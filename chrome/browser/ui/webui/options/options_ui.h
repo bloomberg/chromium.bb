@@ -42,7 +42,7 @@ class OptionsPageUIHandler : public content::WebUIMessageHandler {
   static const char kSettingsAppKey[];
 
   OptionsPageUIHandler();
-  virtual ~OptionsPageUIHandler();
+  ~OptionsPageUIHandler() override;
 
   // Is this handler enabled?
   virtual bool IsEnabled();
@@ -66,7 +66,7 @@ class OptionsPageUIHandler : public content::WebUIMessageHandler {
   virtual void Uninitialize() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override {}
+  void RegisterMessages() override {}
 
  protected:
   struct OptionsStringResource {
@@ -115,7 +115,7 @@ class OptionsUI : public content::WebUIController,
   typedef base::CallbackList<void()> OnFinishedLoadingCallbackList;
 
   explicit OptionsUI(content::WebUI* web_ui);
-  virtual ~OptionsUI();
+  ~OptionsUI() override;
 
   // Registers a callback to be called once the settings frame has finished
   // loading on the HTML/JS side.
@@ -132,15 +132,15 @@ class OptionsUI : public content::WebUIController,
       ui::ScaleFactor scale_factor);
 
   // Overridden from content::WebContentsObserver:
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
 
   // Overridden from OptionsPageUIHandlerHost:
-  virtual void InitializeHandlers() override;
-  virtual void OnFinishedLoading() override;
+  void InitializeHandlers() override;
+  void OnFinishedLoading() override;
 
  private:
   // Adds OptionsPageUiHandler to the handlers list if handler is enabled.

@@ -20,26 +20,24 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
                                public PasswordUIView {
  public:
   PasswordManagerHandler();
-  virtual ~PasswordManagerHandler();
+  ~PasswordManagerHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void InitializeHandler() override;
-  virtual void RegisterMessages() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void InitializeHandler() override;
+  void RegisterMessages() override;
 
   // PasswordUIView implementation.
-  virtual Profile* GetProfile() override;
-  virtual void ShowPassword(size_t index, const base::string16& password_value)
-      override;
-  virtual void SetPasswordList(
+  Profile* GetProfile() override;
+  void ShowPassword(size_t index,
+                    const base::string16& password_value) override;
+  void SetPasswordList(
       const ScopedVector<autofill::PasswordForm>& password_list,
       bool show_passwords) override;
-  virtual void SetPasswordExceptionList(
-      const ScopedVector<autofill::PasswordForm>& password_exception_list)
-      override;
+  void SetPasswordExceptionList(const ScopedVector<autofill::PasswordForm>&
+                                    password_exception_list) override;
 #if !defined(OS_ANDROID)
-  virtual gfx::NativeWindow GetNativeWindow() override;
+  gfx::NativeWindow GetNativeWindow() override;
 #endif
  private:
   // Clears and then populates the list of passwords and password exceptions.

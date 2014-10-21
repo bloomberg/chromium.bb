@@ -15,27 +15,24 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
  public:
   explicit OmniboxCurrentPageDelegateImpl(OmniboxEditController* controller,
                                           Profile* profile);
-  virtual ~OmniboxCurrentPageDelegateImpl();
+  ~OmniboxCurrentPageDelegateImpl() override;
 
   // OmniboxCurrentPageDelegate.
-  virtual bool CurrentPageExists() const override;
-  virtual const GURL& GetURL() const override;
-  virtual bool IsInstantNTP() const override;
-  virtual bool IsSearchResultsPage() const override;
-  virtual bool IsLoading() const override;
-  virtual content::NavigationController&
-      GetNavigationController() const override;
-  virtual const SessionID& GetSessionID() const override;
-  virtual bool ProcessExtensionKeyword(
-      TemplateURL* template_url,
-      const AutocompleteMatch& match,
-      WindowOpenDisposition disposition) override;
-  virtual void OnInputStateChanged() override;
-  virtual void OnFocusChanged(OmniboxFocusState state,
-                              OmniboxFocusChangeReason reason) override;
-  virtual void DoPrerender(const AutocompleteMatch& match) override;
-  virtual void SetSuggestionToPrefetch(
-      const InstantSuggestion& suggestion) override;
+  bool CurrentPageExists() const override;
+  const GURL& GetURL() const override;
+  bool IsInstantNTP() const override;
+  bool IsSearchResultsPage() const override;
+  bool IsLoading() const override;
+  content::NavigationController& GetNavigationController() const override;
+  const SessionID& GetSessionID() const override;
+  bool ProcessExtensionKeyword(TemplateURL* template_url,
+                               const AutocompleteMatch& match,
+                               WindowOpenDisposition disposition) override;
+  void OnInputStateChanged() override;
+  void OnFocusChanged(OmniboxFocusState state,
+                      OmniboxFocusChangeReason reason) override;
+  void DoPrerender(const AutocompleteMatch& match) override;
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) override;
 
  private:
   OmniboxEditController* controller_;

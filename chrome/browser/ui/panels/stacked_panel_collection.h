@@ -24,43 +24,40 @@ class StackedPanelCollection : public PanelCollection,
   typedef std::list<Panel*> Panels;
 
   explicit StackedPanelCollection(PanelManager* panel_manager);
-  virtual ~StackedPanelCollection();
+  ~StackedPanelCollection() override;
 
   // PanelCollection OVERRIDES:
-  virtual void OnDisplayChanged() override;
-  virtual void RefreshLayout() override;
-  virtual void AddPanel(Panel* panel,
-                        PositioningMask positioning_mask) override;
-  virtual void RemovePanel(Panel* panel, RemovalReason reason) override;
-  virtual void CloseAll() override;
-  virtual void ResizePanelWindow(
-      Panel* panel,
-      const gfx::Size& preferred_window_size) override;
-  virtual panel::Resizability GetPanelResizability(
-      const Panel* panel) const override;
-  virtual void OnPanelResizedByMouse(Panel* panel,
-                                     const gfx::Rect& new_bounds) override;
-  virtual void OnPanelAttentionStateChanged(Panel* panel) override;
-  virtual void OnPanelTitlebarClicked(Panel* panel,
-                                      panel::ClickModifier modifier) override;
-  virtual void ActivatePanel(Panel* panel) override;
-  virtual void MinimizePanel(Panel* panel) override;
-  virtual void RestorePanel(Panel* panel) override;
-  virtual void OnMinimizeButtonClicked(Panel* panel,
-                                       panel::ClickModifier modifier) override;
-  virtual void OnRestoreButtonClicked(Panel* panel,
-                                      panel::ClickModifier modifier) override;
-  virtual bool CanShowMinimizeButton(const Panel* panel) const override;
-  virtual bool CanShowRestoreButton(const Panel* panel) const override;
-  virtual bool IsPanelMinimized(const Panel* panel) const override;
-  virtual bool UsesAlwaysOnTopPanels() const override;
-  virtual void SavePanelPlacement(Panel* panel) override;
-  virtual void RestorePanelToSavedPlacement() override;
-  virtual void DiscardSavedPanelPlacement()  override;
-  virtual void UpdatePanelOnCollectionChange(Panel* panel) override;
-  virtual void OnPanelExpansionStateChanged(Panel* panel) override;
-  virtual void OnPanelActiveStateChanged(Panel* panel) override;
-  virtual gfx::Rect GetInitialPanelBounds(
+  void OnDisplayChanged() override;
+  void RefreshLayout() override;
+  void AddPanel(Panel* panel, PositioningMask positioning_mask) override;
+  void RemovePanel(Panel* panel, RemovalReason reason) override;
+  void CloseAll() override;
+  void ResizePanelWindow(Panel* panel,
+                         const gfx::Size& preferred_window_size) override;
+  panel::Resizability GetPanelResizability(const Panel* panel) const override;
+  void OnPanelResizedByMouse(Panel* panel,
+                             const gfx::Rect& new_bounds) override;
+  void OnPanelAttentionStateChanged(Panel* panel) override;
+  void OnPanelTitlebarClicked(Panel* panel,
+                              panel::ClickModifier modifier) override;
+  void ActivatePanel(Panel* panel) override;
+  void MinimizePanel(Panel* panel) override;
+  void RestorePanel(Panel* panel) override;
+  void OnMinimizeButtonClicked(Panel* panel,
+                               panel::ClickModifier modifier) override;
+  void OnRestoreButtonClicked(Panel* panel,
+                              panel::ClickModifier modifier) override;
+  bool CanShowMinimizeButton(const Panel* panel) const override;
+  bool CanShowRestoreButton(const Panel* panel) const override;
+  bool IsPanelMinimized(const Panel* panel) const override;
+  bool UsesAlwaysOnTopPanels() const override;
+  void SavePanelPlacement(Panel* panel) override;
+  void RestorePanelToSavedPlacement() override;
+  void DiscardSavedPanelPlacement() override;
+  void UpdatePanelOnCollectionChange(Panel* panel) override;
+  void OnPanelExpansionStateChanged(Panel* panel) override;
+  void OnPanelActiveStateChanged(Panel* panel) override;
+  gfx::Rect GetInitialPanelBounds(
       const gfx::Rect& requested_bounds) const override;
 
   Panel* GetPanelAbove(Panel* panel) const;
@@ -104,9 +101,9 @@ class StackedPanelCollection : public PanelCollection,
   };
 
   // Overridden from PanelBoundsBatchUpdateObserver:
-  virtual base::string16 GetTitle() const override;
-  virtual gfx::Image GetIcon() const override;
-  virtual void PanelBoundsBatchUpdateCompleted() override;
+  base::string16 GetTitle() const override;
+  gfx::Image GetIcon() const override;
+  void PanelBoundsBatchUpdateCompleted() override;
 
   // Returns the enclosing bounds that include all panels in the stack.
   gfx::Rect GetEnclosingBounds() const;

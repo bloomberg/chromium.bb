@@ -17,7 +17,7 @@ class Value;
 class DomainReliabilityInternalsUI : public content::WebUIController {
  public:
   explicit DomainReliabilityInternalsUI(content::WebUI* web_ui);
-  virtual ~DomainReliabilityInternalsUI();
+  ~DomainReliabilityInternalsUI() override;
 
  private:
   void UpdateData(const base::ListValue* args) const;

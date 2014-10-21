@@ -11,7 +11,7 @@
 class UserActionsUI : public content::WebUIController {
  public:
   explicit UserActionsUI(content::WebUI* contents);
-  virtual ~UserActionsUI();
+  ~UserActionsUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserActionsUI);

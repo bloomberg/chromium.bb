@@ -51,10 +51,10 @@ class InstantUIMessageHandler
       public base::SupportsWeakPtr<InstantUIMessageHandler> {
  public:
   InstantUIMessageHandler();
-  virtual ~InstantUIMessageHandler();
+  ~InstantUIMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void GetPreferenceValue(const base::ListValue* args);

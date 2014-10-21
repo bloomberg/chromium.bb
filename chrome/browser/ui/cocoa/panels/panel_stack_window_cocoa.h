@@ -25,7 +25,7 @@ class PanelStackWindowCocoa;
 class PanelStackWindowCocoa : public NativePanelStackWindow {
  public:
   explicit PanelStackWindowCocoa(NativePanelStackWindowDelegate* delegate);
-  virtual ~PanelStackWindowCocoa();
+  ~PanelStackWindowCocoa() override;
 
   // Notified by BatchBoundsAnimationDelegate about the ending of the bounds
   // animation.
@@ -33,22 +33,22 @@ class PanelStackWindowCocoa : public NativePanelStackWindow {
 
  protected:
   // Overridden from NativePanelStackWindow:
-  virtual void Close() override;
-  virtual void AddPanel(Panel* panel) override;
-  virtual void RemovePanel(Panel* panel) override;
-  virtual void MergeWith(NativePanelStackWindow* another) override;
-  virtual bool IsEmpty() const override;
-  virtual bool HasPanel(Panel* panel) const override;
-  virtual void MovePanelsBy(const gfx::Vector2d& delta) override;
-  virtual void BeginBatchUpdatePanelBounds(bool animate) override;
-  virtual void AddPanelBoundsForBatchUpdate(Panel* panel,
-                                            const gfx::Rect& bounds) override;
-  virtual void EndBatchUpdatePanelBounds() override;
-  virtual bool IsAnimatingPanelBounds() const override;
-  virtual void Minimize() override;
-  virtual bool IsMinimized() const override;
-  virtual void DrawSystemAttention(bool draw_attention) override;
-  virtual void OnPanelActivated(Panel* panel) override;
+  void Close() override;
+  void AddPanel(Panel* panel) override;
+  void RemovePanel(Panel* panel) override;
+  void MergeWith(NativePanelStackWindow* another) override;
+  bool IsEmpty() const override;
+  bool HasPanel(Panel* panel) const override;
+  void MovePanelsBy(const gfx::Vector2d& delta) override;
+  void BeginBatchUpdatePanelBounds(bool animate) override;
+  void AddPanelBoundsForBatchUpdate(Panel* panel,
+                                    const gfx::Rect& bounds) override;
+  void EndBatchUpdatePanelBounds() override;
+  bool IsAnimatingPanelBounds() const override;
+  void Minimize() override;
+  bool IsMinimized() const override;
+  void DrawSystemAttention(bool draw_attention) override;
+  void OnPanelActivated(Panel* panel) override;
 
  private:
   typedef std::list<Panel*> Panels;

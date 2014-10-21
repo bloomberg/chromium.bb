@@ -45,7 +45,7 @@ class WrenchIconPainter : gfx::AnimationDelegate {
   };
 
   explicit WrenchIconPainter(Delegate* delegate);
-  virtual ~WrenchIconPainter();
+  ~WrenchIconPainter() override;
 
   // If |severity| is not |SEVERITY_NONE| then the wrench icon is colored to
   // match the severity level.
@@ -63,7 +63,7 @@ class WrenchIconPainter : gfx::AnimationDelegate {
   FRIEND_TEST_ALL_PREFIXES(WrenchIconPainterTest, PaintCallback);
 
   // AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Gets the image ID used to draw bars for the current severity level.
   int GetCurrentSeverityImageID() const;

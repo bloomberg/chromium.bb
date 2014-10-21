@@ -147,9 +147,7 @@ void CheckConfigDataTypeArguments(base::DictionaryValue* dictionary,
 // CallJavascriptFunction().
 class TestWebUI : public content::WebUI {
  public:
-  virtual ~TestWebUI() {
-    ClearTrackedCalls();
-  }
+  ~TestWebUI() override { ClearTrackedCalls(); }
 
   void ClearTrackedCalls() {
     // Manually free the arguments stored in CallData, since there's no good
@@ -163,70 +161,58 @@ class TestWebUI : public content::WebUI {
     call_data_.clear();
   }
 
-  virtual void CallJavascriptFunction(const std::string& function_name)
-      override {
+  void CallJavascriptFunction(const std::string& function_name) override {
     call_data_.push_back(CallData());
     call_data_.back().function_name = function_name;
   }
 
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1) override {
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1) override {
     call_data_.push_back(CallData());
     call_data_.back().function_name = function_name;
     call_data_.back().arg1 = arg1.DeepCopy();
   }
 
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1,
-                                      const base::Value& arg2) override {
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1,
+                              const base::Value& arg2) override {
     call_data_.push_back(CallData());
     call_data_.back().function_name = function_name;
     call_data_.back().arg1 = arg1.DeepCopy();
     call_data_.back().arg2 = arg2.DeepCopy();
   }
 
-  virtual content::WebContents* GetWebContents() const override {
-    return NULL;
-  }
-  virtual content::WebUIController* GetController() const override {
-    return NULL;
-  }
-  virtual void SetController(content::WebUIController* controller) override {}
-  virtual float GetDeviceScaleFactor() const override {
-    return 1.0f;
-  }
-  virtual const base::string16& GetOverriddenTitle() const override {
+  content::WebContents* GetWebContents() const override { return NULL; }
+  content::WebUIController* GetController() const override { return NULL; }
+  void SetController(content::WebUIController* controller) override {}
+  float GetDeviceScaleFactor() const override { return 1.0f; }
+  const base::string16& GetOverriddenTitle() const override {
     return temp_string_;
   }
-  virtual void OverrideTitle(const base::string16& title) override {}
-  virtual ui::PageTransition GetLinkTransitionType() const override {
+  void OverrideTitle(const base::string16& title) override {}
+  ui::PageTransition GetLinkTransitionType() const override {
     return ui::PAGE_TRANSITION_LINK;
   }
-  virtual void SetLinkTransitionType(ui::PageTransition type) override {}
-  virtual int GetBindings() const override {
-    return 0;
-  }
-  virtual void SetBindings(int bindings) override {}
-  virtual void OverrideJavaScriptFrame(
-      const std::string& frame_name) override {}
-  virtual void AddMessageHandler(
-      content::WebUIMessageHandler* handler) override {}
-  virtual void RegisterMessageCallback(
-      const std::string& message,
-      const MessageCallback& callback) override {}
-  virtual void ProcessWebUIMessage(const GURL& source_url,
-                                   const std::string& message,
-                                   const base::ListValue& args) override {}
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1,
-                                      const base::Value& arg2,
-                                      const base::Value& arg3) override {}
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1,
-                                      const base::Value& arg2,
-                                      const base::Value& arg3,
-                                      const base::Value& arg4) override {}
-  virtual void CallJavascriptFunction(
+  void SetLinkTransitionType(ui::PageTransition type) override {}
+  int GetBindings() const override { return 0; }
+  void SetBindings(int bindings) override {}
+  void OverrideJavaScriptFrame(const std::string& frame_name) override {}
+  void AddMessageHandler(content::WebUIMessageHandler* handler) override {}
+  void RegisterMessageCallback(const std::string& message,
+                               const MessageCallback& callback) override {}
+  void ProcessWebUIMessage(const GURL& source_url,
+                           const std::string& message,
+                           const base::ListValue& args) override {}
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1,
+                              const base::Value& arg2,
+                              const base::Value& arg3) override {}
+  void CallJavascriptFunction(const std::string& function_name,
+                              const base::Value& arg1,
+                              const base::Value& arg2,
+                              const base::Value& arg3,
+                              const base::Value& arg4) override {}
+  void CallJavascriptFunction(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) override {}
 
@@ -250,19 +236,17 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
         profile_(profile) {
     set_web_ui(web_ui);
   }
-  virtual ~TestingSyncSetupHandler() {
-    set_web_ui(NULL);
-  }
+  ~TestingSyncSetupHandler() override { set_web_ui(NULL); }
 
-  virtual void FocusUI() override {}
+  void FocusUI() override {}
 
-  virtual Profile* GetProfile() const override { return profile_; }
+  Profile* GetProfile() const override { return profile_; }
 
   using SyncSetupHandler::is_configuring_sync;
 
  private:
 #if !defined(OS_CHROMEOS)
-  virtual void DisplayGaiaLoginInNewTabOrWindow() override {}
+  void DisplayGaiaLoginInNewTabOrWindow() override {}
 #endif
 
   // Weak pointer to parent profile.
@@ -387,7 +371,7 @@ class SyncSetupHandlerTest : public testing::Test {
 };
 
 class SyncSetupHandlerFirstSigninTest : public SyncSetupHandlerTest {
-  virtual std::string GetTestUser() override { return std::string(); }
+  std::string GetTestUser() override { return std::string(); }
 };
 
 TEST_F(SyncSetupHandlerTest, Basic) {

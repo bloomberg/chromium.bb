@@ -22,27 +22,24 @@ class WebsiteSettingsHandler : public content_settings::Observer,
                                public OptionsPageUIHandler {
  public:
   WebsiteSettingsHandler();
-  virtual ~WebsiteSettingsHandler();
+  ~WebsiteSettingsHandler() override;
 
   typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
       LocalStorageList;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void InitializeHandler() override;
-  virtual void RegisterMessages() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void InitializeHandler() override;
+  void RegisterMessages() override;
 
   // content_settings::Observer implementation.
-  virtual void OnContentSettingChanged(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      std::string resource_identifier) override;
-  virtual void OnContentSettingUsed(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type) override;
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override;
+  void OnContentSettingUsed(const ContentSettingsPattern& primary_pattern,
+                            const ContentSettingsPattern& secondary_pattern,
+                            ContentSettingsType content_type) override;
 
  private:
   // Update the page with all origins for a given content setting.

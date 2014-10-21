@@ -15,18 +15,17 @@
 class TestToolbarModel : public ToolbarModel {
  public:
   TestToolbarModel();
-  virtual ~TestToolbarModel();
-  virtual base::string16 GetText() const override;
-  virtual base::string16 GetFormattedURL(size_t* prefix_end) const override;
-  virtual base::string16 GetCorpusNameForMobile() const override;
-  virtual GURL GetURL() const override;
-  virtual bool WouldPerformSearchTermReplacement(
-      bool ignore_editing) const override;
-  virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const override;
-  virtual int GetIcon() const override;
-  virtual int GetIconForSecurityLevel(SecurityLevel level) const override;
-  virtual base::string16 GetEVCertName() const override;
-  virtual bool ShouldDisplayURL() const override;
+  ~TestToolbarModel() override;
+  base::string16 GetText() const override;
+  base::string16 GetFormattedURL(size_t* prefix_end) const override;
+  base::string16 GetCorpusNameForMobile() const override;
+  GURL GetURL() const override;
+  bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
+  SecurityLevel GetSecurityLevel(bool ignore_editing) const override;
+  int GetIcon() const override;
+  int GetIconForSecurityLevel(SecurityLevel level) const override;
+  base::string16 GetEVCertName() const override;
+  bool ShouldDisplayURL() const override;
 
   void set_text(const base::string16& text) { text_ = text; }
   void set_url(const GURL& url) { url_ = url;}
@@ -49,7 +48,7 @@ class TestToolbarModel : public ToolbarModel {
   }
 
  private:
-  virtual bool WouldOmitURLDueToOriginChip() const override;
+  bool WouldOmitURLDueToOriginChip() const override;
 
   base::string16 text_;
   GURL url_;

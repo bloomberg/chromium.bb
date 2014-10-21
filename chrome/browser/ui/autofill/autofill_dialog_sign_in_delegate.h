@@ -30,24 +30,22 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
                                const gfx::Size& maximum_size);
 
   // WebContentsDelegate implementation.
-  virtual void ResizeDueToAutoResize(content::WebContents* source,
-                                     const gfx::Size& preferred_size) override;
-  virtual content::WebContents* OpenURLFromTab(
+  void ResizeDueToAutoResize(content::WebContents* source,
+                             const gfx::Size& preferred_size) override;
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) override;
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
 
   // WebContentsObserver implementation.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   // Updates the size limits and enables auto-resize for this view.
   void UpdateLimitsAndEnableAutoResize(const gfx::Size& minimum_size,

@@ -28,7 +28,7 @@ class ExtensionInfoUI : public content::WebUIController {
   static GURL GetURL(const std::string& extension_id);
 
  private:
-  virtual ~ExtensionInfoUI();
+  ~ExtensionInfoUI() override;
 
   // Load details about the extension into source_. Called during construction.
   void AddExtensionDataToSource(const std::string& extension_id);

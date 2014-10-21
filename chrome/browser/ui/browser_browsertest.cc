@@ -161,9 +161,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
  public:
   MockTabStripModelObserver() : closing_count_(0) {}
 
-  virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            WebContents* contents,
-                            int index) override {
+  void TabClosingAt(TabStripModel* tab_strip_model,
+                    WebContents* contents,
+                    int index) override {
     ++closing_count_;
   }
 
@@ -179,7 +179,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 class TransferHttpsRedirectsContentBrowserClient
     : public chrome::ChromeContentBrowserClient {
  public:
-  virtual bool ShouldSwapProcessesForRedirect(
+  bool ShouldSwapProcessesForRedirect(
       content::ResourceContext* resource_context,
       const GURL& current_url,
       const GURL& new_url) override {
@@ -211,7 +211,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
         tab, new_navigation, url , this);
     interstitial_page_->Show();
   }
-  virtual ~TestInterstitialPage() { }
+  ~TestInterstitialPage() override {}
   void Proceed() {
     interstitial_page_->Proceed();
   }
@@ -219,9 +219,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
     interstitial_page_->DontProceed();
   }
 
-  virtual std::string GetHTMLContents() override {
-    return "<h1>INTERSTITIAL</h1>";
-  }
+  std::string GetHTMLContents() override { return "<h1>INTERSTITIAL</h1>"; }
 
  private:
   InterstitialPage* interstitial_page_;  // Owns us.
@@ -254,15 +252,14 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   }
 
   // Cache the size when RenderViewHost is first created.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override {
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override {
     render_view_sizes_[render_view_host].rwhv_create_size =
         render_view_host->GetView()->GetViewBounds().size();
   }
 
   // Enlarge WebContentsView by |wcv_resize_insets_| while the navigation entry
   // is pending.
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) override {
     if (wcv_resize_insets_.IsEmpty())
@@ -285,7 +282,7 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   // Cache the sizes of RenderWidgetHostView and WebContentsView when the
   // navigation entry is committed, which is before
   // WebContentsDelegate::DidNavigateMainFramePostCommit is called.
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& details) override {
     content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
     render_view_sizes_[rvh].rwhv_commit_size =
@@ -604,14 +601,14 @@ class RedirectObserver : public content::WebContentsObserver {
       : WebContentsObserver(web_contents) {
   }
 
-  virtual void DidNavigateAnyFrame(
+  void DidNavigateAnyFrame(
       content::RenderFrameHost* render_frame_host,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override {
     params_ = params;
   }
 
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     // Make sure we don't close the tab while the observer is in scope.
     // See http://crbug.com/314036.
     FAIL() << "WebContents closed during navigation (http://crbug.com/314036).";
@@ -823,7 +820,7 @@ class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
   // This test is for testing a specific shutdown behavior. This mimics what
   // happens in InProcessBrowserTest::RunTestOnMainThread and QuitBrowsers, but
   // ensures that it happens through the single IDC_EXIT of the test.
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     // Cycle both the MessageLoop and the Cocoa runloop twice to flush out any
     // Chrome work that generates Cocoa work. Do this twice since there are two
     // Browsers that must be closed.
@@ -1948,9 +1945,7 @@ class MockWebContentsObserver : public WebContentsObserver {
         got_user_gesture_(false) {
   }
 
-  virtual void DidGetUserGesture() override {
-    got_user_gesture_ = true;
-  }
+  void DidGetUserGesture() override { got_user_gesture_ = true; }
 
   bool got_user_gesture() const {
     return got_user_gesture_;
@@ -2127,7 +2122,7 @@ class KioskModeTest : public BrowserTest {
  public:
   KioskModeTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kKioskMode);
   }
 };
@@ -2177,7 +2172,7 @@ class RunInBackgroundTest : public BrowserTest {
  public:
   RunInBackgroundTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kKeepAliveForTest);
   }
 };
@@ -2207,7 +2202,7 @@ class NoStartupWindowTest : public BrowserTest {
  public:
   NoStartupWindowTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kNoStartupWindow);
     command_line->AppendSwitch(switches::kKeepAliveForTest);
   }
@@ -2261,7 +2256,7 @@ class AppModeTest : public BrowserTest {
  public:
   AppModeTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     GURL url = ui_test_utils::GetTestUrl(
        base::FilePath(), base::FilePath().AppendASCII("title1.html"));
     command_line->AppendSwitchASCII(switches::kApp, url.spec());

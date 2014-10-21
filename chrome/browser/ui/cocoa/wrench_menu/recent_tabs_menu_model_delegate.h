@@ -19,10 +19,10 @@ class RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
  public:
   // |model| must live longer than this object.
   RecentTabsMenuModelDelegate(ui::MenuModel* model, NSMenu* menu);
-  virtual ~RecentTabsMenuModelDelegate();
+  ~RecentTabsMenuModelDelegate() override;
 
   // ui::MenuModelDelegate:
-  virtual void OnIconChanged(int index) override;
+  void OnIconChanged(int index) override;
 
  private:
   ui::MenuModel* model_;  // weak

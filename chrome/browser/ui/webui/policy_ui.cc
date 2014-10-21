@@ -265,11 +265,11 @@ class CloudPolicyCoreStatusProvider
       public policy::CloudPolicyStore::Observer {
  public:
   explicit CloudPolicyCoreStatusProvider(policy::CloudPolicyCore* core);
-  virtual ~CloudPolicyCoreStatusProvider();
+  ~CloudPolicyCoreStatusProvider() override;
 
   // policy::CloudPolicyStore::Observer implementation.
-  virtual void OnStoreLoaded(policy::CloudPolicyStore* store) override;
-  virtual void OnStoreError(policy::CloudPolicyStore* store) override;
+  void OnStoreLoaded(policy::CloudPolicyStore* store) override;
+  void OnStoreError(policy::CloudPolicyStore* store) override;
 
  protected:
   // Policy status is read from the CloudPolicyClient, CloudPolicyStore and
@@ -284,10 +284,10 @@ class CloudPolicyCoreStatusProvider
 class UserPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
  public:
   explicit UserPolicyStatusProvider(policy::CloudPolicyCore* core);
-  virtual ~UserPolicyStatusProvider();
+  ~UserPolicyStatusProvider() override;
 
   // CloudPolicyCoreStatusProvider implementation.
-  virtual void GetStatus(base::DictionaryValue* dict) override;
+  void GetStatus(base::DictionaryValue* dict) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserPolicyStatusProvider);
@@ -346,20 +346,20 @@ class PolicyUIHandler : public content::NotificationObserver,
                         public policy::PolicyService::Observer {
  public:
   PolicyUIHandler();
-  virtual ~PolicyUIHandler();
+  ~PolicyUIHandler() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // policy::PolicyService::Observer implementation.
-  virtual void OnPolicyUpdated(const policy::PolicyNamespace& ns,
-                               const policy::PolicyMap& previous,
-                               const policy::PolicyMap& current) override;
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
 
  private:
   // Send a dictionary containing the names of all known policies to the UI.

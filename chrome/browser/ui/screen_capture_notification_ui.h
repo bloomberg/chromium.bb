@@ -13,7 +13,7 @@
 // is being captured.
 class ScreenCaptureNotificationUI : public content::MediaStreamUI {
  public:
-  virtual ~ScreenCaptureNotificationUI() {}
+  ~ScreenCaptureNotificationUI() override {}
 
   // Creates platform-specific screen capture notification UI. |text| specifies
   // the text that should be shown in the notification.

@@ -22,7 +22,7 @@ class ComponentsUI : public content::WebUIController,
                      public component_updater::ServiceObserver {
  public:
   explicit ComponentsUI(content::WebUI* web_ui);
-  virtual ~ComponentsUI();
+  ~ComponentsUI() override;
 
   static void OnDemandUpdate(const std::string& component_id);
 
@@ -32,7 +32,7 @@ class ComponentsUI : public content::WebUIController,
       ui::ScaleFactor scale_factor);
 
   // ServiceObserver implementation.
-  virtual void OnEvent(Events event, const std::string& id) override;
+  void OnEvent(Events event, const std::string& id) override;
 
  private:
   static base::string16 ComponentEventToString(Events event);

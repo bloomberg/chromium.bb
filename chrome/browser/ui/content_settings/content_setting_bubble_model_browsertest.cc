@@ -22,7 +22,7 @@ const base::FilePath::CharType kDocRoot[] =
 
 class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     https_server_.reset(
         new net::SpawnedTestServer(
             net::SpawnedTestServer::TYPE_HTTPS,

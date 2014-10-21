@@ -31,7 +31,7 @@ class RecommendedApps : public extensions::ExtensionRegistryObserver {
   typedef std::vector<scoped_refptr<const extensions::Extension> > Apps;
 
   explicit RecommendedApps(Profile* profile);
-  virtual ~RecommendedApps();
+  ~RecommendedApps() override;
 
   void AddObserver(RecommendedAppsObserver* observer);
   void RemoveObserver(RecommendedAppsObserver* observer);
@@ -42,23 +42,20 @@ class RecommendedApps : public extensions::ExtensionRegistryObserver {
   void Update();
 
   // extensions::ExtensionRegistryObserver overrides:
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override;
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
-  virtual void OnExtensionUnloaded(
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;

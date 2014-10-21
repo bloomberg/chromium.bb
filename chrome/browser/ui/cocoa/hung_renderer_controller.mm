@@ -46,12 +46,10 @@ class HungRendererWebContentsObserverBridge
 
  protected:
   // WebContentsObserver overrides:
-  virtual void RenderProcessGone(base::TerminationStatus status) override {
+  void RenderProcessGone(base::TerminationStatus status) override {
     [controller_ renderProcessGone];
   }
-  virtual void WebContentsDestroyed() override {
-    [controller_ renderProcessGone];
-  }
+  void WebContentsDestroyed() override { [controller_ renderProcessGone]; }
 
  private:
   HungRendererController* controller_;  // weak

@@ -14,7 +14,7 @@ class IdentityInternalsUI
     : public content::WebUIController {
  public:
   explicit IdentityInternalsUI(content::WebUI* web_ui);
-  virtual ~IdentityInternalsUI();
+  ~IdentityInternalsUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IdentityInternalsUI);

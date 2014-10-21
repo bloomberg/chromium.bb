@@ -26,15 +26,14 @@ class CommandObserverBridge : public CommandObserver {
  public:
   CommandObserverBridge(id<CommandObserverProtocol> observer,
                         CommandUpdater* commands);
-  virtual ~CommandObserverBridge();
+  ~CommandObserverBridge() override;
 
   // Register for updates about |command|.
   void ObserveCommand(int command);
 
  protected:
   // Overridden from CommandObserver
-  virtual void EnabledStateChangedForCommand(int command,
-                                             bool enabled) override;
+  void EnabledStateChangedForCommand(int command, bool enabled) override;
 
  private:
   id<CommandObserverProtocol> observer_;  // weak, owns me

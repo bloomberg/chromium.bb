@@ -16,10 +16,10 @@
 class VersionHandler : public content::WebUIMessageHandler {
  public:
   VersionHandler();
-  virtual ~VersionHandler();
+  ~VersionHandler() override;
 
   // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for the "requestVersionInfo" message. This asynchronously requests
   // the flash version and eventually returns it to the front end along with the

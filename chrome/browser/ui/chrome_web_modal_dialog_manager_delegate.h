@@ -13,12 +13,11 @@ class ChromeWebModalDialogManagerDelegate
     : public web_modal::WebContentsModalDialogManagerDelegate {
  public:
   ChromeWebModalDialogManagerDelegate();
-  virtual ~ChromeWebModalDialogManagerDelegate();
+  ~ChromeWebModalDialogManagerDelegate() override;
 
  protected:
   // Overridden from web_modal::WebContentsModalDialogManagerDelegate:
-  virtual bool IsWebContentsVisible(
-      content::WebContents* web_contents) override;
+  bool IsWebContentsVisible(content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebModalDialogManagerDelegate);

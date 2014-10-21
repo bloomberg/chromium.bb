@@ -49,24 +49,23 @@ class PrintPreviewHandler
       public MergeSessionHelper::Observer {
  public:
   PrintPreviewHandler();
-  virtual ~PrintPreviewHandler();
+  ~PrintPreviewHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override;
-  virtual void FileSelectionCanceled(void* params) override;
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
   // PrintViewManagerObserver implementation.
-  virtual void OnPrintDialogShown() override;
+  void OnPrintDialogShown() override;
 
   // MergeSessionHelper::Observer implementation.
-  virtual void MergeSessionCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
+  void MergeSessionCompleted(const std::string& account_id,
+                             const GoogleServiceAuthError& error) override;
 
   // Displays a modal dialog, prompting the user to select a file.
   void SelectFile(const base::FilePath& default_path);
@@ -87,21 +86,20 @@ class PrintPreviewHandler
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   // PrivetLocalPrinterLister::Delegate implementation.
-  virtual void LocalPrinterChanged(
+  void LocalPrinterChanged(
       bool added,
       const std::string& name,
       bool has_local_printing,
       const local_discovery::DeviceDescription& description) override;
-  virtual void LocalPrinterRemoved(const std::string& name) override;
-  virtual void LocalPrinterCacheFlushed() override;
+  void LocalPrinterRemoved(const std::string& name) override;
+  void LocalPrinterCacheFlushed() override;
 
   // PrivetLocalPrintOperation::Delegate implementation.
-  virtual void OnPrivetPrintingDone(
-      const local_discovery::PrivetLocalPrintOperation*
-      print_operation) override;
-  virtual void OnPrivetPrintingError(
+  void OnPrivetPrintingDone(const local_discovery::PrivetLocalPrintOperation*
+                                print_operation) override;
+  void OnPrivetPrintingError(
       const local_discovery::PrivetLocalPrintOperation* print_operation,
-        int http_code) override;
+      int http_code) override;
 #endif  // ENABLE_SERVICE_DISCOVERY
   int regenerate_preview_request_count() const {
     return regenerate_preview_request_count_;

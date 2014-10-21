@@ -33,7 +33,7 @@ class FullscreenControllerStateInteractiveTest
       public FullscreenControllerStateTest {
  private:
   // FullscreenControllerStateTest override:
-  virtual Browser* GetBrowser() override;
+  Browser* GetBrowser() override;
 };
 
 Browser* FullscreenControllerStateInteractiveTest::GetBrowser() {

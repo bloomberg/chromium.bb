@@ -107,7 +107,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   FlagsDOMHandler() : access_(about_flags::kGeneralAccessFlagsOnly),
                       flags_experiments_requested_(false) {
   }
-  virtual ~FlagsDOMHandler() {}
+  ~FlagsDOMHandler() override {}
 
   // Initializes the DOM handler with the provided flags storage and flags
   // access. If there were flags experiments requested from javascript before
@@ -116,7 +116,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
             about_flags::FlagAccess access);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for the "requestFlagsExperiments" message.
   void HandleRequestFlagsExperiments(const base::ListValue* args);

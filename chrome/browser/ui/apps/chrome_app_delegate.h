@@ -26,7 +26,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   // Pass a ScopedKeepAlive to prevent the browser process from shutting down
   // while this object exists.
   explicit ChromeAppDelegate(scoped_ptr<ScopedKeepAlive> keep_alive);
-  virtual ~ChromeAppDelegate();
+  ~ChromeAppDelegate() override;
 
   static void DisableExternalOpenForTesting();
 
@@ -34,46 +34,43 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   class NewWindowContentsDelegate;
 
   // extensions::AppDelegate:
-  virtual void InitWebContents(content::WebContents* web_contents) override;
-  virtual void ResizeWebContents(content::WebContents* web_contents,
-                                 const gfx::Size& size) override;
-  virtual content::WebContents* OpenURLFromTab(
+  void InitWebContents(content::WebContents* web_contents) override;
+  void ResizeWebContents(content::WebContents* web_contents,
+                         const gfx::Size& size) override;
+  content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual void AddNewContents(content::BrowserContext* context,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual content::ColorChooser* ShowColorChooser(
-      content::WebContents* web_contents,
-      SkColor initial_color) override;
-  virtual void RunFileChooser(
-      content::WebContents* tab,
-      const content::FileChooserParams& params) override;
-  virtual void RequestMediaAccessPermission(
+  void AddNewContents(content::BrowserContext* context,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
+                                          SkColor initial_color) override;
+  void RunFileChooser(content::WebContents* tab,
+                      const content::FileChooserParams& params) override;
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension) override;
-  virtual bool CheckMediaAccessPermission(
+  bool CheckMediaAccessPermission(
       content::WebContents* web_contents,
       const GURL& security_origin,
       content::MediaStreamType type,
       const extensions::Extension* extension) override;
-  virtual int PreferredIconSize() override;
-  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) override;
-  virtual bool IsWebContentsVisible(
-      content::WebContents* web_contents) override;
-  virtual void SetTerminatingCallback(const base::Closure& callback) override;
+  int PreferredIconSize() override;
+  void SetWebContentsBlocked(content::WebContents* web_contents,
+                             bool blocked) override;
+  bool IsWebContentsVisible(content::WebContents* web_contents) override;
+  void SetTerminatingCallback(const base::Closure& callback) override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   scoped_ptr<ScopedKeepAlive> keep_alive_;
   scoped_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;

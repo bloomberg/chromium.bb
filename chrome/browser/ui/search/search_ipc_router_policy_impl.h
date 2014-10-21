@@ -15,31 +15,31 @@ class WebContents;
 class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
  public:
   explicit SearchIPCRouterPolicyImpl(const content::WebContents* web_contents);
-  virtual ~SearchIPCRouterPolicyImpl();
+  ~SearchIPCRouterPolicyImpl() override;
 
  private:
   friend class SearchIPCRouterPolicyTest;
 
   // Overridden from SearchIPCRouter::Policy:
-  virtual bool ShouldProcessSetVoiceSearchSupport() override;
-  virtual bool ShouldProcessFocusOmnibox(bool is_active_tab) override;
-  virtual bool ShouldProcessNavigateToURL(bool is_active_tab) override;
-  virtual bool ShouldProcessDeleteMostVisitedItem() override;
-  virtual bool ShouldProcessUndoMostVisitedDeletion() override;
-  virtual bool ShouldProcessUndoAllMostVisitedDeletions() override;
-  virtual bool ShouldProcessLogEvent() override;
-  virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
-  virtual bool ShouldProcessChromeIdentityCheck() override;
-  virtual bool ShouldSendSetPromoInformation() override;
-  virtual bool ShouldSendSetDisplayInstantResults() override;
-  virtual bool ShouldSendSetSuggestionToPrefetch() override;
-  virtual bool ShouldSendSetOmniboxStartMargin() override;
-  virtual bool ShouldSendSetInputInProgress(bool is_active_tab) override;
-  virtual bool ShouldSendOmniboxFocusChanged() override;
-  virtual bool ShouldSendMostVisitedItems() override;
-  virtual bool ShouldSendThemeBackgroundInfo() override;
-  virtual bool ShouldSendToggleVoiceSearch() override;
-  virtual bool ShouldSubmitQuery() override;
+  bool ShouldProcessSetVoiceSearchSupport() override;
+  bool ShouldProcessFocusOmnibox(bool is_active_tab) override;
+  bool ShouldProcessNavigateToURL(bool is_active_tab) override;
+  bool ShouldProcessDeleteMostVisitedItem() override;
+  bool ShouldProcessUndoMostVisitedDeletion() override;
+  bool ShouldProcessUndoAllMostVisitedDeletions() override;
+  bool ShouldProcessLogEvent() override;
+  bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
+  bool ShouldProcessChromeIdentityCheck() override;
+  bool ShouldSendSetPromoInformation() override;
+  bool ShouldSendSetDisplayInstantResults() override;
+  bool ShouldSendSetSuggestionToPrefetch() override;
+  bool ShouldSendSetOmniboxStartMargin() override;
+  bool ShouldSendSetInputInProgress(bool is_active_tab) override;
+  bool ShouldSendOmniboxFocusChanged() override;
+  bool ShouldSendMostVisitedItems() override;
+  bool ShouldSendThemeBackgroundInfo() override;
+  bool ShouldSendToggleVoiceSearch() override;
+  bool ShouldSubmitQuery() override;
 
   // Used by unit tests.
   void set_is_incognito(bool is_incognito) {

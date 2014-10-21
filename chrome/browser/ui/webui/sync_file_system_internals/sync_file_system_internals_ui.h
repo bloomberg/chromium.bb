@@ -10,7 +10,8 @@
 class SyncFileSystemInternalsUI : public content::WebUIController {
  public:
   explicit SyncFileSystemInternalsUI(content::WebUI* web_ui);
-  virtual ~SyncFileSystemInternalsUI();
+  ~SyncFileSystemInternalsUI() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemInternalsUI);
 };

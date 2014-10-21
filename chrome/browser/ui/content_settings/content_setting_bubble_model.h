@@ -99,16 +99,16 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
       Profile* profile,
       ContentSettingsType content_type);
 
-  virtual ~ContentSettingBubbleModel();
+  ~ContentSettingBubbleModel() override;
 
   ContentSettingsType content_type() const { return content_type_; }
 
   const BubbleContent& bubble_content() const { return bubble_content_; }
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   virtual void OnRadioClicked(int radio_index) {}
   virtual void OnPopupClicked(int index) {}
@@ -189,7 +189,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
                                   content::WebContents* web_contents,
                                   Profile* profile,
                                   ContentSettingsType content_type);
-  virtual ~ContentSettingTitleAndLinkModel() {}
+  ~ContentSettingTitleAndLinkModel() override {}
   Delegate* delegate() const { return delegate_; }
 
  private:
@@ -198,8 +198,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   void SetLearnMoreLink();
 
   // content::ContentSettingBubbleModel:
-  virtual void OnManageLinkClicked() override;
-  virtual void OnLearnMoreLinkClicked() override;
+  void OnManageLinkClicked() override;
+  void OnLearnMoreLinkClicked() override;
   Delegate* delegate_;
 };
 
@@ -211,8 +211,8 @@ class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
                                ProtocolHandlerRegistry* registry,
                                ContentSettingsType content_type);
 
-  virtual void OnRadioClicked(int radio_index) override;
-  virtual void OnDoneClicked() override;
+  void OnRadioClicked(int radio_index) override;
+  void OnDoneClicked() override;
 
  private:
   // These states must match the order of appearance of the radio buttons

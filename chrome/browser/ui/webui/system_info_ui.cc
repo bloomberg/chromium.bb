@@ -47,21 +47,19 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
   SystemInfoUIHTMLSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string&) const override {
+  std::string GetMimeType(const std::string&) const override {
     return "text/html";
   }
-  virtual bool ShouldAddContentSecurityPolicy() const override {
-    return false;
-  }
+  bool ShouldAddContentSecurityPolicy() const override { return false; }
 
  private:
-  virtual ~SystemInfoUIHTMLSource() {}
+  ~SystemInfoUIHTMLSource() override {}
 
   void SysInfoComplete(scoped_ptr<SystemLogsResponse> response);
   void RequestComplete();
@@ -81,10 +79,10 @@ class SystemInfoHandler : public WebUIMessageHandler,
                           public base::SupportsWeakPtr<SystemInfoHandler> {
  public:
   SystemInfoHandler();
-  virtual ~SystemInfoHandler();
+  ~SystemInfoHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoHandler);

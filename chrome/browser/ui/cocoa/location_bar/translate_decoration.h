@@ -18,16 +18,16 @@ class CommandUpdater;
 class TranslateDecoration : public ImageDecoration {
  public:
   explicit TranslateDecoration(CommandUpdater* command_updater);
-  virtual ~TranslateDecoration();
+  ~TranslateDecoration() override;
 
   // Toggles the icon on or off.
   void SetLit(bool on);
 
   // Implement |LocationBarDecoration|
-  virtual bool AcceptsMousePress() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSString* GetToolTip() override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  bool AcceptsMousePress() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSString* GetToolTip() override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
  private:
   // For showing the translate bubble up.

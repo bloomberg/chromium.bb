@@ -25,11 +25,10 @@ class WebUIDataSource;
 class MojoWebUIControllerBase : public content::WebUIController {
  public:
   explicit MojoWebUIControllerBase(content::WebUI* contents);
-  virtual ~MojoWebUIControllerBase();
+  ~MojoWebUIControllerBase() override;
 
   // WebUIController overrides:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
  protected:
   // Invoke to register mapping between binding file and resource id (IDR_...).

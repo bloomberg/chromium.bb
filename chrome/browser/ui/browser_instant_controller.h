@@ -25,7 +25,7 @@ class BrowserInstantController : public SearchModelObserver,
                                  public InstantServiceObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
-  virtual ~BrowserInstantController();
+  ~BrowserInstantController() override;
 
   // Commits the current Instant, returning true on success. This is intended
   // for use from OpenCurrentURL.
@@ -49,11 +49,11 @@ class BrowserInstantController : public SearchModelObserver,
 
  private:
   // SearchModelObserver:
-  virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) override;
+  void ModelChanged(const SearchModel::State& old_state,
+                    const SearchModel::State& new_state) override;
 
   // InstantServiceObserver:
-  virtual void DefaultSearchProviderChanged() override;
+  void DefaultSearchProviderChanged() override;
 
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.

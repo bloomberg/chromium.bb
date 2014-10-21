@@ -22,15 +22,15 @@ class TestPanelNotificationObserver : public content::NotificationObserver {
  public:
   TestPanelNotificationObserver(int notification,
                                 const content::NotificationSource& source);
-  virtual ~TestPanelNotificationObserver();
+  ~TestPanelNotificationObserver() override;
 
   // Wait until the expected state is achieved.
   void Wait();
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  protected:
   virtual bool AtExpectedState() = 0;

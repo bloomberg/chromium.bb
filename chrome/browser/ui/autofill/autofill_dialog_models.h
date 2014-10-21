@@ -34,7 +34,7 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
                              public ui::SimpleMenuModel::Delegate {
  public:
   explicit SuggestionsMenuModel(SuggestionsMenuModelDelegate* delegate);
-  virtual ~SuggestionsMenuModel();
+  ~SuggestionsMenuModel() override;
 
   // Adds an item and its identifying key to the model. Keys needn't be unique.
   void AddKeyedItem(const std::string& key,
@@ -80,12 +80,11 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   void SetEnabled(const std::string& item_key, bool enabled);
 
   // ui::SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   // Represents an item in this model.
@@ -113,13 +112,13 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
 class MonthComboboxModel : public ui::ComboboxModel {
  public:
   MonthComboboxModel();
-  virtual ~MonthComboboxModel();
+  ~MonthComboboxModel() override;
 
   static base::string16 FormatMonth(int index);
 
   // ui::Combobox implementation:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MonthComboboxModel);
@@ -129,11 +128,11 @@ class MonthComboboxModel : public ui::ComboboxModel {
 class YearComboboxModel : public ui::ComboboxModel {
  public:
   YearComboboxModel();
-  virtual ~YearComboboxModel();
+  ~YearComboboxModel() override;
 
   // ui::Combobox implementation:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   // The current year (e.g., 2012).

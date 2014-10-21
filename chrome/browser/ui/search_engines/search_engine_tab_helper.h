@@ -21,16 +21,16 @@ class SearchEngineTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<SearchEngineTabHelper> {
  public:
-  virtual ~SearchEngineTabHelper();
+  ~SearchEngineTabHelper() override;
 
   SearchEngineTabHelperDelegate* delegate() const { return delegate_; }
   void set_delegate(SearchEngineTabHelperDelegate* d) { delegate_ = d; }
 
   // content::WebContentsObserver overrides.
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit SearchEngineTabHelper(content::WebContents* web_contents);

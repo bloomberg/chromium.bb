@@ -49,12 +49,10 @@ class ExtensionActionIconFactoryBridge
         icon_factory_(profile, extension, browser_action_, this) {
   }
 
-  virtual ~ExtensionActionIconFactoryBridge() {}
+  ~ExtensionActionIconFactoryBridge() override {}
 
   // ExtensionActionIconFactory::Observer implementation.
-  virtual void OnIconUpdated() override {
-    [owner_ updateState];
-  }
+  void OnIconUpdated() override { [owner_ updateState]; }
 
   gfx::Image GetIcon(int tabId) {
     return icon_factory_.GetIcon(tabId);

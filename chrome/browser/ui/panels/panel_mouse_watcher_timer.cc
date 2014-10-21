@@ -12,13 +12,13 @@
 class PanelMouseWatcherTimer : public PanelMouseWatcher {
  public:
   PanelMouseWatcherTimer();
-  virtual ~PanelMouseWatcherTimer();
+  ~PanelMouseWatcherTimer() override;
 
  private:
-  virtual void Start() override;
-  virtual void Stop() override;
-  virtual bool IsActive() const override;
-  virtual gfx::Point GetMousePosition() const override;
+  void Start() override;
+  void Stop() override;
+  bool IsActive() const override;
+  gfx::Point GetMousePosition() const override;
 
   // Specifies the rate at which we want to sample the mouse position.
   static const int kMousePollingIntervalMs = 250;

@@ -26,17 +26,13 @@ class TestBookmarkMenuBridge : public BookmarkMenuBridge {
       : BookmarkMenuBridge(profile, menu),
         menu_(menu) {
   }
-  virtual ~TestBookmarkMenuBridge() {
-    [menu_ autorelease];
-  }
+  ~TestBookmarkMenuBridge() override { [menu_ autorelease]; }
 
   NSMenu* menu_;
 
  protected:
   // Overridden from BookmarkMenuBridge.
-  virtual NSMenu* BookmarkMenu() override {
-    return menu_;
-  }
+  NSMenu* BookmarkMenu() override { return menu_; }
 };
 
 // TODO(jrg): see refactor comment in bookmark_bar_state_controller_unittest.mm

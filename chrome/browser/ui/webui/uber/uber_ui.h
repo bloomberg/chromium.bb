@@ -20,20 +20,18 @@
 class UberUI : public content::WebUIController {
  public:
   explicit UberUI(content::WebUI* web_ui);
-  virtual ~UberUI();
+  ~UberUI() override;
 
   content::WebUI* GetSubpage(const std::string& page_url);
 
   // WebUIController implementation.
-  virtual bool OverrideHandleWebUIMessage(const GURL& source_url,
-                                          const std::string& message,
-                                          const base::ListValue& args) override;
+  bool OverrideHandleWebUIMessage(const GURL& source_url,
+                                  const std::string& message,
+                                  const base::ListValue& args) override;
 
   // We forward these to |sub_uis_|.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
-  virtual void RenderViewReused(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderViewReused(content::RenderViewHost* render_view_host) override;
 
  private:
   // A map from URL origin to WebUI instance.
@@ -53,13 +51,13 @@ class UberFrameUI : public content::NotificationObserver,
                     public content::WebUIController {
  public:
   explicit UberFrameUI(content::WebUI* web_ui);
-  virtual ~UberFrameUI();
+  ~UberFrameUI() override;
 
  private:
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

@@ -246,7 +246,7 @@ void RecordAppLaunches(Profile* profile,
 class WebContentsCloseObserver : public content::NotificationObserver {
  public:
   WebContentsCloseObserver() : contents_(NULL) {}
-  virtual ~WebContentsCloseObserver() {}
+  ~WebContentsCloseObserver() override {}
 
   void SetContents(content::WebContents* contents) {
     DCHECK(!contents_);
@@ -261,9 +261,9 @@ class WebContentsCloseObserver : public content::NotificationObserver {
 
  private:
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
     contents_ = NULL;
   }

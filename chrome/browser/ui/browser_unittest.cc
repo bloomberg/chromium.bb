@@ -84,7 +84,7 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
         browser()->window())->set_browser(browser());
   }
 
-  virtual BrowserWindow* CreateBrowserWindow() override {
+  BrowserWindow* CreateBrowserWindow() override {
     return new BookmarkBarStateTestBrowserWindow();
   }
 
@@ -94,7 +94,7 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
     BookmarkBarStateTestBrowserWindow()
         : browser_(NULL),
           bookmark_bar_state_(BookmarkBar::HIDDEN) {}
-    virtual ~BookmarkBarStateTestBrowserWindow() {}
+    ~BookmarkBarStateTestBrowserWindow() override {}
 
     void set_browser(Browser* browser) { browser_ = browser; }
 
@@ -104,16 +104,16 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
 
    private:
     // TestBrowserWindow:
-    virtual void BookmarkBarStateChanged(
+    void BookmarkBarStateChanged(
         BookmarkBar::AnimateChangeType change_type) override {
       bookmark_bar_state_ = browser_->bookmark_bar_state();
       TestBrowserWindow::BookmarkBarStateChanged(change_type);
     }
 
-    virtual void OnActiveTabChanged(content::WebContents* old_contents,
-                                    content::WebContents* new_contents,
-                                    int index,
-                                    int reason) override {
+    void OnActiveTabChanged(content::WebContents* old_contents,
+                            content::WebContents* new_contents,
+                            int index,
+                            int reason) override {
       bookmark_bar_state_ = browser_->bookmark_bar_state();
       TestBrowserWindow::OnActiveTabChanged(old_contents, new_contents, index,
                                             reason);

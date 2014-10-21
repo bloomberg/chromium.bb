@@ -87,13 +87,12 @@ class ProfileStoreImpl : public ProfileStore {
         weak_factory_(this) {
   }
 
-  virtual void AddProfileObserver(ProfileInfoCacheObserver* observer) override {
+  void AddProfileObserver(ProfileInfoCacheObserver* observer) override {
     profile_manager_->GetProfileInfoCache().AddObserver(observer);
   }
 
-  virtual void LoadProfileAsync(
-      const base::FilePath& path,
-      base::Callback<void(Profile*)> callback) override {
+  void LoadProfileAsync(const base::FilePath& path,
+                        base::Callback<void(Profile*)> callback) override {
     profile_manager_->CreateProfileAsync(
         path,
         base::Bind(&ProfileStoreImpl::OnProfileCreated,
@@ -123,16 +122,15 @@ class ProfileStoreImpl : public ProfileStore {
     }
   }
 
-  virtual Profile* GetProfileByPath(const base::FilePath& path) override {
+  Profile* GetProfileByPath(const base::FilePath& path) override {
     return profile_manager_->GetProfileByPath(path);
   }
 
-  virtual base::FilePath GetUserDataDir() override {
+  base::FilePath GetUserDataDir() override {
     return profile_manager_->user_data_dir();
   }
 
-  virtual bool IsProfileSupervised(
-      const base::FilePath& profile_path) override {
+  bool IsProfileSupervised(const base::FilePath& profile_path) override {
     ProfileInfoCache& profile_info =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t profile_index = profile_info.GetIndexOfProfileWithPath(profile_path);

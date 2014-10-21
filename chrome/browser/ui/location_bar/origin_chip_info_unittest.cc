@@ -70,8 +70,7 @@ class OriginChipInfoTest : public ChromeRenderViewHostTestHarness,
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) override {
+  void OnExtensionIconImageChanged(extensions::IconImage* image) override {
     // We keep the value of |image| to check if it's set, but the actual value
     // is never used.
     icon_image_ = image;

@@ -12,7 +12,7 @@
 class SuggestionsInternalsUI : public content::WebUIController {
  public:
   explicit SuggestionsInternalsUI(content::WebUI* contents);
-  virtual ~SuggestionsInternalsUI();
+  ~SuggestionsInternalsUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuggestionsInternalsUI);

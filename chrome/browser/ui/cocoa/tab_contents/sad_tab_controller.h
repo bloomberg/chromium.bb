@@ -20,12 +20,12 @@ class SadTabCocoa : public SadTab {
  public:
   explicit SadTabCocoa(content::WebContents* web_contents);
 
-  virtual ~SadTabCocoa();
+  ~SadTabCocoa() override;
 
  private:
   // Overridden from SadTab:
-  virtual void Show() override;
-  virtual void Close() override;
+  void Show() override;
+  void Close() override;
 
   base::scoped_nsobject<SadTabController> sad_tab_controller_;
 

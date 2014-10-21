@@ -27,7 +27,7 @@ class PrefRegistrySyncable;
 class FlagsUI : public content::WebUIController {
  public:
   explicit FlagsUI(content::WebUI* web_ui);
-  virtual ~FlagsUI();
+  ~FlagsUI() override;
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);

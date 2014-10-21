@@ -22,7 +22,7 @@ using content::BrowserThread;
 class TestComboboxModelObserver : public ui::ComboboxModelObserver {
  public:
   TestComboboxModelObserver() : changed_(false) {}
-  virtual ~TestComboboxModelObserver() {}
+  ~TestComboboxModelObserver() override {}
 
   // Returns whether the model changed and clears changed state.
   bool GetAndClearChanged() {
@@ -32,7 +32,7 @@ class TestComboboxModelObserver : public ui::ComboboxModelObserver {
   }
 
   // ComboboxModelObserver:
-  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) override {
+  void OnComboboxModelChanged(ui::ComboboxModel* model) override {
     changed_ = true;
   }
 

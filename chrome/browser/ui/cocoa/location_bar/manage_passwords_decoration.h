@@ -22,7 +22,7 @@ class ManagePasswordsIconCocoa : public ManagePasswordsIcon {
  public:
   ManagePasswordsIconCocoa(ManagePasswordsDecoration* decoration);
   virtual ~ManagePasswordsIconCocoa();
-  virtual void UpdateVisibleUI() override;
+  void UpdateVisibleUI() override;
 
   int icon_id() { return icon_id_; }
   int tooltip_text_id() { return tooltip_text_id_; }
@@ -37,13 +37,13 @@ class ManagePasswordsDecoration : public ImageDecoration {
  public:
   explicit ManagePasswordsDecoration(CommandUpdater* command_updater,
                                      LocationBarViewMac* location_bar);
-  virtual ~ManagePasswordsDecoration();
+  ~ManagePasswordsDecoration() override;
 
   // Implement |LocationBarDecoration|
-  virtual bool AcceptsMousePress() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSString* GetToolTip() override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  bool AcceptsMousePress() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSString* GetToolTip() override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Updates the decoration according to icon state changes.
   void UpdateVisibleUI();

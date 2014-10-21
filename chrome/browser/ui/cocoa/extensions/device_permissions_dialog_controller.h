@@ -28,17 +28,17 @@ class DevicePermissionsDialogController
       content::WebContents* web_contents,
       extensions::DevicePermissionsPrompt::Delegate* delegate,
       scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt);
-  virtual ~DevicePermissionsDialogController();
+  ~DevicePermissionsDialogController() override;
 
   // extensions::DevicePermissionsPrompt::Delegate implementation.
-  virtual void OnUsbDevicesChosen(
+  void OnUsbDevicesChosen(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices) override;
 
   // extensions::DevicePermissionsPrompt::Prompt::Observer implementation.
-  virtual void OnDevicesChanged() override;
+  void OnDevicesChanged() override;
 
   // ConstrainedWindowMacDelegate implementation.
-  virtual void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
+  void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   ConstrainedWindowMac* constrained_window() const {
     return constrained_window_.get();

@@ -117,7 +117,7 @@ class ProfilerMessageHandler : public WebUIMessageHandler {
   ProfilerMessageHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Messages.
   void OnGetData(const base::ListValue* list);

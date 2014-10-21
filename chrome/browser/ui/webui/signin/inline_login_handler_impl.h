@@ -23,7 +23,7 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
                                public content::WebContentsObserver {
  public:
   InlineLoginHandlerImpl();
-  virtual ~InlineLoginHandlerImpl();
+  ~InlineLoginHandlerImpl() override;
 
   using InlineLoginHandler::web_ui;
 
@@ -40,15 +40,14 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
 
  private:
   // InlineLoginHandler overrides:
-  virtual void SetExtraInitParams(base::DictionaryValue& params) override;
-  virtual void CompleteLogin(const base::ListValue* args) override;
+  void SetExtraInitParams(base::DictionaryValue& params) override;
+  void CompleteLogin(const base::ListValue* args) override;
 
   // Overridden from content::WebContentsDelegate.
-  virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   // Overridden from content::WebContentsObserver overrides.
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;

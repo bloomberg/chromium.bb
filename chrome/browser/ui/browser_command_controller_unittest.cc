@@ -306,22 +306,16 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
 class FullscreenTestBrowserWindow : public TestBrowserWindow {
  public:
   FullscreenTestBrowserWindow() : fullscreen_(false) {}
-  virtual ~FullscreenTestBrowserWindow() {}
+  ~FullscreenTestBrowserWindow() override {}
 
   // TestBrowserWindow overrides:
-  virtual bool ShouldHideUIForFullscreen() const override {
-    return fullscreen_;
-  }
-  virtual bool IsFullscreen() const override {
-    return fullscreen_;
-  }
-  virtual void EnterFullscreen(
-      const GURL& url, FullscreenExitBubbleType type) override {
+  bool ShouldHideUIForFullscreen() const override { return fullscreen_; }
+  bool IsFullscreen() const override { return fullscreen_; }
+  void EnterFullscreen(const GURL& url,
+                       FullscreenExitBubbleType type) override {
     fullscreen_ = true;
   }
-  virtual void ExitFullscreen() override {
-    fullscreen_ = false;
-  }
+  void ExitFullscreen() override { fullscreen_ = false; }
 
  private:
   bool fullscreen_;
@@ -337,7 +331,7 @@ class BrowserCommandControllerFullscreenTest
   virtual ~BrowserCommandControllerFullscreenTest() {}
 
   // BrowserWithTestWindowTest overrides:
-  virtual BrowserWindow* CreateBrowserWindow() override {
+  BrowserWindow* CreateBrowserWindow() override {
     return new FullscreenTestBrowserWindow;
   }
 

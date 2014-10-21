@@ -22,7 +22,7 @@ class FullscreenExitBubble : public gfx::AnimationDelegate {
   explicit FullscreenExitBubble(Browser* browser,
                                 const GURL& url,
                                 FullscreenExitBubbleType bubble_type);
-  virtual ~FullscreenExitBubble();
+  ~FullscreenExitBubble() override;
 
  protected:
   static const int kPaddingPx;           // Amount of padding around the link

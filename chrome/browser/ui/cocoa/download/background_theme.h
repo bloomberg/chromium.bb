@@ -13,23 +13,22 @@
 class BackgroundTheme : public ui::ThemeProvider {
  public:
   BackgroundTheme(ui::ThemeProvider* provider);
-  virtual ~BackgroundTheme();
+  ~BackgroundTheme() override;
 
   // Overridden from ui::ThemeProvider:
-  virtual bool UsingSystemTheme() const override;
-  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const override;
-  virtual SkColor GetColor(int id) const override;
-  virtual int GetDisplayProperty(int id) const override;
-  virtual bool ShouldUseNativeFrame() const override;
-  virtual bool HasCustomImage(int id) const override;
-  virtual base::RefCountedMemory* GetRawData(
-      int id,
-      ui::ScaleFactor scale_factor) const override;
-  virtual NSImage* GetNSImageNamed(int id) const override;
-  virtual NSColor* GetNSImageColorNamed(int id) const override;
-  virtual NSColor* GetNSColor(int id) const override;
-  virtual NSColor* GetNSColorTint(int id) const override;
-  virtual NSGradient* GetNSGradient(int id) const override;
+  bool UsingSystemTheme() const override;
+  gfx::ImageSkia* GetImageSkiaNamed(int id) const override;
+  SkColor GetColor(int id) const override;
+  int GetDisplayProperty(int id) const override;
+  bool ShouldUseNativeFrame() const override;
+  bool HasCustomImage(int id) const override;
+  base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
+      const override;
+  NSImage* GetNSImageNamed(int id) const override;
+  NSColor* GetNSImageColorNamed(int id) const override;
+  NSColor* GetNSColor(int id) const override;
+  NSColor* GetNSColorTint(int id) const override;
+  NSGradient* GetNSGradient(int id) const override;
 
  private:
   ui::ThemeProvider* provider_;

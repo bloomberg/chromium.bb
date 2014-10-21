@@ -62,36 +62,32 @@ class MockDisplaySettingsProviderImpl :
     public BasePanelBrowserTest::MockDisplaySettingsProvider {
  public:
   explicit MockDisplaySettingsProviderImpl();
-  virtual ~MockDisplaySettingsProviderImpl() { }
+  ~MockDisplaySettingsProviderImpl() override {}
 
   // Overridden from DisplaySettingsProvider:
-  virtual gfx::Rect GetPrimaryDisplayArea() const override;
-  virtual gfx::Rect GetPrimaryWorkArea() const override;
-  virtual gfx::Rect GetDisplayAreaMatching(
-      const gfx::Rect& bounds) const override;
-  virtual gfx::Rect GetWorkAreaMatching(
-      const gfx::Rect& bounds) const override;
-  virtual bool IsAutoHidingDesktopBarEnabled(
-      DesktopBarAlignment alignment) override;
-  virtual int GetDesktopBarThickness(
+  gfx::Rect GetPrimaryDisplayArea() const override;
+  gfx::Rect GetPrimaryWorkArea() const override;
+  gfx::Rect GetDisplayAreaMatching(const gfx::Rect& bounds) const override;
+  gfx::Rect GetWorkAreaMatching(const gfx::Rect& bounds) const override;
+  bool IsAutoHidingDesktopBarEnabled(DesktopBarAlignment alignment) override;
+  int GetDesktopBarThickness(DesktopBarAlignment alignment) const override;
+  DesktopBarVisibility GetDesktopBarVisibility(
       DesktopBarAlignment alignment) const override;
-  virtual DesktopBarVisibility GetDesktopBarVisibility(
-      DesktopBarAlignment alignment) const override;
-  virtual bool IsFullScreen() override;
+  bool IsFullScreen() override;
 
   // Overridden from MockDisplaySettingsProvider:
-  virtual void SetPrimaryDisplay(
-      const gfx::Rect& display_area, const gfx::Rect& work_area) override;
-  virtual void SetSecondaryDisplay(
-      const gfx::Rect& display_area, const gfx::Rect& work_area) override;
-  virtual void EnableAutoHidingDesktopBar(DesktopBarAlignment alignment,
-                                          bool enabled,
-                                          int thickness) override;
-  virtual void SetDesktopBarVisibility(
-      DesktopBarAlignment alignment, DesktopBarVisibility visibility) override;
-  virtual void SetDesktopBarThickness(DesktopBarAlignment alignment,
-                                      int thickness) override;
-  virtual void EnableFullScreenMode(bool enabled) override;
+  void SetPrimaryDisplay(const gfx::Rect& display_area,
+                         const gfx::Rect& work_area) override;
+  void SetSecondaryDisplay(const gfx::Rect& display_area,
+                           const gfx::Rect& work_area) override;
+  void EnableAutoHidingDesktopBar(DesktopBarAlignment alignment,
+                                  bool enabled,
+                                  int thickness) override;
+  void SetDesktopBarVisibility(DesktopBarAlignment alignment,
+                               DesktopBarVisibility visibility) override;
+  void SetDesktopBarThickness(DesktopBarAlignment alignment,
+                              int thickness) override;
+  void EnableFullScreenMode(bool enabled) override;
 
  private:
   gfx::Rect primary_display_area_;

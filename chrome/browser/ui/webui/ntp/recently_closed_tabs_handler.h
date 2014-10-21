@@ -16,10 +16,10 @@ class RecentlyClosedTabsHandler : public content::WebUIMessageHandler,
                                   public TabRestoreServiceObserver {
  public:
   RecentlyClosedTabsHandler() : tab_restore_service_(NULL) {}
-  virtual ~RecentlyClosedTabsHandler();
+  ~RecentlyClosedTabsHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for the "reopenTab" message. Rewrites the history of the
   // currently displayed tab to be the one in TabRestoreService with a
@@ -35,11 +35,11 @@ class RecentlyClosedTabsHandler : public content::WebUIMessageHandler,
   // Observer callback for TabRestoreServiceObserver. Sends data on
   // recently closed tabs to the javascript side of this page to
   // display to the user.
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(TabRestoreService* service) override;
 
   // Observer callback to notice when our associated TabRestoreService
   // is destroyed.
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
 
  private:
   // Construct and initialize tab_restore_service_ if it's NULL.

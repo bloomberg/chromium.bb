@@ -59,21 +59,15 @@ class KeywordEditorControllerTest : public testing::Test,
     controller_.reset();
   }
 
-  virtual void OnModelChanged() override {
-    model_changed_count_++;
-  }
+  void OnModelChanged() override { model_changed_count_++; }
 
-  virtual void OnItemsChanged(int start, int length) override {
+  void OnItemsChanged(int start, int length) override {
     items_changed_count_++;
   }
 
-  virtual void OnItemsAdded(int start, int length) override {
-    added_count_++;
-  }
+  void OnItemsAdded(int start, int length) override { added_count_++; }
 
-  virtual void OnItemsRemoved(int start, int length) override {
-    removed_count_++;
-  }
+  void OnItemsRemoved(int start, int length) override { removed_count_++; }
 
   void VerifyChangeCount(int model_changed_count, int item_changed_count,
                          int added_count, int removed_count) {

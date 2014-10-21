@@ -36,7 +36,7 @@ class TabModalConfirmDialogCloseDelegate {
 class TabModalConfirmDialogDelegate : public content::NotificationObserver {
  public:
   explicit TabModalConfirmDialogDelegate(content::WebContents* web_contents);
-  virtual ~TabModalConfirmDialogDelegate();
+  ~TabModalConfirmDialogDelegate() override;
 
   void set_close_delegate(TabModalConfirmDialogCloseDelegate* close_delegate) {
     close_delegate_ = close_delegate;
@@ -99,9 +99,9 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
 
   // content::NotificationObserver implementation.
   // Watch for a new load or a closed tab and dismiss the dialog if they occur.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

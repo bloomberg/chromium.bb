@@ -223,10 +223,10 @@ class NetInternalsMessageHandler
       public base::SupportsWeakPtr<NetInternalsMessageHandler> {
  public:
   NetInternalsMessageHandler();
-  virtual ~NetInternalsMessageHandler();
+  ~NetInternalsMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Calls g_browser.receive in the renderer, passing in |command| and |arg|.
   // Takes ownership of |arg|.  If the renderer is displaying a log file, the
@@ -410,16 +410,16 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnSetLogLevel(const base::ListValue* list);
 
   // ChromeNetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLog::Entry& entry) override;
 
   // ConnectionTester::Delegate implementation:
-  virtual void OnStartConnectionTestSuite() override;
-  virtual void OnStartConnectionTestExperiment(
+  void OnStartConnectionTestSuite() override;
+  void OnStartConnectionTestExperiment(
       const ConnectionTester::Experiment& experiment) override;
-  virtual void OnCompletedConnectionTestExperiment(
+  void OnCompletedConnectionTestExperiment(
       const ConnectionTester::Experiment& experiment,
       int result) override;
-  virtual void OnCompletedConnectionTestSuite() override;
+  void OnCompletedConnectionTestSuite() override;
 
   // Helper that calls g_browser.receive in the renderer, passing in |command|
   // and |arg|.  Takes ownership of |arg|.  If the renderer is displaying a log
@@ -434,7 +434,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   typedef std::list<scoped_refptr<net::URLRequestContextGetter> >
       ContextGetterList;
 
-  virtual ~IOThreadImpl();
+  ~IOThreadImpl() override;
 
   // Adds |entry| to the queue of pending log entries to be sent to the page via
   // Javascript.  Must be called on the IO Thread.  Also creates a delayed task

@@ -31,11 +31,11 @@ class SearchResult;
 class WebstoreProvider : public WebserviceSearchProvider{
  public:
   WebstoreProvider(Profile* profile, AppListControllerDelegate* controller);
-  virtual ~WebstoreProvider();
+  ~WebstoreProvider() override;
 
   // SearchProvider overrides:
-  virtual void Start(const base::string16& query) override;
-  virtual void Stop() override;
+  void Start(const base::string16& query) override;
+  void Stop() override;
 
  private:
   friend class app_list::test::WebstoreProviderTest;

@@ -28,8 +28,8 @@ class ProfileSigninConfirmationHandler : public content::WebUIMessageHandler {
   ProfileSigninConfirmationHandler(
       const ProfileSigninConfirmationDialog* dialog,
       ui::ProfileSigninConfirmationDelegate* delegate_);
-  virtual ~ProfileSigninConfirmationHandler();
-  virtual void RegisterMessages() override;
+  ~ProfileSigninConfirmationHandler() override;
+  void RegisterMessages() override;
 
  private:
   // content::WebUIMessageHandler implementation.

@@ -30,11 +30,11 @@ class NewCreditCardBubbleController;
 // saved a new credit card locally in Chrome).
 class NewCreditCardBubbleCocoa : public NewCreditCardBubbleView {
  public:
-  virtual ~NewCreditCardBubbleCocoa();
+  ~NewCreditCardBubbleCocoa() override;
 
   // NewCreditCardBubbleView implementation.
-  virtual void Show() override;
-  virtual void Hide() override;
+  void Show() override;
+  void Hide() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NewCreditCardBubbleCocoaUnitTest, CloseDeletes);

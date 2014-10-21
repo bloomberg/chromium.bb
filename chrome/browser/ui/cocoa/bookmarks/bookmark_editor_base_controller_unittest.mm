@@ -97,7 +97,7 @@ class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
     CocoaTest::TearDown();
   }
 
-  virtual Browser* CreateBrowser() override {
+  Browser* CreateBrowser() override {
     Browser::CreateParams native_params(profile(), chrome::GetActiveDesktop());
     return chrome::CreateBrowserWithTestWindowForParams(&native_params);
   }

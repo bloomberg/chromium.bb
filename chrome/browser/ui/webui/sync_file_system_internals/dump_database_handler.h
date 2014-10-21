@@ -15,10 +15,10 @@ namespace syncfs_internals {
 class DumpDatabaseHandler : public content::WebUIMessageHandler {
  public:
   explicit DumpDatabaseHandler(Profile* profile);
-  virtual ~DumpDatabaseHandler();
+  ~DumpDatabaseHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void GetDatabaseDump(const base::ListValue* args);

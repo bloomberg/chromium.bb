@@ -26,19 +26,19 @@ class ContentSettingDecoration : public ImageDecoration {
   ContentSettingDecoration(ContentSettingsType settings_type,
                            LocationBarViewMac* owner,
                            Profile* profile);
-  virtual ~ContentSettingDecoration();
+  ~ContentSettingDecoration() override;
 
   // Updates the image and visibility state based on the supplied WebContents.
   // Returns true if the decoration's visible state changed.
   bool UpdateFromWebContents(content::WebContents* web_contents);
 
   // Overridden from |LocationBarDecoration|
-  virtual bool AcceptsMousePress() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSString* GetToolTip() override;
-  virtual CGFloat GetWidthForSpace(CGFloat width) override;
-  virtual void DrawInFrame(NSRect frame, NSView* control_view) override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  bool AcceptsMousePress() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSString* GetToolTip() override;
+  CGFloat GetWidthForSpace(CGFloat width) override;
+  void DrawInFrame(NSRect frame, NSView* control_view) override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Called from internal animator. Only public because ObjC objects can't
   // be friends.

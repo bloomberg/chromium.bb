@@ -19,7 +19,7 @@ class RectF;
 class FindTabHelper : public content::WebContentsObserver,
                       public content::WebContentsUserData<FindTabHelper> {
  public:
-  virtual ~FindTabHelper();
+  ~FindTabHelper() override;
 
   // Starts the Find operation by calling StartFinding on the Tab. This function
   // can be called from the outside as a result of hot-keys, so it uses the

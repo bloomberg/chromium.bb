@@ -23,7 +23,7 @@ class LocationIconDecoration;
 class EVBubbleDecoration : public BubbleDecoration {
  public:
   explicit EVBubbleDecoration(LocationIconDecoration* location_icon);
-  virtual ~EVBubbleDecoration();
+  ~EVBubbleDecoration() override;
 
   // |GetWidthForSpace()| will set |full_label| as the label, if it
   // fits, else it will set an elided version.
@@ -31,17 +31,17 @@ class EVBubbleDecoration : public BubbleDecoration {
 
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width) override;
-  virtual bool IsDraggable() override;
-  virtual NSPasteboard* GetDragPasteboard() override;
-  virtual NSImage* GetDragImage() override;
-  virtual NSRect GetDragImageFrame(NSRect frame) override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual bool AcceptsMousePress() override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  CGFloat GetWidthForSpace(CGFloat width) override;
+  bool IsDraggable() override;
+  NSPasteboard* GetDragPasteboard() override;
+  NSImage* GetDragImage() override;
+  NSRect GetDragImageFrame(NSRect frame) override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  bool AcceptsMousePress() override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Implement |BubbleDecoration|.
-  virtual ui::NinePartImageIds GetBubbleImageIds() override;
+  ui::NinePartImageIds GetBubbleImageIds() override;
 
  private:
   // The real label.  BubbleDecoration's label may be elided.

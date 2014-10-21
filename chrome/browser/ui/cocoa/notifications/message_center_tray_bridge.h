@@ -32,17 +32,17 @@ class MessageCenterTrayBridge :
  public:
   explicit MessageCenterTrayBridge(
       message_center::MessageCenter* message_center);
-  virtual ~MessageCenterTrayBridge();
+  ~MessageCenterTrayBridge() override;
 
   // message_center::MessageCenterTrayDelegate:
-  virtual void OnMessageCenterTrayChanged() override;
-  virtual bool ShowPopups() override;
-  virtual void HidePopups() override;
-  virtual bool ShowMessageCenter() override;
-  virtual void HideMessageCenter() override;
-  virtual bool ShowNotifierSettings() override;
-  virtual bool IsContextMenuEnabled() const override;
-  virtual message_center::MessageCenterTray* GetMessageCenterTray() override;
+  void OnMessageCenterTrayChanged() override;
+  bool ShowPopups() override;
+  void HidePopups() override;
+  bool ShowMessageCenter() override;
+  void HideMessageCenter() override;
+  bool ShowNotifierSettings() override;
+  bool IsContextMenuEnabled() const override;
+  message_center::MessageCenterTray* GetMessageCenterTray() override;
 
   message_center::MessageCenter* message_center() { return message_center_; }
 

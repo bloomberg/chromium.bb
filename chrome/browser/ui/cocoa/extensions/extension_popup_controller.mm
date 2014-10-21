@@ -73,14 +73,13 @@ class ExtensionPopupContainer : public ExtensionViewMac::Container {
       : controller_(controller) {
   }
 
-  virtual void OnExtensionSizeChanged(
-      ExtensionViewMac* view,
-      const gfx::Size& new_size) override {
+  void OnExtensionSizeChanged(ExtensionViewMac* view,
+                              const gfx::Size& new_size) override {
     [controller_ onSizeChanged:
         NSMakeSize(new_size.width(), new_size.height())];
   }
 
-  virtual void OnExtensionViewDidShow(ExtensionViewMac* view) override {
+  void OnExtensionViewDidShow(ExtensionViewMac* view) override {
     [controller_ onViewDidShow];
   }
 
@@ -99,7 +98,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
     content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
   }
 
-  virtual ~DevtoolsNotificationBridge() {
+  ~DevtoolsNotificationBridge() override {
     content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
   }
 
@@ -120,10 +119,9 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
     }
   }
 
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
         if (content::Details<extensions::ExtensionViewHost>(

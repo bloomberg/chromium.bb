@@ -64,7 +64,7 @@ class GlobalErrorWithStandardBubble
       public base::SupportsWeakPtr<GlobalErrorWithStandardBubble> {
  public:
   GlobalErrorWithStandardBubble();
-  virtual ~GlobalErrorWithStandardBubble();
+  ~GlobalErrorWithStandardBubble() override;
 
   // Returns an icon to use for the bubble view.
   virtual gfx::Image GetBubbleViewIcon();
@@ -98,10 +98,10 @@ class GlobalErrorWithStandardBubble
   virtual bool ShouldCloseOnDeactivate() const;
 
   // GlobalError overrides:
-  virtual bool HasBubbleView() override;
-  virtual bool HasShownBubbleView() override;
-  virtual void ShowBubbleView(Browser* browser) override;
-  virtual GlobalErrorBubbleViewBase* GetBubbleView() override;
+  bool HasBubbleView() override;
+  bool HasShownBubbleView() override;
+  void ShowBubbleView(Browser* browser) override;
+  GlobalErrorBubbleViewBase* GetBubbleView() override;
 
  private:
   bool has_shown_bubble_view_;

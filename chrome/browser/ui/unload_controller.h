@@ -28,7 +28,7 @@ class UnloadController : public content::NotificationObserver,
                          public TabStripModelObserver {
  public:
   explicit UnloadController(Browser* browser);
-  virtual ~UnloadController();
+  ~UnloadController() override;
 
   // Returns true if |contents| can be cleanly closed. When |browser_| is being
   // closed, this function will return false to indicate |contents| should not
@@ -86,21 +86,20 @@ class UnloadController : public content::NotificationObserver,
   typedef std::set<content::WebContents*> UnloadListenerSet;
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabInsertedAt(content::WebContents* contents,
-                             int index,
-                             bool foreground) override;
-  virtual void TabDetachedAt(content::WebContents* contents,
-                             int index) override;
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* old_contents,
-                             content::WebContents* new_contents,
-                             int index) override;
-  virtual void TabStripEmpty() override;
+  void TabInsertedAt(content::WebContents* contents,
+                     int index,
+                     bool foreground) override;
+  void TabDetachedAt(content::WebContents* contents, int index) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
+  void TabStripEmpty() override;
 
   void TabAttachedImpl(content::WebContents* contents);
   void TabDetachedImpl(content::WebContents* contents);

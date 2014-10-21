@@ -65,10 +65,10 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
 class ComponentsDOMHandler : public WebUIMessageHandler {
  public:
   ComponentsDOMHandler();
-  virtual ~ComponentsDOMHandler() {}
+  ~ComponentsDOMHandler() override {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for the "requestComponentsData" message.
   void HandleRequestComponentsData(const base::ListValue* args);

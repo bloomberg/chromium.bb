@@ -14,11 +14,11 @@
 class UserActionsUIHandler : public content::WebUIMessageHandler {
  public:
   UserActionsUIHandler();
-  virtual ~UserActionsUIHandler();
+  ~UserActionsUIHandler() override;
 
   // WebUIMessageHandler implementation:
   // Does nothing for now.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void OnUserAction(const std::string& action);

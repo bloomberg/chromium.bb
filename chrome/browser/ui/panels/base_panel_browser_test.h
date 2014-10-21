@@ -23,7 +23,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   class MockDisplaySettingsProvider : public DisplaySettingsProvider {
    public:
     MockDisplaySettingsProvider() { }
-    virtual ~MockDisplaySettingsProvider() { }
+    ~MockDisplaySettingsProvider() override {}
 
     virtual void SetPrimaryDisplay(
         const gfx::Rect& display_area, const gfx::Rect& work_area) = 0;
@@ -42,8 +42,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   BasePanelBrowserTest();
   virtual ~BasePanelBrowserTest();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
 
  protected:
   enum ActiveState { SHOW_AS_ACTIVE, SHOW_AS_INACTIVE };

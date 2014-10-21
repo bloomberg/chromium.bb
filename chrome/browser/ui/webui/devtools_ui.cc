@@ -69,8 +69,8 @@ class FetchRequest : public net::URLFetcherDelegate {
                const content::URLDataSource::GotDataCallback& callback);
 
  private:
-  virtual ~FetchRequest() {}
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  ~FetchRequest() override {}
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
   scoped_ptr<net::URLFetcher> fetcher_;
   content::URLDataSource::GotDataCallback callback_;
 };
@@ -131,9 +131,9 @@ class DevToolsDataSource : public content::URLDataSource {
   explicit DevToolsDataSource(net::URLRequestContextGetter* request_context);
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
+  std::string GetSource() const override;
 
-  virtual void StartDataRequest(
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
@@ -141,9 +141,9 @@ class DevToolsDataSource : public content::URLDataSource {
 
  private:
   // content::URLDataSource overrides.
-  virtual std::string GetMimeType(const std::string& path) const override;
-  virtual bool ShouldAddContentSecurityPolicy() const override;
-  virtual bool ShouldServeMimeTypeAsContentTypeHeader() const override;
+  std::string GetMimeType(const std::string& path) const override;
+  bool ShouldAddContentSecurityPolicy() const override;
+  bool ShouldServeMimeTypeAsContentTypeHeader() const override;
 
   // Serves bundled DevTools frontend from ResourceBundle.
   void StartBundledDataRequest(
@@ -159,7 +159,7 @@ class DevToolsDataSource : public content::URLDataSource {
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback);
 
-  virtual ~DevToolsDataSource() {}
+  ~DevToolsDataSource() override {}
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsDataSource);
@@ -262,11 +262,11 @@ class OpenRemotePageRequest : public DevToolsAndroidBridge::DeviceListListener {
       Profile* profile,
       const std::string url,
       const DevToolsAndroidBridge::RemotePageCallback& callback);
-  virtual ~OpenRemotePageRequest() {}
+  ~OpenRemotePageRequest() override {}
 
  private:
   // DevToolsAndroidBridge::Listener overrides.
-  virtual void DeviceListChanged(
+  void DeviceListChanged(
       const DevToolsAndroidBridge::RemoteDevices& devices) override;
 
   bool OpenInBrowser(

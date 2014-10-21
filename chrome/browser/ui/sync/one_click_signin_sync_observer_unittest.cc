@@ -43,7 +43,7 @@ class MockWebContentsObserver : public content::WebContentsObserver {
 
 class OneClickTestProfileSyncService : public TestProfileSyncService {
  public:
-  virtual ~OneClickTestProfileSyncService() {}
+  ~OneClickTestProfileSyncService() override {}
 
   // Helper routine to be used in conjunction with
   // BrowserContextKeyedServiceFactory::SetTestingFactory().
@@ -51,11 +51,11 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
     return new OneClickTestProfileSyncService(static_cast<Profile*>(profile));
   }
 
-  virtual bool FirstSetupInProgress() const override {
+  bool FirstSetupInProgress() const override {
     return first_setup_in_progress_;
   }
 
-  virtual bool SyncActive() const override { return sync_active_; }
+  bool SyncActive() const override { return sync_active_; }
 
   void set_first_setup_in_progress(bool in_progress) {
     first_setup_in_progress_ = in_progress;
@@ -91,7 +91,9 @@ class TestOneClickSigninSyncObserver : public OneClickSigninSyncObserver {
                                  const DestructionCallback& callback)
       : OneClickSigninSyncObserver(web_contents, continue_url),
         destruction_callback_(callback) {}
-  virtual ~TestOneClickSigninSyncObserver() { destruction_callback_.Run(this); }
+  ~TestOneClickSigninSyncObserver() override {
+    destruction_callback_.Run(this);
+  }
 
  private:
   DestructionCallback destruction_callback_;

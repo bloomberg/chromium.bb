@@ -38,7 +38,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   // |callback|.
   BookmarkModelObserverForCocoa(BookmarkModel* model,
                                 ChangeCallback callback);
-  virtual ~BookmarkModelObserverForCocoa();
+  ~BookmarkModelObserverForCocoa() override;
 
   // Starts and stops observing a specified |node|; the node must be contained
   // within the model.
@@ -46,41 +46,38 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   void StopObservingNode(const BookmarkNode* node);
 
   // BookmarkModelObserver:
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index) override;
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node,
+  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
+  void BookmarkNodeMoved(BookmarkModel* model,
+                         const BookmarkNode* old_parent,
+                         int old_index,
+                         const BookmarkNode* new_parent,
+                         int new_index) override;
+  void BookmarkNodeRemoved(BookmarkModel* model,
+                           const BookmarkNode* parent,
+                           int old_index,
+                           const BookmarkNode* node,
+                           const std::set<GURL>& removed_urls) override;
+  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-  virtual void BookmarkAllUserNodesRemoved(
-      BookmarkModel* model,
-      const std::set<GURL>& removed_urls) override;
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) override;
+  void BookmarkNodeChanged(BookmarkModel* model,
+                           const BookmarkNode* node) override;
 
   // Some notifications we don't care about, but by being pure virtual
   // in the base class we must implement them.
 
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) override {}
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) override {}
-  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) override {}
-  virtual void BookmarkNodeChildrenReordered(
-      BookmarkModel* model,
-      const BookmarkNode* node) override {}
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
+  }
+  void BookmarkNodeAdded(BookmarkModel* model,
+                         const BookmarkNode* parent,
+                         int index) override {}
+  void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                  const BookmarkNode* node) override {}
+  void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                     const BookmarkNode* node) override {}
 
-  virtual void ExtensiveBookmarkChangesBeginning(
-      BookmarkModel* model) override {}
+  void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override {}
 
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override {}
+  void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override {}
 
  private:
   BookmarkModel* model_;  // Weak; it is owned by a Profile.

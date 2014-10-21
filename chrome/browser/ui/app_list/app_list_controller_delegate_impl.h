@@ -25,35 +25,34 @@ class Extension;
 class AppListControllerDelegateImpl : public AppListControllerDelegate {
  public:
   explicit AppListControllerDelegateImpl(AppListService* service);
-  virtual ~AppListControllerDelegateImpl();
+  ~AppListControllerDelegateImpl() override;
 
   // AppListControllerDelegate overrides:
-  virtual void DismissView() override;
-  virtual gfx::NativeWindow GetAppListWindow() override;
-  virtual gfx::ImageSkia GetWindowIcon() override;
-  virtual bool IsAppPinned(const std::string& extension_id) override;
-  virtual void PinApp(const std::string& extension_id) override;
-  virtual void UnpinApp(const std::string& extension_id) override;
-  virtual Pinnable GetPinnable() override;
-  virtual bool CanDoCreateShortcutsFlow() override;
-  virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id) override;
-  virtual void CreateNewWindow(Profile* profile, bool incognito) override;
-  virtual void OpenURL(Profile* profile,
-                       const GURL& url,
-                       ui::PageTransition transition,
-                       WindowOpenDisposition disposition) override;
-  virtual void ActivateApp(Profile* profile,
-                           const extensions::Extension* extension,
-                           AppListSource source,
-                           int event_flags) override;
-  virtual void LaunchApp(Profile* profile,
-                         const extensions::Extension* extension,
-                         AppListSource source,
-                         int event_flags) override;
-  virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) override;
-  virtual bool ShouldShowUserIcon() override;
+  void DismissView() override;
+  gfx::NativeWindow GetAppListWindow() override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool IsAppPinned(const std::string& extension_id) override;
+  void PinApp(const std::string& extension_id) override;
+  void UnpinApp(const std::string& extension_id) override;
+  Pinnable GetPinnable() override;
+  bool CanDoCreateShortcutsFlow() override;
+  void DoCreateShortcutsFlow(Profile* profile,
+                             const std::string& extension_id) override;
+  void CreateNewWindow(Profile* profile, bool incognito) override;
+  void OpenURL(Profile* profile,
+               const GURL& url,
+               ui::PageTransition transition,
+               WindowOpenDisposition disposition) override;
+  void ActivateApp(Profile* profile,
+                   const extensions::Extension* extension,
+                   AppListSource source,
+                   int event_flags) override;
+  void LaunchApp(Profile* profile,
+                 const extensions::Extension* extension,
+                 AppListSource source,
+                 int event_flags) override;
+  void ShowForProfileByPath(const base::FilePath& profile_path) override;
+  bool ShouldShowUserIcon() override;
 
  protected:
   // Perform platform-specific adjustments of |params| before OpenApplication().

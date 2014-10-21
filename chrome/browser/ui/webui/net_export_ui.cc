@@ -53,10 +53,10 @@ class NetExportMessageHandler
       public base::SupportsWeakPtr<NetExportMessageHandler> {
  public:
   NetExportMessageHandler();
-  virtual ~NetExportMessageHandler();
+  ~NetExportMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Messages.
   void OnGetExportNetLogInfo(const base::ListValue* list);

@@ -28,22 +28,20 @@ class ChromeWebContentsViewDelegateMac
       public ContextMenuDelegate {
  public:
   explicit ChromeWebContentsViewDelegateMac(content::WebContents* web_contents);
-  virtual ~ChromeWebContentsViewDelegateMac();
+  ~ChromeWebContentsViewDelegateMac() override;
 
   // Overridden from WebContentsViewDelegate:
-  virtual NSObject<RenderWidgetHostViewMacDelegate>*
-      CreateRenderWidgetHostViewDelegate(
-          content::RenderWidgetHost* render_widget_host) override;
-  virtual content::WebDragDestDelegate* GetDragDestDelegate() override;
-  virtual void ShowContextMenu(
-      content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) override;
+  NSObject<RenderWidgetHostViewMacDelegate>* CreateRenderWidgetHostViewDelegate(
+      content::RenderWidgetHost* render_widget_host) override;
+  content::WebDragDestDelegate* GetDragDestDelegate() override;
+  void ShowContextMenu(content::RenderFrameHost* render_frame_host,
+                       const content::ContextMenuParams& params) override;
 
   // Overridden from ContextMenuDelegate.
-  virtual scoped_ptr<RenderViewContextMenu> BuildMenu(
+  scoped_ptr<RenderViewContextMenu> BuildMenu(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params) override;
-  virtual void ShowMenu(scoped_ptr<RenderViewContextMenu> menu) override;
+  void ShowMenu(scoped_ptr<RenderViewContextMenu> menu) override;
 
  private:
   content::RenderWidgetHostView* GetActiveRenderWidgetHostView();

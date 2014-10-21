@@ -54,11 +54,10 @@ class ConstrainedWebDialogDelegate {
 class ConstrainedWebDialogUI : public content::WebUIController {
  public:
   explicit ConstrainedWebDialogUI(content::WebUI* web_ui);
-  virtual ~ConstrainedWebDialogUI();
+  ~ConstrainedWebDialogUI() override;
 
   // WebUIController implementation:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   // Sets the delegate on the WebContents.
   static void SetConstrainedDelegate(content::WebContents* web_contents,

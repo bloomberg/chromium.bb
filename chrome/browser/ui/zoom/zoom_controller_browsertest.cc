@@ -42,11 +42,11 @@ class ZoomChangedWatcher : public ZoomObserver {
         message_loop_runner_(new content::MessageLoopRunner) {
     ZoomController::FromWebContents(web_contents)->AddObserver(this);
   }
-  virtual ~ZoomChangedWatcher() {}
+  ~ZoomChangedWatcher() override {}
 
   void Wait() { message_loop_runner_->Run(); }
 
-  virtual void OnZoomChanged(
+  void OnZoomChanged(
       const ZoomController::ZoomChangedEventData& event_data) override {
     if (event_data == expected_event_data_)
       message_loop_runner_->Quit();

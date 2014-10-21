@@ -58,11 +58,11 @@ class InspectMessageHandler : public WebUIMessageHandler {
  public:
   explicit InspectMessageHandler(InspectUI* inspect_ui)
       : inspect_ui_(inspect_ui) {}
-  virtual ~InspectMessageHandler() {}
+  ~InspectMessageHandler() override {}
 
  private:
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   void HandleInitUICommand(const base::ListValue* args);
   void HandleInspectCommand(const base::ListValue* args);
@@ -206,14 +206,14 @@ class DevToolsUIBindingsEnabler
  public:
   DevToolsUIBindingsEnabler(WebContents* web_contents,
                             const GURL& url);
-  virtual ~DevToolsUIBindingsEnabler() {}
+  ~DevToolsUIBindingsEnabler() override {}
 
   DevToolsUIBindings* GetBindings();
 
  private:
   // contents::WebContentsObserver overrides.
-  virtual void WebContentsDestroyed() override;
-  virtual void AboutToNavigateRenderView(
+  void WebContentsDestroyed() override;
+  void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) override;
 
   DevToolsUIBindings bindings_;

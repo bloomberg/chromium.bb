@@ -22,7 +22,7 @@ class WebserviceCache;
 class WebserviceSearchProvider : public SearchProvider {
  public:
   explicit WebserviceSearchProvider(Profile* profile);
-  virtual ~WebserviceSearchProvider();
+  ~WebserviceSearchProvider() override;
 
   // Validate the query for privacy and size.
   bool IsValidQuery(const base::string16& query);

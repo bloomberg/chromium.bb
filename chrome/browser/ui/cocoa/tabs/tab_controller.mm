@@ -42,18 +42,17 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
         owner_(owner) {}
 
   // Overridden from ui::SimpleMenuModel::Delegate
-  virtual bool IsCommandIdChecked(int command_id) const override {
-    return false;
-  }
-  virtual bool IsCommandIdEnabled(int command_id) const override {
+  bool IsCommandIdChecked(int command_id) const override { return false; }
+  bool IsCommandIdEnabled(int command_id) const override {
     TabStripModel::ContextMenuCommand command =
         static_cast<TabStripModel::ContextMenuCommand>(command_id);
     return [target_ isCommandEnabled:command forController:owner_];
   }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override { return false; }
-  virtual void ExecuteCommand(int command_id, int event_flags) override {
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override {
+    return false;
+  }
+  void ExecuteCommand(int command_id, int event_flags) override {
     TabStripModel::ContextMenuCommand command =
         static_cast<TabStripModel::ContextMenuCommand>(command_id);
     [target_ commandDispatch:command forController:owner_];

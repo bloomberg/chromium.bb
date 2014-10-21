@@ -36,7 +36,7 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
       : file_selection_initialisation_in_progress(false) {
   }
 
-  virtual ~FileSelectionUser() {
+  ~FileSelectionUser() override {
     if (select_file_dialog_.get())
       select_file_dialog_->ListenerDestroyed();
   }
@@ -62,16 +62,16 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
   }
 
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index, void* params) override {
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override {
     ASSERT_FALSE(file_selection_initialisation_in_progress);
   }
-  virtual void MultiFilesSelected(
-      const std::vector<base::FilePath>& files,
-      void* params) override {
+  void MultiFilesSelected(const std::vector<base::FilePath>& files,
+                          void* params) override {
     ASSERT_FALSE(file_selection_initialisation_in_progress);
   }
-  virtual void FileSelectionCanceled(void* params) override {
+  void FileSelectionCanceled(void* params) override {
     ASSERT_FALSE(file_selection_initialisation_in_progress);
   }
 

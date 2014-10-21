@@ -18,18 +18,18 @@ class MockPermissionBubbleRequest : public PermissionBubbleRequest {
   explicit MockPermissionBubbleRequest(const std::string& text,
                                        const std::string& accept_label,
                                        const std::string& deny_label);
-  virtual ~MockPermissionBubbleRequest();
+  ~MockPermissionBubbleRequest() override;
 
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetMessageTextFragment() const override;
-  virtual bool HasUserGesture() const override;
-  virtual GURL GetRequestingHostname() const override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetMessageTextFragment() const override;
+  bool HasUserGesture() const override;
+  GURL GetRequestingHostname() const override;
 
-  virtual void PermissionGranted() override;
-  virtual void PermissionDenied() override;
-  virtual void Cancelled() override;
-  virtual void RequestFinished() override;
+  void PermissionGranted() override;
+  void PermissionDenied() override;
+  void Cancelled() override;
+  void RequestFinished() override;
 
   bool granted();
   bool cancelled();

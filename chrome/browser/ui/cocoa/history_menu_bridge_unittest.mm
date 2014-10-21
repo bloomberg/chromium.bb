@@ -37,9 +37,7 @@ class MockBridge : public HistoryMenuBridge {
       : HistoryMenuBridge(profile),
         menu_([[NSMenu alloc] initWithTitle:@"History"]) {}
 
-  virtual NSMenu* HistoryMenu() override {
-    return menu_.get();
-  }
+  NSMenu* HistoryMenu() override { return menu_.get(); }
 
  private:
   base::scoped_nsobject<NSMenu> menu_;

@@ -19,7 +19,7 @@ class BrowserContext;
 class ZoomEventManager : public base::SupportsUserData::Data {
  public:
   ZoomEventManager();
-  virtual ~ZoomEventManager();
+  ~ZoomEventManager() override;
 
   // Returns the ZoomEventManager for the specified BrowserContext. This
   // function creates the ZoomEventManager if it hasn't been created already.

@@ -36,10 +36,10 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
                            public SuggestionsCombiner::Delegate {
  public:
   SuggestionsHandler();
-  virtual ~SuggestionsHandler();
+  ~SuggestionsHandler() override;
 
   // WebUIMessageHandler override and implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for the "getSuggestions" message.
   void HandleGetSuggestions(const base::ListValue* args);
@@ -60,12 +60,12 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
   void HandleSuggestedSitesSelected(const base::ListValue* args);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // SuggestionsCombiner::Delegate implementation.
-  virtual void OnSuggestionsReady() override;
+  void OnSuggestionsReady() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

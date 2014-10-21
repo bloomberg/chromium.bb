@@ -36,7 +36,7 @@ class NTPResourceCache : public content::NotificationObserver,
   };
 
   explicit NTPResourceCache(Profile* profile);
-  virtual ~NTPResourceCache();
+  ~NTPResourceCache() override;
 
   base::RefCountedMemory* GetNewTabHTML(WindowType win_type);
   base::RefCountedMemory* GetNewTabCSS(WindowType win_type);
@@ -55,9 +55,9 @@ class NTPResourceCache : public content::NotificationObserver,
     should_show_recently_closed_menu_ = should_show_recently_closed_menu;
   }
   // content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   static WindowType GetWindowType(
       Profile* profile, content::RenderProcessHost* render_host);

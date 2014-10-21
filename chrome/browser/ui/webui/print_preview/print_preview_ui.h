@@ -35,7 +35,7 @@ struct PageSizeMargins;
 class PrintPreviewUI : public ConstrainedWebDialogUI {
  public:
   explicit PrintPreviewUI(content::WebUI* web_ui);
-  virtual ~PrintPreviewUI();
+  ~PrintPreviewUI() override;
 
   // Gets the print preview |data|. |index| is zero-based, and can be
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview

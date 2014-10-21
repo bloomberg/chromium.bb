@@ -301,8 +301,8 @@ std::string GetDefaultPrinterOnFileThread() {
 class PrintingContextDelegate : public printing::PrintingContext::Delegate {
  public:
   // PrintingContext::Delegate methods.
-  virtual gfx::NativeView GetParentView() override { return NULL; }
-  virtual std::string GetAppLocale() override {
+  gfx::NativeView GetParentView() override { return NULL; }
+  std::string GetAppLocale() override {
     return g_browser_process->GetApplicationLocale();
   }
 };
@@ -539,14 +539,14 @@ class PrintPreviewHandler::AccessTokenService
     }
   }
 
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override {
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override {
     OnServiceResponce(request, access_token);
   }
 
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override {
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override {
     OnServiceResponce(request, std::string());
   }
 

@@ -37,21 +37,19 @@ class Observer : public chrome::BrowserListObserver,
     BrowserList::AddObserver(this);
   }
 
-  virtual ~Observer() {
-    BrowserList::RemoveObserver(this);
-  }
+  ~Observer() override { BrowserList::RemoveObserver(this); }
 
   // chrome::BrowserListObserver:
-  virtual void OnBrowserAdded(Browser* browser) override {}
-  virtual void OnBrowserRemoved(Browser* browser) override {
+  void OnBrowserAdded(Browser* browser) override {}
+  void OnBrowserRemoved(Browser* browser) override {
     [controller_ activeBrowserChangedTo:chrome::GetLastActiveBrowser()];
   }
-  virtual void OnBrowserSetLastActive(Browser* browser) override {
+  void OnBrowserSetLastActive(Browser* browser) override {
     [controller_ activeBrowserChangedTo:browser];
   }
 
   // AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* menu) override {
+  void OnAvatarMenuChanged(AvatarMenu* menu) override {
     [controller_ rebuildMenu];
   }
 

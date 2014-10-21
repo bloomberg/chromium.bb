@@ -16,7 +16,7 @@ class Profile;
 class InstantTab : public InstantPage {
  public:
   InstantTab(InstantPage::Delegate* delegate, Profile* profile);
-  virtual ~InstantTab();
+  ~InstantTab() override;
 
   // Start observing |contents| for messages. Sends a message to determine if
   // the page supports the Instant API.
@@ -27,7 +27,7 @@ class InstantTab : public InstantPage {
 
  private:
   // Overridden from InstantPage:
-  virtual bool ShouldProcessAboutToNavigateMainFrame() override;
+  bool ShouldProcessAboutToNavigateMainFrame() override;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTab);
 };

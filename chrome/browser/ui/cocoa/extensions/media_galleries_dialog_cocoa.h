@@ -32,7 +32,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   MediaGalleriesDialogCocoa(
       MediaGalleriesDialogController* controller,
       MediaGalleriesCocoaController* delegate);
-  virtual ~MediaGalleriesDialogCocoa();
+  ~MediaGalleriesDialogCocoa() override;
 
   // Called when the user clicks the accept button.
   void OnAcceptClicked();
@@ -42,17 +42,15 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   void OnAuxiliaryButtonClicked();
 
   // MediaGalleriesDialog implementation:
-  virtual void UpdateGalleries() override;
+  void UpdateGalleries() override;
 
   // ConstrainedWindowMacDelegate implementation.
-  virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) override;
+  void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   // MediaGalleryListEntryController implementation.
-  virtual void OnCheckboxToggled(MediaGalleryPrefId pref_id,
-                                 bool checked) override;
-  virtual void OnFolderViewerClicked(MediaGalleryPrefId prefId) override;
-  virtual ui::MenuModel* GetContextMenu(MediaGalleryPrefId pref_id) override;
+  void OnCheckboxToggled(MediaGalleryPrefId pref_id, bool checked) override;
+  void OnFolderViewerClicked(MediaGalleryPrefId prefId) override;
+  ui::MenuModel* GetContextMenu(MediaGalleryPrefId pref_id) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
@@ -62,7 +60,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
   // MediaGalleriesDialog implementation:
-  virtual void AcceptDialogForTesting() override;
+  void AcceptDialogForTesting() override;
 
   void InitDialogControls();
   CGFloat CreateCheckboxes(

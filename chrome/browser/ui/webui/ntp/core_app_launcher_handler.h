@@ -27,7 +27,7 @@ class Profile;
 class CoreAppLauncherHandler : public content::WebUIMessageHandler {
  public:
   CoreAppLauncherHandler();
-  virtual ~CoreAppLauncherHandler();
+  ~CoreAppLauncherHandler() override;
 
   // Records the given type of app launch for UMA.
   static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket,
@@ -58,7 +58,7 @@ class CoreAppLauncherHandler : public content::WebUIMessageHandler {
                             extension_misc::AppLaunchBucket bucket);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   DISALLOW_COPY_AND_ASSIGN(CoreAppLauncherHandler);
 };

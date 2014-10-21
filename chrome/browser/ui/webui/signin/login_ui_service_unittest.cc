@@ -11,9 +11,9 @@
 class TestLoginUI : public LoginUIService::LoginUI {
  public:
   TestLoginUI() { }
-  virtual ~TestLoginUI() { }
-  virtual void FocusUI() override { }
-  virtual void CloseUI() override { }
+  ~TestLoginUI() override {}
+  void FocusUI() override {}
+  void CloseUI() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLoginUI);
@@ -29,11 +29,11 @@ class TestObserver : public LoginUIService::Observer {
   int ui_closed_count() const { return ui_closed_count_; }
 
  private:
-  virtual void OnLoginUIShown(LoginUIService::LoginUI* ui) override {
+  void OnLoginUIShown(LoginUIService::LoginUI* ui) override {
     ++ui_shown_count_;
   }
 
-  virtual void OnLoginUIClosed(LoginUIService::LoginUI* ui) override {
+  void OnLoginUIClosed(LoginUIService::LoginUI* ui) override {
     ++ui_closed_count_;
   }
 

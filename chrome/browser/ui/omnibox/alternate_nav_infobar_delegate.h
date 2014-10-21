@@ -17,7 +17,7 @@ class WebContents;
 
 class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
-  virtual ~AlternateNavInfoBarDelegate();
+  ~AlternateNavInfoBarDelegate() override;
 
   // Creates an alternate nav infobar and delegate and adds the infobar to the
   // infobar service for |web_contents|.
@@ -41,8 +41,8 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
       scoped_ptr<AlternateNavInfoBarDelegate> delegate);
 
   // InfoBarDelegate:
-  virtual int GetIconID() const override;
-  virtual Type GetInfoBarType() const override;
+  int GetIconID() const override;
+  Type GetInfoBarType() const override;
 
   Profile* profile_;
   const base::string16 text_;

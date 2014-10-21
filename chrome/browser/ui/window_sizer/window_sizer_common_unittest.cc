@@ -22,40 +22,36 @@ namespace {
 class TestScreen : public gfx::Screen {
  public:
   TestScreen() {}
-  virtual ~TestScreen() {}
+  ~TestScreen() override {}
 
   // Overridden from gfx::Screen:
-  virtual bool IsDIPEnabled() override {
+  bool IsDIPEnabled() override {
     NOTREACHED();
     return false;
   }
 
-  virtual gfx::Point GetCursorScreenPoint() override {
+  gfx::Point GetCursorScreenPoint() override {
     NOTREACHED();
     return gfx::Point();
   }
 
-  virtual gfx::NativeWindow GetWindowUnderCursor() override {
+  gfx::NativeWindow GetWindowUnderCursor() override {
     NOTREACHED();
     return NULL;
   }
 
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      override {
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     NOTREACHED();
     return NULL;
   }
 
-  virtual int GetNumDisplays() const override {
-    return displays_.size();
-  }
+  int GetNumDisplays() const override { return displays_.size(); }
 
-  virtual std::vector<gfx::Display> GetAllDisplays() const override {
+  std::vector<gfx::Display> GetAllDisplays() const override {
     return displays_;
   }
 
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const override {
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
 #if defined(USE_AURA)
     return GetDisplayMatching(view->GetBoundsInScreen());
 #else
@@ -64,14 +60,12 @@ class TestScreen : public gfx::Screen {
 #endif
   }
 
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override {
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     NOTREACHED();
     return gfx::Display();
   }
 
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override {
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     int max_area = 0;
     size_t max_area_index = 0;
 
@@ -87,17 +81,11 @@ class TestScreen : public gfx::Screen {
     return displays_[max_area_index];
   }
 
-  virtual gfx::Display GetPrimaryDisplay() const override {
-    return displays_[0];
-  }
+  gfx::Display GetPrimaryDisplay() const override { return displays_[0]; }
 
-  virtual void AddObserver(gfx::DisplayObserver* observer) override {
-    NOTREACHED();
-  }
+  void AddObserver(gfx::DisplayObserver* observer) override { NOTREACHED(); }
 
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {
-    NOTREACHED();
-  }
+  void RemoveObserver(gfx::DisplayObserver* observer) override { NOTREACHED(); }
 
   void AddDisplay(const gfx::Rect& bounds,
                   const gfx::Rect& work_area) {
@@ -115,11 +103,10 @@ class TestScreen : public gfx::Screen {
 class TestTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
 public:
   TestTargetDisplayProvider() {}
-  virtual ~TestTargetDisplayProvider() {}
+  ~TestTargetDisplayProvider() override {}
 
-  virtual gfx::Display GetTargetDisplay(
-      const gfx::Screen* screen,
-      const gfx::Rect& bounds) const override {
+  gfx::Display GetTargetDisplay(const gfx::Screen* screen,
+                                const gfx::Rect& bounds) const override {
     // On ash, the bounds is used as a indicator to specify
     // the target display.
     return screen->GetDisplayMatching(bounds);

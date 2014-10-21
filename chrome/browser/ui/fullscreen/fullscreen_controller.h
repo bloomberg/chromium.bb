@@ -54,7 +54,7 @@ class WebContents;
 class FullscreenController : public content::NotificationObserver {
  public:
   explicit FullscreenController(Browser* browser);
-  virtual ~FullscreenController();
+  ~FullscreenController() override;
 
   // Browser/User Fullscreen ///////////////////////////////////////////////////
 
@@ -143,9 +143,9 @@ class FullscreenController : public content::NotificationObserver {
   void LostMouseLock();
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Bubble Content ////////////////////////////////////////////////////////////
 

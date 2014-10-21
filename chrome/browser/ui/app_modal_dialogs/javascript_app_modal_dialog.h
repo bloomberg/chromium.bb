@@ -42,12 +42,12 @@ class JavaScriptAppModalDialog : public AppModalDialog {
       bool is_before_unload_dialog,
       bool is_reload,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback);
-  virtual ~JavaScriptAppModalDialog();
+  ~JavaScriptAppModalDialog() override;
 
   // Overridden from AppModalDialog:
-  virtual NativeAppModalDialog* CreateNativeDialog() override;
-  virtual bool IsJavaScriptModalDialog() override;
-  virtual void Invalidate() override;
+  NativeAppModalDialog* CreateNativeDialog() override;
+  bool IsJavaScriptModalDialog() override;
+  void Invalidate() override;
 
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
   void OnCancel(bool suppress_js_messages);

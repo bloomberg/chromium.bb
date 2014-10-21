@@ -37,7 +37,7 @@ class WebstoreResult : public SearchResult,
                  bool is_paid,
                  extensions::Manifest::Type item_type,
                  AppListControllerDelegate* controller);
-  virtual ~WebstoreResult();
+  ~WebstoreResult() override;
 
   const std::string& app_id() const { return app_id_; }
   const GURL& icon_url() const { return icon_url_; }
@@ -45,9 +45,9 @@ class WebstoreResult : public SearchResult,
   bool is_paid() const { return is_paid_; }
 
   // SearchResult overrides:
-  virtual void Open(int event_flags) override;
-  virtual void InvokeAction(int action_index, int event_flags) override;
-  virtual scoped_ptr<SearchResult> Duplicate() override;
+  void Open(int event_flags) override;
+  void InvokeAction(int action_index, int event_flags) override;
+  scoped_ptr<SearchResult> Duplicate() override;
 
  private:
   // Set the initial state and start observing both InstallObserver and
@@ -69,16 +69,15 @@ class WebstoreResult : public SearchResult,
   void StopObservingRegistry();
 
   // extensions::InstallObserver overrides:
-  virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) override;
-  virtual void OnShutdown() override;
+  void OnDownloadProgress(const std::string& extension_id,
+                          int percent_downloaded) override;
+  void OnShutdown() override;
 
   // extensions::ExtensionRegistryObserver overides:
-  virtual void OnExtensionInstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      bool is_update) override;
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
+  void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   Profile* profile_;
   const std::string app_id_;

@@ -35,34 +35,34 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
                                  public content::NotificationObserver {
  public:
   UserManagerScreenHandler();
-  virtual ~UserManagerScreenHandler();
+  ~UserManagerScreenHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ScreenlockBridge::LockHandler implementation.
-  virtual void ShowBannerMessage(const base::string16& message) override;
-  virtual void ShowUserPodCustomIcon(
+  void ShowBannerMessage(const base::string16& message) override;
+  void ShowUserPodCustomIcon(
       const std::string& user_email,
       const ScreenlockBridge::UserPodCustomIconOptions& icon_options) override;
-  virtual void HideUserPodCustomIcon(const std::string& user_email) override;
-  virtual void EnableInput() override;
-  virtual void SetAuthType(const std::string& user_email,
-                           ScreenlockBridge::LockHandler::AuthType auth_type,
-                           const base::string16& auth_value) override;
-  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
+  void HideUserPodCustomIcon(const std::string& user_email) override;
+  void EnableInput() override;
+  void SetAuthType(const std::string& user_email,
+                   ScreenlockBridge::LockHandler::AuthType auth_type,
+                   const base::string16& auth_value) override;
+  ScreenlockBridge::LockHandler::AuthType GetAuthType(
       const std::string& user_email) const override;
-  virtual void Unlock(const std::string& user_email) override;
-  virtual void AttemptEasySignin(const std::string& user_email,
-                                 const std::string& secret,
-                                 const std::string& key_label) override;
+  void Unlock(const std::string& user_email) override;
+  void AttemptEasySignin(const std::string& user_email,
+                         const std::string& secret,
+                         const std::string& key_label) override;
 
  private:
   // An observer for any changes to Profiles in the ProfileInfoCache so that
@@ -79,9 +79,8 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void HandleHardlockUserPod(const base::ListValue* args);
 
   // Handle GAIA auth results.
-  virtual void OnClientLoginSuccess(const ClientLoginResult& result) override;
-  virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
-      override;
+  void OnClientLoginSuccess(const ClientLoginResult& result) override;
+  void OnClientLoginFailure(const GoogleServiceAuthError& error) override;
 
   // Handle when Notified of a NOTIFICATION_BROWSER_WINDOW_READY event.
   void OnBrowserWindowReady(Browser* browser);

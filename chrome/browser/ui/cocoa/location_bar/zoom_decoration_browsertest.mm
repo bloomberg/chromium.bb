@@ -24,16 +24,14 @@ class ZoomDecorationTest : public InProcessBrowserTest {
         should_quit_on_zoom_(false) {
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     zoom_subscription_ = content::HostZoomMap::GetDefaultForBrowserContext(
         browser()->profile())->AddZoomLevelChangedCallback(
             base::Bind(&ZoomDecorationTest::OnZoomChanged,
                        base::Unretained(this)));
   }
 
-  virtual void TearDownOnMainThread() override {
-    zoom_subscription_.reset();
-  }
+  void TearDownOnMainThread() override { zoom_subscription_.reset(); }
 
   LocationBarViewMac* GetLocationBar() const {
     BrowserWindowController* controller =

@@ -42,7 +42,7 @@ class WrenchMenuBadgeController : public content::NotificationObserver {
   // Creates an instance of this class for the given |profile| that will notify
   // |delegate| of updates.
   WrenchMenuBadgeController(Profile* profile, Delegate* delegate);
-  virtual ~WrenchMenuBadgeController();
+  ~WrenchMenuBadgeController() override;
 
   // Forces an update of the UI based on the current state of the world. This
   // will check whether there are any current pending updates, global errors,
@@ -52,9 +52,9 @@ class WrenchMenuBadgeController : public content::NotificationObserver {
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   Profile* profile_;
   Delegate* delegate_;

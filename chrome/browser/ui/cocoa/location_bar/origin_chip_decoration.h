@@ -29,29 +29,28 @@ class OriginChipDecoration : public ButtonDecoration,
  public:
   OriginChipDecoration(LocationBarViewMac* owner,
                        LocationIconDecoration* location_icon);
-  virtual ~OriginChipDecoration();
+  ~OriginChipDecoration() override;
 
   // Updates the origin chip's content, and display state.
   void Update();
 
   // Implement |ButtonDecoration|.
-  virtual bool PreventFocus(NSPoint location) const override;
+  bool PreventFocus(NSPoint location) const override;
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width) override;
-  virtual void DrawInFrame(NSRect frame, NSView* control_view) override;
-  virtual NSString* GetToolTip() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  CGFloat GetWidthForSpace(CGFloat width) override;
+  void DrawInFrame(NSRect frame, NSView* control_view) override;
+  NSString* GetToolTip() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Implement |IconImage::Observer|.
-  virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) override;
+  void OnExtensionIconImageChanged(extensions::IconImage* image) override;
 
   // Implement |SafeBrowsingUIManager::Observer|.
-  virtual void OnSafeBrowsingHit(
+  void OnSafeBrowsingHit(
       const SafeBrowsingUIManager::UnsafeResource& resource) override;
-  virtual void OnSafeBrowsingMatch(
+  void OnSafeBrowsingMatch(
       const SafeBrowsingUIManager::UnsafeResource& resource) override;
 
  private:

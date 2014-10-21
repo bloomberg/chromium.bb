@@ -29,14 +29,13 @@ namespace options {
 class CreateProfileHandler: public OptionsPageUIHandler {
  public:
   CreateProfileHandler();
-  virtual ~CreateProfileHandler();
+  ~CreateProfileHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Represents the final profile creation status. It is used to map

@@ -18,17 +18,16 @@ class Profile;
 class ExtensionInstallUIDefault : public extensions::ExtensionInstallUI {
  public:
   explicit ExtensionInstallUIDefault(content::BrowserContext* context);
-  virtual ~ExtensionInstallUIDefault();
+  ~ExtensionInstallUIDefault() override;
 
   // ExtensionInstallUI:
-  virtual void OnInstallSuccess(const extensions::Extension* extension,
-                                const SkBitmap* icon) override;
-  virtual void OnInstallFailure(
-      const extensions::CrxInstallerError& error) override;
-  virtual void SetUseAppInstalledBubble(bool use_bubble) override;
-  virtual void OpenAppInstalledUI(const std::string& app_id) override;
-  virtual void SetSkipPostInstallUI(bool skip_ui) override;
-  virtual gfx::NativeWindow GetDefaultInstallDialogParent() override;
+  void OnInstallSuccess(const extensions::Extension* extension,
+                        const SkBitmap* icon) override;
+  void OnInstallFailure(const extensions::CrxInstallerError& error) override;
+  void SetUseAppInstalledBubble(bool use_bubble) override;
+  void OpenAppInstalledUI(const std::string& app_id) override;
+  void SetSkipPostInstallUI(bool skip_ui) override;
+  gfx::NativeWindow GetDefaultInstallDialogParent() override;
 
  private:
   Profile* profile_;

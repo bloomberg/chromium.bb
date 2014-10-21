@@ -22,15 +22,15 @@ class WebsiteSettingsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   WebsiteSettingsInfoBarDelegate();
-  virtual ~WebsiteSettingsInfoBarDelegate();
+  ~WebsiteSettingsInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const override;
-  virtual Type GetInfoBarType() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual int GetButtons() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
+  int GetIconID() const override;
+  Type GetInfoBarType() const override;
+  base::string16 GetMessageText() const override;
+  int GetButtons() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsInfoBarDelegate);
 };

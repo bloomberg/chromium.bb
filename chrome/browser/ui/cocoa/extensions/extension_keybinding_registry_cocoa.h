@@ -37,7 +37,7 @@ class ExtensionKeybindingRegistryCocoa
                                    gfx::NativeWindow window,
                                    ExtensionFilter extension_filter,
                                    Delegate* delegate);
-  virtual ~ExtensionKeybindingRegistryCocoa();
+  ~ExtensionKeybindingRegistryCocoa() override;
 
   static void set_shortcut_handling_suspended(bool suspended) {
     shortcut_handling_suspended_ = suspended;
@@ -54,12 +54,10 @@ class ExtensionKeybindingRegistryCocoa
 
  protected:
   // Overridden from ExtensionKeybindingRegistry:
-  virtual void AddExtensionKeybinding(
-      const extensions::Extension* extension,
-      const std::string& command_name) override;
-  virtual void RemoveExtensionKeybindingImpl(
-      const ui::Accelerator& accelerator,
-      const std::string& command_name) override;
+  void AddExtensionKeybinding(const extensions::Extension* extension,
+                              const std::string& command_name) override;
+  void RemoveExtensionKeybindingImpl(const ui::Accelerator& accelerator,
+                                     const std::string& command_name) override;
 
  private:
   // Keeps track of whether shortcut handling is currently suspended. Shortcuts

@@ -17,17 +17,17 @@ class MediaDevicesSelectionHandler
       public OptionsPageUIHandler {
  public:
   MediaDevicesSelectionHandler();
-  virtual ~MediaDevicesSelectionHandler();
+  ~MediaDevicesSelectionHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* values) override;
-  virtual void InitializePage() override;
-  virtual void RegisterMessages() override;
+  void GetLocalizedValues(base::DictionaryValue* values) override;
+  void InitializePage() override;
+  void RegisterMessages() override;
 
   // MediaCaptureDevicesDispatcher::Observer implementation.
-  virtual void OnUpdateAudioDevices(
+  void OnUpdateAudioDevices(
       const content::MediaStreamDevices& devices) override;
-  virtual void OnUpdateVideoDevices(
+  void OnUpdateVideoDevices(
       const content::MediaStreamDevices& devices) override;
 
  private:

@@ -15,14 +15,14 @@ class SavePasswordRefusalComboboxModel : public ui::ComboboxModel {
   enum { INDEX_NOPE = 0, INDEX_NEVER_FOR_THIS_SITE = 1 };
 
   SavePasswordRefusalComboboxModel();
-  virtual ~SavePasswordRefusalComboboxModel();
+  ~SavePasswordRefusalComboboxModel() override;
 
  private:
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
-  virtual bool IsItemSeparatorAt(int index) override;
-  virtual int GetDefaultIndex() const override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
+  bool IsItemSeparatorAt(int index) override;
+  int GetDefaultIndex() const override;
 
   std::vector<base::string16> items_;
 

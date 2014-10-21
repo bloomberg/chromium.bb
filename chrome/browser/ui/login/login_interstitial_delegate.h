@@ -30,13 +30,13 @@ class LoginInterstitialDelegate : public content::InterstitialPageDelegate {
                             const GURL& request_url,
                             base::Closure& callback);
 
-  virtual ~LoginInterstitialDelegate();
+  ~LoginInterstitialDelegate() override;
 
   // content::InterstitialPageDelegate:
-  virtual void CommandReceived(const std::string& command) override;
+  void CommandReceived(const std::string& command) override;
 
  protected:
-  virtual std::string GetHTMLContents() override;
+  std::string GetHTMLContents() override;
 
  private:
   base::Closure callback_;

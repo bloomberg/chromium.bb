@@ -42,7 +42,7 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
                                  public app_list::AppListItemListObserver {
  public:
   explicit ExtensionAppModelBuilder(AppListControllerDelegate* controller);
-  virtual ~ExtensionAppModelBuilder();
+  ~ExtensionAppModelBuilder() override;
 
   // Initialize to use app-list sync and sets |service_| to |service|.
   void InitializeWithService(app_list::AppListSyncableService* service);
@@ -58,33 +58,30 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   void BuildModel();
 
   // extensions::InstallObserver.
-  virtual void OnBeginExtensionInstall(
-      const ExtensionInstallParams& params) override;
-  virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) override;
-  virtual void OnInstallFailure(const std::string& extension_id) override;
-  virtual void OnDisabledExtensionUpdated(
+  void OnBeginExtensionInstall(const ExtensionInstallParams& params) override;
+  void OnDownloadProgress(const std::string& extension_id,
+                          int percent_downloaded) override;
+  void OnInstallFailure(const std::string& extension_id) override;
+  void OnDisabledExtensionUpdated(
       const extensions::Extension* extension) override;
-  virtual void OnShutdown() override;
+  void OnShutdown() override;
 
   // extensions::ExtensionRegistryObserver.
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
-  virtual void OnExtensionUnloaded(
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
+  void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // AppListItemListObserver.
-  virtual void OnListItemMoved(size_t from_index,
-                               size_t to_index,
-                               app_list::AppListItem* item) override;
+  void OnListItemMoved(size_t from_index,
+                       size_t to_index,
+                       app_list::AppListItem* item) override;
 
   scoped_ptr<ExtensionAppItem> CreateAppItem(
       const std::string& extension_id,

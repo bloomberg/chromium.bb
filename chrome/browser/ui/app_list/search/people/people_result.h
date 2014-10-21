@@ -24,12 +24,12 @@ class PeopleResult : public SearchResult {
   PeopleResult(Profile* profile,
                AppListControllerDelegate* controller,
                scoped_ptr<Person> person);
-  virtual ~PeopleResult();
+  ~PeopleResult() override;
 
   // SearchResult overrides:
-  virtual void Open(int event_flags) override;
-  virtual void InvokeAction(int action_index, int event_flags) override;
-  virtual scoped_ptr<SearchResult> Duplicate() override;
+  void Open(int event_flags) override;
+  void InvokeAction(int action_index, int event_flags) override;
+  scoped_ptr<SearchResult> Duplicate() override;
 
  private:
   void OnIconLoaded();

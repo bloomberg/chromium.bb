@@ -42,8 +42,8 @@ class HasTypedURLsTask : public history::HistoryDBTask {
       : has_typed_urls_(false), cb_(cb) {
   }
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     history::URLRows rows;
     backend->GetAllTypedURLs(&rows);
     if (!rows.empty()) {
@@ -54,12 +54,10 @@ class HasTypedURLsTask : public history::HistoryDBTask {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {
-    cb_.Run(has_typed_urls_);
-  }
+  void DoneRunOnMainThread() override { cb_.Run(has_typed_urls_); }
 
  private:
-  virtual ~HasTypedURLsTask() {}
+  ~HasTypedURLsTask() override {}
 
   bool has_typed_urls_;
   base::Callback<void(bool)> cb_;

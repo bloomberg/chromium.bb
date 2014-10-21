@@ -13,27 +13,26 @@
 class TestTabStripModelDelegate : public TabStripModelDelegate {
  public:
   TestTabStripModelDelegate();
-  virtual ~TestTabStripModelDelegate();
+  ~TestTabStripModelDelegate() override;
 
   // Overridden from TabStripModelDelegate:
-  virtual void AddTabAt(const GURL& url, int index, bool foregroud) override;
-  virtual Browser* CreateNewStripWithContents(
+  void AddTabAt(const GURL& url, int index, bool foregroud) override;
+  Browser* CreateNewStripWithContents(
       const std::vector<NewStripContents>& contentses,
       const gfx::Rect& window_bounds,
       bool maximize) override;
-  virtual void WillAddWebContents(content::WebContents* contents) override;
-  virtual int GetDragActions() const override;
-  virtual bool CanDuplicateContentsAt(int index) override;
-  virtual void DuplicateContentsAt(int index) override;
-  virtual void CreateHistoricalTab(content::WebContents* contents) override;
-  virtual bool ShouldRunUnloadListenerBeforeClosing(
+  void WillAddWebContents(content::WebContents* contents) override;
+  int GetDragActions() const override;
+  bool CanDuplicateContentsAt(int index) override;
+  void DuplicateContentsAt(int index) override;
+  void CreateHistoricalTab(content::WebContents* contents) override;
+  bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;
-  virtual bool RunUnloadListenerBeforeClosing(
-      content::WebContents* contents) override;
-  virtual RestoreTabType GetRestoreTabType() override;
-  virtual void RestoreTab() override;
-  virtual bool CanBookmarkAllTabs() const override;
-  virtual void BookmarkAllTabs() override;
+  bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
+  RestoreTabType GetRestoreTabType() override;
+  void RestoreTab() override;
+  bool CanBookmarkAllTabs() const override;
+  void BookmarkAllTabs() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelDelegate);

@@ -22,10 +22,10 @@ class AboutIPCController;
 class AboutIPCBridge : public IPC::Logging::Consumer {
  public:
   AboutIPCBridge(AboutIPCController* controller) : controller_(controller) { }
-  virtual ~AboutIPCBridge() { }
+  ~AboutIPCBridge() override {}
 
   // IPC::Logging::Consumer implementation.
-  virtual void Log(const IPC::LogData& data) override;
+  void Log(const IPC::LogData& data) override;
 
  private:
   AboutIPCController* controller_;  // weak; owns me

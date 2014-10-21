@@ -19,15 +19,15 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
                         public content::NotificationObserver {
  public:
   NTPLoginHandler();
-  virtual ~NTPLoginHandler();
+  ~NTPLoginHandler() override;
 
   // WebUIMessageHandler interface
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // content::NotificationObserver interface
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns true if the login handler should be shown in a new tab page
   // for the given |profile|. |profile| must not be NULL.

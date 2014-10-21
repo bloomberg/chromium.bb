@@ -81,7 +81,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
                   const GURL& url,
                   const content::SSLStatus& ssl,
                   content::CertStore* cert_store);
-  virtual ~WebsiteSettings();
+  ~WebsiteSettings() override;
 
   // This method is called when ever a permission setting is changed.
   void OnSitePermissionChanged(ContentSettingsType type,
@@ -123,7 +123,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   }
 
   // SiteDataObserver implementation.
-  virtual void OnSiteDataAccessed() override;
+  void OnSiteDataAccessed() override;
 
  private:
   // Initializes the |WebsiteSettings|.

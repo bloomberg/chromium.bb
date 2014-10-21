@@ -34,20 +34,18 @@ class PeopleProvider : public WebserviceSearchProvider,
                        public OAuth2TokenService::Consumer {
  public:
   PeopleProvider(Profile* profile, AppListControllerDelegate* controller);
-  virtual ~PeopleProvider();
+  ~PeopleProvider() override;
 
   // SearchProvider overrides:
-  virtual void Start(const base::string16& query) override;
-  virtual void Stop() override;
+  void Start(const base::string16& query) override;
+  void Stop() override;
 
   // OAuth2TokenService::Consumer overrides:
-  virtual void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const std::string& access_token,
-      const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(
-      const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
  private:
   friend class app_list::test::PeopleProviderTest;

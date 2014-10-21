@@ -42,7 +42,7 @@ class ExtensionAppItem : public app_list::AppListItem,
                    const std::string& extension_name,
                    const gfx::ImageSkia& installing_icon,
                    bool is_platform_app);
-  virtual ~ExtensionAppItem();
+  ~ExtensionAppItem() override;
 
   // Reload the title and icon from the underlying extension.
   void Reload();
@@ -79,22 +79,21 @@ class ExtensionAppItem : public app_list::AppListItem,
   bool NeedsOverlay() const;
 
   // Overridden from extensions::IconImage::Observer:
-  virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) override;
+  void OnExtensionIconImageChanged(extensions::IconImage* image) override;
 
   // Overridden from ExtensionEnableFlowDelegate:
-  virtual void ExtensionEnableFlowFinished() override;
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) override;
+  void ExtensionEnableFlowFinished() override;
+  void ExtensionEnableFlowAborted(bool user_initiated) override;
 
   // Overridden from AppListItem:
-  virtual void Activate(int event_flags) override;
-  virtual ui::MenuModel* GetContextMenuModel() override;
+  void Activate(int event_flags) override;
+  ui::MenuModel* GetContextMenuModel() override;
   // Updates the icon if the overlay needs to be added/removed.
-  virtual void OnExtensionPreferenceChanged() override;
-  virtual const char* GetItemType() const override;
+  void OnExtensionPreferenceChanged() override;
+  const char* GetItemType() const override;
 
   // Overridden from app_list::AppContextMenuDelegate:
-  virtual void ExecuteLaunchCommand(int event_flags) override;
+  void ExecuteLaunchCommand(int event_flags) override;
 
   // Set the position from the extension ordering.
   void UpdatePositionFromExtensionOrdering();

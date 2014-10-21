@@ -76,17 +76,13 @@ class TestingPrefStoreWithCustomReadError : public TestingPrefStore {
     // By default the profile is "new" (NO_FILE means that the profile
     // wasn't found on disk, so it was created).
   }
-  virtual PrefReadError GetReadError() const override {
-    return read_error_;
-  }
-  virtual bool IsInitializationComplete() const override {
-    return true;
-  }
+  PrefReadError GetReadError() const override { return read_error_; }
+  bool IsInitializationComplete() const override { return true; }
   void set_read_error(PrefReadError read_error) {
     read_error_ = read_error;
   }
  private:
-  virtual ~TestingPrefStoreWithCustomReadError() {}
+  ~TestingPrefStoreWithCustomReadError() override {}
   PrefReadError read_error_;
 };
 

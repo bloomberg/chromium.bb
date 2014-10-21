@@ -20,7 +20,7 @@ class InterstitialUI : public content::WebUIController {
  public:
   explicit InterstitialUI(content::WebUI* web_ui);
 
-  virtual ~InterstitialUI();
+  ~InterstitialUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InterstitialUI);

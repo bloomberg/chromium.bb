@@ -11,7 +11,7 @@
 class ProfileSigninConfirmationUI : public ConstrainedWebDialogUI {
  public:
   explicit ProfileSigninConfirmationUI(content::WebUI* web_ui);
-  virtual ~ProfileSigninConfirmationUI();
+  ~ProfileSigninConfirmationUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationUI);

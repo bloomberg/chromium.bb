@@ -33,7 +33,7 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
 
   // WebContentsDelegate implementation. Forwards all unhandled keyboard events
   // to the current window.
-  virtual void HandleKeyboardEvent(
+  void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override {
     if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])

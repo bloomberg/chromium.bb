@@ -29,7 +29,7 @@ class BrowserTabRestorer : public TabRestoreServiceObserver,
                            public chrome::BrowserListObserver,
                            public base::SupportsUserData::Data {
  public:
-  virtual ~BrowserTabRestorer();
+  ~BrowserTabRestorer() override;
 
   static void CreateIfNecessary(Browser* browser);
 
@@ -37,12 +37,12 @@ class BrowserTabRestorer : public TabRestoreServiceObserver,
   explicit BrowserTabRestorer(Browser* browser);
 
   // TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceLoaded(TabRestoreService* service) override;
 
   // BrowserListObserver:
-  virtual void OnBrowserRemoved(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
 
   Browser* browser_;
   TabRestoreService* tab_restore_service_;

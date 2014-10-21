@@ -20,15 +20,15 @@ class SuggestionsInternalsUIHandler : public content::WebUIMessageHandler,
                                       public SuggestionsCombiner::Delegate {
  public:
   explicit SuggestionsInternalsUIHandler(Profile* profile);
-  virtual ~SuggestionsInternalsUIHandler();
+  ~SuggestionsInternalsUIHandler() override;
 
   // SuggestionsCombiner::Delegate implementation.
-  virtual void OnSuggestionsReady() override;
+  void OnSuggestionsReady() override;
 
  protected:
   // WebUIMessageHandler implementation.
   // Register our handler to get callbacks from javascript.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   void HandleGetSuggestions(const base::ListValue* one_element_input_string);
 

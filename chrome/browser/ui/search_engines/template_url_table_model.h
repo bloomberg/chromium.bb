@@ -39,7 +39,7 @@ class TemplateURLTableModel : public ui::TableModel,
   TemplateURLTableModel(TemplateURLService* template_url_service,
                         FaviconService* favicon_service);
 
-  virtual ~TemplateURLTableModel();
+  ~TemplateURLTableModel() override;
 
   // Reloads the entries from the TemplateURLService. This should ONLY be
   // invoked if the TemplateURLService wasn't initially loaded and has been
@@ -47,13 +47,13 @@ class TemplateURLTableModel : public ui::TableModel,
   void Reload();
 
   // ui::TableModel overrides.
-  virtual int RowCount() override;
-  virtual base::string16 GetText(int row, int column) override;
-  virtual gfx::ImageSkia GetIcon(int row) override;
-  virtual void SetObserver(ui::TableModelObserver* observer) override;
-  virtual bool HasGroups() override;
-  virtual Groups GetGroups() override;
-  virtual int GetGroupID(int row) override;
+  int RowCount() override;
+  base::string16 GetText(int row, int column) override;
+  gfx::ImageSkia GetIcon(int row) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
+  bool HasGroups() override;
+  Groups GetGroups() override;
+  int GetGroupID(int row) override;
 
   // Removes the entry at the specified index.
   void Remove(int index);
@@ -106,7 +106,7 @@ class TemplateURLTableModel : public ui::TableModel,
   void FaviconAvailable(ModelEntry* entry);
 
   // TemplateURLServiceObserver notification.
-  virtual void OnTemplateURLServiceChanged() override;
+  void OnTemplateURLServiceChanged() override;
 
   // Removes the entry at |index| from |entries_| and returns the removed item.
   scoped_ptr<ModelEntry> RemoveEntry(int index);

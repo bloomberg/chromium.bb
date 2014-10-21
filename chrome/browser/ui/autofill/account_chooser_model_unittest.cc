@@ -24,7 +24,7 @@ class TestAccountChooserModel : public AccountChooserModel {
                           bool disable_wallet,
                           const AutofillMetrics& metric_logger)
       : AccountChooserModel(delegate, profile, disable_wallet, metric_logger) {}
-  virtual ~TestAccountChooserModel() {}
+  ~TestAccountChooserModel() override {}
 
   using AccountChooserModel::kWalletAccountsStartId;
   using AccountChooserModel::kWalletAddAccountId;

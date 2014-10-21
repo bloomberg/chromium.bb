@@ -18,7 +18,7 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
   virtual ~PanelResizeBrowserTest() {
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BasePanelBrowserTest::SetUpOnMainThread();
 
     // All the tests here assume using mocked 800x600 display area for the

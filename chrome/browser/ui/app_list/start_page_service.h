@@ -75,13 +75,13 @@ class StartPageService : public KeyedService {
   class StartPageWebContentsDelegate;
 
   explicit StartPageService(Profile* profile);
-  virtual ~StartPageService();
+  ~StartPageService() override;
 
   void LoadContents();
   void UnloadContents();
 
   // KeyedService overrides:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   Profile* profile_;
   scoped_ptr<content::WebContents> contents_;

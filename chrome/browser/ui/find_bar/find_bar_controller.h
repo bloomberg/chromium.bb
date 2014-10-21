@@ -41,7 +41,7 @@ class FindBarController : public content::NotificationObserver {
   // FindBar takes ownership of |find_bar_view|.
   explicit FindBarController(FindBar* find_bar);
 
-  virtual ~FindBarController();
+  ~FindBarController() override;
 
   // Shows the find bar. Any previous search string will again be visible.
   void Show();
@@ -61,9 +61,9 @@ class FindBarController : public content::NotificationObserver {
   void ChangeWebContents(content::WebContents* contents);
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   FindBar* find_bar() const { return find_bar_.get(); }
 

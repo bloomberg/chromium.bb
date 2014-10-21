@@ -16,12 +16,12 @@ class CommandUpdater;
 class MicSearchDecoration : public ImageDecoration {
  public:
   explicit MicSearchDecoration(CommandUpdater* command_updater);
-  virtual ~MicSearchDecoration();
+  ~MicSearchDecoration() override;
 
   // Implement |LocationBarDecoration|.
-  virtual bool AcceptsMousePress() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSString* GetToolTip() override;
+  bool AcceptsMousePress() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSString* GetToolTip() override;
 
  private:
   CommandUpdater* command_updater_;  // Weak, owned by Browser.

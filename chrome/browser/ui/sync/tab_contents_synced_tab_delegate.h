@@ -18,28 +18,28 @@ class TabContentsSyncedTabDelegate
     : public browser_sync::SyncedTabDelegate,
       public content::WebContentsUserData<TabContentsSyncedTabDelegate> {
  public:
-  virtual ~TabContentsSyncedTabDelegate();
+  ~TabContentsSyncedTabDelegate() override;
 
   // Methods from SyncedTabDelegate.
-  virtual SessionID::id_type GetWindowId() const override;
-  virtual SessionID::id_type GetSessionId() const override;
-  virtual bool IsBeingDestroyed() const override;
-  virtual Profile* profile() const override;
-  virtual std::string GetExtensionAppId() const override;
-  virtual int GetCurrentEntryIndex() const override;
-  virtual int GetEntryCount() const override;
-  virtual int GetPendingEntryIndex() const override;
-  virtual content::NavigationEntry* GetPendingEntry() const override;
-  virtual content::NavigationEntry* GetEntryAtIndex(int i) const override;
-  virtual content::NavigationEntry* GetActiveEntry() const override;
-  virtual bool ProfileIsSupervised() const override;
-  virtual const std::vector<const content::NavigationEntry*>*
-      GetBlockedNavigations() const override;
-  virtual bool IsPinned() const override;
-  virtual bool HasWebContents() const override;
-  virtual content::WebContents* GetWebContents() const override;
-  virtual int GetSyncId() const override;
-  virtual void SetSyncId(int sync_id) override;
+  SessionID::id_type GetWindowId() const override;
+  SessionID::id_type GetSessionId() const override;
+  bool IsBeingDestroyed() const override;
+  Profile* profile() const override;
+  std::string GetExtensionAppId() const override;
+  int GetCurrentEntryIndex() const override;
+  int GetEntryCount() const override;
+  int GetPendingEntryIndex() const override;
+  content::NavigationEntry* GetPendingEntry() const override;
+  content::NavigationEntry* GetEntryAtIndex(int i) const override;
+  content::NavigationEntry* GetActiveEntry() const override;
+  bool ProfileIsSupervised() const override;
+  const std::vector<const content::NavigationEntry*>* GetBlockedNavigations()
+      const override;
+  bool IsPinned() const override;
+  bool HasWebContents() const override;
+  content::WebContents* GetWebContents() const override;
+  int GetSyncId() const override;
+  void SetSyncId(int sync_id) override;
 
  private:
   explicit TabContentsSyncedTabDelegate(content::WebContents* web_contents);

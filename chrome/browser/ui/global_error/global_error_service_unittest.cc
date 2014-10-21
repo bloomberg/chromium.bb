@@ -15,25 +15,25 @@ namespace {
 class BaseError : public GlobalError {
  public:
   BaseError() { ++count_; }
-  virtual ~BaseError() { --count_; }
+  ~BaseError() override { --count_; }
 
   static int count() { return count_; }
 
-  virtual bool HasMenuItem() override { return false; }
-  virtual int MenuItemCommandID() override {
+  bool HasMenuItem() override { return false; }
+  int MenuItemCommandID() override {
     ADD_FAILURE();
     return 0;
   }
-  virtual base::string16 MenuItemLabel() override {
+  base::string16 MenuItemLabel() override {
     ADD_FAILURE();
     return base::string16();
   }
-  virtual void ExecuteMenuItem(Browser* browser) override { ADD_FAILURE(); }
+  void ExecuteMenuItem(Browser* browser) override { ADD_FAILURE(); }
 
-  virtual bool HasBubbleView() override { return false; }
-  virtual bool HasShownBubbleView() override { return false; }
-  virtual void ShowBubbleView(Browser* browser) override { ADD_FAILURE(); }
-  virtual GlobalErrorBubbleViewBase* GetBubbleView() override { return NULL; }
+  bool HasBubbleView() override { return false; }
+  bool HasShownBubbleView() override { return false; }
+  void ShowBubbleView(Browser* browser) override { ADD_FAILURE(); }
+  GlobalErrorBubbleViewBase* GetBubbleView() override { return NULL; }
 
  private:
   // This tracks the number BaseError objects that are currently instantiated.
@@ -52,12 +52,12 @@ class MenuError : public BaseError {
         severity_(severity) {
   }
 
-  virtual Severity GetSeverity() override { return severity_; }
+  Severity GetSeverity() override { return severity_; }
 
-  virtual bool HasMenuItem() override { return true; }
-  virtual int MenuItemCommandID() override { return command_id_; }
-  virtual base::string16 MenuItemLabel() override { return base::string16(); }
-  virtual void ExecuteMenuItem(Browser* browser) override {}
+  bool HasMenuItem() override { return true; }
+  int MenuItemCommandID() override { return command_id_; }
+  base::string16 MenuItemLabel() override { return base::string16(); }
+  void ExecuteMenuItem(Browser* browser) override {}
 
  private:
   int command_id_;

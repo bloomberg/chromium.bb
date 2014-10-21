@@ -56,7 +56,7 @@ class SignOutWaiter : public SigninManagerBase::Observer {
       : seen_(false), running_(false), scoped_observer_(this) {
     scoped_observer_.Add(signin_manager);
   }
-  virtual ~SignOutWaiter() {}
+  ~SignOutWaiter() override {}
 
   void Wait() {
     if (seen_)
@@ -68,8 +68,8 @@ class SignOutWaiter : public SigninManagerBase::Observer {
     EXPECT_TRUE(seen_);
   }
 
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override {
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override {
     seen_ = true;
     if (!running_)
       return;

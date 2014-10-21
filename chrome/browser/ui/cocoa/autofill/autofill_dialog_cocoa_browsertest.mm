@@ -41,9 +41,9 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         metric_logger_(metric_logger) ,
         runner_(runner) {}
 
-  virtual ~TestAutofillDialogController() {}
+  ~TestAutofillDialogController() override {}
 
-  virtual void ViewClosed() override {
+  void ViewClosed() override {
     DCHECK(runner_.get());
     runner_->Quit();
     AutofillDialogControllerImpl::ViewClosed();
@@ -56,7 +56,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
  private:
   // To specify our own metric logger.
-  virtual const AutofillMetrics& GetMetricLogger() const override {
+  const AutofillMetrics& GetMetricLogger() const override {
     return metric_logger_;
   }
 
@@ -72,7 +72,7 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
 
   virtual ~AutofillDialogCocoaBrowserTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
     autofill::test::DisableSystemServices(browser()->profile()->GetPrefs());
 

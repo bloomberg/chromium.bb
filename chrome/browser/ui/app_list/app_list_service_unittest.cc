@@ -42,38 +42,29 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
   }
 
   // AppListService overrides:
-  virtual Profile* GetCurrentAppListProfile() override {
+  Profile* GetCurrentAppListProfile() override {
     // We don't return showing_for_profile_ here because that is only defined if
     // the app list is visible.
     return NULL;
   }
 
-  virtual void CreateForProfile(Profile* requested_profile) override {
-  }
+  void CreateForProfile(Profile* requested_profile) override {}
 
-  virtual void ShowForProfile(Profile* requested_profile) override {
+  void ShowForProfile(Profile* requested_profile) override {
     showing_for_profile_ = requested_profile;
     RecordAppListLaunch();
   }
 
-  virtual void DismissAppList() override {
-    showing_for_profile_ = NULL;
-  }
+  void DismissAppList() override { showing_for_profile_ = NULL; }
 
-  virtual bool IsAppListVisible() const override {
-    return !!showing_for_profile_;
-  }
+  bool IsAppListVisible() const override { return !!showing_for_profile_; }
 
-  virtual gfx::NativeWindow GetAppListWindow() override {
-    return NULL;
-  }
+  gfx::NativeWindow GetAppListWindow() override { return NULL; }
 
-  virtual AppListControllerDelegate* GetControllerDelegate() override {
-    return NULL;
-  }
+  AppListControllerDelegate* GetControllerDelegate() override { return NULL; }
 
   // AppListServiceImpl overrides:
-  virtual void DestroyAppList() override { ++destroy_app_list_call_count_; }
+  void DestroyAppList() override { ++destroy_app_list_call_count_; }
 
  private:
   Profile* showing_for_profile_;

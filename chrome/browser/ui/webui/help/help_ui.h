@@ -10,7 +10,7 @@
 class HelpUI : public content::WebUIController {
  public:
   explicit HelpUI(content::WebUI* web_ui);
-  virtual ~HelpUI();
+  ~HelpUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HelpUI);

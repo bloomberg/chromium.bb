@@ -67,21 +67,21 @@ class TaskManagerMac : public TaskManagerModelObserver,
                        public TableRowNSImageCache::Table {
  public:
   explicit TaskManagerMac(TaskManager* task_manager);
-  virtual ~TaskManagerMac();
+  ~TaskManagerMac() override;
 
   // TaskManagerModelObserver
-  virtual void OnModelChanged() override;
-  virtual void OnItemsChanged(int start, int length) override;
-  virtual void OnItemsAdded(int start, int length) override;
-  virtual void OnItemsRemoved(int start, int length) override;
+  void OnModelChanged() override;
+  void OnItemsChanged(int start, int length) override;
+  void OnItemsAdded(int start, int length) override;
+  void OnItemsRemoved(int start, int length) override;
 
   // Called by the cocoa window controller when its window closes and the
   // controller destroyed itself. Informs the model to stop updating.
   void WindowWasClosed();
 
   // TableRowNSImageCache::Table
-  virtual int RowCount() const override;
-  virtual gfx::ImageSkia GetIcon(int r) const override;
+  int RowCount() const override;
+  gfx::ImageSkia GetIcon(int r) const override;
 
   // Creates the task manager if it doesn't exist; otherwise, it activates the
   // existing task manager window.

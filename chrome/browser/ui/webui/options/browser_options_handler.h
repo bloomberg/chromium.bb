@@ -65,57 +65,56 @@ class BrowserOptionsHandler
       public content::NotificationObserver {
  public:
   BrowserOptionsHandler();
-  virtual ~BrowserOptionsHandler();
+  ~BrowserOptionsHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* values) override;
-  virtual void PageLoadStarted() override;
-  virtual void InitializeHandler() override;
-  virtual void InitializePage() override;
-  virtual void RegisterMessages() override;
-  virtual void Uninitialize() override;
+  void GetLocalizedValues(base::DictionaryValue* values) override;
+  void PageLoadStarted() override;
+  void InitializeHandler() override;
+  void InitializePage() override;
+  void RegisterMessages() override;
+  void Uninitialize() override;
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
   // SigninManagerBase::Observer implementation.
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // ShellIntegration::DefaultWebClientObserver implementation.
-  virtual void SetDefaultWebClientUIState(
+  void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) override;
-  virtual bool IsInteractiveSetDefaultPermitted() override;
+  bool IsInteractiveSetDefaultPermitted() override;
 
   // TemplateURLServiceObserver implementation.
-  virtual void OnTemplateURLServiceChanged() override;
+  void OnTemplateURLServiceChanged() override;
 
   // extensions::ExtensionRegistryObserver:
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
-  virtual void OnExtensionUnloaded(
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 
  private:
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
   void OnCloudPrintPrefsChanged();
 #endif
 
   // SelectFileDialog::Listener implementation
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override;
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
 
 #if defined(OS_CHROMEOS)
   // PointerDeviceObserver::Observer implementation.

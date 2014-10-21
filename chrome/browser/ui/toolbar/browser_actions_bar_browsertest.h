@@ -22,9 +22,9 @@ class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
   BrowserActionsBarBrowserTest();
   virtual ~BrowserActionsBarBrowserTest();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   BrowserActionTestUtil* browser_actions_bar() {
     return browser_actions_bar_.get();

@@ -46,7 +46,7 @@ class IdentityInternalsTokenRevoker;
 class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
  public:
   IdentityInternalsUIMessageHandler();
-  virtual ~IdentityInternalsUIMessageHandler();
+  ~IdentityInternalsUIMessageHandler() override;
 
   // Ensures that a proper clean up happens after a token is revoked. That
   // includes deleting the |token_revoker|, removing the token from Identity API
@@ -54,7 +54,7 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   void OnTokenRevokerDone(IdentityInternalsTokenRevoker* token_revoker);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Gets the name of an extension referred to by |token_cache_key| as a string.
@@ -110,7 +110,7 @@ class IdentityInternalsTokenRevoker : public GaiaAuthConsumer {
                                 const std::string& access_token,
                                 Profile* profile,
                                 IdentityInternalsUIMessageHandler* consumer);
-  virtual ~IdentityInternalsTokenRevoker();
+  ~IdentityInternalsTokenRevoker() override;
 
   // Returns the access token being revoked.
   const std::string& access_token() const { return access_token_; }
@@ -119,7 +119,7 @@ class IdentityInternalsTokenRevoker : public GaiaAuthConsumer {
   const std::string& extension_id() const { return extension_id_; }
 
   // GaiaAuthConsumer implementation.
-  virtual void OnOAuth2RevokeTokenCompleted() override;
+  void OnOAuth2RevokeTokenCompleted() override;
 
  private:
   // An object used to start a token revoke request.

@@ -50,10 +50,10 @@ class MockWrenchMenuModel : public WrenchMenuModel {
 
 class DummyRouter : public browser_sync::LocalSessionEventRouter {
  public:
-  virtual ~DummyRouter() {}
-  virtual void StartRoutingTo(
+  ~DummyRouter() override {}
+  void StartRoutingTo(
       browser_sync::LocalSessionEventHandler* handler) override {}
-  virtual void Stop() override {}
+  void Stop() override {}
 };
 
 class WrenchMenuControllerTest

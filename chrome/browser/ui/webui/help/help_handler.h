@@ -30,17 +30,18 @@ class HelpHandler : public content::WebUIMessageHandler,
                     public content::NotificationObserver {
  public:
   HelpHandler();
-  virtual ~HelpHandler();
+  ~HelpHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Adds string values for the UI to |localized_strings|.
   static void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
   // NotificationObserver implementation.
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns the browser version as a string.
   static base::string16 BuildBrowserVersionString();

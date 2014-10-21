@@ -21,7 +21,7 @@ class NTPUserDataLogger
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NTPUserDataLogger> {
  public:
-  virtual ~NTPUserDataLogger();
+  ~NTPUserDataLogger() override;
 
   static NTPUserDataLogger* GetOrCreateFromWebContents(
       content::WebContents* content);
@@ -52,7 +52,7 @@ class NTPUserDataLogger
   void LogMostVisitedNavigation(int position, const base::string16& provider);
 
   // content::WebContentsObserver override
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
 
  protected:

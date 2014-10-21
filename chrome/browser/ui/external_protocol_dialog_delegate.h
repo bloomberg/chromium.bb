@@ -18,16 +18,16 @@ class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate {
   explicit ExternalProtocolDialogDelegate(const GURL& url,
                                           int render_process_host_id,
                                           int tab_contents_id);
-  virtual ~ExternalProtocolDialogDelegate();
+  ~ExternalProtocolDialogDelegate() override;
 
   const base::string16& program_name() const { return program_name_; }
 
-  virtual void DoAccept(const GURL& url, bool dont_block) const override;
-  virtual void DoCancel(const GURL& url, bool dont_block) const override;
+  void DoAccept(const GURL& url, bool dont_block) const override;
+  void DoCancel(const GURL& url, bool dont_block) const override;
 
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetCheckboxText() const override;
-  virtual base::string16 GetTitleText() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetCheckboxText() const override;
+  base::string16 GetTitleText() const override;
 
  private:
   int render_process_host_id_;

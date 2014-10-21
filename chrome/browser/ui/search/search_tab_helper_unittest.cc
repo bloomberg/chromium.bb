@@ -78,7 +78,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     SearchTabHelper::CreateForWebContents(web_contents());
   }
 
-  virtual content::BrowserContext* CreateBrowserContext() override {
+  content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               FakeSigninManagerBase::Build);
@@ -285,7 +285,7 @@ class TabTitleObserver : public content::WebContentsObserver {
   base::string16 title_on_commit() { return title_on_commit_; }
 
  private:
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* /* render_frame_host */,
       const GURL& /* validated_url */,
       bool /* is_error_page */,
@@ -293,7 +293,7 @@ class TabTitleObserver : public content::WebContentsObserver {
     title_on_start_ = web_contents()->GetTitle();
   }
 
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& /* details */,
       const content::FrameNavigateParams& /* params */) override {
     title_on_commit_ = web_contents()->GetTitle();

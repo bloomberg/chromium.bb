@@ -17,7 +17,7 @@ class InfoBarCocoa : public infobars::InfoBar {
  public:
   explicit InfoBarCocoa(scoped_ptr<infobars::InfoBarDelegate> delegate);
 
-  virtual ~InfoBarCocoa();
+  ~InfoBarCocoa() override;
 
   InfoBarController* controller() const { return controller_; }
 

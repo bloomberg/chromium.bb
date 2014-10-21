@@ -125,10 +125,10 @@ class AboutMemoryHandler : public MemoryDetails {
       : callback_(callback) {
   }
 
-  virtual void OnDetailsAvailable() override;
+  void OnDetailsAvailable() override;
 
  private:
-  virtual ~AboutMemoryHandler() {}
+  ~AboutMemoryHandler() override {}
 
   void BindProcessMetrics(base::DictionaryValue* data,
                           ProcessMemoryInformation* info);

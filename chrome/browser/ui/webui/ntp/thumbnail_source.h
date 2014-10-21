@@ -28,20 +28,19 @@ class ThumbnailSource : public content::URLDataSource {
   ThumbnailSource(Profile* profile, bool capture_thumbnails);
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string& path) const override;
-  virtual base::MessageLoop* MessageLoopForRequestPath(
+  std::string GetMimeType(const std::string& path) const override;
+  base::MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const override;
-  virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const override;
+  bool ShouldServiceRequest(const net::URLRequest* request) const override;
 
  private:
-  virtual ~ThumbnailSource();
+  ~ThumbnailSource() override;
 
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.

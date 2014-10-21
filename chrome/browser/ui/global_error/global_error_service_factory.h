@@ -26,12 +26,12 @@ class GlobalErrorServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<GlobalErrorServiceFactory>;
 
   GlobalErrorServiceFactory();
-  virtual ~GlobalErrorServiceFactory();
+  ~GlobalErrorServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorServiceFactory);

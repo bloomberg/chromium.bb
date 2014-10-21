@@ -93,10 +93,10 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
  public:
   explicit VoiceSearchDomHandler(Profile* profile) : profile_(profile) {}
 
-  virtual ~VoiceSearchDomHandler() {}
+  ~VoiceSearchDomHandler() override {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override {
+  void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "requestVoiceSearchInfo",
         base::Bind(&VoiceSearchDomHandler::HandleRequestVoiceSearchInfo,

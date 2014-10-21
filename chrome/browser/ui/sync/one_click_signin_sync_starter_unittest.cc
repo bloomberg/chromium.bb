@@ -51,7 +51,7 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
   }
 
   // ChromeRenderViewHostTestHarness:
-  virtual content::BrowserContext* CreateBrowserContext() override {
+  content::BrowserContext* CreateBrowserContext() override {
     // Create the sign in manager required by OneClickSigninSyncStarter.
     TestingProfile::Builder builder;
     builder.AddTestingFactory(

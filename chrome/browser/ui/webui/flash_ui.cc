@@ -82,16 +82,16 @@ class FlashDOMHandler : public WebUIMessageHandler,
                         public content::GpuDataManagerObserver {
  public:
   FlashDOMHandler();
-  virtual ~FlashDOMHandler();
+  ~FlashDOMHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // CrashUploadList::Delegate implementation.
-  virtual void OnUploadListAvailable() override;
+  void OnUploadListAvailable() override;
 
   // GpuDataManager::Observer implementation.
-  virtual void OnGpuInfoUpdate() override;
+  void OnGpuInfoUpdate() override;
 
   // Callback for the "requestFlashInfo" message.
   void HandleRequestFlashInfo(const base::ListValue* args);

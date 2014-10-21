@@ -19,12 +19,12 @@ class UMABrowsingActivityObserver : public content::NotificationObserver {
 
  private:
   UMABrowsingActivityObserver();
-  virtual ~UMABrowsingActivityObserver();
+  ~UMABrowsingActivityObserver() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Counts the number of active RenderProcessHosts and logs them.
   void LogRenderProcessHostCount() const;

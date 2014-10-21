@@ -25,15 +25,15 @@ class WindowedInstallDialogController
       const ExtensionInstallPrompt::ShowParams& show_params,
       ExtensionInstallPrompt::Delegate* delegate,
       scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
-  virtual ~WindowedInstallDialogController();
+  ~WindowedInstallDialogController() override;
 
   // Invoked by the -[NSWindow windowWillClose:] notification after a dialog
   // choice is invoked. Releases owned resources, then deletes |this|.
   void OnWindowClosing();
 
   // ExtensionInstallPrompt::Delegate:
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowedInstallDialogControllerBrowserTest,

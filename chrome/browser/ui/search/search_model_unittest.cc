@@ -16,10 +16,10 @@ namespace {
 class MockSearchModelObserver : public SearchModelObserver {
  public:
   MockSearchModelObserver();
-  virtual ~MockSearchModelObserver();
+  ~MockSearchModelObserver() override;
 
-  virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) override;
+  void ModelChanged(const SearchModel::State& old_state,
+                    const SearchModel::State& new_state) override;
 
   void VerifySearchModelStates(const SearchModel::State& expected_old_state,
                                const SearchModel::State& expected_new_state);

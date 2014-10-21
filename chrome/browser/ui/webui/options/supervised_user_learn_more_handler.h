@@ -18,11 +18,10 @@ namespace options {
 class SupervisedUserLearnMoreHandler : public OptionsPageUIHandler {
  public:
   SupervisedUserLearnMoreHandler();
-  virtual ~SupervisedUserLearnMoreHandler();
+  ~SupervisedUserLearnMoreHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserLearnMoreHandler);

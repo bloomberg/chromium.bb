@@ -20,10 +20,10 @@ class DevToolsUI : public content::WebUIController,
   static GURL GetProxyURL(const std::string& frontend_url);
 
   explicit DevToolsUI(content::WebUI* web_ui);
-  virtual ~DevToolsUI();
+  ~DevToolsUI() override;
 
   // content::WebContentsObserver overrides.
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
 
  private:

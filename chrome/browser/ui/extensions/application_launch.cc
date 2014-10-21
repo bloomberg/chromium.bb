@@ -72,8 +72,7 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
         callback_(callback) {
   }
 
-  virtual ~EnableViaAppListFlow() {
-  }
+  ~EnableViaAppListFlow() override {}
 
   void Run() {
     DCHECK(!service_->IsExtensionEnabled(extension_id_));
@@ -90,7 +89,7 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
   }
 
   // ExtensionEnableFlowDelegate overrides.
-  virtual void ExtensionEnableFlowFinished() override {
+  void ExtensionEnableFlowFinished() override {
     const Extension* extension =
         service_->GetExtensionById(extension_id_, false);
     if (!extension)
@@ -99,9 +98,7 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
     delete this;
   }
 
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) override {
-    delete this;
-  }
+  void ExtensionEnableFlowAborted(bool user_initiated) override { delete this; }
 
   ExtensionService* service_;
   Profile* profile_;

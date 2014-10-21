@@ -42,47 +42,44 @@ class ChromeShellDelegate : public ash::ShellDelegate,
                             public content::NotificationObserver {
  public:
   ChromeShellDelegate();
-  virtual ~ChromeShellDelegate();
+  ~ChromeShellDelegate() override;
 
   static ChromeShellDelegate* instance() { return instance_; }
 
   // ash::ShellDelegate overrides;
-  virtual bool IsFirstRunAfterBoot() const override;
-  virtual bool IsMultiProfilesEnabled() const override;
-  virtual bool IsIncognitoAllowed() const override;
-  virtual bool IsRunningInForcedAppMode() const override;
-  virtual bool IsMultiAccountEnabled() const override;
-  virtual void PreInit() override;
-  virtual void PreShutdown() override;
-  virtual void Exit() override;
-  virtual keyboard::KeyboardControllerProxy*
-      CreateKeyboardControllerProxy() override;
-  virtual void VirtualKeyboardActivated(bool activated) override;
-  virtual void AddVirtualKeyboardStateObserver(
+  bool IsFirstRunAfterBoot() const override;
+  bool IsMultiProfilesEnabled() const override;
+  bool IsIncognitoAllowed() const override;
+  bool IsRunningInForcedAppMode() const override;
+  bool IsMultiAccountEnabled() const override;
+  void PreInit() override;
+  void PreShutdown() override;
+  void Exit() override;
+  keyboard::KeyboardControllerProxy* CreateKeyboardControllerProxy() override;
+  void VirtualKeyboardActivated(bool activated) override;
+  void AddVirtualKeyboardStateObserver(
       ash::VirtualKeyboardStateObserver* observer) override;
-  virtual void RemoveVirtualKeyboardStateObserver(
+  void RemoveVirtualKeyboardStateObserver(
       ash::VirtualKeyboardStateObserver* observer) override;
-  virtual content::BrowserContext* GetActiveBrowserContext() override;
-  virtual app_list::AppListViewDelegate* GetAppListViewDelegate() override;
-  virtual ash::ShelfDelegate* CreateShelfDelegate(
-      ash::ShelfModel* model) override;
-  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
-  virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
-  virtual ash::SessionStateDelegate* CreateSessionStateDelegate() override;
-  virtual ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
-  virtual ash::NewWindowDelegate* CreateNewWindowDelegate() override;
-  virtual ash::MediaDelegate* CreateMediaDelegate() override;
-  virtual ui::MenuModel* CreateContextMenu(
-      aura::Window* root,
-      ash::ShelfItemDelegate* item_delegate,
-      ash::ShelfItem* item) override;
-  virtual ash::GPUSupport* CreateGPUSupport() override;
-  virtual base::string16 GetProductName() const override;
+  content::BrowserContext* GetActiveBrowserContext() override;
+  app_list::AppListViewDelegate* GetAppListViewDelegate() override;
+  ash::ShelfDelegate* CreateShelfDelegate(ash::ShelfModel* model) override;
+  ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
+  ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
+  ash::SessionStateDelegate* CreateSessionStateDelegate() override;
+  ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
+  ash::NewWindowDelegate* CreateNewWindowDelegate() override;
+  ash::MediaDelegate* CreateMediaDelegate() override;
+  ui::MenuModel* CreateContextMenu(aura::Window* root,
+                                   ash::ShelfItemDelegate* item_delegate,
+                                   ash::ShelfItem* item) override;
+  ash::GPUSupport* CreateGPUSupport() override;
+  base::string16 GetProductName() const override;
 
   // content::NotificationObserver override:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   void PlatformInit();

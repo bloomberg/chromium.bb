@@ -15,7 +15,7 @@ class CoreTabHelperDelegate;
 class CoreTabHelper : public content::WebContentsObserver,
                       public content::WebContentsUserData<CoreTabHelper> {
  public:
-  virtual ~CoreTabHelper();
+  ~CoreTabHelper() override;
 
   // Initial title assigned to NavigationEntries from Navigate.
   static base::string16 GetDefaultTitle();
@@ -56,15 +56,13 @@ class CoreTabHelper : public content::WebContentsObserver,
   friend class content::WebContentsUserData<CoreTabHelper>;
 
   // content::WebContentsObserver overrides:
-  virtual void DidStartLoading(
-      content::RenderViewHost* render_view_host) override;
-  virtual void WasShown() override;
-  virtual void WebContentsDestroyed() override;
-  virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
-  virtual void BeforeUnloadDialogCancelled() override;
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) override;
+  void DidStartLoading(content::RenderViewHost* render_view_host) override;
+  void WasShown() override;
+  void WebContentsDestroyed() override;
+  void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
+  void BeforeUnloadDialogCancelled() override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
   void OnRequestThumbnailForContextNodeACK(const SkBitmap& bitmap,
                                            const gfx::Size& original_size);

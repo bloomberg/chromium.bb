@@ -20,11 +20,11 @@ class SearchResourceManager : public SpeechUIModelObserver {
   SearchResourceManager(Profile* profile,
                         SearchBoxModel* search_box,
                         SpeechUIModel* speech_ui);
-  virtual ~SearchResourceManager();
+  ~SearchResourceManager() override;
 
  private:
   // SpeechUIModelObserver overrides:
-  virtual void OnSpeechRecognitionStateChanged(
+  void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
 
   SearchBoxModel* search_box_;

@@ -57,13 +57,13 @@ class StartPageService::ProfileDestroyObserver
                    chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::Source<Profile>(service_->profile()));
   }
-  virtual ~ProfileDestroyObserver() {}
+  ~ProfileDestroyObserver() override {}
 
  private:
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
     DCHECK_EQ(service_->profile(), content::Source<Profile>(source).ptr());
     service_->Shutdown();
@@ -79,9 +79,9 @@ class StartPageService::StartPageWebContentsDelegate
     : public content::WebContentsDelegate {
  public:
   StartPageWebContentsDelegate() {}
-  virtual ~StartPageWebContentsDelegate() {}
+  ~StartPageWebContentsDelegate() override {}
 
-  virtual void RequestMediaAccessPermission(
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override {
@@ -89,10 +89,9 @@ class StartPageService::StartPageWebContentsDelegate
       NOTREACHED() << "Media stream not allowed for WebUI";
   }
 
-  virtual bool CheckMediaAccessPermission(
-      content::WebContents* web_contents,
-      const GURL& security_origin,
-      content::MediaStreamType type) override {
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override {
     return MediaCaptureDevicesDispatcher::GetInstance()
         ->CheckMediaAccessPermission(web_contents, security_origin, type);
   }

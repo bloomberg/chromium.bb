@@ -14,7 +14,7 @@ namespace app_list {
 class StartPageUI : public content::WebUIController {
  public:
   explicit StartPageUI(content::WebUI* web_ui);
-  virtual ~StartPageUI();
+  ~StartPageUI() override;
 
  private:
   // Initializes the data source used for this webui.

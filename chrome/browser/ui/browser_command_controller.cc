@@ -850,11 +850,11 @@ class BrowserCommandController::InterstitialObserver
         controller_(controller) {
   }
 
-  virtual void DidAttachInterstitialPage() override {
+  void DidAttachInterstitialPage() override {
     controller_->UpdateCommandsForTabState();
   }
 
-  virtual void DidDetachInterstitialPage() override {
+  void DidDetachInterstitialPage() override {
     controller_->UpdateCommandsForTabState();
   }
 

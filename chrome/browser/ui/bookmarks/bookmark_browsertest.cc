@@ -37,9 +37,9 @@ class TestBookmarkTabHelperDelegate : public BookmarkTabHelperDelegate {
   TestBookmarkTabHelperDelegate()
       : starred_(false) {
   }
-  virtual ~TestBookmarkTabHelperDelegate() {}
+  ~TestBookmarkTabHelperDelegate() override {}
 
-  virtual void URLStarredChanged(content::WebContents*, bool starred) override {
+  void URLStarredChanged(content::WebContents*, bool starred) override {
     starred_ = starred;
   }
   bool is_starred() const { return starred_; }

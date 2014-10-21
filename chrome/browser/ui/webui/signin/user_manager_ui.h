@@ -20,7 +20,7 @@ class WebUIDataSource;
 class UserManagerUI : public content::WebUIController {
  public:
   explicit UserManagerUI(content::WebUI* web_ui);
-  virtual ~UserManagerUI();
+  ~UserManagerUI() override;
 
  private:
   content::WebUIDataSource* CreateUIDataSource(

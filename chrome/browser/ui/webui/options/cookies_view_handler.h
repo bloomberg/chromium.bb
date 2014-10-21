@@ -18,26 +18,25 @@ class CookiesViewHandler : public OptionsPageUIHandler,
                            public CookiesTreeModel::Observer {
  public:
   CookiesViewHandler();
-  virtual ~CookiesViewHandler();
+  ~CookiesViewHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void RegisterMessages() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void RegisterMessages() override;
 
   // CookiesTreeModel::Observer implementation.
-  virtual void TreeNodesAdded(ui::TreeModel* model,
-                              ui::TreeModelNode* parent,
-                              int start,
-                              int count) override;
-  virtual void TreeNodesRemoved(ui::TreeModel* model,
-                                ui::TreeModelNode* parent,
-                                int start,
-                                int count) override;
-  virtual void TreeNodeChanged(ui::TreeModel* model,
-                               ui::TreeModelNode* node) override {}
-  virtual void TreeModelBeginBatch(CookiesTreeModel* model) override;
-  virtual void TreeModelEndBatch(CookiesTreeModel* model) override;
+  void TreeNodesAdded(ui::TreeModel* model,
+                      ui::TreeModelNode* parent,
+                      int start,
+                      int count) override;
+  void TreeNodesRemoved(ui::TreeModel* model,
+                        ui::TreeModelNode* parent,
+                        int start,
+                        int count) override;
+  void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
+  }
+  void TreeModelBeginBatch(CookiesTreeModel* model) override;
+  void TreeModelEndBatch(CookiesTreeModel* model) override;
 
  private:
   // Creates the CookiesTreeModel if neccessary.

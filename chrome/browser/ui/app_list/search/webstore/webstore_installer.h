@@ -23,7 +23,7 @@ class WebstoreInstaller : public extensions::WebstoreInstallWithPrompt {
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreInstaller>;
-  virtual ~WebstoreInstaller();
+  ~WebstoreInstaller() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreInstaller);
 };

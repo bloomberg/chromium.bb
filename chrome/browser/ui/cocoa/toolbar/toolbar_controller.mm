@@ -109,16 +109,15 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
       : controller_(controller),
         badge_controller_([controller browser]->profile(), this) {
   }
-  virtual ~NotificationBridge() {
-  }
+  ~NotificationBridge() override {}
 
   void UpdateBadgeSeverity() {
     badge_controller_.UpdateDelegate();
   }
 
-  virtual void UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
-                                   WrenchIconPainter::Severity severity,
-                                   bool animate) override {
+  void UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
+                           WrenchIconPainter::Severity severity,
+                           bool animate) override {
     [controller_ updateWrenchButtonSeverity:severity animate:animate];
   }
 

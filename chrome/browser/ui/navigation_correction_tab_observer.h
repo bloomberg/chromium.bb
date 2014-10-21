@@ -21,7 +21,7 @@ class NavigationCorrectionTabObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NavigationCorrectionTabObserver> {
  public:
-  virtual ~NavigationCorrectionTabObserver();
+  ~NavigationCorrectionTabObserver() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -30,8 +30,7 @@ class NavigationCorrectionTabObserver
   friend class content::WebContentsUserData<NavigationCorrectionTabObserver>;
 
   // content::WebContentsObserver overrides:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   // Internal helpers ----------------------------------------------------------
 

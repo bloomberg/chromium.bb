@@ -20,12 +20,12 @@ namespace extensions {
 class InstallExtensionHandler : public content::WebUIMessageHandler {
  public:
   InstallExtensionHandler();
-  virtual ~InstallExtensionHandler();
+  ~InstallExtensionHandler() override;
 
   void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Handles a notification from the JavaScript that a drag has started. This is

@@ -10,7 +10,7 @@
 class TranslateInternalsUI : public content::WebUIController {
  public:
   explicit TranslateInternalsUI(content::WebUI* web_ui);
-  virtual ~TranslateInternalsUI() {}
+  ~TranslateInternalsUI() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateInternalsUI);

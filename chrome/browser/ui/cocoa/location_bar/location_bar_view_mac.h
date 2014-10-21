@@ -53,38 +53,38 @@ class LocationBarViewMac : public LocationBar,
                      CommandUpdater* command_updater,
                      Profile* profile,
                      Browser* browser);
-  virtual ~LocationBarViewMac();
+  ~LocationBarViewMac() override;
 
   // Overridden from LocationBar:
-  virtual void ShowFirstRunBubble() override;
-  virtual GURL GetDestinationURL() const override;
-  virtual WindowOpenDisposition GetWindowOpenDisposition() const override;
-  virtual ui::PageTransition GetPageTransition() const override;
-  virtual void AcceptInput() override;
-  virtual void FocusLocation(bool select_all) override;
-  virtual void FocusSearch() override;
-  virtual void UpdateContentSettingsIcons() override;
-  virtual void UpdateManagePasswordsIconAndBubble() override;
-  virtual void UpdatePageActions() override;
-  virtual void InvalidatePageActions() override;
-  virtual void UpdateBookmarkStarVisibility() override;
-  virtual bool ShowPageActionPopup(const extensions::Extension* extension,
-                                   bool grant_active_tab) override;
-  virtual void UpdateOpenPDFInReaderPrompt() override;
-  virtual void UpdateGeneratedCreditCardView() override;
-  virtual void SaveStateToContents(content::WebContents* contents) override;
-  virtual void Revert() override;
-  virtual const OmniboxView* GetOmniboxView() const override;
-  virtual OmniboxView* GetOmniboxView() override;
-  virtual LocationBarTesting* GetLocationBarForTesting() override;
+  void ShowFirstRunBubble() override;
+  GURL GetDestinationURL() const override;
+  WindowOpenDisposition GetWindowOpenDisposition() const override;
+  ui::PageTransition GetPageTransition() const override;
+  void AcceptInput() override;
+  void FocusLocation(bool select_all) override;
+  void FocusSearch() override;
+  void UpdateContentSettingsIcons() override;
+  void UpdateManagePasswordsIconAndBubble() override;
+  void UpdatePageActions() override;
+  void InvalidatePageActions() override;
+  void UpdateBookmarkStarVisibility() override;
+  bool ShowPageActionPopup(const extensions::Extension* extension,
+                           bool grant_active_tab) override;
+  void UpdateOpenPDFInReaderPrompt() override;
+  void UpdateGeneratedCreditCardView() override;
+  void SaveStateToContents(content::WebContents* contents) override;
+  void Revert() override;
+  const OmniboxView* GetOmniboxView() const override;
+  OmniboxView* GetOmniboxView() override;
+  LocationBarTesting* GetLocationBarForTesting() override;
 
   // Overridden from LocationBarTesting:
-  virtual int PageActionCount() override;
-  virtual int PageActionVisibleCount() override;
-  virtual ExtensionAction* GetPageAction(size_t index) override;
-  virtual ExtensionAction* GetVisiblePageAction(size_t index) override;
-  virtual void TestPageActionPressed(size_t index) override;
-  virtual bool GetBookmarkStarVisibility() override;
+  int PageActionCount() override;
+  int PageActionVisibleCount() override;
+  ExtensionAction* GetPageAction(size_t index) override;
+  ExtensionAction* GetVisiblePageAction(size_t index) override;
+  void TestPageActionPressed(size_t index) override;
+  bool GetBookmarkStarVisibility() override;
 
   // Set/Get the editable state of the field.
   void SetEditable(bool editable);
@@ -154,15 +154,15 @@ class LocationBarViewMac : public LocationBar,
   NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
 
   // OmniboxEditController:
-  virtual void Update(const content::WebContents* contents) override;
-  virtual void OnChanged() override;
-  virtual void OnSetFocus() override;
-  virtual void ShowURL() override;
-  virtual void EndOriginChipAnimations(bool cancel_fade) override;
-  virtual InstantController* GetInstant() override;
-  virtual content::WebContents* GetWebContents() override;
-  virtual ToolbarModel* GetToolbarModel() override;
-  virtual const ToolbarModel* GetToolbarModel() const override;
+  void Update(const content::WebContents* contents) override;
+  void OnChanged() override;
+  void OnSetFocus() override;
+  void ShowURL() override;
+  void EndOriginChipAnimations(bool cancel_fade) override;
+  InstantController* GetInstant() override;
+  content::WebContents* GetWebContents() override;
+  ToolbarModel* GetToolbarModel() override;
+  const ToolbarModel* GetToolbarModel() const override;
 
   NSImage* GetKeywordImage(const base::string16& keyword);
 
@@ -173,14 +173,14 @@ class LocationBarViewMac : public LocationBar,
   }
 
   // SearchModelObserver:
-  virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) override;
+  void ModelChanged(const SearchModel::State& old_state,
+                    const SearchModel::State& new_state) override;
 
   Browser* browser() const { return browser_; }
 
  protected:
   // OmniboxEditController:
-  virtual void HideURL() override;
+  void HideURL() override;
 
  private:
   friend ZoomDecorationTest;

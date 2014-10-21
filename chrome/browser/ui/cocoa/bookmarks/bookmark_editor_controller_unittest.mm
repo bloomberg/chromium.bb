@@ -457,7 +457,7 @@ TEST_F(BookmarkEditorControllerTreeTest, AddFolderWithFolderSelected) {
 class BookmarkEditorControllerTreeNoNodeTest :
     public BookmarkEditorControllerTreeTest {
  public:
-  virtual BookmarkEditorController* CreateController() override {
+  BookmarkEditorController* CreateController() override {
     return [[BookmarkEditorController alloc]
                initWithParentWindow:test_window()
                             profile:profile()

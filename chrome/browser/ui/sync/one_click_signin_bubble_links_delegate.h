@@ -15,12 +15,12 @@ class OneClickSigninBubbleLinksDelegate : public OneClickSigninBubbleDelegate {
  public:
   // |browser| must outlive the delegate.
   explicit OneClickSigninBubbleLinksDelegate(Browser* browser);
-  virtual ~OneClickSigninBubbleLinksDelegate();
+  ~OneClickSigninBubbleLinksDelegate() override;
 
  private:
   // OneClickSigninBubbleDelegate:
-  virtual void OnLearnMoreLinkClicked(bool is_dialog) override;
-  virtual void OnAdvancedLinkClicked() override;
+  void OnLearnMoreLinkClicked(bool is_dialog) override;
+  void OnAdvancedLinkClicked() override;
 
   // Browser in which the links should be opened.
   Browser* browser_;

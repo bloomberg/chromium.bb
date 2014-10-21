@@ -13,7 +13,7 @@
 class SyncInternalsUI : public content::WebUIController {
  public:
   explicit SyncInternalsUI(content::WebUI* web_ui);
-  virtual ~SyncInternalsUI();
+  ~SyncInternalsUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncInternalsUI);

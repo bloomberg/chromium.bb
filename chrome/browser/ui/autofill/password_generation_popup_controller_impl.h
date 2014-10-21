@@ -55,7 +55,7 @@ class PasswordGenerationPopupControllerImpl
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
       gfx::NativeView container_view);
-  virtual ~PasswordGenerationPopupControllerImpl();
+  ~PasswordGenerationPopupControllerImpl() override;
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
   // If |display_password| is true, a generated password is shown that can be
@@ -86,24 +86,24 @@ class PasswordGenerationPopupControllerImpl
 
  private:
   // PasswordGenerationPopupController implementation:
-  virtual void Hide() override;
-  virtual void ViewDestroyed() override;
-  virtual void SetSelectionAtPoint(const gfx::Point& point) override;
-  virtual bool AcceptSelectedLine() override;
-  virtual void SelectionCleared() override;
-  virtual void PasswordAccepted() override;
-  virtual void OnSavedPasswordsLinkClicked() override;
-  virtual int GetMinimumWidth() override;
-  virtual gfx::NativeView container_view() override;
-  virtual const gfx::Rect& popup_bounds() const override;
-  virtual const gfx::RectF& element_bounds() const override;
-  virtual bool IsRTL() const override;
-  virtual bool display_password() const override;
-  virtual bool password_selected() const override;
-  virtual base::string16 password() const override;
-  virtual base::string16 SuggestedText() override;
-  virtual const base::string16& HelpText() override;
-  virtual const gfx::Range& HelpTextLinkRange() override;
+  void Hide() override;
+  void ViewDestroyed() override;
+  void SetSelectionAtPoint(const gfx::Point& point) override;
+  bool AcceptSelectedLine() override;
+  void SelectionCleared() override;
+  void PasswordAccepted() override;
+  void OnSavedPasswordsLinkClicked() override;
+  int GetMinimumWidth() override;
+  gfx::NativeView container_view() override;
+  const gfx::Rect& popup_bounds() const override;
+  const gfx::RectF& element_bounds() const override;
+  bool IsRTL() const override;
+  bool display_password() const override;
+  bool password_selected() const override;
+  base::string16 password() const override;
+  base::string16 SuggestedText() override;
+  const base::string16& HelpText() override;
+  const gfx::Range& HelpTextLinkRange() override;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> GetWeakPtr();
 

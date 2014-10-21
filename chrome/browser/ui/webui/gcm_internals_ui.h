@@ -11,7 +11,7 @@
 class GCMInternalsUI : public content::WebUIController {
  public:
   explicit GCMInternalsUI(content::WebUI* web_ui);
-  virtual ~GCMInternalsUI();
+  ~GCMInternalsUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMInternalsUI);

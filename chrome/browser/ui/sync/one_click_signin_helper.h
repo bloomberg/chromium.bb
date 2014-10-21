@@ -133,7 +133,7 @@ class OneClickSigninHelper
     SyncStarterWrapper(
         const OneClickSigninHelper::StartSyncArgs& args,
         OneClickSigninSyncStarter::StartSyncMode start_mode);
-    virtual ~SyncStarterWrapper();
+    ~SyncStarterWrapper() override;
 
     void Start();
 
@@ -150,15 +150,15 @@ class OneClickSigninHelper
         const std::string& refresh_token);
 
     // Overriden from SigninOAuthHelper::Consumer.
-    virtual void OnSigninOAuthInformationAvailable(
+    void OnSigninOAuthInformationAvailable(
         const std::string& email,
         const std::string& display_email,
         const std::string& refresh_token) override;
-    virtual void OnSigninOAuthInformationFailure(
+    void OnSigninOAuthInformationFailure(
         const GoogleServiceAuthError& error) override;
 
     // Overriden from chrome::BrowserListObserver.
-    virtual void OnBrowserRemoved(Browser* browser) override;
+    void OnBrowserRemoved(Browser* browser) override;
 
     OneClickSigninHelper::StartSyncArgs args_;
     chrome::HostDesktopType desktop_type_;
@@ -285,7 +285,7 @@ class OneClickSigninHelper
   OneClickSigninHelper(content::WebContents* web_contents,
                        password_manager::PasswordManager* password_manager);
 
-  virtual ~OneClickSigninHelper();
+  ~OneClickSigninHelper() override;
 
   // Returns true if the one-click signin feature can be offered at this time.
   // It can be offered if the io_data is not in an incognito window and if the
@@ -332,14 +332,13 @@ class OneClickSigninHelper
   void PasswordSubmitted(const autofill::PasswordForm& form);
 
   // content::WebContentsObserver overrides.
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) override;
+  void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
   OneClickSigninSyncStarter::Callback CreateSyncStarterCallback();
 

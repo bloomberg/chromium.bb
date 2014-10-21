@@ -31,13 +31,13 @@ class Extension;
 class ExtensionErrorHandler : public content::WebUIMessageHandler {
  public:
   explicit ExtensionErrorHandler(Profile* profile);
-  virtual ~ExtensionErrorHandler();
+  ~ExtensionErrorHandler() override;
 
   // Fetches the localized values for the page and deposits them into |source|.
   void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   friend class ManifestHighlightUnitTest;

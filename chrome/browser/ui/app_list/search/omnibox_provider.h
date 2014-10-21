@@ -23,18 +23,18 @@ class OmniboxProvider : public SearchProvider,
  public:
   explicit OmniboxProvider(Profile* profile,
                            AppListControllerDelegate* list_controller);
-  virtual ~OmniboxProvider();
+  ~OmniboxProvider() override;
 
   // SearchProvider overrides:
-  virtual void Start(const base::string16& query) override;
-  virtual void Stop() override;
+  void Start(const base::string16& query) override;
+  void Stop() override;
 
  private:
   // Populates result list from AutocompleteResult.
   void PopulateFromACResult(const AutocompleteResult& result);
 
   // AutocompleteControllerDelegate overrides:
-  virtual void OnResultChanged(bool default_match_changed) override;
+  void OnResultChanged(bool default_match_changed) override;
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;

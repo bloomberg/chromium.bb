@@ -18,7 +18,7 @@ namespace {
 class MockView : public PermissionBubbleView {
  public:
   MockView() : shown_(false), can_accept_updates_(true), delegate_(NULL) {}
-  virtual ~MockView() {}
+  ~MockView() override {}
 
   void Clear() {
     shown_ = false;
@@ -29,30 +29,21 @@ class MockView : public PermissionBubbleView {
   }
 
   // PermissionBubbleView:
-  virtual void SetDelegate(Delegate* delegate) override {
-    delegate_ = delegate;
-  }
+  void SetDelegate(Delegate* delegate) override { delegate_ = delegate; }
 
-  virtual void Show(
-      const std::vector<PermissionBubbleRequest*>& requests,
-      const std::vector<bool>& accept_state,
-      bool customization_state_) override {
+  void Show(const std::vector<PermissionBubbleRequest*>& requests,
+            const std::vector<bool>& accept_state,
+            bool customization_state_) override {
     shown_ = true;
     permission_requests_ = requests;
     permission_states_ = accept_state;
   }
 
-  virtual void Hide() override {
-    shown_ = false;
-  }
+  void Hide() override { shown_ = false; }
 
-  virtual bool CanAcceptRequestUpdate() override {
-    return can_accept_updates_;
-  }
+  bool CanAcceptRequestUpdate() override { return can_accept_updates_; }
 
-  virtual bool IsVisible() override {
-    return shown_;
-  }
+  bool IsVisible() override { return shown_; }
 
   bool shown_;
   bool can_accept_updates_;

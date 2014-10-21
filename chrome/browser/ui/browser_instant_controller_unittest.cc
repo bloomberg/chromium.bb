@@ -62,7 +62,7 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
         url_(contents->GetURL()),
         num_reloads_(0) {}
 
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override {
     if (url_ == url)

@@ -16,7 +16,7 @@ struct DefaultSingletonTraits;
 class ChromeAppWindowClient : public extensions::AppWindowClient {
  public:
   ChromeAppWindowClient();
-  virtual ~ChromeAppWindowClient();
+  ~ChromeAppWindowClient() override;
 
   // Get the LazyInstance for ChromeAppWindowClient.
   static ChromeAppWindowClient* GetInstance();
@@ -25,15 +25,15 @@ class ChromeAppWindowClient : public extensions::AppWindowClient {
   friend struct DefaultSingletonTraits<ChromeAppWindowClient>;
 
   // extensions::AppWindowClient
-  virtual extensions::AppWindow* CreateAppWindow(
+  extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) override;
-  virtual extensions::NativeAppWindow* CreateNativeAppWindow(
+  extensions::NativeAppWindow* CreateNativeAppWindow(
       extensions::AppWindow* window,
       extensions::AppWindow::CreateParams* params) override;
-  virtual void OpenDevToolsWindow(content::WebContents* web_contents,
-                                  const base::Closure& callback) override;
-  virtual bool IsCurrentChannelOlderThanDev() override;
+  void OpenDevToolsWindow(content::WebContents* web_contents,
+                          const base::Closure& callback) override;
+  bool IsCurrentChannelOlderThanDev() override;
 
   // Implemented in platform specific code.
   static extensions::NativeAppWindow* CreateNativeAppWindowImpl(

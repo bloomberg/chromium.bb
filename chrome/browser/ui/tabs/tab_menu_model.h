@@ -17,7 +17,7 @@ class TabMenuModel : public ui::SimpleMenuModel {
   TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                TabStripModel* tab_strip,
                int index);
-  virtual ~TabMenuModel() {}
+  ~TabMenuModel() override {}
 
  private:
   void Build(TabStripModel* tab_strip, int index);

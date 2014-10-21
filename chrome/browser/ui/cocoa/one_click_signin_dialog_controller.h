@@ -31,8 +31,7 @@ class OneClickSigninDialogController : public ConstrainedWindowMacDelegate {
   virtual ~OneClickSigninDialogController();
 
   // ConstrainedWindowMacDelegate implementation.
-  virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) override;
+  void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   ConstrainedWindowMac* constrained_window() const {
     return constrained_window_.get();

@@ -30,7 +30,7 @@ class PrefRegistrySyncable;
 class PrefsTabHelper : public content::NotificationObserver,
                        public content::WebContentsUserData<PrefsTabHelper> {
  public:
-  virtual ~PrefsTabHelper();
+  ~PrefsTabHelper() override;
 
   static void InitIncognitoUserPrefStore(OverlayUserPrefStore* pref_store);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -44,9 +44,9 @@ class PrefsTabHelper : public content::NotificationObserver,
   friend class content::WebContentsUserData<PrefsTabHelper>;
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Update the WebContents's RendererPreferences.
   void UpdateRendererPreferences();

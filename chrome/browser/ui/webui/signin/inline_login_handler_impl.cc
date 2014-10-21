@@ -61,11 +61,11 @@ class InlineSigninHelper : public SigninOAuthHelper::Consumer {
 
  private:
   // Overriden from SigninOAuthHelper::Consumer.
-  virtual void OnSigninOAuthInformationAvailable(
+  void OnSigninOAuthInformationAvailable(
       const std::string& email,
       const std::string& display_email,
       const std::string& refresh_token) override;
-  virtual void OnSigninOAuthInformationFailure(
+  void OnSigninOAuthInformationFailure(
       const GoogleServiceAuthError& error) override;
 
   SigninOAuthHelper signin_oauth_helper_;

@@ -26,10 +26,10 @@ class StartPageServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<StartPageServiceFactory>;
 
   StartPageServiceFactory();
-  virtual ~StartPageServiceFactory();
+  ~StartPageServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageServiceFactory);

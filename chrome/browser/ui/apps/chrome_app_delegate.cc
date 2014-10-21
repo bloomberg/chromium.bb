@@ -81,7 +81,7 @@ class OpenURLFromTabBasedOnBrowserDefault
 
   // Opens a URL when called with the result of if this is the default system
   // browser or not.
-  virtual void SetDefaultWebClientUIState(
+  void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) override {
     Profile* profile =
         Profile::FromBrowserContext(source_->GetBrowserContext());
@@ -101,7 +101,7 @@ class OpenURLFromTabBasedOnBrowserDefault
     }
   }
 
-  virtual bool IsOwnedByWorker() override { return true; }
+  bool IsOwnedByWorker() override { return true; }
 
  private:
   scoped_ptr<content::WebContents> source_;
@@ -114,9 +114,9 @@ class ChromeAppDelegate::NewWindowContentsDelegate
     : public content::WebContentsDelegate {
  public:
   NewWindowContentsDelegate() {}
-  virtual ~NewWindowContentsDelegate() {}
+  ~NewWindowContentsDelegate() override {}
 
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
 

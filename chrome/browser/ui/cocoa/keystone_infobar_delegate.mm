@@ -44,20 +44,19 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   explicit KeystonePromotionInfoBarDelegate(PrefService* prefs);
-  virtual ~KeystonePromotionInfoBarDelegate();
+  ~KeystonePromotionInfoBarDelegate() override;
 
   // Sets this info bar to be able to expire.  Called a predetermined amount
   // of time after this object is created.
   void SetCanExpire() { can_expire_ = true; }
 
   // ConfirmInfoBarDelegate
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
+  bool ShouldExpireInternal(const NavigationDetails& details) const override;
 
   // The prefs to use.
   PrefService* prefs_;  // weak

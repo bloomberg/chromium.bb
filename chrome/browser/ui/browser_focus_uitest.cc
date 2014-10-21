@@ -65,7 +65,7 @@ const char kTypicalPage[] = "/focus/typical_page.html";
 class BrowserFocusTest : public InProcessBrowserTest {
  public:
    // InProcessBrowserTest overrides:
-   virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
      ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
    }
 
@@ -169,7 +169,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
     EXPECT_TRUE(tab->ShowingInterstitialPage());
   }
 
-  virtual std::string GetHTMLContents() override { return html_contents_; }
+  std::string GetHTMLContents() override { return html_contents_; }
 
   RenderViewHost* render_view_host() {
     return interstitial_page_->GetRenderViewHostForTesting();

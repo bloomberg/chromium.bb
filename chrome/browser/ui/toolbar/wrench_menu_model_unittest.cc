@@ -32,15 +32,15 @@ class MenuError : public GlobalError {
 
   int execute_count() { return execute_count_; }
 
-  virtual bool HasMenuItem() override { return true; }
-  virtual int MenuItemCommandID() override { return command_id_; }
-  virtual base::string16 MenuItemLabel() override { return base::string16(); }
-  virtual void ExecuteMenuItem(Browser* browser) override { execute_count_++; }
+  bool HasMenuItem() override { return true; }
+  int MenuItemCommandID() override { return command_id_; }
+  base::string16 MenuItemLabel() override { return base::string16(); }
+  void ExecuteMenuItem(Browser* browser) override { execute_count_++; }
 
-  virtual bool HasBubbleView() override { return false; }
-  virtual bool HasShownBubbleView() override { return false; }
-  virtual void ShowBubbleView(Browser* browser) override { ADD_FAILURE(); }
-  virtual GlobalErrorBubbleViewBase* GetBubbleView() override { return NULL; }
+  bool HasBubbleView() override { return false; }
+  bool HasShownBubbleView() override { return false; }
+  void ShowBubbleView(Browser* browser) override { ADD_FAILURE(); }
+  GlobalErrorBubbleViewBase* GetBubbleView() override { return NULL; }
 
  private:
   int command_id_;
@@ -55,9 +55,10 @@ class WrenchMenuModelTest : public BrowserWithTestWindowTest,
                             public ui::AcceleratorProvider {
  public:
   // Don't handle accelerators.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override { return false; }
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override {
+    return false;
+  }
 
  protected:
   virtual void SetUp() override {
@@ -95,19 +96,19 @@ class TestWrenchMenuModel : public WrenchMenuModel {
   }
 
   // Testing overrides to ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const override {
+  bool IsCommandIdChecked(int command_id) const override {
     bool val = WrenchMenuModel::IsCommandIdChecked(command_id);
     if (val)
       checked_count_++;
     return val;
   }
 
-  virtual bool IsCommandIdEnabled(int command_id) const override {
+  bool IsCommandIdEnabled(int command_id) const override {
     ++enable_count_;
     return true;
   }
 
-  virtual void ExecuteCommand(int command_id, int event_flags) override {
+  void ExecuteCommand(int command_id, int event_flags) override {
     ++execute_count_;
   }
 

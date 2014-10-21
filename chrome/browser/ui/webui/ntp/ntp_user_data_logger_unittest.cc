@@ -16,7 +16,7 @@ namespace {
 class TestNTPUserDataLogger : public NTPUserDataLogger {
  public:
   TestNTPUserDataLogger() : NTPUserDataLogger(NULL) {}
-  virtual ~TestNTPUserDataLogger() {}
+  ~TestNTPUserDataLogger() override {}
 };
 
 base::HistogramBase::Count GetTotalCount(const std::string& histogram_name) {

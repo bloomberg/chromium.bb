@@ -41,13 +41,12 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   MockAutofillExternalDelegate(AutofillManager* autofill_manager,
                                AutofillDriver* autofill_driver)
       : AutofillExternalDelegate(autofill_manager, autofill_driver) {}
-  virtual ~MockAutofillExternalDelegate() {}
+  ~MockAutofillExternalDelegate() override {}
 
-  virtual void DidSelectSuggestion(const base::string16& value,
-                                   int identifier) override {}
-  virtual void RemoveSuggestion(const base::string16& value,
-                                int identifier) override {}
-  virtual void ClearPreviewedForm() override {}
+  void DidSelectSuggestion(const base::string16& value,
+                           int identifier) override {}
+  void RemoveSuggestion(const base::string16& value, int identifier) override {}
+  void ClearPreviewedForm() override {}
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr() {
     return AutofillExternalDelegate::GetWeakPtr();
   }
@@ -56,9 +55,9 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 class MockAutofillClient : public autofill::TestAutofillClient {
  public:
   MockAutofillClient() : prefs_(autofill::test::PrefServiceForTesting()) {}
-  virtual ~MockAutofillClient() {}
+  ~MockAutofillClient() override {}
 
-  virtual PrefService* GetPrefs() override { return prefs_.get(); }
+  PrefService* GetPrefs() override { return prefs_.get(); }
 
  private:
   scoped_ptr<PrefService> prefs_;

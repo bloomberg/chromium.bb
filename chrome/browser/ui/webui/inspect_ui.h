@@ -29,7 +29,7 @@ class InspectUI : public content::WebUIController,
                   public content::NotificationObserver {
  public:
   explicit InspectUI(content::WebUI* web_ui);
-  virtual ~InspectUI();
+  ~InspectUI() override;
 
   void InitUI();
   void Inspect(const std::string& source_id, const std::string& target_id);
@@ -48,9 +48,9 @@ class InspectUI : public content::WebUIController,
 
  private:
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void StartListeningNotifications();
   void StopListeningNotifications();

@@ -18,7 +18,7 @@ namespace extensions {
 class ExtensionsUI : public content::WebUIController {
  public:
   explicit ExtensionsUI(content::WebUI* web_ui);
-  virtual ~ExtensionsUI();
+  ~ExtensionsUI() override;
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);

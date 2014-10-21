@@ -53,14 +53,14 @@ class ProcessDetails : public MemoryDetails {
   explicit ProcessDetails(const DataCallback& callback)
       : callback_(callback) {}
   // MemoryDetails:
-  virtual void OnDetailsAvailable() override {
+  void OnDetailsAvailable() override {
     const std::vector<ProcessData>& browser_processes = processes();
     // [0] means Chrome.
     callback_.Run(browser_processes[0]);
   }
 
  private:
-  virtual ~ProcessDetails() {}
+  ~ProcessDetails() override {}
 
   DataCallback callback_;
 
@@ -129,7 +129,7 @@ class RendererDetails : public content::NotificationObserver {
     registrar_.Add(this, chrome::NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
                    content::NotificationService::AllSources());
   }
-  virtual ~RendererDetails() {}
+  ~RendererDetails() override {}
 
   void Request() {
     for (std::set<content::WebContents*>::iterator iter = web_contents_.begin();
@@ -157,9 +157,9 @@ class RendererDetails : public content::NotificationObserver {
 
  private:
   // NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     const base::ProcessId* pid =
         content::Source<const base::ProcessId>(source).ptr();
     const ChromeRenderMessageFilter::V8HeapStatsDetails* v8_heap =

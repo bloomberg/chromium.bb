@@ -32,22 +32,21 @@ class CommandHandler : public content::WebUIMessageHandler,
                        public ExtensionRegistryObserver {
  public:
   explicit CommandHandler(Profile* profile);
-  virtual ~CommandHandler();
+  ~CommandHandler() override;
 
   // Fetches the localized values for the page and deposits them into |source|.
   void GetLocalizedValues(content::WebUIDataSource* source);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
    // Update the list of extension commands in the config UI.
   void UpdateCommandDataOnPage();

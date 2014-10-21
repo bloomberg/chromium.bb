@@ -19,7 +19,7 @@ class RenderFrameHost;
 class InlineLoginUI : public ui::WebDialogUI {
  public:
   explicit InlineLoginUI(content::WebUI* web_ui);
-  virtual ~InlineLoginUI();
+  ~InlineLoginUI() override;
 
   // Gets the iframe within an auth page that has the specified parent origin
   // if |parent_origin| is not empty, and the specified parent frame name.

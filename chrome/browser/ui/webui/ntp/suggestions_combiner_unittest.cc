@@ -142,9 +142,7 @@ class SuggestionsSourceStub : public SuggestionsSource {
         number_of_suggestions_(number_of_suggestions),
         debug_(false) {
   }
-  virtual ~SuggestionsSourceStub() {
-    STLDeleteElements(&items_);
-  }
+  ~SuggestionsSourceStub() override { STLDeleteElements(&items_); }
 
   // Call this method to simulate that the SuggestionsSource has received all
   // its suggestions.
@@ -154,16 +152,10 @@ class SuggestionsSourceStub : public SuggestionsSource {
 
  private:
   // SuggestionsSource Override and implementation.
-  virtual void SetDebug(bool enable) override {
-    debug_ = enable;
-  }
-  virtual int GetWeight() override {
-    return weight_;
-  }
-  virtual int GetItemCount() override {
-    return items_.size();
-  }
-  virtual base::DictionaryValue* PopItem() override {
+  void SetDebug(bool enable) override { debug_ = enable; }
+  int GetWeight() override { return weight_; }
+  int GetItemCount() override { return items_.size(); }
+  base::DictionaryValue* PopItem() override {
     if (items_.empty())
       return NULL;
     base::DictionaryValue* item = items_.front();
@@ -171,7 +163,7 @@ class SuggestionsSourceStub : public SuggestionsSource {
     return item;
   }
 
-  virtual void FetchItems(Profile* profile) override {
+  void FetchItems(Profile* profile) override {
     char num_str[21];  // Enough to hold all numbers up to 64-bits.
     for (int i = 0; i < number_of_suggestions_; ++i) {
       base::snprintf(num_str, sizeof(num_str), "%d", i);
@@ -187,7 +179,7 @@ class SuggestionsSourceStub : public SuggestionsSource {
     items_.push_back(item);
   }
 
-  virtual void SetCombiner(SuggestionsCombiner* combiner) override {
+  void SetCombiner(SuggestionsCombiner* combiner) override {
     DCHECK(!combiner_);
     combiner_ = combiner;
   }

@@ -43,7 +43,7 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   ExtensionEnableFlow(Profile* profile,
                       const std::string& extension_id,
                       ExtensionEnableFlowDelegate* delegate);
-  virtual ~ExtensionEnableFlow();
+  ~ExtensionEnableFlow() override;
 
   // Starts the flow and the logic continues on |delegate_| after enabling is
   // finished or aborted. Note that |delegate_| could be called synchronously
@@ -80,26 +80,23 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   void StopObserving();
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver overrides:
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // ExtensionInstallPrompt::Delegate overrides:
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
   // content::PageNavigator overrides:
-  virtual content::WebContents* OpenURL(
-      const content::OpenURLParams& params) override;
+  content::WebContents* OpenURL(const content::OpenURLParams& params) override;
 
   Profile* const profile_;
   const std::string extension_id_;

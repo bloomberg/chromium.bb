@@ -22,10 +22,10 @@ class NewTabPageSyncHandler : public content::WebUIMessageHandler,
                               public ProfileSyncServiceObserver {
  public:
   NewTabPageSyncHandler();
-  virtual ~NewTabPageSyncHandler();
+  ~NewTabPageSyncHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for "GetSyncMessage".
   void HandleGetSyncMessage(const base::ListValue* args);
@@ -33,7 +33,7 @@ class NewTabPageSyncHandler : public content::WebUIMessageHandler,
   void HandleSyncLinkClicked(const base::ListValue* args);
 
   // ProfileSyncServiceObserver
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
   void OnSigninAllowedPrefChange();
 

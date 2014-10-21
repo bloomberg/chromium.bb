@@ -26,7 +26,7 @@ class GlobalErrorService : public KeyedService {
   // Constructs a GlobalErrorService object for the given profile. The profile
   // maybe NULL for tests.
   explicit GlobalErrorService(Profile* profile);
-  virtual ~GlobalErrorService();
+  ~GlobalErrorService() override;
 
   // Adds the given error to the list of global errors and displays it on
   // browswer windows. If no browser windows are open  then the error is

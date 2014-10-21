@@ -70,7 +70,7 @@ class AppListPrefs : public KeyedService {
 
   static AppListPrefs* Create(PrefService* pref_service);
 
-  virtual ~AppListPrefs();
+  ~AppListPrefs() override;
 
   // Sets the app list info for |id|.
   void SetAppListInfo(const std::string& id, const AppListInfo& info);

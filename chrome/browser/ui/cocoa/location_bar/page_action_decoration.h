@@ -34,7 +34,7 @@ class PageActionDecoration : public ImageDecoration,
   PageActionDecoration(LocationBarViewMac* owner,
                        Browser* browser,
                        ExtensionAction* page_action);
-  virtual ~PageActionDecoration();
+  ~PageActionDecoration() override;
 
   ExtensionAction* page_action() { return page_action_; }
   int current_tab_id() { return current_tab_id_; }
@@ -42,7 +42,7 @@ class PageActionDecoration : public ImageDecoration,
   bool preview_enabled() const { return preview_enabled_; }
 
   // Overridden from |ExtensionActionIconFactory::Observer|.
-  virtual void OnIconUpdated() override;
+  void OnIconUpdated() override;
 
   // Called to notify the Page Action that it should determine whether
   // to be visible or hidden. |contents| is the WebContents that is
@@ -54,12 +54,12 @@ class PageActionDecoration : public ImageDecoration,
   void SetToolTip(std::string tooltip);
 
   // Overridden from |LocationBarDecoration|
-  virtual CGFloat GetWidthForSpace(CGFloat width) override;
-  virtual bool AcceptsMousePress() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSString* GetToolTip() override;
-  virtual NSMenu* GetMenu() override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  CGFloat GetWidthForSpace(CGFloat width) override;
+  bool AcceptsMousePress() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSString* GetToolTip() override;
+  NSMenu* GetMenu() override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // Activates the page action in its default frame, and, if |grant_active_tab|
   // is true, grants active tab permission to the extension. Returns true if
@@ -77,9 +77,9 @@ class PageActionDecoration : public ImageDecoration,
   const extensions::Extension* GetExtension();
 
   // Overridden from NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // The location bar view that owns us.
   LocationBarViewMac* owner_;

@@ -44,15 +44,15 @@ class FullscreenObserver : public WebContentsObserver {
     return WebContentsObserver::web_contents();
   }
 
-  virtual void DidShowFullscreenWidget(int routing_id) override {
+  void DidShowFullscreenWidget(int routing_id) override {
     [controller_ toggleFullscreenWidget:YES];
   }
 
-  virtual void DidDestroyFullscreenWidget(int routing_id) override {
+  void DidDestroyFullscreenWidget(int routing_id) override {
     [controller_ toggleFullscreenWidget:NO];
   }
 
-  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
     [controller_ toggleFullscreenWidget:YES];
   }
 

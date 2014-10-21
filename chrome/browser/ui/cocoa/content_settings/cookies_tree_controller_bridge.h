@@ -14,19 +14,18 @@
 class CookiesTreeControllerBridge : public ui::TreeModelObserver {
  public:
   explicit CookiesTreeControllerBridge(CookiesTreeModel* model);
-  virtual ~CookiesTreeControllerBridge();
+  ~CookiesTreeControllerBridge() override;
 
   // TreeModelObserver:
-  virtual void TreeNodesAdded(ui::TreeModel* model,
-                              ui::TreeModelNode* parent,
-                              int start,
-                              int count) override;
-  virtual void TreeNodesRemoved(ui::TreeModel* model,
-                                ui::TreeModelNode* parent,
-                                int start,
-                                int count) override;
-  virtual void TreeNodeChanged(ui::TreeModel* model,
-                               ui::TreeModelNode* node) override;
+  void TreeNodesAdded(ui::TreeModel* model,
+                      ui::TreeModelNode* parent,
+                      int start,
+                      int count) override;
+  void TreeNodesRemoved(ui::TreeModel* model,
+                        ui::TreeModelNode* parent,
+                        int start,
+                        int count) override;
+  void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override;
 
   CocoaCookieTreeNode* cocoa_model() const { return cocoa_model_.get(); }
 

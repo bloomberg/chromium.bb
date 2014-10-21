@@ -42,22 +42,14 @@ class TranslateDenialComboboxModel : public ui::ComboboxModel {
     items_.push_back(l10n_util::GetStringUTF16(
         IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE));
   }
-  virtual ~TranslateDenialComboboxModel() {}
+  ~TranslateDenialComboboxModel() override {}
 
  private:
   // ComboboxModel:
-  virtual int GetItemCount() const override {
-    return items_.size();
-  }
-  virtual base::string16 GetItemAt(int index) override {
-    return items_[index];
-  }
-  virtual bool IsItemSeparatorAt(int index) override {
-    return false;
-  }
-  virtual int GetDefaultIndex() const override {
-    return 0;
-  }
+  int GetItemCount() const override { return items_.size(); }
+  base::string16 GetItemAt(int index) override { return items_[index]; }
+  bool IsItemSeparatorAt(int index) override { return false; }
+  int GetDefaultIndex() const override { return 0; }
 
   std::vector<base::string16> items_;
 

@@ -18,7 +18,7 @@ class WebUI;
 class PolicyUI : public content::WebUIController {
  public:
   explicit PolicyUI(content::WebUI* web_ui);
-  virtual ~PolicyUI();
+  ~PolicyUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyUI);

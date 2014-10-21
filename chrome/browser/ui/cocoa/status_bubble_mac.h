@@ -33,15 +33,14 @@ class StatusBubbleMac : public StatusBubble {
   };
 
   StatusBubbleMac(NSWindow* parent, id delegate);
-  virtual ~StatusBubbleMac();
+  ~StatusBubbleMac() override;
 
   // StatusBubble implementation.
-  virtual void SetStatus(const base::string16& status) override;
-  virtual void SetURL(const GURL& url, const std::string& languages) override;
-  virtual void Hide() override;
-  virtual void MouseMoved(const gfx::Point& location,
-                          bool left_content) override;
-  virtual void UpdateDownloadShelfVisibility(bool visible) override;
+  void SetStatus(const base::string16& status) override;
+  void SetURL(const GURL& url, const std::string& languages) override;
+  void Hide() override;
+  void MouseMoved(const gfx::Point& location, bool left_content) override;
+  void UpdateDownloadShelfVisibility(bool visible) override;
 
   // Mac-specific method: Update the size and position of the status bubble to
   // match the parent window. Safe to call even when the status bubble does not

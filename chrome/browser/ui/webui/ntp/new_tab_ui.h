@@ -35,7 +35,7 @@ class NewTabUI : public content::WebUIController,
                  public content::NotificationObserver {
  public:
   explicit NewTabUI(content::WebUI* web_ui);
-  virtual ~NewTabUI();
+  ~NewTabUI() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -63,13 +63,11 @@ class NewTabUI : public content::WebUIController,
   static int current_pref_version() { return current_pref_version_; }
 
   // WebUIController implementation:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
-  virtual void RenderViewReused(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderViewReused(content::RenderViewHost* render_view_host) override;
 
   // WebContentsObserver implementation:
-  virtual void WasHidden() override;
+  void WasHidden() override;
 
   bool showing_sync_bubble() { return showing_sync_bubble_; }
   void set_showing_sync_bubble(bool showing) { showing_sync_bubble_ = showing; }
@@ -77,18 +75,18 @@ class NewTabUI : public content::WebUIController,
   class NewTabHTMLSource : public content::URLDataSource {
    public:
     explicit NewTabHTMLSource(Profile* profile);
-    virtual ~NewTabHTMLSource();
+    ~NewTabHTMLSource() override;
 
     // content::URLDataSource implementation.
-    virtual std::string GetSource() const override;
-    virtual void StartDataRequest(
+    std::string GetSource() const override;
+    void StartDataRequest(
         const std::string& path,
         int render_process_id,
         int render_frame_id,
         const content::URLDataSource::GotDataCallback& callback) override;
-    virtual std::string GetMimeType(const std::string&) const override;
-    virtual bool ShouldReplaceExistingSource() const override;
-    virtual bool ShouldAddContentSecurityPolicy() const override;
+    std::string GetMimeType(const std::string&) const override;
+    bool ShouldReplaceExistingSource() const override;
+    bool ShouldAddContentSecurityPolicy() const override;
 
     // Adds |resource| to the source. |resource_id| is resource id or 0,
     // which means return empty data set. |mime_type| is mime type of the
@@ -111,9 +109,9 @@ class NewTabUI : public content::WebUIController,
   FRIEND_TEST_ALL_PREFIXES(NewTabUITest, UpdateUserPrefsVersion);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // If |web_contents| has an NTP URL, emits a number of NTP statistics (like
   // mouseovers counts) associated with |web_contents|, to be logged in UMA

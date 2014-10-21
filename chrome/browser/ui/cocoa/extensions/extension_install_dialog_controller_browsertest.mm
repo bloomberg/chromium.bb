@@ -18,7 +18,7 @@ class ExtensionInstallDialogControllerTest : public InProcessBrowserTest {
 public:
   ExtensionInstallDialogControllerTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     extension_ = chrome::LoadInstallPromptExtension();
   }
 

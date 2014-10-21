@@ -55,7 +55,7 @@ class LoginUIService : public KeyedService {
   };
 
   explicit LoginUIService(Profile* profile);
-  virtual ~LoginUIService();
+  ~LoginUIService() override;
 
   // Gets the currently active login UI, or null if no login UI is active.
   LoginUI* current_login_ui() const {

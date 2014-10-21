@@ -30,7 +30,7 @@ const int64 kQuickNavigationDelayInMS = 500;
 class MockElapsedTimer : public base::ElapsedTimer {
  public:
   MockElapsedTimer() {}
-  virtual base::TimeDelta Elapsed() const override { return delta_; }
+  base::TimeDelta Elapsed() const override { return delta_; }
 
   void Advance(int64 ms) { delta_ = base::TimeDelta::FromMilliseconds(ms); }
 

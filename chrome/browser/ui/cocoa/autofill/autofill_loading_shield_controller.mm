@@ -33,10 +33,10 @@ class AutofillLoadingAnimationBridge : public gfx::AnimationDelegate {
                                  int font_size)
       : animation_(this, font_size),
         controller_(controller) {}
-  virtual ~AutofillLoadingAnimationBridge() {}
+  ~AutofillLoadingAnimationBridge() override {}
 
   // gfx::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const gfx::Animation* animation) override {
+  void AnimationProgressed(const gfx::Animation* animation) override {
     DCHECK_EQ(animation, &animation_);
     [controller_ relayoutDotsForSteppedAnimation:animation_];
   }

@@ -30,7 +30,7 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
   void RunBidiCheckerOnPage(const std::string& page_url, bool is_rtl);
 
   // Setup test path.
-  virtual void SetUpInProcessBrowserTestFixture() override;
+  void SetUpInProcessBrowserTestFixture() override;
 
  private:
   // The command line args used to run the test before being changed in SetUp().
@@ -49,8 +49,8 @@ class WebUIBidiCheckerBrowserTestRTL : public WebUIBidiCheckerBrowserTest {
   void RunBidiCheckerOnPage(const std::string& page_url);
 
  protected:
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // The app locale before we change it
   std::string app_locale_;

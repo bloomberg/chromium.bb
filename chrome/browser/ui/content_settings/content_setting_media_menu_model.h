@@ -26,15 +26,14 @@ class ContentSettingMediaMenuModel : public ui::SimpleMenuModel,
       content::MediaStreamType type,
       ContentSettingBubbleModel* bubble_model,
       const MenuLabelChangedCallback& callback);
-  virtual ~ContentSettingMediaMenuModel();
+  ~ContentSettingMediaMenuModel() override;
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   typedef std::map<int, content::MediaStreamDevice> CommandMap;

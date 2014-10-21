@@ -100,7 +100,7 @@ struct OmniboxViewMacState : public base::SupportsUserData::Data {
         has_focus(has_focus),
         selection(selection) {
   }
-  virtual ~OmniboxViewMacState() {}
+  ~OmniboxViewMacState() override {}
 
   const OmniboxEditModel::State model_state;
   const bool has_focus;

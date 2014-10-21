@@ -50,7 +50,7 @@ class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
   ManagePasswordsBubbleCocoa(content::WebContents* webContents,
                              DisplayReason displayReason,
                              ManagePasswordsIcon* icon);
-  virtual ~ManagePasswordsBubbleCocoa();
+  ~ManagePasswordsBubbleCocoa() override;
   void Show();
 
   // Cleans up state and deletes itself. Called when the bubble is closed.

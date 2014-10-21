@@ -17,7 +17,7 @@
 class TabStripModelOrderController : public TabStripModelObserver {
  public:
   explicit TabStripModelOrderController(TabStripModel* tabstrip);
-  virtual ~TabStripModelOrderController();
+  ~TabStripModelOrderController() override;
 
   // Determine where to place a newly opened tab by using the supplied
   // transition and foreground flag to figure out how it was opened.
@@ -28,10 +28,10 @@ class TabStripModelOrderController : public TabStripModelObserver {
   int DetermineNewSelectedIndex(int removed_index) const;
 
   // Overridden from TabStripModelObserver:
-  virtual void ActiveTabChanged(content::WebContents* old_contents,
-                                content::WebContents* new_contents,
-                                int index,
-                                int reason) override;
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
 
  private:
   // Returns a valid index to be selected after the tab at |removing_index| is

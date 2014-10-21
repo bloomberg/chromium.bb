@@ -20,14 +20,13 @@ class RefCountedMemory;
 
 class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
  public:
-  virtual content::WebUI::TypeID GetWebUIType(
-      content::BrowserContext* browser_context,
-      const GURL& url) const override;
-  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
-                              const GURL& url) const override;
-  virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+  content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                       const GURL& url) const override;
-  virtual content::WebUIController* CreateWebUIControllerForURL(
+  bool UseWebUIForURL(content::BrowserContext* browser_context,
+                      const GURL& url) const override;
+  bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
+                              const GURL& url) const override;
+  content::WebUIController* CreateWebUIControllerForURL(
       content::WebUI* web_ui,
       const GURL& url) const override;
 
@@ -43,7 +42,7 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
 
  protected:
   ChromeWebUIControllerFactory();
-  virtual ~ChromeWebUIControllerFactory();
+  ~ChromeWebUIControllerFactory() override;
 
  private:
   friend struct DefaultSingletonTraits<ChromeWebUIControllerFactory>;

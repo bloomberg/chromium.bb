@@ -33,7 +33,7 @@ class PanelAnimatedBoundsObserver :
     : content::WindowedNotificationObserver(
         chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
         content::Source<Panel>(panel)) { }
-  virtual ~PanelAnimatedBoundsObserver() { }
+  ~PanelAnimatedBoundsObserver() override {}
 };
 
 // Main test class.

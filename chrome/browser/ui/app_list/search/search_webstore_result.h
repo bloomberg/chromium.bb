@@ -22,11 +22,11 @@ class SearchWebstoreResult : public SearchResult {
   SearchWebstoreResult(Profile* profile,
                        AppListControllerDelegate* controller,
                        const std::string& query);
-  virtual ~SearchWebstoreResult();
+  ~SearchWebstoreResult() override;
 
   // SearchResult overrides:
-  virtual void Open(int event_flags) override;
-  virtual scoped_ptr<SearchResult> Duplicate() override;
+  void Open(int event_flags) override;
+  scoped_ptr<SearchResult> Duplicate() override;
 
  private:
   Profile* profile_;

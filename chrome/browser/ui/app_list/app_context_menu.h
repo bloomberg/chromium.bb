@@ -28,7 +28,7 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
                  Profile* profile,
                  const std::string& app_id,
                  AppListControllerDelegate* controller);
-  virtual ~AppContextMenu();
+  ~AppContextMenu() override;
 
   // Note this could return NULL if corresponding extension is gone.
   ui::MenuModel* GetMenuModel();
@@ -45,14 +45,13 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
 
  private:
   // ui::SimpleMenuModel::Delegate overrides:
-  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
-  virtual base::string16 GetLabelForCommandId(int command_id) const override;
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* acclelrator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsItemForCommandIdDynamic(int command_id) const override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* acclelrator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
   AppContextMenuDelegate* delegate_;
   Profile* profile_;

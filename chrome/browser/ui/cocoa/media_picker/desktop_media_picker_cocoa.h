@@ -14,16 +14,16 @@
 class DesktopMediaPickerCocoa : public DesktopMediaPicker {
  public:
   DesktopMediaPickerCocoa();
-  virtual ~DesktopMediaPickerCocoa();
+  ~DesktopMediaPickerCocoa() override;
 
   // Overridden from DesktopMediaPicker:
-  virtual void Show(content::WebContents* web_contents,
-                    gfx::NativeWindow context,
-                    gfx::NativeWindow parent,
-                    const base::string16& app_name,
-                    const base::string16& target_name,
-                    scoped_ptr<DesktopMediaList> media_list,
-                    const DoneCallback& done_callback) override;
+  void Show(content::WebContents* web_contents,
+            gfx::NativeWindow context,
+            gfx::NativeWindow parent,
+            const base::string16& app_name,
+            const base::string16& target_name,
+            scoped_ptr<DesktopMediaList> media_list,
+            const DoneCallback& done_callback) override;
 
  private:
   base::scoped_nsobject<DesktopMediaPickerController> controller_;

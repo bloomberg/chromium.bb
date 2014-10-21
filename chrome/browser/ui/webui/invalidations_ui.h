@@ -12,7 +12,7 @@
 class InvalidationsUI : public content::WebUIController {
  public:
   explicit InvalidationsUI(content::WebUI* web_ui);
-  virtual ~InvalidationsUI();
+  ~InvalidationsUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InvalidationsUI);

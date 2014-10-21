@@ -18,9 +18,9 @@ namespace test {
 class TestExtensionAppItem : public AppListItem {
  public:
   explicit TestExtensionAppItem(const std::string& id) : AppListItem(id) {}
-  virtual ~TestExtensionAppItem() {}
+  ~TestExtensionAppItem() override {}
 
-  virtual const char* GetItemType() const override {
+  const char* GetItemType() const override {
     return ExtensionAppItem::kItemType;
   }
 

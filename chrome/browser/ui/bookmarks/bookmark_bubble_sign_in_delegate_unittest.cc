@@ -34,9 +34,7 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
 
    private:
     // TestBrowserWindow:
-    virtual void Show() override {
-      ++show_count_;
-    }
+    void Show() override { ++show_count_; }
 
     // Number of times that the Show() method has been called.
     int show_count_;
@@ -44,9 +42,7 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
     DISALLOW_COPY_AND_ASSIGN(Window);
   };
 
-  virtual BrowserWindow* CreateBrowserWindow() override {
-    return new Window();
-  }
+  BrowserWindow* CreateBrowserWindow() override { return new Window(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleSignInDelegateTest);

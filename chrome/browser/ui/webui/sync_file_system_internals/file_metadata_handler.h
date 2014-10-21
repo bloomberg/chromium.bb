@@ -23,10 +23,10 @@ namespace syncfs_internals {
 class FileMetadataHandler : public content::WebUIMessageHandler {
  public:
   explicit FileMetadataHandler(Profile* profile);
-  virtual ~FileMetadataHandler();
+  ~FileMetadataHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void GetExtensions(const base::ListValue* args);

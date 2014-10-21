@@ -27,9 +27,7 @@ class MockOmniboxEditModel : public OmniboxEditModel {
         up_or_down_count_(0) {
   }
 
-  virtual void OnUpOrDownKeyPressed(int count) override {
-    up_or_down_count_ = count;
-  }
+  void OnUpOrDownKeyPressed(int count) override { up_or_down_count_ = count; }
 
   int up_or_down_count() const { return up_or_down_count_; }
 
@@ -46,15 +44,15 @@ class MockOmniboxEditModel : public OmniboxEditModel {
 class MockOmniboxPopupView : public OmniboxPopupView {
  public:
   MockOmniboxPopupView() : is_open_(false) {}
-  virtual ~MockOmniboxPopupView() {}
+  ~MockOmniboxPopupView() override {}
 
   // Overridden from OmniboxPopupView:
-  virtual bool IsOpen() const override { return is_open_; }
-  virtual void InvalidateLine(size_t line) override {}
-  virtual void UpdatePopupAppearance() override {}
-  virtual gfx::Rect GetTargetBounds() override { return gfx::Rect(); }
-  virtual void PaintUpdatesNow() override {}
-  virtual void OnDragCanceled() override {}
+  bool IsOpen() const override { return is_open_; }
+  void InvalidateLine(size_t line) override {}
+  void UpdatePopupAppearance() override {}
+  gfx::Rect GetTargetBounds() override { return gfx::Rect(); }
+  void PaintUpdatesNow() override {}
+  void OnDragCanceled() override {}
 
   void set_is_open(bool is_open) { is_open_ = is_open; }
 
@@ -67,15 +65,11 @@ class MockOmniboxPopupView : public OmniboxPopupView {
 class TestingToolbarModelDelegate : public ToolbarModelDelegate {
  public:
   TestingToolbarModelDelegate() {}
-  virtual ~TestingToolbarModelDelegate() {}
+  ~TestingToolbarModelDelegate() override {}
 
   // Overridden from ToolbarModelDelegate:
-  virtual content::WebContents* GetActiveWebContents() const override {
-    return NULL;
-  }
-  virtual bool InTabbedBrowser() const override {
-    return true;
-  }
+  content::WebContents* GetActiveWebContents() const override { return NULL; }
+  bool InTabbedBrowser() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingToolbarModelDelegate);
@@ -87,20 +81,20 @@ class TestingOmniboxEditController : public OmniboxEditController {
       : OmniboxEditController(NULL),
         toolbar_model_(toolbar_model) {
   }
-  virtual ~TestingOmniboxEditController() {}
+  ~TestingOmniboxEditController() override {}
 
  protected:
   // Overridden from OmniboxEditController:
-  virtual void Update(const content::WebContents* contents) override {}
-  virtual void OnChanged() override {}
-  virtual void OnSetFocus() override {}
-  virtual void ShowURL() override {}
-  virtual void HideURL() override {}
-  virtual void EndOriginChipAnimations(bool cancel_fade) override {}
-  virtual InstantController* GetInstant() override { return NULL; }
-  virtual content::WebContents* GetWebContents() override { return NULL; }
-  virtual ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
-  virtual const ToolbarModel* GetToolbarModel() const override {
+  void Update(const content::WebContents* contents) override {}
+  void OnChanged() override {}
+  void OnSetFocus() override {}
+  void ShowURL() override {}
+  void HideURL() override {}
+  void EndOriginChipAnimations(bool cancel_fade) override {}
+  InstantController* GetInstant() override { return NULL; }
+  content::WebContents* GetWebContents() override { return NULL; }
+  ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
+  const ToolbarModel* GetToolbarModel() const override {
     return toolbar_model_;
   }
 

@@ -41,20 +41,18 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   // LoginModelObserver implementation.
-  virtual void OnAutofillDataAvailable(
-      const base::string16& username,
-      const base::string16& password) override {
+  void OnAutofillDataAvailable(const base::string16& username,
+                               const base::string16& password) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     [sheet_controller_ autofillLogin:base::SysUTF16ToNSString(username)
                             password:base::SysUTF16ToNSString(password)];
   }
-  virtual void OnLoginModelDestroying() override {}
+  void OnLoginModelDestroying() override {}
 
   // LoginHandler:
-  virtual void BuildViewForPasswordManager(
-      password_manager::PasswordManager* manager,
-      const base::string16& explanation) override {
+  void BuildViewForPasswordManager(password_manager::PasswordManager* manager,
+                                   const base::string16& explanation) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     sheet_controller_.reset(
@@ -81,15 +79,14 @@ class LoginHandlerMac : public LoginHandler,
     NotifyAuthNeeded();
   }
 
-  virtual void CloseDialog() override {
+  void CloseDialog() override {
     // The hosting dialog may have been freed.
     if (constrained_window_)
       constrained_window_->CloseWebContentsModalDialog();
   }
 
   // Overridden from ConstrainedWindowMacDelegate:
-  virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) override {
+  void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     SetModel(NULL);
     ReleaseSoon();
@@ -112,7 +109,7 @@ class LoginHandlerMac : public LoginHandler,
  private:
   friend class LoginPrompt;
 
-  virtual ~LoginHandlerMac() {
+  ~LoginHandlerMac() override {
     // This class will be deleted on a non UI thread. Ensure that the UI members
     // have already been deleted.
     CHECK(!constrained_window_.get());

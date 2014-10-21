@@ -29,10 +29,10 @@ class PasswordManagerPresenter
  public:
   // |password_view| the UI view that owns this presenter, must not be NULL.
   explicit PasswordManagerPresenter(PasswordUIView* password_view);
-  virtual ~PasswordManagerPresenter();
+  ~PasswordManagerPresenter() override;
 
   // PasswordStore::Observer implementation.
-  virtual void OnLoginsChanged(
+  void OnLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes) override;
 
   // Repopulates the password and exception entries.
@@ -76,7 +76,7 @@ class PasswordManagerPresenter
   class ListPopulater : public password_manager::PasswordStoreConsumer {
    public:
     explicit ListPopulater(PasswordManagerPresenter* page);
-    virtual ~ListPopulater();
+    ~ListPopulater() override;
 
     // Send a query to the password store to populate a list.
     virtual void Populate() = 0;
@@ -91,10 +91,10 @@ class PasswordManagerPresenter
     explicit PasswordListPopulater(PasswordManagerPresenter* page);
 
     // Send a query to the password store to populate a password list.
-    virtual void Populate() override;
+    void Populate() override;
 
     // Send the password store's reply back to the handler.
-    virtual void OnGetPasswordStoreResults(
+    void OnGetPasswordStoreResults(
         const std::vector<autofill::PasswordForm*>& results) override;
   };
 
@@ -104,10 +104,10 @@ class PasswordManagerPresenter
     explicit PasswordExceptionListPopulater(PasswordManagerPresenter* page);
 
     // Send a query to the password store to populate a passwordException list.
-    virtual void Populate() override;
+    void Populate() override;
 
     // Send the password store's reply back to the handler.
-    virtual void OnGetPasswordStoreResults(
+    void OnGetPasswordStoreResults(
         const std::vector<autofill::PasswordForm*>& results) override;
   };
 

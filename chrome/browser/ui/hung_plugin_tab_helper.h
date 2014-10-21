@@ -41,19 +41,19 @@ class HungPluginTabHelper
       public content::NotificationObserver,
       public content::WebContentsUserData<HungPluginTabHelper> {
  public:
-  virtual ~HungPluginTabHelper();
+  ~HungPluginTabHelper() override;
 
   // content::WebContentsObserver:
-  virtual void PluginCrashed(const base::FilePath& plugin_path,
-                             base::ProcessId plugin_pid) override;
-  virtual void PluginHungStatusChanged(int plugin_child_id,
-                                       const base::FilePath& plugin_path,
-                                       bool is_hung) override;
+  void PluginCrashed(const base::FilePath& plugin_path,
+                     base::ProcessId plugin_pid) override;
+  void PluginHungStatusChanged(int plugin_child_id,
+                               const base::FilePath& plugin_path,
+                               bool is_hung) override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Called by an infobar when the user selects to kill the plugin.
   void KillPlugin(int child_id);

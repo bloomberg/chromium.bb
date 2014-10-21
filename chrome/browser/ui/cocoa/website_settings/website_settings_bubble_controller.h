@@ -101,7 +101,7 @@ class WebContents;
 class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
  public:
   WebsiteSettingsUIBridge();
-  virtual ~WebsiteSettingsUIBridge();
+  ~WebsiteSettingsUIBridge() override;
 
   // Creates a |WebsiteSettingsBubbleController| and displays the UI. |parent|
   // contains the currently active window, |profile| contains the currently
@@ -118,12 +118,12 @@ class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
       WebsiteSettingsBubbleController* bubble_controller);
 
   // WebsiteSettingsUI implementations.
-  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
-  virtual void SetPermissionInfo(
+  void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
+  void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) override;
-  virtual void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  virtual void SetFirstVisit(const base::string16& first_visit) override;
-  virtual void SetSelectedTab(TabId tab_id) override;
+  void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  void SetFirstVisit(const base::string16& first_visit) override;
+  void SetSelectedTab(TabId tab_id) override;
 
  private:
   // The Cocoa controller for the bubble UI.

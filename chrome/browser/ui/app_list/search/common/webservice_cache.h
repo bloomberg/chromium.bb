@@ -47,7 +47,7 @@ class WebserviceCache : public KeyedService,
   };
 
   explicit WebserviceCache(content::BrowserContext* context);
-  virtual ~WebserviceCache();
+  ~WebserviceCache() override;
 
   // Checks the current cache and returns the value for the |query| if it's
   // valid. Otherwise an CacheResult object with the result field set to NULL.

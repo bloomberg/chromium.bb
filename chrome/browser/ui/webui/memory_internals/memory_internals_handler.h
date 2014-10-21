@@ -22,9 +22,9 @@ class MemoryInternalsProxy;
 class MemoryInternalsHandler : public content::WebUIMessageHandler {
  public:
   MemoryInternalsHandler();
-  virtual ~MemoryInternalsHandler();
+  ~MemoryInternalsHandler() override;
 
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // JavaScript message handlers.
   void OnJSUpdate(const base::ListValue* list);

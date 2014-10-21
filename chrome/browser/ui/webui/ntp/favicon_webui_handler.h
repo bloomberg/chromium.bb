@@ -23,10 +23,10 @@ class ListValue;
 class FaviconWebUIHandler : public content::WebUIMessageHandler {
  public:
   FaviconWebUIHandler();
-  virtual ~FaviconWebUIHandler();
+  ~FaviconWebUIHandler() override;
 
   // WebUIMessageHandler
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Called from the JS to get the dominant color of a favicon. The first
   // argument is a favicon URL, the second is the ID of the DOM node that is

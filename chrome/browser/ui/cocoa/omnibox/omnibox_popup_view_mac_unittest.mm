@@ -33,9 +33,7 @@ class MockOmniboxPopupViewMac : public OmniboxPopupViewMac {
   }
 
  protected:
-  virtual const AutocompleteResult& GetResult() const override {
-    return result_;
-  }
+  const AutocompleteResult& GetResult() const override { return result_; }
 
  private:
   AutocompleteResult result_;

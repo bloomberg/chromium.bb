@@ -34,7 +34,7 @@ using content::WebContents;
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
-  virtual WebContents* OpenURL(const OpenURLParams& params) override {
+  WebContents* OpenURL(const OpenURLParams& params) override {
     urls_.push_back(params.url);
     return NULL;
   }

@@ -56,13 +56,13 @@ class DummyPrerenderContents : public PrerenderContents {
       bool call_did_finish_load,
       const content::SessionStorageNamespaceMap& session_storage_namespace_map);
 
-  virtual void StartPrerendering(
+  void StartPrerendering(
       int creator_child_id,
       const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace,
       net::URLRequestContextGetter* request_context) override;
-  virtual bool GetChildId(int* child_id) const override;
-  virtual bool GetRouteId(int* route_id) const override;
+  bool GetChildId(int* child_id) const override;
+  bool GetRouteId(int* route_id) const override;
 
  private:
   Profile* profile_;
@@ -82,7 +82,7 @@ class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
         session_storage_namespace_map_(session_storage_namespace_map) {
   }
 
-  virtual PrerenderContents* CreatePrerenderContents(
+  PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager,
       Profile* profile,
       const GURL& url,

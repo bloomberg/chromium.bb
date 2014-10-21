@@ -30,7 +30,7 @@ class PopupBlockerTabHelper
   // Mapping from popup IDs to blocked popup requests.
   typedef std::map<int32, GURL> PopupIdMap;
 
-  virtual ~PopupBlockerTabHelper();
+  ~PopupBlockerTabHelper() override;
 
   // Returns true if the popup request defined by |params| should be blocked.
   // In that case, it is also added to the |blocked_popups_| container.
@@ -49,7 +49,7 @@ class PopupBlockerTabHelper
   PopupIdMap GetBlockedPopupRequests();
 
   // content::WebContentsObserver overrides:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 

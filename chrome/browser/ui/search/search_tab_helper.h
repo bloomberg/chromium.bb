@@ -45,7 +45,7 @@ class SearchTabHelper : public content::WebContentsObserver,
                         public InstantServiceObserver,
                         public SearchIPCRouter::Delegate {
  public:
-  virtual ~SearchTabHelper();
+  ~SearchTabHelper() override;
 
   SearchModel* model() {
     return &model_;
@@ -141,47 +141,45 @@ class SearchTabHelper : public content::WebContentsObserver,
   explicit SearchTabHelper(content::WebContents* web_contents);
 
   // Overridden from contents::WebContentsObserver:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
-  virtual void DidStartNavigationToPendingEntry(
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description) override;
-  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) override;
-  virtual void NavigationEntryCommitted(
+  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url,
+                              int error_code,
+                              const base::string16& error_description) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
 
   // Overridden from SearchIPCRouter::Delegate:
-  virtual void OnInstantSupportDetermined(bool supports_instant) override;
-  virtual void OnSetVoiceSearchSupport(bool supports_voice_search) override;
-  virtual void FocusOmnibox(OmniboxFocusState state) override;
-  virtual void NavigateToURL(const GURL& url,
-                             WindowOpenDisposition disposition,
-                             bool is_most_visited_item_url) override;
-  virtual void OnDeleteMostVisitedItem(const GURL& url) override;
-  virtual void OnUndoMostVisitedDeletion(const GURL& url) override;
-  virtual void OnUndoAllMostVisitedDeletions() override;
-  virtual void OnLogEvent(NTPLoggingEventType event) override;
-  virtual void OnLogMostVisitedImpression(
-      int position, const base::string16& provider) override;
-  virtual void OnLogMostVisitedNavigation(
-      int position, const base::string16& provider) override;
-  virtual void PasteIntoOmnibox(const base::string16& text) override;
-  virtual void OnChromeIdentityCheck(const base::string16& identity) override;
+  void OnInstantSupportDetermined(bool supports_instant) override;
+  void OnSetVoiceSearchSupport(bool supports_voice_search) override;
+  void FocusOmnibox(OmniboxFocusState state) override;
+  void NavigateToURL(const GURL& url,
+                     WindowOpenDisposition disposition,
+                     bool is_most_visited_item_url) override;
+  void OnDeleteMostVisitedItem(const GURL& url) override;
+  void OnUndoMostVisitedDeletion(const GURL& url) override;
+  void OnUndoAllMostVisitedDeletions() override;
+  void OnLogEvent(NTPLoggingEventType event) override;
+  void OnLogMostVisitedImpression(int position,
+                                  const base::string16& provider) override;
+  void OnLogMostVisitedNavigation(int position,
+                                  const base::string16& provider) override;
+  void PasteIntoOmnibox(const base::string16& text) override;
+  void OnChromeIdentityCheck(const base::string16& identity) override;
 
   // Overridden from InstantServiceObserver:
-  virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
-  virtual void MostVisitedItemsChanged(
+  void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
+  void MostVisitedItemsChanged(
       const std::vector<InstantMostVisitedItem>& items) override;
-  virtual void OmniboxStartMarginChanged(int omnibox_start_margin) override;
+  void OmniboxStartMarginChanged(int omnibox_start_margin) override;
 
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,

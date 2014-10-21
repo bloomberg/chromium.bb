@@ -51,7 +51,7 @@ class ExtensionLoaderHandler::FileHelper
     : public ui::SelectFileDialog::Listener {
  public:
   explicit FileHelper(ExtensionLoaderHandler* loader_handler);
-  virtual ~FileHelper();
+  ~FileHelper() override;
 
   // Create a FileDialog for the user to select the unpacked extension
   // directory.
@@ -59,11 +59,11 @@ class ExtensionLoaderHandler::FileHelper
 
  private:
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override;
-  virtual void MultiFilesSelected(
-      const std::vector<base::FilePath>& files, void* params) override;
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void MultiFilesSelected(const std::vector<base::FilePath>& files,
+                          void* params) override;
 
   // The associated ExtensionLoaderHandler. Weak, but guaranteed to be alive,
   // as it owns this object.

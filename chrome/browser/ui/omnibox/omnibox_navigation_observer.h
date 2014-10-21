@@ -56,7 +56,7 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
                             const base::string16& text,
                             const AutocompleteMatch& match,
                             const AutocompleteMatch& alternate_nav_match);
-  virtual ~OmniboxNavigationObserver();
+  ~OmniboxNavigationObserver() override;
 
   LoadState load_state() const { return load_state_; }
 
@@ -73,20 +73,20 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
   };
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver:
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Once the load has committed and any URL fetch has completed, this displays
   // the alternate nav infobar if necessary, and deletes |this|.

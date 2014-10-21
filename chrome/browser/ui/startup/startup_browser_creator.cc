@@ -110,11 +110,11 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                    content::NotificationService::AllSources());
   }
-  virtual ~ProfileLaunchObserver() {}
+  ~ProfileLaunchObserver() override {}
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_PROFILE_DESTROYED: {
         Profile* profile = content::Source<Profile>(source).ptr();

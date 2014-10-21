@@ -20,7 +20,7 @@ namespace syncfs_internals {
 class ExtensionStatusesHandler : public content::WebUIMessageHandler {
  public:
   explicit ExtensionStatusesHandler(Profile* profile);
-  virtual ~ExtensionStatusesHandler();
+  ~ExtensionStatusesHandler() override;
 
   // Shared by Extension Statuses Tab and also File Metadata Tab to generate the
   // extension drop down.
@@ -29,7 +29,7 @@ class ExtensionStatusesHandler : public content::WebUIMessageHandler {
       const base::Callback<void(const base::ListValue&)>& callback);
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void GetExtensionStatuses(const base::ListValue* args);

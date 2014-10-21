@@ -16,22 +16,22 @@ class MediaIndicatorViewAnimationDelegate : public gfx::AnimationDelegate {
       : view_(view), mediaState_(mediaState),
         animatingMediaState_(animatingMediaState),
         doneCallbackObject_(nil), doneCallbackSelector_(nil) {}
-  virtual ~MediaIndicatorViewAnimationDelegate() {}
+  ~MediaIndicatorViewAnimationDelegate() override {}
 
   void SetAnimationDoneCallback(id anObject, SEL selector) {
     doneCallbackObject_ = anObject;
     doneCallbackSelector_ = selector;
   }
 
-  virtual void AnimationEnded(const gfx::Animation* animation) override {
+  void AnimationEnded(const gfx::Animation* animation) override {
     *animatingMediaState_ = *mediaState_;
     [view_ setNeedsDisplay:YES];
     [doneCallbackObject_ performSelector:doneCallbackSelector_];
   }
-  virtual void AnimationProgressed(const gfx::Animation* animation) override {
+  void AnimationProgressed(const gfx::Animation* animation) override {
     [view_ setNeedsDisplay:YES];
   }
-  virtual void AnimationCanceled(const gfx::Animation* animation) override {
+  void AnimationCanceled(const gfx::Animation* animation) override {
     AnimationEnded(animation);
   }
 

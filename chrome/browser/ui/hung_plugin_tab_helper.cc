@@ -140,14 +140,14 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
                             int plugin_child_id,
                             const base::string16& plugin_name);
-  virtual ~HungPluginInfoBarDelegate();
+  ~HungPluginInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual int GetButtons() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  int GetButtons() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
 
   HungPluginTabHelper* helper_;
   int plugin_child_id_;

@@ -184,7 +184,7 @@ class ContentSettingBubbleWebContentsObserverBridge
 
  protected:
   // WebContentsObserver:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override {
     // Content settings are based on the main frame, so if it switches then

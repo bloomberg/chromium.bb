@@ -38,10 +38,9 @@ class AppNotificationBridge : public content::NotificationObserver {
   }
 
   // Overridden from content::NotificationObserver.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_APP_TERMINATING:
         [owner_ appIsTerminating];

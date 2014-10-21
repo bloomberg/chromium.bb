@@ -30,10 +30,10 @@ class HistoryFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<HistoryFactory>;
 
   HistoryFactory();
-  virtual ~HistoryFactory();
+  ~HistoryFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryFactory);

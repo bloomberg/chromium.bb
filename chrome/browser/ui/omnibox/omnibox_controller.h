@@ -37,13 +37,13 @@ class OmniboxController : public AutocompleteControllerDelegate {
  public:
   OmniboxController(OmniboxEditModel* omnibox_edit_model,
                     Profile* profile);
-  virtual ~OmniboxController();
+  ~OmniboxController() override;
 
   // The |current_url| field of input is only set for mobile ports.
   void StartAutocomplete(const AutocompleteInput& input) const;
 
   // AutocompleteControllerDelegate:
-  virtual void OnResultChanged(bool default_match_changed) override;
+  void OnResultChanged(bool default_match_changed) override;
 
   AutocompleteController* autocomplete_controller() {
     return autocomplete_controller_.get();

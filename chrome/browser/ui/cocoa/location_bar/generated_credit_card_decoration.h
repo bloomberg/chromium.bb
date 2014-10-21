@@ -22,7 +22,7 @@ class GeneratedCreditCardBubbleController;
 class GeneratedCreditCardDecoration : public ImageDecoration {
  public:
   explicit GeneratedCreditCardDecoration(LocationBarViewMac* owner);
-  virtual ~GeneratedCreditCardDecoration();
+  ~GeneratedCreditCardDecoration() override;
 
   // Called when this decoration should update its visible status.
   void Update();
@@ -30,9 +30,9 @@ class GeneratedCreditCardDecoration : public ImageDecoration {
   // Implement |LocationBarDecoration|.
   // N.B. - this is identical to LocationBarDecorationView's OnClick
   // and canHandleClick.
-  virtual bool AcceptsMousePress() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  bool AcceptsMousePress() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
  private:
   // Helper to get the GeneratedCreditCardBubbleController associated with the

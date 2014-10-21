@@ -25,10 +25,10 @@ class ListValue;
 class MetricsHandler : public content::WebUIMessageHandler {
  public:
   MetricsHandler();
-  virtual ~MetricsHandler();
+  ~MetricsHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for the "metricsHandler:recordAction" message. This records a
   // user action.

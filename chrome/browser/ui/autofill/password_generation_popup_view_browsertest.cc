@@ -30,7 +30,7 @@ class TestPasswordGenerationPopupController :
             web_contents,
             native_view) {}
 
-  virtual ~TestPasswordGenerationPopupController() {}
+  ~TestPasswordGenerationPopupController() override {}
 
   PasswordGenerationPopupView* view() {
     return view_;
@@ -39,7 +39,7 @@ class TestPasswordGenerationPopupController :
 
 class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     gfx::NativeView native_view =
         browser()->tab_strip_model()->GetActiveWebContents()->GetNativeView();
 

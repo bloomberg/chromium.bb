@@ -45,7 +45,7 @@ class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
   virtual const gfx::Range& HelpTextLinkRange() = 0;
 
  protected:
-  virtual ~PasswordGenerationPopupController() {}
+  ~PasswordGenerationPopupController() override {}
 };
 
 }  // namespace autofill

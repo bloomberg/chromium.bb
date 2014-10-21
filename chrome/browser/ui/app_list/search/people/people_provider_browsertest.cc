@@ -166,7 +166,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
   virtual ~PeopleProviderTest() {}
 
   // InProcessBrowserTest overrides:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     test_server_.reset(new EmbeddedTestServer);
 
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
@@ -184,7 +184,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
     people_provider_->set_use_throttling(false);
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
   }

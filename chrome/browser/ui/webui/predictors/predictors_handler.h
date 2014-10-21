@@ -24,10 +24,10 @@ class Profile;
 class PredictorsHandler : public content::WebUIMessageHandler {
  public:
   explicit PredictorsHandler(Profile* profile);
-  virtual ~PredictorsHandler();
+  ~PredictorsHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Synchronously fetches the database from AutocompleteActionPredictor and

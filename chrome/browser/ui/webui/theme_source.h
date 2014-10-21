@@ -20,21 +20,20 @@ class RefCountedMemory;
 class ThemeSource : public content::URLDataSource {
  public:
   explicit ThemeSource(Profile* profile);
-  virtual ~ThemeSource();
+  ~ThemeSource() override;
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string& path) const override;
-  virtual base::MessageLoop* MessageLoopForRequestPath(
+  std::string GetMimeType(const std::string& path) const override;
+  base::MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const override;
-  virtual bool ShouldReplaceExistingSource() const override;
-  virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const override;
+  bool ShouldReplaceExistingSource() const override;
+  bool ShouldServiceRequest(const net::URLRequest* request) const override;
 
  private:
   // Fetch and send the theme bitmap.

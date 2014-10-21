@@ -179,11 +179,11 @@ class ContentSettingTitleLinkAndCustomModel
                                         WebContents* web_contents,
                                         Profile* profile,
                                         ContentSettingsType content_type);
-  virtual ~ContentSettingTitleLinkAndCustomModel() {}
+  ~ContentSettingTitleLinkAndCustomModel() override {}
 
  private:
   void SetCustomLink();
-  virtual void OnCustomLinkClicked() override {}
+  void OnCustomLinkClicked() override {}
 };
 
 ContentSettingTitleLinkAndCustomModel::ContentSettingTitleLinkAndCustomModel(
@@ -215,7 +215,7 @@ class ContentSettingSingleRadioGroup
                                  WebContents* web_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type);
-  virtual ~ContentSettingSingleRadioGroup();
+  ~ContentSettingSingleRadioGroup() override;
 
  protected:
   bool settings_changed() const;
@@ -224,7 +224,7 @@ class ContentSettingSingleRadioGroup
  private:
   void SetRadioGroup();
   void AddException(ContentSetting setting);
-  virtual void OnRadioClicked(int radio_index) override;
+  void OnRadioClicked(int radio_index) override;
 
   ContentSetting block_setting_;
   int selected_item_;
@@ -410,10 +410,10 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
                                    Profile* profile,
                                    ContentSettingsType content_type);
 
-  virtual ~ContentSettingCookiesBubbleModel();
+  ~ContentSettingCookiesBubbleModel() override;
 
  private:
-  virtual void OnCustomLinkClicked() override;
+  void OnCustomLinkClicked() override;
 };
 
 ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
@@ -454,10 +454,10 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
                                   Profile* profile,
                                   ContentSettingsType content_type);
 
-  virtual ~ContentSettingPluginBubbleModel();
+  ~ContentSettingPluginBubbleModel() override;
 
  private:
-  virtual void OnCustomLinkClicked() override;
+  void OnCustomLinkClicked() override;
 };
 
 ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
@@ -504,11 +504,11 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
                                  WebContents* web_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type);
-  virtual ~ContentSettingPopupBubbleModel() {}
+  ~ContentSettingPopupBubbleModel() override {}
 
  private:
   void SetPopups();
-  virtual void OnPopupClicked(int index) override;
+  void OnPopupClicked(int index) override;
 };
 
 ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
@@ -557,7 +557,7 @@ class ContentSettingMediaStreamBubbleModel
                                        WebContents* web_contents,
                                        Profile* profile);
 
-  virtual ~ContentSettingMediaStreamBubbleModel();
+  ~ContentSettingMediaStreamBubbleModel() override;
 
  private:
   void SetTitle();
@@ -574,9 +574,9 @@ class ContentSettingMediaStreamBubbleModel
                                   const std::string& device);
 
   // ContentSettingBubbleModel implementation.
-  virtual void OnRadioClicked(int radio_index) override;
-  virtual void OnMediaMenuClicked(content::MediaStreamType type,
-                                  const std::string& selected_device) override;
+  void OnRadioClicked(int radio_index) override;
+  void OnMediaMenuClicked(content::MediaStreamType type,
+                          const std::string& selected_device) override;
 
   // The index of the selected radio item.
   int selected_item_;
@@ -861,12 +861,12 @@ class ContentSettingDomainListBubbleModel
                                       WebContents* web_contents,
                                       Profile* profile,
                                       ContentSettingsType content_type);
-  virtual ~ContentSettingDomainListBubbleModel() {}
+  ~ContentSettingDomainListBubbleModel() override {}
 
  private:
   void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
   void SetDomainsAndCustomLink();
-  virtual void OnCustomLinkClicked() override;
+  void OnCustomLinkClicked() override;
 };
 
 ContentSettingDomainListBubbleModel::ContentSettingDomainListBubbleModel(
@@ -950,10 +950,10 @@ class ContentSettingMixedScriptBubbleModel
                                        Profile* profile,
                                        ContentSettingsType content_type);
 
-  virtual ~ContentSettingMixedScriptBubbleModel() {}
+  ~ContentSettingMixedScriptBubbleModel() override {}
 
  private:
-  virtual void OnCustomLinkClicked() override;
+  void OnCustomLinkClicked() override;
 };
 
 ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
@@ -1114,12 +1114,12 @@ class ContentSettingMidiSysExBubbleModel
                                      WebContents* web_contents,
                                      Profile* profile,
                                      ContentSettingsType content_type);
-  virtual ~ContentSettingMidiSysExBubbleModel() {}
+  ~ContentSettingMidiSysExBubbleModel() override {}
 
  private:
   void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
   void SetDomainsAndCustomLink();
-  virtual void OnCustomLinkClicked() override;
+  void OnCustomLinkClicked() override;
 };
 
 ContentSettingMidiSysExBubbleModel::ContentSettingMidiSysExBubbleModel(

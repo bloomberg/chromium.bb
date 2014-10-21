@@ -49,10 +49,10 @@ class ExtensionIconColorManager : public ExtensionIconManager {
   explicit ExtensionIconColorManager(FaviconWebUIHandler* handler)
       : ExtensionIconManager(),
         handler_(handler) {}
-  virtual ~ExtensionIconColorManager() {}
+  ~ExtensionIconColorManager() override {}
 
-  virtual void OnImageLoaded(const std::string& extension_id,
-                             const gfx::Image& image) override {
+  void OnImageLoaded(const std::string& extension_id,
+                     const gfx::Image& image) override {
     ExtensionIconManager::OnImageLoaded(extension_id, image);
     handler_->NotifyAppIconReady(extension_id);
   }

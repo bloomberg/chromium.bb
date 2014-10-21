@@ -27,9 +27,8 @@ class TestCommandUpdaterDelegate : public CommandUpdaterDelegate {
  public:
   TestCommandUpdaterDelegate() : id_(0) {}
 
-  virtual void ExecuteCommandWithDisposition(
-      int id,
-      WindowOpenDisposition disposition) override {
+  void ExecuteCommandWithDisposition(int id, WindowOpenDisposition disposition)
+      override {
     id_ = id;
   }
 

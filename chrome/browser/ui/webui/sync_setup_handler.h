@@ -27,20 +27,19 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
  public:
   // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
   explicit SyncSetupHandler(ProfileManager* profile_manager);
-  virtual ~SyncSetupHandler();
+  ~SyncSetupHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings)
-      override;
-  virtual void RegisterMessages() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void RegisterMessages() override;
 
   // SyncStartupTracker::Observer implementation;
-  virtual void SyncStartupCompleted() override;
-  virtual void SyncStartupFailed() override;
+  void SyncStartupCompleted() override;
+  void SyncStartupFailed() override;
 
   // LoginUIService::LoginUI implementation.
-  virtual void FocusUI() override;
-  virtual void CloseUI() override;
+  void FocusUI() override;
+  void CloseUI() override;
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings,

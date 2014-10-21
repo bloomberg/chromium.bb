@@ -28,14 +28,12 @@ class ConstrainedWebDialogBrowserTestObserver
       : content::WebContentsObserver(contents),
         contents_destroyed_(false) {
   }
-  virtual ~ConstrainedWebDialogBrowserTestObserver() {}
+  ~ConstrainedWebDialogBrowserTestObserver() override {}
 
   bool contents_destroyed() { return contents_destroyed_; }
 
  private:
-  virtual void WebContentsDestroyed() override {
-    contents_destroyed_ = true;
-  }
+  void WebContentsDestroyed() override { contents_destroyed_ = true; }
 
   bool contents_destroyed_;
 };

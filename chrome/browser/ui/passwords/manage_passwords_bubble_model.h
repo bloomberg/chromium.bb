@@ -30,7 +30,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // The bubble's state is updated from the ManagePasswordsUIController
   // associated with |web_contents| upon creation.
   explicit ManagePasswordsBubbleModel(content::WebContents* web_contents);
-  virtual ~ManagePasswordsBubbleModel();
+  ~ManagePasswordsBubbleModel() override;
 
   // Called by the view code when the bubble is shown.
   void OnBubbleShown(ManagePasswordsBubble::DisplayReason reason);

@@ -27,7 +27,7 @@ class UserManagerUIBrowserTest : public InProcessBrowserTest,
     DCHECK(switches::IsNewAvatarMenu());
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     switches::EnableNewAvatarMenuForTesting(command_line);
   }
 };

@@ -110,10 +110,10 @@ void SetSendingInfo(
 class GcmInternalsUIMessageHandler : public content::WebUIMessageHandler {
  public:
   GcmInternalsUIMessageHandler();
-  virtual ~GcmInternalsUIMessageHandler();
+  ~GcmInternalsUIMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Return all of the GCM related infos to the gcm-internals page by calling

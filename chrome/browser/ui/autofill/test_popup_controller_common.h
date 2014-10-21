@@ -14,14 +14,13 @@ namespace autofill {
 class TestPopupControllerCommon : public PopupControllerCommon {
  public:
   explicit TestPopupControllerCommon(const gfx::RectF& element_bounds);
-  virtual ~TestPopupControllerCommon();
+  ~TestPopupControllerCommon() override;
 
   void set_display(const gfx::Display& display) { display_ = display; }
 
  protected:
   // Returns |display_|
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
 
  private:
   gfx::Display display_;

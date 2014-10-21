@@ -39,46 +39,43 @@ class FindBarBridge : public FindBar,
                       public FindBarTesting {
  public:
   FindBarBridge(Browser* browser);
-  virtual ~FindBarBridge();
+  ~FindBarBridge() override;
 
   FindBarCocoaController* find_bar_cocoa_controller() {
     return cocoa_controller_;
   }
 
-  virtual void SetFindBarController(
-      FindBarController* find_bar_controller) override;
+  void SetFindBarController(FindBarController* find_bar_controller) override;
 
-  virtual FindBarController* GetFindBarController() const override;
+  FindBarController* GetFindBarController() const override;
 
-  virtual FindBarTesting* GetFindBarTesting() override;
+  FindBarTesting* GetFindBarTesting() override;
 
   // Methods from FindBar.
-  virtual void Show(bool animate) override;
-  virtual void Hide(bool animate) override;
-  virtual void SetFocusAndSelection() override;
-  virtual void ClearResults(const FindNotificationDetails& results) override;
-  virtual void StopAnimation() override;
-  virtual void SetFindTextAndSelectedRange(
-      const base::string16& find_text,
-      const gfx::Range& selected_range) override;
-  virtual base::string16 GetFindText() override;
-  virtual gfx::Range GetSelectedRange() override;
-  virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
-                                     const base::string16& find_text) override;
-  virtual void AudibleAlert() override;
-  virtual bool IsFindBarVisible() override;
-  virtual void RestoreSavedFocus() override;
-  virtual bool HasGlobalFindPasteboard() override;
-  virtual void UpdateFindBarForChangedWebContents() override;
-  virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                     bool no_redraw) override;
+  void Show(bool animate) override;
+  void Hide(bool animate) override;
+  void SetFocusAndSelection() override;
+  void ClearResults(const FindNotificationDetails& results) override;
+  void StopAnimation() override;
+  void SetFindTextAndSelectedRange(const base::string16& find_text,
+                                   const gfx::Range& selected_range) override;
+  base::string16 GetFindText() override;
+  gfx::Range GetSelectedRange() override;
+  void UpdateUIForFindResult(const FindNotificationDetails& result,
+                             const base::string16& find_text) override;
+  void AudibleAlert() override;
+  bool IsFindBarVisible() override;
+  void RestoreSavedFocus() override;
+  bool HasGlobalFindPasteboard() override;
+  void UpdateFindBarForChangedWebContents() override;
+  void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
+                             bool no_redraw) override;
 
   // Methods from FindBarTesting.
-  virtual bool GetFindBarWindowInfo(gfx::Point* position,
-                                    bool* fully_visible) override;
-  virtual base::string16 GetFindSelectedText() override;
-  virtual base::string16 GetMatchCountText() override;
-  virtual int GetWidth() override;
+  bool GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) override;
+  base::string16 GetFindSelectedText() override;
+  base::string16 GetMatchCountText() override;
+  int GetWidth() override;
 
   // Used to disable find bar animations when testing.
   static bool disable_animations_during_testing_;

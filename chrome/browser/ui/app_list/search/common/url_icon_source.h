@@ -37,7 +37,7 @@ class UrlIconSource : public gfx::ImageSkiaSource,
                 const GURL& icon_url,
                 int icon_size,
                 int default_icon_resource_id);
-  virtual ~UrlIconSource();
+  ~UrlIconSource() override;
 
  private:
   // Invoked from GetImageForScale to download the app icon when the hosting
@@ -45,15 +45,15 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   void StartIconFetch();
 
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override;
+  gfx::ImageSkiaRep GetImageForScale(float scale) override;
 
   // net::URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // ImageDecoder::Delegate overrides:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   IconLoadedCallback icon_loaded_callback_;
   net::URLRequestContextGetter* context_getter_;

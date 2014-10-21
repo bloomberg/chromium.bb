@@ -140,13 +140,13 @@ class BrokerDelegate : public ExtensionInstallPrompt::Delegate {
       : delegate_(delegate) {}
 
   // ExtensionInstallPrompt::Delegate implementation.
-  virtual void InstallUIProceed() override {
+  void InstallUIProceed() override {
     if (delegate_)
       delegate_->InstallUIProceed();
     delete this;
   };
 
-  virtual void InstallUIAbort(bool user_initiated) override {
+  void InstallUIAbort(bool user_initiated) override {
     if (delegate_)
       delegate_->InstallUIAbort(user_initiated);
     delete this;

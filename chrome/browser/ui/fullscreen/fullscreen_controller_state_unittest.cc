@@ -36,23 +36,22 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   };
 
   FullscreenControllerTestWindow();
-  virtual ~FullscreenControllerTestWindow() {}
+  ~FullscreenControllerTestWindow() override {}
 
   // BrowserWindow Interface:
-  virtual void EnterFullscreen(const GURL& url,
-                               FullscreenExitBubbleType type) override;
-  virtual void ExitFullscreen() override;
-  virtual bool ShouldHideUIForFullscreen() const override;
-  virtual bool IsFullscreen() const override;
+  void EnterFullscreen(const GURL& url, FullscreenExitBubbleType type) override;
+  void ExitFullscreen() override;
+  bool ShouldHideUIForFullscreen() const override;
+  bool IsFullscreen() const override;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) override;
   virtual bool IsInMetroSnapMode() const override;
 #endif
 #if defined(OS_MACOSX)
-  virtual void EnterFullscreenWithChrome() override;
-  virtual void EnterFullscreenWithoutChrome() override;
-  virtual bool IsFullscreenWithChrome() override;
-  virtual bool IsFullscreenWithoutChrome() override;
+  void EnterFullscreenWithChrome() override;
+  void EnterFullscreenWithoutChrome() override;
+  bool IsFullscreenWithChrome() override;
+  bool IsFullscreenWithoutChrome() override;
 #endif
 
   static const char* GetWindowStateString(WindowState state);
@@ -219,15 +218,15 @@ class FullscreenControllerStateUnitTest : public BrowserWithTestWindowTest,
 
   // FullscreenControllerStateTest:
   virtual void SetUp() override;
-  virtual BrowserWindow* CreateBrowserWindow() override;
-  virtual void ChangeWindowFullscreenState() override;
-  virtual const char* GetWindowStateString() override;
-  virtual void VerifyWindowState() override;
+  BrowserWindow* CreateBrowserWindow() override;
+  void ChangeWindowFullscreenState() override;
+  const char* GetWindowStateString() override;
+  void VerifyWindowState() override;
 
  protected:
   // FullscreenControllerStateTest:
-  virtual bool ShouldSkipStateAndEventPair(State state, Event event) override;
-  virtual Browser* GetBrowser() override;
+  bool ShouldSkipStateAndEventPair(State state, Event event) override;
+  Browser* GetBrowser() override;
   FullscreenControllerTestWindow* window_;
 };
 

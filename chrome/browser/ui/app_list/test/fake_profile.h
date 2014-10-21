@@ -30,55 +30,51 @@ class FakeProfile : public Profile {
   FakeProfile(const std::string& name, const base::FilePath& path);
 
   // Profile overrides.
-  virtual std::string GetProfileName() override;
-  virtual ProfileType GetProfileType() const override;
-  virtual base::FilePath GetPath() const override;
-  virtual bool IsOffTheRecord() const override;
-  virtual content::DownloadManagerDelegate*
-      GetDownloadManagerDelegate() override;
-  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+  std::string GetProfileName() override;
+  ProfileType GetProfileType() const override;
+  base::FilePath GetPath() const override;
+  bool IsOffTheRecord() const override;
+  content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
+  net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) override;
-  virtual net::URLRequestContextGetter* GetMediaRequestContext() override;
-  virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
+  net::URLRequestContextGetter* GetMediaRequestContext() override;
+  net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) override;
-  virtual net::URLRequestContextGetter*
-      GetMediaRequestContextForStoragePartition(
-          const base::FilePath& partition_path,
-          bool in_memory) override;
-  virtual content::ResourceContext* GetResourceContext() override;
-  virtual content::BrowserPluginGuestManager* GetGuestManager() override;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
-  virtual content::PushMessagingService* GetPushMessagingService() override;
-  virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
-  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
-  virtual Profile* GetOffTheRecordProfile() override;
-  virtual void DestroyOffTheRecordProfile() override;
-  virtual bool HasOffTheRecordProfile() override;
-  virtual Profile* GetOriginalProfile() override;
-  virtual bool IsSupervised() override;
-  virtual history::TopSites* GetTopSites() override;
-  virtual history::TopSites* GetTopSitesWithoutCreating() override;
-  virtual ExtensionSpecialStoragePolicy*
-      GetExtensionSpecialStoragePolicy() override;
-  virtual PrefService* GetPrefs() override;
-  virtual PrefService* GetOffTheRecordPrefs() override;
-  virtual net::URLRequestContextGetter* GetRequestContext() override;
-  virtual net::URLRequestContextGetter*
-      GetRequestContextForExtensions() override;
-  virtual net::SSLConfigService* GetSSLConfigService() override;
-  virtual HostContentSettingsMap* GetHostContentSettingsMap() override;
-  virtual bool IsSameProfile(Profile* profile) override;
-  virtual base::Time GetStartTime() const override;
-  virtual net::URLRequestContextGetter* CreateRequestContext(
+  net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory) override;
+  content::ResourceContext* GetResourceContext() override;
+  content::BrowserPluginGuestManager* GetGuestManager() override;
+  storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  content::PushMessagingService* GetPushMessagingService() override;
+  content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
+  Profile* GetOffTheRecordProfile() override;
+  void DestroyOffTheRecordProfile() override;
+  bool HasOffTheRecordProfile() override;
+  Profile* GetOriginalProfile() override;
+  bool IsSupervised() override;
+  history::TopSites* GetTopSites() override;
+  history::TopSites* GetTopSitesWithoutCreating() override;
+  ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
+  PrefService* GetPrefs() override;
+  PrefService* GetOffTheRecordPrefs() override;
+  net::URLRequestContextGetter* GetRequestContext() override;
+  net::URLRequestContextGetter* GetRequestContextForExtensions() override;
+  net::SSLConfigService* GetSSLConfigService() override;
+  HostContentSettingsMap* GetHostContentSettingsMap() override;
+  bool IsSameProfile(Profile* profile) override;
+  base::Time GetStartTime() const override;
+  net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
-  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
-  virtual base::FilePath last_selected_directory() override;
-  virtual void set_last_selected_directory(const base::FilePath& path) override;
+  base::FilePath last_selected_directory() override;
+  void set_last_selected_directory(const base::FilePath& path) override;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(
@@ -87,15 +83,15 @@ class FakeProfile : public Profile {
   virtual void InitChromeOSPreferences() override;
 #endif  // defined(OS_CHROMEOS)
 
-  virtual PrefProxyConfigTracker* GetProxyConfigTracker() override;
-  virtual chrome_browser_net::Predictor* GetNetworkPredictor() override;
-  virtual DevToolsNetworkController* GetDevToolsNetworkController() override;
-  virtual void ClearNetworkingHistorySince(
-      base::Time time, const base::Closure& completion) override;
-  virtual GURL GetHomePage() override;
-  virtual bool WasCreatedByVersionOrLater(const std::string& version) override;
-  virtual void SetExitType(ExitType exit_type) override;
-  virtual ExitType GetLastSessionExitType() override;
+  PrefProxyConfigTracker* GetProxyConfigTracker() override;
+  chrome_browser_net::Predictor* GetNetworkPredictor() override;
+  DevToolsNetworkController* GetDevToolsNetworkController() override;
+  void ClearNetworkingHistorySince(base::Time time,
+                                   const base::Closure& completion) override;
+  GURL GetHomePage() override;
+  bool WasCreatedByVersionOrLater(const std::string& version) override;
+  void SetExitType(ExitType exit_type) override;
+  ExitType GetLastSessionExitType() override;
 
  private:
   std::string name_;

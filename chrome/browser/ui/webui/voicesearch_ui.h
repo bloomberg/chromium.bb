@@ -12,7 +12,7 @@
 class VoiceSearchUI : public content::WebUIController {
  public:
   explicit VoiceSearchUI(content::WebUI* web_ui);
-  virtual ~VoiceSearchUI();
+  ~VoiceSearchUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchUI);

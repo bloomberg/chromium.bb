@@ -17,15 +17,15 @@
 class KeywordHintDecoration : public LocationBarDecoration {
  public:
   KeywordHintDecoration();
-  virtual ~KeywordHintDecoration();
+  ~KeywordHintDecoration() override;
 
   // Calculates the message to display and where to place the [tab]
   // image.
   void SetKeyword(const base::string16& keyword, bool is_extension_keyword);
 
   // Implement |LocationBarDecoration|.
-  virtual void DrawInFrame(NSRect frame, NSView* control_view) override;
-  virtual CGFloat GetWidthForSpace(CGFloat width) override;
+  void DrawInFrame(NSRect frame, NSView* control_view) override;
+  CGFloat GetWidthForSpace(CGFloat width) override;
 
  private:
   // Fetch and cache the [tab] image.

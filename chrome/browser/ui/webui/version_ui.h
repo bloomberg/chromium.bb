@@ -11,7 +11,8 @@
 class VersionUI : public content::WebUIController {
  public:
   explicit VersionUI(content::WebUI* web_ui);
-  virtual ~VersionUI();
+  ~VersionUI() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VersionUI);
 };

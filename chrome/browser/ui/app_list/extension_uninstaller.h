@@ -19,14 +19,14 @@ class ExtensionUninstaller
   ExtensionUninstaller(Profile* profile,
                        const std::string& extension_id,
                        AppListControllerDelegate* controller);
-  virtual ~ExtensionUninstaller();
+  ~ExtensionUninstaller() override;
 
   void Run();
 
  private:
   // Overridden from ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionUninstallAccepted() override;
-  virtual void ExtensionUninstallCanceled() override;
+  void ExtensionUninstallAccepted() override;
+  void ExtensionUninstallCanceled() override;
   void CleanUp();
 
   Profile* profile_;

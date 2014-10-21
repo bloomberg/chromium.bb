@@ -17,7 +17,7 @@ class Profile;
 class FindBarState : public KeyedService {
  public:
   FindBarState() {}
-  virtual ~FindBarState() {}
+  ~FindBarState() override {}
 
   base::string16 last_prepopulate_text() const {
     return last_prepopulate_text_;

@@ -22,17 +22,16 @@ namespace options {
 class CoreOptionsHandler : public OptionsPageUIHandler {
  public:
   CoreOptionsHandler();
-  virtual ~CoreOptionsHandler();
+  ~CoreOptionsHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void InitializeHandler() override;
-  virtual void InitializePage() override;
-  virtual void Uninitialize() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void InitializeHandler() override;
+  void InitializePage() override;
+  void Uninitialize() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   void set_handlers_host(OptionsPageUIHandlerHost* handlers_host) {
     handlers_host_ = handlers_host;

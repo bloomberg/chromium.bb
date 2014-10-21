@@ -17,7 +17,7 @@ class BookmarkSubMenuModel : public ui::SimpleMenuModel {
  public:
   BookmarkSubMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                        Browser* browser);
-  virtual ~BookmarkSubMenuModel();
+  ~BookmarkSubMenuModel() override;
 
  private:
   void Build(Browser* browser);

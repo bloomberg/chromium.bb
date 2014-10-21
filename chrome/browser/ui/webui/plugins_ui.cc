@@ -141,10 +141,10 @@ class PluginsDOMHandler : public WebUIMessageHandler,
                           public content::NotificationObserver {
  public:
   PluginsDOMHandler();
-  virtual ~PluginsDOMHandler() {}
+  ~PluginsDOMHandler() override {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback for the "requestPluginsData" message.
   void HandleRequestPluginsData(const base::ListValue* args);
@@ -162,9 +162,9 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   void HandleSetPluginAlwaysAllowed(const base::ListValue* args);
 
   // content::NotificationObserver method overrides
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   void LoadPlugins();

@@ -21,36 +21,34 @@ class BubbleViewError : public GlobalErrorWithStandardBubble {
 
   int bubble_view_close_count() { return bubble_view_close_count_; }
 
-  virtual bool HasMenuItem() override { return false; }
-  virtual int MenuItemCommandID() override {
+  bool HasMenuItem() override { return false; }
+  int MenuItemCommandID() override {
     ADD_FAILURE();
     return 0;
   }
-  virtual base::string16 MenuItemLabel() override {
+  base::string16 MenuItemLabel() override {
     ADD_FAILURE();
     return base::string16();
   }
-  virtual void ExecuteMenuItem(Browser* browser) override { ADD_FAILURE(); }
+  void ExecuteMenuItem(Browser* browser) override { ADD_FAILURE(); }
 
-  virtual bool HasBubbleView() override { return true; }
-  virtual base::string16 GetBubbleViewTitle() override {
-    return base::string16();
-  }
-  virtual std::vector<base::string16> GetBubbleViewMessages() override {
+  bool HasBubbleView() override { return true; }
+  base::string16 GetBubbleViewTitle() override { return base::string16(); }
+  std::vector<base::string16> GetBubbleViewMessages() override {
     return std::vector<base::string16>();
   }
-  virtual base::string16 GetBubbleViewAcceptButtonLabel() override {
+  base::string16 GetBubbleViewAcceptButtonLabel() override {
     return base::string16();
   }
-  virtual base::string16 GetBubbleViewCancelButtonLabel() override {
+  base::string16 GetBubbleViewCancelButtonLabel() override {
     return base::string16();
   }
-  virtual void OnBubbleViewDidClose(Browser* browser) override {
+  void OnBubbleViewDidClose(Browser* browser) override {
     EXPECT_TRUE(browser);
     ++bubble_view_close_count_;
   }
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) override {}
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) override {}
+  void BubbleViewAcceptButtonPressed(Browser* browser) override {}
+  void BubbleViewCancelButtonPressed(Browser* browser) override {}
 
  private:
   int bubble_view_close_count_;

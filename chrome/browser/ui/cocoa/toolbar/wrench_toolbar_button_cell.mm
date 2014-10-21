@@ -11,9 +11,9 @@
 class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
  public:
   explicit WrenchIconPainterDelegateMac(NSCell* cell) : cell_(cell) {}
-  virtual ~WrenchIconPainterDelegateMac() {}
+  ~WrenchIconPainterDelegateMac() override {}
 
-  virtual void ScheduleWrenchIconPaint() override {
+  void ScheduleWrenchIconPaint() override {
     [[cell_ controlView] setNeedsDisplay:YES];
   }
 

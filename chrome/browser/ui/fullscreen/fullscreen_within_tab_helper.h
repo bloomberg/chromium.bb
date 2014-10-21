@@ -36,7 +36,7 @@ class FullscreenWithinTabHelper
  private:
   friend class content::WebContentsUserData<FullscreenWithinTabHelper>;
   explicit FullscreenWithinTabHelper(content::WebContents* ignored);
-  virtual ~FullscreenWithinTabHelper();
+  ~FullscreenWithinTabHelper() override;
 
   bool is_fullscreen_for_captured_tab_;
 

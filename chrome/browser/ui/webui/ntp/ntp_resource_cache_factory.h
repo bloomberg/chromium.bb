@@ -24,12 +24,12 @@ class NTPResourceCacheFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<NTPResourceCacheFactory>;
 
   NTPResourceCacheFactory();
-  virtual ~NTPResourceCacheFactory();
+  ~NTPResourceCacheFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

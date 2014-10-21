@@ -19,7 +19,7 @@ class SadTab;
 class SadTabHelper : public content::WebContentsObserver,
                      public content::WebContentsUserData<SadTabHelper> {
  public:
-  virtual ~SadTabHelper();
+  ~SadTabHelper() override;
 
   chrome::SadTab* sad_tab() { return sad_tab_.get(); }
 
@@ -31,8 +31,8 @@ class SadTabHelper : public content::WebContentsObserver,
   void InstallSadTab(base::TerminationStatus status);
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderViewReady() override;
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderViewReady() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   scoped_ptr<chrome::SadTab> sad_tab_;
 

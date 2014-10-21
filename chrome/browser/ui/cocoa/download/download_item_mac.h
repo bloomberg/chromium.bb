@@ -29,12 +29,12 @@ class DownloadItemMac : content::DownloadItem::Observer {
                   DownloadItemController* controller);
 
   // Destructor.
-  virtual ~DownloadItemMac();
+  ~DownloadItemMac() override;
 
   // content::DownloadItem::Observer implementation
-  virtual void OnDownloadUpdated(content::DownloadItem* download) override;
-  virtual void OnDownloadOpened(content::DownloadItem* download) override;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadUpdated(content::DownloadItem* download) override;
+  void OnDownloadOpened(content::DownloadItem* download) override;
+  void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   DownloadItemModel* download_model() { return &download_model_; }
 

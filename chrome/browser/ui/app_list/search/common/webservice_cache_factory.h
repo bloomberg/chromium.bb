@@ -31,10 +31,10 @@ class WebserviceCacheFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<WebserviceCacheFactory>;
 
   WebserviceCacheFactory();
-  virtual ~WebserviceCacheFactory();
+  ~WebserviceCacheFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(WebserviceCacheFactory);

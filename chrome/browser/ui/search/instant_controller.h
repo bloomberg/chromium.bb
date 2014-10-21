@@ -44,7 +44,7 @@ class WebContents;
 class InstantController : public InstantPage::Delegate {
  public:
   explicit InstantController(BrowserInstantController* browser);
-  virtual ~InstantController();
+  ~InstantController() override;
 
   // Called if the browser is navigating to a search URL for |search_terms| with
   // search-term-replacement enabled. If |instant_tab_| can be used to process
@@ -114,12 +114,10 @@ class InstantController : public InstantPage::Delegate {
   // Overridden from InstantPage::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is
   // the RenderViewHost being created which is not always true. Fix this.
-  virtual void InstantSupportDetermined(
-      const content::WebContents* contents,
-      bool supports_instant) override;
-  virtual void InstantPageAboutToNavigateMainFrame(
-      const content::WebContents* contents,
-      const GURL& url) override;
+  void InstantSupportDetermined(const content::WebContents* contents,
+                                bool supports_instant) override;
+  void InstantPageAboutToNavigateMainFrame(const content::WebContents* contents,
+                                           const GURL& url) override;
 
   // Helper function to navigate the given contents to the local fallback
   // Instant URL and trim the history correctly.

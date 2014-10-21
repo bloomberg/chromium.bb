@@ -15,15 +15,14 @@ namespace options {
 class AutomaticSettingsResetHandler : public OptionsPageUIHandler {
  public:
   AutomaticSettingsResetHandler();
-  virtual ~AutomaticSettingsResetHandler();
+  ~AutomaticSettingsResetHandler() override;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) override;
-  virtual void InitializePage() override;
+  void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
+  void InitializePage() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutomaticSettingsResetHandler);

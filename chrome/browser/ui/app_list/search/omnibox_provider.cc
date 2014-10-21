@@ -91,10 +91,10 @@ class OmniboxResult : public SearchResult {
     UpdateIcon();
     UpdateTitleAndDetails();
   }
-  virtual ~OmniboxResult() {}
+  ~OmniboxResult() override {}
 
   // SearchResult overrides:
-  virtual void Open(int event_flags) override {
+  void Open(int event_flags) override {
     RecordHistogram(OMNIBOX_SEARCH_RESULT);
     list_controller_->OpenURL(profile_,
                               match_.destination_url,
@@ -102,7 +102,7 @@ class OmniboxResult : public SearchResult {
                               ui::DispositionFromEventFlags(event_flags));
   }
 
-  virtual scoped_ptr<SearchResult> Duplicate() override {
+  scoped_ptr<SearchResult> Duplicate() override {
     return scoped_ptr<SearchResult>(new OmniboxResult(
         profile_, list_controller_, autocomplete_controller_, match_));
   }

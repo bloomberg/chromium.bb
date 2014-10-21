@@ -26,11 +26,11 @@ class AppListPrefsFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<AppListPrefsFactory>;
 
   AppListPrefsFactory();
-  virtual ~AppListPrefsFactory();
+  ~AppListPrefsFactory() override;
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

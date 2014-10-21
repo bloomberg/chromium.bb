@@ -14,10 +14,10 @@ class LoadingAnimation : public gfx::LinearAnimation {
  public:
   explicit LoadingAnimation(gfx::AnimationDelegate* delegate,
                             int font_height);
-  virtual ~LoadingAnimation();
+  ~LoadingAnimation() override;
 
   // gfx::Animation implementation.
-  virtual void Step(base::TimeTicks time_now) override;
+  void Step(base::TimeTicks time_now) override;
 
   // Returns the vertical pixel offset for the nth dot.
   double GetCurrentValueForDot(size_t dot_i) const;

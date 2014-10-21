@@ -23,7 +23,7 @@ class PersonalDataManager;
 class CountryComboboxModel : public ui::ComboboxModel {
  public:
   CountryComboboxModel();
-  virtual ~CountryComboboxModel();
+  ~CountryComboboxModel() override;
 
   // |filter| is passed each known country's country code. If |filter| returns
   // true, an item for that country is added to the model (else it's omitted).
@@ -32,9 +32,9 @@ class CountryComboboxModel : public ui::ComboboxModel {
                     const base::Callback<bool(const std::string&)>& filter);
 
   // ui::ComboboxModel implementation:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
-  virtual bool IsItemSeparatorAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
+  bool IsItemSeparatorAt(int index) override;
 
   const std::vector<AutofillCountry*>& countries() const {
     return countries_.get();

@@ -18,10 +18,10 @@
 class VersionUpdaterMac : public VersionUpdater {
  public:
   // VersionUpdater implementation.
-  virtual void CheckForUpdate(const StatusCallback& status_callback,
-                              const PromoteCallback& promote_callback) override;
-  virtual void PromoteUpdater() const override;
-  virtual void RelaunchBrowser() const override;
+  void CheckForUpdate(const StatusCallback& status_callback,
+                      const PromoteCallback& promote_callback) override;
+  void PromoteUpdater() const override;
+  void RelaunchBrowser() const override;
 
   // Process status updates received from Keystone. The dictionary will contain
   // an AutoupdateStatus value as an intValue at key kAutoupdateStatusStatus. If
@@ -34,7 +34,7 @@ class VersionUpdaterMac : public VersionUpdater {
 
   // Clients must use VersionUpdater::Create().
   VersionUpdaterMac();
-  virtual ~VersionUpdaterMac();
+  ~VersionUpdaterMac() override;
 
  private:
   // Update the visibility state of promote button.

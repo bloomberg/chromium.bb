@@ -14,14 +14,14 @@ class ProfilerUI : public content::WebUIController,
                    public metrics::TrackingSynchronizerObserver {
  public:
   explicit ProfilerUI(content::WebUI* web_ui);
-  virtual ~ProfilerUI();
+  ~ProfilerUI() override;
 
   // Get the tracking data from TrackingSynchronizer.
   void GetData();
 
  private:
   // TrackingSynchronizerObserver:
-  virtual void ReceivedProfilerData(
+  void ReceivedProfilerData(
       const tracked_objects::ProcessDataSnapshot& profiler_data,
       int process_type) override;
 

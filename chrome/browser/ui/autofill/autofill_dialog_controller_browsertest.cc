@@ -288,12 +288,12 @@ class NavEntryCommittedObserver : public content::WindowedNotificationObserver {
                                    source),
       url_(url) {}
 
-  virtual ~NavEntryCommittedObserver() {}
+  ~NavEntryCommittedObserver() override {}
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     content::LoadCommittedDetails* load_details =
         content::Details<content::LoadCommittedDetails>(details).ptr();
     if (load_details->entry->GetVirtualURL() != url_)
@@ -1505,7 +1505,7 @@ class AutofillDialogControllerSecurityTest :
   AutofillDialogControllerSecurityTest() {}
   virtual ~AutofillDialogControllerSecurityTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     CHECK(!command_line->HasSwitch(::switches::kReduceSecurityForTesting));
   }
 

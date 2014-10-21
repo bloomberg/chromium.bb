@@ -25,16 +25,16 @@ class DictionaryValue;
 class SuggestionsSourceTopSites : public SuggestionsSource {
  public:
   SuggestionsSourceTopSites();
-  virtual ~SuggestionsSourceTopSites();
+  ~SuggestionsSourceTopSites() override;
 
  protected:
   // SuggestionsSource overrides:
-  virtual void SetDebug(bool enable) override;
-  virtual int GetWeight() override;
-  virtual int GetItemCount() override;
-  virtual base::DictionaryValue* PopItem() override;
-  virtual void FetchItems(Profile* profile) override;
-  virtual void SetCombiner(SuggestionsCombiner* combiner) override;
+  void SetDebug(bool enable) override;
+  int GetWeight() override;
+  int GetItemCount() override;
+  base::DictionaryValue* PopItem() override;
+  void FetchItems(Profile* profile) override;
+  void SetCombiner(SuggestionsCombiner* combiner) override;
 
   void OnSuggestionsUrlsAvailable(const history::FilteredURLList* data);
 

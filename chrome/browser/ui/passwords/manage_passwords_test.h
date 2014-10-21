@@ -22,7 +22,7 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   ManagePasswordsTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
   // Get the mock UI controller for the current WebContents.
   ManagePasswordsUIControllerMock* controller();

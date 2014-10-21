@@ -36,7 +36,7 @@ class ConstrainedWebDialogDelegateUserData
  public:
   explicit ConstrainedWebDialogDelegateUserData(
       ConstrainedWebDialogDelegate* delegate) : delegate_(delegate) {}
-  virtual ~ConstrainedWebDialogDelegateUserData() {}
+  ~ConstrainedWebDialogDelegateUserData() override {}
 
   ConstrainedWebDialogDelegate* delegate() { return delegate_; }
 

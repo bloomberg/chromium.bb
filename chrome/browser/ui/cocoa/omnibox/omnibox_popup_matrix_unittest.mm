@@ -32,19 +32,17 @@ class OmniboxPopupMatrixTest : public CocoaTest,
     [[test_window() contentView] addSubview:matrix_];
   };
 
-  virtual void OnMatrixRowSelected(OmniboxPopupMatrix* matrix,
-                                   size_t row) override {
+  void OnMatrixRowSelected(OmniboxPopupMatrix* matrix, size_t row) override {
     selected_row_ = row;
     [matrix_ selectCellAtRow:row column:0];
   }
 
-  virtual void OnMatrixRowClicked(OmniboxPopupMatrix* matrix,
-                                size_t row) override {
+  void OnMatrixRowClicked(OmniboxPopupMatrix* matrix, size_t row) override {
     clicked_row_ = row;
   }
 
-  virtual void OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
-                                        size_t row) override {
+  void OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
+                                size_t row) override {
     middle_clicked_row_ = row;
   }
 

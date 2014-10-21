@@ -73,7 +73,7 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   virtual int selected_line() const = 0;
 
  protected:
-  virtual ~AutofillPopupController() {}
+  ~AutofillPopupController() override {}
 };
 
 }  // namespace autofill

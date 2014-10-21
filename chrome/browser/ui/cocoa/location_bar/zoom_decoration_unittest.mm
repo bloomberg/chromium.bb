@@ -14,9 +14,9 @@ class MockZoomDecoration : public ZoomDecoration {
  public:
   explicit MockZoomDecoration(LocationBarViewMac* owner)
       : ZoomDecoration(owner), update_ui_count_(0) {}
-  virtual bool ShouldShowDecoration() const override { return true; }
-  virtual void ShowAndUpdateUI(ZoomController* zoom_controller,
-                               NSString* tooltip_string) override {
+  bool ShouldShowDecoration() const override { return true; }
+  void ShowAndUpdateUI(ZoomController* zoom_controller,
+                       NSString* tooltip_string) override {
     ++update_ui_count_;
     ZoomDecoration::ShowAndUpdateUI(zoom_controller, tooltip_string);
   }
@@ -31,7 +31,7 @@ class MockZoomController : public ZoomController {
  public:
   explicit MockZoomController(content::WebContents* web_contents)
       : ZoomController(web_contents) {}
-  virtual int GetZoomPercent() const override { return zoom_percent_; }
+  int GetZoomPercent() const override { return zoom_percent_; }
 
   int zoom_percent_;
 

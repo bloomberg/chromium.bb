@@ -62,7 +62,7 @@ class AppListSyncableService : public syncer::SyncableService,
   AppListSyncableService(Profile* profile,
                          extensions::ExtensionSystem* extension_system);
 
-  virtual ~AppListSyncableService();
+  ~AppListSyncableService() override;
 
   // Adds |item| to |sync_items_| and |model_|. If a sync item already exists,
   // updates the existing sync item instead.
@@ -89,15 +89,14 @@ class AppListSyncableService : public syncer::SyncableService,
   void ResetDriveAppProviderForTest();
 
   // syncer::SyncableService
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
@@ -106,18 +105,16 @@ class AppListSyncableService : public syncer::SyncableService,
   typedef std::map<std::string, SyncItem*> SyncItemMap;
 
   // KeyedService
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // DriveAppUninstallSyncService
-  virtual void TrackUninstalledDriveApp(
-      const std::string& drive_app_id) override;
-  virtual void UntrackUninstalledDriveApp(
-      const std::string& drive_app_id) override;
+  void TrackUninstalledDriveApp(const std::string& drive_app_id) override;
+  void UntrackUninstalledDriveApp(const std::string& drive_app_id) override;
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Builds the model once ExtensionService is ready.
   void BuildModel();

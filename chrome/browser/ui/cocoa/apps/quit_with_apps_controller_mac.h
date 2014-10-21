@@ -21,12 +21,12 @@ class QuitWithAppsController : public NotificationDelegate {
   QuitWithAppsController();
 
   // NotificationDelegate interface.
-  virtual void Display() override;
-  virtual void Error() override;
-  virtual void Close(bool by_user) override;
-  virtual void Click() override;
-  virtual void ButtonClick(int button_index) override;
-  virtual std::string id() const override;
+  void Display() override;
+  void Error() override;
+  void Close(bool by_user) override;
+  void Click() override;
+  void ButtonClick(int button_index) override;
+  std::string id() const override;
 
   // Attempt to quit Chrome. This will display a notification and return false
   // if there are apps running.
@@ -36,7 +36,7 @@ class QuitWithAppsController : public NotificationDelegate {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  virtual ~QuitWithAppsController();
+  ~QuitWithAppsController() override;
 
   scoped_ptr<Notification> notification_;
   // The Profile instance associated with the notification_. We need to cache

@@ -29,15 +29,14 @@ class EncodingMenuModel : public ui::SimpleMenuModel,
                           public ui::SimpleMenuModel::Delegate {
  public:
   explicit EncodingMenuModel(Browser* browser);
-  virtual ~EncodingMenuModel();
+  ~EncodingMenuModel() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   void Build();
@@ -51,7 +50,7 @@ class EncodingMenuModel : public ui::SimpleMenuModel,
 class ZoomMenuModel : public ui::SimpleMenuModel {
  public:
   explicit ZoomMenuModel(ui::SimpleMenuModel::Delegate* delegate);
-  virtual ~ZoomMenuModel();
+  ~ZoomMenuModel() override;
 
  private:
   void Build();
@@ -62,7 +61,7 @@ class ZoomMenuModel : public ui::SimpleMenuModel {
 class ToolsMenuModel : public ui::SimpleMenuModel {
  public:
   ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate, Browser* browser);
-  virtual ~ToolsMenuModel();
+  ~ToolsMenuModel() override;
 
  private:
   void Build(Browser* browser);
@@ -90,39 +89,37 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   static const int kMaxRecentTabsCommandId = 1200;
 
   WrenchMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
-  virtual ~WrenchMenuModel();
+  ~WrenchMenuModel() override;
 
   // Overridden for ButtonMenuItemModel::Delegate:
-  virtual bool DoesCommandIdDismissMenu(int command_id) const override;
+  bool DoesCommandIdDismissMenu(int command_id) const override;
 
   // Overridden for both ButtonMenuItemModel::Delegate and SimpleMenuModel:
-  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
-  virtual base::string16 GetLabelForCommandId(int command_id) const override;
-  virtual bool GetIconForCommandId(int command_id,
-                                   gfx::Image* icon) const override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool IsCommandIdVisible(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
+  bool IsItemForCommandIdDynamic(int command_id) const override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
+  bool GetIconForCommandId(int command_id, gfx::Image* icon) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool IsCommandIdVisible(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
 
   // Overridden from TabStripModelObserver:
-  virtual void ActiveTabChanged(content::WebContents* old_contents,
-                                content::WebContents* new_contents,
-                                int index,
-                                int reason) override;
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* old_contents,
-                             content::WebContents* new_contents,
-                             int index) override;
-  virtual void TabStripModelDeleted() override;
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
+  void TabStripModelDeleted() override;
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Getters.
   Browser* browser() const { return browser_; }

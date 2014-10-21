@@ -27,13 +27,12 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
                             public content::NotificationObserver {
  public:
   CollectedCookiesMac(content::WebContents* web_contents);
-  virtual ~CollectedCookiesMac();
+  ~CollectedCookiesMac() override;
 
   void PerformClose();
 
   // ConstrainedWindowMacDelegate implementation.
-  virtual void OnConstrainedWindowClosed(
-      ConstrainedWindowMac* window) override;
+  void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   CollectedCookiesWindowController* sheet_controller() const {
     return sheet_controller_.get();
@@ -41,9 +40,9 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
 
  private:
   // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

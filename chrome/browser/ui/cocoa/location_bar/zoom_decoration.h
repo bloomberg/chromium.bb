@@ -22,7 +22,7 @@ class ZoomDecoration : public ImageDecoration,
                        public ZoomBubbleControllerDelegate {
  public:
   explicit ZoomDecoration(LocationBarViewMac* owner);
-  virtual ~ZoomDecoration();
+  ~ZoomDecoration() override;
 
   // Called when this decoration should show or hide itself in its most current
   // state. Returns whether any updates were made.
@@ -54,14 +54,14 @@ class ZoomDecoration : public ImageDecoration,
   virtual bool ShouldShowDecoration() const;
 
   // LocationBarDecoration implementation.
-  virtual bool AcceptsMousePress() override;
-  virtual bool OnMousePressed(NSRect frame, NSPoint location) override;
-  virtual NSString* GetToolTip() override;
-  virtual NSPoint GetBubblePointInFrame(NSRect frame) override;
+  bool AcceptsMousePress() override;
+  bool OnMousePressed(NSRect frame, NSPoint location) override;
+  NSString* GetToolTip() override;
+  NSPoint GetBubblePointInFrame(NSRect frame) override;
 
   // ZoomBubbleControllerDelegate implementation.
-  virtual content::WebContents* GetWebContents() override;
-  virtual void OnClose() override;
+  content::WebContents* GetWebContents() override;
+  void OnClose() override;
 
   // The control that owns this. Weak.
   LocationBarViewMac* owner_;

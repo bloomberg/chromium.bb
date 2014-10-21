@@ -17,7 +17,7 @@ class ActiveDesktopMonitor : public aura::EnvObserver {
   // Constructs an ActiveDesktopMonitor which initially uses |initial_desktop|
   // as the |last_activated_desktop_| until a root window is activated.
   explicit ActiveDesktopMonitor(chrome::HostDesktopType initial_desktop);
-  virtual ~ActiveDesktopMonitor();
+  ~ActiveDesktopMonitor() override;
 
   // Returns the host desktop type of the most-recently activated
   // WindowTreeHost. This desktop type may no longer exist (e.g., the Ash
@@ -30,8 +30,8 @@ class ActiveDesktopMonitor : public aura::EnvObserver {
   static bool IsDesktopWindow(aura::WindowTreeHost* host);
 
   // aura::EnvObserver methods.
-  virtual void OnWindowInitialized(aura::Window* window) override;
-  virtual void OnHostActivated(aura::WindowTreeHost* host) override;
+  void OnWindowInitialized(aura::Window* window) override;
+  void OnHostActivated(aura::WindowTreeHost* host) override;
 
   static ActiveDesktopMonitor* g_instance_;
   chrome::HostDesktopType last_activated_desktop_;

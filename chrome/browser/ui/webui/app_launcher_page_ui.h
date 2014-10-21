@@ -19,7 +19,7 @@ class RefCountedMemory;
 class AppLauncherPageUI : public content::WebUIController {
  public:
   explicit AppLauncherPageUI(content::WebUI* web_ui);
-  virtual ~AppLauncherPageUI();
+  ~AppLauncherPageUI() override;
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
@@ -28,18 +28,18 @@ class AppLauncherPageUI : public content::WebUIController {
   class HTMLSource : public content::URLDataSource {
    public:
     explicit HTMLSource(Profile* profile);
-    virtual ~HTMLSource();
+    ~HTMLSource() override;
 
     // content::URLDataSource implementation.
-    virtual std::string GetSource() const override;
-    virtual void StartDataRequest(
+    std::string GetSource() const override;
+    void StartDataRequest(
         const std::string& path,
         int render_process_id,
         int render_frame_id,
         const content::URLDataSource::GotDataCallback& callback) override;
-    virtual std::string GetMimeType(const std::string&) const override;
-    virtual bool ShouldReplaceExistingSource() const override;
-    virtual bool ShouldAddContentSecurityPolicy() const override;
+    std::string GetMimeType(const std::string&) const override;
+    bool ShouldReplaceExistingSource() const override;
+    bool ShouldAddContentSecurityPolicy() const override;
 
    private:
 

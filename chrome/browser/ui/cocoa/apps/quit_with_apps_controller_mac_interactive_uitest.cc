@@ -34,7 +34,7 @@ class QuitWithAppsControllerInteractiveTest
 
   virtual ~QuitWithAppsControllerInteractiveTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kAppsKeepChromeAliveInTests);
   }

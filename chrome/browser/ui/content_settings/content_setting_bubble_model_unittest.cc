@@ -814,25 +814,25 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
-  virtual void RegisterExternalHandler(const std::string& protocol) override {
+  void RegisterExternalHandler(const std::string& protocol) override {
     // Overrides in order to not register the handler with the
     // ChildProcessSecurityPolicy. That has persistent and unalterable
     // side effects on other tests.
   }
 
-  virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
+  ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
       ShellIntegration::DefaultWebClientObserver* observer,
       const std::string& protocol) override {
     VLOG(1) << "CreateShellWorker";
     return NULL;
   }
 
-  virtual ProtocolHandlerRegistry::DefaultClientObserver* CreateShellObserver(
+  ProtocolHandlerRegistry::DefaultClientObserver* CreateShellObserver(
       ProtocolHandlerRegistry* registry) override {
     return NULL;
   }
 
-  virtual void RegisterWithOSAsDefaultClient(
+  void RegisterWithOSAsDefaultClient(
       const std::string& protocol,
       ProtocolHandlerRegistry* registry) override {
     VLOG(1) << "Register With OS";

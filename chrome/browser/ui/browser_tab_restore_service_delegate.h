@@ -19,18 +19,18 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
  public:
   explicit BrowserTabRestoreServiceDelegate(Browser* browser)
       : browser_(browser) {}
-  virtual ~BrowserTabRestoreServiceDelegate() {}
+  ~BrowserTabRestoreServiceDelegate() override {}
 
   // Overridden from TabRestoreServiceDelegate:
-  virtual void ShowBrowserWindow() override;
-  virtual const SessionID& GetSessionID() const override;
-  virtual int GetTabCount() const override;
-  virtual int GetSelectedIndex() const override;
-  virtual std::string GetAppName() const override;
-  virtual content::WebContents* GetWebContentsAt(int index) const override;
-  virtual content::WebContents* GetActiveWebContents() const override;
-  virtual bool IsTabPinned(int index) const override;
-  virtual content::WebContents* AddRestoredTab(
+  void ShowBrowserWindow() override;
+  const SessionID& GetSessionID() const override;
+  int GetTabCount() const override;
+  int GetSelectedIndex() const override;
+  std::string GetAppName() const override;
+  content::WebContents* GetWebContentsAt(int index) const override;
+  content::WebContents* GetActiveWebContents() const override;
+  bool IsTabPinned(int index) const override;
+  content::WebContents* AddRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int tab_index,
       int selected_navigation,
@@ -40,14 +40,14 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
       bool from_last_session,
       content::SessionStorageNamespace* storage_namespace,
       const std::string& user_agent_override) override;
-  virtual content::WebContents* ReplaceRestoredTab(
+  content::WebContents* ReplaceRestoredTab(
       const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
       content::SessionStorageNamespace* session_storage_namespace,
       const std::string& user_agent_override) override;
-  virtual void CloseTab() override;
+  void CloseTab() override;
 
  private:
   Browser* browser_;

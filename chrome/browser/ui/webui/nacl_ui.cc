@@ -72,10 +72,10 @@ content::WebUIDataSource* CreateNaClUIHTMLSource() {
 class NaClDomHandler : public WebUIMessageHandler {
  public:
   NaClDomHandler();
-  virtual ~NaClDomHandler();
+  ~NaClDomHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Callback for the "requestNaClInfo" message.

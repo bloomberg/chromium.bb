@@ -23,14 +23,14 @@
 class DesktopMediaPickerBridge : public DesktopMediaListObserver {
  public:
   DesktopMediaPickerBridge(id<DesktopMediaPickerObserver> observer);
-  virtual ~DesktopMediaPickerBridge();
+  ~DesktopMediaPickerBridge() override;
 
   // DesktopMediaListObserver overrides.
-  virtual void OnSourceAdded(int index) override;
-  virtual void OnSourceRemoved(int index) override;
-  virtual void OnSourceMoved(int old_index, int new_index) override;
-  virtual void OnSourceNameChanged(int index) override;
-  virtual void OnSourceThumbnailChanged(int index) override;
+  void OnSourceAdded(int index) override;
+  void OnSourceRemoved(int index) override;
+  void OnSourceMoved(int old_index, int new_index) override;
+  void OnSourceNameChanged(int index) override;
+  void OnSourceThumbnailChanged(int index) override;
 
  private:
   id<DesktopMediaPickerObserver> observer_;  // weak; owns this

@@ -33,7 +33,7 @@ using extensions::Extension;
 
 class PanelExtensionBrowserTest : public ExtensionBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
@@ -125,9 +125,8 @@ class PanelContextMenu : public RenderViewContextMenu {
 
  protected:
   // RenderViewContextMenu implementation.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override {
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override {
     return false;
   }
 };

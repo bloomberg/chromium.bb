@@ -14,16 +14,14 @@ class PasswordManagerInternalsUI : public content::WebUIController,
                                    public password_manager::LogReceiver {
  public:
   explicit PasswordManagerInternalsUI(content::WebUI* web_ui);
-  virtual ~PasswordManagerInternalsUI();
+  ~PasswordManagerInternalsUI() override;
 
   // WebContentsObserver implementation.
-  virtual void DidStartLoading(
-      content::RenderViewHost* render_view_host) override;
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) override;
+  void DidStartLoading(content::RenderViewHost* render_view_host) override;
+  void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
   // LogReceiver implementation.
-  virtual void LogSavePasswordProgress(const std::string& text) override;
+  void LogSavePasswordProgress(const std::string& text) override;
 
  private:
   // If currently registered with PasswordManagerInternalsService, unregisters

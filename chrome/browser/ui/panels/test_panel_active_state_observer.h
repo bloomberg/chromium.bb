@@ -17,11 +17,11 @@ class PanelActiveStateObserver : public TestPanelNotificationObserver {
   // for the specified panel to detect a change to the expected active
   // state.
   PanelActiveStateObserver(Panel* panel, bool expect_active);
-  virtual ~PanelActiveStateObserver();
+  ~PanelActiveStateObserver() override;
 
  private:
   // TestNotificationObserver override:
-  virtual bool AtExpectedState() override;
+  bool AtExpectedState() override;
 
   Panel* panel_;
   bool expect_active_;

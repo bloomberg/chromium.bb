@@ -66,7 +66,7 @@ class ZoomController : public content::WebContentsObserver,
     bool can_show_bubble;
   };
 
-  virtual ~ZoomController();
+  ~ZoomController() override;
 
   ZoomMode zoom_mode() const { return zoom_mode_; }
 
@@ -121,10 +121,10 @@ class ZoomController : public content::WebContentsObserver,
   void SetZoomMode(ZoomMode zoom_mode);
 
   // content::WebContentsObserver overrides:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
  protected:
   // Protected for testing.
