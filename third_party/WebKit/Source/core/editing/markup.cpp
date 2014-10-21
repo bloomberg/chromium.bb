@@ -114,12 +114,12 @@ static void completeURLs(DocumentFragment& fragment, const String& baseURL)
 
     KURL parsedBaseURL(ParsedURLString, baseURL);
 
-    for (Element* element = ElementTraversal::firstWithin(fragment); element; element = ElementTraversal::next(*element, &fragment)) {
-        AttributeCollection attributes = element->attributes();
+    for (Element& element : ElementTraversal::descendantsOf(fragment)) {
+        AttributeCollection attributes = element.attributes();
         AttributeCollection::iterator end = attributes.end();
         for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-            if (element->isURLAttribute(*it) && !it->value().isEmpty())
-                changes.append(AttributeChange(element, it->name(), KURL(parsedBaseURL, it->value()).string()));
+            if (element.isURLAttribute(*it) && !it->value().isEmpty())
+                changes.append(AttributeChange(&element, it->name(), KURL(parsedBaseURL, it->value()).string()));
         }
     }
 
@@ -674,12 +674,12 @@ static const char fragmentMarkerTag[] = "webkit-fragment-marker";
 
 static bool findNodesSurroundingContext(Document* document, RefPtrWillBeRawPtr<Comment>& nodeBeforeContext, RefPtrWillBeRawPtr<Comment>& nodeAfterContext)
 {
-    for (Node* node = document->firstChild(); node; node = NodeTraversal::next(*node)) {
-        if (node->nodeType() == Node::COMMENT_NODE && toComment(node)->data() == fragmentMarkerTag) {
+    for (Node& node : NodeTraversal::from(document->firstChild())) {
+        if (node.nodeType() == Node::COMMENT_NODE && toComment(node).data() == fragmentMarkerTag) {
             if (!nodeBeforeContext)
-                nodeBeforeContext = toComment(node);
+                nodeBeforeContext = &toComment(node);
             else {
-                nodeAfterContext = toComment(node);
+                nodeAfterContext = &toComment(node);
                 return true;
             }
         }

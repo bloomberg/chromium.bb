@@ -153,9 +153,9 @@ PassRefPtrWillBeRawPtr<Element> SelectorDataList::queryFirst(ContainerNode& root
 template <typename SelectorQueryTrait>
 void SelectorDataList::collectElementsByClassName(ContainerNode& rootNode, const AtomicString& className,  typename SelectorQueryTrait::OutputType& output) const
 {
-    for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
-        if (element->hasClass() && element->classNames().contains(className)) {
-            SelectorQueryTrait::appendElement(output, *element);
+    for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
+        if (element.hasClass() && element.classNames().contains(className)) {
+            SelectorQueryTrait::appendElement(output, element);
             if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
                 return;
         }
@@ -165,9 +165,9 @@ void SelectorDataList::collectElementsByClassName(ContainerNode& rootNode, const
 template <typename SelectorQueryTrait>
 void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const QualifiedName& tagName,  typename SelectorQueryTrait::OutputType& output) const
 {
-    for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
-        if (SelectorChecker::tagMatches(*element, tagName)) {
-            SelectorQueryTrait::appendElement(output, *element);
+    for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
+        if (SelectorChecker::tagMatches(element, tagName)) {
+            SelectorQueryTrait::appendElement(output, element);
             if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
                 return;
         }
@@ -272,9 +272,9 @@ void SelectorDataList::executeForTraverseRoot(const CSSSelector& selector, Conta
         return;
     }
 
-    for (Element* element = ElementTraversal::firstWithin(*traverseRoot); element; element = ElementTraversal::next(*element, traverseRoot)) {
-        if (selectorMatches(selector, *element, rootNode)) {
-            SelectorQueryTrait::appendElement(output, *element);
+    for (Element& element : ElementTraversal::descendantsOf(*traverseRoot)) {
+        if (selectorMatches(selector, element, rootNode)) {
+            SelectorQueryTrait::appendElement(output, element);
             if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
                 return;
         }
@@ -300,10 +300,9 @@ void SelectorDataList::executeForTraverseRoots(const CSSSelector& selector, Simp
     }
 
     while (!traverseRoots.isEmpty()) {
-        Element& traverseRoot = *traverseRoots.next();
-        for (Element* element = ElementTraversal::firstWithin(traverseRoot); element; element = ElementTraversal::next(*element, &traverseRoot)) {
-            if (selectorMatches(selector, *element, rootNode)) {
-                SelectorQueryTrait::appendElement(output, *element);
+        for (Element& element : ElementTraversal::descendantsOf(*traverseRoots.next())) {
+            if (selectorMatches(selector, element, rootNode)) {
+                SelectorQueryTrait::appendElement(output, element);
                 if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
                     return;
             }
@@ -326,8 +325,8 @@ bool SelectorDataList::selectorListMatches(ContainerNode& rootNode, Element& ele
 template <typename SelectorQueryTrait>
 void SelectorDataList::executeSlow(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
-    for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
-        if (selectorListMatches<SelectorQueryTrait>(rootNode, *element, output) && SelectorQueryTrait::shouldOnlyMatchFirstElement)
+    for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
+        if (selectorListMatches<SelectorQueryTrait>(rootNode, element, output) && SelectorQueryTrait::shouldOnlyMatchFirstElement)
             return;
     }
 }

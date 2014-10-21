@@ -534,12 +534,12 @@ static CSSValueID determineTextDirection(DocumentFragment* vttRoot)
     // pre-order, depth-first traversal, excluding WebVTT Ruby Text Objects and
     // their descendants.
     TextDirection textDirection = LTR;
-    for (Node* node = vttRoot->firstChild(); node; node = NodeTraversal::next(*node, vttRoot)) {
-        if (!node->isTextNode() || node->localName() == rtTag)
+    for (Node& node : NodeTraversal::descendantsOf(*vttRoot)) {
+        if (!node.isTextNode() || node.localName() == rtTag)
             continue;
 
         bool hasStrongDirectionality;
-        textDirection = determineDirectionality(node->nodeValue(), hasStrongDirectionality);
+        textDirection = determineDirectionality(node.nodeValue(), hasStrongDirectionality);
         if (hasStrongDirectionality)
             break;
     }
@@ -679,21 +679,21 @@ void VTTCue::markFutureAndPastNodes(ContainerNode* root, double previousTimestam
     if (currentTimestamp > movieTime)
         isPastNode = false;
 
-    for (Node* child = root->firstChild(); child; child = NodeTraversal::next(*child, root)) {
-        if (child->nodeName() == timestampTag) {
+    for (Node& child : NodeTraversal::descendantsOf(*root)) {
+        if (child.nodeName() == timestampTag) {
             double currentTimestamp;
-            bool check = VTTParser::collectTimeStamp(child->nodeValue(), currentTimestamp);
+            bool check = VTTParser::collectTimeStamp(child.nodeValue(), currentTimestamp);
             ASSERT_UNUSED(check, check);
 
             if (currentTimestamp > movieTime)
                 isPastNode = false;
         }
 
-        if (child->isVTTElement()) {
-            toVTTElement(child)->setIsPastNode(isPastNode);
+        if (child.isVTTElement()) {
+            toVTTElement(child).setIsPastNode(isPastNode);
             // Make an elemenet id match a cue id for style matching purposes.
             if (!id().isEmpty())
-                toElement(child)->setIdAttribute(id());
+                toElement(child).setIdAttribute(id());
         }
     }
 }

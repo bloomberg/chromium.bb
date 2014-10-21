@@ -1750,13 +1750,12 @@ static HTMLFormElement* scanForForm(Node* start)
     if (!start)
         return 0;
 
-    HTMLElement* element = start->isHTMLElement() ? toHTMLElement(start) : Traversal<HTMLElement>::next(*start);
-    for (; element; element = Traversal<HTMLElement>::next(*element)) {
-        if (HTMLFormElement* form = associatedFormElement(*element))
+    for (HTMLElement& element : Traversal<HTMLElement>::from(start->isHTMLElement() ? toHTMLElement(start) : Traversal<HTMLElement>::next(*start))) {
+        if (HTMLFormElement* form = associatedFormElement(element))
             return form;
 
-        if (isHTMLFrameElementBase(*element)) {
-            Node* childDocument = toHTMLFrameElementBase(*element).contentDocument();
+        if (isHTMLFrameElementBase(element)) {
+            Node* childDocument = toHTMLFrameElementBase(element).contentDocument();
             if (HTMLFormElement* frameResult = scanForForm(childDocument))
                 return frameResult;
         }

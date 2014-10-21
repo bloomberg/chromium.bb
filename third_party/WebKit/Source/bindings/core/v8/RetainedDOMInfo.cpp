@@ -79,9 +79,8 @@ const char* RetainedDOMInfo::GetLabel()
 intptr_t RetainedDOMInfo::GetElementCount()
 {
     intptr_t count = 1;
-    Node* current = m_root;
-    while (current) {
-        current = NodeTraversal::next(*current, m_root);
+    for (Node& current : NodeTraversal::descendantsOf(*m_root)) {
+        ALLOW_UNUSED_LOCAL(current);
         ++count;
     }
     return count;

@@ -545,10 +545,10 @@ static Node* nextNodeWithGreaterTabIndex(Node* start, int tabIndex)
     // Search is inclusive of start
     int winningTabIndex = std::numeric_limits<short>::max() + 1;
     Node* winner = 0;
-    for (Node* node = start; node; node = NodeTraversal::next(*node)) {
-        if (shouldVisit(node) && node->tabIndex() > tabIndex && node->tabIndex() < winningTabIndex) {
-            winner = node;
-            winningTabIndex = node->tabIndex();
+    for (Node& node : NodeTraversal::from(start)) {
+        if (shouldVisit(&node) && node.tabIndex() > tabIndex && node.tabIndex() < winningTabIndex) {
+            winner = &node;
+            winningTabIndex = node.tabIndex();
         }
     }
 
@@ -576,9 +576,9 @@ Node* FocusController::nextFocusableNode(FocusNavigationScope scope, Node* start
         int tabIndex = adjustedTabIndex(start);
         // If a node is excluded from the normal tabbing cycle, the next focusable node is determined by tree order
         if (tabIndex < 0) {
-            for (Node* node = NodeTraversal::next(*start); node; node = NodeTraversal::next(*node)) {
-                if (shouldVisit(node) && adjustedTabIndex(node) >= 0)
-                    return node;
+            for (Node& node : NodeTraversal::fromNext(*start)) {
+                if (shouldVisit(&node) && adjustedTabIndex(&node) >= 0)
+                    return &node;
             }
         } else {
             // First try to find a node with the same tabindex as start that comes after start in the scope.

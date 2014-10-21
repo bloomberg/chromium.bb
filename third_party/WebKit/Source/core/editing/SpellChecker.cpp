@@ -117,9 +117,8 @@ void SpellChecker::toggleContinuousSpellChecking()
     for (Frame* frame = this->frame().page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        for (Node* node = &toLocalFrame(frame)->document()->rootNode(); node; node = NodeTraversal::next(*node)) {
-            node->setAlreadySpellChecked(false);
-        }
+        for (Node& node : NodeTraversal::from(&toLocalFrame(frame)->document()->rootNode()))
+            node.setAlreadySpellChecked(false);
     }
 }
 
@@ -748,9 +747,8 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
     DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
     if (isGrammarCheckingEnabled() || unifiedTextCheckerEnabled())
         markerTypes.add(DocumentMarker::Grammar);
-    for (Node* node = innerEditor; node; node = NodeTraversal::next(*node, innerEditor)) {
-        frame().document()->markers().removeMarkers(node, markerTypes);
-    }
+    for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor))
+        frame().document()->markers().removeMarkers(&node, markerTypes);
 }
 
 void SpellChecker::replaceMisspelledRange(const String& text)

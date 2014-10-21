@@ -89,8 +89,8 @@ void HTMLFieldSetElement::setNeedsValidityCheck()
 
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)
 {
-    for (HTMLFormControlElement* element = Traversal<HTMLFormControlElement>::firstWithin(base); element; element = Traversal<HTMLFormControlElement>::next(*element, &base))
-        element->ancestorDisabledStateWasChanged();
+    for (HTMLFormControlElement& element : Traversal<HTMLFormControlElement>::descendantsOf(base))
+        element.ancestorDisabledStateWasChanged();
 }
 
 void HTMLFieldSetElement::disabledAttributeChanged()
@@ -103,8 +103,8 @@ void HTMLFieldSetElement::disabledAttributeChanged()
 void HTMLFieldSetElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLFormControlElement::childrenChanged(change);
-    for (HTMLLegendElement* legend = Traversal<HTMLLegendElement>::firstChild(*this); legend; legend = Traversal<HTMLLegendElement>::nextSibling(*legend))
-        invalidateDisabledStateUnder(*legend);
+    for (HTMLLegendElement& legend : Traversal<HTMLLegendElement>::childrenOf(*this))
+        invalidateDisabledStateUnder(legend);
 }
 
 bool HTMLFieldSetElement::supportsFocus() const
@@ -143,16 +143,16 @@ void HTMLFieldSetElement::refreshElementsIfNeeded() const
 
     m_associatedElements.clear();
 
-    for (HTMLElement* element = Traversal<HTMLElement>::firstWithin(*this); element; element = Traversal<HTMLElement>::next(*element, this)) {
-        if (isHTMLObjectElement(*element)) {
-            m_associatedElements.append(toHTMLObjectElement(element));
+    for (HTMLElement& element : Traversal<HTMLElement>::descendantsOf(*this)) {
+        if (isHTMLObjectElement(element)) {
+            m_associatedElements.append(toHTMLObjectElement(&element));
             continue;
         }
 
-        if (!element->isFormControlElement())
+        if (!element.isFormControlElement())
             continue;
 
-        m_associatedElements.append(toHTMLFormControlElement(element));
+        m_associatedElements.append(toHTMLFormControlElement(&element));
     }
 }
 

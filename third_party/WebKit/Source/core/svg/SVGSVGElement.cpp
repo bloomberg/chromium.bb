@@ -375,10 +375,9 @@ PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclo
         }
     }
 
-    for (SVGGraphicsElement* element = Traversal<SVGGraphicsElement>::firstWithin(*root); element;
-        element = Traversal<SVGGraphicsElement>::next(*element, root)) {
-        if (checkIntersectionOrEnclosure(*element, rect, mode))
-            nodes.append(element);
+    for (SVGGraphicsElement& element : Traversal<SVGGraphicsElement>::descendantsOf(*root)) {
+        if (checkIntersectionOrEnclosure(element, rect, mode))
+            nodes.append(&element);
     }
 
     return StaticNodeList::adopt(nodes);

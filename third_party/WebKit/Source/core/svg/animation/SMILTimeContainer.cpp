@@ -299,8 +299,8 @@ void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
 void SMILTimeContainer::updateDocumentOrderIndexes()
 {
     unsigned timingElementCount = 0;
-    for (SVGSMILElement* element = Traversal<SVGSMILElement>::firstWithin(m_ownerSVGElement); element; element = Traversal<SVGSMILElement>::next(*element, &m_ownerSVGElement))
-        element->setDocumentOrderIndex(timingElementCount++);
+    for (SVGSMILElement& element : Traversal<SVGSMILElement>::descendantsOf(m_ownerSVGElement))
+        element.setDocumentOrderIndex(timingElementCount++);
     m_documentOrderIndexesDirty = false;
 }
 

@@ -285,9 +285,10 @@ void ReplacementFragment::removeUnrenderedNodes(ContainerNode* holder)
 {
     WillBeHeapVector<RefPtrWillBeMember<Node> > unrendered;
 
-    for (Node* node = holder->firstChild(); node; node = NodeTraversal::next(*node, holder))
-        if (!isNodeRendered(node) && !isTableStructureNode(node))
-            unrendered.append(node);
+    for (Node& node : NodeTraversal::descendantsOf(*holder)) {
+        if (!isNodeRendered(&node) && !isTableStructureNode(&node))
+            unrendered.append(&node);
+    }
 
     size_t n = unrendered.size();
     for (size_t i = 0; i < n; ++i)
@@ -780,9 +781,10 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
     // The style span that contains the source document's default style should be at
     // the top of the fragment, but Mail sometimes adds a wrapper (for Paste As Quotation),
     // so search for the top level style span instead of assuming it's at the top.
-    for (Node* node = insertedNodes.firstNodeInserted(); node; node = NodeTraversal::next(*node)) {
-        if (isLegacyAppleHTMLSpanElement(node)) {
-            wrappingStyleSpan = toHTMLSpanElement(node);
+
+    for (Node& node : NodeTraversal::from(insertedNodes.firstNodeInserted())) {
+        if (isLegacyAppleHTMLSpanElement(&node)) {
+            wrappingStyleSpan = toHTMLSpanElement(&node);
             break;
         }
     }

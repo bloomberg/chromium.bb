@@ -226,14 +226,14 @@ void NodeSet::traversalSort() const
     WillBeHeapVector<RefPtrWillBeMember<Node> > sortedNodes;
     sortedNodes.reserveInitialCapacity(nodeCount);
 
-    for (Node* n = findRootNode(m_nodes.first().get()); n; n = NodeTraversal::next(*n)) {
-        if (nodes.contains(n))
-            sortedNodes.append(n);
+    for (Node& n : NodeTraversal::from(findRootNode(m_nodes.first().get()))) {
+        if (nodes.contains(&n))
+            sortedNodes.append(&n);
 
-        if (!containsAttributeNodes || !n->isElementNode())
+        if (!containsAttributeNodes || !n.isElementNode())
             continue;
 
-        Element* element = toElement(n);
+        Element* element = toElement(&n);
         AttributeCollection attributes = element->attributes();
         AttributeCollection::iterator end = attributes.end();
         for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {

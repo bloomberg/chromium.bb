@@ -175,37 +175,37 @@ private:
         // To make each minor GC time bounded, we might need to give up
         // traversing at some point for a large DOM tree. That being said,
         // I could not observe the need even in pathological test cases.
-        for (Node* node = rootNode; node; node = NodeTraversal::next(*node)) {
-            if (node->containsWrapper()) {
-                if (!node->isV8CollectableDuringMinorGC()) {
+        for (Node& node : NodeTraversal::from(rootNode)) {
+            if (node.containsWrapper()) {
+                if (!node.isV8CollectableDuringMinorGC()) {
                     // This node is not in the new space of V8. This indicates that
                     // the minor GC cannot anyway judge reachability of this DOM tree.
                     // Thus we give up traversing the DOM tree.
                     return false;
                 }
-                node->clearV8CollectableDuringMinorGC();
-                partiallyDependentNodes->append(node);
+                node.clearV8CollectableDuringMinorGC();
+                partiallyDependentNodes->append(&node);
             }
-            if (ShadowRoot* shadowRoot = node->youngestShadowRoot()) {
+            if (ShadowRoot* shadowRoot = node.youngestShadowRoot()) {
                 if (!traverseTree(shadowRoot, partiallyDependentNodes))
                     return false;
-            } else if (node->isShadowRoot()) {
-                if (ShadowRoot* shadowRoot = toShadowRoot(node)->olderShadowRoot()) {
+            } else if (node.isShadowRoot()) {
+                if (ShadowRoot* shadowRoot = toShadowRoot(node).olderShadowRoot()) {
                     if (!traverseTree(shadowRoot, partiallyDependentNodes))
                         return false;
                 }
             }
             // <template> has a |content| property holding a DOM fragment which we must traverse,
             // just like we do for the shadow trees above.
-            if (isHTMLTemplateElement(*node)) {
-                if (!traverseTree(toHTMLTemplateElement(*node).content(), partiallyDependentNodes))
+            if (isHTMLTemplateElement(node)) {
+                if (!traverseTree(toHTMLTemplateElement(node).content(), partiallyDependentNodes))
                     return false;
             }
 
             // Document maintains the list of imported documents through HTMLImportsController.
-            if (node->isDocumentNode()) {
-                Document* document = toDocument(node);
-                HTMLImportsController* controller = document->importsController();
+            if (node.isDocumentNode()) {
+                Document& document = toDocument(node);
+                HTMLImportsController* controller = document.importsController();
                 if (controller && document == controller->master()) {
                     for (unsigned i = 0; i < controller->loaderCount(); ++i) {
                         if (!traverseTree(controller->loaderDocumentAt(i), partiallyDependentNodes))

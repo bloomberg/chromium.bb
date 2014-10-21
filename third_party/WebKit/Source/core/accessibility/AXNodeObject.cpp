@@ -102,8 +102,8 @@ String AXNodeObject::accessibilityDescriptionForElements(WillBeHeapVector<RawPtr
         Element* idElement = elements[i];
 
         builder.append(accessibleNameForNode(idElement));
-        for (Node* n = idElement->firstChild(); n; n = NodeTraversal::next(*n, idElement))
-            builder.append(accessibleNameForNode(n));
+        for (Node& n : NodeTraversal::descendantsOf(*idElement))
+            builder.append(accessibleNameForNode(&n));
 
         if (i != size - 1)
             builder.append(' ');

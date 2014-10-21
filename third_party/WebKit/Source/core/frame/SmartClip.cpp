@@ -243,18 +243,18 @@ String SmartClip::extractTextFromNode(Node* node)
     int prevYPos = -99999;
 
     StringBuilder result;
-    for (Node* currentNode = node; currentNode; currentNode = NodeTraversal::next(*currentNode, node)) {
-        RenderStyle* style = currentNode->computedStyle();
+    for (Node& currentNode : NodeTraversal::inclusiveDescendantsOf(*node)) {
+        RenderStyle* style = currentNode.computedStyle();
         if (style && style->userSelect() == SELECT_NONE)
             continue;
 
-        if (Node* nodeFromFrame = nodeInsideFrame(currentNode))
+        if (Node* nodeFromFrame = nodeInsideFrame(&currentNode))
             result.append(extractTextFromNode(nodeFromFrame));
 
-        IntRect nodeRect = currentNode->pixelSnappedBoundingBox();
-        if (currentNode->renderer() && !nodeRect.isEmpty()) {
-            if (currentNode->isTextNode()) {
-                String nodeValue = currentNode->nodeValue();
+        IntRect nodeRect = currentNode.pixelSnappedBoundingBox();
+        if (currentNode.renderer() && !nodeRect.isEmpty()) {
+            if (currentNode.isTextNode()) {
+                String nodeValue = currentNode.nodeValue();
 
                 // It's unclear why we blacklist solitary "\n" node values.
                 // Maybe we're trying to ignore <br> tags somehow?

@@ -275,9 +275,9 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         if (context->isAttributeNode())
             return;
 
-        for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context)) {
-            if (nodeMatches(evaluationContext, n, DescendantAxis, nodeTest()))
-                nodes.append(n);
+        for (Node& n : NodeTraversal::descendantsOf(*context)) {
+            if (nodeMatches(evaluationContext, &n, DescendantAxis, nodeTest()))
+                nodes.append(&n);
         }
         return;
 
@@ -340,9 +340,9 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
                 for (Node* n = p->nextSibling(); n; n = n->nextSibling()) {
                     if (nodeMatches(evaluationContext, n, FollowingAxis, nodeTest()))
                         nodes.append(n);
-                    for (Node* c = n->firstChild(); c; c = NodeTraversal::next(*c, n)) {
-                        if (nodeMatches(evaluationContext, c, FollowingAxis, nodeTest()))
-                            nodes.append(c);
+                    for (Node& c : NodeTraversal::descendantsOf(*n)) {
+                        if (nodeMatches(evaluationContext, &c, FollowingAxis, nodeTest()))
+                            nodes.append(&c);
                     }
                 }
             }
@@ -409,9 +409,9 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         if (context->isAttributeNode())
             return;
 
-        for (Node* n = context->firstChild(); n; n = NodeTraversal::next(*n, context)) {
-            if (nodeMatches(evaluationContext, n, DescendantOrSelfAxis, nodeTest()))
-                nodes.append(n);
+        for (Node& n : NodeTraversal::descendantsOf(*context)) {
+            if (nodeMatches(evaluationContext, &n, DescendantOrSelfAxis, nodeTest()))
+                nodes.append(&n);
         }
         return;
 

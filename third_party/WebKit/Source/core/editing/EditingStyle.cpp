@@ -712,21 +712,21 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
 
     TriState state = FalseTriState;
     bool nodeIsStart = true;
-    for (Node* node = selection.start().deprecatedNode(); node; node = NodeTraversal::next(*node)) {
-        if (node->renderer() && node->hasEditableStyle()) {
-            RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> nodeStyle = CSSComputedStyleDeclaration::create(node);
+    for (Node& node : NodeTraversal::from(selection.start().deprecatedNode())) {
+        if (node.renderer() && node.hasEditableStyle()) {
+            RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {
-                TriState nodeState = triStateOfStyle(nodeStyle.get(), node->isTextNode() ? EditingStyle::DoNotIgnoreTextOnlyProperties : EditingStyle::IgnoreTextOnlyProperties);
+                TriState nodeState = triStateOfStyle(nodeStyle.get(), node.isTextNode() ? EditingStyle::DoNotIgnoreTextOnlyProperties : EditingStyle::IgnoreTextOnlyProperties);
                 if (nodeIsStart) {
                     state = nodeState;
                     nodeIsStart = false;
-                } else if (state != nodeState && node->isTextNode()) {
+                } else if (state != nodeState && node.isTextNode()) {
                     state = MixedTriState;
                     break;
                 }
             }
         }
-        if (node == selection.end().deprecatedNode())
+        if (&node == selection.end().deprecatedNode())
             break;
     }
 

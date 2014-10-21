@@ -98,6 +98,7 @@ public:
     static TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>> childrenOf(const Node&);
     static TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>> descendantsOf(const Node&);
     static TraversalRange<TraversalInclusiveDescendantIterator<Traversal<ElementType>>> inclusiveDescendantsOf(const ElementType&);
+    static TraversalRange<TraversalInclusiveNextIterator<Traversal<ElementType>>> from(const ElementType*);
     static TraversalRange<TraversalNextIterator<Traversal<ElementType>>> fromNext(const Node&);
 
 private:
@@ -122,25 +123,31 @@ typedef Traversal<Element> ElementTraversal;
 template <class ElementType>
 inline TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>> Traversal<ElementType>::childrenOf(const Node& start)
 {
-    return TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>>(start);
+    return TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>>(&start);
 };
 
 template <class ElementType>
 inline TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>> Traversal<ElementType>::descendantsOf(const Node& root)
 {
-    return TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>>(root);
+    return TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>>(&root);
 };
 
 template <class ElementType>
 inline TraversalRange<TraversalInclusiveDescendantIterator<Traversal<ElementType>>> Traversal<ElementType>::inclusiveDescendantsOf(const ElementType& root)
 {
-    return TraversalRange<TraversalInclusiveDescendantIterator<Traversal<ElementType>>>(root);
+    return TraversalRange<TraversalInclusiveDescendantIterator<Traversal<ElementType>>>(&root);
+};
+
+template <class ElementType>
+inline TraversalRange<TraversalInclusiveNextIterator<Traversal<ElementType>>> Traversal<ElementType>::from(const ElementType* start)
+{
+    return TraversalRange<TraversalInclusiveNextIterator<Traversal<ElementType>>>(start);
 };
 
 template <class ElementType>
 inline TraversalRange<TraversalNextIterator<Traversal<ElementType>>> Traversal<ElementType>::fromNext(const Node& start)
 {
-    return TraversalRange<TraversalNextIterator<Traversal<ElementType>>>(start);
+    return TraversalRange<TraversalNextIterator<Traversal<ElementType>>>(&start);
 };
 
 // Specialized for pure Element to exploit the fact that Elements parent is always either another Element or the root.

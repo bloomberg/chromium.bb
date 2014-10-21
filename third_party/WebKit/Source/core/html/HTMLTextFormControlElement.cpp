@@ -523,16 +523,16 @@ PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
     int offset = 0;
     Node* startNode = 0;
     Node* endNode = 0;
-    for (Node* node = innerText->firstChild(); node; node = NodeTraversal::next(*node, innerText)) {
-        ASSERT(!node->hasChildren());
-        ASSERT(node->isTextNode() || isHTMLBRElement(*node));
-        int length = node->isTextNode() ? lastOffsetInNode(node) : 1;
+    for (Node& node : NodeTraversal::descendantsOf(*innerText)) {
+        ASSERT(!node.hasChildren());
+        ASSERT(node.isTextNode() || isHTMLBRElement(node));
+        int length = node.isTextNode() ? lastOffsetInNode(&node) : 1;
 
         if (offset <= start && start <= offset + length)
-            setContainerAndOffsetForRange(node, start - offset, startNode, start);
+            setContainerAndOffsetForRange(&node, start - offset, startNode, start);
 
         if (offset <= end && end <= offset + length) {
-            setContainerAndOffsetForRange(node, end - offset, endNode, end);
+            setContainerAndOffsetForRange(&node, end - offset, endNode, end);
             break;
         }
 
@@ -616,11 +616,11 @@ String HTMLTextFormControlElement::innerEditorValue() const
         return emptyString();
 
     StringBuilder result;
-    for (Node* node = innerEditor; node; node = NodeTraversal::next(*node, innerEditor)) {
-        if (isHTMLBRElement(*node))
+    for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor)) {
+        if (isHTMLBRElement(node))
             result.append(newlineCharacter);
-        else if (node->isTextNode())
-            result.append(toText(node)->data());
+        else if (node.isTextNode())
+            result.append(toText(node).data());
     }
     return finishText(result);
 }
@@ -663,11 +663,11 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
     getNextSoftBreak(line, breakNode, breakOffset);
 
     StringBuilder result;
-    for (Node* node = innerText->firstChild(); node; node = NodeTraversal::next(*node, innerText)) {
-        if (isHTMLBRElement(*node))
+    for (Node& node : NodeTraversal::descendantsOf(*innerText)) {
+        if (isHTMLBRElement(node)) {
             result.append(newlineCharacter);
-        else if (node->isTextNode()) {
-            String data = toText(node)->data();
+        } else if (node.isTextNode()) {
+            String data = toText(node).data();
             unsigned length = data.length();
             unsigned position = 0;
             while (breakNode == node && breakOffset <= length) {

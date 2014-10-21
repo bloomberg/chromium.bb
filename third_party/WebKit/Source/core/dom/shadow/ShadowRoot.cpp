@@ -300,8 +300,8 @@ const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> >& ShadowRoot::descend
         return emptyList;
 
     WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> > insertionPoints;
-    for (InsertionPoint* insertionPoint = Traversal<InsertionPoint>::firstWithin(*this); insertionPoint; insertionPoint = Traversal<InsertionPoint>::next(*insertionPoint, this))
-        insertionPoints.append(insertionPoint);
+    for (InsertionPoint& insertionPoint : Traversal<InsertionPoint>::descendantsOf(*this))
+        insertionPoints.append(&insertionPoint);
 
     ensureShadowRootRareData()->setDescendantInsertionPoints(insertionPoints);
 

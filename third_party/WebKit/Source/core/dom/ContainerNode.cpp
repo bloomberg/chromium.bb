@@ -1419,9 +1419,9 @@ Element* ContainerNode::getElementById(const AtomicString& id) const
     }
 
     // Fall back to traversing our subtree. In case of duplicate ids, the first element found will be returned.
-    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element, this)) {
-        if (element->getIdAttribute() == id)
-            return element;
+    for (Element& element : ElementTraversal::descendantsOf(*this)) {
+        if (element.getIdAttribute() == id)
+            return &element;
     }
     return 0;
 }

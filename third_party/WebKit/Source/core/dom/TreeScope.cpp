@@ -298,10 +298,10 @@ HTMLLabelElement* TreeScope::labelElementForId(const AtomicString& forAttributeV
     if (!m_labelsByForAttribute) {
         // Populate the map on first access.
         m_labelsByForAttribute = DocumentOrderedMap::create();
-        for (HTMLLabelElement* label = Traversal<HTMLLabelElement>::firstWithin(rootNode()); label; label = Traversal<HTMLLabelElement>::next(*label)) {
-            const AtomicString& forValue = label->fastGetAttribute(forAttr);
+        for (HTMLLabelElement& label : Traversal<HTMLLabelElement>::fromNext(rootNode())) {
+            const AtomicString& forValue = label.fastGetAttribute(forAttr);
             if (!forValue.isEmpty())
-                addLabel(forValue, label);
+                addLabel(forValue, &label);
         }
     }
 
@@ -329,15 +329,15 @@ Element* TreeScope::findAnchor(const String& name)
         return 0;
     if (Element* element = getElementById(AtomicString(name)))
         return element;
-    for (HTMLAnchorElement* anchor = Traversal<HTMLAnchorElement>::firstWithin(rootNode()); anchor; anchor = Traversal<HTMLAnchorElement>::next(*anchor)) {
+    for (HTMLAnchorElement& anchor : Traversal<HTMLAnchorElement>::fromNext(rootNode())) {
         if (rootNode().document().inQuirksMode()) {
             // Quirks mode, case insensitive comparison of names.
-            if (equalIgnoringCase(anchor->name(), name))
-                return anchor;
+            if (equalIgnoringCase(anchor.name(), name))
+                return &anchor;
         } else {
             // Strict mode, names need to match exactly.
-            if (anchor->name() == name)
-                return anchor;
+            if (anchor.name() == name)
+                return &anchor;
         }
     }
     return 0;

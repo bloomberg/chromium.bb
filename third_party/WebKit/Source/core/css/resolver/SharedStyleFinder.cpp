@@ -275,8 +275,8 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 
 bool SharedStyleFinder::documentContainsValidCandidate() const
 {
-    for (Element* element = document().documentElement(); element; element = ElementTraversal::next(*element)) {
-        if (element->supportsStyleSharing() && canShareStyleWithElement(*element))
+    for (Element& element : ElementTraversal::from(document().documentElement())) {
+        if (element.supportsStyleSharing() && canShareStyleWithElement(element))
             return true;
     }
     return false;
