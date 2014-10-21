@@ -154,6 +154,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                              const RegistrationCallback& callback);
   void UnregisterServiceWorker(const GURL& pattern,
                                const UnregistrationCallback& callback);
+  // Callback is called issued after all unregistrations occur.  The Status
+  // is populated as SERVICE_WORKER_OK if all succeed, or SERVICE_WORKER_FAILED
+  // if any did not succeed.
+  void UnregisterServiceWorkers(const GURL& origin,
+                                const UnregistrationCallback& callback);
   void UpdateServiceWorker(ServiceWorkerRegistration* registration);
 
   // This class maintains collections of live instances, this class
@@ -202,6 +207,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void UnregistrationComplete(const GURL& pattern,
                               const UnregistrationCallback& callback,
                               ServiceWorkerStatusCode status);
+
+  void DidGetAllRegistrationsForUnregisterForOrigin(
+      const UnregistrationCallback& result,
+      const GURL& origin,
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
   base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
   // It's safe to store a raw pointer instead of a scoped_refptr to |wrapper_|
