@@ -1601,7 +1601,6 @@ def GetDefaultTryConfigs(bots=None):
       ],
       'ios_rel_device': ['compile'],
       'ios_rel_device_ninja': ['compile'],
-      'linux_asan': ['compile'],
       'mac_asan': ['compile'],
       #TODO(stip): Change the name of this builder to reflect that it's release.
       'linux_gtk': standard_tests,

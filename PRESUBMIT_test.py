@@ -779,8 +779,6 @@ class TryServerMasterTest(unittest.TestCase):
             'chromium_presubmit',
             'linux_arm_cross_compile',
             'linux_arm_tester',
-            'linux_asan',
-            'linux_browser_asan',
             'linux_chromeos_asan',
             'linux_chromeos_browser_asan',
             'linux_chromeos_valgrind',
