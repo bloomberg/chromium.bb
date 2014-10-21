@@ -60,10 +60,9 @@ static const SessionCommand::id_type kCommandSetTabWindow = 0;
 // OBSOLETE Superseded by kCommandSetWindowBounds3.
 // static const SessionCommand::id_type kCommandSetWindowBounds = 1;
 static const SessionCommand::id_type kCommandSetTabIndexInWindow = 2;
-// Original kCommandTabClosed/kCommandWindowClosed. See comment in
-// MigrateClosedPayload for details on why they were replaced.
-static const SessionCommand::id_type kCommandTabClosedObsolete = 3;
-static const SessionCommand::id_type kCommandWindowClosedObsolete = 4;
+// OBSOLETE Superseded kCommandTabClosed/kCommandWindowClosed commands.
+// static const SessionCommand::id_type kCommandTabClosedObsolete = 3;
+// static const SessionCommand::id_type kCommandWindowClosedObsolete = 4;
 static const SessionCommand::id_type
     kCommandTabNavigationPathPrunedFromBack = 5;
 static const SessionCommand::id_type kCommandUpdateTabNavigation = 6;
@@ -196,31 +195,6 @@ ui::WindowShowState PersistedShowStateToShowState(int state) {
   }
   NOTREACHED();
   return ui::SHOW_STATE_NORMAL;
-}
-
-// Migrates a |ClosedPayload|, returning true on success (migration was
-// necessary and happened), or false (migration was not necessary or was not
-// successful).
-bool MigrateClosedPayload(const SessionCommand& command,
-                          ClosedPayload* payload) {
-#if defined(OS_CHROMEOS)
-  // Pre M17 versions of chromeos were 32bit. Post M17 is 64 bit. Apparently the
-  // 32 bit versions of chrome on pre M17 resulted in a sizeof 12 for the
-  // ClosedPayload, where as post M17 64-bit gives a sizeof 16 (presumably the
-  // struct is padded).
-  if ((command.id() == kCommandWindowClosedObsolete ||
-       command.id() == kCommandTabClosedObsolete) &&
-      command.size() == 12 && sizeof(payload->id) == 4 &&
-      sizeof(payload->close_time) == 8) {
-    memcpy(&payload->id, command.contents(), 4);
-    memcpy(&payload->close_time, command.contents() + 4, 8);
-    return true;
-  } else {
-    return false;
-  }
-#else
-  return false;
-#endif
 }
 
 }  // namespace
@@ -1143,18 +1117,14 @@ bool SessionService::CreateTabsAndWindows(
         break;
       }
 
-      case kCommandTabClosedObsolete:
-      case kCommandWindowClosedObsolete:
       case kCommandTabClosed:
       case kCommandWindowClosed: {
         ClosedPayload payload;
-        if (!command->GetPayload(&payload, sizeof(payload)) &&
-            !MigrateClosedPayload(*command, &payload)) {
+        if (!command->GetPayload(&payload, sizeof(payload))) {
           VLOG(1) << "Failed reading command " << command->id();
           return true;
         }
-        if (command->id() == kCommandTabClosed ||
-            command->id() == kCommandTabClosedObsolete) {
+        if (command->id() == kCommandTabClosed) {
           delete GetTab(payload.id, tabs);
           tabs->erase(payload.id);
         } else {
