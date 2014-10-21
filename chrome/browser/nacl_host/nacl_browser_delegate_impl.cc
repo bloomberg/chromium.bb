@@ -8,7 +8,9 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
+#if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
+#endif
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -19,12 +21,14 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "content/public/browser/browser_thread.h"
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern.h"
+#endif
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "url/gurl.h"
 

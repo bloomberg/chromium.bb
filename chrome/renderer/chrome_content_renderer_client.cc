@@ -704,7 +704,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
-#if !defined(DISABLE_NACL)
+#if !defined(DISABLE_NACL) && defined(ENABLE_EXTENSIONS)
         const bool is_nacl_plugin =
             plugin.name == ASCIIToUTF16(nacl::kNaClPluginName);
         const bool is_nacl_mime_type =
@@ -769,7 +769,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             break;
           }
         }
-#endif  // !defined(DISABLE_NACL)
+#endif  // !defined(DISABLE_NACL) && defined(ENABLE_EXTENSIONS)
 
         // Delay loading plugins if prerendering.
         // TODO(mmenke):  In the case of prerendering, feed into
