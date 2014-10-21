@@ -261,8 +261,9 @@ void HotwordService::OnExtensionUninstalled(
     extensions::UninstallReason reason) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (extension->id() != extension_misc::kHotwordExtensionId ||
-      profile_ != Profile::FromBrowserContext(browser_context) ||
+  if ((extension->id() != extension_misc::kHotwordExtensionId &&
+       extension->id() != extension_misc::kHotwordSharedModuleId) ||
+       profile_ != Profile::FromBrowserContext(browser_context) ||
       !GetExtensionService(profile_))
     return;
 
@@ -275,9 +276,16 @@ void HotwordService::OnExtensionUninstalled(
   SetPreviousLanguagePref();
 }
 
+std::string HotwordService::ReinstalledExtensionId() {
+  if (IsExperimentalHotwordingEnabled())
+    return extension_misc::kHotwordSharedModuleId;
+
+  return extension_misc::kHotwordExtensionId;
+}
+
 void HotwordService::InstallHotwordExtensionFromWebstore() {
   installer_ = new extensions::WebstoreStartupInstaller(
-      extension_misc::kHotwordExtensionId,
+      ReinstalledExtensionId(),
       profile_,
       false,
       extensions::WebstoreStandaloneInstaller::Callback());
@@ -289,8 +297,9 @@ void HotwordService::OnExtensionInstalled(
     const extensions::Extension* extension,
     bool is_update) {
 
-  if (extension->id() != extension_misc::kHotwordExtensionId ||
-      profile_ != Profile::FromBrowserContext(browser_context))
+  if ((extension->id() != extension_misc::kHotwordExtensionId &&
+       extension->id() != extension_misc::kHotwordSharedModuleId) ||
+       profile_ != Profile::FromBrowserContext(browser_context))
     return;
 
   // If the previous locale pref has never been set, set it now since
@@ -330,7 +339,7 @@ bool HotwordService::MaybeReinstallHotwordExtension() {
     return false;
 
   const extensions::Extension* extension = extension_service->GetExtensionById(
-      extension_misc::kHotwordExtensionId, true);
+      ReinstalledExtensionId(), true);
   if (!extension)
     return false;
 
@@ -361,13 +370,14 @@ bool HotwordService::MaybeReinstallHotwordExtension() {
 bool HotwordService::UninstallHotwordExtension(
     ExtensionService* extension_service) {
   base::string16 error;
+  std::string extension_id = ReinstalledExtensionId();
   if (!extension_service->UninstallExtension(
-          extension_misc::kHotwordExtensionId,
+          extension_id,
           extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT,
           base::Bind(&base::DoNothing),
           &error)) {
     LOG(WARNING) << "Cannot uninstall extension with id "
-                 << extension_misc::kHotwordExtensionId
+                 << extension_id
                  << ": " << error;
     reinstall_pending_ = false;
     return false;
@@ -384,16 +394,8 @@ bool HotwordService::IsServiceAvailable() {
   ExtensionService* service = system->extension_service();
   // Include disabled extensions (true parameter) since it may not be enabled
   // if the user opted out.
-  std::string extensionId;
-  if (IsExperimentalHotwordingEnabled()) {
-    // TODO(amistry): Handle reloading on language change as the old extension
-    // does.
-    extensionId = extension_misc::kHotwordSharedModuleId;
-  } else {
-    extensionId = extension_misc::kHotwordExtensionId;
-  }
   const extensions::Extension* extension =
-      service->GetExtensionById(extensionId, true);
+      service->GetExtensionById(ReinstalledExtensionId(), true);
   if (!extension)
     error_message_ = IDS_HOTWORD_GENERIC_ERROR_MESSAGE;
 

@@ -53,13 +53,16 @@ class ExtensionServiceTestBase : public testing::Test {
     ExtensionServiceInitParams();
   };
 
+  // Public because parameterized test cases need it to be, or else the compiler
+  // barfs.
+  static void SetUpTestCase();  // faux-verride (static override).
+
  protected:
   ExtensionServiceTestBase();
   virtual ~ExtensionServiceTestBase();
 
   // testing::Test implementation.
   virtual void SetUp() override;
-  static void SetUpTestCase();  // faux-verride (static override).
 
   // Create a set of InitParams to install an ExtensionService into |temp_dir_|.
   ExtensionServiceInitParams CreateDefaultInitParams();

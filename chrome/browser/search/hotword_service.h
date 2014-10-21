@@ -126,6 +126,9 @@ class HotwordService : public content::NotificationObserver,
   virtual LaunchMode GetHotwordAudioVerificationLaunchMode();
 
  private:
+  // Returns the ID of the extension that may need to be reinstalled.
+  std::string ReinstalledExtensionId();
+
   Profile* profile_;
 
   PrefChangeRegistrar pref_registrar_;
