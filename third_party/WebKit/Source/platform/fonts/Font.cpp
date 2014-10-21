@@ -271,30 +271,24 @@ float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
     return width(run);
 }
 
-PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance,
-    const FloatRect& bounds, bool couldUseLCD) const
+namespace {
+
+template <bool hasOffsets>
+bool buildTextBlobInternal(const GlyphBuffer& glyphBuffer, SkScalar initialAdvance,
+    const SkRect* bounds, bool couldUseLCD, SkTextBlobBuilder& builder)
 {
-    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
-
-    // FIXME: Implement the more general full-positioning path for complex text support.
-    if (glyphBuffer.hasOffsets())
-        return nullptr;
-
-    SkTextBlobBuilder builder;
-    SkScalar x = SkFloatToScalar(initialAdvance);
-    SkRect skBounds = bounds;
-
+    SkScalar x = initialAdvance;
     unsigned i = 0;
     while (i < glyphBuffer.size()) {
         const SimpleFontData* fontData = glyphBuffer.fontDataAt(i);
 
         // FIXME: Handle vertical text.
         if (fontData->platformData().orientation() == Vertical)
-            return nullptr;
+            return false;
 
         // FIXME: Handle SVG fonts.
         if (fontData->isSVGFont())
-            return nullptr;
+            return false;
 
         // FIXME: FontPlatformData makes some decisions on the device scale
         // factor, which is found via the GraphicsContext. This should be fixed
@@ -311,19 +305,44 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
             i++;
         unsigned count = i - start;
 
-        const SkTextBlobBuilder::RunBuffer& buffer = builder.allocRunPosH(paint, count, 0, &skBounds);
+        const SkTextBlobBuilder::RunBuffer& buffer = hasOffsets ?
+            builder.allocRunPos(paint, count, bounds) :
+            builder.allocRunPosH(paint, count, 0, bounds);
 
         const uint16_t* glyphs = glyphBuffer.glyphs(start);
         std::copy(glyphs, glyphs + count, buffer.glyphs);
 
         const float* advances = glyphBuffer.advances(start);
+        const FloatSize* offsets = glyphBuffer.offsets(start);
         for (unsigned j = 0; j < count; j++) {
-            buffer.pos[j] = x;
+            if (hasOffsets) {
+                const FloatSize& offset = offsets[j];
+                buffer.pos[2 * j] = x + offset.width();
+                buffer.pos[2 * j + 1] = offset.height();
+            } else {
+                buffer.pos[j] = x;
+            }
             x += SkFloatToScalar(advances[j]);
         }
     }
+    return true;
+}
 
-    return adoptRef(builder.build());
+} // namespace
+
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance,
+    const FloatRect& bounds, bool couldUseLCD) const
+{
+    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
+
+    SkTextBlobBuilder builder;
+    SkScalar advance = SkFloatToScalar(initialAdvance);
+    SkRect skBounds = bounds;
+
+    bool success = glyphBuffer.hasOffsets() ?
+        buildTextBlobInternal<true>(glyphBuffer, advance, &skBounds, couldUseLCD, builder) :
+        buildTextBlobInternal<false>(glyphBuffer, advance, &skBounds, couldUseLCD, builder);
+    return success ? adoptRef(builder.build()) : nullptr;
 }
 
 static inline FloatRect pixelSnappedSelectionRect(FloatRect rect)
