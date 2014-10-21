@@ -49,16 +49,16 @@ class PrintJob : public PrintJobWorkerOwner,
                   int page_count);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // PrintJobWorkerOwner implementation.
-  virtual void GetSettingsDone(const PrintSettings& new_settings,
-                               PrintingContext::Result result) override;
-  virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) override;
-  virtual const PrintSettings& settings() const override;
-  virtual int cookie() const override;
+  void GetSettingsDone(const PrintSettings& new_settings,
+                       PrintingContext::Result result) override;
+  PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) override;
+  const PrintSettings& settings() const override;
+  int cookie() const override;
 
   // Starts the actual printing. Signals the worker that it should begin to
   // spool as soon as data is available.
@@ -98,7 +98,7 @@ class PrintJob : public PrintJobWorkerOwner,
 #endif  // OS_WIN
 
  protected:
-  virtual ~PrintJob();
+  ~PrintJob() override;
 
  private:
   // Updates document_ to a new instance.

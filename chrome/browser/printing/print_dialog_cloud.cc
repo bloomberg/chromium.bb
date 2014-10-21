@@ -143,7 +143,7 @@ class SignInObserver : public content::WebContentsObserver {
 
  private:
   // Overridden from content::WebContentsObserver:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override {
     if (IsSimilarUrl(params.url, cloud_print_url_)) {
@@ -154,9 +154,7 @@ class SignInObserver : public content::WebContentsObserver {
     }
   }
 
-  virtual void WebContentsDestroyed() override {
-    delete this;
-  }
+  void WebContentsDestroyed() override { delete this; }
 
   void OnSignIn() {
     callback_.Run();

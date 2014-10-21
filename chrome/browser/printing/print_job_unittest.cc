@@ -19,9 +19,7 @@ namespace {
 
 class TestSource : public printing::PrintedPagesSource {
  public:
-  virtual base::string16 RenderSourceName() override {
-    return base::string16();
-  }
+  base::string16 RenderSourceName() override { return base::string16(); }
 };
 
 class TestPrintJobWorker : public printing::PrintJobWorker {
@@ -35,12 +33,11 @@ class TestPrintJobWorker : public printing::PrintJobWorker {
 
 class TestOwner : public printing::PrintJobWorkerOwner {
  public:
-  virtual void GetSettingsDone(
-      const printing::PrintSettings& new_settings,
-      printing::PrintingContext::Result result) override {
+  void GetSettingsDone(const printing::PrintSettings& new_settings,
+                       printing::PrintingContext::Result result) override {
     EXPECT_FALSE(true);
   }
-  virtual printing::PrintJobWorker* DetachWorker(
+  printing::PrintJobWorker* DetachWorker(
       printing::PrintJobWorkerOwner* new_owner) override {
     // We're screwing up here since we're calling worker from the main thread.
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
@@ -50,15 +47,11 @@ class TestOwner : public printing::PrintJobWorkerOwner {
     settings_ = worker->printing_context()->settings();
     return worker;
   }
-  virtual const printing::PrintSettings& settings() const override {
-    return settings_;
-  }
-  virtual int cookie() const override {
-    return 42;
-  }
+  const printing::PrintSettings& settings() const override { return settings_; }
+  int cookie() const override { return 42; }
 
  private:
-  virtual ~TestOwner() {}
+  ~TestOwner() override {}
 
   printing::PrintSettings settings_;
 };
@@ -68,18 +61,16 @@ class TestPrintJob : public printing::PrintJob {
   explicit TestPrintJob(volatile bool* check) : check_(check) {
   }
  private:
-  virtual ~TestPrintJob() {
-    *check_ = true;
-  }
+  ~TestPrintJob() override { *check_ = true; }
   volatile bool* check_;
 };
 
 class TestPrintNotifObserv : public content::NotificationObserver {
  public:
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     ADD_FAILURE();
   }
 };

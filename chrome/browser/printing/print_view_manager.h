@@ -20,7 +20,7 @@ class PrintViewManagerObserver;
 class PrintViewManager : public PrintViewManagerBase,
                          public content::WebContentsUserData<PrintViewManager> {
  public:
-  virtual ~PrintViewManager();
+  ~PrintViewManager() override;
 
 #if !defined(DISABLE_BASIC_PRINTING)
   // Same as PrintNow(), but for the case where a user prints with the system
@@ -53,11 +53,11 @@ class PrintViewManager : public PrintViewManagerBase,
   void set_observer(PrintViewManagerObserver* observer);
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // content::WebContentsObserver implementation.
   // Terminates or cancels the print job if one was pending.
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
   explicit PrintViewManager(content::WebContents* web_contents);

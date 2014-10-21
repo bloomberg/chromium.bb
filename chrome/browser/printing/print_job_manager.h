@@ -58,15 +58,15 @@ class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
 class PrintJobManager : public content::NotificationObserver {
  public:
   PrintJobManager();
-  virtual ~PrintJobManager();
+  ~PrintJobManager() override;
 
   // On browser quit, we should wait to have the print job finished.
   void Shutdown();
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns queries queue. Never returns NULL. Must be called on Browser UI
   // Thread. Reference could be stored and used from any thread.

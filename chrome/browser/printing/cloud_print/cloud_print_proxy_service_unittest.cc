@@ -183,7 +183,7 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual ServiceProcessControl* GetServiceProcessControl() override {
+  ServiceProcessControl* GetServiceProcessControl() override {
     return &process_control_;
   }
   MockServiceProcessControl* GetMockServiceProcessControl() {

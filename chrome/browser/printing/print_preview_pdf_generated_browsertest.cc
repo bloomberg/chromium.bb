@@ -118,7 +118,7 @@ class PrintPreviewObserver : public WebContentsObserver {
         failed_setting_("None"),
         pdf_file_save_path_(pdf_file_save_path) {}
 
-  virtual ~PrintPreviewObserver() {}
+  ~PrintPreviewObserver() override {}
 
   // Sets closure for the observer so that it can end the loop.
   void set_quit_closure(const base::Closure &closure) {
@@ -130,7 +130,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(PrintPreviewObserver, message)
       IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
                           OnDidGetPreviewPageCount)
@@ -222,7 +222,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     explicit UIDoneLoadingMessageHandler(PrintPreviewObserver* observer)
         : observer_(observer) {}
 
-    virtual ~UIDoneLoadingMessageHandler() {}
+    ~UIDoneLoadingMessageHandler() override {}
 
     // When a setting has been set succesfully, this is called and the observer
     // is told to send the next setting to be set.
@@ -242,7 +242,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     // successfully set and its effects have been finalized.
     // 'UIFailedLoadingForTest' is sent when the setting could not be set. This
     // causes the browser test to fail.
-    virtual void RegisterMessages() override {
+    void RegisterMessages() override {
       web_ui()->RegisterMessageCallback(
           "UILoadedForTest",
           base::Bind(&UIDoneLoadingMessageHandler::HandleDone,
@@ -277,9 +277,8 @@ class PrintPreviewObserver : public WebContentsObserver {
     ui->web_ui()->CallJavascriptFunction("onEnableManipulateSettingsForTest");
   }
 
-  virtual void DidCloneToNewWebContents(
-      WebContents* old_web_contents,
-      WebContents* new_web_contents) override {
+  void DidCloneToNewWebContents(WebContents* old_web_contents,
+                                WebContents* new_web_contents) override {
     Observe(new_web_contents);
   }
 

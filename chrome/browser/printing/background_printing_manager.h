@@ -31,7 +31,7 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   typedef std::map<content::WebContents*, Observer*> WebContentsObserverMap;
 
   BackgroundPrintingManager();
-  virtual ~BackgroundPrintingManager();
+  ~BackgroundPrintingManager() override;
 
   // Takes ownership of |preview_dialog| and deletes it when |preview_dialog|
   // finishes printing. This removes |preview_dialog| from its ConstrainedDialog
@@ -46,9 +46,9 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
 
  private:
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Schedule deletion of |preview_contents|.
   void DeletePreviewContents(content::WebContents* preview_contents);

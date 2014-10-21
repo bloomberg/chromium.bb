@@ -62,9 +62,9 @@ class PrintPreviewDialogController
       base::Callback<void(content::WebContents*)> callback);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns true if |contents| is a print preview dialog.
   static bool IsPrintPreviewDialog(content::WebContents* contents);
@@ -88,7 +88,7 @@ class PrintPreviewDialogController
   typedef std::map<content::WebContents*, content::WebContents*>
       PrintPreviewDialogMap;
 
-  virtual ~PrintPreviewDialogController();
+  ~PrintPreviewDialogController() override;
 
   // Handler for the RENDERER_PROCESS_CLOSED notification. This is observed when
   // the initiator renderer crashed.

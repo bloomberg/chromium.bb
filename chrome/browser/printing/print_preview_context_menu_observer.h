@@ -16,11 +16,11 @@ class WebContents;
 class PrintPreviewContextMenuObserver : public RenderViewContextMenuObserver {
  public:
   explicit PrintPreviewContextMenuObserver(content::WebContents* contents);
-  virtual ~PrintPreviewContextMenuObserver();
+  ~PrintPreviewContextMenuObserver() override;
 
   // RenderViewContextMenuObserver implementation.
-  virtual bool IsCommandIdSupported(int command_id) override;
-  virtual bool IsCommandIdEnabled(int command_id) override;
+  bool IsCommandIdSupported(int command_id) override;
+  bool IsCommandIdEnabled(int command_id) override;
 
  private:
   bool IsPrintPreviewDialog();

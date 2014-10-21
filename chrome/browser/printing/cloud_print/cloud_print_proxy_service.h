@@ -31,7 +31,7 @@ struct CloudPrintProxyInfo;
 class CloudPrintProxyService : public KeyedService {
  public:
   explicit CloudPrintProxyService(Profile* profile);
-  virtual ~CloudPrintProxyService();
+  ~CloudPrintProxyService() override;
 
   typedef base::Callback<void(const std::vector<std::string>&)>
       PrintersCallback;

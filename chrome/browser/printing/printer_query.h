@@ -32,11 +32,11 @@ class PrinterQuery : public PrintJobWorkerOwner {
   PrinterQuery(int render_process_id, int render_view_id);
 
   // PrintJobWorkerOwner implementation.
-  virtual void GetSettingsDone(const PrintSettings& new_settings,
-                               PrintingContext::Result result) override;
-  virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) override;
-  virtual const PrintSettings& settings() const override;
-  virtual int cookie() const override;
+  void GetSettingsDone(const PrintSettings& new_settings,
+                       PrintingContext::Result result) override;
+  PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) override;
+  const PrintSettings& settings() const override;
+  int cookie() const override;
 
   // Initializes the printing context. It is fine to call this function multiple
   // times to reinitialize the settings. |web_contents_observer| can be queried
@@ -65,7 +65,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
   bool is_valid() const;
 
  private:
-  virtual ~PrinterQuery();
+  ~PrinterQuery() override;
 
   // Lazy create the worker thread. There is one worker thread per print job.
   void StartWorker(const base::Closure& callback);
