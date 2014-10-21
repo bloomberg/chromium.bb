@@ -5,8 +5,11 @@
 """Tools and utilities for creating proofs about tries."""
 
 import itertools
-import spec
+import optparse
 
+import spec
+import trie
+import validator
 
 class Operands(object):
   """Contains parts of the disassembly of a single instruction.
@@ -76,6 +79,12 @@ def AllYMMOperands(bitness):
   assert bitness in (32, 64), bitness
   return set([Operands(disasms=('%ymm{}'.format(i),))
               for i in xrange(8 if bitness == 32 else 16)])
+
+
+def MnemonicOp(name):
+  """Returns the mnemonic as an operand set."""
+  assert isinstance(name, str)
+  return set([Operands(disasms=(name,))])
 
 
 def MemoryOperandsTemplate(disp, base, index, scale, bitness):
@@ -270,4 +279,52 @@ class TrieDiffSet(object):
       self.accept_trie2_set.add(Operands(disasms=full_operands,
                                          input_rr=input_rr,
                                          output_rr=output_rr))
+
+
+def ParseStandardOpts():
+  """Parses a standard set of options for validator proofs from command line."""
+  parser = optparse.OptionParser(
+      usage='%prog --bitness=[32,64] --old=path1 --new=path2')
+  parser.add_option('--old', help='Path of the old trie')
+  parser.add_option('--new', help='Path of the new trie')
+  parser.add_option('--bitness', choices=['32', '64'])
+  parser.add_option('--validator_dll', help='Path of the validator library')
+  parser.add_option('--decoder_dll', help='Path of the decoder library')
+  options, _ = parser.parse_args()
+  return options
+
+
+def RunProof(standard_opts, proof_func):
+  """Validates that trie diffs conform to to a proof.
+
+  Args:
+    standard_opts: command line options describing the two tries to be diffed,
+                   arch type, etc. (as returned by ParseStandardOpts)
+    proof_func: Callback of (TrieDiffSet, bitness) to run to prove the diff.
+  Returns:
+    None
+  """
+  the_validator = validator.Validator(
+      validator_dll=standard_opts.validator_dll,
+      decoder_dll=standard_opts.decoder_dll)
+  bitness = int(standard_opts.bitness)
+  trie_diff_set = TrieDiffSet(the_validator, bitness)
+  trie.DiffTrieFiles(standard_opts.new, standard_opts.old,
+                     trie_diff_set.Process)
+  proof_func(trie_diff_set, bitness)
+
+
+def AssertDiffSetEquals(trie_diffs, expected_adds, expected_removes):
+  """Assert that diffs is composed of expected_adds and expected_removes."""
+  if trie_diffs.accept_trie1_set != expected_adds:
+    raise AssertionError('falsely added instructions: ',
+                         trie_diffs.accept_trie1_set - expected_adds,
+                         'unadded instructions: ',
+                         expected_adds - trie_diffs.accept_trie1_set)
+
+  if trie_diffs.accept_trie2_set != expected_removes:
+    raise AssertionError('falsely removed instructions: ',
+                         trie_diffs.accept_trie2_set - expected_removes,
+                         'missing instructions: ',
+                         expected_removes - trie_diffs.accept_trie2_set)
 

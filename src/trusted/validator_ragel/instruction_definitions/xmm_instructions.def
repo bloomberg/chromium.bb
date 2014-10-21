@@ -1961,11 +1961,9 @@ vtestpd Wpdx Vpdx, 0xc4 RXB.00010 0.1111.L.01 0x0f,
 vtestps Wpsx Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x0e,
     CPUFeature_AVX disabled_untested
 ######## VZEROALL ##############################################################
-vzeroall, 0xc4 RXB.00001 x.1111.1.00 0x77,
-    CPUFeature_AVX disabled_untested
+vzeroall, 0xc4 RXB.00001 x.1111.1.00 0x77, CPUFeature_AVX
 ######## VZEROUPPER ############################################################
-vzeroupper, 0xc4 RXB.00001 x.1111.0.00 0x77,
-    CPUFeature_AVX disabled_untested
+vzeroupper, 0xc4 RXB.00001 x.1111.0.00 0x77, CPUFeature_AVX
 ######## XORPD/VXORPD ##########################################################
 xorpd Wpd Vpd, 0x66 0x0f 0x57, CPUFeature_SSE2
 vxorpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x57,

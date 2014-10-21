@@ -320,6 +320,25 @@ if ragel_involved:
          latest_trie_file])
     check_tries.append(check_latest_trie_file)
 
+
+  snapshots_dir = '${MAIN_DIR}/../validator_snapshots'
+  trie_proofs = [
+    ('vzero_proof.py', '32', '20141001', '20141020.vzero'),
+    ('vzero_proof.py', '64', '20141001', '20141020.vzero'),
+  ]
+  for proof_file, bitness, old, new in trie_proofs:
+    trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
+    check_proof = env.AutoDepsCommand(
+      '%s_%s_results' % (proof_file, bitness),
+      ['${PYTHON}',
+       env.File(proof_file),
+       '--validator_dll', validator_dll,
+       '--decoder_dll', decoder_dll,
+       '--bitness', bitness,
+       '--old', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + old,
+       '--new', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + new])
+    check_tries.append(check_proof)
+
   # Don't run gen_trie tests in parallel because they can take all CPU.
   SideEffect('check_tries', check_tries)
   env.Alias('dfachecktries', check_tries)
