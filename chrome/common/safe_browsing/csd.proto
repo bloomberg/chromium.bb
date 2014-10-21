@@ -362,14 +362,10 @@ message ClientIncidentReport {
       optional string version = 3;
       optional bool blacklist_initialized = 4;
     }
-    message VariationsSeedSignatureIncident {
-      optional string variations_seed_signature = 1;
-    }
     optional int64 incident_time_msec = 1;
     optional TrackedPreferenceIncident tracked_preference = 2;
     optional BinaryIntegrityIncident binary_integrity = 3;
     optional BlacklistLoadIncident blacklist_load = 4;
-    optional VariationsSeedSignatureIncident variations_seed_signature = 5;
   }
 
   repeated IncidentData incident = 1;

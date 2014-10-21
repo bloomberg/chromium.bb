@@ -694,8 +694,4 @@ void VariationsService::RecordLastFetchTime() {
   }
 }
 
-std::string VariationsService::GetInvalidVariationsSeedSignature() const {
-  return seed_store_.GetInvalidSignature();
-}
-
 }  // namespace chrome_variations

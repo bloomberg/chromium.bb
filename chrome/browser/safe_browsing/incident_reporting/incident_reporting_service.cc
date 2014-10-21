@@ -30,7 +30,6 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident_handlers.h"
-#include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_incident_handlers.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -50,9 +49,8 @@ enum IncidentType {
   TRACKED_PREFERENCE = 1,
   BINARY_INTEGRITY = 2,
   BLACKLIST_LOAD = 3,
-  VARIATIONS_SEED_SIGNATURE = 4,
   // Values for new incident types go here.
-  NUM_INCIDENT_TYPES = 5
+  NUM_INCIDENT_TYPES = 4
 };
 
 // The action taken for an incident; used for user metrics (see
@@ -91,8 +89,6 @@ size_t CountIncidents(const ClientIncidentReport_IncidentData& incident) {
     ++result;
   if (incident.has_blacklist_load())
     ++result;
-  if (incident.has_variations_seed_signature())
-    ++result;
   // Add detection for new incident types here.
   return result;
 }
@@ -106,11 +102,9 @@ IncidentType GetIncidentType(
     return BINARY_INTEGRITY;
   if (incident_data.has_blacklist_load())
     return BLACKLIST_LOAD;
-  if (incident_data.has_variations_seed_signature())
-    return VARIATIONS_SEED_SIGNATURE;
 
   // Add detection for new incident types here.
-  COMPILE_ASSERT(VARIATIONS_SEED_SIGNATURE + 1 == NUM_INCIDENT_TYPES,
+  COMPILE_ASSERT(BLACKLIST_LOAD + 1 == NUM_INCIDENT_TYPES,
                  add_support_for_new_types);
   NOTREACHED();
   return NUM_INCIDENT_TYPES;
@@ -147,13 +141,9 @@ PersistentIncidentState ComputeIncidentState(
       state.key = GetBlacklistLoadIncidentKey(incident);
       state.digest = GetBlacklistLoadIncidentDigest(incident);
       break;
-    case VARIATIONS_SEED_SIGNATURE:
-      state.key = GetVariationsSeedSignatureIncidentKey(incident);
-      state.digest = GetVariationsSeedSignatureIncidentDigest(incident);
-      break;
     // Add handling for new incident types here.
     default:
-      COMPILE_ASSERT(VARIATIONS_SEED_SIGNATURE + 1 == NUM_INCIDENT_TYPES,
+      COMPILE_ASSERT(BLACKLIST_LOAD + 1 == NUM_INCIDENT_TYPES,
                      add_support_for_new_types);
       NOTREACHED();
       break;
