@@ -39,15 +39,15 @@ class PnaclComponentInstaller : public ComponentInstaller {
  public:
   PnaclComponentInstaller();
 
-  virtual ~PnaclComponentInstaller();
+  ~PnaclComponentInstaller() override;
 
-  virtual void OnUpdateError(int error) override;
+  void OnUpdateError(int error) override;
 
-  virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) override;
+  bool Install(const base::DictionaryValue& manifest,
+               const base::FilePath& unpack_path) override;
 
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) override;
+  bool GetInstalledFile(const std::string& file,
+                        base::FilePath* installed_file) override;
 
   // Register a PNaCl component for the first time.
   void RegisterPnaclComponent(ComponentUpdateService* cus);

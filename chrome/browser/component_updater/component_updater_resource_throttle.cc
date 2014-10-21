@@ -28,12 +28,12 @@ class CUResourceThrottle : public content::ResourceThrottle,
                            public base::SupportsWeakPtr<CUResourceThrottle> {
  public:
   CUResourceThrottle();
-  virtual ~CUResourceThrottle();
+  ~CUResourceThrottle() override;
 
   // Overriden from ResourceThrottle.
-  virtual void WillStartRequest(bool* defer) override;
-  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) override;
-  virtual const char* GetNameForLogging() const override;
+  void WillStartRequest(bool* defer) override;
+  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  const char* GetNameForLogging() const override;
 
   // Component updater calls this function via PostTask to unblock the request.
   void Unblock();

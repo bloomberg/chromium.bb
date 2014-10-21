@@ -1002,8 +1002,8 @@ TEST_F(ComponentUpdaterTest, MAYBE_DifferentialUpdateFails) {
 TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
   // This test installer reports installation failure.
   class : public TestInstaller {
-    virtual bool Install(const base::DictionaryValue& manifest,
-                         const base::FilePath& unpack_path) override {
+    bool Install(const base::DictionaryValue& manifest,
+                 const base::FilePath& unpack_path) override {
       ++install_count_;
       base::DeleteFile(unpack_path, true);
       return false;
@@ -1208,11 +1208,11 @@ void RequestAndDeleteResourceThrottle(ComponentUpdateService* cus,
   // pointer to a dead Resource throttle.
   class NoCallResourceController : public TestResourceController {
    public:
-    virtual ~NoCallResourceController() {}
-    virtual void Cancel() override { CHECK(false); }
-    virtual void CancelAndIgnore() override { CHECK(false); }
-    virtual void CancelWithError(int error_code) override { CHECK(false); }
-    virtual void Resume() override { CHECK(false); }
+    ~NoCallResourceController() override {}
+    void Cancel() override { CHECK(false); }
+    void CancelAndIgnore() override { CHECK(false); }
+    void CancelWithError(int error_code) override { CHECK(false); }
+    void Resume() override { CHECK(false); }
   } controller;
 
   delete RequestTestResourceThrottle(cus, &controller, crx_id);
@@ -1272,22 +1272,22 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleDeletedNoUpdate) {
 class CancelResourceController : public TestResourceController {
  public:
   CancelResourceController() : throttle_(NULL), resume_called_(0) {}
-  virtual ~CancelResourceController() {
+  ~CancelResourceController() override {
     // Check that the throttle has been resumed by the time we
     // exit the test.
     CHECK_EQ(1, resume_called_);
     delete throttle_;
   }
-  virtual void Cancel() override { CHECK(false); }
-  virtual void CancelAndIgnore() override { CHECK(false); }
-  virtual void CancelWithError(int error_code) override { CHECK(false); }
-  virtual void Resume() override {
+  void Cancel() override { CHECK(false); }
+  void CancelAndIgnore() override { CHECK(false); }
+  void CancelWithError(int error_code) override { CHECK(false); }
+  void Resume() override {
     BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
                             base::Bind(&CancelResourceController::ResumeCalled,
                                        base::Unretained(this)));
   }
-  virtual void SetThrottle(content::ResourceThrottle* throttle) override {
+  void SetThrottle(content::ResourceThrottle* throttle) override {
     throttle_ = throttle;
     bool defer = false;
     // Initially the throttle is blocked. The CUS needs to run a

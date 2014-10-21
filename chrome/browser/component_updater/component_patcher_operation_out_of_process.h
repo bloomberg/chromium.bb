@@ -27,15 +27,15 @@ class ChromeOutOfProcessPatcher : public OutOfProcessPatcher {
   ChromeOutOfProcessPatcher();
 
   // DeltaUpdateOpPatch::OutOfProcessPatcher implementation.
-  virtual void Patch(const std::string& operation,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     const base::FilePath& input_abs_path,
-                     const base::FilePath& patch_abs_path,
-                     const base::FilePath& output_abs_path,
-                     base::Callback<void(int result)> callback) override;
+  void Patch(const std::string& operation,
+             scoped_refptr<base::SequencedTaskRunner> task_runner,
+             const base::FilePath& input_abs_path,
+             const base::FilePath& patch_abs_path,
+             const base::FilePath& output_abs_path,
+             base::Callback<void(int result)> callback) override;
 
  private:
-  virtual ~ChromeOutOfProcessPatcher();
+  ~ChromeOutOfProcessPatcher() override;
 
   scoped_refptr<PatchHost> host_;
 
