@@ -9,8 +9,7 @@
     NoInterfaceObject,
     RuntimeEnabled=Bluetooth,
 ] interface BluetoothDiscovery {
-    // Should be "Promise<BluetoothDevice>": http://crbug.com/421539
-    [CallWith=ScriptState] Promise requestDevice (
+    [CallWith=ScriptState] Promise<BluetoothDevice> requestDevice (
         // Implement requestDevice: http://crbug.com/420284
         // sequence<BluetoothScanFilter> filters, optional RequestDeviceOptions options
         );
