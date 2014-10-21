@@ -50,7 +50,7 @@ class PasswordManager : public LoginModel {
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
 #endif
   explicit PasswordManager(PasswordManagerClient* client);
-  virtual ~PasswordManager();
+  ~PasswordManager() override;
 
   typedef base::Callback<void(const autofill::PasswordForm&)>
       PasswordSubmittedCallback;
@@ -74,8 +74,8 @@ class PasswordManager : public LoginModel {
                         bool wait_for_username) const;
 
   // LoginModel implementation.
-  virtual void AddObserver(LoginModelObserver* observer) override;
-  virtual void RemoveObserver(LoginModelObserver* observer) override;
+  void AddObserver(LoginModelObserver* observer) override;
+  void RemoveObserver(LoginModelObserver* observer) override;
 
   // Mark this form as having a generated password.
   void SetFormHasGeneratedPassword(const autofill::PasswordForm& form);

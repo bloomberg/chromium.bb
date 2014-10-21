@@ -54,13 +54,13 @@ class BookmarkUtilsTest : public testing::Test,
 
  private:
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() override {}
+  void BookmarkModelChanged() override {}
 
-  virtual void GroupedBookmarkChangesBeginning(BookmarkModel* model) override {
+  void GroupedBookmarkChangesBeginning(BookmarkModel* model) override {
     ++grouped_changes_beginning_count_;
   }
 
-  virtual void GroupedBookmarkChangesEnded(BookmarkModel* model) override {
+  void GroupedBookmarkChangesEnded(BookmarkModel* model) override {
     ++grouped_changes_ended_count_;
   }
 

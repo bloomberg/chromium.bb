@@ -200,8 +200,8 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
     responses_[kImageURLs[1]] = string(kImageData[1]);
   }
 
-  virtual void FetchURL(const string& url,
-                        const URLFetcherCallback& callback) override {
+  void FetchURL(const string& url,
+                const URLFetcherCallback& callback) override {
     ASSERT_FALSE(callback.is_null());
     url_ = url;
     callback_ = callback;
@@ -228,8 +228,8 @@ class TestDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
  public:
   TestDistillerURLFetcherFactory() : DistillerURLFetcherFactory(NULL) {}
 
-  virtual ~TestDistillerURLFetcherFactory() {}
-  virtual DistillerURLFetcher* CreateDistillerURLFetcher() const override {
+  ~TestDistillerURLFetcherFactory() override {}
+  DistillerURLFetcher* CreateDistillerURLFetcher() const override {
     return new TestDistillerURLFetcher(false);
   }
 };

@@ -85,7 +85,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
                     bool suppress_rebuild,
                     const base::FilePath& filename,
                     int32 default_table_size);
-  virtual ~VisitedLinkMaster();
+  ~VisitedLinkMaster() override;
 
   // Must be called immediately after object creation. Nothing else will work
   // until this is called. Returns true on success, false means that this

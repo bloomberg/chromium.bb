@@ -40,7 +40,7 @@ class TemplateURLFetcher : public KeyedService {
   // Creates a TemplateURLFetcher.
   TemplateURLFetcher(TemplateURLService* template_url_service,
                      net::URLRequestContextGetter* request_context);
-  virtual ~TemplateURLFetcher();
+  ~TemplateURLFetcher() override;
 
   // If TemplateURLFetcher is not already downloading the OSDD for osdd_url,
   // it is downloaded. If successful and the result can be parsed, a TemplateURL

@@ -144,89 +144,85 @@ class BookmarkModelTest : public testing::Test,
     ClearCounts();
   }
 
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) override {
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
     // We never load from the db, so that this should never get invoked.
     NOTREACHED();
   }
 
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index) override {
+  void BookmarkNodeMoved(BookmarkModel* model,
+                         const BookmarkNode* old_parent,
+                         int old_index,
+                         const BookmarkNode* new_parent,
+                         int new_index) override {
     ++moved_count_;
     observer_details_.Set(old_parent, new_parent, old_index, new_index);
   }
 
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) override {
+  void BookmarkNodeAdded(BookmarkModel* model,
+                         const BookmarkNode* parent,
+                         int index) override {
     ++added_count_;
     observer_details_.Set(parent, NULL, index, -1);
   }
 
-  virtual void OnWillRemoveBookmarks(BookmarkModel* model,
-                                     const BookmarkNode* parent,
-                                     int old_index,
-                                     const BookmarkNode* node) override {
+  void OnWillRemoveBookmarks(BookmarkModel* model,
+                             const BookmarkNode* parent,
+                             int old_index,
+                             const BookmarkNode* node) override {
     ++before_remove_count_;
   }
 
-  virtual void BookmarkNodeRemoved(
-      BookmarkModel* model,
-      const BookmarkNode* parent,
-      int old_index,
-      const BookmarkNode* node,
-      const std::set<GURL>& removed_urls) override {
+  void BookmarkNodeRemoved(BookmarkModel* model,
+                           const BookmarkNode* parent,
+                           int old_index,
+                           const BookmarkNode* node,
+                           const std::set<GURL>& removed_urls) override {
     ++removed_count_;
     observer_details_.Set(parent, NULL, old_index, -1);
   }
 
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) override {
+  void BookmarkNodeChanged(BookmarkModel* model,
+                           const BookmarkNode* node) override {
     ++changed_count_;
     observer_details_.Set(node, NULL, -1, -1);
   }
 
-  virtual void OnWillChangeBookmarkNode(BookmarkModel* model,
-                                        const BookmarkNode* node) override {
+  void OnWillChangeBookmarkNode(BookmarkModel* model,
+                                const BookmarkNode* node) override {
     ++before_change_count_;
   }
 
-  virtual void BookmarkNodeChildrenReordered(
-      BookmarkModel* model,
-      const BookmarkNode* node) override {
+  void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                     const BookmarkNode* node) override {
     ++reordered_count_;
   }
 
-  virtual void OnWillReorderBookmarkNode(BookmarkModel* model,
-                                         const BookmarkNode* node) override {
+  void OnWillReorderBookmarkNode(BookmarkModel* model,
+                                 const BookmarkNode* node) override {
     ++before_reorder_count_;
   }
 
-  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) override {
+  void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                  const BookmarkNode* node) override {
     // We never attempt to load favicons, so that this method never
     // gets invoked.
   }
 
-  virtual void ExtensiveBookmarkChangesBeginning(
-      BookmarkModel* model) override {
+  void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override {
     ++extensive_changes_beginning_count_;
   }
 
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override {
+  void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override {
     ++extensive_changes_ended_count_;
   }
 
-  virtual void BookmarkAllUserNodesRemoved(
+  void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
       const std::set<GURL>& removed_urls) override {
     ++all_bookmarks_removed_;
   }
 
-  virtual void OnWillRemoveAllUserBookmarks(BookmarkModel* model) override {
+  void OnWillRemoveAllUserBookmarks(BookmarkModel* model) override {
     ++before_remove_all_count_;
   }
 

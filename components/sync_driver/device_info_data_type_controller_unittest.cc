@@ -56,14 +56,14 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override {
     // Shouldn't be called for this test.
     NOTREACHED();
     return base::WeakPtr<syncer::SyncableService>();
   }
 
-  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) override {

@@ -33,12 +33,12 @@ class POLICY_EXPORT PolicyLoaderMac : public AsyncPolicyLoader {
   PolicyLoaderMac(scoped_refptr<base::SequencedTaskRunner> task_runner,
                   const base::FilePath& managed_policy_path,
                   MacPreferences* preferences);
-  virtual ~PolicyLoaderMac();
+  ~PolicyLoaderMac() override;
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnBackgroundThread() override;
-  virtual scoped_ptr<PolicyBundle> Load() override;
-  virtual base::Time LastModificationTime() override;
+  void InitOnBackgroundThread() override;
+  scoped_ptr<PolicyBundle> Load() override;
+  base::Time LastModificationTime() override;
 
  private:
   // Callback for the FilePathWatcher.

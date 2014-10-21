@@ -49,7 +49,7 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
 
   explicit CaptivePortalDetector(
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
-  virtual ~CaptivePortalDetector();
+  ~CaptivePortalDetector() override;
 
   // Triggers a check for a captive portal. After completion, runs the
   // |callback|.
@@ -62,7 +62,7 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
   friend class CaptivePortalDetectorTestBase;
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Takes a net::URLFetcher that has finished trying to retrieve the
   // test URL, and fills a Results struct based on its result.  If the

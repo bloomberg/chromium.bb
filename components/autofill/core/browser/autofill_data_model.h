@@ -20,7 +20,7 @@ class AutofillType;
 class AutofillDataModel : public FormGroup {
  public:
   AutofillDataModel(const std::string& guid, const std::string& origin);
-  virtual ~AutofillDataModel();
+  ~AutofillDataModel() override;
 
   // Returns the string that should be auto-filled into a text field given the
   // |type| of that field, localized to the given |app_locale| if appropriate.

@@ -40,21 +40,21 @@ void CreateSubscribedMessage(const std::vector<std::string>& subscription_ids,
 class FakeDirectiveHandler : public DirectiveHandler {
  public:
   FakeDirectiveHandler() {}
-  virtual ~FakeDirectiveHandler() {}
+  ~FakeDirectiveHandler() override {}
 
   const std::vector<Directive>& added_directives() const {
     return added_directives_;
   }
 
-  virtual void Initialize(
+  void Initialize(
       const AudioRecorder::DecodeSamplesCallback& decode_cb,
       const AudioDirectiveHandler::EncodeTokenCallback& encode_cb) override {}
 
-  virtual void AddDirective(const Directive& directive) override {
+  void AddDirective(const Directive& directive) override {
     added_directives_.push_back(directive);
   }
 
-  virtual void RemoveDirectives(const std::string& op_id) override {
+  void RemoveDirectives(const std::string& op_id) override {
     // TODO(ckehoe): Add a parallel implementation when prod has one.
   }
 
@@ -137,29 +137,24 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
 
   // CopresenceDelegate implementation
 
-  virtual void HandleMessages(
-      const std::string& app_id,
-      const std::string& subscription_id,
-      const std::vector<Message>& messages) override {
+  void HandleMessages(const std::string& app_id,
+                      const std::string& subscription_id,
+                      const std::vector<Message>& messages) override {
     // app_id is unused for now, pending a server fix.
     messages_by_subscription_[subscription_id] = messages;
   }
 
-  virtual net::URLRequestContextGetter* GetRequestContext() const override {
+  net::URLRequestContextGetter* GetRequestContext() const override {
     return NULL;
   }
 
-  virtual const std::string GetPlatformVersionString() const override {
+  const std::string GetPlatformVersionString() const override {
     return kChromeVersion;
   }
 
-  virtual const std::string GetAPIKey() const override {
-    return api_key_;
-  }
+  const std::string GetAPIKey() const override { return api_key_; }
 
-  virtual WhispernetClient* GetWhispernetClient() override {
-    return NULL;
-  }
+  WhispernetClient* GetWhispernetClient() override { return NULL; }
 
  protected:
   // For rpc_handler_.invalid_audio_token_cache_

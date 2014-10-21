@@ -89,7 +89,7 @@ class FakeURLListProvider : public URLListProvider {
         run_immediately_(run_immediately),
         was_get_urls_called_(false) {}
 
-  virtual void GetURLs(const GetURLsCallback& callback) override {
+  void GetURLs(const GetURLsCallback& callback) override {
     was_get_urls_called_ = true;
 
     if (run_immediately_) {

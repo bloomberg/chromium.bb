@@ -46,10 +46,10 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
-  virtual ~UserCloudPolicyManager();
+  ~UserCloudPolicyManager() override;
 
   // ConfigurationPolicyProvider overrides:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void SetSigninUsername(const std::string& username);
 

@@ -21,7 +21,7 @@ class OriginPowerMap : public KeyedService {
   typedef base::CallbackList<void(void)>::Subscription Subscription;
 
   OriginPowerMap();
-  virtual ~OriginPowerMap();
+  ~OriginPowerMap() override;
 
   // Returns the integer percentage usage of the total power consumed by a
   // given URL's origin.

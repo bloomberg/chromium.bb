@@ -42,7 +42,7 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
       const std::string& channel_status_request_url,
       const std::string& user_agent,
       const GCMChannelStatusRequestCallback& callback);
-  virtual ~GCMChannelStatusRequest();
+  ~GCMChannelStatusRequest() override;
 
   void Start();
 
@@ -53,7 +53,7 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(GCMChannelStatusRequestTest, RequestData);
 
   // Overridden from URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   bool ParseResponse(const net::URLFetcher* source);
   void RetryWithBackoff(bool update_backoff);

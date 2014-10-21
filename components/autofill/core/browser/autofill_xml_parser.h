@@ -23,7 +23,7 @@ namespace autofill {
 class AutofillXmlParser : public buzz::XmlParseHandler {
  public:
   AutofillXmlParser();
-  virtual ~AutofillXmlParser();
+  ~AutofillXmlParser() override;
 
   // Returns true if no parsing errors were encountered.
   bool succeeded() const { return succeeded_; }
@@ -32,23 +32,21 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
   // A callback for the end of an </element>, called by Expat.
   // |context| is a parsing context used to resolve element/attribute names.
   // |name| is the name of the element.
-  virtual void EndElement(buzz::XmlParseContext* context,
-                          const char* name) override;
+  void EndElement(buzz::XmlParseContext* context, const char* name) override;
 
   // The callback for character data between tags (<element>text...</element>).
   // |context| is a parsing context used to resolve element/attribute names.
   // |text| is a pointer to the beginning of character data (not null
   // terminated).
   // |len| is the length of the string pointed to by text.
-  virtual void CharacterData(buzz::XmlParseContext* context,
-                             const char* text,
-                             int len) override;
+  void CharacterData(buzz::XmlParseContext* context,
+                     const char* text,
+                     int len) override;
 
   // The callback for parsing errors.
   // |context| is a parsing context used to resolve names.
   // |error_code| is a code representing the parsing error.
-  virtual void Error(buzz::XmlParseContext* context,
-                     XML_Error error_code) override;
+  void Error(buzz::XmlParseContext* context, XML_Error error_code) override;
 
   // True if parsing succeeded.
   bool succeeded_;
@@ -75,16 +73,16 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
  public:
   AutofillQueryXmlParser(std::vector<AutofillServerFieldInfo>* field_infos,
                          UploadRequired* upload_required);
-  virtual ~AutofillQueryXmlParser();
+  ~AutofillQueryXmlParser() override;
 
  private:
   // A callback for the beginning of a new <element>, called by Expat.
   // |context| is a parsing context used to resolve element/attribute names.
   // |name| is the name of the element.
   // |attrs| is the list of attributes (names and values) for the element.
-  virtual void StartElement(buzz::XmlParseContext* context,
-                            const char* name,
-                            const char** attrs) override;
+  void StartElement(buzz::XmlParseContext* context,
+                    const char* name,
+                    const char** attrs) override;
 
   // A helper function to parse a |WebElementDescriptor|.
   // |context| is the current parsing context.
@@ -131,9 +129,9 @@ class AutofillUploadXmlParser : public AutofillXmlParser {
   // |context| is a parsing context used to resolve element/attribute names.
   // |name| is the name of the element.
   // |attrs| is the list of attributes (names and values) for the element.
-  virtual void StartElement(buzz::XmlParseContext* context,
-                            const char* name,
-                            const char** attrs) override;
+  void StartElement(buzz::XmlParseContext* context,
+                    const char* name,
+                    const char** attrs) override;
 
   // A helper function to retrieve double values from strings.  Raises an XML
   // parse error if it fails.

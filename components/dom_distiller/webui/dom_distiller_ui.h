@@ -19,7 +19,7 @@ class DomDistillerUi : public content::WebUIController {
   DomDistillerUi(content::WebUI* web_ui,
                  DomDistillerService* service,
                  const std::string& scheme);
-  virtual ~DomDistillerUi();
+  ~DomDistillerUi() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DomDistillerUi);

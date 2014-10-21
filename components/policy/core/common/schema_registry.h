@@ -102,21 +102,21 @@ class POLICY_EXPORT CombinedSchemaRegistry
       public SchemaRegistry::InternalObserver {
  public:
   CombinedSchemaRegistry();
-  virtual ~CombinedSchemaRegistry();
+  ~CombinedSchemaRegistry() override;
 
   void Track(SchemaRegistry* registry);
 
   // SchemaRegistry:
-  virtual void RegisterComponents(PolicyDomain domain,
-                                  const ComponentMap& components) override;
-  virtual void UnregisterComponent(const PolicyNamespace& ns) override;
+  void RegisterComponents(PolicyDomain domain,
+                          const ComponentMap& components) override;
+  void UnregisterComponent(const PolicyNamespace& ns) override;
 
   // SchemaRegistry::Observer:
-  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) override;
-  virtual void OnSchemaRegistryReady() override;
+  void OnSchemaRegistryUpdated(bool has_new_schemas) override;
+  void OnSchemaRegistryReady() override;
 
   // SchemaRegistry::InternalObserver:
-  virtual void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) override;
+  void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) override;
 
  private:
   void Combine(bool has_new_schemas);
@@ -136,19 +136,19 @@ class POLICY_EXPORT ForwardingSchemaRegistry
   // This registry will stop updating its SchemaMap when |wrapped| is
   // destroyed.
   explicit ForwardingSchemaRegistry(SchemaRegistry* wrapped);
-  virtual ~ForwardingSchemaRegistry();
+  ~ForwardingSchemaRegistry() override;
 
   // SchemaRegistry:
-  virtual void RegisterComponents(PolicyDomain domain,
-                                  const ComponentMap& components) override;
-  virtual void UnregisterComponent(const PolicyNamespace& ns) override;
+  void RegisterComponents(PolicyDomain domain,
+                          const ComponentMap& components) override;
+  void UnregisterComponent(const PolicyNamespace& ns) override;
 
   // SchemaRegistry::Observer:
-  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) override;
-  virtual void OnSchemaRegistryReady() override;
+  void OnSchemaRegistryUpdated(bool has_new_schemas) override;
+  void OnSchemaRegistryReady() override;
 
   // SchemaRegistry::InternalObserver:
-  virtual void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) override;
+  void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) override;
 
  private:
   SchemaRegistry* wrapped_;

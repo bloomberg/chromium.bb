@@ -33,17 +33,17 @@ class TestPasswordManagerClient
  public:
   TestPasswordManagerClient(password_manager::PasswordStore* store)
       : did_prompt_user_to_save_(false), store_(store) {}
-  virtual ~TestPasswordManagerClient() {}
+  ~TestPasswordManagerClient() override {}
 
-  virtual password_manager::PasswordStore* GetPasswordStore() override {
+  password_manager::PasswordStore* GetPasswordStore() override {
     return store_;
   }
 
-  virtual password_manager::PasswordManagerDriver* GetDriver() override {
+  password_manager::PasswordManagerDriver* GetDriver() override {
     return &driver_;
   }
 
-  virtual bool PromptUserToSavePassword(
+  bool PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> manager) override {
     did_prompt_user_to_save_ = true;
     manager_.reset(manager.release());

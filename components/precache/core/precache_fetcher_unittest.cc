@@ -60,9 +60,7 @@ class TestPrecacheDelegate : public PrecacheFetcher::PrecacheDelegate {
  public:
   TestPrecacheDelegate() : was_on_done_called_(false) {}
 
-  virtual void OnDone() override {
-    was_on_done_called_ = true;
-  }
+  void OnDone() override { was_on_done_called_ = true; }
 
   bool was_on_done_called() const {
     return was_on_done_called_;

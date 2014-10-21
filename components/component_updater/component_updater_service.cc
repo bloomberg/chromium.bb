@@ -103,20 +103,19 @@ CrxComponent::~CrxComponent() {
 class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
  public:
   explicit CrxUpdateService(Configurator* config);
-  virtual ~CrxUpdateService();
+  ~CrxUpdateService() override;
 
   // Overrides for ComponentUpdateService.
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual Status Start() override;
-  virtual Status Stop() override;
-  virtual Status RegisterComponent(const CrxComponent& component) override;
-  virtual std::vector<std::string> GetComponentIDs() const override;
-  virtual OnDemandUpdater& GetOnDemandUpdater() override;
-  virtual void MaybeThrottle(const std::string& crx_id,
-                             const base::Closure& callback) override;
-  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
-      override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  Status Start() override;
+  Status Stop() override;
+  Status RegisterComponent(const CrxComponent& component) override;
+  std::vector<std::string> GetComponentIDs() const override;
+  OnDemandUpdater& GetOnDemandUpdater() override;
+  void MaybeThrottle(const std::string& crx_id,
+                     const base::Closure& callback) override;
+  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() override;
 
   // Context for a crx download url request.
   struct CRXContext {
@@ -142,11 +141,11 @@ class CrxUpdateService : public ComponentUpdateService, public OnDemandUpdater {
   };
 
   // Overrides for ComponentUpdateService.
-  virtual bool GetComponentDetails(const std::string& component_id,
-                                   CrxUpdateItem* item) const override;
+  bool GetComponentDetails(const std::string& component_id,
+                           CrxUpdateItem* item) const override;
 
   // Overrides for OnDemandUpdater.
-  virtual Status OnDemandUpdate(const std::string& component_id) override;
+  Status OnDemandUpdate(const std::string& component_id) override;
 
   void UpdateCheckComplete(const GURL& original_url,
                            int error,

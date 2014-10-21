@@ -23,7 +23,7 @@ class WebContentsModalDialogManager
       public content::WebContentsObserver,
       public content::WebContentsUserData<WebContentsModalDialogManager> {
  public:
-  virtual ~WebContentsModalDialogManager();
+  ~WebContentsModalDialogManager() override;
 
   WebContentsModalDialogManagerDelegate* delegate() const { return delegate_; }
   void SetDelegate(WebContentsModalDialogManagerDelegate* d);
@@ -50,8 +50,8 @@ class WebContentsModalDialogManager
   void FocusTopmostDialog() const;
 
   // SingleWebContentsDialogManagerDelegate:
-  virtual content::WebContents* GetWebContents() const override;
-  virtual void WillClose(NativeWebContentsModalDialog dialog) override;
+  content::WebContents* GetWebContents() const override;
+  void WillClose(NativeWebContentsModalDialog dialog) override;
 
   // For testing.
   class TestApi {
@@ -99,14 +99,14 @@ class WebContentsModalDialogManager
   void CloseAllDialogs();
 
   // Overridden from content::WebContentsObserver:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void DidGetIgnoredUIEvent() override;
-  virtual void WasShown() override;
-  virtual void WasHidden() override;
-  virtual void WebContentsDestroyed() override;
-  virtual void DidAttachInterstitialPage() override;
+  void DidGetIgnoredUIEvent() override;
+  void WasShown() override;
+  void WasHidden() override;
+  void WebContentsDestroyed() override;
+  void DidAttachInterstitialPage() override;
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   WebContentsModalDialogManagerDelegate* delegate_;

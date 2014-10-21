@@ -15,7 +15,7 @@ namespace web_cache {
 class WebCacheRenderProcessObserver : public content::RenderProcessObserver {
  public:
   WebCacheRenderProcessObserver();
-  virtual ~WebCacheRenderProcessObserver();
+  ~WebCacheRenderProcessObserver() override;
 
   // Needs to be called by RenderViews in case of navigations to execute
   // any 'clear cache' commands that were delayed until the next navigation.
@@ -23,9 +23,9 @@ class WebCacheRenderProcessObserver : public content::RenderProcessObserver {
 
  private:
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
-  virtual void WebKitInitialized() override;
-  virtual void OnRenderProcessShutdown() override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void WebKitInitialized() override;
+  void OnRenderProcessShutdown() override;
 
   // Message handlers.
   void OnSetCacheCapacities(size_t min_dead_capacity,

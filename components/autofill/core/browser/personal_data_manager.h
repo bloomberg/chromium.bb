@@ -53,7 +53,7 @@ class PersonalDataManager : public KeyedService,
   typedef std::pair<std::string, size_t> GUIDPair;
 
   explicit PersonalDataManager(const std::string& app_locale);
-  virtual ~PersonalDataManager();
+  ~PersonalDataManager() override;
 
   // Kicks off asynchronous loading of profiles and credit cards.
   // |pref_service| must outlive this instance.  |is_off_the_record| informs
@@ -64,12 +64,11 @@ class PersonalDataManager : public KeyedService,
             bool is_off_the_record);
 
   // WebDataServiceConsumer:
-  virtual void OnWebDataServiceRequestDone(
-      WebDataServiceBase::Handle h,
-      const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
+                                   const WDTypedResult* result) override;
 
   // AutofillWebDataServiceObserverOnUIThread:
-  virtual void AutofillMultipleChanged() override;
+  void AutofillMultipleChanged() override;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);

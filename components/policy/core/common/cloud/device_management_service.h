@@ -124,7 +124,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
   };
 
   explicit DeviceManagementService(scoped_ptr<Configuration> configuration);
-  virtual ~DeviceManagementService();
+  ~DeviceManagementService() override;
 
   // The ID of URLFetchers created by the DeviceManagementService. This can be
   // used by tests that use a TestURLFetcherFactory to get the pending fetchers
@@ -154,7 +154,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
   friend class DeviceManagementRequestJobImpl;
 
   // net::URLFetcherDelegate override.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Starts processing any queued jobs.
   void Initialize();

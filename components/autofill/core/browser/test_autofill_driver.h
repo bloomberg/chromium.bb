@@ -20,28 +20,27 @@ namespace autofill {
 class TestAutofillDriver : public AutofillDriver {
  public:
   TestAutofillDriver();
-  virtual ~TestAutofillDriver();
+  ~TestAutofillDriver() override;
 
   // AutofillDriver implementation.
-  virtual bool IsOffTheRecord() const override;
+  bool IsOffTheRecord() const override;
   // Returns the value passed in to the last call to |SetURLRequestContext()|
   // or NULL if that method has never been called.
-  virtual net::URLRequestContextGetter* GetURLRequestContext() override;
-  virtual base::SequencedWorkerPool* GetBlockingPool() override;
-  virtual bool RendererIsAvailable() override;
-  virtual void SendFormDataToRenderer(int query_id,
-                                      RendererFormDataAction action,
-                                      const FormData& data) override;
-  virtual void PingRenderer() override;
-  virtual void SendAutofillTypePredictionsToRenderer(
+  net::URLRequestContextGetter* GetURLRequestContext() override;
+  base::SequencedWorkerPool* GetBlockingPool() override;
+  bool RendererIsAvailable() override;
+  void SendFormDataToRenderer(int query_id,
+                              RendererFormDataAction action,
+                              const FormData& data) override;
+  void PingRenderer() override;
+  void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
-  virtual void RendererShouldAcceptDataListSuggestion(
+  void RendererShouldAcceptDataListSuggestion(
       const base::string16& value) override;
-  virtual void RendererShouldClearFilledForm() override;
-  virtual void RendererShouldClearPreviewedForm() override;
-  virtual void RendererShouldFillFieldWithValue(
-      const base::string16& value) override;
-  virtual void RendererShouldPreviewFieldWithValue(
+  void RendererShouldClearFilledForm() override;
+  void RendererShouldClearPreviewedForm() override;
+  void RendererShouldFillFieldWithValue(const base::string16& value) override;
+  void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
 
   // Methods that tests can use to specialize functionality.

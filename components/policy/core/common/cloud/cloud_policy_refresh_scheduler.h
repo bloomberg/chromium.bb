@@ -43,7 +43,7 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
       CloudPolicyClient* client,
       CloudPolicyStore* store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-  virtual ~CloudPolicyRefreshScheduler();
+  ~CloudPolicyRefreshScheduler() override;
 
   base::Time last_refresh() const { return last_refresh_; }
   int64 refresh_delay() const { return refresh_delay_ms_; }
@@ -68,16 +68,16 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   }
 
   // CloudPolicyClient::Observer:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
-  virtual void OnClientError(CloudPolicyClient* client) override;
+  void OnPolicyFetched(CloudPolicyClient* client) override;
+  void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  void OnClientError(CloudPolicyClient* client) override;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
-  virtual void OnStoreError(CloudPolicyStore* store) override;
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
 
   // net::NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
  private:
   // Initializes |last_refresh_| to the policy timestamp from |store_| in case

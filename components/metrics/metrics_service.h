@@ -98,7 +98,7 @@ class MetricsService : public base::HistogramFlattener {
   MetricsService(MetricsStateManager* state_manager,
                  MetricsServiceClient* client,
                  PrefService* local_state);
-  virtual ~MetricsService();
+  ~MetricsService() override;
 
   // Initializes metrics recording state. Updates various bookkeeping values in
   // prefs and sets up the scheduler. This is a separate function rather than
@@ -152,13 +152,13 @@ class MetricsService : public base::HistogramFlattener {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // HistogramFlattener:
-  virtual void RecordDelta(const base::HistogramBase& histogram,
-                           const base::HistogramSamples& snapshot) override;
-  virtual void InconsistencyDetected(
+  void RecordDelta(const base::HistogramBase& histogram,
+                   const base::HistogramSamples& snapshot) override;
+  void InconsistencyDetected(
       base::HistogramBase::Inconsistency problem) override;
-  virtual void UniqueInconsistencyDetected(
+  void UniqueInconsistencyDetected(
       base::HistogramBase::Inconsistency problem) override;
-  virtual void InconsistencyDetectedInLoggedCount(int amount) override;
+  void InconsistencyDetectedInLoggedCount(int amount) override;
 
   // This should be called when the application is not idle, i.e. the user seems
   // to be interacting with the application.

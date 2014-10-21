@@ -30,26 +30,26 @@ class INVALIDATION_EXPORT_PRIVATE PushClientChannel
   // is destroyed.
   explicit PushClientChannel(scoped_ptr<notifier::PushClient> push_client);
 
-  virtual ~PushClientChannel();
+  ~PushClientChannel() override;
 
   // invalidation::NetworkChannel implementation.
-  virtual void SendMessage(const std::string& message) override;
-  virtual void RequestDetailedStatus(
+  void SendMessage(const std::string& message) override;
+  void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) override;
 
   // SyncNetworkChannel implementation.
   // If not connected, connects with the given credentials.  If
   // already connected, the next connection attempt will use the given
   // credentials.
-  virtual void UpdateCredentials(const std::string& email,
-      const std::string& token) override;
-  virtual int GetInvalidationClientType() override;
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override;
+  int GetInvalidationClientType() override;
 
   // notifier::PushClient::Observer implementation.
-  virtual void OnNotificationsEnabled() override;
-  virtual void OnNotificationsDisabled(
+  void OnNotificationsEnabled() override;
+  void OnNotificationsDisabled(
       notifier::NotificationsDisabledReason reason) override;
-  virtual void OnIncomingNotification(
+  void OnIncomingNotification(
       const notifier::Notification& notification) override;
 
   const std::string& GetServiceContextForTest() const;

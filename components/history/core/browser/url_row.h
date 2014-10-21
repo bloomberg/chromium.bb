@@ -167,7 +167,7 @@ class URLResult : public URLRow {
   URLResult(const GURL& url,
             const query_parser::Snippet::MatchPositions& title_matches);
   explicit URLResult(const URLRow& url_row);
-  virtual ~URLResult();
+  ~URLResult() override;
 
   base::Time visit_time() const { return visit_time_; }
   void set_visit_time(base::Time visit_time) { visit_time_ = visit_time; }

@@ -38,7 +38,7 @@ class BookmarkServerClusterService : public KeyedService,
       SigninManagerBase* signin_manager,
       EnhancedBookmarkModel* enhanced_bookmark_model,
       PrefService* pref_service);
-  virtual ~BookmarkServerClusterService();
+  ~BookmarkServerClusterService() override;
 
   // Retrieves all the bookmarks associated with a cluster. The returned
   // BookmarkNodes are owned by the bookmark model, and one must listen to the
@@ -58,20 +58,19 @@ class BookmarkServerClusterService : public KeyedService,
 
  protected:
   // BookmarkServerService methods.
-  virtual scoped_ptr<net::URLFetcher> CreateFetcher() override;
-  virtual bool ProcessResponse(const std::string& response,
-                               bool* should_notify) override;
-  virtual void CleanAfterFailure() override;
+  scoped_ptr<net::URLFetcher> CreateFetcher() override;
+  bool ProcessResponse(const std::string& response,
+                       bool* should_notify) override;
+  void CleanAfterFailure() override;
 
   // EnhancedBookmarkModelObserver methods.
-  virtual void EnhancedBookmarkModelLoaded() override;
-  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) override;
-  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) override;
-  virtual void EnhancedBookmarkAllUserNodesRemoved() override;
-  virtual void EnhancedBookmarkRemoteIdChanged(
-      const BookmarkNode* node,
-      const std::string& old_remote_id,
-      const std::string& remote_id) override;
+  void EnhancedBookmarkModelLoaded() override;
+  void EnhancedBookmarkAdded(const BookmarkNode* node) override;
+  void EnhancedBookmarkRemoved(const BookmarkNode* node) override;
+  void EnhancedBookmarkAllUserNodesRemoved() override;
+  void EnhancedBookmarkRemoteIdChanged(const BookmarkNode* node,
+                                       const std::string& old_remote_id,
+                                       const std::string& remote_id) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Cluster);
@@ -84,8 +83,8 @@ class BookmarkServerClusterService : public KeyedService,
                            ClearClusterMapOnRemoveAllBookmarks);
 
   // Overriden from SigninManagerBase::Observer.
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // Updates |cluster_data_| with the |cluster_map| and saves the result to
   // profile prefs. All changes to |cluster_data_| should go through this method

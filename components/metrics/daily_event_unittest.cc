@@ -20,9 +20,7 @@ class TestDailyObserver : public DailyEvent::Observer {
 
   bool fired() const { return fired_; }
 
-  virtual void OnDailyEvent() override {
-    fired_ = true;
-  }
+  void OnDailyEvent() override { fired_ = true; }
 
   void Reset() {
     fired_ = false;

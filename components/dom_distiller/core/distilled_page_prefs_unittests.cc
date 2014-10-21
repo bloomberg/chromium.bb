@@ -19,14 +19,13 @@ class TestingObserver : public DistilledPagePrefs::Observer {
       : font_(DistilledPagePrefs::SANS_SERIF),
         theme_(DistilledPagePrefs::LIGHT) {}
 
-  virtual void OnChangeFontFamily(
-      DistilledPagePrefs::FontFamily new_font) override {
+  void OnChangeFontFamily(DistilledPagePrefs::FontFamily new_font) override {
     font_ = new_font;
   }
 
   DistilledPagePrefs::FontFamily GetFontFamily() { return font_; }
 
-  virtual void OnChangeTheme(DistilledPagePrefs::Theme new_theme) override {
+  void OnChangeTheme(DistilledPagePrefs::Theme new_theme) override {
     theme_ = new_theme;
   }
 

@@ -14,7 +14,7 @@ class ContextMenuDelegateUserData : public base::SupportsUserData::Data {
  public:
   explicit ContextMenuDelegateUserData(ContextMenuDelegate* menu_delegate)
       : menu_delegate_(menu_delegate) {}
-  virtual ~ContextMenuDelegateUserData() {}
+  ~ContextMenuDelegateUserData() override {}
   ContextMenuDelegate* menu_delegate() { return menu_delegate_; }
 
  private:

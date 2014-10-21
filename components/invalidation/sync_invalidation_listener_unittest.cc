@@ -56,7 +56,7 @@ typedef std::set<AckHandle, AckHandleLessThan> AckHandleSet;
 class FakeInvalidationClient : public invalidation::InvalidationClient {
  public:
   FakeInvalidationClient() : started_(false) {}
-  virtual ~FakeInvalidationClient() {}
+  ~FakeInvalidationClient() override {}
 
   const ObjectIdSet& GetRegisteredIds() const {
     return registered_ids_;
@@ -72,15 +72,11 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 
   // invalidation::InvalidationClient implementation.
 
-  virtual void Start() override {
-    started_ = true;
-  }
+  void Start() override { started_ = true; }
 
-  virtual void Stop() override {
-    started_ = false;
-  }
+  void Stop() override { started_ = false; }
 
-  virtual void Register(const ObjectId& object_id) override {
+  void Register(const ObjectId& object_id) override {
     if (!started_) {
       ADD_FAILURE();
       return;
@@ -88,8 +84,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
     registered_ids_.insert(object_id);
   }
 
-  virtual void Register(
-      const invalidation::vector<ObjectId>& object_ids) override {
+  void Register(const invalidation::vector<ObjectId>& object_ids) override {
     if (!started_) {
       ADD_FAILURE();
       return;
@@ -97,7 +92,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
     registered_ids_.insert(object_ids.begin(), object_ids.end());
   }
 
-  virtual void Unregister(const ObjectId& object_id) override {
+  void Unregister(const ObjectId& object_id) override {
     if (!started_) {
       ADD_FAILURE();
       return;
@@ -105,8 +100,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
     registered_ids_.erase(object_id);
   }
 
-  virtual void Unregister(
-      const invalidation::vector<ObjectId>& object_ids) override {
+  void Unregister(const invalidation::vector<ObjectId>& object_ids) override {
     if (!started_) {
       ADD_FAILURE();
       return;
@@ -117,7 +111,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
     }
   }
 
-  virtual void Acknowledge(const AckHandle& ack_handle) override {
+  void Acknowledge(const AckHandle& ack_handle) override {
     if (!started_) {
       ADD_FAILURE();
       return;
@@ -137,7 +131,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
  public:
   explicit FakeDelegate(SyncInvalidationListener* listener)
       : state_(TRANSIENT_INVALIDATION_ERROR) {}
-  virtual ~FakeDelegate() {}
+  ~FakeDelegate() override {}
 
   size_t GetInvalidationCount(const ObjectId& id) const {
     Map::const_iterator it = invalidations_.find(id);
@@ -222,8 +216,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
   }
 
   // SyncInvalidationListener::Delegate implementation.
-  virtual void OnInvalidate(
-      const ObjectIdInvalidationMap& invalidation_map) override {
+  void OnInvalidate(const ObjectIdInvalidationMap& invalidation_map) override {
     ObjectIdSet ids = invalidation_map.GetObjectIds();
     for (ObjectIdSet::iterator it = ids.begin(); it != ids.end(); ++it) {
       const SingleObjectInvalidationSet& incoming =
@@ -233,7 +226,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
     }
   }
 
-  virtual void OnInvalidatorStateChange(InvalidatorState state) override {
+  void OnInvalidatorStateChange(InvalidatorState state) override {
     state_ = state;
   }
 

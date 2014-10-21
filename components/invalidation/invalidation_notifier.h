@@ -50,24 +50,22 @@ class INVALIDATION_EXPORT_PRIVATE InvalidationNotifier
           invalidation_state_tracker_task_runner,
       const std::string& client_info);
 
-  virtual ~InvalidationNotifier();
+  ~InvalidationNotifier() override;
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) override;
-  virtual void UnregisterHandler(InvalidationHandler* handler) override;
-  virtual InvalidatorState GetInvalidatorState() const override;
-  virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) override;
-  virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) const
-      override;
+  void RegisterHandler(InvalidationHandler* handler) override;
+  void UpdateRegisteredIds(InvalidationHandler* handler,
+                           const ObjectIdSet& ids) override;
+  void UnregisterHandler(InvalidationHandler* handler) override;
+  InvalidatorState GetInvalidatorState() const override;
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override;
+  void RequestDetailedStatus(base::Callback<void(const base::DictionaryValue&)>
+                                 callback) const override;
 
   // SyncInvalidationListener::Delegate implementation.
-  virtual void OnInvalidate(
-      const ObjectIdInvalidationMap& invalidation_map) override;
-  virtual void OnInvalidatorStateChange(InvalidatorState state) override;
+  void OnInvalidate(const ObjectIdInvalidationMap& invalidation_map) override;
+  void OnInvalidatorStateChange(InvalidatorState state) override;
 
  private:
   // We start off in the STOPPED state.  When we get our initial

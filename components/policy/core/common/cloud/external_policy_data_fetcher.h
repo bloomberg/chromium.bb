@@ -139,7 +139,7 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend
   ExternalPolicyDataFetcherBackend(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       scoped_refptr<net::URLRequestContextGetter> request_context);
-  virtual ~ExternalPolicyDataFetcherBackend();
+  ~ExternalPolicyDataFetcherBackend() override;
 
   // Create an ExternalPolicyDataFetcher that allows fetch jobs to be started
   // from the thread represented by |task_runner|.
@@ -156,10 +156,10 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend
                  const base::Closure& callback);
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
-  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                          int64 current,
-                                          int64 total) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                  int64 current,
+                                  int64 total) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

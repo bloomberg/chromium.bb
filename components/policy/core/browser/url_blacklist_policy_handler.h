@@ -17,13 +17,13 @@ class POLICY_EXPORT URLBlacklistPolicyHandler
     : public ConfigurationPolicyHandler {
  public:
   URLBlacklistPolicyHandler();
-  virtual ~URLBlacklistPolicyHandler();
+  ~URLBlacklistPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLBlacklistPolicyHandler);

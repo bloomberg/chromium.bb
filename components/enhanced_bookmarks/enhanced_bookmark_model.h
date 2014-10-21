@@ -38,9 +38,9 @@ class EnhancedBookmarkModel : public KeyedService,
  public:
   EnhancedBookmarkModel(BookmarkModel* bookmark_model,
                         const std::string& version);
-  virtual ~EnhancedBookmarkModel();
+  ~EnhancedBookmarkModel() override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void AddObserver(EnhancedBookmarkModelObserver* observer);
   void RemoveObserver(EnhancedBookmarkModelObserver* observer);
@@ -139,24 +139,22 @@ class EnhancedBookmarkModel : public KeyedService,
   typedef std::map<const BookmarkNode*, std::string> NodeToIdMap;
 
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() override;
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) override;
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) override;
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node,
+  void BookmarkModelChanged() override;
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
+  void BookmarkNodeAdded(BookmarkModel* model,
+                         const BookmarkNode* parent,
+                         int index) override;
+  void BookmarkNodeRemoved(BookmarkModel* model,
+                           const BookmarkNode* parent,
+                           int old_index,
+                           const BookmarkNode* node,
+                           const std::set<GURL>& removed_urls) override;
+  void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
+                                    const BookmarkNode* node) override;
+  void BookmarkMetaInfoChanged(BookmarkModel* model,
+                               const BookmarkNode* node) override;
+  void BookmarkAllUserNodesRemoved(BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
-  virtual void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
-                                            const BookmarkNode* node) override;
-  virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
-                                       const BookmarkNode* node) override;
-  virtual void BookmarkAllUserNodesRemoved(
-      BookmarkModel* model,
-      const std::set<GURL>& removed_urls) override;
 
   // Initialize the mapping from remote ids to nodes.
   void InitializeIdMap();

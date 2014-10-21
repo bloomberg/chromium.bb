@@ -47,7 +47,7 @@ class DataReductionProxyUsageStats
   DataReductionProxyUsageStats(
       DataReductionProxyParams* params,
       const scoped_refptr<base::MessageLoopProxy>& ui_thread_proxy);
-  virtual ~DataReductionProxyUsageStats();
+  ~DataReductionProxyUsageStats() override;
 
   // Sets the callback to be called on the UI thread when the unavailability
   // status has changed.
@@ -108,7 +108,7 @@ class DataReductionProxyUsageStats
   void RecordMissingViaHeaderBytes(net::URLRequest* request);
 
   // NetworkChangeNotifier::NetworkChangeObserver:
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Called when request counts change. Resets counts if they exceed thresholds,

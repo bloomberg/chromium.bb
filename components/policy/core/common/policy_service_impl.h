@@ -35,24 +35,23 @@ class POLICY_EXPORT PolicyServiceImpl
   // the providers, and they must outlive the PolicyServiceImpl.
   explicit PolicyServiceImpl(const Providers& providers);
 
-  virtual ~PolicyServiceImpl();
+  ~PolicyServiceImpl() override;
 
   // PolicyService overrides:
-  virtual void AddObserver(PolicyDomain domain,
-                           PolicyService::Observer* observer) override;
-  virtual void RemoveObserver(PolicyDomain domain,
-                              PolicyService::Observer* observer) override;
-  virtual const PolicyMap& GetPolicies(
-      const PolicyNamespace& ns) const override;
-  virtual bool IsInitializationComplete(PolicyDomain domain) const override;
-  virtual void RefreshPolicies(const base::Closure& callback) override;
+  void AddObserver(PolicyDomain domain,
+                   PolicyService::Observer* observer) override;
+  void RemoveObserver(PolicyDomain domain,
+                      PolicyService::Observer* observer) override;
+  const PolicyMap& GetPolicies(const PolicyNamespace& ns) const override;
+  bool IsInitializationComplete(PolicyDomain domain) const override;
+  void RefreshPolicies(const base::Closure& callback) override;
 
  private:
   typedef ObserverList<PolicyService::Observer, true> Observers;
   typedef std::map<PolicyDomain, Observers*> ObserverMap;
 
   // ConfigurationPolicyProvider::Observer overrides:
-  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
+  void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
 
   // Posts a task to notify observers of |ns| that its policies have changed,
   // passing along the |previous| and the |current| policies.

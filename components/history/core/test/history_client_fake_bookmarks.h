@@ -16,7 +16,7 @@ namespace history {
 class HistoryClientFakeBookmarks : public HistoryClient {
  public:
   HistoryClientFakeBookmarks();
-  virtual ~HistoryClientFakeBookmarks();
+  ~HistoryClientFakeBookmarks() override;
 
   void ClearAllBookmarks();
   void AddBookmark(const GURL& url);
@@ -24,8 +24,8 @@ class HistoryClientFakeBookmarks : public HistoryClient {
   void DelBookmark(const GURL& url);
 
   // HistoryClient:
-  virtual bool IsBookmarked(const GURL& url) override;
-  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) override;
+  bool IsBookmarked(const GURL& url) override;
+  void GetBookmarks(std::vector<URLAndTitle>* bookmarks) override;
 
  private:
   std::map<GURL, base::string16> bookmarks_;

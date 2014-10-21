@@ -51,7 +51,7 @@ class ContentTranslateDriver : public TranslateDriver,
   };
 
   ContentTranslateDriver(content::NavigationController* nav_controller);
-  virtual ~ContentTranslateDriver();
+  ~ContentTranslateDriver() override;
 
   // Adds or Removes observers.
   void AddObserver(Observer* observer);
@@ -71,30 +71,29 @@ class ContentTranslateDriver : public TranslateDriver,
   void InitiateTranslation(const std::string& page_lang, int attempt);
 
   // TranslateDriver methods.
-  virtual void OnIsPageTranslatedChanged() override;
-  virtual void OnTranslateEnabledChanged() override;
-  virtual bool IsLinkNavigation() override;
-  virtual void TranslatePage(int page_seq_no,
-                             const std::string& translate_script,
-                             const std::string& source_lang,
-                             const std::string& target_lang) override;
-  virtual void RevertTranslation(int page_seq_no) override;
-  virtual bool IsOffTheRecord() override;
-  virtual const std::string& GetContentsMimeType() override;
-  virtual const GURL& GetLastCommittedURL() override;
-  virtual const GURL& GetActiveURL() override;
-  virtual const GURL& GetVisibleURL() override;
-  virtual bool HasCurrentPage() override;
-  virtual void OpenUrlInNewTab(const GURL& url) override;
+  void OnIsPageTranslatedChanged() override;
+  void OnTranslateEnabledChanged() override;
+  bool IsLinkNavigation() override;
+  void TranslatePage(int page_seq_no,
+                     const std::string& translate_script,
+                     const std::string& source_lang,
+                     const std::string& target_lang) override;
+  void RevertTranslation(int page_seq_no) override;
+  bool IsOffTheRecord() override;
+  const std::string& GetContentsMimeType() override;
+  const GURL& GetLastCommittedURL() override;
+  const GURL& GetActiveURL() override;
+  const GURL& GetVisibleURL() override;
+  bool HasCurrentPage() override;
+  void OpenUrlInNewTab(const GURL& url) override;
 
   // content::WebContentsObserver implementation.
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
-  virtual void DidNavigateAnyFrame(
-      content::RenderFrameHost* render_frame_host,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
+                           const content::LoadCommittedDetails& details,
+                           const content::FrameNavigateParams& params) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC handlers.
   void OnTranslateAssignedSequenceNumber(int page_seq_no);

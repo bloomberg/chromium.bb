@@ -31,12 +31,12 @@ class FeedbackUploaderFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<FeedbackUploaderFactory>;
 
   FeedbackUploaderFactory();
-  virtual ~FeedbackUploaderFactory();
+  ~FeedbackUploaderFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderFactory);

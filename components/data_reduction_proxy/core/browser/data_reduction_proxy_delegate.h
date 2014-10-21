@@ -28,25 +28,23 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   explicit DataReductionProxyDelegate(
       DataReductionProxyAuthRequestHandler* auth_handler);
 
-  virtual ~DataReductionProxyDelegate();
+  ~DataReductionProxyDelegate() override;
 
-  virtual void OnResolveProxy(const GURL& url,
-                              int load_flags,
-                              const net::ProxyService& proxy_service,
-                              net::ProxyInfo* result) override;
+  void OnResolveProxy(const GURL& url,
+                      int load_flags,
+                      const net::ProxyService& proxy_service,
+                      net::ProxyInfo* result) override;
 
-  virtual void OnFallback(const net::ProxyServer& bad_proxy,
-                          int net_error) override;
+  void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
 
-  virtual void OnBeforeSendHeaders(net::URLRequest* request,
-                                   const net::ProxyInfo& proxy_info,
-                                   net::HttpRequestHeaders* headers) override;
+  void OnBeforeSendHeaders(net::URLRequest* request,
+                           const net::ProxyInfo& proxy_info,
+                           net::HttpRequestHeaders* headers) override;
 
-  virtual void OnBeforeTunnelRequest(
-      const net::HostPortPair& proxy_server,
-      net::HttpRequestHeaders* extra_headers) override;
+  void OnBeforeTunnelRequest(const net::HostPortPair& proxy_server,
+                             net::HttpRequestHeaders* extra_headers) override;
 
-  virtual void OnTunnelHeadersReceived(
+  void OnTunnelHeadersReceived(
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
       const net::HttpResponseHeaders& response_headers) override;

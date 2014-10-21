@@ -171,10 +171,10 @@ SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
 class FaviconImageSource : public gfx::ImageSkiaSource {
  public:
   FaviconImageSource() {}
-  virtual ~FaviconImageSource() {}
+  ~FaviconImageSource() override {}
 
   // gfx::ImageSkiaSource:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
     const gfx::ImageSkiaRep* rep = NULL;
     // gfx::ImageSkia passes one of the resource scale factors. The source
     // should return:

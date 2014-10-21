@@ -25,19 +25,19 @@ struct Activity {
 // Contains relevant data of a connection activity.
 struct ConnectionActivity : Activity {
   ConnectionActivity();
-  virtual ~ConnectionActivity();
+  ~ConnectionActivity() override;
 };
 
 // Contains relevant data of a check-in activity.
 struct CheckinActivity : Activity {
   CheckinActivity();
-  virtual ~CheckinActivity();
+  ~CheckinActivity() override;
 };
 
 // Contains relevant data of a registration/unregistration step.
 struct RegistrationActivity : Activity {
   RegistrationActivity();
-  virtual ~RegistrationActivity();
+  ~RegistrationActivity() override;
 
   std::string app_id;
   std::string sender_ids;  // Comma separated sender ids.
@@ -46,7 +46,7 @@ struct RegistrationActivity : Activity {
 // Contains relevant data of a message receiving event.
 struct ReceivingActivity : Activity {
   ReceivingActivity();
-  virtual ~ReceivingActivity();
+  ~ReceivingActivity() override;
 
   std::string app_id;
   std::string from;
@@ -56,7 +56,7 @@ struct ReceivingActivity : Activity {
 // Contains relevant data of a send-message step.
 struct SendingActivity : Activity {
   SendingActivity();
-  virtual ~SendingActivity();
+  ~SendingActivity() override;
 
   std::string app_id;
   std::string receiver_id;

@@ -27,8 +27,8 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
       const GURL& search_url);
 
   // ConfirmInfoBarDelegate:
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
+  bool Accept() override;
+  bool Cancel() override;
 
   GoogleURLTrackerNavigationHelper* navigation_helper() {
     return navigation_helper_weak_ptr_;
@@ -54,16 +54,15 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   GoogleURLTrackerInfoBarDelegate(
       GoogleURLTracker* google_url_tracker,
       const GURL& search_url);
-  virtual ~GoogleURLTrackerInfoBarDelegate();
+  ~GoogleURLTrackerInfoBarDelegate() override;
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual base::string16 GetLinkText() const override;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  base::string16 GetLinkText() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
+  bool ShouldExpireInternal(const NavigationDetails& details) const override;
 
   GoogleURLTracker* google_url_tracker_;
   scoped_ptr<GoogleURLTrackerNavigationHelper> navigation_helper_;

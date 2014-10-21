@@ -38,7 +38,7 @@ class SigninClient : public KeyedService {
   typedef base::CallbackList<void(const net::CanonicalCookie* cookie)>
       CookieChangedCallbackList;
 
-  virtual ~SigninClient() {}
+  ~SigninClient() override {}
 
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;

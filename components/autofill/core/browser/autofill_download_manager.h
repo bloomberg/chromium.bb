@@ -63,7 +63,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   AutofillDownloadManager(AutofillDriver* driver,
                           PrefService* pref_service,
                           Observer* observer);
-  virtual ~AutofillDownloadManager();
+  ~AutofillDownloadManager() override;
 
   // Starts a query request to Autofill servers. The observer is called with the
   // list of the fields of all requested forms.
@@ -118,7 +118,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
       const std::vector<std::string>& forms_in_query) const;
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
   // GetPositiveUploadRate() is for matched forms,

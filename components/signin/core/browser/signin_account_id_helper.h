@@ -24,14 +24,14 @@ class SigninAccountIdHelper : public SigninManagerBase::Observer,
   SigninAccountIdHelper(SigninClient* client,
                         ProfileOAuth2TokenService* token_service,
                         SigninManagerBase* signin_manager);
-  virtual ~SigninAccountIdHelper();
+  ~SigninAccountIdHelper() override;
 
   // SigninManagerBase::Observer:
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // Disables network requests for testing to avoid messing up with irrelevant
   // tests.

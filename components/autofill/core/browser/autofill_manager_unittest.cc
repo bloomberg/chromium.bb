@@ -385,9 +385,9 @@ class TestAutofillManager : public AutofillManager {
       : AutofillManager(driver, client, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true) {}
-  virtual ~TestAutofillManager() {}
+  ~TestAutofillManager() override {}
 
-  virtual bool IsAutofillEnabled() const override { return autofill_enabled_; }
+  bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
@@ -398,7 +398,7 @@ class TestAutofillManager : public AutofillManager {
     expected_submitted_field_types_ = expected_types;
   }
 
-  virtual void UploadFormDataAsyncCallback(
+  void UploadFormDataAsyncCallback(
       const FormStructure* submitted_form,
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
@@ -440,7 +440,7 @@ class TestAutofillManager : public AutofillManager {
   // Wait for the asynchronous OnFormSubmitted() call to complete.
   void WaitForAsyncFormSubmit() { run_loop_->Run(); }
 
-  virtual void UploadFormData(const FormStructure& submitted_form) override {
+  void UploadFormData(const FormStructure& submitted_form) override {
     submitted_form_signature_ = submitted_form.FormSignature();
   }
 
@@ -500,18 +500,18 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
       : AutofillExternalDelegate(autofill_manager, autofill_driver),
         on_query_seen_(false),
         on_suggestions_returned_seen_(false) {}
-  virtual ~TestAutofillExternalDelegate() {}
+  ~TestAutofillExternalDelegate() override {}
 
-  virtual void OnQuery(int query_id,
-                       const FormData& form,
-                       const FormFieldData& field,
-                       const gfx::RectF& bounds,
-                       bool display_warning) override {
+  void OnQuery(int query_id,
+               const FormData& form,
+               const FormFieldData& field,
+               const gfx::RectF& bounds,
+               bool display_warning) override {
     on_query_seen_ = true;
     on_suggestions_returned_seen_ = false;
   }
 
-  virtual void OnSuggestionsReturned(
+  void OnSuggestionsReturned(
       int query_id,
       const std::vector<base::string16>& autofill_values,
       const std::vector<base::string16>& autofill_labels,
@@ -680,7 +680,7 @@ class TestFormStructure : public FormStructure {
  public:
   explicit TestFormStructure(const FormData& form)
       : FormStructure(form) {}
-  virtual ~TestFormStructure() {}
+  ~TestFormStructure() override {}
 
   void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
                      const std::vector<ServerFieldType>& server_types) {
@@ -2883,12 +2883,11 @@ class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() {}
 
-  virtual ~MockAutofillClient() {}
+  ~MockAutofillClient() override {}
 
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      const GURL& source_url,
-      const ResultCallback& callback) override {
+  void ShowRequestAutocompleteDialog(const FormData& form,
+                                     const GURL& source_url,
+                                     const ResultCallback& callback) override {
     callback.Run(user_supplied_data_ ? AutocompleteResultSuccess :
                                        AutocompleteResultErrorDisabled,
                  base::string16(),

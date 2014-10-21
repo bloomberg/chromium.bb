@@ -14,7 +14,7 @@ class GURL;
 // e.g. Chrome.
 class FaviconClient : public KeyedService {
  public:
-  virtual ~FaviconClient() {};
+  ~FaviconClient() override{};
 
   virtual FaviconService* GetFaviconService() = 0;
 

@@ -13,11 +13,11 @@ namespace translate {
 class StaticBrowserCldDataProvider : public BrowserCldDataProvider {
  public:
   explicit StaticBrowserCldDataProvider();
-  virtual ~StaticBrowserCldDataProvider();
+  ~StaticBrowserCldDataProvider() override;
   // BrowserCldDataProvider implementations:
-  virtual bool OnMessageReceived(const IPC::Message&) override;
-  virtual void OnCldDataRequest() override;
-  virtual void SendCldDataResponse() override;
+  bool OnMessageReceived(const IPC::Message&) override;
+  void OnCldDataRequest() override;
+  void SendCldDataResponse() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StaticBrowserCldDataProvider);

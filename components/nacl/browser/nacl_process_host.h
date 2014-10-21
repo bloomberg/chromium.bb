@@ -67,9 +67,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
                   bool off_the_record,
                   NaClAppProcessType process_type,
                   const base::FilePath& profile_directory);
-  virtual ~NaClProcessHost();
+  ~NaClProcessHost() override;
 
-  virtual void OnProcessCrashed(int exit_status) override;
+  void OnProcessCrashed(int exit_status) override;
 
   // Do any minimal work that must be done at browser startup.
   static void EarlyStartup();
@@ -83,7 +83,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
               IPC::Message* reply_msg,
               const base::FilePath& manifest_path);
 
-  virtual void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32 peer_pid) override;
 
 #if defined(OS_WIN)
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
@@ -117,8 +117,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool LaunchSelLdr();
 
   // BrowserChildProcessHostDelegate implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnProcessLaunched() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnProcessLaunched() override;
 
   void OnResourcesReady();
 

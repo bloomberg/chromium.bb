@@ -78,11 +78,11 @@ class POLICY_EXPORT TypeCheckingPolicyHandler
  public:
   TypeCheckingPolicyHandler(const char* policy_name,
                             base::Value::Type value_type);
-  virtual ~TypeCheckingPolicyHandler();
+  ~TypeCheckingPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
 
   const char* policy_name() const;
 
@@ -114,11 +114,11 @@ class POLICY_EXPORT IntRangePolicyHandlerBase
                             bool clamp);
 
   // ConfigurationPolicyHandler:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
 
  protected:
-  virtual ~IntRangePolicyHandlerBase();
+  ~IntRangePolicyHandlerBase() override;
 
   // Ensures that the value is in the allowed range. Returns false if the value
   // cannot be parsed or lies outside the allowed range and clamping is
@@ -147,11 +147,11 @@ class POLICY_EXPORT SimplePolicyHandler : public TypeCheckingPolicyHandler {
   SimplePolicyHandler(const char* policy_name,
                       const char* pref_path,
                       base::Value::Type value_type);
-  virtual ~SimplePolicyHandler();
+  ~SimplePolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   // The DictionaryValue path of the preference the policy maps to.
@@ -182,13 +182,13 @@ class POLICY_EXPORT StringMappingListPolicyHandler
   StringMappingListPolicyHandler(const char* policy_name,
                                  const char* pref_path,
                                  const GenerateMapCallback& map_generator);
-  virtual ~StringMappingListPolicyHandler();
+  ~StringMappingListPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   // Attempts to convert the list in |input| to |output| according to the table,
@@ -223,11 +223,11 @@ class POLICY_EXPORT IntRangePolicyHandler : public IntRangePolicyHandlerBase {
                         int min,
                         int max,
                         bool clamp);
-  virtual ~IntRangePolicyHandler();
+  ~IntRangePolicyHandler() override;
 
   // ConfigurationPolicyHandler:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   // Name of the pref to write.
@@ -246,11 +246,11 @@ class POLICY_EXPORT IntPercentageToDoublePolicyHandler
                                      int min,
                                      int max,
                                      bool clamp);
-  virtual ~IntPercentageToDoublePolicyHandler();
+  ~IntPercentageToDoublePolicyHandler() override;
 
   // ConfigurationPolicyHandler:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   // Name of the pref to write.
@@ -268,11 +268,11 @@ class POLICY_EXPORT SchemaValidatingPolicyHandler
   SchemaValidatingPolicyHandler(const char* policy_name,
                                 Schema schema,
                                 SchemaOnErrorStrategy strategy);
-  virtual ~SchemaValidatingPolicyHandler();
+  ~SchemaValidatingPolicyHandler() override;
 
   // ConfigurationPolicyHandler:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
 
   const char* policy_name() const;
 
@@ -309,13 +309,13 @@ class POLICY_EXPORT SimpleSchemaValidatingPolicyHandler
       SchemaOnErrorStrategy strategy,
       RecommendedPermission recommended_permission,
       MandatoryPermission mandatory_permission);
-  virtual ~SimpleSchemaValidatingPolicyHandler();
+  ~SimpleSchemaValidatingPolicyHandler() override;
 
   // ConfigurationPolicyHandler:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   const char* pref_path_;
@@ -334,13 +334,13 @@ class POLICY_EXPORT LegacyPoliciesDeprecatingPolicyHandler
   LegacyPoliciesDeprecatingPolicyHandler(
       ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers,
       scoped_ptr<SchemaValidatingPolicyHandler> new_policy_handler);
-  virtual ~LegacyPoliciesDeprecatingPolicyHandler();
+  ~LegacyPoliciesDeprecatingPolicyHandler() override;
 
   // ConfigurationPolicyHandler:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers_;

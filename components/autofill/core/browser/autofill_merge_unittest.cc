@@ -81,15 +81,14 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
 class PersonalDataManagerMock : public PersonalDataManager {
  public:
   PersonalDataManagerMock();
-  virtual ~PersonalDataManagerMock();
+  ~PersonalDataManagerMock() override;
 
   // Reset the saved profiles.
   void Reset();
 
   // PersonalDataManager:
-  virtual std::string SaveImportedProfile(
-      const AutofillProfile& profile) override;
-  virtual const std::vector<AutofillProfile*>& web_profiles() const override;
+  std::string SaveImportedProfile(const AutofillProfile& profile) override;
+  const std::vector<AutofillProfile*>& web_profiles() const override;
 
  private:
   ScopedVector<AutofillProfile> profiles_;
@@ -140,8 +139,7 @@ class AutofillMergeTest : public testing::Test,
   virtual void SetUp();
 
   // DataDrivenTest:
-  virtual void GenerateResults(const std::string& input,
-                               std::string* output) override;
+  void GenerateResults(const std::string& input, std::string* output) override;
 
   // Deserializes a set of Autofill profiles from |profiles|, imports each
   // sequentially, and fills |merged_profiles| with the serialized result.

@@ -65,54 +65,50 @@ class TiclInvalidationService : public base::NonThreadSafe,
       scoped_ptr<TiclSettingsProvider> settings_provider,
       gcm::GCMDriver* gcm_driver,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
-  virtual ~TiclInvalidationService();
+  ~TiclInvalidationService() override;
 
   void Init(
       scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker);
 
   // InvalidationService implementation.
   // It is an error to have registered handlers when the service is destroyed.
-  virtual void RegisterInvalidationHandler(
+  void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredInvalidationIds(
-      syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) override;
-  virtual void UnregisterInvalidationHandler(
+  void UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
+                                       const syncer::ObjectIdSet& ids) override;
+  void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual syncer::InvalidatorState GetInvalidatorState() const override;
-  virtual std::string GetInvalidatorClientId() const override;
-  virtual InvalidationLogger* GetInvalidationLogger() override;
-  virtual void RequestDetailedStatus(
+  syncer::InvalidatorState GetInvalidatorState() const override;
+  std::string GetInvalidatorClientId() const override;
+  InvalidationLogger* GetInvalidationLogger() override;
+  void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
-  virtual IdentityProvider* GetIdentityProvider() override;
+  IdentityProvider* GetIdentityProvider() override;
 
   void RequestAccessToken();
 
   // OAuth2TokenService::Consumer implementation
-  virtual void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const std::string& access_token,
-      const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(
-      const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer implementation
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   // IdentityProvider::Observer implementation.
-  virtual void OnActiveAccountLogout() override;
+  void OnActiveAccountLogout() override;
 
   // TiclSettingsProvider::Observer implementation.
-  virtual void OnUseGCMChannelChanged() override;
+  void OnUseGCMChannelChanged() override;
 
   // syncer::InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) override;
-  virtual void OnIncomingInvalidation(
+  void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
+  void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) override;
-  virtual std::string GetOwnerName() const override;
+  std::string GetOwnerName() const override;
 
  protected:
   // Initializes with an injected invalidator.

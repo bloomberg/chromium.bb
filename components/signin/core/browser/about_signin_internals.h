@@ -48,7 +48,7 @@ class AboutSigninInternals
 
   AboutSigninInternals(ProfileOAuth2TokenService* token_service,
                        SigninManagerBase* signin_manager);
-  virtual ~AboutSigninInternals();
+  ~AboutSigninInternals() override;
 
   // Each instance of SigninInternalsUI adds itself as an observer to be
   // notified of all updates that AboutSigninInternals receives.
@@ -59,18 +59,18 @@ class AboutSigninInternals
   void RefreshSigninPrefs();
 
   // SigninManager::SigninDiagnosticsObserver implementation.
-  virtual void NotifySigninValueChanged(
+  void NotifySigninValueChanged(
       const signin_internals_util::UntimedSigninStatusField& field,
       const std::string& value) override;
 
-  virtual void NotifySigninValueChanged(
+  void NotifySigninValueChanged(
       const signin_internals_util::TimedSigninStatusField& field,
       const std::string& value) override;
 
   void Initialize(SigninClient* client);
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Returns a dictionary of values in signin_status_ for use in
   // about:signin-internals. The values are formatted as shown -
@@ -93,19 +93,17 @@ class AboutSigninInternals
   void GetCookieAccountsAsync();
 
   // OAuth2TokenService::DiagnosticsObserver implementations.
-  virtual void OnAccessTokenRequested(
+  void OnAccessTokenRequested(
       const std::string& account_id,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
-  virtual void OnFetchAccessTokenComplete(
-      const std::string& account_id,
-      const std::string& consumer_id,
-      const OAuth2TokenService::ScopeSet& scopes,
-      GoogleServiceAuthError error,
-      base::Time expiration_time) override;
-  virtual void OnTokenRemoved(const std::string& account_id,
-                              const OAuth2TokenService::ScopeSet& scopes)
-      override;
+  void OnFetchAccessTokenComplete(const std::string& account_id,
+                                  const std::string& consumer_id,
+                                  const OAuth2TokenService::ScopeSet& scopes,
+                                  GoogleServiceAuthError error,
+                                  base::Time expiration_time) override;
+  void OnTokenRemoved(const std::string& account_id,
+                      const OAuth2TokenService::ScopeSet& scopes) override;
 
     void OnRefreshTokenReceived(std::string status);
     void OnAuthenticationResultReceived(std::string status);
@@ -174,9 +172,8 @@ class AboutSigninInternals
 
 
   // Overriden from GaiaAuthConsumer.
-  virtual void OnListAccountsSuccess(const std::string& data) override;
-  virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
-      override;
+  void OnListAccountsSuccess(const std::string& data) override;
+  void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
 
   // Callback for ListAccounts. Once the email addresses are fetched from GAIA,
   // they are pushed to the signin_internals_ui.

@@ -25,12 +25,12 @@ class CopresenceSocketBluetooth : public CopresenceSocket {
  public:
   explicit CopresenceSocketBluetooth(
       const scoped_refptr<device::BluetoothSocket>& socket);
-  virtual ~CopresenceSocketBluetooth();
+  ~CopresenceSocketBluetooth() override;
 
   // CopresenceSocket overrides:
-  virtual bool Send(const scoped_refptr<net::IOBuffer>& buffer,
-                    int buffer_size) override;
-  virtual void Receive(const ReceiveCallback& callback) override;
+  bool Send(const scoped_refptr<net::IOBuffer>& buffer,
+            int buffer_size) override;
+  void Receive(const ReceiveCallback& callback) override;
 
  private:
   void OnSendComplete(int status);

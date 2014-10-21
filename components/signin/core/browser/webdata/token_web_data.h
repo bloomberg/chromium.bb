@@ -59,7 +59,7 @@ class TokenWebData : public WebDataServiceBase {
   // For unit tests, passes a null callback.
   TokenWebData();
 
-  virtual ~TokenWebData();
+  ~TokenWebData() override;
 
  private:
   scoped_refptr<TokenWebDataBackend> token_backend_;

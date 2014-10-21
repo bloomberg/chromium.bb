@@ -14,11 +14,11 @@ namespace policy {
 class POLICY_EXPORT AutofillPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   AutofillPolicyHandler();
-  virtual ~AutofillPolicyHandler();
+  ~AutofillPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillPolicyHandler);

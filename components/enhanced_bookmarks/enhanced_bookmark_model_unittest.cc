@@ -108,25 +108,22 @@ class EnhancedBookmarkModelTest
   scoped_ptr<EnhancedBookmarkModel> model_;
 
   // EnhancedBookmarkModelObserver implementation:
-  virtual void EnhancedBookmarkModelLoaded() override { loaded_calls_++; }
-  virtual void EnhancedBookmarkModelShuttingDown() override {
-    shutting_down_calls_++;
-  }
-  virtual void EnhancedBookmarkAdded(const BookmarkNode* node) override {
+  void EnhancedBookmarkModelLoaded() override { loaded_calls_++; }
+  void EnhancedBookmarkModelShuttingDown() override { shutting_down_calls_++; }
+  void EnhancedBookmarkAdded(const BookmarkNode* node) override {
     added_calls_++;
     last_added_ = node;
   }
-  virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) override {
+  void EnhancedBookmarkRemoved(const BookmarkNode* node) override {
     removed_calls_++;
     last_removed_ = node;
   }
-  virtual void EnhancedBookmarkAllUserNodesRemoved() override {
+  void EnhancedBookmarkAllUserNodesRemoved() override {
     all_user_nodes_removed_calls_++;
   }
-  virtual void EnhancedBookmarkRemoteIdChanged(
-      const BookmarkNode* node,
-      const std::string& old_remote_id,
-      const std::string& remote_id) override {
+  void EnhancedBookmarkRemoteIdChanged(const BookmarkNode* node,
+                                       const std::string& old_remote_id,
+                                       const std::string& remote_id) override {
     remote_id_changed_calls_++;
     last_remote_id_node_ = node;
     last_old_remote_id_ = old_remote_id;

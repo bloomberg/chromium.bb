@@ -56,33 +56,31 @@ class GCMDriverDesktop : public GCMDriver {
       const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
       const scoped_refptr<base::SequencedTaskRunner>& io_thread,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
-  virtual ~GCMDriverDesktop();
+  ~GCMDriverDesktop() override;
 
   // GCMDriver overrides:
-  virtual void Shutdown() override;
-  virtual void OnSignedIn() override;
-  virtual void OnSignedOut() override;
-  virtual void Purge() override;
-  virtual void AddAppHandler(const std::string& app_id,
-                             GCMAppHandler* handler) override;
-  virtual void RemoveAppHandler(const std::string& app_id) override;
-  virtual void AddConnectionObserver(GCMConnectionObserver* observer) override;
-  virtual void RemoveConnectionObserver(
-      GCMConnectionObserver* observer) override;
-  virtual void Enable() override;
-  virtual void Disable() override;
-  virtual GCMClient* GetGCMClientForTesting() const override;
-  virtual bool IsStarted() const override;
-  virtual bool IsConnected() const override;
-  virtual void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                bool clear_logs) override;
-  virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
-                               bool recording) override;
-  virtual void SetAccountTokens(
+  void Shutdown() override;
+  void OnSignedIn() override;
+  void OnSignedOut() override;
+  void Purge() override;
+  void AddAppHandler(const std::string& app_id,
+                     GCMAppHandler* handler) override;
+  void RemoveAppHandler(const std::string& app_id) override;
+  void AddConnectionObserver(GCMConnectionObserver* observer) override;
+  void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
+  void Enable() override;
+  void Disable() override;
+  GCMClient* GetGCMClientForTesting() const override;
+  bool IsStarted() const override;
+  bool IsConnected() const override;
+  void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+                        bool clear_logs) override;
+  void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+                       bool recording) override;
+  void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
-  virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) override;
-  virtual void RemoveAccountMapping(const std::string& account_id) override;
+  void UpdateAccountMapping(const AccountMapping& account_mapping) override;
+  void RemoveAccountMapping(const std::string& account_id) override;
 
   // Exposed for testing purpose.
   bool gcm_enabled() const { return gcm_enabled_; }
@@ -92,14 +90,13 @@ class GCMDriverDesktop : public GCMDriver {
 
  protected:
   // GCMDriver implementation:
-  virtual GCMClient::Result EnsureStarted() override;
-  virtual void RegisterImpl(
-      const std::string& app_id,
-      const std::vector<std::string>& sender_ids) override;
-  virtual void UnregisterImpl(const std::string& app_id) override;
-  virtual void SendImpl(const std::string& app_id,
-                        const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) override;
+  GCMClient::Result EnsureStarted() override;
+  void RegisterImpl(const std::string& app_id,
+                    const std::vector<std::string>& sender_ids) override;
+  void UnregisterImpl(const std::string& app_id) override;
+  void SendImpl(const std::string& app_id,
+                const std::string& receiver_id,
+                const GCMClient::OutgoingMessage& message) override;
 
  private:
   class IOWorker;

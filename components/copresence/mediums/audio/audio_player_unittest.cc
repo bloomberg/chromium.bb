@@ -29,17 +29,17 @@ class TestAudioOutputStream : public media::AudioOutputStream {
     caller_loop_ = base::MessageLoop::current();
   }
 
-  virtual ~TestAudioOutputStream() {}
+  ~TestAudioOutputStream() override {}
 
-  virtual bool Open() override { return true; }
-  virtual void Start(AudioSourceCallback* callback) override {
+  bool Open() override { return true; }
+  void Start(AudioSourceCallback* callback) override {
     callback_ = callback;
     GatherPlayedSamples();
   }
-  virtual void Stop() override {}
-  virtual void SetVolume(double volume) override {}
-  virtual void GetVolume(double* volume) override {}
-  virtual void Close() override {}
+  void Stop() override {}
+  void SetVolume(double volume) override {}
+  void GetVolume(double* volume) override {}
+  void Close() override {}
 
  private:
   void GatherPlayedSamples() {

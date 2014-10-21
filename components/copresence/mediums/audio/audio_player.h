@@ -47,7 +47,7 @@ class AudioPlayer : public media::AudioOutputStream::AudioSourceCallback {
   }
 
  protected:
-  virtual ~AudioPlayer();
+  ~AudioPlayer() override;
   void set_is_playing(bool is_playing) { is_playing_ = is_playing; }
 
  private:
@@ -66,9 +66,8 @@ class AudioPlayer : public media::AudioOutputStream::AudioSourceCallback {
 
   // AudioOutputStream::AudioSourceCallback overrides:
   // Following methods could be called from *ANY* thread.
-  virtual int OnMoreData(media::AudioBus* dest,
-                         uint32 total_bytes_delay) override;
-  virtual void OnError(media::AudioOutputStream* stream) override;
+  int OnMoreData(media::AudioBus* dest, uint32 total_bytes_delay) override;
+  void OnError(media::AudioOutputStream* stream) override;
 
   // Flushes the audio loop, making sure that any queued operations are
   // performed.

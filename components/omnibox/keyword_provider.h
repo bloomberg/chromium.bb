@@ -94,14 +94,13 @@ class KeywordProvider : public AutocompleteProvider {
                                         const AutocompleteInput& input);
 
   // AutocompleteProvider:
-  virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) override;
-  virtual void Stop(bool clear_cached_results) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
+  void Stop(bool clear_cached_results) override;
 
  private:
   friend class KeywordExtensionsDelegateImpl;
 
-  virtual ~KeywordProvider();
+  ~KeywordProvider() override;
 
   // Extracts the keyword from |input| into |keyword|. Any remaining characters
   // after the keyword are placed in |remaining_input|. Returns true if |input|

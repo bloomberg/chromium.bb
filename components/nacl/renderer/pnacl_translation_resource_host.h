@@ -39,7 +39,7 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
   void ReportTranslationFinished(PP_Instance instance, PP_Bool success);
 
  protected:
-  virtual ~PnaclTranslationResourceHost();
+  ~PnaclTranslationResourceHost() override;
 
  private:
   // Maps the instance with an outstanding cache request to the info
@@ -47,10 +47,10 @@ class PnaclTranslationResourceHost : public IPC::MessageFilter {
   typedef std::map<PP_Instance, RequestNexeFdCallback> CacheRequestInfoMap;
 
   // IPC::MessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
   void SendRequestNexeFd(int render_view_id,
                          PP_Instance instance,

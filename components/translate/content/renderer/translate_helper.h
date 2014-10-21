@@ -83,7 +83,7 @@ class TranslateHelper : public content::RenderViewObserver {
                            int world_id,
                            int extension_group,
                            const std::string& extension_scheme);
-  virtual ~TranslateHelper();
+  ~TranslateHelper() override;
 
   // Informs us that the page's text has been extracted.
   void PageCaptured(const base::string16& contents);
@@ -180,7 +180,7 @@ class TranslateHelper : public content::RenderViewObserver {
   static bool IsTranslationAllowed(blink::WebDocument* document);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Informs us that the page's text has been extracted.
   void PageCapturedImpl(int page_seq_no, const base::string16& contents);

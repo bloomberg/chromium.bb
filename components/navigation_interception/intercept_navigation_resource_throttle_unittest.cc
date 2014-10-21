@@ -86,16 +86,10 @@ class MockResourceController : public content::ResourceController {
   Status status() const { return status_; }
 
   // ResourceController:
-  virtual void Cancel() override {
-    NOTREACHED();
-  }
-  virtual void CancelAndIgnore() override {
-    status_ = CANCELLED;
-  }
-  virtual void CancelWithError(int error_code) override {
-    NOTREACHED();
-  }
-  virtual void Resume() override {
+  void Cancel() override { NOTREACHED(); }
+  void CancelAndIgnore() override { status_ = CANCELLED; }
+  void CancelWithError(int error_code) override { NOTREACHED(); }
+  void Resume() override {
     DCHECK(status_ == UNKNOWN);
     status_ = RESUMED;
   }

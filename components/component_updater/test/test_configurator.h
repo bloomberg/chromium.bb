@@ -36,32 +36,31 @@ class TestConfigurator : public Configurator {
   TestConfigurator(
       const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner);
-  virtual ~TestConfigurator();
+  ~TestConfigurator() override;
 
   // Overrrides for Configurator.
-  virtual int InitialDelay() const override;
-  virtual int NextCheckDelay() override;
-  virtual int StepDelay() const override;
-  virtual int StepDelayMedium() override;
-  virtual int MinimumReCheckWait() const override;
-  virtual int OnDemandDelay() const override;
-  virtual std::vector<GURL> UpdateUrl() const override;
-  virtual std::vector<GURL> PingUrl() const override;
-  virtual base::Version GetBrowserVersion() const override;
-  virtual std::string GetChannel() const override;
-  virtual std::string GetLang() const override;
-  virtual std::string GetOSLongName() const override;
-  virtual std::string ExtraRequestParams() const override;
-  virtual size_t UrlSizeLimit() const override;
-  virtual net::URLRequestContextGetter* RequestContext() const override;
-  virtual scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher()
+  int InitialDelay() const override;
+  int NextCheckDelay() override;
+  int StepDelay() const override;
+  int StepDelayMedium() override;
+  int MinimumReCheckWait() const override;
+  int OnDemandDelay() const override;
+  std::vector<GURL> UpdateUrl() const override;
+  std::vector<GURL> PingUrl() const override;
+  base::Version GetBrowserVersion() const override;
+  std::string GetChannel() const override;
+  std::string GetLang() const override;
+  std::string GetOSLongName() const override;
+  std::string ExtraRequestParams() const override;
+  size_t UrlSizeLimit() const override;
+  net::URLRequestContextGetter* RequestContext() const override;
+  scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher() const override;
+  bool DeltasEnabled() const override;
+  bool UseBackgroundDownloader() const override;
+  scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
-  virtual bool DeltasEnabled() const override;
-  virtual bool UseBackgroundDownloader() const override;
-  virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
+  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
       const override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetSingleThreadTaskRunner() const override;
 
   void SetLoopCount(int times);
   void SetRecheckTime(int seconds);

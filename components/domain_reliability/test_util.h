@@ -46,16 +46,16 @@ class MockUploader : public DomainReliabilityUploader {
 
   MockUploader(const UploadRequestCallback& callback);
 
-  virtual ~MockUploader();
+  ~MockUploader() override;
 
   virtual bool discard_uploads() const;
 
   // DomainReliabilityUploader implementation:
-  virtual void UploadReport(const std::string& report_json,
-                            const GURL& upload_url,
-                            const UploadCallback& callback) override;
+  void UploadReport(const std::string& report_json,
+                    const GURL& upload_url,
+                    const UploadCallback& callback) override;
 
-  virtual void set_discard_uploads(bool discard_uploads) override;
+  void set_discard_uploads(bool discard_uploads) override;
 
  private:
   UploadRequestCallback callback_;
@@ -69,12 +69,12 @@ class MockTime : public MockableTime {
   // N.B.: Tasks (and therefore Timers) scheduled to run in the future will
   // never be run if MockTime is destroyed before the mock time is advanced
   // to their scheduled time.
-  virtual ~MockTime();
+  ~MockTime() override;
 
   // MockableTime implementation:
-  virtual base::Time Now() override;
-  virtual base::TimeTicks NowTicks() override;
-  virtual scoped_ptr<MockableTime::Timer> CreateTimer() override;
+  base::Time Now() override;
+  base::TimeTicks NowTicks() override;
+  scoped_ptr<MockableTime::Timer> CreateTimer() override;
 
   // Pretends that |delta| has passed, and runs tasks that would've happened
   // during that interval (with |Now()| returning proper values while they

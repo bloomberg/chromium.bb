@@ -47,7 +47,7 @@ class HttpPost : public net::URLFetcherDelegate {
            const google::protobuf::MessageLite& request_proto);
 
   // HTTP requests are cancelled on delete.
-  virtual ~HttpPost();
+  ~HttpPost() override;
 
   // Send an HttpPost request.
   void Start(const ResponseCallback& response_callback);
@@ -60,7 +60,7 @@ class HttpPost : public net::URLFetcherDelegate {
   friend class HttpPostTest;
 
   // Overridden from net::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   ResponseCallback response_callback_;
 

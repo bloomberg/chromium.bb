@@ -17,13 +17,11 @@ class ListIterator : public RuleIterator {
   explicit ListIterator(const std::list<Rule>& rules)
       : rules_(rules) {}
 
-  virtual ~ListIterator() {}
+  ~ListIterator() override {}
 
-  virtual bool HasNext() const override {
-    return !rules_.empty();
-  }
+  bool HasNext() const override { return !rules_.empty(); }
 
-  virtual Rule Next() override {
+  Rule Next() override {
     EXPECT_FALSE(rules_.empty());
     // |front()| returns a reference but we're going to discard the object
     // referred to; force copying here.

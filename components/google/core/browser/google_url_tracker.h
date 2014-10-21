@@ -63,7 +63,7 @@ class GoogleURLTracker
   // Only the GoogleURLTrackerFactory and tests should call this.
   GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client, Mode mode);
 
-  virtual ~GoogleURLTracker();
+  ~GoogleURLTracker() override;
 
   // Returns the current Google homepage URL.
   const GURL& google_url() const { return google_url_; }
@@ -128,14 +128,14 @@ class GoogleURLTracker
   static const char kSearchDomainCheckURL[];
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Registers consumer interest in getting an updated URL from the server.
   // Observe chrome::NOTIFICATION_GOOGLE_URL_UPDATED to be notified when the URL

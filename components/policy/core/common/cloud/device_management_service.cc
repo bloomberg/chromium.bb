@@ -142,7 +142,7 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
       const std::string& platform_parameter,
       DeviceManagementService* service,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
-  virtual ~DeviceManagementRequestJobImpl();
+  ~DeviceManagementRequestJobImpl() override;
 
   // Handles the URL request response.
   void HandleResponse(const net::URLRequestStatus& status,
@@ -166,7 +166,7 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
 
  protected:
   // DeviceManagementRequestJob:
-  virtual void Run() override;
+  void Run() override;
 
  private:
   // Invokes the callback with the given error code.

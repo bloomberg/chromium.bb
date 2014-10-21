@@ -19,12 +19,12 @@ class ProfileInvalidationProvider : public KeyedService {
  public:
   explicit ProfileInvalidationProvider(
       scoped_ptr<InvalidationService> invalidation_service);
-  virtual ~ProfileInvalidationProvider();
+  ~ProfileInvalidationProvider() override;
 
   InvalidationService* GetInvalidationService();
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   scoped_ptr<InvalidationService> invalidation_service_;

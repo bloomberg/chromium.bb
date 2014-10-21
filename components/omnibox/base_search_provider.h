@@ -69,8 +69,8 @@ class BaseSearchProvider : public AutocompleteProvider {
       const SearchTermsData& search_terms_data);
 
   // AutocompleteProvider:
-  virtual void DeleteMatch(const AutocompleteMatch& match) override;
-  virtual void AddProviderInfo(ProvidersInfo* provider_info) const override;
+  void DeleteMatch(const AutocompleteMatch& match) override;
+  void AddProviderInfo(ProvidersInfo* provider_info) const override;
 
   bool field_trial_triggered_in_session() const {
     return field_trial_triggered_in_session_;
@@ -97,7 +97,7 @@ class BaseSearchProvider : public AutocompleteProvider {
   static const char kTrue[];
   static const char kFalse[];
 
-  virtual ~BaseSearchProvider();
+  ~BaseSearchProvider() override;
 
   typedef std::pair<base::string16, std::string> MatchKey;
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;

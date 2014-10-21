@@ -27,7 +27,7 @@ class PasswordManagerInternalsService : public KeyedService,
   // Both properties are guarantied by the BrowserContextKeyedFactory framework,
   // so the service itself does not need the context on creation.
   PasswordManagerInternalsService();
-  virtual ~PasswordManagerInternalsService();
+  ~PasswordManagerInternalsService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerInternalsService);

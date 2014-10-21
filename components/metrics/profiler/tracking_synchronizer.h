@@ -57,22 +57,22 @@ class TrackingSynchronizer
 
   // Update the number of pending processes for the given |sequence_number|.
   // This is called on UI thread.
-  virtual void OnPendingProcesses(int sequence_number,
-                                  int pending_processes,
-                                  bool end) override;
+  void OnPendingProcesses(int sequence_number,
+                          int pending_processes,
+                          bool end) override;
 
  private:
   friend class base::RefCountedThreadSafe<TrackingSynchronizer>;
 
   class RequestContext;
 
-  virtual ~TrackingSynchronizer();
+  ~TrackingSynchronizer() override;
 
   // Send profiler_data back to callback_object_ by calling
   // DecrementPendingProcessesAndSendData which records that we are waiting
   // for one less profiler data from renderer or browser child process for the
   // given sequence number. This method is accessible on UI thread.
-  virtual void OnProfilerDataCollected(
+  void OnProfilerDataCollected(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
       int process_type) override;

@@ -27,10 +27,9 @@ namespace {
 class NullModelTypeSyncWorker : public syncer::ModelTypeSyncWorker {
  public:
   NullModelTypeSyncWorker();
-  virtual ~NullModelTypeSyncWorker();
+  ~NullModelTypeSyncWorker() override;
 
-  virtual void EnqueueForCommit(
-      const syncer::CommitRequestDataList& list) override;
+  void EnqueueForCommit(const syncer::CommitRequestDataList& list) override;
 };
 
 NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
@@ -80,9 +79,9 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
       : mock_sync_context_(sync_context),
         model_task_runner_(model_task_runner),
         sync_task_runner_(sync_task_runner) {}
-  virtual ~MockSyncContextProxy() {}
+  ~MockSyncContextProxy() override {}
 
-  virtual void ConnectTypeToSync(
+  void ConnectTypeToSync(
       syncer::ModelType type,
       const syncer::DataTypeState& data_type_state,
       const syncer::UpdateResponseDataList& saved_pending_updates,
@@ -99,14 +98,14 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
                                            type_proxy));
   }
 
-  virtual void Disconnect(syncer::ModelType type) override {
+  void Disconnect(syncer::ModelType type) override {
     sync_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(&MockSyncContext::Disconnect,
                                            base::Unretained(mock_sync_context_),
                                            type));
   }
 
-  virtual scoped_ptr<SyncContextProxy> Clone() const override {
+  scoped_ptr<SyncContextProxy> Clone() const override {
     return scoped_ptr<SyncContextProxy>(new MockSyncContextProxy(
         mock_sync_context_, model_task_runner_, sync_task_runner_));
   }

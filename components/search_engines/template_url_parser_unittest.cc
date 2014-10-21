@@ -21,10 +21,9 @@ using base::ASCIIToUTF16;
 class ParamFilterImpl : public TemplateURLParser::ParameterFilter {
  public:
   ParamFilterImpl(std::string name_str, std::string value_str);
-  virtual ~ParamFilterImpl();
+  ~ParamFilterImpl() override;
 
-  virtual bool KeepParameter(const std::string& key,
-                             const std::string& value) override;
+  bool KeepParameter(const std::string& key, const std::string& value) override;
 
  private:
   std::string name_str_;

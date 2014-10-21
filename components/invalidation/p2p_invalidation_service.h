@@ -34,23 +34,22 @@ class P2PInvalidationService : public base::NonThreadSafe,
       scoped_ptr<IdentityProvider> identity_provider,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
       syncer::P2PNotificationTarget notification_target);
-  virtual ~P2PInvalidationService();
+  ~P2PInvalidationService() override;
 
   // InvalidationService implementation.
   // It is an error to have registered handlers when the service is destroyed.
-  virtual void RegisterInvalidationHandler(
+  void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredInvalidationIds(
-      syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) override;
-  virtual void UnregisterInvalidationHandler(
+  void UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
+                                       const syncer::ObjectIdSet& ids) override;
+  void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual syncer::InvalidatorState GetInvalidatorState() const override;
-  virtual std::string GetInvalidatorClientId() const override;
-  virtual InvalidationLogger* GetInvalidationLogger() override;
-  virtual void RequestDetailedStatus(
+  syncer::InvalidatorState GetInvalidatorState() const override;
+  std::string GetInvalidatorClientId() const override;
+  InvalidationLogger* GetInvalidationLogger() override;
+  void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
-  virtual IdentityProvider* GetIdentityProvider() override;
+  IdentityProvider* GetIdentityProvider() override;
 
   void UpdateCredentials(const std::string& username,
                          const std::string& password);

@@ -20,10 +20,10 @@ class DomDistillerHandler : public content::WebUIMessageHandler {
  public:
   // The lifetime of |service| has to outlive this handler.
   DomDistillerHandler(DomDistillerService* service, const std::string& scheme);
-  virtual ~DomDistillerHandler();
+  ~DomDistillerHandler() override;
 
   // content::WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // Callback from JavaScript for the "requestEntries" message. This
   // requests the list of entries and returns it to the front end by calling

@@ -30,26 +30,25 @@ class NonUIDataTypeController : public DataTypeController {
       SyncApiComponentFactory* sync_factory);
 
   // DataTypeController interface.
-  virtual void LoadModels(
-      const ModelLoadCallback& model_load_callback) override;
-  virtual void StartAssociating(const StartCallback& start_callback) override;
-  virtual void Stop() override;
+  void LoadModels(const ModelLoadCallback& model_load_callback) override;
+  void StartAssociating(const StartCallback& start_callback) override;
+  void Stop() override;
   virtual syncer::ModelType type() const = 0;
   virtual syncer::ModelSafeGroup model_safe_group() const = 0;
-  virtual ChangeProcessor* GetChangeProcessor() const override;
-  virtual std::string name() const override;
-  virtual State state() const override;
-  virtual void OnSingleDataTypeUnrecoverableError(
+  ChangeProcessor* GetChangeProcessor() const override;
+  std::string name() const override;
+  State state() const override;
+  void OnSingleDataTypeUnrecoverableError(
       const syncer::SyncError& error) override;
 
  protected:
   // For testing only.
   NonUIDataTypeController();
   // DataTypeController is RefCounted.
-  virtual ~NonUIDataTypeController();
+  ~NonUIDataTypeController() override;
 
   // DataTypeController interface.
-  virtual void OnModelLoaded() override;
+  void OnModelLoaded() override;
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.

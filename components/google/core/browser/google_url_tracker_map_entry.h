@@ -47,10 +47,8 @@ class GoogleURLTrackerMapEntry : public infobars::InfoBarManager::Observer {
   friend class GoogleURLTrackerTest;
 
   // infobars::InfoBarManager::Observer:
-  virtual void OnInfoBarRemoved(infobars::InfoBar* infobar,
-                                bool animate) override;
-  virtual void OnManagerShuttingDown(
-      infobars::InfoBarManager* manager) override;
+  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
+  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
 
   GoogleURLTracker* const google_url_tracker_;
   infobars::InfoBarManager* const infobar_manager_;

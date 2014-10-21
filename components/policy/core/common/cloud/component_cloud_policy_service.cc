@@ -62,7 +62,7 @@ class ComponentCloudPolicyService::Backend
           scoped_ptr<ResourceCache> cache,
           scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher);
 
-  virtual ~Backend();
+  ~Backend() override;
 
   // |username| and |dm_token| will be  used to validate the cached policies.
   void SetCredentials(const std::string& username, const std::string& dm_token);
@@ -75,7 +75,7 @@ class ComponentCloudPolicyService::Backend
   void UpdateExternalPolicy(scoped_ptr<em::PolicyFetchResponse> response);
 
   // ComponentCloudPolicyStore::Delegate implementation:
-  virtual void OnComponentCloudPolicyStoreUpdated() override;
+  void OnComponentCloudPolicyStoreUpdated() override;
 
   // Passes the current SchemaMap so that the disk cache can purge components
   // that aren't being tracked anymore.

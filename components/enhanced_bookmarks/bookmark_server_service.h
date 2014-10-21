@@ -45,7 +45,7 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
       ProfileOAuth2TokenService* token_service,
       SigninManagerBase* signin_manager,
       EnhancedBookmarkModel* enhanced_bookmark_model);
-  virtual ~BookmarkServerService();
+  ~BookmarkServerService() override;
 
   virtual void AddObserver(BookmarkServerServiceObserver* observer);
   void RemoveObserver(BookmarkServerServiceObserver* observer);
@@ -77,7 +77,7 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   virtual void CleanAfterFailure() = 0;
 
   // EnhancedBookmarkModelObserver:
-  virtual void EnhancedBookmarkModelShuttingDown() override;
+  void EnhancedBookmarkModelShuttingDown() override;
 
   SigninManagerBase* GetSigninManager();
 
@@ -95,14 +95,14 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
                            ClearClusterMapOnRemoveAllBookmarks);
 
   // net::URLFetcherDelegate methods. Called when the query is finished.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // OAuth2TokenService::Consumer methods.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // The Auth service is used to get a token for auth with the server.
   ProfileOAuth2TokenService* token_service_;  // Weak

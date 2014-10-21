@@ -29,7 +29,7 @@ struct PasswordForm;
 class PasswordGenerationAgent : public content::RenderViewObserver {
  public:
   explicit PasswordGenerationAgent(content::RenderView* render_view);
-  virtual ~PasswordGenerationAgent();
+  ~PasswordGenerationAgent() override;
 
   // Returns true if the field being changed is one where a generated password
   // is being offered. Updates the state of the popup if necessary.
@@ -50,15 +50,15 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   virtual bool ShouldAnalyzeDocument(const blink::WebDocument& document) const;
 
   // RenderViewObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Use to force enable during testing.
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
  private:
   // RenderViewObserver:
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  void DidFinishLoad(blink::WebLocalFrame* frame) override;
 
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);

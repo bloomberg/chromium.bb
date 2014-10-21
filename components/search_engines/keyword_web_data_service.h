@@ -82,7 +82,7 @@ class KeywordWebDataService : public WebDataServiceBase {
   void SetBuiltinKeywordVersion(int version);
 
  protected:
-  virtual ~KeywordWebDataService();
+  ~KeywordWebDataService() override;
 
  private:
   // Called by the BatchModeScoper (see comments there).

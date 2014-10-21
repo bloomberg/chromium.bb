@@ -46,31 +46,29 @@ class DataTypeManagerImpl : public DataTypeManager,
       const DataTypeEncryptionHandler* encryption_handler,
       BackendDataTypeConfigurer* configurer,
       DataTypeManagerObserver* observer);
-  virtual ~DataTypeManagerImpl();
+  ~DataTypeManagerImpl() override;
 
   // DataTypeManager interface.
-  virtual void Configure(syncer::ModelTypeSet desired_types,
-                         syncer::ConfigureReason reason) override;
-  virtual void ReenableType(syncer::ModelType type) override;
-  virtual void ResetDataTypeErrors() override;
+  void Configure(syncer::ModelTypeSet desired_types,
+                 syncer::ConfigureReason reason) override;
+  void ReenableType(syncer::ModelType type) override;
+  void ResetDataTypeErrors() override;
 
   // Needed only for backend migration.
-  virtual void PurgeForMigration(
-      syncer::ModelTypeSet undesired_types,
-      syncer::ConfigureReason reason) override;
+  void PurgeForMigration(syncer::ModelTypeSet undesired_types,
+                         syncer::ConfigureReason reason) override;
 
-  virtual void Stop() override;
-  virtual State state() const override;
+  void Stop() override;
+  State state() const override;
 
   // |ModelAssociationManagerDelegate| implementation.
-  virtual void OnSingleDataTypeAssociationDone(
+  void OnSingleDataTypeAssociationDone(
       syncer::ModelType type,
       const syncer::DataTypeAssociationStats& association_stats) override;
-  virtual void OnModelAssociationDone(
+  void OnModelAssociationDone(
       const DataTypeManager::ConfigureResult& result) override;
-  virtual void OnSingleDataTypeWillStop(
-      syncer::ModelType type,
-      const syncer::SyncError& error) override;
+  void OnSingleDataTypeWillStop(syncer::ModelType type,
+                                const syncer::SyncError& error) override;
 
   // Used by unit tests. TODO(sync) : This would go away if we made
   // this class be able to do Dependency injection. crbug.com/129212.

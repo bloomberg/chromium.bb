@@ -102,11 +102,10 @@ class InfoBarContainer : public InfoBarManager::Observer {
   typedef std::vector<InfoBar*> InfoBars;
 
   // InfoBarManager::Observer:
-  virtual void OnInfoBarAdded(InfoBar* infobar) override;
-  virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate) override;
-  virtual void OnInfoBarReplaced(InfoBar* old_infobar,
-                                 InfoBar* new_infobar) override;
-  virtual void OnManagerShuttingDown(InfoBarManager* manager) override;
+  void OnInfoBarAdded(InfoBar* infobar) override;
+  void OnInfoBarRemoved(InfoBar* infobar, bool animate) override;
+  void OnInfoBarReplaced(InfoBar* old_infobar, InfoBar* new_infobar) override;
+  void OnManagerShuttingDown(InfoBarManager* manager) override;
 
   // Adds |infobar| to this container before the existing infobar at position
   // |position| and calls Show() on it.  |animate| is passed along to

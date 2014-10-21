@@ -13,15 +13,14 @@
 class POLICY_EXPORT MockPreferences : public MacPreferences {
  public:
   MockPreferences();
-  virtual ~MockPreferences();
+  ~MockPreferences() override;
 
-  virtual Boolean AppSynchronize(CFStringRef applicationID) override;
+  Boolean AppSynchronize(CFStringRef applicationID) override;
 
-  virtual CFPropertyListRef CopyAppValue(CFStringRef key,
-                                         CFStringRef applicationID) override;
+  CFPropertyListRef CopyAppValue(CFStringRef key,
+                                 CFStringRef applicationID) override;
 
-  virtual Boolean AppValueIsForced(CFStringRef key,
-                                   CFStringRef applicationID) override;
+  Boolean AppValueIsForced(CFStringRef key, CFStringRef applicationID) override;
 
   // Adds a preference item with the given info to the test set.
   void AddTestItem(CFStringRef key, CFPropertyListRef value, bool is_forced);

@@ -33,7 +33,7 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
       const base::FilePath& key_file,
       const std::string& verification_key,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
-  virtual ~UserCloudPolicyStore();
+  ~UserCloudPolicyStore() override;
 
   // Factory method for creating a UserCloudPolicyStore for a profile with path
   // |profile_path|.
@@ -53,9 +53,8 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   virtual void Clear();
 
   // CloudPolicyStore implementation.
-  virtual void Load() override;
-  virtual void Store(
-      const enterprise_management::PolicyFetchResponse& policy) override;
+  void Load() override;
+  void Store(const enterprise_management::PolicyFetchResponse& policy) override;
 
   // The key used to sign the current policy (empty if there either is no
   // loaded policy yet, or if the policy is unsigned).

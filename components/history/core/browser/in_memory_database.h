@@ -21,7 +21,7 @@ namespace history {
 class InMemoryDatabase : public URLDatabase {
  public:
   InMemoryDatabase();
-  virtual ~InMemoryDatabase();
+  ~InMemoryDatabase() override;
 
   // Creates an empty in-memory database.
   bool InitFromScratch();
@@ -34,7 +34,7 @@ class InMemoryDatabase : public URLDatabase {
 
  protected:
   // Implemented for URLDatabase.
-  virtual sql::Connection& GetDB() override;
+  sql::Connection& GetDB() override;
 
  private:
   // Initializes the database connection, this is the shared code between

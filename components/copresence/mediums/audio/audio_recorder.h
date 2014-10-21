@@ -55,7 +55,7 @@ class AudioRecorder : public media::AudioInputStream::AudioInputCallback,
   }
 
  protected:
-  virtual ~AudioRecorder();
+  ~AudioRecorder() override;
   void set_is_recording(bool is_recording) { is_recording_ = is_recording; }
 
  private:
@@ -75,15 +75,15 @@ class AudioRecorder : public media::AudioInputStream::AudioInputCallback,
   // Called by the audio recorder when a full packet of audio data is
   // available. This is called from a special audio thread and the
   // implementation should return as soon as possible.
-  virtual void OnData(media::AudioInputStream* stream,
-                      const media::AudioBus* source,
-                      uint32 hardware_delay_bytes,
-                      double volume) override;
-  virtual void OnError(media::AudioInputStream* stream) override;
+  void OnData(media::AudioInputStream* stream,
+              const media::AudioBus* source,
+              uint32 hardware_delay_bytes,
+              double volume) override;
+  void OnError(media::AudioInputStream* stream) override;
 
   // AudioConverter::InputCallback overrides:
-  virtual double ProvideInput(media::AudioBus* dest,
-                              base::TimeDelta buffer_delay) override;
+  double ProvideInput(media::AudioBus* dest,
+                      base::TimeDelta buffer_delay) override;
 
   // Flushes the audio loop, making sure that any queued operations are
   // performed.

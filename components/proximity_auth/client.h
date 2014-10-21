@@ -91,15 +91,14 @@ class Client : public ConnectionObserver {
   void HandleUnlockResponseMessage(const base::DictionaryValue& message);
 
   // ConnectionObserver:
-  virtual void OnConnectionStatusChanged(
-      const Connection& connection,
-      Connection::Status old_status,
-      Connection::Status new_status) override;
-  virtual void OnMessageReceived(const Connection& connection,
-                                 const WireMessage& wire_message) override;
-  virtual void OnSendCompleted(const Connection& connection,
-                               const WireMessage& wire_message,
-                               bool success) override;
+  void OnConnectionStatusChanged(const Connection& connection,
+                                 Connection::Status old_status,
+                                 Connection::Status new_status) override;
+  void OnMessageReceived(const Connection& connection,
+                         const WireMessage& wire_message) override;
+  void OnSendCompleted(const Connection& connection,
+                       const WireMessage& wire_message,
+                       bool success) override;
 
   // The connection used to send and receive events and status updates.
   scoped_ptr<Connection> connection_;

@@ -53,13 +53,12 @@ class AutofillWebDataBackendImpl
       const base::Closure& on_changed_callback);
 
   // AutofillWebDataBackend implementation.
-  virtual void AddObserver(AutofillWebDataServiceObserverOnDBThread* observer)
-      override;
-  virtual void RemoveObserver(
+  void AddObserver(AutofillWebDataServiceObserverOnDBThread* observer) override;
+  void RemoveObserver(
       AutofillWebDataServiceObserverOnDBThread* observer) override;
-  virtual WebDatabase* GetDatabase() override;
-  virtual void RemoveExpiredFormElements() override;
-  virtual void NotifyOfMultipleAutofillChanges() override;
+  WebDatabase* GetDatabase() override;
+  void RemoveExpiredFormElements() override;
+  void NotifyOfMultipleAutofillChanges() override;
 
   // Returns a SupportsUserData objects that may be used to store data
   // owned by the DB thread on this object. Should be called only from
@@ -146,7 +145,7 @@ class AutofillWebDataBackendImpl
       WebDatabase* db);
 
  protected:
-  virtual ~AutofillWebDataBackendImpl();
+  ~AutofillWebDataBackendImpl() override;
 
  private:
   friend class base::RefCountedDeleteOnMessageLoop<AutofillWebDataBackendImpl>;
@@ -159,7 +158,8 @@ class AutofillWebDataBackendImpl
   class SupportsUserDataAggregatable : public base::SupportsUserData {
    public:
     SupportsUserDataAggregatable() {}
-    virtual ~SupportsUserDataAggregatable() {}
+    ~SupportsUserDataAggregatable() override {}
+
    private:
     DISALLOW_COPY_AND_ASSIGN(SupportsUserDataAggregatable);
   };

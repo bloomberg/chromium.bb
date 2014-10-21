@@ -77,7 +77,7 @@ class FeedbackData : public FeedbackCommon {
   }
 
  private:
-  virtual ~FeedbackData();
+  ~FeedbackData() override;
 
   // Called once a compression operation is complete.
   void OnCompressComplete();

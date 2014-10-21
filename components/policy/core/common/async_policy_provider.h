@@ -34,12 +34,12 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
   // should be passed later to Init().
   AsyncPolicyProvider(SchemaRegistry* registry,
                       scoped_ptr<AsyncPolicyLoader> loader);
-  virtual ~AsyncPolicyProvider();
+  ~AsyncPolicyProvider() override;
 
   // ConfigurationPolicyProvider implementation.
-  virtual void Init(SchemaRegistry* registry) override;
-  virtual void Shutdown() override;
-  virtual void RefreshPolicies() override;
+  void Init(SchemaRegistry* registry) override;
+  void Shutdown() override;
+  void RefreshPolicies() override;
 
  private:
   // Helper for RefreshPolicies().

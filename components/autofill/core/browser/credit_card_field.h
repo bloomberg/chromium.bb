@@ -20,12 +20,12 @@ class AutofillScanner;
 
 class CreditCardField : public FormField {
  public:
-  virtual ~CreditCardField();
+  ~CreditCardField() override;
   static FormField* Parse(AutofillScanner* scanner);
 
  protected:
   // FormField:
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const override;
+  bool ClassifyField(ServerFieldTypeMap* map) const override;
 
  private:
   friend class CreditCardFieldTest;

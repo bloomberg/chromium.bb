@@ -128,16 +128,15 @@ struct FormFieldData;
 class AutofillTable : public WebDatabaseTable {
  public:
   explicit AutofillTable(const std::string& app_locale);
-  virtual ~AutofillTable();
+  ~AutofillTable() override;
 
   // Retrieves the AutofillTable* owned by |database|.
   static AutofillTable* FromWebDatabase(WebDatabase* db);
 
-  virtual WebDatabaseTable::TypeKey GetTypeKey() const override;
-  virtual bool CreateTablesIfNecessary() override;
-  virtual bool IsSyncable() override;
-  virtual bool MigrateToVersion(int version,
-                                bool* update_compatible_version) override;
+  WebDatabaseTable::TypeKey GetTypeKey() const override;
+  bool CreateTablesIfNecessary() override;
+  bool IsSyncable() override;
+  bool MigrateToVersion(int version, bool* update_compatible_version) override;
 
   // Records the form elements in |elements| in the database in the
   // autofill table.  A list of all added and updated autofill entries

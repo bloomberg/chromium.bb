@@ -41,20 +41,19 @@ class DefaultApprovalDelegate
     : public device::BluetoothDevice::PairingDelegate {
  public:
   DefaultApprovalDelegate() {}
-  virtual ~DefaultApprovalDelegate() {}
+  ~DefaultApprovalDelegate() override {}
 
   // device::BluetoothDevice::PairingDelegate overrides:
-  virtual void RequestPinCode(device::BluetoothDevice* device) override {}
-  virtual void RequestPasskey(device::BluetoothDevice* device) override {}
-  virtual void DisplayPinCode(device::BluetoothDevice* device,
-                              const std::string& pincode) override {}
-  virtual void DisplayPasskey(device::BluetoothDevice* device,
-                              uint32 passkey) override {}
-  virtual void KeysEntered(device::BluetoothDevice* device,
-                           uint32 entered) override {}
-  virtual void ConfirmPasskey(device::BluetoothDevice* device,
-                              uint32 passkey) override {}
-  virtual void AuthorizePairing(device::BluetoothDevice* device) override {
+  void RequestPinCode(device::BluetoothDevice* device) override {}
+  void RequestPasskey(device::BluetoothDevice* device) override {}
+  void DisplayPinCode(device::BluetoothDevice* device,
+                      const std::string& pincode) override {}
+  void DisplayPasskey(device::BluetoothDevice* device,
+                      uint32 passkey) override {}
+  void KeysEntered(device::BluetoothDevice* device, uint32 entered) override {}
+  void ConfirmPasskey(device::BluetoothDevice* device,
+                      uint32 passkey) override {}
+  void AuthorizePairing(device::BluetoothDevice* device) override {
     if (device->ExpectingConfirmation())
       device->ConfirmPairing();
   }

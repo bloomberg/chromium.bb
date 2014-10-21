@@ -127,10 +127,10 @@ class TestPasswordManager : public PasswordManager {
   explicit TestPasswordManager(PasswordManagerClient* client)
       : PasswordManager(client) {}
 
-  virtual void Autofill(const autofill::PasswordForm& form_for_autofill,
-                        const autofill::PasswordFormMap& best_matches,
-                        const autofill::PasswordForm& preferred_match,
-                        bool wait_for_username) const override {
+  void Autofill(const autofill::PasswordForm& form_for_autofill,
+                const autofill::PasswordFormMap& best_matches,
+                const autofill::PasswordForm& preferred_match,
+                bool wait_for_username) const override {
     best_matches_ = best_matches;
   }
 

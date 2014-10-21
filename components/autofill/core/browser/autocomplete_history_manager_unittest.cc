@@ -48,10 +48,11 @@ class MockAutofillClient : public TestAutofillClient {
   MockAutofillClient(scoped_refptr<MockWebDataService> web_data_service)
       : web_data_service_(web_data_service),
         prefs_(test::PrefServiceForTesting()) {}
-  virtual ~MockAutofillClient() {}
-  virtual scoped_refptr<AutofillWebDataService>
-      GetDatabase() override { return web_data_service_; }
-  virtual PrefService* GetPrefs() override { return prefs_.get(); }
+  ~MockAutofillClient() override {}
+  scoped_refptr<AutofillWebDataService> GetDatabase() override {
+    return web_data_service_;
+  }
+  PrefService* GetPrefs() override { return prefs_.get(); }
 
  private:
   scoped_refptr<MockWebDataService> web_data_service_;

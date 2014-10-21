@@ -31,7 +31,7 @@ namespace translate {
 // constant from ipc_message_start.h
 class BrowserCldDataProvider : public IPC::Listener {
  public:
-  virtual ~BrowserCldDataProvider() {}
+  ~BrowserCldDataProvider() override {}
 
   // IPC::Listener implementation:
   // If the specified message is a request for CLD data, invokes

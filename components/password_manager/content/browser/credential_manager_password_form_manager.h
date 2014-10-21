@@ -35,9 +35,9 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       PasswordManagerClient* client,
       const autofill::PasswordForm& observed_form,
       ContentCredentialManagerDispatcher* dispatcher);
-  virtual ~CredentialManagerPasswordFormManager();
+  ~CredentialManagerPasswordFormManager() override;
 
-  virtual void OnGetPasswordStoreResults(
+  void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
 
  private:

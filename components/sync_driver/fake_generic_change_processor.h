@@ -19,22 +19,22 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
  public:
   FakeGenericChangeProcessor(syncer::ModelType type,
                              SyncApiComponentFactory* sync_factory);
-  virtual ~FakeGenericChangeProcessor();
+  ~FakeGenericChangeProcessor() override;
 
   // Setters for GenericChangeProcessor implementation results.
   void set_sync_model_has_user_created_nodes(bool has_nodes);
   void set_sync_model_has_user_created_nodes_success(bool success);
 
   // GenericChangeProcessor implementations.
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  virtual syncer::SyncError GetAllSyncDataReturnError(
+  syncer::SyncError GetAllSyncDataReturnError(
       syncer::SyncDataList* data) const override;
-  virtual bool GetDataTypeContext(std::string* context) const override;
-  virtual int GetSyncCount() override;
-  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) override;
-  virtual bool CryptoReadyIfNecessary() override;
+  bool GetDataTypeContext(std::string* context) const override;
+  int GetSyncCount() override;
+  bool SyncModelHasUserCreatedNodes(bool* has_nodes) override;
+  bool CryptoReadyIfNecessary() override;
 
  private:
   bool sync_model_has_user_created_nodes_;
@@ -46,8 +46,8 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
  public:
   explicit FakeGenericChangeProcessorFactory(
       scoped_ptr<FakeGenericChangeProcessor> processor);
-  virtual ~FakeGenericChangeProcessorFactory();
-  virtual scoped_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
+  ~FakeGenericChangeProcessorFactory() override;
+  scoped_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
       syncer::ModelType type,
       syncer::UserShare* user_share,
       DataTypeErrorHandler* error_handler,

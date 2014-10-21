@@ -64,14 +64,13 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
                            OnFieldTrialGroupFinalized);
 
   VariationsHttpHeaderProvider();
-  virtual ~VariationsHttpHeaderProvider();
+  ~VariationsHttpHeaderProvider() override;
 
   // base::FieldTrialList::Observer implementation.
   // This will add the variation ID associated with |trial_name| and
   // |group_name| to the variation ID cache.
-  virtual void OnFieldTrialGroupFinalized(
-      const std::string& trial_name,
-      const std::string& group_name) override;
+  void OnFieldTrialGroupFinalized(const std::string& trial_name,
+                                  const std::string& group_name) override;
 
   // Prepares the variation IDs cache with initial values if not already done.
   // This method also registers the caller with the FieldTrialList to receive

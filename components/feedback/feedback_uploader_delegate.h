@@ -22,11 +22,11 @@ class FeedbackUploaderDelegate : public net::URLFetcherDelegate {
   FeedbackUploaderDelegate(const std::string& post_body,
                            const base::Closure& success_callback,
                            const ReportDataCallback& error_callback);
-  virtual ~FeedbackUploaderDelegate();
+  ~FeedbackUploaderDelegate() override;
 
  private:
   // Overridden from net::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   std::string post_body_;
   base::Closure success_callback_;

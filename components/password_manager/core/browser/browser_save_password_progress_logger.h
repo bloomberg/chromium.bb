@@ -19,11 +19,11 @@ class BrowserSavePasswordProgressLogger
     : public autofill::SavePasswordProgressLogger {
  public:
   explicit BrowserSavePasswordProgressLogger(PasswordManagerClient* client);
-  virtual ~BrowserSavePasswordProgressLogger();
+  ~BrowserSavePasswordProgressLogger() override;
 
  protected:
   // autofill::SavePasswordProgressLogger:
-  virtual void SendLog(const std::string& log) override;
+  void SendLog(const std::string& log) override;
 
  private:
   // The PasswordManagerClient to which logs can be sent for display. The client

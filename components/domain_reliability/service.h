@@ -42,7 +42,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
   static DomainReliabilityService* Create(
       const std::string& upload_reporter_string);
 
-  virtual ~DomainReliabilityService();
+  ~DomainReliabilityService() override;
 
   // Initializes the Service: given the task runner on which Monitor methods
   // should be called, creates the Monitor and returns it. Can be called at

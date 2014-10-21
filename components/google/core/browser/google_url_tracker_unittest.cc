@@ -72,13 +72,13 @@ void TestCallbackListener::RegisterCallback(
 class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
  public:
   explicit TestGoogleURLTrackerClient(PrefService* prefs_);
-  virtual ~TestGoogleURLTrackerClient();
+  ~TestGoogleURLTrackerClient() override;
 
-  virtual void SetListeningForNavigationStart(bool listen) override;
-  virtual bool IsListeningForNavigationStart() override;
-  virtual bool IsBackgroundNetworkingEnabled() override;
-  virtual PrefService* GetPrefs() override;
-  virtual net::URLRequestContextGetter* GetRequestContext() override;
+  void SetListeningForNavigationStart(bool listen) override;
+  bool IsListeningForNavigationStart() override;
+  bool IsBackgroundNetworkingEnabled() override;
+  PrefService* GetPrefs() override;
+  net::URLRequestContextGetter* GetRequestContext() override;
 
  private:
   PrefService* prefs_;
@@ -125,15 +125,15 @@ class TestGoogleURLTrackerNavigationHelper
     : public GoogleURLTrackerNavigationHelper {
  public:
   explicit TestGoogleURLTrackerNavigationHelper(GoogleURLTracker* tracker);
-  virtual ~TestGoogleURLTrackerNavigationHelper();
+  ~TestGoogleURLTrackerNavigationHelper() override;
 
-  virtual void SetListeningForNavigationCommit(bool listen) override;
-  virtual bool IsListeningForNavigationCommit() override;
-  virtual void SetListeningForTabDestruction(bool listen) override;
-  virtual bool IsListeningForTabDestruction() override;
-  virtual void OpenURL(GURL url,
-                       WindowOpenDisposition disposition,
-                       bool user_clicked_on_link) override;
+  void SetListeningForNavigationCommit(bool listen) override;
+  bool IsListeningForNavigationCommit() override;
+  void SetListeningForTabDestruction(bool listen) override;
+  bool IsListeningForTabDestruction() override;
+  void OpenURL(GURL url,
+               WindowOpenDisposition disposition,
+               bool user_clicked_on_link) override;
 
  private:
   bool listening_for_nav_commit_;
@@ -181,8 +181,8 @@ void TestGoogleURLTrackerNavigationHelper::OpenURL(
 class TestInfoBarManager : public infobars::InfoBarManager {
  public:
   explicit TestInfoBarManager(int unique_id);
-  virtual ~TestInfoBarManager();
-  virtual int GetActiveEntryID() override;
+  ~TestInfoBarManager() override;
+  int GetActiveEntryID() override;
 
  private:
   int unique_id_;

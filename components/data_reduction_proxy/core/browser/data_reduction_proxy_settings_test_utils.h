@@ -27,15 +27,15 @@ class DataReductionProxyStatisticsPrefs;
 class TestDataReductionProxyConfig : public DataReductionProxyConfigurator {
  public:
   TestDataReductionProxyConfig();
-  virtual ~TestDataReductionProxyConfig() {}
-  virtual void Enable(bool restricted,
-                      bool fallback_restricted,
-                      const std::string& primary_origin,
-                      const std::string& fallback_origin,
-                      const std::string& ssl_origin) override;
-  virtual void Disable() override;
-  virtual void AddHostPatternToBypass(const std::string& pattern) override {}
-  virtual void AddURLPatternToBypass(const std::string& pattern) override {}
+  ~TestDataReductionProxyConfig() override {}
+  void Enable(bool restricted,
+              bool fallback_restricted,
+              const std::string& primary_origin,
+              const std::string& fallback_origin,
+              const std::string& ssl_origin) override;
+  void Disable() override;
+  void AddHostPatternToBypass(const std::string& pattern) override {}
+  void AddURLPatternToBypass(const std::string& pattern) override {}
 
   // True if the proxy has been enabled, i.e., only after |Enable| has been
   // called. Defaults to false.

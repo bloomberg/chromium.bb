@@ -56,7 +56,7 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   //   {}
   BrowserContextKeyedServiceFactory(const char* name,
                                     BrowserContextDependencyManager* manager);
-  virtual ~BrowserContextKeyedServiceFactory();
+  ~BrowserContextKeyedServiceFactory() override;
 
   // Common implementation that maps |context| to some service object. Deals
   // with incognito contexts per subclass instructions with
@@ -91,15 +91,12 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   // Secondly, BrowserContextDestroyed() is called on every ServiceFactory
   // and the default implementation removes it from |mapping_| and deletes
   // the pointer.
-  virtual void BrowserContextShutdown(content::BrowserContext* context)
-      override;
-  virtual void BrowserContextDestroyed(content::BrowserContext* context)
-      override;
+  void BrowserContextShutdown(content::BrowserContext* context) override;
+  void BrowserContextDestroyed(content::BrowserContext* context) override;
 
-  virtual void SetEmptyTestingFactory(content::BrowserContext* context)
-      override;
-  virtual bool HasTestingFactory(content::BrowserContext* context) override;
-  virtual void CreateServiceNow(content::BrowserContext* context) override;
+  void SetEmptyTestingFactory(content::BrowserContext* context) override;
+  bool HasTestingFactory(content::BrowserContext* context) override;
+  void CreateServiceNow(content::BrowserContext* context) override;
 
  private:
   friend class BrowserContextDependencyManager;

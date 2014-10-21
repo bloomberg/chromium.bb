@@ -20,22 +20,18 @@ class ActualTimer : public MockableTime::Timer {
   // Initialize base timer with retain_user_info and is_repeating false.
   ActualTimer() : base_timer_(false, false) {}
 
-  virtual ~ActualTimer() {}
+  ~ActualTimer() override {}
 
   // MockableTime::Timer implementation:
-  virtual void Start(const tracked_objects::Location& posted_from,
-                     base::TimeDelta delay,
-                     const base::Closure& user_task) override {
+  void Start(const tracked_objects::Location& posted_from,
+             base::TimeDelta delay,
+             const base::Closure& user_task) override {
     base_timer_.Start(posted_from, delay, user_task);
   }
 
-  virtual void Stop() override {
-    base_timer_.Stop();
-  }
+  void Stop() override { base_timer_.Stop(); }
 
-  virtual bool IsRunning() override {
-    return base_timer_.IsRunning();
-  }
+  bool IsRunning() override { return base_timer_.IsRunning(); }
 
  private:
   base::Timer base_timer_;

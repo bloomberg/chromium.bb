@@ -64,10 +64,10 @@ class BookmarkModel : public KeyedService {
   };
 
   explicit BookmarkModel(bookmarks::BookmarkClient* client);
-  virtual ~BookmarkModel();
+  ~BookmarkModel() override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Loads the bookmarks. This is called upon creation of the
   // BookmarkModel. You need not invoke this directly.

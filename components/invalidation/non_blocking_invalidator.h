@@ -51,19 +51,18 @@ class INVALIDATION_EXPORT_PRIVATE NonBlockingInvalidator
       const scoped_refptr<net::URLRequestContextGetter>&
           request_context_getter);
 
-  virtual ~NonBlockingInvalidator();
+  ~NonBlockingInvalidator() override;
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) override;
-  virtual void UnregisterHandler(InvalidationHandler* handler) override;
-  virtual InvalidatorState GetInvalidatorState() const override;
-  virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) override;
-  virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) const
-      override;
+  void RegisterHandler(InvalidationHandler* handler) override;
+  void UpdateRegisteredIds(InvalidationHandler* handler,
+                           const ObjectIdSet& ids) override;
+  void UnregisterHandler(InvalidationHandler* handler) override;
+  InvalidatorState GetInvalidatorState() const override;
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override;
+  void RequestDetailedStatus(base::Callback<void(const base::DictionaryValue&)>
+                                 callback) const override;
 
   // Static functions to construct callback that creates network channel for
   // SyncSystemResources. The goal is to pass network channel to invalidator at
@@ -76,14 +75,13 @@ class INVALIDATION_EXPORT_PRIVATE NonBlockingInvalidator
       scoped_ptr<GCMNetworkChannelDelegate> delegate);
 
   // These methods are forwarded to the invalidation_state_tracker_.
-  virtual void ClearAndSetNewClientId(const std::string& data) override;
-  virtual std::string GetInvalidatorClientId() const override;
-  virtual void SetBootstrapData(const std::string& data) override;
-  virtual std::string GetBootstrapData() const override;
-  virtual void SetSavedInvalidations(
-      const UnackedInvalidationsMap& states) override;
-  virtual UnackedInvalidationsMap GetSavedInvalidations() const override;
-  virtual void Clear() override;
+  void ClearAndSetNewClientId(const std::string& data) override;
+  std::string GetInvalidatorClientId() const override;
+  void SetBootstrapData(const std::string& data) override;
+  std::string GetBootstrapData() const override;
+  void SetSavedInvalidations(const UnackedInvalidationsMap& states) override;
+  UnackedInvalidationsMap GetSavedInvalidations() const override;
+  void Clear() override;
 
  private:
   void OnInvalidatorStateChange(InvalidatorState state);

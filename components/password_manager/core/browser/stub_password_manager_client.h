@@ -15,20 +15,19 @@ namespace password_manager {
 class StubPasswordManagerClient : public PasswordManagerClient {
  public:
   StubPasswordManagerClient();
-  virtual ~StubPasswordManagerClient();
+  ~StubPasswordManagerClient() override;
 
   // PasswordManagerClient:
-  virtual bool IsSyncAccountCredential(
-      const std::string& username, const std::string& origin) const override;
-  virtual bool ShouldFilterAutofillResult(
-      const autofill::PasswordForm& form) override;
-  virtual bool PromptUserToSavePassword(
+  bool IsSyncAccountCredential(const std::string& username,
+                               const std::string& origin) const override;
+  bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
+  bool PromptUserToSavePassword(
       scoped_ptr<PasswordFormManager> form_to_save) override;
-  virtual void AutomaticPasswordSave(
+  void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) override;
-  virtual PrefService* GetPrefs() override;
-  virtual PasswordStore* GetPasswordStore() override;
-  virtual PasswordManagerDriver* GetDriver() override;
+  PrefService* GetPrefs() override;
+  PasswordStore* GetPasswordStore() override;
+  PasswordManagerDriver* GetDriver() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);

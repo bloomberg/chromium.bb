@@ -17,17 +17,17 @@ namespace syncer {
 class FakeInvalidationHandler : public InvalidationHandler {
  public:
   FakeInvalidationHandler();
-  virtual ~FakeInvalidationHandler();
+  ~FakeInvalidationHandler() override;
 
   InvalidatorState GetInvalidatorState() const;
   const ObjectIdInvalidationMap& GetLastInvalidationMap() const;
   int GetInvalidationCount() const;
 
   // InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) override;
-  virtual void OnIncomingInvalidation(
+  void OnInvalidatorStateChange(InvalidatorState state) override;
+  void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) override;
-  virtual std::string GetOwnerName() const override;
+  std::string GetOwnerName() const override;
 
  private:
   InvalidatorState state_;

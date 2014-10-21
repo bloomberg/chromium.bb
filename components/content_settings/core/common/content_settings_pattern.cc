@@ -87,19 +87,19 @@ class ContentSettingsPattern::Builder :
     public ContentSettingsPattern::BuilderInterface {
  public:
   explicit Builder(bool use_legacy_validate);
-  virtual ~Builder();
+  ~Builder() override;
 
   // BuilderInterface:
-  virtual BuilderInterface* WithPort(const std::string& port) override;
-  virtual BuilderInterface* WithPortWildcard() override;
-  virtual BuilderInterface* WithHost(const std::string& host) override;
-  virtual BuilderInterface* WithDomainWildcard() override;
-  virtual BuilderInterface* WithScheme(const std::string& scheme) override;
-  virtual BuilderInterface* WithSchemeWildcard() override;
-  virtual BuilderInterface* WithPath(const std::string& path) override;
-  virtual BuilderInterface* WithPathWildcard() override;
-  virtual BuilderInterface* Invalid() override;
-  virtual ContentSettingsPattern Build() override;
+  BuilderInterface* WithPort(const std::string& port) override;
+  BuilderInterface* WithPortWildcard() override;
+  BuilderInterface* WithHost(const std::string& host) override;
+  BuilderInterface* WithDomainWildcard() override;
+  BuilderInterface* WithScheme(const std::string& scheme) override;
+  BuilderInterface* WithSchemeWildcard() override;
+  BuilderInterface* WithPath(const std::string& path) override;
+  BuilderInterface* WithPathWildcard() override;
+  BuilderInterface* Invalid() override;
+  ContentSettingsPattern Build() override;
 
  private:
   // Canonicalizes the pattern parts so that they are ASCII only, either

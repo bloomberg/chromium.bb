@@ -46,11 +46,11 @@ const char kUserID1[] = "user1";
 class FakeGCMConnectionObserver : public GCMConnectionObserver {
  public:
   FakeGCMConnectionObserver();
-  virtual ~FakeGCMConnectionObserver();
+  ~FakeGCMConnectionObserver() override;
 
   // gcm::GCMConnectionObserver implementation:
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
-  virtual void OnDisconnected() override;
+  void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  void OnDisconnected() override;
 
   bool connected() const { return connected_; }
 

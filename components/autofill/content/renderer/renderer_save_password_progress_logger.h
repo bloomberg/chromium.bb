@@ -25,11 +25,11 @@ class RendererSavePasswordProgressLogger : public SavePasswordProgressLogger {
   // AutofillHostMsg_RecordSavePasswordProgress message with the logs to the
   // browser. The |sender| needs to outlive the constructed logger.
   RendererSavePasswordProgressLogger(IPC::Sender* sender, int routing_id);
-  virtual ~RendererSavePasswordProgressLogger();
+  ~RendererSavePasswordProgressLogger() override;
 
  protected:
   // SavePasswordProgressLogger:
-  virtual void SendLog(const std::string& log) override;
+  void SendLog(const std::string& log) override;
 
  private:
   // Used by SendLog to send the IPC message with logs. |sender_| needs to

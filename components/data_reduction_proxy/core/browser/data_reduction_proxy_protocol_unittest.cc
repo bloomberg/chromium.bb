@@ -54,7 +54,7 @@ class TestDataReductionProxyNetworkDelegate : public net::NetworkDelegate {
         bypass_type_(bypass_type) {
   }
 
-  virtual int OnHeadersReceived(
+  int OnHeadersReceived(
       URLRequest* request,
       const net::CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
@@ -820,10 +820,10 @@ TEST_F(DataReductionProxyProtocolTest,
 
 class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
  public:
-  virtual ~BadEntropyProvider() {}
+  ~BadEntropyProvider() override {}
 
-  virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const override {
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32 randomization_seed) const override {
     return 0.5;
   }
 };

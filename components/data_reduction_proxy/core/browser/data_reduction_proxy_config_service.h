@@ -36,16 +36,13 @@ class DataReductionProxyConfigService
   // Takes ownership of the passed |base_service|.
   DataReductionProxyConfigService(
       scoped_ptr<net::ProxyConfigService> base_service);
-  virtual ~DataReductionProxyConfigService();
+  ~DataReductionProxyConfigService() override;
 
   // ProxyConfigService implementation:
-  virtual void AddObserver(
-      net::ProxyConfigService::Observer* observer) override;
-  virtual void RemoveObserver(
-      net::ProxyConfigService::Observer* observer) override;
-  virtual ConfigAvailability GetLatestProxyConfig(
-      net::ProxyConfig* config) override;
-  virtual void OnLazyPoll() override;
+  void AddObserver(net::ProxyConfigService::Observer* observer) override;
+  void RemoveObserver(net::ProxyConfigService::Observer* observer) override;
+  ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config) override;
+  void OnLazyPoll() override;
 
   // Method on IO thread that receives the data reduction proxy settings pushed
   // from DataReductionProxyConfiguratorImpl.
@@ -56,8 +53,8 @@ class DataReductionProxyConfigService
   friend class DataReductionProxyConfigServiceTest;
 
   // ProxyConfigService::Observer implementation:
-  virtual void OnProxyConfigChanged(const net::ProxyConfig& config,
-                                    ConfigAvailability availability) override;
+  void OnProxyConfigChanged(const net::ProxyConfig& config,
+                            ConfigAvailability availability) override;
 
   // Makes sure that the observer registration with the base service is set up.
   void RegisterObserver();
@@ -94,16 +91,16 @@ class DataReductionProxyConfigTracker : public DataReductionProxyConfigurator {
   DataReductionProxyConfigTracker(
       base::Callback<void(bool, const net::ProxyConfig&)> update_proxy_config,
       const scoped_refptr<base::TaskRunner>& task_runner);
-  virtual ~DataReductionProxyConfigTracker();
+  ~DataReductionProxyConfigTracker() override;
 
-  virtual void Enable(bool primary_restricted,
-                      bool fallback_restricted,
-                      const std::string& primary_origin,
-                      const std::string& fallback_origin,
-                      const std::string& ssl_origin) override;
-  virtual void Disable() override;
-  virtual void AddHostPatternToBypass(const std::string& pattern) override;
-  virtual void AddURLPatternToBypass(const std::string& pattern) override;
+  void Enable(bool primary_restricted,
+              bool fallback_restricted,
+              const std::string& primary_origin,
+              const std::string& fallback_origin,
+              const std::string& ssl_origin) override;
+  void Disable() override;
+  void AddHostPatternToBypass(const std::string& pattern) override;
+  void AddURLPatternToBypass(const std::string& pattern) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceTest,

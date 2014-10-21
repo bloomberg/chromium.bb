@@ -49,10 +49,10 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
                                 public content::RenderViewObserver {
  public:
   explicit CredentialManagerClient(content::RenderView* render_view);
-  virtual ~CredentialManagerClient();
+  ~CredentialManagerClient() override;
 
   // RenderViewObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers for messages from the browser process:
   virtual void OnAcknowledgeFailedSignIn(int request_id);

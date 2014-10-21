@@ -41,7 +41,7 @@ class AccountReconcilor : public KeyedService,
   AccountReconcilor(ProfileOAuth2TokenService* token_service,
                     SigninManagerBase* signin_manager,
                     SigninClient* client);
-  virtual ~AccountReconcilor();
+  ~AccountReconcilor() override;
 
   void Initialize(bool start_reconcile_if_tokens_available);
 
@@ -51,7 +51,7 @@ class AccountReconcilor : public KeyedService,
   void OnNewProfileManagementFlagChanged(bool new_flag_status);
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Add or remove observers for the merge session notification.
   void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
@@ -138,24 +138,22 @@ class AccountReconcilor : public KeyedService,
   void OnCookieChanged(const net::CanonicalCookie* cookie);
 
   // Overriden from GaiaAuthConsumer.
-  virtual void OnListAccountsSuccess(const std::string& data) override;
-  virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
-      override;
+  void OnListAccountsSuccess(const std::string& data) override;
+  void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
 
   // Overriden from MergeSessionHelper::Observer.
-  virtual void MergeSessionCompleted(const std::string& account_id,
-                                     const GoogleServiceAuthError& error)
-      override;
+  void MergeSessionCompleted(const std::string& account_id,
+                             const GoogleServiceAuthError& error) override;
 
   // Overriden from OAuth2TokenService::Observer.
-  virtual void OnEndBatchChanges() override;
+  void OnEndBatchChanges() override;
 
   // Overriden from SigninManagerBase::Observer.
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   void MayBeDoNextListAccounts();
 

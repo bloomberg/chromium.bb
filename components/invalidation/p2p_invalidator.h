@@ -98,25 +98,24 @@ class INVALIDATION_EXPORT_PRIVATE P2PInvalidator
                  const std::string& invalidator_client_id,
                  P2PNotificationTarget send_notification_target);
 
-  virtual ~P2PInvalidator();
+  ~P2PInvalidator() override;
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) override;
-  virtual void UnregisterHandler(InvalidationHandler* handler) override;
-  virtual InvalidatorState GetInvalidatorState() const override;
-  virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) override;
-  virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) const
-      override;
+  void RegisterHandler(InvalidationHandler* handler) override;
+  void UpdateRegisteredIds(InvalidationHandler* handler,
+                           const ObjectIdSet& ids) override;
+  void UnregisterHandler(InvalidationHandler* handler) override;
+  InvalidatorState GetInvalidatorState() const override;
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override;
+  void RequestDetailedStatus(base::Callback<void(const base::DictionaryValue&)>
+                                 callback) const override;
 
   // PushClientObserver implementation.
-  virtual void OnNotificationsEnabled() override;
-  virtual void OnNotificationsDisabled(
+  void OnNotificationsEnabled() override;
+  void OnNotificationsDisabled(
       notifier::NotificationsDisabledReason reason) override;
-  virtual void OnIncomingNotification(
+  void OnIncomingNotification(
       const notifier::Notification& notification) override;
 
   void SendInvalidation(const ObjectIdSet& ids);

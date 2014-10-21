@@ -27,10 +27,10 @@ class PrecacheManagerFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<PrecacheManagerFactory>;
 
   PrecacheManagerFactory();
-  virtual ~PrecacheManagerFactory();
+  ~PrecacheManagerFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* browser_context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheManagerFactory);

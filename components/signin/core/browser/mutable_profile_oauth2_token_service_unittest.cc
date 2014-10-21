@@ -65,21 +65,17 @@ class MutableProfileOAuth2TokenServiceTest
   }
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override {
+  void OnRefreshTokenAvailable(const std::string& account_id) override {
     ++token_available_count_;
   }
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) override {
+  void OnRefreshTokenRevoked(const std::string& account_id) override {
     ++token_revoked_count_;
   }
-  virtual void OnRefreshTokensLoaded() override { ++tokens_loaded_count_; }
+  void OnRefreshTokensLoaded() override { ++tokens_loaded_count_; }
 
-  virtual void OnStartBatchChanges() override {
-    ++start_batch_changes_;
-  }
+  void OnStartBatchChanges() override { ++start_batch_changes_; }
 
-  virtual void OnEndBatchChanges() override {
-    ++end_batch_changes_;
-  }
+  void OnEndBatchChanges() override { ++end_batch_changes_; }
 
   void ResetObserverCounts() {
     token_available_count_ = 0;

@@ -27,10 +27,10 @@ namespace {
 class FakeTiclSettingsProvider : public TiclSettingsProvider {
  public:
   FakeTiclSettingsProvider();
-  virtual ~FakeTiclSettingsProvider();
+  ~FakeTiclSettingsProvider() override;
 
   // TiclSettingsProvider:
-  virtual bool UseGCMChannel() const override;
+  bool UseGCMChannel() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeTiclSettingsProvider);

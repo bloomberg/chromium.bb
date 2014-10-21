@@ -21,20 +21,18 @@ const float kScreenScaleFactor = 2;
 class TestGPUMetricsProvider : public GPUMetricsProvider {
  public:
   TestGPUMetricsProvider() {}
-  virtual ~TestGPUMetricsProvider() {}
+  ~TestGPUMetricsProvider() override {}
 
  private:
-  virtual gfx::Size GetScreenSize() const override {
+  gfx::Size GetScreenSize() const override {
     return gfx::Size(kScreenWidth, kScreenHeight);
   }
 
-  virtual float GetScreenDeviceScaleFactor() const override {
+  float GetScreenDeviceScaleFactor() const override {
     return kScreenScaleFactor;
   }
 
-  virtual int GetScreenCount() const override {
-    return kScreenCount;
-  }
+  int GetScreenCount() const override { return kScreenCount; }
 
   DISALLOW_COPY_AND_ASSIGN(TestGPUMetricsProvider);
 };

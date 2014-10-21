@@ -107,17 +107,16 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
 class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   TestSyncChangeProcessor() {}
-  virtual ~TestSyncChangeProcessor() {}
+  ~TestSyncChangeProcessor() override {}
 
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& location,
       const syncer::SyncChangeList& changes) override {
     changes_ = changes;
     return syncer::SyncError();
   }
 
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      override {
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
     return syncer::SyncDataList();
   }
 

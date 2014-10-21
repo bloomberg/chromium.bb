@@ -39,7 +39,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
                       PasswordManagerDriver* driver,
                       const autofill::PasswordForm& observed_form,
                       bool ssl_valid);
-  virtual ~PasswordFormManager();
+  ~PasswordFormManager() override;
 
   // Flags describing the result of comparing two forms as performed by
   // DoesMatch. Individual flags are only relevant for HTML forms, but
@@ -113,7 +113,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Takes ownership of the elements in |result|.
   void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
 
-  virtual void OnGetPasswordStoreResults(
+  void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
 
   // A user opted to 'never remember' passwords for this form.

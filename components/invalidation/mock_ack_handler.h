@@ -25,7 +25,7 @@ class INVALIDATION_EXPORT MockAckHandler
     public base::SupportsWeakPtr<MockAckHandler> {
  public:
   MockAckHandler();
-  virtual ~MockAckHandler();
+  ~MockAckHandler() override;
 
   // Sets up some internal state to track this invalidation, and modifies it so
   // that its Acknowledge() and Drop() methods will route back to us.
@@ -54,12 +54,9 @@ class INVALIDATION_EXPORT MockAckHandler
   bool AllInvalidationsAccountedFor() const;
 
   // Implementation of AckHandler.
-  virtual void Acknowledge(
-      const invalidation::ObjectId& id,
-      const AckHandle& handle) override;
-  virtual void Drop(
-      const invalidation::ObjectId& id,
-      const AckHandle& handle) override;
+  void Acknowledge(const invalidation::ObjectId& id,
+                   const AckHandle& handle) override;
+  void Drop(const invalidation::ObjectId& id, const AckHandle& handle) override;
 
  private:
   typedef std::vector<syncer::Invalidation> InvalidationVector;

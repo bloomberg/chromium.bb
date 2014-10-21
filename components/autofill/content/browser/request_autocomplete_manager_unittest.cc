@@ -23,9 +23,9 @@ class TestAutofillManager : public AutofillManager {
   TestAutofillManager(AutofillDriver* driver, AutofillClient* client)
       : AutofillManager(driver, client, kAppLocale, kDownloadState),
         autofill_enabled_(true) {}
-  virtual ~TestAutofillManager() {}
+  ~TestAutofillManager() override {}
 
-  virtual bool IsAutofillEnabled() const override { return autofill_enabled_; }
+  bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
@@ -41,12 +41,11 @@ class CustomTestAutofillClient : public TestAutofillClient {
  public:
   CustomTestAutofillClient() : should_simulate_success_(true) {}
 
-  virtual ~CustomTestAutofillClient() {}
+  ~CustomTestAutofillClient() override {}
 
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      const GURL& source_url,
-      const ResultCallback& callback) override {
+  void ShowRequestAutocompleteDialog(const FormData& form,
+                                     const GURL& source_url,
+                                     const ResultCallback& callback) override {
     if (should_simulate_success_) {
       FormStructure form_structure(form);
       callback.Run(
@@ -78,7 +77,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
     SetAutofillManager(make_scoped_ptr<AutofillManager>(
         new TestAutofillManager(this, client)));
   }
-  virtual ~TestContentAutofillDriver() {}
+  ~TestContentAutofillDriver() override {}
 
   TestAutofillManager* mock_autofill_manager() {
     return static_cast<TestAutofillManager*>(autofill_manager());

@@ -24,14 +24,14 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
   IPC::ChannelHandle TakeClientChannelHandle();
 
   // Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   bool Send(IPC::Message* msg);
 
  private:
   friend class base::RefCounted<NaClTrustedListener>;
-  virtual ~NaClTrustedListener();
+  ~NaClTrustedListener() override;
   IPC::ChannelHandle channel_handle_;
   scoped_ptr<IPC::SyncChannel> channel_;
 

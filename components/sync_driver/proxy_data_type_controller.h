@@ -21,26 +21,25 @@ class ProxyDataTypeController : public DataTypeController {
        syncer::ModelType type);
 
   // DataTypeController interface.
-  virtual void LoadModels(
-      const ModelLoadCallback& model_load_callback) override;
-  virtual void StartAssociating(const StartCallback& start_callback) override;
-  virtual void Stop() override;
-  virtual syncer::ModelType type() const override;
-  virtual syncer::ModelSafeGroup model_safe_group() const override;
-  virtual ChangeProcessor* GetChangeProcessor() const override;
-  virtual std::string name() const override;
-  virtual State state() const override;
+  void LoadModels(const ModelLoadCallback& model_load_callback) override;
+  void StartAssociating(const StartCallback& start_callback) override;
+  void Stop() override;
+  syncer::ModelType type() const override;
+  syncer::ModelSafeGroup model_safe_group() const override;
+  ChangeProcessor* GetChangeProcessor() const override;
+  std::string name() const override;
+  State state() const override;
 
   // DataTypeErrorHandler interface.
-  virtual void OnSingleDataTypeUnrecoverableError(
+  void OnSingleDataTypeUnrecoverableError(
       const syncer::SyncError& error) override;
 
  protected:
   // DataTypeController is RefCounted.
-  virtual ~ProxyDataTypeController();
+  ~ProxyDataTypeController() override;
 
   // DataTypeController interface.
-  virtual void OnModelLoaded() override;
+  void OnModelLoaded() override;
 
  private:
   State state_;

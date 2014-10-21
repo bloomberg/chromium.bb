@@ -88,7 +88,7 @@ class BookmarkClient : public KeyedService {
   virtual bool CanBeEditedByUser(const BookmarkNode* node) = 0;
 
  protected:
-  virtual ~BookmarkClient() {}
+  ~BookmarkClient() override {}
 };
 
 }  // namespace bookmarks

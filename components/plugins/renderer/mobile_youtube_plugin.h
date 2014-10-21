@@ -26,16 +26,16 @@ class MobileYouTubePlugin : public PluginPlaceholder {
   static bool IsYouTubeURL(const GURL& url, const std::string& mime_type);
 
  private:
-  virtual ~MobileYouTubePlugin();
+  ~MobileYouTubePlugin() override;
 
   // Opens a youtube app in the current tab.
   void OpenYoutubeUrlCallback();
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  virtual void BindWebFrame(blink::WebFrame* frame) override;
+  void BindWebFrame(blink::WebFrame* frame) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   DISALLOW_COPY_AND_ASSIGN(MobileYouTubePlugin);

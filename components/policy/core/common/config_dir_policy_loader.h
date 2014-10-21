@@ -27,12 +27,12 @@ class POLICY_EXPORT ConfigDirPolicyLoader : public AsyncPolicyLoader {
   ConfigDirPolicyLoader(scoped_refptr<base::SequencedTaskRunner> task_runner,
                         const base::FilePath& config_dir,
                         PolicyScope scope);
-  virtual ~ConfigDirPolicyLoader();
+  ~ConfigDirPolicyLoader() override;
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnBackgroundThread() override;
-  virtual scoped_ptr<PolicyBundle> Load() override;
-  virtual base::Time LastModificationTime() override;
+  void InitOnBackgroundThread() override;
+  scoped_ptr<PolicyBundle> Load() override;
+  base::Time LastModificationTime() override;
 
  private:
   // Loads the policy files at |path| into the |bundle|, with the given |level|.

@@ -39,7 +39,7 @@ class LogUploader : public net::URLFetcherDelegate {
 
   // If the object is destroyed (or the program terminates) while logs are
   // queued, the logs are lost.
-  virtual ~LogUploader();
+  ~LogUploader() override;
 
   // Adds an entry to the queue of logs to be uploaded to the server.  The
   // uploader makes no assumptions about the format of |log| and simply sends
@@ -64,7 +64,7 @@ class LogUploader : public net::URLFetcherDelegate {
  private:
   // Implements net::URLFetcherDelegate. Called after transmission completes
   // (whether successful or not).
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Called when the upload is completed.
   void OnUploadFinished(bool server_is_healthy, bool more_logs_remaining);

@@ -32,24 +32,24 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
                      net::URLRequestContextGetter* request_context_getter,
                      AccountTrackerService* service,
                      const std::string& account_id);
-  virtual ~AccountInfoFetcher();
+  ~AccountInfoFetcher() override;
 
   const std::string& account_id() { return account_id_; }
 
   void Start();
 
   // OAuth2TokenService::Consumer implementation.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
-  virtual void OnGetUserInfoResponse(
+  void OnGetUserInfoResponse(
       scoped_ptr<base::DictionaryValue> user_info) override;
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
  private:
   OAuth2TokenService* token_service_;

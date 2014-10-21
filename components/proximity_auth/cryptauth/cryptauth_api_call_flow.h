@@ -23,7 +23,7 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
   typedef base::Callback<void(const std::string& error_message)> ErrorCallback;
 
   CryptAuthApiCallFlow(const GURL& request_url);
-  virtual ~CryptAuthApiCallFlow();
+  ~CryptAuthApiCallFlow() override;
 
   // Starts the API call.
   //   context: The URL context used to make the request.
@@ -44,11 +44,11 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
   using OAuth2ApiCallFlow::Start;
 
   // google_apis::OAuth2ApiCallFlow:
-  virtual GURL CreateApiCallUrl() override;
-  virtual std::string CreateApiCallBody() override;
-  virtual std::string CreateApiCallBodyContentType() override;
-  virtual void ProcessApiCallSuccess(const net::URLFetcher* source) override;
-  virtual void ProcessApiCallFailure(const net::URLFetcher* source) override;
+  GURL CreateApiCallUrl() override;
+  std::string CreateApiCallBody() override;
+  std::string CreateApiCallBodyContentType() override;
+  void ProcessApiCallSuccess(const net::URLFetcher* source) override;
+  void ProcessApiCallFailure(const net::URLFetcher* source) override;
 
  private:
   // The URL of the CryptAuth endpoint serving the request.

@@ -46,14 +46,14 @@ class DomainReliabilityUploaderImpl
       : url_request_context_getter_(url_request_context_getter),
         discard_uploads_(true) {}
 
-  virtual ~DomainReliabilityUploaderImpl() {
+  ~DomainReliabilityUploaderImpl() override {
     // Delete any in-flight URLFetchers.
     STLDeleteContainerPairFirstPointers(
         upload_callbacks_.begin(), upload_callbacks_.end());
   }
 
   // DomainReliabilityUploader implementation:
-  virtual void UploadReport(
+  void UploadReport(
       const std::string& report_json,
       const GURL& upload_url,
       const DomainReliabilityUploader::UploadCallback& callback) override {
@@ -81,14 +81,13 @@ class DomainReliabilityUploaderImpl
     upload_callbacks_[fetcher] = callback;
   }
 
-  virtual void set_discard_uploads(bool discard_uploads) override {
+  void set_discard_uploads(bool discard_uploads) override {
     discard_uploads_ = discard_uploads;
     VLOG(1) << "Setting discard_uploads to " << discard_uploads;
   }
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(
-      const net::URLFetcher* fetcher) override {
+  void OnURLFetchComplete(const net::URLFetcher* fetcher) override {
     DCHECK(fetcher);
 
     UploadCallbackMap::iterator callback_it = upload_callbacks_.find(fetcher);

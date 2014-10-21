@@ -37,7 +37,7 @@ class ComponentsTestSuite : public base::TestSuite {
   ComponentsTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
  private:
-  virtual void Initialize() override {
+  void Initialize() override {
     base::TestSuite::Initialize();
 
     // Initialize the histograms subsystem, so that any histograms hit in tests
@@ -100,7 +100,7 @@ class ComponentsTestSuite : public base::TestSuite {
         "chrome-extension");
   }
 
-  virtual void Shutdown() override {
+  void Shutdown() override {
     ui::ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

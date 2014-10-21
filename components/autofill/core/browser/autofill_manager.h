@@ -73,7 +73,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                   AutofillClient* client,
                   const std::string& app_locale,
                   AutofillDownloadManagerState enable_download_manager);
-  virtual ~AutofillManager();
+  ~AutofillManager() override;
 
   // Sets an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
@@ -214,8 +214,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
 
  private:
   // AutofillDownloadManager::Observer:
-  virtual void OnLoadedServerPredictions(
-      const std::string& response_xml) override;
+  void OnLoadedServerPredictions(const std::string& response_xml) override;
 
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels() const;

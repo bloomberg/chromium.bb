@@ -30,11 +30,9 @@ const int64 kPseudoSleepTime2 = 1888;
 class TestTickClock : public base::TickClock {
  public:
   explicit TestTickClock(base::TimeTicks* ticks_now) : ticks_now_(ticks_now) {}
-  virtual ~TestTickClock() {}
+  ~TestTickClock() override {}
 
-  virtual base::TimeTicks NowTicks() override {
-    return *ticks_now_;
-  }
+  base::TimeTicks NowTicks() override { return *ticks_now_; }
 
  private:
   base::TimeTicks* ticks_now_;

@@ -41,7 +41,7 @@ class GenericAutofillChange {
 class AutofillChange : public GenericAutofillChange<AutofillKey> {
  public:
   AutofillChange(Type type, const AutofillKey& key);
-  virtual ~AutofillChange();
+  ~AutofillChange() override;
   bool operator==(const AutofillChange& change) const {
     return type() == change.type() && key() == change.key();
   }
@@ -60,7 +60,7 @@ class AutofillProfileChange : public GenericAutofillChange<std::string> {
   AutofillProfileChange(Type type,
                         const std::string& key,
                         const AutofillProfile* profile);
-  virtual ~AutofillProfileChange();
+  ~AutofillProfileChange() override;
 
   const AutofillProfile* profile() const { return profile_; }
   bool operator==(const AutofillProfileChange& change) const;

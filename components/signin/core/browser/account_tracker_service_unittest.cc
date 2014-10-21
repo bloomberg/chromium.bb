@@ -98,7 +98,7 @@ std::string Str(const std::vector<TrackingEvent>& events) {
 class AccountTrackerObserver : public AccountTrackerService::Observer {
  public:
   AccountTrackerObserver() {}
-  virtual ~AccountTrackerObserver() {}
+  ~AccountTrackerObserver() override {}
 
   void Clear();
   void SortEventsByUser();
@@ -113,10 +113,8 @@ class AccountTrackerObserver : public AccountTrackerService::Observer {
 
  private:
   // AccountTrackerService::Observer implementation
-  virtual void OnAccountUpdated(
-      const AccountTrackerService::AccountInfo& ids) override;
-  virtual void OnAccountRemoved(
-      const AccountTrackerService::AccountInfo& ids) override;
+  void OnAccountUpdated(const AccountTrackerService::AccountInfo& ids) override;
+  void OnAccountRemoved(const AccountTrackerService::AccountInfo& ids) override;
 
   testing::AssertionResult CheckEvents(
       const std::vector<TrackingEvent>& events);

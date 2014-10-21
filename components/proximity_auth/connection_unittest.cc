@@ -77,7 +77,7 @@ class MockConnectionObserver : public ConnectionObserver {
 class TestWireMessage : public WireMessage {
  public:
   TestWireMessage() : WireMessage(std::string(), std::string()) {}
-  virtual ~TestWireMessage() {}
+  ~TestWireMessage() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWireMessage);

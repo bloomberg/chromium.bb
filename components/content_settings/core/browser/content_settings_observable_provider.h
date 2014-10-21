@@ -17,7 +17,7 @@ namespace content_settings {
 class ObservableProvider : public ProviderInterface {
  public:
   ObservableProvider();
-  virtual ~ObservableProvider();
+  ~ObservableProvider() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

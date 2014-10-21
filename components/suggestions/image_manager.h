@@ -40,7 +40,7 @@ class ImageManager : public ImageFetcherDelegate {
   ImageManager(scoped_ptr<ImageFetcher> image_fetcher,
                scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database,
                const base::FilePath& database_dir);
-  virtual ~ImageManager();
+  ~ImageManager() override;
 
   virtual void Initialize(const SuggestionsProfile& suggestions);
 
@@ -51,7 +51,7 @@ class ImageManager : public ImageFetcherDelegate {
 
  protected:
   // Perform additional tasks when an image has been fetched.
-  virtual void OnImageFetched(const GURL& url, const SkBitmap* bitmap) override;
+  void OnImageFetched(const GURL& url, const SkBitmap* bitmap) override;
 
  private:
   friend class MockImageManager;

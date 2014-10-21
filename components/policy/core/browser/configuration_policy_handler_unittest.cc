@@ -34,11 +34,9 @@ class TestSchemaValidatingPolicyHandler : public SchemaValidatingPolicyHandler {
   TestSchemaValidatingPolicyHandler(const Schema& schema,
                                     SchemaOnErrorStrategy strategy)
       : SchemaValidatingPolicyHandler("PolicyForTesting", schema, strategy) {}
-  virtual ~TestSchemaValidatingPolicyHandler() {}
+  ~TestSchemaValidatingPolicyHandler() override {}
 
-  virtual void ApplyPolicySettings(const policy::PolicyMap&,
-                                   PrefValueMap*) override {
-  }
+  void ApplyPolicySettings(const policy::PolicyMap&, PrefValueMap*) override {}
 
   bool CheckAndGetValueForTest(const PolicyMap& policies,
                                scoped_ptr<base::Value>* value) {

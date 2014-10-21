@@ -80,7 +80,7 @@ class HmacByteVectorGenerator : public ByteVectorGenerator {
                           const std::string& entropy_input,
                           const std::string& personalization_string);
 
-  virtual ~HmacByteVectorGenerator();
+  ~HmacByteVectorGenerator() override;
 
   // Generates a random string suitable for passing to the constructor as
   // |entropy_input|.
@@ -95,7 +95,7 @@ class HmacByteVectorGenerator : public ByteVectorGenerator {
   explicit HmacByteVectorGenerator(const HmacByteVectorGenerator& prev_request);
 
   // ByteVector implementation:
-  virtual ByteVector GetRandomByteVector() override;
+  ByteVector GetRandomByteVector() override;
 
  private:
   // HMAC initalized with the value of "Key" HMAC_DRBG_Initialize.

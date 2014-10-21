@@ -39,9 +39,9 @@ class RuleIterator {
 
 class EmptyRuleIterator : public RuleIterator {
  public:
-  virtual ~EmptyRuleIterator();
-  virtual bool HasNext() const override;
-  virtual Rule Next() override;
+  ~EmptyRuleIterator() override;
+  bool HasNext() const override;
+  Rule Next() override;
 };
 
 class ConcatenationIterator : public RuleIterator {
@@ -50,9 +50,10 @@ class ConcatenationIterator : public RuleIterator {
   // list and |auto_lock|. |auto_lock| can be NULL if no locking is needed.
   ConcatenationIterator(ScopedVector<RuleIterator>* iterators,
                         base::AutoLock* auto_lock);
-  virtual ~ConcatenationIterator();
-  virtual bool HasNext() const override;
-  virtual Rule Next() override;
+  ~ConcatenationIterator() override;
+  bool HasNext() const override;
+  Rule Next() override;
+
  private:
   ScopedVector<RuleIterator> iterators_;
   scoped_ptr<base::AutoLock> auto_lock_;

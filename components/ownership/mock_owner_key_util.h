@@ -23,13 +23,13 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   MockOwnerKeyUtil();
 
   // OwnerKeyUtil implementation:
-  virtual bool ImportPublicKey(std::vector<uint8>* output) override;
+  bool ImportPublicKey(std::vector<uint8>* output) override;
 #if defined(USE_NSS)
   virtual crypto::RSAPrivateKey* FindPrivateKeyInSlot(
       const std::vector<uint8>& key,
       PK11SlotInfo* slot) override;
 #endif  // defined(USE_NSS)
-  virtual bool IsPublicKeyPresent() override;
+  bool IsPublicKeyPresent() override;
 
   // Clears the public and private keys.
   void Clear();
@@ -45,7 +45,7 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   void SetPrivateKey(scoped_ptr<crypto::RSAPrivateKey> key);
 
  private:
-  virtual ~MockOwnerKeyUtil();
+  ~MockOwnerKeyUtil() override;
 
   std::vector<uint8> public_key_;
   scoped_ptr<crypto::RSAPrivateKey> private_key_;

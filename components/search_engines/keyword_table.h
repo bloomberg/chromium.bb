@@ -92,16 +92,15 @@ class KeywordTable : public WebDatabaseTable {
   static const char kDefaultSearchProviderKey[];
 
   KeywordTable();
-  virtual ~KeywordTable();
+  ~KeywordTable() override;
 
   // Retrieves the KeywordTable* owned by |database|.
   static KeywordTable* FromWebDatabase(WebDatabase* db);
 
-  virtual WebDatabaseTable::TypeKey GetTypeKey() const override;
-  virtual bool CreateTablesIfNecessary() override;
-  virtual bool IsSyncable() override;
-  virtual bool MigrateToVersion(int version,
-                                bool* update_compatible_version) override;
+  WebDatabaseTable::TypeKey GetTypeKey() const override;
+  bool CreateTablesIfNecessary() override;
+  bool IsSyncable() override;
+  bool MigrateToVersion(int version, bool* update_compatible_version) override;
 
   // Performs an arbitrary number of Add/Remove/Update operations as a single
   // transaction.  This is provided for efficiency reasons: if the caller needs

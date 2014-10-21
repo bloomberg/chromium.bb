@@ -17,14 +17,14 @@ namespace web_modal {
 class TestWebContentsModalDialogHost : public WebContentsModalDialogHost {
  public:
   explicit TestWebContentsModalDialogHost(gfx::NativeView host_view);
-  virtual ~TestWebContentsModalDialogHost();
+  ~TestWebContentsModalDialogHost() override;
 
   // WebContentsModalDialogHost:
-  virtual gfx::Size GetMaximumDialogSize() override;
-  virtual gfx::NativeView GetHostView() const override;
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) override;
-  virtual void AddObserver(ModalDialogHostObserver* observer) override;
-  virtual void RemoveObserver(ModalDialogHostObserver* observer) override;
+  gfx::Size GetMaximumDialogSize() override;
+  gfx::NativeView GetHostView() const override;
+  gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  void AddObserver(ModalDialogHostObserver* observer) override;
+  void RemoveObserver(ModalDialogHostObserver* observer) override;
 
   void set_max_dialog_size(const gfx::Size& max_dialog_size) {
     max_dialog_size_ = max_dialog_size;

@@ -105,8 +105,8 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
   // the specified URL using the specified request context.
   Fetcher(net::URLRequestContextGetter* request_context, const GURL& url,
           const base::Callback<void(const URLFetcher&)>& callback);
-  virtual ~Fetcher() {}
-  virtual void OnURLFetchComplete(const URLFetcher* source) override;
+  ~Fetcher() override {}
+  void OnURLFetchComplete(const URLFetcher* source) override;
 
  private:
   const base::Callback<void(const URLFetcher&)> callback_;

@@ -92,29 +92,28 @@ class DomDistillerStore : public syncer::SyncableService,
       const std::vector<ArticleEntry>& initial_data,
       const base::FilePath& database_dir);
 
-  virtual ~DomDistillerStore();
+  ~DomDistillerStore() override;
 
   // DomDistillerStoreInterface implementation.
-  virtual syncer::SyncableService* GetSyncableService() override;
-  virtual bool AddEntry(const ArticleEntry& entry) override;
-  virtual bool UpdateEntry(const ArticleEntry& entry) override;
-  virtual bool RemoveEntry(const ArticleEntry& entry) override;
-  virtual bool GetEntryById(const std::string& entry_id,
-                            ArticleEntry* entry) override;
-  virtual bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) override;
-  virtual std::vector<ArticleEntry> GetEntries() const override;
-  virtual void AddObserver(DomDistillerObserver* observer) override;
-  virtual void RemoveObserver(DomDistillerObserver* observer) override;
+  syncer::SyncableService* GetSyncableService() override;
+  bool AddEntry(const ArticleEntry& entry) override;
+  bool UpdateEntry(const ArticleEntry& entry) override;
+  bool RemoveEntry(const ArticleEntry& entry) override;
+  bool GetEntryById(const std::string& entry_id, ArticleEntry* entry) override;
+  bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) override;
+  std::vector<ArticleEntry> GetEntries() const override;
+  void AddObserver(DomDistillerObserver* observer) override;
+  void RemoveObserver(DomDistillerObserver* observer) override;
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
-      syncer::ModelType type, const syncer::SyncDataList& initial_sync_data,
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
+      syncer::ModelType type,
+      const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 

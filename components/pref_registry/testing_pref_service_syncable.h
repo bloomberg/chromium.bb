@@ -22,7 +22,7 @@ class TestingPrefServiceSyncable
                              TestingPrefStore* recommended_prefs,
                              PrefRegistrySyncable* pref_registry,
                              PrefNotifierImpl* pref_notifier);
-  virtual ~TestingPrefServiceSyncable();
+  ~TestingPrefServiceSyncable() override;
 
   // This is provided as a convenience; on a production PrefService
   // you would do all registrations before constructing it, passing it

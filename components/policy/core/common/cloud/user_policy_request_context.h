@@ -25,12 +25,12 @@ class POLICY_EXPORT UserPolicyRequestContext
       const std::string& user_agent);
 
   // Overridden from net::URLRequestContextGetter:
-  virtual net::URLRequestContext* GetURLRequestContext() override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override;
+  net::URLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override;
 
  protected:
-  virtual ~UserPolicyRequestContext();
+  ~UserPolicyRequestContext() override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> user_context_getter_;

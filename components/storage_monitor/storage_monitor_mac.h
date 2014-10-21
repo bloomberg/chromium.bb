@@ -30,21 +30,19 @@ class StorageMonitorMac : public StorageMonitor,
   // Should only be called by browser start up code.  Use GetInstance() instead.
   StorageMonitorMac();
 
-  virtual ~StorageMonitorMac();
+  ~StorageMonitorMac() override;
 
-  virtual void Init() override;
+  void Init() override;
 
   void UpdateDisk(const std::string& bsd_name,
                   const StorageInfo& info,
                   UpdateType update_type);
 
-  virtual bool GetStorageInfoForPath(
-      const base::FilePath& path,
-      StorageInfo* device_info) const override;
+  bool GetStorageInfoForPath(const base::FilePath& path,
+                             StorageInfo* device_info) const override;
 
-  virtual void EjectDevice(
-      const std::string& device_id,
-      base::Callback<void(EjectStatus)> callback) override;
+  void EjectDevice(const std::string& device_id,
+                   base::Callback<void(EjectStatus)> callback) override;
 
  private:
   static void DiskAppearedCallback(DADiskRef disk, void* context);

@@ -38,7 +38,7 @@ const char* kVideoArticlePath = "/video_article.html";
 class DistillerPageWebContentsTest : public ContentBrowserTest {
  public:
   // ContentBrowserTest:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     AddComponentsResources();
     SetUpTestServer();
     ContentBrowserTest::SetUpOnMainThread();
@@ -103,7 +103,7 @@ class TestDistillerPageWebContents : public DistillerPageWebContents {
         expect_new_web_contents_(expect_new_web_contents),
         new_web_contents_created_(false) {}
 
-  virtual void CreateNewWebContents(const GURL& url) override {
+  void CreateNewWebContents(const GURL& url) override {
     ASSERT_EQ(true, expect_new_web_contents_);
     new_web_contents_created_ = true;
     // DistillerPageWebContents::CreateNewWebContents resets the scoped_ptr to
@@ -114,7 +114,7 @@ class TestDistillerPageWebContents : public DistillerPageWebContents {
     DistillerPageWebContents::CreateNewWebContents(url);
   }
 
-  virtual ~TestDistillerPageWebContents() {
+  ~TestDistillerPageWebContents() override {
     if (!expect_new_web_contents_) {
       // Intentionally leaking WebContents, since it is owned by the shell.
       content::WebContents* web_contents = web_contents_.release();
@@ -142,7 +142,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
         callback_(callback),
         wait_for_document_loaded_(wait_for_document_loaded) {}
 
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override {
@@ -152,7 +152,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
       callback_.Run();
   }
 
-  virtual void DocumentLoadedInFrame(
+  void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override {
     if (wait_for_document_loaded_) {
       if (!render_frame_host->GetParent())

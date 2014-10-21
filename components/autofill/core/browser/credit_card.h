@@ -23,7 +23,7 @@ class CreditCard : public AutofillDataModel {
   // For use in STL containers.
   CreditCard();
   CreditCard(const CreditCard& credit_card);
-  virtual ~CreditCard();
+  ~CreditCard() override;
 
   // Returns a version of |number| that has any separator characters removed.
   static const base::string16 StripSeparators(const base::string16& number);
@@ -44,18 +44,16 @@ class CreditCard : public AutofillDataModel {
   static const char* GetCreditCardType(const base::string16& number);
 
   // FormGroup:
-  virtual void GetMatchingTypes(
-      const base::string16& text,
-      const std::string& app_locale,
-      ServerFieldTypeSet* matching_types) const override;
-  virtual base::string16 GetRawInfo(ServerFieldType type) const override;
-  virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) override;
-  virtual base::string16 GetInfo(const AutofillType& type,
-                                 const std::string& app_locale) const override;
-  virtual bool SetInfo(const AutofillType& type,
-                       const base::string16& value,
-                       const std::string& app_locale) override;
+  void GetMatchingTypes(const base::string16& text,
+                        const std::string& app_locale,
+                        ServerFieldTypeSet* matching_types) const override;
+  base::string16 GetRawInfo(ServerFieldType type) const override;
+  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  base::string16 GetInfo(const AutofillType& type,
+                         const std::string& app_locale) const override;
+  bool SetInfo(const AutofillType& type,
+               const base::string16& value,
+               const std::string& app_locale) override;
 
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
   const base::string16 Label() const;
@@ -114,8 +112,7 @@ class CreditCard : public AutofillDataModel {
 
  private:
   // FormGroup:
-  virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const override;
+  void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }

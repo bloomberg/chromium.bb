@@ -37,10 +37,10 @@ struct PendingRequest {
 // The implementation for CopresenceManager.
 class CopresenceManagerImpl : public CopresenceManager {
  public:
-  virtual ~CopresenceManagerImpl();
-  virtual void ExecuteReportRequest(ReportRequest request,
-                                    const std::string& app_id,
-                                    const StatusCallback& callback) override;
+  ~CopresenceManagerImpl() override;
+  void ExecuteReportRequest(ReportRequest request,
+                            const std::string& app_id,
+                            const StatusCallback& callback) override;
 
  private:
   // Create managers with the CopresenceManager::Create() method.

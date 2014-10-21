@@ -50,14 +50,14 @@ class ManifestServiceChannel : public IPC::Listener {
       const base::Callback<void(int32_t)>& connected_callback,
       scoped_ptr<Delegate> delegate,
       base::WaitableEvent* waitable_event);
-  virtual ~ManifestServiceChannel();
+  ~ManifestServiceChannel() override;
 
   void Send(IPC::Message* message);
 
   // Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
 
  private:
   void OnStartupInitializationComplete();

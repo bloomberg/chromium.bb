@@ -100,15 +100,13 @@ class TestDataReductionProxyAuthRequestHandler
       : DataReductionProxyAuthRequestHandler(
             client, version, params, loop_proxy) {}
 
-  virtual std::string GetDefaultKey() const override {
-    return kTestKey;
-  }
+  std::string GetDefaultKey() const override { return kTestKey; }
 
-  virtual base::Time Now() const override {
+  base::Time Now() const override {
     return base::Time::UnixEpoch() + now_offset_;
   }
 
-  virtual void RandBytes(void* output, size_t length) override {
+  void RandBytes(void* output, size_t length) override {
     char* c =  static_cast<char*>(output);
     for (size_t i = 0; i < length; ++i) {
       c[i] = 'a';

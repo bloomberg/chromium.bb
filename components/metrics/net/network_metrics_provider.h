@@ -23,16 +23,16 @@ class NetworkMetricsProvider
   // Creates a NetworkMetricsProvider, where |io_task_runner| is used to post
   // network info collection tasks.
   explicit NetworkMetricsProvider(base::TaskRunner* io_task_runner);
-  virtual ~NetworkMetricsProvider();
+  ~NetworkMetricsProvider() override;
 
  private:
   // metrics::MetricsProvider:
-  virtual void OnDidCreateMetricsLog() override;
-  virtual void ProvideSystemProfileMetrics(
+  void OnDidCreateMetricsLog() override;
+  void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile) override;
 
   // ConnectionTypeObserver:
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   metrics::SystemProfileProto::Network::ConnectionType

@@ -45,14 +45,13 @@ class DistilledContentStore {
 class InMemoryContentStore : public DistilledContentStore {
  public:
   explicit InMemoryContentStore(const int max_num_entries);
-  virtual ~InMemoryContentStore();
+  ~InMemoryContentStore() override;
 
   // DistilledContentStore implementation
-  virtual void SaveContent(const ArticleEntry& entry,
-                           const DistilledArticleProto& proto,
-                           SaveCallback callback) override;
-  virtual void LoadContent(const ArticleEntry& entry,
-                           LoadCallback callback) override;
+  void SaveContent(const ArticleEntry& entry,
+                   const DistilledArticleProto& proto,
+                   SaveCallback callback) override;
+  void LoadContent(const ArticleEntry& entry, LoadCallback callback) override;
 
   // Synchronously saves the content.
   void InjectContent(const ArticleEntry& entry,

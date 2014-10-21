@@ -32,11 +32,11 @@ class FakeGCMClient : public GCMClient {
   FakeGCMClient(StartMode start_mode,
                 const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
                 const scoped_refptr<base::SequencedTaskRunner>& io_thread);
-  virtual ~FakeGCMClient();
+  ~FakeGCMClient() override;
 
   // Overridden from GCMClient:
   // Called on IO thread.
-  virtual void Initialize(
+  void Initialize(
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
@@ -44,23 +44,22 @@ class FakeGCMClient : public GCMClient {
           url_request_context_getter,
       scoped_ptr<Encryptor> encryptor,
       Delegate* delegate) override;
-  virtual void Start() override;
-  virtual void Stop() override;
-  virtual void CheckOut() override;
-  virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids) override;
-  virtual void Unregister(const std::string& app_id) override;
-  virtual void Send(const std::string& app_id,
-                    const std::string& receiver_id,
-                    const OutgoingMessage& message) override;
-  virtual void SetRecording(bool recording) override;
-  virtual void ClearActivityLogs() override;
-  virtual GCMStatistics GetStatistics() const override;
-  virtual void SetAccountTokens(
+  void Start() override;
+  void Stop() override;
+  void CheckOut() override;
+  void Register(const std::string& app_id,
+                const std::vector<std::string>& sender_ids) override;
+  void Unregister(const std::string& app_id) override;
+  void Send(const std::string& app_id,
+            const std::string& receiver_id,
+            const OutgoingMessage& message) override;
+  void SetRecording(bool recording) override;
+  void ClearActivityLogs() override;
+  GCMStatistics GetStatistics() const override;
+  void SetAccountTokens(
       const std::vector<AccountTokenInfo>& account_tokens) override;
-  virtual void UpdateAccountMapping(
-      const AccountMapping& account_mapping) override;
-  virtual void RemoveAccountMapping(const std::string& account_id) override;
+  void UpdateAccountMapping(const AccountMapping& account_mapping) override;
+  void RemoveAccountMapping(const std::string& account_id) override;
 
   // Initiate the loading that has been delayed.
   // Called on UI thread.

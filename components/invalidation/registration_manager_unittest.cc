@@ -28,16 +28,14 @@ class FakeRegistrationManager : public RegistrationManager {
       : RegistrationManager(invalidation_client),
         jitter_(0.0) {}
 
-  virtual ~FakeRegistrationManager() {}
+  ~FakeRegistrationManager() override {}
 
   void SetJitter(double jitter) {
     jitter_ = jitter;
   }
 
  protected:
-  virtual double GetJitter() override {
-    return jitter_;
-  }
+  double GetJitter() override { return jitter_; }
 
  private:
   double jitter_;
@@ -51,7 +49,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
  public:
   FakeInvalidationClient() {}
 
-  virtual ~FakeInvalidationClient() {}
+  ~FakeInvalidationClient() override {}
 
   void LoseRegistration(const invalidation::ObjectId& oid) {
     EXPECT_TRUE(ContainsKey(registered_ids_, oid));
@@ -64,27 +62,25 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 
   // invalidation::InvalidationClient implementation.
 
-  virtual void Start() override {}
-  virtual void Stop() override {}
-  virtual void Acknowledge(const invalidation::AckHandle& handle) override {}
+  void Start() override {}
+  void Stop() override {}
+  void Acknowledge(const invalidation::AckHandle& handle) override {}
 
-  virtual void Register(const invalidation::ObjectId& oid) override {
+  void Register(const invalidation::ObjectId& oid) override {
     EXPECT_FALSE(ContainsKey(registered_ids_, oid));
     registered_ids_.insert(oid);
   }
 
-  virtual void Register(
-      const std::vector<invalidation::ObjectId>& oids) override {
+  void Register(const std::vector<invalidation::ObjectId>& oids) override {
     // Unused for now.
   }
 
-  virtual void Unregister(const invalidation::ObjectId& oid) override {
+  void Unregister(const invalidation::ObjectId& oid) override {
     EXPECT_TRUE(ContainsKey(registered_ids_, oid));
     registered_ids_.erase(oid);
   }
 
-  virtual void Unregister(
-      const std::vector<invalidation::ObjectId>& oids) override {
+  void Unregister(const std::vector<invalidation::ObjectId>& oids) override {
     // Unused for now.
   }
 

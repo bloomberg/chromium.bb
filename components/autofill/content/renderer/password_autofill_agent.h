@@ -28,7 +28,7 @@ namespace autofill {
 class PasswordAutofillAgent : public content::RenderViewObserver {
  public:
   explicit PasswordAutofillAgent(content::RenderView* render_view);
-  virtual ~PasswordAutofillAgent();
+  ~PasswordAutofillAgent() override;
 
   // WebViewClient editor related calls forwarded by the RenderView.
   // If they return true, it indicates the event was consumed and should not
@@ -132,18 +132,18 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   };
 
   // RenderViewObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
-  virtual void DidStartLoading() override;
-  virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) override;
-  virtual void DidStopLoading() override;
-  virtual void FrameDetached(blink::WebFrame* frame) override;
-  virtual void FrameWillClose(blink::WebFrame* frame) override;
-  virtual void WillSendSubmitEvent(blink::WebLocalFrame* frame,
-                                   const blink::WebFormElement& form) override;
-  virtual void WillSubmitForm(blink::WebLocalFrame* frame,
-                              const blink::WebFormElement& form) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidStartProvisionalLoad(blink::WebLocalFrame* frame) override;
+  void DidStartLoading() override;
+  void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  void DidStopLoading() override;
+  void FrameDetached(blink::WebFrame* frame) override;
+  void FrameWillClose(blink::WebFrame* frame) override;
+  void WillSendSubmitEvent(blink::WebLocalFrame* frame,
+                           const blink::WebFormElement& form) override;
+  void WillSubmitForm(blink::WebLocalFrame* frame,
+                      const blink::WebFormElement& form) override;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data);

@@ -86,15 +86,15 @@ class DeltaUpdateOpCopy : public DeltaUpdateOp {
   DeltaUpdateOpCopy();
 
  private:
-  virtual ~DeltaUpdateOpCopy();
+  ~DeltaUpdateOpCopy() override;
 
   // Overrides of DeltaUpdateOp.
-  virtual ComponentUnpacker::Error DoParseArguments(
+  ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       ComponentInstaller* installer) override;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) override;
+  void DoRun(const ComponentUnpacker::Callback& callback) override;
 
   base::FilePath input_abs_path_;
 
@@ -110,15 +110,15 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
   DeltaUpdateOpCreate();
 
  private:
-  virtual ~DeltaUpdateOpCreate();
+  ~DeltaUpdateOpCreate() override;
 
   // Overrides of DeltaUpdateOp.
-  virtual ComponentUnpacker::Error DoParseArguments(
+  ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       ComponentInstaller* installer) override;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) override;
+  void DoRun(const ComponentUnpacker::Callback& callback) override;
 
   base::FilePath patch_abs_path_;
 
@@ -153,15 +153,15 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
                      scoped_refptr<OutOfProcessPatcher> out_of_process_patcher);
 
  private:
-  virtual ~DeltaUpdateOpPatch();
+  ~DeltaUpdateOpPatch() override;
 
   // Overrides of DeltaUpdateOp.
-  virtual ComponentUnpacker::Error DoParseArguments(
+  ComponentUnpacker::Error DoParseArguments(
       const base::DictionaryValue* command_args,
       const base::FilePath& input_dir,
       ComponentInstaller* installer) override;
 
-  virtual void DoRun(const ComponentUnpacker::Callback& callback) override;
+  void DoRun(const ComponentUnpacker::Callback& callback) override;
 
   // |success_code| is the code that indicates a successful patch.
   // |result| is the code the patching operation returned.

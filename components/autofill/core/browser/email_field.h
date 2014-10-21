@@ -17,7 +17,7 @@ class EmailField : public FormField {
 
  protected:
   // FormField:
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const override;
+  bool ClassifyField(ServerFieldTypeMap* map) const override;
 
  private:
   explicit EmailField(const AutofillField* field);

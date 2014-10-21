@@ -80,10 +80,9 @@ class SHA1EntropyGenerator : public TrialEntropyGenerator {
       : trial_name_(trial_name) {
   }
 
-  virtual ~SHA1EntropyGenerator() {
-  }
+  ~SHA1EntropyGenerator() override {}
 
-  virtual double GenerateEntropyValue() const override {
+  double GenerateEntropyValue() const override {
     // Use a random GUID + 13 additional bits of entropy to match how the
     // SHA1EntropyProvider is used in metrics_service.cc.
     const int low_entropy_source =
@@ -113,10 +112,9 @@ class PermutedEntropyGenerator : public TrialEntropyGenerator {
                                                    &mapping_);
   }
 
-  virtual ~PermutedEntropyGenerator() {
-  }
+  ~PermutedEntropyGenerator() override {}
 
-  virtual double GenerateEntropyValue() const override {
+  double GenerateEntropyValue() const override {
     const int low_entropy_source =
         static_cast<uint16>(base::RandInt(0, kMaxLowEntropySize - 1));
     return mapping_[low_entropy_source] /

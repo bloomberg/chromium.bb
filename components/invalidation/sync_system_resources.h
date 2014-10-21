@@ -33,36 +33,37 @@ class SyncLogger : public invalidation::Logger {
  public:
   SyncLogger();
 
-  virtual ~SyncLogger();
+  ~SyncLogger() override;
 
   // invalidation::Logger implementation.
-  virtual void Log(LogLevel level, const char* file, int line,
-                   const char* format, ...) override;
+  void Log(LogLevel level,
+           const char* file,
+           int line,
+           const char* format,
+           ...) override;
 
-  virtual void SetSystemResources(
-      invalidation::SystemResources* resources) override;
+  void SetSystemResources(invalidation::SystemResources* resources) override;
 };
 
 class SyncInvalidationScheduler : public invalidation::Scheduler {
  public:
   SyncInvalidationScheduler();
 
-  virtual ~SyncInvalidationScheduler();
+  ~SyncInvalidationScheduler() override;
 
   // Start and stop the scheduler.
   void Start();
   void Stop();
 
   // invalidation::Scheduler implementation.
-  virtual void Schedule(invalidation::TimeDelta delay,
-                        invalidation::Closure* task) override;
+  void Schedule(invalidation::TimeDelta delay,
+                invalidation::Closure* task) override;
 
-  virtual bool IsRunningOnThread() const override;
+  bool IsRunningOnThread() const override;
 
-  virtual invalidation::Time GetCurrentTime() const override;
+  invalidation::Time GetCurrentTime() const override;
 
-  virtual void SetSystemResources(
-      invalidation::SystemResources* resources) override;
+  void SetSystemResources(invalidation::SystemResources* resources) override;
 
  private:
   // Runs the task, deletes it, and removes it from |posted_tasks_|.
@@ -99,17 +100,16 @@ class INVALIDATION_EXPORT_PRIVATE SyncNetworkChannel
 
   SyncNetworkChannel();
 
-  virtual ~SyncNetworkChannel();
+  ~SyncNetworkChannel() override;
 
   // invalidation::NetworkChannel implementation.
   // SyncNetworkChannel doesn't implement SendMessage. It is responsibility of
   // subclass to implement it.
-  virtual void SetMessageReceiver(
+  void SetMessageReceiver(
       invalidation::MessageCallback* incoming_receiver) override;
-  virtual void AddNetworkStatusReceiver(
+  void AddNetworkStatusReceiver(
       invalidation::NetworkStatusCallback* network_status_receiver) override;
-  virtual void SetSystemResources(
-      invalidation::SystemResources* resources) override;
+  void SetSystemResources(invalidation::SystemResources* resources) override;
 
   // Subclass should implement UpdateCredentials to pass new token to channel
   // library.
@@ -178,27 +178,26 @@ class SyncStorage : public invalidation::Storage {
  public:
   SyncStorage(StateWriter* state_writer, invalidation::Scheduler* scheduler);
 
-  virtual ~SyncStorage();
+  ~SyncStorage() override;
 
   void SetInitialState(const std::string& value) {
     cached_state_ = value;
   }
 
   // invalidation::Storage implementation.
-  virtual void WriteKey(const std::string& key, const std::string& value,
-                        invalidation::WriteKeyCallback* done) override;
+  void WriteKey(const std::string& key,
+                const std::string& value,
+                invalidation::WriteKeyCallback* done) override;
 
-  virtual void ReadKey(const std::string& key,
-                       invalidation::ReadKeyCallback* done) override;
+  void ReadKey(const std::string& key,
+               invalidation::ReadKeyCallback* done) override;
 
-  virtual void DeleteKey(const std::string& key,
-                         invalidation::DeleteKeyCallback* done) override;
+  void DeleteKey(const std::string& key,
+                 invalidation::DeleteKeyCallback* done) override;
 
-  virtual void ReadAllKeys(
-      invalidation::ReadAllKeysCallback* key_callback) override;
+  void ReadAllKeys(invalidation::ReadAllKeysCallback* key_callback) override;
 
-  virtual void SetSystemResources(
-      invalidation::SystemResources* resources) override;
+  void SetSystemResources(invalidation::SystemResources* resources) override;
 
  private:
   // Runs the given storage callback with SUCCESS status and deletes it.
@@ -220,19 +219,19 @@ class INVALIDATION_EXPORT_PRIVATE SyncSystemResources
   SyncSystemResources(SyncNetworkChannel* sync_network_channel,
                       StateWriter* state_writer);
 
-  virtual ~SyncSystemResources();
+  ~SyncSystemResources() override;
 
   // invalidation::SystemResources implementation.
-  virtual void Start() override;
-  virtual void Stop() override;
-  virtual bool IsStarted() const override;
+  void Start() override;
+  void Stop() override;
+  bool IsStarted() const override;
   virtual void set_platform(const std::string& platform);
-  virtual std::string platform() const override;
-  virtual SyncLogger* logger() override;
-  virtual SyncStorage* storage() override;
-  virtual SyncNetworkChannel* network() override;
-  virtual SyncInvalidationScheduler* internal_scheduler() override;
-  virtual SyncInvalidationScheduler* listener_scheduler() override;
+  std::string platform() const override;
+  SyncLogger* logger() override;
+  SyncStorage* storage() override;
+  SyncNetworkChannel* network() override;
+  SyncInvalidationScheduler* internal_scheduler() override;
+  SyncInvalidationScheduler* listener_scheduler() override;
 
  private:
   bool is_started_;

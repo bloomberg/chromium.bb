@@ -19,7 +19,7 @@ namespace web_modal {
 // this into account.
 class WebContentsModalDialogHost : public ModalDialogHost {
  public:
-  virtual ~WebContentsModalDialogHost();
+  ~WebContentsModalDialogHost() override;
 
   // Returns the maximum dimensions a dialog can have.
   virtual gfx::Size GetMaximumDialogSize() = 0;

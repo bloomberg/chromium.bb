@@ -56,25 +56,25 @@ class INVALIDATION_EXPORT_PRIVATE GCMNetworkChannel
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_ptr<GCMNetworkChannelDelegate> delegate);
 
-  virtual ~GCMNetworkChannel();
+  ~GCMNetworkChannel() override;
 
   // invalidation::NetworkChannel implementation.
-  virtual void SendMessage(const std::string& message) override;
-  virtual void SetMessageReceiver(
+  void SendMessage(const std::string& message) override;
+  void SetMessageReceiver(
       invalidation::MessageCallback* incoming_receiver) override;
 
   // SyncNetworkChannel implementation.
-  virtual void UpdateCredentials(const std::string& email,
-                                 const std::string& token) override;
-  virtual int GetInvalidationClientType() override;
-  virtual void RequestDetailedStatus(
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override;
+  int GetInvalidationClientType() override;
+  void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) override;
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType connection_type) override;
 
  protected:

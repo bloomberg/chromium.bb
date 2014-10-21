@@ -35,28 +35,26 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
 
   // Overridden from GCMClient::Delegate:
   // Called on IO thread.
-  virtual void OnRegisterFinished(const std::string& app_id,
-                                  const std::string& registration_id,
-                                  GCMClient::Result result) override;
-  virtual void OnUnregisterFinished(const std::string& app_id,
-                                    GCMClient::Result result) override;
-  virtual void OnSendFinished(const std::string& app_id,
-                              const std::string& message_id,
-                              GCMClient::Result result) override;
-  virtual void OnMessageReceived(
-      const std::string& app_id,
-      const GCMClient::IncomingMessage& message) override;
-  virtual void OnMessagesDeleted(const std::string& app_id) override;
-  virtual void OnMessageSendError(
+  void OnRegisterFinished(const std::string& app_id,
+                          const std::string& registration_id,
+                          GCMClient::Result result) override;
+  void OnUnregisterFinished(const std::string& app_id,
+                            GCMClient::Result result) override;
+  void OnSendFinished(const std::string& app_id,
+                      const std::string& message_id,
+                      GCMClient::Result result) override;
+  void OnMessageReceived(const std::string& app_id,
+                         const GCMClient::IncomingMessage& message) override;
+  void OnMessagesDeleted(const std::string& app_id) override;
+  void OnMessageSendError(
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) override;
-  virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) override;
-  virtual void OnGCMReady(
-      const std::vector<AccountMapping>& account_mappings) override;
-  virtual void OnActivityRecorded() override;
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
-  virtual void OnDisconnected() override;
+  void OnSendAcknowledged(const std::string& app_id,
+                          const std::string& message_id) override;
+  void OnGCMReady(const std::vector<AccountMapping>& account_mappings) override;
+  void OnActivityRecorded() override;
+  void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  void OnDisconnected() override;
 
   // Called on IO thread.
   void Initialize(

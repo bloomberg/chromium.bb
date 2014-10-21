@@ -55,32 +55,30 @@ class GenericChangeProcessor : public ChangeProcessor,
       syncer::UserShare* user_share,
       SyncApiComponentFactory* sync_factory,
       const scoped_refptr<syncer::AttachmentStore>& attachment_store);
-  virtual ~GenericChangeProcessor();
+  ~GenericChangeProcessor() override;
 
   // ChangeProcessor interface.
   // Build and store a list of all changes into |syncer_changes_|.
-  virtual void ApplyChangesFromSyncModel(
+  void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
       int64 version,
       const syncer::ImmutableChangeRecordList& changes) override;
   // Passes |syncer_changes_|, built in ApplyChangesFromSyncModel, onto
   // |local_service_| by way of its ProcessSyncChanges method.
-  virtual void CommitChangesFromSyncModel() override;
+  void CommitChangesFromSyncModel() override;
 
   // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const override;
-  virtual syncer::SyncError UpdateDataTypeContext(
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError UpdateDataTypeContext(
       syncer::ModelType type,
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) override;
 
   // syncer::AttachmentService::Delegate implementation.
-  virtual void OnAttachmentUploaded(
-      const syncer::AttachmentId& attachment_id) override;
+  void OnAttachmentUploaded(const syncer::AttachmentId& attachment_id) override;
 
   // Similar to above, but returns a SyncError for use by direct clients
   // of GenericChangeProcessor that may need more error visibility.
@@ -102,8 +100,8 @@ class GenericChangeProcessor : public ChangeProcessor,
 
  protected:
   // ChangeProcessor interface.
-  virtual void StartImpl() override;  // Does nothing.
-  virtual syncer::UserShare* share_handle() const override;
+  void StartImpl() override;  // Does nothing.
+  syncer::UserShare* share_handle() const override;
 
  private:
   // Logically part of ProcessSyncChanges.

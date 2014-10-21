@@ -30,13 +30,11 @@ class RuleIteratorImpl : public RuleIterator {
         rule_end_(rule_end),
         auto_lock_(auto_lock) {
   }
-  virtual ~RuleIteratorImpl() {}
+  ~RuleIteratorImpl() override {}
 
-  virtual bool HasNext() const override {
-    return (current_rule_ != rule_end_);
-  }
+  bool HasNext() const override { return (current_rule_ != rule_end_); }
 
-  virtual Rule Next() override {
+  Rule Next() override {
     DCHECK(current_rule_ != rule_end_);
     DCHECK(current_rule_->second.get());
     Rule to_return(current_rule_->first.primary_pattern,

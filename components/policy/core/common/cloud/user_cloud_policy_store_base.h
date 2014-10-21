@@ -27,7 +27,7 @@ class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
  public:
   explicit UserCloudPolicyStoreBase(
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
-  virtual ~UserCloudPolicyStoreBase();
+  ~UserCloudPolicyStoreBase() override;
 
  protected:
   // Creates a validator configured to validate a user policy. The caller owns

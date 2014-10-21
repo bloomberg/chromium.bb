@@ -35,28 +35,25 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   // wiring this up as a subclass of PasswordStoreConsumer.
   ContentCredentialManagerDispatcher(content::WebContents* web_contents,
                                      PasswordManagerClient* client);
-  virtual ~ContentCredentialManagerDispatcher();
+  ~ContentCredentialManagerDispatcher() override;
 
   void OnProvisionalSaveComplete();
 
   // CredentialManagerDispatcher implementation.
-  virtual void OnNotifyFailedSignIn(
-      int request_id,
-      const password_manager::CredentialInfo&) override;
-  virtual void OnNotifySignedIn(
-      int request_id,
-      const password_manager::CredentialInfo&) override;
-  virtual void OnNotifySignedOut(int request_id) override;
-  virtual void OnRequestCredential(
-      int request_id,
-      bool zero_click_only,
-      const std::vector<GURL>& federations) override;
+  void OnNotifyFailedSignIn(int request_id,
+                            const password_manager::CredentialInfo&) override;
+  void OnNotifySignedIn(int request_id,
+                        const password_manager::CredentialInfo&) override;
+  void OnNotifySignedOut(int request_id) override;
+  void OnRequestCredential(int request_id,
+                           bool zero_click_only,
+                           const std::vector<GURL>& federations) override;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // PasswordStoreConsumer implementation.
-  virtual void OnGetPasswordStoreResults(
+  void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
 
  private:

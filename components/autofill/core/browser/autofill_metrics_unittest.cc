@@ -141,7 +141,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 class TestFormStructure : public FormStructure {
  public:
   explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
-  virtual ~TestFormStructure() {}
+  ~TestFormStructure() override {}
 
   void SetFieldTypes(const std::vector<ServerFieldType>& heuristic_types,
                      const std::vector<ServerFieldType>& server_types) {
@@ -171,9 +171,9 @@ class TestAutofillManager : public AutofillManager {
         autofill_enabled_(true) {
     set_metric_logger(new testing::NiceMock<MockAutofillMetrics>);
   }
-  virtual ~TestAutofillManager() {}
+  ~TestAutofillManager() override {}
 
-  virtual bool IsAutofillEnabled() const override { return autofill_enabled_; }
+  bool IsAutofillEnabled() const override { return autofill_enabled_; }
 
   void set_autofill_enabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
@@ -207,7 +207,7 @@ class TestAutofillManager : public AutofillManager {
     run_loop_->Run();
   }
 
-  virtual void UploadFormDataAsyncCallback(
+  void UploadFormDataAsyncCallback(
       const FormStructure* submitted_form,
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,

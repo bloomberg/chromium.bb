@@ -38,40 +38,39 @@ class TestPasswordStore : public PasswordStore {
   bool IsEmpty() const;
 
  protected:
-  virtual ~TestPasswordStore();
+  ~TestPasswordStore() override;
 
   // Helper function to determine if forms are considered equivalent.
   bool FormsAreEquivalent(const autofill::PasswordForm& lhs,
                           const autofill::PasswordForm& rhs);
 
   // PasswordStore interface
-  virtual PasswordStoreChangeList AddLoginImpl(
+  PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual PasswordStoreChangeList UpdateLoginImpl(
+  PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual PasswordStoreChangeList RemoveLoginImpl(
+  PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual void GetLoginsImpl(
-      const autofill::PasswordForm& form,
-      PasswordStore::AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& runner) override;
-  virtual void WrapModificationTask(ModificationTask task) override;
+  void GetLoginsImpl(const autofill::PasswordForm& form,
+                     PasswordStore::AuthorizationPromptPolicy prompt_policy,
+                     const ConsumerCallbackRunner& runner) override;
+  void WrapModificationTask(ModificationTask task) override;
 
   // Unused portions of PasswordStore interface
-  virtual void ReportMetricsImpl(const std::string& sync_username) override {}
-  virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
+  void ReportMetricsImpl(const std::string& sync_username) override {}
+  PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) override;
-  virtual PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
+  PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  virtual void GetAutofillableLoginsImpl(
+  void GetAutofillableLoginsImpl(
       PasswordStore::GetLoginsRequest* request) override {}
-  virtual void GetBlacklistLoginsImpl(
+  void GetBlacklistLoginsImpl(
       PasswordStore::GetLoginsRequest* request) override {}
-  virtual bool FillAutofillableLogins(
+  bool FillAutofillableLogins(
       std::vector<autofill::PasswordForm*>* forms) override;
-  virtual bool FillBlacklistLogins(
+  bool FillBlacklistLogins(
       std::vector<autofill::PasswordForm*>* forms) override;
 
  private:

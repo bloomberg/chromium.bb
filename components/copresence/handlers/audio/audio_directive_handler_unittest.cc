@@ -21,16 +21,16 @@ namespace copresence {
 class TestAudioPlayer : public AudioPlayer {
  public:
   TestAudioPlayer() {}
-  virtual ~TestAudioPlayer() {}
+  ~TestAudioPlayer() override {}
 
   // AudioPlayer overrides:
-  virtual void Initialize() override {}
-  virtual void Play(
+  void Initialize() override {}
+  void Play(
       const scoped_refptr<media::AudioBusRefCounted>& /* samples */) override {
     set_is_playing(true);
   }
-  virtual void Stop() override { set_is_playing(false); }
-  virtual void Finalize() override { delete this; }
+  void Stop() override { set_is_playing(false); }
+  void Finalize() override { delete this; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAudioPlayer);
@@ -39,13 +39,13 @@ class TestAudioPlayer : public AudioPlayer {
 class TestAudioRecorder : public AudioRecorder {
  public:
   TestAudioRecorder() : AudioRecorder(AudioRecorder::DecodeSamplesCallback()) {}
-  virtual ~TestAudioRecorder() {}
+  ~TestAudioRecorder() override {}
 
   // AudioRecorder overrides:
-  virtual void Initialize() override {}
-  virtual void Record() override { set_is_recording(true); }
-  virtual void Stop() override { set_is_recording(false); }
-  virtual void Finalize() override { delete this; }
+  void Initialize() override {}
+  void Record() override { set_is_recording(true); }
+  void Stop() override { set_is_recording(false); }
+  void Finalize() override { delete this; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAudioRecorder);

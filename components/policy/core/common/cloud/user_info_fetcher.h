@@ -43,13 +43,13 @@ class POLICY_EXPORT UserInfoFetcher : public net::URLFetcherDelegate {
 
   // Create a new UserInfoFetcher. |context| can be NULL for unit tests.
   UserInfoFetcher(Delegate* delegate, net::URLRequestContextGetter* context);
-  virtual ~UserInfoFetcher();
+  ~UserInfoFetcher() override;
 
   // Starts the UserInfo request, using the passed OAuth2 |access_token|.
   void Start(const std::string& access_token);
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   Delegate* delegate_;

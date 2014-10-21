@@ -22,11 +22,11 @@ class TestEntropyProvider : public base::FieldTrial::EntropyProvider {
  public:
   explicit TestEntropyProvider(double entropy_value)
       : entropy_value_(entropy_value) {}
-  virtual ~TestEntropyProvider() {}
+  ~TestEntropyProvider() override {}
 
   // base::FieldTrial::EntropyProvider implementation:
-  virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const override {
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32 randomization_seed) const override {
     return entropy_value_;
   }
 

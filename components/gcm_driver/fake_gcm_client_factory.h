@@ -24,10 +24,10 @@ class FakeGCMClientFactory : public GCMClientFactory {
       FakeGCMClient::StartMode gcm_client_start_mode,
       const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
       const scoped_refptr<base::SequencedTaskRunner>& io_thread);
-  virtual ~FakeGCMClientFactory();
+  ~FakeGCMClientFactory() override;
 
   // GCMClientFactory:
-  virtual scoped_ptr<GCMClient> BuildInstance() override;
+  scoped_ptr<GCMClient> BuildInstance() override;
 
  private:
   FakeGCMClient::StartMode gcm_client_start_mode_;

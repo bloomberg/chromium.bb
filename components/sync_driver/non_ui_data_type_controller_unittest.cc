@@ -106,10 +106,8 @@ class NonUIDataTypeControllerFake
         change_processor_(change_processor),
         backend_loop_(backend_loop) {}
 
-  virtual syncer::ModelType type() const override {
-    return AUTOFILL_PROFILE;
-  }
-  virtual syncer::ModelSafeGroup model_safe_group() const override {
+  syncer::ModelType type() const override { return AUTOFILL_PROFILE; }
+  syncer::ModelSafeGroup model_safe_group() const override {
     return syncer::GROUP_DB;
   }
 
@@ -130,14 +128,13 @@ class NonUIDataTypeControllerFake
     pending_tasks_.clear();
   }
 
-  virtual SharedChangeProcessor* CreateSharedChangeProcessor() override {
+  SharedChangeProcessor* CreateSharedChangeProcessor() override {
     return change_processor_.get();
   }
 
  protected:
-  virtual bool PostTaskOnBackendThread(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task) override {
+  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
+                               const base::Closure& task) override {
     if (blocked_) {
       pending_tasks_.push_back(PendingTask(from_here, task));
       return true;
@@ -148,22 +145,17 @@ class NonUIDataTypeControllerFake
 
   // We mock the following methods because their default implementations do
   // nothing, but we still want to make sure they're called appropriately.
-  virtual bool StartModels() override {
-    return mock_->StartModels();
-  }
-  virtual void StopModels() override {
-    mock_->StopModels();
-  }
-  virtual void RecordAssociationTime(base::TimeDelta time) override {
+  bool StartModels() override { return mock_->StartModels(); }
+  void StopModels() override { mock_->StopModels(); }
+  void RecordAssociationTime(base::TimeDelta time) override {
     mock_->RecordAssociationTime(time);
   }
-  virtual void RecordStartFailure(DataTypeController::ConfigureResult result)
-      override {
+  void RecordStartFailure(DataTypeController::ConfigureResult result) override {
     mock_->RecordStartFailure(result);
   }
 
  private:
-  virtual ~NonUIDataTypeControllerFake() {}
+  ~NonUIDataTypeControllerFake() override {}
 
   DISALLOW_COPY_AND_ASSIGN(NonUIDataTypeControllerFake);
 

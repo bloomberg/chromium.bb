@@ -160,7 +160,7 @@ class NaClSandboxedProcessLauncherDelegate
 #endif
   {}
 
-  virtual ~NaClSandboxedProcessLauncherDelegate() {}
+  ~NaClSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
   virtual void PostSpawnTarget(base::ProcessHandle process) {
@@ -176,12 +176,8 @@ class NaClSandboxedProcessLauncherDelegate
     }
   }
 #elif defined(OS_POSIX)
-  virtual bool ShouldUseZygote() override {
-    return true;
-  }
-  virtual base::ScopedFD TakeIpcFd() override {
-    return ipc_fd_.Pass();
-  }
+  bool ShouldUseZygote() override { return true; }
+  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
 
  private:

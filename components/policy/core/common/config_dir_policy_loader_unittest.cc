@@ -28,29 +28,27 @@ const base::FilePath::CharType kMandatoryPath[] = FILE_PATH_LITERAL("managed");
 class TestHarness : public PolicyProviderTestHarness {
  public:
   TestHarness();
-  virtual ~TestHarness();
+  ~TestHarness() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
-  virtual ConfigurationPolicyProvider* CreateProvider(
+  ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner) override;
 
-  virtual void InstallEmptyPolicy() override;
-  virtual void InstallStringPolicy(const std::string& policy_name,
-                                   const std::string& policy_value) override;
-  virtual void InstallIntegerPolicy(const std::string& policy_name,
-                                    int policy_value) override;
-  virtual void InstallBooleanPolicy(const std::string& policy_name,
-                                    bool policy_value) override;
-  virtual void InstallStringListPolicy(
-      const std::string& policy_name,
-      const base::ListValue* policy_value) override;
-  virtual void InstallDictionaryPolicy(
+  void InstallEmptyPolicy() override;
+  void InstallStringPolicy(const std::string& policy_name,
+                           const std::string& policy_value) override;
+  void InstallIntegerPolicy(const std::string& policy_name,
+                            int policy_value) override;
+  void InstallBooleanPolicy(const std::string& policy_name,
+                            bool policy_value) override;
+  void InstallStringListPolicy(const std::string& policy_name,
+                               const base::ListValue* policy_value) override;
+  void InstallDictionaryPolicy(
       const std::string& policy_name,
       const base::DictionaryValue* policy_value) override;
-  virtual void Install3rdPartyPolicy(
-      const base::DictionaryValue* policies) override;
+  void Install3rdPartyPolicy(const base::DictionaryValue* policies) override;
 
   const base::FilePath& test_dir() { return test_dir_.path(); }
 

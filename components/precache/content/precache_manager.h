@@ -43,7 +43,7 @@ class PrecacheManager : public KeyedService,
   typedef base::Closure PrecacheCompletionCallback;
 
   explicit PrecacheManager(content::BrowserContext* browser_context);
-  virtual ~PrecacheManager();
+  ~PrecacheManager() override;
 
   // Returns true if precaching is enabled as part of a field trial or by the
   // command line flag. This method can be called on any thread.
@@ -74,10 +74,10 @@ class PrecacheManager : public KeyedService,
 
  private:
   // From KeyedService.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // From PrecacheFetcher::PrecacheDelegate.
-  virtual void OnDone() override;
+  void OnDone() override;
 
   void OnURLsReceived(const std::list<GURL>& urls);
 

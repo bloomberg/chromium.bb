@@ -24,31 +24,30 @@ class PasswordStoreDefault : public PasswordStore {
       LoginDatabase* login_db);
 
  protected:
-  virtual ~PasswordStoreDefault();
+  ~PasswordStoreDefault() override;
 
   // Implements PasswordStore interface.
-  virtual void ReportMetricsImpl(const std::string& sync_username) override;
-  virtual PasswordStoreChangeList AddLoginImpl(
+  void ReportMetricsImpl(const std::string& sync_username) override;
+  PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual PasswordStoreChangeList UpdateLoginImpl(
+  PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual PasswordStoreChangeList RemoveLoginImpl(
+  PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
+  PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  virtual PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
+  PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  virtual void GetLoginsImpl(
-      const autofill::PasswordForm& form,
-      AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) override;
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
-  virtual bool FillAutofillableLogins(
+  void GetLoginsImpl(const autofill::PasswordForm& form,
+                     AuthorizationPromptPolicy prompt_policy,
+                     const ConsumerCallbackRunner& callback_runner) override;
+  void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
+  void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
+  bool FillAutofillableLogins(
       std::vector<autofill::PasswordForm*>* forms) override;
-  virtual bool FillBlacklistLogins(
+  bool FillBlacklistLogins(
       std::vector<autofill::PasswordForm*>* forms) override;
 
  protected:

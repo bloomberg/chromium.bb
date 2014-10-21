@@ -62,13 +62,13 @@ class MockSecureContext : public SecureContext {
 class FakeConnection : public Connection {
  public:
   FakeConnection() : Connection(RemoteDevice()) { Connect(); }
-  virtual ~FakeConnection() { Disconnect(); }
+  ~FakeConnection() override { Disconnect(); }
 
-  virtual void Connect() override { SetStatus(CONNECTED); }
+  void Connect() override { SetStatus(CONNECTED); }
 
-  virtual void Disconnect() override { SetStatus(DISCONNECTED); }
+  void Disconnect() override { SetStatus(DISCONNECTED); }
 
-  virtual void SendMessageImpl(scoped_ptr<WireMessage> message) override {
+  void SendMessageImpl(scoped_ptr<WireMessage> message) override {
     ASSERT_FALSE(current_message_);
     current_message_ = message.Pass();
   }
@@ -91,7 +91,7 @@ class FakeConnection : public Connection {
 
   // Returns a message containing the payload set via
   // ReceiveMessageWithPayload().
-  virtual scoped_ptr<WireMessage> DeserializeWireMessage(
+  scoped_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message) override {
     *is_incomplete_message = false;
     return make_scoped_ptr(new WireMessage(std::string(), pending_payload_));
@@ -142,7 +142,7 @@ class TestClient : public Client {
   TestClient()
       : Client(make_scoped_ptr(new NiceMock<FakeConnection>()),
                make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
-  virtual ~TestClient() {}
+  ~TestClient() override {}
 
   // Simple getters for the mock objects owned by |this| client.
   FakeConnection* GetFakeConnection() {

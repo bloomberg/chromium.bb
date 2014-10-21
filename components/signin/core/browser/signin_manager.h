@@ -64,7 +64,7 @@ class SigninManager : public SigninManagerBase {
   static const char kChromeSigninEffectiveSite[];
 
   SigninManager(SigninClient* client, ProfileOAuth2TokenService* token_service);
-  virtual ~SigninManager();
+  ~SigninManager() override;
 
   // Returns true if the username is allowed based on the policy string.
   static bool IsUsernameAllowedByPolicy(const std::string& username,
@@ -93,8 +93,8 @@ class SigninManager : public SigninManagerBase {
   // On platforms where SigninManager is responsible for dealing with
   // invalid username policy updates, we need to check this during
   // initialization and sign the user out.
-  virtual void Initialize(PrefService* local_state) override;
-  virtual void Shutdown() override;
+  void Initialize(PrefService* local_state) override;
+  void Shutdown() override;
 
   // Invoked from an OAuthTokenFetchedCallback to complete user signin.
   virtual void CompletePendingSignin();
@@ -104,9 +104,9 @@ class SigninManager : public SigninManagerBase {
   void OnExternalSigninCompleted(const std::string& username);
 
   // Returns true if there's a signin in progress.
-  virtual bool AuthInProgress() const override;
+  bool AuthInProgress() const override;
 
-  virtual bool IsSigninAllowed() const override;
+  bool IsSigninAllowed() const override;
 
   // Returns true if the passed username is allowed by policy. Virtual for
   // mocking in tests.

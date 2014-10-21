@@ -86,13 +86,13 @@ class ProximityAuthCryptAuthApiCallFlowTest
   }
 
   // net::TestURLFetcherDelegateForTests overrides.
-  virtual void OnRequestStart(int fetcher_id) override {
+  void OnRequestStart(int fetcher_id) override {
     url_fetcher_ = url_fetcher_factory_->GetFetcherByID(fetcher_id);
   }
 
-  virtual void OnChunkUpload(int fetcher_id) override {}
+  void OnChunkUpload(int fetcher_id) override {}
 
-  virtual void OnRequestEnd(int fetcher_id) override {}
+  void OnRequestEnd(int fetcher_id) override {}
 
   net::TestURLFetcher* url_fetcher_;
   scoped_ptr<std::string> result_;

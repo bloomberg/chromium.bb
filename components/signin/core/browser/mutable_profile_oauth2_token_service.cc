@@ -47,11 +47,11 @@ class MutableProfileOAuth2TokenService::RevokeServerRefreshToken
  public:
   RevokeServerRefreshToken(MutableProfileOAuth2TokenService* token_service,
                            const std::string& account_id);
-  virtual ~RevokeServerRefreshToken();
+  ~RevokeServerRefreshToken() override;
 
  private:
   // GaiaAuthConsumer overrides:
-  virtual void OnOAuth2RevokeTokenCompleted() override;
+  void OnOAuth2RevokeTokenCompleted() override;
 
   MutableProfileOAuth2TokenService* token_service_;
   GaiaAuthFetcher fetcher_;

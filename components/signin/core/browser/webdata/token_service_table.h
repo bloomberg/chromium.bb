@@ -16,16 +16,15 @@ class WebDatabase;
 class TokenServiceTable : public WebDatabaseTable {
  public:
   TokenServiceTable() {}
-  virtual ~TokenServiceTable() {}
+  ~TokenServiceTable() override {}
 
   // Retrieves the TokenServiceTable* owned by |database|.
   static TokenServiceTable* FromWebDatabase(WebDatabase* db);
 
-  virtual WebDatabaseTable::TypeKey GetTypeKey() const override;
-  virtual bool CreateTablesIfNecessary() override;
-  virtual bool IsSyncable() override;
-  virtual bool MigrateToVersion(int version,
-                                bool* update_compatible_version) override;
+  WebDatabaseTable::TypeKey GetTypeKey() const override;
+  bool CreateTablesIfNecessary() override;
+  bool IsSyncable() override;
+  bool MigrateToVersion(int version, bool* update_compatible_version) override;
 
   // Remove all tokens previously set with SetTokenForService.
   bool RemoveAllTokens();

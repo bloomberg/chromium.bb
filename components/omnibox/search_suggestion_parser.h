@@ -125,7 +125,7 @@ class SearchSuggestionParser {
                   bool relevance_from_server,
                   bool should_prefetch,
                   const base::string16& input_text);
-    virtual ~SuggestResult();
+    ~SuggestResult() override;
 
     const base::string16& suggestion() const { return suggestion_; }
     const base::string16& match_contents_prefix() const {
@@ -149,9 +149,8 @@ class SearchSuggestionParser {
                                const base::string16& input_text);
 
     // Result:
-    virtual int CalculateRelevance(
-        const AutocompleteInput& input,
-        bool keyword_provider_requested) const override;
+    int CalculateRelevance(const AutocompleteInput& input,
+                           bool keyword_provider_requested) const override;
 
    private:
     // The search terms to be used for this suggestion.
@@ -193,7 +192,7 @@ class SearchSuggestionParser {
                      bool relevance_from_server,
                      const base::string16& input_text,
                      const std::string& languages);
-    virtual ~NavigationResult();
+    ~NavigationResult() override;
 
     const GURL& url() const { return url_; }
     const base::string16& description() const { return description_; }
@@ -209,9 +208,8 @@ class SearchSuggestionParser {
                                            const std::string& languages);
 
     // Result:
-    virtual int CalculateRelevance(
-        const AutocompleteInput& input,
-        bool keyword_provider_requested) const override;
+    int CalculateRelevance(const AutocompleteInput& input,
+                           bool keyword_provider_requested) const override;
 
    private:
     // The suggested url for navigation.

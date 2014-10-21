@@ -48,11 +48,11 @@ class SHA1EntropyProvider : public base::FieldTrial::EntropyProvider {
   // should contain a large amount of entropy - for example, a textual
   // representation of a persistent randomly-generated 128-bit value.
   explicit SHA1EntropyProvider(const std::string& entropy_source);
-  virtual ~SHA1EntropyProvider();
+  ~SHA1EntropyProvider() override;
 
   // base::FieldTrial::EntropyProvider implementation:
-  virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const override;
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32 randomization_seed) const override;
 
  private:
   std::string entropy_source_;
@@ -71,11 +71,11 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
   // which should have a value in the range of [0, low_entropy_source_max).
   PermutedEntropyProvider(uint16 low_entropy_source,
                           size_t low_entropy_source_max);
-  virtual ~PermutedEntropyProvider();
+  ~PermutedEntropyProvider() override;
 
   // base::FieldTrial::EntropyProvider implementation:
-  virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const override;
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32 randomization_seed) const override;
 
  protected:
   // Performs the permutation algorithm and returns the permuted value that

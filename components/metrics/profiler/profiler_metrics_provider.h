@@ -20,11 +20,10 @@ namespace metrics {
 class ProfilerMetricsProvider : public MetricsProvider {
  public:
   ProfilerMetricsProvider();
-  virtual ~ProfilerMetricsProvider();
+  ~ProfilerMetricsProvider() override;
 
   // MetricsDataProvider:
-  virtual void ProvideGeneralMetrics(
-      ChromeUserMetricsExtension* uma_proto) override;
+  void ProvideGeneralMetrics(ChromeUserMetricsExtension* uma_proto) override;
 
   // Records the passed profiled data, which should be a snapshot of the
   // browser's profiled performance during startup for a single process.

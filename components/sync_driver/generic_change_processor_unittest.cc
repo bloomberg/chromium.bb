@@ -39,8 +39,8 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
  public:
   MockAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store);
-  virtual ~MockAttachmentService();
-  virtual void UploadAttachments(
+  ~MockAttachmentService() override;
+  void UploadAttachments(
       const syncer::AttachmentIdSet& attachment_ids) override;
   std::vector<syncer::AttachmentIdSet>* attachment_id_sets();
 
@@ -82,14 +82,14 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       scoped_ptr<syncer::AttachmentService> attachment_service)
       : attachment_service_(attachment_service.Pass()) {}
 
-  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override {
     // Shouldn't be called for this test.
     NOTREACHED();
     return base::WeakPtr<syncer::SyncableService>();
   }
 
-  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) override {

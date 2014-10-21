@@ -23,13 +23,13 @@ class TestInstaller : public ComponentInstaller {
  public:
   TestInstaller();
 
-  virtual void OnUpdateError(int error) override;
+  void OnUpdateError(int error) override;
 
-  virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) override;
+  bool Install(const base::DictionaryValue& manifest,
+               const base::FilePath& unpack_path) override;
 
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) override;
+  bool GetInstalledFile(const std::string& file,
+                        base::FilePath* installed_file) override;
 
   int error() const;
 
@@ -46,10 +46,10 @@ class ReadOnlyTestInstaller : public TestInstaller {
  public:
   explicit ReadOnlyTestInstaller(const base::FilePath& installed_path);
 
-  virtual ~ReadOnlyTestInstaller();
+  ~ReadOnlyTestInstaller() override;
 
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) override;
+  bool GetInstalledFile(const std::string& file,
+                        base::FilePath* installed_file) override;
 
  private:
   base::FilePath install_directory_;
@@ -61,13 +61,13 @@ class VersionedTestInstaller : public TestInstaller {
  public:
   VersionedTestInstaller();
 
-  virtual ~VersionedTestInstaller();
+  ~VersionedTestInstaller() override;
 
-  virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) override;
+  bool Install(const base::DictionaryValue& manifest,
+               const base::FilePath& unpack_path) override;
 
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) override;
+  bool GetInstalledFile(const std::string& file,
+                        base::FilePath* installed_file) override;
 
  private:
   base::FilePath install_directory_;

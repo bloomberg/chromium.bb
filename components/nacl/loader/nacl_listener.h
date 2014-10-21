@@ -29,7 +29,7 @@ class SyncMessageFilter;
 class NaClListener : public IPC::Listener {
  public:
   NaClListener();
-  virtual ~NaClListener();
+  ~NaClListener() override;
   // Listen for a request to launch a NaCl module.
   void Listen();
 
@@ -59,7 +59,7 @@ class NaClListener : public IPC::Listener {
                            base::FilePath file_path);
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   void OnStart(const nacl::NaClStartParams& params);
 

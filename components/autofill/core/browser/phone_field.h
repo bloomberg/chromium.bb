@@ -23,13 +23,13 @@ class AutofillScanner;
 // - number
 class PhoneField : public FormField {
  public:
-  virtual ~PhoneField();
+  ~PhoneField() override;
 
   static FormField* Parse(AutofillScanner* scanner);
 
  protected:
   // FormField:
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const override;
+  bool ClassifyField(ServerFieldTypeMap* map) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLinePhone);

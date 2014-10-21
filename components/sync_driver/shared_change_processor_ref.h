@@ -21,21 +21,20 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
   SharedChangeProcessorRef(
       const scoped_refptr<SharedChangeProcessor>&
           change_processor);
-  virtual ~SharedChangeProcessorRef();
+  ~SharedChangeProcessorRef() override;
 
   // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError UpdateDataTypeContext(
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError UpdateDataTypeContext(
       syncer::ModelType type,
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) override;
 
   // syncer::SyncErrorFactory implementation.
-  virtual syncer::SyncError CreateAndUploadError(
+  syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& from_here,
       const std::string& message) override;
 

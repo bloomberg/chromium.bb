@@ -17,10 +17,10 @@ namespace nacl {
 class NaClHelper : public content::RenderFrameObserver {
  public:
   explicit NaClHelper(content::RenderFrame* render_frame);
-  virtual ~NaClHelper();
+  ~NaClHelper() override;
 
   // RenderFrameObserver.
-  virtual void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
+  void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NaClHelper);

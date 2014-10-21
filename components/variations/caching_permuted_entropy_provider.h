@@ -27,7 +27,7 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
   CachingPermutedEntropyProvider(PrefService* local_state,
                                  uint16 low_entropy_source,
                                  size_t low_entropy_source_max);
-  virtual ~CachingPermutedEntropyProvider();
+  ~CachingPermutedEntropyProvider() override;
 
   // Registers pref keys used by this class in the Local State pref registry.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -38,7 +38,7 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
 
  private:
   // PermutedEntropyProvider overrides:
-  virtual uint16 GetPermutedValue(uint32 randomization_seed) const override;
+  uint16 GetPermutedValue(uint32 randomization_seed) const override;
 
   // Reads the cache from local state.
   void ReadFromLocalState() const;

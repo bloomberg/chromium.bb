@@ -18,7 +18,7 @@ class WebContentsMainFrameObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<WebContentsMainFrameObserver> {
  public:
-  virtual ~WebContentsMainFrameObserver();
+  ~WebContentsMainFrameObserver() override;
 
   bool is_document_loaded_in_main_frame() {
     return is_document_loaded_in_main_frame_;
@@ -27,12 +27,12 @@ class WebContentsMainFrameObserver
   bool is_initialized() { return is_initialized_; }
 
   // content::WebContentsObserver implementation.
-  virtual void DocumentLoadedInFrame(
+  void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
   explicit WebContentsMainFrameObserver(content::WebContents* web_contents);

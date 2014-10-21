@@ -199,10 +199,10 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
  private:
-  virtual ~FingerprintDataLoader() {}
+  ~FingerprintDataLoader() override {}
 
   // content::GpuDataManagerObserver:
-  virtual void OnGpuInfoUpdate() override;
+  void OnGpuInfoUpdate() override;
 
   // Callbacks for asynchronously loaded data.
   void OnGotFonts(scoped_ptr<base::ListValue> fonts);

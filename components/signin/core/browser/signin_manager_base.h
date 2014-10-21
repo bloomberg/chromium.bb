@@ -61,7 +61,7 @@ class SigninManagerBase : public KeyedService {
   };
 
   SigninManagerBase(SigninClient* client);
-  virtual ~SigninManagerBase();
+  ~SigninManagerBase() override;
 
   // If user was signed in, load tokens from DB if available.
   virtual void Initialize(PrefService* local_state);
@@ -109,7 +109,7 @@ class SigninManagerBase : public KeyedService {
   virtual bool AuthInProgress() const;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Methods to register or remove observers of signin.
   void AddObserver(Observer* observer);

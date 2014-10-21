@@ -205,28 +205,24 @@ class TestCameraListener
       : completed_(false),
         removed_(false),
         last_error_(base::File::FILE_ERROR_INVALID_URL) {}
-  virtual ~TestCameraListener() {}
+  ~TestCameraListener() override {}
 
-  virtual void ItemAdded(const std::string& name,
-                         const base::File::Info& info) override {
+  void ItemAdded(const std::string& name,
+                 const base::File::Info& info) override {
     items_.push_back(name);
   }
 
-  virtual void NoMoreItems() override {
-    completed_ = true;
-  }
+  void NoMoreItems() override { completed_ = true; }
 
-  virtual void DownloadedFile(const std::string& name,
-                              base::File::Error error) override {
+  void DownloadedFile(const std::string& name,
+                      base::File::Error error) override {
     EXPECT_TRUE(content::BrowserThread::CurrentlyOn(
         content::BrowserThread::UI));
     downloads_.push_back(name);
     last_error_ = error;
   }
 
-  virtual void DeviceRemoved() override {
-    removed_ = true;
-  }
+  void DeviceRemoved() override { removed_ = true; }
 
   std::vector<std::string> items() const { return items_; }
   std::vector<std::string> downloads() const { return downloads_; }

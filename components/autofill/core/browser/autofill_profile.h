@@ -33,26 +33,24 @@ class AutofillProfile : public AutofillDataModel {
   // For use in STL containers.
   AutofillProfile();
   AutofillProfile(const AutofillProfile& profile);
-  virtual ~AutofillProfile();
+  ~AutofillProfile() override;
 
   AutofillProfile& operator=(const AutofillProfile& profile);
 
   // FormGroup:
-  virtual void GetMatchingTypes(
-      const base::string16& text,
-      const std::string& app_locale,
-      ServerFieldTypeSet* matching_types) const override;
-  virtual base::string16 GetRawInfo(ServerFieldType type) const override;
-  virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) override;
-  virtual base::string16 GetInfo(const AutofillType& type,
-                                 const std::string& app_locale) const override;
-  virtual bool SetInfo(const AutofillType& type,
-                       const base::string16& value,
-                       const std::string& app_locale) override;
+  void GetMatchingTypes(const base::string16& text,
+                        const std::string& app_locale,
+                        ServerFieldTypeSet* matching_types) const override;
+  base::string16 GetRawInfo(ServerFieldType type) const override;
+  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  base::string16 GetInfo(const AutofillType& type,
+                         const std::string& app_locale) const override;
+  bool SetInfo(const AutofillType& type,
+               const base::string16& value,
+               const std::string& app_locale) override;
 
   // AutofillDataModel:
-  virtual base::string16 GetInfoForVariant(
+  base::string16 GetInfoForVariant(
       const AutofillType& type,
       size_t variant,
       const std::string& app_locale) const override;
@@ -151,8 +149,7 @@ class AutofillProfile : public AutofillDataModel {
   typedef std::vector<const FormGroup*> FormGroupList;
 
   // FormGroup:
-  virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const override;
+  void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
   // Shared implementation for GetRawMultiInfo() and GetMultiInfo().  Pass an
   // empty |app_locale| to get the raw info; otherwise, the returned info is

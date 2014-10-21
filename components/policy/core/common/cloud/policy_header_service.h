@@ -33,7 +33,7 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
                       const std::string& verification_key_hash,
                       CloudPolicyStore* user_policy_store,
                       CloudPolicyStore* device_policy_store);
-  virtual ~PolicyHeaderService();
+  ~PolicyHeaderService() override;
 
   // Creates a PolicyHeaderIOHelper object to be run on the IO thread and
   // add policy headers to outgoing requests. The caller takes ownership of
@@ -44,8 +44,8 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Overridden CloudPolicyStore::Observer methods:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
-  virtual void OnStoreError(CloudPolicyStore* store) override;
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
 
   // Returns a list of all PolicyHeaderIOHelpers created by this object.
   std::vector<PolicyHeaderIOHelper*> GetHelpersForTest();

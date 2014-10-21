@@ -53,28 +53,23 @@ class TestNativeWebContentsModalDialogManager
       tracker_->SetState(NativeManagerTracker::NOT_SHOWN);
   }
 
-  virtual void Show() override {
+  void Show() override {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::SHOWN);
   }
-  virtual void Hide() override {
+  void Hide() override {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::HIDDEN);
   }
-  virtual void Close() override {
+  void Close() override {
     if (tracker_)
       tracker_->SetState(NativeManagerTracker::CLOSED);
     delegate_->WillClose(dialog_);
   }
-  virtual void Focus() override {
-  }
-  virtual void Pulse() override {
-  }
-  virtual void HostChanged(WebContentsModalDialogHost* new_host) override {
-  }
-  virtual NativeWebContentsModalDialog dialog() override {
-      return dialog_;
-  }
+  void Focus() override {}
+  void Pulse() override {}
+  void HostChanged(WebContentsModalDialogHost* new_host) override {}
+  NativeWebContentsModalDialog dialog() override { return dialog_; }
 
   void StopTracking() {
     tracker_ = NULL;

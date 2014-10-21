@@ -35,7 +35,7 @@ class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
 
  private:
   explicit UserPrefs(PrefService* prefs);
-  virtual ~UserPrefs();
+  ~UserPrefs() override;
 
   // Non-owning; owned by embedder.
   PrefService* prefs_;

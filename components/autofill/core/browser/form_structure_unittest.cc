@@ -24,7 +24,7 @@ namespace {
 class TestAutofillMetrics : public AutofillMetrics {
  public:
   TestAutofillMetrics() {}
-  virtual ~TestAutofillMetrics() {}
+  ~TestAutofillMetrics() override {}
 };
 
 }  // anonymous namespace

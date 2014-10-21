@@ -14,7 +14,7 @@ class FakeAuthStatusProvider
     : public SigninErrorController::AuthStatusProvider {
  public:
   explicit FakeAuthStatusProvider(SigninErrorController* error);
-  virtual ~FakeAuthStatusProvider();
+  ~FakeAuthStatusProvider() override;
 
   // Sets the auth error that this provider reports to SigninErrorController.
   // Also notifies SigninErrorController via AuthStatusChanged().
@@ -27,9 +27,9 @@ class FakeAuthStatusProvider
   }
 
   // AuthStatusProvider implementation.
-  virtual std::string GetAccountId() const override;
-  virtual std::string GetUsername() const override;
-  virtual GoogleServiceAuthError GetAuthStatus() const override;
+  std::string GetAccountId() const override;
+  std::string GetUsername() const override;
+  GoogleServiceAuthError GetAuthStatus() const override;
 
  private:
   SigninErrorController* error_provider_;

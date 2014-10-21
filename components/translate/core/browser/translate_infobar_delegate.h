@@ -40,7 +40,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   static const size_t kNoIndex;
 
-  virtual ~TranslateInfoBarDelegate();
+  ~TranslateInfoBarDelegate() override;
 
   // Factory method to create a translate infobar.  |error_type| must be
   // specified iff |step| == TRANSLATION_ERROR.  For other translate steps,
@@ -192,11 +192,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   typedef std::pair<std::string, base::string16> LanguageNamePair;
 
   // InfoBarDelegate:
-  virtual void InfoBarDismissed() override;
-  virtual int GetIconID() const override;
-  virtual infobars::InfoBarDelegate::Type GetInfoBarType() const override;
-  virtual bool ShouldExpire(const NavigationDetails& details) const override;
-  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
+  void InfoBarDismissed() override;
+  int GetIconID() const override;
+  infobars::InfoBarDelegate::Type GetInfoBarType() const override;
+  bool ShouldExpire(const NavigationDetails& details) const override;
+  TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() override;
 
   bool is_off_the_record_;
   translate::TranslateStep step_;

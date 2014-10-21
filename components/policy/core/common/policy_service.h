@@ -88,7 +88,7 @@ class POLICY_EXPORT PolicyChangeRegistrar : public PolicyService::Observer {
   PolicyChangeRegistrar(PolicyService* policy_service,
                         const PolicyNamespace& ns);
 
-  virtual ~PolicyChangeRegistrar();
+  ~PolicyChangeRegistrar() override;
 
   // Will invoke |callback| whenever |policy_name| changes its value, as long
   // as this registrar exists.
@@ -97,9 +97,9 @@ class POLICY_EXPORT PolicyChangeRegistrar : public PolicyService::Observer {
   void Observe(const std::string& policy_name, const UpdateCallback& callback);
 
   // Implementation of PolicyService::Observer:
-  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
-                               const PolicyMap& previous,
-                               const PolicyMap& current) override;
+  void OnPolicyUpdated(const PolicyNamespace& ns,
+                       const PolicyMap& previous,
+                       const PolicyMap& current) override;
 
  private:
   typedef std::map<std::string, UpdateCallback> CallbackMap;

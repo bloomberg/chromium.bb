@@ -38,8 +38,8 @@ class TestMetricsProvider : public metrics::MetricsProvider {
       provide_stability_metrics_called_(false) {
   }
 
-  virtual bool HasStabilityMetrics() override { return has_stability_metrics_; }
-  virtual void ProvideStabilityMetrics(
+  bool HasStabilityMetrics() override { return has_stability_metrics_; }
+  void ProvideStabilityMetrics(
       SystemProfileProto* system_profile_proto) override {
     provide_stability_metrics_called_ = true;
   }
@@ -61,7 +61,7 @@ class TestMetricsService : public MetricsService {
                      MetricsServiceClient* client,
                      PrefService* local_state)
       : MetricsService(state_manager, client, local_state) {}
-  virtual ~TestMetricsService() {}
+  ~TestMetricsService() override {}
 
   using MetricsService::log_manager;
 
@@ -81,7 +81,7 @@ class TestMetricsLog : public MetricsLog {
                    client,
                    local_state) {}
 
-  virtual ~TestMetricsLog() {}
+  ~TestMetricsLog() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);

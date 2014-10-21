@@ -17,25 +17,25 @@ class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
   TestGCMNetworkChannelDelegate()
       : register_call_count_(0) {}
 
-  virtual void Initialize(
+  void Initialize(
       GCMNetworkChannelDelegate::ConnectionStateCallback callback) override {
     connection_state_callback = callback;
   }
 
-  virtual void RequestToken(RequestTokenCallback callback) override {
+  void RequestToken(RequestTokenCallback callback) override {
     request_token_callback = callback;
   }
 
-  virtual void InvalidateToken(const std::string& token) override {
+  void InvalidateToken(const std::string& token) override {
     invalidated_token = token;
   }
 
-  virtual void Register(RegisterCallback callback) override {
+  void Register(RegisterCallback callback) override {
     ++register_call_count_;
     register_callback = callback;
   }
 
-  virtual void SetMessageReceiver(MessageCallback callback) override {
+  void SetMessageReceiver(MessageCallback callback) override {
     message_callback = callback;
   }
 
@@ -86,7 +86,7 @@ class TestGCMNetworkChannel : public GCMNetworkChannel {
  protected:
   // On Android GCMNetworkChannel::BuildUrl hits NOTREACHED(). I still want
   // tests to run.
-  virtual GURL BuildUrl(const std::string& registration_id) override {
+  GURL BuildUrl(const std::string& registration_id) override {
     return GURL("http://test.url.com");
   }
 };
@@ -110,7 +110,7 @@ class TestNetworkChannelURLFetcher : public net::FakeURLFetcher {
                             status),
         test_(test) {}
 
-  virtual void AddExtraRequestHeader(const std::string& header_line) override;
+  void AddExtraRequestHeader(const std::string& header_line) override;
 
  private:
   GCMNetworkChannelTest* test_;
@@ -166,7 +166,7 @@ class GCMNetworkChannelTest
     return GCMNetworkChannel::Base64DecodeURLSafe(input, output);
   }
 
-  virtual void OnNetworkChannelStateChanged(
+  void OnNetworkChannelStateChanged(
       InvalidatorState invalidator_state) override {
     last_invalidator_state_ = invalidator_state;
   }

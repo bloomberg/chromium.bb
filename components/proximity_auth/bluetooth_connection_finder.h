@@ -30,20 +30,20 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   BluetoothConnectionFinder(const RemoteDevice& remote_device,
                             const device::BluetoothUUID& uuid,
                             const base::TimeDelta& polling_interval);
-  virtual ~BluetoothConnectionFinder();
+  ~BluetoothConnectionFinder() override;
 
   // ConnectionFinder:
-  virtual void Find(const ConnectionCallback& connection_callback) override;
+  void Find(const ConnectionCallback& connection_callback) override;
 
  protected:
   // Exposed for mocking out the connection in tests.
   virtual scoped_ptr<Connection> CreateConnection();
 
   // BluetoothAdapter::Observer:
-  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) override;
-  virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                                     bool powered) override;
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override;
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override;
 
  private:
   // Returns true iff the Bluetooth adapter is ready to make connections.
@@ -64,10 +64,9 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // ConnectionObserver:
-  virtual void OnConnectionStatusChanged(
-      const Connection& connection,
-      Connection::Status old_status,
-      Connection::Status new_status) override;
+  void OnConnectionStatusChanged(const Connection& connection,
+                                 Connection::Status old_status,
+                                 Connection::Status new_status) override;
 
   // The remote device to connect to.
   const RemoteDevice remote_device_;

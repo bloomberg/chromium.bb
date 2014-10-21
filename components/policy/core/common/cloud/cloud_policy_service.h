@@ -42,7 +42,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   CloudPolicyService(const PolicyNamespaceKey& policy_ns_key,
                      CloudPolicyClient* client,
                      CloudPolicyStore* store);
-  virtual ~CloudPolicyService();
+  ~CloudPolicyService() override;
 
   // Returns the domain that manages this user/device, according to the current
   // policy blob. Empty if not managed/not available.
@@ -57,13 +57,13 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   void RemoveObserver(Observer* observer);
 
   // CloudPolicyClient::Observer:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
-  virtual void OnClientError(CloudPolicyClient* client) override;
+  void OnPolicyFetched(CloudPolicyClient* client) override;
+  void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  void OnClientError(CloudPolicyClient* client) override;
 
   // CloudPolicyStore::Observer:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
-  virtual void OnStoreError(CloudPolicyStore* store) override;
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
 
   bool IsInitializationComplete() const { return initialization_complete_; }
 

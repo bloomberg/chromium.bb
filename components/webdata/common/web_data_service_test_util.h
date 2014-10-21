@@ -15,9 +15,9 @@
 class MockWebDataServiceWrapperBase : public WebDataServiceWrapper {
  public:
   MockWebDataServiceWrapperBase();
-  virtual ~MockWebDataServiceWrapperBase();
+  ~MockWebDataServiceWrapperBase() override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapperBase);
@@ -31,12 +31,11 @@ class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
       scoped_refptr<autofill::AutofillWebDataService> fake_autofill,
       scoped_refptr<TokenWebData> fake_token);
 
-  virtual ~MockWebDataServiceWrapper();
+  ~MockWebDataServiceWrapper() override;
 
-  virtual scoped_refptr<autofill::AutofillWebDataService>
-      GetAutofillWebData() override;
+  scoped_refptr<autofill::AutofillWebDataService> GetAutofillWebData() override;
 
-  virtual scoped_refptr<TokenWebData> GetTokenWebData() override;
+  scoped_refptr<TokenWebData> GetTokenWebData() override;
 
  protected:
   scoped_refptr<autofill::AutofillWebDataService> fake_autofill_web_data_;

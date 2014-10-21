@@ -16,11 +16,11 @@ class DefaultSearchEncodingsPolicyHandler
     : public TypeCheckingPolicyHandler {
  public:
   DefaultSearchEncodingsPolicyHandler();
-  virtual ~DefaultSearchEncodingsPolicyHandler();
+  ~DefaultSearchEncodingsPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchEncodingsPolicyHandler);
@@ -30,13 +30,13 @@ class DefaultSearchEncodingsPolicyHandler
 class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
  public:
   DefaultSearchPolicyHandler();
-  virtual ~DefaultSearchPolicyHandler();
+  ~DefaultSearchPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   void HandleDictionaryPref(const PolicyMap& policies, PrefValueMap* prefs);

@@ -35,20 +35,18 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
         password_generation_manager_(client),
         password_autofill_manager_(client, NULL),
         is_off_the_record_(false) {}
-  virtual ~TestPasswordManagerDriver() {}
+  ~TestPasswordManagerDriver() override {}
 
   // PasswordManagerDriver implementation.
-  virtual bool IsOffTheRecord() override { return is_off_the_record_; }
-  virtual PasswordGenerationManager* GetPasswordGenerationManager() override {
+  bool IsOffTheRecord() override { return is_off_the_record_; }
+  PasswordGenerationManager* GetPasswordGenerationManager() override {
     return &password_generation_manager_;
   }
-  virtual PasswordManager* GetPasswordManager() override {
-    return &password_manager_;
-  }
-  virtual PasswordAutofillManager* GetPasswordAutofillManager() override {
+  PasswordManager* GetPasswordManager() override { return &password_manager_; }
+  PasswordAutofillManager* GetPasswordAutofillManager() override {
     return &password_autofill_manager_;
   }
-  virtual void AccountCreationFormsFound(
+  void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) override {
     found_account_creation_forms_.insert(
         found_account_creation_forms_.begin(), forms.begin(), forms.end());
@@ -74,10 +72,10 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   TestPasswordManagerClient(scoped_ptr<PrefService> prefs)
       : prefs_(prefs.Pass()), driver_(this), is_sync_enabled_(false) {}
 
-  virtual PasswordStore* GetPasswordStore() override { return NULL; }
-  virtual PrefService* GetPrefs() override { return prefs_.get(); }
-  virtual PasswordManagerDriver* GetDriver() override { return &driver_; }
-  virtual bool IsPasswordSyncEnabled() override { return is_sync_enabled_; }
+  PasswordStore* GetPasswordStore() override { return NULL; }
+  PrefService* GetPrefs() override { return prefs_.get(); }
+  PasswordManagerDriver* GetDriver() override { return &driver_; }
+  bool IsPasswordSyncEnabled() override { return is_sync_enabled_; }
 
   void set_is_password_sync_enabled(bool enabled) {
     is_sync_enabled_ = enabled;
@@ -95,7 +93,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 class TestAutofillMetrics : public autofill::AutofillMetrics {
  public:
   TestAutofillMetrics() {}
-  virtual ~TestAutofillMetrics() {}
+  ~TestAutofillMetrics() override {}
 };
 
 }  // anonymous namespace

@@ -50,7 +50,7 @@ class AutofillProfileSyncableService
       public AutofillWebDataServiceObserverOnDBThread,
       public base::NonThreadSafe {
  public:
-  virtual ~AutofillProfileSyncableService();
+  ~AutofillProfileSyncableService() override;
 
   // Creates a new AutofillProfileSyncableService and hangs it off of
   // |web_data_service|, which takes ownership. This method should only be
@@ -67,21 +67,19 @@ class AutofillProfileSyncableService
   static syncer::ModelType model_type() { return syncer::AUTOFILL_PROFILE; }
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
   // AutofillWebDataServiceObserverOnDBThread implementation.
-  virtual void AutofillProfileChanged(
-      const AutofillProfileChange& change) override;
+  void AutofillProfileChanged(const AutofillProfileChange& change) override;
 
   // Provides a StartSyncFlare to the SyncableService. See
   // sync_start_util for more.

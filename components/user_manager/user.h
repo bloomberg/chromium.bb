@@ -85,11 +85,11 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   base::string16 display_name() const { return display_name_; }
 
   // UserInfo
-  virtual std::string GetEmail() const override;
-  virtual base::string16 GetDisplayName() const override;
-  virtual base::string16 GetGivenName() const override;
-  virtual const gfx::ImageSkia& GetImage() const override;
-  virtual std::string GetUserID() const override;
+  std::string GetEmail() const override;
+  base::string16 GetDisplayName() const override;
+  base::string16 GetGivenName() const override;
+  const gfx::ImageSkia& GetImage() const override;
+  std::string GetUserID() const override;
 
   // Is user supervised.
   virtual bool IsSupervised() const;
@@ -174,7 +174,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   static User* CreatePublicAccountUser(const std::string& email);
 
   explicit User(const std::string& email);
-  virtual ~User();
+  ~User() override;
 
   const std::string* GetAccountLocale() const { return account_locale_.get(); }
 

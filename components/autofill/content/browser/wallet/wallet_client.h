@@ -142,7 +142,7 @@ class WalletClient : public net::URLFetcherDelegate {
                WalletClientDelegate* delegate,
                const GURL& source_url);
 
-  virtual ~WalletClient();
+  ~WalletClient() override;
 
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
@@ -223,7 +223,7 @@ class WalletClient : public net::URLFetcherDelegate {
   void HandleWalletError(ErrorType error_type);
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Logs an UMA metric for each of the |required_actions|.
   void LogRequiredActions(

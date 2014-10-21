@@ -28,7 +28,7 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   };
 
   explicit TranslateURLFetcher(int id);
-  virtual ~TranslateURLFetcher();
+  ~TranslateURLFetcher() override;
 
   int max_retry_on_5xx() {
     return max_retry_on_5xx_;
@@ -54,7 +54,7 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   State state() { return state_; }
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   // URL to send the request.

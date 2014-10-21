@@ -29,7 +29,7 @@ namespace translate {
 // constant from ipc_message_start.h
 class RendererCldDataProvider : public IPC::Listener {
  public:
-  virtual ~RendererCldDataProvider() {}
+  ~RendererCldDataProvider() override {}
 
   // (Inherited from IPC::Listener)
   // If the specified message is a response for CLD data, attempts to

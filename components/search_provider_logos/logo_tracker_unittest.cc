@@ -277,9 +277,9 @@ class MockLogoObserver : public LogoObserver {
 class TestLogoDelegate : public LogoDelegate {
  public:
   TestLogoDelegate() {}
-  virtual ~TestLogoDelegate() {}
+  ~TestLogoDelegate() override {}
 
-  virtual void DecodeUntrustedImage(
+  void DecodeUntrustedImage(
       const scoped_refptr<base::RefCountedString>& encoded_image,
       base::Callback<void(const SkBitmap&)> image_decoded_callback) override {
     SkBitmap bitmap =

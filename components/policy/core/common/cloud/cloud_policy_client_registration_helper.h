@@ -37,7 +37,7 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   CloudPolicyClientRegistrationHelper(
       CloudPolicyClient* client,
       enterprise_management::DeviceRegisterRequest::Type registration_type);
-  virtual ~CloudPolicyClientRegistrationHelper();
+  ~CloudPolicyClientRegistrationHelper() override;
 
   // Starts the client registration process. This version uses the
   // supplied OAuth2TokenService to mint the new token for the userinfo
@@ -74,15 +74,13 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   void OnTokenFetched(const std::string& oauth_access_token);
 
   // UserInfoFetcher::Delegate implementation:
-  virtual void OnGetUserInfoSuccess(
-      const base::DictionaryValue* response) override;
-  virtual void OnGetUserInfoFailure(
-      const GoogleServiceAuthError& error) override;
+  void OnGetUserInfoSuccess(const base::DictionaryValue* response) override;
+  void OnGetUserInfoFailure(const GoogleServiceAuthError& error) override;
 
   // CloudPolicyClient::Observer implementation:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
-  virtual void OnClientError(CloudPolicyClient* client) override;
+  void OnPolicyFetched(CloudPolicyClient* client) override;
+  void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  void OnClientError(CloudPolicyClient* client) override;
 
   // Invoked when the registration request has been completed.
   void RequestCompleted();

@@ -30,31 +30,31 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
   ContentPasswordManagerDriver(content::WebContents* web_contents,
                                PasswordManagerClient* client,
                                autofill::AutofillClient* autofill_client);
-  virtual ~ContentPasswordManagerDriver();
+  ~ContentPasswordManagerDriver() override;
 
   // PasswordManagerDriver implementation.
-  virtual void FillPasswordForm(const autofill::PasswordFormFillData& form_data)
-      override;
-  virtual bool DidLastPageLoadEncounterSSLErrors() override;
-  virtual bool IsOffTheRecord() override;
-  virtual void AllowPasswordGenerationForForm(
+  void FillPasswordForm(
+      const autofill::PasswordFormFillData& form_data) override;
+  bool DidLastPageLoadEncounterSSLErrors() override;
+  bool IsOffTheRecord() override;
+  void AllowPasswordGenerationForForm(
       const autofill::PasswordForm& form) override;
-  virtual void AccountCreationFormsFound(
+  void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) override;
-  virtual void FillSuggestion(const base::string16& username,
-                              const base::string16& password) override;
-  virtual void PreviewSuggestion(const base::string16& username,
-                                 const base::string16& password) override;
-  virtual void ClearPreviewedForm() override;
+  void FillSuggestion(const base::string16& username,
+                      const base::string16& password) override;
+  void PreviewSuggestion(const base::string16& username,
+                         const base::string16& password) override;
+  void ClearPreviewedForm() override;
 
-  virtual PasswordGenerationManager* GetPasswordGenerationManager() override;
-  virtual PasswordManager* GetPasswordManager() override;
-  virtual autofill::AutofillManager* GetAutofillManager() override;
-  virtual PasswordAutofillManager* GetPasswordAutofillManager() override;
+  PasswordGenerationManager* GetPasswordGenerationManager() override;
+  PasswordManager* GetPasswordManager() override;
+  autofill::AutofillManager* GetAutofillManager() override;
+  PasswordAutofillManager* GetPasswordAutofillManager() override;
 
   // content::WebContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidNavigateMainFrame(
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 

@@ -196,7 +196,7 @@ class PasswordStore : protected PasswordStoreSync,
 
   typedef base::Callback<PasswordStoreChangeList(void)> ModificationTask;
 
-  virtual ~PasswordStore();
+  ~PasswordStore() override;
 
   // Get the TaskRunner to use for PasswordStore background tasks.
   // By default, a SingleThreadTaskRunner on the DB thread is used, but
@@ -255,8 +255,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Called by WrapModificationTask() once the underlying data-modifying
   // operation has been performed. Notifies observers that password store data
   // may have been changed.
-  virtual void NotifyLoginsChanged(
-      const PasswordStoreChangeList& changes) override;
+  void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
 
   // TaskRunner for tasks that run on the main thread (usually the UI thread).
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;

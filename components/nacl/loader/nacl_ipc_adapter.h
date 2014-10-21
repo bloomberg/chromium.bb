@@ -111,9 +111,9 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 #endif
 
   // Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
 
   typedef base::Callback<void(IPC::PlatformFileForTransit, base::FilePath)>
       ResolveFileTokenReplyCallback;
@@ -175,7 +175,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
     PendingSyncMsgMap pending_sync_msgs_;
   };
 
-  virtual ~NaClIPCAdapter();
+  ~NaClIPCAdapter() override;
 
   void OnFileTokenResolved(const IPC::Message& orig_msg,
                            IPC::PlatformFileForTransit ipc_fd,

@@ -296,36 +296,35 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
 
   // NetErrorHelperCore::Delegate implementation:
-  virtual void GenerateLocalizedErrorPage(const WebURLError& error,
-                                          bool is_failed_post,
-                                          scoped_ptr<ErrorPageParams> params,
-                                          bool* reload_button_shown,
-                                          bool* load_stale_button_shown,
-                                          std::string* html) const override {
+  void GenerateLocalizedErrorPage(const WebURLError& error,
+                                  bool is_failed_post,
+                                  scoped_ptr<ErrorPageParams> params,
+                                  bool* reload_button_shown,
+                                  bool* load_stale_button_shown,
+                                  std::string* html) const override {
     last_error_page_params_.reset(params.release());
     *reload_button_shown = false;
     *load_stale_button_shown = false;
     *html = ErrorToString(error, is_failed_post);
   }
 
-  virtual void LoadErrorPageInMainFrame(const std::string& html,
-                                        const GURL& failed_url) override {
+  void LoadErrorPageInMainFrame(const std::string& html,
+                                const GURL& failed_url) override {
     error_html_update_count_++;
     last_error_html_ = html;
   }
 
-  virtual void EnablePageHelperFunctions() override {
+  void EnablePageHelperFunctions() override {
     enable_page_helper_functions_count_++;
   }
 
-  virtual void UpdateErrorPage(const WebURLError& error,
-                               bool is_failed_post) override {
+  void UpdateErrorPage(const WebURLError& error, bool is_failed_post) override {
     update_count_++;
     last_error_page_params_.reset(NULL);
     last_error_html_ = ErrorToString(error, is_failed_post);
   }
 
-  virtual void FetchNavigationCorrections(
+  void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) override {
     EXPECT_TRUE(url_being_fetched_.is_empty());
@@ -350,23 +349,20 @@ class NetErrorHelperCoreTest : public testing::Test,
     EXPECT_TRUE(StringValueEquals(*dict, "params.key", kApiKey));
   }
 
-  virtual void CancelFetchNavigationCorrections() override {
+  void CancelFetchNavigationCorrections() override {
     url_being_fetched_ = GURL();
     request_body_.clear();
   }
 
-  virtual void ReloadPage() override {
-    reload_count_++;
-  }
+  void ReloadPage() override { reload_count_++; }
 
-  virtual void LoadPageFromCache(const GURL& error_url) override {
+  void LoadPageFromCache(const GURL& error_url) override {
     load_stale_count_++;
     load_stale_url_ = error_url;
   }
 
-  virtual void SendTrackingRequest(
-      const GURL& tracking_url,
-      const std::string& tracking_request_body) override {
+  void SendTrackingRequest(const GURL& tracking_url,
+                           const std::string& tracking_request_body) override {
     last_tracking_url_ = tracking_url;
     last_tracking_request_body_ = tracking_request_body;
     tracking_request_count_++;

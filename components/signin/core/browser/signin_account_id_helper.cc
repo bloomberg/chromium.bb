@@ -20,19 +20,19 @@ class SigninAccountIdHelper::GaiaIdFetcher
                 ProfileOAuth2TokenService* token_service,
                 SigninManagerBase* signin_manager,
                 SigninAccountIdHelper* signin_account_id_helper);
-  virtual ~GaiaIdFetcher();
+  ~GaiaIdFetcher() override;
 
   // OAuth2TokenService::Consumer implementation.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
-  virtual void OnGetUserIdResponse(const std::string& gaia_id) override;
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnGetUserIdResponse(const std::string& gaia_id) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
  private:
   void Start();

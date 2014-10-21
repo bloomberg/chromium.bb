@@ -25,7 +25,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
   };
 
   FakeGCMAppHandler();
-  virtual ~FakeGCMAppHandler();
+  ~FakeGCMAppHandler() override;
 
   const Event& received_event() const { return received_event_; }
   const std::string& app_id() const { return app_id_; }
@@ -38,15 +38,15 @@ class FakeGCMAppHandler : public GCMAppHandler {
   void WaitForNotification();
 
   // GCMAppHandler implementation.
-  virtual void ShutdownHandler() override;
-  virtual void OnMessage(const std::string& app_id,
-                         const GCMClient::IncomingMessage& message) override;
-  virtual void OnMessagesDeleted(const std::string& app_id) override;
-  virtual void OnSendError(
+  void ShutdownHandler() override;
+  void OnMessage(const std::string& app_id,
+                 const GCMClient::IncomingMessage& message) override;
+  void OnMessagesDeleted(const std::string& app_id) override;
+  void OnSendError(
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) override;
-  virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) override;
+  void OnSendAcknowledged(const std::string& app_id,
+                          const std::string& message_id) override;
 
  private:
   void ClearResults();

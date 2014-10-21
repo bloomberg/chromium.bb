@@ -15,10 +15,10 @@ namespace metrics {
 class GPUMetricsProvider : public MetricsProvider {
  public:
   GPUMetricsProvider();
-  virtual ~GPUMetricsProvider();
+  ~GPUMetricsProvider() override;
 
   // MetricsProvider:
-  virtual void ProvideSystemProfileMetrics(
+  void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto) override;
 
  protected:

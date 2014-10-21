@@ -13,11 +13,11 @@ namespace storage_monitor {
 class MockRemovableStorageObserver : public RemovableStorageObserver {
  public:
   MockRemovableStorageObserver();
-  virtual ~MockRemovableStorageObserver();
+  ~MockRemovableStorageObserver() override;
 
-  virtual void OnRemovableStorageAttached(const StorageInfo& info) override;
+  void OnRemovableStorageAttached(const StorageInfo& info) override;
 
-  virtual void OnRemovableStorageDetached(const StorageInfo& info) override;
+  void OnRemovableStorageDetached(const StorageInfo& info) override;
 
   int attach_calls() { return attach_calls_; }
 

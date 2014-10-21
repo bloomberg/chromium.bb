@@ -54,7 +54,7 @@ class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
 class TestAutofillMetrics : public AutofillMetrics {
  public:
   TestAutofillMetrics() {}
-  virtual ~TestAutofillMetrics() {}
+  ~TestAutofillMetrics() override {}
 };
 
 template <typename T>

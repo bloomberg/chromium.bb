@@ -22,36 +22,36 @@ namespace {
 class RegistrarInvalidator : public Invalidator {
  public:
   RegistrarInvalidator() {}
-  virtual ~RegistrarInvalidator() {}
+  ~RegistrarInvalidator() override {}
 
   InvalidatorRegistrar* GetRegistrar() {
     return &registrar_;
   }
 
   // Invalidator implementation.
-  virtual void RegisterHandler(InvalidationHandler* handler) override {
+  void RegisterHandler(InvalidationHandler* handler) override {
     registrar_.RegisterHandler(handler);
   }
 
-  virtual void UpdateRegisteredIds(InvalidationHandler* handler,
-                                   const ObjectIdSet& ids) override {
+  void UpdateRegisteredIds(InvalidationHandler* handler,
+                           const ObjectIdSet& ids) override {
     registrar_.UpdateRegisteredIds(handler, ids);
   }
 
-  virtual void UnregisterHandler(InvalidationHandler* handler) override {
+  void UnregisterHandler(InvalidationHandler* handler) override {
     registrar_.UnregisterHandler(handler);
   }
 
-  virtual InvalidatorState GetInvalidatorState() const override {
+  InvalidatorState GetInvalidatorState() const override {
     return registrar_.GetInvalidatorState();
   }
 
-  virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) override {
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override {
     // Do nothing.
   }
 
-  virtual void RequestDetailedStatus(
+  void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> call) const override {
     // Do nothing.
   }

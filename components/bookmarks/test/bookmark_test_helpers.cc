@@ -22,13 +22,12 @@ namespace {
 class BookmarkLoadObserver : public BaseBookmarkModelObserver {
  public:
   explicit BookmarkLoadObserver(const base::Closure& quit_task);
-  virtual ~BookmarkLoadObserver();
+  ~BookmarkLoadObserver() override;
 
  private:
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() override;
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) override;
+  void BookmarkModelChanged() override;
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
 
   base::Closure quit_task_;
 

@@ -43,7 +43,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  virtual PasswordManagerDriver* GetDriver() override { return &driver_; }
+  PasswordManagerDriver* GetDriver() override { return &driver_; }
 
   MockPasswordManagerDriver* mock_driver() { return &driver_; }
 

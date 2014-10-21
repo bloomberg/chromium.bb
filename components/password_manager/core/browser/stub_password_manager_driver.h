@@ -15,26 +15,26 @@ namespace password_manager {
 class StubPasswordManagerDriver : public PasswordManagerDriver {
  public:
   StubPasswordManagerDriver();
-  virtual ~StubPasswordManagerDriver();
+  ~StubPasswordManagerDriver() override;
 
   // PasswordManagerDriver:
-  virtual void FillPasswordForm(
+  void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
-  virtual bool DidLastPageLoadEncounterSSLErrors() override;
-  virtual bool IsOffTheRecord() override;
-  virtual void AllowPasswordGenerationForForm(
+  bool DidLastPageLoadEncounterSSLErrors() override;
+  bool IsOffTheRecord() override;
+  void AllowPasswordGenerationForForm(
       const autofill::PasswordForm& form) override;
-  virtual void AccountCreationFormsFound(
+  void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) override;
-  virtual void FillSuggestion(const base::string16& username,
-                              const base::string16& password) override;
-  virtual void PreviewSuggestion(const base::string16& username,
-                                 const base::string16& password) override;
-  virtual void ClearPreviewedForm() override;
-  virtual PasswordGenerationManager* GetPasswordGenerationManager() override;
-  virtual PasswordManager* GetPasswordManager() override;
-  virtual PasswordAutofillManager* GetPasswordAutofillManager() override;
-  virtual autofill::AutofillManager* GetAutofillManager() override;
+  void FillSuggestion(const base::string16& username,
+                      const base::string16& password) override;
+  void PreviewSuggestion(const base::string16& username,
+                         const base::string16& password) override;
+  void ClearPreviewedForm() override;
+  PasswordGenerationManager* GetPasswordGenerationManager() override;
+  PasswordManager* GetPasswordManager() override;
+  PasswordAutofillManager* GetPasswordAutofillManager() override;
+  autofill::AutofillManager* GetAutofillManager() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerDriver);

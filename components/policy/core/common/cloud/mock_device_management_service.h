@@ -29,11 +29,11 @@ class MockDeviceManagementServiceConfiguration
   MockDeviceManagementServiceConfiguration();
   explicit MockDeviceManagementServiceConfiguration(
       const std::string& server_url);
-  virtual ~MockDeviceManagementServiceConfiguration();
+  ~MockDeviceManagementServiceConfiguration() override;
 
-  virtual std::string GetServerUrl() override;
-  virtual std::string GetAgentParameter() override;
-  virtual std::string GetPlatformParameter() override;
+  std::string GetServerUrl() override;
+  std::string GetAgentParameter() override;
+  std::string GetPlatformParameter() override;
 
  private:
   const std::string server_url_;

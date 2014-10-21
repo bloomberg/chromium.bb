@@ -33,7 +33,7 @@ class PushClientChannelTest
     push_client_channel_.RemoveObserver(this);
   }
 
-  virtual void OnNetworkChannelStateChanged(
+  void OnNetworkChannelStateChanged(
       InvalidatorState invalidator_state) override {
     last_invalidator_state_ = invalidator_state;
   }

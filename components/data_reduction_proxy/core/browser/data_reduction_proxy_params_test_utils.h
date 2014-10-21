@@ -47,21 +47,21 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   static std::string FlagProbeURL();
 
  protected:
-  virtual std::string GetDefaultDevOrigin() const override;
+  std::string GetDefaultDevOrigin() const override;
 
-  virtual std::string GetDefaultDevFallbackOrigin() const override;
+  std::string GetDefaultDevFallbackOrigin() const override;
 
-  virtual std::string GetDefaultOrigin() const override;
+  std::string GetDefaultOrigin() const override;
 
-  virtual std::string GetDefaultFallbackOrigin() const override;
+  std::string GetDefaultFallbackOrigin() const override;
 
-  virtual std::string GetDefaultSSLOrigin() const override;
+  std::string GetDefaultSSLOrigin() const override;
 
-  virtual std::string GetDefaultAltOrigin() const override;
+  std::string GetDefaultAltOrigin() const override;
 
-  virtual std::string GetDefaultAltFallbackOrigin() const override;
+  std::string GetDefaultAltFallbackOrigin() const override;
 
-  virtual std::string GetDefaultProbeURL() const override;
+  std::string GetDefaultProbeURL() const override;
 
  private:
   std::string GetDefinition(unsigned int has_def,

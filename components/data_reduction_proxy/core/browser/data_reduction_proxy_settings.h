@@ -92,7 +92,7 @@ class DataReductionProxySettings
   static bool IsProxyKeySetOnCommandLine();
 
   DataReductionProxySettings(DataReductionProxyParams* params);
-  virtual ~DataReductionProxySettings();
+  ~DataReductionProxySettings() override;
 
   DataReductionProxyParams* params() const {
     return params_.get();
@@ -179,7 +179,7 @@ class DataReductionProxySettings
   ContentLengthList GetDailyContentLengths(const char* pref_name);
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  protected:
   void InitPrefMembers();
@@ -269,7 +269,7 @@ class DataReductionProxySettings
                            TestSetProxyConfigsHoldback);
 
   // NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
   void OnProxyEnabledPrefChange();
   void OnProxyAlternativeEnabledPrefChange();

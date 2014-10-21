@@ -51,7 +51,7 @@ class InfoBar : public gfx::AnimationDelegate {
   static const int kMaximumArrowTargetHalfWidth;
 
   explicit InfoBar(scoped_ptr<InfoBarDelegate> delegate);
-  virtual ~InfoBar();
+  ~InfoBar() override;
 
   static SkColor GetTopColor(InfoBarDelegate::Type infobar_type);
   static SkColor GetBottomColor(InfoBarDelegate::Type infobar_type);
@@ -98,7 +98,7 @@ class InfoBar : public gfx::AnimationDelegate {
 
  protected:
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   const InfoBarContainer* container() const { return container_; }
   InfoBarContainer* container() { return container_; }
@@ -116,7 +116,7 @@ class InfoBar : public gfx::AnimationDelegate {
 
  private:
   // gfx::AnimationDelegate:
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // Finds the new desired arrow and bar heights, and if they differ from the
   // current ones, calls PlatformSpecificOnHeightRecalculated().  Informs our

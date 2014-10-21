@@ -21,12 +21,12 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
   explicit ChildTraceMessageFilter(base::MessageLoopProxy* ipc_message_loop);
 
   // IPC::MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~ChildTraceMessageFilter();
+  ~ChildTraceMessageFilter() override;
 
  private:
   // Message handlers.

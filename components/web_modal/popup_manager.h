@@ -27,7 +27,7 @@ class PopupManager : public SinglePopupManagerDelegate {
   // |host| may be null.
   PopupManager(WebContentsModalDialogHost* host);
 
-  virtual ~PopupManager();
+  ~PopupManager() override;
 
   // Returns the native view which will be the parent of managed popups.
   virtual gfx::NativeView GetHostView() const;
@@ -48,7 +48,7 @@ class PopupManager : public SinglePopupManagerDelegate {
       const content::WebContents* web_contents) const;
 
   // Called when a NativePopup we own is about to be closed.
-  virtual void WillClose(NativePopup popup) override;
+  void WillClose(NativePopup popup) override;
 
   // Called by views code to re-activate popups anchored to a particular tab
   // when that tab gets focus. Note that depending on the situation, more than

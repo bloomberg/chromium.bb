@@ -114,7 +114,7 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
   scoped_refptr<PrefRegistrySyncable> ForkForIncognito();
 
  private:
-  virtual ~PrefRegistrySyncable();
+  ~PrefRegistrySyncable() override;
 
   void RegisterSyncablePreference(const char* path,
                                   base::Value* default_value,

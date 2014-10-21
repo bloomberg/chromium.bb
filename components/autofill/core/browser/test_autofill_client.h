@@ -17,22 +17,20 @@ namespace autofill {
 class TestAutofillClient : public AutofillClient {
  public:
   TestAutofillClient();
-  virtual ~TestAutofillClient();
+  ~TestAutofillClient() override;
 
   // AutofillClient implementation.
-  virtual PersonalDataManager* GetPersonalDataManager() override;
-  virtual scoped_refptr<AutofillWebDataService> GetDatabase() override;
-  virtual PrefService* GetPrefs() override;
-  virtual void HideRequestAutocompleteDialog() override;
-  virtual void ShowAutofillSettings() override;
-  virtual void ConfirmSaveCreditCard(
-      const AutofillMetrics& metric_logger,
-      const base::Closure& save_card_callback) override;
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      const GURL& source_url,
-      const ResultCallback& callback) override;
-  virtual void ShowAutofillPopup(
+  PersonalDataManager* GetPersonalDataManager() override;
+  scoped_refptr<AutofillWebDataService> GetDatabase() override;
+  PrefService* GetPrefs() override;
+  void HideRequestAutocompleteDialog() override;
+  void ShowAutofillSettings() override;
+  void ConfirmSaveCreditCard(const AutofillMetrics& metric_logger,
+                             const base::Closure& save_card_callback) override;
+  void ShowRequestAutocompleteDialog(const FormData& form,
+                                     const GURL& source_url,
+                                     const ResultCallback& callback) override;
+  void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
       const std::vector<base::string16>& values,
@@ -40,18 +38,17 @@ class TestAutofillClient : public AutofillClient {
       const std::vector<base::string16>& icons,
       const std::vector<int>& identifiers,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
-  virtual void UpdateAutofillPopupDataListValues(
+  void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
-  virtual void HideAutofillPopup() override;
-  virtual bool IsAutocompleteEnabled() override;
+  void HideAutofillPopup() override;
+  bool IsAutocompleteEnabled() override;
 
-  virtual void DetectAccountCreationForms(
+  void DetectAccountCreationForms(
       const std::vector<autofill::FormStructure*>& forms) override;
 
-  virtual void DidFillOrPreviewField(
-      const base::string16& autofilled_value,
-      const base::string16& profile_full_name) override;
+  void DidFillOrPreviewField(const base::string16& autofilled_value,
+                             const base::string16& profile_full_name) override;
 
   void SetPrefs(scoped_ptr<PrefService> prefs) { prefs_ = prefs.Pass(); }
 

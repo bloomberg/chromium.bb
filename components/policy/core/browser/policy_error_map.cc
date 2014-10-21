@@ -41,9 +41,9 @@ class SimplePendingError : public PolicyErrorMap::PendingError {
       : PendingError(policy_name),
         message_id_(message_id),
         replacement_(replacement) {}
-  virtual ~SimplePendingError() {}
+  ~SimplePendingError() override {}
 
-  virtual base::string16 GetMessage() const override {
+  base::string16 GetMessage() const override {
     if (message_id_ >= 0) {
       if (replacement_.empty())
         return l10n_util::GetStringUTF16(message_id_);
@@ -68,9 +68,9 @@ class DictSubkeyPendingError : public SimplePendingError {
                          const std::string& replacement)
       : SimplePendingError(policy_name, message_id, replacement),
         subkey_(subkey) {}
-  virtual ~DictSubkeyPendingError() {}
+  ~DictSubkeyPendingError() override {}
 
-  virtual base::string16 GetMessage() const override {
+  base::string16 GetMessage() const override {
     return l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
                                       base::ASCIIToUTF16(subkey_),
                                       SimplePendingError::GetMessage());
@@ -90,9 +90,9 @@ class ListItemPendingError : public SimplePendingError {
                        const std::string& replacement)
       : SimplePendingError(policy_name, message_id, replacement),
         index_(index) {}
-  virtual ~ListItemPendingError() {}
+  ~ListItemPendingError() override {}
 
-  virtual base::string16 GetMessage() const override {
+  base::string16 GetMessage() const override {
     return l10n_util::GetStringFUTF16(IDS_POLICY_LIST_ENTRY_ERROR,
                                       base::IntToString16(index_),
                                       SimplePendingError::GetMessage());
@@ -111,9 +111,9 @@ class SchemaValidatingPendingError : public SimplePendingError {
                                const std::string& replacement)
       : SimplePendingError(policy_name, -1, replacement),
         error_path_(error_path) {};
-  virtual ~SchemaValidatingPendingError() {}
+  ~SchemaValidatingPendingError() override {}
 
-  virtual base::string16 GetMessage() const override {
+  base::string16 GetMessage() const override {
     return l10n_util::GetStringFUTF16(IDS_POLICY_SCHEMA_VALIDATION_ERROR,
                                       base::ASCIIToUTF16(error_path_),
                                       SimplePendingError::GetMessage());

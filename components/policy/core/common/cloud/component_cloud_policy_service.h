@@ -82,7 +82,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
       scoped_refptr<net::URLRequestContextGetter> request_context,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
-  virtual ~ComponentCloudPolicyService();
+  ~ComponentCloudPolicyService() override;
 
   // Returns true if |domain| is supported by the service.
   static bool SupportsDomain(PolicyDomain domain);
@@ -98,22 +98,22 @@ class POLICY_EXPORT ComponentCloudPolicyService
   void ClearCache();
 
   // SchemaRegistry::Observer implementation:
-  virtual void OnSchemaRegistryReady() override;
-  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) override;
+  void OnSchemaRegistryReady() override;
+  void OnSchemaRegistryUpdated(bool has_new_schemas) override;
 
   // CloudPolicyCore::Observer implementation:
-  virtual void OnCoreConnected(CloudPolicyCore* core) override;
-  virtual void OnCoreDisconnecting(CloudPolicyCore* core) override;
-  virtual void OnRefreshSchedulerStarted(CloudPolicyCore* core) override;
+  void OnCoreConnected(CloudPolicyCore* core) override;
+  void OnCoreDisconnecting(CloudPolicyCore* core) override;
+  void OnRefreshSchedulerStarted(CloudPolicyCore* core) override;
 
   // CloudPolicyStore::Observer implementation:
-  virtual void OnStoreLoaded(CloudPolicyStore* store) override;
-  virtual void OnStoreError(CloudPolicyStore* store) override;
+  void OnStoreLoaded(CloudPolicyStore* store) override;
+  void OnStoreError(CloudPolicyStore* store) override;
 
   // CloudPolicyClient::Observer implementation:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
-  virtual void OnClientError(CloudPolicyClient* client) override;
+  void OnPolicyFetched(CloudPolicyClient* client) override;
+  void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  void OnClientError(CloudPolicyClient* client) override;
 
  private:
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

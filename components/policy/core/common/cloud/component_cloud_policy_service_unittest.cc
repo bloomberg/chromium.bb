@@ -89,16 +89,14 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
   explicit TestURLRequestContextGetter(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner) {}
-  virtual net::URLRequestContext* GetURLRequestContext() override {
-    return NULL;
-  }
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override {
+  net::URLRequestContext* GetURLRequestContext() override { return NULL; }
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
     return task_runner_;
   }
 
  private:
-  virtual ~TestURLRequestContextGetter() {}
+  ~TestURLRequestContextGetter() override {}
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

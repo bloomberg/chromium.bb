@@ -80,9 +80,9 @@ class MockBluetoothConnection : public BluetoothConnection {
 class TestWireMessage : public WireMessage {
  public:
   TestWireMessage() : WireMessage("permit id", "payload") {}
-  virtual ~TestWireMessage() {}
+  ~TestWireMessage() override {}
 
-  virtual std::string Serialize() const override { return kSerializedMessage; }
+  std::string Serialize() const override { return kSerializedMessage; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWireMessage);

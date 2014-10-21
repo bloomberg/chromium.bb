@@ -29,13 +29,13 @@ class TrustedPluginChannel : public IPC::Listener {
                        const IPC::ChannelHandle& handle,
                        base::WaitableEvent* shutdown_event,
                        bool report_exit_status);
-  virtual ~TrustedPluginChannel();
+  ~TrustedPluginChannel() override;
 
   bool Send(IPC::Message* message);
 
   // Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   void OnReportExitStatus(int exit_status);
 

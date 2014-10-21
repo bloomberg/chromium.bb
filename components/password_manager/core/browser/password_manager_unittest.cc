@@ -81,7 +81,7 @@ class TestPasswordManager : public PasswordManager {
  public:
   explicit TestPasswordManager(PasswordManagerClient* client)
       : PasswordManager(client) {}
-  virtual ~TestPasswordManager() {}
+  ~TestPasswordManager() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestPasswordManager);

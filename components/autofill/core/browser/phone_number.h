@@ -22,25 +22,23 @@ class PhoneNumber : public FormGroup {
  public:
   explicit PhoneNumber(AutofillProfile* profile);
   PhoneNumber(const PhoneNumber& number);
-  virtual ~PhoneNumber();
+  ~PhoneNumber() override;
 
   PhoneNumber& operator=(const PhoneNumber& number);
 
   void set_profile(AutofillProfile* profile) { profile_ = profile; }
 
   // FormGroup implementation:
-  virtual void GetMatchingTypes(
-      const base::string16& text,
-      const std::string& app_locale,
-      ServerFieldTypeSet* matching_types) const override;
-  virtual base::string16 GetRawInfo(ServerFieldType type) const override;
-  virtual void SetRawInfo(ServerFieldType type,
-                          const base::string16& value) override;
-  virtual base::string16 GetInfo(const AutofillType& type,
-                           const std::string& app_locale) const override;
-  virtual bool SetInfo(const AutofillType& type,
-                       const base::string16& value,
-                       const std::string& app_locale) override;
+  void GetMatchingTypes(const base::string16& text,
+                        const std::string& app_locale,
+                        ServerFieldTypeSet* matching_types) const override;
+  base::string16 GetRawInfo(ServerFieldType type) const override;
+  void SetRawInfo(ServerFieldType type, const base::string16& value) override;
+  base::string16 GetInfo(const AutofillType& type,
+                         const std::string& app_locale) const override;
+  bool SetInfo(const AutofillType& type,
+               const base::string16& value,
+               const std::string& app_locale) override;
 
   // Size and offset of the prefix and suffix portions of phone numbers.
   static const size_t kPrefixOffset = 0;
@@ -78,8 +76,7 @@ class PhoneNumber : public FormGroup {
 
  private:
   // FormGroup:
-  virtual void GetSupportedTypes(
-      ServerFieldTypeSet* supported_types) const override;
+  void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
   // Updates the cached parsed number if the profile's region has changed
   // since the last time the cache was updated.

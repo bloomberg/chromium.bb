@@ -26,7 +26,7 @@ class PopupManagerRelay : public content::WebContentsUserData<PopupManager> {
   explicit PopupManagerRelay(base::WeakPtr<PopupManager> manager)
       : manager_(manager) {}
 
-  virtual ~PopupManagerRelay() {}
+  ~PopupManagerRelay() override {}
 
   base::WeakPtr<PopupManager> manager_;
 };

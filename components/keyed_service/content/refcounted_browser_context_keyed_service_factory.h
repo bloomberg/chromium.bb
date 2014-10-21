@@ -55,7 +55,7 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
   RefcountedBrowserContextKeyedServiceFactory(
       const char* name,
       BrowserContextDependencyManager* manager);
-  virtual ~RefcountedBrowserContextKeyedServiceFactory();
+  ~RefcountedBrowserContextKeyedServiceFactory() override;
 
   scoped_refptr<RefcountedKeyedService> GetServiceForBrowserContext(
       content::BrowserContext* context,
@@ -71,14 +71,11 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
   virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* context) const = 0;
 
-  virtual void BrowserContextShutdown(content::BrowserContext* context)
-      override;
-  virtual void BrowserContextDestroyed(content::BrowserContext* context)
-      override;
-  virtual void SetEmptyTestingFactory(content::BrowserContext* context)
-      override;
-  virtual bool HasTestingFactory(content::BrowserContext* context) override;
-  virtual void CreateServiceNow(content::BrowserContext* context) override;
+  void BrowserContextShutdown(content::BrowserContext* context) override;
+  void BrowserContextDestroyed(content::BrowserContext* context) override;
+  void SetEmptyTestingFactory(content::BrowserContext* context) override;
+  bool HasTestingFactory(content::BrowserContext* context) override;
+  void CreateServiceNow(content::BrowserContext* context) override;
 
  private:
   typedef std::map<content::BrowserContext*,

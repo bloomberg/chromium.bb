@@ -332,7 +332,7 @@ namespace internal {
 class BoundFakeInvalidationHandler : public FakeInvalidationHandler {
  public:
   explicit BoundFakeInvalidationHandler(const Invalidator& invalidator);
-  virtual ~BoundFakeInvalidationHandler();
+  ~BoundFakeInvalidationHandler() override;
 
   // Returns the last return value of GetInvalidatorState() on the
   // bound invalidator from the last time the invalidator state
@@ -340,7 +340,7 @@ class BoundFakeInvalidationHandler : public FakeInvalidationHandler {
   InvalidatorState GetLastRetrievedState() const;
 
   // InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) override;
+  void OnInvalidatorStateChange(InvalidatorState state) override;
 
  private:
   const Invalidator& invalidator_;

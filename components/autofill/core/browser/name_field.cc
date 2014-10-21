@@ -24,7 +24,7 @@ class FullNameField : public NameField {
 
  protected:
   // FormField:
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const override;
+  bool ClassifyField(ServerFieldTypeMap* map) const override;
 
  private:
   explicit FullNameField(AutofillField* field);
@@ -43,7 +43,7 @@ class FirstLastNameField : public NameField {
 
  protected:
   // FormField:
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const override;
+  bool ClassifyField(ServerFieldTypeMap* map) const override;
 
  private:
   FirstLastNameField();

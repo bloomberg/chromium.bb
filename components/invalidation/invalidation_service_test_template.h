@@ -339,7 +339,7 @@ class BoundFakeInvalidationHandler : public syncer::FakeInvalidationHandler {
  public:
   explicit BoundFakeInvalidationHandler(
       const invalidation::InvalidationService& invalidator);
-  virtual ~BoundFakeInvalidationHandler();
+  ~BoundFakeInvalidationHandler() override;
 
   // Returns the last return value of GetInvalidatorState() on the
   // bound invalidator from the last time the invalidator state
@@ -347,8 +347,7 @@ class BoundFakeInvalidationHandler : public syncer::FakeInvalidationHandler {
   syncer::InvalidatorState GetLastRetrievedState() const;
 
   // InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) override;
+  void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
 
  private:
   const invalidation::InvalidationService& invalidator_;

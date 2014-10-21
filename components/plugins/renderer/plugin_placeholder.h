@@ -43,7 +43,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
                     const std::string& html_data,
                     GURL placeholderDataUrl);
 
-  virtual ~PluginPlaceholder();
+  ~PluginPlaceholder() override;
 
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
@@ -67,16 +67,16 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   void LoadPlugin();
 
   // gin::Wrappable method:
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
  private:
   // WebViewPlugin::Delegate methods:
-  virtual void ShowContextMenu(const blink::WebMouseEvent&) override;
-  virtual void PluginDestroyed() override;
+  void ShowContextMenu(const blink::WebMouseEvent&) override;
+  void PluginDestroyed() override;
 
   // RenderFrameObserver methods:
-  virtual void OnDestruct() override;
+  void OnDestruct() override;
 
   // Javascript callbacks:
 

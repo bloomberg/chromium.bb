@@ -56,10 +56,10 @@ class AccountTrackerService : public KeyedService,
   };
 
   AccountTrackerService();
-  virtual ~AccountTrackerService();
+  ~AccountTrackerService() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -91,8 +91,8 @@ class AccountTrackerService : public KeyedService,
   void OnUserInfoFetchFailure(AccountInfoFetcher* fetcher);
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   struct AccountState {
     AccountInfo info;

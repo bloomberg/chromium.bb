@@ -105,7 +105,7 @@ class LogoTracker : public net::URLFetcherDelegate {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_ptr<LogoDelegate> delegate);
 
-  virtual ~LogoTracker();
+  ~LogoTracker() override;
 
   // Defines the server API for downloading and parsing the logo. This must be
   // called at least once before calling GetLogo().
@@ -172,10 +172,10 @@ class LogoTracker : public net::URLFetcherDelegate {
                             const SkBitmap& image);
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
-  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                          int64 current,
-                                          int64 total) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                  int64 current,
+                                  int64 total) override;
 
   // The URL from which the logo is fetched.
   GURL logo_url_;

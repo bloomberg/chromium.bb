@@ -44,12 +44,12 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Creates a new node with |id| and |url|.
   BookmarkNode(int64 id, const GURL& url);
 
-  virtual ~BookmarkNode();
+  ~BookmarkNode() override;
 
   // Set the node's internal title. Note that this neither invokes observers
   // nor updates any bookmark model this node may be in. For that functionality,
   // BookmarkModel::SetTitle(..) should be used instead.
-  virtual void SetTitle(const base::string16& title) override;
+  void SetTitle(const base::string16& title) override;
 
   // Returns an unique id for this node.
   // For bookmark nodes that are managed by the bookmark model, the IDs are
@@ -195,13 +195,13 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 class BookmarkPermanentNode : public BookmarkNode {
  public:
   explicit BookmarkPermanentNode(int64 id);
-  virtual ~BookmarkPermanentNode();
+  ~BookmarkPermanentNode() override;
 
   // WARNING: this code is used for other projects. Contact noyau@ for details.
   void set_visible(bool value) { visible_ = value; }
 
   // BookmarkNode overrides:
-  virtual bool IsVisible() const override;
+  bool IsVisible() const override;
 
  private:
   bool visible_;

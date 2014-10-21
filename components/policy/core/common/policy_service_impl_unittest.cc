@@ -75,9 +75,9 @@ class ChangePolicyObserver : public PolicyService::Observer {
       : provider_(provider),
         observer_invoked_(false) {}
 
-  virtual void OnPolicyUpdated(const PolicyNamespace&,
-                               const PolicyMap& previous,
-                               const PolicyMap& current) override {
+  void OnPolicyUpdated(const PolicyNamespace&,
+                       const PolicyMap& previous,
+                       const PolicyMap& current) override {
     PolicyMap new_policy;
     new_policy.Set("foo",
                    POLICY_LEVEL_MANDATORY,

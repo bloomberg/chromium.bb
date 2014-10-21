@@ -19,7 +19,7 @@ class FileHostTestNaClBrowserDelegate : public TestNaClBrowserDelegate {
  public:
   FileHostTestNaClBrowserDelegate() {}
 
-  virtual bool GetPnaclDirectory(base::FilePath* pnacl_dir) override {
+  bool GetPnaclDirectory(base::FilePath* pnacl_dir) override {
     *pnacl_dir = pnacl_path_;
     return true;
   }

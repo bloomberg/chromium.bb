@@ -54,7 +54,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
         new MockAutofillManager(this, client));
     SetAutofillManager(autofill_manager.Pass());
   }
-  virtual ~TestContentAutofillDriver() {}
+  ~TestContentAutofillDriver() override {}
 
   virtual MockAutofillManager* mock_autofill_manager() {
     return static_cast<MockAutofillManager*>(autofill_manager());
