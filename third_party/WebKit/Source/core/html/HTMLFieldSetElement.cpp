@@ -58,6 +58,35 @@ void HTMLFieldSetElement::trace(Visitor* visitor)
     HTMLFormControlElement::trace(visitor);
 }
 
+bool HTMLFieldSetElement::matchesValidityPseudoClasses() const
+{
+    return true;
+}
+
+bool HTMLFieldSetElement::isValidElement()
+{
+    const FormAssociatedElement::List& elements = associatedElements();
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        if (elements[i]->isFormControlElement()) {
+            HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
+            if (!control->checkValidity(0, CheckValidityDispatchNoEvent))
+                return false;
+        }
+    }
+    return true;
+}
+
+void HTMLFieldSetElement::setNeedsValidityCheck()
+{
+    // For now unconditionally order style recalculation, which triggers
+    // validity recalculation. In the near future, consider implement validity
+    // cache and recalculate style only if it changed.
+    // If setNeedsStyleRecalc ends up being called conditionally here, then
+    // the caller will have to call setNeedsValidityCheck for all ancestor
+    // fieldsets, not only the furthest one.
+    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
+}
+
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)
 {
     for (HTMLFormControlElement* element = Traversal<HTMLFormControlElement>::firstWithin(base); element; element = Traversal<HTMLFormControlElement>::next(*element, &base))

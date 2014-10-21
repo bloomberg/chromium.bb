@@ -157,8 +157,8 @@ private:
     virtual short tabIndex() const override final;
 
     virtual bool isDefaultButtonForForm() const override final;
-    virtual bool isValidElement() override final;
-    virtual bool matchesValidityPseudoClasses() const override final;
+    virtual bool isValidElement() override;
+    virtual bool matchesValidityPseudoClasses() const override;
     void updateAncestorDisabledState() const;
 
     bool isValidationMessageVisible() const;
@@ -166,6 +166,8 @@ private:
 
     // Requests validity recalc for the form owner, if one exists.
     void formOwnerSetNeedsValidityCheck();
+    // Requests validity recalc for all ancestor fieldsets, if exist.
+    void fieldSetAncestorsSetNeedsValidityCheck(Node*);
 
     bool m_disabled : 1;
     bool m_isAutofilled : 1;

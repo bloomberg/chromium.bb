@@ -42,6 +42,8 @@ public:
 
     const FormAssociatedElement::List& associatedElements() const;
 
+    void setNeedsValidityCheck();
+
 protected:
     virtual void disabledAttributeChanged() override;
 
@@ -53,6 +55,8 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) override;
     virtual const AtomicString& formControlType() const override;
     virtual bool recalcWillValidate() const override { return false; }
+    virtual bool matchesValidityPseudoClasses() const override final;
+    virtual bool isValidElement() override final;
     virtual void childrenChanged(const ChildrenChange&) override;
     virtual bool areAuthorShadowsAllowed() const override { return false; }
 

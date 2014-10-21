@@ -253,11 +253,13 @@ Node::InsertionNotificationRequest HTMLFormControlElement::insertedInto(Containe
     setNeedsWillValidateCheck();
     HTMLElement::insertedInto(insertionPoint);
     FormAssociatedElement::insertedInto(insertionPoint);
+    fieldSetAncestorsSetNeedsValidityCheck(insertionPoint);
     return InsertionDone;
 }
 
 void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
 {
+    fieldSetAncestorsSetNeedsValidityCheck(insertionPoint);
     hideVisibleValidationMessage();
     m_hasValidationMessage = false;
     m_ancestorDisabledState = AncestorDisabledStateUnknown;
@@ -283,6 +285,20 @@ void HTMLFormControlElement::formOwnerSetNeedsValidityCheck()
     HTMLFormElement* form = formOwner();
     if (form)
         form->setNeedsValidityCheck();
+}
+
+void HTMLFormControlElement::fieldSetAncestorsSetNeedsValidityCheck(Node* node)
+{
+    if (!node)
+        return;
+    HTMLFieldSetElement* fieldSet = Traversal<HTMLFieldSetElement>::firstAncestorOrSelf(*node);
+    HTMLFieldSetElement* lastFieldSet = 0;
+    while (fieldSet) {
+        lastFieldSet = fieldSet;
+        fieldSet = Traversal<HTMLFieldSetElement>::firstAncestor(*fieldSet);
+    }
+    if (lastFieldSet)
+        lastFieldSet->setNeedsValidityCheck();
 }
 
 void HTMLFormControlElement::setChangedSinceLastFormControlChangeEvent(bool changed)
@@ -519,6 +535,7 @@ void HTMLFormControlElement::setNeedsValidityCheck()
     bool newIsValid = valid();
     if (willValidate() && newIsValid != m_isValid) {
         formOwnerSetNeedsValidityCheck();
+        fieldSetAncestorsSetNeedsValidityCheck(parentNode());
         // Update style for pseudo classes such as :valid :invalid.
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
     }
