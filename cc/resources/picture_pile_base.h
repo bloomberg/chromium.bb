@@ -65,6 +65,10 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
 
   void AsValueInto(base::debug::TracedValue* array) const;
 
+  SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const {
+    return tile_grid_info_;
+  }
+
  protected:
   class CC_EXPORT PictureInfo {
    public:

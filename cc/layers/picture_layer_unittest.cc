@@ -84,5 +84,23 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
 }
 
+TEST(PictureLayerTest, UseTileGridSize) {
+  LayerTreeSettings settings;
+  settings.default_tile_grid_size = gfx::Size(123, 123);
+
+  MockContentLayerClient client;
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&host_client, settings);
+  host->SetRootLayer(layer);
+
+  // Tile-grid is set according to its setting.
+  SkTileGridFactory::TileGridInfo info =
+      layer->GetPicturePileForTesting()->GetTileGridInfoForTesting();
+  EXPECT_EQ(info.fTileInterval.width(), 123 - 2 * info.fMargin.width());
+  EXPECT_EQ(info.fTileInterval.height(), 123 - 2 * info.fMargin.height());
+}
+
 }  // namespace
 }  // namespace cc

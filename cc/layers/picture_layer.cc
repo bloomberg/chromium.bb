@@ -60,7 +60,7 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
   if (host) {
     pile_->SetMinContentsScale(host->settings().minimum_contents_scale);
-    pile_->SetTileGridSize(host->settings().default_tile_size);
+    pile_->SetTileGridSize(host->settings().default_tile_grid_size);
     pile_->set_slow_down_raster_scale_factor(
         host->debug_state().slow_down_raster_scale_factor);
     pile_->set_show_debug_picture_borders(
