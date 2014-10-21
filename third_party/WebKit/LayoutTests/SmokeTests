@@ -18,7 +18,11 @@ compositing/reflections/empty-reflection-with-mask.html
 compositing/repaint/invalidations-on-composited-layers.html
 compositing/repaint/resize-repaint.html
 compositing/transitions/opacity-on-inline.html
+crypto/hmac-generate-key.html
+crypto/aes-kw-wrap-unwrap-aes.html
+crypto/clone-hmacKey.html
 crypto/random-values.html
+crypto/sha-digest.html
 css1/cascade/important.html
 css1/classification/list_style.html
 css1/classification/list_style_image.html
