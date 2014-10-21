@@ -15,12 +15,12 @@ namespace gfx {
 class GL_EXPORT GLFenceNV : public GLFence {
  public:
   GLFenceNV(bool flush);
-  virtual ~GLFenceNV();
+  ~GLFenceNV() override;
 
   // GLFence implementation:
-  virtual bool HasCompleted() override;
-  virtual void ClientWait() override;
-  virtual void ServerWait() override;
+  bool HasCompleted() override;
+  void ClientWait() override;
+  void ServerWait() override;
 
  private:
   GLuint fence_;

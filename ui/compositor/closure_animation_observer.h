@@ -20,10 +20,10 @@ class COMPOSITOR_EXPORT ClosureAnimationObserver
   explicit ClosureAnimationObserver(const base::Closure& closure);
 
  private:
-  virtual ~ClosureAnimationObserver();
+  ~ClosureAnimationObserver() override;
 
   // ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() override;
+  void OnImplicitAnimationsCompleted() override;
 
   const base::Closure closure_;
 

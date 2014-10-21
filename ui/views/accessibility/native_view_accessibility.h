@@ -32,12 +32,12 @@ class VIEWS_EXPORT NativeViewAccessibility : public ui::AXPlatformNodeDelegate {
   static void UnregisterWebView(View* web_view);
 
   // ui::AXPlatformNodeDelegate
-  virtual ui::AXNodeData* GetData() override;
-  virtual int GetChildCount() override;
-  virtual gfx::NativeViewAccessible ChildAtIndex(int index) override;
-  virtual gfx::NativeViewAccessible GetParent() override;
-  virtual gfx::Vector2d GetGlobalCoordinateOffset() override;
-  virtual void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
+  ui::AXNodeData* GetData() override;
+  int GetChildCount() override;
+  gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  gfx::NativeViewAccessible GetParent() override;
+  gfx::Vector2d GetGlobalCoordinateOffset() override;
+  void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
 
  protected:
   NativeViewAccessibility();

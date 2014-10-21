@@ -18,11 +18,11 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
   AXPlatformNodeMac();
 
   // AXPlatformNode.
-  virtual void Destroy() override;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  void Destroy() override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
 
  private:
-  virtual ~AXPlatformNodeMac();
+  ~AXPlatformNodeMac() override;
 
   base::scoped_nsobject<AXPlatformNodeCocoa> native_node_;
 

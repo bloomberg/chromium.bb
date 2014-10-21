@@ -147,42 +147,30 @@ class MockInputMethodBase : public InputMethodBase {
   // Note: this class does not take the ownership of |verifier|.
   MockInputMethodBase(ClientChangeVerifier* verifier) : verifier_(verifier) {
   }
-  virtual ~MockInputMethodBase() {
-  }
+  ~MockInputMethodBase() override {}
 
  private:
   // Overriden from InputMethod.
-  virtual bool OnUntranslatedIMEMessage(
+  bool OnUntranslatedIMEMessage(
       const base::NativeEvent& event,
       InputMethod::NativeEventResult* result) override {
     return false;
   }
-  virtual bool DispatchKeyEvent(const ui::KeyEvent&) override {
-    return false;
-  }
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) override {
-  }
-  virtual void CancelComposition(const TextInputClient* client) override {
-  }
-  virtual void OnInputLocaleChanged() override {
-  }
-  virtual std::string GetInputLocale() override{
-    return "";
-  }
-  virtual bool IsActive() override {
-    return false;
-  }
-  virtual bool IsCandidatePopupOpen() const override {
-    return false;
-  }
+  bool DispatchKeyEvent(const ui::KeyEvent&) override { return false; }
+  void OnCaretBoundsChanged(const TextInputClient* client) override {}
+  void CancelComposition(const TextInputClient* client) override {}
+  void OnInputLocaleChanged() override {}
+  std::string GetInputLocale() override { return ""; }
+  bool IsActive() override { return false; }
+  bool IsCandidatePopupOpen() const override { return false; }
   // Overriden from InputMethodBase.
-  virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
-                                         TextInputClient* focused) override {
+  void OnWillChangeFocusedClient(TextInputClient* focused_before,
+                                 TextInputClient* focused) override {
     verifier_->OnWillChangeFocusedClient(focused_before, focused);
   }
 
-  virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                        TextInputClient* focused) override {
+  void OnDidChangeFocusedClient(TextInputClient* focused_before,
+                                TextInputClient* focused) override {
     verifier_->OnDidChangeFocusedClient(focused_before, focused);
   }
 
@@ -198,25 +186,18 @@ class MockInputMethodObserver : public InputMethodObserver {
   explicit MockInputMethodObserver(ClientChangeVerifier* verifier)
       : verifier_(verifier) {
   }
-  virtual ~MockInputMethodObserver() {
-  }
+  ~MockInputMethodObserver() override {}
 
  private:
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) override {
-  }
-  virtual void OnFocus() override {
-  }
-  virtual void OnBlur() override {
-  }
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) override {
-  }
-  virtual void OnTextInputStateChanged(const TextInputClient* client) override {
+  void OnTextInputTypeChanged(const TextInputClient* client) override {}
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const TextInputClient* client) override {}
+  void OnTextInputStateChanged(const TextInputClient* client) override {
     verifier_->OnTextInputStateChanged(client);
   }
-  virtual void OnShowImeIfNeeded() override {
-  }
-  virtual void OnInputMethodDestroyed(const InputMethod* client) override {
-  }
+  void OnShowImeIfNeeded() override {}
+  void OnInputMethodDestroyed(const InputMethod* client) override {}
 
   ClientChangeVerifier* verifier_;
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodObserver);
@@ -227,18 +208,11 @@ class MockTextInputClient : public DummyTextInputClient {
   MockTextInputClient()
       : shown_event_count_(0), updated_event_count_(0), hidden_event_count_(0) {
   }
-  virtual ~MockTextInputClient() {
-  }
+  ~MockTextInputClient() override {}
 
-  virtual void OnCandidateWindowShown() override {
-    ++shown_event_count_;
-  }
-  virtual void OnCandidateWindowUpdated() override {
-    ++updated_event_count_;
-  }
-  virtual void OnCandidateWindowHidden() override {
-    ++hidden_event_count_;
-  }
+  void OnCandidateWindowShown() override { ++shown_event_count_; }
+  void OnCandidateWindowUpdated() override { ++updated_event_count_; }
+  void OnCandidateWindowHidden() override { ++hidden_event_count_; }
 
   int shown_event_count() const { return shown_event_count_; }
   int updated_event_count() const { return updated_event_count_; }

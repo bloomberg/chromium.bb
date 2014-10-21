@@ -40,7 +40,7 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
   WebDialogWebContentsDelegate(content::BrowserContext* context,
                                WebContentsHandler* handler);
 
-  virtual ~WebDialogWebContentsDelegate();
+  ~WebDialogWebContentsDelegate() override;
 
   // The returned browser context is guaranteed to be original if non-NULL.
   content::BrowserContext* browser_context() const {
@@ -53,20 +53,18 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
   void Detach();
 
   // content::WebContentsDelegate declarations.
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual bool IsPopupOrPanel(
-      const content::WebContents* source) const override;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) override;
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  bool IsPopupOrPanel(const content::WebContents* source) const override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
 
  private:
   // Weak pointer.  Always an original profile.

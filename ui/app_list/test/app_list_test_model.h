@@ -21,9 +21,9 @@ class AppListTestModel : public AppListModel {
   class AppListTestItem : public AppListItem {
    public:
     AppListTestItem(const std::string& id, AppListTestModel* model);
-    virtual ~AppListTestItem();
-    virtual void Activate(int event_flags) override;
-    virtual const char* GetItemType() const override;
+    ~AppListTestItem() override;
+    void Activate(int event_flags) override;
+    const char* GetItemType() const override;
 
     void SetPosition(const syncer::StringOrdinal& new_position);
 

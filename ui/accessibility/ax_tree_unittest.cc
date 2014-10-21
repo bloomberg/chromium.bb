@@ -16,27 +16,27 @@ namespace {
 
 class FakeAXTreeDelegate : public AXTreeDelegate {
  public:
-  virtual void OnNodeWillBeDeleted(AXNode* node) override {
+  void OnNodeWillBeDeleted(AXNode* node) override {
     deleted_ids_.push_back(node->id());
   }
 
-  virtual void OnNodeCreated(AXNode* node) override {
+  void OnNodeCreated(AXNode* node) override {
     created_ids_.push_back(node->id());
   }
 
-  virtual void OnNodeChanged(AXNode* node) override {
+  void OnNodeChanged(AXNode* node) override {
     changed_ids_.push_back(node->id());
   }
 
-  virtual void OnNodeCreationFinished(AXNode* node) override {
+  void OnNodeCreationFinished(AXNode* node) override {
     creation_finished_ids_.push_back(node->id());
   }
 
-  virtual void OnNodeChangeFinished(AXNode* node) override {
+  void OnNodeChangeFinished(AXNode* node) override {
     change_finished_ids_.push_back(node->id());
   }
 
-  virtual void OnRootChanged(AXNode* new_root) override {
+  void OnRootChanged(AXNode* new_root) override {
     new_root_ids_.push_back(new_root->id());
   }
 

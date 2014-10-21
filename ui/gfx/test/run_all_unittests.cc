@@ -28,7 +28,7 @@ class GfxTestSuite : public base::TestSuite {
   GfxTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
  protected:
-  virtual void Initialize() override {
+  void Initialize() override {
     base::TestSuite::Initialize();
 
 #if defined(OS_ANDROID)
@@ -46,7 +46,7 @@ class GfxTestSuite : public base::TestSuite {
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
   }
 
-  virtual void Shutdown() override {
+  void Shutdown() override {
     ui::ResourceBundle::CleanupSharedInstance();
     base::TestSuite::Shutdown();
   }

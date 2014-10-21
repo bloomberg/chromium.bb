@@ -16,20 +16,20 @@ class TestWebContentsHandler
     : public WebDialogWebContentsDelegate::WebContentsHandler {
  public:
   TestWebContentsHandler();
-  virtual ~TestWebContentsHandler();
+  ~TestWebContentsHandler() override;
 
  private:
   // Overridden from WebDialogWebContentsDelegate::WebContentsHandler:
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual void AddNewContents(content::BrowserContext* context,
-                              content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) override;
+  void AddNewContents(content::BrowserContext* context,
+                      content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsHandler);
 };

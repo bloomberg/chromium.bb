@@ -124,10 +124,10 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
  public:
   ResourceBundleImageSource(ResourceBundle* rb, int resource_id)
       : rb_(rb), resource_id_(resource_id) {}
-  virtual ~ResourceBundleImageSource() {}
+  ~ResourceBundleImageSource() override {}
 
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
     SkBitmap image;
     bool fell_back_to_1x = false;
     ScaleFactor scale_factor = GetSupportedScaleFactor(scale);

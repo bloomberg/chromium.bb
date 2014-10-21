@@ -15,12 +15,12 @@ namespace gfx {
 class GL_EXPORT GLFenceARB : public GLFence {
  public:
   GLFenceARB(bool flush);
-  virtual ~GLFenceARB();
+  ~GLFenceARB() override;
 
   // GLFence implementation:
-  virtual bool HasCompleted() override;
-  virtual void ClientWait() override;
-  virtual void ServerWait() override;
+  bool HasCompleted() override;
+  void ClientWait() override;
+  void ServerWait() override;
 
  private:
   GLsync sync_;

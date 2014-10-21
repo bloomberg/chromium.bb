@@ -53,29 +53,28 @@ class GESTURE_DETECTION_EXPORT SimpleGestureListener
       public DoubleTapListener {
  public:
   // GestureListener implementation.
-  virtual bool OnDown(const MotionEvent& e) override;
-  virtual void OnShowPress(const MotionEvent& e) override;
-  virtual bool OnSingleTapUp(const MotionEvent& e) override;
-  virtual void OnLongPress(const MotionEvent& e) override;
-  virtual bool OnScroll(const MotionEvent& e1,
-                        const MotionEvent& e2,
-                        float distance_x,
-                        float distance_y) override;
-  virtual bool OnFling(const MotionEvent& e1,
-                       const MotionEvent& e2,
-                       float velocity_x,
-                       float velocity_y) override;
-  virtual bool OnSwipe(const MotionEvent& e1,
-                       const MotionEvent& e2,
-                       float velocity_x,
-                       float velocity_y) override;
-  virtual bool OnTwoFingerTap(const MotionEvent& e1,
-                              const MotionEvent& e2) override;
+  bool OnDown(const MotionEvent& e) override;
+  void OnShowPress(const MotionEvent& e) override;
+  bool OnSingleTapUp(const MotionEvent& e) override;
+  void OnLongPress(const MotionEvent& e) override;
+  bool OnScroll(const MotionEvent& e1,
+                const MotionEvent& e2,
+                float distance_x,
+                float distance_y) override;
+  bool OnFling(const MotionEvent& e1,
+               const MotionEvent& e2,
+               float velocity_x,
+               float velocity_y) override;
+  bool OnSwipe(const MotionEvent& e1,
+               const MotionEvent& e2,
+               float velocity_x,
+               float velocity_y) override;
+  bool OnTwoFingerTap(const MotionEvent& e1, const MotionEvent& e2) override;
 
   // DoubleTapListener implementation.
-  virtual bool OnSingleTapConfirmed(const MotionEvent& e) override;
-  virtual bool OnDoubleTap(const MotionEvent& e) override;
-  virtual bool OnDoubleTapEvent(const MotionEvent& e) override;
+  bool OnSingleTapConfirmed(const MotionEvent& e) override;
+  bool OnDoubleTap(const MotionEvent& e) override;
+  bool OnDoubleTapEvent(const MotionEvent& e) override;
 };
 
 }  // namespace ui

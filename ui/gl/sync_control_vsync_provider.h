@@ -16,9 +16,9 @@ namespace gfx {
 class SyncControlVSyncProvider : public VSyncProvider {
  public:
   SyncControlVSyncProvider();
-  virtual ~SyncControlVSyncProvider();
+  ~SyncControlVSyncProvider() override;
 
-  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
+  void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  protected:
   virtual bool GetSyncValues(int64* system_time,

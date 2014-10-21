@@ -17,7 +17,7 @@ namespace {
 class TestTarget : public AcceleratorTarget {
  public:
   TestTarget() : accelerator_pressed_count_(0) {}
-  virtual ~TestTarget() {}
+  ~TestTarget() override {}
 
   int accelerator_pressed_count() const {
     return accelerator_pressed_count_;
@@ -28,8 +28,8 @@ class TestTarget : public AcceleratorTarget {
   }
 
   // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) override;
-  virtual bool CanHandleAccelerators() const override;
+  bool AcceleratorPressed(const Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
 
  private:
   int accelerator_pressed_count_;

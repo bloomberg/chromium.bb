@@ -19,10 +19,10 @@ class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
                   gfx::GpuMemoryBuffer::Format format);
 
   // Overridden from GLImage:
-  virtual void Destroy(bool have_context) override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~GLImageSharedMemory();
+  ~GLImageSharedMemory() override;
 
  private:
   scoped_ptr<base::SharedMemory> shared_memory_;

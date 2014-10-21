@@ -19,7 +19,7 @@ namespace gfx {
 class GFX_EXPORT ThrobAnimation : public SlideAnimation {
  public:
   explicit ThrobAnimation(AnimationDelegate* target);
-  virtual ~ThrobAnimation() {}
+  ~ThrobAnimation() override {}
 
   // Starts throbbing. cycles_til_stop gives the number of cycles to do before
   // stopping. A negative value means "throb indefinitely".
@@ -29,13 +29,13 @@ class GFX_EXPORT ThrobAnimation : public SlideAnimation {
   void SetThrobDuration(int duration) { throb_duration_ = duration; }
 
   // Overridden to reset to the slide duration.
-  virtual void Reset() override;
-  virtual void Reset(double value) override;
-  virtual void Show() override;
-  virtual void Hide() override;
+  void Reset() override;
+  void Reset(double value) override;
+  void Show() override;
+  void Hide() override;
 
   // Overridden to maintain the slide duration.
-  virtual void SetSlideDuration(int duration) override;
+  void SetSlideDuration(int duration) override;
 
   // The number of cycles remaining until the animation stops.
   void set_cycles_remaining(int value) { cycles_remaining_ = value; }
@@ -43,7 +43,7 @@ class GFX_EXPORT ThrobAnimation : public SlideAnimation {
 
  protected:
   // Overriden to continually throb (assuming we're throbbing).
-  virtual void Step(base::TimeTicks time_now) override;
+  void Step(base::TimeTicks time_now) override;
 
  private:
   // Resets state such that we behave like SlideAnimation.

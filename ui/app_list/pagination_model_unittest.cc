@@ -26,7 +26,7 @@ class TestPaginationModelObserver : public PaginationModelObserver {
         transition_page_(-1) {
     Reset();
   }
-  virtual ~TestPaginationModelObserver() {}
+  ~TestPaginationModelObserver() override {}
 
   void Reset() {
     selection_count_ = 0;
@@ -61,9 +61,8 @@ class TestPaginationModelObserver : public PaginationModelObserver {
   }
 
   // PaginationModelObserver overrides:
-  virtual void TotalPagesChanged() override {}
-  virtual void SelectedPageChanged(int old_selected,
-                                   int new_selected) override {
+  void TotalPagesChanged() override {}
+  void SelectedPageChanged(int old_selected, int new_selected) override {
     AppendSelectedPage(new_selected);
     ++selection_count_;
     if (expected_page_selection_ &&
@@ -72,10 +71,9 @@ class TestPaginationModelObserver : public PaginationModelObserver {
     }
   }
 
-  virtual void TransitionStarted() override {
-  }
+  void TransitionStarted() override {}
 
-  virtual void TransitionChanged() override {
+  void TransitionChanged() override {
     if (transition_page_ == -1 ||
         model_->transition().target_page == transition_page_) {
       if (model_->transition().progress == 0)

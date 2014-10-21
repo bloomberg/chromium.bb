@@ -143,7 +143,7 @@ class COMPOSITOR_EXPORT Compositor
   Compositor(gfx::AcceleratedWidget widget,
              ui::ContextFactory* context_factory,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~Compositor();
+  ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }
 
@@ -237,31 +237,29 @@ class COMPOSITOR_EXPORT Compositor
   void OnSwapBuffersAborted();
 
   // LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame(int frame_id) override {}
-  virtual void DidBeginMainFrame() override {}
-  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) override;
-  virtual void Layout() override;
-  virtual void ApplyViewportDeltas(
-      const gfx::Vector2d& inner_delta,
-      const gfx::Vector2d& outer_delta,
-      float page_scale,
-      float top_controls_delta) override {}
-  virtual void ApplyViewportDeltas(
-      const gfx::Vector2d& scroll_delta,
-      float page_scale,
-      float top_controls_delta) override {}
-  virtual void RequestNewOutputSurface(bool fallback) override;
-  virtual void DidInitializeOutputSurface() override {}
-  virtual void WillCommit() override {}
-  virtual void DidCommit() override;
-  virtual void DidCommitAndDrawFrame() override;
-  virtual void DidCompleteSwapBuffers() override;
+  void WillBeginMainFrame(int frame_id) override {}
+  void DidBeginMainFrame() override {}
+  void BeginMainFrame(const cc::BeginFrameArgs& args) override;
+  void Layout() override;
+  void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
+                           const gfx::Vector2d& outer_delta,
+                           float page_scale,
+                           float top_controls_delta) override {}
+  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                           float page_scale,
+                           float top_controls_delta) override {}
+  void RequestNewOutputSurface(bool fallback) override;
+  void DidInitializeOutputSurface() override {}
+  void WillCommit() override {}
+  void DidCommit() override;
+  void DidCommitAndDrawFrame() override;
+  void DidCompleteSwapBuffers() override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  virtual void ScheduleComposite() override;
-  virtual void ScheduleAnimation() override;
-  virtual void DidPostSwapBuffers() override;
-  virtual void DidAbortSwapBuffers() override;
+  void ScheduleComposite() override;
+  void ScheduleAnimation() override;
+  void DidPostSwapBuffers() override;
+  void DidAbortSwapBuffers() override;
 
   int last_started_frame() { return last_started_frame_; }
   int last_ended_frame() { return last_ended_frame_; }

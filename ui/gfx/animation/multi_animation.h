@@ -46,7 +46,7 @@ class GFX_EXPORT MultiAnimation : public Animation {
   typedef std::vector<Part> Parts;
 
   MultiAnimation(const Parts& parts, base::TimeDelta timer_interval);
-  virtual ~MultiAnimation();
+  ~MultiAnimation() override;
 
   // Default interval.
   static base::TimeDelta GetDefaultTimerInterval();
@@ -57,15 +57,15 @@ class GFX_EXPORT MultiAnimation : public Animation {
 
   // Returns the current value. The current value for a MultiAnimation is
   // determined from the tween type of the current part.
-  virtual double GetCurrentValue() const override;
+  double GetCurrentValue() const override;
 
   // Returns the index of the current part.
   size_t current_part_index() const { return current_part_index_; }
 
  protected:
   // Animation overrides.
-  virtual void Step(base::TimeTicks time_now) override;
-  virtual void SetStartTime(base::TimeTicks start_time) override;
+  void Step(base::TimeTicks time_now) override;
+  void SetStartTime(base::TimeTicks start_time) override;
 
  private:
   // Returns the part containing the specified time. |time_ms| is reset to be

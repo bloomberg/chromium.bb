@@ -60,7 +60,7 @@ class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   virtual void DestroyTouchSelection() = 0;
 
  protected:
-  virtual ~TouchEditable() {}
+  ~TouchEditable() override {}
 };
 
 // This defines the callback interface for other code to be notified of changes

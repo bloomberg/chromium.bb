@@ -14,11 +14,11 @@ namespace ui {
 class NATIVE_THEME_EXPORT FallbackTheme : public NativeThemeBase {
  public:
   FallbackTheme();
-  virtual ~FallbackTheme();
+  ~FallbackTheme() override;
 
  protected:
   // Overridden from NativeThemeBase:
-  virtual SkColor GetSystemColor(ColorId color_id) const override;
+  SkColor GetSystemColor(ColorId color_id) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FallbackTheme);

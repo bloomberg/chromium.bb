@@ -20,11 +20,11 @@ class PlatformEventWaiter : public PlatformEventObserver {
  private:
   PlatformEventWaiter(const base::Closure& success_callback,
                       const PlatformEventMatcher& event_matcher);
-  virtual ~PlatformEventWaiter();
+  ~PlatformEventWaiter() override;
 
   // PlatformEventObserver:
-  virtual void WillProcessEvent(const PlatformEvent& event) override;
-  virtual void DidProcessEvent(const PlatformEvent& event) override;
+  void WillProcessEvent(const PlatformEvent& event) override;
+  void DidProcessEvent(const PlatformEvent& event) override;
 
   base::Closure success_callback_;
   PlatformEventMatcher event_matcher_;

@@ -19,19 +19,19 @@ class GLContextCGL : public GLContextReal {
   explicit GLContextCGL(GLShareGroup* share_group);
 
   // Implement GLContext.
-  virtual bool Initialize(GLSurface* compatible_surface,
-                          GpuPreference gpu_preference) override;
-  virtual void Destroy() override;
-  virtual bool MakeCurrent(GLSurface* surface) override;
-  virtual void ReleaseCurrent(GLSurface* surface) override;
-  virtual bool IsCurrent(GLSurface* surface) override;
-  virtual void* GetHandle() override;
-  virtual void SetSwapInterval(int interval) override;
-  virtual bool GetTotalGpuMemory(size_t* bytes) override;
-  virtual void SetSafeToForceGpuSwitch() override;
+  bool Initialize(GLSurface* compatible_surface,
+                  GpuPreference gpu_preference) override;
+  void Destroy() override;
+  bool MakeCurrent(GLSurface* surface) override;
+  void ReleaseCurrent(GLSurface* surface) override;
+  bool IsCurrent(GLSurface* surface) override;
+  void* GetHandle() override;
+  void SetSwapInterval(int interval) override;
+  bool GetTotalGpuMemory(size_t* bytes) override;
+  void SetSafeToForceGpuSwitch() override;
 
  protected:
-  virtual ~GLContextCGL();
+  ~GLContextCGL() override;
 
  private:
   GpuPreference GetGpuPreference();

@@ -25,7 +25,7 @@ class MessageCenterTestSuite : public base::TestSuite {
   MessageCenterTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
  protected:
-  virtual void Initialize() override {
+  void Initialize() override {
 #if defined(OS_MACOSX)
     mock_cr_app::RegisterMockCrApp();
 #else
@@ -39,7 +39,7 @@ class MessageCenterTestSuite : public base::TestSuite {
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
   }
 
-  virtual void Shutdown() override {
+  void Shutdown() override {
     ui::ResourceBundle::CleanupSharedInstance();
     base::TestSuite::Shutdown();
   }

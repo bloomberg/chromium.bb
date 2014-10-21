@@ -36,7 +36,7 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   static const char kItemType[];
 
   AppListFolderItem(const std::string& id, FolderType folder_type);
-  virtual ~AppListFolderItem();
+  ~AppListFolderItem() override;
 
   // Updates the folder's icon.
   void UpdateIcon();
@@ -59,13 +59,13 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   FolderType folder_type() const { return folder_type_; }
 
   // AppListItem
-  virtual void Activate(int event_flags) override;
-  virtual const char* GetItemType() const override;
-  virtual ui::MenuModel* GetContextMenuModel() override;
-  virtual AppListItem* FindChildItem(const std::string& id) override;
-  virtual size_t ChildItemCount() const override;
-  virtual void OnExtensionPreferenceChanged() override;
-  virtual bool CompareForTest(const AppListItem* other) const override;
+  void Activate(int event_flags) override;
+  const char* GetItemType() const override;
+  ui::MenuModel* GetContextMenuModel() override;
+  AppListItem* FindChildItem(const std::string& id) override;
+  size_t ChildItemCount() const override;
+  void OnExtensionPreferenceChanged() override;
+  bool CompareForTest(const AppListItem* other) const override;
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons in sequence of top left, top right,
@@ -77,15 +77,15 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
 
  private:
   // AppListItemObserver
-  virtual void ItemIconChanged() override;
+  void ItemIconChanged() override;
 
   // AppListItemListObserver
-  virtual void OnListItemAdded(size_t index, AppListItem* item) override;
-  virtual void OnListItemRemoved(size_t index,
-                                 AppListItem* item) override;;
-  virtual void OnListItemMoved(size_t from_index,
-                               size_t to_index,
-                               AppListItem* item) override;
+  void OnListItemAdded(size_t index, AppListItem* item) override;
+  void OnListItemRemoved(size_t index, AppListItem* item) override;
+  ;
+  void OnListItemMoved(size_t from_index,
+                       size_t to_index,
+                       AppListItem* item) override;
 
   void UpdateTopItems();
 

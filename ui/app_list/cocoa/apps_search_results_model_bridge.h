@@ -20,7 +20,7 @@ class AppsSearchResultsModelBridge : public ui::ListModelObserver {
  public:
   explicit AppsSearchResultsModelBridge(
       AppsSearchResultsController* results_controller);
-  virtual ~AppsSearchResultsModelBridge();
+  ~AppsSearchResultsModelBridge() override;
 
   // Returns the context menu for the item at |index| in the search results
   // model. A menu will be generated if it hasn't been previously requested.
@@ -34,10 +34,10 @@ class AppsSearchResultsModelBridge : public ui::ListModelObserver {
   void ReloadDataForItems(size_t start, size_t count) const;
 
   // Overridden from ui::ListModelObserver:
-  virtual void ListItemsAdded(size_t start, size_t count) override;
-  virtual void ListItemsRemoved(size_t start, size_t count) override;
-  virtual void ListItemMoved(size_t index, size_t target_index) override;
-  virtual void ListItemsChanged(size_t start, size_t count) override;
+  void ListItemsAdded(size_t start, size_t count) override;
+  void ListItemsRemoved(size_t start, size_t count) override;
+  void ListItemMoved(size_t index, size_t target_index) override;
+  void ListItemsChanged(size_t start, size_t count) override;
 
   AppsSearchResultsController* parent_;  // Weak. Owns us.
   ScopedVector<ItemObserver> item_observers_;

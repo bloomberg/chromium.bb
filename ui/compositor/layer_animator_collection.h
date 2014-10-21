@@ -24,7 +24,7 @@ class COMPOSITOR_EXPORT LayerAnimatorCollection
     : public CompositorAnimationObserver {
  public:
   explicit LayerAnimatorCollection(Compositor* compositor);
-  virtual ~LayerAnimatorCollection();
+  ~LayerAnimatorCollection() override;
 
   void StartAnimator(scoped_refptr<LayerAnimator> animator);
   void StopAnimator(scoped_refptr<LayerAnimator> animator);
@@ -34,7 +34,7 @@ class COMPOSITOR_EXPORT LayerAnimatorCollection
   base::TimeTicks last_tick_time() const { return last_tick_time_; }
 
   // CompositorAnimationObserver:
-  virtual void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnAnimationStep(base::TimeTicks timestamp) override;
 
  private:
   Compositor* compositor_;

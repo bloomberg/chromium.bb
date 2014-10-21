@@ -22,26 +22,16 @@ class MockDelegate : public MessageCenterTrayDelegate {
       : show_popups_success_(true),
         show_message_center_success_(true),
         enable_context_menu_(true) {}
-  virtual ~MockDelegate() {}
-  virtual void OnMessageCenterTrayChanged() override {}
-  virtual bool ShowPopups() override {
-    return show_message_center_success_;
-  }
-  virtual void HidePopups() override {}
-  virtual bool ShowMessageCenter() override {
-    return show_popups_success_;
-  }
-  virtual void HideMessageCenter() override {}
-  virtual bool ShowNotifierSettings() override {
-    return true;
-  }
-  virtual bool IsContextMenuEnabled() const override {
-    return enable_context_menu_;
-  }
+  ~MockDelegate() override {}
+  void OnMessageCenterTrayChanged() override {}
+  bool ShowPopups() override { return show_message_center_success_; }
+  void HidePopups() override {}
+  bool ShowMessageCenter() override { return show_popups_success_; }
+  void HideMessageCenter() override {}
+  bool ShowNotifierSettings() override { return true; }
+  bool IsContextMenuEnabled() const override { return enable_context_menu_; }
 
-  virtual MessageCenterTray* GetMessageCenterTray() override {
-    return NULL;
-  }
+  MessageCenterTray* GetMessageCenterTray() override { return NULL; }
 
   bool show_popups_success_;
   bool show_message_center_success_;

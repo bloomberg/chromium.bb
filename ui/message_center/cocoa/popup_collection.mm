@@ -57,22 +57,18 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     message_center_->AddObserver(this);
   }
 
-  virtual ~PopupCollectionObserver() {
-    message_center_->RemoveObserver(this);
-  }
+  ~PopupCollectionObserver() override { message_center_->RemoveObserver(this); }
 
-  virtual void OnNotificationAdded(
-      const std::string& notification_id) override {
+  void OnNotificationAdded(const std::string& notification_id) override {
     [popup_collection_ layoutNewNotifications];
   }
 
-  virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool user_id) override {
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool user_id) override {
     [popup_collection_ removeNotification:notification_id];
   }
 
-  virtual void OnNotificationUpdated(
-      const std::string& notification_id) override {
+  void OnNotificationUpdated(const std::string& notification_id) override {
     [popup_collection_ updateNotification:notification_id];
   }
 

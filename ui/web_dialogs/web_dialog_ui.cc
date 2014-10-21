@@ -28,7 +28,7 @@ class WebDialogDelegateUserData : public base::SupportsUserData::Data {
  public:
   explicit WebDialogDelegateUserData(WebDialogDelegate* delegate)
       : delegate_(delegate) {}
-  virtual ~WebDialogDelegateUserData() {}
+  ~WebDialogDelegateUserData() override {}
   WebDialogDelegate* delegate() { return delegate_; }
 
  private:

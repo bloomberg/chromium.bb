@@ -178,7 +178,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
  protected:
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
   explicit SelectFileDialog(Listener* listener, SelectFilePolicy* policy);
-  virtual ~SelectFileDialog();
+  ~SelectFileDialog() override;
 
   // Displays the actual file-selection dialog.
   // This is overridden in the platform-specific descendants of FileSelectDialog

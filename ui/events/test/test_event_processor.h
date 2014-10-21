@@ -14,7 +14,7 @@ namespace test {
 class TestEventProcessor : public EventProcessor {
  public:
   TestEventProcessor();
-  virtual ~TestEventProcessor();
+  ~TestEventProcessor() override;
 
   int num_times_processing_started() const {
     return num_times_processing_started_;
@@ -32,11 +32,11 @@ class TestEventProcessor : public EventProcessor {
   void Reset();
 
   // EventProcessor:
-  virtual bool CanDispatchToTarget(EventTarget* target) override;
-  virtual EventTarget* GetRootTarget() override;
-  virtual EventDispatchDetails OnEventFromSource(Event* event) override;
-  virtual void OnEventProcessingStarted(Event* event) override;
-  virtual void OnEventProcessingFinished(Event* event) override;
+  bool CanDispatchToTarget(EventTarget* target) override;
+  EventTarget* GetRootTarget() override;
+  EventDispatchDetails OnEventFromSource(Event* event) override;
+  void OnEventProcessingStarted(Event* event) override;
+  void OnEventProcessingFinished(Event* event) override;
 
  private:
   scoped_ptr<EventTarget> root_;

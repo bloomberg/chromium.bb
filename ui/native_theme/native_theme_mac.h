@@ -17,27 +17,26 @@ class NativeThemeMac : public FallbackTheme {
   static NativeThemeMac* instance();
 
   // Overridden from NativeTheme:
-  virtual SkColor GetSystemColor(ColorId color_id) const override;
+  SkColor GetSystemColor(ColorId color_id) const override;
 
   // Overridden from NativeThemeBase:
-  virtual void PaintScrollbarTrack(
-      SkCanvas* canvas,
-      Part part,
-      State state,
-      const ScrollbarTrackExtraParams& extra_params,
-      const gfx::Rect& rect) const override;
-  virtual void PaintScrollbarThumb(SkCanvas* sk_canvas,
-                                   Part part,
-                                   State state,
-                                   const gfx::Rect& rect) const override;
-  virtual void PaintScrollbarCorner(SkCanvas* canvas,
-                                    State state,
-                                    const gfx::Rect& rect) const override;
-  virtual void PaintMenuPopupBackground(
+  void PaintScrollbarTrack(SkCanvas* canvas,
+                           Part part,
+                           State state,
+                           const ScrollbarTrackExtraParams& extra_params,
+                           const gfx::Rect& rect) const override;
+  void PaintScrollbarThumb(SkCanvas* sk_canvas,
+                           Part part,
+                           State state,
+                           const gfx::Rect& rect) const override;
+  void PaintScrollbarCorner(SkCanvas* canvas,
+                            State state,
+                            const gfx::Rect& rect) const override;
+  void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const override;
-  virtual void PaintMenuItemBackground(
+  void PaintMenuItemBackground(
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
@@ -45,7 +44,7 @@ class NativeThemeMac : public FallbackTheme {
 
  private:
   NativeThemeMac();
-  virtual ~NativeThemeMac();
+  ~NativeThemeMac() override;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeMac);
 };

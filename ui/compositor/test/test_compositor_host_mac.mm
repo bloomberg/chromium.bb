@@ -71,8 +71,7 @@ class AppKitHost : public FoundationHost {
   AppKitHost() {
     [NSApplication sharedApplication];
   }
-  virtual ~AppKitHost() {
-  }
+  ~AppKitHost() override {}
  private:
   DISALLOW_COPY_AND_ASSIGN(AppKitHost);
 };
@@ -84,12 +83,12 @@ class TestCompositorHostMac : public TestCompositorHost,
  public:
   TestCompositorHostMac(const gfx::Rect& bounds,
                         ui::ContextFactory* context_factory);
-  virtual ~TestCompositorHostMac();
+  ~TestCompositorHostMac() override;
 
  private:
   // TestCompositorHost:
-  virtual void Show() override;
-  virtual ui::Compositor* GetCompositor() override;
+  void Show() override;
+  ui::Compositor* GetCompositor() override;
 
   gfx::Rect bounds_;
 

@@ -34,19 +34,19 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
 
  private:
   // Overridden from TreeModelObserver:
-  virtual void TreeNodesAdded(TreeModel* model,
-                              TreeModelNode* parent,
-                              int start,
-                              int count) override {
+  void TreeNodesAdded(TreeModel* model,
+                      TreeModelNode* parent,
+                      int start,
+                      int count) override {
     added_count_++;
   }
-  virtual void TreeNodesRemoved(TreeModel* model,
-                                TreeModelNode* parent,
-                                int start,
-                                int count) override {
+  void TreeNodesRemoved(TreeModel* model,
+                        TreeModelNode* parent,
+                        int start,
+                        int count) override {
     removed_count_++;
   }
-  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) override {
+  void TreeNodeChanged(TreeModel* model, TreeModelNode* node) override {
     changed_count_++;
   }
 

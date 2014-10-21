@@ -22,7 +22,7 @@ class GFX_EXPORT CanvasSkiaPaint : public Canvas {
   // This constructor assumes the result is opaque.
   explicit CanvasSkiaPaint(NSRect dirtyRect);
   CanvasSkiaPaint(NSRect dirtyRect, bool opaque);
-  virtual ~CanvasSkiaPaint();
+  ~CanvasSkiaPaint() override;
 
   // If true, the data painted into the CanvasSkiaPaint is blended onto the
   // current context, else it is copied.

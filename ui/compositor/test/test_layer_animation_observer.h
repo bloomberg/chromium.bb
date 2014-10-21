@@ -17,18 +17,15 @@ class LayerAnimationSequence;
 class TestLayerAnimationObserver : public LayerAnimationObserver {
  public:
   TestLayerAnimationObserver();
-  virtual ~TestLayerAnimationObserver();
+  ~TestLayerAnimationObserver() override;
 
-  virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override;
 
-  virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override;
 
-  virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override;
 
-  virtual bool RequiresNotificationWhenAnimatorDestroyed() const override;
+  bool RequiresNotificationWhenAnimatorDestroyed() const override;
 
   const LayerAnimationSequence* last_ended_sequence() const {
     return last_ended_sequence_;

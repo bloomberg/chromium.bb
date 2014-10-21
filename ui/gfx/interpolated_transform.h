@@ -91,10 +91,10 @@ class GFX_EXPORT InterpolatedRotation : public InterpolatedTransform {
                        float end_degrees,
                        float start_time,
                        float end_time);
-  virtual ~InterpolatedRotation();
+  ~InterpolatedRotation() override;
 
  protected:
-  virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
+  gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
   const float start_degrees_;
@@ -119,10 +119,10 @@ class GFX_EXPORT InterpolatedAxisAngleRotation : public InterpolatedTransform {
                                 float end_degrees,
                                 float start_time,
                                 float end_time);
-  virtual ~InterpolatedAxisAngleRotation();
+  ~InterpolatedAxisAngleRotation() override;
 
  protected:
-  virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
+  gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
   gfx::Vector3dF axis_;
@@ -149,10 +149,10 @@ class GFX_EXPORT InterpolatedScale : public InterpolatedTransform {
                     const gfx::Point3F& end_scale,
                     float start_time,
                     float end_time);
-  virtual ~InterpolatedScale();
+  ~InterpolatedScale() override;
 
  protected:
-  virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
+  gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
   const gfx::Point3F start_scale_;
@@ -175,10 +175,10 @@ class GFX_EXPORT InterpolatedTranslation : public InterpolatedTransform {
                           const gfx::Point3F& end_pos,
                           float start_time,
                           float end_time);
-  virtual ~InterpolatedTranslation();
+  ~InterpolatedTranslation() override;
 
  protected:
-  virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
+  gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
   const gfx::Point3F start_pos_;
@@ -199,10 +199,10 @@ class GFX_EXPORT InterpolatedTranslation : public InterpolatedTransform {
 class GFX_EXPORT InterpolatedConstantTransform : public InterpolatedTransform {
  public:
   explicit InterpolatedConstantTransform(const gfx::Transform& transform);
-  virtual ~InterpolatedConstantTransform();
+  ~InterpolatedConstantTransform() override;
 
  protected:
-  virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
+  gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
   const gfx::Transform transform_;
@@ -230,10 +230,10 @@ class GFX_EXPORT InterpolatedTransformAboutPivot
                                   InterpolatedTransform* transform,
                                   float start_time,
                                   float end_time);
-  virtual ~InterpolatedTransformAboutPivot();
+  ~InterpolatedTransformAboutPivot() override;
 
  protected:
-  virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
+  gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
   void Init(const gfx::Point& pivot, InterpolatedTransform* transform);
@@ -253,10 +253,10 @@ class GFX_EXPORT InterpolatedMatrixTransform : public InterpolatedTransform {
                               float start_time,
                               float end_time);
 
-  virtual ~InterpolatedMatrixTransform();
+  ~InterpolatedMatrixTransform() override;
 
  protected:
-  virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
+  gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
   void Init(const gfx::Transform& start_transform,

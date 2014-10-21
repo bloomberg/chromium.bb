@@ -13,10 +13,10 @@ namespace app_list {
 class TestSearchResult : public SearchResult {
  public:
   TestSearchResult();
-  virtual ~TestSearchResult();
+  ~TestSearchResult() override;
 
   // SearchResult:
-  virtual scoped_ptr<SearchResult> Duplicate() override;
+  scoped_ptr<SearchResult> Duplicate() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSearchResult);

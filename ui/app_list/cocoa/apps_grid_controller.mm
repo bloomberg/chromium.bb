@@ -98,20 +98,20 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 
  private:
   // Overridden from AppListItemListObserver:
-  virtual void OnListItemAdded(size_t index, AppListItem* item) override {
+  void OnListItemAdded(size_t index, AppListItem* item) override {
     [parent_ listItemAdded:index
                       item:item];
   }
-  virtual void OnListItemRemoved(size_t index, AppListItem* item) override {
+  void OnListItemRemoved(size_t index, AppListItem* item) override {
     [parent_ listItemRemoved:index];
   }
-  virtual void OnListItemMoved(size_t from_index,
-                               size_t to_index,
-                               AppListItem* item) override {
+  void OnListItemMoved(size_t from_index,
+                       size_t to_index,
+                       AppListItem* item) override {
     [parent_ listItemMovedFromIndex:from_index
                        toModelIndex:to_index];
   }
-  virtual void OnAppListItemHighlight(size_t index, bool highlight) override {
+  void OnAppListItemHighlight(size_t index, bool highlight) override {
     // NSCollectionView (or -[AppsGridController scrollToPage]) ensures only one
     // item is highlighted, so clearing a highlight isn't necessary.
     if (!highlight)

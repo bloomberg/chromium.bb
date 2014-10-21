@@ -24,7 +24,7 @@ class InputDeviceEventObserver;
 // Keeps track of device mappings and event transformations.
 class EVENTS_BASE_EXPORT DeviceDataManager : public DeviceHotplugEventObserver {
  public:
-  virtual ~DeviceDataManager();
+  ~DeviceDataManager() override;
 
   static void CreateInstance();
   static DeviceDataManager* GetInstance();
@@ -60,7 +60,7 @@ class EVENTS_BASE_EXPORT DeviceDataManager : public DeviceHotplugEventObserver {
   bool IsTouchDeviceIdValid(int touch_device_id) const;
 
   // DeviceHotplugEventObserver:
-  virtual void OnTouchscreenDevicesUpdated(
+  void OnTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) override;
 
   double touch_radius_scale_map_[kMaxDeviceNum];

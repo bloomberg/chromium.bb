@@ -40,10 +40,10 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
 
  private:
   // GestureProviderClient implementation.
-  virtual void OnGestureEvent(const ui::GestureEventData& event) override;
+  void OnGestureEvent(const ui::GestureEventData& event) override;
 
   // TouchDispositionGestureFilterClient implementation.
-  virtual void ForwardGestureEvent(const ui::GestureEventData& event) override;
+  void ForwardGestureEvent(const ui::GestureEventData& event) override;
 
   GestureProviderClient* const client_;
 

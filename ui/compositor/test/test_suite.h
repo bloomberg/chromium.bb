@@ -20,12 +20,12 @@ namespace test {
 class CompositorTestSuite : public base::TestSuite {
  public:
   CompositorTestSuite(int argc, char** argv);
-  virtual ~CompositorTestSuite();
+  ~CompositorTestSuite() override;
 
  protected:
   // Overridden from base::TestSuite:
-  virtual void Initialize() override;
-  virtual void Shutdown() override;
+  void Initialize() override;
+  void Shutdown() override;
 
  private:
   scoped_ptr<base::MessageLoop> message_loop_;

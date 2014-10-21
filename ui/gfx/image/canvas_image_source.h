@@ -30,10 +30,10 @@ class GFX_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
   const gfx::Size& size() const { return size_; };
 
   // Overridden from gfx::ImageSkiaSource.
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override;
+  gfx::ImageSkiaRep GetImageForScale(float scale) override;
 
  protected:
-  virtual ~CanvasImageSource() {}
+  ~CanvasImageSource() override {}
 
   const gfx::Size size_;
   const bool is_opaque_;

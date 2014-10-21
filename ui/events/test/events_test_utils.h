@@ -37,7 +37,7 @@ class EventTestApi {
 class LocatedEventTestApi : public EventTestApi {
  public:
   explicit LocatedEventTestApi(LocatedEvent* located_event);
-  virtual ~LocatedEventTestApi();
+  ~LocatedEventTestApi() override;
 
   void set_location(const gfx::Point& location) {
     located_event_->location_ = location;
@@ -54,7 +54,7 @@ class LocatedEventTestApi : public EventTestApi {
 class KeyEventTestApi : public EventTestApi {
  public:
   explicit KeyEventTestApi(KeyEvent* key_event);
-  virtual ~KeyEventTestApi();
+  ~KeyEventTestApi() override;
 
   void set_is_char(bool is_char) {
     key_event_->set_is_char(is_char);

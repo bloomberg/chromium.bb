@@ -64,15 +64,15 @@ namespace app_list {
 class ItemModelObserverBridge : public app_list::AppListItemObserver {
  public:
   ItemModelObserverBridge(AppsGridViewItem* parent, AppListItem* model);
-  virtual ~ItemModelObserverBridge();
+  ~ItemModelObserverBridge() override;
 
   AppListItem* model() { return model_; }
   NSMenu* GetContextMenu();
 
-  virtual void ItemIconChanged() override;
-  virtual void ItemNameChanged() override;
-  virtual void ItemIsInstallingChanged() override;
-  virtual void ItemPercentDownloadedChanged() override;
+  void ItemIconChanged() override;
+  void ItemNameChanged() override;
+  void ItemIsInstallingChanged() override;
+  void ItemPercentDownloadedChanged() override;
 
  private:
   AppsGridViewItem* parent_;  // Weak. Owns us.

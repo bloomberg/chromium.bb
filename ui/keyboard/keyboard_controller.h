@@ -49,7 +49,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Takes ownership of |proxy|.
   explicit KeyboardController(KeyboardControllerProxy* proxy);
-  virtual ~KeyboardController();
+  ~KeyboardController() override;
 
   // Returns the container for the keyboard, which is owned by
   // KeyboardController.
@@ -115,21 +115,16 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   friend class KeyboardControllerTest;
 
   // aura::WindowObserver overrides
-  virtual void OnWindowHierarchyChanged(
-      const HierarchyChangeParams& params) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
 
   // InputMethodObserver overrides
-  virtual void OnTextInputTypeChanged(
-      const ui::TextInputClient* client) override {}
-  virtual void OnFocus() override {}
-  virtual void OnBlur() override {}
-  virtual void OnCaretBoundsChanged(
-      const ui::TextInputClient* client) override {}
-  virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) override;
-  virtual void OnInputMethodDestroyed(
-      const ui::InputMethod* input_method) override;
-  virtual void OnShowImeIfNeeded() override;
+  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override;
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
+  void OnShowImeIfNeeded() override;
 
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal();

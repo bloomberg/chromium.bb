@@ -145,7 +145,7 @@ class AppListItemWithMenu : public AppListItem {
     menu_ready_ = ready;
   }
 
-  virtual ui::MenuModel* GetContextMenuModel() override {
+  ui::MenuModel* GetContextMenuModel() override {
     if (!menu_ready_)
       return NULL;
 

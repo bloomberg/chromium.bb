@@ -24,25 +24,25 @@ namespace ui {
 class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
  public:
   // NativeTheme implementation:
-  virtual gfx::Size GetPartSize(Part part,
-                                State state,
-                                const ExtraParams& extra) const override;
-  virtual void Paint(SkCanvas* canvas,
-                     Part part,
-                     State state,
-                     const gfx::Rect& rect,
-                     const ExtraParams& extra) const override;
+  gfx::Size GetPartSize(Part part,
+                        State state,
+                        const ExtraParams& extra) const override;
+  void Paint(SkCanvas* canvas,
+             Part part,
+             State state,
+             const gfx::Rect& rect,
+             const ExtraParams& extra) const override;
 
-  virtual void PaintStateTransition(SkCanvas* canvas,
-                                    Part part,
-                                    State startState,
-                                    State endState,
-                                    double progress,
-                                    const gfx::Rect& rect) const override;
+  void PaintStateTransition(SkCanvas* canvas,
+                            Part part,
+                            State startState,
+                            State endState,
+                            double progress,
+                            const gfx::Rect& rect) const override;
 
  protected:
   NativeThemeBase();
-  virtual ~NativeThemeBase();
+  ~NativeThemeBase() override;
 
   // Draw the arrow. Used by scrollbar and inner spin button.
   virtual void PaintArrowButton(

@@ -30,7 +30,7 @@ namespace ui {
 class UI_BASE_EXPORT DataPack : public ResourceHandle {
  public:
   DataPack(ui::ScaleFactor scale_factor);
-  virtual ~DataPack();
+  ~DataPack() override;
 
   // Load a pack file from |path|, returning false on error.
   bool LoadFromPath(const base::FilePath& path);
@@ -51,13 +51,13 @@ class UI_BASE_EXPORT DataPack : public ResourceHandle {
                         TextEncodingType textEncodingType);
 
   // ResourceHandle implementation:
-  virtual bool HasResource(uint16 resource_id) const override;
-  virtual bool GetStringPiece(uint16 resource_id,
-                              base::StringPiece* data) const override;
-  virtual base::RefCountedStaticMemory* GetStaticMemory(
+  bool HasResource(uint16 resource_id) const override;
+  bool GetStringPiece(uint16 resource_id,
+                      base::StringPiece* data) const override;
+  base::RefCountedStaticMemory* GetStaticMemory(
       uint16 resource_id) const override;
-  virtual TextEncodingType GetTextEncodingType() const override;
-  virtual ui::ScaleFactor GetScaleFactor() const override;
+  TextEncodingType GetTextEncodingType() const override;
+  ui::ScaleFactor GetScaleFactor() const override;
 
  private:
   // Does the actual loading of a pack file. Called by Load and LoadFromFile.

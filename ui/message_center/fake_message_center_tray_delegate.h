@@ -20,22 +20,22 @@ class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
  public:
   FakeMessageCenterTrayDelegate(MessageCenter* message_center,
                                 base::Closure quit_closure);
-  virtual ~FakeMessageCenterTrayDelegate();
+  ~FakeMessageCenterTrayDelegate() override;
 
   bool displayed_first_run_balloon() const {
     return displayed_first_run_balloon_;
   }
 
   // Overridden from MessageCenterTrayDelegate:
-  virtual void OnMessageCenterTrayChanged() override;
-  virtual bool ShowPopups() override;
-  virtual void HidePopups() override;
-  virtual bool ShowMessageCenter() override;
-  virtual void HideMessageCenter() override;
-  virtual bool ShowNotifierSettings() override;
-  virtual bool IsContextMenuEnabled() const override;
-  virtual MessageCenterTray* GetMessageCenterTray() override;
-  virtual void DisplayFirstRunBalloon() override;
+  void OnMessageCenterTrayChanged() override;
+  bool ShowPopups() override;
+  void HidePopups() override;
+  bool ShowMessageCenter() override;
+  void HideMessageCenter() override;
+  bool ShowNotifierSettings() override;
+  bool IsContextMenuEnabled() const override;
+  MessageCenterTray* GetMessageCenterTray() override;
+  void DisplayFirstRunBalloon() override;
 
  private:
   scoped_ptr<MessageCenterTray> tray_;

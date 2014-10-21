@@ -34,12 +34,9 @@ class GESTURE_DETECTION_EXPORT SimpleScaleGestureListener
     : public ScaleGestureListener {
  public:
   // ScaleGestureListener implementation.
-  virtual bool OnScale(const ScaleGestureDetector&,
-                       const MotionEvent&) override;
-  virtual bool OnScaleBegin(const ScaleGestureDetector&,
-                            const MotionEvent&) override;
-  virtual void OnScaleEnd(const ScaleGestureDetector&,
-                          const MotionEvent&) override;
+  bool OnScale(const ScaleGestureDetector&, const MotionEvent&) override;
+  bool OnScaleBegin(const ScaleGestureDetector&, const MotionEvent&) override;
+  void OnScaleEnd(const ScaleGestureDetector&, const MotionEvent&) override;
 };
 
 }  // namespace ui

@@ -22,10 +22,10 @@ class GL_EXPORT GLImageRefCountedMemory : public GLImageMemory {
                   gfx::GpuMemoryBuffer::Format format);
 
   // Overridden from GLImage:
-  virtual void Destroy(bool have_context) override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~GLImageRefCountedMemory();
+  ~GLImageRefCountedMemory() override;
 
  private:
   scoped_refptr<base::RefCountedMemory> ref_counted_memory_;

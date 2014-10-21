@@ -29,25 +29,18 @@ class TestObserver : public AppListModelObserver {
         items_removed_(0),
         items_updated_(0) {
   }
-  virtual ~TestObserver() {
-  }
+  ~TestObserver() override {}
 
   // AppListModelObserver
-  virtual void OnAppListModelStatusChanged() override {
-    ++status_changed_count_;
-  }
+  void OnAppListModelStatusChanged() override { ++status_changed_count_; }
 
-  virtual void OnAppListItemAdded(AppListItem* item) override {
-    items_added_++;
-  }
+  void OnAppListItemAdded(AppListItem* item) override { items_added_++; }
 
-  virtual void OnAppListItemWillBeDeleted(AppListItem* item) override {
+  void OnAppListItemWillBeDeleted(AppListItem* item) override {
     items_removed_++;
   }
 
-  virtual void OnAppListItemUpdated(AppListItem* item) override {
-    items_updated_++;
-  }
+  void OnAppListItemUpdated(AppListItem* item) override { items_updated_++; }
 
   int status_changed_count() const { return status_changed_count_; }
   size_t items_added() { return items_added_; }

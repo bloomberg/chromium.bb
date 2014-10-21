@@ -39,21 +39,20 @@ class Delegate : public SimpleMenuModel::Delegate {
         did_close_(false) {
   }
 
-  virtual bool IsCommandIdChecked(int command_id) const override {
-    return false;
-  }
-  virtual bool IsCommandIdEnabled(int command_id) const override {
+  bool IsCommandIdChecked(int command_id) const override { return false; }
+  bool IsCommandIdEnabled(int command_id) const override {
     ++enable_count_;
     return true;
   }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      Accelerator* accelerator) override { return false; }
-  virtual void ExecuteCommand(int command_id, int event_flags) override {
+  bool GetAcceleratorForCommandId(int command_id,
+                                  Accelerator* accelerator) override {
+    return false;
+  }
+  void ExecuteCommand(int command_id, int event_flags) override {
     ++execute_count_;
   }
 
-  virtual void MenuWillShow(SimpleMenuModel* /*source*/) override {
+  void MenuWillShow(SimpleMenuModel* /*source*/) override {
     EXPECT_FALSE(did_show_);
     EXPECT_FALSE(did_close_);
     did_show_ = true;
@@ -66,7 +65,7 @@ class Delegate : public SimpleMenuModel::Delegate {
                             inModes:modes];
   }
 
-  virtual void MenuClosed(SimpleMenuModel* /*source*/) override {
+  void MenuClosed(SimpleMenuModel* /*source*/) override {
     EXPECT_TRUE(did_show_);
     EXPECT_FALSE(did_close_);
     did_close_ = true;
@@ -86,15 +85,11 @@ class Delegate : public SimpleMenuModel::Delegate {
 class DynamicDelegate : public Delegate {
  public:
   DynamicDelegate() {}
-  virtual bool IsItemForCommandIdDynamic(int command_id) const override {
-    return true;
-  }
-  virtual base::string16 GetLabelForCommandId(int command_id) const override {
+  bool IsItemForCommandIdDynamic(int command_id) const override { return true; }
+  base::string16 GetLabelForCommandId(int command_id) const override {
     return label_;
   }
-  virtual bool GetIconForCommandId(
-      int command_id,
-      gfx::Image* icon) const override {
+  bool GetIconForCommandId(int command_id, gfx::Image* icon) const override {
     if (icon_.IsEmpty()) {
       return false;
     } else {
@@ -120,8 +115,8 @@ class FontListMenuModel : public SimpleMenuModel {
         font_list_(font_list),
         index_(index) {
   }
-  virtual ~FontListMenuModel() {}
-  virtual const gfx::FontList* GetLabelFontListAt(int index) const override {
+  ~FontListMenuModel() override {}
+  const gfx::FontList* GetLabelFontListAt(int index) const override {
     return (index == index_) ? font_list_ : NULL;
   }
 

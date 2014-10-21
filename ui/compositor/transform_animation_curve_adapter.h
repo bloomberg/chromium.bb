@@ -22,18 +22,18 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
                                  gfx::Transform target_value,
                                  base::TimeDelta duration);
 
-  virtual ~TransformAnimationCurveAdapter();
+  ~TransformAnimationCurveAdapter() override;
 
   // TransformAnimationCurve implementation.
-  virtual double Duration() const override;
-  virtual scoped_ptr<AnimationCurve> Clone() const override;
-  virtual gfx::Transform GetValue(double t) const override;
-  virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                                    gfx::BoxF* bounds) const override;
-  virtual bool AffectsScale() const override;
-  virtual bool IsTranslation() const override;
-  virtual bool MaximumTargetScale(bool forward_direction,
-                                  float* max_scale) const override;
+  double Duration() const override;
+  scoped_ptr<AnimationCurve> Clone() const override;
+  gfx::Transform GetValue(double t) const override;
+  bool AnimatedBoundsForBox(const gfx::BoxF& box,
+                            gfx::BoxF* bounds) const override;
+  bool AffectsScale() const override;
+  bool IsTranslation() const override;
+  bool MaximumTargetScale(bool forward_direction,
+                          float* max_scale) const override;
 
  private:
   gfx::Tween::Type tween_type_;
@@ -53,17 +53,17 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
                                gfx::Transform initial_value,
                                base::TimeDelta duration);
 
-  virtual ~InverseTransformCurveAdapter();
+  ~InverseTransformCurveAdapter() override;
 
-  virtual double Duration() const override;
-  virtual scoped_ptr<AnimationCurve> Clone() const override;
-  virtual gfx::Transform GetValue(double t) const override;
-  virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                                    gfx::BoxF* bounds) const override;
-  virtual bool AffectsScale() const override;
-  virtual bool IsTranslation() const override;
-  virtual bool MaximumTargetScale(bool forward_direction,
-                                  float* max_scale) const override;
+  double Duration() const override;
+  scoped_ptr<AnimationCurve> Clone() const override;
+  gfx::Transform GetValue(double t) const override;
+  bool AnimatedBoundsForBox(const gfx::BoxF& box,
+                            gfx::BoxF* bounds) const override;
+  bool AffectsScale() const override;
+  bool IsTranslation() const override;
+  bool MaximumTargetScale(bool forward_direction,
+                          float* max_scale) const override;
 
  private:
   TransformAnimationCurveAdapter base_curve_;

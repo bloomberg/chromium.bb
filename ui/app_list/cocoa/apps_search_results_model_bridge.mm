@@ -25,9 +25,7 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
     result_->AddObserver(this);
   }
 
-  virtual ~ItemObserver() {
-    result_->RemoveObserver(this);
-  }
+  ~ItemObserver() override { result_->RemoveObserver(this); }
 
   NSMenu* GetContextMenu() {
     if (!context_menu_controller_) {
@@ -43,14 +41,14 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   }
 
   // SearchResultObserver overrides:
-  virtual void OnIconChanged() override {
+  void OnIconChanged() override {
     bridge_->ReloadDataForItems(row_in_view_, 1);
   }
-  virtual void OnActionsChanged() override {}
-  virtual void OnIsInstallingChanged() override {}
-  virtual void OnPercentDownloadedChanged() override {}
-  virtual void OnItemInstalled() override {}
-  virtual void OnItemUninstalled() override;
+  void OnActionsChanged() override {}
+  void OnIsInstallingChanged() override {}
+  void OnPercentDownloadedChanged() override {}
+  void OnItemInstalled() override {}
+  void OnItemUninstalled() override;
 
  private:
   AppsSearchResultsModelBridge* bridge_;  // Weak. Owns us.

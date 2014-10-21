@@ -19,21 +19,21 @@ class PlatformFontMac : public PlatformFont {
                   int font_size);
 
   // Overridden from PlatformFont:
-  virtual Font DeriveFont(int size_delta, int style) const override;
-  virtual int GetHeight() const override;
-  virtual int GetBaseline() const override;
-  virtual int GetCapHeight() const override;
-  virtual int GetExpectedTextWidth(int length) const override;
-  virtual int GetStyle() const override;
-  virtual std::string GetFontName() const override;
-  virtual std::string GetActualFontNameForTesting() const override;
-  virtual int GetFontSize() const override;
-  virtual const FontRenderParams& GetFontRenderParams() const override;
-  virtual NativeFont GetNativeFont() const override;
+  Font DeriveFont(int size_delta, int style) const override;
+  int GetHeight() const override;
+  int GetBaseline() const override;
+  int GetCapHeight() const override;
+  int GetExpectedTextWidth(int length) const override;
+  int GetStyle() const override;
+  std::string GetFontName() const override;
+  std::string GetActualFontNameForTesting() const override;
+  int GetFontSize() const override;
+  const FontRenderParams& GetFontRenderParams() const override;
+  NativeFont GetNativeFont() const override;
 
  private:
   PlatformFontMac(const std::string& font_name, int font_size, int font_style);
-  virtual ~PlatformFontMac();
+  ~PlatformFontMac() override;
 
   // Calculates and caches the font metrics.
   void CalculateMetrics();

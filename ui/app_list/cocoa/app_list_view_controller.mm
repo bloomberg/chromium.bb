@@ -83,12 +83,12 @@ namespace app_list {
 class AppListModelObserverBridge : public AppListViewDelegateObserver {
  public:
   AppListModelObserverBridge(AppListViewController* parent);
-  virtual ~AppListModelObserverBridge();
+  ~AppListModelObserverBridge() override;
 
  private:
   // Overridden from app_list::AppListViewDelegateObserver:
-  virtual void OnProfilesChanged() override;
-  virtual void OnShutdown() override;
+  void OnProfilesChanged() override;
+  void OnShutdown() override;
 
   AppListViewController* parent_;  // Weak. Owns us.
 

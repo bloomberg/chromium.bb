@@ -17,27 +17,26 @@ class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
   FakeNotifierSettingsProvider();
   explicit FakeNotifierSettingsProvider(
       const std::vector<Notifier*>& notifiers);
-  virtual ~FakeNotifierSettingsProvider();
+  ~FakeNotifierSettingsProvider() override;
 
-  virtual size_t GetNotifierGroupCount() const override;
-  virtual const NotifierGroup& GetNotifierGroupAt(size_t index) const override;
-  virtual bool IsNotifierGroupActiveAt(size_t index) const override;
-  virtual void SwitchToNotifierGroup(size_t index) override;
-  virtual const NotifierGroup& GetActiveNotifierGroup() const override;
+  size_t GetNotifierGroupCount() const override;
+  const NotifierGroup& GetNotifierGroupAt(size_t index) const override;
+  bool IsNotifierGroupActiveAt(size_t index) const override;
+  void SwitchToNotifierGroup(size_t index) override;
+  const NotifierGroup& GetActiveNotifierGroup() const override;
 
-  virtual void GetNotifierList(std::vector<Notifier*>* notifiers) override;
+  void GetNotifierList(std::vector<Notifier*>* notifiers) override;
 
-  virtual void SetNotifierEnabled(const Notifier& notifier,
-                                  bool enabled) override;
+  void SetNotifierEnabled(const Notifier& notifier, bool enabled) override;
 
-  virtual void OnNotifierSettingsClosing() override;
-  virtual bool NotifierHasAdvancedSettings(const NotifierId& notifier_id) const
-      override;
-  virtual void OnNotifierAdvancedSettingsRequested(
+  void OnNotifierSettingsClosing() override;
+  bool NotifierHasAdvancedSettings(
+      const NotifierId& notifier_id) const override;
+  void OnNotifierAdvancedSettingsRequested(
       const NotifierId& notifier_id,
       const std::string* notification_id) override;
-  virtual void AddObserver(NotifierSettingsObserver* observer) override;
-  virtual void RemoveObserver(NotifierSettingsObserver* observer) override;
+  void AddObserver(NotifierSettingsObserver* observer) override;
+  void RemoveObserver(NotifierSettingsObserver* observer) override;
 
   bool WasEnabled(const Notifier& notifier);
   int closed_called_count();

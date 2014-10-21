@@ -54,13 +54,13 @@ class APP_LIST_EXPORT DictionaryDataStore
  private:
   friend class base::RefCountedThreadSafe<DictionaryDataStore>;
 
-  virtual ~DictionaryDataStore();
+  ~DictionaryDataStore() override;
 
   // Reads data from backing file.
   scoped_ptr<base::DictionaryValue> LoadOnBlockingPool();
 
   // ImportantFileWriter::DataSerializer overrides:
-  virtual bool SerializeData(std::string* data) override;
+  bool SerializeData(std::string* data) override;
 
   base::FilePath data_file_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

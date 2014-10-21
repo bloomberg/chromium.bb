@@ -24,7 +24,7 @@ class InvertingObserver : public ImplicitAnimationObserver {
       : base_layer_(NULL) {
     }
 
-    virtual ~InvertingObserver() {}
+    ~InvertingObserver() override {}
 
     void SetLayer(Layer* base_layer) { base_layer_ = base_layer; }
 
@@ -34,10 +34,9 @@ class InvertingObserver : public ImplicitAnimationObserver {
       inverse_layers_.push_back(inverse_layer);
     }
 
-    virtual void OnImplicitAnimationsCompleted() override {}
+    void OnImplicitAnimationsCompleted() override {}
 
-    virtual void OnLayerAnimationScheduled(
-        LayerAnimationSequence* sequence) override {
+    void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override {
       DCHECK(base_layer_  != NULL)
         << "Must set base layer with ScopedLayerAnimationSettings::"
         << "SetInverslyAnimatedBaseLayer";

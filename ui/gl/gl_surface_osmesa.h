@@ -21,17 +21,17 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
   GLSurfaceOSMesa(OSMesaSurfaceFormat format, const gfx::Size& size);
 
   // Implement GLSurface.
-  virtual bool Initialize() override;
-  virtual void Destroy() override;
-  virtual bool Resize(const gfx::Size& new_size) override;
-  virtual bool IsOffscreen() override;
-  virtual bool SwapBuffers() override;
-  virtual gfx::Size GetSize() override;
-  virtual void* GetHandle() override;
-  virtual unsigned GetFormat() override;
+  bool Initialize() override;
+  void Destroy() override;
+  bool Resize(const gfx::Size& new_size) override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
+  gfx::Size GetSize() override;
+  void* GetHandle() override;
+  unsigned GetFormat() override;
 
  protected:
-  virtual ~GLSurfaceOSMesa();
+  ~GLSurfaceOSMesa() override;
 
  private:
   unsigned format_;
@@ -48,11 +48,11 @@ class GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
  public:
   explicit GLSurfaceOSMesaHeadless();
 
-  virtual bool IsOffscreen() override;
-  virtual bool SwapBuffers() override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
 
  protected:
-  virtual ~GLSurfaceOSMesaHeadless();
+  ~GLSurfaceOSMesaHeadless() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesaHeadless);

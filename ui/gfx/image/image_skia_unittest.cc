@@ -30,12 +30,9 @@ class FixedSource : public ImageSkiaSource {
  public:
   explicit FixedSource(const ImageSkiaRep& image) : image_(image) {}
 
-  virtual ~FixedSource() {
-  }
+  ~FixedSource() override {}
 
-  virtual ImageSkiaRep GetImageForScale(float scale) override {
-    return image_;
-  }
+  ImageSkiaRep GetImageForScale(float scale) override { return image_; }
 
  private:
   ImageSkiaRep image_;
@@ -47,10 +44,9 @@ class FixedScaleSource : public ImageSkiaSource {
  public:
   explicit FixedScaleSource(const ImageSkiaRep& image) : image_(image) {}
 
-  virtual ~FixedScaleSource() {
-  }
+  ~FixedScaleSource() override {}
 
-  virtual ImageSkiaRep GetImageForScale(float scale) override {
+  ImageSkiaRep GetImageForScale(float scale) override {
     if (!image_.unscaled() && image_.scale() != scale)
       return ImageSkiaRep();
     return image_;
@@ -68,10 +64,9 @@ class DynamicSource : public ImageSkiaSource {
       : size_(size),
         last_requested_scale_(0.0f) {}
 
-  virtual ~DynamicSource() {
-  }
+  ~DynamicSource() override {}
 
-  virtual ImageSkiaRep GetImageForScale(float scale) override {
+  ImageSkiaRep GetImageForScale(float scale) override {
     last_requested_scale_ = scale;
     return gfx::ImageSkiaRep(size_, scale);
   }
@@ -94,10 +89,9 @@ class NullSource: public ImageSkiaSource {
   NullSource() {
   }
 
-  virtual ~NullSource() {
-  }
+  ~NullSource() override {}
 
-  virtual ImageSkiaRep GetImageForScale(float scale) override {
+  ImageSkiaRep GetImageForScale(float scale) override {
     return gfx::ImageSkiaRep();
   }
 
@@ -117,7 +111,7 @@ class TestOnThread : public base::SimpleThread {
         can_modify_(false) {
   }
 
-  virtual void Run() override {
+  void Run() override {
     can_read_ = image_skia_->CanRead();
     can_modify_ = image_skia_->CanModify();
     if (can_read_)

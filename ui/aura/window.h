@@ -73,7 +73,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   typedef std::vector<Window*> Windows;
 
   explicit Window(WindowDelegate* delegate);
-  virtual ~Window();
+  ~Window() override;
 
   // Initializes the window. This creates the window's layer.
   void Init(WindowLayerType layer_type);
@@ -312,7 +312,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   typedef void (*PropertyDeallocator)(int64 value);
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
 
 #if !defined(NDEBUG)
   // These methods are useful when debugging.
@@ -455,18 +455,17 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void OnWindowBoundsChanged(const gfx::Rect& old_bounds);
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override;
-  virtual base::Closure PrepareForLayerBoundsChange() override;
+  void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
+  base::Closure PrepareForLayerBoundsChange() override;
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) override;
-  virtual EventTarget* GetParentTarget() override;
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
-  virtual ui::EventTargeter* GetEventTargeter() override;
-  virtual void ConvertEventToTarget(ui::EventTarget* target,
-                                    ui::LocatedEvent* event) override;
+  bool CanAcceptEvent(const ui::Event& event) override;
+  EventTarget* GetParentTarget() override;
+  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  ui::EventTargeter* GetEventTargeter() override;
+  void ConvertEventToTarget(ui::EventTarget* target,
+                            ui::LocatedEvent* event) override;
 
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();

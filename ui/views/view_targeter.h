@@ -22,7 +22,7 @@ class ViewTargeterDelegate;
 class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
  public:
   explicit ViewTargeter(ViewTargeterDelegate* delegate);
-  virtual ~ViewTargeter();
+  ~ViewTargeter() override;
 
   // A call-through to DoesIntersectRect() on |delegate_|.
   bool DoesIntersectRect(const View* target, const gfx::Rect& rect) const;
@@ -32,16 +32,14 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
 
  protected:
   // ui::EventTargeter:
-  virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                              ui::Event* event) override;
-  virtual ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
-                                              ui::Event* event) override;
-  virtual bool SubtreeCanAcceptEvent(
-      ui::EventTarget* target,
-      const ui::LocatedEvent& event) const override;
-  virtual bool EventLocationInsideBounds(
-      ui::EventTarget* target,
-      const ui::LocatedEvent& event) const override;
+  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
+                                      ui::Event* event) override;
+  ui::EventTarget* FindNextBestTarget(ui::EventTarget* previous_target,
+                                      ui::Event* event) override;
+  bool SubtreeCanAcceptEvent(ui::EventTarget* target,
+                             const ui::LocatedEvent& event) const override;
+  bool EventLocationInsideBounds(ui::EventTarget* target,
+                                 const ui::LocatedEvent& event) const override;
 
  private:
   // TODO(tdanderson): Un-friend RootView once RootView::DispatchGestureEvent()

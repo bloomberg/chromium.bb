@@ -30,7 +30,7 @@ class GFX_EXPORT LinearAnimation : public Animation {
   // Gets the value for the current state, according to the animation curve in
   // use. This class provides only for a linear relationship, however subclasses
   // can override this to provide others.
-  virtual double GetCurrentValue() const override;
+  double GetCurrentValue() const override;
 
   // Change the current state of the animation to |new_value|.
   void SetCurrentValue(double new_value);
@@ -50,16 +50,16 @@ class GFX_EXPORT LinearAnimation : public Animation {
   // Invoked by the AnimationContainer when the animation is running to advance
   // the animation. Use |time_now| rather than Time::Now to avoid multiple
   // animations running at the same time diverging.
-  virtual void Step(base::TimeTicks time_now) override;
+  void Step(base::TimeTicks time_now) override;
 
   // Overriden to initialize state.
-  virtual void AnimationStarted() override;
+  void AnimationStarted() override;
 
   // Overriden to advance to the end (if End was invoked).
-  virtual void AnimationStopped() override;
+  void AnimationStopped() override;
 
   // Overriden to return true if state is not 1.
-  virtual bool ShouldSendCanceledFromStop() override;
+  bool ShouldSendCanceledFromStop() override;
 
  private:
   base::TimeDelta duration_;

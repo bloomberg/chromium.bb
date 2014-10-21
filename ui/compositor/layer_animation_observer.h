@@ -82,7 +82,7 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
     : public LayerAnimationObserver {
  public:
   ImplicitAnimationObserver();
-  virtual ~ImplicitAnimationObserver();
+  ~ImplicitAnimationObserver() override;
 
   // Called when the first animation sequence has started.
   virtual void OnImplicitAnimationsScheduled() {}
@@ -116,16 +116,11 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
   friend class ScopedLayerAnimationSettings;
 
   // LayerAnimationObserver implementation
-  virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) override;
-  virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) override;
-  virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) override;
-  virtual void OnAttachedToSequence(
-      LayerAnimationSequence* sequence) override;
-  virtual void OnDetachedFromSequence(
-      LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override;
+  void OnAttachedToSequence(LayerAnimationSequence* sequence) override;
+  void OnDetachedFromSequence(LayerAnimationSequence* sequence) override;
 
   // OnImplicitAnimationsCompleted is not fired unless the observer is active.
   bool active() const { return active_; }

@@ -119,15 +119,14 @@ class LeastSquaresVelocityTrackerStrategy : public VelocityTrackerStrategy {
   // Degree must be no greater than Estimator::kMaxDegree.
   LeastSquaresVelocityTrackerStrategy(uint32_t degree,
                                       Weighting weighting = WEIGHTING_NONE);
-  virtual ~LeastSquaresVelocityTrackerStrategy();
+  ~LeastSquaresVelocityTrackerStrategy() override;
 
-  virtual void Clear() override;
-  virtual void ClearPointers(BitSet32 id_bits) override;
-  virtual void AddMovement(const TimeTicks& event_time,
-                           BitSet32 id_bits,
-                           const Position* positions) override;
-  virtual bool GetEstimator(uint32_t id,
-                            Estimator* out_estimator) const override;
+  void Clear() override;
+  void ClearPointers(BitSet32 id_bits) override;
+  void AddMovement(const TimeTicks& event_time,
+                   BitSet32 id_bits,
+                   const Position* positions) override;
+  bool GetEstimator(uint32_t id, Estimator* out_estimator) const override;
 
  private:
   // Sample horizon.
@@ -158,15 +157,14 @@ class IntegratingVelocityTrackerStrategy : public VelocityTrackerStrategy {
  public:
   // Degree must be 1 or 2.
   explicit IntegratingVelocityTrackerStrategy(uint32_t degree);
-  virtual ~IntegratingVelocityTrackerStrategy();
+  ~IntegratingVelocityTrackerStrategy() override;
 
-  virtual void Clear() override;
-  virtual void ClearPointers(BitSet32 id_bits) override;
-  virtual void AddMovement(const TimeTicks& event_time,
-                           BitSet32 id_bits,
-                           const Position* positions) override;
-  virtual bool GetEstimator(uint32_t id,
-                            Estimator* out_estimator) const override;
+  void Clear() override;
+  void ClearPointers(BitSet32 id_bits) override;
+  void AddMovement(const TimeTicks& event_time,
+                   BitSet32 id_bits,
+                   const Position* positions) override;
+  bool GetEstimator(uint32_t id, Estimator* out_estimator) const override;
 
  private:
   // Current state estimate for a particular pointer.

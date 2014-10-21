@@ -57,7 +57,7 @@ class WEB_DIALOGS_EXPORT WebDialogUI : public content::WebUIController {
   // When created, the delegate should already be set as user data on the
   // WebContents.
   explicit WebDialogUI(content::WebUI* web_ui);
-  virtual ~WebDialogUI();
+  ~WebDialogUI() override;
 
   // Close the dialog, passing the specified arguments to the close handler.
   void CloseDialog(const base::ListValue* args);
@@ -68,8 +68,7 @@ class WEB_DIALOGS_EXPORT WebDialogUI : public content::WebUIController {
 
  private:
   // WebUIController
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   // Gets the delegate for the WebContent set with SetDelegate.
   static WebDialogDelegate* GetDelegate(content::WebContents* web_contents);
@@ -88,7 +87,7 @@ class WEB_DIALOGS_EXPORT WebDialogUI : public content::WebUIController {
 class WEB_DIALOGS_EXPORT ExternalWebDialogUI : public WebDialogUI {
  public:
   explicit ExternalWebDialogUI(content::WebUI* web_ui);
-  virtual ~ExternalWebDialogUI();
+  ~ExternalWebDialogUI() override;
 };
 
 }  // namespace ui

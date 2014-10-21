@@ -35,7 +35,7 @@ class APP_LIST_EXPORT History : public KeyedService,
                                 public HistoryDataObserver {
  public:
   explicit History(scoped_refptr<HistoryDataStore> store);
-  virtual ~History();
+  ~History() override;
 
   // Returns true if the service is ready.
   bool IsReady() const;
@@ -51,7 +51,7 @@ class APP_LIST_EXPORT History : public KeyedService,
   friend class app_list::test::SearchHistoryTest;
 
   // HistoryDataObserver overrides:
-  virtual void OnHistoryDataLoadedFromStore() override;
+  void OnHistoryDataLoadedFromStore() override;
 
   scoped_ptr<HistoryData> data_;
   scoped_refptr<HistoryDataStore> store_;

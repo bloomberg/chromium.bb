@@ -107,7 +107,7 @@ class ToggledNotificationBlocker : public NotificationBlocker {
   explicit ToggledNotificationBlocker(MessageCenter* message_center)
       : NotificationBlocker(message_center),
         notifications_enabled_(true) {}
-  virtual ~ToggledNotificationBlocker() {}
+  ~ToggledNotificationBlocker() override {}
 
   void SetNotificationsEnabled(bool enabled) {
     if (notifications_enabled_ != enabled) {
@@ -117,7 +117,7 @@ class ToggledNotificationBlocker : public NotificationBlocker {
   }
 
   // NotificationBlocker overrides:
-  virtual  bool ShouldShowNotificationAsPopup(
+  bool ShouldShowNotificationAsPopup(
       const message_center::NotifierId& notifier_id) const override {
     return notifications_enabled_;
   }
@@ -134,10 +134,10 @@ class PopupNotificationBlocker : public ToggledNotificationBlocker {
                            const NotifierId& allowed_notifier)
       : ToggledNotificationBlocker(message_center),
         allowed_notifier_(allowed_notifier) {}
-  virtual ~PopupNotificationBlocker() {}
+  ~PopupNotificationBlocker() override {}
 
   // NotificationBlocker overrides:
-  virtual bool ShouldShowNotificationAsPopup(
+  bool ShouldShowNotificationAsPopup(
       const NotifierId& notifier_id) const override {
     return (notifier_id == allowed_notifier_) ||
         ToggledNotificationBlocker::ShouldShowNotificationAsPopup(notifier_id);
@@ -154,11 +154,10 @@ class TotalNotificationBlocker : public PopupNotificationBlocker {
   TotalNotificationBlocker(MessageCenter* message_center,
                            const NotifierId& allowed_notifier)
       : PopupNotificationBlocker(message_center, allowed_notifier) {}
-  virtual ~TotalNotificationBlocker() {}
+  ~TotalNotificationBlocker() override {}
 
   // NotificationBlocker overrides:
-  virtual bool ShouldShowNotification(
-      const NotifierId& notifier_id) const override {
+  bool ShouldShowNotification(const NotifierId& notifier_id) const override {
     return ShouldShowNotificationAsPopup(notifier_id);
   }
 
@@ -200,9 +199,9 @@ class MockPopupTimersController : public PopupTimersController {
       : PopupTimersController(message_center),
         timer_finished_(false),
         quit_closure_(quit_closure) {}
-  virtual ~MockPopupTimersController() {}
+  ~MockPopupTimersController() override {}
 
-  virtual void TimerFinished(const std::string& id) override {
+  void TimerFinished(const std::string& id) override {
     base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
     timer_finished_ = true;
     last_id_ = id;

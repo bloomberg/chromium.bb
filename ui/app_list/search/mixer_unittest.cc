@@ -26,12 +26,12 @@ class TestSearchResult : public SearchResult {
     set_title(base::UTF8ToUTF16(id));
     set_relevance(relevance);
   }
-  virtual ~TestSearchResult() {}
+  ~TestSearchResult() override {}
 
   // SearchResult overrides:
-  virtual void Open(int event_flags) override {}
-  virtual void InvokeAction(int action_index, int event_flags) override {}
-  virtual scoped_ptr<SearchResult> Duplicate() override {
+  void Open(int event_flags) override {}
+  void InvokeAction(int action_index, int event_flags) override {}
+  scoped_ptr<SearchResult> Duplicate() override {
     return scoped_ptr<SearchResult>(new TestSearchResult(id(), relevance()));
   }
 
@@ -55,10 +55,10 @@ class TestSearchProvider : public SearchProvider {
  public:
   explicit TestSearchProvider(const std::string& prefix)
       : prefix_(prefix), count_(0) {}
-  virtual ~TestSearchProvider() {}
+  ~TestSearchProvider() override {}
 
   // SearchProvider overrides:
-  virtual void Start(const base::string16& query) override {
+  void Start(const base::string16& query) override {
     ClearResults();
     for (size_t i = 0; i < count_; ++i) {
       const std::string id =
@@ -67,7 +67,7 @@ class TestSearchProvider : public SearchProvider {
       Add(scoped_ptr<SearchResult>(new TestSearchResult(id, relevance)).Pass());
     }
   }
-  virtual void Stop() override {}
+  void Stop() override {}
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void set_count(size_t count) { count_ = count; }

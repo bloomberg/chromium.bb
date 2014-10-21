@@ -59,15 +59,15 @@ class MESSAGE_CENTER_EXPORT HandleNotificationClickedDelegate
   explicit HandleNotificationClickedDelegate(const base::Closure& closure);
 
   // message_center::NotificationDelegate overrides:
-  virtual void Display() override;
-  virtual void Error() override;
-  virtual void Close(bool by_user) override;
-  virtual bool HasClickedListener() override;
-  virtual void Click() override;
-  virtual void ButtonClick(int button_index) override;
+  void Display() override;
+  void Error() override;
+  void Close(bool by_user) override;
+  bool HasClickedListener() override;
+  void Click() override;
+  void ButtonClick(int button_index) override;
 
  protected:
-  virtual ~HandleNotificationClickedDelegate();
+  ~HandleNotificationClickedDelegate() override;
 
  private:
   std::string id_;
@@ -87,14 +87,14 @@ class MESSAGE_CENTER_EXPORT HandleNotificationButtonClickDelegate
       const ButtonClickCallback& button_callback);
 
   // message_center::NotificationDelegate overrides:
-  virtual void Display() override;
-  virtual void Error() override;
-  virtual void Close(bool by_user) override;
-  virtual void Click() override;
-  virtual void ButtonClick(int button_index) override;
+  void Display() override;
+  void Error() override;
+  void Close(bool by_user) override;
+  void Click() override;
+  void ButtonClick(int button_index) override;
 
  protected:
-  virtual ~HandleNotificationButtonClickDelegate();
+  ~HandleNotificationButtonClickDelegate() override;
 
  private:
   ButtonClickCallback button_callback_;

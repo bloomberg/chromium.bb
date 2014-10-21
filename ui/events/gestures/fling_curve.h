@@ -18,12 +18,12 @@ namespace ui {
 class EVENTS_BASE_EXPORT FlingCurve : public GestureCurve {
  public:
   FlingCurve(const gfx::Vector2dF& velocity, base::TimeTicks start_timestamp);
-  virtual ~FlingCurve();
+  ~FlingCurve() override;
 
   // GestureCurve implementation.
-  virtual bool ComputeScrollOffset(base::TimeTicks time,
-                                   gfx::Vector2dF* offset,
-                                   gfx::Vector2dF* velocity) override;
+  bool ComputeScrollOffset(base::TimeTicks time,
+                           gfx::Vector2dF* offset,
+                           gfx::Vector2dF* velocity) override;
 
   // In contrast to |ComputeScrollOffset()|, this method is stateful and
   // returns the *change* in scroll offset between successive calls.

@@ -42,7 +42,7 @@ class GLApiBase : public GLApi {
 
  protected:
   GLApiBase();
-  virtual ~GLApiBase();
+  ~GLApiBase() override;
   void InitializeBase(DriverGL* driver);
   void SignalFlush();
 
@@ -53,19 +53,19 @@ class GLApiBase : public GLApi {
 class RealGLApi : public GLApiBase {
  public:
   RealGLApi();
-  virtual ~RealGLApi();
+  ~RealGLApi() override;
   void Initialize(DriverGL* driver);
 
  private:
-  virtual void glFinishFn() override;
-  virtual void glFlushFn() override;
+  void glFinishFn() override;
+  void glFlushFn() override;
 };
 
 // Inserts a TRACE for every GL call.
 class TraceGLApi : public GLApi {
  public:
   TraceGLApi(GLApi* gl_api) : gl_api_(gl_api) { }
-  virtual ~TraceGLApi();
+  ~TraceGLApi() override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -80,7 +80,7 @@ class TraceGLApi : public GLApi {
 class NoContextGLApi : public GLApi {
  public:
   NoContextGLApi();
-  virtual ~NoContextGLApi();
+  ~NoContextGLApi() override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -94,7 +94,7 @@ class NoContextGLApi : public GLApi {
 class VirtualGLApi : public GLApiBase {
  public:
   VirtualGLApi();
-  virtual ~VirtualGLApi();
+  ~VirtualGLApi() override;
   void Initialize(DriverGL* driver, GLContext* real_context);
 
   // Sets the current virutal context.
@@ -104,9 +104,9 @@ class VirtualGLApi : public GLApiBase {
 
 private:
   // Overridden functions from GLApiBase
-  virtual const GLubyte* glGetStringFn(GLenum name) override;
-  virtual void glFinishFn() override;
-  virtual void glFlushFn() override;
+ const GLubyte* glGetStringFn(GLenum name) override;
+ void glFinishFn() override;
+ void glFlushFn() override;
 
   // The real context we're running on.
   GLContext* real_context_;
