@@ -20,7 +20,7 @@ namespace webcrypto {
 
 Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,
-                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoKeyUsageMask usages,
                                 unsigned keylen_bytes,
                                 GenerateKeyResult* result) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -37,7 +37,7 @@ Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
                                   blink::WebCryptoKeyTypeSecret,
                                   extractable,
                                   algorithm,
-                                  usage_mask));
+                                  usages));
 
   return Status::Success();
 }
@@ -45,13 +45,13 @@ Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
 Status ImportKeyRawOpenSsl(const CryptoData& key_data,
                            const blink::WebCryptoKeyAlgorithm& algorithm,
                            bool extractable,
-                           blink::WebCryptoKeyUsageMask usage_mask,
+                           blink::WebCryptoKeyUsageMask usages,
                            blink::WebCryptoKey* key) {
   *key = blink::WebCryptoKey::create(new SymKeyOpenSsl(key_data),
                                      blink::WebCryptoKeyTypeSecret,
                                      extractable,
                                      algorithm,
-                                     usage_mask);
+                                     usages);
   return Status::Success();
 }
 

@@ -26,7 +26,7 @@ CONTENT_EXPORT Status GetWebCryptoUsagesFromJwkKeyOps(
 
 // Composes a JWK key_ops array from a Web Crypto usage mask.
 base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
-    blink::WebCryptoKeyUsageMask usage_mask);
+    blink::WebCryptoKeyUsageMask usages);
 
 // Creates a WebCryptoAlgorithm without any parameters.
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAlgorithm(

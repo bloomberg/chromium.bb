@@ -45,23 +45,23 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
 
   virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                              bool extractable,
-                             blink::WebCryptoKeyUsageMask usage_mask,
+                             blink::WebCryptoKeyUsageMask usages,
                              GenerateKeyResult* result) const override;
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const override;
+      blink::WebCryptoKeyUsageMask usages) const override;
 
   virtual Status ImportKeyPkcs8(const CryptoData& key_data,
                                 const blink::WebCryptoAlgorithm& algorithm,
                                 bool extractable,
-                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoKeyUsageMask usages,
                                 blink::WebCryptoKey* key) const override;
 
   virtual Status ImportKeySpki(const CryptoData& key_data,
                                const blink::WebCryptoAlgorithm& algorithm,
                                bool extractable,
-                               blink::WebCryptoKeyUsageMask usage_mask,
+                               blink::WebCryptoKeyUsageMask usages,
                                blink::WebCryptoKey* key) const override;
 
   virtual Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
@@ -73,7 +73,7 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
   virtual Status ImportKeyJwk(const CryptoData& key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoKeyUsageMask usages,
                               blink::WebCryptoKey* key) const override;
 
   virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,

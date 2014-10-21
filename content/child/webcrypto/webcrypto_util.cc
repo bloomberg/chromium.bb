@@ -61,12 +61,12 @@ const JwkToWebCryptoUsage kJwkWebCryptoUsageMap[] = {
     {"wrapKey", blink::WebCryptoKeyUsageWrapKey},
     {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey}};
 
-// Modifies the input usage_mask by according to the key_op value.
+// Modifies the input usages by according to the key_op value.
 bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
-                              blink::WebCryptoKeyUsageMask* usage_mask) {
+                              blink::WebCryptoKeyUsageMask* usages) {
   for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
     if (kJwkWebCryptoUsageMap[i].jwk_key_op == key_op) {
-      *usage_mask |= kJwkWebCryptoUsageMap[i].webcrypto_usage;
+      *usages |= kJwkWebCryptoUsageMap[i].webcrypto_usage;
       return true;
     }
   }
@@ -74,10 +74,9 @@ bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
 }
 
 // Composes a Web Crypto usage mask from an array of JWK key_ops values.
-Status GetWebCryptoUsagesFromJwkKeyOps(
-    const base::ListValue* jwk_key_ops_value,
-    blink::WebCryptoKeyUsageMask* usage_mask) {
-  *usage_mask = 0;
+Status GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* jwk_key_ops_value,
+                                       blink::WebCryptoKeyUsageMask* usages) {
+  *usages = 0;
   for (size_t i = 0; i < jwk_key_ops_value->GetSize(); ++i) {
     std::string key_op;
     if (!jwk_key_ops_value->GetString(i, &key_op)) {
@@ -85,7 +84,7 @@ Status GetWebCryptoUsagesFromJwkKeyOps(
           base::StringPrintf("key_ops[%d]", static_cast<int>(i)), "string");
     }
     // Unrecognized key_ops are silently skipped.
-    ignore_result(JwkKeyOpToWebCryptoUsage(key_op, usage_mask));
+    ignore_result(JwkKeyOpToWebCryptoUsage(key_op, usages));
   }
   return Status::Success();
 }
@@ -93,10 +92,10 @@ Status GetWebCryptoUsagesFromJwkKeyOps(
 // Composes a JWK key_ops List from a Web Crypto usage mask.
 // Note: Caller must assume ownership of returned instance.
 base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
-    blink::WebCryptoKeyUsageMask usage_mask) {
+    blink::WebCryptoKeyUsageMask usages) {
   base::ListValue* jwk_key_ops = new base::ListValue();
   for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
-    if (usage_mask & kJwkWebCryptoUsageMap[i].webcrypto_usage)
+    if (usages & kJwkWebCryptoUsageMap[i].webcrypto_usage)
       jwk_key_ops->AppendString(kJwkWebCryptoUsageMap[i].jwk_key_op);
   }
   return jwk_key_ops;

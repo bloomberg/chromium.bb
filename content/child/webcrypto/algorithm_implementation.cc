@@ -55,14 +55,14 @@ Status AlgorithmImplementation::Digest(
 Status AlgorithmImplementation::GenerateKey(
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKeyUsageMask usages,
     GenerateKeyResult* result) const {
   return Status::ErrorUnsupported();
 }
 
 Status AlgorithmImplementation::VerifyKeyUsagesBeforeImportKey(
     blink::WebCryptoKeyFormat format,
-    blink::WebCryptoKeyUsageMask usage_mask) const {
+    blink::WebCryptoKeyUsageMask usages) const {
   return Status::ErrorUnsupportedImportKeyFormat();
 }
 
@@ -70,7 +70,7 @@ Status AlgorithmImplementation::ImportKeyRaw(
     const CryptoData& key_data,
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
   return Status::ErrorUnsupportedImportKeyFormat();
 }
@@ -79,7 +79,7 @@ Status AlgorithmImplementation::ImportKeyPkcs8(
     const CryptoData& key_data,
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
   return Status::ErrorUnsupportedImportKeyFormat();
 }
@@ -88,7 +88,7 @@ Status AlgorithmImplementation::ImportKeySpki(
     const CryptoData& key_data,
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
   return Status::ErrorUnsupportedImportKeyFormat();
 }
@@ -97,7 +97,7 @@ Status AlgorithmImplementation::ImportKeyJwk(
     const CryptoData& key_data,
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
   return Status::ErrorUnsupportedImportKeyFormat();
 }

@@ -170,23 +170,22 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
 
   virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                              bool extractable,
-                             blink::WebCryptoKeyUsageMask usage_mask,
+                             blink::WebCryptoKeyUsageMask usages,
                              GenerateKeyResult* result) const override {
     Status status = NssSupportsRsaOaep();
     if (status.IsError())
       return status;
     return RsaHashedAlgorithm::GenerateKey(
-        algorithm, extractable, usage_mask, result);
+        algorithm, extractable, usages, result);
   }
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const override {
+      blink::WebCryptoKeyUsageMask usages) const override {
     Status status = NssSupportsRsaOaep();
     if (status.IsError())
       return status;
-    return RsaHashedAlgorithm::VerifyKeyUsagesBeforeImportKey(format,
-                                                              usage_mask);
+    return RsaHashedAlgorithm::VerifyKeyUsagesBeforeImportKey(format, usages);
   }
 
   virtual const char* GetJwkAlgorithm(

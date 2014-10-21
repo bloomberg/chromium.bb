@@ -57,9 +57,9 @@ class HmacImplementation : public AlgorithmImplementation {
 
   virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                              bool extractable,
-                             blink::WebCryptoKeyUsageMask usage_mask,
+                             blink::WebCryptoKeyUsageMask usages,
                              GenerateKeyResult* result) const override {
-    Status status = CheckKeyCreationUsages(kAllKeyUsages, usage_mask);
+    Status status = CheckKeyCreationUsages(kAllKeyUsages, usages);
     if (status.IsError())
       return status;
 
@@ -79,7 +79,7 @@ class HmacImplementation : public AlgorithmImplementation {
     return GenerateSecretKeyNss(
         blink::WebCryptoKeyAlgorithm::createHmac(hash.id(), keylen_bits),
         extractable,
-        usage_mask,
+        usages,
         keylen_bits / 8,
         mechanism,
         result);
@@ -87,11 +87,11 @@ class HmacImplementation : public AlgorithmImplementation {
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const override {
+      blink::WebCryptoKeyUsageMask usages) const override {
     switch (format) {
       case blink::WebCryptoKeyFormatRaw:
       case blink::WebCryptoKeyFormatJwk:
-        return CheckKeyCreationUsages(kAllKeyUsages, usage_mask);
+        return CheckKeyCreationUsages(kAllKeyUsages, usages);
       default:
         return Status::ErrorUnsupportedImportKeyFormat();
     }
@@ -100,7 +100,7 @@ class HmacImplementation : public AlgorithmImplementation {
   virtual Status ImportKeyRaw(const CryptoData& key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoKeyUsageMask usages,
                               blink::WebCryptoKey* key) const override {
     const blink::WebCryptoAlgorithm& hash =
         algorithm.hmacImportParams()->hash();
@@ -119,7 +119,7 @@ class HmacImplementation : public AlgorithmImplementation {
                            blink::WebCryptoKeyAlgorithm::createHmac(
                                hash.id(), keylen_bits.ValueOrDie()),
                            extractable,
-                           usage_mask,
+                           usages,
                            mechanism,
                            CKF_SIGN | CKF_VERIFY,
                            key);
@@ -128,7 +128,7 @@ class HmacImplementation : public AlgorithmImplementation {
   virtual Status ImportKeyJwk(const CryptoData& key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoKeyUsageMask usages,
                               blink::WebCryptoKey* key) const override {
     const char* algorithm_name =
         GetJwkHmacAlgorithmName(algorithm.hmacImportParams()->hash().id());
@@ -137,12 +137,12 @@ class HmacImplementation : public AlgorithmImplementation {
 
     std::vector<uint8_t> raw_data;
     Status status = ReadSecretKeyJwk(
-        key_data, algorithm_name, extractable, usage_mask, &raw_data);
+        key_data, algorithm_name, extractable, usages, &raw_data);
     if (status.IsError())
       return status;
 
     return ImportKeyRaw(
-        CryptoData(raw_data), algorithm, extractable, usage_mask, key);
+        CryptoData(raw_data), algorithm, extractable, usages, key);
   }
 
   virtual Status ExportKeyRaw(const blink::WebCryptoKey& key,

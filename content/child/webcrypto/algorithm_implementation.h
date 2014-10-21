@@ -74,11 +74,11 @@ class AlgorithmImplementation {
 
   // This method corresponds to Web Crypto's crypto.subtle.generateKey().
   //
-  // Implementations MUST verify |usage_mask| and return an error if it is not
+  // Implementations MUST verify |usages| and return an error if it is not
   // appropriate.
   virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                              bool extractable,
-                             blink::WebCryptoKeyUsageMask usage_mask,
+                             blink::WebCryptoKeyUsageMask usages,
                              GenerateKeyResult* result) const;
 
   // -----------------------------------------------
@@ -99,14 +99,14 @@ class AlgorithmImplementation {
   // ImportKeyJwk() must do the final usage check.
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const;
+      blink::WebCryptoKeyUsageMask usages) const;
 
   // This method corresponds to Web Crypto's
   // crypto.subtle.importKey(format='raw').
   virtual Status ImportKeyRaw(const CryptoData& key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoKeyUsageMask usages,
                               blink::WebCryptoKey* key) const;
 
   // This method corresponds to Web Crypto's
@@ -114,7 +114,7 @@ class AlgorithmImplementation {
   virtual Status ImportKeyPkcs8(const CryptoData& key_data,
                                 const blink::WebCryptoAlgorithm& algorithm,
                                 bool extractable,
-                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoKeyUsageMask usages,
                                 blink::WebCryptoKey* key) const;
 
   // This method corresponds to Web Crypto's
@@ -122,7 +122,7 @@ class AlgorithmImplementation {
   virtual Status ImportKeySpki(const CryptoData& key_data,
                                const blink::WebCryptoAlgorithm& algorithm,
                                bool extractable,
-                               blink::WebCryptoKeyUsageMask usage_mask,
+                               blink::WebCryptoKeyUsageMask usages,
                                blink::WebCryptoKey* key) const;
 
   // This method corresponds to Web Crypto's
@@ -130,7 +130,7 @@ class AlgorithmImplementation {
   virtual Status ImportKeyJwk(const CryptoData& key_data,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoKeyUsageMask usages,
                               blink::WebCryptoKey* key) const;
 
   // -----------------------------------------------

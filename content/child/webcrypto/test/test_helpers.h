@@ -129,15 +129,15 @@ void ImportRsaKeyPair(const std::vector<uint8_t>& spki_der,
                       const std::vector<uint8_t>& pkcs8_der,
                       const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
-                      blink::WebCryptoKeyUsageMask public_key_usage_mask,
-                      blink::WebCryptoKeyUsageMask private_key_usage_mask,
+                      blink::WebCryptoKeyUsageMask public_key_usages,
+                      blink::WebCryptoKeyUsageMask private_key_usages,
                       blink::WebCryptoKey* public_key,
                       blink::WebCryptoKey* private_key);
 
 Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                             const blink::WebCryptoAlgorithm& algorithm,
                             bool extractable,
-                            blink::WebCryptoKeyUsageMask usage_mask,
+                            blink::WebCryptoKeyUsageMask usages,
                             blink::WebCryptoKey* key);
 
 // Parses a vector of JSON into a dictionary.
@@ -179,11 +179,11 @@ void ImportExportJwkSymmetricKey(
 // expectation, then it fails with Status::ErrorUnexpected().
 Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
                          bool extractable,
-                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKeyUsageMask usages,
                          blink::WebCryptoKey* key);
 Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                        bool extractable,
-                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKeyUsageMask usages,
                        blink::WebCryptoKey* public_key,
                        blink::WebCryptoKey* private_key);
 

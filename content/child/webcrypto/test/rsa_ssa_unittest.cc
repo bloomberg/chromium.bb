@@ -539,13 +539,13 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      modulus_length,
                                      public_exponent);
   bool extractable = true;
-  const blink::WebCryptoKeyUsageMask usage_mask = 0;
+  const blink::WebCryptoKeyUsageMask usages = 0;
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey private_key;
 
   EXPECT_EQ(Status::Success(),
             GenerateKeyPair(
-                algorithm, extractable, usage_mask, &public_key, &private_key));
+                algorithm, extractable, usages, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
@@ -560,8 +560,8 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
             private_key.algorithm().rsaHashedParams()->hash().id());
   EXPECT_TRUE(public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
-  EXPECT_EQ(usage_mask, public_key.usages());
-  EXPECT_EQ(usage_mask, private_key.usages());
+  EXPECT_EQ(usages, public_key.usages());
+  EXPECT_EQ(usages, private_key.usages());
 
   // Try exporting the generated key pair, and then re-importing to verify that
   // the exported data was valid.
@@ -579,7 +579,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                             blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                             blink::WebCryptoAlgorithmIdSha256),
                         true,
-                        usage_mask,
+                        usages,
                         &public_key));
     EXPECT_EQ(modulus_length,
               public_key.algorithm().rsaHashedParams()->modulusLengthBits());
@@ -597,7 +597,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                             blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                             blink::WebCryptoAlgorithmIdSha256),
                         true,
-                        usage_mask,
+                        usages,
                         &private_key));
     EXPECT_EQ(modulus_length,
               private_key.algorithm().rsaHashedParams()->modulusLengthBits());
@@ -611,7 +611,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      public_exponent);
   EXPECT_EQ(Status::ErrorGenerateRsaUnsupportedModulus(),
             GenerateKeyPair(
-                algorithm, extractable, usage_mask, &public_key, &private_key));
+                algorithm, extractable, usages, &public_key, &private_key));
 
   // Fail with bad exponent: larger than unsigned long.
   unsigned int exponent_length = sizeof(unsigned long) + 1;  // NOLINT
@@ -623,7 +623,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      long_exponent);
   EXPECT_EQ(Status::ErrorGenerateKeyPublicExponent(),
             GenerateKeyPair(
-                algorithm, extractable, usage_mask, &public_key, &private_key));
+                algorithm, extractable, usages, &public_key, &private_key));
 
   // Fail with bad exponent: empty.
   const std::vector<uint8_t> empty_exponent;
@@ -634,7 +634,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      empty_exponent);
   EXPECT_EQ(Status::ErrorGenerateKeyPublicExponent(),
             GenerateKeyPair(
-                algorithm, extractable, usage_mask, &public_key, &private_key));
+                algorithm, extractable, usages, &public_key, &private_key));
 
   // Fail with bad exponent: all zeros.
   std::vector<uint8_t> exponent_with_leading_zeros(15, 0x00);
@@ -645,7 +645,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      exponent_with_leading_zeros);
   EXPECT_EQ(Status::ErrorGenerateKeyPublicExponent(),
             GenerateKeyPair(
-                algorithm, extractable, usage_mask, &public_key, &private_key));
+                algorithm, extractable, usages, &public_key, &private_key));
 
   // Key generation success using exponent with leading zeros.
   exponent_with_leading_zeros.insert(exponent_with_leading_zeros.end(),
@@ -658,15 +658,15 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      exponent_with_leading_zeros);
   EXPECT_EQ(Status::Success(),
             GenerateKeyPair(
-                algorithm, extractable, usage_mask, &public_key, &private_key));
+                algorithm, extractable, usages, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
   EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key.type());
   EXPECT_TRUE(public_key.extractable());
   EXPECT_EQ(extractable, private_key.extractable());
-  EXPECT_EQ(usage_mask, public_key.usages());
-  EXPECT_EQ(usage_mask, private_key.usages());
+  EXPECT_EQ(usages, public_key.usages());
+  EXPECT_EQ(usages, private_key.usages());
 
   // Successful WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 key generation (sha1)
   algorithm =
@@ -676,7 +676,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
                                      public_exponent);
   EXPECT_EQ(
       Status::Success(),
-      GenerateKeyPair(algorithm, false, usage_mask, &public_key, &private_key));
+      GenerateKeyPair(algorithm, false, usages, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
@@ -693,8 +693,8 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
   // extractable.
   EXPECT_TRUE(public_key.extractable());
   EXPECT_FALSE(private_key.extractable());
-  EXPECT_EQ(usage_mask, public_key.usages());
-  EXPECT_EQ(usage_mask, private_key.usages());
+  EXPECT_EQ(usages, public_key.usages());
+  EXPECT_EQ(usages, private_key.usages());
 
   // Exporting a private key as SPKI format doesn't make sense. However this
   // will first fail because the key is not extractable.
@@ -706,7 +706,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
   // This should fail since spki is for public keys.
   EXPECT_EQ(
       Status::Success(),
-      GenerateKeyPair(algorithm, true, usage_mask, &public_key, &private_key));
+      GenerateKeyPair(algorithm, true, usages, &public_key, &private_key));
   EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
             ExportKey(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
@@ -731,14 +731,13 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadModulusLength) {
         modulus_length_bits,
         public_exponent);
     bool extractable = true;
-    const blink::WebCryptoKeyUsageMask usage_mask = 0;
+    const blink::WebCryptoKeyUsageMask usages = 0;
     blink::WebCryptoKey public_key;
     blink::WebCryptoKey private_key;
 
-    EXPECT_EQ(
-        Status::ErrorGenerateRsaUnsupportedModulus(),
-        GenerateKeyPair(
-            algorithm, extractable, usage_mask, &public_key, &private_key));
+    EXPECT_EQ(Status::ErrorGenerateRsaUnsupportedModulus(),
+              GenerateKeyPair(
+                  algorithm, extractable, usages, &public_key, &private_key));
   }
 }
 
@@ -1159,7 +1158,7 @@ TEST(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
   blink::WebCryptoAlgorithm algorithm =
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha256);
-  blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageVerify;
+  blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageVerify;
   blink::WebCryptoKey key;
 
   // An RSA public key JWK _must_ have an "n" (modulus) and an "e" (exponent)
@@ -1170,7 +1169,7 @@ TEST(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
 
   // Baseline pass.
   EXPECT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+            ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
   EXPECT_EQ(algorithm.id(), key.algorithm().id());
   EXPECT_FALSE(key.extractable());
   EXPECT_EQ(blink::WebCryptoKeyUsageVerify, key.usages());
@@ -1184,19 +1183,19 @@ TEST(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
     // Fail on missing parameter.
     dict.Remove(kKtyParmName[idx], NULL);
     EXPECT_NE(Status::Success(),
-              ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+              ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
     RestoreJwkRsaDictionary(&dict);
 
     // Fail on bad b64 parameter encoding.
     dict.SetString(kKtyParmName[idx], "Qk3f0DsytU8lfza2au #$% Htaw2xpop9yTuH0");
     EXPECT_NE(Status::Success(),
-              ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+              ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
     RestoreJwkRsaDictionary(&dict);
 
     // Fail on empty parameter.
     dict.SetString(kKtyParmName[idx], "");
     EXPECT_EQ(Status::ErrorJwkEmptyBigInteger(kKtyParmName[idx]),
-              ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+              ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
     RestoreJwkRsaDictionary(&dict);
   }
 }

@@ -45,14 +45,14 @@ CONTENT_EXPORT Status Digest(const blink::WebCryptoAlgorithm& algorithm,
 
 CONTENT_EXPORT Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                                   bool extractable,
-                                  blink::WebCryptoKeyUsageMask usage_mask,
+                                  blink::WebCryptoKeyUsageMask usages,
                                   GenerateKeyResult* result);
 
 CONTENT_EXPORT Status ImportKey(blink::WebCryptoKeyFormat format,
                                 const CryptoData& key_data,
                                 const blink::WebCryptoAlgorithm& algorithm,
                                 bool extractable,
-                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoKeyUsageMask usages,
                                 blink::WebCryptoKey* key);
 
 CONTENT_EXPORT Status ExportKey(blink::WebCryptoKeyFormat format,
@@ -84,7 +84,7 @@ CONTENT_EXPORT Status
               const blink::WebCryptoAlgorithm& wrapping_algorithm,
               const blink::WebCryptoAlgorithm& algorithm,
               bool extractable,
-              blink::WebCryptoKeyUsageMask usage_mask,
+              blink::WebCryptoKeyUsageMask usages,
               blink::WebCryptoKey* key);
 
 CONTENT_EXPORT scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(

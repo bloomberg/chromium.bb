@@ -109,7 +109,7 @@ bool SerializeKeyForClone(const blink::WebCryptoKey& key,
 bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                             blink::WebCryptoKeyType type,
                             bool extractable,
-                            blink::WebCryptoKeyUsageMask usage_mask,
+                            blink::WebCryptoKeyUsageMask usages,
                             const CryptoData& key_data,
                             blink::WebCryptoKey* key) {
   // TODO(eroman): This should not call into the platform crypto layer.
@@ -124,7 +124,7 @@ bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                             key_data,
                             KeyAlgorithmToImportAlgorithm(algorithm),
                             extractable,
-                            usage_mask,
+                            usages,
                             key);
   if (status.IsError())
     return false;

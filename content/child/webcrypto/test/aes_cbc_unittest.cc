@@ -639,7 +639,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedKeyOps) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
-  blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
+  blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageEncrypt;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -655,7 +655,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedKeyOps) {
   key_ops->AppendString("baz");
   key_ops->AppendString("encrypt");
   EXPECT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+            ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
 }
 
 // Import a JWK with a value in key_ops array that is not a string.
@@ -663,7 +663,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkNonStringKeyOp) {
   blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
-  blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
+  blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageEncrypt;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -677,7 +677,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkNonStringKeyOp) {
   key_ops->AppendString("encrypt");
   key_ops->AppendInteger(3);
   EXPECT_EQ(Status::ErrorJwkPropertyWrongType("key_ops[1]", "string"),
-            ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+            ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
 }
 
 // Fail on missing k.

@@ -23,7 +23,7 @@ bool SerializeKeyForClone(const blink::WebCryptoKey& key,
 bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                             blink::WebCryptoKeyType type,
                             bool extractable,
-                            blink::WebCryptoKeyUsageMask usage_mask,
+                            blink::WebCryptoKeyUsageMask usages,
                             const CryptoData& key_data,
                             blink::WebCryptoKey* key);
 

@@ -211,16 +211,16 @@ typedef EncryptState DigestState;
 struct GenerateKeyState : public BaseState {
   GenerateKeyState(const blink::WebCryptoAlgorithm& algorithm,
                    bool extractable,
-                   blink::WebCryptoKeyUsageMask usage_mask,
+                   blink::WebCryptoKeyUsageMask usages,
                    const blink::WebCryptoResult& result)
       : BaseState(result),
         algorithm(algorithm),
         extractable(extractable),
-        usage_mask(usage_mask) {}
+        usages(usages) {}
 
   const blink::WebCryptoAlgorithm algorithm;
   const bool extractable;
-  const blink::WebCryptoKeyUsageMask usage_mask;
+  const blink::WebCryptoKeyUsageMask usages;
 
   webcrypto::GenerateKeyResult generate_key_result;
 };
@@ -231,20 +231,20 @@ struct ImportKeyState : public BaseState {
                  unsigned int key_data_size,
                  const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
-                 blink::WebCryptoKeyUsageMask usage_mask,
+                 blink::WebCryptoKeyUsageMask usages,
                  const blink::WebCryptoResult& result)
       : BaseState(result),
         format(format),
         key_data(key_data, key_data + key_data_size),
         algorithm(algorithm),
         extractable(extractable),
-        usage_mask(usage_mask) {}
+        usages(usages) {}
 
   const blink::WebCryptoKeyFormat format;
   const std::vector<uint8_t> key_data;
   const blink::WebCryptoAlgorithm algorithm;
   const bool extractable;
-  const blink::WebCryptoKeyUsageMask usage_mask;
+  const blink::WebCryptoKeyUsageMask usages;
 
   blink::WebCryptoKey key;
 };
@@ -403,7 +403,7 @@ void DoGenerateKey(scoped_ptr<GenerateKeyState> passed_state) {
     return;
   state->status = webcrypto::GenerateKey(state->algorithm,
                                          state->extractable,
-                                         state->usage_mask,
+                                         state->usages,
                                          &state->generate_key_result);
   state->origin_thread->PostTask(
       FROM_HERE, base::Bind(DoGenerateKeyReply, Passed(&passed_state)));
@@ -421,7 +421,7 @@ void DoImportKey(scoped_ptr<ImportKeyState> passed_state) {
                                        webcrypto::CryptoData(state->key_data),
                                        state->algorithm,
                                        state->extractable,
-                                       state->usage_mask,
+                                       state->usages,
                                        &state->key);
   if (state->status.IsSuccess()) {
     DCHECK(state->key.handle());
@@ -591,12 +591,12 @@ void WebCryptoImpl::digest(const blink::WebCryptoAlgorithm& algorithm,
 
 void WebCryptoImpl::generateKey(const blink::WebCryptoAlgorithm& algorithm,
                                 bool extractable,
-                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoKeyUsageMask usages,
                                 blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
 
   scoped_ptr<GenerateKeyState> state(
-      new GenerateKeyState(algorithm, extractable, usage_mask, result));
+      new GenerateKeyState(algorithm, extractable, usages, result));
   if (!CryptoThreadPool::PostTask(FROM_HERE,
                                   base::Bind(DoGenerateKey, Passed(&state)))) {
     CompleteWithThreadPoolError(&result);
@@ -608,15 +608,10 @@ void WebCryptoImpl::importKey(blink::WebCryptoKeyFormat format,
                               unsigned int key_data_size,
                               const blink::WebCryptoAlgorithm& algorithm,
                               bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
+                              blink::WebCryptoKeyUsageMask usages,
                               blink::WebCryptoResult result) {
-  scoped_ptr<ImportKeyState> state(new ImportKeyState(format,
-                                                      key_data,
-                                                      key_data_size,
-                                                      algorithm,
-                                                      extractable,
-                                                      usage_mask,
-                                                      result));
+  scoped_ptr<ImportKeyState> state(new ImportKeyState(
+      format, key_data, key_data_size, algorithm, extractable, usages, result));
   if (!CryptoThreadPool::PostTask(FROM_HERE,
                                   base::Bind(DoImportKey, Passed(&state)))) {
     CompleteWithThreadPoolError(&result);

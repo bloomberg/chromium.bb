@@ -20,7 +20,7 @@ namespace webcrypto {
 
 Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
                             bool extractable,
-                            blink::WebCryptoKeyUsageMask usage_mask,
+                            blink::WebCryptoKeyUsageMask usages,
                             unsigned keylen_bytes,
                             CK_MECHANISM_TYPE mechanism,
                             GenerateKeyResult* result) {
@@ -51,7 +51,7 @@ Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
                                   blink::WebCryptoKeyTypeSecret,
                                   extractable,
                                   algorithm,
-                                  usage_mask));
+                                  usages));
 
   return Status::Success();
 }
@@ -59,7 +59,7 @@ Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
 Status ImportKeyRawNss(const CryptoData& key_data,
                        const blink::WebCryptoKeyAlgorithm& algorithm,
                        bool extractable,
-                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKeyUsageMask usages,
                        CK_MECHANISM_TYPE mechanism,
                        CK_FLAGS flags,
                        blink::WebCryptoKey* key) {
@@ -85,7 +85,7 @@ Status ImportKeyRawNss(const CryptoData& key_data,
                                      blink::WebCryptoKeyTypeSecret,
                                      extractable,
                                      algorithm,
-                                     usage_mask);
+                                     usages);
   return Status::Success();
 }
 

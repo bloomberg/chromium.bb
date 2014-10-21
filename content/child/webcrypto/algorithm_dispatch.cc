@@ -104,14 +104,14 @@ Status Digest(const blink::WebCryptoAlgorithm& algorithm,
 
 Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                    bool extractable,
-                   blink::WebCryptoKeyUsageMask usage_mask,
+                   blink::WebCryptoKeyUsageMask usages,
                    GenerateKeyResult* result) {
   const AlgorithmImplementation* impl = NULL;
   Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
   if (status.IsError())
     return status;
 
-  return impl->GenerateKey(algorithm, extractable, usage_mask, result);
+  return impl->GenerateKey(algorithm, extractable, usages, result);
 }
 
 // Note that this function may be called from the target Blink thread.
@@ -119,30 +119,27 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
                  const CryptoData& key_data,
                  const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
-                 blink::WebCryptoKeyUsageMask usage_mask,
+                 blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoKey* key) {
   const AlgorithmImplementation* impl = NULL;
   Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
   if (status.IsError())
     return status;
 
-  status = impl->VerifyKeyUsagesBeforeImportKey(format, usage_mask);
+  status = impl->VerifyKeyUsagesBeforeImportKey(format, usages);
   if (status.IsError())
     return status;
 
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
-      return impl->ImportKeyRaw(
-          key_data, algorithm, extractable, usage_mask, key);
+      return impl->ImportKeyRaw(key_data, algorithm, extractable, usages, key);
     case blink::WebCryptoKeyFormatSpki:
-      return impl->ImportKeySpki(
-          key_data, algorithm, extractable, usage_mask, key);
+      return impl->ImportKeySpki(key_data, algorithm, extractable, usages, key);
     case blink::WebCryptoKeyFormatPkcs8:
       return impl->ImportKeyPkcs8(
-          key_data, algorithm, extractable, usage_mask, key);
+          key_data, algorithm, extractable, usages, key);
     case blink::WebCryptoKeyFormatJwk:
-      return impl->ImportKeyJwk(
-          key_data, algorithm, extractable, usage_mask, key);
+      return impl->ImportKeyJwk(key_data, algorithm, extractable, usages, key);
     default:
       return Status::ErrorUnsupported();
   }
@@ -213,7 +210,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
                  const blink::WebCryptoAlgorithm& wrapping_algorithm,
                  const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
-                 blink::WebCryptoKeyUsageMask usage_mask,
+                 blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoKey* key) {
   if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageUnwrapKey))
     return Status::ErrorUnexpected();
@@ -226,7 +223,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   if (status.IsError())
     return status;
 
-  status = import_impl->VerifyKeyUsagesBeforeImportKey(format, usage_mask);
+  status = import_impl->VerifyKeyUsagesBeforeImportKey(format, usages);
   if (status.IsError())
     return status;
 
@@ -242,7 +239,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   // key bytes however this should be OK. For more discussion see
   // http://crubg.com/372040
   return ImportKey(
-      format, CryptoData(buffer), algorithm, extractable, usage_mask, key);
+      format, CryptoData(buffer), algorithm, extractable, usages, key);
 }
 
 scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(

@@ -46,7 +46,7 @@
 // Web Crypto Key type            <-- (deduced)
 // Web Crypto Key extractable     <-- JWK ext + input extractable
 // Web Crypto Key algorithm       <-- JWK alg + input algorithm
-// Web Crypto Key keyUsage        <-- JWK use, key_ops + input usage_mask
+// Web Crypto Key keyUsage        <-- JWK use, key_ops + input usages
 // Web Crypto Key keying material <-- kty-specific parameters
 //
 // Values for each JWK entry are case-sensitive and defined in
@@ -183,7 +183,7 @@
 //   +-------+--------------------------------------------------------------+
 //
 // Consistency and conflict resolution
-// The 'algorithm', 'extractable', and 'usage_mask' input parameters
+// The 'algorithm', 'extractable', and 'usages' input parameters
 // may be different than the corresponding values inside the JWK. The Web
 // Crypto spec says that if a JWK value is present but is inconsistent with
 // the input value, it is an error and the operation must fail. If no
@@ -199,10 +199,10 @@
 //   false but the input parameter is true, it is an inconsistency. If both
 //   are true or both are false, use that value.
 //
-// usage_mask
-//   The input usage_mask must be a strict subset of the interpreted JWK use
-//   value, else it is judged inconsistent. In all cases the input usage_mask
-//   is used as the final usage_mask.
+// usages
+//   The input usages must be a strict subset of the interpreted JWK use
+//   value, else it is judged inconsistent. In all cases the input usages
+//   is used as the final usages.
 //
 
 namespace content {
@@ -224,10 +224,10 @@ class JwkWriter {
  public:
   JwkWriter(const std::string& algorithm,
             bool extractable,
-            blink::WebCryptoKeyUsageMask usage_mask,
+            blink::WebCryptoKeyUsageMask usages,
             const std::string& kty) {
     dict_.SetString("alg", algorithm);
-    dict_.Set("key_ops", CreateJwkKeyOpsFromWebCryptoUsages(usage_mask));
+    dict_.Set("key_ops", CreateJwkKeyOpsFromWebCryptoUsages(usages));
     dict_.SetBoolean("ext", extractable);
     dict_.SetString("kty", kty);
   }
@@ -378,8 +378,8 @@ Status VerifyExt(base::DictionaryValue* dict, bool expected_extractable) {
 }
 
 Status VerifyUsages(base::DictionaryValue* dict,
-                    blink::WebCryptoKeyUsageMask expected_usage_mask) {
-  // JWK "key_ops" (optional) --> usage_mask parameter
+                    blink::WebCryptoKeyUsageMask expected_usages) {
+  // JWK "key_ops" (optional) --> usages parameter
   base::ListValue* jwk_key_ops_value = NULL;
   bool has_jwk_key_ops;
   Status status =
@@ -392,12 +392,12 @@ Status VerifyUsages(base::DictionaryValue* dict,
         GetWebCryptoUsagesFromJwkKeyOps(jwk_key_ops_value, &jwk_key_ops_mask);
     if (status.IsError())
       return status;
-    // The input usage_mask must be a subset of jwk_key_ops_mask.
-    if (!ContainsKeyUsages(jwk_key_ops_mask, expected_usage_mask))
+    // The input usages must be a subset of jwk_key_ops_mask.
+    if (!ContainsKeyUsages(jwk_key_ops_mask, expected_usages))
       return Status::ErrorJwkKeyopsInconsistent();
   }
 
-  // JWK "use" (optional) --> usage_mask parameter
+  // JWK "use" (optional) --> usages parameter
   std::string jwk_use_value;
   bool has_jwk_use;
   status = GetOptionalJwkString(dict, "use", &jwk_use_value, &has_jwk_use);
@@ -411,8 +411,8 @@ Status VerifyUsages(base::DictionaryValue* dict,
       jwk_use_mask = kJwkSigUsage;
     else
       return Status::ErrorJwkUnrecognizedUse();
-    // The input usage_mask must be a subset of jwk_use_mask.
-    if (!ContainsKeyUsages(jwk_use_mask, expected_usage_mask))
+    // The input usages must be a subset of jwk_use_mask.
+    if (!ContainsKeyUsages(jwk_use_mask, expected_usages))
       return Status::ErrorJwkUseInconsistent();
   }
 
@@ -442,7 +442,7 @@ Status VerifyAlg(base::DictionaryValue* dict,
 
 Status ParseJwkCommon(const CryptoData& bytes,
                       bool expected_extractable,
-                      blink::WebCryptoKeyUsageMask expected_usage_mask,
+                      blink::WebCryptoKeyUsageMask expected_usages,
                       std::string* kty,
                       scoped_ptr<base::DictionaryValue>* dict) {
   // Parse the incoming JWK JSON.
@@ -469,25 +469,24 @@ Status ParseJwkCommon(const CryptoData& bytes,
   if (status.IsError())
     return status;
 
-  status = VerifyUsages(dict_value, expected_usage_mask);
+  status = VerifyUsages(dict_value, expected_usages);
   if (status.IsError())
     return status;
 
   return Status::Success();
 }
 
-Status ReadSecretKeyNoExpectedAlg(
-    const CryptoData& key_data,
-    bool expected_extractable,
-    blink::WebCryptoKeyUsageMask expected_usage_mask,
-    std::vector<uint8_t>* raw_key_data,
-    scoped_ptr<base::DictionaryValue>* dict) {
+Status ReadSecretKeyNoExpectedAlg(const CryptoData& key_data,
+                                  bool expected_extractable,
+                                  blink::WebCryptoKeyUsageMask expected_usages,
+                                  std::vector<uint8_t>* raw_key_data,
+                                  scoped_ptr<base::DictionaryValue>* dict) {
   if (!key_data.byte_length())
     return Status::ErrorImportEmptyKeyData();
 
   std::string kty;
   Status status = ParseJwkCommon(
-      key_data, expected_extractable, expected_usage_mask, &kty, dict);
+      key_data, expected_extractable, expected_usages, &kty, dict);
   if (status.IsError())
     return status;
 
@@ -508,9 +507,9 @@ Status ReadSecretKeyNoExpectedAlg(
 void WriteSecretKeyJwk(const CryptoData& raw_key_data,
                        const std::string& algorithm,
                        bool extractable,
-                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKeyUsageMask usages,
                        std::vector<uint8_t>* jwk_key_data) {
-  JwkWriter writer(algorithm, extractable, usage_mask, "oct");
+  JwkWriter writer(algorithm, extractable, usages, "oct");
   writer.SetBase64Encoded("k", raw_key_data);
   writer.ToBytes(jwk_key_data);
 }
@@ -518,11 +517,11 @@ void WriteSecretKeyJwk(const CryptoData& raw_key_data,
 Status ReadSecretKeyJwk(const CryptoData& key_data,
                         const std::string& expected_algorithm,
                         bool expected_extractable,
-                        blink::WebCryptoKeyUsageMask expected_usage_mask,
+                        blink::WebCryptoKeyUsageMask expected_usages,
                         std::vector<uint8_t>* raw_key_data) {
   scoped_ptr<base::DictionaryValue> dict;
   Status status = ReadSecretKeyNoExpectedAlg(
-      key_data, expected_extractable, expected_usage_mask, raw_key_data, &dict);
+      key_data, expected_extractable, expected_usages, raw_key_data, &dict);
   if (status.IsError())
     return status;
   return VerifyAlg(dict.get(), expected_algorithm);
@@ -542,11 +541,11 @@ std::string MakeJwkAesAlgorithmName(const std::string& suffix,
 Status ReadAesSecretKeyJwk(const CryptoData& key_data,
                            const std::string& algorithm_name_suffix,
                            bool expected_extractable,
-                           blink::WebCryptoKeyUsageMask expected_usage_mask,
+                           blink::WebCryptoKeyUsageMask expected_usages,
                            std::vector<uint8_t>* raw_key_data) {
   scoped_ptr<base::DictionaryValue> dict;
   Status status = ReadSecretKeyNoExpectedAlg(
-      key_data, expected_extractable, expected_usage_mask, raw_key_data, &dict);
+      key_data, expected_extractable, expected_usages, raw_key_data, &dict);
   if (status.IsError())
     return status;
 
@@ -579,9 +578,9 @@ void WriteRsaPublicKeyJwk(const CryptoData& n,
                           const CryptoData& e,
                           const std::string& algorithm,
                           bool extractable,
-                          blink::WebCryptoKeyUsageMask usage_mask,
+                          blink::WebCryptoKeyUsageMask usages,
                           std::vector<uint8_t>* jwk_key_data) {
-  JwkWriter writer(algorithm, extractable, usage_mask, "RSA");
+  JwkWriter writer(algorithm, extractable, usages, "RSA");
   writer.SetBase64Encoded("n", n);
   writer.SetBase64Encoded("e", e);
   writer.ToBytes(jwk_key_data);
@@ -598,9 +597,9 @@ void WriteRsaPrivateKeyJwk(const CryptoData& n,
                            const CryptoData& qi,
                            const std::string& algorithm,
                            bool extractable,
-                           blink::WebCryptoKeyUsageMask usage_mask,
+                           blink::WebCryptoKeyUsageMask usages,
                            std::vector<uint8_t>* jwk_key_data) {
-  JwkWriter writer(algorithm, extractable, usage_mask, "RSA");
+  JwkWriter writer(algorithm, extractable, usages, "RSA");
 
   writer.SetBase64Encoded("n", n);
   writer.SetBase64Encoded("e", e);
@@ -624,7 +623,7 @@ JwkRsaInfo::~JwkRsaInfo() {
 Status ReadRsaKeyJwk(const CryptoData& key_data,
                      const std::string& expected_algorithm,
                      bool expected_extractable,
-                     blink::WebCryptoKeyUsageMask expected_usage_mask,
+                     blink::WebCryptoKeyUsageMask expected_usages,
                      JwkRsaInfo* result) {
   if (!key_data.byte_length())
     return Status::ErrorImportEmptyKeyData();
@@ -632,7 +631,7 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
   scoped_ptr<base::DictionaryValue> dict;
   std::string kty;
   Status status = ParseJwkCommon(
-      key_data, expected_extractable, expected_usage_mask, &kty, &dict);
+      key_data, expected_extractable, expected_usages, &kty, &dict);
   if (status.IsError())
     return status;
 

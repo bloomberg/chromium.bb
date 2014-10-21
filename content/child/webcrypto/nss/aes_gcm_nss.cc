@@ -145,25 +145,24 @@ class AesGcmImplementation : public AesAlgorithm {
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const override {
+      blink::WebCryptoKeyUsageMask usages) const override {
     // Prevent importing AES-GCM keys if it is unavailable.
     Status status = NssSupportsAesGcm();
     if (status.IsError())
       return status;
-    return AesAlgorithm::VerifyKeyUsagesBeforeImportKey(format, usage_mask);
+    return AesAlgorithm::VerifyKeyUsagesBeforeImportKey(format, usages);
   }
 
   virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                              bool extractable,
-                             blink::WebCryptoKeyUsageMask usage_mask,
+                             blink::WebCryptoKeyUsageMask usages,
                              GenerateKeyResult* result) const override {
     // Prevent generating AES-GCM keys if it is unavailable.
     Status status = NssSupportsAesGcm();
     if (status.IsError())
       return status;
 
-    return AesAlgorithm::GenerateKey(
-        algorithm, extractable, usage_mask, result);
+    return AesAlgorithm::GenerateKey(algorithm, extractable, usages, result);
   }
 
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,

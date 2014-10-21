@@ -30,23 +30,23 @@ class AesAlgorithm : public AlgorithmImplementation {
 
   Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                      bool extractable,
-                     blink::WebCryptoKeyUsageMask usage_mask,
+                     blink::WebCryptoKeyUsageMask usages,
                      GenerateKeyResult* result) const override;
 
   Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
-      blink::WebCryptoKeyUsageMask usage_mask) const override;
+      blink::WebCryptoKeyUsageMask usages) const override;
 
   Status ImportKeyRaw(const CryptoData& key_data,
                       const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
-                      blink::WebCryptoKeyUsageMask usage_mask,
+                      blink::WebCryptoKeyUsageMask usages,
                       blink::WebCryptoKey* key) const override;
 
   Status ImportKeyJwk(const CryptoData& key_data,
                       const blink::WebCryptoAlgorithm& algorithm,
                       bool extractable,
-                      blink::WebCryptoKeyUsageMask usage_mask,
+                      blink::WebCryptoKeyUsageMask usages,
                       blink::WebCryptoKey* key) const override;
 
   Status ExportKeyRaw(const blink::WebCryptoKey& key,

@@ -26,11 +26,11 @@ class Status;
 //  * raw_key_data: The actual key data
 //  * algorithm: The JWK algorithm name (i.e. "alg")
 //  * extractable: The JWK extractability (i.e. "ext")
-//  * usage_mask: The JWK usages (i.e. "key_ops")
+//  * usages: The JWK usages (i.e. "key_ops")
 void WriteSecretKeyJwk(const CryptoData& raw_key_data,
                        const std::string& algorithm,
                        bool extractable,
-                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKeyUsageMask usages,
                        std::vector<uint8_t>* jwk_key_data);
 
 // Parses a UTF-8 encoded JWK (key_data), and extracts the key material to
@@ -39,11 +39,11 @@ void WriteSecretKeyJwk(const CryptoData& raw_key_data,
 //   * expected_algorithm must match the JWK's "alg", if present.
 //   * expected_extractable must be consistent with the JWK's "ext", if
 //     present.
-//   * expected_usage_mask must be a subset of the JWK's "key_ops" if present.
+//   * expected_usages must be a subset of the JWK's "key_ops" if present.
 Status ReadSecretKeyJwk(const CryptoData& key_data,
                         const std::string& expected_algorithm,
                         bool expected_extractable,
-                        blink::WebCryptoKeyUsageMask expected_usage_mask,
+                        blink::WebCryptoKeyUsageMask expected_usages,
                         std::vector<uint8_t>* raw_key_data);
 
 // Creates an AES algorithm name for the given key size (in bytes). For
@@ -61,7 +61,7 @@ std::string MakeJwkAesAlgorithmName(const std::string& suffix,
 Status ReadAesSecretKeyJwk(const CryptoData& key_data,
                            const std::string& algorithm_name_suffix,
                            bool expected_extractable,
-                           blink::WebCryptoKeyUsageMask expected_usage_mask,
+                           blink::WebCryptoKeyUsageMask expected_usages,
                            std::vector<uint8_t>* raw_key_data);
 
 // Writes a JWK-formated RSA public key and saves the result to
@@ -70,7 +70,7 @@ void WriteRsaPublicKeyJwk(const CryptoData& n,
                           const CryptoData& e,
                           const std::string& algorithm,
                           bool extractable,
-                          blink::WebCryptoKeyUsageMask usage_mask,
+                          blink::WebCryptoKeyUsageMask usages,
                           std::vector<uint8_t>* jwk_key_data);
 
 // Writes a JWK-formated RSA private key and saves the result to
@@ -85,7 +85,7 @@ void WriteRsaPrivateKeyJwk(const CryptoData& n,
                            const CryptoData& qi,
                            const std::string& algorithm,
                            bool extractable,
-                           blink::WebCryptoKeyUsageMask usage_mask,
+                           blink::WebCryptoKeyUsageMask usages,
                            std::vector<uint8_t>* jwk_key_data);
 
 // Describes the RSA components for a parsed key. The names of the properties
@@ -113,11 +113,11 @@ struct JwkRsaInfo {
 //   * expected_algorithm must match the JWK's "alg", if present.
 //   * expected_extractable must be consistent with the JWK's "ext", if
 //     present.
-//   * expected_usage_mask must be a subset of the JWK's "key_ops" if present.
+//   * expected_usages must be a subset of the JWK's "key_ops" if present.
 Status ReadRsaKeyJwk(const CryptoData& key_data,
                      const std::string& expected_algorithm,
                      bool expected_extractable,
-                     blink::WebCryptoKeyUsageMask expected_usage_mask,
+                     blink::WebCryptoKeyUsageMask expected_usages,
                      JwkRsaInfo* result);
 
 const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash);

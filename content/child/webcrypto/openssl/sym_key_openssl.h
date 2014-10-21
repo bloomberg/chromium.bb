@@ -17,14 +17,14 @@ class Status;
 
 Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,
-                                blink::WebCryptoKeyUsageMask usage_mask,
+                                blink::WebCryptoKeyUsageMask usages,
                                 unsigned keylen_bytes,
                                 GenerateKeyResult* result);
 
 Status ImportKeyRawOpenSsl(const CryptoData& key_data,
                            const blink::WebCryptoKeyAlgorithm& algorithm,
                            bool extractable,
-                           blink::WebCryptoKeyUsageMask usage_mask,
+                           blink::WebCryptoKeyUsageMask usages,
                            blink::WebCryptoKey* key);
 
 }  // namespace webcrypto
