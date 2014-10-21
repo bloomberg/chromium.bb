@@ -687,7 +687,10 @@ void MigrateProfileZoomLevelPrefs(Profile* profile) {
   migrated |= !host_zoom_dictionary->empty();
   UMA_HISTOGRAM_BOOLEAN("Settings.ZoomLevelPreferencesMigrated", migrated);
 
-  zoom_level_prefs->ExtractPerHostZoomLevels(host_zoom_dictionary);
+  // Since |host_zoom_dictionary| is not partition-based, do not attempt to
+  // sanitize it.
+  zoom_level_prefs->ExtractPerHostZoomLevels(
+      host_zoom_dictionary, false /* sanitize_partition_host_zoom_levels */);
 
   // We're done migrating the profile per-host zoom level values, so we clear
   // them all.

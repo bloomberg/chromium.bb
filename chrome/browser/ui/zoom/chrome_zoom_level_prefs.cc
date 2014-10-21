@@ -78,7 +78,8 @@ void ChromeZoomLevelPrefs::InitPrefsAndCopyToHostZoomMap(
     // Since we're calling this before setting up zoom_subscription_ below we
     // don't need to worry that host_zoom_dictionary is indirectly affected
     // by calls to HostZoomMap::SetZoomLevelForHost().
-    ExtractPerHostZoomLevels(host_zoom_dictionary);
+    ExtractPerHostZoomLevels(host_zoom_dictionary,
+                             true /* sanitize_partition_host_zoom_levels */);
   }
   zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(base::Bind(
       &ChromeZoomLevelPrefs::OnZoomLevelChanged, base::Unretained(this)));
@@ -144,8 +145,11 @@ void ChromeZoomLevelPrefs::OnZoomLevelChanged(
     host_zoom_dictionary->SetDoubleWithoutPathExpansion(change.host, level);
 }
 
+// TODO(wjmaclean): Remove the dictionary_path once the migration code is
+// removed. crbug.com/420643
 void ChromeZoomLevelPrefs::ExtractPerHostZoomLevels(
-    const base::DictionaryValue* host_zoom_dictionary) {
+    const base::DictionaryValue* host_zoom_dictionary,
+    bool sanitize_partition_host_zoom_levels) {
   std::vector<std::string> keys_to_remove;
   scoped_ptr<base::DictionaryValue> host_zoom_dictionary_copy(
       host_zoom_dictionary->DeepCopyWithoutEmptyChildren());
@@ -173,6 +177,14 @@ void ChromeZoomLevelPrefs::ExtractPerHostZoomLevels(
 
     host_zoom_map_->SetZoomLevelForHost(host, zoom_level);
   }
+
+  // We don't bother sanitizing non-partition dictionaries as they will be
+  // discarded in the migration process. Note: since the structure of partition
+  // per-host zoom level dictionaries is different from the legacy profile
+  // per-host zoom level dictionaries, the following code will fail if run
+  // on the legacy dictionaries.
+  if (!sanitize_partition_host_zoom_levels)
+    return;
 
   // Sanitize prefs to remove entries that match the default zoom level and/or
   // have an empty host.

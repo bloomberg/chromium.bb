@@ -53,7 +53,8 @@ class ChromeZoomLevelPrefs {
       const base::Closure& callback);
 
   void ExtractPerHostZoomLevels(
-      const base::DictionaryValue* host_zoom_dictionary);
+      const base::DictionaryValue* host_zoom_dictionary,
+      bool sanitize_partition_host_zoom_levels);
 
  private:
   // This is a callback function that receives notifications from HostZoomMap
