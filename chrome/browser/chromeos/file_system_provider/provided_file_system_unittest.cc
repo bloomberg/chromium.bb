@@ -124,7 +124,7 @@ class Observer : public ProvidedFileSystemObserver {
   // ProvidedFileSystemInterfaceObserver overrides.
   virtual void OnObservedEntryChanged(
       const ProvidedFileSystemInfo& file_system_info,
-      const base::FilePath& observed_path,
+      const ObservedEntry& observed_entry,
       ProvidedFileSystemObserver::ChangeType change_type,
       const ProvidedFileSystemObserver::ChildChanges& child_changes,
       const base::Closure& callback) override {
@@ -135,8 +135,7 @@ class Observer : public ProvidedFileSystemObserver {
 
   virtual void OnObservedEntryTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,
-      const base::FilePath& observed_path,
-      const std::string& tag) override {
+      const ObservedEntry& observed_entry) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     ++tag_updated_counter_;
   }

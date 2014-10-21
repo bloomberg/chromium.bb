@@ -20,7 +20,6 @@ struct MountOptions {
   MountOptions(const std::string& file_system_id,
                const std::string& display_name);
 
-  std::string extension_id;
   std::string file_system_id;
   std::string display_name;
   bool writable;

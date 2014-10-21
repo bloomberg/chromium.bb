@@ -177,6 +177,7 @@
       'browser/chromeos/file_system_provider/operations/unobserve_entry_unittest.cc',
       'browser/chromeos/file_system_provider/operations/write_file_unittest.cc',
       'browser/chromeos/file_system_provider/provided_file_system_unittest.cc',
+      'browser/chromeos/file_system_provider/registry_unittest.cc',
       'browser/chromeos/file_system_provider/request_manager_unittest.cc',
       'browser/chromeos/file_system_provider/service_unittest.cc',
       'browser/chromeos/fileapi/external_file_url_request_job_unittest.cc',

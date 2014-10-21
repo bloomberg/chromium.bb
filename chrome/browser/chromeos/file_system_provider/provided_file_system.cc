@@ -476,7 +476,7 @@ bool ProvidedFileSystem::Notify(
   FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
                     observers_,
                     OnObservedEntryChanged(file_system_info_,
-                                           observed_path,
+                                           it->second,
                                            change_type,
                                            child_changes_ref,
                                            auto_updater->CreateCallback()));
@@ -549,10 +549,9 @@ void ProvidedFileSystem::OnNotifyCompleted(
 
   it->second.last_tag = tag;
 
-  FOR_EACH_OBSERVER(
-      ProvidedFileSystemObserver,
-      observers_,
-      OnObservedEntryTagUpdated(file_system_info_, observed_path, tag));
+  FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
+                    observers_,
+                    OnObservedEntryTagUpdated(file_system_info_, it->second));
 
   // If the observed entry is deleted, then unobserve it.
   if (change_type == ProvidedFileSystemObserver::DELETED)

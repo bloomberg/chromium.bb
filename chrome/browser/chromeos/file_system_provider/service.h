@@ -39,19 +39,10 @@ class PrefRegistrySyncable;
 namespace chromeos {
 namespace file_system_provider {
 
-// Key names for preferences.
-extern const char kPrefKeyFileSystemId[];
-extern const char kPrefKeyDisplayName[];
-extern const char kPrefKeyWritable[];
-extern const char kPrefKeySupportsNotifyTag[];
-extern const char kPrefKeyObservedEntries[];
-extern const char kPrefKeyObservedEntryEntryPath[];
-extern const char kPrefKeyObservedEntryRecursive[];
-extern const char kPrefKeyObservedEntryLastTag[];
-
 class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
 class ProvidedFileSystemInterface;
+class RegistryInterface;
 class ServiceFactory;
 struct MountOptions;
 
@@ -81,6 +72,9 @@ class Service : public KeyedService,
   // where an event router is not available.
   void SetFileSystemFactoryForTesting(
       const FileSystemFactoryCallback& factory_callback);
+
+  // Sets a custom Registry implementation. Used by unit tests.
+  void SetRegistryForTesting(scoped_ptr<RegistryInterface> registry);
 
   // Mounts a file system provided by an extension with the |extension_id|. If
   // |writable| is set to true, then the file system is mounted in a R/W mode.
@@ -137,14 +131,13 @@ class Service : public KeyedService,
   // ProvidedFileSystemInterface::Observer overrides.
   virtual void OnObservedEntryChanged(
       const ProvidedFileSystemInfo& file_system_info,
-      const base::FilePath& observed_path,
+      const ObservedEntry& observed_entry,
       ProvidedFileSystemObserver::ChangeType change_type,
       const ProvidedFileSystemObserver::ChildChanges& child_changes,
       const base::Closure& callback) override;
   virtual void OnObservedEntryTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,
-      const base::FilePath& observed_path,
-      const std::string& tag) override;
+      const ObservedEntry& observed_entry) override;
   virtual void OnObservedEntryListChanged(
       const ProvidedFileSystemInfo& file_system_info,
       const ObservedEntries& observed_entries) override;
@@ -185,9 +178,10 @@ class Service : public KeyedService,
   ObserverList<Observer> observers_;
   ProvidedFileSystemMap file_system_map_;  // Owns pointers.
   MountPointNameToKeyMap mount_point_name_to_key_map_;
+  scoped_ptr<RegistryInterface> registry_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<Service> weak_ptr_factory_;
 
+  base::WeakPtrFactory<Service> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 

@@ -12,9 +12,9 @@
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/chromeos/file_system_provider/registry.h"
+#include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
-#include "chrome/common/pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -36,26 +36,12 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
 
 }  // namespace
 
-const char kPrefKeyFileSystemId[] = "file-system-id";
-const char kPrefKeyDisplayName[] = "display-name";
-const char kPrefKeyWritable[] = "writable";
-const char kPrefKeySupportsNotifyTag[] = "supports-notify-tag";
-const char kPrefKeyObservedEntries[] = "observed-entries";
-const char kPrefKeyObservedEntryEntryPath[] = "entry-path";
-const char kPrefKeyObservedEntryRecursive[] = "recursive";
-const char kPrefKeyObservedEntryLastTag[] = "last-tag";
-
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kFileSystemProviderMounted,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
 Service::Service(Profile* profile,
                  extensions::ExtensionRegistry* extension_registry)
     : profile_(profile),
       extension_registry_(extension_registry),
-      file_system_factory_(base::Bind(CreateProvidedFileSystem)),
+      file_system_factory_(base::Bind(&CreateProvidedFileSystem)),
+      registry_(new Registry(profile)),
       weak_ptr_factory_(this) {
   extension_registry_->AddObserver(this);
 }
@@ -102,6 +88,11 @@ void Service::SetFileSystemFactoryForTesting(
     const FileSystemFactoryCallback& factory_callback) {
   DCHECK(!factory_callback.is_null());
   file_system_factory_ = factory_callback;
+}
+
+void Service::SetRegistryForTesting(scoped_ptr<RegistryInterface> registry) {
+  DCHECK(registry);
+  registry_.reset(registry.release());
 }
 
 bool Service::MountFileSystem(const std::string& extension_id,
@@ -167,7 +158,8 @@ bool Service::MountFileSystem(const std::string& extension_id,
       file_system;
   mount_point_name_to_key_map_[mount_point_name] =
       FileSystemKey(extension_id, options.file_system_id);
-  RememberFileSystem(file_system_info, *file_system->GetObservedEntries());
+  registry_->RememberFileSystem(file_system_info,
+                                *file_system->GetObservedEntries());
 
   FOR_EACH_OBSERVER(
       Observer,
@@ -220,8 +212,8 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
   mount_point_name_to_key_map_.erase(mount_point_name);
 
   if (reason == UNMOUNT_REASON_USER) {
-    ForgetFileSystem(file_system_info.extension_id(),
-                     file_system_info.file_system_id());
+    registry_->ForgetFileSystem(file_system_info.extension_id(),
+                                file_system_info.file_system_id());
   }
 
   delete file_system_it->second;
@@ -297,7 +289,32 @@ void Service::OnExtensionUnloaded(
 
 void Service::OnExtensionLoaded(content::BrowserContext* browser_context,
                                 const extensions::Extension* extension) {
-  RestoreFileSystems(extension->id());
+  scoped_ptr<RegistryInterface::RestoredFileSystems> restored_file_systems =
+      registry_->RestoreFileSystems(extension->id());
+
+  for (const auto& restored_file_system : *restored_file_systems) {
+    const bool result = MountFileSystem(restored_file_system.extension_id,
+                                        restored_file_system.options);
+    if (!result) {
+      LOG(ERROR) << "Failed to restore a provided file system from "
+                 << "registry: " << restored_file_system.extension_id << ", "
+                 << restored_file_system.options.file_system_id << ", "
+                 << restored_file_system.options.display_name << ".";
+      // Since remounting of the file system failed, then remove it from
+      // preferences to avoid remounting it over and over again with a failure.
+      registry_->ForgetFileSystem(restored_file_system.extension_id,
+                                  restored_file_system.options.file_system_id);
+      continue;
+    }
+
+    ProvidedFileSystemInterface* const file_system =
+        GetProvidedFileSystem(restored_file_system.extension_id,
+                              restored_file_system.options.file_system_id);
+    DCHECK(file_system);
+    file_system->GetObservedEntries()->insert(
+        restored_file_system.observed_entries.begin(),
+        restored_file_system.observed_entries.end());
+  }
 }
 
 ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
@@ -332,7 +349,7 @@ void Service::OnRequestUnmountStatus(
 
 void Service::OnObservedEntryChanged(
     const ProvidedFileSystemInfo& file_system_info,
-    const base::FilePath& observed_path,
+    const ObservedEntry& observed_entry,
     ChangeType change_type,
     const ChildChanges& child_changes,
     const base::Closure& callback) {
@@ -341,221 +358,17 @@ void Service::OnObservedEntryChanged(
 
 void Service::OnObservedEntryTagUpdated(
     const ProvidedFileSystemInfo& file_system_info,
-    const base::FilePath& observed_path,
-    const std::string& tag) {
+    const ObservedEntry& observed_entry) {
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
 
-  // TODO(mtomasz): Consider optimizing it by moving information about observed
-  // entries, or even file systems to leveldb.
-  DictionaryPrefUpdate dict_update(pref_service,
-                                   prefs::kFileSystemProviderMounted);
-
-  // All of the following checks should not happen in healthy environment.
-  // However, since they rely on storage, DCHECKs can't be used.
-  base::DictionaryValue* file_systems_per_extension = NULL;
-  base::DictionaryValue* file_system = NULL;
-  base::DictionaryValue* observed_entries = NULL;
-  base::DictionaryValue* observed_entry = NULL;
-  if (!dict_update->GetDictionaryWithoutPathExpansion(
-          file_system_info.extension_id(), &file_systems_per_extension) ||
-      !file_systems_per_extension->GetDictionaryWithoutPathExpansion(
-          file_system_info.file_system_id(), &file_system) ||
-      !file_system->GetDictionaryWithoutPathExpansion(kPrefKeyObservedEntries,
-                                                      &observed_entries) ||
-      !observed_entries->GetDictionaryWithoutPathExpansion(
-          observed_path.value(), &observed_entry)) {
-    // Broken preferences.
-    LOG(ERROR) << "Broken preferences detected while updating a tag.";
-    return;
-  }
-
-  observed_entry->SetStringWithoutPathExpansion(kPrefKeyObservedEntryLastTag,
-                                                tag);
+  registry_->UpdateObservedEntryTag(file_system_info, observed_entry);
 }
 
 void Service::OnObservedEntryListChanged(
     const ProvidedFileSystemInfo& file_system_info,
     const ObservedEntries& observed_entries) {
-  RememberFileSystem(file_system_info, observed_entries);
-}
-
-void Service::RememberFileSystem(const ProvidedFileSystemInfo& file_system_info,
-                                 const ObservedEntries& observed_entries) {
-  base::DictionaryValue* const file_system = new base::DictionaryValue();
-  file_system->SetStringWithoutPathExpansion(kPrefKeyFileSystemId,
-                                             file_system_info.file_system_id());
-  file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName,
-                                             file_system_info.display_name());
-  file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable,
-                                              file_system_info.writable());
-  file_system->SetBooleanWithoutPathExpansion(
-      kPrefKeySupportsNotifyTag, file_system_info.supports_notify_tag());
-
-  base::DictionaryValue* const observed_entries_value =
-      new base::DictionaryValue();
-  file_system->SetWithoutPathExpansion(kPrefKeyObservedEntries,
-                                       observed_entries_value);
-
-  for (ObservedEntries::const_iterator it = observed_entries.begin();
-       it != observed_entries.end();
-       ++it) {
-    base::DictionaryValue* const observed_entry = new base::DictionaryValue();
-    observed_entries_value->SetWithoutPathExpansion(it->first.value(),
-                                                    observed_entry);
-    observed_entry->SetStringWithoutPathExpansion(
-        kPrefKeyObservedEntryEntryPath, it->second.entry_path.value());
-    observed_entry->SetBooleanWithoutPathExpansion(
-        kPrefKeyObservedEntryRecursive, it->second.recursive);
-    observed_entry->SetStringWithoutPathExpansion(kPrefKeyObservedEntryLastTag,
-                                                  it->second.last_tag);
-  }
-
-  PrefService* const pref_service = profile_->GetPrefs();
-  DCHECK(pref_service);
-
-  DictionaryPrefUpdate dict_update(pref_service,
-                                   prefs::kFileSystemProviderMounted);
-
-  base::DictionaryValue* file_systems_per_extension = NULL;
-  if (!dict_update->GetDictionaryWithoutPathExpansion(
-          file_system_info.extension_id(), &file_systems_per_extension)) {
-    file_systems_per_extension = new base::DictionaryValue();
-    dict_update->SetWithoutPathExpansion(file_system_info.extension_id(),
-                                         file_systems_per_extension);
-  }
-
-  file_systems_per_extension->SetWithoutPathExpansion(
-      file_system_info.file_system_id(), file_system);
-}
-
-void Service::ForgetFileSystem(const std::string& extension_id,
-                               const std::string& file_system_id) {
-  PrefService* const pref_service = profile_->GetPrefs();
-  DCHECK(pref_service);
-
-  DictionaryPrefUpdate dict_update(pref_service,
-                                   prefs::kFileSystemProviderMounted);
-
-  base::DictionaryValue* file_systems_per_extension = NULL;
-  if (!dict_update->GetDictionaryWithoutPathExpansion(
-          extension_id, &file_systems_per_extension))
-    return;  // Nothing to forget.
-
-  file_systems_per_extension->RemoveWithoutPathExpansion(file_system_id, NULL);
-  if (!file_systems_per_extension->size())
-    dict_update->Remove(extension_id, NULL);
-}
-
-void Service::RestoreFileSystems(const std::string& extension_id) {
-  // TODO(mtomasz): Restore observed entries together with their tags.
-  PrefService* const pref_service = profile_->GetPrefs();
-  DCHECK(pref_service);
-
-  const base::DictionaryValue* const file_systems =
-      pref_service->GetDictionary(prefs::kFileSystemProviderMounted);
-  DCHECK(file_systems);
-
-  const base::DictionaryValue* file_systems_per_extension = NULL;
-  if (!file_systems->GetDictionaryWithoutPathExpansion(
-          extension_id, &file_systems_per_extension)) {
-    return;  // Nothing to restore.
-  }
-
-  // Use a copy of the dictionary, since the original one may be modified while
-  // iterating over it.
-  scoped_ptr<const base::DictionaryValue> file_systems_per_extension_copy(
-      file_systems_per_extension->DeepCopy());
-
-  for (base::DictionaryValue::Iterator it(*file_systems_per_extension_copy);
-       !it.IsAtEnd();
-       it.Advance()) {
-    const base::Value* file_system_value = NULL;
-    const base::DictionaryValue* file_system = NULL;
-    file_systems_per_extension_copy->GetWithoutPathExpansion(
-        it.key(), &file_system_value);
-    DCHECK(file_system_value);
-
-    std::string file_system_id;
-    std::string display_name;
-    bool writable = false;
-    bool supports_notify_tag = false;
-
-    if (!file_system_value->GetAsDictionary(&file_system) ||
-        !file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
-                                                    &file_system_id) ||
-        !file_system->GetStringWithoutPathExpansion(kPrefKeyDisplayName,
-                                                    &display_name) ||
-        !file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable,
-                                                     &writable) ||
-        !file_system->GetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
-                                                     &supports_notify_tag) ||
-        file_system_id.empty() || display_name.empty()) {
-      LOG(ERROR)
-          << "Malformed provided file system information in preferences.";
-      continue;
-    }
-
-    MountOptions options;
-    options.file_system_id = file_system_id;
-    options.display_name = display_name;
-    options.writable = writable;
-    options.supports_notify_tag = supports_notify_tag;
-
-    const bool result = MountFileSystem(extension_id, options);
-    if (!result) {
-      LOG(ERROR) << "Failed to restore a provided file system from "
-                 << "preferences: " << extension_id << ", " << file_system_id
-                 << ", " << display_name << ".";
-      // Since remounting of the file system failed, then remove it from
-      // preferences to avoid remounting it over and over again with a failure.
-      ForgetFileSystem(extension_id, file_system_id);
-    }
-
-    // Restore observed entries. It's optional, since this field is new.
-    const base::DictionaryValue* observed_entries = NULL;
-    if (file_system->GetDictionaryWithoutPathExpansion(kPrefKeyObservedEntries,
-                                                       &observed_entries)) {
-      ProvidedFileSystemInterface* const restored_file_system =
-          GetProvidedFileSystem(extension_id, file_system_id);
-      DCHECK(restored_file_system);
-
-      for (base::DictionaryValue::Iterator it(*observed_entries); !it.IsAtEnd();
-           it.Advance()) {
-        const base::Value* observed_entry_value = NULL;
-        const base::DictionaryValue* observed_entry = NULL;
-        observed_entries->GetWithoutPathExpansion(it.key(),
-                                                  &observed_entry_value);
-        DCHECK(observed_entry_value);
-
-        std::string entry_path;
-        bool recursive = false;
-        std::string last_tag;
-
-        if (!observed_entry_value->GetAsDictionary(&observed_entry) ||
-            !observed_entry->GetStringWithoutPathExpansion(
-                kPrefKeyObservedEntryEntryPath, &entry_path) ||
-            !observed_entry->GetBooleanWithoutPathExpansion(
-                kPrefKeyObservedEntryRecursive, &recursive) ||
-            !observed_entry->GetStringWithoutPathExpansion(
-                kPrefKeyObservedEntryLastTag, &last_tag) ||
-            it.key() != entry_path || entry_path.empty() ||
-            (!options.supports_notify_tag && !last_tag.empty())) {
-          LOG(ERROR) << "Malformed observed entry information in preferences.";
-          continue;
-        }
-
-        ObservedEntry restored_observed_entry;
-        restored_observed_entry.entry_path =
-            base::FilePath::FromUTF8Unsafe(entry_path);
-        restored_observed_entry.recursive = recursive;
-        restored_observed_entry.last_tag = last_tag;
-        (*restored_file_system
-              ->GetObservedEntries())[restored_observed_entry.entry_path] =
-            restored_observed_entry;
-      }
-    }
-  }
+  registry_->RememberFileSystem(file_system_info, observed_entries);
 }
 
 }  // namespace file_system_provider
