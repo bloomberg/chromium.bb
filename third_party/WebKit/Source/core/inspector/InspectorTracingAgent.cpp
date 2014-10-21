@@ -38,11 +38,11 @@ void InspectorTracingAgent::restore()
     emitMetadataEvents();
 }
 
-void InspectorTracingAgent::start(ErrorString*, const String& categoryFilter, const String&, const double*, PassRefPtrWillBeRawPtr<StartCallback> callback)
+void InspectorTracingAgent::start(ErrorString*, const String* categoryFilter, const String*, const double*, PassRefPtrWillBeRawPtr<StartCallback> callback)
 {
     ASSERT(m_state->getString(TracingAgentState::sessionId).isEmpty());
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
-    m_client->enableTracing(categoryFilter);
+    m_client->enableTracing(categoryFilter ? *categoryFilter : String());
     emitMetadataEvents();
     callback->sendSuccess();
 }
