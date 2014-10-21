@@ -440,7 +440,7 @@ void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
             m_clipperFilterMaskerData->clipper = 0;
         }
         break;
-    case SolidColorResourceType:
+    default:
         ASSERT_NOT_REACHED();
     }
 }

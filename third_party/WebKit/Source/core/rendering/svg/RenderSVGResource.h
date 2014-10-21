@@ -32,7 +32,6 @@ enum RenderSVGResourceType {
     PatternResourceType,
     LinearGradientResourceType,
     RadialGradientResourceType,
-    SolidColorResourceType,
     FilterResourceType,
     ClipperResourceType
 };
@@ -45,8 +44,8 @@ enum RenderSVGResourceMode {
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class RenderObject;
+class RenderSVGResource;
 class RenderStyle;
-class RenderSVGResourceSolidColor;
 
 class SVGPaintServer {
 public:
@@ -55,6 +54,7 @@ public:
     explicit SVGPaintServer(PassRefPtr<Pattern>);
 
     static SVGPaintServer requestForRenderer(const RenderObject&, const RenderStyle*, RenderSVGResourceMode);
+    static bool existsForRenderer(const RenderObject&, const RenderStyle*, RenderSVGResourceMode);
 
     void apply(GraphicsContext&, RenderSVGResourceMode, GraphicsContextStateSaver* = 0);
 
@@ -70,6 +70,19 @@ private:
     Color m_color;
 };
 
+// If |SVGPaintDescription::hasFallback| is true, |SVGPaintDescription::color| is set to a fallback color.
+struct SVGPaintDescription {
+    SVGPaintDescription() : resource(nullptr), isValid(false), hasFallback(false) { }
+    SVGPaintDescription(Color color) : resource(nullptr), color(color), isValid(true), hasFallback(false) { }
+    SVGPaintDescription(RenderSVGResource* resource) : resource(resource), isValid(true), hasFallback(false) { ASSERT(resource); }
+    SVGPaintDescription(RenderSVGResource* resource, Color fallbackColor) : resource(resource), color(fallbackColor), isValid(true), hasFallback(true) { ASSERT(resource); }
+
+    RenderSVGResource* resource;
+    Color color;
+    bool isValid;
+    bool hasFallback;
+};
+
 class RenderSVGResource {
 public:
     RenderSVGResource() { }
@@ -79,10 +92,8 @@ public:
 
     virtual RenderSVGResourceType resourceType() const = 0;
 
-    // Helper utilities used in the render tree to access resources used for painting shapes/text (gradients & patterns & solid colors only)
-    // If hasFallback gets set to true, the sharedSolidPaintingResource is set to a fallback color.
-    static RenderSVGResource* requestPaintingResource(RenderSVGResourceMode, const RenderObject&, const RenderStyle*, bool& hasFallback);
-    static RenderSVGResourceSolidColor* sharedSolidPaintingResource();
+    // Helper utilities used in to access the underlying resources for DRT.
+    static SVGPaintDescription requestPaintDescription(const RenderObject&, const RenderStyle*, RenderSVGResourceMode);
 
     static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
 };

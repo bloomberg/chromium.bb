@@ -3042,8 +3042,6 @@
             'rendering/svg/RenderSVGResourcePattern.h',
             'rendering/svg/RenderSVGResourceRadialGradient.cpp',
             'rendering/svg/RenderSVGResourceRadialGradient.h',
-            'rendering/svg/RenderSVGResourceSolidColor.cpp',
-            'rendering/svg/RenderSVGResourceSolidColor.h',
             'rendering/svg/RenderSVGRoot.cpp',
             'rendering/svg/RenderSVGRoot.h',
             'rendering/svg/RenderSVGShape.cpp',

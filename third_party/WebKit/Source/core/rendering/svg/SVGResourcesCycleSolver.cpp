@@ -165,7 +165,7 @@ void SVGResourcesCycleSolver::breakCycle(RenderSVGResourceContainer* resourceLea
         ASSERT(resourceLeadingToCycle == m_resources->clipper());
         m_resources->resetClipper();
         break;
-    case SolidColorResourceType:
+    default:
         ASSERT_NOT_REACHED();
         break;
     }

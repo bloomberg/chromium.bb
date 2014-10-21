@@ -26,8 +26,6 @@
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
-#include "core/rendering/svg/RenderSVGResourceSolidColor.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -84,35 +82,9 @@ void SVGPaintServer::prependTransform(const AffineTransform& transform)
         m_gradient->setGradientSpaceTransform(transform * m_gradient->gradientSpaceTransform());
 }
 
-SVGPaintServer SVGPaintServer::requestForRenderer(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
+static SVGPaintDescription requestPaint(const RenderObject& object, const RenderStyle* style, RenderSVGResourceMode mode)
 {
     ASSERT(style);
-    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
-
-    bool hasFallback = false;
-    RenderSVGResource* paintingResource = RenderSVGResource::requestPaintingResource(resourceMode, renderer, style, hasFallback);
-    if (!paintingResource)
-        return invalid();
-
-    SVGPaintServer paintServer = paintingResource->preparePaintServer(renderer);
-    if (paintServer.isValid())
-        return paintServer;
-    if (hasFallback)
-        return SVGPaintServer(RenderSVGResource::sharedSolidPaintingResource()->color());
-    return invalid();
-}
-
-SVGPaintServer RenderSVGResource::preparePaintServer(const RenderObject&)
-{
-    ASSERT_NOT_REACHED();
-    return SVGPaintServer::invalid();
-}
-
-RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceMode mode, const RenderObject& object, const RenderStyle* style, bool& hasFallback)
-{
-    ASSERT(style);
-
-    hasFallback = false;
 
     // If we have no style at all, ignore it.
     const SVGRenderStyle& svgStyle = style->svgStyle();
@@ -120,10 +92,10 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     // If we have no fill/stroke, return 0.
     if (mode == ApplyToFillMode) {
         if (!svgStyle.hasFill())
-            return 0;
+            return SVGPaintDescription();
     } else {
         if (!svgStyle.hasStroke())
-            return 0;
+            return SVGPaintDescription();
     }
 
     bool applyToFill = mode == ApplyToFillMode;
@@ -156,12 +128,10 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     }
 
     // If the primary resource is just a color, return immediately.
-    RenderSVGResourceSolidColor* colorResource = RenderSVGResource::sharedSolidPaintingResource();
     if (paintType < SVG_PAINTTYPE_URI_NONE) {
         // |paintType| will be either <current-color> or <rgb-color> here - both of which will have a color.
         ASSERT(hasColor);
-        colorResource->setColor(color);
-        return colorResource;
+        return SVGPaintDescription(color);
     }
 
     RenderSVGResource* uriResource = 0;
@@ -172,27 +142,52 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     if (!uriResource) {
         // The fallback is 'none'. (SVG2 say 'none' is implied when no fallback is specified.)
         if (paintType == SVG_PAINTTYPE_URI_NONE || !hasColor)
-            return 0;
+            return SVGPaintDescription();
 
-        colorResource->setColor(color);
-        return colorResource;
+        return SVGPaintDescription(color);
     }
 
-    // The paint server resource exists, though it may be invalid (pattern with width/height=0). Pass the fallback color to our caller
-    // via sharedSolidPaintingResource so it can use the solid color painting resource, if applyResource() on the URI resource failed.
-    if (hasColor) {
-        colorResource->setColor(color);
-        hasFallback = true;
-    }
-    return uriResource;
+    // The paint server resource exists, though it may be invalid (pattern with width/height=0).
+    // Return the fallback color to our caller so it can use it, if
+    // preparePaintServer() on the resource container failed.
+    if (hasColor)
+        return SVGPaintDescription(uriResource, color);
+
+    return SVGPaintDescription(uriResource);
 }
 
-RenderSVGResourceSolidColor* RenderSVGResource::sharedSolidPaintingResource()
+SVGPaintServer SVGPaintServer::requestForRenderer(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
 {
-    static RenderSVGResourceSolidColor* s_sharedSolidPaintingResource = 0;
-    if (!s_sharedSolidPaintingResource)
-        s_sharedSolidPaintingResource = new RenderSVGResourceSolidColor;
-    return s_sharedSolidPaintingResource;
+    ASSERT(style);
+    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
+
+    SVGPaintDescription paintDescription = requestPaint(renderer, style, resourceMode);
+    if (!paintDescription.isValid)
+        return invalid();
+    if (!paintDescription.resource)
+        return SVGPaintServer(paintDescription.color);
+    SVGPaintServer paintServer = paintDescription.resource->preparePaintServer(renderer);
+    if (paintServer.isValid())
+        return paintServer;
+    if (paintDescription.hasFallback)
+        return SVGPaintServer(paintDescription.color);
+    return invalid();
+}
+
+bool SVGPaintServer::existsForRenderer(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
+{
+    return requestPaint(renderer, style, resourceMode).isValid;
+}
+
+SVGPaintServer RenderSVGResource::preparePaintServer(const RenderObject&)
+{
+    ASSERT_NOT_REACHED();
+    return SVGPaintServer::invalid();
+}
+
+SVGPaintDescription RenderSVGResource::requestPaintDescription(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
+{
+    return requestPaint(renderer, style, resourceMode);
 }
 
 static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object, bool needsLayout)

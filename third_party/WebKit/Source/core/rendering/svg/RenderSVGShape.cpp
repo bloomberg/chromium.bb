@@ -111,8 +111,7 @@ bool RenderSVGShape::fillContains(const FloatPoint& point, bool requiresFill, co
     if (!m_fillBoundingBox.contains(point))
         return false;
 
-    bool hasFallback;
-    if (requiresFill && !RenderSVGResource::requestPaintingResource(ApplyToFillMode, *this, style(), hasFallback))
+    if (requiresFill && !SVGPaintServer::existsForRenderer(*this, style(), ApplyToFillMode))
         return false;
 
     return shapeDependentFillContains(point, fillRule);
@@ -123,8 +122,7 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
     if (!strokeBoundingBox().contains(point))
         return false;
 
-    bool hasFallback;
-    if (requiresStroke && !RenderSVGResource::requestPaintingResource(ApplyToStrokeMode, *this, style(), hasFallback))
+    if (requiresStroke && !SVGPaintServer::existsForRenderer(*this, style(), ApplyToStrokeMode))
         return false;
 
     return shapeDependentStrokeContains(point);
