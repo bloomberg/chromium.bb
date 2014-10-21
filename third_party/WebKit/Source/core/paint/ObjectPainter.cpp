@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/ObjectPainter.h"
 
+#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTheme.h"
@@ -31,9 +32,7 @@ void ObjectPainter::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRe
     if (!styleToUse->hasOutline())
         return;
 
-    LayoutUnit outlineWidth = styleToUse->outlineWidth();
-
-    int outlineOffset = styleToUse->outlineOffset();
+    PaintCommandRecorder recorder(paintInfo.context, &m_renderObject, paintInfo.phase, paintRect);
 
     if (styleToUse->outlineStyleIsAuto()) {
         if (RenderTheme::theme().shouldDrawDefaultFocusRing(&m_renderObject)) {
@@ -47,9 +46,10 @@ void ObjectPainter::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRe
         return;
 
     IntRect inner = pixelSnappedIntRect(paintRect);
-    inner.inflate(outlineOffset);
+    inner.inflate(styleToUse->outlineOffset());
 
     IntRect outer = pixelSnappedIntRect(inner);
+    LayoutUnit outlineWidth = styleToUse->outlineWidth();
     outer.inflate(outlineWidth);
 
     // FIXME: This prevents outlines from painting inside the object. See bug 12042
