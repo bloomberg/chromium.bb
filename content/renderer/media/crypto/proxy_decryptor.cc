@@ -15,10 +15,6 @@
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
 
-#if defined(ENABLE_BROWSER_CDMS)
-#include "content/renderer/media/crypto/renderer_cdm_manager.h"
-#endif  // defined(ENABLE_BROWSER_CDMS)
-
 namespace content {
 
 // Special system code to signal a closed persistent session in a SessionError()
@@ -33,9 +29,6 @@ ProxyDecryptor::ProxyDecryptor(const KeyAddedCB& key_added_cb,
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
       is_clear_key_(false),
-#if defined(ENABLE_BROWSER_CDMS)
-      cdm_id_(RendererCdmManager::kInvalidCdmId),
-#endif  // defined(ENABLE_PEPPER_CDMS)
       weak_ptr_factory_(this) {
   DCHECK(!key_added_cb_.is_null());
   DCHECK(!key_error_cb_.is_null());
@@ -53,7 +46,7 @@ media::Decryptor* ProxyDecryptor::GetDecryptor() {
 
 #if defined(ENABLE_BROWSER_CDMS)
 int ProxyDecryptor::GetCdmId() {
-  return cdm_id_;
+  return media_keys_->GetCdmId();
 }
 #endif
 
@@ -214,9 +207,6 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
   return cdm_factory->Create(
       key_system,
       security_origin,
-#if defined(ENABLE_BROWSER_CDMS)
-      &cdm_id_,
-#endif
       base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionReady, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionClosed, weak_this),

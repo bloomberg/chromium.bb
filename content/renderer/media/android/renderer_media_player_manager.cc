@@ -261,7 +261,7 @@ void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
 }
 
 void RendererMediaPlayerManager::SetCdm(int player_id, int cdm_id) {
-  if (cdm_id == RendererCdmManager::kInvalidCdmId) {
+  if (cdm_id == media::MediaKeys::kInvalidCdmId) {
     NOTREACHED();
     return;
   }

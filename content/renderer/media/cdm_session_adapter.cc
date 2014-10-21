@@ -15,21 +15,13 @@
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_BROWSER_CDMS)
-#include "content/renderer/media/crypto/renderer_cdm_manager.h"
-#endif  // defined(ENABLE_BROWSER_CDMS)
-
 namespace content {
 
 const char kMediaEME[] = "Media.EME.";
 const char kDot[] = ".";
 
-CdmSessionAdapter::CdmSessionAdapter() :
-#if defined(ENABLE_BROWSER_CDMS)
-    // TODO(xhwang): Move kInvalidCdmId to src/media.
-    cdm_id_(RendererCdmManager::kInvalidCdmId),
-#endif
-    weak_ptr_factory_(this) {}
+CdmSessionAdapter::CdmSessionAdapter() : weak_ptr_factory_(this) {
+}
 
 CdmSessionAdapter::~CdmSessionAdapter() {}
 
@@ -45,9 +37,6 @@ bool CdmSessionAdapter::Initialize(media::CdmFactory* cdm_factory,
   media_keys_ = cdm_factory->Create(
       key_system,
       security_origin,
-#if defined(ENABLE_BROWSER_CDMS)
-      &cdm_id_,
-#endif  // defined(ENABLE_PEPPER_CDMS)
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionReady, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
@@ -143,7 +132,7 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
 
 #if defined(ENABLE_BROWSER_CDMS)
 int CdmSessionAdapter::GetCdmId() const {
-  return cdm_id_;
+  return media_keys_->GetCdmId();
 }
 #endif  // defined(ENABLE_BROWSER_CDMS)
 

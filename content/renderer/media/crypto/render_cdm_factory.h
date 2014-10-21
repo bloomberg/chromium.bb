@@ -38,9 +38,6 @@ class RenderCdmFactory : public media::CdmFactory {
   virtual scoped_ptr<media::MediaKeys> Create(
       const std::string& key_system,
       const GURL& security_origin,
-#if defined(ENABLE_BROWSER_CDMS)
-      int* cdm_id,
-#endif
       const media::SessionMessageCB& session_message_cb,
       const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,

@@ -13,7 +13,6 @@
 #include "content/renderer/media/crypto/ppapi_decryptor.h"
 #elif defined(ENABLE_BROWSER_CDMS)
 #include "content/renderer/media/crypto/proxy_media_keys.h"
-#include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 namespace content {
@@ -38,9 +37,6 @@ RenderCdmFactory::~RenderCdmFactory() {
 scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
     const std::string& key_system,
     const GURL& security_origin,
-#if defined(ENABLE_BROWSER_CDMS)
-    int* cdm_id,
-#endif
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -51,10 +47,6 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
   // TODO(jrummell): Enable the following line once blink code updated to
   // check the security origin before calling.
   // DCHECK(security_origin.is_valid());
-
-#if defined(ENABLE_BROWSER_CDMS)
-  *cdm_id = RendererCdmManager::kInvalidCdmId;
-#endif
 
   if (CanUseAesDecryptor(key_system)) {
     return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
@@ -73,7 +65,7 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
                              session_keys_change_cb,
                              session_expiration_update_cb));
 #elif defined(ENABLE_BROWSER_CDMS)
-  scoped_ptr<ProxyMediaKeys> proxy_media_keys =
+  return scoped_ptr<media::MediaKeys>(
       ProxyMediaKeys::Create(key_system,
                              security_origin,
                              manager_,
@@ -82,10 +74,7 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
                              session_closed_cb,
                              session_error_cb,
                              session_keys_change_cb,
-                             session_expiration_update_cb);
-  if (proxy_media_keys)
-    *cdm_id = proxy_media_keys->GetCdmId();
-  return proxy_media_keys.Pass();
+                             session_expiration_update_cb));
 #else
   return nullptr;
 #endif  // defined(ENABLE_PEPPER_CDMS)

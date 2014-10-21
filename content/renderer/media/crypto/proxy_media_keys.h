@@ -64,6 +64,7 @@ class ProxyMediaKeys : public media::MediaKeys {
   virtual void GetUsableKeyIds(
       const std::string& web_session_id,
       scoped_ptr<media::KeyIdsPromise> promise) override;
+  virtual int GetCdmId() const override;
 
   // Callbacks.
   void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
@@ -75,8 +76,6 @@ class ProxyMediaKeys : public media::MediaKeys {
   void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
                       uint32 system_code);
-
-  int GetCdmId() const;
 
  private:
   // The Android-specific code that handles sessions uses integer session ids

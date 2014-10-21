@@ -26,8 +26,6 @@ class ProxyMediaKeys;
 // Class for managing all the CDM objects in the same RenderFrame.
 class RendererCdmManager : public RenderFrameObserver {
  public:
-  static const int kInvalidCdmId = 0;
-
   // Constructs a RendererCdmManager object for the |render_frame|.
   explicit RendererCdmManager(RenderFrame* render_frame);
   virtual ~RendererCdmManager();

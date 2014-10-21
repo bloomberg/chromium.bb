@@ -36,7 +36,6 @@
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
-// TODO(xhwang): Remove when we remove prefixed EME implementation.
 #include "media/base/media_keys.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -179,7 +178,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   // Set the initial CDM, if specified.
   if (initial_cdm) {
     web_cdm_ = ToWebContentDecryptionModuleImpl(initial_cdm);
-    if (web_cdm_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
+    if (web_cdm_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
       player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
   }
 }
@@ -1538,7 +1537,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
 
     // Only browser CDMs have CDM ID. Render side CDMs (e.g. ClearKey CDM) do
     // not have a CDM ID and there is no need to call player_manager_->SetCdm().
-    if (proxy_decryptor_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
+    if (proxy_decryptor_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
       player_manager_->SetCdm(player_id_, proxy_decryptor_->GetCdmId());
 
     current_key_system_ = key_system;
@@ -1657,7 +1656,7 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
         .Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
   }
 
-  if (web_cdm_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
+  if (web_cdm_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
     player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
 }
 
@@ -1691,7 +1690,7 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
     ContentDecryptionModuleAttached(result, true);
   }
 
-  if (web_cdm_->GetCdmId() != RendererCdmManager::kInvalidCdmId)
+  if (web_cdm_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
     player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
 }
 

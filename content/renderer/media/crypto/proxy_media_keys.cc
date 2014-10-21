@@ -142,6 +142,10 @@ void ProxyMediaKeys::GetUsableKeyIds(const std::string& web_session_id,
   promise->reject(NOT_SUPPORTED_ERROR, 0, "Not yet implemented.");
 }
 
+int ProxyMediaKeys::GetCdmId() const {
+  return cdm_id_;
+}
+
 void ProxyMediaKeys::OnSessionCreated(uint32 session_id,
                                       const std::string& web_session_id) {
   AssignWebSessionId(session_id, web_session_id);
@@ -216,10 +220,6 @@ void ProxyMediaKeys::OnSessionError(uint32 session_id,
   // for something bad to happen in the CDM and it needs to tell the client.
   session_error_cb_.Run(
       web_session_id, exception_code, system_code, std::string());
-}
-
-int ProxyMediaKeys::GetCdmId() const {
-  return cdm_id_;
 }
 
 ProxyMediaKeys::ProxyMediaKeys(

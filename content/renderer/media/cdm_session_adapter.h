@@ -137,10 +137,6 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   SessionMap sessions_;
 
-#if defined(ENABLE_BROWSER_CDMS)
-  int cdm_id_;
-#endif
-
   std::string key_system_uma_prefix_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

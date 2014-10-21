@@ -23,9 +23,6 @@ class MEDIA_EXPORT CdmFactory {
   virtual scoped_ptr<MediaKeys> Create(
       const std::string& key_system,
       const GURL& security_origin,
-#if defined(ENABLE_BROWSER_CDMS)
-      int* cdm_id,  // Output parameter indicating the CDM ID of the MediaKeys.
-#endif
       const SessionMessageCB& session_message_cb,
       const SessionReadyCB& session_ready_cb,
       const SessionClosedCB& session_closed_cb,

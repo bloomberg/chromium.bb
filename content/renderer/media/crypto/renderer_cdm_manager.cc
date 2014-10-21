@@ -18,7 +18,7 @@ const size_t kMaxSessionMessageLength = 10240;  // 10 KB
 
 RendererCdmManager::RendererCdmManager(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      next_cdm_id_(kInvalidCdmId + 1) {
+      next_cdm_id_(media::MediaKeys::kInvalidCdmId + 1) {
 }
 
 RendererCdmManager::~RendererCdmManager() {
@@ -127,7 +127,7 @@ void RendererCdmManager::OnSessionError(int cdm_id,
 
 int RendererCdmManager::RegisterMediaKeys(ProxyMediaKeys* media_keys) {
   int cdm_id = next_cdm_id_++;
-  DCHECK_NE(cdm_id, kInvalidCdmId);
+  DCHECK_NE(cdm_id, media::MediaKeys::kInvalidCdmId);
   DCHECK(!ContainsKey(proxy_media_keys_map_, cdm_id));
   proxy_media_keys_map_[cdm_id] = media_keys;
   return cdm_id;

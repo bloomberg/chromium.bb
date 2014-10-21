@@ -388,6 +388,12 @@ Decryptor* AesDecryptor::GetDecryptor() {
   return this;
 }
 
+#if defined(ENABLE_BROWSER_CDMS)
+int AesDecryptor::GetCdmId() const {
+  return kInvalidCdmId;
+}
+#endif  // defined(ENABLE_BROWSER_CDMS)
+
 void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                     const NewKeyCB& new_key_cb) {
   base::AutoLock auto_lock(new_key_cb_lock_);

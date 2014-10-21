@@ -71,7 +71,10 @@ class MEDIA_EXPORT MediaKeys {
     PERSISTENT_SESSION
   };
 
-  const static uint32 kInvalidSessionId = 0;
+  static const uint32 kInvalidSessionId = 0;
+#if defined(ENABLE_BROWSER_CDMS)
+  static const int kInvalidCdmId = 0;
+#endif
 
   MediaKeys();
   virtual ~MediaKeys();
@@ -122,6 +125,12 @@ class MEDIA_EXPORT MediaKeys {
   // no Decryptor object is associated. The returned object is only guaranteed
   // to be valid during the MediaKeys' lifetime.
   virtual Decryptor* GetDecryptor();
+
+#if defined(ENABLE_BROWSER_CDMS)
+  // Returns the CDM ID associated with |this|. May be kInvalidCdmId if no CDM
+  // ID is associated.
+  virtual int GetCdmId() const = 0;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaKeys);

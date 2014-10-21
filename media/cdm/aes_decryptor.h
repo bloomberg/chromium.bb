@@ -55,6 +55,9 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   virtual void GetUsableKeyIds(const std::string& web_session_id,
                                scoped_ptr<KeyIdsPromise> promise) override;
   virtual Decryptor* GetDecryptor() override;
+#if defined(ENABLE_BROWSER_CDMS)
+  virtual int GetCdmId() const override;
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
   // Decryptor implementation.
   virtual void RegisterNewKeyCB(StreamType stream_type,

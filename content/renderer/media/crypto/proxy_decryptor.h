@@ -23,10 +23,6 @@ class CdmFactory;
 
 namespace content {
 
-#if defined(ENABLE_BROWSER_CDMS)
-class RendererCdmManager;
-#endif  // defined(ENABLE_BROWSER_CDMS)
-
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
 // forwards decryptor calls to it.
