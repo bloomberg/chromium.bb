@@ -998,7 +998,7 @@
             'content_unittests.isolate',
           ],
           'conditions': [
-            ['OS=="linux" and use_ozone==0', {
+            ['use_x11==1', {
               'dependencies': [
                 '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
               ],
