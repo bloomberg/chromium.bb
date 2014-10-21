@@ -127,5 +127,15 @@
     "prefix": "regionbasedmulticol",
     "base": "fast/pagination",
     "args": ["--enable-region-based-columns"]
+  },
+  {
+    "prefix": "textblob",
+    "base": "fast/text",
+    "args": ["--enable-text-blobs"]
+  },
+  {
+    "prefix": "textblob",
+    "base": "svg/text",
+    "args": ["--enable-text-blobs"]
   }
 ]
