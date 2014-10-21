@@ -22,6 +22,7 @@ class Profile;
 
 namespace chromeos {
 
+class ErrorScreensHistogramHelper;
 class NetworkState;
 class ScreenManager;
 
@@ -143,6 +144,8 @@ class SupervisedUserCreationScreen
   scoped_refptr<ImageDecoder> image_decoder_;
   bool apply_photo_after_decoding_;
   int selected_image_;
+
+  scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
   base::WeakPtrFactory<SupervisedUserCreationScreen> weak_factory_;
 

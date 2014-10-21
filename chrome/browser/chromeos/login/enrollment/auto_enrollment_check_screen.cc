@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -31,7 +32,8 @@ AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
       actor_(actor),
       captive_portal_status_(
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN),
-      auto_enrollment_state_(policy::AUTO_ENROLLMENT_STATE_IDLE) {
+      auto_enrollment_state_(policy::AUTO_ENROLLMENT_STATE_IDLE),
+      histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")) {
   if (actor_)
     actor_->SetDelegate(this);
 }
@@ -85,6 +87,7 @@ void AutoEnrollmentCheckScreen::Show() {
     Start();
     if (actor_)
       actor_->Show();
+    histogram_helper_->OnScreenShow();
   }
 }
 
@@ -221,6 +224,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
   error_screen->SetErrorState(error_state,
                               network ? network->name() : std::string());
   get_screen_observer()->ShowErrorScreen();
+  histogram_helper_->OnErrorShow(error_state);
 }
 
 void AutoEnrollmentCheckScreen::SignalCompletion() {

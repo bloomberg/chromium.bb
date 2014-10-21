@@ -53,7 +53,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     ERROR_STATE.OFFLINE,
     ERROR_STATE.PROXY,
     ERROR_STATE.AUTH_EXT_TIMEOUT,
-    ERROR_STATE.KIOSK_ONLINE
+    ERROR_STATE.NONE,
+    ERROR_STATE.KIOSK_ONLINE,
   ];
 
   return {
