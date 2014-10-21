@@ -1495,3 +1495,4 @@ crbug.com/422846 [ Linux ] virtual/textblob/fast/text/shaping/same-script-differ
 crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnlyFailure ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
+crbug.com/425345 [ Mac ] virtual/textblob/fast/text/line-break-after-question-mark.html [ Failure ]
