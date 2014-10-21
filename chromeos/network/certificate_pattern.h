@@ -34,15 +34,6 @@ class CHROMEOS_EXPORT IssuerSubjectPattern {
   // Clears out all values in this pattern.
   void Clear();
 
-  void set_common_name(const std::string& name) { common_name_ = name; }
-  void set_locality(const std::string& locality) { locality_ = locality; }
-  void set_organization(const std::string& organization) {
-    organization_ = organization;
-  }
-  void set_organizational_unit(const std::string& unit) {
-    organizational_unit_ = unit;
-  }
-
   const std::string& common_name() const {
     return common_name_;
   }
@@ -77,12 +68,6 @@ class CHROMEOS_EXPORT CertificatePattern {
   // Returns true if this pattern has nothing set (and so would match
   // all certs).  Ignores enrollment_uri_;
   bool Empty() const;
-
-  void set_issuer(const IssuerSubjectPattern& issuer) { issuer_ = issuer; }
-  void set_subject(const IssuerSubjectPattern& subject) { subject_ = subject; }
-  void set_enrollment_uri_list(const std::vector<std::string>& uri_list) {
-    enrollment_uri_list_ = uri_list;
-  }
 
   const IssuerSubjectPattern& issuer() const {
     return issuer_;
