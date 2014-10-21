@@ -589,6 +589,7 @@
             '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.h',
           ],
           'dependencies': [
+            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:audio_processing',
             '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
             '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
             '<(DEPTH)/third_party/webrtc/webrtc.gyp:webrtc',
