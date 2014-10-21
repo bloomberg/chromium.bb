@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
@@ -100,7 +101,7 @@ Range StripAcceleratorChars(int flags, base::string16* text) {
 // Elides |text| and adjusts |range| appropriately. If eliding causes |range|
 // to no longer point to the same character in |text|, |range| is made invalid.
 void ElideTextAndAdjustRange(const FontList& font_list,
-                             int width,
+                             float width,
                              base::string16* text,
                              Range* range) {
   const base::char16 start_char =
@@ -174,10 +175,11 @@ void Canvas::SizeStringFloat(const base::string16& text,
     else if (!(flags & NO_ELLIPSIS))
       wrap_behavior = ELIDE_LONG_WORDS;
 
-    Rect rect(*width, INT_MAX);
     std::vector<base::string16> strings;
-    ElideRectangleText(adjusted_text, font_list, rect.width(), rect.height(),
+    ElideRectangleText(adjusted_text, font_list,
+                       *width, INT_MAX,
                        wrap_behavior, &strings);
+    Rect rect(ClampToInt(*width), INT_MAX);
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
@@ -198,11 +200,12 @@ void Canvas::SizeStringFloat(const base::string16& text,
     // will inexplicably fail with result E_INVALIDARG. Guard against this.
     const size_t kMaxRenderTextLength = 5000;
     if (adjusted_text.length() >= kMaxRenderTextLength) {
-      *width = font_list.GetExpectedTextWidth(adjusted_text.length());
-      *height = font_list.GetHeight();
+      *width = static_cast<float>(
+          font_list.GetExpectedTextWidth(adjusted_text.length()));
+      *height = static_cast<float>(font_list.GetHeight());
     } else {
       scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-      Rect rect(*width, *height);
+      Rect rect(ClampToInt(*width), ClampToInt(*height));
       StripAcceleratorChars(flags, &adjusted_text);
       UpdateRenderText(rect, adjusted_text, font_list, flags, 0,
                        render_text.get());
@@ -247,7 +250,8 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
       wrap_behavior = ELIDE_LONG_WORDS;
 
     std::vector<base::string16> strings;
-    ElideRectangleText(adjusted_text, font_list, text_bounds.width(),
+    ElideRectangleText(adjusted_text, font_list,
+                       static_cast<float>(text_bounds.width()),
                        text_bounds.height(), wrap_behavior, &strings);
 
     for (size_t i = 0; i < strings.size(); i++) {
@@ -294,8 +298,9 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
 #endif
 
     if (elide_text) {
-      ElideTextAndAdjustRange(font_list, text_bounds.width(), &adjusted_text,
-                              &range);
+      ElideTextAndAdjustRange(font_list,
+                              static_cast<float>(text_bounds.width()),
+                              &adjusted_text, &range);
     }
 
     UpdateRenderText(rect, adjusted_text, font_list, flags, color,

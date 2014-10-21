@@ -802,7 +802,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
       pos.back().set(SkIntToScalar(text_offset.x() + segment_x),
                      SkIntToScalar(text_offset.y()));
 
-      renderer.SetTextSize(run->font.GetFontSize());
+      renderer.SetTextSize(SkIntToScalar(run->font.GetFontSize()));
       renderer.SetFontFamilyWithStyle(run->font.GetFontName(), run->font_style);
 
       for (BreakList<SkColor>::const_iterator it =
@@ -828,10 +828,10 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
         renderer.SetForegroundColor(it->second);
         renderer.DrawPosText(&start_pos, &run->glyphs[colored_glyphs.start()],
                              colored_glyphs.length());
-        renderer.DrawDecorations(start_pos.x(), text_offset.y(),
-                                 SkScalarCeilToInt(end_pos.x() - start_pos.x()),
-                                 run->underline, run->strike,
-                                 run->diagonal_strike);
+        int start_x = SkScalarRoundToInt(start_pos.x());
+        renderer.DrawDecorations(
+            start_x, text_offset.y(), SkScalarRoundToInt(end_pos.x()) - start_x,
+            run->underline, run->strike, run->diagonal_strike);
       }
 
       preceding_segment_widths += segment_width;
@@ -1122,8 +1122,8 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
   for (int i = 0; i < run->glyph_count; ++i)
     run->glyphs[i] = IsWhitespace(run_text[i]) ? space_glyph : missing_glyph;
   for (size_t i = 0; i < run_length; ++i) {
-    run->logical_clusters[i] = run->script_analysis.fRTL ?
-        run_length - 1 - i : i;
+    run->logical_clusters[i] =
+        static_cast<WORD>(run->script_analysis.fRTL ? run_length - 1 - i : i);
   }
 
   // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can

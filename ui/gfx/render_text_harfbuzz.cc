@@ -71,12 +71,12 @@ void GetGlyphWidthAndExtents(SkPaint* paint,
                              hb_codepoint_t codepoint,
                              hb_position_t* width,
                              hb_glyph_extents_t* extents) {
-  DCHECK_LE(codepoint, 0xFFFFU);
+  DCHECK_LE(codepoint, std::numeric_limits<uint16>::max());
   paint->setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
   SkScalar sk_width;
   SkRect sk_bounds;
-  uint16_t glyph = codepoint;
+  uint16_t glyph = static_cast<uint16_t>(codepoint);
 
   paint->getTextWidths(&glyph, sizeof(glyph), &sk_width, &sk_bounds);
   if (width)
@@ -273,7 +273,7 @@ class HarfBuzzFace {
 
 // Creates a HarfBuzz font from the given Skia face and text size.
 hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
-                              int text_size,
+                              SkScalar text_size,
                               const FontRenderParams& params,
                               bool background_is_transparent) {
   typedef std::pair<HarfBuzzFace, GlyphCache> FaceCache;
@@ -882,7 +882,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
       lines[0].segments.push_back(segment);
 
       paint.setTypeface(run.skia_face.get());
-      paint.setTextSize(run.font_size);
+      paint.setTextSize(SkIntToScalar(run.font_size));
       SkPaint::FontMetrics metrics;
       paint.getFontMetrics(&metrics);
 
@@ -909,7 +909,7 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
   for (size_t i = 0; i < runs_.size(); ++i) {
     const internal::TextRunHarfBuzz& run = *runs_[visual_to_logical_[i]];
     renderer.SetTypeface(run.skia_face.get());
-    renderer.SetTextSize(run.font_size);
+    renderer.SetTextSize(SkIntToScalar(run.font_size));
     renderer.SetFontRenderParams(run.render_params,
                                  background_is_transparent());
 
@@ -937,11 +937,12 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
       renderer.DrawPosText(&positions[colored_glyphs.start()],
                            &run.glyphs[colored_glyphs.start()],
                            colored_glyphs.length());
-      int width = (colored_glyphs.end() == run.glyph_count ? run.width :
-              run.positions[colored_glyphs.end()].x()) -
-          run.positions[colored_glyphs.start()].x();
-      renderer.DrawDecorations(origin.x(), origin.y(), width, run.underline,
-                               run.strike, run.diagonal_strike);
+      int start_x = SkScalarRoundToInt(positions[colored_glyphs.start()].x());
+      int end_x = SkScalarRoundToInt((colored_glyphs.end() == run.glyph_count) ?
+          (run.width + SkIntToScalar(origin.x())) :
+          positions[colored_glyphs.end()].x());
+      renderer.DrawDecorations(start_x, origin.y(), end_x - start_x,
+                               run.underline, run.strike, run.diagonal_strike);
     }
 
     current_x += run.width;
@@ -1145,8 +1146,9 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   query.pixel_size = run->font_size;
   query.style = run->font_style;
   run->render_params = GetFontRenderParams(query, NULL);
-  hb_font_t* harfbuzz_font = CreateHarfBuzzFont(run->skia_face.get(),
-      run->font_size, run->render_params, background_is_transparent());
+  hb_font_t* harfbuzz_font = CreateHarfBuzzFont(
+      run->skia_face.get(), SkIntToScalar(run->font_size), run->render_params,
+      background_is_transparent());
 
   // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz
   // buffer holds our text, run information to be used by the shaping engine,
@@ -1174,10 +1176,11 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   run->positions.reset(new SkPoint[run->glyph_count]);
   run->width = 0.0f;
   for (size_t i = 0; i < run->glyph_count; ++i) {
-    run->glyphs[i] = infos[i].codepoint;
+    DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16>::max());
+    run->glyphs[i] = static_cast<uint16>(infos[i].codepoint);
     run->glyph_to_char[i] = infos[i].cluster;
-    const int x_offset = SkFixedToScalar(hb_positions[i].x_offset);
-    const int y_offset = SkFixedToScalar(hb_positions[i].y_offset);
+    const SkScalar x_offset = SkFixedToScalar(hb_positions[i].x_offset);
+    const SkScalar y_offset = SkFixedToScalar(hb_positions[i].y_offset);
     run->positions[i].set(run->width + x_offset, -y_offset);
     run->width += SkFixedToScalar(hb_positions[i].x_advance);
 #if defined(OS_LINUX)

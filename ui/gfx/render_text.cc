@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/render_text_harfbuzz.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -269,8 +270,10 @@ void SkiaTextRenderer::EndDiagonalStrike() {
 }
 
 void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {
-  SkRect r = SkRect::MakeLTRB(x, y + underline_position_, x + width,
-                              y + underline_position_ + underline_thickness_);
+  SkScalar x_scalar = SkIntToScalar(x);
+  SkRect r = SkRect::MakeLTRB(
+      x_scalar, y + underline_position_, x_scalar + width,
+      y + underline_position_ + underline_thickness_);
   if (underline_thickness_ == kUnderlineMetricsNotSet) {
     const SkScalar text_size = paint_.getTextSize();
     r.fTop = SkScalarMulAdd(text_size, kUnderlineOffset, y);
@@ -283,7 +286,9 @@ void SkiaTextRenderer::DrawStrike(int x, int y, int width) const {
   const SkScalar text_size = paint_.getTextSize();
   const SkScalar height = SkScalarMul(text_size, kLineThickness);
   const SkScalar offset = SkScalarMulAdd(text_size, kStrikeThroughOffset, y);
-  const SkRect r = SkRect::MakeLTRB(x, offset, x + width, offset + height);
+  SkScalar x_scalar = SkIntToScalar(x);
+  const SkRect r =
+      SkRect::MakeLTRB(x_scalar, offset, x_scalar + width, offset + height);
   canvas_skia_->drawRect(r, paint_);
 }
 
@@ -314,7 +319,7 @@ void SkiaTextRenderer::DiagonalStrike::Draw() {
   const int clip_height = height + 2 * thickness;
 
   paint_.setAntiAlias(true);
-  paint_.setStrokeWidth(thickness);
+  paint_.setStrokeWidth(SkIntToScalar(thickness));
 
   const bool clipped = pieces_.size() > 1;
   SkCanvas* sk_canvas = canvas_->sk_canvas();
@@ -708,8 +713,7 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
 }
 
 SizeF RenderText::GetStringSizeF() {
-  const Size size = GetStringSize();
-  return SizeF(size.width(), size.height());
+  return GetStringSize();
 }
 
 float RenderText::GetContentWidth() {
@@ -845,7 +849,8 @@ const Vector2d& RenderText::GetUpdatedDisplayOffset() {
 }
 
 void RenderText::SetDisplayOffset(int horizontal_offset) {
-  const int extra_content = GetContentWidth() - display_rect_.width();
+  const int extra_content =
+      ToFlooredInt(GetContentWidth()) - display_rect_.width();
   const int cursor_width = cursor_enabled_ ? 1 : 0;
 
   int min_offset = 0;
@@ -1198,8 +1203,9 @@ void RenderText::UpdateLayoutText() {
       static_cast<int>(GetContentWidth()) > display_rect_.width()) {
     // This doesn't trim styles so ellipsis may get rendered as a different
     // style than the preceding text. See crbug.com/327850.
-    layout_text_.assign(
-        Elide(layout_text_, display_rect_.width(), elide_behavior_));
+    layout_text_.assign(Elide(layout_text_,
+                              static_cast<float>(display_rect_.width()),
+                              elide_behavior_));
   }
 
   // Replace the newline character with a newline symbol in single line mode.

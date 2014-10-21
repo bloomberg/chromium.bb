@@ -92,12 +92,12 @@ void Canvas::SizeStringInt(const base::string16& text,
                            int* height,
                            int line_height,
                            int flags) {
-  float fractional_width = *width;
-  float factional_height = *height;
+  float fractional_width = static_cast<float>(*width);
+  float factional_height = static_cast<float>(*height);
   SizeStringFloat(text, font_list, &fractional_width,
                   &factional_height, line_height, flags);
-  *width = std::ceil(fractional_width);
-  *height = std::ceil(factional_height);
+  *width = ToCeiledInt(fractional_width);
+  *height = ToCeiledInt(factional_height);
 }
 
 // static
