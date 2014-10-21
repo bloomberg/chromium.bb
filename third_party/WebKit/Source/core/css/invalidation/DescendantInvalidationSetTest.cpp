@@ -61,4 +61,12 @@ TEST(DescendantInvalidationSetTest, SubtreeInvalid_Combine_2)
     ASSERT_TRUE(set1->isEmpty());
 }
 
+#ifndef NDEBUG
+TEST(DescendantInvalidationSetTest, ShowDebug)
+{
+    RefPtrWillBeRawPtr<DescendantInvalidationSet> set = DescendantInvalidationSet::create();
+    set->show();
+}
+#endif // NDEBUG
+
 } // namespace

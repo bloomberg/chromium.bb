@@ -265,7 +265,9 @@ void DescendantInvalidationSet::toTracedValue(TracedValue* value) const
 void DescendantInvalidationSet::show() const
 {
     RefPtr<TracedValue> value = TracedValue::create();
+    value->beginArray("DescendantInvalidationSet");
     toTracedValue(value.get());
+    value->endArray();
     fprintf(stderr, "%s\n", value->asTraceFormat().ascii().data());
 }
 #endif // NDEBUG
