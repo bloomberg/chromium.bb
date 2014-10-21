@@ -101,9 +101,20 @@ COMPILER=clang
 GOMA=auto
 make_gn_args() {
   local args=()
+  # TODO(vtl): It's a bit of a hack to infer the build type from the output
+  # directory name, but it's what we have right now (since we support "debug and
+  # release" mode).
+  case "$1" in
+    Debug)
+      # (Default.)
+      ;;
+    Release)
+      args+=("is_debug=false")
+      ;;
+  esac
   case "$COMPILER" in
     clang)
-      args+=("is_clang=true")
+      # (Default.)
       ;;
     gcc)
       args+=("is_clang=false")
@@ -116,11 +127,11 @@ make_gn_args() {
       elif [ -d "${HOME}/goma" ]; then
         args+=("use_goma=true" "goma_dir=\"${HOME}/goma\"")
       else
-        args+=("use_goma=false")
+        :  # (Default.)
       fi
       ;;
     disabled)
-      args+=("use_goma=false")
+      # (Default.)
       ;;
   esac
   echo "${args[*]}"
