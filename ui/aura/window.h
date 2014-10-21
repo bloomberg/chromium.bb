@@ -470,9 +470,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();
 
-  // Returns true if the mouse is currently within our bounds.
-  bool ContainsMouse();
-
   // Returns the first ancestor (starting at |this|) with a layer. |offset| is
   // set to the offset from |this| to the first ancestor with a layer. |offset|
   // may be NULL.

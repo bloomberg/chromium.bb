@@ -1445,16 +1445,6 @@ void Window::UpdateLayerName() {
 #endif
 }
 
-bool Window::ContainsMouse() {
-  bool contains_mouse = false;
-  if (IsVisible()) {
-    WindowTreeHost* host = GetHost();
-    contains_mouse = host &&
-        ContainsPointInRoot(host->dispatcher()->GetLastMouseLocationInRoot());
-  }
-  return contains_mouse;
-}
-
 const Window* Window::GetAncestorWithLayer(gfx::Vector2d* offset) const {
   for (const aura::Window* window = this; window; window = window->parent()) {
     if (window->layer())

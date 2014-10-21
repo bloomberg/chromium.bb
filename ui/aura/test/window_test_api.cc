@@ -5,6 +5,8 @@
 #include "ui/aura/test/window_test_api.h"
 
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 
 namespace aura {
 namespace test {
@@ -17,7 +19,12 @@ bool WindowTestApi::OwnsLayer() const {
 }
 
 bool WindowTestApi::ContainsMouse() const {
-  return window_->ContainsMouse();
+  if (!window_->IsVisible())
+    return false;
+  WindowTreeHost* host = window_->GetHost();
+  return host &&
+         window_->ContainsPointInRoot(
+             host->dispatcher()->GetLastMouseLocationInRoot());
 }
 
 }  // namespace test
