@@ -107,14 +107,14 @@ SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, 
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<SVGTestInterface>() : 0;
 }
 
-void V8SVGTestInterface::refObject(ScriptWrappableBase* internalPointer)
+void V8SVGTestInterface::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<SVGTestInterface>()->ref();
+    scriptWrappableBase->toImpl<SVGTestInterface>()->ref();
 }
 
-void V8SVGTestInterface::derefObject(ScriptWrappableBase* internalPointer)
+void V8SVGTestInterface::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<SVGTestInterface>()->deref();
+    scriptWrappableBase->toImpl<SVGTestInterface>()->deref();
 }
 
 template<>

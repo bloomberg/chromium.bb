@@ -1763,9 +1763,9 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterfaceImplementationV8Internal
 
-void V8TestInterface::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8TestInterface::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    TestInterfaceImplementation* impl = internalPointer->toImpl<TestInterfaceImplementation>();
+    TestInterfaceImplementation* impl = scriptWrappableBase->toImpl<TestInterfaceImplementation>();
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
     TestInterfaceImplementation* referencedName = impl->referencedName();
@@ -1774,7 +1774,7 @@ void V8TestInterface::visitDOMWrapper(ScriptWrappableBase* internalPointer, cons
             wrap(referencedName, creationContext, isolate);
         DOMDataStore::setWrapperReference<V8TestInterface>(wrapper, referencedName, isolate);
     }
-    setObjectGroup(internalPointer, wrapper, isolate);
+    setObjectGroup(scriptWrappableBase, wrapper, isolate);
 }
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
@@ -2068,14 +2068,14 @@ ActiveDOMObject* V8TestInterface::toActiveDOMObject(v8::Handle<v8::Object> wrapp
     return toImpl(wrapper);
 }
 
-void V8TestInterface::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterface::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceImplementation>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceImplementation>()->ref();
 }
 
-void V8TestInterface::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterface::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceImplementation>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceImplementation>()->deref();
 }
 
 template<>

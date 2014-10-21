@@ -570,9 +570,9 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {##############################################################################}
 {% block visit_dom_wrapper %}
 {% if reachable_node_function or set_wrapper_reference_to_list %}
-void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    {{cpp_class}}* impl = internalPointer->toImpl<{{cpp_class}}>();
+    {{cpp_class}}* impl = scriptWrappableBase->toImpl<{{cpp_class}}>();
     {% if set_wrapper_reference_to_list %}
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
@@ -593,7 +593,7 @@ void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v
         return;
     }
     {% endif %}
-    setObjectGroup(internalPointer, wrapper, isolate);
+    setObjectGroup(scriptWrappableBase, wrapper, isolate);
 }
 
 {% endif %}
@@ -788,9 +788,9 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {{cpp_class}}* V8ArrayBufferView::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsArrayBufferView());
-    ScriptWrappableBase* internalPointer = blink::toScriptWrappableBase(object);
-    if (internalPointer)
-        return internalPointer->toImpl<{{cpp_class}}>();
+    ScriptWrappableBase* scriptWrappableBase = blink::toScriptWrappableBase(object);
+    if (scriptWrappableBase)
+        return scriptWrappableBase->toImpl<{{cpp_class}}>();
 
     if (object->IsInt8Array())
         return V8Int8Array::toImpl(object);
@@ -821,9 +821,9 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {{cpp_class}}* {{v8_class}}::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->Is{{interface_name}}());
-    ScriptWrappableBase* internalPointer = blink::toScriptWrappableBase(object);
-    if (internalPointer)
-        return internalPointer->toImpl<{{cpp_class}}>();
+    ScriptWrappableBase* scriptWrappableBase = blink::toScriptWrappableBase(object);
+    if (scriptWrappableBase)
+        return scriptWrappableBase->toImpl<{{cpp_class}}>();
 
     v8::Handle<v8::{{interface_name}}> v8View = object.As<v8::{{interface_name}}>();
     RefPtr<{{cpp_class}}> typedArray = {{cpp_class}}::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
@@ -945,25 +945,25 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
 
 {##############################################################################}
 {% block deref_object_and_to_v8_no_inline %}
-void {{v8_class}}::refObject(ScriptWrappableBase* internalPointer)
+void {{v8_class}}::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<{{cpp_class}}>()->ref();
+    scriptWrappableBase->toImpl<{{cpp_class}}>()->ref();
 #endif
 {% elif gc_type == 'RefCountedObject' %}
-    internalPointer->toImpl<{{cpp_class}}>()->ref();
+    scriptWrappableBase->toImpl<{{cpp_class}}>()->ref();
 {% endif %}
 }
 
-void {{v8_class}}::derefObject(ScriptWrappableBase* internalPointer)
+void {{v8_class}}::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<{{cpp_class}}>()->deref();
+    scriptWrappableBase->toImpl<{{cpp_class}}>()->deref();
 #endif
 {% elif gc_type == 'RefCountedObject' %}
-    internalPointer->toImpl<{{cpp_class}}>()->deref();
+    scriptWrappableBase->toImpl<{{cpp_class}}>()->deref();
 {% endif %}
 }
 

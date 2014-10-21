@@ -10675,14 +10675,14 @@ void V8TestObject::installConditionallyEnabledMethods(v8::Handle<v8::Object> pro
     }
 }
 
-void V8TestObject::refObject(ScriptWrappableBase* internalPointer)
+void V8TestObject::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestObject>()->ref();
+    scriptWrappableBase->toImpl<TestObject>()->ref();
 }
 
-void V8TestObject::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestObject::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestObject>()->deref();
+    scriptWrappableBase->toImpl<TestObject>()->deref();
 }
 
 template<>

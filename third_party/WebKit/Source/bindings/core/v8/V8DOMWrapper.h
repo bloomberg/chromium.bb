@@ -45,7 +45,7 @@ struct WrapperTypeInfo;
 
 class V8DOMWrapper {
 public:
-    static v8::Local<v8::Object> createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer, v8::Isolate*);
+    static v8::Local<v8::Object> createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappableBase*, v8::Isolate*);
 
     template<typename V8T, typename T>
     static v8::Handle<v8::Object> associateObjectWithWrapper(PassRefPtr<T>, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*);
@@ -58,18 +58,18 @@ public:
     static v8::Handle<v8::Object> associateObjectWithWrapper(T*, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*);
     static v8::Handle<v8::Object> associateObjectWithWrapperNonTemplate(ScriptWrappable*, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*);
     static v8::Handle<v8::Object> associateObjectWithWrapperNonTemplate(Node*, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*);
-    static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer);
+    static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase*);
     static void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
 
     static bool isDOMWrapper(v8::Handle<v8::Value>);
 };
 
-inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* internalPointer)
+inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* scriptWrappableBase)
 {
     ASSERT(wrapper->InternalFieldCount() >= 2);
-    ASSERT(internalPointer);
+    ASSERT(scriptWrappableBase);
     ASSERT(wrapperTypeInfo);
-    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, internalPointer);
+    wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, scriptWrappableBase);
     wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
 }
 

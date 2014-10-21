@@ -373,17 +373,17 @@ TestInterfaceEventConstructor* V8TestInterfaceEventConstructor::toImplWithTypeCh
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceEventConstructor>() : 0;
 }
 
-void V8TestInterfaceEventConstructor::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceEventConstructor::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<TestInterfaceEventConstructor>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceEventConstructor>()->ref();
 #endif
 }
 
-void V8TestInterfaceEventConstructor::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceEventConstructor::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<TestInterfaceEventConstructor>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceEventConstructor>()->deref();
 #endif
 }
 

@@ -28,12 +28,12 @@ public:
     }
     static TestInterfaceDocument* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void refObject(ScriptWrappableBase* internalPointer);
-    static void derefObject(ScriptWrappableBase* internalPointer);
-    static void trace(Visitor* visitor, ScriptWrappableBase* internalPointer)
+    static void refObject(ScriptWrappableBase*);
+    static void derefObject(ScriptWrappableBase*);
+    static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
     {
 #if ENABLE(OILPAN)
-        visitor->trace(internalPointer->toImpl<TestInterfaceDocument>());
+        visitor->trace(scriptWrappableBase->toImpl<TestInterfaceDocument>());
 #endif
     }
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);

@@ -49,18 +49,18 @@ static const int v8PrototypeTypeIndex = 0;
 static const int v8PrototypeInternalFieldcount = 1;
 
 typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
-typedef void (*RefObjectFunction)(ScriptWrappableBase* internalPointer);
-typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
-typedef void (*TraceFunction)(Visitor*, ScriptWrappableBase* internalPointer);
+typedef void (*RefObjectFunction)(ScriptWrappableBase*);
+typedef void (*DerefObjectFunction)(ScriptWrappableBase*);
+typedef void (*TraceFunction)(Visitor*, ScriptWrappableBase*);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
-typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
+typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase*, const v8::Persistent<v8::Object>&, v8::Isolate*);
 typedef void (*InstallConditionallyEnabledMethodsFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 
-inline void setObjectGroup(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+inline void setObjectGroup(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(internalPointer)));
+    isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(scriptWrappableBase)));
 }
 
 // This struct provides a way to store a bunch of information that is helpful when unwrapping
@@ -121,22 +121,22 @@ struct WrapperTypeInfo {
         return domTemplateFunction(isolate);
     }
 
-    void refObject(ScriptWrappableBase* internalPointer) const
+    void refObject(ScriptWrappableBase* scriptWrappableBase) const
     {
         ASSERT(refObjectFunction);
-        refObjectFunction(internalPointer);
+        refObjectFunction(scriptWrappableBase);
     }
 
-    void derefObject(ScriptWrappableBase* internalPointer) const
+    void derefObject(ScriptWrappableBase* scriptWrappableBase) const
     {
         ASSERT(derefObjectFunction);
-        derefObjectFunction(internalPointer);
+        derefObjectFunction(scriptWrappableBase);
     }
 
-    void trace(Visitor* visitor, ScriptWrappableBase* internalPointer) const
+    void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase) const
     {
         ASSERT(traceFunction);
-        return traceFunction(visitor, internalPointer);
+        return traceFunction(visitor, scriptWrappableBase);
     }
 
     void installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
@@ -165,12 +165,12 @@ struct WrapperTypeInfo {
         return toEventTargetFunction(object);
     }
 
-    void visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate) const
+    void visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate) const
     {
         if (!visitDOMWrapperFunction)
-            setObjectGroup(internalPointer, wrapper, isolate);
+            setObjectGroup(scriptWrappableBase, wrapper, isolate);
         else
-            visitDOMWrapperFunction(internalPointer, wrapper, isolate);
+            visitDOMWrapperFunction(scriptWrappableBase, wrapper, isolate);
     }
 
     // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.

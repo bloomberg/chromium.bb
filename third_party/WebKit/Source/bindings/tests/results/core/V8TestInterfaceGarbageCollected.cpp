@@ -169,11 +169,11 @@ EventTarget* V8TestInterfaceGarbageCollected::toEventTarget(v8::Handle<v8::Objec
     return toImpl(object);
 }
 
-void V8TestInterfaceGarbageCollected::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceGarbageCollected::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
 }
 
-void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
 }
 

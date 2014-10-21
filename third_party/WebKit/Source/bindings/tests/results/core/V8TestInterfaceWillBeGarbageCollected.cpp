@@ -214,17 +214,17 @@ EventTarget* V8TestInterfaceWillBeGarbageCollected::toEventTarget(v8::Handle<v8:
     return toImpl(object);
 }
 
-void V8TestInterfaceWillBeGarbageCollected::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceWillBeGarbageCollected::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<TestInterfaceWillBeGarbageCollected>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceWillBeGarbageCollected>()->ref();
 #endif
 }
 
-void V8TestInterfaceWillBeGarbageCollected::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceWillBeGarbageCollected::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<TestInterfaceWillBeGarbageCollected>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceWillBeGarbageCollected>()->deref();
 #endif
 }
 

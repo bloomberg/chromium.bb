@@ -124,14 +124,14 @@ TestException* V8TestException::toImplWithTypeCheck(v8::Isolate* isolate, v8::Ha
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestException>() : 0;
 }
 
-void V8TestException::refObject(ScriptWrappableBase* internalPointer)
+void V8TestException::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestException>()->ref();
+    scriptWrappableBase->toImpl<TestException>()->ref();
 }
 
-void V8TestException::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestException::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestException>()->deref();
+    scriptWrappableBase->toImpl<TestException>()->deref();
 }
 
 template<>

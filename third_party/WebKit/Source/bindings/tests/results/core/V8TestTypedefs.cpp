@@ -364,14 +364,14 @@ TestTypedefs* V8TestTypedefs::toImplWithTypeCheck(v8::Isolate* isolate, v8::Hand
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestTypedefs>() : 0;
 }
 
-void V8TestTypedefs::refObject(ScriptWrappableBase* internalPointer)
+void V8TestTypedefs::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestTypedefs>()->ref();
+    scriptWrappableBase->toImpl<TestTypedefs>()->ref();
 }
 
-void V8TestTypedefs::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestTypedefs::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestTypedefs>()->deref();
+    scriptWrappableBase->toImpl<TestTypedefs>()->deref();
 }
 
 template<>

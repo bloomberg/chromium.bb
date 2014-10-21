@@ -55,20 +55,20 @@ public:
     {% endif %}
     static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
-    static void refObject(ScriptWrappableBase* internalPointer);
-    static void derefObject(ScriptWrappableBase* internalPointer);
-    static void trace(Visitor* visitor, ScriptWrappableBase* internalPointer)
+    static void refObject(ScriptWrappableBase*);
+    static void derefObject(ScriptWrappableBase*);
+    static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
     {
         {% if gc_type == 'GarbageCollectedObject' %}
-        visitor->trace(internalPointer->toImpl<{{cpp_class}}>());
+        visitor->trace(scriptWrappableBase->toImpl<{{cpp_class}}>());
         {% elif gc_type == 'WillBeGarbageCollectedObject' %}
 #if ENABLE(OILPAN)
-        visitor->trace(internalPointer->toImpl<{{cpp_class}}>());
+        visitor->trace(scriptWrappableBase->toImpl<{{cpp_class}}>());
 #endif
         {% endif %}
     }
     {% if has_visit_dom_wrapper %}
-    static void visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
+    static void visitDOMWrapper(ScriptWrappableBase*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     {% endif %}
     {% if is_active_dom_object %}
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);

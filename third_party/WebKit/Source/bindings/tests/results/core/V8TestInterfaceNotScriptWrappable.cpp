@@ -145,14 +145,14 @@ v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::createWrapper(PassRefP
     return wrapper;
 }
 
-void V8TestInterfaceNotScriptWrappable::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceNotScriptWrappable::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceNotScriptWrappable>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceNotScriptWrappable>()->ref();
 }
 
-void V8TestInterfaceNotScriptWrappable::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceNotScriptWrappable::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceNotScriptWrappable>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceNotScriptWrappable>()->deref();
 }
 
 template<>

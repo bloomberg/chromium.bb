@@ -720,9 +720,9 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterface5ImplementationV8Internal
 
-void V8TestInterface5::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8TestInterface5::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    TestInterface5Implementation* impl = internalPointer->toImpl<TestInterface5Implementation>();
+    TestInterface5Implementation* impl = scriptWrappableBase->toImpl<TestInterface5Implementation>();
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
     TestInterface5Implementation* referencedName = impl->referencedName();
@@ -731,7 +731,7 @@ void V8TestInterface5::visitDOMWrapper(ScriptWrappableBase* internalPointer, con
             wrap(referencedName, creationContext, isolate);
         DOMDataStore::setWrapperReference<V8TestInterface5>(wrapper, referencedName, isolate);
     }
-    setObjectGroup(internalPointer, wrapper, isolate);
+    setObjectGroup(scriptWrappableBase, wrapper, isolate);
 }
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterface5Attributes[] = {
@@ -858,14 +858,14 @@ ActiveDOMObject* V8TestInterface5::toActiveDOMObject(v8::Handle<v8::Object> wrap
     return toImpl(wrapper);
 }
 
-void V8TestInterface5::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterface5::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterface5Implementation>()->ref();
+    scriptWrappableBase->toImpl<TestInterface5Implementation>()->ref();
 }
 
-void V8TestInterface5::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterface5::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterface5Implementation>()->deref();
+    scriptWrappableBase->toImpl<TestInterface5Implementation>()->deref();
 }
 
 template<>

@@ -129,14 +129,14 @@ TestInterface3* V8TestInterface3::toImplWithTypeCheck(v8::Isolate* isolate, v8::
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterface3>() : 0;
 }
 
-void V8TestInterface3::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterface3::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterface3>()->ref();
+    scriptWrappableBase->toImpl<TestInterface3>()->ref();
 }
 
-void V8TestInterface3::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterface3::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterface3>()->deref();
+    scriptWrappableBase->toImpl<TestInterface3>()->deref();
 }
 
 template<>

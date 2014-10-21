@@ -336,17 +336,17 @@ EventTarget* V8TestInterfaceNode::toEventTarget(v8::Handle<v8::Object> object)
     return toImpl(object);
 }
 
-void V8TestInterfaceNode::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceNode::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<TestInterfaceNode>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceNode>()->ref();
 #endif
 }
 
-void V8TestInterfaceNode::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceNode::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
 #if !ENABLE(OILPAN)
-    internalPointer->toImpl<TestInterfaceNode>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceNode>()->deref();
 #endif
 }
 

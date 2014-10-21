@@ -523,14 +523,14 @@ TestInterfaceCheckSecurity* V8TestInterfaceCheckSecurity::toImplWithTypeCheck(v8
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceCheckSecurity>() : 0;
 }
 
-void V8TestInterfaceCheckSecurity::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceCheckSecurity::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceCheckSecurity>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceCheckSecurity>()->ref();
 }
 
-void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceCheckSecurity>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceCheckSecurity>()->deref();
 }
 
 template<>

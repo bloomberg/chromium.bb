@@ -179,14 +179,14 @@ ActiveDOMObject* V8TestInterfaceNamedConstructor::toActiveDOMObject(v8::Handle<v
     return toImpl(wrapper);
 }
 
-void V8TestInterfaceNamedConstructor::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceNamedConstructor::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceNamedConstructor>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceNamedConstructor>()->ref();
 }
 
-void V8TestInterfaceNamedConstructor::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceNamedConstructor::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceNamedConstructor>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceNamedConstructor>()->deref();
 }
 
 template<>

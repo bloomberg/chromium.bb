@@ -70,14 +70,14 @@ TestInterfaceEmpty* V8TestInterfaceEmpty::toImplWithTypeCheck(v8::Isolate* isola
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceEmpty>() : 0;
 }
 
-void V8TestInterfaceEmpty::refObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceEmpty::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceEmpty>()->ref();
+    scriptWrappableBase->toImpl<TestInterfaceEmpty>()->ref();
 }
 
-void V8TestInterfaceEmpty::derefObject(ScriptWrappableBase* internalPointer)
+void V8TestInterfaceEmpty::derefObject(ScriptWrappableBase* scriptWrappableBase)
 {
-    internalPointer->toImpl<TestInterfaceEmpty>()->deref();
+    scriptWrappableBase->toImpl<TestInterfaceEmpty>()->deref();
 }
 
 template<>
