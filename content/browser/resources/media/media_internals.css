@@ -87,6 +87,12 @@ h3 {
 #property-wrapper,
 #log-wrapper {
   display:block;
+  flex-grow: 0.25;
+  align-self: stretch;
+  overflow: auto;
+}
+
+#video-capture-capabilities-wrapper {
   flex-grow: 0.5;
   align-self: stretch;
   overflow: auto;
@@ -117,6 +123,37 @@ h3 {
   min-width: 115px;
 }
 
+#video-capture-capabilities-table {
+  margin-bottom:30px;
+}
+
+#video-capture-capabilities-table th,
+#video-capture-capabilities-table td {
+  min-width:120px;
+}
+
+#video-capture-capabilities-table td {
+  padding:5px;
+}
+
 #video-capture-capabilities-table tr td {
   font-size:13px;
+  text-align:center;
+}
+
+#video-capture-capabilities-table .video-capture-formats-table th,
+#video-capture-capabilities-table .video-capture-formats-table td {
+  text-align:right;
+  min-width:80px;
+}
+
+#video-capture-capabilities-table .video-capture-formats-table th {
+  background:none;
+  color:#666;
+  font-size:13px;
+  font-weight:bold;
+}
+
+#video-capture-capabilities-table .video-capture-formats-table td {
+  padding:2px;
 }

@@ -111,9 +111,45 @@ var Manager = (function() {
                                          value);
     },
 
+    parseVideoCaptureFormat_: function(format) {
+      /**
+       * Example:
+       *
+       * format:
+       *   "resolution: 1280x720, fps: 30.000000, pixel format: I420"
+       *
+       * formatDict:
+       *   {'resolution':'1280x720', 'fps': '30.00'}
+       */
+      var parts = format.split(', ');
+      var formatDict = {};
+      for (var i in parts) {
+        var kv = parts[i].split(': ');
+        formatDict[kv[0]] = kv[1];
+      }
+
+      // Round down the FPS to 2 decimals.
+      formatDict['fps'] = parseFloat(formatDict['fps']).toFixed(2);
+
+      // The camera does not actually output I420 so this info is misleading.
+      delete formatDict['pixel format'];
+
+      return formatDict;
+    },
+
     updateVideoCaptureCapabilities: function(videoCaptureCapabilities) {
+      // Parse the video formats to be structured for the table.
+      for (var i in videoCaptureCapabilities) {
+        for (var j in videoCaptureCapabilities[i]['formats']) {
+          videoCaptureCapabilities[i]['formats'][j] =
+              this.parseVideoCaptureFormat_(
+                    videoCaptureCapabilities[i]['formats'][j]);
+        }
+      }
+
       // The keys of each device to be shown in order of appearance.
-      var videoCaptureDeviceKeys = ['id','name','formats','captureApi'];
+      var videoCaptureDeviceKeys = ['name','formats','captureApi','id'];
+
       this.clientRenderer_.redrawVideoCaptureCapabilities(
           videoCaptureCapabilities, videoCaptureDeviceKeys);
     }

@@ -106,6 +106,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     CaptureApiType capture_api_type() const {
       return capture_api_class_.capture_api_type();
     }
+    const char* GetCaptureApiTypeString() const;
 #endif
 #if defined(OS_WIN)
     // Certain devices need an ID different from the |unique_id_| for

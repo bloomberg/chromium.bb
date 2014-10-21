@@ -47,7 +47,6 @@ var media = (function() {
 
   media.onReceiveVideoCaptureCapabilities = function(videoCaptureCapabilities) {
     manager.updateVideoCaptureCapabilities(videoCaptureCapabilities)
-    console.log("Video capabilities", videoCaptureCapabilities);
   }
 
   media.onReceiveConstants = function(constants) {

@@ -8,11 +8,13 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace {
 const int kTestComponentID = 0;
@@ -107,6 +109,52 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
   MediaInternals::UpdateCallback update_cb_;
 };
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+TEST_F(MediaInternalsVideoCaptureDeviceTest,
+       AllCaptureApiTypesHaveProperStringRepresentation) {
+  typedef media::VideoCaptureDevice::Name VideoCaptureDeviceName;
+  typedef std::map<VideoCaptureDeviceName::CaptureApiType, std::string>
+      CaptureApiTypeStringMap;
+  CaptureApiTypeStringMap m;
+#if defined(OS_WIN)
+  m[VideoCaptureDeviceName::MEDIA_FOUNDATION] = "Media Foundation";
+  m[VideoCaptureDeviceName::DIRECT_SHOW] = "Direct Show";
+  m[VideoCaptureDeviceName::DIRECT_SHOW_WDM_CROSSBAR] =
+      "Direct Show WDM Crossbar";
+#elif defined(OS_MACOSX)
+  m[VideoCaptureDeviceName::AVFOUNDATION] = "AV Foundation";
+  m[VideoCaptureDeviceName::QTKIT] = "QTKit";
+  m[VideoCaptureDeviceName::DECKLINK] = "DeckLink";
+#endif
+  EXPECT_EQ(media::VideoCaptureDevice::Name::API_TYPE_UNKNOWN, m.size());
+  for (CaptureApiTypeStringMap::iterator it = m.begin(); it != m.end(); ++it) {
+    const VideoCaptureDeviceName device_name("dummy", "dummy", it->first);
+    EXPECT_EQ(it->second, device_name.GetCaptureApiTypeString());
+  }
+}
+#endif
+
+TEST_F(MediaInternalsVideoCaptureDeviceTest,
+       VideoCaptureFormatStringIsInExpectedFormat) {
+  // Since media internals will send video capture capabilities to JavaScript in
+  // an expected format and there are no public methods for accessing the
+  // resolutions, frame rates or pixel formats, this test checks that the format
+  // has not changed. If the test fails because of the changed format, it should
+  // be updated at the same time as the media internals JS files.
+  const float kFrameRate = 30.0f;
+  const gfx::Size kFrameSize(1280, 720);
+  const media::VideoPixelFormat kPixelFormat = media::PIXEL_FORMAT_I420;
+  const media::VideoCaptureFormat capture_format(
+      kFrameSize, kFrameRate, kPixelFormat);
+  const std::string expected_string =
+      base::StringPrintf("resolution: %s, fps: %f, pixel format: %s",
+                         kFrameSize.ToString().c_str(),
+                         kFrameRate,
+                         media::VideoCaptureFormat::PixelFormatToString(
+                              kPixelFormat).c_str());
+  EXPECT_EQ(expected_string, capture_format.ToString());
+}
+
 TEST_F(MediaInternalsVideoCaptureDeviceTest,
        NotifyVideoCaptureDeviceCapabilitiesEnumerated) {
   const int kWidth = 1280;
@@ -149,9 +197,9 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   expected_list.AppendString(format_hd.ToString());
   ExpectListOfStrings("formats", expected_list);
 #if defined(OS_MACOSX)
-  ExpectInt("captureApi", media::VideoCaptureDevice::Name::QTKIT);
+  ExpectString("captureApi", "QTKit");
 #elif defined(OS_WIN)
-  ExpectInt("captureApi", media::VideoCaptureDevice::Name::DIRECT_SHOW);
+  ExpectString("captureApi", "Direct Show");
 #endif
 }
 

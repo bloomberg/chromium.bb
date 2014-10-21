@@ -57,6 +57,36 @@ VideoCaptureDevice::Name::Name(const std::string& name,
 
 VideoCaptureDevice::Name::~Name() {}
 
+#if defined(OS_WIN)
+const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
+  switch(capture_api_type()) {
+    case MEDIA_FOUNDATION:
+      return "Media Foundation";
+    case DIRECT_SHOW:
+      return "Direct Show";
+    case DIRECT_SHOW_WDM_CROSSBAR:
+      return "Direct Show WDM Crossbar";
+    default:
+      NOTREACHED() << "Unknown Video Capture API type!";
+      return "Unknown API";
+  }
+}
+#elif defined(OS_MACOSX)
+const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
+  switch(capture_api_type()) {
+    case AVFOUNDATION:
+      return "AV Foundation";
+    case QTKIT:
+      return "QTKit";
+    case DECKLINK:
+      return "DeckLink";
+    default:
+      NOTREACHED() << "Unknown Video Capture API type!";
+      return "Unknown API";
+  }
+}
+#endif
+
 VideoCaptureDevice::~VideoCaptureDevice() {}
 
 int VideoCaptureDevice::GetPowerLineFrequencyForLocation() const {
