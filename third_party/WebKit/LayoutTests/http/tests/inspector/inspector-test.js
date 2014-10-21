@@ -240,8 +240,11 @@ InspectorTest.runWhenPageLoads = function(callback)
 
 InspectorTest.runAfterPendingDispatches = function(callback)
 {
-    callback = InspectorTest.safeWrap(callback);
-    InspectorBackend.connection().runAfterPendingDispatches(callback);
+    var barrier = new CallbackBarrier();
+    var targets = WebInspector.targetManager.targets();
+    for (var i = 0; i < targets.length; ++i)
+        targets[i]._connection.runAfterPendingDispatches(barrier.createCallback());
+    barrier.callWhenDone(InspectorTest.safeWrap(callback));
 }
 
 InspectorTest.createKeyEvent = function(keyIdentifier, ctrlKey, altKey, shiftKey, metaKey)
