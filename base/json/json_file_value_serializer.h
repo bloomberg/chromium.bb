@@ -58,10 +58,10 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   };
 
   // File-specific error messages that can be returned.
-  static const char* kAccessDenied;
-  static const char* kCannotReadFile;
-  static const char* kFileLocked;
-  static const char* kNoSuchFile;
+  static const char kAccessDenied[];
+  static const char kCannotReadFile[];
+  static const char kFileLocked[];
+  static const char kNoSuchFile[];
 
   // Convert an error code into an error message.  |error_code| is assumed to
   // be a JsonFileError.

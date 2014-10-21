@@ -21,8 +21,8 @@ TEST_F(EnvironmentTest, GetVar) {
 
 TEST_F(EnvironmentTest, GetVarReverse) {
   scoped_ptr<Environment> env(Environment::Create());
-  const char* kFooUpper = "FOO";
-  const char* kFooLower = "foo";
+  const char kFooUpper[] = "FOO";
+  const char kFooLower[] = "foo";
 
   // Set a variable in UPPER case.
   EXPECT_TRUE(env->SetVar(kFooUpper, kFooLower));
@@ -35,7 +35,7 @@ TEST_F(EnvironmentTest, GetVarReverse) {
 
   EXPECT_TRUE(env->UnSetVar(kFooUpper));
 
-  const char* kBar = "bar";
+  const char kBar[] = "bar";
   // Now do the opposite, set the variable in the lower case.
   EXPECT_TRUE(env->SetVar(kFooLower, kBar));
 
@@ -56,8 +56,8 @@ TEST_F(EnvironmentTest, HasVar) {
 TEST_F(EnvironmentTest, SetVar) {
   scoped_ptr<Environment> env(Environment::Create());
 
-  const char* kFooUpper = "FOO";
-  const char* kFooLower = "foo";
+  const char kFooUpper[] = "FOO";
+  const char kFooLower[] = "foo";
   EXPECT_TRUE(env->SetVar(kFooUpper, kFooLower));
 
   // Now verify that the environment has the new variable.
@@ -71,8 +71,8 @@ TEST_F(EnvironmentTest, SetVar) {
 TEST_F(EnvironmentTest, UnSetVar) {
   scoped_ptr<Environment> env(Environment::Create());
 
-  const char* kFooUpper = "FOO";
-  const char* kFooLower = "foo";
+  const char kFooUpper[] = "FOO";
+  const char kFooLower[] = "foo";
   // First set some environment variable.
   EXPECT_TRUE(env->SetVar(kFooUpper, kFooLower));
 
@@ -95,7 +95,7 @@ TEST_F(EnvironmentTest, AlterEnvironment) {
   string16 e;
 
   e = AlterEnvironment(empty, changes);
-  EXPECT_TRUE(e[0] == 0);
+  EXPECT_EQ(0, e[0]);
 
   changes[L"A"] = L"1";
   e = AlterEnvironment(empty, changes);

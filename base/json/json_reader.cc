@@ -13,21 +13,21 @@ namespace base {
 COMPILE_ASSERT(JSONReader::JSON_PARSE_ERROR_COUNT < 1000,
                json_reader_error_out_of_bounds);
 
-const char* JSONReader::kInvalidEscape =
+const char JSONReader::kInvalidEscape[] =
     "Invalid escape sequence.";
-const char* JSONReader::kSyntaxError =
+const char JSONReader::kSyntaxError[] =
     "Syntax error.";
-const char* JSONReader::kUnexpectedToken =
+const char JSONReader::kUnexpectedToken[] =
     "Unexpected token.";
-const char* JSONReader::kTrailingComma =
+const char JSONReader::kTrailingComma[] =
     "Trailing comma not allowed.";
-const char* JSONReader::kTooMuchNesting =
+const char JSONReader::kTooMuchNesting[] =
     "Too much nesting.";
-const char* JSONReader::kUnexpectedDataAfterRoot =
+const char JSONReader::kUnexpectedDataAfterRoot[] =
     "Unexpected data after root element.";
-const char* JSONReader::kUnsupportedEncoding =
+const char JSONReader::kUnsupportedEncoding[] =
     "Unsupported encoding. JSON must be UTF-8.";
-const char* JSONReader::kUnquotedDictionaryKey =
+const char JSONReader::kUnquotedDictionaryKey[] =
     "Dictionary keys must be quoted.";
 
 JSONReader::JSONReader()

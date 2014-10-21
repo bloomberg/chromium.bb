@@ -25,10 +25,10 @@ class MockEnvironment : public Environment {
   MOCK_METHOD1(UnSetVar, bool(const char*));
 };
 
-const char* kGnome = "gnome";
-const char* kKDE4 = "kde4";
-const char* kKDE = "kde";
-const char* kXFCE = "xfce";
+const char* const kGnome = "gnome";
+const char* const kKDE4 = "kde4";
+const char* const kKDE = "kde";
+const char* const kXFCE = "xfce";
 
 }  // namespace
 

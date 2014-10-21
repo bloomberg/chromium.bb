@@ -106,7 +106,7 @@ TEST(StringPrintfTest, Grow) {
     src[i] = 'A';
   src[1025] = 0;
 
-  const char* fmt = "%sB%sB%sB%sB%sB%sB%s";
+  const char fmt[] = "%sB%sB%sB%sB%sB%sB%s";
 
   std::string out;
   SStringPrintf(&out, fmt, src, src, src, src, src, src, src);
@@ -132,14 +132,15 @@ TEST(StringPrintfTest, StringAppendV) {
 // Test the boundary condition for the size of the string_util's
 // internal buffer.
 TEST(StringPrintfTest, GrowBoundary) {
-  const int string_util_buf_len = 1024;
+  const int kStringUtilBufLen = 1024;
   // Our buffer should be one larger than the size of StringAppendVT's stack
   // buffer.
-  const int buf_len = string_util_buf_len + 1;
-  char src[buf_len + 1];  // Need extra one for NULL-terminator.
-  for (int i = 0; i < buf_len; ++i)
+  // And need extra one for NULL-terminator.
+  const int kBufLen = kStringUtilBufLen + 1 + 1;
+  char src[kBufLen];
+  for (int i = 0; i < kBufLen - 1; ++i)
     src[i] = 'a';
-  src[buf_len] = 0;
+  src[kBufLen - 1] = 0;
 
   std::string out;
   SStringPrintf(&out, "%s", src);

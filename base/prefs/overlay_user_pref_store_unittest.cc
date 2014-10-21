@@ -19,12 +19,12 @@ namespace {
 const char kBrowserWindowPlacement[] = "browser.window_placement";
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 
-const char* overlay_key = kBrowserWindowPlacement;
-const char* regular_key = kShowBookmarkBar;
+const char* const overlay_key = kBrowserWindowPlacement;
+const char* const regular_key = kShowBookmarkBar;
 // With the removal of the kWebKitGlobalXXX prefs, we'll no longer have real
 // prefs using the overlay pref store, so make up keys here.
-const char* mapped_overlay_key = "test.per_tab.javascript_enabled";
-const char* mapped_underlay_key = "test.per_profile.javascript_enabled";
+const char mapped_overlay_key[] = "test.per_tab.javascript_enabled";
+const char mapped_underlay_key[] = "test.per_profile.javascript_enabled";
 
 }  // namespace
 

@@ -239,7 +239,7 @@ TEST(ProcMapsTest, ReadProcMapsNonEmptyString) {
 }
 
 TEST(ProcMapsTest, MissingFields) {
-  static const char* kTestCases[] = {
+  static const char* const kTestCases[] = {
     "00400000\n",                               // Missing end + beyond.
     "00400000-0040b000\n",                      // Missing perms + beyond.
     "00400000-0040b000 r-xp\n",                 // Missing offset + beyond.
@@ -261,7 +261,7 @@ TEST(ProcMapsTest, MissingFields) {
 }
 
 TEST(ProcMapsTest, InvalidInput) {
-  static const char* kTestCases[] = {
+  static const char* const kTestCases[] = {
     "thisisal-0040b000 rwxp 00000000 fc:00 794418 /bin/cat\n",
     "0040000d-linvalid rwxp 00000000 fc:00 794418 /bin/cat\n",
     "00400000-0040b000 inpu 00000000 fc:00 794418 /bin/cat\n",

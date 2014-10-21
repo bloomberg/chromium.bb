@@ -505,7 +505,7 @@ TEST(JSONReaderTest, Reading) {
   EXPECT_EQ("\xf0\x9f\x92\xa9\xf0\x9f\x91\xac", str_val);
 
   // Test invalid utf16 strings.
-  const char* cases[] = {
+  const char* const cases[] = {
     "\"\\u123\"",  // Invalid scalar.
     "\"\\ud83d\"",  // Invalid scalar.
     "\"\\u$%@!\"",  // Invalid scalar.
@@ -627,7 +627,7 @@ TEST(JSONReaderTest, StringOptimizations) {
 // parser implementation against buffer overflow. Best run with DCHECKs so
 // that the one in NextChar fires.
 TEST(JSONReaderTest, InvalidSanity) {
-  const char* invalid_json[] = {
+  const char* const invalid_json[] = {
       "/* test *",
       "{\"foo\"",
       "{\"foo\":",

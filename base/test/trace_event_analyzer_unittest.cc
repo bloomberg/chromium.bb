@@ -86,7 +86,7 @@ TEST_F(TraceEventAnalyzerTest, TraceEvent) {
 
   int int_num = 2;
   double double_num = 3.5;
-  const char* str = "the string";
+  const char str[] = "the string";
 
   TraceEvent event;
   event.arg_numbers["false"] = 0.0;
@@ -508,7 +508,7 @@ TEST_F(TraceEventAnalyzerTest, BeginEndAssocations) {
 TEST_F(TraceEventAnalyzerTest, MergeAssociatedEventArgs) {
   ManualSetUp();
 
-  const char* arg_string = "arg_string";
+  const char arg_string[] = "arg_string";
   BeginTracing();
   {
     TRACE_EVENT_BEGIN0("cat1", "name1");

@@ -461,7 +461,7 @@ TEST(StringUtilTest, IsStringASCII) {
 }
 
 TEST(StringUtilTest, ConvertASCII) {
-  static const char* char_cases[] = {
+  static const char* const char_cases[] = {
     "Google Video",
     "Hello, world\n",
     "0123ABCDwxyz \a\b\t\r\n!+,.~"
@@ -566,7 +566,7 @@ TEST(StringUtilTest, FormatBytesUnlocalized) {
     {99LL*1024*1024*1024, "99.0 GB"},
     {105LL*1024*1024*1024, "105 GB"},
     {105LL*1024*1024*1024 + 500LL*1024*1024, "105 GB"},
-    {~(1LL<<63), "8192 PB"},
+    {~(1LL << 63), "8192 PB"},
 
     {99*1024 + 103, "99.1 kB"},
     {1024*1024 + 103, "1.0 MB"},
@@ -1153,7 +1153,7 @@ TEST(StringUtilTest, WprintfFormatPortabilityTest) {
 }
 
 TEST(StringUtilTest, RemoveChars) {
-  const char* kRemoveChars = "-/+*";
+  const char kRemoveChars[] = "-/+*";
   std::string input = "A-+bc/d!*";
   EXPECT_TRUE(RemoveChars(input, kRemoveChars, &input));
   EXPECT_EQ("Abcd!", input);

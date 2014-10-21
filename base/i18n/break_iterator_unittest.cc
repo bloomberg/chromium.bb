@@ -89,7 +89,7 @@ TEST(BreakIteratorTest, BreakWide16) {
 
 TEST(BreakIteratorTest, BreakWide32) {
   // U+1D49C MATHEMATICAL SCRIPT CAPITAL A
-  const char* very_wide_char = "\xF0\x9D\x92\x9C";
+  const char very_wide_char[] = "\xF0\x9D\x92\x9C";
   const string16 str(
       UTF8ToUTF16(base::StringPrintf("%s a", very_wide_char)));
   const string16 very_wide_word(str.substr(0, 2));
@@ -194,7 +194,7 @@ TEST(BreakIteratorTest, BreakSpacekWide16) {
 
 TEST(BreakIteratorTest, BreakSpaceWide32) {
   // U+1D49C MATHEMATICAL SCRIPT CAPITAL A
-  const char* very_wide_char = "\xF0\x9D\x92\x9C";
+  const char very_wide_char[] = "\xF0\x9D\x92\x9C";
   const string16 str(
       UTF8ToUTF16(base::StringPrintf("%s a", very_wide_char)));
   const string16 very_wide_word(str.substr(0, 3));
@@ -292,7 +292,7 @@ TEST(BreakIteratorTest, BreakLineWide16) {
 
 TEST(BreakIteratorTest, BreakLineWide32) {
   // U+1D49C MATHEMATICAL SCRIPT CAPITAL A
-  const char* very_wide_char = "\xF0\x9D\x92\x9C";
+  const char very_wide_char[] = "\xF0\x9D\x92\x9C";
   const string16 str(
       UTF8ToUTF16(base::StringPrintf("%s\na", very_wide_char)));
   const string16 very_wide_line(str.substr(0, 3));
@@ -345,7 +345,7 @@ TEST(BreakIteratorTest, GetStringAfterSetText) {
   const string16 long_string(ASCIIToUTF16("another,string"));
   EXPECT_TRUE(iter.SetText(long_string.c_str(), long_string.size()));
   EXPECT_TRUE(iter.Advance());
-  EXPECT_TRUE(iter.Advance()); // Advance to ',' in |long_string|
+  EXPECT_TRUE(iter.Advance());  // Advance to ',' in |long_string|
 
   // Check that the current position is out of bounds of the |initial_string|.
   EXPECT_LT(initial_string.size(), iter.pos());

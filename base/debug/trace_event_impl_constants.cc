@@ -8,7 +8,7 @@ namespace base {
 namespace debug {
 
 // Enable everything but debug and test categories by default.
-const char* CategoryFilter::kDefaultCategoryFilterString = "-*Debug,-*Test";
+const char CategoryFilter::kDefaultCategoryFilterString[] = "-*Debug,-*Test";
 
 // Constant used by TraceLog's internal implementation of trace_option.
 const TraceLog::InternalTraceOptions

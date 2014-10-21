@@ -21,7 +21,7 @@ namespace base {
 
 namespace {
 
-const char* kLinuxStandardBaseVersionKeys[] = {
+const char* const kLinuxStandardBaseVersionKeys[] = {
   "CHROMEOS_RELEASE_VERSION",
   "GOOGLE_RELEASE",
   "DISTRIB_RELEASE",

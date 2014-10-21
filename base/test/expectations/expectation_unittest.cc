@@ -71,7 +71,7 @@ TEST(TestExpectationsFunctionsTest, PlatformFromString) {
 }
 
 TEST(TestExpectationsFunctionsTest, IsValidPlatform) {
-  const char* kValidPlatforms[] = {
+  const char* const kValidPlatforms[] = {
     "Win",
     "Win-XP",
     "Win-Vista",
@@ -89,7 +89,7 @@ TEST(TestExpectationsFunctionsTest, IsValidPlatform) {
     "Android",
   };
 
-  const char* kInvalidPlatforms[] = {
+  const char* const kInvalidPlatforms[] = {
     "Solaris",
     "Plan9",
   };

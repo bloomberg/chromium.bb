@@ -13,8 +13,8 @@ typedef PlatformTest ThreadIdNameManagerTest;
 
 namespace {
 
-static const char* kAThread = "a thread";
-static const char* kBThread = "b thread";
+const char kAThread[] = "a thread";
+const char kBThread[] = "b thread";
 
 TEST_F(ThreadIdNameManagerTest, AddThreads) {
   base::ThreadIdNameManager* manager = base::ThreadIdNameManager::GetInstance();

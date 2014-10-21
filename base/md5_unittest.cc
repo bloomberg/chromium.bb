@@ -33,7 +33,7 @@ TEST(MD5, DigestToBase16) {
 
 TEST(MD5, MD5SumEmtpyData) {
   MD5Digest digest;
-  const char* data = "";
+  const char data[] = "";
 
   MD5Sum(data, strlen(data), &digest);
 
@@ -50,7 +50,7 @@ TEST(MD5, MD5SumEmtpyData) {
 
 TEST(MD5, MD5SumOneByteData) {
   MD5Digest digest;
-  const char* data = "a";
+  const char data[] = "a";
 
   MD5Sum(data, strlen(data), &digest);
 

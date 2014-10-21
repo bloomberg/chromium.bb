@@ -179,7 +179,7 @@ class BASE_EXPORT TraceEvent {
 // TraceBufferChunk is the basic unit of TraceBuffer.
 class BASE_EXPORT TraceBufferChunk {
  public:
-  TraceBufferChunk(uint32 seq)
+  explicit TraceBufferChunk(uint32 seq)
       : next_free_(0),
         seq_(seq) {
   }
@@ -281,7 +281,7 @@ class BASE_EXPORT CategoryFilter {
   // The default category filter, used when none is provided.
   // Allows all categories through, except if they end in the suffix 'Debug' or
   // 'Test'.
-  static const char* kDefaultCategoryFilterString;
+  static const char kDefaultCategoryFilterString[];
 
   // |filter_string| is a comma-delimited list of category wildcards.
   // A category can have an optional '-' prefix to make it an excluded category.
@@ -380,13 +380,12 @@ enum TraceRecordMode {
 };
 
 struct BASE_EXPORT TraceOptions {
-
   TraceOptions()
       : record_mode(RECORD_UNTIL_FULL),
         enable_sampling(false),
         enable_systrace(false) {}
 
-  TraceOptions(TraceRecordMode record_mode)
+  explicit TraceOptions(TraceRecordMode record_mode)
       : record_mode(record_mode),
         enable_sampling(false),
         enable_systrace(false) {}

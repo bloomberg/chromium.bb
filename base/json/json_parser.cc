@@ -901,7 +901,7 @@ bool JSONParser::ReadInt(bool allow_leading_zeros) {
 Value* JSONParser::ConsumeLiteral() {
   switch (*pos_) {
     case 't': {
-      const char* kTrueLiteral = "true";
+      const char kTrueLiteral[] = "true";
       const int kTrueLen = static_cast<int>(strlen(kTrueLiteral));
       if (!CanConsume(kTrueLen - 1) ||
           !StringsAreEqual(pos_, kTrueLiteral, kTrueLen)) {
@@ -912,7 +912,7 @@ Value* JSONParser::ConsumeLiteral() {
       return new FundamentalValue(true);
     }
     case 'f': {
-      const char* kFalseLiteral = "false";
+      const char kFalseLiteral[] = "false";
       const int kFalseLen = static_cast<int>(strlen(kFalseLiteral));
       if (!CanConsume(kFalseLen - 1) ||
           !StringsAreEqual(pos_, kFalseLiteral, kFalseLen)) {
@@ -923,7 +923,7 @@ Value* JSONParser::ConsumeLiteral() {
       return new FundamentalValue(false);
     }
     case 'n': {
-      const char* kNullLiteral = "null";
+      const char kNullLiteral[] = "null";
       const int kNullLen = static_cast<int>(strlen(kNullLiteral));
       if (!CanConsume(kNullLen - 1) ||
           !StringsAreEqual(pos_, kNullLiteral, kNullLen)) {

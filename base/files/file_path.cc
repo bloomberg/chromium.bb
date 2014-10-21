@@ -35,8 +35,8 @@ typedef FilePath::StringType StringType;
 
 namespace {
 
-const char* kCommonDoubleExtensionSuffixes[] = { "gz", "z", "bz2", "bz" };
-const char* kCommonDoubleExtensions[] = { "user.js" };
+const char* const kCommonDoubleExtensionSuffixes[] = { "gz", "z", "bz2", "bz" };
+const char* const kCommonDoubleExtensions[] = { "user.js" };
 
 const FilePath::CharType kStringTerminator = FILE_PATH_LITERAL('\0');
 

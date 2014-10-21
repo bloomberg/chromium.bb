@@ -64,7 +64,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
   EXPECT_TRUE(out.empty());
 
   // Some more invalid inputs.
-  const char* invalid_inputs[] = {
+  const char* const invalid_inputs[] = {
     "/", "/foo", "foo", "/foo/bar.", "foo/bar.", "/foo/bar./bazquux",
     "foo/bar./bazquux", "foo/.app", "//foo",
   };

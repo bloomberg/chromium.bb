@@ -44,7 +44,7 @@ class CrashLoggingTest : public testing::Test {
 };
 
 TEST_F(CrashLoggingTest, SetClearSingle) {
-  const char* kTestKey = "test-key";
+  const char kTestKey[] = "test-key";
   base::debug::CrashKey keys[] = { { kTestKey, 255 } };
   base::debug::InitCrashKeys(keys, arraysize(keys), 255);
 
@@ -56,10 +56,10 @@ TEST_F(CrashLoggingTest, SetClearSingle) {
 }
 
 TEST_F(CrashLoggingTest, SetChunked) {
-  const char* kTestKey = "chunky";
-  const char* kChunk1 = "chunky-1";
-  const char* kChunk2 = "chunky-2";
-  const char* kChunk3 = "chunky-3";
+  const char kTestKey[] = "chunky";
+  const char kChunk1[] = "chunky-1";
+  const char kChunk2[] = "chunky-2";
+  const char kChunk3[] = "chunky-3";
   base::debug::CrashKey keys[] = { { kTestKey, 15 } };
   base::debug::InitCrashKeys(keys, arraysize(keys), 5);
 
@@ -104,7 +104,7 @@ TEST_F(CrashLoggingTest, SetChunked) {
 }
 
 TEST_F(CrashLoggingTest, ScopedCrashKey) {
-  const char* kTestKey = "test-key";
+  const char kTestKey[] = "test-key";
   base::debug::CrashKey keys[] = { { kTestKey, 255 } };
   base::debug::InitCrashKeys(keys, arraysize(keys), 255);
 
