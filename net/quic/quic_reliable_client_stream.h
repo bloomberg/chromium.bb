@@ -55,7 +55,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
 
   // QuicDataStream
   uint32 ProcessData(const char* data, uint32 data_len) override;
-  void OnFinRead() override;
+  void OnClose() override;
   void OnCanWrite() override;
   QuicPriority EffectivePriority() const override;
 
