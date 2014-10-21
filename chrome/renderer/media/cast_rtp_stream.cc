@@ -260,7 +260,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
         expected_natural_size_(expected_natural_size),
         error_callback_(error_callback) {}
 
-  virtual ~CastVideoSink() {
+  ~CastVideoSink() override {
     if (sink_added_)
       RemoveFromVideoTrack(this, track_);
   }
@@ -349,17 +349,17 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
         output_sample_rate_(output_sample_rate),
         input_preroll_(0) {}
 
-  virtual ~CastAudioSink() {
+  ~CastAudioSink() override {
     if (sink_added_)
       RemoveFromAudioTrack(this, track_);
   }
 
   // Called on real-time audio thread.
   // content::MediaStreamAudioSink implementation.
-  virtual void OnData(const int16* audio_data,
-                      int sample_rate,
-                      int number_of_channels,
-                      int number_of_frames) override {
+  void OnData(const int16* audio_data,
+              int sample_rate,
+              int number_of_channels,
+              int number_of_frames) override {
     scoped_ptr<media::AudioBus> input_bus;
     if (resampler_) {
       input_bus = ResampleData(
@@ -416,7 +416,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   }
 
   // Called on real-time audio thread.
-  virtual void OnSetFormat(const media::AudioParameters& params) override {
+  void OnSetFormat(const media::AudioParameters& params) override {
     if (params.sample_rate() == output_sample_rate_)
       return;
     fifo_.reset(new media::AudioFifo(

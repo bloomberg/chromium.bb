@@ -29,7 +29,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
  public:
   explicit ChromeRenderProcessObserver(
       ChromeContentRendererClient* client);
-  virtual ~ChromeRenderProcessObserver();
+  ~ChromeRenderProcessObserver() override;
 
   static bool is_incognito_process() { return is_incognito_process_; }
 
@@ -39,9 +39,9 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
 
  private:
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
-  virtual void WebKitInitialized() override;
-  virtual void OnRenderProcessShutdown() override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void WebKitInitialized() override;
+  void OnRenderProcessShutdown() override;
 
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetContentSettingsForCurrentURL(

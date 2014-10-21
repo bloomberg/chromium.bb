@@ -26,7 +26,7 @@ class SearchBox : public content::RenderViewObserver,
                   public content::RenderViewObserverTracker<SearchBox> {
  public:
   explicit SearchBox(content::RenderView* render_view);
-  virtual ~SearchBox();
+  ~SearchBox() override;
 
   // Sends ChromeViewHostMsg_LogEvent to the browser.
   void LogEvent(NTPLoggingEventType event);
@@ -114,7 +114,7 @@ class SearchBox : public content::RenderViewObserver,
 
  private:
   // Overridden from content::RenderViewObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnSetPageSequenceNumber(int page_seq_no);
   void OnChromeIdentityCheckResult(const base::string16& identity,

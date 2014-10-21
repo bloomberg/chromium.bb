@@ -37,7 +37,7 @@ class TtsDispatcher
   virtual ~TtsDispatcher();
 
   // RenderProcessObserver override.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // blink::WebSpeechSynthesizer implementation.
   virtual void updateVoiceList() override;

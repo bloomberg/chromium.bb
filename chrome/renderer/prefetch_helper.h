@@ -30,7 +30,7 @@ class PrefetchHelper : public content::RenderFrameObserver,
 
  private:
   // RenderViewObserver implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnPrefetch(const GURL& url);
 

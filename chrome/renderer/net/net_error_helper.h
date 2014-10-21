@@ -41,7 +41,7 @@ class NetErrorHelper
       public error_page::NetErrorHelperCore::Delegate {
  public:
   explicit NetErrorHelper(content::RenderFrame* render_view);
-  virtual ~NetErrorHelper();
+  ~NetErrorHelper() override;
 
   // Button press notification from error page.
   void ReloadButtonPressed();
@@ -49,18 +49,18 @@ class NetErrorHelper
   void MoreButtonPressed();
 
   // RenderFrameObserver implementation.
-  virtual void DidStartProvisionalLoad() override;
-  virtual void DidCommitProvisionalLoad(bool is_new_navigation) override;
-  virtual void DidFinishLoad() override;
-  virtual void OnStop() override;
-  virtual void WasShown() override;
-  virtual void WasHidden() override;
+  void DidStartProvisionalLoad() override;
+  void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  void DidFinishLoad() override;
+  void OnStop() override;
+  void WasShown() override;
+  void WasHidden() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // RenderProcessObserver implementation.
-  virtual void NetworkStateChanged(bool online) override;
+  void NetworkStateChanged(bool online) override;
 
   // Examines |frame| and |error| to see if this is an error worthy of a DNS
   // probe.  If it is, initializes |error_strings| based on |error|,
@@ -84,27 +84,26 @@ class NetErrorHelper
 
  private:
   // NetErrorHelperCore::Delegate implementation:
-  virtual void GenerateLocalizedErrorPage(
+  void GenerateLocalizedErrorPage(
       const blink::WebURLError& error,
       bool is_failed_post,
       scoped_ptr<error_page::ErrorPageParams> params,
       bool* reload_button_shown,
       bool* load_stale_button_shown,
       std::string* html) const override;
-  virtual void LoadErrorPageInMainFrame(const std::string& html,
-                                        const GURL& failed_url) override;
-  virtual void EnablePageHelperFunctions() override;
-  virtual void UpdateErrorPage(const blink::WebURLError& error,
-                               bool is_failed_post) override;
-  virtual void FetchNavigationCorrections(
+  void LoadErrorPageInMainFrame(const std::string& html,
+                                const GURL& failed_url) override;
+  void EnablePageHelperFunctions() override;
+  void UpdateErrorPage(const blink::WebURLError& error,
+                       bool is_failed_post) override;
+  void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) override;
-  virtual void CancelFetchNavigationCorrections() override;
-  virtual void SendTrackingRequest(
-      const GURL& tracking_url,
-      const std::string& tracking_request_body) override;
-  virtual void ReloadPage() override;
-  virtual void LoadPageFromCache(const GURL& page_url) override;
+  void CancelFetchNavigationCorrections() override;
+  void SendTrackingRequest(const GURL& tracking_url,
+                           const std::string& tracking_request_body) override;
+  void ReloadPage() override;
+  void LoadPageFromCache(const GURL& page_url) override;
 
   void OnNetErrorInfo(int status);
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,

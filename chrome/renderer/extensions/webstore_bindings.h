@@ -22,7 +22,7 @@ class WebstoreBindings : public ObjectBackedNativeHandler,
   explicit WebstoreBindings(ScriptContext* context);
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void Install(const v8::FunctionCallbackInfo<v8::Value>& args);

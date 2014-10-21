@@ -29,7 +29,7 @@ class AppBindings : public ObjectBackedNativeHandler,
 
  private:
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void GetIsInstalled(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetDetails(const v8::FunctionCallbackInfo<v8::Value>& args);

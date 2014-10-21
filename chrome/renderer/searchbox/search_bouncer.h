@@ -21,7 +21,7 @@ class Message;
 class SearchBouncer : public content::RenderProcessObserver {
  public:
   SearchBouncer();
-  virtual ~SearchBouncer();
+  ~SearchBouncer() override;
 
   // Returns whether a navigation to |url| should bounce back to the browser as
   // a potential Instant url. See chrome::ShouldAssignURLToInstantRenderer().
@@ -37,7 +37,7 @@ class SearchBouncer : public content::RenderProcessObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchBouncerTest, SetSearchURLs);
 
   // From RenderProcessObserver:
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // URLs to bounce back to the browser.
   std::vector<GURL> search_urls_;

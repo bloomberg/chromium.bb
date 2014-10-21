@@ -39,8 +39,8 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
  public:
   TestingSpellCheckProvider();
 
-  virtual ~TestingSpellCheckProvider();
-  virtual bool Send(IPC::Message* message) override;
+  ~TestingSpellCheckProvider() override;
+  bool Send(IPC::Message* message) override;
   void OnCallSpellingService(int route_id,
                              int identifier,
                              const base::string16& text,

@@ -41,7 +41,7 @@ class SpellCheck : public content::RenderProcessObserver,
   };
 
   SpellCheck();
-  virtual ~SpellCheck();
+  ~SpellCheck() override;
 
   // TODO: Try to move that all to SpellcheckLanguage.
   void Init(base::File file,
@@ -115,7 +115,7 @@ class SpellCheck : public content::RenderProcessObserver,
        RequestSpellCheckMultipleTimesWithoutInitialization);
 
   // RenderProcessObserver implementation:
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
   void OnInit(IPC::PlatformFileForTransit bdict_file,

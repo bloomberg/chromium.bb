@@ -28,7 +28,7 @@ class NetErrorPageController
 
  private:
   explicit NetErrorPageController(content::RenderFrame* render_frame);
-  virtual ~NetErrorPageController();
+  ~NetErrorPageController() override;
 
   // Execute a "Load Stale" button click.
   bool LoadStaleButtonClick();
@@ -44,13 +44,13 @@ class NetErrorPageController
   bool TrackClick(const gin::Arguments& args);
 
   // gin::WrappableBase
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   // RenderFrameObserver.  Overridden to avoid being destroyed when RenderFrame
   // goes away; NetErrorPageController objects are owned by the JS
   // garbage collector.
-  virtual void OnDestruct() override;
+  void OnDestruct() override;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorPageController);
 };

@@ -47,27 +47,27 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
                           const blink::WebPluginParams& params,
                           const std::string& html_data,
                           const base::string16& title);
-  virtual ~ChromePluginPlaceholder();
+  ~ChromePluginPlaceholder() override;
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  virtual void BindWebFrame(blink::WebFrame* frame) override;
+  void BindWebFrame(blink::WebFrame* frame) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   // content::RenderViewObserver (via PluginPlaceholder) override:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) methods:
-  virtual void ShowContextMenu(const blink::WebMouseEvent&) override;
+  void ShowContextMenu(const blink::WebMouseEvent&) override;
 
   // content::RenderProcessObserver methods:
-  virtual void PluginListChanged() override;
+  void PluginListChanged() override;
 
   // content::ContextMenuClient methods:
-  virtual void OnMenuAction(int request_id, unsigned action) override;
-  virtual void OnMenuClosed(int request_id) override;
+  void OnMenuAction(int request_id, unsigned action) override;
+  void OnMenuClosed(int request_id) override;
 
   // Javascript callback opens chrome://plugins in a new tab.
   void OpenAboutPluginsCallback();

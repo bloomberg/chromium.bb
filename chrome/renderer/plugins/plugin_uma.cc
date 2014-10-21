@@ -36,9 +36,8 @@ const char* kShockwaveFlashExtensions[] = {".spl", ".swf"};
 }  // namespace.
 
 class UMASenderImpl : public PluginUMAReporter::UMASender {
-  virtual void SendPluginUMA(
-      PluginUMAReporter::ReportType report_type,
-      PluginUMAReporter::PluginType plugin_type) override;
+  void SendPluginUMA(PluginUMAReporter::ReportType report_type,
+                     PluginUMAReporter::PluginType plugin_type) override;
 };
 
 void UMASenderImpl::SendPluginUMA(PluginUMAReporter::ReportType report_type,

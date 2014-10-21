@@ -11,35 +11,34 @@ class ChromeExtensionsDispatcherDelegate
     : public extensions::DispatcherDelegate {
  public:
   ChromeExtensionsDispatcherDelegate();
-  virtual ~ChromeExtensionsDispatcherDelegate();
+  ~ChromeExtensionsDispatcherDelegate() override;
 
  private:
   // extensions::DispatcherDelegate implementation.
-  virtual scoped_ptr<extensions::ScriptContext> CreateScriptContext(
+  scoped_ptr<extensions::ScriptContext> CreateScriptContext(
       const v8::Handle<v8::Context>& v8_context,
       blink::WebFrame* frame,
       const extensions::Extension* extension,
       extensions::Feature::Context context_type,
       const extensions::Extension* effective_extension,
       extensions::Feature::Context effective_context_type) override;
-  virtual void InitOriginPermissions(const extensions::Extension* extension,
-                                     bool is_extension_active) override;
-  virtual void RegisterNativeHandlers(
-      extensions::Dispatcher* dispatcher,
-      extensions::ModuleSystem* module_system,
-      extensions::ScriptContext* context) override;
-  virtual void PopulateSourceMap(
+  void InitOriginPermissions(const extensions::Extension* extension,
+                             bool is_extension_active) override;
+  void RegisterNativeHandlers(extensions::Dispatcher* dispatcher,
+                              extensions::ModuleSystem* module_system,
+                              extensions::ScriptContext* context) override;
+  void PopulateSourceMap(
       extensions::ResourceBundleSourceMap* source_map) override;
-  virtual void RequireAdditionalModules(extensions::ScriptContext* context,
-                                        bool is_within_platform_app) override;
-  virtual void OnActiveExtensionsUpdated(
+  void RequireAdditionalModules(extensions::ScriptContext* context,
+                                bool is_within_platform_app) override;
+  void OnActiveExtensionsUpdated(
       const std::set<std::string>& extensions_ids) override;
-  virtual void SetChannel(int channel) override;
-  virtual void ClearTabSpecificPermissions(
+  void SetChannel(int channel) override;
+  void ClearTabSpecificPermissions(
       const extensions::Dispatcher* dispatcher,
       int tab_id,
       const std::vector<std::string>& extension_ids) override;
-  virtual void UpdateTabSpecificPermissions(
+  void UpdateTabSpecificPermissions(
       const extensions::Dispatcher* dispatcher,
       const GURL& url,
       int tab_id,

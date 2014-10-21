@@ -13,9 +13,9 @@ class MockWebRtcLoggingMessageFilter
   explicit MockWebRtcLoggingMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
-  virtual void AddLogMessages(
+  void AddLogMessages(
       const std::vector<WebRtcLoggingMessageData>& messages) override;
-  virtual void LoggingStopped() override;
+  void LoggingStopped() override;
 
   ChromeWebRtcLogMessageDelegate* log_message_delegate() {
     return log_message_delegate_;
@@ -25,7 +25,7 @@ class MockWebRtcLoggingMessageFilter
   bool logging_stopped_;
 
  protected:
-  virtual ~MockWebRtcLoggingMessageFilter();
+  ~MockWebRtcLoggingMessageFilter() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebRtcLoggingMessageFilter);

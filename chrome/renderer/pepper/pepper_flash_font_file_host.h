@@ -32,9 +32,9 @@ class PepperFlashFontFileHost : public ppapi::host::ResourceHost {
       PP_Resource resource,
       const ppapi::proxy::SerializedFontDescription& description,
       PP_PrivateFontCharset charset);
-  virtual ~PepperFlashFontFileHost();
+  ~PepperFlashFontFileHost() override;
 
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

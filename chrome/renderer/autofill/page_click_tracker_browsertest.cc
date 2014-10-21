@@ -23,9 +23,8 @@ class TestPageClickListener : public PageClickListener {
       : form_control_element_clicked_called_(false),
         was_focused_(false) {}
 
-  virtual void FormControlElementClicked(
-      const blink::WebFormControlElement& element,
-      bool was_focused) override {
+  void FormControlElementClicked(const blink::WebFormControlElement& element,
+                                 bool was_focused) override {
     form_control_element_clicked_called_ = true;
     form_control_element_clicked_ = element;
     was_focused_ = was_focused;

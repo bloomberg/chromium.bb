@@ -35,7 +35,7 @@ class ContentSettingsObserver
  public:
   ContentSettingsObserver(content::RenderFrame* render_frame,
                           extensions::Dispatcher* extension_dispatcher);
-  virtual ~ContentSettingsObserver();
+  ~ContentSettingsObserver() override;
 
   // Sets the content setting rules which back |AllowImage()|, |AllowScript()|,
   // and |AllowScriptFromSource()|. |content_setting_rules| must outlive this
@@ -88,8 +88,8 @@ class ContentSettingsObserver
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, PluginsTemporarilyAllowed);
 
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidCommitProvisionalLoad(bool is_new_navigation) override;
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);

@@ -25,10 +25,10 @@ class PepperSharedMemoryMessageFilter
     : public ppapi::host::InstanceMessageFilter {
  public:
   explicit PepperSharedMemoryMessageFilter(content::RendererPpapiHost* host);
-  virtual ~PepperSharedMemoryMessageFilter();
+  ~PepperSharedMemoryMessageFilter() override;
 
   // InstanceMessageFilter:
-  virtual bool OnInstanceMessageReceived(const IPC::Message& msg) override;
+  bool OnInstanceMessageReceived(const IPC::Message& msg) override;
 
   bool Send(IPC::Message* msg);
 

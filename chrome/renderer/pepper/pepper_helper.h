@@ -13,10 +13,10 @@
 class PepperHelper : public content::RenderFrameObserver {
  public:
   explicit PepperHelper(content::RenderFrame* render_frame);
-  virtual ~PepperHelper();
+  ~PepperHelper() override;
 
   // RenderFrameObserver.
-  virtual void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
+  void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperHelper);

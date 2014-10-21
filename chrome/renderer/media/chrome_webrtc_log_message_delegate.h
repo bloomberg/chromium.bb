@@ -31,10 +31,10 @@ class ChromeWebRtcLogMessageDelegate
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
       WebRtcLoggingMessageFilter* message_filter);
 
-  virtual ~ChromeWebRtcLogMessageDelegate();
+  ~ChromeWebRtcLogMessageDelegate() override;
 
   // content::WebRtcLogMessageDelegate implementation.
-  virtual void LogMessage(const std::string& message) override;
+  void LogMessage(const std::string& message) override;
 
   void OnFilterRemoved();
 

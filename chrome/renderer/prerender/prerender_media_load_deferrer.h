@@ -18,11 +18,11 @@ class PrerenderMediaLoadDeferrer : public content::RenderFrameObserver {
   // swapped in.
   PrerenderMediaLoadDeferrer(content::RenderFrame* render_frame,
                              const base::Closure& closure);
-  virtual ~PrerenderMediaLoadDeferrer();
+  ~PrerenderMediaLoadDeferrer() override;
 
  private:
   // RenderFrameObserver method:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnSetIsPrerendering(bool is_prerendering);
 

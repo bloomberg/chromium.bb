@@ -23,15 +23,14 @@ class MemoryMappedFile;
 class HunspellEngine : public SpellingEngine {
  public:
   HunspellEngine();
-  virtual ~HunspellEngine();
+  ~HunspellEngine() override;
 
-  virtual void Init(base::File file) override;
+  void Init(base::File file) override;
 
-  virtual bool InitializeIfNeeded() override;
-  virtual bool IsEnabled() override;
-  virtual bool CheckSpelling(const base::string16& word_to_check,
-                             int tag) override;
-  virtual void FillSuggestionList(
+  bool InitializeIfNeeded() override;
+  bool IsEnabled() override;
+  bool CheckSpelling(const base::string16& word_to_check, int tag) override;
+  void FillSuggestionList(
       const base::string16& wrong_word,
       std::vector<base::string16>* optional_suggestions) override;
 

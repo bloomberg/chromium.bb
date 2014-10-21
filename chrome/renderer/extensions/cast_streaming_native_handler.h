@@ -27,7 +27,7 @@ namespace extensions {
 class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit CastStreamingNativeHandler(ScriptContext* context);
-  virtual ~CastStreamingNativeHandler();
+  ~CastStreamingNativeHandler() override;
 
  private:
   void CreateCastSession(

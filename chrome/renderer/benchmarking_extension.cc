@@ -59,7 +59,7 @@ class BenchmarkingWrapper : public v8::Extension {
         "}"
         ) {}
 
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
       v8::Handle<v8::String> name) override {
     if (name->Equals(v8::String::NewFromUtf8(isolate, "GetCounter"))) {

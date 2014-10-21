@@ -19,14 +19,14 @@ class PrerenderHelper
       public content::RenderFrameObserverTracker<PrerenderHelper> {
  public:
   explicit PrerenderHelper(content::RenderFrame* render_frame);
-  virtual ~PrerenderHelper();
+  ~PrerenderHelper() override;
 
   // Returns true if |render_view| is currently prerendering.
   static bool IsPrerendering(const content::RenderFrame* render_frame);
 
  private:
   // RenderViewObserver implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnSetIsPrerendering(bool is_prerendering);
 

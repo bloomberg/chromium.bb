@@ -43,7 +43,7 @@ class PrerenderDispatcher : public content::RenderProcessObserver,
   void OnPrerenderStop(int prerender_id);
 
   // From RenderProcessObserver:
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // From WebPrerenderingSupport:
   virtual void add(const blink::WebPrerender& prerender) override;

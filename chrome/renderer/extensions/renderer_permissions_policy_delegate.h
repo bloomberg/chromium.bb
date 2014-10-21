@@ -16,14 +16,14 @@ class RendererPermissionsPolicyDelegate
     : public PermissionsData::PolicyDelegate {
  public:
   explicit RendererPermissionsPolicyDelegate(Dispatcher* dispatcher);
-  virtual ~RendererPermissionsPolicyDelegate();
+  ~RendererPermissionsPolicyDelegate() override;
 
-  virtual bool CanExecuteScriptOnPage(const Extension* extension,
-                                      const GURL& document_url,
-                                      const GURL& top_document_url,
-                                      int tab_id,
-                                      int process_id,
-                                      std::string* error) override;
+  bool CanExecuteScriptOnPage(const Extension* extension,
+                              const GURL& document_url,
+                              const GURL& top_document_url,
+                              int tab_id,
+                              int process_id,
+                              std::string* error) override;
 
  private:
   Dispatcher* dispatcher_;

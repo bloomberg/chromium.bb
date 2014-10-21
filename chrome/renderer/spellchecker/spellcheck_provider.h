@@ -34,7 +34,7 @@ class SpellCheckProvider
 
   SpellCheckProvider(content::RenderView* render_view,
                      SpellCheck* spellcheck);
-  virtual ~SpellCheckProvider();
+  ~SpellCheckProvider() override;
 
   // Requests async spell and grammar checker to the platform text
   // checker, which is available on the browser process.
@@ -55,8 +55,8 @@ class SpellCheckProvider
   void EnableSpellcheck(bool enabled);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void FocusedNodeChanged(const blink::WebNode& node) override;
 
  private:
   friend class TestingSpellCheckProvider;

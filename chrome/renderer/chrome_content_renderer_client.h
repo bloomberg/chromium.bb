@@ -73,77 +73,72 @@ class WebRtcLoggingMessageFilter;
 class ChromeContentRendererClient : public content::ContentRendererClient {
  public:
   ChromeContentRendererClient();
-  virtual ~ChromeContentRendererClient();
+  ~ChromeContentRendererClient() override;
 
-  virtual void RenderThreadStarted() override;
-  virtual void RenderFrameCreated(content::RenderFrame* render_frame) override;
-  virtual void RenderViewCreated(content::RenderView* render_view) override;
-  virtual void SetNumberOfViews(int number_of_views) override;
-  virtual SkBitmap* GetSadPluginBitmap() override;
-  virtual SkBitmap* GetSadWebViewBitmap() override;
-  virtual bool OverrideCreatePlugin(
-      content::RenderFrame* render_frame,
-      blink::WebLocalFrame* frame,
-      const blink::WebPluginParams& params,
-      blink::WebPlugin** plugin) override;
-  virtual blink::WebPlugin* CreatePluginReplacement(
+  void RenderThreadStarted() override;
+  void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  void RenderViewCreated(content::RenderView* render_view) override;
+  void SetNumberOfViews(int number_of_views) override;
+  SkBitmap* GetSadPluginBitmap() override;
+  SkBitmap* GetSadWebViewBitmap() override;
+  bool OverrideCreatePlugin(content::RenderFrame* render_frame,
+                            blink::WebLocalFrame* frame,
+                            const blink::WebPluginParams& params,
+                            blink::WebPlugin** plugin) override;
+  blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
-  virtual bool HasErrorPage(int http_status_code,
-                            std::string* error_domain) override;
-  virtual bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
-                                       const GURL& url) override;
-  virtual void GetNavigationErrorStrings(
-      content::RenderView* render_view,
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& failed_request,
-      const blink::WebURLError& error,
-      std::string* error_html,
-      base::string16* error_description) override;
-  virtual void DeferMediaLoad(content::RenderFrame* render_frame,
-                              const base::Closure& closure) override;
-  virtual bool RunIdleHandlerWhenWidgetsHidden() override;
-  virtual bool AllowPopup() override;
-  virtual bool ShouldFork(blink::WebFrame* frame,
-                          const GURL& url,
-                          const std::string& http_method,
-                          bool is_initial_navigation,
-                          bool is_server_redirect,
-                          bool* send_referrer) override;
-  virtual bool WillSendRequest(blink::WebFrame* frame,
-                               ui::PageTransition transition_type,
-                               const GURL& url,
-                               const GURL& first_party_for_cookies,
-                               GURL* new_url) override;
-  virtual void DidCreateScriptContext(blink::WebFrame* frame,
-                                      v8::Handle<v8::Context> context,
-                                      int extension_group,
-                                      int world_id) override;
-  virtual unsigned long long VisitedLinkHash(const char* canonical_url,
-                                             size_t length) override;
-  virtual bool IsLinkVisited(unsigned long long link_hash) override;
-  virtual blink::WebPrescientNetworking* GetPrescientNetworking() override;
-  virtual bool ShouldOverridePageVisibilityState(
+  bool HasErrorPage(int http_status_code, std::string* error_domain) override;
+  bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
+                               const GURL& url) override;
+  void GetNavigationErrorStrings(content::RenderView* render_view,
+                                 blink::WebFrame* frame,
+                                 const blink::WebURLRequest& failed_request,
+                                 const blink::WebURLError& error,
+                                 std::string* error_html,
+                                 base::string16* error_description) override;
+  void DeferMediaLoad(content::RenderFrame* render_frame,
+                      const base::Closure& closure) override;
+  bool RunIdleHandlerWhenWidgetsHidden() override;
+  bool AllowPopup() override;
+  bool ShouldFork(blink::WebFrame* frame,
+                  const GURL& url,
+                  const std::string& http_method,
+                  bool is_initial_navigation,
+                  bool is_server_redirect,
+                  bool* send_referrer) override;
+  bool WillSendRequest(blink::WebFrame* frame,
+                       ui::PageTransition transition_type,
+                       const GURL& url,
+                       const GURL& first_party_for_cookies,
+                       GURL* new_url) override;
+  void DidCreateScriptContext(blink::WebFrame* frame,
+                              v8::Handle<v8::Context> context,
+                              int extension_group,
+                              int world_id) override;
+  unsigned long long VisitedLinkHash(const char* canonical_url,
+                                     size_t length) override;
+  bool IsLinkVisited(unsigned long long link_hash) override;
+  blink::WebPrescientNetworking* GetPrescientNetworking() override;
+  bool ShouldOverridePageVisibilityState(
       const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) override;
-  virtual const void* CreatePPAPIInterface(
-      const std::string& interface_name) override;
-  virtual bool IsExternalPepperPlugin(const std::string& module_name) override;
-  virtual blink::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
+  const void* CreatePPAPIInterface(const std::string& interface_name) override;
+  bool IsExternalPepperPlugin(const std::string& module_name) override;
+  blink::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;
-  virtual bool ShouldReportDetailedMessageForSource(
+  bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const override;
-  virtual bool ShouldEnableSiteIsolationPolicy() const override;
-  virtual blink::WebWorkerPermissionClientProxy*
-      CreateWorkerPermissionClientProxy(content::RenderFrame* render_frame,
-                                        blink::WebFrame* frame) override;
-  virtual bool AllowPepperMediaStreamAPI(const GURL& url) override;
-  virtual void AddKeySystems(
-      std::vector<content::KeySystemInfo>* key_systems) override;
-  virtual bool IsPluginAllowedToUseDevChannelAPIs() override;
-  virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
-  virtual bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;
-  virtual content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
+  bool ShouldEnableSiteIsolationPolicy() const override;
+  blink::WebWorkerPermissionClientProxy* CreateWorkerPermissionClientProxy(
+      content::RenderFrame* render_frame,
+      blink::WebFrame* frame) override;
+  bool AllowPepperMediaStreamAPI(const GURL& url) override;
+  void AddKeySystems(std::vector<content::KeySystemInfo>* key_systems) override;
+  bool IsPluginAllowedToUseDevChannelAPIs() override;
+  bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
+  bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;
+  content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
       const std::string& mime_type) override;
 

@@ -31,7 +31,7 @@ class WebRtcLoggingMessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~WebRtcLoggingMessageFilter();
+  ~WebRtcLoggingMessageFilter() override;
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
@@ -47,10 +47,10 @@ class WebRtcLoggingMessageFilter : public IPC::MessageFilter {
 
  private:
   // IPC::MessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
   void CreateLoggingHandler();
 

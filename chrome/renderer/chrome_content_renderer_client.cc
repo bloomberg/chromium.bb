@@ -214,7 +214,7 @@ class SpellCheckReplacer : public content::RenderViewVisitor {
  public:
   explicit SpellCheckReplacer(SpellCheck* spellcheck)
       : spellcheck_(spellcheck) {}
-  virtual bool Visit(content::RenderView* render_view) override;
+  bool Visit(content::RenderView* render_view) override;
 
  private:
   SpellCheck* spellcheck_;  // New shared spellcheck for all views. Weak Ptr.

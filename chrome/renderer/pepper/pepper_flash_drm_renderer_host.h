@@ -25,9 +25,9 @@ class PepperFlashDRMRendererHost : public ppapi::host::ResourceHost {
   PepperFlashDRMRendererHost(content::RendererPpapiHost* host,
                              PP_Instance instance,
                              PP_Resource resource);
-  virtual ~PepperFlashDRMRendererHost();
+  ~PepperFlashDRMRendererHost() override;
 
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

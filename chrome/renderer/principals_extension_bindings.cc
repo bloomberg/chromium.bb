@@ -23,7 +23,7 @@ class PrincipalsExtensionWrapper : public v8::Extension {
 
  private:
   // v8::Extension overrides.
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
       v8::Handle<v8::String> name) override;
 

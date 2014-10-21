@@ -23,7 +23,7 @@ class Sender;
 // instance of ExtensionLocalizationPeer based on the original Peer.
 class ExtensionLocalizationPeer : public content::RequestPeer {
  public:
-  virtual ~ExtensionLocalizationPeer();
+  ~ExtensionLocalizationPeer() override;
 
   static ExtensionLocalizationPeer* CreateExtensionLocalizationPeer(
       content::RequestPeer* peer,
@@ -32,22 +32,20 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
       const GURL& request_url);
 
   // content::RequestPeer methods.
-  virtual void OnUploadProgress(uint64 position, uint64 size) override;
-  virtual bool OnReceivedRedirect(
-      const net::RedirectInfo& redirect_info,
-      const content::ResourceResponseInfo& info) override;
-  virtual void OnReceivedResponse(
-      const content::ResourceResponseInfo& info) override;
-  virtual void OnDownloadedData(int len, int encoded_data_length) override {}
-  virtual void OnReceivedData(const char* data,
-                              int data_length,
-                              int encoded_data_length) override;
-  virtual void OnCompletedRequest(int error_code,
-                                  bool was_ignored_by_handler,
-                                  bool stale_copy_in_cache,
-                                  const std::string& security_info,
-                                  const base::TimeTicks& completion_time,
-                                  int64 total_transfer_size) override;
+  void OnUploadProgress(uint64 position, uint64 size) override;
+  bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
+                          const content::ResourceResponseInfo& info) override;
+  void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
+  void OnDownloadedData(int len, int encoded_data_length) override {}
+  void OnReceivedData(const char* data,
+                      int data_length,
+                      int encoded_data_length) override;
+  void OnCompletedRequest(int error_code,
+                          bool was_ignored_by_handler,
+                          bool stale_copy_in_cache,
+                          const std::string& security_info,
+                          const base::TimeTicks& completion_time,
+                          int64 total_transfer_size) override;
 
  private:
   friend class ExtensionLocalizationPeerTest;

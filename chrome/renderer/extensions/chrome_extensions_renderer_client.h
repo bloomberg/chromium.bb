@@ -12,14 +12,14 @@ class ChromeExtensionsRendererClient
     : public extensions::ExtensionsRendererClient {
  public:
   ChromeExtensionsRendererClient();
-  virtual ~ChromeExtensionsRendererClient();
+  ~ChromeExtensionsRendererClient() override;
 
   // Get the LazyInstance for ChromeExtensionsRendererClient.
   static ChromeExtensionsRendererClient* GetInstance();
 
   // extensions::ExtensionsRendererClient implementation.
-  virtual bool IsIncognitoProcess() const override;
-  virtual int GetLowestIsolatedWorldId() const override;
+  bool IsIncognitoProcess() const override;
+  int GetLowestIsolatedWorldId() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsRendererClient);

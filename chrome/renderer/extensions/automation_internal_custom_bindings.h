@@ -17,7 +17,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit AutomationInternalCustomBindings(ScriptContext* context);
 
-  virtual ~AutomationInternalCustomBindings();
+  ~AutomationInternalCustomBindings() override;
 
  private:
   // Returns whether this extension has the "interact" permission set (either
