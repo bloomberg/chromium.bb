@@ -6169,7 +6169,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
-TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
+TEST_F(WebFrameTest, FullscreenMainFrame)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("fullscreen_div.html");
@@ -6189,6 +6189,12 @@ TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
     // Verify that the main frame is still scrollable.
     ASSERT_TRUE(Fullscreen::isFullScreen(*document));
     WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
+    ASSERT_TRUE(webScrollLayer->scrollable());
+    ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
+    ASSERT_TRUE(webScrollLayer->userScrollableVertical());
+
+    // Verify the main frame still behaves correctly after a resize.
+    webViewImpl->resize(WebSize(viewportHeight, viewportWidth));
     ASSERT_TRUE(webScrollLayer->scrollable());
     ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
     ASSERT_TRUE(webScrollLayer->userScrollableVertical());

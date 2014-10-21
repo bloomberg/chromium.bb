@@ -164,8 +164,8 @@ void FullscreenController::updateSize()
         return;
 
     RenderFullScreen* renderer = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenRenderer();
-    ASSERT(renderer);
-    renderer->updateStyle();
+    if (renderer)
+        renderer->updateStyle();
 }
 
 void FullscreenController::trace(Visitor* visitor)
