@@ -35,7 +35,7 @@ class SignalingConnector
       XmppSignalStrategy* signal_strategy,
       scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
       const base::Closure& auth_failed_callback);
-  virtual ~SignalingConnector();
+  ~SignalingConnector() override;
 
   // May be called immediately after the constructor to enable OAuth
   // access token updating.
@@ -48,17 +48,15 @@ class SignalingConnector
                      const std::string& access_token);
 
   // SignalStrategy::Listener interface.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
   // NetworkChangeNotifier::ConnectionTypeObserver interface.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // NetworkChangeNotifier::IPAddressObserver interface.
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
  private:
   void OnNetworkError();

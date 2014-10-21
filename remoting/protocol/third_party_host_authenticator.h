@@ -35,14 +35,13 @@ class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
   ThirdPartyHostAuthenticator(const std::string& local_cert,
                               scoped_refptr<RsaKeyPair> key_pair,
                               scoped_ptr<TokenValidator> token_validator);
-  virtual ~ThirdPartyHostAuthenticator();
+  ~ThirdPartyHostAuthenticator() override;
 
  protected:
   // ThirdPartyAuthenticator implementation.
-  virtual void ProcessTokenMessage(
-      const buzz::XmlElement* message,
-      const base::Closure& resume_callback) override;
-  virtual void AddTokenElements(buzz::XmlElement* message) override;
+  void ProcessTokenMessage(const buzz::XmlElement* message,
+                           const base::Closure& resume_callback) override;
+  void AddTokenElements(buzz::XmlElement* message) override;
 
  private:
   void OnThirdPartyTokenValidated(const buzz::XmlElement* message,

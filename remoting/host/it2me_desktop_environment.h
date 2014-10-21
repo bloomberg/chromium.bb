@@ -18,7 +18,7 @@ class LocalInputMonitor;
 // the local user.
 class It2MeDesktopEnvironment : public BasicDesktopEnvironment {
  public:
-  virtual ~It2MeDesktopEnvironment();
+  ~It2MeDesktopEnvironment() override;
 
  protected:
   friend class It2MeDesktopEnvironmentFactory;
@@ -48,10 +48,10 @@ class It2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~It2MeDesktopEnvironmentFactory();
+  ~It2MeDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory interface.
-  virtual scoped_ptr<DesktopEnvironment> Create(
+  scoped_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:

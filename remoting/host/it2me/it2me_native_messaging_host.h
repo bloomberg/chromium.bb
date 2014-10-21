@@ -25,21 +25,19 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
  public:
   It2MeNativeMessagingHost(scoped_refptr<AutoThreadTaskRunner> task_runner,
                            scoped_ptr<It2MeHostFactory> factory);
-  virtual ~It2MeNativeMessagingHost();
+  ~It2MeNativeMessagingHost() override;
 
   // extensions::NativeMessageHost implementation.
-  virtual void OnMessage(const std::string& message) override;
-  virtual void Start(Client* client) override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> task_runner()
-      const override;
+  void OnMessage(const std::string& message) override;
+  void Start(Client* client) override;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
   // It2MeHost::Observer implementation.
-  virtual void OnClientAuthenticated(const std::string& client_username)
-      override;
-  virtual void OnStoreAccessCode(const std::string& access_code,
-                                 base::TimeDelta access_code_lifetime) override;
-  virtual void OnNatPolicyChanged(bool nat_traversal_enabled) override;
-  virtual void OnStateChanged(It2MeHostState state) override;
+  void OnClientAuthenticated(const std::string& client_username) override;
+  void OnStoreAccessCode(const std::string& access_code,
+                         base::TimeDelta access_code_lifetime) override;
+  void OnNatPolicyChanged(bool nat_traversal_enabled) override;
+  void OnStateChanged(It2MeHostState state) override;
 
   static std::string HostStateToString(It2MeHostState host_state);
 

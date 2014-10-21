@@ -32,12 +32,12 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
       scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher_,
       const std::vector<AuthenticationMethod>& methods);
 
-  virtual ~NegotiatingClientAuthenticator();
+  ~NegotiatingClientAuthenticator() override;
 
   // Overriden from Authenticator.
-  virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) override;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override;
+  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
 
  private:
   // (Asynchronously) creates an authenticator, and stores it in

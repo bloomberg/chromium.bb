@@ -18,10 +18,10 @@ class IpcScreenControls : public ScreenControls {
  public:
   explicit IpcScreenControls(
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
-  virtual ~IpcScreenControls();
+  ~IpcScreenControls() override;
 
   // SessionController interface.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
+  void SetScreenResolution(const ScreenResolution& resolution) override;
 
  private:
   // Wraps the IPC channel to the desktop session agent.

@@ -16,30 +16,28 @@ namespace remoting {
 class FakeInputInjector : public InputInjector {
  public:
   FakeInputInjector();
-  virtual ~FakeInputInjector();
+  ~FakeInputInjector() override;
 
-  virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
-  virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) override;
+  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  void InjectTextEvent(const protocol::TextEvent& event) override;
+  void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 };
 
 class FakeScreenControls : public ScreenControls {
  public:
   FakeScreenControls();
-  virtual ~FakeScreenControls();
+  ~FakeScreenControls() override;
 
   // ScreenControls implementation.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
+  void SetScreenResolution(const ScreenResolution& resolution) override;
 };
 
 class FakeDesktopEnvironment : public DesktopEnvironment {
  public:
   FakeDesktopEnvironment();
-  virtual ~FakeDesktopEnvironment();
+  ~FakeDesktopEnvironment() override;
 
   // Sets frame generator to be used for FakeDesktopCapturer created by
   // FakeDesktopEnvironment.
@@ -49,15 +47,14 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   }
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
-  virtual scoped_ptr<InputInjector> CreateInputInjector() override;
-  virtual scoped_ptr<ScreenControls> CreateScreenControls() override;
-  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
-      override;
-  virtual std::string GetCapabilities() const override;
-  virtual void SetCapabilities(const std::string& capabilities) override;
-  virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
+  scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
+  scoped_ptr<InputInjector> CreateInputInjector() override;
+  scoped_ptr<ScreenControls> CreateScreenControls() override;
+  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
+  std::string GetCapabilities() const override;
+  void SetCapabilities(const std::string& capabilities) override;
+  scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
       protocol::ClientStub* client_stub) override;
 
  private:
@@ -69,7 +66,7 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
 class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
  public:
   FakeDesktopEnvironmentFactory();
-  virtual ~FakeDesktopEnvironmentFactory();
+  ~FakeDesktopEnvironmentFactory() override;
 
   // Sets frame generator to be used for FakeDesktopCapturer created by
   // FakeDesktopEnvironment.
@@ -79,11 +76,11 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   }
 
   // DesktopEnvironmentFactory implementation.
-  virtual scoped_ptr<DesktopEnvironment> Create(
+  scoped_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
-  virtual void SetEnableCurtaining(bool enable) override;
-  virtual bool SupportsAudioCapture() const override;
-  virtual void SetEnableGnubbyAuth(bool enable) override;
+  void SetEnableCurtaining(bool enable) override;
+  bool SupportsAudioCapture() const override;
+  void SetEnableGnubbyAuth(bool enable) override;
 
  private:
   FakeDesktopCapturer::FrameGenerator frame_generator_;

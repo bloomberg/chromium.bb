@@ -39,7 +39,7 @@ class ClipboardEchoFilter {
   class ClientFilter : public ClipboardStub {
    public:
     ClientFilter(ClipboardEchoFilter* filter);
-    virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
+    void InjectClipboardEvent(const ClipboardEvent& event) override;
 
    private:
     ClipboardEchoFilter* filter_;
@@ -48,7 +48,7 @@ class ClipboardEchoFilter {
   class HostFilter : public ClipboardStub {
    public:
     HostFilter(ClipboardEchoFilter* filter);
-    virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
+    void InjectClipboardEvent(const ClipboardEvent& event) override;
 
    private:
     ClipboardEchoFilter* filter_;

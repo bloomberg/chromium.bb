@@ -57,21 +57,21 @@ class XmppSignalStrategy : public base::NonThreadSafe,
       net::ClientSocketFactory* socket_factory,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       const XmppServerConfig& xmpp_server_config);
-  virtual ~XmppSignalStrategy();
+  ~XmppSignalStrategy() override;
 
   // SignalStrategy interface.
-  virtual void Connect() override;
-  virtual void Disconnect() override;
-  virtual State GetState() const override;
-  virtual Error GetError() const override;
-  virtual std::string GetLocalJid() const override;
-  virtual void AddListener(Listener* listener) override;
-  virtual void RemoveListener(Listener* listener) override;
-  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
-  virtual std::string GetNextId() override;
+  void Connect() override;
+  void Disconnect() override;
+  State GetState() const override;
+  Error GetError() const override;
+  std::string GetLocalJid() const override;
+  void AddListener(Listener* listener) override;
+  void RemoveListener(Listener* listener) override;
+  bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
+  std::string GetNextId() override;
 
   // buzz::XmppStanzaHandler interface.
-  virtual bool HandleStanza(const buzz::XmlElement* stanza) override;
+  bool HandleStanza(const buzz::XmlElement* stanza) override;
 
   // This method is used to update the auth info (for example when the OAuth
   // access token is renewed). It is OK to call this even when we are in the

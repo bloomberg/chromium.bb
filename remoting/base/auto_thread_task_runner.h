@@ -25,18 +25,16 @@ class AutoThreadTaskRunner : public base::SingleThreadTaskRunner {
                        const base::Closure& stop_task);
 
   // SingleThreadTaskRunner implementation
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
  private:
-  virtual ~AutoThreadTaskRunner();
+  ~AutoThreadTaskRunner() override;
 
   // Task posted to |task_runner_| to notify the caller that it may be stopped.
   base::Closure stop_task_;

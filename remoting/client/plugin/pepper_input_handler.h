@@ -28,7 +28,7 @@ class PepperInputHandler : public pp::MouseLock {
  public:
   // |instance| must outlive |this|.
   explicit PepperInputHandler(pp::Instance* instance);
-  virtual ~PepperInputHandler();
+  ~PepperInputHandler() override;
 
   void set_input_stub(protocol::InputStub* input_stub) {
     input_stub_ = input_stub;
@@ -64,7 +64,7 @@ class PepperInputHandler : public pp::MouseLock {
   };
 
   // pp::MouseLock interface.
-  virtual void MouseLockLost() override;
+  void MouseLockLost() override;
 
   // Requests the browser to lock the mouse and hides the cursor.
   void RequestMouseLock();

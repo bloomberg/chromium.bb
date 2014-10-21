@@ -20,11 +20,11 @@ class IpcVideoFrameCapturer : public webrtc::DesktopCapturer {
  public:
   explicit IpcVideoFrameCapturer(
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
-  virtual ~IpcVideoFrameCapturer();
+  ~IpcVideoFrameCapturer() override;
 
   // webrtc::DesktopCapturer interface.
-  virtual void Start(Callback* callback) override;
-  virtual void Capture(const webrtc::DesktopRegion& region) override;
+  void Start(Callback* callback) override;
+  void Capture(const webrtc::DesktopRegion& region) override;
 
   // Called when a video |frame| has been captured.
   void OnCaptureCompleted(scoped_ptr<webrtc::DesktopFrame> frame);

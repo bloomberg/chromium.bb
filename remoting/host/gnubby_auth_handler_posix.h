@@ -30,7 +30,7 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
                                public net::StreamListenSocket::Delegate {
  public:
   explicit GnubbyAuthHandlerPosix(protocol::ClientStub* client_stub);
-  virtual ~GnubbyAuthHandlerPosix();
+  ~GnubbyAuthHandlerPosix() override;
 
   bool HasActiveSocketForTesting(net::StreamListenSocket* socket) const;
   int GetConnectionIdForTesting(net::StreamListenSocket* socket) const;
@@ -41,17 +41,17 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
   typedef std::map<int, GnubbySocket*> ActiveSockets;
 
   // GnubbyAuthHandler interface.
-  virtual void DeliverClientMessage(const std::string& message) override;
-  virtual void DeliverHostDataMessage(int connection_id,
-                                      const std::string& data) const override;
+  void DeliverClientMessage(const std::string& message) override;
+  void DeliverHostDataMessage(int connection_id,
+                              const std::string& data) const override;
 
   // StreamListenSocket::Delegate interface.
-  virtual void DidAccept(net::StreamListenSocket* server,
-                         scoped_ptr<net::StreamListenSocket> socket) override;
-  virtual void DidRead(net::StreamListenSocket* socket,
-                       const char* data,
-                       int len) override;
-  virtual void DidClose(net::StreamListenSocket* socket) override;
+  void DidAccept(net::StreamListenSocket* server,
+                 scoped_ptr<net::StreamListenSocket> socket) override;
+  void DidRead(net::StreamListenSocket* socket,
+               const char* data,
+               int len) override;
+  void DidClose(net::StreamListenSocket* socket) override;
 
   // Create socket for authorization.
   void CreateAuthorizationSocket();

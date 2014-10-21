@@ -47,7 +47,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    VideoRenderer* video_renderer,
                    scoped_ptr<AudioPlayer> audio_player);
 
-  virtual ~ChromotingClient();
+  ~ChromotingClient() override;
 
   void SetProtocolConfigForTests(
       scoped_ptr<protocol::CandidateSessionConfig> config);
@@ -71,28 +71,23 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   protocol::InputStub* input_stub() { return connection_.input_stub(); }
 
   // ClientStub implementation.
-  virtual void SetCapabilities(
-      const protocol::Capabilities& capabilities) override;
-  virtual void SetPairingResponse(
+  void SetCapabilities(const protocol::Capabilities& capabilities) override;
+  void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) override;
-  virtual void DeliverHostMessage(
-      const protocol::ExtensionMessage& message) override;
+  void DeliverHostMessage(const protocol::ExtensionMessage& message) override;
 
   // ClipboardStub implementation for receiving clipboard data from host.
-  virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) override;
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
   // CursorShapeStub implementation for receiving cursor shape updates.
-  virtual void SetCursorShape(
-      const protocol::CursorShapeInfo& cursor_shape) override;
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
   // ConnectionToHost::HostEventCallback implementation.
-  virtual void OnConnectionState(
-      protocol::ConnectionToHost::State state,
-      protocol::ErrorCode error) override;
-  virtual void OnConnectionReady(bool ready) override;
-  virtual void OnRouteChanged(const std::string& channel_name,
-                              const protocol::TransportRoute& route) override;
+  void OnConnectionState(protocol::ConnectionToHost::State state,
+                         protocol::ErrorCode error) override;
+  void OnConnectionReady(bool ready) override;
+  void OnRouteChanged(const std::string& channel_name,
+                      const protocol::TransportRoute& route) override;
 
  private:
   // Called when the connection is authenticated.

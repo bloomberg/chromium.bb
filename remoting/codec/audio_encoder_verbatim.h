@@ -14,11 +14,10 @@ class AudioPacket;
 class AudioEncoderVerbatim : public AudioEncoder {
  public:
   AudioEncoderVerbatim();
-  virtual ~AudioEncoderVerbatim();
+  ~AudioEncoderVerbatim() override;
 
   // AudioEncoder implementation.
-  virtual scoped_ptr<AudioPacket> Encode(
-      scoped_ptr<AudioPacket> packet) override;
+  scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioEncoderVerbatim);

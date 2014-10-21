@@ -17,7 +17,7 @@ namespace remoting {
 class VlogNetLog : public net::NetLog {
  public:
   VlogNetLog();
-  virtual ~VlogNetLog();
+  ~VlogNetLog() override;
 
  private:
   class Observer;

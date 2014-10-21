@@ -21,12 +21,12 @@ class FakePortAllocator : public cricket::HttpPortAllocatorBase {
   static scoped_ptr<FakePortAllocator> Create(
       scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher);
 
-  virtual ~FakePortAllocator();
+  ~FakePortAllocator() override;
 
   FakePacketSocketFactory* socket_factory() { return socket_factory_.get(); }
 
   // cricket::BasicPortAllocator overrides.
-  virtual cricket::PortAllocatorSession* CreateSessionInternal(
+  cricket::PortAllocatorSession* CreateSessionInternal(
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,

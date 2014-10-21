@@ -23,11 +23,10 @@ class AudioPacket;
 class AudioEncoderOpus : public AudioEncoder {
  public:
   AudioEncoderOpus();
-  virtual ~AudioEncoderOpus();
+  ~AudioEncoderOpus() override;
 
   // AudioEncoder interface.
-  virtual scoped_ptr<AudioPacket> Encode(
-      scoped_ptr<AudioPacket> packet) override;
+  scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override;
 
  private:
   void InitEncoder();

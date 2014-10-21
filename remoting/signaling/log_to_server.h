@@ -30,13 +30,11 @@ class LogToServer : public base::NonThreadSafe,
   LogToServer(ServerLogEntry::Mode mode,
               SignalStrategy* signal_strategy,
               const std::string& directory_bot_jid);
-  virtual ~LogToServer();
+  ~LogToServer() override;
 
   // SignalStrategy::Listener interface.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
   void Log(const ServerLogEntry& entry);
 

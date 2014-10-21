@@ -43,11 +43,11 @@ class LibjingleTransportFactory : public TransportFactory {
       scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
       const NetworkSettings& network_settings);
 
-  virtual ~LibjingleTransportFactory();
+  ~LibjingleTransportFactory() override;
 
   // TransportFactory interface.
-  virtual void PrepareTokens() override;
-  virtual scoped_ptr<Transport> CreateTransport() override;
+  void PrepareTokens() override;
+  scoped_ptr<Transport> CreateTransport() override;
 
  private:
   void EnsureFreshJingleInfo();

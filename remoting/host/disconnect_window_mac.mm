@@ -29,11 +29,10 @@ namespace remoting {
 class DisconnectWindowMac : public HostWindow {
  public:
   DisconnectWindowMac();
-  virtual ~DisconnectWindowMac();
+  ~DisconnectWindowMac() override;
 
   // HostWindow overrides.
-  virtual void Start(
-      const base::WeakPtr<ClientSessionControl>& client_session_control)
+  void Start(const base::WeakPtr<ClientSessionControl>& client_session_control)
       override;
 
  private:

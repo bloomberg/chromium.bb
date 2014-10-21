@@ -35,12 +35,12 @@ namespace remoting {
 class ContinueWindowMac : public ContinueWindow {
  public:
   ContinueWindowMac();
-  virtual ~ContinueWindowMac();
+  ~ContinueWindowMac() override;
 
  protected:
   // ContinueWindow overrides.
-  virtual void ShowUi() override;
-  virtual void HideUi() override;
+  void ShowUi() override;
+  void HideUi() override;
 
  private:
   base::scoped_nsobject<ContinueWindowMacController> controller_;

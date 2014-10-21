@@ -38,7 +38,7 @@ class IqSender : public SignalStrategy::Listener {
                               const buzz::XmlElement* response)> ReplyCallback;
 
   explicit IqSender(SignalStrategy* signal_strategy);
-  virtual ~IqSender();
+  ~IqSender() override;
 
   // Send an iq stanza. Returns an IqRequest object that represends
   // the request. |callback| is called when response to |stanza| is
@@ -55,10 +55,8 @@ class IqSender : public SignalStrategy::Listener {
                                const ReplyCallback& callback);
 
   // SignalStrategy::Listener implementation.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
  private:
   typedef std::map<std::string, IqRequest*> IqRequestMap;

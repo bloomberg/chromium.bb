@@ -16,14 +16,14 @@ namespace remoting {
 class VideoFrameRecorderHostExtension : public HostExtension {
  public:
   VideoFrameRecorderHostExtension();
-  virtual ~VideoFrameRecorderHostExtension();
+  ~VideoFrameRecorderHostExtension() override;
 
   // Sets the maximum number of bytes that each session may record.
   void SetMaxContentBytes(int64_t max_content_bytes);
 
   // remoting::HostExtension interface.
-  virtual std::string capability() const override;
-  virtual scoped_ptr<HostExtensionSession> CreateExtensionSession(
+  std::string capability() const override;
+  scoped_ptr<HostExtensionSession> CreateExtensionSession(
       ClientSessionControl* client_session,
       protocol::ClientStub* client_stub) override;
 

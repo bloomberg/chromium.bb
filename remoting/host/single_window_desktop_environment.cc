@@ -16,11 +16,11 @@ namespace remoting {
 class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
 
  public:
-  virtual ~SingleWindowDesktopEnvironment();
+  ~SingleWindowDesktopEnvironment() override;
 
   // DesktopEnvironment interface.
-  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  virtual scoped_ptr<InputInjector> CreateInputInjector() override;
+  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  scoped_ptr<InputInjector> CreateInputInjector() override;
 
  protected:
   friend class SingleWindowDesktopEnvironmentFactory;

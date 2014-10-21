@@ -16,12 +16,11 @@ namespace protocol {
 class FakeChannelAuthenticator : public ChannelAuthenticator {
  public:
   FakeChannelAuthenticator(bool accept, bool async);
-  virtual ~FakeChannelAuthenticator();
+  ~FakeChannelAuthenticator() override;
 
   // ChannelAuthenticator interface.
-  virtual void SecureAndAuthenticate(
-      scoped_ptr<net::StreamSocket> socket,
-      const DoneCallback& done_callback) override;
+  void SecureAndAuthenticate(scoped_ptr<net::StreamSocket> socket,
+                             const DoneCallback& done_callback) override;
 
  private:
   void OnAuthBytesWritten(int result);
@@ -58,21 +57,20 @@ class FakeAuthenticator : public Authenticator {
 
   FakeAuthenticator(Type type, int round_trips, Action action, bool async);
 
-  virtual ~FakeAuthenticator();
+  ~FakeAuthenticator() override;
 
   // Set the number of messages that the authenticator needs to process before
   // started() returns true.  Default to 0.
   void set_messages_till_started(int messages);
 
   // Authenticator interface.
-  virtual State state() const override;
-  virtual bool started() const override;
-  virtual RejectionReason rejection_reason() const override;
-  virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) override;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
-  virtual scoped_ptr<ChannelAuthenticator>
-      CreateChannelAuthenticator() const override;
+  State state() const override;
+  bool started() const override;
+  RejectionReason rejection_reason() const override;
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override;
+  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
  protected:
   Type type_;
@@ -94,10 +92,10 @@ class FakeHostAuthenticatorFactory : public AuthenticatorFactory {
   FakeHostAuthenticatorFactory(
       int round_trips, int messages_till_start,
       FakeAuthenticator::Action action, bool async);
-  virtual ~FakeHostAuthenticatorFactory();
+  ~FakeHostAuthenticatorFactory() override;
 
   // AuthenticatorFactory interface.
-  virtual scoped_ptr<Authenticator> CreateAuthenticator(
+  scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid,
       const buzz::XmlElement* first_message) override;

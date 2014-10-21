@@ -81,7 +81,7 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner) {
   }
-  virtual ~ThreadCheckVideoEncoder() {
+  ~ThreadCheckVideoEncoder() override {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 
@@ -97,7 +97,7 @@ class ThreadCheckDesktopCapturer : public FakeDesktopCapturer {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner) {
   }
-  virtual ~ThreadCheckDesktopCapturer() {
+  ~ThreadCheckDesktopCapturer() override {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 
@@ -113,7 +113,7 @@ class ThreadCheckMouseCursorMonitor : public FakeMouseCursorMonitor {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner) {
   }
-  virtual ~ThreadCheckMouseCursorMonitor() {
+  ~ThreadCheckMouseCursorMonitor() override {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 

@@ -20,17 +20,17 @@ namespace {
 class PamAuthorizer : public protocol::Authenticator {
  public:
   PamAuthorizer(scoped_ptr<protocol::Authenticator> underlying);
-  virtual ~PamAuthorizer();
+  ~PamAuthorizer() override;
 
   // protocol::Authenticator interface.
-  virtual State state() const override;
-  virtual bool started() const override;
-  virtual RejectionReason rejection_reason() const override;
-  virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) override;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
-  virtual scoped_ptr<protocol::ChannelAuthenticator>
-      CreateChannelAuthenticator() const override;
+  State state() const override;
+  bool started() const override;
+  RejectionReason rejection_reason() const override;
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override;
+  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  scoped_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
+      const override;
 
  private:
   void MaybeCheckLocalLogin();

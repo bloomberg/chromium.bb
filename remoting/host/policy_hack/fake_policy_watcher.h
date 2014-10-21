@@ -14,14 +14,14 @@ class FakePolicyWatcher : public PolicyWatcher {
  public:
   explicit FakePolicyWatcher(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~FakePolicyWatcher();
+  ~FakePolicyWatcher() override;
 
   void SetPolicies(const base::DictionaryValue* policies);
 
  protected:
-  virtual void StartWatchingInternal() override;
-  virtual void StopWatchingInternal() override;
-  virtual void Reload() override;
+  void StartWatchingInternal() override;
+  void StopWatchingInternal() override;
+  void Reload() override;
 };
 
 }  // namespace policy_hack

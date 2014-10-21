@@ -79,12 +79,12 @@ class MockIt2MeHost : public It2MeHost {
                   directory_bot_jid) {}
 
   // It2MeHost overrides
-  virtual void Connect() override;
-  virtual void Disconnect() override;
-  virtual void RequestNatPolicy() override;
+  void Connect() override;
+  void Disconnect() override;
+  void RequestNatPolicy() override;
 
  private:
-  virtual ~MockIt2MeHost() {}
+  ~MockIt2MeHost() override {}
 
   void RunSetState(It2MeHostState state);
 
@@ -149,7 +149,7 @@ void MockIt2MeHost::RunSetState(It2MeHostState state) {
 class MockIt2MeHostFactory : public It2MeHostFactory {
  public:
   MockIt2MeHostFactory() {}
-  virtual scoped_refptr<It2MeHost> CreateIt2MeHost(
+  scoped_refptr<It2MeHost> CreateIt2MeHost(
       ChromotingHostContext* context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<It2MeHost::Observer> observer,

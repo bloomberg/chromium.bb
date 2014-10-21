@@ -23,11 +23,11 @@ namespace remoting {
 class NormalizingInputFilterCros : public protocol::InputFilter {
  public:
   explicit NormalizingInputFilterCros(protocol::InputStub* input_stub);
-  virtual ~NormalizingInputFilterCros();
+  ~NormalizingInputFilterCros() override;
 
   // InputFilter overrides.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
   void ProcessKeyDown(const protocol::KeyEvent& event);

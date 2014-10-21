@@ -38,22 +38,22 @@ class PepperView : public FrameConsumer {
   // Constructs a PepperView for the |instance|. The |instance| and |context|
   // must outlive this class.
   PepperView(ChromotingInstance* instance, ClientContext* context);
-  virtual ~PepperView();
+  ~PepperView() override;
 
   // Allocates buffers and passes them to the FrameProducer to render into until
   // the maximum number of buffers are in-flight.
   void Initialize(FrameProducer* producer);
 
   // FrameConsumer implementation.
-  virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
-                           const webrtc::DesktopRect& clip_area,
-                           webrtc::DesktopFrame* buffer,
-                           const webrtc::DesktopRegion& region,
-                           const webrtc::DesktopRegion& shape) override;
-  virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
-  virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
-                             const webrtc::DesktopVector& dpi) override;
-  virtual PixelFormat GetPixelFormat() override;
+  void ApplyBuffer(const webrtc::DesktopSize& view_size,
+                   const webrtc::DesktopRect& clip_area,
+                   webrtc::DesktopFrame* buffer,
+                   const webrtc::DesktopRegion& region,
+                   const webrtc::DesktopRegion& shape) override;
+  void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
+  void SetSourceSize(const webrtc::DesktopSize& source_size,
+                     const webrtc::DesktopVector& dpi) override;
+  PixelFormat GetPixelFormat() override;
 
   // Updates the PepperView's size & clipping area, taking into account the
   // DIP-to-device scale factor.

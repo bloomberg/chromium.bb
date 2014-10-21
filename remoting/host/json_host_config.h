@@ -20,12 +20,12 @@ namespace remoting {
 class JsonHostConfig : public InMemoryHostConfig {
  public:
   JsonHostConfig(const base::FilePath& filename);
-  virtual ~JsonHostConfig();
+  ~JsonHostConfig() override;
 
   virtual bool Read();
 
   // MutableHostConfig interface.
-  virtual bool Save() override;
+  bool Save() override;
 
   std::string GetSerializedData();
 

@@ -17,10 +17,9 @@ class AudioPacket;
 class AudioDecoderVerbatim : public AudioDecoder {
  public:
   AudioDecoderVerbatim();
-  virtual ~AudioDecoderVerbatim();
+  ~AudioDecoderVerbatim() override;
 
-  virtual scoped_ptr<AudioPacket> Decode(
-      scoped_ptr<AudioPacket> packet) override;
+  scoped_ptr<AudioPacket> Decode(scoped_ptr<AudioPacket> packet) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderVerbatim);

@@ -18,11 +18,11 @@ class VideoStub;
 class ClientVideoDispatcher : public ChannelDispatcherBase {
  public:
   explicit ClientVideoDispatcher(VideoStub* video_stub);
-  virtual ~ClientVideoDispatcher();
+  ~ClientVideoDispatcher() override;
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() override;
+  void OnInitialized() override;
 
  private:
   ProtobufMessageReader<VideoPacket> reader_;

@@ -25,10 +25,10 @@ class DnsBlackholeChecker : public net::URLFetcherDelegate {
   DnsBlackholeChecker(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       std::string talkgadget_prefix);
-  virtual ~DnsBlackholeChecker();
+  ~DnsBlackholeChecker() override;
 
   // net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Initiates a check the verify that the host talkgadget has not been "DNS
   // blackholed" to prevent connections. If this is called again before the

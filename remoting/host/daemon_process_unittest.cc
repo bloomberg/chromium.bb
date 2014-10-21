@@ -40,10 +40,9 @@ enum Messages {
 class FakeDesktopSession : public DesktopSession {
  public:
   FakeDesktopSession(DaemonProcess* daemon_process, int id);
-  virtual ~FakeDesktopSession();
+  ~FakeDesktopSession() override;
 
-  virtual void SetScreenResolution(
-      const ScreenResolution& resolution) override {}
+  void SetScreenResolution(const ScreenResolution& resolution) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopSession);

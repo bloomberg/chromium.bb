@@ -31,19 +31,18 @@ class IpcHostEventLogger
   // Initializes the logger. |daemon_channel| must outlive this object.
   IpcHostEventLogger(base::WeakPtr<HostStatusMonitor> monitor,
                      IPC::Sender* daemon_channel);
-  virtual ~IpcHostEventLogger();
+  ~IpcHostEventLogger() override;
 
   // HostStatusObserver interface.
-  virtual void OnAccessDenied(const std::string& jid) override;
-  virtual void OnClientAuthenticated(const std::string& jid) override;
-  virtual void OnClientConnected(const std::string& jid) override;
-  virtual void OnClientDisconnected(const std::string& jid) override;
-  virtual void OnClientRouteChange(
-      const std::string& jid,
-      const std::string& channel_name,
-      const protocol::TransportRoute& route) override;
-  virtual void OnStart(const std::string& xmpp_login) override;
-  virtual void OnShutdown() override;
+  void OnAccessDenied(const std::string& jid) override;
+  void OnClientAuthenticated(const std::string& jid) override;
+  void OnClientConnected(const std::string& jid) override;
+  void OnClientDisconnected(const std::string& jid) override;
+  void OnClientRouteChange(const std::string& jid,
+                           const std::string& channel_name,
+                           const protocol::TransportRoute& route) override;
+  void OnStart(const std::string& xmpp_login) override;
+  void OnShutdown() override;
 
  private:
   // Used to report host status events to the daemon.

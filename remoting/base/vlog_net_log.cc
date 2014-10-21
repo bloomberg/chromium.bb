@@ -16,10 +16,10 @@ namespace remoting {
 class VlogNetLog::Observer : public net::NetLog::ThreadSafeObserver {
  public:
   Observer();
-  virtual ~Observer();
+  ~Observer() override;
 
   // NetLog::ThreadSafeObserver overrides:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLog::Entry& entry) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Observer);

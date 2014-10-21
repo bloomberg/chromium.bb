@@ -25,7 +25,7 @@ class ClientStub : public ClipboardStub,
                    public CursorShapeStub {
  public:
   ClientStub() {}
-  virtual ~ClientStub() {}
+  ~ClientStub() override {}
 
   // Passes the set of capabilities supported by the host to the client.
   virtual void SetCapabilities(const Capabilities& capabilities) = 0;

@@ -15,11 +15,10 @@ namespace remoting {
 class VideoEncoderVerbatim : public VideoEncoder {
  public:
   VideoEncoderVerbatim();
-  virtual ~VideoEncoderVerbatim();
+  ~VideoEncoderVerbatim() override;
 
   // VideoEncoder interface.
-  virtual scoped_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) override;
+  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) override;
 
  private:
   VideoEncoderHelper helper_;

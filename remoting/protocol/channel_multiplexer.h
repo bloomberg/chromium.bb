@@ -21,12 +21,12 @@ class ChannelMultiplexer : public StreamChannelFactory {
   // |factory| is used to create the channel upon which to multiplex.
   ChannelMultiplexer(StreamChannelFactory* factory,
                      const std::string& base_channel_name);
-  virtual ~ChannelMultiplexer();
+  ~ChannelMultiplexer() override;
 
   // StreamChannelFactory interface.
-  virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) override;
-  virtual void CancelChannelCreation(const std::string& name) override;
+  void CreateChannel(const std::string& name,
+                     const ChannelCreatedCallback& callback) override;
+  void CancelChannelCreation(const std::string& name) override;
 
  private:
   struct PendingChannel;

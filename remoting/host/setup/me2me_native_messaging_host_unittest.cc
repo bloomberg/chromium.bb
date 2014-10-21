@@ -135,24 +135,22 @@ namespace remoting {
 class MockDaemonControllerDelegate : public DaemonController::Delegate {
  public:
   MockDaemonControllerDelegate();
-  virtual ~MockDaemonControllerDelegate();
+  ~MockDaemonControllerDelegate() override;
 
   // DaemonController::Delegate interface.
-  virtual DaemonController::State GetState() override;
-  virtual scoped_ptr<base::DictionaryValue> GetConfig() override;
-  virtual void InstallHost(
-      const DaemonController::CompletionCallback& done) override;
-  virtual void SetConfigAndStart(
+  DaemonController::State GetState() override;
+  scoped_ptr<base::DictionaryValue> GetConfig() override;
+  void InstallHost(const DaemonController::CompletionCallback& done) override;
+  void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
       const DaemonController::CompletionCallback& done) override;
-  virtual void UpdateConfig(
-      scoped_ptr<base::DictionaryValue> config,
-      const DaemonController::CompletionCallback& done) override;
-  virtual void Stop(const DaemonController::CompletionCallback& done) override;
-  virtual void SetWindow(void* window_handle) override;
-  virtual std::string GetVersion() override;
-  virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
+  void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                    const DaemonController::CompletionCallback& done) override;
+  void Stop(const DaemonController::CompletionCallback& done) override;
+  void SetWindow(void* window_handle) override;
+  std::string GetVersion() override;
+  DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDaemonControllerDelegate);

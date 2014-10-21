@@ -29,13 +29,9 @@ class FakeAudioPlayer : public AudioPlayer {
   FakeAudioPlayer() {
   }
 
-  virtual bool ResetAudioPlayer(AudioPacket::SamplingRate) override {
-    return true;
-  }
+  bool ResetAudioPlayer(AudioPacket::SamplingRate) override { return true; }
 
-  virtual uint32 GetSamplesPerFrame() override {
-    return kAudioSamplesPerFrame;
-  }
+  uint32 GetSamplesPerFrame() override { return kAudioSamplesPerFrame; }
 };
 
 class AudioPlayerTest : public ::testing::Test {

@@ -14,22 +14,24 @@ namespace protocol {
 class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
  public:
   explicit ChromiumPacketSocketFactory();
-  virtual ~ChromiumPacketSocketFactory();
+  ~ChromiumPacketSocketFactory() override;
 
-  virtual rtc::AsyncPacketSocket* CreateUdpSocket(
+  rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
-      int min_port, int max_port) override;
-  virtual rtc::AsyncPacketSocket* CreateServerTcpSocket(
+      int min_port,
+      int max_port) override;
+  rtc::AsyncPacketSocket* CreateServerTcpSocket(
       const rtc::SocketAddress& local_address,
-      int min_port, int max_port,
+      int min_port,
+      int max_port,
       int opts) override;
-  virtual rtc::AsyncPacketSocket* CreateClientTcpSocket(
+  rtc::AsyncPacketSocket* CreateClientTcpSocket(
       const rtc::SocketAddress& local_address,
       const rtc::SocketAddress& remote_address,
       const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
       int opts) override;
-  virtual rtc::AsyncResolverInterface* CreateAsyncResolver() override;
+  rtc::AsyncResolverInterface* CreateAsyncResolver() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromiumPacketSocketFactory);

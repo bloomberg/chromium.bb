@@ -45,10 +45,10 @@ namespace remoting {
 class NormalizingInputFilterMac : public protocol::InputFilter {
  public:
   explicit NormalizingInputFilterMac(protocol::InputStub* input_stub);
-  virtual ~NormalizingInputFilterMac();
+  ~NormalizingInputFilterMac() override;
 
   // InputFilter overrides.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  void InjectKeyEvent(const protocol::KeyEvent& event) override;
 
  private:
   typedef std::map<int, protocol::KeyEvent> KeyPressedMap;

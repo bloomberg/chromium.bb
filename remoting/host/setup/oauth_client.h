@@ -33,7 +33,7 @@ class OAuthClient : public gaia::GaiaOAuthClient::Delegate {
   OAuthClient(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
-  virtual ~OAuthClient();
+  ~OAuthClient() override;
 
   // Redeems |auth_code| using |oauth_client_info| to obtain |refresh_token| and
   // |access_token|, then uses the userinfo endpoint to obtain |user_email|.
@@ -47,15 +47,15 @@ class OAuthClient : public gaia::GaiaOAuthClient::Delegate {
       CompletionCallback on_done);
 
   // gaia::GaiaOAuthClient::Delegate
-  virtual void OnGetTokensResponse(const std::string& refresh_token,
-                                 const std::string& access_token,
-                                 int expires_in_seconds) override;
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) override;
-  virtual void OnGetUserEmailResponse(const std::string& user_email) override;
+  void OnGetTokensResponse(const std::string& refresh_token,
+                           const std::string& access_token,
+                           int expires_in_seconds) override;
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnGetUserEmailResponse(const std::string& user_email) override;
 
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
  private:
   struct Request {

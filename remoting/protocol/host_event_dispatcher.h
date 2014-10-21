@@ -21,7 +21,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
   typedef base::Callback<void(int64)> SequenceNumberCallback;
 
   HostEventDispatcher();
-  virtual ~HostEventDispatcher();
+  ~HostEventDispatcher() override;
 
   // Set InputStub that will be called for each incoming input
   // message. Doesn't take ownership of |input_stub|. It must outlive
@@ -36,7 +36,7 @@ class HostEventDispatcher : public ChannelDispatcherBase {
 
  protected:
   // ChannelDispatcherBase overrides.
-  virtual void OnInitialized() override;
+  void OnInitialized() override;
 
  private:
   void OnMessageReceived(scoped_ptr<EventMessage> message,

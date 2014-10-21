@@ -37,13 +37,11 @@ class HostChangeNotificationListener : public SignalStrategy::Listener {
                                  const std::string& host_id,
                                  SignalStrategy* signal_strategy,
                                  const std::string& directory_bot_jid);
-  virtual ~HostChangeNotificationListener();
+  ~HostChangeNotificationListener() override;
 
   // SignalStrategy::Listener interface.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
  private:
   void OnHostDeleted();

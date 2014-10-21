@@ -60,20 +60,20 @@ class OAuthTokenGetter :
       scoped_ptr<OAuthCredentials> oauth_credentials,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       bool auto_refresh);
-  virtual ~OAuthTokenGetter();
+  ~OAuthTokenGetter() override;
 
   // Call |on_access_token| with an access token, or the failure status.
   void CallWithToken(const OAuthTokenGetter::TokenCallback& on_access_token);
 
   // gaia::GaiaOAuthClient::Delegate interface.
-  virtual void OnGetTokensResponse(const std::string& user_email,
-                                   const std::string& access_token,
-                                   int expires_seconds) override;
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) override;
-  virtual void OnGetUserEmailResponse(const std::string& user_email) override;
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnGetTokensResponse(const std::string& user_email,
+                           const std::string& access_token,
+                           int expires_seconds) override;
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnGetUserEmailResponse(const std::string& user_email) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
  private:
   void NotifyCallbacks(Status status,

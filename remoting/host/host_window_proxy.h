@@ -24,11 +24,10 @@ class HostWindowProxy : public HostWindow {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_ptr<HostWindow> host_window);
-  virtual ~HostWindowProxy();
+  ~HostWindowProxy() override;
 
   // HostWindow overrides.
-  virtual void Start(
-      const base::WeakPtr<ClientSessionControl>& client_session_control)
+  void Start(const base::WeakPtr<ClientSessionControl>& client_session_control)
       override;
 
  private:

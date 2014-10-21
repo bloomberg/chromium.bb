@@ -16,10 +16,11 @@ namespace remoting {
 class PepperPluginThreadDelegate : public PluginThreadTaskRunner::Delegate {
  public:
   PepperPluginThreadDelegate();
-  virtual ~PepperPluginThreadDelegate();
+  ~PepperPluginThreadDelegate() override;
 
-  virtual bool RunOnPluginThread(
-      base::TimeDelta delay, void(CDECL function)(void*), void* data) override;
+  bool RunOnPluginThread(base::TimeDelta delay,
+                         void(CDECL function)(void*),
+                         void* data) override;
 
  private:
   pp::Core* core_;

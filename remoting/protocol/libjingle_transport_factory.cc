@@ -39,19 +39,18 @@ class LibjingleTransport
  public:
   LibjingleTransport(cricket::PortAllocator* port_allocator,
                            const NetworkSettings& network_settings);
-  virtual ~LibjingleTransport();
+  ~LibjingleTransport() override;
 
   // Called by JingleTransportFactory when it has fresh Jingle info.
   void OnCanStart();
 
   // Transport interface.
-  virtual void Connect(
-      const std::string& name,
-      Transport::EventHandler* event_handler,
-      const Transport::ConnectedCallback& callback) override;
-  virtual void AddRemoteCandidate(const cricket::Candidate& candidate) override;
-  virtual const std::string& name() const override;
-  virtual bool is_connected() const override;
+  void Connect(const std::string& name,
+               Transport::EventHandler* event_handler,
+               const Transport::ConnectedCallback& callback) override;
+  void AddRemoteCandidate(const cricket::Candidate& candidate) override;
+  const std::string& name() const override;
+  bool is_connected() const override;
 
  private:
   void DoStart();

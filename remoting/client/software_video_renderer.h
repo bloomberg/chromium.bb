@@ -39,13 +39,13 @@ class SoftwareVideoRenderer : public VideoRenderer,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
       scoped_refptr<FrameConsumerProxy> consumer);
-  virtual ~SoftwareVideoRenderer();
+  ~SoftwareVideoRenderer() override;
 
   // VideoRenderer implementation.
-  virtual void Initialize(const protocol::SessionConfig& config) override;
-  virtual ChromotingStats* GetStats() override;
-  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                  const base::Closure& done) override;
+  void Initialize(const protocol::SessionConfig& config) override;
+  ChromotingStats* GetStats() override;
+  void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+                          const base::Closure& done) override;
 
   // FrameProducer implementation. These methods may be called before we are
   // Initialize()d, or we know the source screen size. These methods may be
@@ -54,12 +54,11 @@ class SoftwareVideoRenderer : public VideoRenderer,
   // TODO(sergeyu): On Android a separate display thread is used for drawing.
   // FrameConsumer calls FrameProducer on that thread. Can we avoid having a
   // separate display thread? E.g. can we do everything on the decode thread?
-  virtual void DrawBuffer(webrtc::DesktopFrame* buffer) override;
-  virtual void InvalidateRegion(const webrtc::DesktopRegion& region) override;
-  virtual void RequestReturnBuffers(const base::Closure& done) override;
-  virtual void SetOutputSizeAndClip(
-      const webrtc::DesktopSize& view_size,
-      const webrtc::DesktopRect& clip_area) override;
+  void DrawBuffer(webrtc::DesktopFrame* buffer) override;
+  void InvalidateRegion(const webrtc::DesktopRegion& region) override;
+  void RequestReturnBuffers(const base::Closure& done) override;
+  void SetOutputSizeAndClip(const webrtc::DesktopSize& view_size,
+                            const webrtc::DesktopRect& clip_area) override;
 
  private:
   class Core;

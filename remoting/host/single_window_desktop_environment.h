@@ -20,10 +20,10 @@ class SingleWindowDesktopEnvironmentFactory
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       webrtc::WindowId window_id);
-  virtual ~SingleWindowDesktopEnvironmentFactory();
+  ~SingleWindowDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory interface.
-  virtual scoped_ptr<DesktopEnvironment> Create(
+  scoped_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
 
  private:

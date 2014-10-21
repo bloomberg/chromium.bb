@@ -22,19 +22,19 @@ class VideoDecoderVpx : public VideoDecoder {
   static scoped_ptr<VideoDecoderVpx> CreateForVP8();
   static scoped_ptr<VideoDecoderVpx> CreateForVP9();
 
-  virtual ~VideoDecoderVpx();
+  ~VideoDecoderVpx() override;
 
   // VideoDecoder interface.
-  virtual void Initialize(const webrtc::DesktopSize& screen_size) override;
-  virtual bool DecodePacket(const VideoPacket& packet) override;
-  virtual void Invalidate(const webrtc::DesktopSize& view_size,
-                          const webrtc::DesktopRegion& region) override;
-  virtual void RenderFrame(const webrtc::DesktopSize& view_size,
-                           const webrtc::DesktopRect& clip_area,
-                           uint8* image_buffer,
-                           int image_stride,
-                           webrtc::DesktopRegion* output_region) override;
-  virtual const webrtc::DesktopRegion* GetImageShape() override;
+  void Initialize(const webrtc::DesktopSize& screen_size) override;
+  bool DecodePacket(const VideoPacket& packet) override;
+  void Invalidate(const webrtc::DesktopSize& view_size,
+                  const webrtc::DesktopRegion& region) override;
+  void RenderFrame(const webrtc::DesktopSize& view_size,
+                   const webrtc::DesktopRect& clip_area,
+                   uint8* image_buffer,
+                   int image_stride,
+                   webrtc::DesktopRegion* output_region) override;
+  const webrtc::DesktopRegion* GetImageShape() override;
 
  private:
   explicit VideoDecoderVpx(ScopedVpxCodec codec);

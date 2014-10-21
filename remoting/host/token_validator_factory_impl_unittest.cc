@@ -40,9 +40,9 @@ class FakeProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       : headers_(headers),
         response_(response) {
   }
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate) const
-      override {
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
     return new net::URLRequestTestJob(
         request, network_delegate, headers_, response_, true);
   }

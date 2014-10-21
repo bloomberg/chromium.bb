@@ -59,13 +59,11 @@ class HostStatusSender : SignalStrategy::Listener {
                    SignalStrategy* signal_strategy,
                    scoped_refptr<RsaKeyPair> key_pair,
                    const std::string& directory_bot_jid);
-  virtual ~HostStatusSender();
+  ~HostStatusSender() override;
 
   // SignalStrategy::Listener interface.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
   // APIs for sending host status XMPP messages to the chromoting bot.
   // status: the reason (exit code) why the host is offline.

@@ -38,10 +38,9 @@ class VideoFrameRecorder::RecordingVideoEncoder : public VideoEncoder {
   }
 
   // remoting::VideoEncoder interface.
-  virtual void SetLosslessEncode(bool want_lossless) override;
-  virtual void SetLosslessColor(bool want_lossless) override;
-  virtual scoped_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) override;
+  void SetLosslessEncode(bool want_lossless) override;
+  void SetLosslessColor(bool want_lossless) override;
+  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) override;
 
  private:
   scoped_ptr<VideoEncoder> encoder_;

@@ -27,7 +27,7 @@ namespace protocol {
 // See comments in negotiating_authenticator_base.h for a general explanation.
 class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
  public:
-  virtual ~NegotiatingHostAuthenticator();
+  ~NegotiatingHostAuthenticator() override;
 
   // Creates a host authenticator, using a fixed shared secret/PIN hash.
   // If |pairing_registry| is non-NULL then the Spake2Pair method will
@@ -46,9 +46,9 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
       scoped_ptr<TokenValidator> token_validator);
 
   // Overriden from Authenticator.
-  virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) override;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override;
+  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
 
  private:
   NegotiatingHostAuthenticator(

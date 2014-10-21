@@ -50,13 +50,11 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
                              scoped_refptr<RsaKeyPair> key_pair,
                              const std::string& directory_bot_jid,
                              const RegisterCallback& callback);
-  virtual ~RegisterSupportHostRequest();
+  ~RegisterSupportHostRequest() override;
 
   // HostStatusObserver implementation.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
  private:
   void DoSend();

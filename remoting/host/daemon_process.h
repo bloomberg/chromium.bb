@@ -46,7 +46,7 @@ class DaemonProcess
  public:
   typedef std::list<DesktopSession*> DesktopSessionList;
 
-  virtual ~DaemonProcess();
+  ~DaemonProcess() override;
 
   // Creates a platform-specific implementation of the daemon process object
   // passing relevant task runners. Public methods of this class must be called
@@ -58,17 +58,17 @@ class DaemonProcess
       const base::Closure& stopped_callback);
 
   // ConfigWatcher::Delegate
-  virtual void OnConfigUpdated(const std::string& serialized_config) override;
-  virtual void OnConfigWatcherError() override;
+  void OnConfigUpdated(const std::string& serialized_config) override;
+  void OnConfigWatcherError() override;
 
   // HostStatusMonitor interface.
-  virtual void AddStatusObserver(HostStatusObserver* observer) override;
-  virtual void RemoveStatusObserver(HostStatusObserver* observer) override;
+  void AddStatusObserver(HostStatusObserver* observer) override;
+  void RemoveStatusObserver(HostStatusObserver* observer) override;
 
   // WorkerProcessIpcDelegate implementation.
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnPermanentError(int exit_code) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnPermanentError(int exit_code) override;
 
   // Sends an IPC message to the network process. The message will be dropped
   // unless the network process is connected over the IPC channel.

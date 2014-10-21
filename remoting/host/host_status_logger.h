@@ -27,19 +27,18 @@ class HostStatusLogger : public HostStatusObserver,
                   ServerLogEntry::Mode mode,
                   SignalStrategy* signal_strategy,
                   const std::string& directory_bot_jid);
-  virtual ~HostStatusLogger();
+  ~HostStatusLogger() override;
 
   // Logs a session state change. Currently, this is either
   // connection or disconnection.
   void LogSessionStateChange(const std::string& jid, bool connected);
 
   // HostStatusObserver interface.
-  virtual void OnClientConnected(const std::string& jid) override;
-  virtual void OnClientDisconnected(const std::string& jid) override;
-  virtual void OnClientRouteChange(
-      const std::string& jid,
-      const std::string& channel_name,
-      const protocol::TransportRoute& route) override;
+  void OnClientConnected(const std::string& jid) override;
+  void OnClientDisconnected(const std::string& jid) override;
+  void OnClientRouteChange(const std::string& jid,
+                           const std::string& channel_name,
+                           const protocol::TransportRoute& route) override;
 
   // Allows test code to fake SignalStrategy state change events.
   void SetSignalingStateForTest(SignalStrategy::State state);

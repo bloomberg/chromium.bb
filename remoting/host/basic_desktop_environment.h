@@ -27,18 +27,17 @@ class GnubbyAuthHandler;
 // the local console.
 class BasicDesktopEnvironment : public DesktopEnvironment {
  public:
-  virtual ~BasicDesktopEnvironment();
+  ~BasicDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.
-  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
-  virtual scoped_ptr<InputInjector> CreateInputInjector() override;
-  virtual scoped_ptr<ScreenControls> CreateScreenControls() override;
-  virtual scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
-  virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
-      override;
-  virtual std::string GetCapabilities() const override;
-  virtual void SetCapabilities(const std::string& capabilities) override;
-  virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
+  scoped_ptr<AudioCapturer> CreateAudioCapturer() override;
+  scoped_ptr<InputInjector> CreateInputInjector() override;
+  scoped_ptr<ScreenControls> CreateScreenControls() override;
+  scoped_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
+  scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor() override;
+  std::string GetCapabilities() const override;
+  void SetCapabilities(const std::string& capabilities) override;
+  scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
       protocol::ClientStub* client_stub) override;
 
  protected:
@@ -93,10 +92,10 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~BasicDesktopEnvironmentFactory();
+  ~BasicDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory implementation.
-  virtual bool SupportsAudioCapture() const override;
+  bool SupportsAudioCapture() const override;
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {

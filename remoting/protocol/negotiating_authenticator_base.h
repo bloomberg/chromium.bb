@@ -60,14 +60,13 @@ namespace protocol {
 //      mix of webapp, client plugin and host, for both Me2Me and IT2Me.
 class NegotiatingAuthenticatorBase : public Authenticator {
  public:
-  virtual ~NegotiatingAuthenticatorBase();
+  ~NegotiatingAuthenticatorBase() override;
 
   // Authenticator interface.
-  virtual State state() const override;
-  virtual bool started() const override;
-  virtual RejectionReason rejection_reason() const override;
-  virtual scoped_ptr<ChannelAuthenticator>
-      CreateChannelAuthenticator() const override;
+  State state() const override;
+  bool started() const override;
+  RejectionReason rejection_reason() const override;
+  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
   // Calls |current_authenticator_| to process |message|, passing the supplied
   // |resume_callback|.

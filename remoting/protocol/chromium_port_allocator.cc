@@ -34,14 +34,14 @@ class ChromiumPortAllocatorSession
       const std::vector<std::string>& relay_hosts,
       const std::string& relay,
       const scoped_refptr<net::URLRequestContextGetter>& url_context);
-  virtual ~ChromiumPortAllocatorSession();
+  ~ChromiumPortAllocatorSession() override;
 
   // cricket::HttpPortAllocatorBase overrides.
-  virtual void ConfigReady(cricket::PortConfiguration* config) override;
-  virtual void SendSessionRequest(const std::string& host, int port) override;
+  void ConfigReady(cricket::PortConfiguration* config) override;
+  void SendSessionRequest(const std::string& host, int port) override;
 
   // net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* url_fetcher) override;
+  void OnURLFetchComplete(const net::URLFetcher* url_fetcher) override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_context_;

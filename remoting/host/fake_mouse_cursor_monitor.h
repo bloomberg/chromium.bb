@@ -12,10 +12,10 @@ namespace remoting {
 class FakeMouseCursorMonitor : public webrtc::MouseCursorMonitor {
  public:
   FakeMouseCursorMonitor();
-  virtual ~FakeMouseCursorMonitor();
+  ~FakeMouseCursorMonitor() override;
 
-  virtual void Init(Callback* callback, Mode mode) override;
-  virtual void Capture() override;
+  void Init(Callback* callback, Mode mode) override;
+  void Capture() override;
 
  private:
   Callback* callback_;

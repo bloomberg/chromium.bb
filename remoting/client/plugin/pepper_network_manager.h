@@ -24,11 +24,11 @@ namespace remoting {
 class PepperNetworkManager : public rtc::NetworkManagerBase {
  public:
   PepperNetworkManager(const pp::InstanceHandle& instance);
-  virtual ~PepperNetworkManager();
+  ~PepperNetworkManager() override;
 
   // NetworkManager interface.
-  virtual void StartUpdating() override;
-  virtual void StopUpdating() override;
+  void StartUpdating() override;
+  void StopUpdating() override;
 
  private:
   static void OnNetworkListCallbackHandler(void* user_data,

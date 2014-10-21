@@ -16,7 +16,7 @@ namespace remoting {
 class FakeDesktopShapeTracker : public DesktopShapeTracker {
  public:
   FakeDesktopShapeTracker() {}
-  virtual ~FakeDesktopShapeTracker() {}
+  ~FakeDesktopShapeTracker() override {}
 
   static webrtc::DesktopRegion CreateShape() {
     webrtc::DesktopRegion result;
@@ -25,11 +25,9 @@ class FakeDesktopShapeTracker : public DesktopShapeTracker {
     return result;
   }
 
-  virtual void RefreshDesktopShape() override {
-    shape_ = CreateShape();
-  }
+  void RefreshDesktopShape() override { shape_ = CreateShape(); }
 
-  virtual const webrtc::DesktopRegion& desktop_shape() override {
+  const webrtc::DesktopRegion& desktop_shape() override {
     // desktop_shape() can't be called before RefreshDesktopShape().
     EXPECT_FALSE(shape_.is_empty());
     return shape_;
@@ -43,11 +41,11 @@ class ShapedDesktopCapturerTest : public testing::Test,
                                  public webrtc::DesktopCapturer::Callback {
  public:
   // webrtc::DesktopCapturer::Callback interface
-  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) override {
+  webrtc::SharedMemory* CreateSharedMemory(size_t size) override {
     return NULL;
   }
 
-  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) override {
+  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override {
     last_frame_.reset(frame);
   }
 

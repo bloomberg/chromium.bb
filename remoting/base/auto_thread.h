@@ -55,7 +55,7 @@ class AutoThread : base::PlatformThread::Delegate {
   explicit AutoThread(const char* name);
 
   // Waits for the thread to exit, and then destroys it.
-  virtual ~AutoThread();
+  ~AutoThread() override;
 
   // Starts the thread, running the specified type of MessageLoop.  Returns
   // an AutoThreadTaskRunner through which tasks may be posted to the thread
@@ -83,7 +83,7 @@ class AutoThread : base::PlatformThread::Delegate {
   void JoinAndDeleteThread();
 
   // base::PlatformThread::Delegate methods:
-  virtual void ThreadMain() override;
+  void ThreadMain() override;
 
   // Used to pass data to ThreadMain.
   struct StartupData;

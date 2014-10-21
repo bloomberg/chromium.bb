@@ -226,10 +226,10 @@ class CurtainModeMac : public CurtainMode {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  virtual ~CurtainModeMac();
+  ~CurtainModeMac() override;
 
   // Overriden from CurtainMode.
-  virtual bool Activate() override;
+  bool Activate() override;
 
  private:
   scoped_refptr<SessionWatcher> session_watcher_;

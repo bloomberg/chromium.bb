@@ -30,10 +30,10 @@ class ConfigFileWatcher : public ConfigWatcher {
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const base::FilePath& config_path);
-  virtual ~ConfigFileWatcher();
+  ~ConfigFileWatcher() override;
 
   // Inherited from ConfigWatcher.
-  virtual void Watch(Delegate* delegate) override;
+  void Watch(Delegate* delegate) override;
 
  private:
   scoped_refptr<ConfigFileWatcherImpl> impl_;

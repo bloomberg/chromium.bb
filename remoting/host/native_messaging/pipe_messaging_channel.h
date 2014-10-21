@@ -35,11 +35,11 @@ class PipeMessagingChannel : public extensions::NativeMessagingChannel,
   // Constructs an object taking the ownership of |input| and |output|. Closes
   // |input| and |output| to prevent the caller from using them.
   PipeMessagingChannel(base::File input, base::File output);
-  virtual ~PipeMessagingChannel();
+  ~PipeMessagingChannel() override;
 
   // extensions::NativeMessagingChannel implementation.
-  virtual void Start(EventHandler* event_handler) override;
-  virtual void SendMessage(scoped_ptr<base::Value> message) override;
+  void Start(EventHandler* event_handler) override;
+  void SendMessage(scoped_ptr<base::Value> message) override;
 
  private:
   // Processes a message received from the client app.

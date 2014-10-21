@@ -44,24 +44,22 @@ class JingleSessionManager : public SessionManager,
                              public SignalStrategy::Listener {
  public:
   explicit JingleSessionManager(scoped_ptr<TransportFactory> transport_factory);
-  virtual ~JingleSessionManager();
+  ~JingleSessionManager() override;
 
   // SessionManager interface.
-  virtual void Init(SignalStrategy* signal_strategy,
-                    SessionManager::Listener* listener) override;
-  virtual scoped_ptr<Session> Connect(
+  void Init(SignalStrategy* signal_strategy,
+            SessionManager::Listener* listener) override;
+  scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
       scoped_ptr<CandidateSessionConfig> config) override;
-  virtual void Close() override;
-  virtual void set_authenticator_factory(
+  void Close() override;
+  void set_authenticator_factory(
       scoped_ptr<AuthenticatorFactory> authenticator_factory) override;
 
   // SignalStrategy::Listener interface.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
  private:
   friend class JingleSession;

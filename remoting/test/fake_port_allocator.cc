@@ -24,11 +24,11 @@ class FakePortAllocatorSession
       const std::vector<rtc::SocketAddress>& stun_hosts,
       const std::vector<std::string>& relay_hosts,
       const std::string& relay);
-  virtual ~FakePortAllocatorSession();
+  ~FakePortAllocatorSession() override;
 
   // cricket::HttpPortAllocatorBase overrides.
-  virtual void ConfigReady(cricket::PortConfiguration* config) override;
-  virtual void SendSessionRequest(const std::string& host, int port) override;
+  void ConfigReady(cricket::PortConfiguration* config) override;
+  void SendSessionRequest(const std::string& host, int port) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePortAllocatorSession);

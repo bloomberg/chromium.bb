@@ -30,19 +30,18 @@ class HostWindowProxy::Core
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
-  virtual ~Core();
+  ~Core() override;
 
   // Start() and Stop() equivalents called on the |ui_task_runner_| thread.
   void StartOnUiThread(const std::string& client_jid);
   void StopOnUiThread();
 
   // ClientSessionControl interface.
-  virtual const std::string& client_jid() const override;
-  virtual void DisconnectSession() override;
-  virtual void OnLocalMouseMoved(
-      const webrtc::DesktopVector& position) override;
-  virtual void SetDisableInputs(bool disable_inputs) override;
-  virtual void ResetVideoPipeline() override;
+  const std::string& client_jid() const override;
+  void DisconnectSession() override;
+  void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
+  void SetDisableInputs(bool disable_inputs) override;
+  void ResetVideoPipeline() override;
 
   // Task runner on which public methods of this class must be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;

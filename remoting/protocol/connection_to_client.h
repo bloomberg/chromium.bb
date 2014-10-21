@@ -67,7 +67,7 @@ class ConnectionToClient : public base::NonThreadSafe,
   // Constructs a ConnectionToClient object for the |session|. Takes
   // ownership of |session|.
   explicit ConnectionToClient(Session* session);
-  virtual ~ConnectionToClient();
+  ~ConnectionToClient() override;
 
   // Set |event_handler| for connection events. Must be called once when this
   // object is created.
@@ -101,9 +101,9 @@ class ConnectionToClient : public base::NonThreadSafe,
   virtual InputStub* input_stub();
 
   // Session::EventHandler interface.
-  virtual void OnSessionStateChange(Session::State state) override;
-  virtual void OnSessionRouteChange(const std::string& channel_name,
-                                    const TransportRoute& route) override;
+  void OnSessionStateChange(Session::State state) override;
+  void OnSessionRouteChange(const std::string& channel_name,
+                            const TransportRoute& route) override;
 
  private:
   // Callback for channel initialization.

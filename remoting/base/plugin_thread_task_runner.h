@@ -46,18 +46,16 @@ class PluginThreadTaskRunner : public base::SingleThreadTaskRunner {
   void Quit();
 
   // base::SingleThreadTaskRunner interface.
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
  protected:
-  virtual ~PluginThreadTaskRunner();
+  ~PluginThreadTaskRunner() override;
 
  private:
   // Methods that can be called from any thread.

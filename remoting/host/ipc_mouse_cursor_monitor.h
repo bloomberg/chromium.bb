@@ -21,11 +21,11 @@ class IpcMouseCursorMonitor : public webrtc::MouseCursorMonitor {
  public:
   explicit IpcMouseCursorMonitor(
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
-  virtual ~IpcMouseCursorMonitor();
+  ~IpcMouseCursorMonitor() override;
 
   // webrtc::MouseCursorMonitor interface.
-  virtual void Init(Callback* callback, Mode mode) override;
-  virtual void Capture() override;
+  void Init(Callback* callback, Mode mode) override;
+  void Capture() override;
 
   // Called when the cursor shape has changed.
   void OnMouseCursor(scoped_ptr<webrtc::MouseCursor> cursor);

@@ -41,22 +41,21 @@ class TokenValidatorBase
       const ThirdPartyAuthConfig& third_party_auth_config,
       const std::string& token_scope,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
-  virtual ~TokenValidatorBase();
+  ~TokenValidatorBase() override;
 
   // TokenValidator interface.
-  virtual void ValidateThirdPartyToken(
+  void ValidateThirdPartyToken(
       const std::string& token,
-      const base::Callback<void(
-          const std::string& shared_secret)>& on_token_validated) override;
+      const base::Callback<void(const std::string& shared_secret)>&
+          on_token_validated) override;
 
-  virtual const GURL& token_url() const override;
-  virtual const std::string& token_scope() const override;
+  const GURL& token_url() const override;
+  const std::string& token_scope() const override;
 
   // URLRequest::Delegate interface.
-  virtual void OnResponseStarted(net::URLRequest* source) override;
-  virtual void OnReadCompleted(net::URLRequest* source,
-                               int bytes_read) override;
-  virtual void OnCertificateRequested(
+  void OnResponseStarted(net::URLRequest* source) override;
+  void OnReadCompleted(net::URLRequest* source, int bytes_read) override;
+  void OnCertificateRequested(
       net::URLRequest* source,
       net::SSLCertRequestInfo* cert_request_info) override;
 

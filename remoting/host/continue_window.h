@@ -14,11 +14,10 @@ namespace remoting {
 
 class ContinueWindow : public HostWindow {
  public:
-  virtual ~ContinueWindow();
+  ~ContinueWindow() override;
 
   // HostWindow override.
-  virtual void Start(
-      const base::WeakPtr<ClientSessionControl>& client_session_control)
+  void Start(const base::WeakPtr<ClientSessionControl>& client_session_control)
       override;
 
   // Resumes paused client session.

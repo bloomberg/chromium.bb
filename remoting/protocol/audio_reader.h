@@ -26,12 +26,12 @@ class AudioReader : public ChannelDispatcherBase {
  public:
   static scoped_ptr<AudioReader> Create(const SessionConfig& config);
 
-  virtual ~AudioReader();
+  ~AudioReader() override;
 
   void set_audio_stub(AudioStub* audio_stub) { audio_stub_ = audio_stub; }
 
  protected:
-  virtual void OnInitialized() override;
+  void OnInitialized() override;
 
  private:
   explicit AudioReader(AudioPacket::Encoding encoding);

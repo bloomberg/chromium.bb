@@ -19,7 +19,7 @@ class ClipboardFilter : public ClipboardStub {
  public:
   ClipboardFilter();
   explicit ClipboardFilter(ClipboardStub* clipboard_stub);
-  virtual ~ClipboardFilter();
+  ~ClipboardFilter() override;
 
   // Set the ClipboardStub that events will be forwarded to.
   void set_clipboard_stub(ClipboardStub* clipboard_stub);
@@ -29,7 +29,7 @@ class ClipboardFilter : public ClipboardStub {
   bool enabled() const { return enabled_; }
 
   // ClipboardStub interface.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
+  void InjectClipboardEvent(const ClipboardEvent& event) override;
 
  private:
   ClipboardStub* clipboard_stub_;

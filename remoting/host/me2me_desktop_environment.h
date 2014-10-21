@@ -17,12 +17,12 @@ class LocalInputMonitor;
 // notifications on Linux.
 class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
  public:
-  virtual ~Me2MeDesktopEnvironment();
+  ~Me2MeDesktopEnvironment() override;
 
   // DesktopEnvironment interface.
-  virtual scoped_ptr<ScreenControls> CreateScreenControls() override;
-  virtual std::string GetCapabilities() const override;
-  virtual scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
+  scoped_ptr<ScreenControls> CreateScreenControls() override;
+  std::string GetCapabilities() const override;
+  scoped_ptr<GnubbyAuthHandler> CreateGnubbyAuthHandler(
       protocol::ClientStub* client_stub) override;
 
  protected:
@@ -64,13 +64,13 @@ class Me2MeDesktopEnvironmentFactory : public BasicDesktopEnvironmentFactory {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~Me2MeDesktopEnvironmentFactory();
+  ~Me2MeDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory interface.
-  virtual scoped_ptr<DesktopEnvironment> Create(
+  scoped_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control) override;
-  virtual void SetEnableCurtaining(bool enable) override;
-  virtual void SetEnableGnubbyAuth(bool enable) override;
+  void SetEnableCurtaining(bool enable) override;
+  void SetEnableGnubbyAuth(bool enable) override;
 
  protected:
   bool curtain_enabled() const { return curtain_enabled_; }

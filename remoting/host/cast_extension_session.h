@@ -44,7 +44,7 @@ struct NetworkSettings;
 class CastExtensionSession : public HostExtensionSession,
                              public webrtc::PeerConnectionObserver {
  public:
-  virtual ~CastExtensionSession();
+  ~CastExtensionSession() override;
 
   // Creates and returns a CastExtensionSession object, after performing
   // initialization steps on it. The caller must take ownership of the returned
@@ -61,32 +61,29 @@ class CastExtensionSession : public HostExtensionSession,
   void OnCreateSessionDescriptionFailure(const std::string& error);
 
   // HostExtensionSession interface.
-  virtual void OnCreateVideoCapturer(
+  void OnCreateVideoCapturer(
       scoped_ptr<webrtc::DesktopCapturer>* capturer) override;
-  virtual bool ModifiesVideoPipeline() const override;
-  virtual bool OnExtensionMessage(
-      ClientSessionControl* client_session_control,
-      protocol::ClientStub* client_stub,
-      const protocol::ExtensionMessage& message) override;
+  bool ModifiesVideoPipeline() const override;
+  bool OnExtensionMessage(ClientSessionControl* client_session_control,
+                          protocol::ClientStub* client_stub,
+                          const protocol::ExtensionMessage& message) override;
 
   // webrtc::PeerConnectionObserver interface.
-  virtual void OnError() override;
-  virtual void OnSignalingChange(
+  void OnError() override;
+  void OnSignalingChange(
       webrtc::PeerConnectionInterface::SignalingState new_state) override;
-  virtual void OnStateChange(
+  void OnStateChange(
       webrtc::PeerConnectionObserver::StateType state_changed) override;
-  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) override;
-  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
-  virtual void OnDataChannel(
-      webrtc::DataChannelInterface* data_channel) override;
-  virtual void OnRenegotiationNeeded() override;
-  virtual void OnIceConnectionChange(
+  void OnAddStream(webrtc::MediaStreamInterface* stream) override;
+  void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
+  void OnDataChannel(webrtc::DataChannelInterface* data_channel) override;
+  void OnRenegotiationNeeded() override;
+  void OnIceConnectionChange(
       webrtc::PeerConnectionInterface::IceConnectionState new_state) override;
-  virtual void OnIceGatheringChange(
+  void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
-  virtual void OnIceCandidate(
-      const webrtc::IceCandidateInterface* candidate) override;
-  virtual void OnIceComplete() override;
+  void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
+  void OnIceComplete() override;
 
  private:
   CastExtensionSession(

@@ -17,17 +17,16 @@ namespace remoting {
 class FakeExtension::Session : public HostExtensionSession {
  public:
   Session(FakeExtension* extension, const std::string& message_type);
-  virtual ~Session() {}
+  ~Session() override {}
 
   // HostExtensionSession interface.
-  virtual void OnCreateVideoCapturer(
+  void OnCreateVideoCapturer(
       scoped_ptr<webrtc::DesktopCapturer>* encoder) override;
-  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) override;
-  virtual bool ModifiesVideoPipeline() const override;
-  virtual bool OnExtensionMessage(
-      ClientSessionControl* client_session_control,
-      protocol::ClientStub* client_stub,
-      const protocol::ExtensionMessage& message) override;
+  void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) override;
+  bool ModifiesVideoPipeline() const override;
+  bool OnExtensionMessage(ClientSessionControl* client_session_control,
+                          protocol::ClientStub* client_stub,
+                          const protocol::ExtensionMessage& message) override;
 
  private:
   FakeExtension* extension_;

@@ -22,7 +22,7 @@ class NativeMessagingPipe
       public extensions::NativeMessageHost::Client {
  public:
   NativeMessagingPipe();
-  virtual ~NativeMessagingPipe();
+  ~NativeMessagingPipe() override;
 
   // Starts processing messages from the pipe.
   void Start(scoped_ptr<extensions::NativeMessageHost> host,
@@ -30,12 +30,12 @@ class NativeMessagingPipe
              const base::Closure& quit_closure);
 
   // extensions::NativeMessageHost::Client implementation.
-  virtual void PostMessageFromNativeHost(const std::string& message) override;
-  virtual void CloseChannel(const std::string& error_message) override;
+  void PostMessageFromNativeHost(const std::string& message) override;
+  void CloseChannel(const std::string& error_message) override;
 
   // extensions::NativeMessagingChannel::EventHandler implementation.
-  virtual void OnMessage(scoped_ptr<base::Value> message) override;
-  virtual void OnDisconnect() override;
+  void OnMessage(scoped_ptr<base::Value> message) override;
+  void OnDisconnect() override;
 
  private:
   base::Closure quit_closure_;

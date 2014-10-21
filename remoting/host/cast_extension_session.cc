@@ -71,16 +71,16 @@ class CastSetSessionDescriptionObserver
   static CastSetSessionDescriptionObserver* Create() {
     return new rtc::RefCountedObject<CastSetSessionDescriptionObserver>();
   }
-  virtual void OnSuccess() override {
+  void OnSuccess() override {
     VLOG(1) << "Setting session description succeeded.";
   }
-  virtual void OnFailure(const std::string& error) override {
+  void OnFailure(const std::string& error) override {
     LOG(ERROR) << "Setting session description failed: " << error;
   }
 
  protected:
   CastSetSessionDescriptionObserver() {}
-  virtual ~CastSetSessionDescriptionObserver() {}
+  ~CastSetSessionDescriptionObserver() override {}
 
   DISALLOW_COPY_AND_ASSIGN(CastSetSessionDescriptionObserver);
 };
@@ -95,7 +95,7 @@ class CastCreateSessionDescriptionObserver
     return new rtc::RefCountedObject<CastCreateSessionDescriptionObserver>(
         session);
   }
-  virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
+  void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     if (cast_extension_session_ == NULL) {
       LOG(ERROR)
           << "No CastExtensionSession. Creating session description succeeded.";
@@ -103,7 +103,7 @@ class CastCreateSessionDescriptionObserver
     }
     cast_extension_session_->OnCreateSessionDescription(desc);
   }
-  virtual void OnFailure(const std::string& error) override {
+  void OnFailure(const std::string& error) override {
     if (cast_extension_session_ == NULL) {
       LOG(ERROR)
           << "No CastExtensionSession. Creating session description failed.";
@@ -118,7 +118,7 @@ class CastCreateSessionDescriptionObserver
  protected:
   explicit CastCreateSessionDescriptionObserver(CastExtensionSession* session)
       : cast_extension_session_(session) {}
-  virtual ~CastCreateSessionDescriptionObserver() {}
+  ~CastCreateSessionDescriptionObserver() override {}
 
  private:
   CastExtensionSession* cast_extension_session_;
@@ -134,8 +134,7 @@ class CastStatsObserver : public webrtc::StatsObserver {
     return new rtc::RefCountedObject<CastStatsObserver>();
   }
 
-  virtual void OnComplete(
-      const std::vector<webrtc::StatsReport>& reports) override {
+  void OnComplete(const std::vector<webrtc::StatsReport>& reports) override {
     typedef webrtc::StatsReport::Values::iterator ValuesIterator;
 
     VLOG(1) << "Received " << reports.size() << " new StatsReports.";
@@ -153,7 +152,7 @@ class CastStatsObserver : public webrtc::StatsObserver {
 
  protected:
   CastStatsObserver() {}
-  virtual ~CastStatsObserver() {}
+  ~CastStatsObserver() override {}
 
   DISALLOW_COPY_AND_ASSIGN(CastStatsObserver);
 };

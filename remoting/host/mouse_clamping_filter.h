@@ -17,7 +17,7 @@ namespace remoting {
 class MouseClampingFilter : public protocol::VideoStub {
  public:
   explicit MouseClampingFilter(protocol::InputStub* input_stub);
-  virtual ~MouseClampingFilter();
+  ~MouseClampingFilter() override;
 
   protocol::InputStub* input_filter() { return &input_filter_; }
 
@@ -26,8 +26,8 @@ class MouseClampingFilter : public protocol::VideoStub {
   }
 
   // protocol::VideoStub implementation.
-  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
-                                  const base::Closure& done) override;
+  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+                          const base::Closure& done) override;
 
  private:
   // Clamps mouse event coordinates to the video dimensions.

@@ -98,13 +98,11 @@ class HeartbeatSender : public SignalStrategy::Listener {
                   SignalStrategy* signal_strategy,
                   scoped_refptr<RsaKeyPair> key_pair,
                   const std::string& directory_bot_jid);
-  virtual ~HeartbeatSender();
+  ~HeartbeatSender() override;
 
   // SignalStrategy::Listener interface.
-  virtual void OnSignalStrategyStateChange(
-      SignalStrategy::State state) override;
-  virtual bool OnSignalStrategyIncomingStanza(
-      const buzz::XmlElement* stanza) override;
+  void OnSignalStrategyStateChange(SignalStrategy::State state) override;
+  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, DoSendStanza);

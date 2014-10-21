@@ -95,15 +95,13 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       protocol::VideoStub* video_stub);
 
   // webrtc::DesktopCapturer::Callback implementation.
-  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
-  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
+  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   // webrtc::MouseCursorMonitor::Callback implementation.
-  virtual void OnMouseCursor(
-      webrtc::MouseCursor* mouse_cursor) override;
-  virtual void OnMouseCursorPosition(
-      webrtc::MouseCursorMonitor::CursorState state,
-      const webrtc::DesktopVector& position) override;
+  void OnMouseCursor(webrtc::MouseCursor* mouse_cursor) override;
+  void OnMouseCursorPosition(webrtc::MouseCursorMonitor::CursorState state,
+                             const webrtc::DesktopVector& position) override;
 
   // Starts scheduling frame captures.
   void Start();
@@ -127,7 +125,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
  private:
   friend class base::RefCountedThreadSafe<VideoScheduler>;
-  virtual ~VideoScheduler();
+  ~VideoScheduler() override;
 
   // Capturer thread ----------------------------------------------------------
 

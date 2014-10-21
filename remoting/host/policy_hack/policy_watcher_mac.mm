@@ -28,18 +28,14 @@ class PolicyWatcherMac : public PolicyWatcher {
     : PolicyWatcher(task_runner) {
   }
 
-  virtual ~PolicyWatcherMac() {
-  }
+  ~PolicyWatcherMac() override {}
 
  protected:
-  virtual void StartWatchingInternal() override {
-    Reload();
-  }
+  void StartWatchingInternal() override { Reload(); }
 
-  virtual void StopWatchingInternal() override {
-  }
+  void StopWatchingInternal() override {}
 
-  virtual void Reload() override {
+  void Reload() override {
     DCHECK(OnPolicyWatcherThread());
     base::DictionaryValue policy;
 

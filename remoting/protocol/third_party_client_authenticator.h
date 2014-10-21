@@ -58,14 +58,13 @@ class ThirdPartyClientAuthenticator : public ThirdPartyAuthenticatorBase {
   // |host_public_key|. |token_fetcher| is used to get the authentication token.
   explicit ThirdPartyClientAuthenticator(
       scoped_ptr<TokenFetcher> token_fetcher);
-  virtual ~ThirdPartyClientAuthenticator();
+  ~ThirdPartyClientAuthenticator() override;
 
  protected:
   // ThirdPartyAuthenticator implementation.
-  virtual void ProcessTokenMessage(
-      const buzz::XmlElement* message,
-      const base::Closure& resume_callback) override;
-  virtual void AddTokenElements(buzz::XmlElement* message) override;
+  void ProcessTokenMessage(const buzz::XmlElement* message,
+                           const base::Closure& resume_callback) override;
+  void AddTokenElements(buzz::XmlElement* message) override;
 
  private:
   void OnThirdPartyTokenFetched(const base::Closure& resume_callback,

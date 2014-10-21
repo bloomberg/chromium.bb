@@ -21,20 +21,20 @@ class DelegatingSignalStrategy : public SignalStrategy {
 
   DelegatingSignalStrategy(std::string local_jid,
                        const SendIqCallback& send_iq_callback);
-  virtual ~DelegatingSignalStrategy();
+  ~DelegatingSignalStrategy() override;
 
   void OnIncomingMessage(const std::string& message);
 
   // SignalStrategy interface.
-  virtual void Connect() override;
-  virtual void Disconnect() override;
-  virtual State GetState() const override;
-  virtual Error GetError() const override;
-  virtual std::string GetLocalJid() const override;
-  virtual void AddListener(Listener* listener) override;
-  virtual void RemoveListener(Listener* listener) override;
-  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
-  virtual std::string GetNextId() override;
+  void Connect() override;
+  void Disconnect() override;
+  State GetState() const override;
+  Error GetError() const override;
+  std::string GetLocalJid() const override;
+  void AddListener(Listener* listener) override;
+  void RemoveListener(Listener* listener) override;
+  bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override;
+  std::string GetNextId() override;
 
  private:
   std::string local_jid_;

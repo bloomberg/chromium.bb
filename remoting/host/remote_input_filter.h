@@ -22,7 +22,7 @@ class RemoteInputFilter : public protocol::InputStub {
   // Creates a filter forwarding events to the specified InputEventTracker.
   // The filter needs a tracker to release buttons & keys when blocking input.
   explicit RemoteInputFilter(protocol::InputEventTracker* event_tracker);
-  virtual ~RemoteInputFilter();
+  ~RemoteInputFilter() override;
 
   // Informs the filter that local mouse activity has been detected.  If the
   // activity does not match events we injected then we assume that it is local,
@@ -33,9 +33,9 @@ class RemoteInputFilter : public protocol::InputStub {
   void SetExpectLocalEcho(bool expect_local_echo);
 
   // InputStub overrides.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  void InjectTextEvent(const protocol::TextEvent& event) override;
+  void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
   bool ShouldIgnoreInput() const;

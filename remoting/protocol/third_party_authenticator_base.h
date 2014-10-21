@@ -32,17 +32,16 @@ namespace protocol {
 // an authentication key, which is used to establish the connection.
 class ThirdPartyAuthenticatorBase : public Authenticator {
  public:
-  virtual ~ThirdPartyAuthenticatorBase();
+  ~ThirdPartyAuthenticatorBase() override;
 
   // Authenticator interface.
-  virtual State state() const override;
-  virtual bool started() const override;
-  virtual RejectionReason rejection_reason() const override;
-  virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) override;
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override;
-  virtual scoped_ptr<ChannelAuthenticator>
-      CreateChannelAuthenticator() const override;
+  State state() const override;
+  bool started() const override;
+  RejectionReason rejection_reason() const override;
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override;
+  scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
  protected:
   // XML tag names for third party authentication fields.

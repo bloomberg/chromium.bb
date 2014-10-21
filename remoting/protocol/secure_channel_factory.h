@@ -27,12 +27,12 @@ class SecureChannelFactory : public StreamChannelFactory {
   // Both parameters must outlive the object.
   SecureChannelFactory(StreamChannelFactory* channel_factory,
                        Authenticator* authenticator);
-  virtual ~SecureChannelFactory();
+  ~SecureChannelFactory() override;
 
   // StreamChannelFactory interface.
-  virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) override;
-  virtual void CancelChannelCreation(const std::string& name) override;
+  void CreateChannel(const std::string& name,
+                     const ChannelCreatedCallback& callback) override;
+  void CancelChannelCreation(const std::string& name) override;
 
  private:
   typedef std::map<std::string, ChannelAuthenticator*> AuthenticatorMap;

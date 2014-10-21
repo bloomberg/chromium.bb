@@ -218,15 +218,15 @@ class MockSessionManager : public SessionManager {
 class MockPairingRegistryDelegate : public PairingRegistry::Delegate {
  public:
   MockPairingRegistryDelegate();
-  virtual ~MockPairingRegistryDelegate();
+  ~MockPairingRegistryDelegate() override;
 
   // PairingRegistry::Delegate implementation.
-  virtual scoped_ptr<base::ListValue> LoadAll() override;
-  virtual bool DeleteAll() override;
-  virtual protocol::PairingRegistry::Pairing Load(
+  scoped_ptr<base::ListValue> LoadAll() override;
+  bool DeleteAll() override;
+  protocol::PairingRegistry::Pairing Load(
       const std::string& client_id) override;
-  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) override;
-  virtual bool Delete(const std::string& client_id) override;
+  bool Save(const protocol::PairingRegistry::Pairing& pairing) override;
+  bool Delete(const std::string& client_id) override;
 
  private:
   typedef std::map<std::string, protocol::PairingRegistry::Pairing> Pairings;
@@ -238,13 +238,12 @@ class SynchronousPairingRegistry : public PairingRegistry {
   explicit SynchronousPairingRegistry(scoped_ptr<Delegate> delegate);
 
  protected:
-  virtual ~SynchronousPairingRegistry();
+  ~SynchronousPairingRegistry() override;
 
   // Runs tasks synchronously instead of posting them to |task_runner|.
-  virtual void PostTask(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const tracked_objects::Location& from_here,
-      const base::Closure& task) override;
+  void PostTask(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+                const tracked_objects::Location& from_here,
+                const base::Closure& task) override;
 };
 
 }  // namespace protocol

@@ -27,10 +27,10 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& shared_secret);
-  virtual ~It2MeHostAuthenticatorFactory();
+  ~It2MeHostAuthenticatorFactory() override;
 
   // AuthenticatorFactory interface.
-  virtual scoped_ptr<Authenticator> CreateAuthenticator(
+  scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid,
       const buzz::XmlElement* first_message) override;

@@ -23,36 +23,30 @@ class RejectingAuthenticator : public Authenticator {
   RejectingAuthenticator()
       : state_(WAITING_MESSAGE) {
   }
-  virtual ~RejectingAuthenticator() {
-  }
+  ~RejectingAuthenticator() override {}
 
-  virtual State state() const override {
-    return state_;
-  }
+  State state() const override { return state_; }
 
-  virtual bool started() const override {
-    return true;
-  }
+  bool started() const override { return true; }
 
-  virtual RejectionReason rejection_reason() const override {
+  RejectionReason rejection_reason() const override {
     DCHECK_EQ(state_, REJECTED);
     return INVALID_CREDENTIALS;
   }
 
-  virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) override {
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override {
     DCHECK_EQ(state_, WAITING_MESSAGE);
     state_ = REJECTED;
     resume_callback.Run();
   }
 
-  virtual scoped_ptr<buzz::XmlElement> GetNextMessage() override {
+  scoped_ptr<buzz::XmlElement> GetNextMessage() override {
     NOTREACHED();
     return nullptr;
   }
 
-  virtual scoped_ptr<ChannelAuthenticator>
-  CreateChannelAuthenticator() const override {
+  scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override {
     NOTREACHED();
     return nullptr;
   }

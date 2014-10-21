@@ -79,7 +79,7 @@ class ChromotingHost : public base::NonThreadSafe,
       scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~ChromotingHost();
+  ~ChromotingHost() override;
 
   // Asynchronously starts the host.
   //
@@ -90,8 +90,8 @@ class ChromotingHost : public base::NonThreadSafe,
   void Start(const std::string& host_owner);
 
   // HostStatusMonitor interface.
-  virtual void AddStatusObserver(HostStatusObserver* observer) override;
-  virtual void RemoveStatusObserver(HostStatusObserver* observer) override;
+  void AddStatusObserver(HostStatusObserver* observer) override;
+  void RemoveStatusObserver(HostStatusObserver* observer) override;
 
   // Registers a host extension.
   void AddExtension(scoped_ptr<HostExtension> extension);
@@ -120,19 +120,18 @@ class ChromotingHost : public base::NonThreadSafe,
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
-  virtual void OnSessionAuthenticating(ClientSession* client) override;
-  virtual bool OnSessionAuthenticated(ClientSession* client) override;
-  virtual void OnSessionChannelsConnected(ClientSession* client) override;
-  virtual void OnSessionAuthenticationFailed(ClientSession* client) override;
-  virtual void OnSessionClosed(ClientSession* session) override;
-  virtual void OnSessionRouteChange(
-      ClientSession* session,
-      const std::string& channel_name,
-      const protocol::TransportRoute& route) override;
+  void OnSessionAuthenticating(ClientSession* client) override;
+  bool OnSessionAuthenticated(ClientSession* client) override;
+  void OnSessionChannelsConnected(ClientSession* client) override;
+  void OnSessionAuthenticationFailed(ClientSession* client) override;
+  void OnSessionClosed(ClientSession* session) override;
+  void OnSessionRouteChange(ClientSession* session,
+                            const std::string& channel_name,
+                            const protocol::TransportRoute& route) override;
 
   // SessionManager::Listener implementation.
-  virtual void OnSessionManagerReady() override;
-  virtual void OnIncomingSession(
+  void OnSessionManagerReady() override;
+  void OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) override;
 

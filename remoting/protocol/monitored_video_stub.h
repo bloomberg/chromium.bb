@@ -37,11 +37,11 @@ class MonitoredVideoStub : public VideoStub {
       VideoStub* video_stub,
       base::TimeDelta connectivity_check_delay,
       const ChannelStateCallback& callback);
-  virtual ~MonitoredVideoStub();
+  ~MonitoredVideoStub() override;
 
   // VideoStub implementation.
-  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                  const base::Closure& done) override;
+  void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+                          const base::Closure& done) override;
 
  private:
   void OnConnectivityCheckTimeout();

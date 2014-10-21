@@ -18,11 +18,10 @@ class AudioPacket;
 class AudioDecoderOpus : public AudioDecoder {
  public:
   AudioDecoderOpus();
-  virtual ~AudioDecoderOpus();
+  ~AudioDecoderOpus() override;
 
   // AudioDecoder interface.
-  virtual scoped_ptr<AudioPacket> Decode(
-      scoped_ptr<AudioPacket> packet) override;
+  scoped_ptr<AudioPacket> Decode(scoped_ptr<AudioPacket> packet) override;
 
  private:
   void InitDecoder();

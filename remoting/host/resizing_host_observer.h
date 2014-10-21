@@ -28,10 +28,10 @@ class DesktopResizer;
 class ResizingHostObserver : public ScreenControls {
  public:
   explicit ResizingHostObserver(scoped_ptr<DesktopResizer> desktop_resizer);
-  virtual ~ResizingHostObserver();
+  ~ResizingHostObserver() override;
 
   // ScreenControls interface.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
+  void SetScreenResolution(const ScreenResolution& resolution) override;
 
   // Provide a replacement for base::Time::Now so that this class can be
   // unit-tested in a timely manner. This function will be called exactly

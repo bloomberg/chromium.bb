@@ -26,19 +26,18 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
   HostEventLoggerPosix(base::WeakPtr<HostStatusMonitor> monitor,
                        const std::string& application_name);
 
-  virtual ~HostEventLoggerPosix();
+  ~HostEventLoggerPosix() override;
 
   // HostStatusObserver implementation.  These methods will be called from the
   // network thread.
-  virtual void OnClientAuthenticated(const std::string& jid) override;
-  virtual void OnClientDisconnected(const std::string& jid) override;
-  virtual void OnAccessDenied(const std::string& jid) override;
-  virtual void OnClientRouteChange(
-      const std::string& jid,
-      const std::string& channel_name,
-      const protocol::TransportRoute& route) override;
-  virtual void OnStart(const std::string& xmpp_login) override;
-  virtual void OnShutdown() override;
+  void OnClientAuthenticated(const std::string& jid) override;
+  void OnClientDisconnected(const std::string& jid) override;
+  void OnAccessDenied(const std::string& jid) override;
+  void OnClientRouteChange(const std::string& jid,
+                           const std::string& channel_name,
+                           const protocol::TransportRoute& route) override;
+  void OnStart(const std::string& xmpp_login) override;
+  void OnShutdown() override;
 
  private:
   void Log(const std::string& message);

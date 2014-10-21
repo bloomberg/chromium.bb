@@ -16,12 +16,12 @@ namespace remoting {
 class FakeNetworkManager : public rtc::NetworkManager {
  public:
   FakeNetworkManager(const rtc::IPAddress& address);
-  virtual ~FakeNetworkManager();
+  ~FakeNetworkManager() override;
 
   // rtc::NetworkManager interface.
-  virtual void StartUpdating() override;
-  virtual void StopUpdating() override;
-  virtual void GetNetworks(NetworkList* networks) const override;
+  void StartUpdating() override;
+  void StopUpdating() override;
+  void GetNetworks(NetworkList* networks) const override;
 
  protected:
   void SendNetworksChangedSignal();

@@ -35,7 +35,7 @@ namespace protocol {
 class FakeDatagramSocket : public net::Socket {
  public:
   FakeDatagramSocket();
-  virtual ~FakeDatagramSocket();
+  ~FakeDatagramSocket() override;
 
   const std::vector<std::string>& written_packets() const {
     return written_packets_;
@@ -54,12 +54,14 @@ class FakeDatagramSocket : public net::Socket {
   base::WeakPtr<FakeDatagramSocket> GetWeakPtr();
 
   // net::Socket implementation.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override;
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) override;
-  virtual int SetReceiveBufferSize(int32 size) override;
-  virtual int SetSendBufferSize(int32 size) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override;
+  int SetReceiveBufferSize(int32 size) override;
+  int SetSendBufferSize(int32 size) override;
 
  private:
   int CopyReadData(net::IOBuffer* buf, int buf_len);
@@ -83,7 +85,7 @@ class FakeDatagramSocket : public net::Socket {
 class FakeDatagramChannelFactory : public DatagramChannelFactory {
  public:
   FakeDatagramChannelFactory();
-  virtual ~FakeDatagramChannelFactory();
+  ~FakeDatagramChannelFactory() override;
 
   void set_asynchronous_create(bool asynchronous_create) {
     asynchronous_create_ = asynchronous_create;
@@ -102,9 +104,9 @@ class FakeDatagramChannelFactory : public DatagramChannelFactory {
   FakeDatagramSocket* GetFakeChannel(const std::string& name);
 
   // DatagramChannelFactory interface.
-  virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) override;
-  virtual void CancelChannelCreation(const std::string& name) override;
+  void CreateChannel(const std::string& name,
+                     const ChannelCreatedCallback& callback) override;
+  void CancelChannelCreation(const std::string& name) override;
 
  private:
   typedef std::map<std::string, base::WeakPtr<FakeDatagramSocket> > ChannelsMap;

@@ -21,7 +21,7 @@ namespace protocol {
 class InputEventTracker : public InputStub {
  public:
   explicit InputEventTracker(protocol::InputStub* input_stub);
-  virtual ~InputEventTracker();
+  ~InputEventTracker() override;
 
   // Returns true if the key with the specified USB code is currently pressed.
   bool IsKeyPressed(uint32 usb_keycode) const;
@@ -34,9 +34,9 @@ class InputEventTracker : public InputStub {
   void ReleaseAll();
 
   // InputStub interface.
-  virtual void InjectKeyEvent(const KeyEvent& event) override;
-  virtual void InjectTextEvent(const TextEvent& event) override;
-  virtual void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectKeyEvent(const KeyEvent& event) override;
+  void InjectTextEvent(const TextEvent& event) override;
+  void InjectMouseEvent(const MouseEvent& event) override;
 
  private:
   protocol::InputStub* input_stub_;

@@ -104,12 +104,12 @@ class BufferedSocketWriterBase : public base::NonThreadSafe {
 class BufferedSocketWriter : public BufferedSocketWriterBase {
  public:
   BufferedSocketWriter();
-  virtual ~BufferedSocketWriter();
+  ~BufferedSocketWriter() override;
 
  protected:
-  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) override;
-  virtual base::Closure AdvanceBufferPosition(int written) override;
-  virtual void OnError(int result) override;
+  void GetNextPacket(net::IOBuffer** buffer, int* size) override;
+  base::Closure AdvanceBufferPosition(int written) override;
+  void OnError(int result) override;
 
  private:
   scoped_refptr<net::DrainableIOBuffer> current_buf_;
@@ -118,12 +118,12 @@ class BufferedSocketWriter : public BufferedSocketWriterBase {
 class BufferedDatagramWriter : public BufferedSocketWriterBase {
  public:
   BufferedDatagramWriter();
-  virtual ~BufferedDatagramWriter();
+  ~BufferedDatagramWriter() override;
 
  protected:
-  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) override;
-  virtual base::Closure AdvanceBufferPosition(int written) override;
-  virtual void OnError(int result) override;
+  void GetNextPacket(net::IOBuffer** buffer, int* size) override;
+  base::Closure AdvanceBufferPosition(int written) override;
+  void OnError(int result) override;
 };
 
 }  // namespace protocol

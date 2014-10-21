@@ -18,9 +18,9 @@ class PamAuthorizationFactory : public protocol::AuthenticatorFactory {
  public:
   PamAuthorizationFactory(
       scoped_ptr<protocol::AuthenticatorFactory> underlying);
-  virtual ~PamAuthorizationFactory();
+  ~PamAuthorizationFactory() override;
 
-  virtual scoped_ptr<protocol::Authenticator> CreateAuthenticator(
+  scoped_ptr<protocol::Authenticator> CreateAuthenticator(
       const std::string& local_jid,
       const std::string& remote_jid,
       const buzz::XmlElement* first_message) override;

@@ -40,7 +40,7 @@ namespace protocol {
 class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
   class FakeTokenFetcher : public ThirdPartyClientAuthenticator::TokenFetcher {
    public:
-    virtual void FetchThirdPartyToken(
+    void FetchThirdPartyToken(
         const GURL& token_url,
         const std::string& scope,
         const TokenFetchedCallback& token_fetched_callback) override {
@@ -68,9 +68,9 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
      : token_url_(kTokenUrl),
        token_scope_(kTokenScope) {}
 
-    virtual ~FakeTokenValidator() {}
+    ~FakeTokenValidator() override {}
 
-    virtual void ValidateThirdPartyToken(
+    void ValidateThirdPartyToken(
         const std::string& token,
         const TokenValidatedCallback& token_validated_callback) override {
       ASSERT_FALSE(token_validated_callback.is_null());
@@ -84,13 +84,9 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
       on_token_validated.Run(shared_secret);
     }
 
-    virtual const GURL& token_url() const override {
-      return token_url_;
-    }
+    const GURL& token_url() const override { return token_url_; }
 
-    virtual const std::string& token_scope() const override {
-      return token_scope_;
-    }
+    const std::string& token_scope() const override { return token_scope_; }
 
    private:
     GURL token_url_;

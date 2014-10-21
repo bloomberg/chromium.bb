@@ -24,11 +24,11 @@ class DesktopResizerMac : public DesktopResizer {
   DesktopResizerMac();
 
   // DesktopResizer interface
-  virtual ScreenResolution GetCurrentResolution() override;
-  virtual std::list<ScreenResolution> GetSupportedResolutions(
+  ScreenResolution GetCurrentResolution() override;
+  std::list<ScreenResolution> GetSupportedResolutions(
       const ScreenResolution& preferred) override;
-  virtual void SetResolution(const ScreenResolution& resolution) override;
-  virtual void RestoreResolution(const ScreenResolution& original) override;
+  void SetResolution(const ScreenResolution& resolution) override;
+  void RestoreResolution(const ScreenResolution& original) override;
 
  private:
   // If there is a single display, get its id and return true, otherwise return

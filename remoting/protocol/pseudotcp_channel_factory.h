@@ -22,12 +22,12 @@ class PseudoTcpChannelFactory : public StreamChannelFactory {
   // |datagram_channel_factory| must outlive this object.
   explicit PseudoTcpChannelFactory(
       DatagramChannelFactory* datagram_channel_factory);
-  virtual ~PseudoTcpChannelFactory();
+  ~PseudoTcpChannelFactory() override;
 
   // StreamChannelFactory interface.
-  virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) override;
-  virtual void CancelChannelCreation(const std::string& name) override;
+  void CreateChannel(const std::string& name,
+                     const ChannelCreatedCallback& callback) override;
+  void CancelChannelCreation(const std::string& name) override;
 
  private:
   typedef std::map<std::string, net::StreamSocket*> PendingSocketsMap;

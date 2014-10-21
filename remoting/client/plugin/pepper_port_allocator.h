@@ -25,10 +25,10 @@ class PepperPortAllocator : public cricket::HttpPortAllocatorBase {
  public:
   static scoped_ptr<PepperPortAllocator> Create(
       const pp::InstanceHandle& instance);
-  virtual ~PepperPortAllocator();
+  ~PepperPortAllocator() override;
 
   // cricket::HttpPortAllocatorBase overrides.
-  virtual cricket::PortAllocatorSession* CreateSessionInternal(
+  cricket::PortAllocatorSession* CreateSessionInternal(
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,

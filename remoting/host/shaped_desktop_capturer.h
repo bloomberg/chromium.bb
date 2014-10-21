@@ -18,16 +18,16 @@ class ShapedDesktopCapturer : public webrtc::DesktopCapturer,
  public:
   ShapedDesktopCapturer(scoped_ptr<webrtc::DesktopCapturer> screen_capturer,
                         scoped_ptr<DesktopShapeTracker> shape_tracker);
-  virtual ~ShapedDesktopCapturer();
+  ~ShapedDesktopCapturer() override;
 
   // webrtc::DesktopCapturer interface.
-  virtual void Start(webrtc::DesktopCapturer::Callback* callback) override;
-  virtual void Capture(const webrtc::DesktopRegion& region) override;
+  void Start(webrtc::DesktopCapturer::Callback* callback) override;
+  void Capture(const webrtc::DesktopRegion& region) override;
 
  private:
   // webrtc::DesktopCapturer::Callback interface.
-  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
-  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
+  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
   scoped_ptr<DesktopShapeTracker> shape_tracker_;

@@ -19,7 +19,7 @@ class InputFilter : public InputStub {
  public:
   InputFilter();
   explicit InputFilter(InputStub* input_stub);
-  virtual ~InputFilter();
+  ~InputFilter() override;
 
   // Set the InputStub that events will be forwarded to.
   void set_input_stub(InputStub* input_stub) {
@@ -35,9 +35,9 @@ class InputFilter : public InputStub {
   }
 
   // InputStub interface.
-  virtual void InjectKeyEvent(const KeyEvent& event) override;
-  virtual void InjectTextEvent(const TextEvent& event) override;
-  virtual void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectKeyEvent(const KeyEvent& event) override;
+  void InjectTextEvent(const TextEvent& event) override;
+  void InjectMouseEvent(const MouseEvent& event) override;
 
  private:
   InputStub* input_stub_;

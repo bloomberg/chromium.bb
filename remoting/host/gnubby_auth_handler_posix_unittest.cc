@@ -42,10 +42,10 @@ class MockStreamListenSocket : public net::StreamListenSocket {
   explicit MockStreamListenSocket(net::StreamListenSocket::Delegate* delegate)
       : StreamListenSocket(net::kInvalidSocket, delegate) {}
 
-  virtual void Accept() override { NOTREACHED(); }
+  void Accept() override { NOTREACHED(); }
 
  private:
-  virtual ~MockStreamListenSocket() {}
+  ~MockStreamListenSocket() override {}
 };
 
 }  // namespace

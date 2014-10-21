@@ -87,9 +87,9 @@ class DesktopSessionProxy
   void SetCapabilities(const std::string& capabilities);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
 
   // Connects to the desktop session agent.
   bool AttachToDesktop(base::ProcessHandle desktop_process,
@@ -138,7 +138,7 @@ class DesktopSessionProxy
   class IpcSharedBuffer;
   typedef std::map<int, scoped_refptr<IpcSharedBufferCore> > SharedBuffers;
 
-  virtual ~DesktopSessionProxy();
+  ~DesktopSessionProxy() override;
 
   // Returns a shared buffer from the list of known buffers.
   scoped_refptr<IpcSharedBufferCore> GetSharedBufferCore(int id);

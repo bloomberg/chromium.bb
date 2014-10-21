@@ -29,14 +29,14 @@ class AudioDecodeScheduler : public protocol::AudioStub {
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
       scoped_ptr<AudioPlayer> audio_player);
-  virtual ~AudioDecodeScheduler();
+  ~AudioDecodeScheduler() override;
 
   // Initializes decoder with the information from the protocol config.
   void Initialize(const protocol::SessionConfig& config);
 
   // AudioStub implementation.
-  virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
-                                  const base::Closure& done) override;
+  void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
+                          const base::Closure& done) override;
 
  private:
   class Core;

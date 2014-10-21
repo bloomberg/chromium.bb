@@ -45,7 +45,7 @@ class TokenValidatorImpl : public TokenValidatorBase {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
 
  protected:
-  virtual void StartValidateRequest(const std::string& token) override;
+  void StartValidateRequest(const std::string& token) override;
 
  private:
   static std::string CreateScope(const std::string& local_jid,

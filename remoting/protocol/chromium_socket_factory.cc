@@ -33,25 +33,27 @@ const int kMaxSendBufferSize = 256 * 1024;
 class UdpPacketSocket : public rtc::AsyncPacketSocket {
  public:
   UdpPacketSocket();
-  virtual ~UdpPacketSocket();
+  ~UdpPacketSocket() override;
 
   bool Init(const rtc::SocketAddress& local_address,
             int min_port, int max_port);
 
   // rtc::AsyncPacketSocket interface.
-  virtual rtc::SocketAddress GetLocalAddress() const override;
-  virtual rtc::SocketAddress GetRemoteAddress() const override;
-  virtual int Send(const void* data, size_t data_size,
-                   const rtc::PacketOptions& options) override;
-  virtual int SendTo(const void* data, size_t data_size,
-                     const rtc::SocketAddress& address,
-                     const rtc::PacketOptions& options) override;
-  virtual int Close() override;
-  virtual State GetState() const override;
-  virtual int GetOption(rtc::Socket::Option option, int* value) override;
-  virtual int SetOption(rtc::Socket::Option option, int value) override;
-  virtual int GetError() const override;
-  virtual void SetError(int error) override;
+  rtc::SocketAddress GetLocalAddress() const override;
+  rtc::SocketAddress GetRemoteAddress() const override;
+  int Send(const void* data,
+           size_t data_size,
+           const rtc::PacketOptions& options) override;
+  int SendTo(const void* data,
+             size_t data_size,
+             const rtc::SocketAddress& address,
+             const rtc::PacketOptions& options) override;
+  int Close() override;
+  State GetState() const override;
+  int GetOption(rtc::Socket::Option option, int* value) override;
+  int SetOption(rtc::Socket::Option option, int value) override;
+  int GetError() const override;
+  void SetError(int error) override;
 
  private:
   struct PendingPacket {

@@ -24,20 +24,20 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& pin);
-  virtual ~PairingHostAuthenticator();
+  ~PairingHostAuthenticator() override;
 
   // Authenticator interface.
-  virtual State state() const override;
-  virtual RejectionReason rejection_reason() const override;
-  virtual void ProcessMessage(const buzz::XmlElement* message,
-                              const base::Closure& resume_callback) override;
+  State state() const override;
+  RejectionReason rejection_reason() const override;
+  void ProcessMessage(const buzz::XmlElement* message,
+                      const base::Closure& resume_callback) override;
 
  private:
   // PairingAuthenticatorBase interface.
-  virtual void CreateV2AuthenticatorWithPIN(
+  void CreateV2AuthenticatorWithPIN(
       State initial_state,
       const SetAuthenticatorCallback& callback) override;
-  virtual void AddPairingElements(buzz::XmlElement* message) override;
+  void AddPairingElements(buzz::XmlElement* message) override;
 
   // Continue processing a protocol message once the pairing information for
   // the client id has been received.

@@ -30,9 +30,9 @@ class ContentDescription : public cricket::ContentDescription {
 
   ContentDescription(scoped_ptr<CandidateSessionConfig> config,
                      scoped_ptr<buzz::XmlElement> authenticator_message);
-  virtual ~ContentDescription();
+  ~ContentDescription() override;
 
-  virtual ContentDescription* Copy() const override;
+  ContentDescription* Copy() const override;
 
   const CandidateSessionConfig* config() const {
     return candidate_config_.get();

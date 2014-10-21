@@ -35,16 +35,16 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
       const std::string& daemon_channel_name);
-  virtual ~DesktopProcess();
+  ~DesktopProcess() override;
 
   // DesktopSessionAgent::Delegate implementation.
-  virtual DesktopEnvironmentFactory& desktop_environment_factory() override;
-  virtual void OnNetworkProcessDisconnected() override;
+  DesktopEnvironmentFactory& desktop_environment_factory() override;
+  void OnNetworkProcessDisconnected() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
 
   // Injects Secure Attention Sequence.
   void InjectSas();

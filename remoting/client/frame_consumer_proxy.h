@@ -30,19 +30,19 @@ class FrameConsumerProxy
                      const base::WeakPtr<FrameConsumer>& frame_consumer);
 
   // FrameConsumer implementation.
-  virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
-                           const webrtc::DesktopRect& clip_area,
-                           webrtc::DesktopFrame* buffer,
-                           const webrtc::DesktopRegion& region,
-                           const webrtc::DesktopRegion& shape) override;
-  virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
-  virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
-                             const webrtc::DesktopVector& dpi) override;
-  virtual PixelFormat GetPixelFormat() override;
+  void ApplyBuffer(const webrtc::DesktopSize& view_size,
+                   const webrtc::DesktopRect& clip_area,
+                   webrtc::DesktopFrame* buffer,
+                   const webrtc::DesktopRegion& region,
+                   const webrtc::DesktopRegion& shape) override;
+  void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
+  void SetSourceSize(const webrtc::DesktopSize& source_size,
+                     const webrtc::DesktopVector& dpi) override;
+  PixelFormat GetPixelFormat() override;
 
  private:
   friend class base::RefCountedThreadSafe<FrameConsumerProxy>;
-  virtual ~FrameConsumerProxy();
+  ~FrameConsumerProxy() override;
 
   base::WeakPtr<FrameConsumer> frame_consumer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

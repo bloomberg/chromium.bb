@@ -19,20 +19,18 @@ class IpcInputInjector : public InputInjector {
  public:
   explicit IpcInputInjector(
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
-  virtual ~IpcInputInjector();
+  ~IpcInputInjector() override;
 
   // ClipboardStub interface.
-  virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) override;
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
   // InputStub interface.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  void InjectTextEvent(const protocol::TextEvent& event) override;
+  void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
   // InputInjector interface.
-  virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   // Wraps the IPC channel to the desktop process.

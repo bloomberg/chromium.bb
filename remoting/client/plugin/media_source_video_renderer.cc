@@ -22,18 +22,18 @@ class MediaSourceVideoRenderer::VideoWriter : public mkvmuxer::IMkvWriter {
   typedef std::vector<uint8_t> DataBuffer;
 
   VideoWriter(const webrtc::DesktopSize& frame_size, const char* codec_id);
-  virtual ~VideoWriter();
+  ~VideoWriter() override;
 
   const webrtc::DesktopSize& size() { return frame_size_; }
   int64_t last_frame_timestamp() { return timecode_ - kFrameIntervalNs; }
 
   // IMkvWriter interface.
-  virtual mkvmuxer::int32 Write(const void* buf, mkvmuxer::uint32 len) override;
-  virtual mkvmuxer::int64 Position() const override;
-  virtual mkvmuxer::int32 Position(mkvmuxer::int64 position) override;
-  virtual bool Seekable() const override;
-  virtual void ElementStartNotify(mkvmuxer::uint64 element_id,
-                                  mkvmuxer::int64 position) override;
+  mkvmuxer::int32 Write(const void* buf, mkvmuxer::uint32 len) override;
+  mkvmuxer::int64 Position() const override;
+  mkvmuxer::int32 Position(mkvmuxer::int64 position) override;
+  bool Seekable() const override;
+  void ElementStartNotify(mkvmuxer::uint64 element_id,
+                          mkvmuxer::int64 position) override;
 
   scoped_ptr<DataBuffer> OnVideoFrame(const std::string& video_data,
                                       bool keyframe);

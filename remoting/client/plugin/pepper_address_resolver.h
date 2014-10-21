@@ -16,14 +16,13 @@ namespace remoting {
 class PepperAddressResolver : public rtc::AsyncResolverInterface {
  public:
   explicit PepperAddressResolver(const pp::InstanceHandle& instance);
-  virtual ~PepperAddressResolver();
+  ~PepperAddressResolver() override;
 
   // rtc::AsyncResolverInterface.
-  virtual void Start(const rtc::SocketAddress& addr) override;
-  virtual bool GetResolvedAddress(int family,
-                                  rtc::SocketAddress* addr) const override;
-  virtual int GetError() const override;
-  virtual void Destroy(bool wait) override;
+  void Start(const rtc::SocketAddress& addr) override;
+  bool GetResolvedAddress(int family, rtc::SocketAddress* addr) const override;
+  int GetError() const override;
+  void Destroy(bool wait) override;
 
  private:
   void OnResolved(int32_t result);
