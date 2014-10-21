@@ -106,7 +106,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // The state for the page changed and should be updated.
   virtual void UpdateState(RenderViewHost* render_view_host,
-                           int32 rvh_page_id,  // http://crbug.com/407376
                            int32 page_id,
                            const PageState& state) {}
 
