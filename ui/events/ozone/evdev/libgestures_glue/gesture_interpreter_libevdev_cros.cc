@@ -14,6 +14,7 @@
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_timer_provider.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -38,18 +39,20 @@ GestureInterpreterDeviceClass GestureDeviceClass(Evdev* evdev) {
 }
 
 // Convert libevdev state to libgestures hardware properties.
-HardwareProperties GestureHardwareProperties(Evdev* evdev) {
+HardwareProperties GestureHardwareProperties(
+    Evdev* evdev,
+    const GestureDeviceProperties* props) {
   HardwareProperties hwprops;
-  hwprops.left = Event_Get_Left(evdev);
-  hwprops.top = Event_Get_Top(evdev);
-  hwprops.right = Event_Get_Right(evdev);
-  hwprops.bottom = Event_Get_Bottom(evdev);
-  hwprops.res_x = Event_Get_Res_X(evdev);
-  hwprops.res_y = Event_Get_Res_Y(evdev);
+  hwprops.left = props->area_left;
+  hwprops.top = props->area_top;
+  hwprops.right = props->area_right;
+  hwprops.bottom = props->area_bottom;
+  hwprops.res_x = props->res_x;
+  hwprops.res_y = props->res_y;
   hwprops.screen_x_dpi = 133;
   hwprops.screen_y_dpi = 133;
-  hwprops.orientation_minimum = Event_Get_Orientation_Minimum(evdev);
-  hwprops.orientation_maximum = Event_Get_Orientation_Maximum(evdev);
+  hwprops.orientation_minimum = props->orientation_minimum;
+  hwprops.orientation_maximum = props->orientation_maximum;
   hwprops.max_finger_cnt = Event_Get_Slot_Count(evdev);
   hwprops.max_touch_cnt = Event_Get_Touch_Count_Max(evdev);
   hwprops.supports_t5r2 = Event_Get_T5R2(evdev);
@@ -81,23 +84,41 @@ const int kGestureSwipeFingerCount = 3;
 }  // namespace
 
 GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
+    int id,
     EventModifiersEvdev* modifiers,
     CursorDelegateEvdev* cursor,
     KeyboardEvdev* keyboard,
+    GesturePropertyProvider* property_provider,
     const EventDispatchCallback& callback)
-    : modifiers_(modifiers),
+    : id_(id),
+      modifiers_(modifiers),
       cursor_(cursor),
       keyboard_(keyboard),
+      property_provider_(property_provider),
       dispatch_callback_(callback),
-      interpreter_(NULL) {
+      interpreter_(NULL),
+      evdev_(NULL),
+      device_properties_(new GestureDeviceProperties) {
   memset(&prev_key_state_, 0, sizeof(prev_key_state_));
 }
 
 GestureInterpreterLibevdevCros::~GestureInterpreterLibevdevCros() {
+  // Note that this destructor got called after the evdev device node has been
+  // closed. Therefore, all clean-up codes here shouldn't depend on the device
+  // information (except for the pointer address itself).
+
+  // Clean-up if the gesture interpreter has been successfully created.
   if (interpreter_) {
+    // Unset callbacks.
+    GestureInterpreterSetCallback(interpreter_, NULL, NULL);
+    GestureInterpreterSetPropProvider(interpreter_, NULL, NULL);
+    GestureInterpreterSetTimerProvider(interpreter_, NULL, NULL);
     DeleteGestureInterpreter(interpreter_);
     interpreter_ = NULL;
   }
+
+  // Unregister device from the gesture property provider.
+  GesturesPropFunctionsWrapper::UnregisterDevice(this);
 }
 
 void GestureInterpreterLibevdevCros::OnLibEvdevCrosOpen(
@@ -106,12 +127,21 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosOpen(
   DCHECK(evdev->info.is_monotonic) << "libevdev must use monotonic timestamps";
   VLOG(9) << "HACK DO NOT REMOVE OR LINK WILL FAIL" << (void*)gestures_log;
 
-  HardwareProperties hwprops = GestureHardwareProperties(evdev);
+  // Set device pointer and initialize properties.
+  evdev_ = evdev;
+  GesturesPropFunctionsWrapper::InitializeDeviceProperties(
+      this, device_properties_.get());
+  HardwareProperties hwprops =
+      GestureHardwareProperties(evdev, device_properties_.get());
   GestureInterpreterDeviceClass devclass = GestureDeviceClass(evdev);
 
   // Create & initialize GestureInterpreter.
   DCHECK(!interpreter_);
   interpreter_ = NewGestureInterpreter();
+  GestureInterpreterSetPropProvider(
+      interpreter_,
+      const_cast<GesturesPropProvider*>(&kGesturePropProvider),
+      this);
   GestureInterpreterInitialize(interpreter_, devclass);
   GestureInterpreterSetHardwareProperties(interpreter_, &hwprops);
   GestureInterpreterSetTimerProvider(

@@ -27,6 +27,10 @@ namespace ui {
 class CursorDelegateEvdev;
 class DeviceManager;
 
+#if defined(USE_EVDEV_GESTURES)
+class GesturePropertyProvider;
+#endif
+
 // Ozone events implementation for the Linux input subsystem ("evdev").
 class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
                                                     public PlatformEventSource {
@@ -82,6 +86,11 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   // Cursor movement.
   CursorDelegateEvdev* cursor_;
+
+#if defined(USE_EVDEV_GESTURES)
+  // Gesture library property provider (used by touchpads/mice).
+  scoped_ptr<GesturePropertyProvider> gesture_property_provider_;
+#endif
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;

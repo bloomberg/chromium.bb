@@ -60,6 +60,8 @@
       'evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h',
       'evdev/libgestures_glue/gesture_logging.cc',
       'evdev/libgestures_glue/gesture_logging.h',
+      'evdev/libgestures_glue/gesture_property_provider.cc',
+      'evdev/libgestures_glue/gesture_property_provider.h',
       'evdev/libgestures_glue/gesture_timer_provider.cc',
       'evdev/libgestures_glue/gesture_timer_provider.h',
       'evdev/event_converter_evdev.cc',

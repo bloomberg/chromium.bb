@@ -22,6 +22,8 @@ class EventDeviceInfo;
 class EventModifiersEvdev;
 class CursorDelegateEvdev;
 class KeyboardEvdev;
+class GestureDeviceProperties;
+class GesturePropertyProvider;
 
 // Convert libevdev-cros events to ui::Events using libgestures.
 //
@@ -39,9 +41,11 @@ class KeyboardEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
     : public EventReaderLibevdevCros::Delegate {
  public:
-  GestureInterpreterLibevdevCros(EventModifiersEvdev* modifiers,
+  GestureInterpreterLibevdevCros(int id,
+                                 EventModifiersEvdev* modifiers,
                                  CursorDelegateEvdev* cursor,
                                  KeyboardEvdev* keyboard,
+                                 GesturePropertyProvider* property_provider,
                                  const EventDispatchCallback& callback);
   virtual ~GestureInterpreterLibevdevCros();
 
@@ -54,6 +58,11 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
 
   // Handler for gesture events generated from libgestures.
   void OnGestureReady(const Gesture* gesture);
+
+  // Accessors.
+  int id() { return id_; }
+  GesturePropertyProvider* property_provider() { return property_provider_; }
+  Evdev* evdev() { return evdev_; }
 
  private:
   void OnGestureMove(const Gesture* gesture, const GestureMove* move);
@@ -72,6 +81,9 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   void DispatchMouseButton(unsigned int modifier, bool down);
   void DispatchChangedKeys(Evdev* evdev, const timeval& time);
 
+  // The unique device id.
+  int id_;
+
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
 
@@ -81,6 +93,9 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   // Shared keyboard state.
   KeyboardEvdev* keyboard_;
 
+  // Shared gesture property provider.
+  GesturePropertyProvider* property_provider_;
+
   // Callback for dispatching events.
   EventDispatchCallback dispatch_callback_;
 
@@ -89,6 +104,12 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
 
   // Last key state from libevdev.
   unsigned long prev_key_state_[EVDEV_BITS_TO_LONGS(KEY_CNT)];
+
+  // Device pointer.
+  Evdev* evdev_;
+
+  // Gesture lib device properties.
+  scoped_ptr<GestureDeviceProperties> device_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreterLibevdevCros);
 };
