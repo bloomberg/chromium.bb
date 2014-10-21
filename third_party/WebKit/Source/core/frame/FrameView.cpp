@@ -2024,6 +2024,7 @@ bool FrameView::wasViewportResized()
     RenderView* renderView = this->renderView();
     if (!renderView)
         return false;
+    ASSERT(renderView->style());
     return (layoutSize(IncludeScrollbars) != m_lastViewportSize || renderView->style()->zoom() != m_lastZoomFactor);
 }
 
