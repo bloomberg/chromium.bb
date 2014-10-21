@@ -61,108 +61,15 @@
         <!-- The following service entries exist in order to allow us to
              start more than one sandboxed process. -->
 
-        <!-- NOTE: If you change the values of "android:process" for any of the below services,
+        <!-- NOTE: If you change the value of "android:process" for the below services,
              you also need to update kHelperProcessExecutableName in chrome_constants.cc. -->
-        <service android:name="org.chromium.content.app.SandboxedProcessService0"
-                 android:process=":sandboxed_process0"
+        {% for i in range(20) %}
+        <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
+                 android:process=":sandboxed_process{{ i }}"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:isolatedProcess="true"
                  android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService1"
-                 android:process=":sandboxed_process1"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService2"
-                 android:process=":sandboxed_process2"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService3"
-                 android:process=":sandboxed_process3"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService4"
-                 android:process=":sandboxed_process4"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService5"
-                 android:process=":sandboxed_process5"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService6"
-                 android:process=":sandboxed_process6"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService7"
-                 android:process=":sandboxed_process7"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService8"
-                 android:process=":sandboxed_process8"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService9"
-                 android:process=":sandboxed_process9"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService10"
-                 android:process=":sandboxed_process10"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService11"
-                 android:process=":sandboxed_process11"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService12"
-                 android:process=":sandboxed_process12"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService13"
-                 android:process=":sandboxed_process13"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService14"
-                 android:process=":sandboxed_process14"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService15"
-                 android:process=":sandboxed_process15"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService16"
-                 android:process=":sandboxed_process16"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService17"
-                 android:process=":sandboxed_process17"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService18"
-                 android:process=":sandboxed_process18"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
-        <service android:name="org.chromium.content.app.SandboxedProcessService19"
-                 android:process=":sandboxed_process19"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
-                 android:isolatedProcess="true"
-                 android:exported="false" />
+        {% endfor %}
 
         <!-- Receiver for GCM messages. Rebroadcasts them locally for sync. -->
         <receiver android:exported="true"

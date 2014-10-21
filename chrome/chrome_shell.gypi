@@ -83,6 +83,16 @@
       ],
     },
     {
+      # GN: //chrome/android:chrome_shell_manifest
+      'target_name': 'chrome_shell_manifest',
+      'type': 'none',
+      'variables': {
+        'jinja_inputs': ['android/shell/java/AndroidManifest.xml'],
+        'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chrome_shell_manifest/AndroidManifest.xml',
+      },
+      'includes': [ '../build/android/jinja_template.gypi' ],
+    },
+    {
       # GN: //chrome/android:chrome_shell_apk
       'target_name': 'chrome_shell_apk',
       'type': 'none',
@@ -94,6 +104,7 @@
       ],
       'variables': {
         'apk_name': 'ChromeShell',
+        'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/chrome_shell_manifest/AndroidManifest.xml',
         'native_lib_version_name': '<(version_full)',
         'java_in_dir': 'android/shell/java',
         'resource_dir': 'android/shell/res',

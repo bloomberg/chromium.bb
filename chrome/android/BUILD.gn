@@ -7,7 +7,6 @@ import("//build/config/android/rules.gni")
 import("//chrome/version.gni")
 import("//third_party/icu/config.gni")
 
-
 # GYP: //chrome/chrome.gyp:chrome_java (resources part)
 android_resources("chrome_java_resources") {
   resource_dirs = [
@@ -218,7 +217,7 @@ static_library("chrome_shell_base") {
 
 # TODO(GYP, cjhopman): make chrome_shell_base actually link and then move it to
 # deps. Also, actually compile the main delegates at that point.
-# GYP: //chrome/chrome_browser.gypi:libchromeshell
+# GYP: //chrome/chrome_shell.gypi:libchromeshell
 shared_library("chrome_shell") {
   testonly = true
   sources = [
@@ -237,7 +236,7 @@ shared_library("chrome_shell") {
   ]
 }
 
-# GYP: //chrome/chrome_browser.gypi:libchromesyncshell
+# GYP: //chrome/chrome_shell.gypi:libchromesyncshell
 shared_library("chrome_sync_shell") {
   testonly = true
   sources = [
@@ -349,7 +348,16 @@ copy_ex("chrome_shell_assets") {
   }
 }
 
-# GYP: //chrome/chrome_browser.gypi:chrome_shell_apk
+chrome_shell_manifest = "$target_gen_dir/chrome_shell_manifest/AndroidManifest.xml"
+
+# GYP: //chrome/chrome_shell.gypi:chrome_shell_manifest
+jinja_template("chrome_shell_manifest") {
+  testonly = true
+  input = "shell/java/AndroidManifest.xml"
+  output = chrome_shell_manifest
+}
+
+# GYP: //chrome/chrome_shell.gypi:chrome_shell_apk
 android_apk("chrome_shell_apk") {
   testonly = true
   deps = [
@@ -359,7 +367,7 @@ android_apk("chrome_shell_apk") {
     ":chrome_shell",
   ]
   apk_name = "ChromeShell"
-  android_manifest = "shell/java/AndroidManifest.xml"
+  android_manifest = chrome_shell_manifest
   native_libs = [
     "$root_build_dir/lib.stripped/libchrome_shell.so"
   ]
@@ -378,7 +386,7 @@ android_apk("chrome_shell_apk") {
 
 }
 
-# GYP: //chrome/chrome_browser.gypi:chrome_sync_shell_apk
+# GYP: //chrome/chrome_shell.gypi:chrome_sync_shell_apk
 android_apk("chrome_sync_shell_apk") {
   testonly = true
   deps = [

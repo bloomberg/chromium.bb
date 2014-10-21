@@ -343,6 +343,112 @@ template("java_cpp_enum") {
   }
 }
 
+# Declare a target for processing a Jinja template.
+#
+# Variables
+#   input: The template file to be processed.
+#   output: Where to save the result.
+#   variables: (Optional) A list of variables to make available to the template
+#     processing environment, e.g. ["name=foo", "color=red"].
+#
+# Example
+#   jinja_template("chrome_shell_manifest") {
+#     input = "shell/java/AndroidManifest.xml"
+#     output = "$target_gen_dir/AndroidManifest.xml"
+#   }
+template("jinja_template") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
+  assert(defined(invoker.input))
+  assert(defined(invoker.output))
+
+  action(target_name) {
+    sources = [invoker.input]
+    script = "//build/android/gyp/jinja_template.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    outputs = [
+      depfile,
+      invoker.output,
+    ]
+
+    args = [
+      "--inputs", rebase_path(invoker.input, root_build_dir),
+      "--output", rebase_path(invoker.output, root_build_dir),
+      "--depfile", rebase_path(depfile, root_build_dir),
+    ]
+    if (defined(invoker.variables)) {
+      variables = invoker.variables
+      args += ["--variables=${variables}" ]
+    }
+  }
+}
+
+# Declare a target for processing Android resources as Jinja templates.
+#
+# This takes an Android resource directory where each resource is a Jinja
+# template, processes each template, then packages the results in a zip file
+# which can be consumed by an android resources, library, or apk target.
+#
+# If this target is included in the deps of an android resources/library/apk,
+# the resources will be included with that target.
+#
+# Variables
+#   resources: The list of resources files to process.
+#   res_dir: The resource directory containing the resources.
+#   variables: (Optional) A list of variables to make available to the template
+#     processing environment, e.g. ["name=foo", "color=red"].
+#
+# Example
+#   jinja_template_resources("chrome_shell_template_resources") {
+#     res_dir = "shell/res_template"
+#     resources = ["shell/res_template/xml/syncable.xml"]
+#     variables = ["color=red"]
+#   }
+template("jinja_template_resources") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
+  assert(defined(invoker.resources))
+  assert(defined(invoker.res_dir))
+
+  _base_path = "$target_gen_dir/$target_name"
+  _resources_zip = _base_path + ".resources.zip"
+  _build_config = _base_path + ".build_config"
+
+  write_build_config("${target_name}__build_config") {
+    type = "android_resources"
+  }
+
+  action("${target_name}__template") {
+    sources = invoker.resources
+    script = "//build/android/gyp/jinja_template.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    outputs = [
+      depfile,
+      _resources_zip,
+    ]
+
+    rebased_resources = rebase_path(invoker.resources, root_build_dir)
+    args = [
+      "--inputs=${rebased_resources}",
+      "--inputs-base-dir", rebase_path(invoker.res_dir, root_build_dir),
+      "--outputs-zip", rebase_path(_resources_zip, root_build_dir),
+      "--depfile", rebase_path(depfile, root_build_dir),
+    ]
+    if (defined(invoker.variables)) {
+      variables = invoker.variables
+      args += ["--variables=${variables}" ]
+    }
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__build_config",
+      ":${target_name}__template",
+    ]
+  }
+}
 
 # Declare an Android resources target
 #
@@ -688,6 +794,7 @@ template("android_java_prebuilt") {
 
   group(target_name) {
     deps = [
+      ":${target_name}__build_config",
       ":${target_name}__dex",
     ]
   }

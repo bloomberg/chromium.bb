@@ -147,6 +147,10 @@
 
         'target_subarch%': '',
 
+        # The channel to build on Android: stable, beta, dev, canary, or
+        # default. "default" should be used on non-official builds.
+        'android_channel%': 'default',
+
         # This is set when building the Android WebView inside the Android
         # build system, using the 'android' gyp backend. The WebView code is
         # still built when this is unset, but builds using the normal chromium
@@ -285,6 +289,7 @@
       'use_openssl_certs%': '<(use_openssl_certs)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
+      'android_channel%': '<(android_channel)',
       'android_webview_build%': '<(android_webview_build)',
       'android_webview_telemetry_build%': '<(android_webview_telemetry_build)',
       'use_goma%': '<(use_goma)',
@@ -1155,6 +1160,7 @@
     'wix_path%': '<(wix_path)',
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
+    'android_channel%': '<(android_channel)',
     'android_webview_build%': '<(android_webview_build)',
     'android_webview_telemetry_build%': '<(android_webview_telemetry_build)',
     'icu_use_data_file_flag%': '<(icu_use_data_file_flag)',
