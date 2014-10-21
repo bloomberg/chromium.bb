@@ -33,18 +33,18 @@ class FakeVideoDecoder : public VideoDecoder {
   // Constructs an object with a decoding delay of |decoding_delay| frames.
   FakeVideoDecoder(int decoding_delay,
                    int max_parallel_decoding_requests);
-  virtual ~FakeVideoDecoder();
+  ~FakeVideoDecoder() override;
 
   // VideoDecoder implementation.
-  virtual std::string GetDisplayName() const override;
-  virtual void Initialize(const VideoDecoderConfig& config,
-                          bool low_delay,
-                          const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) override;
-  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) override;
-  virtual void Reset(const base::Closure& closure) override;
-  virtual int GetMaxDecodeRequests() const override;
+  std::string GetDisplayName() const override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  const PipelineStatusCB& status_cb,
+                  const OutputCB& output_cb) override;
+  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+              const DecodeCB& decode_cb) override;
+  void Reset(const base::Closure& closure) override;
+  int GetMaxDecodeRequests() const override;
 
   // Holds the next init/decode/reset callback from firing.
   void HoldNextInit();

@@ -18,28 +18,28 @@ class MEDIA_EXPORT FakeAudioManager : public AudioManagerBase {
   FakeAudioManager(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
-  virtual bool HasAudioOutputDevices() override;
-  virtual bool HasAudioInputDevices() override;
+  bool HasAudioOutputDevices() override;
+  bool HasAudioInputDevices() override;
 
   // Implementation of AudioManagerBase.
-  virtual AudioOutputStream* MakeLinearOutputStream(
+  AudioOutputStream* MakeLinearOutputStream(
       const AudioParameters& params) override;
-  virtual AudioOutputStream* MakeLowLatencyOutputStream(
+  AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
-  virtual AudioInputStream* MakeLinearInputStream(const AudioParameters& params,
-                                                  const std::string& device_id)
-      override;
-  virtual AudioInputStream* MakeLowLatencyInputStream(
+  AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
-  virtual AudioParameters GetInputStreamParameters(
+  AudioInputStream* MakeLowLatencyInputStream(
+      const AudioParameters& params,
+      const std::string& device_id) override;
+  AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
 
  protected:
-  virtual ~FakeAudioManager();
+  ~FakeAudioManager() override;
 
-  virtual AudioParameters GetPreferredOutputStreamParameters(
+  AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;
 

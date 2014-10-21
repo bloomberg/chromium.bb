@@ -25,19 +25,19 @@ class MEDIA_EXPORT ClocklessAudioSink
   ClocklessAudioSink();
 
   // AudioRendererSink implementation.
-  virtual void Initialize(const AudioParameters& params,
-                          RenderCallback* callback) override;
-  virtual void Start() override;
-  virtual void Stop() override;
-  virtual void Pause() override;
-  virtual void Play() override;
-  virtual bool SetVolume(double volume) override;
+  void Initialize(const AudioParameters& params,
+                  RenderCallback* callback) override;
+  void Start() override;
+  void Stop() override;
+  void Pause() override;
+  void Play() override;
+  bool SetVolume(double volume) override;
 
   // Returns the time taken to consume all the audio.
   base::TimeDelta render_time() { return playback_time_; }
 
  protected:
-  virtual ~ClocklessAudioSink();
+  ~ClocklessAudioSink() override;
 
  private:
   scoped_ptr<ClocklessAudioSinkThread> thread_;

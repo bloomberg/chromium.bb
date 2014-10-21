@@ -171,10 +171,10 @@ class LoopBackPacketPipe : public test::PacketPipe {
   LoopBackPacketPipe(const PacketReceiverCallback& packet_receiver)
       : packet_receiver_(packet_receiver) {}
 
-  virtual ~LoopBackPacketPipe() {}
+  ~LoopBackPacketPipe() override {}
 
   // PacketPipe implementations.
-  virtual void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) override {
     packet_receiver_.Run(packet.Pass());
   }
 
@@ -206,8 +206,7 @@ class LoopBackTransport : public PacketSender {
     packet_pipe_->InitOnIOThread(task_runner, clock);
   }
 
-  virtual bool SendPacket(PacketRef packet,
-                          const base::Closure& cb) override {
+  bool SendPacket(PacketRef packet, const base::Closure& cb) override {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
     if (!send_packets_)
       return true;
@@ -224,9 +223,7 @@ class LoopBackTransport : public PacketSender {
     return true;
   }
 
-  virtual int64 GetBytesSent() override {
-    return bytes_sent_;
-  }
+  int64 GetBytesSent() override { return bytes_sent_; }
 
   void SetSendPackets(bool send_packets) { send_packets_ = send_packets; }
 

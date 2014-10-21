@@ -41,31 +41,31 @@ class MEDIA_EXPORT GpuVideoDecoder
       const scoped_refptr<GpuVideoAcceleratorFactories>& factories);
 
   // VideoDecoder implementation.
-  virtual std::string GetDisplayName() const override;
-  virtual void Initialize(const VideoDecoderConfig& config,
-                          bool low_delay,
-                          const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) override;
-  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) override;
-  virtual void Reset(const base::Closure& closure) override;
-  virtual bool NeedsBitstreamConversion() const override;
-  virtual bool CanReadWithoutStalling() const override;
-  virtual int GetMaxDecodeRequests() const override;
+  std::string GetDisplayName() const override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  const PipelineStatusCB& status_cb,
+                  const OutputCB& output_cb) override;
+  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+              const DecodeCB& decode_cb) override;
+  void Reset(const base::Closure& closure) override;
+  bool NeedsBitstreamConversion() const override;
+  bool CanReadWithoutStalling() const override;
+  int GetMaxDecodeRequests() const override;
 
   // VideoDecodeAccelerator::Client implementation.
-  virtual void ProvidePictureBuffers(uint32 count,
-                                     const gfx::Size& size,
-                                     uint32 texture_target) override;
-  virtual void DismissPictureBuffer(int32 id) override;
-  virtual void PictureReady(const media::Picture& picture) override;
-  virtual void NotifyEndOfBitstreamBuffer(int32 id) override;
-  virtual void NotifyFlushDone() override;
-  virtual void NotifyResetDone() override;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  void ProvidePictureBuffers(uint32 count,
+                             const gfx::Size& size,
+                             uint32 texture_target) override;
+  void DismissPictureBuffer(int32 id) override;
+  void PictureReady(const media::Picture& picture) override;
+  void NotifyEndOfBitstreamBuffer(int32 id) override;
+  void NotifyFlushDone() override;
+  void NotifyResetDone() override;
+  void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
  protected:
-  virtual ~GpuVideoDecoder();
+  ~GpuVideoDecoder() override;
 
  private:
   enum State {

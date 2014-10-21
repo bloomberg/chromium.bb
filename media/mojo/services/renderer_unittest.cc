@@ -25,10 +25,10 @@ namespace {
 class MojoRendererTestHelper : public mojo::ApplicationDelegate {
  public:
   MojoRendererTestHelper() : application_impl_(NULL) {}
-  virtual ~MojoRendererTestHelper() {}
+  ~MojoRendererTestHelper() override {}
 
   // ApplicationDelegate implementation.
-  virtual void Initialize(mojo::ApplicationImpl* app) override {
+  void Initialize(mojo::ApplicationImpl* app) override {
     application_impl_ = app;
   }
 
@@ -49,22 +49,21 @@ class FakeDemuxerStream : public media::DemuxerStreamProvider,
                           public media::DemuxerStream {
  public:
   FakeDemuxerStream() {}
-  virtual ~FakeDemuxerStream() {}
+  ~FakeDemuxerStream() override {}
 
   // media::Demuxer implementation.
-  virtual media::DemuxerStream* GetStream(
-      media::DemuxerStream::Type type) override {
+  media::DemuxerStream* GetStream(media::DemuxerStream::Type type) override {
     DCHECK_EQ(media::DemuxerStream::AUDIO, type);
     return this;
   }
-  virtual media::DemuxerStreamProvider::Liveness GetLiveness() const override {
+  media::DemuxerStreamProvider::Liveness GetLiveness() const override {
     return media::DemuxerStreamProvider::LIVENESS_UNKNOWN;
   }
 
   // media::DemuxerStream implementation.
-  virtual void Read(const ReadCB& read_cb) override {}
+  void Read(const ReadCB& read_cb) override {}
 
-  virtual media::AudioDecoderConfig audio_decoder_config() override {
+  media::AudioDecoderConfig audio_decoder_config() override {
     media::AudioDecoderConfig config;
     config.Initialize(media::kCodecAAC,
                       media::kSampleFormatU8,
@@ -79,20 +78,20 @@ class FakeDemuxerStream : public media::DemuxerStreamProvider,
     return config;
   }
 
-  virtual media::VideoDecoderConfig video_decoder_config() override {
+  media::VideoDecoderConfig video_decoder_config() override {
     NOTREACHED();
     return media::VideoDecoderConfig();
   }
 
-  virtual media::DemuxerStream::Type type() override {
+  media::DemuxerStream::Type type() override {
     return media::DemuxerStream::AUDIO;
   }
 
-  virtual void EnableBitstreamConverter() override {}
+  void EnableBitstreamConverter() override {}
 
-  virtual bool SupportsConfigChanges() override { return true; }
+  bool SupportsConfigChanges() override { return true; }
 
-  virtual media::VideoRotation video_rotation() override {
+  media::VideoRotation video_rotation() override {
     NOTREACHED();
     return media::VIDEO_ROTATION_0;
   }

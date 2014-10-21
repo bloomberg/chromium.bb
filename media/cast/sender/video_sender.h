@@ -45,7 +45,7 @@ class VideoSender : public FrameSender,
               CastTransportSender* const transport_sender,
               const PlayoutDelayChangeCB& playout_delay_change_cb);
 
-  virtual ~VideoSender();
+  ~VideoSender() override;
 
   // Note: It is not guaranteed that |video_frame| will actually be encoded and
   // sent, if VideoSender detects too many frames in flight.  Therefore, clients
@@ -57,9 +57,9 @@ class VideoSender : public FrameSender,
                            const base::TimeTicks& reference_time);
 
  protected:
-  virtual int GetNumberOfFramesInEncoder() const override;
-  virtual base::TimeDelta GetInFlightMediaDuration() const override;
-  virtual void OnAck(uint32 frame_id) override;
+  int GetNumberOfFramesInEncoder() const override;
+  base::TimeDelta GetInFlightMediaDuration() const override;
+  void OnAck(uint32 frame_id) override;
 
  private:
   // Called when the encoder is initialized or has failed to initialize.

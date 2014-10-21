@@ -32,12 +32,12 @@ class MEDIA_EXPORT AudioOutputProxy
   explicit AudioOutputProxy(AudioOutputDispatcher* dispatcher);
 
   // AudioOutputStream interface.
-  virtual bool Open() override;
-  virtual void Start(AudioSourceCallback* callback) override;
-  virtual void Stop() override;
-  virtual void SetVolume(double volume) override;
-  virtual void GetVolume(double* volume) override;
-  virtual void Close() override;
+  bool Open() override;
+  void Start(AudioSourceCallback* callback) override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void GetVolume(double* volume) override;
+  void Close() override;
 
  private:
   enum State {
@@ -49,7 +49,7 @@ class MEDIA_EXPORT AudioOutputProxy
     kStartError,
   };
 
-  virtual ~AudioOutputProxy();
+  ~AudioOutputProxy() override;
 
   scoped_refptr<AudioOutputDispatcher> dispatcher_;
   State state_;

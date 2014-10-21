@@ -211,12 +211,12 @@ class VideoImageGenerator : public SkImageGenerator {
   VideoImageGenerator(const scoped_refptr<VideoFrame>& frame) : frame_(frame) {
     DCHECK(frame_.get());
   }
-  virtual ~VideoImageGenerator() {}
+  ~VideoImageGenerator() override {}
 
   void set_frame(const scoped_refptr<VideoFrame>& frame) { frame_ = frame; }
 
  protected:
-  virtual bool onGetInfo(SkImageInfo* info) override {
+  bool onGetInfo(SkImageInfo* info) override {
     info->fWidth = frame_->visible_rect().width();
     info->fHeight = frame_->visible_rect().height();
     info->fColorType = kN32_SkColorType;
@@ -224,11 +224,11 @@ class VideoImageGenerator : public SkImageGenerator {
     return true;
   }
 
-  virtual bool onGetPixels(const SkImageInfo& info,
-                           void* pixels,
-                           size_t row_bytes,
-                           SkPMColor ctable[],
-                           int* ctable_count) override {
+  bool onGetPixels(const SkImageInfo& info,
+                   void* pixels,
+                   size_t row_bytes,
+                   SkPMColor ctable[],
+                   int* ctable_count) override {
     if (!frame_.get())
       return false;
     if (!pixels)
@@ -238,10 +238,10 @@ class VideoImageGenerator : public SkImageGenerator {
     return true;
   }
 
-  virtual bool onGetYUV8Planes(SkISize sizes[3],
-                               void* planes[3],
-                               size_t row_bytes[3],
-                               SkYUVColorSpace* color_space) override {
+  bool onGetYUV8Planes(SkISize sizes[3],
+                       void* planes[3],
+                       size_t row_bytes[3],
+                       SkYUVColorSpace* color_space) override {
     if (!frame_.get() || !IsYUV(frame_->format()))
       return false;
 

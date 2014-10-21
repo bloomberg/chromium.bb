@@ -41,7 +41,7 @@ class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
       VideoCaptureFormats* supported_formats);
 
   explicit VideoCaptureDeviceDeckLinkMac(const Name& device_name);
-  virtual ~VideoCaptureDeviceDeckLinkMac();
+  ~VideoCaptureDeviceDeckLinkMac() override;
 
   // Copy of VideoCaptureDevice::Client::OnIncomingCapturedData(). Used by
   // |decklink_capture_delegate_| to forward captured frames.
@@ -59,10 +59,9 @@ class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
 
  private:
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(
-      const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const VideoCaptureParams& params,
+                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void StopAndDeAllocate() override;
 
   // Protects concurrent setting and using of |client_|.
   base::Lock lock_;

@@ -27,19 +27,19 @@ class MEDIA_EXPORT AudioRendererMixerInput
       const GetMixerCB& get_mixer_cb, const RemoveMixerCB& remove_mixer_cb);
 
   // AudioRendererSink implementation.
-  virtual void Start() override;
-  virtual void Stop() override;
-  virtual void Play() override;
-  virtual void Pause() override;
-  virtual bool SetVolume(double volume) override;
-  virtual void Initialize(const AudioParameters& params,
-                          AudioRendererSink::RenderCallback* renderer) override;
+  void Start() override;
+  void Stop() override;
+  void Play() override;
+  void Pause() override;
+  bool SetVolume(double volume) override;
+  void Initialize(const AudioParameters& params,
+                  AudioRendererSink::RenderCallback* renderer) override;
 
   // Called by AudioRendererMixer when an error occurs.
   void OnRenderError();
 
  protected:
-  virtual ~AudioRendererMixerInput();
+  ~AudioRendererMixerInput() override;
 
  private:
   friend class AudioRendererMixerInputTest;
@@ -49,8 +49,8 @@ class MEDIA_EXPORT AudioRendererMixerInput
   double volume_;
 
   // AudioConverter::InputCallback implementation.
-  virtual double ProvideInput(AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override;
 
   // Callbacks provided during construction which allow AudioRendererMixerInput
   // to retrieve a mixer during Initialize() and notify when it's done with it.

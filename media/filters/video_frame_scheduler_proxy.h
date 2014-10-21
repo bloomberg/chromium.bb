@@ -27,13 +27,13 @@ class MEDIA_EXPORT VideoFrameSchedulerProxy : public VideoFrameScheduler {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& scheduler_runner,
       scoped_ptr<VideoFrameScheduler> scheduler);
-  virtual ~VideoFrameSchedulerProxy();
+  ~VideoFrameSchedulerProxy() override;
 
   // VideoFrameScheduler implementation.
-  virtual void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
-                                  base::TimeTicks wall_ticks,
-                                  const DoneCB& done_cb) override;
-  virtual void Reset() override;
+  void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
+                          base::TimeTicks wall_ticks,
+                          const DoneCB& done_cb) override;
+  void Reset() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

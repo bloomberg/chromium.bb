@@ -17,12 +17,12 @@ class MEDIA_EXPORT FakeVideoCaptureDeviceFactory :
     public VideoCaptureDeviceFactory {
  public:
   FakeVideoCaptureDeviceFactory();
-  virtual ~FakeVideoCaptureDeviceFactory() {}
+  ~FakeVideoCaptureDeviceFactory() override {}
 
-  virtual scoped_ptr<VideoCaptureDevice> Create(
+  scoped_ptr<VideoCaptureDevice> Create(
       const VideoCaptureDevice::Name& device_name) override;
-  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
-  virtual void GetDeviceSupportedFormats(
+  void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
+  void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
       VideoCaptureFormats* supported_formats) override;
 

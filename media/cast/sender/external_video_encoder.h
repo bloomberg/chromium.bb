@@ -32,16 +32,16 @@ class ExternalVideoEncoder : public VideoEncoder {
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb);
 
-  virtual ~ExternalVideoEncoder();
+  ~ExternalVideoEncoder() override;
 
   // VideoEncoder implementation.
-  virtual bool EncodeVideoFrame(
+  bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
       const FrameEncodedCallback& frame_encoded_callback) override;
-  virtual void SetBitRate(int new_bit_rate) override;
-  virtual void GenerateKeyFrame() override;
-  virtual void LatestFrameIdToReference(uint32 frame_id) override;
+  void SetBitRate(int new_bit_rate) override;
+  void GenerateKeyFrame() override;
+  void LatestFrameIdToReference(uint32 frame_id) override;
 
   // Called when video_accelerator_client_ has finished creating the VEA and
   // is ready for use.

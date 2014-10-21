@@ -25,11 +25,11 @@ const char kTestAudioData[] = "RIFF\x26\x00\x00\x00WAVEfmt \x10\x00\x00\x00"
 class TestObserver : public AudioStreamHandler::TestObserver {
  public:
   TestObserver(const base::Closure& quit);
-  virtual ~TestObserver();
+  ~TestObserver() override;
 
   // AudioStreamHandler::TestObserver implementation:
-  virtual void OnPlay() override;
-  virtual void OnStop(size_t cursor) override;
+  void OnPlay() override;
+  void OnStop(size_t cursor) override;
 
   int num_play_requests() const { return num_play_requests_; }
   int num_stop_requests() const { return num_stop_requests_; }

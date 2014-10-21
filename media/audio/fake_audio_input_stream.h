@@ -27,16 +27,16 @@ class MEDIA_EXPORT FakeAudioInputStream
   static AudioInputStream* MakeFakeStream(AudioManagerBase* manager,
                                           const AudioParameters& params);
 
-  virtual bool Open() override;
-  virtual void Start(AudioInputCallback* callback) override;
-  virtual void Stop() override;
-  virtual void Close() override;
-  virtual double GetMaxVolume() override;
-  virtual void SetVolume(double volume) override;
-  virtual double GetVolume() override;
-  virtual bool IsMuted() override;
-  virtual void SetAutomaticGainControl(bool enabled) override;
-  virtual bool GetAutomaticGainControl() override;
+  bool Open() override;
+  void Start(AudioInputCallback* callback) override;
+  void Stop() override;
+  void Close() override;
+  double GetMaxVolume() override;
+  void SetVolume(double volume) override;
+  double GetVolume() override;
+  bool IsMuted() override;
+  void SetAutomaticGainControl(bool enabled) override;
+  bool GetAutomaticGainControl() override;
 
   // Generate one beep sound. This method is called by
   // FakeVideoCaptureDevice to test audio/video synchronization.
@@ -53,7 +53,7 @@ class MEDIA_EXPORT FakeAudioInputStream
   FakeAudioInputStream(AudioManagerBase* manager,
                        const AudioParameters& params);
 
-  virtual ~FakeAudioInputStream();
+  ~FakeAudioInputStream() override;
 
   void DoCallback();
 

@@ -37,11 +37,11 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   ReceiverRtcpEventSubscriber(const size_t max_size_to_retain,
       EventMediaType type);
 
-  virtual ~ReceiverRtcpEventSubscriber();
+  ~ReceiverRtcpEventSubscriber() override;
 
   // RawEventSubscriber implementation.
-  virtual void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
-  virtual void OnReceivePacketEvent(const PacketEvent& packet_event) override;
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
+  void OnReceivePacketEvent(const PacketEvent& packet_event) override;
 
   // Assigns events collected to |rtcp_events| and clears them from this
   // object.

@@ -26,25 +26,25 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   explicit FakeVideoEncodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       std::vector<uint32>* stored_bitrates);
-  virtual ~FakeVideoEncodeAccelerator();
+  ~FakeVideoEncodeAccelerator() override;
 
-  virtual std::vector<VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfiles() override;
-  virtual bool Initialize(media::VideoFrame::Format input_format,
-                          const gfx::Size& input_visible_size,
-                          VideoCodecProfile output_profile,
-                          uint32 initial_bitrate,
-                          Client* client) override;
+  std::vector<VideoEncodeAccelerator::SupportedProfile> GetSupportedProfiles()
+      override;
+  bool Initialize(media::VideoFrame::Format input_format,
+                  const gfx::Size& input_visible_size,
+                  VideoCodecProfile output_profile,
+                  uint32 initial_bitrate,
+                  Client* client) override;
 
-  virtual void Encode(const scoped_refptr<VideoFrame>& frame,
-                      bool force_keyframe) override;
+  void Encode(const scoped_refptr<VideoFrame>& frame,
+              bool force_keyframe) override;
 
-  virtual void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
+  void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
 
-  virtual void RequestEncodingParametersChange(uint32 bitrate,
-                                               uint32 framerate) override;
+  void RequestEncodingParametersChange(uint32 bitrate,
+                                       uint32 framerate) override;
 
-  virtual void Destroy() override;
+  void Destroy() override;
 
   void SendDummyFrameForTesting(bool key_frame);
   void SetWillInitializationSucceed(bool will_initialization_succeed) {

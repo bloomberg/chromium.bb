@@ -23,7 +23,7 @@ class MEDIA_EXPORT AudioRendererMixer
   AudioRendererMixer(const AudioParameters& input_params,
                      const AudioParameters& output_params,
                      const scoped_refptr<AudioRendererSink>& sink);
-  virtual ~AudioRendererMixer();
+  ~AudioRendererMixer() override;
 
   // Add or remove a mixer input from mixing; called by AudioRendererMixerInput.
   void AddMixerInput(AudioConverter::InputCallback* input);
@@ -41,9 +41,8 @@ class MEDIA_EXPORT AudioRendererMixer
 
  private:
   // AudioRendererSink::RenderCallback implementation.
-  virtual int Render(AudioBus* audio_bus,
-                     int audio_delay_milliseconds) override;
-  virtual void OnRenderError() override;
+  int Render(AudioBus* audio_bus, int audio_delay_milliseconds) override;
+  void OnRenderError() override;
 
   // Output sink for this mixer.
   scoped_refptr<AudioRendererSink> audio_sink_;

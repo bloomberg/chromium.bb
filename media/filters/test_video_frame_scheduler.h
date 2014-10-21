@@ -26,13 +26,13 @@ class TestVideoFrameScheduler : public VideoFrameScheduler {
   };
 
   TestVideoFrameScheduler();
-  virtual ~TestVideoFrameScheduler();
+  ~TestVideoFrameScheduler() override;
 
   // VideoFrameScheduler implementation.
-  virtual void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
-                                  base::TimeTicks wall_ticks,
-                                  const DoneCB& done_cb) override;
-  virtual void Reset() override;
+  void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
+                          base::TimeTicks wall_ticks,
+                          const DoneCB& done_cb) override;
+  void Reset() override;
 
   // Displays all frames with scheduled times <= |wall_ticks|.
   void DisplayFramesUpTo(base::TimeTicks wall_ticks);

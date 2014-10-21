@@ -29,21 +29,21 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
  public:
   explicit FFmpegVideoDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  virtual ~FFmpegVideoDecoder();
+  ~FFmpegVideoDecoder() override;
 
   // Allow decoding of individual NALU. Entire frames are required by default.
   // Disables low-latency mode. Must be called before Initialize().
   void set_decode_nalus(bool decode_nalus) { decode_nalus_ = decode_nalus; }
 
   // VideoDecoder implementation.
-  virtual std::string GetDisplayName() const override;
-  virtual void Initialize(const VideoDecoderConfig& config,
-                          bool low_delay,
-                          const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) override;
-  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) override;
-  virtual void Reset(const base::Closure& closure) override;
+  std::string GetDisplayName() const override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  const PipelineStatusCB& status_cb,
+                  const OutputCB& output_cb) override;
+  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+              const DecodeCB& decode_cb) override;
+  void Reset(const base::Closure& closure) override;
 
   // Callback called from within FFmpeg to allocate a buffer based on
   // the dimensions of |codec_context|. See AVCodecContext.get_buffer2

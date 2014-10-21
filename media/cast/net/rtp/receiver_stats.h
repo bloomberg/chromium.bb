@@ -16,12 +16,12 @@ namespace cast {
 class ReceiverStats : public RtpReceiverStatistics {
  public:
   explicit ReceiverStats(base::TickClock* clock);
-  virtual ~ReceiverStats() override;
+  ~ReceiverStats() override;
 
-  virtual void GetStatistics(uint8* fraction_lost,
-                             uint32* cumulative_lost,  // 24 bits valid.
-                             uint32* extended_high_sequence_number,
-                             uint32* jitter) override;
+  void GetStatistics(uint8* fraction_lost,
+                     uint32* cumulative_lost,  // 24 bits valid.
+                     uint32* extended_high_sequence_number,
+                     uint32* jitter) override;
   void UpdateStatistics(const RtpCastHeader& header);
 
  private:

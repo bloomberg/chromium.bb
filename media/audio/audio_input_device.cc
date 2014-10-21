@@ -31,12 +31,12 @@ class AudioInputDevice::AudioThreadCallback
                       int memory_length,
                       int total_segments,
                       CaptureCallback* capture_callback);
-  virtual ~AudioThreadCallback();
+  ~AudioThreadCallback() override;
 
-  virtual void MapSharedMemory() override;
+  void MapSharedMemory() override;
 
   // Called whenever we receive notifications about pending data.
-  virtual void Process(int pending_data) override;
+  void Process(int pending_data) override;
 
  private:
   int current_segment_id_;

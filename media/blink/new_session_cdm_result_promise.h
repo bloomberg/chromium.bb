@@ -29,13 +29,13 @@ class MEDIA_EXPORT NewSessionCdmResultPromise
       const blink::WebContentDecryptionModuleResult& result,
       const std::string& uma_name,
       const SessionInitializedCB& new_session_created_cb);
-  virtual ~NewSessionCdmResultPromise();
+  ~NewSessionCdmResultPromise() override;
 
   // CdmPromiseTemplate<T> implementation.
-  virtual void resolve(const std::string& web_session_id) override;
-  virtual void reject(MediaKeys::Exception exception_code,
-                      uint32 system_code,
-                      const std::string& error_message) override;
+  void resolve(const std::string& web_session_id) override;
+  void reject(MediaKeys::Exception exception_code,
+              uint32 system_code,
+              const std::string& error_message) override;
 
  private:
   blink::WebContentDecryptionModuleResult web_cdm_result_;

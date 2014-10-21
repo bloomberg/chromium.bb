@@ -52,7 +52,7 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
                               const std::vector<uint8>& init_data)> NeedKeyCB;
 
   Demuxer();
-  virtual ~Demuxer();
+  ~Demuxer() override;
 
   // Completes initialization of the demuxer.
   //

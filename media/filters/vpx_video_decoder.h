@@ -29,17 +29,17 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
  public:
   explicit VpxVideoDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  virtual ~VpxVideoDecoder();
+  ~VpxVideoDecoder() override;
 
   // VideoDecoder implementation.
-  virtual std::string GetDisplayName() const override;
-  virtual void Initialize(const VideoDecoderConfig& config,
-                          bool low_delay,
-                          const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) override;
-  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) override;
-  virtual void Reset(const base::Closure& closure) override;
+  std::string GetDisplayName() const override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  const PipelineStatusCB& status_cb,
+                  const OutputCB& output_cb) override;
+  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+              const DecodeCB& decode_cb) override;
+  void Reset(const base::Closure& closure) override;
 
  private:
   enum DecoderState {

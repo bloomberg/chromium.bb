@@ -25,7 +25,7 @@ class AudioBus;
 class MEDIA_EXPORT AudioBufferConverter : public AudioConverter::InputCallback {
  public:
   explicit AudioBufferConverter(const AudioParameters& output_params);
-  virtual ~AudioBufferConverter();
+  ~AudioBufferConverter() override;
 
   void AddInput(const scoped_refptr<AudioBuffer>& buffer);
 
@@ -51,8 +51,8 @@ class MEDIA_EXPORT AudioBufferConverter : public AudioConverter::InputCallback {
 
  private:
   // Callback to provide data to the AudioConverter
-  virtual double ProvideInput(AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override;
 
   // Reset the converter in response to a configuration change.
   void ResetConverter(const scoped_refptr<AudioBuffer>& input_buffer);

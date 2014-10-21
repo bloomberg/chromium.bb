@@ -21,9 +21,8 @@ class LocalVideoFrameInput : public VideoFrameInput {
                        base::WeakPtr<VideoSender> video_sender)
       : cast_environment_(cast_environment), video_sender_(video_sender) {}
 
-  virtual void InsertRawVideoFrame(
-      const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time) override {
+  void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+                           const base::TimeTicks& capture_time) override {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&VideoSender::InsertRawVideoFrame,
@@ -33,7 +32,7 @@ class LocalVideoFrameInput : public VideoFrameInput {
   }
 
  protected:
-  virtual ~LocalVideoFrameInput() {}
+  ~LocalVideoFrameInput() override {}
 
  private:
   friend class base::RefCountedThreadSafe<LocalVideoFrameInput>;
@@ -52,8 +51,8 @@ class LocalAudioFrameInput : public AudioFrameInput {
                        base::WeakPtr<AudioSender> audio_sender)
       : cast_environment_(cast_environment), audio_sender_(audio_sender) {}
 
-  virtual void InsertAudio(scoped_ptr<AudioBus> audio_bus,
-                           const base::TimeTicks& recorded_time) override {
+  void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+                   const base::TimeTicks& recorded_time) override {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&AudioSender::InsertAudio,
@@ -63,7 +62,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
   }
 
  protected:
-  virtual ~LocalAudioFrameInput() {}
+  ~LocalAudioFrameInput() override {}
 
  private:
   friend class base::RefCountedThreadSafe<LocalAudioFrameInput>;

@@ -28,16 +28,16 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
  public:
   explicit OpusAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  virtual ~OpusAudioDecoder();
+  ~OpusAudioDecoder() override;
 
   // AudioDecoder implementation.
-  virtual std::string GetDisplayName() const override;
-  virtual void Initialize(const AudioDecoderConfig& config,
-                          const PipelineStatusCB& status_cb,
-                          const OutputCB& output_cb) override;
-  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const DecodeCB& decode_cb) override;
-  virtual void Reset(const base::Closure& closure) override;
+  std::string GetDisplayName() const override;
+  void Initialize(const AudioDecoderConfig& config,
+                  const PipelineStatusCB& status_cb,
+                  const OutputCB& output_cb) override;
+  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+              const DecodeCB& decode_cb) override;
+  void Reset(const base::Closure& closure) override;
 
  private:
   // Reads from the demuxer stream with corresponding callback method.

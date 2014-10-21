@@ -18,7 +18,7 @@ class AudioDecoderConfig;
 class WebMAudioClient : public WebMParserClient {
  public:
   explicit WebMAudioClient(const LogCB& log_cb);
-  virtual ~WebMAudioClient();
+  ~WebMAudioClient() override;
 
   // Reset this object's state so it can process a new audio track element.
   void Reset();
@@ -38,8 +38,8 @@ class WebMAudioClient : public WebMParserClient {
 
  private:
   // WebMParserClient implementation.
-  virtual bool OnUInt(int id, int64 val) override;
-  virtual bool OnFloat(int id, double val) override;
+  bool OnUInt(int id, int64 val) override;
+  bool OnFloat(int id, double val) override;
 
   LogCB log_cb_;
   int channels_;

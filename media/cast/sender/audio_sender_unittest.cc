@@ -25,8 +25,7 @@ class TestPacketSender : public PacketSender {
  public:
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
 
-  virtual bool SendPacket(PacketRef packet,
-                          const base::Closure& cb) override {
+  bool SendPacket(PacketRef packet, const base::Closure& cb) override {
     if (Rtcp::IsRtcpPacket(&packet->data[0], packet->data.size())) {
       ++number_of_rtcp_packets_;
     } else {
@@ -41,9 +40,7 @@ class TestPacketSender : public PacketSender {
     return true;
   }
 
-  virtual int64 GetBytesSent() override {
-    return 0;
-  }
+  int64 GetBytesSent() override { return 0; }
 
   int number_of_rtp_packets() const { return number_of_rtp_packets_; }
 

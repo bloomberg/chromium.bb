@@ -22,12 +22,9 @@ namespace {
 class TestUsbMidiDevice : public UsbMidiDevice {
  public:
   TestUsbMidiDevice() {}
-  virtual ~TestUsbMidiDevice() {}
-  virtual std::vector<uint8> GetDescriptor() override {
-    return std::vector<uint8>();
-  }
-  virtual void Send(int endpoint_number,
-                    const std::vector<uint8>& data) override {}
+  ~TestUsbMidiDevice() override {}
+  std::vector<uint8> GetDescriptor() override { return std::vector<uint8>(); }
+  void Send(int endpoint_number, const std::vector<uint8>& data) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestUsbMidiDevice);
@@ -36,11 +33,11 @@ class TestUsbMidiDevice : public UsbMidiDevice {
 class MockDelegate : public UsbMidiInputStream::Delegate {
  public:
   MockDelegate() {}
-  virtual ~MockDelegate() {}
-  virtual void OnReceivedData(size_t jack_index,
-                              const uint8* data,
-                              size_t size,
-                              base::TimeTicks time) override {
+  ~MockDelegate() override {}
+  void OnReceivedData(size_t jack_index,
+                      const uint8* data,
+                      size_t size,
+                      base::TimeTicks time) override {
     for (size_t i = 0; i < size; ++i)
       received_data_ += base::StringPrintf("0x%02x ", data[i]);
     received_data_ += "\n";

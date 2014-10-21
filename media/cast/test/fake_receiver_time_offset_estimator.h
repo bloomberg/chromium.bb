@@ -20,15 +20,15 @@ class FakeReceiverTimeOffsetEstimator : public ReceiverTimeOffsetEstimator {
  public:
   FakeReceiverTimeOffsetEstimator(base::TimeDelta offset);
 
-  virtual ~FakeReceiverTimeOffsetEstimator();
+  ~FakeReceiverTimeOffsetEstimator() override;
 
   // RawReventSubscriber implementations.
-  virtual void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
-  virtual void OnReceivePacketEvent(const PacketEvent& packet_event) override;
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
+  void OnReceivePacketEvent(const PacketEvent& packet_event) override;
 
   // ReceiverTimeOffsetEstimator
-  virtual bool GetReceiverOffsetBounds(base::TimeDelta* lower_bound,
-                                       base::TimeDelta* upper_bound) override;
+  bool GetReceiverOffsetBounds(base::TimeDelta* lower_bound,
+                               base::TimeDelta* upper_bound) override;
 
  private:
   const base::TimeDelta offset_;

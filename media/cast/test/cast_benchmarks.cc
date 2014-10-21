@@ -108,24 +108,21 @@ class CastTransportSenderWrapper : public CastTransportSender {
     encoded_audio_bytes_ = encoded_audio_bytes;
   }
 
-  virtual void InitializeAudio(
-      const CastTransportRtpConfig& config,
-      const RtcpCastMessageCallback& cast_message_cb,
-      const RtcpRttCallback& rtt_cb) override {
+  void InitializeAudio(const CastTransportRtpConfig& config,
+                       const RtcpCastMessageCallback& cast_message_cb,
+                       const RtcpRttCallback& rtt_cb) override {
     audio_ssrc_ = config.ssrc;
     transport_->InitializeAudio(config, cast_message_cb, rtt_cb);
   }
 
-  virtual void InitializeVideo(
-      const CastTransportRtpConfig& config,
-      const RtcpCastMessageCallback& cast_message_cb,
-      const RtcpRttCallback& rtt_cb) override {
+  void InitializeVideo(const CastTransportRtpConfig& config,
+                       const RtcpCastMessageCallback& cast_message_cb,
+                       const RtcpRttCallback& rtt_cb) override {
     video_ssrc_ = config.ssrc;
     transport_->InitializeVideo(config, cast_message_cb, rtt_cb);
   }
 
-  virtual void InsertFrame(uint32 ssrc,
-                           const EncodedFrame& frame) override {
+  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) override {
     if (ssrc == audio_ssrc_) {
       *encoded_audio_bytes_ += frame.data.size();
     } else if (ssrc == video_ssrc_) {
@@ -134,27 +131,24 @@ class CastTransportSenderWrapper : public CastTransportSender {
     transport_->InsertFrame(ssrc, frame);
   }
 
-  virtual void SendSenderReport(
-      uint32 ssrc,
-      base::TimeTicks current_time,
-      uint32 current_time_as_rtp_timestamp) override {
+  void SendSenderReport(uint32 ssrc,
+                        base::TimeTicks current_time,
+                        uint32 current_time_as_rtp_timestamp) override {
     transport_->SendSenderReport(ssrc,
                                  current_time,
                                  current_time_as_rtp_timestamp);
   }
 
-  virtual void CancelSendingFrames(
-      uint32 ssrc,
-      const std::vector<uint32>& frame_ids) override {
+  void CancelSendingFrames(uint32 ssrc,
+                           const std::vector<uint32>& frame_ids) override {
     transport_->CancelSendingFrames(ssrc, frame_ids);
   }
 
-  virtual void ResendFrameForKickstart(uint32 ssrc,
-                                       uint32 frame_id) override {
+  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override {
     transport_->ResendFrameForKickstart(ssrc, frame_id);
   }
 
-  virtual PacketReceiverCallback PacketReceiverForTesting() override {
+  PacketReceiverCallback PacketReceiverForTesting() override {
     return transport_->PacketReceiverForTesting();
   }
 

@@ -21,17 +21,17 @@ namespace {
 class FakeMidiManager : public MidiManager {
  public:
   FakeMidiManager() : start_initialization_is_called_(false) {}
-  virtual ~FakeMidiManager() {}
+  ~FakeMidiManager() override {}
 
   // MidiManager implementation.
-  virtual void StartInitialization() override {
+  void StartInitialization() override {
     start_initialization_is_called_ = true;
   }
 
-  virtual void DispatchSendMidiData(MidiManagerClient* client,
-                                    uint32 port_index,
-                                    const std::vector<uint8>& data,
-                                    double timestamp) override {}
+  void DispatchSendMidiData(MidiManagerClient* client,
+                            uint32 port_index,
+                            const std::vector<uint8>& data,
+                            double timestamp) override {}
 
   // Utility functions for testing.
   void CallCompleteInitialization(MidiResult result) {
@@ -58,19 +58,21 @@ class FakeMidiManagerClient : public MidiManagerClient {
       : client_id_(client_id),
         result_(MIDI_NOT_SUPPORTED),
         wait_for_result_(true) {}
-  virtual ~FakeMidiManagerClient() {}
+  ~FakeMidiManagerClient() override {}
 
   // MidiManagerClient implementation.
-  virtual void CompleteStartSession(int client_id, MidiResult result) override {
+  void CompleteStartSession(int client_id, MidiResult result) override {
     EXPECT_TRUE(wait_for_result_);
     CHECK_EQ(client_id_, client_id);
     result_ = result;
     wait_for_result_ = false;
   }
 
-  virtual void ReceiveMidiData(uint32 port_index, const uint8* data,
-                               size_t size, double timestamp) override {}
-  virtual void AccumulateMidiBytesSent(size_t size) override {}
+  void ReceiveMidiData(uint32 port_index,
+                       const uint8* data,
+                       size_t size,
+                       double timestamp) override {}
+  void AccumulateMidiBytesSent(size_t size) override {}
 
   int client_id() const { return client_id_; }
   MidiResult result() const { return result_; }

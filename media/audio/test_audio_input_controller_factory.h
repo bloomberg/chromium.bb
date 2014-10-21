@@ -64,17 +64,17 @@ class TestAudioInputController : public AudioInputController {
   EventHandler* event_handler() const { return event_handler_; }
 
   // Notifies the TestAudioControllerOpened() event to the delegate (if any).
-  virtual void Record() override;
+  void Record() override;
 
   // Ensure that the closure is run on the audio-manager thread.
-  virtual void Close(const base::Closure& closed_task) override;
+  void Close(const base::Closure& closed_task) override;
 
   const AudioParameters& audio_parameters() const {
     return audio_parameters_;
   }
 
  protected:
-  virtual ~TestAudioInputController();
+  ~TestAudioInputController() override;
 
  private:
   AudioParameters audio_parameters_;
@@ -94,10 +94,10 @@ typedef TestAudioInputController::Delegate TestAudioInputControllerDelegate;
 class TestAudioInputControllerFactory : public AudioInputController::Factory {
  public:
   TestAudioInputControllerFactory();
-  virtual ~TestAudioInputControllerFactory();
+  ~TestAudioInputControllerFactory() override;
 
   // AudioInputController::Factory methods.
-  virtual AudioInputController* Create(
+  AudioInputController* Create(
       AudioManager* audio_manager,
       AudioInputController::EventHandler* event_handler,
       AudioParameters params,

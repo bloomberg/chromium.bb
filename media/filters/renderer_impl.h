@@ -39,23 +39,23 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
                scoped_ptr<AudioRenderer> audio_renderer,
                scoped_ptr<VideoRenderer> video_renderer);
 
-  virtual ~RendererImpl();
+  ~RendererImpl() override;
 
   // Renderer implementation.
-  virtual void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
-                          const base::Closure& init_cb,
-                          const StatisticsCB& statistics_cb,
-                          const base::Closure& ended_cb,
-                          const PipelineStatusCB& error_cb,
-                          const BufferingStateCB& buffering_state_cb) override;
-  virtual void Flush(const base::Closure& flush_cb) override;
-  virtual void StartPlayingFrom(base::TimeDelta time) override;
-  virtual void SetPlaybackRate(float playback_rate) override;
-  virtual void SetVolume(float volume) override;
-  virtual base::TimeDelta GetMediaTime() override;
-  virtual bool HasAudio() override;
-  virtual bool HasVideo() override;
-  virtual void SetCdm(MediaKeys* cdm) override;
+  void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+                  const base::Closure& init_cb,
+                  const StatisticsCB& statistics_cb,
+                  const base::Closure& ended_cb,
+                  const PipelineStatusCB& error_cb,
+                  const BufferingStateCB& buffering_state_cb) override;
+  void Flush(const base::Closure& flush_cb) override;
+  void StartPlayingFrom(base::TimeDelta time) override;
+  void SetPlaybackRate(float playback_rate) override;
+  void SetVolume(float volume) override;
+  base::TimeDelta GetMediaTime() override;
+  bool HasAudio() override;
+  bool HasVideo() override;
+  void SetCdm(MediaKeys* cdm) override;
 
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();

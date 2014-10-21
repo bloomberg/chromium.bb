@@ -147,7 +147,7 @@ class MEDIA_EXPORT AudioBusRefCounted
   friend class base::RefCountedThreadSafe<AudioBusRefCounted>;
 
   AudioBusRefCounted(int channels, int frames);
-  virtual ~AudioBusRefCounted();
+  ~AudioBusRefCounted() override;
 
   DISALLOW_COPY_AND_ASSIGN(AudioBusRefCounted);
 };

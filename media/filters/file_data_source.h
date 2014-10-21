@@ -20,17 +20,19 @@ class MEDIA_EXPORT FileDataSource : public DataSource {
  public:
   FileDataSource();
   explicit FileDataSource(base::File file);
-  virtual ~FileDataSource();
+  ~FileDataSource() override;
 
   bool Initialize(const base::FilePath& file_path);
 
   // Implementation of DataSource.
-  virtual void Stop() override;
-  virtual void Read(int64 position, int size, uint8* data,
-                    const DataSource::ReadCB& read_cb) override;
-  virtual bool GetSize(int64* size_out) override;
-  virtual bool IsStreaming() override;
-  virtual void SetBitrate(int bitrate) override;
+  void Stop() override;
+  void Read(int64 position,
+            int size,
+            uint8* data,
+            const DataSource::ReadCB& read_cb) override;
+  bool GetSize(int64* size_out) override;
+  bool IsStreaming() override;
+  void SetBitrate(int bitrate) override;
 
   // Unit test helpers. Recreate the object if you want the default behaviour.
   void force_read_errors_for_testing() { force_read_errors_ = true; }

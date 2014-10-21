@@ -18,7 +18,7 @@ class VideoDecoderConfig;
 class WebMVideoClient : public WebMParserClient {
  public:
   explicit WebMVideoClient(const LogCB& log_cb);
-  virtual ~WebMVideoClient();
+  ~WebMVideoClient() override;
 
   // Reset this object's state so it can process a new video track element.
   void Reset();
@@ -37,9 +37,9 @@ class WebMVideoClient : public WebMParserClient {
 
  private:
   // WebMParserClient implementation.
-  virtual bool OnUInt(int id, int64 val) override;
-  virtual bool OnBinary(int id, const uint8* data, int size) override;
-  virtual bool OnFloat(int id, double val) override;
+  bool OnUInt(int id, int64 val) override;
+  bool OnBinary(int id, const uint8* data, int size) override;
+  bool OnFloat(int id, double val) override;
 
   LogCB log_cb_;
   int64 pixel_width_;

@@ -24,32 +24,32 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   AudioManagerMac(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
-  virtual bool HasAudioOutputDevices() override;
-  virtual bool HasAudioInputDevices() override;
-  virtual void GetAudioInputDeviceNames(
-      AudioDeviceNames* device_names) override;
-  virtual void GetAudioOutputDeviceNames(
-      AudioDeviceNames* device_names) override;
-  virtual AudioParameters GetInputStreamParameters(
+  bool HasAudioOutputDevices() override;
+  bool HasAudioInputDevices() override;
+  void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override;
+  void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override;
+  AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
-  virtual std::string GetAssociatedOutputDeviceID(
+  std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
 
   // Implementation of AudioManagerBase.
-  virtual AudioOutputStream* MakeLinearOutputStream(
+  AudioOutputStream* MakeLinearOutputStream(
       const AudioParameters& params) override;
-  virtual AudioOutputStream* MakeLowLatencyOutputStream(
+  AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
-  virtual AudioInputStream* MakeLinearInputStream(
-      const AudioParameters& params, const std::string& device_id) override;
-  virtual AudioInputStream* MakeLowLatencyInputStream(
-      const AudioParameters& params, const std::string& device_id) override;
-  virtual std::string GetDefaultOutputDeviceID() override;
+  AudioInputStream* MakeLinearInputStream(
+      const AudioParameters& params,
+      const std::string& device_id) override;
+  AudioInputStream* MakeLowLatencyInputStream(
+      const AudioParameters& params,
+      const std::string& device_id) override;
+  std::string GetDefaultOutputDeviceID() override;
 
   // Used to track destruction of input and output streams.
-  virtual void ReleaseOutputStream(AudioOutputStream* stream) override;
-  virtual void ReleaseInputStream(AudioInputStream* stream) override;
+  void ReleaseOutputStream(AudioOutputStream* stream) override;
+  void ReleaseInputStream(AudioInputStream* stream) override;
 
   static bool GetDefaultInputDevice(AudioDeviceID* device);
   static bool GetDefaultOutputDevice(AudioDeviceID* device);
@@ -76,9 +76,9 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   bool ShouldDeferStreamStart();
 
  protected:
-  virtual ~AudioManagerMac();
+  ~AudioManagerMac() override;
 
-  virtual AudioParameters GetPreferredOutputStreamParameters(
+  AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;
 

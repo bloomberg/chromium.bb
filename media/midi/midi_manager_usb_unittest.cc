@@ -43,15 +43,14 @@ class Logger {
 class FakeUsbMidiDevice : public UsbMidiDevice {
  public:
   explicit FakeUsbMidiDevice(Logger* logger) : logger_(logger) {}
-  virtual ~FakeUsbMidiDevice() {}
+  ~FakeUsbMidiDevice() override {}
 
-  virtual std::vector<uint8> GetDescriptor() override {
+  std::vector<uint8> GetDescriptor() override {
     logger_->AddLog("UsbMidiDevice::GetDescriptor\n");
     return descriptor_;
   }
 
-  virtual void Send(int endpoint_number,
-                    const std::vector<uint8>& data) override {
+  void Send(int endpoint_number, const std::vector<uint8>& data) override {
     logger_->AddLog("UsbMidiDevice::Send ");
     logger_->AddLog(base::StringPrintf("endpoint = %d data =",
                                        endpoint_number));
@@ -77,17 +76,17 @@ class FakeMidiManagerClient : public MidiManagerClient {
       : complete_start_session_(false),
         result_(MIDI_NOT_SUPPORTED),
         logger_(logger) {}
-  virtual ~FakeMidiManagerClient() {}
+  ~FakeMidiManagerClient() override {}
 
-  virtual void CompleteStartSession(int client_id, MidiResult result) override {
+  void CompleteStartSession(int client_id, MidiResult result) override {
     complete_start_session_ = true;
     result_ = result;
   }
 
-  virtual void ReceiveMidiData(uint32 port_index,
-                               const uint8* data,
-                               size_t size,
-                               double timestamp) override {
+  void ReceiveMidiData(uint32 port_index,
+                       const uint8* data,
+                       size_t size,
+                       double timestamp) override {
     logger_->AddLog("MidiManagerClient::ReceiveMidiData ");
     logger_->AddLog(base::StringPrintf("port_index = %d data =", port_index));
     for (size_t i = 0; i < size; ++i)
@@ -95,7 +94,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
     logger_->AddLog("\n");
   }
 
-  virtual void AccumulateMidiBytesSent(size_t size) override {
+  void AccumulateMidiBytesSent(size_t size) override {
     logger_->AddLog("MidiManagerClient::AccumulateMidiBytesSent ");
     // Windows has no "%zu".
     logger_->AddLog(base::StringPrintf("size = %u\n",
@@ -114,9 +113,9 @@ class FakeMidiManagerClient : public MidiManagerClient {
 class TestUsbMidiDeviceFactory : public UsbMidiDevice::Factory {
  public:
   TestUsbMidiDeviceFactory() {}
-  virtual ~TestUsbMidiDeviceFactory() {}
-  virtual void EnumerateDevices(UsbMidiDeviceDelegate* device,
-                                Callback callback) override {
+  ~TestUsbMidiDeviceFactory() override {}
+  void EnumerateDevices(UsbMidiDeviceDelegate* device,
+                        Callback callback) override {
     callback_ = callback;
   }
 
@@ -131,7 +130,7 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
   explicit MidiManagerUsbForTesting(
       scoped_ptr<UsbMidiDevice::Factory> device_factory)
       : MidiManagerUsb(device_factory.Pass()) {}
-  virtual ~MidiManagerUsbForTesting() {}
+  ~MidiManagerUsbForTesting() override {}
 
   void CallCompleteInitialization(MidiResult result) {
     CompleteInitialization(result);

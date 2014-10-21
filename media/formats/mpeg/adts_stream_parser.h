@@ -14,17 +14,17 @@ namespace media {
 class MEDIA_EXPORT ADTSStreamParser : public MPEGAudioStreamParserBase {
  public:
   ADTSStreamParser();
-  virtual ~ADTSStreamParser();
+  ~ADTSStreamParser() override;
 
  private:
   // MPEGAudioStreamParserBase overrides.
-  virtual int ParseFrameHeader(const uint8* data,
-                               int size,
-                               int* frame_size,
-                               int* sample_rate,
-                               ChannelLayout* channel_layout,
-                               int* sample_count,
-                               bool* metadata_frame) const override;
+  int ParseFrameHeader(const uint8* data,
+                       int size,
+                       int* frame_size,
+                       int* sample_rate,
+                       ChannelLayout* channel_layout,
+                       int* sample_count,
+                       bool* metadata_frame) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ADTSStreamParser);
 };

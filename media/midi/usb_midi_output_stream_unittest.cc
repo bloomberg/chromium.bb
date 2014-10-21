@@ -24,14 +24,11 @@ std::vector<T> ToVector(const T((&array)[N])) {
 class MockUsbMidiDevice : public UsbMidiDevice {
  public:
   MockUsbMidiDevice() {}
-  virtual ~MockUsbMidiDevice() {}
+  ~MockUsbMidiDevice() override {}
 
-  virtual std::vector<uint8> GetDescriptor() override {
-    return std::vector<uint8>();
-  }
+  std::vector<uint8> GetDescriptor() override { return std::vector<uint8>(); }
 
-  virtual void Send(int endpoint_number, const std::vector<uint8>& data)
-      override {
+  void Send(int endpoint_number, const std::vector<uint8>& data) override {
     for (size_t i = 0; i < data.size(); ++i) {
       log_ += base::StringPrintf("0x%02x ", data[i]);
     }

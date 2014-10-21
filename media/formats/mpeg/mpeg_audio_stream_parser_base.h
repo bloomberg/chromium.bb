@@ -28,19 +28,19 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   MPEGAudioStreamParserBase(uint32 start_code_mask,
                             AudioCodec audio_codec,
                             int codec_delay);
-  virtual ~MPEGAudioStreamParserBase();
+  ~MPEGAudioStreamParserBase() override;
 
   // StreamParser implementation.
-  virtual void Init(const InitCB& init_cb,
-                    const NewConfigCB& config_cb,
-                    const NewBuffersCB& new_buffers_cb,
-                    bool ignore_text_tracks,
-                    const NeedKeyCB& need_key_cb,
-                    const NewMediaSegmentCB& new_segment_cb,
-                    const base::Closure& end_of_segment_cb,
-                    const LogCB& log_cb) override;
-  virtual void Flush() override;
-  virtual bool Parse(const uint8* buf, int size) override;
+  void Init(const InitCB& init_cb,
+            const NewConfigCB& config_cb,
+            const NewBuffersCB& new_buffers_cb,
+            bool ignore_text_tracks,
+            const NeedKeyCB& need_key_cb,
+            const NewMediaSegmentCB& new_segment_cb,
+            const base::Closure& end_of_segment_cb,
+            const LogCB& log_cb) override;
+  void Flush() override;
+  bool Parse(const uint8* buf, int size) override;
 
  protected:
   // Subclasses implement this method to parse format specific frame headers.

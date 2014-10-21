@@ -231,27 +231,27 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     return promise.Pass();
   }
 
-  virtual void OnSessionMessage(const std::string& web_session_id,
-                                const std::vector<uint8>& message,
-                                const GURL& destination_url) override {
+  void OnSessionMessage(const std::string& web_session_id,
+                        const std::vector<uint8>& message,
+                        const GURL& destination_url) override {
     EXPECT_FALSE(web_session_id.empty());
     EXPECT_FALSE(message.empty());
     EXPECT_EQ(current_session_id_, web_session_id);
   }
 
-  virtual void OnSessionClosed(const std::string& web_session_id) override {
+  void OnSessionClosed(const std::string& web_session_id) override {
     EXPECT_EQ(current_session_id_, web_session_id);
   }
 
-  virtual void OnSessionKeysChange(const std::string& web_session_id,
-                                   bool has_additional_usable_key) override {
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           bool has_additional_usable_key) override {
     EXPECT_EQ(current_session_id_, web_session_id);
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
-  virtual void NeedKey(const std::string& type,
-                       const std::vector<uint8>& init_data,
-                       AesDecryptor* decryptor) override {
+  void NeedKey(const std::string& type,
+               const std::vector<uint8>& init_data,
+               AesDecryptor* decryptor) override {
     if (current_session_id_.empty()) {
       decryptor->CreateSession(type,
                                kInitData,
@@ -286,14 +286,14 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 class RotatingKeyProvidingApp : public KeyProvidingApp {
  public:
   RotatingKeyProvidingApp() : num_distint_need_key_calls_(0) {}
-  virtual ~RotatingKeyProvidingApp() {
+  ~RotatingKeyProvidingApp() override {
     // Expect that NeedKey is fired multiple times with different |init_data|.
     EXPECT_GT(num_distint_need_key_calls_, 1u);
   }
 
-  virtual void NeedKey(const std::string& type,
-                       const std::vector<uint8>& init_data,
-                       AesDecryptor* decryptor) override {
+  void NeedKey(const std::string& type,
+               const std::vector<uint8>& init_data,
+               AesDecryptor* decryptor) override {
     // Skip the request if the |init_data| has been seen.
     if (init_data == prev_init_data_)
       return;
@@ -358,29 +358,28 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
 // Ignores needkey and does not perform a license request
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
-  virtual void OnSessionMessage(const std::string& web_session_id,
-                                const std::vector<uint8>& message,
-                                const GURL& default_url) override {
+  void OnSessionMessage(const std::string& web_session_id,
+                        const std::vector<uint8>& message,
+                        const GURL& default_url) override {
     EXPECT_FALSE(web_session_id.empty());
     EXPECT_FALSE(message.empty());
     FAIL() << "Unexpected Message";
   }
 
-  virtual void OnSessionClosed(const std::string& web_session_id) override {
+  void OnSessionClosed(const std::string& web_session_id) override {
     EXPECT_FALSE(web_session_id.empty());
     FAIL() << "Unexpected Closed";
   }
 
-  virtual void OnSessionKeysChange(const std::string& web_session_id,
-                                   bool has_additional_usable_key) override {
+  void OnSessionKeysChange(const std::string& web_session_id,
+                           bool has_additional_usable_key) override {
     EXPECT_FALSE(web_session_id.empty());
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
-  virtual void NeedKey(const std::string& type,
-                       const std::vector<uint8>& init_data,
-                       AesDecryptor* decryptor) override {
-  }
+  void NeedKey(const std::string& type,
+               const std::vector<uint8>& init_data,
+               AesDecryptor* decryptor) override {}
 };
 
 // Helper class that emulates calls made on the ChunkDemuxer by the

@@ -57,18 +57,18 @@ class DeckLinkCaptureDelegate :
 
  private:
   // IDeckLinkInputCallback interface implementation.
-  virtual HRESULT VideoInputFormatChanged(
+  HRESULT VideoInputFormatChanged(
       BMDVideoInputFormatChangedEvents notification_events,
-      IDeckLinkDisplayMode *new_display_mode,
+      IDeckLinkDisplayMode* new_display_mode,
       BMDDetectedVideoInputFormatFlags detected_signal_flags) override;
-  virtual HRESULT VideoInputFrameArrived(
+  HRESULT VideoInputFrameArrived(
       IDeckLinkVideoInputFrame* video_frame,
       IDeckLinkAudioInputPacket* audio_packet) override;
 
   // IUnknown interface implementation.
-  virtual HRESULT QueryInterface(REFIID iid, void** ppv) override;
-  virtual ULONG AddRef() override;
-  virtual ULONG Release() override;
+  HRESULT QueryInterface(REFIID iid, void** ppv) override;
+  ULONG AddRef() override;
+  ULONG Release() override;
 
   // Forwarder to VideoCaptureDeviceDeckLinkMac::SendErrorString().
   void SendErrorString(const std::string& reason);
@@ -96,7 +96,7 @@ class DeckLinkCaptureDelegate :
   friend class scoped_refptr<DeckLinkCaptureDelegate>;
   friend class base::RefCountedThreadSafe<DeckLinkCaptureDelegate>;
 
-  virtual ~DeckLinkCaptureDelegate();
+  ~DeckLinkCaptureDelegate() override;
 
   DISALLOW_COPY_AND_ASSIGN(DeckLinkCaptureDelegate);
 };

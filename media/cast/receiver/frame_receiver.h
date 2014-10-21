@@ -52,7 +52,7 @@ class FrameReceiver : public RtpPayloadFeedback,
                 EventMediaType event_media_type,
                 PacedPacketSender* const packet_sender);
 
-  virtual ~FrameReceiver();
+  ~FrameReceiver() override;
 
   // Request an encoded frame.
   //
@@ -76,7 +76,7 @@ class FrameReceiver : public RtpPayloadFeedback,
                            size_t payload_size);
 
   // RtpPayloadFeedback implementation.
-  virtual void CastFeedback(const RtcpCastMessage& cast_message) override;
+  void CastFeedback(const RtcpCastMessage& cast_message) override;
 
  private:
   // Processes ready-to-consume packets from |framer_|, decrypting each packet's

@@ -21,15 +21,15 @@ class MojoDemuxerStreamImpl : public mojo::InterfaceImpl<mojo::DemuxerStream> {
   // |stream| is the underlying DemuxerStream we are proxying for.
   // Note: |this| does not take ownership of |stream|.
   explicit MojoDemuxerStreamImpl(media::DemuxerStream* stream);
-  virtual ~MojoDemuxerStreamImpl();
+  ~MojoDemuxerStreamImpl() override;
 
   // mojo::DemuxerStream implementation.
-  virtual void Read(const mojo::Callback<
-      void(mojo::DemuxerStream::Status, mojo::MediaDecoderBufferPtr)>& callback)
+  void Read(const mojo::Callback<void(mojo::DemuxerStream::Status,
+                                      mojo::MediaDecoderBufferPtr)>& callback)
       override;
 
   // mojo::InterfaceImpl overrides.
-  virtual void OnConnectionEstablished() override;
+  void OnConnectionEstablished() override;
 
  private:
   // |callback| is the callback that was passed to the initiating Read()

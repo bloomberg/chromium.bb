@@ -43,7 +43,7 @@ class UdpTransport : public PacketSender {
       const net::IPEndPoint& remote_end_point,
       int32 send_buffer_size,
       const CastTransportStatusCallback& status_callback);
-  virtual ~UdpTransport();
+  ~UdpTransport() override;
 
   // Start receiving packets. Packets are submitted to |packet_receiver|.
   void StartReceiving(const PacketReceiverCallback& packet_receiver);
@@ -53,9 +53,8 @@ class UdpTransport : public PacketSender {
   void SetDscp(net::DiffServCodePoint dscp);
 
   // PacketSender implementations.
-  virtual bool SendPacket(PacketRef packet,
-                          const base::Closure& cb) override;
-  virtual int64 GetBytesSent() override;
+  bool SendPacket(PacketRef packet, const base::Closure& cb) override;
+  int64 GetBytesSent() override;
 
  private:
   // Requests and processes packets from |udp_socket_|.  This method is called

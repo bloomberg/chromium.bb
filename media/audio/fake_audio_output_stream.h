@@ -23,17 +23,17 @@ class MEDIA_EXPORT FakeAudioOutputStream : public AudioOutputStream {
                                            const AudioParameters& params);
 
   // AudioOutputStream implementation.
-  virtual bool Open() override;
-  virtual void Start(AudioSourceCallback* callback) override;
-  virtual void Stop() override;
-  virtual void SetVolume(double volume) override;
-  virtual void GetVolume(double* volume) override;
-  virtual void Close() override;
+  bool Open() override;
+  void Start(AudioSourceCallback* callback) override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void GetVolume(double* volume) override;
+  void Close() override;
 
  private:
   FakeAudioOutputStream(AudioManagerBase* manager,
                         const AudioParameters& params);
-  virtual ~FakeAudioOutputStream();
+  ~FakeAudioOutputStream() override;
 
   // Task that periodically calls OnMoreData() to consume audio data.
   void CallOnMoreData(AudioBus* audio_bus);

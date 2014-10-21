@@ -24,56 +24,52 @@ class MockAudioManager : public media::AudioManager {
   explicit MockAudioManager(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-  virtual bool HasAudioOutputDevices() override;
+  bool HasAudioOutputDevices() override;
 
-  virtual bool HasAudioInputDevices() override;
+  bool HasAudioInputDevices() override;
 
-  virtual base::string16 GetAudioInputDeviceModel() override;
+  base::string16 GetAudioInputDeviceModel() override;
 
-  virtual void ShowAudioInputSettings() override;
+  void ShowAudioInputSettings() override;
 
-  virtual void GetAudioInputDeviceNames(
+  void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names) override;
+
+  void GetAudioOutputDeviceNames(
       media::AudioDeviceNames* device_names) override;
 
-  virtual void GetAudioOutputDeviceNames(
-      media::AudioDeviceNames* device_names) override;
-
-  virtual media::AudioOutputStream* MakeAudioOutputStream(
+  media::AudioOutputStream* MakeAudioOutputStream(
       const media::AudioParameters& params,
       const std::string& device_id) override;
 
-  virtual media::AudioOutputStream* MakeAudioOutputStreamProxy(
+  media::AudioOutputStream* MakeAudioOutputStreamProxy(
       const media::AudioParameters& params,
       const std::string& device_id) override;
 
-  virtual media::AudioInputStream* MakeAudioInputStream(
+  media::AudioInputStream* MakeAudioInputStream(
       const media::AudioParameters& params,
       const std::string& device_id) override;
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner()
-      override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() override;
 
-  virtual void AddOutputDeviceChangeListener(
-      AudioDeviceListener* listener) override;
-  virtual void RemoveOutputDeviceChangeListener(
-      AudioDeviceListener* listener) override;
+  void AddOutputDeviceChangeListener(AudioDeviceListener* listener) override;
+  void RemoveOutputDeviceChangeListener(AudioDeviceListener* listener) override;
 
-  virtual AudioParameters GetDefaultOutputStreamParameters() override;
-  virtual AudioParameters GetOutputStreamParameters(
+  AudioParameters GetDefaultOutputStreamParameters() override;
+  AudioParameters GetOutputStreamParameters(
       const std::string& device_id) override;
-  virtual AudioParameters GetInputStreamParameters(
+  AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
-  virtual std::string GetAssociatedOutputDeviceID(
+  std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
 
-  virtual scoped_ptr<AudioLog> CreateAudioLog(
+  scoped_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
 
-  virtual void SetHasKeyboardMic() override;
+  void SetHasKeyboardMic() override;
 
  protected:
-  virtual ~MockAudioManager();
+  ~MockAudioManager() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

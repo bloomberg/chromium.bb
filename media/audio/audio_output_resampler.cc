@@ -27,12 +27,11 @@ class OnMoreDataConverter
  public:
   OnMoreDataConverter(const AudioParameters& input_params,
                       const AudioParameters& output_params);
-  virtual ~OnMoreDataConverter();
+  ~OnMoreDataConverter() override;
 
   // AudioSourceCallback interface.
-  virtual int OnMoreData(AudioBus* dest,
-                         uint32 total_bytes_delay) override;
-  virtual void OnError(AudioOutputStream* stream) override;
+  int OnMoreData(AudioBus* dest, uint32 total_bytes_delay) override;
+  void OnError(AudioOutputStream* stream) override;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
   // called before Start().
@@ -45,8 +44,8 @@ class OnMoreDataConverter
 
  private:
   // AudioConverter::InputCallback implementation.
-  virtual double ProvideInput(AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override;
 
   // Ratio of input bytes to output bytes used to correct playback delay with
   // regard to buffering and resampling.

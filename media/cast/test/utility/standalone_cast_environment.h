@@ -28,7 +28,7 @@ class StandaloneCastEnvironment : public CastEnvironment,
   void Shutdown();
 
  protected:
-  virtual ~StandaloneCastEnvironment();
+  ~StandaloneCastEnvironment() override;
 
   base::Thread main_thread_;
   base::Thread audio_thread_;

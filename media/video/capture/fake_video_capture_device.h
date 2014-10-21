@@ -23,13 +23,12 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   static const int kFakeCaptureTimeoutMs = 50;
 
   FakeVideoCaptureDevice();
-  virtual ~FakeVideoCaptureDevice();
+  ~FakeVideoCaptureDevice() override;
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(
-      const VideoCaptureParams& params,
-      scoped_ptr<VideoCaptureDevice::Client> client) override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const VideoCaptureParams& params,
+                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void StopAndDeAllocate() override;
 
   // Sets the formats to use sequentially when the device is configured as
   // variable capture resolution. Works only before AllocateAndStart() or

@@ -44,19 +44,19 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
       const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
       const AfterCloseCallback& after_close_cb);
 
-  virtual ~VirtualAudioInputStream();
+  ~VirtualAudioInputStream() override;
 
   // AudioInputStream:
-  virtual bool Open() override;
-  virtual void Start(AudioInputCallback* callback) override;
-  virtual void Stop() override;
-  virtual void Close() override;
-  virtual double GetMaxVolume() override;
-  virtual void SetVolume(double volume) override;
-  virtual double GetVolume() override;
-  virtual void SetAutomaticGainControl(bool enabled) override;
-  virtual bool GetAutomaticGainControl() override;
-  virtual bool IsMuted() override;
+  bool Open() override;
+  void Start(AudioInputCallback* callback) override;
+  void Stop() override;
+  void Close() override;
+  double GetMaxVolume() override;
+  void SetVolume(double volume) override;
+  double GetVolume() override;
+  void SetAutomaticGainControl(bool enabled) override;
+  bool GetAutomaticGainControl() override;
+  bool IsMuted() override;
 
   // Attaches a VirtualAudioOutputStream to be used as input. This
   // VirtualAudioInputStream must outlive all attached streams, so any attached

@@ -31,11 +31,11 @@ class MEDIA_EXPORT BlockingUrlProtocol : public FFmpegURLProtocol {
   void Abort();
 
   // FFmpegURLProtocol implementation.
-  virtual int Read(int size, uint8* data) override;
-  virtual bool GetPosition(int64* position_out) override;
-  virtual bool SetPosition(int64 position) override;
-  virtual bool GetSize(int64* size_out) override;
-  virtual bool IsStreaming() override;
+  int Read(int size, uint8* data) override;
+  bool GetPosition(int64* position_out) override;
+  bool SetPosition(int64 position) override;
+  bool GetSize(int64* size_out) override;
+  bool IsStreaming() override;
 
  private:
   // Sets |last_read_bytes_| and signals the blocked thread that the read

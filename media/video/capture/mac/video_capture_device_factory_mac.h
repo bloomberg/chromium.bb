@@ -19,14 +19,14 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryMac :
 
   explicit VideoCaptureDeviceFactoryMac(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~VideoCaptureDeviceFactoryMac();
+  ~VideoCaptureDeviceFactoryMac() override;
 
-  virtual scoped_ptr<VideoCaptureDevice> Create(
+  scoped_ptr<VideoCaptureDevice> Create(
       const VideoCaptureDevice::Name& device_name) override;
-  virtual void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
-  virtual void EnumerateDeviceNames(const base::Callback<
+  void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
+  void EnumerateDeviceNames(const base::Callback<
       void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback) override;
-  virtual void GetDeviceSupportedFormats(
+  void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
       VideoCaptureFormats* supported_formats) override;
 

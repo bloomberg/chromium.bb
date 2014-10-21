@@ -31,13 +31,13 @@ class TextTrackImpl : public TextTrack {
                 blink::WebMediaPlayerClient* client,
                 scoped_ptr<WebInbandTextTrackImpl> text_track);
 
-  virtual ~TextTrackImpl();
+  ~TextTrackImpl() override;
 
-  virtual void addWebVTTCue(const base::TimeDelta& start,
-                            const base::TimeDelta& end,
-                            const std::string& id,
-                            const std::string& content,
-                            const std::string& settings) override;
+  void addWebVTTCue(const base::TimeDelta& start,
+                    const base::TimeDelta& end,
+                    const std::string& id,
+                    const std::string& content,
+                    const std::string& settings) override;
 
  private:
   static void OnAddCue(WebInbandTextTrackImpl* text_track,

@@ -68,17 +68,17 @@ class MEDIA_EXPORT MPEG1AudioStreamParser : public MPEGAudioStreamParserBase {
       Header* header);
 
   MPEG1AudioStreamParser();
-  virtual ~MPEG1AudioStreamParser();
+  ~MPEG1AudioStreamParser() override;
 
  private:
   // MPEGAudioStreamParserBase overrides.
-  virtual int ParseFrameHeader(const uint8* data,
-                               int size,
-                               int* frame_size,
-                               int* sample_rate,
-                               ChannelLayout* channel_layout,
-                               int* sample_count,
-                               bool* metadata_frame) const override;
+  int ParseFrameHeader(const uint8* data,
+                       int size,
+                       int* frame_size,
+                       int* sample_rate,
+                       ChannelLayout* channel_layout,
+                       int* sample_count,
+                       bool* metadata_frame) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MPEG1AudioStreamParser);
 };

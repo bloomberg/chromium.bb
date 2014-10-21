@@ -24,13 +24,12 @@ bool g_initialized_for_testing = false;
 class SoundsManagerImpl : public SoundsManager {
  public:
   SoundsManagerImpl();
-  virtual ~SoundsManagerImpl();
+  ~SoundsManagerImpl() override;
 
   // SoundsManager implementation:
-  virtual bool Initialize(SoundKey key,
-                          const base::StringPiece& data) override;
-  virtual bool Play(SoundKey key) override;
-  virtual base::TimeDelta GetDuration(SoundKey key) override;
+  bool Initialize(SoundKey key, const base::StringPiece& data) override;
+  bool Play(SoundKey key) override;
+  base::TimeDelta GetDuration(SoundKey key) override;
 
  private:
   base::hash_map<SoundKey, linked_ptr<AudioStreamHandler> > handlers_;

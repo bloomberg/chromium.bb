@@ -23,15 +23,15 @@ typedef std::vector<ContentEncoding*> ContentEncodings;
 class MEDIA_EXPORT WebMContentEncodingsClient : public WebMParserClient {
  public:
   explicit WebMContentEncodingsClient(const LogCB& log_cb);
-  virtual ~WebMContentEncodingsClient();
+  ~WebMContentEncodingsClient() override;
 
   const ContentEncodings& content_encodings() const;
 
   // WebMParserClient methods
-  virtual WebMParserClient* OnListStart(int id) override;
-  virtual bool OnListEnd(int id) override;
-  virtual bool OnUInt(int id, int64 val) override;
-  virtual bool OnBinary(int id, const uint8* data, int size) override;
+  WebMParserClient* OnListStart(int id) override;
+  bool OnListEnd(int id) override;
+  bool OnUInt(int id, int64 val) override;
+  bool OnBinary(int id, const uint8* data, int size) override;
 
  private:
   LogCB log_cb_;

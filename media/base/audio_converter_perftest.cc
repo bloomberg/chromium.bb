@@ -16,10 +16,10 @@ static const int kBenchmarkIterations = 200000;
 class NullInputProvider : public AudioConverter::InputCallback {
  public:
   NullInputProvider() {}
-  virtual ~NullInputProvider() {}
+  ~NullInputProvider() override {}
 
-  virtual double ProvideInput(AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) override {
+  double ProvideInput(AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override {
     audio_bus->Zero();
     return 1;
   }

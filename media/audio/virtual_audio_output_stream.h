@@ -34,20 +34,20 @@ class MEDIA_EXPORT VirtualAudioOutputStream
                            VirtualAudioInputStream* target,
                            const AfterCloseCallback& after_close_cb);
 
-  virtual ~VirtualAudioOutputStream();
+  ~VirtualAudioOutputStream() override;
 
   // AudioOutputStream:
-  virtual bool Open() override;
-  virtual void Start(AudioSourceCallback* callback) override;
-  virtual void Stop() override;
-  virtual void SetVolume(double volume) override;
-  virtual void GetVolume(double* volume) override;
-  virtual void Close() override;
+  bool Open() override;
+  void Start(AudioSourceCallback* callback) override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void GetVolume(double* volume) override;
+  void Close() override;
 
  private:
   // AudioConverter::InputCallback:
-  virtual double ProvideInput(AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override;
 
   const AudioParameters params_;
   // Pointer to the VirtualAudioInputStream to attach to when Start() is called.

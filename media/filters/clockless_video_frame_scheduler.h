@@ -15,13 +15,13 @@ class ClocklessVideoFrameScheduler : public VideoFrameScheduler {
   typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> DisplayCB;
 
   explicit ClocklessVideoFrameScheduler(const DisplayCB& display_cb);
-  virtual ~ClocklessVideoFrameScheduler();
+  ~ClocklessVideoFrameScheduler() override;
 
   // VideoFrameScheduler implementation.
-  virtual void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
-                                  base::TimeTicks wall_ticks,
-                                  const DoneCB& done_cb) override;
-  virtual void Reset() override;
+  void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
+                          base::TimeTicks wall_ticks,
+                          const DoneCB& done_cb) override;
+  void Reset() override;
 
  private:
   DisplayCB display_cb_;

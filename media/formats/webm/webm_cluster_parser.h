@@ -144,7 +144,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
                     const std::string& audio_encryption_key_id,
                     const std::string& video_encryption_key_id,
                     const LogCB& log_cb);
-  virtual ~WebMClusterParser();
+  ~WebMClusterParser() override;
 
   // Resets the parser state so it can accept a new cluster.
   void Reset();
@@ -191,10 +191,10 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
  private:
   // WebMParserClient methods.
-  virtual WebMParserClient* OnListStart(int id) override;
-  virtual bool OnListEnd(int id) override;
-  virtual bool OnUInt(int id, int64 val) override;
-  virtual bool OnBinary(int id, const uint8* data, int size) override;
+  WebMParserClient* OnListStart(int id) override;
+  bool OnListEnd(int id) override;
+  bool OnUInt(int id, int64 val) override;
+  bool OnBinary(int id, const uint8* data, int size) override;
 
   bool ParseBlock(bool is_simple_block, const uint8* buf, int size,
                   const uint8* additional, int additional_size, int duration,

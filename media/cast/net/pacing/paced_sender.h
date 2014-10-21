@@ -89,7 +89,7 @@ class PacedSender : public PacedPacketSender,
       PacketSender* external_transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
-  virtual ~PacedSender();
+  ~PacedSender() override;
 
   // These must be called before non-RTCP packets are sent.
   void RegisterAudioSsrc(uint32 audio_ssrc);
@@ -111,11 +111,11 @@ class PacedSender : public PacedPacketSender,
   int64 GetLastByteSentForSsrc(uint32 ssrc);
 
   // PacedPacketSender implementation.
-  virtual bool SendPackets(const SendPacketVector& packets) override;
-  virtual bool ResendPackets(const SendPacketVector& packets,
-                             const DedupInfo& dedup_info) override;
-  virtual bool SendRtcpPacket(uint32 ssrc, PacketRef packet) override;
-  virtual void CancelSendingPacket(const PacketKey& packet_key) override;
+  bool SendPackets(const SendPacketVector& packets) override;
+  bool ResendPackets(const SendPacketVector& packets,
+                     const DedupInfo& dedup_info) override;
+  bool SendRtcpPacket(uint32 ssrc, PacketRef packet) override;
+  void CancelSendingPacket(const PacketKey& packet_key) override;
 
  private:
   // Actually sends the packets to the transport.

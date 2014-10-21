@@ -227,11 +227,11 @@ class MEDIA_EXPORT AudioInputController
 
   // AudioInputCallback implementation. Threading details depends on the
   // device-specific implementation.
-  virtual void OnData(AudioInputStream* stream,
-                      const AudioBus* source,
-                      uint32 hardware_delay_bytes,
-                      double volume) override;
-  virtual void OnError(AudioInputStream* stream) override;
+  void OnData(AudioInputStream* stream,
+              const AudioBus* source,
+              uint32 hardware_delay_bytes,
+              double volume) override;
+  void OnError(AudioInputStream* stream) override;
 
   bool SharedMemoryAndSyncSocketMode() const { return sync_writer_ != NULL; }
 
@@ -268,7 +268,7 @@ class MEDIA_EXPORT AudioInputController
   AudioInputController(EventHandler* handler,
                        SyncWriter* sync_writer,
                        UserInputMonitor* user_input_monitor);
-  virtual ~AudioInputController();
+  ~AudioInputController() override;
 
   // Methods called on the audio thread (owned by the AudioManager).
   void DoCreate(AudioManager* audio_manager,

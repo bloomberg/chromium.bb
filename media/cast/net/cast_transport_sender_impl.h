@@ -77,28 +77,26 @@ class CastTransportSenderImpl : public CastTransportSender {
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacketSender* external_transport);
 
-  virtual ~CastTransportSenderImpl();
+  ~CastTransportSenderImpl() override;
 
-  virtual void InitializeAudio(const CastTransportRtpConfig& config,
-                               const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb) override;
-  virtual void InitializeVideo(const CastTransportRtpConfig& config,
-                               const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb) override;
-  virtual void InsertFrame(uint32 ssrc, const EncodedFrame& frame) override;
+  void InitializeAudio(const CastTransportRtpConfig& config,
+                       const RtcpCastMessageCallback& cast_message_cb,
+                       const RtcpRttCallback& rtt_cb) override;
+  void InitializeVideo(const CastTransportRtpConfig& config,
+                       const RtcpCastMessageCallback& cast_message_cb,
+                       const RtcpRttCallback& rtt_cb) override;
+  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) override;
 
-  virtual void SendSenderReport(
-      uint32 ssrc,
-      base::TimeTicks current_time,
-      uint32 current_time_as_rtp_timestamp) override;
+  void SendSenderReport(uint32 ssrc,
+                        base::TimeTicks current_time,
+                        uint32 current_time_as_rtp_timestamp) override;
 
-  virtual void CancelSendingFrames(
-      uint32 ssrc,
-      const std::vector<uint32>& frame_ids) override;
+  void CancelSendingFrames(uint32 ssrc,
+                           const std::vector<uint32>& frame_ids) override;
 
-  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override;
+  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override;
 
-  virtual PacketReceiverCallback PacketReceiverForTesting() override;
+  PacketReceiverCallback PacketReceiverForTesting() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);

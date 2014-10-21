@@ -79,7 +79,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Constructs a media pipeline that will execute on |task_runner|.
   Pipeline(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
            MediaLog* media_log);
-  virtual ~Pipeline();
+  ~Pipeline() override;
 
   // Build a pipeline to using the given |demuxer| and |renderer| to construct
   // a filter chain, executing |seek_cb| when the initial seek has completed.
@@ -203,13 +203,13 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void FinishSeek();
 
   // DemuxerHost implementaion.
-  virtual void AddBufferedTimeRange(base::TimeDelta start,
-                                    base::TimeDelta end) override;
-  virtual void SetDuration(base::TimeDelta duration) override;
-  virtual void OnDemuxerError(PipelineStatus error) override;
-  virtual void AddTextStream(DemuxerStream* text_stream,
-                             const TextTrackConfig& config) override;
-  virtual void RemoveTextStream(DemuxerStream* text_stream) override;
+  void AddBufferedTimeRange(base::TimeDelta start,
+                            base::TimeDelta end) override;
+  void SetDuration(base::TimeDelta duration) override;
+  void OnDemuxerError(PipelineStatus error) override;
+  void AddTextStream(DemuxerStream* text_stream,
+                     const TextTrackConfig& config) override;
+  void RemoveTextStream(DemuxerStream* text_stream) override;
 
   // Callback executed when a rendering error happened, initiating the teardown
   // sequence.

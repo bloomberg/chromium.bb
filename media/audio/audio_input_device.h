@@ -85,28 +85,27 @@ class MEDIA_EXPORT AudioInputDevice
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // AudioCapturerSource implementation.
-  virtual void Initialize(const AudioParameters& params,
-                          CaptureCallback* callback,
-                          int session_id) override;
-  virtual void Start() override;
-  virtual void Stop() override;
-  virtual void SetVolume(double volume) override;
-  virtual void SetAutomaticGainControl(bool enabled) override;
+  void Initialize(const AudioParameters& params,
+                  CaptureCallback* callback,
+                  int session_id) override;
+  void Start() override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void SetAutomaticGainControl(bool enabled) override;
 
  protected:
   friend class base::RefCountedThreadSafe<AudioInputDevice>;
-  virtual ~AudioInputDevice();
+  ~AudioInputDevice() override;
 
   // Methods called on IO thread ----------------------------------------------
   // AudioInputIPCDelegate implementation.
-  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                               base::SyncSocket::Handle socket_handle,
-                               int length,
-                               int total_segments) override;
-  virtual void OnVolume(double volume) override;
-  virtual void OnStateChanged(
-      AudioInputIPCDelegate::State state) override;
-  virtual void OnIPCClosed() override;
+  void OnStreamCreated(base::SharedMemoryHandle handle,
+                       base::SyncSocket::Handle socket_handle,
+                       int length,
+                       int total_segments) override;
+  void OnVolume(double volume) override;
+  void OnStateChanged(AudioInputIPCDelegate::State state) override;
+  void OnIPCClosed() override;
 
  private:
   // Note: The ordering of members in this enum is critical to correct behavior!
@@ -128,7 +127,7 @@ class MEDIA_EXPORT AudioInputDevice
 
   // base::MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   AudioParameters audio_parameters_;
 

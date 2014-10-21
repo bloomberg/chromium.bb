@@ -31,13 +31,13 @@ class MEDIA_EXPORT VideoFrameSchedulerImpl : public VideoFrameScheduler {
   VideoFrameSchedulerImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const DisplayCB& display_cb);
-  virtual ~VideoFrameSchedulerImpl();
+  ~VideoFrameSchedulerImpl() override;
 
   // VideoFrameScheduler implementation.
-  virtual void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
-                                  base::TimeTicks wall_ticks,
-                                  const DoneCB& done_cb) override;
-  virtual void Reset() override;
+  void ScheduleVideoFrame(const scoped_refptr<VideoFrame>& frame,
+                          base::TimeTicks wall_ticks,
+                          const DoneCB& done_cb) override;
+  void Reset() override;
 
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
 

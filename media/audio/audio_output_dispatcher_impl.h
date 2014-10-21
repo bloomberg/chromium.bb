@@ -40,30 +40,29 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
 
   // Opens a new physical stream if there are no pending streams in
   // |idle_streams_|.  Do not call Close() or Stop() if this method fails.
-  virtual bool OpenStream() override;
+  bool OpenStream() override;
 
   // If there are pending streams in |idle_streams_| then it reuses one of
   // them, otherwise creates a new one.
-  virtual bool StartStream(AudioOutputStream::AudioSourceCallback* callback,
-                           AudioOutputProxy* stream_proxy) override;
+  bool StartStream(AudioOutputStream::AudioSourceCallback* callback,
+                   AudioOutputProxy* stream_proxy) override;
 
   // Stops the stream assigned to the specified proxy and moves it into
   // |idle_streams_| for reuse by other proxies.
-  virtual void StopStream(AudioOutputProxy* stream_proxy) override;
+  void StopStream(AudioOutputProxy* stream_proxy) override;
 
-  virtual void StreamVolumeSet(AudioOutputProxy* stream_proxy,
-                               double volume) override;
+  void StreamVolumeSet(AudioOutputProxy* stream_proxy, double volume) override;
 
   // Closes |idle_streams_| until the number of |idle_streams_| is equal to the
   // |idle_proxies_| count.  If there are no |idle_proxies_| a single stream is
   // kept alive until |close_timer_| fires.
-  virtual void CloseStream(AudioOutputProxy* stream_proxy) override;
+  void CloseStream(AudioOutputProxy* stream_proxy) override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   friend class base::RefCountedThreadSafe<AudioOutputDispatcherImpl>;
-  virtual ~AudioOutputDispatcherImpl();
+  ~AudioOutputDispatcherImpl() override;
 
   // Creates a new physical output stream, opens it and pushes to
   // |idle_streams_|.  Returns false if the stream couldn't be created or

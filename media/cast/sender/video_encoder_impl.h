@@ -32,16 +32,16 @@ class VideoEncoderImpl : public VideoEncoder {
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const VideoSenderConfig& video_config);
 
-  virtual ~VideoEncoderImpl();
+  ~VideoEncoderImpl() override;
 
   // VideoEncoder implementation.
-  virtual bool EncodeVideoFrame(
+  bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
       const FrameEncodedCallback& frame_encoded_callback) override;
-  virtual void SetBitRate(int new_bit_rate) override;
-  virtual void GenerateKeyFrame() override;
-  virtual void LatestFrameIdToReference(uint32 frame_id) override;
+  void SetBitRate(int new_bit_rate) override;
+  void GenerateKeyFrame() override;
+  void LatestFrameIdToReference(uint32 frame_id) override;
 
  private:
   scoped_refptr<CastEnvironment> cast_environment_;

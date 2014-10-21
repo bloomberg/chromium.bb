@@ -22,14 +22,14 @@ namespace media {
 class MEDIA_EXPORT MidiManagerMac : public MidiManager {
  public:
   MidiManagerMac();
-  virtual ~MidiManagerMac();
+  ~MidiManagerMac() override;
 
   // MidiManager implementation.
-  virtual void StartInitialization() override;
-  virtual void DispatchSendMidiData(MidiManagerClient* client,
-                                    uint32 port_index,
-                                    const std::vector<uint8>& data,
-                                    double timestamp) override;
+  void StartInitialization() override;
+  void DispatchSendMidiData(MidiManagerClient* client,
+                            uint32 port_index,
+                            const std::vector<uint8>& data,
+                            double timestamp) override;
 
  private:
   // Runs a closure on |client_thread_|. It starts the thread if it isn't

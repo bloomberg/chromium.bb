@@ -23,12 +23,12 @@ class AudioOutputDevice::AudioThreadCallback
                       base::SharedMemoryHandle memory,
                       int memory_length,
                       AudioRendererSink::RenderCallback* render_callback);
-  virtual ~AudioThreadCallback();
+  ~AudioThreadCallback() override;
 
-  virtual void MapSharedMemory() override;
+  void MapSharedMemory() override;
 
   // Called whenever we receive notifications about pending data.
-  virtual void Process(int pending_data) override;
+  void Process(int pending_data) override;
 
  private:
   AudioRendererSink::RenderCallback* render_callback_;

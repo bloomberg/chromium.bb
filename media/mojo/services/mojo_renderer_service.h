@@ -34,15 +34,15 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   // allow |this| to connect to a sink that will receive decoded data ready
   // for playback.
   explicit MojoRendererService(mojo::ApplicationConnection* connection);
-  virtual ~MojoRendererService();
+  ~MojoRendererService() override;
 
   // mojo::MediaRenderer implementation.
-  virtual void Initialize(mojo::DemuxerStreamPtr stream,
-                          const mojo::Callback<void()>& callback) override;
-  virtual void Flush(const mojo::Callback<void()>& callback) override;
-  virtual void StartPlayingFrom(int64_t time_delta_usec) override;
-  virtual void SetPlaybackRate(float playback_rate) override;
-  virtual void SetVolume(float volume) override;
+  void Initialize(mojo::DemuxerStreamPtr stream,
+                  const mojo::Callback<void()>& callback) override;
+  void Flush(const mojo::Callback<void()>& callback) override;
+  void StartPlayingFrom(int64_t time_delta_usec) override;
+  void SetPlaybackRate(float playback_rate) override;
+  void SetVolume(float volume) override;
 
  private:
   // Called when the MojoDemuxerStreamAdapter is ready to go (has a config,

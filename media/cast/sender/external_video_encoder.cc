@@ -173,7 +173,7 @@ class LocalVideoEncodeAcceleratorClient
   }
 
  protected:
-  virtual void NotifyError(VideoEncodeAccelerator::Error error) override {
+  void NotifyError(VideoEncodeAccelerator::Error error) override {
     DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
     VLOG(1) << "ExternalVideoEncoder NotifyError: " << error;
@@ -185,9 +185,9 @@ class LocalVideoEncodeAcceleratorClient
   }
 
   // Called to allocate the input and output buffers.
-  virtual void RequireBitstreamBuffers(unsigned int input_count,
-                                       const gfx::Size& input_coded_size,
-                                       size_t output_buffer_size) override {
+  void RequireBitstreamBuffers(unsigned int input_count,
+                               const gfx::Size& input_coded_size,
+                               size_t output_buffer_size) override {
     DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
     DCHECK(video_encode_accelerator_);
@@ -202,9 +202,9 @@ class LocalVideoEncodeAcceleratorClient
 
   // Encoder has encoded a frame and it's available in one of out output
   // buffers.
-  virtual void BitstreamBufferReady(int32 bitstream_buffer_id,
-                                    size_t payload_size,
-                                    bool key_frame) override {
+  void BitstreamBufferReady(int32 bitstream_buffer_id,
+                            size_t payload_size,
+                            bool key_frame) override {
     DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
     if (bitstream_buffer_id < 0 ||
@@ -361,7 +361,7 @@ class LocalVideoEncodeAcceleratorClient
 
   friend class base::RefCountedThreadSafe<LocalVideoEncodeAcceleratorClient>;
 
-  virtual ~LocalVideoEncodeAcceleratorClient() {
+  ~LocalVideoEncodeAcceleratorClient() override {
     Destroy();
     DCHECK(!video_encode_accelerator_);
   }

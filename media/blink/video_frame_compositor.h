@@ -40,14 +40,13 @@ class MEDIA_EXPORT VideoFrameCompositor
   VideoFrameCompositor(
       const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
       const base::Callback<void(bool)>& opacity_changed_cb);
-  virtual ~VideoFrameCompositor();
+  ~VideoFrameCompositor() override;
 
   // cc::VideoFrameProvider implementation.
-  virtual void SetVideoFrameProviderClient(
+  void SetVideoFrameProviderClient(
       cc::VideoFrameProvider::Client* client) override;
-  virtual scoped_refptr<VideoFrame> GetCurrentFrame() override;
-  virtual void PutCurrentFrame(
-      const scoped_refptr<VideoFrame>& frame) override;
+  scoped_refptr<VideoFrame> GetCurrentFrame() override;
+  void PutCurrentFrame(const scoped_refptr<VideoFrame>& frame) override;
 
   // Updates the current frame and notifies the compositor.
   void UpdateCurrentFrame(const scoped_refptr<VideoFrame>& frame);

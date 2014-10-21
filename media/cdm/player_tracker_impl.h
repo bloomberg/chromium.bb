@@ -21,12 +21,12 @@ namespace media {
 class MEDIA_EXPORT PlayerTrackerImpl : public PlayerTracker {
  public:
   PlayerTrackerImpl();
-  virtual ~PlayerTrackerImpl();
+  ~PlayerTrackerImpl() override;
 
   // PlayerTracker implementation.
-  virtual int RegisterPlayer(const base::Closure& new_key_cb,
-                             const base::Closure& cdm_unset_cb) override;
-  virtual void UnregisterPlayer(int registration_id) override;
+  int RegisterPlayer(const base::Closure& new_key_cb,
+                     const base::Closure& cdm_unset_cb) override;
+  void UnregisterPlayer(int registration_id) override;
 
   // Helpers methods to fire registered callbacks.
   void NotifyNewKey();

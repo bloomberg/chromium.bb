@@ -64,10 +64,9 @@ class TestAudioSource : public SineWaveAudioSource {
             kParams.channel_layout(), 200.0, kParams.sample_rate()),
         data_pulled_(false, false) {}
 
-  virtual ~TestAudioSource() {}
+  ~TestAudioSource() override {}
 
-  virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) override {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
     const int ret = SineWaveAudioSource::OnMoreData(audio_bus,
                                                     total_bytes_delay);
     data_pulled_.Signal();

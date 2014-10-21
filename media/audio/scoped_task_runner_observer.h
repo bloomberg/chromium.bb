@@ -28,7 +28,7 @@ class ScopedTaskRunnerObserver
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
  protected:
-  virtual ~ScopedTaskRunnerObserver();
+  ~ScopedTaskRunnerObserver() override;
 
   // Accessor to the loop that's used by the derived class.
   const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {

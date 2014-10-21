@@ -18,11 +18,11 @@ class MEDIA_EXPORT BufferedDataSourceHostImpl
     : public BufferedDataSourceHost {
  public:
   BufferedDataSourceHostImpl();
-  virtual ~BufferedDataSourceHostImpl();
+  ~BufferedDataSourceHostImpl() override;
 
   // BufferedDataSourceHost implementation.
-  virtual void SetTotalBytes(int64 total_bytes) override;
-  virtual void AddBufferedByteRange(int64 start, int64 end) override;
+  void SetTotalBytes(int64 total_bytes) override;
+  void AddBufferedByteRange(int64 start, int64 end) override;
 
   // Translate the byte ranges to time ranges and append them to the list.
   // TODO(sandersd): This is a confusing name, find something better.

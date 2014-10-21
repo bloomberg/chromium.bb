@@ -28,7 +28,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
 
   explicit ChunkDemuxerStream(Type type, bool splice_frames_enabled);
-  virtual ~ChunkDemuxerStream();
+  ~ChunkDemuxerStream() override;
 
   // ChunkDemuxerStream control methods.
   void StartReturningData();
@@ -80,12 +80,12 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   void UnmarkEndOfStream();
 
   // DemuxerStream methods.
-  virtual void Read(const ReadCB& read_cb) override;
-  virtual Type type() override;
-  virtual AudioDecoderConfig audio_decoder_config() override;
-  virtual VideoDecoderConfig video_decoder_config() override;
-  virtual bool SupportsConfigChanges() override;
-  virtual VideoRotation video_rotation() override;
+  void Read(const ReadCB& read_cb) override;
+  Type type() override;
+  AudioDecoderConfig audio_decoder_config() override;
+  VideoDecoderConfig video_decoder_config() override;
+  bool SupportsConfigChanges() override;
+  VideoRotation video_rotation() override;
 
   // Returns the text track configuration.  It is an error to call this method
   // if type() != TEXT.
@@ -154,18 +154,18 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                const NeedKeyCB& need_key_cb,
                const LogCB& log_cb,
                bool splice_frames_enabled);
-  virtual ~ChunkDemuxer();
+  ~ChunkDemuxer() override;
 
   // Demuxer implementation.
-  virtual void Initialize(DemuxerHost* host,
-                          const PipelineStatusCB& cb,
-                          bool enable_text_tracks) override;
-  virtual void Stop() override;
-  virtual void Seek(base::TimeDelta time, const PipelineStatusCB&  cb) override;
-  virtual base::Time GetTimelineOffset() const override;
-  virtual DemuxerStream* GetStream(DemuxerStream::Type type) override;
-  virtual base::TimeDelta GetStartTime() const override;
-  virtual Liveness GetLiveness() const override;
+  void Initialize(DemuxerHost* host,
+                  const PipelineStatusCB& cb,
+                  bool enable_text_tracks) override;
+  void Stop() override;
+  void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
+  base::Time GetTimelineOffset() const override;
+  DemuxerStream* GetStream(DemuxerStream::Type type) override;
+  base::TimeDelta GetStartTime() const override;
+  Liveness GetLiveness() const override;
 
   // Methods used by an external object to control this demuxer.
   //

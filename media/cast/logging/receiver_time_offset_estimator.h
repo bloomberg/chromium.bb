@@ -24,7 +24,7 @@ namespace cast {
 //   timestamp.
 class ReceiverTimeOffsetEstimator : public RawEventSubscriber {
  public:
-  virtual ~ReceiverTimeOffsetEstimator() {}
+  ~ReceiverTimeOffsetEstimator() override {}
 
   // If bounds are known, assigns |lower_bound| and |upper_bound| with the
   // lower bound and upper bound for the offset value, respectively.

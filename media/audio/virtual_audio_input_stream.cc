@@ -25,7 +25,7 @@ class LoopbackAudioConverter : public AudioConverter::InputCallback {
                          const AudioParameters& output_params)
       : audio_converter_(input_params, output_params, false) {}
 
-  virtual ~LoopbackAudioConverter() {}
+  ~LoopbackAudioConverter() override {}
 
   void AddInput(AudioConverter::InputCallback* input) {
     audio_converter_.AddInput(input);
@@ -36,8 +36,8 @@ class LoopbackAudioConverter : public AudioConverter::InputCallback {
   }
 
  private:
-  virtual double ProvideInput(AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) override {
+  double ProvideInput(AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override {
     audio_converter_.Convert(audio_bus);
     return 1.0;
   }

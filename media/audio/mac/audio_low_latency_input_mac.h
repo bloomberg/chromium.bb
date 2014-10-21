@@ -62,17 +62,17 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
                      AudioDeviceID audio_device_id);
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioInputStream::Close().
-  virtual ~AUAudioInputStream();
+  ~AUAudioInputStream() override;
 
   // Implementation of AudioInputStream.
-  virtual bool Open() override;
-  virtual void Start(AudioInputCallback* callback) override;
-  virtual void Stop() override;
-  virtual void Close() override;
-  virtual double GetMaxVolume() override;
-  virtual void SetVolume(double volume) override;
-  virtual double GetVolume() override;
-  virtual bool IsMuted() override;
+  bool Open() override;
+  void Start(AudioInputCallback* callback) override;
+  void Stop() override;
+  void Close() override;
+  double GetMaxVolume() override;
+  void SetVolume(double volume) override;
+  double GetVolume() override;
+  bool IsMuted() override;
 
   // Returns the current hardware sample rate for the default input device.
   MEDIA_EXPORT static int HardwareSampleRate();

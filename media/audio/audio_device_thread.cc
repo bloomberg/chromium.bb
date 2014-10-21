@@ -42,10 +42,10 @@ class AudioDeviceThread::Thread
 
  private:
   friend class base::RefCountedThreadSafe<AudioDeviceThread::Thread>;
-  virtual ~Thread();
+  ~Thread() override;
 
   // Overrides from PlatformThread::Delegate.
-  virtual void ThreadMain() override;
+  void ThreadMain() override;
 
   // Runs the loop that reads from the socket.
   void Run();
