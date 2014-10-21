@@ -1,0 +1,13 @@
+CONSOLE ERROR: Unhandled promise rejection
+CONSOLE ERROR: Unhandled promise rejection
+Tests that uncaught promise rejections happenned in workers are logged into console.
+
+Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: err1}
+    __proto__: Promise
+    [[PromiseStatus]]: "rejected"
+    [[PromiseValue]]: Error: err1
+Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: err2}
+    __proto__: Promise
+    [[PromiseStatus]]: "rejected"
+    [[PromiseValue]]: Error: err2
+

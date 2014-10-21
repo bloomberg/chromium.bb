@@ -55,6 +55,7 @@
 #include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 #include "wtf/RefPtr.h"
+#include "wtf/ThreadSpecific.h"
 #include "wtf/text/WTFString.h"
 #include <v8-debug.h>
 
@@ -171,45 +172,46 @@ public:
     {
     }
 
-    const ScriptValue m_promise;
-    const RefPtrWillBeMember<ScriptCallStack> m_callStack;
-
     void trace(Visitor* visitor)
     {
         visitor->trace(m_callStack);
     }
+
+    const ScriptValue m_promise;
+    const RefPtrWillBeMember<ScriptCallStack> m_callStack;
 };
 
 } // namespace
 
-typedef WillBeHeapDeque<PromiseRejectMessage> PromiseRejectMessageQueue;
+typedef Deque<PromiseRejectMessage> PromiseRejectMessageQueue;
 
 static PromiseRejectMessageQueue& promiseRejectMessageQueue()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<PromiseRejectMessageQueue>, queue, (adoptPtrWillBeNoop(new PromiseRejectMessageQueue())));
-    return *queue;
+    AtomicallyInitializedStatic(ThreadSpecific<PromiseRejectMessageQueue>*, queue = new ThreadSpecific<PromiseRejectMessageQueue>);
+    return **queue;
 }
 
 void V8Initializer::reportRejectedPromises()
 {
-    ASSERT(isMainThread());
-
     PromiseRejectMessageQueue& queue = promiseRejectMessageQueue();
     while (!queue.isEmpty()) {
         PromiseRejectMessage message = queue.takeFirst();
         ScriptState* scriptState = message.m_promise.scriptState();
         if (!scriptState->contextIsValid())
             continue;
+        // If execution termination has been triggered, quietly bail out.
+        if (v8::V8::IsExecutionTerminating(scriptState->isolate()))
+            continue;
+        ExecutionContext* executionContext = scriptState->executionContext();
+        if (!executionContext)
+            continue;
+
         ScriptState::Scope scope(scriptState);
 
         ASSERT(!message.m_promise.isEmpty());
         v8::Handle<v8::Value> value = message.m_promise.v8Value();
         ASSERT(!value.IsEmpty() && value->IsPromise());
         if (v8::Handle<v8::Promise>::Cast(value)->HasHandler())
-            continue;
-
-        ExecutionContext* executionContext = scriptState->executionContext();
-        if (!executionContext)
             continue;
 
         const String errorMessage = "Unhandled promise rejection";
@@ -266,6 +268,28 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage message)
                 callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
         }
     }
+
+    ScriptState* scriptState = ScriptState::from(context);
+    promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), callStack));
+}
+
+static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage message)
+{
+    if (message.GetEvent() != v8::kPromiseRejectWithNoHandler)
+        return;
+
+    v8::Handle<v8::Promise> promise = message.GetPromise();
+
+    // Bail out if called during context initialization.
+    v8::Isolate* isolate = promise->GetIsolate();
+    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+    if (context.IsEmpty())
+        return;
+
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
+    v8::Handle<v8::StackTrace> stackTrace = message.GetStackTrace();
+    if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
+        callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
 
     ScriptState* scriptState = ScriptState::from(context);
     promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), callStack));
@@ -414,6 +438,7 @@ void V8Initializer::initializeWorker(v8::Isolate* isolate)
 
     uint32_t here;
     isolate->SetStackLimit(reinterpret_cast<uintptr_t>(&here - kWorkerMaxStackSize / sizeof(uint32_t*)));
+    isolate->SetPromiseRejectCallback(promiseRejectHandlerInWorker);
 }
 
 } // namespace blink

@@ -29,6 +29,7 @@
 #include "core/workers/WorkerThread.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Initializer.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -62,6 +63,7 @@ public:
     virtual void didProcessTask() override
     {
         Microtask::performCheckpoint();
+        V8Initializer::reportRejectedPromises();
     }
 };
 
