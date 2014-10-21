@@ -277,11 +277,6 @@ class Builder(object):
       # only be 2GB (rip-relative references can only be +/- 2GB).
       sandbox_top = 0x40000000
       self.irt_data_max = sandbox_top - (16 << 20)
-      # Initialize layout flags with "too-close-to-max" flags so that
-      # we can relax this later and get a tight fit.
-      self.link_options += [
-          '-Wl,-Ttext-segment=0x%x' % (self.irt_text_max - 0x10000),
-          '-Wl,-Trodata-segment=0x%x' % (self.irt_data_max - 0x10000)]
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
 
@@ -671,12 +666,14 @@ class Builder(object):
                         src, out, outd, ' '.join(cmd_line), e))
     return out
 
-  def IRTLayoutFits(self, irt_file):
-    """Check if the IRT's data and text segment fit layout constraints.
+  def GetIRTLayout(self, irt_file):
+    """Check if the IRT's data and text segment fit layout constraints and
+       get sizes of the IRT's text and data segments.
 
     Returns a tuple containing:
       * whether the IRT data/text top addresses fit within the max limit
       * current data/text top addrs
+      * size of text and data segments
     """
     cmd_line = [self.GetReadElf(), '-W', '--segments', irt_file]
     # Put LC_ALL=C in the environment for readelf, so that its messages
@@ -694,58 +691,52 @@ class Builder(object):
     if ph_start == -1:
       raise Error('Could not find Program Headers start: %s\n' % lines)
     seg_lines = lines[ph_start:]
+    text_bottom = 0
     text_top = 0
+    data_bottom = 0
     data_top = 0
     for line in seg_lines:
       pieces = line.split()
       # Type, Offset, Vaddr, Paddr, FileSz, MemSz, Flg(multiple), Align
       if len(pieces) >= 8 and pieces[0] == 'LOAD':
         # Vaddr + MemSz
-        segment_top = int(pieces[2], 16) + int(pieces[5], 16)
+        segment_bottom = int(pieces[2], 16)
+        segment_top = segment_bottom + int(pieces[5], 16)
         if pieces[6] == 'R' and pieces[7] == 'E':
           text_top = max(segment_top, text_top)
+          if text_bottom == 0:
+            text_bottom = segment_bottom
+          else:
+            text_bottom = min(segment_bottom, text_bottom)
           continue
         if pieces[6] == 'R' or pieces[6] == 'RW':
           data_top = max(segment_top, data_top)
+          if data_bottom == 0:
+            data_bottom = segment_bottom
+          else:
+            data_bottom = min(segment_bottom, data_bottom)
           continue
-    if text_top == 0 or data_top == 0:
-      raise Error('Could not parse IRT Layout: text_top=0x%x data_top=0x%x\n'
-                  'readelf output: %s\n' % (text_top, data_top, lines))
-    return (text_top <= self.irt_text_max and
-            data_top <= self.irt_data_max), text_top, data_top
+    if text_top == 0 or data_top == 0 or text_bottom == 0 or data_bottom == 0:
+      raise Error('Could not parse IRT Layout: text_top=0x%x text_bottom=0x%x\n'
+                  '                            data_top=0x%x data_bottom=0x%x\n'
+                  'readelf output: %s\n' % (text_top, text_bottom,
+                                            data_top, data_bottom, lines))
+    return ((text_top <= self.irt_text_max and
+            data_top <= self.irt_data_max), text_top, data_top,
+            text_top - text_bottom, data_top - data_bottom)
 
-  def FindOldIRTFlagPosition(self, cmd_line, flag_name):
-    """Search for a given IRT link flag's position and value."""
-    pos = -1
-    old_start = ''
-    for i, option in enumerate(cmd_line):
-      m = re.search('.*%s=(0x.*)' % flag_name, option)
-      if m:
-        if pos != -1:
-          raise Exception('Duplicate %s flag at position %d' % (flag_name, i))
-        pos = i
-        old_start = m.group(1)
-    if pos == -1:
-      raise Exception('Could not find IRT layout flag %s' % flag_name)
-    return pos, old_start
-
-  def AdjustIRTLinkToFit(self, cmd_line, text_top, data_top):
+  def AdjustIRTLinkToFit(self, cmd_line, text_size, data_size):
     """Adjust the linker options so that the IRT's data and text segment fit."""
     def RoundDownToAlign(x):
       return x - (x % 0x10000)
-    def AdjustFlag(flag_name, orig_max, expected_max):
-      if orig_max < expected_max:
-        return
-      pos, old_start = self.FindOldIRTFlagPosition(cmd_line, flag_name)
-      size = orig_max - int(old_start, 16)
+    def AdjustFlag(flag_name, size, expected_max):
       self.Log('IRT %s size is %s' % (flag_name, size))
       new_start = RoundDownToAlign(expected_max - size)
-      self.Log('Adjusting link flag %s from %s to %s' % (flag_name,
-                                                         old_start,
-                                                         hex(new_start)))
-      cmd_line[pos] = cmd_line[pos].replace(old_start, hex(new_start))
-    AdjustFlag('-Ttext-segment', text_top, self.irt_text_max)
-    AdjustFlag('-Trodata-segment', data_top, self.irt_data_max)
+      self.Log('Setting link flag %s to %s' % (flag_name,
+                                            hex(new_start)))
+      cmd_line.extend(["-Wl,%s=%s" % (flag_name, hex(new_start))])
+    AdjustFlag('-Ttext-segment', text_size, self.irt_text_max)
+    AdjustFlag('-Trodata-segment', data_size, self.irt_data_max)
     self.Log('Adjusted link options to %s' % ' '.join(cmd_line))
     return cmd_line
 
@@ -775,17 +766,18 @@ class Builder(object):
     self.RunLink(cmd_line, link_out)
 
     if self.irt_layout:
-      fits, text_top, data_top = self.IRTLayoutFits(link_out)
+      (fits, text_top, data_top,
+       text_size, data_size) = self.GetIRTLayout(link_out)
+      # fits is ignored after first link, since correct parameters were not
+      # present in the command line (as they were unknown at the time).
+      cmd_line = self.AdjustIRTLinkToFit(cmd_line, text_size, data_size)
+      self.RunLink(cmd_line, link_out)
+      (fits, text_top, data_top,
+       text_size, data_size) = self.GetIRTLayout(link_out)
       if not fits:
-        self.Log('IRT layout does not fit: text_top=0x%x and data_top=0x%x' %
-                 (text_top, data_top))
-        cmd_line = self.AdjustIRTLinkToFit(cmd_line, text_top, data_top)
-        self.RunLink(cmd_line, link_out)
-        fits, text_top, data_top = self.IRTLayoutFits(link_out)
-        if not fits:
-          raise Error('Already re-linked IRT and it still does not fit:\n'
-                      'text_top=0x%x and data_top=0x%x\n' % (
-                          text_top, data_top))
+        raise Error('Already re-linked IRT and it still does not fit:\n'
+                    'text_top=0x%x and data_top=0x%x\n' % (
+                        text_top, data_top))
       self.Log('IRT layout fits: text_top=0x%x and data_top=0x%x' %
                (text_top, data_top))
 
