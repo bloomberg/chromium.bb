@@ -1,7 +1,7 @@
 CONSOLE ERROR: Unhandled promise rejection
 CONSOLE ERROR: Unhandled promise rejection
 CONSOLE ERROR: line 9: Unhandled promise rejection
-CONSOLE ERROR: line 27: Unhandled promise rejection
+CONSOLE ERROR: line 29: Unhandled promise rejection
 Tests that uncaught promise rejections are logged into console.
 
 console-uncaught-promise.html:1 Unhandled promise rejection Promise
@@ -18,12 +18,12 @@ console-uncaught-promise.html:1 Unhandled promise rejection Promise
         [[PromiseStatus]]: "rejected"
         [[PromiseValue]]: Error: inspector.err1
         console-uncaught-promise.html:9 runPromises
-        console-uncaught-promise.html:47 timeout
+        console-uncaught-promise.html:46 timeout
 
-    console-uncaught-promise.html:27 Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: inspector.err2}
+    console-uncaught-promise.html:29 Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: inspector.err2}
         __proto__: Promise
         [[PromiseStatus]]: "rejected"
         [[PromiseValue]]: Error: inspector.err2
-        console-uncaught-promise.html:27 runPromises
-        console-uncaught-promise.html:47 timeout
+        console-uncaught-promise.html:29 runPromises
+        console-uncaught-promise.html:46 timeout
 

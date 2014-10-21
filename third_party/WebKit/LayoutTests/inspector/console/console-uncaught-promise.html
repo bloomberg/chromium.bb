@@ -21,6 +21,8 @@ function runPromises(source)
         m2.catch(function() {
             m1.catch(function() {
                 m4 = m3.then(function() {}); // Unhandled.
+                if (source === "onload")
+                    scheduleRunTests();
             });
         });
     });
@@ -35,9 +37,6 @@ function onload()
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-
-    // Run tests after all microtasks.
-    setTimeout(runTest, 0);
 }
 
 function runPromisesFromInspector()
@@ -46,6 +45,14 @@ function runPromisesFromInspector()
     setTimeout(function timeout() {
         runPromises("inspector")
     }, 0);
+}
+
+function scheduleRunTests()
+{
+    // Run tests after all microtasks.
+    Promise.resolve().then(function() {
+        setTimeout(runTest, 0);
+    });
 }
 
 function test()
