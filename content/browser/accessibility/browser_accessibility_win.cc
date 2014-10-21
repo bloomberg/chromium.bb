@@ -3397,6 +3397,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
+    case ui::AX_ROLE_BANNER:
+      ia_role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_HEADER;
+      break;
     case ui::AX_ROLE_BUSY_INDICATOR:
       ia_role_ = ROLE_SYSTEM_ANIMATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
@@ -3577,7 +3581,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_LABEL;
       break;
-    case ui::AX_ROLE_BANNER:
     case ui::AX_ROLE_SEARCH:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
