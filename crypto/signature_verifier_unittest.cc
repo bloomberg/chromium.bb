@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "crypto/signature_verifier.h"
+
+#include "base/numerics/safe_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SignatureVerifierTest, BasicTest) {
@@ -1005,36 +1007,36 @@ static bool EncodeRSAPublicKey(const std::vector<uint8>& modulus_n,
   public_key_info->insert(public_key_info->begin(),
                           public_exponent_e.begin(),
                           public_exponent_e.end());
-  uint8 length = public_exponent_e.size();
-  public_key_info->insert(public_key_info->begin(), length);
+  uint8 exponent_size = base::checked_cast<uint8>(public_exponent_e.size());
+  public_key_info->insert(public_key_info->begin(), exponent_size);
   public_key_info->insert(public_key_info->begin(), kIntegerTag);
 
   // Encode the modulus n as an INTEGER.
   public_key_info->insert(public_key_info->begin(),
                           modulus_n.begin(), modulus_n.end());
-  uint16 length16 = modulus_n.size();
+  uint16 modulus_size = base::checked_cast<uint16>(modulus_n.size());
   if (modulus_n[0] & 0x80) {
     public_key_info->insert(public_key_info->begin(), 0x00);
-    length16++;
+    modulus_size++;
   }
-  public_key_info->insert(public_key_info->begin(), length16 & 0xff);
-  public_key_info->insert(public_key_info->begin(), (length16 >> 8) & 0xff);
+  public_key_info->insert(public_key_info->begin(), modulus_size & 0xff);
+  public_key_info->insert(public_key_info->begin(), (modulus_size >> 8) & 0xff);
   public_key_info->insert(public_key_info->begin(), 0x82);
   public_key_info->insert(public_key_info->begin(), kIntegerTag);
 
   // Encode the RSAPublicKey SEQUENCE.
-  length16 = public_key_info->size();
-  public_key_info->insert(public_key_info->begin(), length16 & 0xff);
-  public_key_info->insert(public_key_info->begin(), (length16 >> 8) & 0xff);
+  uint16 info_size = base::checked_cast<uint16>(public_key_info->size());
+  public_key_info->insert(public_key_info->begin(), info_size & 0xff);
+  public_key_info->insert(public_key_info->begin(), (info_size >> 8) & 0xff);
   public_key_info->insert(public_key_info->begin(), 0x82);
   public_key_info->insert(public_key_info->begin(), kSequenceTag);
 
   // Encode the BIT STRING.
   // Number of unused bits.
   public_key_info->insert(public_key_info->begin(), 0x00);
-  length16 = public_key_info->size();
-  public_key_info->insert(public_key_info->begin(), length16 & 0xff);
-  public_key_info->insert(public_key_info->begin(), (length16 >> 8) & 0xff);
+  info_size = base::checked_cast<uint16>(public_key_info->size());
+  public_key_info->insert(public_key_info->begin(), info_size & 0xff);
+  public_key_info->insert(public_key_info->begin(), (info_size >> 8) & 0xff);
   public_key_info->insert(public_key_info->begin(), 0x82);
   public_key_info->insert(public_key_info->begin(), kBitStringTag);
 
@@ -1049,9 +1051,9 @@ static bool EncodeRSAPublicKey(const std::vector<uint8>& modulus_n,
                           algorithm, algorithm + sizeof(algorithm));
 
   // Encode the outermost SEQUENCE.
-  length16 = public_key_info->size();
-  public_key_info->insert(public_key_info->begin(), length16 & 0xff);
-  public_key_info->insert(public_key_info->begin(), (length16 >> 8) & 0xff);
+  info_size = base::checked_cast<uint16>(public_key_info->size());
+  public_key_info->insert(public_key_info->begin(), info_size & 0xff);
+  public_key_info->insert(public_key_info->begin(), (info_size >> 8) & 0xff);
   public_key_info->insert(public_key_info->begin(), 0x82);
   public_key_info->insert(public_key_info->begin(), kSequenceTag);
 

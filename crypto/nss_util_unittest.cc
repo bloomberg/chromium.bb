@@ -19,14 +19,17 @@ TEST(NSSUtilTest, PRTimeConversion) {
   prxtime.tm_params.tp_gmt_offset = 0;
   prxtime.tm_params.tp_dst_offset = 0;
   base::Time::Exploded exploded;
-  prxtime.tm_year = exploded.year = 2011;
+  exploded.year = prxtime.tm_year = 2011;
   exploded.month = 12;
   prxtime.tm_month = 11;
-  prxtime.tm_wday = exploded.day_of_week = 0;  // Should be unusued.
-  prxtime.tm_mday = exploded.day_of_month = 10;
-  prxtime.tm_hour = exploded.hour = 2;
-  prxtime.tm_min = exploded.minute = 52;
-  prxtime.tm_sec = exploded.second = 19;
+  // PRExplodedTime::tm_wday is a smaller type than Exploded::day_of_week, so
+  // assigning the two in this order instead of the reverse avoids potential
+  // warnings about type downcasting.
+  exploded.day_of_week = prxtime.tm_wday = 0;  // Should be unused.
+  exploded.day_of_month = prxtime.tm_mday = 10;
+  exploded.hour = prxtime.tm_hour = 2;
+  exploded.minute = prxtime.tm_min = 52;
+  exploded.second = prxtime.tm_sec = 19;
   exploded.millisecond = 342;
   prxtime.tm_usec = 342000;
 

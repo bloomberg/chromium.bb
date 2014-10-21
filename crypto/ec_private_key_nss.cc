@@ -340,7 +340,7 @@ ECPrivateKey* ECPrivateKey::CreateWithParams(PK11SlotInfo* slot,
   };
 
   ec_parameters.data[0] = SEC_ASN1_OBJECT_ID;
-  ec_parameters.data[1] = oid_data->oid.len;
+  ec_parameters.data[1] = static_cast<unsigned char>(oid_data->oid.len);
   memcpy(ec_parameters.data + 2, oid_data->oid.data, oid_data->oid.len);
 
   result->key_ = PK11_GenerateKeyPair(slot,
