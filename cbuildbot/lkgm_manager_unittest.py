@@ -372,9 +372,10 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
     lkgm_manager.LKGMManager.CheckoutSourceCode()
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
+    for _ in range(2):
+      lkgm_manager.LKGMManager.RefreshManifestCheckout()
+      lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
+      lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
     self.mox.ReplayAll()
     self.manager.SLEEP_TIMEOUT = 0.2

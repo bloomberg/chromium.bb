@@ -493,9 +493,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           _AttemptToGetLatestCandidate,
           timeout,
           period=self.SLEEP_TIMEOUT,
+          fallback_timeout=max(10, timeout),
           side_effect_func=_PrintRemainingTime)
     except timeout_util.TimeoutError:
-      version_to_build = None
+      _PrintRemainingTime(0)
+      version_to_build = _AttemptToGetLatestCandidate()
 
     if version_to_build:
       logging.info('Starting build spec: %s', version_to_build)
