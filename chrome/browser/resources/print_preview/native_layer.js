@@ -244,8 +244,8 @@ cr.define('print_preview', function() {
         // preview, they still need to be included.
         'duplex': printTicketStore.duplex.getValue() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
-        'copies': printTicketStore.copies.getValueAsNumber(),
-        'collate': printTicketStore.collate.getValue(),
+        'copies': 1,
+        'collate': true,
         'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
         'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue()
       };
