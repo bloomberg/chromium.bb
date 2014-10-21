@@ -114,22 +114,6 @@ public:
     { }
 };
 
-} // namespace blink
-
-// Escape out and declare VectorTraits for GradientStop before it is used
-// in a HeapVector with an inline capacity.
-namespace WTF  {
-
-template<>
-struct VectorTraits<blink::GradientStop> : SimpleClassVectorTraits<blink::GradientStop> {
-    // IsPod<> doesn't handle embedded structs/enums (e.g., Color.)
-    static const bool needsDestruction = false;
-};
-
-} // namespace WTF
-
-namespace blink {
-
 PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const TextLinkColors& textLinkColors, Color currentColor)
 {
     bool derived = false;

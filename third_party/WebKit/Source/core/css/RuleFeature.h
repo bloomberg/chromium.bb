@@ -179,14 +179,4 @@ private:
 
 } // namespace blink
 
-namespace WTF {
-
-template <> struct VectorTraits<blink::RuleFeature> : VectorTraitsBase<blink::RuleFeature> {
-    static const bool needsDestruction = false;
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-} // namespace WTF
-
 #endif // RuleFeature_h

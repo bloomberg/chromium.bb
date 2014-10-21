@@ -65,14 +65,6 @@ private:
 
 } // namespace blink
 
-#if !ENABLE(OILPAN)
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NodeEventContext);
-#else
-namespace WTF {
-template <> struct VectorTraits<blink::NodeEventContext> : SimpleClassVectorTraits<blink::NodeEventContext> {
-    static const bool needsDestruction = false;
-};
-}
-#endif
 
 #endif // NodeEventContext_h

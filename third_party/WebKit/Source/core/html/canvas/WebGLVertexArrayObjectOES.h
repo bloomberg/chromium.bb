@@ -113,11 +113,6 @@ namespace WTF {
 
 template<>
 struct VectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> : SimpleClassVectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> {
-    // Specialization needed as the VertexAttribState's struct fields
-    // aren't handled as desired by the IsPod() trait.
-#if ENABLE(OILPAN)
-    static const bool needsDestruction = false;
-#endif
     // Must use the constructor.
     static const bool canInitializeWithMemset = false;
     static const bool canCopyWithMemcpy = true;

@@ -33,7 +33,6 @@
 #include "core/rendering/style/GridCoordinate.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"
-#include "wtf/VectorTraits.h"
 
 namespace blink {
 
@@ -695,22 +694,6 @@ private:
     GridCoordinate m_coordinate;
     size_t m_span;
 };
-
-} // namespace blink
-
-namespace WTF  {
-
-template<>
-struct VectorTraits<blink::GridItemWithSpan> : SimpleClassVectorTraits<blink::GridItemWithSpan> {
-    // needsDestruction is by default defined in terms of IsPod<>, but as
-    // it doesn't handle embedded structs/enums (e.g., GridCoordinate),
-    // override it here.
-    static const bool needsDestruction = false;
-};
-
-} // namespace WTF
-
-namespace blink {
 
 bool RenderGrid::spanningItemCrossesFlexibleSizedTracks(const GridCoordinate& coordinate, GridTrackSizingDirection direction) const
 {
