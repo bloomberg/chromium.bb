@@ -258,7 +258,7 @@ class PortForwardingController::Connection
              scoped_refptr<AndroidDeviceManager::Device> device,
              scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
              const ForwardingMap& forwarding_map);
-  virtual ~Connection();
+  ~Connection() override;
 
   const PortStatusMap& GetPortStatusMap();
 
@@ -294,9 +294,9 @@ class PortForwardingController::Connection
   void UpdateSocketCount(int port, int increment);
 
   // DevToolsAndroidBridge::AndroidWebSocket::Delegate implementation:
-  virtual void OnSocketOpened() override;
-  virtual void OnFrameRead(const std::string& message) override;
-  virtual void OnSocketClosed() override;
+  void OnSocketOpened() override;
+  void OnFrameRead(const std::string& message) override;
+  void OnSocketClosed() override;
 
   PortForwardingController::Registry* registry_;
   scoped_refptr<AndroidDeviceManager::Device> device_;

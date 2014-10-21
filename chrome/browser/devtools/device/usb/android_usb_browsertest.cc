@@ -413,15 +413,14 @@ class MockUsbService : public UsbService {
     devices_.push_back(new MockUsbDevice<AndroidTraits>());
   }
 
-  virtual ~MockUsbService() {}
+  ~MockUsbService() override {}
 
-  virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
+  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     NOTIMPLEMENTED();
     return NULL;
   }
 
-  virtual void GetDevices(
-      std::vector<scoped_refptr<UsbDevice> >* devices) override {
+  void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
     STLClearObject(devices);
     std::copy(devices_.begin(), devices_.end(), back_inserter(*devices));
   }
@@ -433,15 +432,14 @@ class MockUsbServiceForCheckingTraits : public UsbService {
  public:
   MockUsbServiceForCheckingTraits() : step_(0) {}
 
-  virtual ~MockUsbServiceForCheckingTraits() {}
+  ~MockUsbServiceForCheckingTraits() override {}
 
-  virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
+  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     NOTIMPLEMENTED();
     return NULL;
   }
 
-  virtual void GetDevices(
-      std::vector<scoped_refptr<UsbDevice> >* devices) override {
+  void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
     STLClearObject(devices);
     // This switch should be kept in sync with
     // AndroidUsbBrowserTest::DeviceCountChanged.
@@ -477,7 +475,7 @@ class DevToolsAndroidBridgeWarmUp
                               scoped_refptr<DevToolsAndroidBridge> adb_bridge)
       : closure_(closure), adb_bridge_(adb_bridge) {}
 
-  virtual void DeviceCountChanged(int count) override {
+  void DeviceCountChanged(int count) override {
     adb_bridge_->RemoveDeviceCountListener(this);
     closure_.Run();
   }
@@ -491,7 +489,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
   AndroidUsbDiscoveryTest()
       : scheduler_invoked_(0) {
   }
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
 
@@ -527,7 +525,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     UsbService::SetInstanceForTest(new MockUsbService());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     UsbService* service = NULL;
@@ -546,7 +544,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
 
 class AndroidUsbCountTest : public AndroidUsbDiscoveryTest {
  protected:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     AndroidUsbDiscoveryTest::SetUpOnMainThread();
     DevToolsAndroidBridgeWarmUp warmup(runner_->QuitClosure(), adb_bridge_);
     adb_bridge_->AddDeviceCountListener(&warmup);
@@ -557,7 +555,7 @@ class AndroidUsbCountTest : public AndroidUsbDiscoveryTest {
 
 class AndroidUsbTraitsTest : public AndroidUsbDiscoveryTest {
  protected:
-  virtual void SetUpService() override {
+  void SetUpService() override {
     UsbService::SetInstanceForTest(new MockUsbServiceForCheckingTraits());
   }
 };
@@ -570,7 +568,7 @@ class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
         callback_(callback) {
   }
 
-  virtual void DeviceListChanged(
+  void DeviceListChanged(
       const DevToolsAndroidBridge::RemoteDevices& devices) override {
     if (devices.size() > 0) {
       if (devices[0]->is_connected()) {
@@ -594,7 +592,7 @@ class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {
         invoked_(0) {
   }
 
-  virtual void DeviceCountChanged(int count) override {
+  void DeviceCountChanged(int count) override {
     ++invoked_;
     adb_bridge_->RemoveDeviceCountListener(this);
     Shutdown();
@@ -638,7 +636,7 @@ class MockCountListenerWithReAdd : public MockCountListener {
         readd_count_(2) {
   }
 
-  virtual void DeviceCountChanged(int count) override {
+  void DeviceCountChanged(int count) override {
     ++invoked_;
     adb_bridge_->RemoveDeviceCountListener(this);
     if (readd_count_ > 0) {
@@ -662,7 +660,7 @@ class MockCountListenerWithReAddWhileQueued : public MockCountListener {
         readded_(false) {
   }
 
-  virtual void DeviceCountChanged(int count) override {
+  void DeviceCountChanged(int count) override {
     ++invoked_;
     if (!readded_) {
       readded_ = true;
@@ -691,7 +689,7 @@ class MockCountListenerForCheckingTraits : public MockCountListener {
       : MockCountListener(adb_bridge),
         step_(0) {
   }
-  virtual void DeviceCountChanged(int count) override {
+  void DeviceCountChanged(int count) override {
     switch (step_) {
       case 0:
         // Check for 0 devices when no devices present.

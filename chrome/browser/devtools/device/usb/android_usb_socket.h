@@ -27,33 +27,35 @@ class AndroidUsbSocket : public net::StreamSocket,
                    uint32 socket_id,
                    const std::string& command,
                    base::Callback<void(uint32)> delete_callback);
-  virtual ~AndroidUsbSocket();
+  ~AndroidUsbSocket() override;
 
   void HandleIncoming(scoped_refptr<AdbMessage> message);
 
   void Terminated(bool closed_by_device);
 
   // net::StreamSocket implementation.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override;
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) override;
-  virtual int SetReceiveBufferSize(int32 size) override;
-  virtual int SetSendBufferSize(int32 size) override;
-  virtual int Connect(const net::CompletionCallback& callback) override;
-  virtual void Disconnect() override;
-  virtual bool IsConnected() const override;
-  virtual bool IsConnectedAndIdle() const override;
-  virtual int GetPeerAddress(net::IPEndPoint* address) const override;
-  virtual int GetLocalAddress(net::IPEndPoint* address) const override;
-  virtual const net::BoundNetLog& NetLog() const override;
-  virtual void SetSubresourceSpeculation() override;
-  virtual void SetOmniboxSpeculation() override;
-  virtual bool WasEverUsed() const override;
-  virtual bool UsingTCPFastOpen() const override;
-  virtual bool WasNpnNegotiated() const override;
-  virtual net::NextProto GetNegotiatedProtocol() const override;
-  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override;
+  int SetReceiveBufferSize(int32 size) override;
+  int SetSendBufferSize(int32 size) override;
+  int Connect(const net::CompletionCallback& callback) override;
+  void Disconnect() override;
+  bool IsConnected() const override;
+  bool IsConnectedAndIdle() const override;
+  int GetPeerAddress(net::IPEndPoint* address) const override;
+  int GetLocalAddress(net::IPEndPoint* address) const override;
+  const net::BoundNetLog& NetLog() const override;
+  void SetSubresourceSpeculation() override;
+  void SetOmniboxSpeculation() override;
+  bool WasEverUsed() const override;
+  bool UsingTCPFastOpen() const override;
+  bool WasNpnNegotiated() const override;
+  net::NextProto GetNegotiatedProtocol() const override;
+  bool GetSSLInfo(net::SSLInfo* ssl_info) override;
 
  private:
   class IORequest {

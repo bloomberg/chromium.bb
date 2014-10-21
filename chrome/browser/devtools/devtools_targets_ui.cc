@@ -119,18 +119,17 @@ class WorkerObserver
 
  private:
   friend class base::RefCountedThreadSafe<WorkerObserver>;
-  virtual ~WorkerObserver() {}
+  ~WorkerObserver() override {}
 
   // content::WorkerServiceObserver overrides:
-  virtual void WorkerCreated(
-      const GURL& url,
-      const base::string16& name,
-      int process_id,
-      int route_id) override {
+  void WorkerCreated(const GURL& url,
+                     const base::string16& name,
+                     int process_id,
+                     int route_id) override {
     NotifyOnIOThread();
   }
 
-  virtual void WorkerDestroyed(int process_id, int route_id) override {
+  void WorkerDestroyed(int process_id, int route_id) override {
     NotifyOnIOThread();
   }
 
@@ -167,16 +166,16 @@ class LocalTargetsUIHandler
       public content::NotificationObserver {
  public:
   explicit LocalTargetsUIHandler(const Callback& callback);
-  virtual ~LocalTargetsUIHandler();
+  ~LocalTargetsUIHandler() override;
 
   // DevToolsTargetsUIHandler overrides.
-  virtual void ForceUpdate() override;
+  void ForceUpdate() override;
 
 private:
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+ void Observe(int type,
+              const content::NotificationSource& source,
+              const content::NotificationDetails& details) override;
 
   void ScheduleUpdate();
   void UpdateTargets();
@@ -278,18 +277,18 @@ class AdbTargetsUIHandler
       public DevToolsAndroidBridge::DeviceListListener {
  public:
   AdbTargetsUIHandler(const Callback& callback, Profile* profile);
-  virtual ~AdbTargetsUIHandler();
+  ~AdbTargetsUIHandler() override;
 
-  virtual void Open(const std::string& browser_id,
-                    const std::string& url,
-                    const DevToolsTargetsUIHandler::TargetCallback&) override;
+  void Open(const std::string& browser_id,
+            const std::string& url,
+            const DevToolsTargetsUIHandler::TargetCallback&) override;
 
-  virtual scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
+  scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
       const std::string& browser_id) override;
 
  private:
   // DevToolsAndroidBridge::Listener overrides.
-  virtual void DeviceListChanged(
+  void DeviceListChanged(
       const DevToolsAndroidBridge::RemoteDevices& devices) override;
 
   DevToolsAndroidBridge* GetAndroidBridge();

@@ -68,9 +68,9 @@ class PortForwardingStatusSerializer
   typedef base::Callback<void(const base::Value&)> Callback;
 
   PortForwardingStatusSerializer(const Callback& callback, Profile* profile);
-  virtual ~PortForwardingStatusSerializer();
+  ~PortForwardingStatusSerializer() override;
 
-  virtual void PortStatusChanged(const ForwardingStatus& status) override;
+  void PortStatusChanged(const ForwardingStatus& status) override;
 
  private:
   Callback callback_;

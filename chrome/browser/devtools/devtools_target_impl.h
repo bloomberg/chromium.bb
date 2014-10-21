@@ -32,22 +32,21 @@ class DevToolsTargetImpl : public content::DevToolsTarget {
 
   explicit DevToolsTargetImpl(
       scoped_refptr<content::DevToolsAgentHost> agent_host);
-  virtual ~DevToolsTargetImpl();
+  ~DevToolsTargetImpl() override;
 
   // content::DevToolsTarget overrides:
-  virtual std::string GetId() const override;
-  virtual std::string GetParentId() const override;
-  virtual std::string GetType() const override;
-  virtual std::string GetTitle() const override;
-  virtual std::string GetDescription() const override;
-  virtual GURL GetURL() const override;
-  virtual GURL GetFaviconURL() const override;
-  virtual base::TimeTicks GetLastActivityTime() const override;
-  virtual scoped_refptr<content::DevToolsAgentHost>
-      GetAgentHost() const override;
-  virtual bool IsAttached() const override;
-  virtual bool Activate() const override;
-  virtual bool Close() const override;
+  std::string GetId() const override;
+  std::string GetParentId() const override;
+  std::string GetType() const override;
+  std::string GetTitle() const override;
+  std::string GetDescription() const override;
+  GURL GetURL() const override;
+  GURL GetFaviconURL() const override;
+  base::TimeTicks GetLastActivityTime() const override;
+  scoped_refptr<content::DevToolsAgentHost> GetAgentHost() const override;
+  bool IsAttached() const override;
+  bool Activate() const override;
+  bool Close() const override;
 
   // Returns the WebContents associated with the target on NULL if there is
   // not any.

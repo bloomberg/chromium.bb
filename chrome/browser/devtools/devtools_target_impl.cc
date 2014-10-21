@@ -49,10 +49,10 @@ class WebContentsTarget : public DevToolsTargetImpl {
   WebContentsTarget(WebContents* web_contents, bool is_tab);
 
   // DevToolsTargetImpl overrides:
-  virtual WebContents* GetWebContents() const override;
-  virtual int GetTabId() const override;
-  virtual std::string GetExtensionId() const override;
-  virtual void Inspect(Profile* profile) const override;
+  WebContents* GetWebContents() const override;
+  int GetTabId() const override;
+  std::string GetExtensionId() const override;
+  void Inspect(Profile* profile) const override;
 
  private:
   int tab_id_;
@@ -153,7 +153,7 @@ class WorkerTarget : public DevToolsTargetImpl {
   explicit WorkerTarget(scoped_refptr<DevToolsAgentHost> agent_host);
 
   // DevToolsTargetImpl overrides:
-  virtual void Inspect(Profile* profile) const override;
+  void Inspect(Profile* profile) const override;
 };
 
 WorkerTarget::WorkerTarget(scoped_refptr<DevToolsAgentHost> agent_host)

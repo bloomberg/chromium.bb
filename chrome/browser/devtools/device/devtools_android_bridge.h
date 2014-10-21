@@ -44,7 +44,7 @@ class DevToolsAndroidBridge
   class Wrapper : public KeyedService {
    public:
     explicit Wrapper(content::BrowserContext* context);
-    virtual ~Wrapper();
+    ~Wrapper() override;
 
     DevToolsAndroidBridge* Get();
    private:
@@ -63,10 +63,10 @@ class DevToolsAndroidBridge
     friend struct DefaultSingletonTraits<Factory>;
 
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
     // BrowserContextKeyedServiceFactory overrides:
-    virtual KeyedService* BuildServiceInstanceFor(
+    KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* context) const override;
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };

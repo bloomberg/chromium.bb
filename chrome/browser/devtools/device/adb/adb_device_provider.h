@@ -9,17 +9,17 @@
 
 class AdbDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  public:
-  virtual void QueryDevices(const SerialsCallback& callback) override;
+  void QueryDevices(const SerialsCallback& callback) override;
 
-  virtual void QueryDeviceInfo(const std::string& serial,
-                               const DeviceInfoCallback& callback) override;
+  void QueryDeviceInfo(const std::string& serial,
+                       const DeviceInfoCallback& callback) override;
 
-  virtual void OpenSocket(const std::string& serial,
-                          const std::string& socket_name,
-                          const SocketCallback& callback) override;
+  void OpenSocket(const std::string& serial,
+                  const std::string& socket_name,
+                  const SocketCallback& callback) override;
 
  private:
-  virtual ~AdbDeviceProvider();
+  ~AdbDeviceProvider() override;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_DEVICE_PROVIDER_H_

@@ -90,19 +90,18 @@ class DevToolsToolboxDelegate
   DevToolsToolboxDelegate(
       WebContents* toolbox_contents,
       DevToolsWindow::ObserverWithAccessor* web_contents_observer);
-  virtual ~DevToolsToolboxDelegate();
+  ~DevToolsToolboxDelegate() override;
 
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual bool PreHandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) override;
-  virtual void HandleKeyboardEvent(
+  bool PreHandleKeyboardEvent(content::WebContents* source,
+                              const content::NativeWebKeyboardEvent& event,
+                              bool* is_keyboard_shortcut) override;
+  void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
  private:
   BrowserWindow* GetInspectedBrowserWindow();

@@ -28,7 +28,7 @@ const int kDefaultDebuggingPort = 9223;
 }
 
 class PortForwardingTest: public InProcessBrowserTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort,
         base::IntToString(kDefaultDebuggingPort));
@@ -44,12 +44,12 @@ class PortForwardingTest: public InProcessBrowserTest {
           AddPortForwardingListener(this);
     }
 
-    virtual ~Listener() {
+    ~Listener() override {
       DevToolsAndroidBridge::Factory::GetForProfile(profile_)->
           RemovePortForwardingListener(this);
     }
 
-    virtual void PortStatusChanged(const ForwardingStatus& status) override {
+    void PortStatusChanged(const ForwardingStatus& status) override {
       if (status.empty() && skip_empty_devices_)
         return;
       base::MessageLoop::current()->PostTask(

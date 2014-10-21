@@ -50,20 +50,20 @@ class DelegateWrapper
         message_loop_(message_loop) {
   }
 
-  virtual ~DelegateWrapper() {}
+  ~DelegateWrapper() override {}
 
   // AndroidWebSocket::Delegate implementation
-  virtual void OnSocketOpened() override {
+  void OnSocketOpened() override {
     message_loop_->PostTask(FROM_HERE,
         base::Bind(&Delegate::OnSocketOpened, weak_delegate_));
   }
 
-  virtual void OnFrameRead(const std::string& message) override {
+  void OnFrameRead(const std::string& message) override {
     message_loop_->PostTask(FROM_HERE,
         base::Bind(&Delegate::OnFrameRead, weak_delegate_, message));
   }
 
-  virtual void OnSocketClosed() override {
+  void OnSocketClosed() override {
     message_loop_->PostTask(FROM_HERE,
         base::Bind(&Delegate::OnSocketClosed, weak_delegate_));
   }
@@ -85,15 +85,15 @@ class AndroidWebSocketImpl
       const std::string& url,
       AndroidWebSocket::Delegate* delegate);
 
-  virtual ~AndroidWebSocketImpl();
+  ~AndroidWebSocketImpl() override;
 
   // AndroidWebSocket implementation
-  virtual void SendFrame(const std::string& message) override;
+  void SendFrame(const std::string& message) override;
 
   // AndroidWebSocket::Delegate implementation
-  virtual void OnSocketOpened() override;
-  virtual void OnFrameRead(const std::string& message) override;
-  virtual void OnSocketClosed() override;
+  void OnSocketOpened() override;
+  void OnFrameRead(const std::string& message) override;
+  void OnSocketClosed() override;
 
  private:
   void Connected(int result, scoped_ptr<net::StreamSocket> socket);

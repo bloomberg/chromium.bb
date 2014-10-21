@@ -20,13 +20,13 @@ class BrowserListTabContentsProvider
 
   explicit BrowserListTabContentsProvider(
       chrome::HostDesktopType host_desktop_type);
-  virtual ~BrowserListTabContentsProvider();
+  ~BrowserListTabContentsProvider() override;
 
   // DevToolsHttpProtocolHandler::Delegate overrides.
-  virtual std::string GetDiscoveryPageHTML() override;
-  virtual bool BundlesFrontendResources() override;
-  virtual base::FilePath GetDebugFrontendDir() override;
-  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
+  std::string GetDiscoveryPageHTML() override;
+  bool BundlesFrontendResources() override;
+  base::FilePath GetDebugFrontendDir() override;
+  scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) override;
 

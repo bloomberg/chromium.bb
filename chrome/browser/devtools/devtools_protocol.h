@@ -38,7 +38,7 @@ class DevToolsProtocol {
   class Command : public Message {
    public:
     Command(int id, const std::string& method, base::DictionaryValue* params);
-    virtual ~Command();
+    ~Command() override;
 
     int id() { return id_; }
     std::string Serialize();
@@ -80,7 +80,7 @@ class DevToolsProtocol {
 
   class Notification : public Message {
    public:
-    virtual ~Notification();
+    ~Notification() override;
 
    private:
     friend class DevToolsProtocol;

@@ -32,7 +32,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   class ObserverWithAccessor : public content::WebContentsObserver {
    public:
     explicit ObserverWithAccessor(content::WebContents* web_contents);
-    virtual ~ObserverWithAccessor();
+    ~ObserverWithAccessor() override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ObserverWithAccessor);
@@ -40,7 +40,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   static const char kDevToolsApp[];
 
-  virtual ~DevToolsWindow();
+  ~DevToolsWindow() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -226,60 +226,56 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const std::string& settings);
 
   // content::WebContentsDelegate:
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual void ActivateContents(content::WebContents* contents) override;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual void WebContentsCreated(content::WebContents* source_contents,
-                                  int opener_render_frame_id,
-                                  const base::string16& frame_name,
-                                  const GURL& target_url,
-                                  content::WebContents* new_contents) override;
-  virtual void CloseContents(content::WebContents* source) override;
-  virtual void ContentsZoomChange(bool zoom_in) override;
-  virtual void BeforeUnloadFired(content::WebContents* tab,
-                                 bool proceed,
-                                 bool* proceed_to_fire_unload) override;
-  virtual bool PreHandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) override;
-  virtual void HandleKeyboardEvent(
+  void ActivateContents(content::WebContents* contents) override;
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  void WebContentsCreated(content::WebContents* source_contents,
+                          int opener_render_frame_id,
+                          const base::string16& frame_name,
+                          const GURL& target_url,
+                          content::WebContents* new_contents) override;
+  void CloseContents(content::WebContents* source) override;
+  void ContentsZoomChange(bool zoom_in) override;
+  void BeforeUnloadFired(content::WebContents* tab,
+                         bool proceed,
+                         bool* proceed_to_fire_unload) override;
+  bool PreHandleKeyboardEvent(content::WebContents* source,
+                              const content::NativeWebKeyboardEvent& event,
+                              bool* is_keyboard_shortcut) override;
+  void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  virtual content::JavaScriptDialogManager*
-      GetJavaScriptDialogManager() override;
-  virtual content::ColorChooser* OpenColorChooser(
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<content::ColorSuggestion>& suggestions) override;
-  virtual void RunFileChooser(
-      content::WebContents* web_contents,
-      const content::FileChooserParams& params) override;
-  virtual void WebContentsFocused(content::WebContents* contents) override;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) override;
+  void RunFileChooser(content::WebContents* web_contents,
+                      const content::FileChooserParams& params) override;
+  void WebContentsFocused(content::WebContents* contents) override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
 
   // content::DevToolsUIBindings::Delegate overrides
-  virtual void ActivateWindow() override;
-  virtual void CloseWindow() override;
-  virtual void SetInspectedPageBounds(const gfx::Rect& rect) override;
-  virtual void InspectElementCompleted() override;
-  virtual void MoveWindow(int x, int y) override;
-  virtual void SetIsDocked(bool is_docked) override;
-  virtual void OpenInNewTab(const std::string& url) override;
-  virtual void SetWhitelistedShortcuts(const std::string& message) override;
-  virtual void InspectedContentsClosing() override;
-  virtual void OnLoadCompleted() override;
-  virtual InfoBarService* GetInfoBarService() override;
-  virtual void RenderProcessGone() override;
+  void ActivateWindow() override;
+  void CloseWindow() override;
+  void SetInspectedPageBounds(const gfx::Rect& rect) override;
+  void InspectElementCompleted() override;
+  void MoveWindow(int x, int y) override;
+  void SetIsDocked(bool is_docked) override;
+  void OpenInNewTab(const std::string& url) override;
+  void SetWhitelistedShortcuts(const std::string& message) override;
+  void InspectedContentsClosing() override;
+  void OnLoadCompleted() override;
+  InfoBarService* GetInfoBarService() override;
+  void RenderProcessGone() override;
 
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();
