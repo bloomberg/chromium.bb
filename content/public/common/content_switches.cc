@@ -248,6 +248,9 @@ const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 // Disables the use of a 3D software rasterizer.
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 
+// Disables SVG 1.1 DOM.
+const char kDisableSVG1DOM[]                = "disable-svg1dom";
+
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
