@@ -17,6 +17,7 @@
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBoxClipper.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
@@ -54,20 +55,17 @@ void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     if (m_renderBlock.hasOverflowClip() && !m_renderBlock.hasControlClip() && !(m_renderBlock.shouldPaintSelectionGaps() && phase == PaintPhaseForeground) && !hasCaret())
         contentsClipBehavior = SkipContentsClipIfPossible;
 
-    bool pushedClip = m_renderBlock.pushContentsClip(paintInfo, adjustedPaintOffset, contentsClipBehavior);
     {
+        RenderBoxClipper boxClipper(m_renderBlock, paintInfo, adjustedPaintOffset, contentsClipBehavior);
         GraphicsContextCullSaver cullSaver(*paintInfo.context);
         // Cull if we have more than one child and we didn't already clip.
-        bool shouldCull = m_renderBlock.document().settings()->containerCullingEnabled() && !pushedClip && !m_renderBlock.isDocumentElement()
+        bool shouldCull = m_renderBlock.document().settings()->containerCullingEnabled() && !boxClipper.pushedClip() && !m_renderBlock.isDocumentElement()
             && m_renderBlock.firstChild() && m_renderBlock.lastChild() && m_renderBlock.firstChild() != m_renderBlock.lastChild();
         if (shouldCull)
             cullSaver.cull(overflowBox);
 
         m_renderBlock.paintObject(paintInfo, adjustedPaintOffset);
     }
-    // FIXME: move popContentsClip out of RenderBox.
-    if (pushedClip)
-        m_renderBlock.popContentsClip(paintInfo, phase, adjustedPaintOffset);
 
     // Our scrollbar widgets paint exactly when we tell them to, so that they work properly with
     // z-index. We paint after we painted the background/border, so that the scrollbars will

@@ -8,6 +8,7 @@
 #include "core/paint/TableRowPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderBoxClipper.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
@@ -32,13 +33,12 @@ void TableSectionPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOf
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderTableSection.location();
 
-    PaintPhase phase = paintInfo.phase;
-    bool pushedClip = m_renderTableSection.pushContentsClip(paintInfo, adjustedPaintOffset, ForceContentsClip);
-    paintObject(paintInfo, adjustedPaintOffset);
-    if (pushedClip)
-        m_renderTableSection.popContentsClip(paintInfo, phase, adjustedPaintOffset);
+    {
+        RenderBoxClipper boxClipper(m_renderTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
+        paintObject(paintInfo, adjustedPaintOffset);
+    }
 
-    if ((phase == PaintPhaseOutline || phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
+    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
         m_renderTableSection.paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
 }
 

@@ -1637,6 +1637,7 @@
             'rendering/RenderBlockFlow.cpp',
             'rendering/RenderBlockLineLayout.cpp',
             'rendering/RenderBox.cpp',
+            'rendering/RenderBoxClipper.cpp',
             'rendering/RenderBoxModelObject.cpp',
             'rendering/RenderButton.cpp',
             'rendering/RenderButton.h',
