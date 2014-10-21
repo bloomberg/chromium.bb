@@ -238,10 +238,6 @@ void WebEmbeddedWorkerImpl::resumeAfterDownload()
         startWorkerThread();
 }
 
-void WebEmbeddedWorkerImpl::resumeWorkerContext()
-{
-}
-
 void WebEmbeddedWorkerImpl::attachDevTools(const WebString& hostId)
 {
     WebDevToolsAgent* devtoolsAgent = m_webView->devToolsAgent();

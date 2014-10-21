@@ -83,11 +83,6 @@ void WorkerObjectProxy::postMessageToPageInspector(const String& message)
         toDocument(m_executionContext)->postInspectorTask(createCrossThreadTask(&WorkerMessagingProxy::postMessageToPageInspector, m_messagingProxy, message));
 }
 
-void WorkerObjectProxy::updateInspectorStateCookie(const String&)
-{
-    notImplemented();
-}
-
 void WorkerObjectProxy::workerGlobalScopeClosed()
 {
     m_executionContext->postTask(createCrossThreadTask(&WorkerMessagingProxy::terminateWorkerGlobalScope, m_messagingProxy));

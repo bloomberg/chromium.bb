@@ -75,7 +75,6 @@ public:
         const WTF::String&, int, int, const WTF::String&) override;
     virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
     virtual void postMessageToPageInspector(const WTF::String&) override;
-    virtual void updateInspectorStateCookie(const WTF::String&) override;
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override;
     virtual void workerGlobalScopeClosed() override;
     virtual void workerThreadTerminated() override;
@@ -101,7 +100,6 @@ public:
     virtual void clientDestroyed() override;
 
     virtual void pauseWorkerContextOnStart() override;
-    virtual void resumeWorkerContext() override;
     virtual void attachDevTools(const WebString& hostId) override;
     virtual void reattachDevTools(const WebString& hostId, const WebString& savedState) override;
     virtual void detachDevTools() override;

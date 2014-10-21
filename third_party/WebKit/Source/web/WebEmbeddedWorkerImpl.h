@@ -65,7 +65,6 @@ public:
     virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) override;
     virtual void resumeAfterDownload() override;
     virtual void terminateWorkerContext() override;
-    virtual void resumeWorkerContext() override;
     virtual void attachDevTools(const WebString& hostId) override;
     virtual void reattachDevTools(const WebString& hostId, const WebString& savedState) override;
     virtual void detachDevTools() override;

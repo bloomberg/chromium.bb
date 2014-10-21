@@ -74,16 +74,11 @@ private:
 class WorkerStateClient final : public InspectorStateClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    WorkerStateClient(WorkerGlobalScope* context) : m_workerGlobalScope(context) { }
+    WorkerStateClient(WorkerGlobalScope* context) { }
     virtual ~WorkerStateClient() { }
 
 private:
-    virtual void updateInspectorStateCookie(const String& cookie) override
-    {
-        m_workerGlobalScope->thread()->workerReportingProxy().updateInspectorStateCookie(cookie);
-    }
-
-    WorkerGlobalScope* m_workerGlobalScope;
+    virtual void updateInspectorStateCookie(const String& cookie) override { }
 };
 
 }

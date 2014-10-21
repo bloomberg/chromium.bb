@@ -292,10 +292,6 @@ void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& m
 
 }
 
-void WebSharedWorkerImpl::updateInspectorStateCookie(const String& cookie)
-{
-}
-
 void WebSharedWorkerImpl::workerGlobalScopeClosed()
 {
     callOnMainThread(bind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, this));
@@ -424,10 +420,6 @@ void WebSharedWorkerImpl::clientDestroyed()
 void WebSharedWorkerImpl::pauseWorkerContextOnStart()
 {
     m_pauseWorkerContextOnStart = true;
-}
-
-void WebSharedWorkerImpl::resumeWorkerContext()
-{
 }
 
 void WebSharedWorkerImpl::attachDevTools(const WebString& hostId)

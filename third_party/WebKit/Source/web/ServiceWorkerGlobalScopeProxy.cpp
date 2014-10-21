@@ -144,12 +144,6 @@ void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& mes
     m_document.postInspectorTask(createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, &m_embeddedWorker, message));
 }
 
-void ServiceWorkerGlobalScopeProxy::updateInspectorStateCookie(const String& message)
-{
-    // The inspector cookie saving/restoring is controlled from the main thread.
-    // This method could be removed once shared workers are moved to the main thread inspection as well.
-}
-
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
 {
     ASSERT(!m_workerGlobalScope);

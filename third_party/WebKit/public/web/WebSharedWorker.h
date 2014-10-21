@@ -63,7 +63,6 @@ public:
     virtual void clientDestroyed() = 0;
 
     virtual void pauseWorkerContextOnStart() = 0;
-    virtual void resumeWorkerContext() = 0;
     virtual void attachDevTools(const WebString& hostId) = 0;
     virtual void reattachDevTools(const WebString& hostId, const WebString& savedState) = 0;
     virtual void detachDevTools() = 0;
