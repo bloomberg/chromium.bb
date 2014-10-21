@@ -76,7 +76,7 @@ scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>
 CreateSocketFactory(int port) {
 #if defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string socket_name = "content_shell_devtools_remote";
+  std::string socket_name = "cast_shell_devtools_remote";
   if (command_line->HasSwitch(switches::kRemoteDebuggingSocketName)) {
     socket_name = command_line->GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
