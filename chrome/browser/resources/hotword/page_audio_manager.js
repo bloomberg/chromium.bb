@@ -12,7 +12,6 @@ cr.define('hotword', function() {
    * pages.
    * @param {!hotword.StateManager} stateManager
    * @constructor
-   * @struct
    */
   function PageAudioManager(stateManager) {
     /**
@@ -24,7 +23,7 @@ cr.define('hotword', function() {
     /**
      * Mapping between tab ID and port that is connected from the injected
      * content script.
-     * @private {!Object.<number, chrome.runtime.Port>}
+     * @private {!Object.<number, Port>}
      */
     this.portMap_ = {};
 
@@ -308,7 +307,7 @@ cr.define('hotword', function() {
       });
     },
 
-    /*
+    /**
      * Starts hotwording.
      * @private
      */
@@ -321,7 +320,7 @@ cr.define('hotword', function() {
           this.hotwordTriggered_.bind(this));
     },
 
-    /*
+    /**
      * Starts hotwording if the currently active tab is eligible for hotwording
      * (i.e. google.com).
      * @private
@@ -337,7 +336,7 @@ cr.define('hotword', function() {
       });
     },
 
-    /*
+    /**
      * Stops hotwording.
      * @private
      */
@@ -346,7 +345,7 @@ cr.define('hotword', function() {
       this.sendAllClients_(CommandToPage.HOTWORD_ENDED);
     },
 
-    /*
+    /**
      * Stops hotwording if the currently active tab is not eligible for
      * hotwording (i.e. google.com).
      * @private

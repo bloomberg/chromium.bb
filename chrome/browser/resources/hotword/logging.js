@@ -8,8 +8,9 @@ cr.define('hotword', function() {
   /**
    * Wrapper around console.log allowing debug log message to be enabled during
    * development.
+   * @param {...*} varArgs
    */
-  function debug() {
+  function debug(varArgs) {
     if (hotword.DEBUG || window.localStorage['hotword.DEBUG'])
       console.log.apply(console, arguments);
   }

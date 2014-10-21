@@ -40,7 +40,7 @@ function NaClManager() {
 
   /**
    * NaCl plugin element on extension background page.
-   * @private {?Nacl}
+   * @private {?HTMLEmbedElement}
    */
   this.plugin_ = null;
 
@@ -86,7 +86,7 @@ NaClManager.prototype.__proto__ = cr.EventTarget.prototype;
  * @private
  */
 NaClManager.prototype.handleError_ = function(error) {
-  event = new Event(hotword.constants.Event.ERROR);
+  var event = new Event(hotword.constants.Event.ERROR);
   event.data = error;
   this.dispatchEvent(event);
 };
@@ -198,11 +198,11 @@ NaClManager.prototype.getPossibleLanguages_ = function() {
 /**
  * Creates a NaCl plugin object and attaches it to the page.
  * @param {!string} src Location of the plugin.
- * @return {!Nacl} NaCl plugin DOM object.
+ * @return {!HTMLEmbedElement} NaCl plugin DOM object.
  * @private
  */
 NaClManager.prototype.createPlugin_ = function(src) {
-  var plugin = document.createElement('embed');
+  var plugin = /** @type {HTMLEmbedElement} */(document.createElement('embed'));
   plugin.src = src;
   plugin.type = 'application/x-nacl';
   document.body.appendChild(plugin);
@@ -235,7 +235,7 @@ NaClManager.prototype.initialize = function(naclArch, stream) {
     }
 
     var plugin = this.createPlugin_(pluginSrc);
-    this.plugin_ = /** @type {Nacl} */ (plugin);
+    this.plugin_ = plugin;
     if (!this.plugin_ || !this.plugin_.postMessage) {
       document.body.removeChild(this.plugin_);
       this.recognizerState_ = ManagerState_.ERROR;
@@ -273,7 +273,7 @@ NaClManager.prototype.shutdown = function() {
 
 /**
  * Sends data to the NaCl plugin.
- * @param {!string} data Command to be sent to NaCl plugin.
+ * @param {!string|!MediaStreamTrack} data Command to be sent to NaCl plugin.
  * @private
  */
 NaClManager.prototype.sendDataToPlugin_ = function(data) {

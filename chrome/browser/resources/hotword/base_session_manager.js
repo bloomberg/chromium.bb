@@ -12,7 +12,6 @@ cr.define('hotword', function() {
    * @param {!hotword.constants.SessionSource} sessionSource Source of the
    *     hotword session request.
    * @constructor
-   * @struct
    */
   function BaseSessionManager(stateManager, sessionSource) {
     /**

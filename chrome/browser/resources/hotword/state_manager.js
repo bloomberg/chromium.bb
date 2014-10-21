@@ -42,7 +42,6 @@ cr.define('hotword', function() {
    * on user settings, session requests, and any other factors that play into
    * whether or not hotwording should be running.
    * @constructor
-   * @struct
    */
   function StateManager() {
     /**
@@ -65,21 +64,22 @@ cr.define('hotword', function() {
 
     /**
      * Currently active hotwording sessions.
-     * @private {!Array.<hotword.Session_>}
+     * @private {!Array.<Session_>}
      */
     this.sessions_ = [];
 
     /**
      * Event that fires when the hotwording status has changed.
-     * @type {!chrome.Event}
+     * @type {!ChromeEvent}
      */
     this.onStatusChanged = new chrome.Event();
 
     /**
      * Hotword trigger audio notification... a.k.a The Chime (tm).
-     * @private {!Audio}
+     * @private {!HTMLAudioElement}
      */
-    this.chime_ = document.createElement('audio');
+    this.chime_ =
+        /** @type {!HTMLAudioElement} */(document.createElement('audio'));
 
     // Get the initial status.
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));

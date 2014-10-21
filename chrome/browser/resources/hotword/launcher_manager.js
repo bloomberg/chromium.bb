@@ -11,7 +11,6 @@ cr.define('hotword', function() {
    * @param {!hotword.StateManager} stateManager
    * @constructor
    * @extends {hotword.BaseSessionManager}
-   * @struct
    */
   function LauncherManager(stateManager) {
     hotword.BaseSessionManager.call(this,

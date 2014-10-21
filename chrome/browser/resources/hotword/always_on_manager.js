@@ -12,7 +12,6 @@ cr.define('hotword', function() {
    * @param {!hotword.StateManager} stateManager
    * @constructor
    * @extends {hotword.BaseSessionManager}
-   * @struct
    */
   function AlwaysOnManager(stateManager) {
     hotword.BaseSessionManager.call(this,
@@ -23,12 +22,12 @@ cr.define('hotword', function() {
   AlwaysOnManager.prototype = {
     __proto__: hotword.BaseSessionManager.prototype,
 
-    /** override */
+    /** @override */
      enabled: function() {
        return this.stateManager.isAlwaysOnEnabled();
      },
 
-    /** override */
+    /** @override */
     updateListeners: function() {
       hotword.BaseSessionManager.prototype.updateListeners.call(this);
       if (this.enabled())
