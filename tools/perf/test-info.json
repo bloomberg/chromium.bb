@@ -213,5 +213,11 @@
   },
   "tab_switching.top_10":{
     "description":"This test records the MPArch.RWH_TabSwitchPaintDuration histogram, which is a measure of the time between when a tab was requested to be shown, and when first paint occurred. The script opens 10 pages in different tabs, waits for them to load, and then switches to each tab and records the metric. The pages were chosen from Alexa top ranking sites."
+  },
+  "task_execution_time.key_mobile_sites":{
+    "description":"This benchmark measures the runtimes of various tasks on the renderer main thread while scrolling on key mobile sites. It is used for tracking and guiding optimizations in the Blink scheduler project."
+  },
+  "task_execution_time.tough_scheduling_cases":{
+    "description":"This benchmark measures the runtimes of various tasks on the renderer main thread while scrolling on synthetic pages with challenging scheduling properties. It is used for tracking and guiding optimizations in the Blink scheduler project."
   }
 }
