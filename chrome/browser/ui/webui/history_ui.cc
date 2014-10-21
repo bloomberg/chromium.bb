@@ -173,6 +173,8 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("deleteConfirm",
                              IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);
+  source->AddLocalizedString("bookmarked", IDS_HISTORY_ENTRY_BOOKMARKED);
+  source->AddLocalizedString("entrySummary", IDS_HISTORY_ENTRY_SUMMARY);
   source->AddBoolean("isFullHistorySyncEnabled",
                      WebHistoryServiceFactory::GetForProfile(profile) != NULL);
   source->AddBoolean("groupByDomain",

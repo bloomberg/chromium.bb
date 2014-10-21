@@ -187,7 +187,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var entryBox = createElementWithClassName('div', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
 
-  this.id_ = this.model_.nextVisitId_++;
+  this.id_ = this.model_.getNextVisitId();
   var self = this;
 
   // Only create the checkbox if it can be used either to delete an entry or to
@@ -196,9 +196,13 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     var checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = 'checkbox-' + this.id_;
-    checkbox.setAttribute('aria-label',
-                          loadTimeData.getString('removeFromHistory'));
     checkbox.time = this.date.getTime();
+    checkbox.setAttribute('aria-label', loadTimeData.getStringF(
+        'entrySummary',
+        this.dateTimeOfDay,
+        this.starred_ ? loadTimeData.getString('bookmarked') : '',
+        this.title_,
+        this.domain_));
     checkbox.addEventListener('click', checkboxClicked);
     entryBox.appendChild(checkbox);
 
@@ -741,6 +745,14 @@ HistoryModel.prototype.removeVisit = function(visit) {
   var index = this.visits_.indexOf(visit);
   if (index >= 0)
     this.visits_.splice(index, 1);
+};
+
+/**
+ * Automatically generates a new visit ID.
+ * @return {number} The next visit ID.
+ */
+HistoryModel.prototype.getNextVisitId = function() {
+  return this.nextVisitId_++;
 };
 
 // HistoryModel, Private: -----------------------------------------------------

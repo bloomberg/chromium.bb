@@ -578,6 +578,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_UNKNOWN_DEVICE" desc="On the dropdown menu for a history entry, the text that is shown instead of a device name, when the device name is not known.">
         Unknown device
       </message>
+      <message name="IDS_HISTORY_ENTRY_BOOKMARKED" desc="Whether a history entry is bookmarked.">
+        Bookmarked
+      </message>
+      <message name="IDS_HISTORY_ENTRY_SUMMARY" desc="Summary of all the fields in a history entry (time, whether the entry is bookmarked, title, and domain).">
+        <ph name="TIME"><ex>3:14</ex>$1</ph> <ph name="BOOKMARKED"><ex>bookmarked</ex>$2</ph> <ph name="TITLE"><ex>PI: The Magical Number</ex>$3</ph> <ph name="DOMAIN"><ex>pi.com</ex>$4</ph>
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_OK" desc="Used for OK on buttons">

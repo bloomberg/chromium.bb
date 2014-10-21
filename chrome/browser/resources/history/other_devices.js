@@ -189,6 +189,7 @@ Device.prototype.getDOMNode = function(maxNumTabs, row) {
   var dropDownButton = new cr.ui.ContextMenuButton;
   dropDownButton.tabIndex = 0;
   dropDownButton.classList.add('drop-down');
+  dropDownButton.title = loadTimeData.getString('actionMenuDescription');
   dropDownButton.addEventListener('mousedown', function(event) {
       handleDropDownFocus(event);
       // Mousedown handling of cr.ui.MenuButton.handleEvent calls
@@ -242,7 +243,7 @@ Device.prototype.setSearchText = function(searchText) {
  * @private
  */
 Device.prototype.createSessionContents_ = function(maxNumTabs) {
-  var contents = createElementWithClassName('div', 'device-contents');
+  var contents = createElementWithClassName('ol', 'device-contents');
 
   var sessionTag = this.session_.tag;
   var numTabsShown = 0;

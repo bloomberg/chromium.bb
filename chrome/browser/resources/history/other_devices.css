@@ -38,6 +38,11 @@
   white-space: nowrap;
 }
 
+.device-contents {
+  margin: 0;
+  padding: 0;
+}
+
 .device-tab-entry {
   -webkit-margin-end: 8px;
   -webkit-margin-start: 0;
