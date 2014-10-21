@@ -69,6 +69,7 @@ void ServiceWorkerWriteToCacheJob::Kill() {
   if (did_notify_started_ && !did_notify_finished_) {
     version_->script_cache_map()->NotifyFinishedCaching(
         url_,
+        -1,
         net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_ABORTED));
     did_notify_finished_ = true;
   }
@@ -128,7 +129,8 @@ bool ServiceWorkerWriteToCacheJob::ReadRawData(
 
   // No more data to process, the job is complete.
   io_buffer_ = NULL;
-  version_->script_cache_map()->NotifyFinishedCaching(url_, status);
+  version_->script_cache_map()->NotifyFinishedCaching(
+      url_, writer_->amount_written(), net::URLRequestStatus());
   did_notify_finished_ = true;
   return status.is_success();
 }
@@ -373,7 +375,7 @@ void ServiceWorkerWriteToCacheJob::OnReadCompleted(
   DCHECK(request->status().is_success());
   io_buffer_ = NULL;
   version_->script_cache_map()->NotifyFinishedCaching(
-      url_, net::URLRequestStatus());
+      url_, writer_->amount_written(), net::URLRequestStatus());
   did_notify_finished_ = true;
   SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   NotifyReadComplete(0);
@@ -383,7 +385,11 @@ void ServiceWorkerWriteToCacheJob::AsyncNotifyDoneHelper(
     const net::URLRequestStatus& status) {
   DCHECK(!status.is_io_pending());
   DCHECK(!did_notify_finished_);
-  version_->script_cache_map()->NotifyFinishedCaching(url_, status);
+  int size = -1;
+  if (writer_.get()) {
+    size = writer_->amount_written();
+  }
+  version_->script_cache_map()->NotifyFinishedCaching(url_, size, status);
   did_notify_finished_ = true;
   SetStatus(status);
   NotifyDone(status);

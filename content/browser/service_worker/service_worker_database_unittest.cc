@@ -37,12 +37,9 @@ GURL URL(const GURL& origin, const std::string& path) {
   return out;
 }
 
-Resource CreateResource(int64 resource_id, const GURL& url) {
+Resource CreateResource(int64 resource_id, const GURL& url, uint64 size_bytes) {
   EXPECT_TRUE(url.is_valid());
-  Resource resource;
-  resource.resource_id = resource_id;
-  resource.url = url;
-  return resource;
+  return Resource(resource_id, url, size_bytes);
 }
 
 ServiceWorkerDatabase* CreateDatabase(const base::FilePath& path) {
@@ -62,6 +59,8 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.is_active, actual.is_active);
   EXPECT_EQ(expected.has_fetch_handler, actual.has_fetch_handler);
   EXPECT_EQ(expected.last_update_check, actual.last_update_check);
+  EXPECT_EQ(expected.resources_total_size_bytes,
+            actual.resources_total_size_bytes);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -70,6 +69,7 @@ void VerifyResourceRecords(const std::vector<Resource>& expected,
   for (size_t i = 0; i < expected.size(); ++i) {
     EXPECT_EQ(expected[i].resource_id, actual[i].resource_id);
     EXPECT_EQ(expected[i].url, actual[i].url);
+    EXPECT_EQ(expected[i].size_bytes, actual[i].size_bytes);
   }
 }
 
@@ -465,10 +465,11 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   data.scope = URL(origin, "/foo");
   data.script = URL(origin, "/script.js");
   data.version_id = 200;
+  data.resources_total_size_bytes = 10939 + 200;
 
   std::vector<Resource> resources;
-  resources.push_back(CreateResource(1, URL(origin, "/resource1")));
-  resources.push_back(CreateResource(2, URL(origin, "/resource2")));
+  resources.push_back(CreateResource(1, URL(origin, "/resource1"), 10939));
+  resources.push_back(CreateResource(2, URL(origin, "/resource2"), 200));
 
   // Write a resource to the uncommitted list to make sure that writing
   // registration removes resource ids associated with the registration from
@@ -542,10 +543,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
   data.scope = URL(origin, "/foo");
   data.script = URL(origin, "/script.js");
   data.version_id = 200;
+  data.resources_total_size_bytes = 19 + 29129;
 
   std::vector<Resource> resources;
-  resources.push_back(CreateResource(1, URL(origin, "/resource1")));
-  resources.push_back(CreateResource(2, URL(origin, "/resource2")));
+  resources.push_back(CreateResource(1, URL(origin, "/resource1"), 19));
+  resources.push_back(CreateResource(2, URL(origin, "/resource2"), 29129));
 
   const int64 kNonExistentRegistrationId = 999;
   const int64 kArbitraryVersionId = 222;  // Used as a dummy initial value
@@ -591,10 +593,11 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   data.scope = URL(origin, "/foo");
   data.script = URL(origin, "/script.js");
   data.version_id = 200;
+  data.resources_total_size_bytes = 10 + 11;
 
   std::vector<Resource> resources1;
-  resources1.push_back(CreateResource(1, URL(origin, "/resource1")));
-  resources1.push_back(CreateResource(2, URL(origin, "/resource2")));
+  resources1.push_back(CreateResource(1, URL(origin, "/resource1"), 10));
+  resources1.push_back(CreateResource(2, URL(origin, "/resource2"), 11));
 
   int64 deleted_version_id = 222;  // Dummy inital value
   std::vector<int64> newly_purgeable_resources;
@@ -617,9 +620,10 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   // Update the registration.
   RegistrationData updated_data = data;
   updated_data.version_id = data.version_id + 1;
+  updated_data.resources_total_size_bytes = 12 + 13;
   std::vector<Resource> resources2;
-  resources2.push_back(CreateResource(3, URL(origin, "/resource3")));
-  resources2.push_back(CreateResource(4, URL(origin, "/resource4")));
+  resources2.push_back(CreateResource(3, URL(origin, "/resource3"), 12));
+  resources2.push_back(CreateResource(4, URL(origin, "/resource4"), 13));
 
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->WriteRegistration(updated_data,
@@ -660,10 +664,11 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   data1.scope = URL(origin, "/foo");
   data1.script = URL(origin, "/script1.js");
   data1.version_id = 200;
+  data1.resources_total_size_bytes = 1451 + 15234;
 
   std::vector<Resource> resources1;
-  resources1.push_back(CreateResource(1, URL(origin, "/resource1")));
-  resources1.push_back(CreateResource(2, URL(origin, "/resource2")));
+  resources1.push_back(CreateResource(1, URL(origin, "/resource1"), 1451));
+  resources1.push_back(CreateResource(2, URL(origin, "/resource2"), 15234));
   EXPECT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(
@@ -675,10 +680,11 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   data2.scope = URL(origin, "/bar");
   data2.script = URL(origin, "/script2.js");
   data2.version_id = 201;
+  data2.resources_total_size_bytes = 5 + 6;
 
   std::vector<Resource> resources2;
-  resources2.push_back(CreateResource(3, URL(origin, "/resource3")));
-  resources2.push_back(CreateResource(4, URL(origin, "/resource4")));
+  resources2.push_back(CreateResource(3, URL(origin, "/resource3"), 5));
+  resources2.push_back(CreateResource(4, URL(origin, "/resource4"), 6));
   EXPECT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(
@@ -957,10 +963,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   data1.scope = URL(origin1, "/foo");
   data1.script = URL(origin1, "/script1.js");
   data1.version_id = 100;
+  data1.resources_total_size_bytes = 2013 + 512;
 
   std::vector<Resource> resources1;
-  resources1.push_back(CreateResource(1, URL(origin1, "/resource1")));
-  resources1.push_back(CreateResource(2, URL(origin1, "/resource2")));
+  resources1.push_back(CreateResource(1, URL(origin1, "/resource1"), 2013));
+  resources1.push_back(CreateResource(2, URL(origin1, "/resource2"), 512));
   ASSERT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(
@@ -971,10 +978,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   data2.scope = URL(origin1, "/bar");
   data2.script = URL(origin1, "/script2.js");
   data2.version_id = 101;
+  data2.resources_total_size_bytes = 4 + 5;
 
   std::vector<Resource> resources2;
-  resources2.push_back(CreateResource(3, URL(origin1, "/resource3")));
-  resources2.push_back(CreateResource(4, URL(origin1, "/resource4")));
+  resources2.push_back(CreateResource(3, URL(origin1, "/resource3"), 4));
+  resources2.push_back(CreateResource(4, URL(origin1, "/resource4"), 5));
   ASSERT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(
@@ -986,10 +994,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   data3.scope = URL(origin2, "/hoge");
   data3.script = URL(origin2, "/script3.js");
   data3.version_id = 102;
+  data3.resources_total_size_bytes = 6 + 7;
 
   std::vector<Resource> resources3;
-  resources3.push_back(CreateResource(5, URL(origin2, "/resource5")));
-  resources3.push_back(CreateResource(6, URL(origin2, "/resource6")));
+  resources3.push_back(CreateResource(5, URL(origin2, "/resource5"), 6));
+  resources3.push_back(CreateResource(6, URL(origin2, "/resource6"), 7));
   ASSERT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(

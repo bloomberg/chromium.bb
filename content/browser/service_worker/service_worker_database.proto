@@ -23,9 +23,12 @@ message ServiceWorkerRegistrationData {
 
   // Serialized by Time::ToInternalValue().
   required int64 last_update_check_time = 7;
+
+  optional uint64 resources_total_size_bytes = 8;
 }
 
 message ServiceWorkerResourceRecord {
   required int64 resource_id = 1;
   required string url = 2;
+  optional uint64 size_bytes = 3;
 }

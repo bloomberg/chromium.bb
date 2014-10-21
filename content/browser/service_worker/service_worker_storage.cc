@@ -465,6 +465,12 @@ void ServiceWorkerStorage::StoreRegistration(
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
 
+  uint64 resources_total_size_bytes = 0;
+  for (const auto& resource : resources) {
+    resources_total_size_bytes += resource.size_bytes;
+  }
+  data.resources_total_size_bytes = resources_total_size_bytes;
+
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();
 

@@ -64,6 +64,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     bool has_fetch_handler;
     base::Time last_update_check;
 
+    // Not populated until ServiceWorkerStorage::StoreRegistration is called.
+    uint64 resources_total_size_bytes;
+
     RegistrationData();
     ~RegistrationData();
   };
@@ -71,9 +74,13 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   struct ResourceRecord {
     int64 resource_id;
     GURL url;
+    // Signed so we can store -1 to specify an unknown or error state.  When
+    // stored to the database, this value should always be >= 0.
+    int64 size_bytes;
 
-    ResourceRecord() {}
-    ResourceRecord(int64 id, GURL url) : resource_id(id), url(url) {}
+    ResourceRecord() : resource_id(-1), size_bytes(0) {}
+    ResourceRecord(int64 id, GURL url, int64 size_bytes)
+        : resource_id(id), url(url), size_bytes(size_bytes) {}
   };
 
   // Reads next available ids from the database. Returns OK if they are

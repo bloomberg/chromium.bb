@@ -493,9 +493,9 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
           registration()->active_version();
   DCHECK(most_recent_version.get());
   int64 most_recent_script_id =
-      most_recent_version->script_cache_map()->Lookup(script_url_);
+      most_recent_version->script_cache_map()->LookupResourceId(script_url_);
   int64 new_script_id =
-      new_version()->script_cache_map()->Lookup(script_url_);
+      new_version()->script_cache_map()->LookupResourceId(script_url_);
 
   // TODO(michaeln): It would be better to compare as the new resource
   // is being downloaded and to avoid writing it to disk until we know

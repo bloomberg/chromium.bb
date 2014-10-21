@@ -561,6 +561,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     version_id_ = storage()->NewVersionId();
     resource_id1_ = storage()->NewResourceId();
     resource_id2_ = storage()->NewResourceId();
+    resource_id1_size_ = 239193;
+    resource_id2_size_ = 59923;
 
     // Cons up a new registration+version with two script resources.
     RegistrationData data;
@@ -570,8 +572,10 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     data.version_id = version_id_;
     data.is_active = false;
     std::vector<ResourceRecord> resources;
-    resources.push_back(ResourceRecord(resource_id1_, script_));
-    resources.push_back(ResourceRecord(resource_id2_, import_));
+    resources.push_back(
+        ResourceRecord(resource_id1_, script_, resource_id1_size_));
+    resources.push_back(
+        ResourceRecord(resource_id2_, import_, resource_id2_size_));
     registration_ = storage()->GetOrCreateRegistration(data, resources);
     registration_->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
 
@@ -609,7 +613,9 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
   int64 registration_id_;
   int64 version_id_;
   int64 resource_id1_;
+  uint64 resource_id1_size_;
   int64 resource_id2_;
+  uint64 resource_id2_size_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
 };
 

@@ -112,8 +112,8 @@ bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(
       version_->status() != ServiceWorkerVersion::INSTALLING) {
     return false;
   }
-  return version_->script_cache_map()->Lookup(url) ==
-            kInvalidServiceWorkerResponseId;
+  return version_->script_cache_map()->LookupResourceId(url) ==
+         kInvalidServiceWorkerResponseId;
 }
 
 bool ServiceWorkerContextRequestHandler::ShouldReadFromScriptCache(
@@ -122,7 +122,7 @@ bool ServiceWorkerContextRequestHandler::ShouldReadFromScriptCache(
   if (version_->status() == ServiceWorkerVersion::NEW ||
       version_->status() == ServiceWorkerVersion::INSTALLING)
     return false;
-  *response_id_out = version_->script_cache_map()->Lookup(url);
+  *response_id_out = version_->script_cache_map()->LookupResourceId(url);
   return *response_id_out != kInvalidServiceWorkerResponseId;
 }
 

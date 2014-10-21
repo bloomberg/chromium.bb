@@ -134,6 +134,7 @@ void PutRegistrationDataToBatch(
   data.set_is_active(input.is_active);
   data.set_has_fetch_handler(input.has_fetch_handler);
   data.set_last_update_check_time(input.last_update_check.ToInternalValue());
+  data.set_resources_total_size_bytes(input.resources_total_size_bytes);
 
   std::string value;
   bool success = data.SerializeToString(&value);
@@ -147,11 +148,13 @@ void PutResourceRecordToBatch(
     int64 version_id,
     leveldb::WriteBatch* batch) {
   DCHECK(batch);
+  DCHECK_GE(input.size_bytes, 0);
 
   // Convert ResourceRecord to ServiceWorkerResourceRecord.
   ServiceWorkerResourceRecord record;
   record.set_resource_id(input.resource_id);
   record.set_url(input.url.spec());
+  record.set_size_bytes(input.size_bytes);
 
   std::string value;
   bool success = record.SerializeToString(&value);
@@ -230,6 +233,8 @@ ServiceWorkerDatabase::Status ParseRegistrationData(
   out->has_fetch_handler = data.has_fetch_handler();
   out->last_update_check =
       base::Time::FromInternalValue(data.last_update_check_time());
+  out->resources_total_size_bytes = data.resources_total_size_bytes();
+
   return ServiceWorkerDatabase::STATUS_OK;
 }
 
@@ -248,6 +253,7 @@ ServiceWorkerDatabase::Status ParseResourceRecord(
   // Convert ServiceWorkerResourceRecord to ResourceRecord.
   out->resource_id = record.resource_id();
   out->url = url;
+  out->size_bytes = record.size_bytes();
   return ServiceWorkerDatabase::STATUS_OK;
 }
 
@@ -292,7 +298,8 @@ ServiceWorkerDatabase::RegistrationData::RegistrationData()
     : registration_id(kInvalidServiceWorkerRegistrationId),
       version_id(kInvalidServiceWorkerVersionId),
       is_active(false),
-      has_fetch_handler(false) {
+      has_fetch_handler(false),
+      resources_total_size_bytes(0) {
 }
 
 ServiceWorkerDatabase::RegistrationData::~RegistrationData() {
@@ -498,6 +505,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   BumpNextVersionIdIfNeeded(registration.version_id, &batch);
 
   PutUniqueOriginToBatch(registration.scope.GetOrigin(), &batch);
+#if DCHECK_IS_ON
+  uint64 total_size_bytes = 0;
+  for (const auto& resource : resources) {
+    total_size_bytes += resource.size_bytes;
+  }
+  DCHECK_EQ(total_size_bytes, registration.resources_total_size_bytes)
+      << "The total size in the registration must match the cumulative "
+      << "sizes of the resources.";
+#endif
   PutRegistrationDataToBatch(registration, &batch);
 
   // Used for avoiding multiple writes for the same resource id or url.

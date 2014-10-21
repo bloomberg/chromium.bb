@@ -933,6 +933,7 @@ class UpdateJobTestHelper
                              const GURL& script,
                              bool pause_after_download) override {
     const std::string kMockScriptBody = "mock_script";
+    const uint64 kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ASSERT_TRUE(version);
     version->AddListener(this);
@@ -943,7 +944,7 @@ class UpdateJobTestHelper
       version->script_cache_map()->NotifyStartedCaching(script, resource_id);
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
       version->script_cache_map()->NotifyFinishedCaching(
-          script, net::URLRequestStatus());
+          script, kMockScriptSize, net::URLRequestStatus());
     } else {
       // Spoof caching the script for the new version.
       int64 resource_id = storage()->NewResourceId();
@@ -953,7 +954,7 @@ class UpdateJobTestHelper
       else
         WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
-          script, net::URLRequestStatus());
+          script, kMockScriptSize, net::URLRequestStatus());
     }
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download);
