@@ -940,9 +940,14 @@ const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Disables support for Core Animation plugins. This is triggered when
-// accelerated compositing is disabled. See http://crbug.com/122430 .
+// accelerated compositing is disabled. See http://crbug.com/122430.
 const char kDisableCoreAnimationPlugins[] =
     "disable-core-animation-plugins";
+
+// Allows input events to be handed on the compositor thread.
+// This feature is under development, see http://crbug.com/138003.
+extern const char kEnableThreadedEventHandlingMac[] =
+    "enable-threaded-event-handling-mac";
 #endif
 
 #if defined(OS_WIN)

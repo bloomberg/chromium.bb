@@ -276,6 +276,7 @@ CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 extern const char kDisableCoreAnimationPlugins[];
+extern const char kEnableThreadedEventHandlingMac[];
 #endif
 
 #if defined(OS_WIN)

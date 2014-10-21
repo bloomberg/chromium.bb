@@ -1238,6 +1238,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
 #endif
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    switches::kEnableThreadedEventHandlingMac,
+#endif
 #if defined(OS_WIN)
     switches::kDisableDirectWrite,
 #endif

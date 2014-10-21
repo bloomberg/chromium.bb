@@ -2134,16 +2134,23 @@ void RenderViewImpl::initializeLayerTreeView() {
   if (webview() && webview()->devToolsAgent())
     webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
 
-#if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  // render_thread may be NULL in tests.
-  InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : NULL;
-  if (input_handler_manager) {
-    input_handler_manager->AddInputHandler(
-        routing_id_, rwc->GetInputHandler(), AsWeakPtr());
-  }
+  bool use_threaded_event_handling = true;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Development flag because many events are still unhandled on Mac.
+  // http://crbug.com/138003
+  use_threaded_event_handling = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableThreadedEventHandlingMac);
 #endif
+  if (use_threaded_event_handling) {
+    RenderThreadImpl* render_thread = RenderThreadImpl::current();
+    // render_thread may be NULL in tests.
+    InputHandlerManager* input_handler_manager =
+        render_thread ? render_thread->input_handler_manager() : NULL;
+    if (input_handler_manager) {
+      input_handler_manager->AddInputHandler(
+          routing_id_, rwc->GetInputHandler(), AsWeakPtr());
+    }
+  }
 }
 
 // blink::WebFrameClient -----------------------------------------------------
