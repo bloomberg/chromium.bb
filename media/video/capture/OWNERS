@@ -1,8 +1,2 @@
 perkj@chromium.org
 tommi@chromium.org
-
-# Android OWNERS, applying to files under android/
-per-file *android.*=mcasas@chromium.org
-
-# Mac OWNERS, applying to files under mac/
-per-file *mac.*=mcasas@chromium.org
