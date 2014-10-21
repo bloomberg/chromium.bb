@@ -14,3 +14,15 @@ function doSomething()
 
 // searchTestUnique space String
 // AAAAAAAAAAA 11xA here
+
+// replaceMe1
+// replaceMe2 replaceMe2
+
+// REPLACEME1
+// REPLACEME2 REPLACEME2
+
+
+// replaceMe3
+// replaceMe4 replaceMe4
+// REPLACEME3
+// REPLACEME4 REPLACEME4
