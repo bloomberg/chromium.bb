@@ -398,6 +398,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/symsrc/pefile.py': [
         'UNKNOWN',
     ],
+    # Not shipped, downloaded on trybots sometimes.
+    'tools/telemetry/third_party/gsutil': [
+        'UNKNOWN',
+    ],
     'tools/telemetry/third_party/pyserial': [
         # https://sourceforge.net/p/pyserial/feature-requests/35/
         'UNKNOWN',
