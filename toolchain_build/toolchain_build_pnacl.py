@@ -90,7 +90,18 @@ CHROME_CLANG = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                             'llvm-build', 'Release+Asserts', 'bin', 'clang')
 CHROME_CLANGXX = CHROME_CLANG + '++'
 
+# Redirectors are small shims acting like sym links with optional arguments.
+# For mac/linux we simply use a shell script which create small redirector
+# shell scripts. For windows we compile an executable which redirects to
+# the target using a compiled in table.
 REDIRECTOR_SCRIPT = os.path.join(NACL_TOOLS_DIR, 'create_redirector.sh')
+REDIRECTOR_WIN32_SRC = os.path.join(NACL_TOOLS_DIR, 'redirector')
+
+TOOL_X64_I686_REDIRECTS = [
+    #Toolname, Tool Args
+    ('as',     '--32'),
+    ('ld',     '-melf_i386_nacl'),
+    ]
 
 TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
                      'x86-32-nonsfi', 'arm-nonsfi')
@@ -630,25 +641,67 @@ def HostToolsDirectToNacl(host):
   def H(component_name):
     return GSDJoin(component_name, host)
 
-  if TripleIsWindows(host):
-    # TODO(dyen): Compile redirector.c and execute here for windows.
-    redirect_cmds = []
-    redirect_inputs = {}
-  else:
-    redirect_inputs = { 'redirector_script' : REDIRECTOR_SCRIPT }
-    redirect_cmds = [
-      command.Command([
-        '%(abs_redirector_script)s',
-        command.path.join('%(output)s', 'bin', 'i686-nacl-' + tool),
-        'x86_64-nacl-' + tool,
-        args])
-      for tool, args in [('as', '--32'), ('ld', '-melf_i386_nacl')]]
+  tools = {}
 
-  tools = {
+  if TripleIsWindows(host):
+    redirector_table = ''
+    for tool, args in TOOL_X64_I686_REDIRECTS:
+      redirector_table += '  {L"/bin/i686-nacl-%s.exe",' % tool + \
+                          '   L"/bin/x86_64-nacl-%s.exe",' % tool + \
+                          ' L"%s"},\n' % args
+
+    cc, cxx = CompilersForHost(host)
+    tools.update({
+        'redirector_src': {
+            'type': 'source',
+            'inputs': { 'source_directory': REDIRECTOR_WIN32_SRC },
+            'commands': [
+                command.CopyTree('%(source_directory)s', '%(output)s'),
+                command.WriteData(redirector_table,
+                                  os.path.join('%(output)s',
+                                               'redirector_table.txt')),
+            ],
+        },
+        'redirector': {
+            'type': 'build',
+            'dependencies': ['redirector_src'],
+            'commands': [
+                command.Mkdir('%(output)s', parents=True),
+                command.Command([cc, '-O3', '-std=c99',
+                                 '-I',
+                                 os.path.join(NACL_DIR, '..'),
+                                 '-o',
+                                 os.path.join('%(output)s', 'redirector.exe'),
+                                 os.path.join('%(redirector_src)s',
+                                              'redirector.c')]),
+            ],
+        },
+    })
+
+    redirect_deps = ['redirector']
+    redirect_inputs = {}
+    redirect_cmds = [
+        command.Command([
+            'ln', '-f',
+            command.path.join('%(redirector)s', 'redirector.exe'),
+            command.path.join('%(output)s', 'bin', 'i686-nacl-%s.exe' % tool)])
+        for tool, args in TOOL_X64_I686_REDIRECTS]
+  else:
+    redirect_deps = []
+    redirect_inputs = { 'redirector_script': REDIRECTOR_SCRIPT }
+    redirect_cmds = [
+        command.Command([
+            '%(abs_redirector_script)s',
+            command.path.join('%(output)s', 'bin', 'i686-nacl-' + tool),
+            'x86_64-nacl-' + tool,
+            args])
+        for tool, args in TOOL_X64_I686_REDIRECTS]
+
+  tools.update({
       H('binutils_x86'): {
           'type': 'build',
-          'dependencies': ['binutils_x86_src'],
-          'inputs' : redirect_inputs,
+          'dependencies': ['binutils_x86_src'] + redirect_deps,
+          'inputs': redirect_inputs,
           'commands': [
               command.SkipForIncrementalCommand(
                   ['sh', '%(binutils_x86_src)s/configure'] +
@@ -685,7 +738,6 @@ def HostToolsDirectToNacl(host):
               # Create links for i686-flavored names of the tools. For now we
               # don't use the redirector scripts that pass different arguments
               # because the compiler driver doesn't need them.
-              # TODO(dschuff): Make redirectors for as and ld for users
               [command.Command([
                   'ln', '-f',
                   command.path.join('%(output)s', 'bin', 'x86_64-nacl-' + tool),
@@ -694,7 +746,7 @@ def HostToolsDirectToNacl(host):
                             'ranlib', 'readelf', 'size', 'strings', 'strip']] +
               redirect_cmds
       }
-  }
+  })
   return tools
 
 def ParseComponentRevisionsFile(filename):

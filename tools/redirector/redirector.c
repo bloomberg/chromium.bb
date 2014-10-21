@@ -6,9 +6,8 @@
 
 #include <wchar.h>
 #include <windows.h>
-#include "redirector.h"
 
-#pragma comment(linker, "/entry:entry")
+#include "native_client/tools/redirector/redirector.h"
 
 #define FILE_NOT_FOUND_ERROR_MESSAGE "Can not find filename to execute!\r\n"
 
@@ -138,7 +137,7 @@ void println_redirect(const redirect_t *redirect) {
   WriteFile(output, L"\n", 1, &tmp, NULL);
 }
 
-void entry() {
+int main() {
   wchar_t *newpath = NULL, *oldpath = NULL;
   const wchar_t *cmdline, *arguments, *selector;
   int length, done;
@@ -237,4 +236,6 @@ ShowErrorMessage:
   WriteFile(GetStdHandle(STD_ERROR_HANDLE), FILE_NOT_FOUND_ERROR_MESSAGE,
             sizeof(FILE_NOT_FOUND_ERROR_MESSAGE) - 1, &length, NULL);
   ExitProcess(1);
+
+  return 1;
 }

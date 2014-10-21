@@ -127,7 +127,7 @@ class Runnable(object):
     if not found_match:
       print 'Function', self._func.func_name, 'in', sourcefile
       raise Exception('Python Runnable objects must be implemented in one of' +
-                      'the following files: ' + str(COMMAND_CODE_FILES))
+                      ' the following files: ' + str(COMMAND_CODE_FILES))
 
     # Like repr(datum), but do something stable for dictionaries.
     # This only properly handles dictionaries that use simple types
