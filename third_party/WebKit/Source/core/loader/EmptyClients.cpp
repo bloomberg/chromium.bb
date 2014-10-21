@@ -36,6 +36,7 @@
 #include "core/plugins/PluginPlaceholder.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/FileChooser.h"
+#include "platform/Widget.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"

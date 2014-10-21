@@ -32,6 +32,7 @@
 #define FrameTestHelpers_h
 
 #include "core/frame/Settings.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebFrameClient.h"

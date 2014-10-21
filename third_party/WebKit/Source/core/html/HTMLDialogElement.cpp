@@ -88,7 +88,7 @@ static void inertSubtreesChanged(Document& document)
     Document& topDocument = document.topDocument();
     topDocument.clearAXObjectCache();
     if (AXObjectCache* cache = topDocument.axObjectCache())
-        cache->childrenChanged(cache->getOrCreate(&topDocument));
+        cache->childrenChanged(&topDocument);
 }
 
 inline HTMLDialogElement::HTMLDialogElement(Document& document)

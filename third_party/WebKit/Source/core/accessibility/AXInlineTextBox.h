@@ -58,7 +58,7 @@ public:
 
 private:
     RefPtr<AbstractInlineTextBox> m_inlineTextBox;
-    AXObjectCache* m_axObjectCache;
+    AXObjectCacheImpl* m_axObjectCache;
 
     virtual bool computeAccessibilityIsIgnored() const override;
 };

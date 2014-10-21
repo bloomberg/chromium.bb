@@ -30,10 +30,7 @@
 #include "core/accessibility/AXListBox.h"
 
 #include "core/accessibility/AXListBoxOption.h"
-#include "core/accessibility/AXObjectCache.h"
-#include "core/html/HTMLSelectElement.h"
 #include "core/rendering/RenderListBox.h"
-
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 #include "core/InputTypeNames.h"
 #include "core/accessibility/AXImageMapLink.h"
 #include "core/accessibility/AXInlineTextBox.h"
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/accessibility/AXSVGRoot.h"
 #include "core/accessibility/AXSpinButton.h"
 #include "core/accessibility/AXTable.h"
@@ -998,7 +998,7 @@ void AXRenderObject::accessibilityChildrenFromAttribute(QualifiedName attr, Acce
     WillBeHeapVector<RawPtrWillBeMember<Element> > elements;
     elementsFromAttribute(elements, attr);
 
-    AXObjectCache* cache = axObjectCache();
+    AXObjectCacheImpl* cache = axObjectCache();
     unsigned count = elements.size();
     for (unsigned k = 0; k < count; ++k) {
         Element* element = elements[k];
@@ -1337,7 +1337,7 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
     if (!obj)
         return 0;
 
-    AXObject* result = obj->document().axObjectCache()->getOrCreate(obj);
+    AXObject* result = toAXObjectCacheImpl(obj->document().axObjectCache())->getOrCreate(obj);
     result->updateChildrenIfNecessary();
 
     // Allow the element to perform any hit-testing it might need to do to reach non-render children.
@@ -1569,7 +1569,7 @@ Element* AXRenderObject::anchorElement() const
     if (!m_renderer)
         return 0;
 
-    AXObjectCache* cache = axObjectCache();
+    AXObjectCacheImpl* cache = axObjectCache();
     RenderObject* currRenderer;
 
     // Search up the render tree for a RenderObject with a DOM node. Defer to an earlier continuation, though.
@@ -1695,7 +1695,7 @@ void AXRenderObject::handleActiveDescendantChanged()
     AXRenderObject* activedescendant = toAXRenderObject(activeDescendant());
 
     if (activedescendant && shouldNotifyActiveDescendant())
-        doc.axObjectCache()->postNotification(m_renderer, AXObjectCache::AXActiveDescendantChanged, true);
+        doc.axObjectCache()->postNotification(m_renderer, AXObjectCacheImpl::AXActiveDescendantChanged, true);
 }
 
 void AXRenderObject::handleAriaExpandedChanged()
@@ -1725,11 +1725,11 @@ void AXRenderObject::handleAriaExpandedChanged()
 
     // Post that the row count changed.
     if (containerParent)
-        axObjectCache()->postNotification(containerParent, document(), AXObjectCache::AXRowCountChanged, true);
+        axObjectCache()->postNotification(containerParent, document(), AXObjectCacheImpl::AXRowCountChanged, true);
 
     // Post that the specific row either collapsed or expanded.
     if (roleValue() == RowRole || roleValue() == TreeItemRole)
-        axObjectCache()->postNotification(this, document(), isExpanded() ? AXObjectCache::AXRowExpanded : AXObjectCache::AXRowCollapsed, true);
+        axObjectCache()->postNotification(this, document(), isExpanded() ? AXObjectCacheImpl::AXRowExpanded : AXObjectCacheImpl::AXRowCollapsed, true);
 }
 
 void AXRenderObject::textChanged()
@@ -1827,7 +1827,7 @@ void AXRenderObject::addInlineTextBoxChildren()
     if (renderer()->needsLayout()) {
         // If a RenderText needs layout, its inline text boxes are either
         // nonexistent or invalid, so defer until the layout happens and
-        // the renderer calls AXObjectCache::inlineTextBoxesUpdated.
+        // the renderer calls AXObjectCacheImpl::inlineTextBoxesUpdated.
         return;
     }
 
@@ -2097,7 +2097,7 @@ AXSVGRoot* AXRenderObject::remoteSVGRootElement() const
     if (!rendererRoot)
         return 0;
 
-    AXObject* rootSVGObject = doc->axObjectCache()->getOrCreate(rendererRoot);
+    AXObject* rootSVGObject = toAXObjectCacheImpl(doc->axObjectCache())->getOrCreate(rendererRoot);
 
     // In order to connect the AX hierarchy from the SVG root element from the loaded resource
     // the parent must be set, because there's no other way to get back to who created the image.

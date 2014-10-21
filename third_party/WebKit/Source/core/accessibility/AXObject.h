@@ -40,7 +40,7 @@
 namespace blink {
 
 class AXObject;
-class AXObjectCache;
+class AXObjectCacheImpl;
 class Element;
 class FrameView;
 class IntPoint;
@@ -284,7 +284,7 @@ public:
     virtual ~AXObject();
 
     // After constructing an AXObject, it must be given a
-    // unique ID, then added to AXObjectCache, and finally init() must
+    // unique ID, then added to AXObjectCacheImpl, and finally init() must
     // be called last.
     void setAXObjectID(AXID axObjectID) { m_id = axObjectID; }
     virtual void init() { }
@@ -294,8 +294,8 @@ public:
     virtual void detach();
     virtual bool isDetached() const;
 
-    // The AXObjectCache that owns this object, and its unique ID within this cache.
-    AXObjectCache* axObjectCache() const;
+    // The AXObjectCacheImpl that owns this object, and its unique ID within this cache.
+    AXObjectCacheImpl* axObjectCache() const;
     AXID axObjectID() const { return m_id; }
 
     // Determine subclass type.

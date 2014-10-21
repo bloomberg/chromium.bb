@@ -27,7 +27,7 @@
 #include "core/accessibility/AXMenuListPopup.h"
 
 #include "core/accessibility/AXMenuListOption.h"
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/html/HTMLSelectElement.h"
 
 namespace blink {
@@ -70,7 +70,7 @@ AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) 
     if (!isHTMLOptionElement(*element))
         return 0;
 
-    AXObject* object = document()->axObjectCache()->getOrCreate(MenuListOptionRole);
+    AXObject* object = toAXObjectCacheImpl(document()->axObjectCache())->getOrCreate(MenuListOptionRole);
     ASSERT_WITH_SECURITY_IMPLICATION(object->isMenuListOption());
 
     AXMenuListOption* option = toAXMenuListOption(object);
@@ -112,7 +112,7 @@ void AXMenuListPopup::addChildren()
 
 void AXMenuListPopup::childrenChanged()
 {
-    AXObjectCache* cache = axObjectCache();
+    AXObjectCacheImpl* cache = axObjectCache();
     if (!cache)
         return;
     for (size_t i = m_children.size(); i > 0 ; --i) {
@@ -139,11 +139,11 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
     ASSERT_ARG(optionIndex, optionIndex >= 0);
     ASSERT_ARG(optionIndex, optionIndex < static_cast<int>(m_children.size()));
 
-    AXObjectCache* cache = axObjectCache();
+    AXObjectCacheImpl* cache = axObjectCache();
     RefPtr<AXObject> child = m_children[optionIndex].get();
 
-    cache->postNotification(child.get(), document(), AXObjectCache::AXFocusedUIElementChanged, true, PostSynchronously);
-    cache->postNotification(child.get(), document(), AXObjectCache::AXMenuListItemSelected, true, PostSynchronously);
+    cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXFocusedUIElementChanged, true, PostSynchronously);
+    cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXMenuListItemSelected, true, PostSynchronously);
 }
 
 } // namespace blink

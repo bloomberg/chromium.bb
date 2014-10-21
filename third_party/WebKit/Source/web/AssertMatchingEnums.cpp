@@ -76,6 +76,7 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/text/TextChecking.h"
 #include "platform/text/TextDecoration.h"
 #include "platform/weborigin/ReferrerPolicy.h"

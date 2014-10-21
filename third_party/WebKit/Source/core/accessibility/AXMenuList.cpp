@@ -27,7 +27,7 @@
 #include "core/accessibility/AXMenuList.h"
 
 #include "core/accessibility/AXMenuListPopup.h"
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/rendering/RenderMenuList.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ void AXMenuList::addChildren()
 {
     m_haveChildren = true;
 
-    AXObjectCache* cache = m_renderer->document().axObjectCache();
+    AXObjectCacheImpl* cache = toAXObjectCacheImpl(m_renderer->document().axObjectCache());
 
     AXObject* list = cache->getOrCreate(MenuListPopupRole);
     if (!list)
@@ -98,7 +98,7 @@ bool AXMenuList::canSetFocusAttribute() const
 void AXMenuList::didUpdateActiveOption(int optionIndex)
 {
     RefPtrWillBeRawPtr<Document> document(m_renderer->document());
-    AXObjectCache* cache = document->axObjectCache();
+    AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
 
     const AccessibilityChildrenVector& childObjects = children();
     if (!childObjects.isEmpty()) {
@@ -111,7 +111,7 @@ void AXMenuList::didUpdateActiveOption(int optionIndex)
         }
     }
 
-    cache->postNotification(this, document.get(), AXObjectCache::AXMenuListValueChanged, true, PostSynchronously);
+    cache->postNotification(this, document.get(), AXObjectCacheImpl::AXMenuListValueChanged, true, PostSynchronously);
 }
 
 } // namespace blink

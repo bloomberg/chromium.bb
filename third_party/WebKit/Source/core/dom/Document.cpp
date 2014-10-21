@@ -2283,7 +2283,7 @@ AXObjectCache* Document::axObjectCache() const
 
     ASSERT(&cacheOwner == this || !m_axObjectCache);
     if (!cacheOwner.m_axObjectCache)
-        cacheOwner.m_axObjectCache = adoptPtr(new AXObjectCache(cacheOwner));
+        cacheOwner.m_axObjectCache = adoptPtr(AXObjectCache::create(cacheOwner));
     return cacheOwner.m_axObjectCache.get();
 }
 

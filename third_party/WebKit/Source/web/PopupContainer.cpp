@@ -53,6 +53,7 @@
 #include "web/PopupContainerClient.h"
 #include "web/WebPopupMenuImpl.h"
 #include "web/WebViewImpl.h"
+#include <algorithm>
 #include <limits>
 
 namespace blink {
@@ -403,7 +404,7 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
     // The controlSize is the size of the select box. It's usually larger than
     // we need. Subtract border size so that usually the container will be
     // displayed exactly the same width as the select box.
-    m_listBox->setBaseWidth(max(controlSize.width() - borderSize * 2, 0));
+    m_listBox->setBaseWidth(std::max(controlSize.width() - borderSize * 2, 0));
 
     m_listBox->updateFromElement();
 
@@ -430,7 +431,7 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
 
 IntRect PopupContainer::refresh(const IntRect& targetControlRect)
 {
-    m_listBox->setBaseWidth(max(m_controlSize.width() - borderSize * 2, 0));
+    m_listBox->setBaseWidth(std::max(m_controlSize.width() - borderSize * 2, 0));
     m_listBox->updateFromElement();
 
     IntPoint locationInWindow = m_frameView->contentsToWindow(targetControlRect.location());

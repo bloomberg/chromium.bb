@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXObject.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -156,11 +156,11 @@ bool AXObject::isDetached() const
     return m_detached;
 }
 
-AXObjectCache* AXObject::axObjectCache() const
+AXObjectCacheImpl* AXObject::axObjectCache() const
 {
     Document* doc = document();
     if (doc)
-        return doc->axObjectCache();
+        return toAXObjectCacheImpl(doc->axObjectCache());
     return 0;
 }
 
@@ -256,7 +256,7 @@ bool AXObject::isExpanded() const
 
 bool AXObject::accessibilityIsIgnored() const
 {
-    AXObjectCache* cache = axObjectCache();
+    AXObjectCacheImpl* cache = axObjectCache();
     if (!cache)
         return true;
 
@@ -519,7 +519,7 @@ AXObject* AXObject::firstAccessibleObjectFromNode(const Node* node)
     if (!node)
         return 0;
 
-    AXObjectCache* cache = node->document().axObjectCache();
+    AXObjectCacheImpl* cache = toAXObjectCacheImpl(node->document().axObjectCache());
     AXObject* accessibleObject = cache->getOrCreate(node->renderer());
     while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
         node = NodeTraversal::next(*node);
@@ -563,7 +563,7 @@ AXObject* AXObject::focusedUIElement() const
     if (!page)
         return 0;
 
-    return AXObjectCache::focusedUIElementForPage(page);
+    return AXObjectCacheImpl::focusedUIElementForPage(page);
 }
 
 Document* AXObject::document() const

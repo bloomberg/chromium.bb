@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXImageMapLink.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/accessibility/AXRenderObject.h"
 
 namespace blink {
@@ -66,7 +66,7 @@ AXObject* AXImageMapLink::parentObject() const
     if (!m_mapElement.get() || !m_mapElement->renderer())
         return 0;
 
-    return m_mapElement->document().axObjectCache()->getOrCreate(m_mapElement->renderer());
+    return toAXObjectCacheImpl(m_mapElement->document().axObjectCache())->getOrCreate(m_mapElement->renderer());
 }
 
 AccessibilityRole AXImageMapLink::roleValue() const

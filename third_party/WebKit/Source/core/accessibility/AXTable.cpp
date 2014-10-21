@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXTable.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/accessibility/AXTableCell.h"
 #include "core/accessibility/AXTableColumn.h"
 #include "core/accessibility/AXTableRow.h"
@@ -371,7 +371,7 @@ void AXTable::addChildren()
         return;
 
     RenderTable* table = toRenderTable(m_renderer);
-    AXObjectCache* axCache = m_renderer->document().axObjectCache();
+    AXObjectCacheImpl* axCache = toAXObjectCacheImpl(m_renderer->document().axObjectCache());
 
     // Go through all the available sections to pull out the rows and add them as children.
     table->recalcSectionsIfNeeded();

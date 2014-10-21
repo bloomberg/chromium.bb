@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXARIAGrid.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/accessibility/AXTableColumn.h"
 #include "core/accessibility/AXTableRow.h"
 #include "core/rendering/RenderObject.h"
@@ -92,7 +92,7 @@ void AXARIAGrid::addChildren()
     if (!m_renderer)
         return;
 
-    AXObjectCache* axCache = m_renderer->document().axObjectCache();
+    AXObjectCacheImpl* axCache = toAXObjectCacheImpl(m_renderer->document().axObjectCache());
 
     // add only rows that are labeled as aria rows
     HashSet<AXObject*> appendedRows;

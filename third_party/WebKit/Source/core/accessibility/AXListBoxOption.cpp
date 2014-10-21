@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AXListBoxOption.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/rendering/RenderListBox.h"

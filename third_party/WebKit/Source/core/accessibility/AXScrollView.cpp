@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/accessibility/AXScrollView.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AXObjectCacheImpl.h"
 #include "core/accessibility/AXScrollbar.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
