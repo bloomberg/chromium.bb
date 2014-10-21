@@ -1565,6 +1565,8 @@
             'paint/SVGImagePainter.h',
             'paint/SVGInlineTextBoxPainter.cpp',
             'paint/SVGInlineTextBoxPainter.h',
+            'paint/SVGRootPainter.cpp',
+            'paint/SVGRootPainter.h',
             'paint/SVGTextPainter.cpp',
             'paint/SVGTextPainter.h',
             'paint/TablePainter.cpp',

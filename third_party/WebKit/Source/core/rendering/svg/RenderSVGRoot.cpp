@@ -26,20 +26,17 @@
 #include "core/rendering/svg/RenderSVGRoot.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/paint/SVGRootPainter.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/LengthFunctions.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -217,49 +214,7 @@ bool RenderSVGRoot::shouldApplyViewportClip() const
 
 void RenderSVGRoot::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    // An empty viewport disables rendering.
-    if (pixelSnappedBorderBoxRect().isEmpty())
-        return;
-
-    // SVG outlines are painted during PaintPhaseForeground.
-    if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline)
-        return;
-
-    // An empty viewBox also disables rendering.
-    // (http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute)
-    SVGSVGElement* svg = toSVGSVGElement(node());
-    ASSERT(svg);
-    if (svg->hasEmptyViewBox())
-        return;
-
-    // Don't paint if we don't have kids, except if we have filters we should paint those.
-    if (!firstChild()) {
-        SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
-        if (!resources || !resources->filter())
-            return;
-    }
-
-    // Make a copy of the PaintInfo because applyTransform will modify the damage rect.
-    PaintInfo childPaintInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-
-    // Apply initial viewport clip
-    if (shouldApplyViewportClip())
-        childPaintInfo.context->clip(pixelSnappedIntRect(overflowClipRect(paintOffset)));
-
-    // Convert from container offsets (html renderers) to a relative transform (svg renderers).
-    // Transform from our paint container's coordinate system to our local coords.
-    IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
-    childPaintInfo.applyTransform(AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * localToBorderBoxTransform());
-
-    SVGRenderingContext renderingContext;
-    if (childPaintInfo.phase == PaintPhaseForeground) {
-        renderingContext.prepareToRenderSVGContent(this, childPaintInfo);
-        if (!renderingContext.isRenderingPrepared())
-            return;
-    }
-
-    RenderBox::paint(childPaintInfo, LayoutPoint());
+    SVGRootPainter(*this).paint(paintInfo, paintOffset);
 }
 
 void RenderSVGRoot::willBeDestroyed()

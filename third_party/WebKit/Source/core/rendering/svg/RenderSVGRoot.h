@@ -44,6 +44,9 @@ public:
     void slowFirstChild() const WTF_DELETED_FUNCTION;
     void slowLastChild() const WTF_DELETED_FUNCTION;
 
+    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
+    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
     virtual void setNeedsBoundariesUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
     virtual void setNeedsTransformUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
@@ -63,10 +66,9 @@ public:
     const AffineTransform& localToBorderBoxTransform() const { return m_localToBorderBoxTransform; }
     bool shouldApplyViewportClip() const;
 
-private:
-    RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
+
+private:
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 
