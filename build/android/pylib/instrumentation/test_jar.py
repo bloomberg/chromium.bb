@@ -268,12 +268,13 @@ class TestJar(object):
               '%s has no annotations. Assuming "%s".', test,
               self._DEFAULT_ANNOTATION)
           available_tests.append(test)
-      if exclude_annotation_list:
-        excluded_tests = self.GetAnnotatedTests(exclude_annotation_list)
-        available_tests = list(set(available_tests) - set(excluded_tests))
     else:
       available_tests = [m for m in self.GetTestMethods()
                          if not self.IsHostDrivenTest(m)]
+
+    if exclude_annotation_list:
+      excluded_tests = self.GetAnnotatedTests(exclude_annotation_list)
+      available_tests = list(set(available_tests) - set(excluded_tests))
 
     tests = []
     if test_filter:
