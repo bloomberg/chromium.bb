@@ -354,3 +354,18 @@ TEST_F(KeyEventConverterEvdevTest, KeyWithLock) {
   EXPECT_EQ(ui::VKEY_CAPITAL, event->key_code());
   EXPECT_EQ(0, event->flags());
 }
+
+TEST_F(KeyEventConverterEvdevTest, UnmappedKeyPress) {
+  ui::MockKeyEventConverterEvdev* dev = device();
+
+  struct input_event mock_kernel_queue[] = {
+      {{0, 0}, EV_KEY, BTN_TOUCH, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      {{0, 0}, EV_KEY, BTN_TOUCH, 0},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+  EXPECT_EQ(0u, size());
+}

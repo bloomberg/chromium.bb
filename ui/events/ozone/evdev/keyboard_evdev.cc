@@ -228,6 +228,9 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down) {
   ui::KeyboardCode code = KeyboardCodeFromEvdevKey(key);
   int flags = modifiers_->GetModifierFlags();
 
+  if (code == VKEY_UNKNOWN)
+    return;
+
   callback_.Run(make_scoped_ptr(new KeyEvent(
       down ? ET_KEY_PRESSED : ET_KEY_RELEASED,
       code,
