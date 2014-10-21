@@ -168,6 +168,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_TwoCallsWithAecDump) {
+  if (OnWinXp()) {
+    // http://crbug.com/425034.
+    LOG(INFO) << "Disabled on Win XP: skipping test...";
+    return;
+  }
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;

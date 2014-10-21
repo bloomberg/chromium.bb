@@ -17,6 +17,10 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace content {
 
 void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
@@ -94,6 +98,14 @@ void WebRtcContentBrowserTest::DisableOpusIfOnAndroid() {
   // Always force iSAC 16K on Android for now (Opus is broken).
   EXPECT_EQ("isac-forced",
             ExecuteJavascriptAndReturnResult("forceIsac16KInSdp();"));
+#endif
+}
+
+bool WebRtcContentBrowserTest::OnWinXp() const {
+#if defined(OS_WIN)
+  return base::win::GetVersion() <= base::win::VERSION_XP;
+#else
+  return false;
 #endif
 }
 
