@@ -2158,7 +2158,6 @@ external_brillo_paladin.add_config('gizmo-paladin',
   trybot_list=True,
   important=True,
   vm_tests=None,
-  create_delta_sysroot=True,
 )
 
 external_brillo_paladin.add_config('panther_embedded-minimal-paladin',
