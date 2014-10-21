@@ -207,14 +207,14 @@ WillBeHeapHashSet<RawPtrWillBeMember<Node> > MutationObserver::getObservedNodes(
     return observedNodes;
 }
 
-bool MutationObserver::canDeliver()
+bool MutationObserver::shouldBeSuspended() const
 {
-    return m_callback->canInvokeCallback();
+    return m_callback->executionContext() && m_callback->executionContext()->activeDOMObjectsAreSuspended();
 }
 
 void MutationObserver::deliver()
 {
-    ASSERT(canDeliver());
+    ASSERT(!shouldBeSuspended());
 
     // Calling clearTransientRegistrations() can modify m_registrations, so it's necessary
     // to make a copy of the transient registrations before operating on them.
@@ -246,7 +246,7 @@ void MutationObserver::resumeSuspendedObservers()
     MutationObserverVector suspended;
     copyToVector(suspendedMutationObservers(), suspended);
     for (size_t i = 0; i < suspended.size(); ++i) {
-        if (suspended[i]->canDeliver()) {
+        if (!suspended[i]->shouldBeSuspended()) {
             suspendedMutationObservers().remove(suspended[i]);
             activateObserver(suspended[i]);
         }
@@ -261,10 +261,10 @@ void MutationObserver::deliverMutations()
     activeMutationObservers().clear();
     std::sort(observers.begin(), observers.end(), ObserverLessThan());
     for (size_t i = 0; i < observers.size(); ++i) {
-        if (observers[i]->canDeliver())
-            observers[i]->deliver();
-        else
+        if (observers[i]->shouldBeSuspended())
             suspendedMutationObservers().add(observers[i]);
+        else
+            observers[i]->deliver();
     }
 }
 
