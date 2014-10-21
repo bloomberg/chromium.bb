@@ -2042,7 +2042,7 @@ internal_paladin.add_config('stumpy_moblab-paladin',
   paladin_builder_name='stumpy_moblab paladin',
 )
 
-internal_paladin.add_config('moblab_panther-paladin',
+internal_paladin.add_config('panther_moblab-paladin',
   moblab,
   boards=['panther_moblab'],
   paladin_builder_name='panther_moblab paladin',
@@ -2599,7 +2599,7 @@ _release.add_config('stumpy_moblab-release',
 
 _release.add_config('panther_moblab-release',
   moblab,
-  boards=['moblab_panther'],
+  boards=['panther_moblab'],
   images=['base', 'test'],
   paygen_skip_delta_payloads=True,
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
