@@ -551,7 +551,7 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
     if (frame().settings() && frame().settings()->accessibilityEnabled()) {
         Node* node = endingSelection.start().deprecatedNode();
         if (AXObjectCache* cache = frame().document()->existingAXObjectCache())
-            cache->postNotification(node, AXObjectCache::AXValueChanged, false);
+            cache->handleEditableTextContentChanged(node);
     }
 
     spellChecker().updateMarkersForWordsAffectedByEditing(true);

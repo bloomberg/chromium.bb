@@ -410,8 +410,7 @@ void RenderMenuList::didUpdateActiveOption(int optionIndex)
     int listIndex = select->optionToListIndex(optionIndex);
     if (listIndex < 0 || listIndex >= static_cast<int>(select->listItems().size()))
         return;
-    if (AXMenuList* menuList = toAXMenuList(document().axObjectCache()->get(this)))
-        menuList->didUpdateActiveOption(optionIndex);
+    document().existingAXObjectCache()->handleUpdateActiveMenuOption(this, optionIndex);
 }
 
 String RenderMenuList::itemText(unsigned listIndex) const

@@ -3726,8 +3726,7 @@ WebAXObject WebViewImpl::accessibilityObject()
         return WebAXObject();
 
     Document* document = mainFrameImpl()->frame()->document();
-    return WebAXObject(
-        document->axObjectCache()->getOrCreate(document->renderView()));
+    return WebAXObject(document->axObjectCache()->root());
 }
 
 void WebViewImpl::performCustomContextMenuAction(unsigned action)

@@ -277,7 +277,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
         return 0;
     AXObjectCache* cache = document->axObjectCache();
     ASSERT(cache);
-    return cache->getOrCreate(document->view());
+    return cache->getOrCreateAXObjectFromRenderView(document->renderView());
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)

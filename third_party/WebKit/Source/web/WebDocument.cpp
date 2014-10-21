@@ -300,7 +300,7 @@ WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();
     AXObjectCache* cache = document->axObjectCache();
-    return cache ? WebAXObject(cache->getOrCreate(document->renderView())) : WebAXObject();
+    return cache ? WebAXObject(cache->getOrCreateAXObjectFromRenderView(document->renderView())) : WebAXObject();
 }
 
 WebAXObject WebDocument::accessibilityObjectFromID(int axID) const

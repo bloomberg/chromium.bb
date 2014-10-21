@@ -792,7 +792,7 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         setValueAsDecimal(newValue, eventBehavior, exceptionState);
     }
     if (AXObjectCache* cache = element().document().existingAXObjectCache())
-        cache->postNotification(&element(), AXObjectCache::AXValueChanged, true);
+        cache->handleValueChanged(&element());
 }
 
 bool InputType::getAllowedValueStep(Decimal* step) const

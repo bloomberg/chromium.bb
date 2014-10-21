@@ -131,6 +131,16 @@ AXObjectCacheImpl::~AXObjectCacheImpl()
     }
 }
 
+AXObject* AXObjectCacheImpl::getOrCreateAXObjectFromRenderView(RenderView* renderView)
+{
+    return getOrCreate(renderView);
+}
+
+AXObject* AXObjectCacheImpl::root()
+{
+    return getOrCreate(&m_document);
+}
+
 AXObject* AXObjectCacheImpl::focusedImageMapUIElement(HTMLAreaElement* areaElement)
 {
     // Find the corresponding accessibility object for the HTMLAreaElement. This should be
@@ -1038,6 +1048,42 @@ void AXObjectCacheImpl::handleFocusedUIElementChanged(Node*, Node* newFocusedNod
         return;
 
     postPlatformNotification(focusedObject, AXFocusedUIElementChanged);
+}
+
+void AXObjectCacheImpl::handleInitialFocus()
+{
+    postNotification(&m_document, AXObjectCache::AXFocusedUIElementChanged, true);
+}
+
+void AXObjectCacheImpl::handleEditableTextContentChanged(Node* node)
+{
+    postNotification(node, AXObjectCache::AXValueChanged, false);
+}
+
+void AXObjectCacheImpl::handleTextFormControlChanged(Node* node)
+{
+    postNotification(node, AXObjectCache::AXValueChanged, false);
+}
+
+void AXObjectCacheImpl::handleValueChanged(Node* node)
+{
+    postNotification(node, AXObjectCache::AXValueChanged, true);
+}
+
+void AXObjectCacheImpl::handleUpdateActiveMenuOption(RenderMenuList* menuList, int optionIndex)
+{
+    if (AXMenuList* axMenuList = static_cast<AXMenuList*>(get(menuList)))
+        axMenuList->didUpdateActiveOption(optionIndex);
+}
+
+void AXObjectCacheImpl::handleLoadComplete(Document* document)
+{
+    postNotification(getOrCreate(document), document, AXObjectCache::AXLoadComplete, true);
+}
+
+void AXObjectCacheImpl::handleLayoutComplete(Document* document)
+{
+    postNotification(getOrCreate(document), document, AXObjectCache::AXLayoutComplete, true);
 }
 
 void AXObjectCacheImpl::handleScrolledToAnchor(const Node* anchorNode)

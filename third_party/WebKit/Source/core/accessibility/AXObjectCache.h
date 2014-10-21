@@ -34,9 +34,8 @@ namespace blink {
 class AbstractInlineTextBox;
 class FrameView;
 class Page;
+class RenderMenuList;
 class Widget;
-
-enum PostType { PostSynchronously, PostAsynchronously };
 
 // Code outside of the accessibility directory should only use the AXObjectCache
 // interface, never AXObjectCacheImpl.
@@ -82,6 +81,9 @@ public:
 
     virtual AXObject* objectFromAXID(AXID) const = 0;
 
+    virtual AXObject* root() = 0;
+    virtual AXObject* getOrCreateAXObjectFromRenderView(RenderView*) = 0;
+
     virtual void selectionChanged(Node*) = 0;
     virtual void childrenChanged(Node*) = 0;
     virtual void childrenChanged(RenderObject*) = 0;
@@ -105,6 +107,13 @@ public:
 
     virtual void handleAttributeChanged(const QualifiedName& attrName, Element*) = 0;
     virtual void handleFocusedUIElementChanged(Node* oldFocusedNode, Node* newFocusedNode) = 0;
+    virtual void handleInitialFocus() = 0;
+    virtual void handleEditableTextContentChanged(Node*) = 0;
+    virtual void handleTextFormControlChanged(Node*) = 0;
+    virtual void handleValueChanged(Node*) = 0;
+    virtual void handleUpdateActiveMenuOption(RenderMenuList*, int optionIndex) = 0;
+    virtual void handleLoadComplete(Document*) = 0;
+    virtual void handleLayoutComplete(Document*) = 0;
 
     virtual void setCanvasObjectBounds(Element*, const LayoutRect&) = 0;
 
@@ -120,17 +129,6 @@ public:
     virtual void handleScrollbarUpdate(FrameView*) = 0;
     virtual void handleLayoutComplete(RenderObject*) = 0;
     virtual void handleScrolledToAnchor(const Node* anchorNode) = 0;
-
-    // FIXME(dmazzoni): in a following changelist we want to move these to AXObjectCacheImpl
-    // and stop calling them from outside of the accessibility directory.
-    virtual AXObject* getOrCreate(RenderObject*) = 0;
-    virtual AXObject* getOrCreate(Widget*) = 0;
-    virtual AXObject* getOrCreate(Node*) = 0;
-    virtual AXObject* getOrCreate(AbstractInlineTextBox*) = 0;
-    virtual AXObject* get(RenderObject*) = 0;
-    virtual void postNotification(RenderObject*, AXNotification, bool postToElement, PostType = PostAsynchronously) = 0;
-    virtual void postNotification(Node*, AXNotification, bool postToElement, PostType = PostAsynchronously) = 0;
-    virtual void postNotification(AXObject*, Document*, AXNotification, bool postToElement, PostType = PostAsynchronously) = 0;
 
 protected:
     AXObjectCache();

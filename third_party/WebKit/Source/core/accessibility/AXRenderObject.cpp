@@ -1701,7 +1701,7 @@ void AXRenderObject::handleActiveDescendantChanged()
     AXRenderObject* activedescendant = toAXRenderObject(activeDescendant());
 
     if (activedescendant && shouldNotifyActiveDescendant())
-        doc.axObjectCache()->postNotification(m_renderer, AXObjectCacheImpl::AXActiveDescendantChanged, true);
+        toAXObjectCacheImpl(doc.axObjectCache())->postNotification(m_renderer, AXObjectCacheImpl::AXActiveDescendantChanged, true);
 }
 
 void AXRenderObject::handleAriaExpandedChanged()

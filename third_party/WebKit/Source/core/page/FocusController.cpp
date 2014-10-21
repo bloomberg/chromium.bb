@@ -365,7 +365,7 @@ bool FocusController::setInitialFocus(FocusType type)
     if (focusedOrMainFrame()->isLocalFrame()) {
         Document* document = toLocalFrame(focusedOrMainFrame())->document();
         if (AXObjectCache* cache = document->existingAXObjectCache())
-            cache->postNotification(document, AXObjectCache::AXFocusedUIElementChanged, true);
+            cache->handleInitialFocus();
     }
 
     return didAdvanceFocus;

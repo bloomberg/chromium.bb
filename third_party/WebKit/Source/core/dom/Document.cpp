@@ -2566,19 +2566,11 @@ void Document::implicitClose()
     m_loadEventProgress = LoadEventCompleted;
 
     if (frame() && renderView() && settings()->accessibilityEnabled()) {
-        // The AX cache may have been cleared at this point, but we need to make sure it contains an
-        // AX object to send the notification to. getOrCreate will make sure that an valid AX object
-        // exists in the cache (we ignore the return value because we don't need it here). This is
-        // only safe to call when a layout is not in progress, so it can not be used in postNotification.
         if (AXObjectCache* cache = axObjectCache()) {
-            cache->getOrCreate(renderView());
-            if (this == &axObjectCacheOwner()) {
-                cache->postNotification(renderView(), AXObjectCache::AXLoadComplete, true);
-            } else {
-                // AXLoadComplete can only be posted on the top document, so if it's a document
-                // in an iframe that just finished loading, post AXLayoutComplete instead.
-                cache->postNotification(renderView(), AXObjectCache::AXLayoutComplete, true);
-            }
+            if (this == &axObjectCacheOwner())
+                cache->handleLoadComplete(this);
+            else
+                cache->handleLayoutComplete(this);
         }
     }
 

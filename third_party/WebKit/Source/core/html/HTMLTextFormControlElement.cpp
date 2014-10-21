@@ -590,7 +590,7 @@ void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
     if (textIsChanged || !innerEditorElement()->hasChildren()) {
         if (textIsChanged && renderer()) {
             if (AXObjectCache* cache = document().existingAXObjectCache())
-                cache->postNotification(this, AXObjectCache::AXValueChanged, false);
+                cache->handleTextFormControlChanged(this);
         }
         innerEditorElement()->setInnerText(value, ASSERT_NO_EXCEPTION);
 

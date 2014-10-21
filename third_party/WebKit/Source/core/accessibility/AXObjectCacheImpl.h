@@ -73,6 +73,8 @@ private:
     HashMap<AXID, CachedAXObjectAttributes> m_idMapping;
 };
 
+enum PostType { PostSynchronously, PostAsynchronously };
+
 // This class should only be used from inside the accessibility directory.
 class AXObjectCacheImpl : public AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl); WTF_MAKE_FAST_ALLOCATED;
@@ -83,6 +85,9 @@ public:
     static AXObject* focusedUIElementForPage(const Page*);
 
     virtual AXObject* objectFromAXID(AXID id) const override { return m_objects.get(id); }
+
+    virtual AXObject* root() override;
+    virtual AXObject* getOrCreateAXObjectFromRenderView(RenderView*) override;
 
     virtual void selectionChanged(Node*) override;
     virtual void childrenChanged(Node*) override;
@@ -107,6 +112,13 @@ public:
 
     virtual void handleAttributeChanged(const QualifiedName& attrName, Element*) override;
     virtual void handleFocusedUIElementChanged(Node* oldFocusedNode, Node* newFocusedNode) override;
+    virtual void handleInitialFocus() override;
+    virtual void handleTextFormControlChanged(Node*) override;
+    virtual void handleEditableTextContentChanged(Node*) override;
+    virtual void handleValueChanged(Node*) override;
+    virtual void handleUpdateActiveMenuOption(RenderMenuList*, int optionIndex) override;
+    virtual void handleLoadComplete(Document*) override;
+    virtual void handleLayoutComplete(Document*) override;
 
     virtual void setCanvasObjectBounds(Element*, const LayoutRect&) override;
 
@@ -123,24 +135,18 @@ public:
     void handleLayoutComplete(RenderObject*);
     void handleScrolledToAnchor(const Node* anchorNode);
 
-    // FIXME(dmazzoni): in a following changelist we want to move these out of AXObjectCache
-    // and stop calling them from outside of the accessibility directory.
-    virtual AXObject* getOrCreate(RenderObject*) override;
-    virtual AXObject* getOrCreate(Widget*) override;
-    virtual AXObject* getOrCreate(Node*) override;
-    virtual AXObject* getOrCreate(AbstractInlineTextBox*) override;
-    virtual AXObject* get(RenderObject*) override;
-    virtual void postNotification(RenderObject*, AXNotification, bool postToElement, PostType = PostAsynchronously) override;
-    virtual void postNotification(Node*, AXNotification, bool postToElement, PostType = PostAsynchronously) override;
-    virtual void postNotification(AXObject*, Document*, AXNotification, bool postToElement, PostType = PostAsynchronously) override;
-
     // Returns the root object for the entire document.
     AXObject* rootObject();
 
     // used for objects without backing elements
     AXObject* getOrCreate(AccessibilityRole);
+    AXObject* getOrCreate(RenderObject*);
+    AXObject* getOrCreate(Widget*);
+    AXObject* getOrCreate(Node*);
+    AXObject* getOrCreate(AbstractInlineTextBox*);
 
     // will only return the AXObject if it already exists
+    AXObject* get(RenderObject*);
     AXObject* get(Widget*);
     AXObject* get(Node*);
     AXObject* get(AbstractInlineTextBox*);
@@ -169,6 +175,10 @@ public:
     bool nodeHasRole(Node*, const AtomicString& role);
 
     AXComputedObjectAttributeCache* computedObjectAttributeCache() { return m_computedObjectAttributeCache.get(); }
+
+    void postNotification(RenderObject*, AXNotification, bool postToElement, PostType = PostAsynchronously);
+    void postNotification(Node*, AXNotification, bool postToElement, PostType = PostAsynchronously);
+    void postNotification(AXObject*, Document*, AXNotification, bool postToElement, PostType = PostAsynchronously);
 
 protected:
     void postPlatformNotification(AXObject*, AXNotification);
