@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -48,6 +49,14 @@ class CONTENT_EXPORT AppCacheInterceptor
 
   static AppCacheInterceptor* GetInstance();
 
+  // The appcache system employs two different interceptors. The singleton
+  // AppCacheInterceptor derives URLRequest::Interceptor and is used
+  // to hijack request handling upon receipt of the response or a redirect.
+  // A separate URLRequestInterceptor derivative is used to hijack handling
+  // at the very start of request processing. The separate handler allows the
+  // content lib to order its collection of net::URLRequestInterceptors.
+  static scoped_ptr<net::URLRequestInterceptor> CreateStartInterceptor();
+
  protected:
   // Override from net::URLRequest::Interceptor:
   virtual net::URLRequestJob* MaybeIntercept(
@@ -63,6 +72,7 @@ class CONTENT_EXPORT AppCacheInterceptor
 
  private:
   friend struct DefaultSingletonTraits<AppCacheInterceptor>;
+  class StartInterceptor;
 
   AppCacheInterceptor();
   virtual ~AppCacheInterceptor();

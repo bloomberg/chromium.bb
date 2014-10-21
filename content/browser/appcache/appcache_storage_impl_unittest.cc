@@ -126,11 +126,23 @@ class MockHttpServer {
 class MockHttpServerJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
+  MockHttpServerJobFactory(
+     scoped_ptr<net::URLRequestInterceptor> appcache_start_interceptor)
+     : appcache_start_interceptor_(appcache_start_interceptor.Pass()) {
+  }
+
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
+    net::URLRequestJob* appcache_job =
+        appcache_start_interceptor_->MaybeInterceptRequest(
+            request, network_delegate);
+    if (appcache_job)
+      return appcache_job;
     return MockHttpServer::CreateJob(request, network_delegate);
   }
+ private:
+  scoped_ptr<net::URLRequestInterceptor> appcache_start_interceptor_;
 };
 
 class IOThread : public base::Thread {
@@ -150,7 +162,10 @@ class IOThread : public base::Thread {
   virtual void Init() override {
     scoped_ptr<net::URLRequestJobFactoryImpl> factory(
         new net::URLRequestJobFactoryImpl());
-    factory->SetProtocolHandler("http", new MockHttpServerJobFactory);
+    factory->SetProtocolHandler(
+        "http",
+        new MockHttpServerJobFactory(
+            AppCacheInterceptor::CreateStartInterceptor()));
     job_factory_ = factory.Pass();
     request_context_.reset(new net::TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());

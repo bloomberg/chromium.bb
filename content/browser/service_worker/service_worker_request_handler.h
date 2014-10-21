@@ -69,6 +69,12 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   static scoped_ptr<net::URLRequestInterceptor> CreateInterceptor(
       ResourceContext* resource_context);
 
+  // Returns true if the request falls into the scope of a ServiceWorker.
+  // It's only reliable after the ServiceWorkerRequestHandler MaybeCreateJob
+  // method runs to completion for this request. The AppCache handler uses
+  // this to avoid colliding with ServiceWorkers.
+  static bool IsControlledByServiceWorker(net::URLRequest* request);
+
   virtual ~ServiceWorkerRequestHandler();
 
   // Called via custom URLRequestJobFactory.

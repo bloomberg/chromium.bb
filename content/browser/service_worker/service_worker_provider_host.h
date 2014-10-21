@@ -74,6 +74,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
         associated_registration_->installing_version() : NULL;
   }
 
+  ServiceWorkerRegistration* associated_registration() const {
+    return associated_registration_.get();
+  }
+
   // The running version, if any, that this provider is providing resource
   // loads for.
   ServiceWorkerVersion* running_hosted_version() const {

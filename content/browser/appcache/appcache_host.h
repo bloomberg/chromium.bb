@@ -163,6 +163,10 @@ class CONTENT_EXPORT AppCacheHost
   AppCacheFrontend* frontend() const { return frontend_; }
   AppCache* associated_cache() const { return associated_cache_.get(); }
 
+  void enable_cache_selection(bool enable) {
+    is_cache_selection_enabled_ = enable;
+  }
+
   bool is_selection_pending() const {
     return pending_selected_cache_id_ != kAppCacheNoCacheId ||
            !pending_selected_manifest_url_.is_empty();
@@ -264,6 +268,9 @@ class CONTENT_EXPORT AppCacheHost
   // indicate which cache or group is being loaded.
   int64 pending_selected_cache_id_;
   GURL pending_selected_manifest_url_;
+
+  // Used to avoid stepping on pages controlled by ServiceWorkers.
+  bool is_cache_selection_enabled_;
 
   // A new master entry to be added to the cache, may be empty.
   GURL new_master_entry_url_;

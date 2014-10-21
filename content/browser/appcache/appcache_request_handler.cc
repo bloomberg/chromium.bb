@@ -8,6 +8,7 @@
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
@@ -237,6 +238,16 @@ void AppCacheRequestHandler::MaybeLoadMainResource(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   DCHECK(!job_.get());
   DCHECK(host_);
+
+  // If a page falls into the scope of a ServiceWorker, any matching AppCaches
+  // should be ignored. This depends on the ServiceWorker handler being invoked
+  // prior to the AppCache handler.
+  if (ServiceWorkerRequestHandler::IsControlledByServiceWorker(request)) {
+    host_->enable_cache_selection(false);
+    return;
+  }
+
+  host_->enable_cache_selection(true);
 
   const AppCacheHost* spawning_host =
       (resource_type_ == RESOURCE_TYPE_SHARED_WORKER) ?
