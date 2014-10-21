@@ -381,7 +381,8 @@ void WindowEventDispatcher::UpdateCapture(Window* old_capture,
     if (details.dispatcher_destroyed)
       return;
 
-    old_capture->delegate()->OnCaptureLost();
+    if (!details.target_destroyed)
+      old_capture->delegate()->OnCaptureLost();
   }
 
   if (new_capture) {

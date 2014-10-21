@@ -2079,6 +2079,28 @@ TEST_F(WindowEventDispatcherTest, SynthesizedLocatedEvent) {
             Env::GetInstance()->last_mouse_location().ToString());
 }
 
+// Tests that the window which has capture can get destroyed as a result of
+// ui::ET_MOUSE_CAPTURE_CHANGED event dispatched in
+// WindowEventDispatcher::UpdateCapture without causing a "use after free".
+TEST_F(WindowEventDispatcherTest, DestroyWindowOnCaptureChanged) {
+  SelfDestructDelegate delegate;
+  scoped_ptr<aura::Window> window_first(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(20, 10, 10, 20), root_window()));
+  Window* window_first_raw = window_first.get();
+  window_first->Show();
+  window_first->SetCapture();
+  delegate.set_window(window_first.Pass());
+  EXPECT_TRUE(delegate.has_window());
+
+  scoped_ptr<aura::Window> window_second(
+      test::CreateTestWindowWithId(2, root_window()));
+  window_second->Show();
+
+  client::CaptureDelegate* capture_delegate = host()->dispatcher();
+  capture_delegate->UpdateCapture(window_first_raw, window_second.get());
+  EXPECT_FALSE(delegate.has_window());
+}
+
 class StaticFocusClient : public client::FocusClient {
  public:
   explicit StaticFocusClient(Window* focused)
