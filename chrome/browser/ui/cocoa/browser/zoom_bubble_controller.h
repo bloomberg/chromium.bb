@@ -7,7 +7,7 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 namespace content {
