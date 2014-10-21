@@ -130,7 +130,7 @@ bool ServiceWorkerWriteToCacheJob::ReadRawData(
   // No more data to process, the job is complete.
   io_buffer_ = NULL;
   version_->script_cache_map()->NotifyFinishedCaching(
-      url_, writer_->amount_written(), net::URLRequestStatus());
+      url_, writer_->amount_written(), status);
   did_notify_finished_ = true;
   return status.is_success();
 }
