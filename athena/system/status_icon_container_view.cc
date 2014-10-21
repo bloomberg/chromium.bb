@@ -224,7 +224,8 @@ StatusIconContainerView::StatusIconContainerView(
   AddChildView(CreateLabel(color_scheme, "Network:"));
   views::Label* network_label = CreateLabel(color_scheme, std::string());
   AddChildView(network_label);
-  network_status_.reset(new NetworkStatus(network_label));
+  if (chromeos::NetworkHandler::IsInitialized())
+    network_status_.reset(new NetworkStatus(network_label));
 
   views::ImageView* battery_view = new views::ImageView();
   AddChildView(battery_view);
