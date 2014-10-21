@@ -761,13 +761,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
   EXPECT_EQ(200, response.status_code);
 }
 
-// ServiceWorkerBrowserTest.Reload is flaky on Android crbug.com/393486
-#if defined(OS_ANDROID)
-#define MAYBE_Reload DISABLED_Reload
-#else
-#define MAYBE_Reload Reload
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, MAYBE_Reload) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   const std::string kPageUrl = "/service_worker/reload.html";
   const std::string kWorkerUrl = "/service_worker/fetch_event_reload.js";
   {
@@ -869,13 +863,7 @@ static int CountRenderProcessHosts() {
   return result;
 }
 
-// Crashes on Android and flakes on CrOS: http://crbug.com/387045
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#define MAYBE_Registration DISABLED_Registration
-#else
-#define MAYBE_Registration Registration
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
   // Close the only window to be sure we're not re-using its RenderProcessHost.
   shell()->Close();
   EXPECT_EQ(0, CountRenderProcessHosts());
