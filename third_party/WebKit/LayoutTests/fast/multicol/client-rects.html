@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <style>
     div.columns {
         height: 50px;
@@ -13,11 +14,13 @@
         columns: 2;
         column-gap: 10px;
         column-fill: auto;
+        display: inline-block;
+        vertical-align: bottom;
     }
 
     div.marker {
         position: absolute;
-        border: solid rgba(0, 0, 255, 0.5);
+        border: solid dodgerblue;
         -webkit-box-sizing: border-box;
     }
 
@@ -26,6 +29,7 @@
         width: 25px;
         height: 25px;
         background-color: lightblue;
+        margin: 0;
     }
 
     input[type="range"]::-webkit-slider-thumb {
@@ -34,11 +38,11 @@
 </style>
 <p>
     The blue borders should coincide with light blue squares, like this:
-    <span style="display: inline-block; background-color: lightblue; border: solid rgba(0, 0, 255, 0.5); width: 19px; height: 19px;"></span>.
+    <span style="display: inline-block; background-color: lightblue; border: solid dodgerblue; width: 19px; height: 19px;"></span>.
     There should be none of this:
     <span style="display: inline-block; background-color: lightblue; width: 25px; height: 25px;"></span>
     or this:
-    <span style="display: inline-block; border: solid rgba(0, 0, 255, 0.5); width: 19px; height: 19px;"></span>.
+    <span style="display: inline-block; border: solid dodgerblue; width: 19px; height: 19px;"></span>.
 </p>
 <div class="columns" id="t1">
     <br>x y z

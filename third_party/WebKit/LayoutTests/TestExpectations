@@ -939,7 +939,6 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 # Old multicol tests that currently have no baseline in the virtual test suite
 # for the new multicol implementation.
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/client-rects.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-break-with-balancing.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-count-with-rules.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules-stacking.html [ Skip ]
