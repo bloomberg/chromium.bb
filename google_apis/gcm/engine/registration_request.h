@@ -89,12 +89,12 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
       int max_retry_count,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       GCMStatsRecorder* recorder);
-  virtual ~RegistrationRequest();
+  ~RegistrationRequest() override;
 
   void Start();
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   // Schedules a retry attempt, informs the backoff of a previous request's

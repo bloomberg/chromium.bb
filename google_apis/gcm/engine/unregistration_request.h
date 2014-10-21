@@ -80,13 +80,13 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
       const UnregistrationCallback& callback,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       GCMStatsRecorder* recorder);
-  virtual ~UnregistrationRequest();
+  ~UnregistrationRequest() override;
 
   // Starts an unregistration request.
   void Start();
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   // Schedules a retry attempt and informs the backoff of previous request's

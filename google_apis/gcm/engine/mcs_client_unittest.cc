@@ -74,7 +74,7 @@ class TestMCSClient : public MCSClient {
       next_id_(0) {
   }
 
-  virtual std::string GetNextPersistentId() override {
+  std::string GetNextPersistentId() override {
     return base::UintToString(++next_id_);
   }
 

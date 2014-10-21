@@ -48,9 +48,9 @@ class MockOAuthFetcher : public net::TestURLFetcher {
     SetResponseString(results);
   }
 
-  virtual ~MockOAuthFetcher() { }
+  ~MockOAuthFetcher() override {}
 
-  virtual void Start() override {
+  void Start() override {
     if ((GetResponseCode() != net::HTTP_OK) && (max_failure_count_ != -1) &&
         (current_failure_count_ == max_failure_count_)) {
       set_response_code(net::HTTP_OK);
@@ -87,12 +87,11 @@ class MockOAuthFetcherFactory : public net::URLFetcherFactory,
         response_code_(net::HTTP_OK),
         complete_immediately_(true) {
   }
-  virtual ~MockOAuthFetcherFactory() {}
-  virtual net::URLFetcher* CreateURLFetcher(
-      int id,
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d) override {
+  ~MockOAuthFetcherFactory() override {}
+  net::URLFetcher* CreateURLFetcher(int id,
+                                    const GURL& url,
+                                    net::URLFetcher::RequestType request_type,
+                                    net::URLFetcherDelegate* d) override {
     url_fetcher_ = new MockOAuthFetcher(
         response_code_,
         max_failure_count_,

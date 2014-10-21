@@ -83,9 +83,9 @@ void WriteContinuation() {
 class TestBackoffEntry : public net::BackoffEntry {
  public:
   explicit TestBackoffEntry(base::SimpleTestTickClock* tick_clock);
-  virtual ~TestBackoffEntry();
+  ~TestBackoffEntry() override;
 
-  virtual base::TimeTicks ImplGetTimeNow() const override;
+  base::TimeTicks ImplGetTimeNow() const override;
 
  private:
   base::SimpleTestTickClock* tick_clock_;
@@ -107,22 +107,22 @@ base::TimeTicks TestBackoffEntry::ImplGetTimeNow() const {
 class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
  public:
   TestConnectionFactoryImpl(const base::Closure& finished_callback);
-  virtual ~TestConnectionFactoryImpl();
+  ~TestConnectionFactoryImpl() override;
 
   void InitializeFactory();
 
   // Overridden stubs.
-  virtual void ConnectImpl() override;
-  virtual void InitHandler() override;
-  virtual scoped_ptr<net::BackoffEntry> CreateBackoffEntry(
+  void ConnectImpl() override;
+  void InitHandler() override;
+  scoped_ptr<net::BackoffEntry> CreateBackoffEntry(
       const net::BackoffEntry::Policy* const policy) override;
-  virtual scoped_ptr<ConnectionHandler> CreateConnectionHandler(
+  scoped_ptr<ConnectionHandler> CreateConnectionHandler(
       base::TimeDelta read_timeout,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback,
       const ConnectionHandler::ConnectionChangedCallback& connection_callback)
-          override;
-  virtual base::TimeTicks NowTicks() override;
+      override;
+  base::TimeTicks NowTicks() override;
 
   // Helpers for verifying connection attempts are made. Connection results
   // must be consumed.
@@ -266,9 +266,9 @@ class ConnectionFactoryImplTest
   void WaitForConnections();
 
   // ConnectionFactory::ConnectionListener
-  virtual void OnConnected(const GURL& current_server,
-                           const net::IPEndPoint& ip_endpoint) override;
-  virtual void OnDisconnected() override;
+  void OnConnected(const GURL& current_server,
+                   const net::IPEndPoint& ip_endpoint) override;
+  void OnDisconnected() override;
 
  private:
   void ConnectionsComplete();

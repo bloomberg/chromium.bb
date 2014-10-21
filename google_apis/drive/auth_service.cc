@@ -41,15 +41,15 @@ class AuthRequest : public OAuth2TokenService::Consumer {
               net::URLRequestContextGetter* url_request_context_getter,
               const AuthStatusCallback& callback,
               const std::vector<std::string>& scopes);
-  virtual ~AuthRequest();
+  ~AuthRequest() override;
 
  private:
   // Overridden from OAuth2TokenService::Consumer:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   AuthStatusCallback callback_;
   scoped_ptr<OAuth2TokenService::Request> request_;

@@ -215,10 +215,10 @@ class OAuth2TokenService : public base::NonThreadSafe {
    public:
     // |consumer| is required to outlive this.
     explicit RequestImpl(const std::string& account_id, Consumer* consumer);
-    virtual ~RequestImpl();
+    ~RequestImpl() override;
 
     // Overridden from Request:
-    virtual std::string GetAccountId() const override;
+    std::string GetAccountId() const override;
 
     std::string GetConsumerId() const;
 

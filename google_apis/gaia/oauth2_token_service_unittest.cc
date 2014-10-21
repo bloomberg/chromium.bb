@@ -27,10 +27,10 @@ class RetryingTestingOAuth2TokenServiceConsumer
       const std::string& account_id)
       : oauth2_service_(oauth2_service),
         account_id_(account_id) {}
-  virtual ~RetryingTestingOAuth2TokenServiceConsumer() {}
+  ~RetryingTestingOAuth2TokenServiceConsumer() override {}
 
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override {
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override {
     TestingOAuth2TokenServiceConsumer::OnGetTokenFailure(request, error);
     request_.reset(oauth2_service_->StartRequest(
         account_id_, OAuth2TokenService::ScopeSet(), this).release());
@@ -62,8 +62,7 @@ class TestOAuth2TokenService : public OAuth2TokenService {
       refresh_tokens_[account_id] = refresh_token;
   }
 
-  virtual bool RefreshTokenIsAvailable(const std::string& account_id) const
-      override {
+  bool RefreshTokenIsAvailable(const std::string& account_id) const override {
     std::map<std::string, std::string>::const_iterator it =
         refresh_tokens_.find(account_id);
 
@@ -72,11 +71,11 @@ class TestOAuth2TokenService : public OAuth2TokenService {
 
  private:
   // OAuth2TokenService implementation.
-  virtual net::URLRequestContextGetter* GetRequestContext() override {
+  net::URLRequestContextGetter* GetRequestContext() override {
     return request_context_getter_.get();
   }
 
-  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
       OAuth2AccessTokenConsumer* consumer) override {

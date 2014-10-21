@@ -24,15 +24,14 @@ class MockUbertokenConsumer : public UbertokenConsumer {
         last_error_(GoogleServiceAuthError::AuthErrorNone()),
         nb_error_(0) {
   }
-  virtual ~MockUbertokenConsumer() {}
+  ~MockUbertokenConsumer() override {}
 
-  virtual void OnUbertokenSuccess(const std::string& token) override {
+  void OnUbertokenSuccess(const std::string& token) override {
     last_token_ = token;
     ++ nb_correct_token_;
   }
 
-  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error)
-      override {
+  void OnUbertokenFailure(const GoogleServiceAuthError& error) override {
     last_error_ = error;
     ++nb_error_;
   }

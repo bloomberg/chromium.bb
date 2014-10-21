@@ -41,7 +41,7 @@ class IdentityProvider : public OAuth2TokenService::Observer {
     virtual ~Observer();
   };
 
-  virtual ~IdentityProvider();
+  ~IdentityProvider() override;
 
   // Adds and removes observers that will be notified of changes to the refresh
   // token availability for the active account.
@@ -69,9 +69,9 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   void RemoveObserver(Observer* observer);
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
-  virtual void OnRefreshTokensLoaded() override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokensLoaded() override;
 
  protected:
   IdentityProvider();

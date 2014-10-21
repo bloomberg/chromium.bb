@@ -35,15 +35,14 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
         url_(url) {
   }
 
-  virtual ~FakeUrlFetchRequest() {
-  }
+  ~FakeUrlFetchRequest() override {}
 
  protected:
-  virtual GURL GetURL() const override { return url_; }
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override {
+  GURL GetURL() const override { return url_; }
+  void ProcessURLFetchResults(const net::URLFetcher* source) override {
     callback_.Run(GetErrorCode());
   }
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) override {
+  void RunCallbackOnPrematureFailure(GDataErrorCode code) override {
     callback_.Run(code);
   }
 

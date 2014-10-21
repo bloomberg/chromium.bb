@@ -139,7 +139,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
     Init();
   }
 
-  virtual ~MyTestURLRequestContext() {}
+  ~MyTestURLRequestContext() override {}
 };
 
 class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
@@ -148,7 +148,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
       : TestURLRequestContextGetter(io_message_loop_proxy) {}
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() override {
+  net::TestURLRequestContext* GetURLRequestContext() override {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_)
@@ -157,7 +157,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
   }
 
  private:
-  virtual ~MyTestURLRequestContextGetter() {}
+  ~MyTestURLRequestContextGetter() override {}
 
   scoped_ptr<MyTestURLRequestContext> context_;
 };
@@ -166,20 +166,20 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
 class MyTestCertVerifier : public net::CertVerifier {
  public:
   MyTestCertVerifier() {}
-  virtual ~MyTestCertVerifier() {}
+  ~MyTestCertVerifier() override {}
 
-  virtual int Verify(net::X509Certificate* cert,
-                     const std::string& hostname,
-                     int flags,
-                     net::CRLSet* crl_set,
-                     net::CertVerifyResult* verify_result,
-                     const net::CompletionCallback& callback,
-                     RequestHandle* out_req,
-                     const net::BoundNetLog& net_log) override {
+  int Verify(net::X509Certificate* cert,
+             const std::string& hostname,
+             int flags,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             RequestHandle* out_req,
+             const net::BoundNetLog& net_log) override {
     return net::OK;
   }
 
-  virtual void CancelRequest(RequestHandle req) override {
+  void CancelRequest(RequestHandle req) override {
     // Do nothing.
   }
 };

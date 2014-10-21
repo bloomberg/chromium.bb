@@ -32,14 +32,14 @@ class OAuth2ApiCallFlow
  public:
   OAuth2ApiCallFlow();
 
-  virtual ~OAuth2ApiCallFlow();
+  ~OAuth2ApiCallFlow() override;
 
   // Start the flow.
   virtual void Start(net::URLRequestContextGetter* context,
                      const std::string& access_token);
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  protected:
   // Template methods for sub-classes.

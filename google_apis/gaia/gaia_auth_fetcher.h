@@ -53,7 +53,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   GaiaAuthFetcher(GaiaAuthConsumer* consumer,
                   const std::string& source,
                   net::URLRequestContextGetter* getter);
-  virtual ~GaiaAuthFetcher();
+  ~GaiaAuthFetcher() override;
 
   // Start a request to obtain the SID and LSID cookies for the the account
   // identified by |username| and |password|.  If |service| is not null or
@@ -192,7 +192,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void StartGetCheckConnectionInfo();
 
   // Implementation of net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();

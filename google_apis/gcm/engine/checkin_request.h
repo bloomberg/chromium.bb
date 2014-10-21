@@ -64,12 +64,12 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
                  const CheckinRequestCallback& callback,
                  net::URLRequestContextGetter* request_context_getter,
                  GCMStatsRecorder* recorder);
-  virtual ~CheckinRequest();
+  ~CheckinRequest() override;
 
   void Start();
 
   // URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   // Schedules a retry attempt, informs the backoff of a previous request's

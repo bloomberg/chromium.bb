@@ -99,17 +99,15 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   };
 
   OAuth2MintTokenFlow(Delegate* delegate, const Parameters& parameters);
-  virtual ~OAuth2MintTokenFlow();
+  ~OAuth2MintTokenFlow() override;
 
  protected:
   // Implementation of template methods in OAuth2ApiCallFlow.
-  virtual GURL CreateApiCallUrl() override;
-  virtual std::string CreateApiCallBody() override;
+  GURL CreateApiCallUrl() override;
+  std::string CreateApiCallBody() override;
 
-  virtual void ProcessApiCallSuccess(
-      const net::URLFetcher* source) override;
-  virtual void ProcessApiCallFailure(
-      const net::URLFetcher* source) override;
+  void ProcessApiCallSuccess(const net::URLFetcher* source) override;
+  void ProcessApiCallFailure(const net::URLFetcher* source) override;
 
  private:
   friend class OAuth2MintTokenFlowTest;

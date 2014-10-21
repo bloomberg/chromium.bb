@@ -28,13 +28,13 @@ class GetResourceEntryRequest : public UrlFetchRequestBase {
                           const std::string& resource_id,
                           const GURL& embed_origin,
                           const GetResourceEntryCallback& callback);
-  virtual ~GetResourceEntryRequest();
+  ~GetResourceEntryRequest() override;
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode error) override;
-  virtual GURL GetURL() const override;
+  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  void RunCallbackOnPrematureFailure(GDataErrorCode error) override;
+  GURL GetURL() const override;
 
  private:
   void OnDataParsed(GDataErrorCode error, scoped_ptr<ResourceEntry> entry);

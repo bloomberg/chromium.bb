@@ -31,9 +31,9 @@ class MockFetcher : public net::TestURLFetcher {
               net::URLFetcher::RequestType request_type,
               net::URLFetcherDelegate* d);
 
-  virtual ~MockFetcher();
+  ~MockFetcher() override;
 
-  virtual void Start() override;
+  void Start() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFetcher);

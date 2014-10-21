@@ -16,14 +16,14 @@ std::string GetValidTokenResponse(std::string token, int expiration);
 class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
  public:
   TestingOAuth2TokenServiceConsumer();
-  virtual ~TestingOAuth2TokenServiceConsumer();
+  ~TestingOAuth2TokenServiceConsumer() override;
 
   // OAuth2TokenService::Consumer overrides.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& token,
-                                 const base::Time& expiration_date) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& token,
+                         const base::Time& expiration_date) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   std::string last_token_;
   int number_of_successful_tokens_;

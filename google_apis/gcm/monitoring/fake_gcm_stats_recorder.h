@@ -13,54 +13,51 @@ namespace gcm {
 class FakeGCMStatsRecorder : public GCMStatsRecorder {
  public:
   FakeGCMStatsRecorder();
-  virtual ~FakeGCMStatsRecorder();
+  ~FakeGCMStatsRecorder() override;
 
-  virtual void RecordCheckinInitiated(uint64 android_id) override;
-  virtual void RecordCheckinDelayedDueToBackoff(int64 delay_msec) override;
-  virtual void RecordCheckinSuccess() override;
-  virtual void RecordCheckinFailure(std::string status,
-                                    bool will_retry) override;
-  virtual void RecordConnectionInitiated(const std::string& host) override;
-  virtual void RecordConnectionDelayedDueToBackoff(int64 delay_msec) override;
-  virtual void RecordConnectionSuccess() override;
-  virtual void RecordConnectionFailure(int network_error) override;
-  virtual void RecordConnectionResetSignaled(
+  void RecordCheckinInitiated(uint64 android_id) override;
+  void RecordCheckinDelayedDueToBackoff(int64 delay_msec) override;
+  void RecordCheckinSuccess() override;
+  void RecordCheckinFailure(std::string status, bool will_retry) override;
+  void RecordConnectionInitiated(const std::string& host) override;
+  void RecordConnectionDelayedDueToBackoff(int64 delay_msec) override;
+  void RecordConnectionSuccess() override;
+  void RecordConnectionFailure(int network_error) override;
+  void RecordConnectionResetSignaled(
       ConnectionFactory::ConnectionResetReason reason) override;
-  virtual void RecordRegistrationSent(const std::string& app_id,
-                                      const std::string& sender_ids) override;
-  virtual void RecordRegistrationResponse(
-      const std::string& app_id,
-      const std::vector<std::string>& sender_ids,
-      RegistrationRequest::Status status) override;
-  virtual void RecordRegistrationRetryRequested(
+  void RecordRegistrationSent(const std::string& app_id,
+                              const std::string& sender_ids) override;
+  void RecordRegistrationResponse(const std::string& app_id,
+                                  const std::vector<std::string>& sender_ids,
+                                  RegistrationRequest::Status status) override;
+  void RecordRegistrationRetryRequested(
       const std::string& app_id,
       const std::vector<std::string>& sender_ids,
       int retries_left) override;
-  virtual void RecordUnregistrationSent(const std::string& app_id) override;
-  virtual void RecordUnregistrationResponse(
+  void RecordUnregistrationSent(const std::string& app_id) override;
+  void RecordUnregistrationResponse(
       const std::string& app_id,
       UnregistrationRequest::Status status) override;
-  virtual void RecordUnregistrationRetryDelayed(const std::string& app_id,
-                                                int64 delay_msec) override;
-  virtual void RecordDataMessageReceived(
-      const std::string& app_id,
-      const std::string& from,
-      int message_byte_size,
-      bool to_registered_app,
-      ReceivedMessageType message_type) override;
-  virtual void RecordDataSentToWire(const std::string& app_id,
-                                    const std::string& receiver_id,
-                                    const std::string& message_id,
-                                    int queued) override;
-  virtual void RecordNotifySendStatus(const std::string& app_id,
-                                      const std::string& receiver_id,
-                                      const std::string& message_id,
-                                      MCSClient::MessageSendStatus status,
-                                      int byte_size,
-                                      int ttl) override;
-  virtual void RecordIncomingSendError(const std::string& app_id,
-                                       const std::string& receiver_id,
-                                       const std::string& message_id) override;
+  void RecordUnregistrationRetryDelayed(const std::string& app_id,
+                                        int64 delay_msec) override;
+  void RecordDataMessageReceived(const std::string& app_id,
+                                 const std::string& from,
+                                 int message_byte_size,
+                                 bool to_registered_app,
+                                 ReceivedMessageType message_type) override;
+  void RecordDataSentToWire(const std::string& app_id,
+                            const std::string& receiver_id,
+                            const std::string& message_id,
+                            int queued) override;
+  void RecordNotifySendStatus(const std::string& app_id,
+                              const std::string& receiver_id,
+                              const std::string& message_id,
+                              MCSClient::MessageSendStatus status,
+                              int byte_size,
+                              int ttl) override;
+  void RecordIncomingSendError(const std::string& app_id,
+                               const std::string& receiver_id,
+                               const std::string& message_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeGCMStatsRecorder);

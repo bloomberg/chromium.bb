@@ -42,23 +42,23 @@ class GCM_EXPORT ConnectionFactoryImpl :
       const scoped_refptr<net::HttpNetworkSession>& http_network_session,
       net::NetLog* net_log,
       GCMStatsRecorder* recorder);
-  virtual ~ConnectionFactoryImpl();
+  ~ConnectionFactoryImpl() override;
 
   // ConnectionFactory implementation.
-  virtual void Initialize(
+  void Initialize(
       const BuildLoginRequestCallback& request_builder,
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback) override;
-  virtual ConnectionHandler* GetConnectionHandler() const override;
-  virtual void Connect() override;
-  virtual bool IsEndpointReachable() const override;
-  virtual std::string GetConnectionStateString() const override;
-  virtual base::TimeTicks NextRetryAttempt() const override;
-  virtual void SignalConnectionReset(ConnectionResetReason reason) override;
-  virtual void SetConnectionListener(ConnectionListener* listener) override;
+  ConnectionHandler* GetConnectionHandler() const override;
+  void Connect() override;
+  bool IsEndpointReachable() const override;
+  std::string GetConnectionStateString() const override;
+  base::TimeTicks NextRetryAttempt() const override;
+  void SignalConnectionReset(ConnectionResetReason reason) override;
+  void SetConnectionListener(ConnectionListener* listener) override;
 
   // NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Returns the server to which the factory is currently connected, or if

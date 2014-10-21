@@ -19,15 +19,14 @@ class FakeConnectionHandler : public ConnectionHandler {
   FakeConnectionHandler(
       const ConnectionHandler::ProtoReceivedCallback& read_callback,
       const ConnectionHandler::ProtoSentCallback& write_callback);
-  virtual ~FakeConnectionHandler();
+  ~FakeConnectionHandler() override;
 
   // ConnectionHandler implementation.
-  virtual void Init(const mcs_proto::LoginRequest& login_request,
-                    net::StreamSocket* socket) override;
-  virtual void Reset() override;
-  virtual bool CanSendMessage() const override;
-  virtual void SendMessage(const google::protobuf::MessageLite& message)
-      override;
+  void Init(const mcs_proto::LoginRequest& login_request,
+            net::StreamSocket* socket) override;
+  void Reset() override;
+  bool CanSendMessage() const override;
+  void SendMessage(const google::protobuf::MessageLite& message) override;
 
   // EXPECT's receipt of |message| via SendMessage(..).
   void ExpectOutgoingMessage(const MCSMessage& message);

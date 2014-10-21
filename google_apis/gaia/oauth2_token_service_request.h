@@ -87,10 +87,10 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request,
       const OAuth2TokenService::ScopeSet& scopes,
       const std::string& access_token);
 
-  virtual ~OAuth2TokenServiceRequest();
+  ~OAuth2TokenServiceRequest() override;
 
   // OAuth2TokenService::Request.
-  virtual std::string GetAccountId() const override;
+  std::string GetAccountId() const override;
 
  private:
   OAuth2TokenServiceRequest(const std::string& account_id);

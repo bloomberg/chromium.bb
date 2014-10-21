@@ -24,14 +24,14 @@ class DummyAuthService : public AuthServiceInterface {
   const std::string& refresh_token() const { return refresh_token_; }
 
   // AuthServiceInterface overrides.
-  virtual void AddObserver(AuthServiceObserver* observer) override;
-  virtual void RemoveObserver(AuthServiceObserver* observer) override;
-  virtual void StartAuthentication(const AuthStatusCallback& callback) override;
-  virtual bool HasAccessToken() const override;
-  virtual bool HasRefreshToken() const override;
-  virtual const std::string& access_token() const override;
-  virtual void ClearAccessToken() override;
-  virtual void ClearRefreshToken() override;
+  void AddObserver(AuthServiceObserver* observer) override;
+  void RemoveObserver(AuthServiceObserver* observer) override;
+  void StartAuthentication(const AuthStatusCallback& callback) override;
+  bool HasAccessToken() const override;
+  bool HasRefreshToken() const override;
+  const std::string& access_token() const override;
+  void ClearAccessToken() override;
+  void ClearRefreshToken() override;
 
  private:
   std::string access_token_;

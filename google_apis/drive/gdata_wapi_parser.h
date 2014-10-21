@@ -317,7 +317,7 @@ class ResourceEntry : public CommonMetadata {
     ENTRY_KIND_FILE
   };
   ResourceEntry();
-  virtual ~ResourceEntry();
+  ~ResourceEntry() override;
 
   // Extracts "entry" dictionary from the JSON value, and parse the contents,
   // using CreateFrom(). Returns NULL on failure. The input JSON data, coming
@@ -517,7 +517,7 @@ class ResourceEntry : public CommonMetadata {
 class ResourceList : public CommonMetadata {
  public:
   ResourceList();
-  virtual ~ResourceList();
+  ~ResourceList() override;
 
   // Extracts "feed" dictionary from the JSON value, and parse the contents,
   // using CreateFrom(). Returns NULL on failure. The input JSON data, coming

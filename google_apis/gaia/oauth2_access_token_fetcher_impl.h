@@ -51,17 +51,17 @@ class OAuth2AccessTokenFetcherImpl : public OAuth2AccessTokenFetcher,
   OAuth2AccessTokenFetcherImpl(OAuth2AccessTokenConsumer* consumer,
                                net::URLRequestContextGetter* getter,
                                const std::string& refresh_token);
-  virtual ~OAuth2AccessTokenFetcherImpl();
+  ~OAuth2AccessTokenFetcherImpl() override;
 
   // Implementation of OAuth2AccessTokenFetcher
-  virtual void Start(const std::string& client_id,
-                     const std::string& client_secret,
-                     const std::vector<std::string>& scopes) override;
+  void Start(const std::string& client_id,
+             const std::string& client_secret,
+             const std::vector<std::string>& scopes) override;
 
-  virtual void CancelRequest() override;
+  void CancelRequest() override;
 
   // Implementation of net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   enum State {

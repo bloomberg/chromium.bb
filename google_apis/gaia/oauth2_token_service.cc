@@ -128,7 +128,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
                                  const std::string& client_secret,
                                  const ScopeSet& scopes,
                                  base::WeakPtr<RequestImpl> waiting_request);
-  virtual ~Fetcher();
+  ~Fetcher() override;
 
   // Add a request that is waiting for the result of this Fetcher.
   void AddWaitingRequest(base::WeakPtr<RequestImpl> waiting_request);
@@ -151,10 +151,9 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
 
  protected:
    // OAuth2AccessTokenConsumer
-  virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_date) override;
-  virtual void OnGetTokenFailure(
-      const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const std::string& access_token,
+                         const base::Time& expiration_date) override;
+  void OnGetTokenFailure(const GoogleServiceAuthError& error) override;
 
  private:
   Fetcher(OAuth2TokenService* oauth2_token_service,

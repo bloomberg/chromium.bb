@@ -136,10 +136,10 @@ class AccountTrackerObserver : public AccountTracker::Observer {
   void SortEventsByUser();
 
   // AccountTracker::Observer implementation
-  virtual void OnAccountAdded(const AccountIds& ids) override;
-  virtual void OnAccountRemoved(const AccountIds& ids) override;
-  virtual void OnAccountSignInChanged(const AccountIds& ids, bool is_signed_in)
-      override;
+  void OnAccountAdded(const AccountIds& ids) override;
+  void OnAccountRemoved(const AccountIds& ids) override;
+  void OnAccountSignInChanged(const AccountIds& ids,
+                              bool is_signed_in) override;
 
  private:
   testing::AssertionResult CheckEvents(

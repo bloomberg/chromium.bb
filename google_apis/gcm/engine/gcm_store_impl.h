@@ -28,70 +28,68 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   GCMStoreImpl(const base::FilePath& path,
                scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                scoped_ptr<Encryptor> encryptor);
-  virtual ~GCMStoreImpl();
+  ~GCMStoreImpl() override;
 
   // Load the directory and pass the initial state back to caller.
-  virtual void Load(const LoadCallback& callback) override;
+  void Load(const LoadCallback& callback) override;
 
   // Closes the GCM store.
-  virtual void Close() override;
+  void Close() override;
 
   // Clears the GCM store of all data and destroys any LevelDB files associated
   // with this store.
   // WARNING: this will permanently destroy any pending outgoing messages
   // and require the device to re-create credentials and serial number mapping
   // tables.
-  virtual void Destroy(const UpdateCallback& callback) override;
+  void Destroy(const UpdateCallback& callback) override;
 
   // Sets this device's messaging credentials.
-  virtual void SetDeviceCredentials(uint64 device_android_id,
-                                    uint64 device_security_token,
-                                    const UpdateCallback& callback) override;
+  void SetDeviceCredentials(uint64 device_android_id,
+                            uint64 device_security_token,
+                            const UpdateCallback& callback) override;
 
   // Registration info.
-  virtual void AddRegistration(const std::string& app_id,
-                               const linked_ptr<RegistrationInfo>& registration,
-                               const UpdateCallback& callback) override;
-  virtual void RemoveRegistration(const std::string& app_id,
-                                  const UpdateCallback& callback) override;
+  void AddRegistration(const std::string& app_id,
+                       const linked_ptr<RegistrationInfo>& registration,
+                       const UpdateCallback& callback) override;
+  void RemoveRegistration(const std::string& app_id,
+                          const UpdateCallback& callback) override;
 
   // Unacknowledged incoming message handling.
-  virtual void AddIncomingMessage(const std::string& persistent_id,
-                                  const UpdateCallback& callback) override;
-  virtual void RemoveIncomingMessage(const std::string& persistent_id,
-                                     const UpdateCallback& callback) override;
-  virtual void RemoveIncomingMessages(const PersistentIdList& persistent_ids,
-                                      const UpdateCallback& callback) override;
+  void AddIncomingMessage(const std::string& persistent_id,
+                          const UpdateCallback& callback) override;
+  void RemoveIncomingMessage(const std::string& persistent_id,
+                             const UpdateCallback& callback) override;
+  void RemoveIncomingMessages(const PersistentIdList& persistent_ids,
+                              const UpdateCallback& callback) override;
 
   // Unacknowledged outgoing messages handling.
-  virtual bool AddOutgoingMessage(const std::string& persistent_id,
-                                  const MCSMessage& message,
-                                  const UpdateCallback& callback) override;
-  virtual void OverwriteOutgoingMessage(const std::string& persistent_id,
-                                        const MCSMessage& message,
-                                        const UpdateCallback& callback)
-      override;
-  virtual void RemoveOutgoingMessage(const std::string& persistent_id,
-                                     const UpdateCallback& callback) override;
-  virtual void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
-                                      const UpdateCallback& callback) override;
+  bool AddOutgoingMessage(const std::string& persistent_id,
+                          const MCSMessage& message,
+                          const UpdateCallback& callback) override;
+  void OverwriteOutgoingMessage(const std::string& persistent_id,
+                                const MCSMessage& message,
+                                const UpdateCallback& callback) override;
+  void RemoveOutgoingMessage(const std::string& persistent_id,
+                             const UpdateCallback& callback) override;
+  void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
+                              const UpdateCallback& callback) override;
 
   // Sets last device's checkin information.
-  virtual void SetLastCheckinInfo(const base::Time& time,
-                                  const std::set<std::string>& accounts,
-                                  const UpdateCallback& callback) override;
+  void SetLastCheckinInfo(const base::Time& time,
+                          const std::set<std::string>& accounts,
+                          const UpdateCallback& callback) override;
 
   // G-service settings handling.
-  virtual void SetGServicesSettings(
-      const std::map<std::string, std::string>& settings,
-      const std::string& settings_digest,
-      const UpdateCallback& callback) override;
+  void SetGServicesSettings(const std::map<std::string, std::string>& settings,
+                            const std::string& settings_digest,
+                            const UpdateCallback& callback) override;
 
   // Sets the account information related to device to account mapping.
-  virtual void AddAccountMapping(const AccountMapping& account_mapping,
-                                 const UpdateCallback& callback) override;
-  virtual void RemoveAccountMapping(const std::string& account_id,
-                                    const UpdateCallback& callback) override;
+  void AddAccountMapping(const AccountMapping& account_mapping,
+                         const UpdateCallback& callback) override;
+  void RemoveAccountMapping(const std::string& account_id,
+                            const UpdateCallback& callback) override;
 
  private:
   typedef std::map<std::string, int> AppIdToMessageCountMap;
