@@ -168,7 +168,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                           old_sequence_number,
                           clock_.Now(),
                           kDefaultLength,
-                          LOSS_RETRANSMISSION,
+                          TLP_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
     EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(
         &manager_, new_sequence_number));
@@ -1036,7 +1036,7 @@ TEST_F(QuicSentPacketManagerTest, ResetRecentMinRTTWithEmptyWindow) {
   QuicSentPacketManagerPeer::GetRttStats(&manager_)->UpdateRtt(
       min_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
   EXPECT_EQ(min_rtt,
-            QuicSentPacketManagerPeer::GetRttStats(&manager_)->min_rtt());
+            QuicSentPacketManagerPeer::GetRttStats(&manager_)->MinRtt());
   EXPECT_EQ(min_rtt,
             QuicSentPacketManagerPeer::GetRttStats(
                 &manager_)->recent_min_rtt());
@@ -1063,7 +1063,7 @@ TEST_F(QuicSentPacketManagerTest, ResetRecentMinRTTWithEmptyWindow) {
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
   EXPECT_EQ(min_rtt,
-            QuicSentPacketManagerPeer::GetRttStats(&manager_)->min_rtt());
+            QuicSentPacketManagerPeer::GetRttStats(&manager_)->MinRtt());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100),
             QuicSentPacketManagerPeer::GetRttStats(
                 &manager_)->recent_min_rtt());

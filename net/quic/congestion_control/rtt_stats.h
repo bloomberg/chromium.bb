@@ -43,6 +43,11 @@ class NET_EXPORT_PRIVATE RttStats {
 
   QuicTime::Delta SmoothedRtt() const;
 
+  // Returns the min_rtt for the entire connection if a min has been measured.
+  // This returns an initial non-zero RTT estimate if no measurements have yet
+  // been made.
+  QuicTime::Delta MinRtt() const;
+
   int64 initial_rtt_us() const {
     return initial_rtt_us_;
   }
@@ -54,11 +59,6 @@ class NET_EXPORT_PRIVATE RttStats {
 
   QuicTime::Delta latest_rtt() const {
     return latest_rtt_;
-  }
-
-  // Returns the min_rtt for the entire connection.
-  QuicTime::Delta min_rtt() const {
-    return min_rtt_;
   }
 
   // Returns the min_rtt since SampleNewRecentMinRtt has been called, or the

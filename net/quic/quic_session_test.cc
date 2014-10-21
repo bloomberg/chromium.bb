@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_stream.h"
@@ -227,7 +228,7 @@ class QuicSessionTest : public ::testing::TestWithParam<QuicVersion> {
 
   void CheckClosedStreams() {
     for (int i = kCryptoStreamId; i < 100; i++) {
-      if (closed_streams_.count(i) == 0) {
+      if (!ContainsKey(closed_streams_, i)) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
         EXPECT_TRUE(session_.IsClosedStream(i)) << " stream id: " << i;
@@ -529,10 +530,6 @@ TEST_P(QuicSessionTest, OnCanWriteWithClosedStream) {
 }
 
 TEST_P(QuicSessionTest, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
-  if (version() < QUIC_VERSION_19) {
-    return;
-  }
-
   // Ensure connection level flow control blockage.
   QuicFlowControllerPeer::SetSendWindowOffset(session_.flow_controller(), 0);
   EXPECT_TRUE(session_.flow_controller()->IsBlocked());
@@ -732,7 +729,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   QuicStreamId stream_id = 5;
   // Write until the header stream is flow control blocked.
-  while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2000) {
+  while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2010) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     SpdyHeaderBlock headers;
@@ -747,7 +744,8 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
   EXPECT_FALSE(session_.HasDataToWrite());
-  EXPECT_TRUE(headers_stream->HasBufferedData());
+  // TODO(rtenneti): crbug.com/423586 headers_stream->HasBufferedData is flaky.
+  // EXPECT_TRUE(headers_stream->HasBufferedData());
 
   // Now complete the crypto handshake, resulting in an increased flow control
   // send window.
@@ -778,43 +776,7 @@ TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
   session_.OnConfigNegotiated();
 }
 
-TEST_P(QuicSessionTest, InvalidStreamFlowControlWindowInHandshake) {
-  // Test that receipt of an invalid (< default) stream flow control window from
-  // the peer results in the connection being torn down.
-  if (version() <= QUIC_VERSION_19) {
-    return;
-  }
-
-  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
-  QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(session_.config(),
-                                                            kInvalidWindow);
-
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW));
-  session_.OnConfigNegotiated();
-}
-
-TEST_P(QuicSessionTest, InvalidSessionFlowControlWindowInHandshake) {
-  // Test that receipt of an invalid (< default) session flow control window
-  // from the peer results in the connection being torn down.
-  if (version() <= QUIC_VERSION_19) {
-    return;
-  }
-
-  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
-  QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(session_.config(),
-                                                             kInvalidWindow);
-
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW));
-  session_.OnConfigNegotiated();
-}
-
 TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstOutOfOrder) {
-  if (version() < QUIC_VERSION_19) {
-    return;
-  }
-
   // Test that when we receive an out of order stream RST we correctly adjust
   // our connection level flow control receive window.
   // On close, the stream should mark as consumed all bytes between the highest
@@ -839,10 +801,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstOutOfOrder) {
 }
 
 TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAndLocalReset) {
-  if (version() < QUIC_VERSION_19) {
-    return;
-  }
-
   // Test the situation where we receive a FIN on a stream, and before we fully
   // consume all the data from the sequencer buffer we locally RST the stream.
   // The bytes between highest consumed byte, and the final byte offset that we
@@ -885,9 +843,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAfterRst) {
   // Test that when we RST the stream (and tear down stream state), and then
   // receive a FIN from the peer, we correctly adjust our connection level flow
   // control receive window.
-  if (version() < QUIC_VERSION_19) {
-    return;
-  }
 
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
@@ -927,9 +882,6 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
   // Test that when we RST the stream (and tear down stream state), and then
   // receive a RST from the peer, we correctly adjust our connection level flow
   // control receive window.
-  if (version() < QUIC_VERSION_19) {
-    return;
-  }
 
   // Connection starts with some non-zero highest received byte offset,
   // due to other active streams.
@@ -959,6 +911,38 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
             session_.flow_controller()->highest_received_byte_offset());
 }
 
+TEST_P(QuicSessionTest, InvalidStreamFlowControlWindowInHandshake) {
+  // Test that receipt of an invalid (< default) stream flow control window from
+  // the peer results in the connection being torn down.
+  if (version() <= QUIC_VERSION_19) {
+    return;
+  }
+
+  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+  QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(session_.config(),
+                                                            kInvalidWindow);
+
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW));
+  session_.OnConfigNegotiated();
+}
+
+TEST_P(QuicSessionTest, InvalidSessionFlowControlWindowInHandshake) {
+  // Test that receipt of an invalid (< default) session flow control window
+  // from the peer results in the connection being torn down.
+  if (version() == QUIC_VERSION_19) {
+    return;
+  }
+
+  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+  QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(session_.config(),
+                                                             kInvalidWindow);
+
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_FLOW_CONTROL_INVALID_WINDOW));
+  session_.OnConfigNegotiated();
+}
+
 TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
   // Test that if we receive a stream RST with a highest byte offset that
   // violates flow control, that we close the connection.
@@ -979,26 +963,6 @@ TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
   QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
                                kLargeOffset);
   session_.OnRstStream(rst_frame);
-}
-
-TEST_P(QuicSessionTest, VersionNegotiationDisablesFlowControl) {
-  if (version() < QUIC_VERSION_19) {
-    return;
-  }
-
-  // Test that after successful version negotiation, flow control is disabled
-  // appropriately at both the connection and stream level.
-
-  // Initially both stream and connection flow control are enabled.
-  TestStream* stream = session_.CreateOutgoingDataStream();
-  EXPECT_TRUE(stream->flow_controller()->IsEnabled());
-  EXPECT_TRUE(session_.flow_controller()->IsEnabled());
-
-  // Version 18 implies that stream flow control is enabled, but connection
-  // level is disabled.
-  session_.OnSuccessfulVersionNegotiation(QUIC_VERSION_18);
-  EXPECT_FALSE(session_.flow_controller()->IsEnabled());
-  EXPECT_TRUE(stream->flow_controller()->IsEnabled());
 }
 
 TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {
@@ -1029,9 +993,6 @@ TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {
 }
 
 TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {
-  if (version() < QUIC_VERSION_18) {
-    return;
-  }
   // If a buggy/malicious peer creates too many streams that are not ended with
   // a FIN or RST then we send a connection close.
   ValueRestore<bool> old_flag(&FLAGS_close_quic_connection_unfinished_streams_2,

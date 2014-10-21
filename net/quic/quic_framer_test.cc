@@ -4538,20 +4538,12 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
     0x07,
   };
 
-  if (version_ >= QUIC_VERSION_18) {
-    scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
-    ASSERT_TRUE(data != nullptr);
+  scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
 
-    test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                        data->length(), AsChars(packet),
-                                        arraysize(packet));
-  } else {
-    string expected_error =
-        "Attempt to add a PingFrame in " + QuicVersionToString(version_);
-    EXPECT_DFATAL(BuildDataPacket(header, frames),
-                  expected_error);
-    return;
-  }
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildPublicResetPacket) {

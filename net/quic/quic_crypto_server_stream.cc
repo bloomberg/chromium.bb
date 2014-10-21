@@ -189,6 +189,12 @@ void QuicCryptoServerStream::OnServerHelloAcked() {
   session()->connection()->OnHandshakeComplete();
 }
 
+void QuicCryptoServerStream::set_previous_cached_network_params(
+    CachedNetworkParameters cached_network_params) {
+  previous_cached_network_params_.reset(
+      new CachedNetworkParameters(cached_network_params));
+}
+
 bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
     string* output) const {
   if (!encryption_established_ ||
@@ -243,6 +249,11 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
 }
 
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {
+}
+
+CachedNetworkParameters*
+QuicCryptoServerStream::get_previous_cached_network_params() {
+  return previous_cached_network_params_.get();
 }
 
 QuicCryptoServerStream::ValidateCallback::ValidateCallback(

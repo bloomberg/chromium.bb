@@ -27,8 +27,8 @@ class TcpLossAlgorithmTest : public ::testing::Test {
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
     SerializedPacket packet(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             nullptr, 0, new RetransmittableFrames());
-    unacked_packets_.AddPacket(packet);
-    unacked_packets_.SetSent(sequence_number, clock_.Now(), 1000, true);
+    unacked_packets_.AddSentPacket(packet, 0, NOT_RETRANSMISSION, clock_.Now(),
+                                   1000, true);
   }
 
   void VerifyLosses(QuicPacketSequenceNumber largest_observed,

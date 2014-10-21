@@ -82,6 +82,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
       QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) const = 0;
 
+  virtual QuicBandwidth PacingRate() const = 0;
+
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.
   virtual QuicBandwidth BandwidthEstimate() const = 0;

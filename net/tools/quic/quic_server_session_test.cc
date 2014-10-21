@@ -357,7 +357,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   expected_network_params.set_min_rtt_ms(session_->connection()
                                              ->sent_packet_manager()
                                              .GetRttStats()
-                                             ->min_rtt()
+                                             ->MinRtt()
                                              .ToMilliseconds());
   expected_network_params.set_previous_connection_state(
       CachedNetworkParameters::CONGESTION_AVOIDANCE);

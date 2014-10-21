@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 using base::StringPiece;
 using std::numeric_limits;
@@ -31,7 +32,7 @@ QuicFecGroup::~QuicFecGroup() {}
 bool QuicFecGroup::Update(EncryptionLevel encryption_level,
                           const QuicPacketHeader& header,
                           StringPiece decrypted_payload) {
-  if (received_packets_.count(header.packet_sequence_number) != 0) {
+  if (ContainsKey(received_packets_, header.packet_sequence_number)) {
     return false;
   }
   if (min_protected_packet_ != kNoSequenceNumber &&

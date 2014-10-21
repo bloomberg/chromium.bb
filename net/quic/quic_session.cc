@@ -111,7 +111,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       goaway_received_(false),
       goaway_sent_(false),
       has_pending_handshake_(false) {
-  if (connection_->version() <= QUIC_VERSION_19) {
+  if (connection_->version() == QUIC_VERSION_19) {
     flow_controller_.reset(new QuicFlowController(
         connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
         config_.GetInitialFlowControlWindowToSend(),
@@ -487,8 +487,8 @@ void QuicSession::OnConfigNegotiated() {
     set_max_open_streams(max_streams);
   }
 
-  if (version <= QUIC_VERSION_19) {
-    // QUIC_VERSION_17,18,19 don't support independent stream/session flow
+  if (version == QUIC_VERSION_19) {
+    // QUIC_VERSION_19 doesn't support independent stream/session flow
     // control windows.
     if (config_.HasReceivedInitialFlowControlWindowBytes()) {
       // Streams which were created before the SHLO was received (0-RTT
@@ -715,7 +715,7 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
   // For peer created streams, we also need to consider implicitly created
   // streams.
   return id <= largest_peer_created_stream_id_ &&
-      implicitly_created_streams_.count(id) == 0;
+      !ContainsKey(implicitly_created_streams_, id);
 }
 
 size_t QuicSession::GetNumOpenStreams() const {
@@ -770,10 +770,6 @@ void QuicSession::PostProcessAfterData() {
 }
 
 void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
-  if (version < QUIC_VERSION_19) {
-    flow_controller_->Disable();
-  }
-
   // Disable stream level flow control based on negotiated version. Streams may
   // have been created with a different version.
   if (version < QUIC_VERSION_21) {

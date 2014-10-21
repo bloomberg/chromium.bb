@@ -134,14 +134,10 @@ TEST_F(PacingSenderTest, SendNow) {
 }
 
 TEST_F(PacingSenderTest, VariousSending) {
-  // Start the test in slow start.
-  EXPECT_CALL(*mock_sender_, InSlowStart()).WillRepeatedly(Return(true));
-
-  // Configure bandwith of 1 packet per 2 ms, for which the pacing rate
-  // will be 1 packet per 1 ms.
-  EXPECT_CALL(*mock_sender_, BandwidthEstimate())
+  // Configure pacing rate of 1 packet per 1 ms.
+  EXPECT_CALL(*mock_sender_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::FromBytesAndTimeDelta(
-          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(2))));
+          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1))));
 
   // Now update the RTT and verify that packets are actually paced.
   EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
@@ -204,14 +200,10 @@ TEST_F(PacingSenderTest, VariousSending) {
 }
 
 TEST_F(PacingSenderTest, CongestionAvoidanceSending) {
-  // Start the test in congestion avoidance.
-  EXPECT_CALL(*mock_sender_, InSlowStart()).WillRepeatedly(Return(false));
-
-  // Configure bandwith of 1 packet per 2 ms, for which the pacing rate
-  // will be 1 packet per 1 ms.
-  EXPECT_CALL(*mock_sender_, BandwidthEstimate())
+  // Configure pacing rate of 1 packet per 1 ms.
+  EXPECT_CALL(*mock_sender_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::FromBytesAndTimeDelta(
-          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(2))));
+          kMaxPacketSize * 1.25, QuicTime::Delta::FromMilliseconds(2))));
 
   // Now update the RTT and verify that packets are actually paced.
   EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
@@ -272,14 +264,11 @@ TEST_F(PacingSenderTest, InitialBurst) {
   pacing_sender_.reset(new PacingSender(mock_sender_,
                                         QuicTime::Delta::FromMilliseconds(1),
                                         10));
-  // Start the test in slow start.
-  EXPECT_CALL(*mock_sender_, InSlowStart()).WillRepeatedly(Return(true));
 
-  // Configure bandwith of 1 packet per 2 ms, for which the pacing rate
-  // will be 1 packet per 1 ms.
-  EXPECT_CALL(*mock_sender_, BandwidthEstimate())
+  // Configure pacing rate of 1 packet per 1 ms.
+  EXPECT_CALL(*mock_sender_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::FromBytesAndTimeDelta(
-          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(2))));
+          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1))));
 
   // Update the RTT and verify that the first 10 packets aren't paced.
   EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
@@ -330,14 +319,11 @@ TEST_F(PacingSenderTest, InitialBurstNoRttMeasurement) {
   pacing_sender_.reset(new PacingSender(mock_sender_,
                                         QuicTime::Delta::FromMilliseconds(1),
                                         10));
-  // Start the test in slow start.
-  EXPECT_CALL(*mock_sender_, InSlowStart()).WillRepeatedly(Return(true));
 
-  // Configure bandwith of 1 packet per 2 ms, for which the pacing rate
-  // will be 1 packet per 1 ms.
-  EXPECT_CALL(*mock_sender_, BandwidthEstimate())
+  // Configure pacing rate of 1 packet per 1 ms.
+  EXPECT_CALL(*mock_sender_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::FromBytesAndTimeDelta(
-          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(2))));
+          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1))));
 
   // Send 10 packets, and verify that they are not paced.
   for (int i = 0 ; i < kInitialBurstPackets; ++i) {

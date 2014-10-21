@@ -111,10 +111,8 @@ TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
   EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
 }
 
-TEST_P(ToolsQuicClientSessionTest, EmptyPacketReceived) {
-  // This test covers broken behavior that empty packets cause QUIC connection
-  // broken.
-
+// Regression test for b/17206611.
+TEST_P(ToolsQuicClientSessionTest, InvalidPacketReceived) {
   // Create Packet with 0 length.
   QuicEncryptedPacket invalid_packet(nullptr, 0, false);
   IPEndPoint server_address(TestPeerIPAddress(), kTestPort);
@@ -126,16 +124,12 @@ TEST_P(ToolsQuicClientSessionTest, EmptyPacketReceived) {
           Invoke(reinterpret_cast<MockConnection*>(session_->connection()),
                  &MockConnection::ReallyProcessUdpPacket));
 
-  // Expect call to close connection with error QUIC_INVALID_PACKET_HEADER.
-  // TODO(b/17206611): Correct behavior: packet should get dropped and
-  // connection should remain open.
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-      QUIC_INVALID_PACKET_HEADER, _)).Times(1);
+  // Validate that empty packets don't close the connection.
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
   session_->connection()->ProcessUdpPacket(client_address, server_address,
                                            invalid_packet);
 
-  // Create a packet that causes DecryptPacket failed. The packet will get
-  // dropped without closing connection. This is a correct behavior.
+  // Verifiy that small, invalid packets don't close the connection.
   char buf[2] = {0x00, 0x01};
   QuicEncryptedPacket valid_packet(buf, 2, false);
   // Close connection shouldn't be called.

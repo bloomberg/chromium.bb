@@ -16,9 +16,11 @@ TEST(QuicProtocolTest, AdjustErrorForVersion) {
       << "Any additions to QuicRstStreamErrorCode require an addition to "
       << "AdjustErrorForVersion and this associated test.";
 
-  EXPECT_EQ(QUIC_RST_FLOW_CONTROL_ACCOUNTING, AdjustErrorForVersion(
-      QUIC_RST_FLOW_CONTROL_ACCOUNTING,
-      QUIC_VERSION_18));
+  // If we ever add different RST codes, we should have a test akin to the
+  // following.
+  //  EXPECT_EQ(QUIC_RST_FLOW_CONTROL_ACCOUNTING, AdjustErrorForVersion(
+  //      QUIC_RST_FLOW_CONTROL_ACCOUNTING,
+  //      QUIC_VERSION_18));
 }
 
 TEST(QuicProtocolTest, MakeQuicTag) {

@@ -762,9 +762,6 @@ TEST_P(EndToEndTest, DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
   // an infinite loop in the EpollServer, as the alarm fires and is immediately
   // rescheduled.
   ASSERT_TRUE(Initialize());
-  if (negotiated_version_ < QUIC_VERSION_19) {
-    return;
-  }
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
   // Ensure both stream and connection level are flow control blocked by setting
@@ -857,22 +854,27 @@ TEST_P(EndToEndTest, Timeout) {
 }
 
 TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_more_open_streams, true);
+
   // Negotiate 1 max open stream.
   client_config_.SetMaxStreamsPerConnection(1, 1);
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
   // Make the client misbehave after negotiation.
-  QuicSessionPeer::SetMaxOpenStreams(client_->client()->session(), 10);
+  const int kServerMaxStreams = kMaxStreamsMinimumIncrement + 1;
+  QuicSessionPeer::SetMaxOpenStreams(client_->client()->session(),
+                                     kServerMaxStreams + 1);
 
-  HTTPMessage request(HttpConstants::HTTP_1_1,
-                      HttpConstants::POST, "/foo");
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
   request.AddHeader("content-length", "3");
   request.set_has_complete_message(false);
 
-  // Open two simultaneous streams.
-  client_->SendMessage(request);
-  client_->SendMessage(request);
+  // The server supports a small number of additional streams beyond the
+  // negotiated limit. Open enough streams to go beyond that limit.
+  for (int i = 0; i < kServerMaxStreams + 1; ++i) {
+    client_->SendMessage(request);
+  }
   client_->WaitForResponse();
 
   EXPECT_FALSE(client_->connected());
@@ -1245,7 +1247,7 @@ TEST_P(EndToEndTest, DifferentFlowControlWindowsQ020) {
   set_server_initial_session_flow_control_receive_window(kServerSessionIFCW);
 
   ASSERT_TRUE(Initialize());
-  if (negotiated_version_ <= QUIC_VERSION_19) {
+  if (negotiated_version_ == QUIC_VERSION_19) {
     return;
   }
 

@@ -122,7 +122,7 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
   cached_network_params.set_max_bandwidth_timestamp_seconds(
       max_bandwidth_timestamp);
   cached_network_params.set_min_rtt_ms(
-      sent_packet_manager.GetRttStats()->min_rtt().ToMilliseconds());
+      sent_packet_manager.GetRttStats()->MinRtt().ToMilliseconds());
   cached_network_params.set_previous_connection_state(
       bandwidth_recorder.EstimateRecordedDuringSlowStart()
           ? CachedNetworkParameters::SLOW_START

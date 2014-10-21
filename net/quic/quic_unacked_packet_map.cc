@@ -34,25 +34,42 @@ QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   }
 }
 
-// TODO(ianswett): Combine this method with OnPacketSent once packets are always
-// sent in order and the connection tracks RetransmittableFrames for longer.
-void QuicUnackedPacketMap::AddPacket(
-    const SerializedPacket& serialized_packet) {
-  DCHECK_GE(serialized_packet.sequence_number,
-            least_unacked_ + unacked_packets_.size());
-  while (least_unacked_ + unacked_packets_.size() <
-         serialized_packet.sequence_number) {
+void QuicUnackedPacketMap::AddSentPacket(
+    const SerializedPacket& packet,
+    QuicPacketSequenceNumber old_sequence_number,
+    TransmissionType transmission_type,
+    QuicTime sent_time,
+    QuicByteCount bytes_sent,
+    bool set_in_flight) {
+  QuicPacketSequenceNumber sequence_number = packet.sequence_number;
+  DCHECK_LT(largest_sent_packet_, sequence_number);
+  DCHECK_GE(sequence_number, least_unacked_ + unacked_packets_.size());
+  while (least_unacked_ + unacked_packets_.size() < sequence_number) {
     unacked_packets_.push_back(TransmissionInfo());
     unacked_packets_.back().is_unackable = true;
   }
-  unacked_packets_.push_back(
-      TransmissionInfo(serialized_packet.retransmittable_frames,
-                       serialized_packet.sequence_number_length));
-  if (serialized_packet.retransmittable_frames != nullptr &&
-      serialized_packet.retransmittable_frames->HasCryptoHandshake() ==
-          IS_HANDSHAKE) {
-    ++pending_crypto_packet_count_;
+
+  TransmissionInfo info;
+  if (old_sequence_number == 0) {
+    if (packet.retransmittable_frames != nullptr &&
+        packet.retransmittable_frames->HasCryptoHandshake() == IS_HANDSHAKE) {
+      ++pending_crypto_packet_count_;
+    }
+    info = TransmissionInfo(packet.retransmittable_frames,
+                            packet.sequence_number_length);
+  } else {
+    info = OnRetransmittedPacket(
+        old_sequence_number, sequence_number, transmission_type);
   }
+  info.sent_time = sent_time;
+
+  largest_sent_packet_ = max(sequence_number, largest_sent_packet_);
+  if (set_in_flight) {
+    bytes_in_flight_ += bytes_sent;
+    info.bytes_sent = bytes_sent;
+    info.in_flight = true;
+  }
+  unacked_packets_.push_back(info);
 }
 
 void QuicUnackedPacketMap::RemoveObsoletePackets() {
@@ -65,29 +82,24 @@ void QuicUnackedPacketMap::RemoveObsoletePackets() {
   }
 }
 
-void QuicUnackedPacketMap::OnRetransmittedPacket(
+TransmissionInfo QuicUnackedPacketMap::OnRetransmittedPacket(
     QuicPacketSequenceNumber old_sequence_number,
     QuicPacketSequenceNumber new_sequence_number,
     TransmissionType transmission_type) {
   DCHECK_GE(old_sequence_number, least_unacked_);
   DCHECK_LT(old_sequence_number, least_unacked_ + unacked_packets_.size());
   DCHECK_GE(new_sequence_number, least_unacked_ + unacked_packets_.size());
-  while (least_unacked_ + unacked_packets_.size() < new_sequence_number) {
-    unacked_packets_.push_back(TransmissionInfo());
-    unacked_packets_.back().is_unackable = true;
-  }
+  DCHECK_NE(NOT_RETRANSMISSION, transmission_type);
 
   // TODO(ianswett): Discard and lose the packet lazily instead of immediately.
   TransmissionInfo* transmission_info =
       &unacked_packets_.at(old_sequence_number - least_unacked_);
   RetransmittableFrames* frames = transmission_info->retransmittable_frames;
+  transmission_info->retransmittable_frames = nullptr;
   LOG_IF(DFATAL, frames == nullptr)
       << "Attempt to retransmit packet with no "
       << "retransmittable frames: " << old_sequence_number;
 
-  // We keep the old packet in the unacked packet list until it, or one of
-  // the retransmissions of it are acked.
-  transmission_info->retransmittable_frames = nullptr;
   // Only keep one transmission older than largest observed, because only the
   // most recent is expected to possibly be a spurious retransmission.
   while (transmission_info->all_transmissions != nullptr &&
@@ -118,12 +130,14 @@ void QuicUnackedPacketMap::OnRetransmittedPacket(
     }
     transmission_info->all_transmissions->push_back(new_sequence_number);
   }
-  unacked_packets_.push_back(
+  TransmissionInfo info =
       TransmissionInfo(frames,
                        transmission_info->sequence_number_length,
                        transmission_type,
-                       transmission_info->all_transmissions));
+                       transmission_info->all_transmissions);
+  // Proactively remove obsolete packets so the least unacked can be raised.
   RemoveObsoletePackets();
+  return info;
 }
 
 void QuicUnackedPacketMap::ClearAllPreviousRetransmissions() {
@@ -354,25 +368,6 @@ bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
 QuicPacketSequenceNumber
 QuicUnackedPacketMap::GetLeastUnacked() const {
   return least_unacked_;
-}
-
-void QuicUnackedPacketMap::SetSent(QuicPacketSequenceNumber sequence_number,
-                                   QuicTime sent_time,
-                                   QuicByteCount bytes_sent,
-                                   bool set_in_flight) {
-  DCHECK_GE(sequence_number, least_unacked_);
-  DCHECK_LT(sequence_number, least_unacked_ + unacked_packets_.size());
-  TransmissionInfo* info = &unacked_packets_[sequence_number - least_unacked_];
-  DCHECK(!info->in_flight);
-
-  DCHECK_LT(largest_sent_packet_, sequence_number);
-  largest_sent_packet_ = max(sequence_number, largest_sent_packet_);
-  info->sent_time = sent_time;
-  if (set_in_flight) {
-    bytes_in_flight_ += bytes_sent;
-    info->bytes_sent = bytes_sent;
-    info->in_flight = true;
-  }
 }
 
 void QuicUnackedPacketMap::RestoreInFlight(

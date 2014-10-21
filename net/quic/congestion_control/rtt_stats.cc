@@ -68,7 +68,7 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
              << (rtt_sample.IsZero() ? "Zero" : "Infinite");
     return;
   }
-  // RTT can't be negative.
+  // RTT can't be non-positive.
   DCHECK_LT(0, rtt_sample.ToMicroseconds());
 
   latest_rtt_ = rtt_sample;
@@ -136,6 +136,13 @@ QuicTime::Delta RttStats::SmoothedRtt() const {
     return QuicTime::Delta::FromMicroseconds(initial_rtt_us_);
   }
   return smoothed_rtt_;
+}
+
+QuicTime::Delta RttStats::MinRtt() const {
+  if (!HasUpdates()) {
+    return QuicTime::Delta::FromMicroseconds(initial_rtt_us_);
+  }
+  return min_rtt_;
 }
 
 }  // namespace net

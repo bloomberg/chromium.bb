@@ -196,6 +196,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       connection_id_(connection_id),
       peer_address_(address),
       migrating_peer_port_(0),
+      last_packet_decrypted_(false),
       last_packet_revived_(false),
       last_size_(0),
       last_decrypted_packet_level_(ENCRYPTION_NONE),
@@ -291,10 +292,16 @@ bool QuicConnection::SelectMutualVersion(
 }
 
 void QuicConnection::OnError(QuicFramer* framer) {
-  // Packets that we cannot decrypt are dropped.
+  // Packets that we can not or have not decrypted are dropped.
   // TODO(rch): add stats to measure this.
-  if (!connected_ || framer->error() == QUIC_DECRYPTION_FAILURE) {
-    return;
+  if (FLAGS_quic_drop_junk_packets) {
+    if (!connected_ || last_packet_decrypted_ == false) {
+      return;
+    }
+  } else {
+    if (!connected_ || framer->error() == QUIC_DECRYPTION_FAILURE) {
+      return;
+    }
   }
   SendConnectionCloseWithDetails(framer->error(), framer->detailed_error());
 }
@@ -310,6 +317,8 @@ void QuicConnection::OnPacket() {
          last_blocked_frames_.empty() &&
          last_ping_frames_.empty() &&
          last_close_frames_.empty());
+  last_packet_decrypted_ = false;
+  last_packet_revived_ = false;
 }
 
 void QuicConnection::OnPublicResetPacket(
@@ -435,6 +444,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 
 void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
   last_decrypted_packet_level_ = level;
+  last_packet_decrypted_ = true;
 }
 
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
@@ -1082,7 +1092,7 @@ void QuicConnection::SendBlocked(QuicStreamId id) {
 const QuicConnectionStats& QuicConnection::GetStats() {
   // Update rtt and estimated bandwidth.
   stats_.min_rtt_us =
-      sent_packet_manager_.GetRttStats()->min_rtt().ToMicroseconds();
+      sent_packet_manager_.GetRttStats()->MinRtt().ToMicroseconds();
   stats_.srtt_us =
       sent_packet_manager_.GetRttStats()->SmoothedRtt().ToMicroseconds();
   stats_.estimated_bandwidth =
@@ -1102,7 +1112,6 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   if (debug_visitor_.get() != nullptr) {
     debug_visitor_->OnPacketReceived(self_address, peer_address, packet);
   }
-  last_packet_revived_ = false;
   last_size_ = packet.length();
 
   CheckForAddressMigration(self_address, peer_address);
@@ -1721,7 +1730,7 @@ QuicFecGroup* QuicConnection::GetFecGroup() {
   if (fec_group_num == 0) {
     return nullptr;
   }
-  if (group_map_.count(fec_group_num) == 0) {
+  if (!ContainsKey(group_map_, fec_group_num)) {
     if (group_map_.size() >= kMaxFecGroups) {  // Too many groups
       if (fec_group_num < group_map_.begin()->first) {
         // The group being requested is a group we've seen before and deleted.

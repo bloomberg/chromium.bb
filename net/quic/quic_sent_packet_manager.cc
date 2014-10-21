@@ -148,31 +148,6 @@ bool QuicSentPacketManager::HasClientSentConnectionOption(
   return false;
 }
 
-void QuicSentPacketManager::OnRetransmittedPacket(
-    QuicPacketSequenceNumber old_sequence_number,
-    QuicPacketSequenceNumber new_sequence_number) {
-  TransmissionType transmission_type;
-  PendingRetransmissionMap::iterator it =
-      pending_retransmissions_.find(old_sequence_number);
-  if (it != pending_retransmissions_.end()) {
-    transmission_type = it->second;
-    pending_retransmissions_.erase(it);
-  } else {
-    DLOG(DFATAL) << "Expected sequence number to be in "
-        "pending_retransmissions_.  sequence_number: " << old_sequence_number;
-    transmission_type = NOT_RETRANSMISSION;
-  }
-
-  // A notifier may be waiting to hear about ACKs for the original sequence
-  // number. Inform them that the sequence number has changed.
-  ack_notifier_manager_.UpdateSequenceNumber(old_sequence_number,
-                                             new_sequence_number);
-
-  unacked_packets_.OnRetransmittedPacket(old_sequence_number,
-                                         new_sequence_number,
-                                         transmission_type);
-}
-
 void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
                                           QuicTime ack_receive_time) {
   QuicByteCount bytes_in_flight = unacked_packets_.bytes_in_flight();
@@ -451,8 +426,8 @@ void QuicSentPacketManager::MarkPacketHandled(
     const TransmissionInfo& info,
     QuicTime::Delta delta_largest_observed) {
   QuicPacketSequenceNumber newest_transmission =
-      info.all_transmissions == nullptr ? sequence_number
-                                        : *info.all_transmissions->rbegin();
+      info.all_transmissions == nullptr ?
+          sequence_number : *info.all_transmissions->rbegin();
   // Remove the most recent packet, if it is pending retransmission.
   pending_retransmissions_.erase(newest_transmission);
 
@@ -508,10 +483,20 @@ bool QuicSentPacketManager::OnPacketSent(
     if (serialized_packet->retransmittable_frames) {
       ack_notifier_manager_.OnSerializedPacket(*serialized_packet);
     }
-    unacked_packets_.AddPacket(*serialized_packet);
-    serialized_packet->retransmittable_frames = nullptr;
   } else {
-    OnRetransmittedPacket(original_sequence_number, sequence_number);
+    PendingRetransmissionMap::iterator it =
+        pending_retransmissions_.find(original_sequence_number);
+    if (it != pending_retransmissions_.end()) {
+      pending_retransmissions_.erase(it);
+    } else {
+      DLOG(DFATAL) << "Expected sequence number to be in "
+                   << "pending_retransmissions_.  sequence_number: "
+                   << original_sequence_number;
+    }
+    // A notifier may be waiting to hear about ACKs for the original sequence
+    // number. Inform them that the sequence number has changed.
+    ack_notifier_manager_.UpdateSequenceNumber(original_sequence_number,
+                                               sequence_number);
   }
 
   if (pending_timer_transmission_count_ > 0) {
@@ -533,8 +518,15 @@ bool QuicSentPacketManager::OnPacketSent(
                                     sequence_number,
                                     bytes,
                                     has_retransmittable_data);
-  unacked_packets_.SetSent(sequence_number, sent_time, bytes, in_flight);
+  unacked_packets_.AddSentPacket(*serialized_packet,
+                                 original_sequence_number,
+                                 transmission_type,
+                                 sent_time,
+                                 bytes,
+                                 in_flight);
 
+  // Take ownership of the retransmittable frames before exiting.
+  serialized_packet->retransmittable_frames = nullptr;
   // Reset the retransmission timer anytime a pending packet is sent.
   return in_flight;
 }
@@ -873,11 +865,12 @@ void QuicSentPacketManager::EnablePacing() {
     return;
   }
 
-  // Set up a pacing sender with a 5 millisecond alarm granularity.
+  // Set up a pacing sender with a 1 millisecond alarm granularity, the same as
+  // the default granularity of the Linux kernel's FQ qdisc.
   using_pacing_ = true;
   send_algorithm_.reset(
       new PacingSender(send_algorithm_.release(),
-                       QuicTime::Delta::FromMilliseconds(5),
+                       QuicTime::Delta::FromMilliseconds(1),
                        kInitialUnpacedBurst));
 }
 

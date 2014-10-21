@@ -2813,13 +2813,7 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(15));
   connection_.GetPingAlarm()->Fire();
   EXPECT_EQ(1u, writer_->frame_count());
-  if (version() >= QUIC_VERSION_18) {
-    ASSERT_EQ(1u, writer_->ping_frames().size());
-  } else {
-    ASSERT_EQ(1u, writer_->stream_frames().size());
-    EXPECT_EQ(kCryptoStreamId, writer_->stream_frames()[0].stream_id);
-    EXPECT_EQ(0u, writer_->stream_frames()[0].offset);
-  }
+  ASSERT_EQ(1u, writer_->ping_frames().size());
   writer_->Reset();
 
   EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(false));
@@ -3021,16 +3015,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckOnSecondPacket) {
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 }
 
-TEST_P(QuicConnectionTest, SendDelayedAckForPing) {
-  if (version() < QUIC_VERSION_18) {
-    return;
-  }
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
-  ProcessPingPacket(1);
-  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
-}
-
 TEST_P(QuicConnectionTest, NoAckOnOldNacks) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   // Drop one packet, triggering a sequence of acks.
@@ -3229,15 +3213,11 @@ TEST_P(QuicConnectionTest, Blocked) {
   ProcessFramePacket(QuicFrame(&blocked));
 }
 
-TEST_P(QuicConnectionTest, InvalidPacket) {
-  EXPECT_CALL(visitor_,
-              OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, false));
+TEST_P(QuicConnectionTest, ZeroBytePacket) {
+  // Don't close the connection for zero byte packets.
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(0);
   QuicEncryptedPacket encrypted(nullptr, 0);
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), encrypted);
-  // The connection close packet should have error details.
-  ASSERT_FALSE(writer_->connection_close_frames().empty());
-  EXPECT_EQ("Unable to read public flags.",
-            writer_->connection_close_frames()[0].error_details);
 }
 
 TEST_P(QuicConnectionTest, MissingPacketsBeforeLeastUnacked) {

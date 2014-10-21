@@ -62,13 +62,9 @@ bool PacingSender::OnPacketSent(
     next_packet_send_time_ = QuicTime::Zero();
     return in_flight;
   }
-  // The next packet should be sent as soon as the current packets has
-  // been transferred.  We pace at twice the rate of the underlying
-  // sender's bandwidth estimate during slow start and 1.25x during congestion
-  // avoidance to ensure pacing doesn't prevent us from filling the window.
-  const float kPacingAggression = sender_->InSlowStart() ? 2 : 1.25;
-  QuicTime::Delta delay =
-      BandwidthEstimate().Scale(kPacingAggression).TransferTime(bytes);
+  // The next packet should be sent as soon as the current packets has been
+  // transferred.
+  QuicTime::Delta delay = PacingRate().TransferTime(bytes);
   // If the last send was delayed, and the alarm took a long time to get
   // invoked, allow the connection to make up for lost time.
   if (was_last_send_delayed_) {
@@ -143,6 +139,10 @@ QuicTime::Delta PacingSender::TimeUntilSend(
 
   DVLOG(1) << "Sending packet now";
   return QuicTime::Delta::Zero();
+}
+
+QuicBandwidth PacingSender::PacingRate() const {
+  return sender_->PacingRate();
 }
 
 QuicBandwidth PacingSender::BandwidthEstimate() const {

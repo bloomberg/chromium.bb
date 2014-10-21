@@ -683,6 +683,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Used to store latest peer port to possibly migrate to later.
   int migrating_peer_port_;
 
+  // True if the last packet has gotten far enough in the framer to be
+  // decrypted.
+  bool last_packet_decrypted_;
   bool last_packet_revived_;  // True if the last packet was revived from FEC.
   size_t last_size_;  // Size of the last received packet.
   EncryptionLevel last_decrypted_packet_level_;
