@@ -115,15 +115,27 @@ def generate_interface_dependencies():
     # since this is also special-cased and Node inherits from EventTarget,
     # but this inheritance information requires computing dependencies for
     # the real Node.idl file.
-
+    non_test_idl_paths = []
+    test_idl_paths = []
+    test_idl_dir = test_input_directory + os.sep
+    for idl_path in idl_paths_recursive(source_path):
+        if idl_path.startswith(test_idl_dir):
+            test_idl_paths.append(idl_path)
+        else:
+            non_test_idl_paths.append(idl_path)
     # 2-stage computation: individual, then overall
     #
     # Properly should compute separately by component (currently test
     # includes are invalid), but that's brittle (would need to update this file
     # for each new component) and doesn't test the code generator any better
     # than using a single component.
-    for idl_filename in idl_paths_recursive(source_path):
-        compute_info_individual(idl_filename)
+    #
+    # In order to allow test IDL files to override the production IDL files if
+    # they have the same interface name, process the test IDL files after the
+    # non-test IDL files.
+    for idl_path_list in (non_test_idl_paths, test_idl_paths):
+        for idl_path in idl_path_list:
+            compute_info_individual(idl_path)
     info_individuals = [info_individual()]
     # TestDictionary.{h,cpp} are placed under Source/bindings/tests/idls/core.
     # However, IdlCompiler generates TestDictionary.{h,cpp} by using relative_dir.
