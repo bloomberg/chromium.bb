@@ -17,7 +17,7 @@ namespace net {
 // Implements a TCP socket.
 class NET_EXPORT TCPListenSocket : public StreamListenSocket {
  public:
-  virtual ~TCPListenSocket();
+  ~TCPListenSocket() override;
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
   // accept local connections.
   static scoped_ptr<TCPListenSocket> CreateAndListen(
@@ -34,7 +34,7 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
   TCPListenSocket(SocketDescriptor s, StreamListenSocket::Delegate* del);
 
   // Implements StreamListenSocket::Accept.
-  virtual void Accept() override;
+  void Accept() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TCPListenSocket);
@@ -44,10 +44,10 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
 class NET_EXPORT TCPListenSocketFactory : public StreamListenSocketFactory {
  public:
   TCPListenSocketFactory(const std::string& ip, int port);
-  virtual ~TCPListenSocketFactory();
+  ~TCPListenSocketFactory() override;
 
   // StreamListenSocketFactory overrides.
-  virtual scoped_ptr<StreamListenSocket> CreateAndListen(
+  scoped_ptr<StreamListenSocket> CreateAndListen(
       StreamListenSocket::Delegate* delegate) const override;
 
  private:

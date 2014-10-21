@@ -94,16 +94,16 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
       const scoped_refptr<EventManager>& event_manager)
       : event_manager_(event_manager) {}
 
-  virtual void DidAccept(StreamListenSocket* server,
-                         scoped_ptr<StreamListenSocket> connection) override {
+  void DidAccept(StreamListenSocket* server,
+                 scoped_ptr<StreamListenSocket> connection) override {
     LOG(ERROR) << __PRETTY_FUNCTION__;
     connection_ = connection.Pass();
     Notify(EVENT_ACCEPT);
   }
 
-  virtual void DidRead(StreamListenSocket* connection,
-                       const char* data,
-                       int len) override {
+  void DidRead(StreamListenSocket* connection,
+               const char* data,
+               int len) override {
     {
       base::AutoLock lock(mutex_);
       DCHECK(len);
@@ -112,9 +112,7 @@ class TestListenSocketDelegate : public StreamListenSocket::Delegate {
     Notify(EVENT_READ);
   }
 
-  virtual void DidClose(StreamListenSocket* sock) override {
-    Notify(EVENT_CLOSE);
-  }
+  void DidClose(StreamListenSocket* sock) override { Notify(EVENT_CLOSE); }
 
   void OnListenCompleted() {
     Notify(EVENT_LISTEN);

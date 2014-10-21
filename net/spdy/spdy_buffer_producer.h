@@ -35,9 +35,9 @@ class NET_EXPORT_PRIVATE SimpleBufferProducer : public SpdyBufferProducer {
  public:
   explicit SimpleBufferProducer(scoped_ptr<SpdyBuffer> buffer);
 
-  virtual ~SimpleBufferProducer();
+  ~SimpleBufferProducer() override;
 
-  virtual scoped_ptr<SpdyBuffer> ProduceBuffer() override;
+  scoped_ptr<SpdyBuffer> ProduceBuffer() override;
 
  private:
   scoped_ptr<SpdyBuffer> buffer_;

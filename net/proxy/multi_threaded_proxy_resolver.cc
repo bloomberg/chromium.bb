@@ -175,7 +175,7 @@ class MultiThreadedProxyResolver::SetPacScriptJob
   }
 
   // Runs on the worker thread.
-  virtual void Run(scoped_refptr<base::MessageLoopProxy> origin_loop) override {
+  void Run(scoped_refptr<base::MessageLoopProxy> origin_loop) override {
     ProxyResolver* resolver = executor()->resolver();
     int rv = resolver->SetPacScript(script_data_, CompletionCallback());
 
@@ -186,7 +186,7 @@ class MultiThreadedProxyResolver::SetPacScriptJob
   }
 
  protected:
-  virtual ~SetPacScriptJob() {}
+  ~SetPacScriptJob() override {}
 
  private:
   // Runs the completion callback on the origin thread.
@@ -222,12 +222,12 @@ class MultiThreadedProxyResolver::GetProxyForURLJob
 
   BoundNetLog* net_log() { return &net_log_; }
 
-  virtual void WaitingForThread() override {
+  void WaitingForThread() override {
     was_waiting_for_thread_ = true;
     net_log_.BeginEvent(NetLog::TYPE_WAITING_FOR_PROXY_RESOLVER_THREAD);
   }
 
-  virtual void FinishedWaitingForThread() override {
+  void FinishedWaitingForThread() override {
     DCHECK(executor());
 
     if (was_waiting_for_thread_) {
@@ -240,7 +240,7 @@ class MultiThreadedProxyResolver::GetProxyForURLJob
   }
 
   // Runs on the worker thread.
-  virtual void Run(scoped_refptr<base::MessageLoopProxy> origin_loop) override {
+  void Run(scoped_refptr<base::MessageLoopProxy> origin_loop) override {
     ProxyResolver* resolver = executor()->resolver();
     int rv = resolver->GetProxyForURL(
         url_, &results_buf_, CompletionCallback(), NULL, net_log_);
@@ -252,7 +252,7 @@ class MultiThreadedProxyResolver::GetProxyForURLJob
   }
 
  protected:
-  virtual ~GetProxyForURLJob() {}
+  ~GetProxyForURLJob() override {}
 
  private:
   // Runs the completion callback on the origin thread.

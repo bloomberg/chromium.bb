@@ -21,10 +21,10 @@ namespace net {
 class NetworkChangeNotifierMac: public NetworkChangeNotifier {
  public:
   NetworkChangeNotifierMac();
-  virtual ~NetworkChangeNotifierMac();
+  ~NetworkChangeNotifierMac() override;
 
   // NetworkChangeNotifier implementation:
-  virtual ConnectionType GetCurrentConnectionType() const override;
+  ConnectionType GetCurrentConnectionType() const override;
 
   // Forwarder just exists to keep the NetworkConfigWatcherMac API out of
   // NetworkChangeNotifierMac's public API.
@@ -34,11 +34,10 @@ class NetworkChangeNotifierMac: public NetworkChangeNotifier {
         : net_config_watcher_(net_config_watcher) {}
 
     // NetworkConfigWatcherMac::Delegate implementation:
-    virtual void Init() override;
-    virtual void StartReachabilityNotifications() override;
-    virtual void SetDynamicStoreNotificationKeys(
-        SCDynamicStoreRef store) override;
-    virtual void OnNetworkConfigChange(CFArrayRef changed_keys) override;
+    void Init() override;
+    void StartReachabilityNotifications() override;
+    void SetDynamicStoreNotificationKeys(SCDynamicStoreRef store) override;
+    void OnNetworkConfigChange(CFArrayRef changed_keys) override;
 
    private:
     NetworkChangeNotifierMac* const net_config_watcher_;

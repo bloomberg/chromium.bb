@@ -207,7 +207,7 @@ class StreamRequestDestroyingCallback : public TestCompletionCallbackBase {
  public:
   StreamRequestDestroyingCallback() {}
 
-  virtual ~StreamRequestDestroyingCallback() {}
+  ~StreamRequestDestroyingCallback() override {}
 
   void SetRequestToDestroy(scoped_ptr<SpdyStreamRequest> request) {
     request_ = request.Pass();
@@ -2303,9 +2303,9 @@ class SessionClosingDelegate : public test::StreamDelegateDoNothing {
       : StreamDelegateDoNothing(stream),
         session_to_close_(session_to_close) {}
 
-  virtual ~SessionClosingDelegate() {}
+  ~SessionClosingDelegate() override {}
 
-  virtual void OnClose(int status) override {
+  void OnClose(int status) override {
     session_to_close_->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error");
   }
 
@@ -3379,9 +3379,9 @@ class StreamCreatingDelegate : public test::StreamDelegateDoNothing {
       : StreamDelegateDoNothing(stream),
         session_(session) {}
 
-  virtual ~StreamCreatingDelegate() {}
+  ~StreamCreatingDelegate() override {}
 
-  virtual void OnClose(int status) override {
+  void OnClose(int status) override {
     GURL url(kDefaultURL);
     ignore_result(
         CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
@@ -3658,10 +3658,10 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
                            base::StringPiece data)
       : StreamDelegateSendImmediate(stream, data) {}
 
-  virtual ~DropReceivedDataDelegate() {}
+  ~DropReceivedDataDelegate() override {}
 
   // Drop any received data.
-  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override {}
+  void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override {}
 };
 
 // Send data back and forth but use a delegate that drops its received
@@ -4243,13 +4243,13 @@ class StreamClosingDelegate : public test::StreamDelegateWithBody {
                         base::StringPiece data)
       : StreamDelegateWithBody(stream, data) {}
 
-  virtual ~StreamClosingDelegate() {}
+  ~StreamClosingDelegate() override {}
 
   void set_stream_to_close(const base::WeakPtr<SpdyStream>& stream_to_close) {
     stream_to_close_ = stream_to_close;
   }
 
-  virtual void OnDataSent() override {
+  void OnDataSent() override {
     test::StreamDelegateWithBody::OnDataSent();
     if (stream_to_close_.get()) {
       stream_to_close_->Close();

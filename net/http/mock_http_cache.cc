@@ -459,8 +459,8 @@ int MockDiskCache::DoomEntriesSince(const base::Time initial_time,
 
 class MockDiskCache::NotImplementedIterator : public Iterator {
  public:
-  virtual int OpenNextEntry(disk_cache::Entry** next_entry,
-                            const net::CompletionCallback& callback) override {
+  int OpenNextEntry(disk_cache::Entry** next_entry,
+                    const net::CompletionCallback& callback) override {
     return net::ERR_NOT_IMPLEMENTED;
   }
 };

@@ -25,18 +25,19 @@ class MockFileStream : public net::FileStream {
   explicit MockFileStream(const scoped_refptr<base::TaskRunner>& task_runner);
   MockFileStream(base::File file,
                  const scoped_refptr<base::TaskRunner>& task_runner);
-  virtual ~MockFileStream();
+  ~MockFileStream() override;
 
   // FileStream methods.
-  virtual int Seek(base::File::Whence whence, int64 offset,
-                   const Int64CompletionCallback& callback) override;
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) override;
-  virtual int Write(IOBuffer* buf,
-                    int buf_len,
-                    const CompletionCallback& callback) override;
-  virtual int Flush(const CompletionCallback& callback) override;
+  int Seek(base::File::Whence whence,
+           int64 offset,
+           const Int64CompletionCallback& callback) override;
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override;
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override;
+  int Flush(const CompletionCallback& callback) override;
 
   void set_forced_error_async(int error) {
     forced_error_ = error;

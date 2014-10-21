@@ -20,7 +20,7 @@ class QuicRandom;
 // Diffie-Hellman on curve25519. See http://cr.yp.to/ecdh.html
 class NET_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
  public:
-  virtual ~Curve25519KeyExchange();
+  ~Curve25519KeyExchange() override;
 
   // New creates a new object from a private key. If the private key is
   // invalid, nullptr is returned.
@@ -31,11 +31,11 @@ class NET_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
   static std::string NewPrivateKey(QuicRandom* rand);
 
   // KeyExchange interface.
-  virtual KeyExchange* NewKeyPair(QuicRandom* rand) const override;
-  virtual bool CalculateSharedKey(const base::StringPiece& peer_public_value,
-                                  std::string* shared_key) const override;
-  virtual base::StringPiece public_value() const override;
-  virtual QuicTag tag() const override;
+  KeyExchange* NewKeyPair(QuicRandom* rand) const override;
+  bool CalculateSharedKey(const base::StringPiece& peer_public_value,
+                          std::string* shared_key) const override;
+  base::StringPiece public_value() const override;
+  QuicTag tag() const override;
 
  private:
   Curve25519KeyExchange();

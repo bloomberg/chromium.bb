@@ -34,7 +34,7 @@ class OrphanedTestServerFilter : public base::ProcessFilter {
       : path_string_(path_string),
         port_string_(port_string) {}
 
-  virtual bool Includes(const base::ProcessEntry& entry) const override {
+  bool Includes(const base::ProcessEntry& entry) const override {
     if (entry.parent_pid() != 1)
       return false;
     bool found_path_string = false;

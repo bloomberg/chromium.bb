@@ -27,7 +27,7 @@ class ShrinkableIOBufferWithSize : public IOBufferWithSize {
   }
 
  private:
-  virtual ~ShrinkableIOBufferWithSize() {}
+  ~ShrinkableIOBufferWithSize() override {}
 };
 
 }  // namespace

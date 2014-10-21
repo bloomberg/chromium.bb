@@ -57,7 +57,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
               uint32 mask,
               const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
               net::NetLog* net_log);
-  virtual ~BackendImpl();
+  ~BackendImpl() override;
 
   // Performs general initialization for this current instance of the cache.
   int Init(const CompletionCallback& callback);
@@ -259,20 +259,22 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void FlushIndex();
 
   // Backend implementation.
-  virtual net::CacheType GetCacheType() const override;
-  virtual int32 GetEntryCount() const override;
-  virtual int OpenEntry(const std::string& key, Entry** entry,
-                        const CompletionCallback& callback) override;
-  virtual int CreateEntry(const std::string& key, Entry** entry,
-                          const CompletionCallback& callback) override;
-  virtual int DoomEntry(const std::string& key,
-                        const CompletionCallback& callback) override;
-  virtual int DoomAllEntries(const CompletionCallback& callback) override;
-  virtual int DoomEntriesBetween(base::Time initial_time,
-                                 base::Time end_time,
-                                 const CompletionCallback& callback) override;
-  virtual int DoomEntriesSince(base::Time initial_time,
-                               const CompletionCallback& callback) override;
+  net::CacheType GetCacheType() const override;
+  int32 GetEntryCount() const override;
+  int OpenEntry(const std::string& key,
+                Entry** entry,
+                const CompletionCallback& callback) override;
+  int CreateEntry(const std::string& key,
+                  Entry** entry,
+                  const CompletionCallback& callback) override;
+  int DoomEntry(const std::string& key,
+                const CompletionCallback& callback) override;
+  int DoomAllEntries(const CompletionCallback& callback) override;
+  int DoomEntriesBetween(base::Time initial_time,
+                         base::Time end_time,
+                         const CompletionCallback& callback) override;
+  int DoomEntriesSince(base::Time initial_time,
+                       const CompletionCallback& callback) override;
   // NOTE: The blockfile Backend::Iterator::OpenNextEntry method does not modify
   // the last_used field of the entry, and therefore it does not impact the
   // eviction ranking of the entry. However, an enumeration will go through all
@@ -281,9 +283,9 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   // the iterator (for example, deleting the entry) will invalidate the
   // iterator. Performing operations on an entry that modify the entry may
   // result in loops in the iteration, skipped entries or similar.
-  virtual scoped_ptr<Iterator> CreateIterator() override;
-  virtual void GetStats(StatsItems* stats) override;
-  virtual void OnExternalCacheHit(const std::string& key) override;
+  scoped_ptr<Iterator> CreateIterator() override;
+  void GetStats(StatsItems* stats) override;
+  void OnExternalCacheHit(const std::string& key) override;
 
  private:
   typedef base::hash_map<CacheAddr, EntryImpl*> EntriesMap;

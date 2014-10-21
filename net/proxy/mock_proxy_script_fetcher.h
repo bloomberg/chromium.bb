@@ -20,14 +20,14 @@ class URLRequestContext;
 class MockProxyScriptFetcher : public ProxyScriptFetcher {
  public:
   MockProxyScriptFetcher();
-  virtual ~MockProxyScriptFetcher();
+  ~MockProxyScriptFetcher() override;
 
   // ProxyScriptFetcher implementation.
-  virtual int Fetch(const GURL& url,
-                    base::string16* text,
-                    const CompletionCallback& callback) override;
-  virtual void Cancel() override;
-  virtual URLRequestContext* GetRequestContext() const override;
+  int Fetch(const GURL& url,
+            base::string16* text,
+            const CompletionCallback& callback) override;
+  void Cancel() override;
+  URLRequestContext* GetRequestContext() const override;
 
   void NotifyFetchCompletion(int result, const std::string& ascii_text);
   const GURL& pending_request_url() const;

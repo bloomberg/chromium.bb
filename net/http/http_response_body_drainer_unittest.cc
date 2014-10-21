@@ -74,59 +74,56 @@ class MockHttpStream : public HttpStream {
         is_last_chunk_zero_size_(false),
         is_complete_(false),
         weak_factory_(this) {}
-  virtual ~MockHttpStream() {}
+  ~MockHttpStream() override {}
 
   // HttpStream implementation.
-  virtual int InitializeStream(const HttpRequestInfo* request_info,
-                               RequestPriority priority,
-                               const BoundNetLog& net_log,
-                               const CompletionCallback& callback) override {
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override {
     return ERR_UNEXPECTED;
   }
-  virtual int SendRequest(const HttpRequestHeaders& request_headers,
-                          HttpResponseInfo* response,
-                          const CompletionCallback& callback) override {
+  int SendRequest(const HttpRequestHeaders& request_headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override {
     return ERR_UNEXPECTED;
   }
-  virtual UploadProgress GetUploadProgress() const override {
-    return UploadProgress();
-  }
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) override {
+  UploadProgress GetUploadProgress() const override { return UploadProgress(); }
+  int ReadResponseHeaders(const CompletionCallback& callback) override {
     return ERR_UNEXPECTED;
   }
 
-  virtual bool CanFindEndOfResponse() const override { return true; }
-  virtual bool IsConnectionReused() const override { return false; }
-  virtual void SetConnectionReused() override {}
-  virtual bool IsConnectionReusable() const override { return false; }
-  virtual int64 GetTotalReceivedBytes() const override { return 0; }
-  virtual void GetSSLInfo(SSLInfo* ssl_info) override {}
-  virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) override {}
+  bool CanFindEndOfResponse() const override { return true; }
+  bool IsConnectionReused() const override { return false; }
+  void SetConnectionReused() override {}
+  bool IsConnectionReusable() const override { return false; }
+  int64 GetTotalReceivedBytes() const override { return 0; }
+  void GetSSLInfo(SSLInfo* ssl_info) override {}
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
 
   // Mocked API
-  virtual int ReadResponseBody(IOBuffer* buf, int buf_len,
-                               const CompletionCallback& callback) override;
-  virtual void Close(bool not_reusable) override {
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override;
+  void Close(bool not_reusable) override {
     CHECK(!closed_);
     closed_ = true;
     result_waiter_->set_result(not_reusable);
   }
 
-  virtual HttpStream* RenewStreamForAuth() override {
-    return NULL;
+  HttpStream* RenewStreamForAuth() override { return NULL; }
+
+  bool IsResponseBodyComplete() const override { return is_complete_; }
+
+  bool IsSpdyHttpStream() const override { return false; }
+
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
+    return false;
   }
 
-  virtual bool IsResponseBodyComplete() const override { return is_complete_; }
+  void Drain(HttpNetworkSession*) override {}
 
-  virtual bool IsSpdyHttpStream() const override { return false; }
-
-  virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override { return false; }
-
-  virtual void Drain(HttpNetworkSession*) override {}
-
-  virtual void SetPriority(RequestPriority priority) override {}
+  void SetPriority(RequestPriority priority) override {}
 
   // Methods to tweak/observer mock behavior:
   void set_stall_reads_forever() { stall_reads_forever_ = true; }

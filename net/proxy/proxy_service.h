@@ -97,7 +97,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
                ProxyResolver* resolver,
                NetLog* net_log);
 
-  virtual ~ProxyService();
+  ~ProxyService() override;
 
   // Used internally to handle PAC queries.
   // TODO(eroman): consider naming this simply "Request".
@@ -375,14 +375,14 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   // NetworkChangeNotifier::IPAddressObserver
   // When this is called, we re-fetch PAC scripts and re-run WPAD.
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
   // NetworkChangeNotifier::DNSObserver
   // We respond as above.
-  virtual void OnDNSChanged() override;
+  void OnDNSChanged() override;
 
   // ProxyConfigService::Observer
-  virtual void OnProxyConfigChanged(
+  void OnProxyConfigChanged(
       const ProxyConfig& config,
       ProxyConfigService::ConfigAvailability availability) override;
 

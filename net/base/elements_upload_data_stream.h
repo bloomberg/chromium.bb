@@ -26,7 +26,7 @@ class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
   ElementsUploadDataStream(ScopedVector<UploadElementReader> element_readers,
                            int64 identifier);
 
-  virtual ~ElementsUploadDataStream();
+  ~ElementsUploadDataStream() override;
 
   // Creates an ElementsUploadDataStream with a single reader.  Returns a
   // scoped_ptr<UploadDataStream> for ease of use.
@@ -36,12 +36,11 @@ class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
 
  private:
   // UploadDataStream implementation.
-  virtual bool IsInMemory() const override;
-  virtual const ScopedVector<UploadElementReader>*
-     GetElementReaders() const override;
-  virtual int InitInternal() override;
-  virtual int ReadInternal(IOBuffer* buf, int buf_len) override;
-  virtual void ResetInternal() override;
+  bool IsInMemory() const override;
+  const ScopedVector<UploadElementReader>* GetElementReaders() const override;
+  int InitInternal() override;
+  int ReadInternal(IOBuffer* buf, int buf_len) override;
+  void ResetInternal() override;
 
   // Runs Init() for all element readers.
   // This method is used to implement InitInternal().

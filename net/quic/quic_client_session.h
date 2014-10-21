@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
                     const QuicConfig& config,
                     base::TaskRunner* task_runner,
                     NetLog* net_log);
-  virtual ~QuicClientSession();
+  ~QuicClientSession() override;
 
   // Initialize session's connection to |server_id|.
   void InitializeSession(
@@ -123,31 +123,28 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   void CancelRequest(StreamRequest* request);
 
   // QuicSession methods:
-  virtual void OnStreamFrames(
-      const std::vector<QuicStreamFrame>& frames) override;
-  virtual QuicReliableClientStream* CreateOutgoingDataStream() override;
-  virtual QuicCryptoClientStream* GetCryptoStream() override;
-  virtual void CloseStream(QuicStreamId stream_id) override;
-  virtual void SendRstStream(QuicStreamId id,
-                             QuicRstStreamErrorCode error,
-                             QuicStreamOffset bytes_written) override;
-  virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
-  virtual void OnCryptoHandshakeMessageSent(
+  void OnStreamFrames(const std::vector<QuicStreamFrame>& frames) override;
+  QuicReliableClientStream* CreateOutgoingDataStream() override;
+  QuicCryptoClientStream* GetCryptoStream() override;
+  void CloseStream(QuicStreamId stream_id) override;
+  void SendRstStream(QuicStreamId id,
+                     QuicRstStreamErrorCode error,
+                     QuicStreamOffset bytes_written) override;
+  void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
+  void OnCryptoHandshakeMessageSent(
       const CryptoHandshakeMessage& message) override;
-  virtual void OnCryptoHandshakeMessageReceived(
+  void OnCryptoHandshakeMessageReceived(
       const CryptoHandshakeMessage& message) override;
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) const override;
+  bool GetSSLInfo(SSLInfo* ssl_info) const override;
 
   // QuicClientSessionBase methods:
-  virtual void OnProofValid(
-      const QuicCryptoClientConfig::CachedState& cached) override;
-  virtual void OnProofVerifyDetailsAvailable(
+  void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
+  void OnProofVerifyDetailsAvailable(
       const ProofVerifyDetails& verify_details) override;
 
   // QuicConnectionVisitorInterface methods:
-  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
-  virtual void OnSuccessfulVersionNegotiation(
-      const QuicVersion& version) override;
+  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
 
   // Performs a crypto handshake with the server.
   int CryptoConnect(bool require_confirmation,
@@ -182,7 +179,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
 
  protected:
   // QuicSession methods:
-  virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) override;
+  QuicDataStream* CreateIncomingDataStream(QuicStreamId id) override;
 
  private:
   friend class test::QuicClientSessionPeer;

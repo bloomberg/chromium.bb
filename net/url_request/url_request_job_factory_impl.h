@@ -20,7 +20,7 @@ class URLRequestInterceptor;
 class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
  public:
   URLRequestJobFactoryImpl();
-  virtual ~URLRequestJobFactoryImpl();
+  ~URLRequestJobFactoryImpl() override;
 
   // Sets the ProtocolHandler for a scheme. Returns true on success, false on
   // failure (a ProtocolHandler already exists for |scheme|). On success,
@@ -29,13 +29,13 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
                           ProtocolHandler* protocol_handler);
 
   // URLRequestJobFactory implementation
-  virtual URLRequestJob* MaybeCreateJobWithProtocolHandler(
+  URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       URLRequest* request,
       NetworkDelegate* network_delegate) const override;
-  virtual bool IsHandledProtocol(const std::string& scheme) const override;
-  virtual bool IsHandledURL(const GURL& url) const override;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override;
+  bool IsHandledProtocol(const std::string& scheme) const override;
+  bool IsHandledURL(const GURL& url) const override;
+  bool IsSafeRedirectTarget(const GURL& location) const override;
 
  private:
   // For testing only.

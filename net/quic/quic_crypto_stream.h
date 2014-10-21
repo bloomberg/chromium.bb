@@ -34,13 +34,12 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   explicit QuicCryptoStream(QuicSession* session);
 
   // CryptoFramerVisitorInterface implementation
-  virtual void OnError(CryptoFramer* framer) override;
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) override;
+  void OnError(CryptoFramer* framer) override;
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
   // ReliableQuicStream implementation
-  virtual uint32 ProcessRawData(const char* data, uint32 data_len) override;
-  virtual QuicPriority EffectivePriority() const override;
+  uint32 ProcessRawData(const char* data, uint32 data_len) override;
+  QuicPriority EffectivePriority() const override;
 
   // Sends |message| to the peer.
   // TODO(wtc): return a success/failure status.

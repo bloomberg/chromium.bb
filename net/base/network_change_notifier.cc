@@ -45,7 +45,7 @@ NetworkChangeNotifierFactory* g_network_change_notifier_factory = NULL;
 
 class MockNetworkChangeNotifier : public NetworkChangeNotifier {
  public:
-  virtual ConnectionType GetCurrentConnectionType() const override {
+  ConnectionType GetCurrentConnectionType() const override {
     return CONNECTION_UNKNOWN;
   }
 };
@@ -83,7 +83,7 @@ class HistogramWatcher
     NetworkChangeNotifier::AddNetworkChangeObserver(this);
   }
 
-  virtual ~HistogramWatcher() {
+  ~HistogramWatcher() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(g_network_change_notifier);
     NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
@@ -93,7 +93,7 @@ class HistogramWatcher
   }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() override {
+  void OnIPAddressChanged() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     UMA_HISTOGRAM_MEDIUM_TIMES("NCN.IPAddressChange",
                                SinceLast(&last_ip_address_change_));
@@ -103,7 +103,7 @@ class HistogramWatcher
   }
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     base::TimeTicks now = base::TimeTicks::Now();
@@ -264,15 +264,14 @@ class HistogramWatcher
   }
 
   // NetworkChangeNotifier::DNSObserver implementation.
-  virtual void OnDNSChanged() override {
+  void OnDNSChanged() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     UMA_HISTOGRAM_MEDIUM_TIMES("NCN.DNSConfigChange",
                                SinceLast(&last_dns_change_));
   }
 
   // NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
-      NetworkChangeNotifier::ConnectionType type) override {
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (type != NetworkChangeNotifier::CONNECTION_NONE) {
       UMA_HISTOGRAM_MEDIUM_TIMES("NCN.NetworkOnlineChange",
@@ -424,7 +423,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
     AddIPAddressObserver(this);
   }
 
-  virtual ~NetworkChangeCalculator() {
+  ~NetworkChangeCalculator() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(g_network_change_notifier);
     RemoveConnectionTypeObserver(this);
@@ -432,7 +431,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() override {
+  void OnIPAddressChanged() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE
         ? params_.ip_address_offline_delay_ : params_.ip_address_online_delay_;
@@ -441,7 +440,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   }
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(ConnectionType type) override {
+  void OnConnectionTypeChanged(ConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     pending_connection_type_ = type;
     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE

@@ -61,11 +61,11 @@ class URLSecurityManagerWhitelist : public URLSecurityManager {
   // The URLSecurityManagerWhitelist takes ownership of the whitelists.
   URLSecurityManagerWhitelist(const HttpAuthFilter* whitelist_default,
                               const HttpAuthFilter* whitelist_delegation);
-  virtual ~URLSecurityManagerWhitelist();
+  ~URLSecurityManagerWhitelist() override;
 
   // URLSecurityManager methods.
-  virtual bool CanUseDefaultCredentials(const GURL& auth_origin) const override;
-  virtual bool CanDelegate(const GURL& auth_origin) const override;
+  bool CanUseDefaultCredentials(const GURL& auth_origin) const override;
+  bool CanDelegate(const GURL& auth_origin) const override;
 
  private:
   scoped_ptr<const HttpAuthFilter> whitelist_default_;

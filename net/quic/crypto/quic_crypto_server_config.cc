@@ -107,8 +107,8 @@ class VerifyNonceIsValidAndUniqueCallback
   }
 
  protected:
-  virtual void RunImpl(bool nonce_is_valid_and_unique,
-                       InsertStatus nonce_error) override {
+  void RunImpl(bool nonce_is_valid_and_unique,
+               InsertStatus nonce_error) override {
     DVLOG(1) << "Using client nonce, unique: " << nonce_is_valid_and_unique
              << " nonce_error: " << nonce_error;
     result_->info.unique = nonce_is_valid_and_unique;

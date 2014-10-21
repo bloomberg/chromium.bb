@@ -45,12 +45,12 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
                     NetworkDelegate* network_delegate,
                     const HttpUserAgentSettings* http_user_agent_settings);
 
-  virtual ~URLRequestHttpJob();
+  ~URLRequestHttpJob() override;
 
   // Overridden from URLRequestJob:
-  virtual void SetPriority(RequestPriority priority) override;
-  virtual void Start() override;
-  virtual void Kill() override;
+  void SetPriority(RequestPriority priority) override;
+  void Start() override;
+  void Kill() override;
 
   RequestPriority priority() const {
     return priority_;
@@ -99,44 +99,40 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void RestartTransactionWithAuth(const AuthCredentials& credentials);
 
   // Overridden from URLRequestJob:
-  virtual void SetUpload(UploadDataStream* upload) override;
-  virtual void SetExtraRequestHeaders(
-      const HttpRequestHeaders& headers) override;
-  virtual LoadState GetLoadState() const override;
-  virtual UploadProgress GetUploadProgress() const override;
-  virtual bool GetMimeType(std::string* mime_type) const override;
-  virtual bool GetCharset(std::string* charset) override;
-  virtual void GetResponseInfo(HttpResponseInfo* info) override;
-  virtual void GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override;
-  virtual bool GetResponseCookies(std::vector<std::string>* cookies) override;
-  virtual int GetResponseCode() const override;
-  virtual Filter* SetupFilter() const override;
-  virtual bool CopyFragmentOnRedirect(const GURL& location) const override;
-  virtual bool IsSafeRedirect(const GURL& location) override;
-  virtual bool NeedsAuth() override;
-  virtual void GetAuthChallengeInfo(scoped_refptr<AuthChallengeInfo>*) override;
-  virtual void SetAuth(const AuthCredentials& credentials) override;
-  virtual void CancelAuth() override;
-  virtual void ContinueWithCertificate(X509Certificate* client_cert) override;
-  virtual void ContinueDespiteLastError() override;
-  virtual void ResumeNetworkStart() override;
-  virtual bool ReadRawData(IOBuffer* buf, int buf_size,
-                           int* bytes_read) override;
-  virtual void StopCaching() override;
-  virtual bool GetFullRequestHeaders(
-      HttpRequestHeaders* headers) const override;
-  virtual int64 GetTotalReceivedBytes() const override;
-  virtual void DoneReading() override;
-  virtual void DoneReadingRedirectResponse() override;
+  void SetUpload(UploadDataStream* upload) override;
+  void SetExtraRequestHeaders(const HttpRequestHeaders& headers) override;
+  LoadState GetLoadState() const override;
+  UploadProgress GetUploadProgress() const override;
+  bool GetMimeType(std::string* mime_type) const override;
+  bool GetCharset(std::string* charset) override;
+  void GetResponseInfo(HttpResponseInfo* info) override;
+  void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  bool GetResponseCookies(std::vector<std::string>* cookies) override;
+  int GetResponseCode() const override;
+  Filter* SetupFilter() const override;
+  bool CopyFragmentOnRedirect(const GURL& location) const override;
+  bool IsSafeRedirect(const GURL& location) override;
+  bool NeedsAuth() override;
+  void GetAuthChallengeInfo(scoped_refptr<AuthChallengeInfo>*) override;
+  void SetAuth(const AuthCredentials& credentials) override;
+  void CancelAuth() override;
+  void ContinueWithCertificate(X509Certificate* client_cert) override;
+  void ContinueDespiteLastError() override;
+  void ResumeNetworkStart() override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  void StopCaching() override;
+  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
+  int64 GetTotalReceivedBytes() const override;
+  void DoneReading() override;
+  void DoneReadingRedirectResponse() override;
 
-  virtual HostPortPair GetSocketAddress() const override;
-  virtual void NotifyURLRequestDestroyed() override;
+  HostPortPair GetSocketAddress() const override;
+  void NotifyURLRequestDestroyed() override;
 
   void RecordTimer();
   void ResetTimer();
 
-  virtual void UpdatePacketReadTimes() override;
+  void UpdatePacketReadTimes() override;
   void RecordPacketStats(FilterContext::StatisticSelector statistic) const;
 
   void RecordCompressionHistograms();

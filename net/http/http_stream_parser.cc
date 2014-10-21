@@ -162,7 +162,7 @@ class HttpStreamParser::SeekableIOBuffer : public IOBuffer {
   int capacity() const { return capacity_; };
 
  private:
-  virtual ~SeekableIOBuffer() {
+  ~SeekableIOBuffer() override {
     // data_ will be deleted in IOBuffer::~IOBuffer().
     data_ = real_data_;
   }

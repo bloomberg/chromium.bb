@@ -239,38 +239,34 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Sets the cookies specified by |cookie_list| returned from |url|
   // with options |options| in effect.
-  virtual void SetCookieWithOptionsAsync(
-      const GURL& url,
-      const std::string& cookie_line,
-      const CookieOptions& options,
-      const SetCookiesCallback& callback) override;
+  void SetCookieWithOptionsAsync(const GURL& url,
+                                 const std::string& cookie_line,
+                                 const CookieOptions& options,
+                                 const SetCookiesCallback& callback) override;
 
   // Gets all cookies that apply to |url| given |options|.
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
-  virtual void GetCookiesWithOptionsAsync(
-      const GURL& url,
-      const CookieOptions& options,
-      const GetCookiesCallback& callback) override;
+  void GetCookiesWithOptionsAsync(const GURL& url,
+                                  const CookieOptions& options,
+                                  const GetCookiesCallback& callback) override;
 
   // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
   // only cookies.
-  virtual void GetAllCookiesForURLAsync(
-      const GURL& url,
-      const GetCookieListCallback& callback) override;
+  void GetAllCookiesForURLAsync(const GURL& url,
+                                const GetCookieListCallback& callback) override;
 
   // Deletes all cookies with that might apply to |url| that has |cookie_name|.
-  virtual void DeleteCookieAsync(
-      const GURL& url, const std::string& cookie_name,
-      const base::Closure& callback) override;
+  void DeleteCookieAsync(const GURL& url,
+                         const std::string& cookie_name,
+                         const base::Closure& callback) override;
 
   // Deletes all of the cookies that have a creation_date greater than or equal
   // to |delete_begin| and less than |delete_end|.
   // Returns the number of cookies that have been deleted.
-  virtual void DeleteAllCreatedBetweenAsync(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      const DeleteCallback& callback) override;
+  void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
+                                    const base::Time& delete_end,
+                                    const DeleteCallback& callback) override;
 
   // Deletes all of the cookies that match the host of the given URL
   // regardless of path and that have a creation_date greater than or
@@ -278,15 +274,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // all http_only and secure cookies, but does not include any domain
   // cookies that may apply to this host.
   // Returns the number of cookies deleted.
-  virtual void DeleteAllCreatedBetweenForHostAsync(
+  void DeleteAllCreatedBetweenForHostAsync(
       const base::Time delete_begin,
       const base::Time delete_end,
       const GURL& url,
       const DeleteCallback& callback) override;
 
-  virtual void DeleteSessionCookiesAsync(const DeleteCallback&) override;
+  void DeleteSessionCookiesAsync(const DeleteCallback&) override;
 
-  virtual CookieMonster* GetCookieMonster() override;
+  CookieMonster* GetCookieMonster() override;
 
   // Enables writing session cookies into the cookie database. If this this
   // method is called, it must be called before first use of the instance
@@ -408,7 +404,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
 
-  virtual ~CookieMonster();
+  ~CookieMonster() override;
 
   // The following are synchronous calls to which the asynchronous methods
   // delegate either immediately (if the store is loaded) or through a deferred

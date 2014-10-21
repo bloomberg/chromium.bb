@@ -29,7 +29,7 @@ namespace net {
 
 class NET_EXPORT_PRIVATE SdchFilter : public Filter {
  public:
-  virtual ~SdchFilter();
+  ~SdchFilter() override;
 
   // Initializes filter decoding mode and internal control blocks.
   bool InitDecoding(Filter::FilterType filter_type);
@@ -40,8 +40,7 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   // Upon entry, *dest_len is the total size (in number of chars) of the
   // destination buffer. Upon exit, *dest_len is the actual number of chars
   // written into the destination buffer.
-  virtual FilterStatus ReadFilteredData(char* dest_buffer,
-                                        int* dest_len) override;
+  FilterStatus ReadFilteredData(char* dest_buffer, int* dest_len) override;
 
  private:
   // Internal status.  Once we enter an error state, we stop processing data.

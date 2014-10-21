@@ -61,17 +61,17 @@ class NET_EXPORT_PRIVATE AddressSorterPosix
   typedef std::map<IPAddressNumber, SourceAddressInfo> SourceAddressMap;
 
   explicit AddressSorterPosix(ClientSocketFactory* socket_factory);
-  virtual ~AddressSorterPosix();
+  ~AddressSorterPosix() override;
 
   // AddressSorter:
-  virtual void Sort(const AddressList& list,
-                    const CallbackType& callback) const override;
+  void Sort(const AddressList& list,
+            const CallbackType& callback) const override;
 
  private:
   friend class AddressSorterPosixTest;
 
   // NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
   // Fills |info| with values for |address| from policy tables.
   void FillPolicy(const IPAddressNumber& address,

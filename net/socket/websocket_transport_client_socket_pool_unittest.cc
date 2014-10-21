@@ -382,7 +382,7 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
         callback_(base::Bind(&RequestSocketCallback::OnComplete,
                              base::Unretained(this))) {}
 
-  virtual ~RequestSocketCallback() {}
+  ~RequestSocketCallback() override {}
 
   const CompletionCallback& callback() const { return callback_; }
 

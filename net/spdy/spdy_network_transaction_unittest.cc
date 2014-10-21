@@ -1545,7 +1545,7 @@ class KillerCallback : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  virtual ~KillerCallback() {}
+  ~KillerCallback() override {}
 
   const CompletionCallback& callback() const { return callback_; }
 

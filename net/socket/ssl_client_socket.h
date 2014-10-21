@@ -87,8 +87,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   };
 
   // StreamSocket:
-  virtual bool WasNpnNegotiated() const override;
-  virtual NextProto GetNegotiatedProtocol() const override;
+  bool WasNpnNegotiated() const override;
+  NextProto GetNegotiatedProtocol() const override;
 
   // Computes a unique key string for the SSL session cache.
   virtual std::string GetSessionCacheKey() const = 0;

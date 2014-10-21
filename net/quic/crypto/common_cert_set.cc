@@ -69,12 +69,12 @@ int Compare(StringPiece a, const unsigned char* b, size_t b_len) {
 class CommonCertSetsQUIC : public CommonCertSets {
  public:
   // CommonCertSets interface.
-  virtual StringPiece GetCommonHashes() const override {
+  StringPiece GetCommonHashes() const override {
     return StringPiece(reinterpret_cast<const char*>(kSetHashes),
                        sizeof(uint64) * arraysize(kSetHashes));
   }
 
-  virtual StringPiece GetCert(uint64 hash, uint32 index) const override {
+  StringPiece GetCert(uint64 hash, uint32 index) const override {
     for (size_t i = 0; i < arraysize(kSets); i++) {
       if (kSets[i].hash == hash) {
         if (index < kSets[i].num_certs) {
@@ -89,8 +89,10 @@ class CommonCertSetsQUIC : public CommonCertSets {
     return StringPiece();
   }
 
-  virtual bool MatchCert(StringPiece cert, StringPiece common_set_hashes,
-                         uint64* out_hash, uint32* out_index) const override {
+  bool MatchCert(StringPiece cert,
+                 StringPiece common_set_hashes,
+                 uint64* out_hash,
+                 uint32* out_index) const override {
     if (common_set_hashes.size() % sizeof(uint64) != 0) {
       return false;
     }
@@ -140,7 +142,7 @@ class CommonCertSetsQUIC : public CommonCertSets {
 
  private:
   CommonCertSetsQUIC() {}
-  virtual ~CommonCertSetsQUIC() {}
+  ~CommonCertSetsQUIC() override {}
 
   friend struct DefaultSingletonTraits<CommonCertSetsQUIC>;
   DISALLOW_COPY_AND_ASSIGN(CommonCertSetsQUIC);

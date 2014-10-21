@@ -76,23 +76,22 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   // Constructs a ProxyResolverV8.
   ProxyResolverV8();
 
-  virtual ~ProxyResolverV8();
+  ~ProxyResolverV8() override;
 
   JSBindings* js_bindings() const { return js_bindings_; }
   void set_js_bindings(JSBindings* js_bindings) { js_bindings_ = js_bindings; }
 
   // ProxyResolver implementation:
-  virtual int GetProxyForURL(const GURL& url,
-                             ProxyInfo* results,
-                             const net::CompletionCallback& /*callback*/,
-                             RequestHandle* /*request*/,
-                             const BoundNetLog& net_log) override;
-  virtual void CancelRequest(RequestHandle request) override;
-  virtual LoadState GetLoadState(RequestHandle request) const override;
-  virtual void CancelSetPacScript() override;
-  virtual int SetPacScript(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      const net::CompletionCallback& /*callback*/) override;
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const net::CompletionCallback& /*callback*/,
+                     RequestHandle* /*request*/,
+                     const BoundNetLog& net_log) override;
+  void CancelRequest(RequestHandle request) override;
+  LoadState GetLoadState(RequestHandle request) const override;
+  void CancelSetPacScript() override;
+  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
+                   const net::CompletionCallback& /*callback*/) override;
 
   // Create an isolate to use for the proxy resolver. If the embedder invokes
   // this method multiple times, it must be invoked in a thread safe manner,

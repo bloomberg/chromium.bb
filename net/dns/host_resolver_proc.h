@@ -95,13 +95,14 @@ NET_EXPORT_PRIVATE int SystemHostResolverCall(
 class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
  public:
   SystemHostResolverProc();
-  virtual int Resolve(const std::string& hostname,
-                      AddressFamily address_family,
-                      HostResolverFlags host_resolver_flags,
-                      AddressList* addr_list,
-                      int* os_error) override;
+  int Resolve(const std::string& hostname,
+              AddressFamily address_family,
+              HostResolverFlags host_resolver_flags,
+              AddressList* addr_list,
+              int* os_error) override;
+
  protected:
-  virtual ~SystemHostResolverProc();
+  ~SystemHostResolverProc() override;
 
   DISALLOW_COPY_AND_ASSIGN(SystemHostResolverProc);
 };

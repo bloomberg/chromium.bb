@@ -198,7 +198,7 @@ void RecordIndexLoad(net::CacheType cache_type,
 class SimpleBackendImpl::ActiveEntryProxy
     : public SimpleEntryImpl::ActiveEntryProxy {
  public:
-  virtual ~ActiveEntryProxy() {
+  ~ActiveEntryProxy() override {
     if (backend_) {
       DCHECK_EQ(1U, backend_->active_entries_.count(entry_hash_));
       backend_->active_entries_.erase(entry_hash_);
@@ -475,8 +475,8 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
   }
 
   // From Backend::Iterator:
-  virtual int OpenNextEntry(Entry** next_entry,
-                            const CompletionCallback& callback) override {
+  int OpenNextEntry(Entry** next_entry,
+                    const CompletionCallback& callback) override {
     CompletionCallback open_next_entry_impl =
         base::Bind(&SimpleIterator::OpenNextEntryImpl,
                    weak_factory_.GetWeakPtr(), next_entry, callback);

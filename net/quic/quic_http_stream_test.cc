@@ -98,7 +98,7 @@ class AutoClosingStream : public QuicHttpStream {
       : QuicHttpStream(session) {
   }
 
-  virtual int OnDataReceived(const char* data, int length) override {
+  int OnDataReceived(const char* data, int length) override {
     Close(false);
     return OK;
   }
@@ -108,9 +108,9 @@ class TestPacketWriterFactory : public QuicConnection::PacketWriterFactory {
  public:
   explicit TestPacketWriterFactory(DatagramClientSocket* socket)
       : socket_(socket) {}
-  virtual ~TestPacketWriterFactory() {}
+  ~TestPacketWriterFactory() override {}
 
-  virtual QuicPacketWriter* Create(QuicConnection* connection) const override {
+  QuicPacketWriter* Create(QuicConnection* connection) const override {
     return new QuicDefaultPacketWriter(socket_);
   }
 

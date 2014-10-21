@@ -105,7 +105,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool always_require_handshake_confirmation,
       bool disable_connection_pooling,
       const QuicTagVector& connection_options);
-  virtual ~QuicStreamFactory();
+  ~QuicStreamFactory() override;
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be
   // owned by |request|. |is_https| specifies if the protocol is https or not.
@@ -147,13 +147,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Until the servers support roaming, close all connections when the local
   // IP address changes.
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
   // CertDatabase::Observer methods:
 
   // We close all sessions when certificate database is changed.
-  virtual void OnCertAdded(const X509Certificate* cert) override;
-  virtual void OnCACertChanged(const X509Certificate* cert) override;
+  void OnCertAdded(const X509Certificate* cert) override;
+  void OnCACertChanged(const X509Certificate* cert) override;
 
   bool require_confirmation() const {
     return require_confirmation_;

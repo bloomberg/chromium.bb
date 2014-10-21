@@ -252,7 +252,7 @@ class NET_EXPORT SdchManager
   };
 
   SdchManager();
-  virtual ~SdchManager();
+  ~SdchManager() override;
 
   // Clear data (for browser data removal).
   void ClearData();
@@ -355,8 +355,8 @@ class NET_EXPORT SdchManager
   // dictionaries. This addition will fail if addition is illegal
   // (data in the dictionary is not acceptable from the
   // dictionary_url; dictionary already added, etc.).
-  virtual void AddSdchDictionary(const std::string& dictionary_text,
-                                 const GURL& dictionary_url) override;
+  void AddSdchDictionary(const std::string& dictionary_text,
+                         const GURL& dictionary_url) override;
 
  private:
   struct BlacklistInfo {

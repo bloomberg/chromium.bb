@@ -25,7 +25,7 @@ class HttpAuthController;
 class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
  public:
   ProxyClientSocket() {}
-  virtual ~ProxyClientSocket() {}
+  ~ProxyClientSocket() override {}
 
   // Returns the HttpResponseInfo (including HTTP Headers) from
   // the response to the CONNECT request.

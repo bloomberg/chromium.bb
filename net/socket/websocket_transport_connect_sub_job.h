@@ -33,7 +33,7 @@ class WebSocketTransportConnectSubJob
                                   WebSocketTransportConnectJob* parent_job,
                                   SubJobType type);
 
-  virtual ~WebSocketTransportConnectSubJob();
+  ~WebSocketTransportConnectSubJob() override;
 
   // Start connecting.
   int Start();
@@ -47,7 +47,7 @@ class WebSocketTransportConnectSubJob
   scoped_ptr<StreamSocket> PassSocket() { return transport_socket_.Pass(); }
 
   // Implementation of WebSocketEndpointLockManager::EndpointWaiter.
-  virtual void GotEndpointLock() override;
+  void GotEndpointLock() override;
 
  private:
   enum State {

@@ -190,35 +190,32 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
  public:
   NoOpFramerVisitor() {}
 
-  virtual void OnError(QuicFramer* framer) override {}
-  virtual void OnPacket() override {}
-  virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& packet) override {}
-  virtual void OnVersionNegotiationPacket(
+  void OnError(QuicFramer* framer) override {}
+  void OnPacket() override {}
+  void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {}
+  void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {}
-  virtual void OnRevivedPacket() override {}
-  virtual bool OnProtocolVersionMismatch(QuicVersion version) override;
-  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
-  virtual bool OnUnauthenticatedPublicHeader(
+  void OnRevivedPacket() override {}
+  bool OnProtocolVersionMismatch(QuicVersion version) override;
+  bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
+  bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header) override;
-  virtual void OnDecryptedPacket(EncryptionLevel level) override {}
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) override;
-  virtual void OnFecProtectedPayload(base::StringPiece payload) override {}
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame) override;
-  virtual bool OnAckFrame(const QuicAckFrame& frame) override;
-  virtual bool OnCongestionFeedbackFrame(
+  void OnDecryptedPacket(EncryptionLevel level) override {}
+  bool OnPacketHeader(const QuicPacketHeader& header) override;
+  void OnFecProtectedPayload(base::StringPiece payload) override {}
+  bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool OnAckFrame(const QuicAckFrame& frame) override;
+  bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) override;
-  virtual bool OnStopWaitingFrame(
-      const QuicStopWaitingFrame& frame) override;
-  virtual bool OnPingFrame(const QuicPingFrame& frame) override;
-  virtual void OnFecData(const QuicFecData& fec) override {}
-  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
-  virtual bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) override;
-  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
-  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
-  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
-  virtual void OnPacketComplete() override {}
+  bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
+  bool OnPingFrame(const QuicPingFrame& frame) override;
+  void OnFecData(const QuicFecData& fec) override {}
+  bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
+  bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
+  bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
+  bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
+  bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  void OnPacketComplete() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoOpFramerVisitor);
@@ -254,10 +251,10 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
 class MockHelper : public QuicConnectionHelperInterface {
  public:
   MockHelper();
-  virtual ~MockHelper();
-  virtual const QuicClock* GetClock() const override;
-  virtual QuicRandom* GetRandomGenerator() override;
-  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
+  ~MockHelper() override;
+  const QuicClock* GetClock() const override;
+  QuicRandom* GetRandomGenerator() override;
+  QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
   void AdvanceTime(QuicTime::Delta delta);
 
  private:
@@ -329,9 +326,9 @@ class PacketSavingConnection : public MockConnection {
   PacketSavingConnection(bool is_server,
                          const QuicVersionVector& supported_versions);
 
-  virtual ~PacketSavingConnection();
+  ~PacketSavingConnection() override;
 
-  virtual void SendOrQueuePacket(QueuedPacket packet) override;
+  void SendOrQueuePacket(QueuedPacket packet) override;
 
   std::vector<QuicPacket*> packets_;
   std::vector<QuicEncryptedPacket*> encrypted_packets_;
@@ -494,9 +491,9 @@ class TestEntropyCalculator :
       public QuicReceivedEntropyHashCalculatorInterface {
  public:
   TestEntropyCalculator();
-  virtual ~TestEntropyCalculator();
+  ~TestEntropyCalculator() override;
 
-  virtual QuicPacketEntropyHash EntropyHash(
+  QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const override;
 
  private:
@@ -552,10 +549,10 @@ class MockNetworkChangeVisitor :
 class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
  public:
   TestWriterFactory();
-  virtual ~TestWriterFactory();
+  ~TestWriterFactory() override;
 
-  virtual QuicPacketWriter* Create(QuicServerPacketWriter* writer,
-                                   QuicConnection* connection) override;
+  QuicPacketWriter* Create(QuicServerPacketWriter* writer,
+                           QuicConnection* connection) override;
 
   // Calls OnPacketSent on the last QuicConnection to write through one of the
   // packet writers created by this factory.
@@ -567,13 +564,12 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
     PerConnectionPacketWriter(TestWriterFactory* factory,
                               QuicServerPacketWriter* writer,
                               QuicConnection* connection);
-    virtual ~PerConnectionPacketWriter();
+    ~PerConnectionPacketWriter() override;
 
-    virtual WriteResult WritePacket(
-        const char* buffer,
-        size_t buf_len,
-        const IPAddressNumber& self_address,
-        const IPEndPoint& peer_address) override;
+    WriteResult WritePacket(const char* buffer,
+                            size_t buf_len,
+                            const IPAddressNumber& self_address,
+                            const IPEndPoint& peer_address) override;
 
    private:
     TestWriterFactory* factory_;

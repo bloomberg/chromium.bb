@@ -48,15 +48,15 @@ class Delegate : public URLRequest::Delegate {
 
   explicit Delegate(StreamRequestImpl* owner)
       : owner_(owner), result_(INCOMPLETE) {}
-  virtual ~Delegate() {
+  ~Delegate() override {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.WebSocket.HandshakeResult", result_, NUM_HANDSHAKE_RESULT_TYPES);
   }
 
   // Implementation of URLRequest::Delegate methods.
-  virtual void OnReceivedRedirect(URLRequest* request,
-                                  const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override {
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override {
     // HTTP status codes returned by HttpStreamParser are filtered by
     // WebSocketBasicHandshakeStream, and only 101, 401 and 407 are permitted
     // back up the stack to HttpNetworkTransaction. In particular, redirect
@@ -65,20 +65,19 @@ class Delegate : public URLRequest::Delegate {
     NOTREACHED();
   }
 
-  virtual void OnResponseStarted(URLRequest* request) override;
+  void OnResponseStarted(URLRequest* request) override;
 
-  virtual void OnAuthRequired(URLRequest* request,
-                              AuthChallengeInfo* auth_info) override;
+  void OnAuthRequired(URLRequest* request,
+                      AuthChallengeInfo* auth_info) override;
 
-  virtual void OnCertificateRequested(URLRequest* request,
-                                      SSLCertRequestInfo* cert_request_info)
-      override;
+  void OnCertificateRequested(URLRequest* request,
+                              SSLCertRequestInfo* cert_request_info) override;
 
-  virtual void OnSSLCertificateError(URLRequest* request,
-                                     const SSLInfo& ssl_info,
-                                     bool fatal) override;
+  void OnSSLCertificateError(URLRequest* request,
+                             const SSLInfo& ssl_info,
+                             bool fatal) override;
 
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read) override;
+  void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
   StreamRequestImpl* owner_;
@@ -118,7 +117,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
 
   // Destroying this object destroys the URLRequest, which cancels the request
   // and so terminates the handshake if it is incomplete.
-  virtual ~StreamRequestImpl() {}
+  ~StreamRequestImpl() override {}
 
   void Start(scoped_ptr<base::Timer> timer) {
     DCHECK(timer);
@@ -206,7 +205,7 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
   explicit SSLErrorCallbacks(URLRequest* url_request)
       : url_request_(url_request) {}
 
-  virtual void CancelSSLRequest(int error, const SSLInfo* ssl_info) override {
+  void CancelSSLRequest(int error, const SSLInfo* ssl_info) override {
     if (ssl_info) {
       url_request_->CancelWithSSLError(error, *ssl_info);
     } else {
@@ -214,7 +213,7 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
     }
   }
 
-  virtual void ContinueSSLRequest() override {
+  void ContinueSSLRequest() override {
     url_request_->ContinueDespiteLastError();
   }
 

@@ -60,17 +60,17 @@ class NET_EXPORT URLFetcherResponseWriter {
 class NET_EXPORT URLFetcherStringWriter : public URLFetcherResponseWriter {
  public:
   URLFetcherStringWriter();
-  virtual ~URLFetcherStringWriter();
+  ~URLFetcherStringWriter() override;
 
   const std::string& data() const { return data_; }
 
   // URLFetcherResponseWriter overrides:
-  virtual int Initialize(const CompletionCallback& callback) override;
-  virtual int Write(IOBuffer* buffer,
-                    int num_bytes,
-                    const CompletionCallback& callback) override;
-  virtual int Finish(const CompletionCallback& callback) override;
-  virtual URLFetcherStringWriter* AsStringWriter() override;
+  int Initialize(const CompletionCallback& callback) override;
+  int Write(IOBuffer* buffer,
+            int num_bytes,
+            const CompletionCallback& callback) override;
+  int Finish(const CompletionCallback& callback) override;
+  URLFetcherStringWriter* AsStringWriter() override;
 
  private:
   std::string data_;
@@ -86,17 +86,17 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   URLFetcherFileWriter(
       scoped_refptr<base::SequencedTaskRunner> file_task_runner,
       const base::FilePath& file_path);
-  virtual ~URLFetcherFileWriter();
+  ~URLFetcherFileWriter() override;
 
   const base::FilePath& file_path() const { return file_path_; }
 
   // URLFetcherResponseWriter overrides:
-  virtual int Initialize(const CompletionCallback& callback) override;
-  virtual int Write(IOBuffer* buffer,
-                    int num_bytes,
-                    const CompletionCallback& callback) override;
-  virtual int Finish(const CompletionCallback& callback) override;
-  virtual URLFetcherFileWriter* AsFileWriter() override;
+  int Initialize(const CompletionCallback& callback) override;
+  int Write(IOBuffer* buffer,
+            int num_bytes,
+            const CompletionCallback& callback) override;
+  int Finish(const CompletionCallback& callback) override;
+  URLFetcherFileWriter* AsFileWriter() override;
 
   // Drops ownership of the file at |file_path_|.
   // This class will not delete it or write to it again.

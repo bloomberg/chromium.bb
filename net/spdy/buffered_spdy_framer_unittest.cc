@@ -25,79 +25,74 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
         promised_stream_id_(static_cast<SpdyStreamId>(-1)) {
   }
 
-  virtual void OnError(SpdyFramer::SpdyError error_code) override {
+  void OnError(SpdyFramer::SpdyError error_code) override {
     LOG(INFO) << "SpdyFramer Error: " << error_code;
     error_count_++;
   }
 
-  virtual void OnStreamError(
-      SpdyStreamId stream_id,
-      const std::string& description) override {
+  void OnStreamError(SpdyStreamId stream_id,
+                     const std::string& description) override {
     LOG(INFO) << "SpdyFramer Error on stream: " << stream_id  << " "
               << description;
     error_count_++;
   }
 
-  virtual void OnSynStream(SpdyStreamId stream_id,
-                           SpdyStreamId associated_stream_id,
-                           SpdyPriority priority,
-                           bool fin,
-                           bool unidirectional,
-                           const SpdyHeaderBlock& headers) override {
+  void OnSynStream(SpdyStreamId stream_id,
+                   SpdyStreamId associated_stream_id,
+                   SpdyPriority priority,
+                   bool fin,
+                   bool unidirectional,
+                   const SpdyHeaderBlock& headers) override {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     syn_frame_count_++;
     headers_ = headers;
   }
 
-  virtual void OnSynReply(SpdyStreamId stream_id,
-                          bool fin,
-                          const SpdyHeaderBlock& headers) override {
+  void OnSynReply(SpdyStreamId stream_id,
+                  bool fin,
+                  const SpdyHeaderBlock& headers) override {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     syn_reply_frame_count_++;
     headers_ = headers;
   }
 
-  virtual void OnHeaders(SpdyStreamId stream_id,
-                         bool fin,
-                         const SpdyHeaderBlock& headers) override {
+  void OnHeaders(SpdyStreamId stream_id,
+                 bool fin,
+                 const SpdyHeaderBlock& headers) override {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     headers_frame_count_++;
     headers_ = headers;
   }
 
-  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
-                                 size_t length,
-                                 bool fin) override {
+  void OnDataFrameHeader(SpdyStreamId stream_id,
+                         size_t length,
+                         bool fin) override {
     ADD_FAILURE() << "Unexpected OnDataFrameHeader call.";
   }
 
-  virtual void OnStreamFrameData(SpdyStreamId stream_id,
-                                 const char* data,
-                                 size_t len,
-                                 bool fin) override {
+  void OnStreamFrameData(SpdyStreamId stream_id,
+                         const char* data,
+                         size_t len,
+                         bool fin) override {
     LOG(FATAL) << "Unexpected OnStreamFrameData call.";
   }
 
-  virtual void OnSettings(bool clear_persisted) override {}
+  void OnSettings(bool clear_persisted) override {}
 
-  virtual void OnSetting(SpdySettingsIds id,
-                         uint8 flags,
-                         uint32 value) override {
+  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {
     setting_count_++;
   }
 
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override {}
+  void OnPing(SpdyPingId unique_id, bool is_ack) override {}
 
-  virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) override {
-  }
+  void OnRstStream(SpdyStreamId stream_id,
+                   SpdyRstStreamStatus status) override {}
 
-  virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) override {
-  }
+  void OnGoAway(SpdyStreamId last_accepted_stream_id,
+                SpdyGoAwayStatus status) override {}
 
   bool OnCredentialFrameData(const char*, size_t) {
     LOG(FATAL) << "Unexpected OnCredentialFrameData call.";
@@ -111,12 +106,12 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   void OnRstStream(const SpdyFrame& frame) {}
   void OnGoAway(const SpdyFrame& frame) {}
   void OnPing(const SpdyFrame& frame) {}
-  virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) override {}
+  void OnWindowUpdate(SpdyStreamId stream_id,
+                      uint32 delta_window_size) override {}
 
-  virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id,
-                             const SpdyHeaderBlock& headers) override {
+  void OnPushPromise(SpdyStreamId stream_id,
+                     SpdyStreamId promised_stream_id,
+                     const SpdyHeaderBlock& headers) override {
     header_stream_id_ = stream_id;
     EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     push_promise_frame_count_++;
@@ -125,7 +120,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     headers_ = headers;
   }
 
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     return true;
   }
 

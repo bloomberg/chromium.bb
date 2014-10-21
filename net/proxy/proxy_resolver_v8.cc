@@ -93,13 +93,11 @@ class V8ExternalStringFromScriptData
       const scoped_refptr<ProxyResolverScriptData>& script_data)
       : script_data_(script_data) {}
 
-  virtual const uint16_t* data() const override {
+  const uint16_t* data() const override {
     return reinterpret_cast<const uint16*>(script_data_->utf16().data());
   }
 
-  virtual size_t length() const override {
-    return script_data_->utf16().size();
-  }
+  size_t length() const override { return script_data_->utf16().size(); }
 
  private:
   const scoped_refptr<ProxyResolverScriptData> script_data_;
@@ -117,13 +115,9 @@ class V8ExternalASCIILiteral
     DCHECK(base::IsStringASCII(ascii));
   }
 
-  virtual const char* data() const override {
-    return ascii_;
-  }
+  const char* data() const override { return ascii_; }
 
-  virtual size_t length() const override {
-    return length_;
-  }
+  size_t length() const override { return length_; }
 
  private:
   const char* ascii_;

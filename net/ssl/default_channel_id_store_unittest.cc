@@ -69,15 +69,15 @@ class MockPersistentStore
   MockPersistentStore();
 
   // DefaultChannelIDStore::PersistentStore implementation.
-  virtual void Load(const LoadedCallback& loaded_callback) override;
-  virtual void AddChannelID(
+  void Load(const LoadedCallback& loaded_callback) override;
+  void AddChannelID(
       const DefaultChannelIDStore::ChannelID& channel_id) override;
-  virtual void DeleteChannelID(
+  void DeleteChannelID(
       const DefaultChannelIDStore::ChannelID& channel_id) override;
-  virtual void SetForceKeepSessionState() override;
+  void SetForceKeepSessionState() override;
 
  protected:
-  virtual ~MockPersistentStore();
+  ~MockPersistentStore() override;
 
  private:
   typedef std::map<std::string, DefaultChannelIDStore::ChannelID>

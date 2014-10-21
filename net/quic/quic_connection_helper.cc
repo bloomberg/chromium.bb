@@ -29,7 +29,7 @@ class QuicChromeAlarm : public QuicAlarm {
         weak_factory_(this) {}
 
  protected:
-  virtual void SetImpl() override {
+  void SetImpl() override {
     DCHECK(deadline().IsInitialized());
     if (task_deadline_.IsInitialized()) {
       if (task_deadline_ <= deadline()) {
@@ -54,7 +54,7 @@ class QuicChromeAlarm : public QuicAlarm {
     task_deadline_ = deadline();
   }
 
-  virtual void CancelImpl() override {
+  void CancelImpl() override {
     DCHECK(!deadline().IsInitialized());
     // Since tasks can not be un-posted, OnAlarm will be invoked which
     // will notice that deadline is not Initialized and will do nothing.

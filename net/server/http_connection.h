@@ -59,7 +59,7 @@ class HttpConnection {
     }
 
    private:
-    virtual ~ReadIOBuffer();
+    ~ReadIOBuffer() override;
 
     scoped_refptr<GrowableIOBuffer> base_;
     int max_buffer_size_;
@@ -101,7 +101,7 @@ class HttpConnection {
     }
 
    private:
-    virtual ~QueuedWriteIOBuffer();
+    ~QueuedWriteIOBuffer() override;
 
     std::queue<std::string> pending_data_;
     int total_size_;

@@ -25,7 +25,7 @@ class NET_EXPORT ChunkedUploadDataStream : public UploadDataStream {
  public:
   ChunkedUploadDataStream(int64 identifier);
 
-  virtual ~ChunkedUploadDataStream();
+  ~ChunkedUploadDataStream() override;
 
   // Adds data to the stream. |is_done| should be true if this is the last
   // data to be appended. |data_len| must not be 0 unless |is_done| is true.
@@ -35,9 +35,9 @@ class NET_EXPORT ChunkedUploadDataStream : public UploadDataStream {
 
  private:
   // UploadDataStream implementation.
-  virtual int InitInternal() override;
-  virtual int ReadInternal(IOBuffer* buf, int buf_len) override;
-  virtual void ResetInternal() override;
+  int InitInternal() override;
+  int ReadInternal(IOBuffer* buf, int buf_len) override;
+  void ResetInternal() override;
 
   int ReadChunk(IOBuffer* buf, int buf_len);
 

@@ -19,13 +19,13 @@ namespace net {
 class NET_EXPORT_PRIVATE TCPServerSocket : public ServerSocket {
  public:
   TCPServerSocket(NetLog* net_log, const NetLog::Source& source);
-  virtual ~TCPServerSocket();
+  ~TCPServerSocket() override;
 
   // net::ServerSocket implementation.
-  virtual int Listen(const IPEndPoint& address, int backlog) override;
-  virtual int GetLocalAddress(IPEndPoint* address) const override;
-  virtual int Accept(scoped_ptr<StreamSocket>* socket,
-                     const CompletionCallback& callback) override;
+  int Listen(const IPEndPoint& address, int backlog) override;
+  int GetLocalAddress(IPEndPoint* address) const override;
+  int Accept(scoped_ptr<StreamSocket>* socket,
+             const CompletionCallback& callback) override;
 
  private:
   // Converts |accepted_socket_| and stores the result in

@@ -119,7 +119,7 @@ class ProxyResolverV8Tracing::Job
     base::string16 message;
   };
 
-  virtual ~Job();
+  ~Job() override;
 
   void CheckIsOnWorkerThread() const;
   void CheckIsOnOriginThread() const;
@@ -145,12 +145,12 @@ class ProxyResolverV8Tracing::Job
   int ExecuteProxyResolver();
 
   // Implementation of ProxyResolverv8::JSBindings
-  virtual bool ResolveDns(const std::string& host,
-                          ResolveDnsOperation op,
-                          std::string* output,
-                          bool* terminate) override;
-  virtual void Alert(const base::string16& message) override;
-  virtual void OnError(int line_number, const base::string16& error) override;
+  bool ResolveDns(const std::string& host,
+                  ResolveDnsOperation op,
+                  std::string* output,
+                  bool* terminate) override;
+  void Alert(const base::string16& message) override;
+  void OnError(int line_number, const base::string16& error) override;
 
   bool ResolveDnsBlocking(const std::string& host,
                           ResolveDnsOperation op,

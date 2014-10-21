@@ -84,70 +84,66 @@ class TestURLFetcher : public URLFetcher {
   TestURLFetcher(int id,
                  const GURL& url,
                  URLFetcherDelegate* d);
-  virtual ~TestURLFetcher();
+  ~TestURLFetcher() override;
 
   // URLFetcher implementation
-  virtual void SetUploadData(const std::string& upload_content_type,
-                             const std::string& upload_content) override;
-  virtual void SetUploadFilePath(
+  void SetUploadData(const std::string& upload_content_type,
+                     const std::string& upload_content) override;
+  void SetUploadFilePath(
       const std::string& upload_content_type,
       const base::FilePath& file_path,
       uint64 range_offset,
       uint64 range_length,
       scoped_refptr<base::TaskRunner> file_task_runner) override;
-  virtual void SetChunkedUpload(
-      const std::string& upload_content_type) override;
+  void SetChunkedUpload(const std::string& upload_content_type) override;
   // Overriden to cache the chunks uploaded. Caller can read back the uploaded
   // chunks with the upload_chunks() accessor.
-  virtual void AppendChunkToUpload(const std::string& data,
-                                   bool is_last_chunk) override;
-  virtual void SetLoadFlags(int load_flags) override;
-  virtual int GetLoadFlags() const override;
-  virtual void SetReferrer(const std::string& referrer) override;
-  virtual void SetReferrerPolicy(
-      URLRequest::ReferrerPolicy referrer_policy) override;
-  virtual void SetExtraRequestHeaders(
+  void AppendChunkToUpload(const std::string& data,
+                           bool is_last_chunk) override;
+  void SetLoadFlags(int load_flags) override;
+  int GetLoadFlags() const override;
+  void SetReferrer(const std::string& referrer) override;
+  void SetReferrerPolicy(URLRequest::ReferrerPolicy referrer_policy) override;
+  void SetExtraRequestHeaders(
       const std::string& extra_request_headers) override;
-  virtual void AddExtraRequestHeader(const std::string& header_line) override;
-  virtual void SetRequestContext(
+  void AddExtraRequestHeader(const std::string& header_line) override;
+  void SetRequestContext(
       URLRequestContextGetter* request_context_getter) override;
-  virtual void SetFirstPartyForCookies(
-      const GURL& first_party_for_cookies) override;
-  virtual void SetURLRequestUserData(
+  void SetFirstPartyForCookies(const GURL& first_party_for_cookies) override;
+  void SetURLRequestUserData(
       const void* key,
       const CreateDataCallback& create_data_callback) override;
-  virtual void SetStopOnRedirect(bool stop_on_redirect) override;
-  virtual void SetAutomaticallyRetryOn5xx(bool retry) override;
-  virtual void SetMaxRetriesOn5xx(int max_retries) override;
-  virtual int GetMaxRetriesOn5xx() const override;
-  virtual base::TimeDelta GetBackoffDelay() const override;
-  virtual void SetAutomaticallyRetryOnNetworkChanges(int max_retries) override;
-  virtual void SaveResponseToFileAtPath(
+  void SetStopOnRedirect(bool stop_on_redirect) override;
+  void SetAutomaticallyRetryOn5xx(bool retry) override;
+  void SetMaxRetriesOn5xx(int max_retries) override;
+  int GetMaxRetriesOn5xx() const override;
+  base::TimeDelta GetBackoffDelay() const override;
+  void SetAutomaticallyRetryOnNetworkChanges(int max_retries) override;
+  void SaveResponseToFileAtPath(
       const base::FilePath& file_path,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner) override;
-  virtual void SaveResponseToTemporaryFile(
+  void SaveResponseToTemporaryFile(
       scoped_refptr<base::SequencedTaskRunner> file_task_runner) override;
-  virtual void SaveResponseWithWriter(
+  void SaveResponseWithWriter(
       scoped_ptr<URLFetcherResponseWriter> response_writer) override;
-  virtual HttpResponseHeaders* GetResponseHeaders() const override;
-  virtual HostPortPair GetSocketAddress() const override;
-  virtual bool WasFetchedViaProxy() const override;
-  virtual void Start() override;
+  HttpResponseHeaders* GetResponseHeaders() const override;
+  HostPortPair GetSocketAddress() const override;
+  bool WasFetchedViaProxy() const override;
+  void Start() override;
 
   // URL we were created with. Because of how we're using URLFetcher GetURL()
   // always returns an empty URL. Chances are you'll want to use
   // GetOriginalURL() in your tests.
-  virtual const GURL& GetOriginalURL() const override;
-  virtual const GURL& GetURL() const override;
-  virtual const URLRequestStatus& GetStatus() const override;
-  virtual int GetResponseCode() const override;
-  virtual const ResponseCookies& GetCookies() const override;
-  virtual void ReceivedContentWasMalformed() override;
+  const GURL& GetOriginalURL() const override;
+  const GURL& GetURL() const override;
+  const URLRequestStatus& GetStatus() const override;
+  int GetResponseCode() const override;
+  const ResponseCookies& GetCookies() const override;
+  void ReceivedContentWasMalformed() override;
   // Override response access functions to return fake data.
-  virtual bool GetResponseAsString(
-      std::string* out_response_string) const override;
-  virtual bool GetResponseAsFilePath(
-      bool take_ownership, base::FilePath* out_response_path) const override;
+  bool GetResponseAsString(std::string* out_response_string) const override;
+  bool GetResponseAsFilePath(bool take_ownership,
+                             base::FilePath* out_response_path) const override;
 
   void GetExtraRequestHeaders(HttpRequestHeaders* headers) const;
 
@@ -241,13 +237,12 @@ class TestURLFetcherFactory : public URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
   TestURLFetcherFactory();
-  virtual ~TestURLFetcherFactory();
+  ~TestURLFetcherFactory() override;
 
-  virtual URLFetcher* CreateURLFetcher(
-      int id,
-      const GURL& url,
-      URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d) override;
+  URLFetcher* CreateURLFetcher(int id,
+                               const GURL& url,
+                               URLFetcher::RequestType request_type,
+                               URLFetcherDelegate* d) override;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
   void SetDelegateForTests(TestURLFetcherDelegateForTests* delegate_for_tests);
@@ -299,11 +294,11 @@ class FakeURLFetcher : public TestURLFetcher {
 
   // Start the request.  This will call the given delegate asynchronously
   // with the pre-baked response as parameter.
-  virtual void Start() override;
+  void Start() override;
 
-  virtual const GURL& GetURL() const override;
+  const GURL& GetURL() const override;
 
-  virtual ~FakeURLFetcher();
+  ~FakeURLFetcher() override;
 
  private:
   // This is the method which actually calls the delegate that is passed in the
@@ -396,18 +391,17 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
   FakeURLFetcherFactory(URLFetcherFactory* default_factory,
                         const FakeURLFetcherCreator& creator);
 
-  virtual ~FakeURLFetcherFactory();
+  ~FakeURLFetcherFactory() override;
 
   // If no fake response is set for the given URL this method will delegate the
   // call to |default_factory_| if it is not NULL, or return NULL if it is
   // NULL.
   // Otherwise, it will return a URLFetcher object which will respond with the
   // pre-baked response that the client has set by calling SetFakeResponse().
-  virtual URLFetcher* CreateURLFetcher(
-      int id,
-      const GURL& url,
-      URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d) override;
+  URLFetcher* CreateURLFetcher(int id,
+                               const GURL& url,
+                               URLFetcher::RequestType request_type,
+                               URLFetcherDelegate* d) override;
 
   // Sets the fake response for a given URL. The |response_data| may be empty.
   // The |response_code| may be any HttpStatusCode. For instance, HTTP_OK will
@@ -453,14 +447,13 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
 class URLFetcherImplFactory : public URLFetcherFactory {
  public:
   URLFetcherImplFactory();
-  virtual ~URLFetcherImplFactory();
+  ~URLFetcherImplFactory() override;
 
   // This method will create a real URLFetcher.
-  virtual URLFetcher* CreateURLFetcher(
-      int id,
-      const GURL& url,
-      URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d) override;
+  URLFetcher* CreateURLFetcher(int id,
+                               const GURL& url,
+                               URLFetcher::RequestType request_type,
+                               URLFetcherDelegate* d) override;
 };
 
 }  // namespace net

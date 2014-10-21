@@ -24,7 +24,7 @@ class NET_EXPORT_PRIVATE ChaCha20Poly1305Encrypter : public AeadBaseEncrypter {
   };
 
   ChaCha20Poly1305Encrypter();
-  virtual ~ChaCha20Poly1305Encrypter();
+  ~ChaCha20Poly1305Encrypter() override;
 
   // Returns true if the underlying crypto library supports ChaCha20+Poly1305.
   static bool IsSupported();

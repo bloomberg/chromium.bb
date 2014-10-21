@@ -19,25 +19,25 @@ namespace {
 class TestNetworkDelegate : public net::NetworkDelegate {
  public:
   TestNetworkDelegate() : got_pac_error_(false) {}
-  virtual ~TestNetworkDelegate() {}
+  ~TestNetworkDelegate() override {}
 
   bool got_pac_error() const { return got_pac_error_; }
 
  private:
   // net::NetworkDelegate implementation.
-  virtual int OnBeforeURLRequest(URLRequest* request,
-                                 const CompletionCallback& callback,
-                                 GURL* new_url) override {
+  int OnBeforeURLRequest(URLRequest* request,
+                         const CompletionCallback& callback,
+                         GURL* new_url) override {
     return OK;
   }
-  virtual int OnBeforeSendHeaders(URLRequest* request,
-                                  const CompletionCallback& callback,
-                                  HttpRequestHeaders* headers) override {
+  int OnBeforeSendHeaders(URLRequest* request,
+                          const CompletionCallback& callback,
+                          HttpRequestHeaders* headers) override {
     return OK;
   }
-  virtual void OnSendHeaders(URLRequest* request,
-                             const HttpRequestHeaders& headers) override {}
-  virtual int OnHeadersReceived(
+  void OnSendHeaders(URLRequest* request,
+                     const HttpRequestHeaders& headers) override {}
+  int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
@@ -45,44 +45,40 @@ class TestNetworkDelegate : public net::NetworkDelegate {
       GURL* allowed_unsafe_redirect_url) override {
     return net::OK;
   }
-  virtual void OnBeforeRedirect(URLRequest* request,
-                                const GURL& new_location) override {}
-  virtual void OnResponseStarted(URLRequest* request) override {}
-  virtual void OnRawBytesRead(const URLRequest& request,
-                              int bytes_read) override {}
-  virtual void OnCompleted(URLRequest* request, bool started) override {}
-  virtual void OnURLRequestDestroyed(URLRequest* request) override {}
+  void OnBeforeRedirect(URLRequest* request,
+                        const GURL& new_location) override {}
+  void OnResponseStarted(URLRequest* request) override {}
+  void OnRawBytesRead(const URLRequest& request, int bytes_read) override {}
+  void OnCompleted(URLRequest* request, bool started) override {}
+  void OnURLRequestDestroyed(URLRequest* request) override {}
 
-  virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) override {
+  void OnPACScriptError(int line_number, const base::string16& error) override {
     got_pac_error_ = true;
   }
-  virtual AuthRequiredResponse OnAuthRequired(
-      URLRequest* request,
-      const AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
-      AuthCredentials* credentials) override {
+  AuthRequiredResponse OnAuthRequired(URLRequest* request,
+                                      const AuthChallengeInfo& auth_info,
+                                      const AuthCallback& callback,
+                                      AuthCredentials* credentials) override {
     return AUTH_REQUIRED_RESPONSE_NO_ACTION;
   }
-  virtual bool OnCanGetCookies(const URLRequest& request,
-                               const CookieList& cookie_list) override {
+  bool OnCanGetCookies(const URLRequest& request,
+                       const CookieList& cookie_list) override {
     return true;
   }
-  virtual bool OnCanSetCookie(const URLRequest& request,
-                              const std::string& cookie_line,
-                              CookieOptions* options) override {
+  bool OnCanSetCookie(const URLRequest& request,
+                      const std::string& cookie_line,
+                      CookieOptions* options) override {
     return true;
   }
-  virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const base::FilePath& path) const override {
+  bool OnCanAccessFile(const net::URLRequest& request,
+                       const base::FilePath& path) const override {
     return true;
   }
-  virtual bool OnCanThrottleRequest(const URLRequest& request) const override {
+  bool OnCanThrottleRequest(const URLRequest& request) const override {
     return false;
   }
-  virtual int OnBeforeSocketStreamConnect(
-      SocketStream* stream,
-      const CompletionCallback& callback) override {
+  int OnBeforeSocketStreamConnect(SocketStream* stream,
+                                  const CompletionCallback& callback) override {
     return OK;
   }
 

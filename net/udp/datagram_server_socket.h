@@ -17,7 +17,7 @@ class IOBuffer;
 // A UDP Socket.
 class NET_EXPORT DatagramServerSocket : public DatagramSocket {
  public:
-  virtual ~DatagramServerSocket() {}
+  ~DatagramServerSocket() override {}
 
   // Initialize this socket as a server socket listening at |address|.
   // Returns a network error code.

@@ -111,7 +111,7 @@ class MockWebSocketStream : public WebSocketStream {
 class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
  public:
   WebSocketDeflatePredictorMock() : result_(DEFLATE) {}
-  virtual ~WebSocketDeflatePredictorMock() {
+  ~WebSocketDeflatePredictorMock() override {
     // Verify whether all expectaions are consumed.
     if (!frames_to_be_input_.empty()) {
       ADD_FAILURE() << "There are missing frames to be input.";
@@ -124,11 +124,11 @@ class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
   }
 
   // WebSocketDeflatePredictor functions.
-  virtual Result Predict(const ScopedVector<WebSocketFrame>& frames,
-                         size_t frame_index) override {
+  Result Predict(const ScopedVector<WebSocketFrame>& frames,
+                 size_t frame_index) override {
     return result_;
   }
-  virtual void RecordInputDataFrame(const WebSocketFrame* frame) override {
+  void RecordInputDataFrame(const WebSocketFrame* frame) override {
     if (!WebSocketFrameHeader::IsKnownDataOpCode(frame->header.opcode)) {
       ADD_FAILURE() << "Control frames should not be recorded.";
       return;
@@ -147,7 +147,7 @@ class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
     }
     frames_to_be_input_.pop_front();
   }
-  virtual void RecordWrittenDataFrame(const WebSocketFrame* frame) override {
+  void RecordWrittenDataFrame(const WebSocketFrame* frame) override {
     if (!WebSocketFrameHeader::IsKnownDataOpCode(frame->header.opcode)) {
       ADD_FAILURE() << "Control frames should not be recorded.";
       return;

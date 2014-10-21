@@ -57,19 +57,18 @@ class MockSimpleIndexFile : public SimpleIndexFile,
         load_index_entries_calls_(0),
         disk_writes_(0) {}
 
-  virtual void LoadIndexEntries(
-      base::Time cache_last_modified,
-      const base::Closure& callback,
-      SimpleIndexLoadResult* out_load_result) override {
+  void LoadIndexEntries(base::Time cache_last_modified,
+                        const base::Closure& callback,
+                        SimpleIndexLoadResult* out_load_result) override {
     load_callback_ = callback;
     load_result_ = out_load_result;
     ++load_index_entries_calls_;
   }
 
-  virtual void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
-                           uint64 cache_size,
-                           const base::TimeTicks& start,
-                           bool app_on_background) override {
+  void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
+                   uint64 cache_size,
+                   const base::TimeTicks& start,
+                   bool app_on_background) override {
     disk_writes_++;
     disk_write_entry_set_ = entry_set;
   }
@@ -120,8 +119,8 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
   }
 
   // From SimpleIndexDelegate:
-  virtual void DoomEntries(std::vector<uint64>* entry_hashes,
-                           const net::CompletionCallback& callback) override {
+  void DoomEntries(std::vector<uint64>* entry_hashes,
+                   const net::CompletionCallback& callback) override {
     std::for_each(entry_hashes->begin(), entry_hashes->end(),
                   std::bind1st(std::mem_fun(&SimpleIndex::Remove),
                                index_.get()));

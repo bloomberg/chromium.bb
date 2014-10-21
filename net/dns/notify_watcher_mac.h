@@ -20,7 +20,7 @@ class NotifyWatcherMac : public base::MessageLoopForIO::Watcher {
   NotifyWatcherMac();
 
   // When deleted, automatically cancels.
-  virtual ~NotifyWatcherMac();
+  ~NotifyWatcherMac() override;
 
   // Registers for notifications for |key|. Returns true if succeeds. If so,
   // will deliver asynchronous notifications and errors to |callback|.
@@ -31,8 +31,8 @@ class NotifyWatcherMac : public base::MessageLoopForIO::Watcher {
 
  private:
   // MessageLoopForIO::Watcher:
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override {}
 
   int notify_fd_;
   int notify_token_;

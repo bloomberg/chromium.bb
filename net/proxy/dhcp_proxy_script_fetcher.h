@@ -83,12 +83,13 @@ class NET_EXPORT_PRIVATE DoNothingDhcpProxyScriptFetcher
     : public DhcpProxyScriptFetcher {
  public:
   DoNothingDhcpProxyScriptFetcher();
-  virtual ~DoNothingDhcpProxyScriptFetcher();
+  ~DoNothingDhcpProxyScriptFetcher() override;
 
-  virtual int Fetch(base::string16* utf16_text,
-                    const CompletionCallback& callback) override;
-  virtual void Cancel() override;
-  virtual const GURL& GetPacURL() const override;
+  int Fetch(base::string16* utf16_text,
+            const CompletionCallback& callback) override;
+  void Cancel() override;
+  const GURL& GetPacURL() const override;
+
  private:
   GURL gurl_;
   DISALLOW_COPY_AND_ASSIGN(DoNothingDhcpProxyScriptFetcher);

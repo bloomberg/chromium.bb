@@ -15,7 +15,7 @@ namespace net {
 // and server SSL sockets.
 class NET_EXPORT SSLSocket : public StreamSocket {
 public:
-  virtual ~SSLSocket() {}
+ ~SSLSocket() override {}
 
   // Exports data derived from the SSL master-secret (see RFC 5705).
   // If |has_context| is false, uses the no-context construction from the

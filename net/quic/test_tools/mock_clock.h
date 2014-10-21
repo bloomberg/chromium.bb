@@ -16,15 +16,15 @@ namespace net {
 class MockClock : public QuicClock {
  public:
   MockClock();
-  virtual ~MockClock();
+  ~MockClock() override;
 
   void AdvanceTime(QuicTime::Delta delta);
 
-  virtual QuicTime Now() const override;
+  QuicTime Now() const override;
 
-  virtual QuicTime ApproximateNow() const override;
+  QuicTime ApproximateNow() const override;
 
-  virtual QuicWallTime WallNow() const override;
+  QuicWallTime WallNow() const override;
 
   base::TimeTicks NowInTicks() const;
 

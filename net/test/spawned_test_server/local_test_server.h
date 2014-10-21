@@ -38,7 +38,7 @@ class LocalTestServer : public BaseTestServer {
                   const SSLOptions& ssl_options,
                   const base::FilePath& document_root);
 
-  virtual ~LocalTestServer();
+  ~LocalTestServer() override;
 
   // Start the test server and block until it's ready. Returns true on success.
   bool Start() WARN_UNUSED_RESULT;

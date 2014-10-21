@@ -23,11 +23,11 @@ class DelayedVerifyStrikeRegisterClient : public LocalStrikeRegisterClient {
                                     uint32 window_secs,
                                     const uint8 orbit[8],
                                     StrikeRegister::StartupType startup);
-  virtual ~DelayedVerifyStrikeRegisterClient();
+  ~DelayedVerifyStrikeRegisterClient() override;
 
-  virtual void VerifyNonceIsValidAndUnique(base::StringPiece nonce,
-                                           QuicWallTime now,
-                                           ResultCallback* cb) override;
+  void VerifyNonceIsValidAndUnique(base::StringPiece nonce,
+                                   QuicWallTime now,
+                                   ResultCallback* cb) override;
 
   // Start queueing verifications instead of executing them immediately.
   void StartDelayingVerification() {

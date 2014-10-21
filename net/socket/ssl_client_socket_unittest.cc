@@ -57,65 +57,57 @@ class WrappedStreamSocket : public StreamSocket {
  public:
   explicit WrappedStreamSocket(scoped_ptr<StreamSocket> transport)
       : transport_(transport.Pass()) {}
-  virtual ~WrappedStreamSocket() {}
+  ~WrappedStreamSocket() override {}
 
   // StreamSocket implementation:
-  virtual int Connect(const CompletionCallback& callback) override {
+  int Connect(const CompletionCallback& callback) override {
     return transport_->Connect(callback);
   }
-  virtual void Disconnect() override { transport_->Disconnect(); }
-  virtual bool IsConnected() const override {
-    return transport_->IsConnected();
-  }
-  virtual bool IsConnectedAndIdle() const override {
+  void Disconnect() override { transport_->Disconnect(); }
+  bool IsConnected() const override { return transport_->IsConnected(); }
+  bool IsConnectedAndIdle() const override {
     return transport_->IsConnectedAndIdle();
   }
-  virtual int GetPeerAddress(IPEndPoint* address) const override {
+  int GetPeerAddress(IPEndPoint* address) const override {
     return transport_->GetPeerAddress(address);
   }
-  virtual int GetLocalAddress(IPEndPoint* address) const override {
+  int GetLocalAddress(IPEndPoint* address) const override {
     return transport_->GetLocalAddress(address);
   }
-  virtual const BoundNetLog& NetLog() const override {
-    return transport_->NetLog();
-  }
-  virtual void SetSubresourceSpeculation() override {
+  const BoundNetLog& NetLog() const override { return transport_->NetLog(); }
+  void SetSubresourceSpeculation() override {
     transport_->SetSubresourceSpeculation();
   }
-  virtual void SetOmniboxSpeculation() override {
-    transport_->SetOmniboxSpeculation();
-  }
-  virtual bool WasEverUsed() const override {
-    return transport_->WasEverUsed();
-  }
-  virtual bool UsingTCPFastOpen() const override {
+  void SetOmniboxSpeculation() override { transport_->SetOmniboxSpeculation(); }
+  bool WasEverUsed() const override { return transport_->WasEverUsed(); }
+  bool UsingTCPFastOpen() const override {
     return transport_->UsingTCPFastOpen();
   }
-  virtual bool WasNpnNegotiated() const override {
+  bool WasNpnNegotiated() const override {
     return transport_->WasNpnNegotiated();
   }
-  virtual NextProto GetNegotiatedProtocol() const override {
+  NextProto GetNegotiatedProtocol() const override {
     return transport_->GetNegotiatedProtocol();
   }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) override {
+  bool GetSSLInfo(SSLInfo* ssl_info) override {
     return transport_->GetSSLInfo(ssl_info);
   }
 
   // Socket implementation:
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) override {
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override {
     return transport_->Read(buf, buf_len, callback);
   }
-  virtual int Write(IOBuffer* buf,
-                    int buf_len,
-                    const CompletionCallback& callback) override {
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override {
     return transport_->Write(buf, buf_len, callback);
   }
-  virtual int SetReceiveBufferSize(int32 size) override {
+  int SetReceiveBufferSize(int32 size) override {
     return transport_->SetReceiveBufferSize(size);
   }
-  virtual int SetSendBufferSize(int32 size) override {
+  int SetSendBufferSize(int32 size) override {
     return transport_->SetSendBufferSize(size);
   }
 
@@ -132,12 +124,12 @@ class WrappedStreamSocket : public StreamSocket {
 class ReadBufferingStreamSocket : public WrappedStreamSocket {
  public:
   explicit ReadBufferingStreamSocket(scoped_ptr<StreamSocket> transport);
-  virtual ~ReadBufferingStreamSocket() {}
+  ~ReadBufferingStreamSocket() override {}
 
   // Socket implementation:
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) override;
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override;
 
   // Sets the internal buffer to |size|. This must not be greater than
   // the largest value supplied to Read() - that is, it does not handle
@@ -262,15 +254,15 @@ void ReadBufferingStreamSocket::OnReadCompleted(int result) {
 class SynchronousErrorStreamSocket : public WrappedStreamSocket {
  public:
   explicit SynchronousErrorStreamSocket(scoped_ptr<StreamSocket> transport);
-  virtual ~SynchronousErrorStreamSocket() {}
+  ~SynchronousErrorStreamSocket() override {}
 
   // Socket implementation:
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) override;
-  virtual int Write(IOBuffer* buf,
-                    int buf_len,
-                    const CompletionCallback& callback) override;
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override;
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override;
 
   // Sets the next Read() call and all future calls to return |error|.
   // If there is already a pending asynchronous read, the configured error
@@ -333,15 +325,15 @@ int SynchronousErrorStreamSocket::Write(IOBuffer* buf,
 class FakeBlockingStreamSocket : public WrappedStreamSocket {
  public:
   explicit FakeBlockingStreamSocket(scoped_ptr<StreamSocket> transport);
-  virtual ~FakeBlockingStreamSocket() {}
+  ~FakeBlockingStreamSocket() override {}
 
   // Socket implementation:
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) override;
-  virtual int Write(IOBuffer* buf,
-                    int buf_len,
-                    const CompletionCallback& callback) override;
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override;
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override;
 
   // Blocks read results on the socket. Reads will not complete until
   // UnblockReadResult() has been called and a result is ready from the
@@ -549,18 +541,18 @@ class CountingStreamSocket : public WrappedStreamSocket {
       : WrappedStreamSocket(transport.Pass()),
         read_count_(0),
         write_count_(0) {}
-  virtual ~CountingStreamSocket() {}
+  ~CountingStreamSocket() override {}
 
   // Socket implementation:
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) override {
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override {
     read_count_++;
     return transport_->Read(buf, buf_len, callback);
   }
-  virtual int Write(IOBuffer* buf,
-                    int buf_len,
-                    const CompletionCallback& callback) override {
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override {
     write_count_++;
     return transport_->Write(buf, buf_len, callback);
   }
@@ -581,7 +573,7 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
       : socket_(socket),
         callback_(base::Bind(&DeleteSocketCallback::OnComplete,
                              base::Unretained(this))) {}
-  virtual ~DeleteSocketCallback() {}
+  ~DeleteSocketCallback() override {}
 
   const CompletionCallback& callback() const { return callback_; }
 
@@ -605,62 +597,58 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
 // A ChannelIDStore that always returns an error when asked for a
 // channel id.
 class FailingChannelIDStore : public ChannelIDStore {
-  virtual int GetChannelID(const std::string& server_identifier,
-                           base::Time* expiration_time,
-                           std::string* private_key_result,
-                           std::string* cert_result,
-                           const GetChannelIDCallback& callback) override {
+  int GetChannelID(const std::string& server_identifier,
+                   base::Time* expiration_time,
+                   std::string* private_key_result,
+                   std::string* cert_result,
+                   const GetChannelIDCallback& callback) override {
     return ERR_UNEXPECTED;
   }
-  virtual void SetChannelID(const std::string& server_identifier,
-                            base::Time creation_time,
-                            base::Time expiration_time,
-                            const std::string& private_key,
-                            const std::string& cert) override {}
-  virtual void DeleteChannelID(const std::string& server_identifier,
-                               const base::Closure& completion_callback)
-      override {}
-  virtual void DeleteAllCreatedBetween(base::Time delete_begin,
-                                       base::Time delete_end,
-                                       const base::Closure& completion_callback)
-      override {}
-  virtual void DeleteAll(const base::Closure& completion_callback) override {}
-  virtual void GetAllChannelIDs(const GetChannelIDListCallback& callback)
-      override {}
-  virtual int GetChannelIDCount() override { return 0; }
-  virtual void SetForceKeepSessionState() override {}
+  void SetChannelID(const std::string& server_identifier,
+                    base::Time creation_time,
+                    base::Time expiration_time,
+                    const std::string& private_key,
+                    const std::string& cert) override {}
+  void DeleteChannelID(const std::string& server_identifier,
+                       const base::Closure& completion_callback) override {}
+  void DeleteAllCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& completion_callback) override {}
+  void DeleteAll(const base::Closure& completion_callback) override {}
+  void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
+  int GetChannelIDCount() override { return 0; }
+  void SetForceKeepSessionState() override {}
 };
 
 // A ChannelIDStore that asynchronously returns an error when asked for a
 // channel id.
 class AsyncFailingChannelIDStore : public ChannelIDStore {
-  virtual int GetChannelID(const std::string& server_identifier,
-                           base::Time* expiration_time,
-                           std::string* private_key_result,
-                           std::string* cert_result,
-                           const GetChannelIDCallback& callback) override {
+  int GetChannelID(const std::string& server_identifier,
+                   base::Time* expiration_time,
+                   std::string* private_key_result,
+                   std::string* cert_result,
+                   const GetChannelIDCallback& callback) override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, ERR_UNEXPECTED,
                               server_identifier, base::Time(), "", ""));
     return ERR_IO_PENDING;
   }
-  virtual void SetChannelID(const std::string& server_identifier,
-                            base::Time creation_time,
-                            base::Time expiration_time,
-                            const std::string& private_key,
-                            const std::string& cert) override {}
-  virtual void DeleteChannelID(const std::string& server_identifier,
-                               const base::Closure& completion_callback)
-      override {}
-  virtual void DeleteAllCreatedBetween(base::Time delete_begin,
-                                       base::Time delete_end,
-                                       const base::Closure& completion_callback)
-      override {}
-  virtual void DeleteAll(const base::Closure& completion_callback) override {}
-  virtual void GetAllChannelIDs(const GetChannelIDListCallback& callback)
-      override {}
-  virtual int GetChannelIDCount() override { return 0; }
-  virtual void SetForceKeepSessionState() override {}
+  void SetChannelID(const std::string& server_identifier,
+                    base::Time creation_time,
+                    base::Time expiration_time,
+                    const std::string& private_key,
+                    const std::string& cert) override {}
+  void DeleteChannelID(const std::string& server_identifier,
+                       const base::Closure& completion_callback) override {}
+  void DeleteAllCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      const base::Closure& completion_callback) override {}
+  void DeleteAll(const base::Closure& completion_callback) override {}
+  void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
+  int GetChannelIDCount() override { return 0; }
+  void SetForceKeepSessionState() override {}
 };
 
 // A mock CTVerifier that records every call to Verify but doesn't verify

@@ -108,15 +108,15 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
                    const base::FilePath& path,
                    int max_bytes,
                    const scoped_refptr<base::SingleThreadTaskRunner>& thread);
-    virtual ~DefaultBackend();
+    ~DefaultBackend() override;
 
     // Returns a factory for an in-memory cache.
     static BackendFactory* InMemory(int max_bytes);
 
     // BackendFactory implementation.
-    virtual int CreateBackend(NetLog* net_log,
-                              scoped_ptr<disk_cache::Backend>* backend,
-                              const CompletionCallback& callback) override;
+    int CreateBackend(NetLog* net_log,
+                      scoped_ptr<disk_cache::Backend>* backend,
+                      const CompletionCallback& callback) override;
 
    private:
     CacheType type_;
@@ -145,7 +145,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
             NetLog* net_log,
             BackendFactory* backend_factory);
 
-  virtual ~HttpCache();
+  ~HttpCache() override;
 
   HttpTransactionFactory* network_layer() { return network_layer_.get(); }
 
@@ -213,10 +213,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   }
 
   // HttpTransactionFactory implementation:
-  virtual int CreateTransaction(RequestPriority priority,
-                                scoped_ptr<HttpTransaction>* trans) override;
-  virtual HttpCache* GetCache() override;
-  virtual HttpNetworkSession* GetSession() override;
+  int CreateTransaction(RequestPriority priority,
+                        scoped_ptr<HttpTransaction>* trans) override;
+  HttpCache* GetCache() override;
+  HttpNetworkSession* GetSession() override;
 
   base::WeakPtr<HttpCache> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 

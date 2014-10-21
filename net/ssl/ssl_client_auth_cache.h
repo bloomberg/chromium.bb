@@ -28,7 +28,7 @@ class X509Certificate;
 class NET_EXPORT_PRIVATE SSLClientAuthCache : public CertDatabase::Observer {
  public:
   SSLClientAuthCache();
-  virtual ~SSLClientAuthCache();
+  ~SSLClientAuthCache() override;
 
   // Checks for a client certificate preference for SSL server at |server|.
   // Returns true if a preference is found, and sets |*certificate| to the
@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE SSLClientAuthCache : public CertDatabase::Observer {
   void Remove(const HostPortPair& server);
 
   // CertDatabase::Observer methods:
-  virtual void OnCertAdded(const X509Certificate* cert) override;
+  void OnCertAdded(const X509Certificate* cert) override;
 
  private:
   typedef HostPortPair AuthCacheKey;

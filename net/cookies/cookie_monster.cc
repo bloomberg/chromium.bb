@@ -428,10 +428,10 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   }
 
   // CookieMonsterTask:
-  virtual void Run() override;
+  void Run() override;
 
  protected:
-  virtual ~SetCookieWithDetailsTask() {}
+  ~SetCookieWithDetailsTask() override {}
 
  private:
   GURL url_;
@@ -468,10 +468,10 @@ class CookieMonster::GetAllCookiesTask : public CookieMonsterTask {
   }
 
   // CookieMonsterTask
-  virtual void Run() override;
+  void Run() override;
 
  protected:
-  virtual ~GetAllCookiesTask() {}
+  ~GetAllCookiesTask() override {}
 
  private:
   GetCookieListCallback callback_;
@@ -503,10 +503,10 @@ class CookieMonster::GetAllCookiesForURLWithOptionsTask
   }
 
   // CookieMonsterTask:
-  virtual void Run() override;
+  void Run() override;
 
  protected:
-  virtual ~GetAllCookiesForURLWithOptionsTask() {}
+  ~GetAllCookiesForURLWithOptionsTask() override {}
 
  private:
   GURL url_;
@@ -596,10 +596,10 @@ class CookieMonster::DeleteAllTask : public DeleteTask<int> {
   }
 
   // DeleteTask:
-  virtual int RunDeleteTask() override;
+  int RunDeleteTask() override;
 
  protected:
-  virtual ~DeleteAllTask() {}
+  ~DeleteAllTask() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeleteAllTask);
@@ -622,10 +622,10 @@ class CookieMonster::DeleteAllCreatedBetweenTask : public DeleteTask<int> {
   }
 
   // DeleteTask:
-  virtual int RunDeleteTask() override;
+  int RunDeleteTask() override;
 
  protected:
-  virtual ~DeleteAllCreatedBetweenTask() {}
+  ~DeleteAllCreatedBetweenTask() override {}
 
  private:
   Time delete_begin_;
@@ -650,10 +650,10 @@ class CookieMonster::DeleteAllForHostTask : public DeleteTask<int> {
   }
 
   // DeleteTask:
-  virtual int RunDeleteTask() override;
+  int RunDeleteTask() override;
 
  protected:
-  virtual ~DeleteAllForHostTask() {}
+  ~DeleteAllForHostTask() override {}
 
  private:
   GURL url_;
@@ -682,10 +682,10 @@ class CookieMonster::DeleteAllCreatedBetweenForHostTask
   }
 
   // DeleteTask:
-  virtual int RunDeleteTask() override;
+  int RunDeleteTask() override;
 
  protected:
-  virtual ~DeleteAllCreatedBetweenForHostTask() {}
+  ~DeleteAllCreatedBetweenForHostTask() override {}
 
  private:
   Time delete_begin_;
@@ -711,10 +711,10 @@ class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<bool> {
   }
 
   // DeleteTask:
-  virtual bool RunDeleteTask() override;
+  bool RunDeleteTask() override;
 
  protected:
-  virtual ~DeleteCanonicalCookieTask() {}
+  ~DeleteCanonicalCookieTask() override {}
 
  private:
   CanonicalCookie cookie_;
@@ -742,10 +742,10 @@ class CookieMonster::SetCookieWithOptionsTask : public CookieMonsterTask {
   }
 
   // CookieMonsterTask:
-  virtual void Run() override;
+  void Run() override;
 
  protected:
-  virtual ~SetCookieWithOptionsTask() {}
+  ~SetCookieWithOptionsTask() override {}
 
  private:
   GURL url_;
@@ -779,10 +779,10 @@ class CookieMonster::GetCookiesWithOptionsTask : public CookieMonsterTask {
   }
 
   // CookieMonsterTask:
-  virtual void Run() override;
+  void Run() override;
 
  protected:
-  virtual ~GetCookiesWithOptionsTask() {}
+  ~GetCookiesWithOptionsTask() override {}
 
  private:
   GURL url_;
@@ -814,10 +814,10 @@ class CookieMonster::DeleteCookieTask : public DeleteTask<void> {
   }
 
   // DeleteTask:
-  virtual void RunDeleteTask() override;
+  void RunDeleteTask() override;
 
  protected:
-  virtual ~DeleteCookieTask() {}
+  ~DeleteCookieTask() override {}
 
  private:
   GURL url_;
@@ -839,10 +839,10 @@ class CookieMonster::DeleteSessionCookiesTask : public DeleteTask<int> {
   }
 
   // DeleteTask:
-  virtual int RunDeleteTask() override;
+  int RunDeleteTask() override;
 
  protected:
-  virtual ~DeleteSessionCookiesTask() {}
+  ~DeleteSessionCookiesTask() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeleteSessionCookiesTask);
@@ -865,10 +865,10 @@ class CookieMonster::HasCookiesForETLDP1Task : public CookieMonsterTask {
   }
 
   // CookieMonsterTask:
-  virtual void Run() override;
+  void Run() override;
 
  protected:
-  virtual ~HasCookiesForETLDP1Task() {}
+  ~HasCookiesForETLDP1Task() override {}
 
  private:
   std::string etldp1_;

@@ -559,7 +559,7 @@ class NET_EXPORT_PRIVATE SpdyFrameIR {
 // to them.
 class NET_EXPORT_PRIVATE SpdyFrameWithStreamIdIR : public SpdyFrameIR {
  public:
-  virtual ~SpdyFrameWithStreamIdIR() {}
+  ~SpdyFrameWithStreamIdIR() override {}
   SpdyStreamId stream_id() const { return stream_id_; }
   void set_stream_id(SpdyStreamId stream_id) {
     DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
@@ -581,7 +581,7 @@ class NET_EXPORT_PRIVATE SpdyFrameWithStreamIdIR : public SpdyFrameIR {
 // flag. Implies SpdyFrameWithStreamIdIR.
 class NET_EXPORT_PRIVATE SpdyFrameWithFinIR : public SpdyFrameWithStreamIdIR {
  public:
-  virtual ~SpdyFrameWithFinIR() {}
+  ~SpdyFrameWithFinIR() override {}
   bool fin() const { return fin_; }
   void set_fin(bool fin) { fin_ = fin; }
 
@@ -618,7 +618,7 @@ class NET_EXPORT_PRIVATE SpdyFrameWithNameValueBlockIR
 
  protected:
   explicit SpdyFrameWithNameValueBlockIR(SpdyStreamId stream_id);
-  virtual ~SpdyFrameWithNameValueBlockIR();
+  ~SpdyFrameWithNameValueBlockIR() override;
 
  private:
   SpdyNameValueBlock name_value_block_;
@@ -635,7 +635,7 @@ class NET_EXPORT_PRIVATE SpdyDataIR
   // Use in conjunction with SetDataShallow() for shallow-copy on data.
   explicit SpdyDataIR(SpdyStreamId stream_id);
 
-  virtual ~SpdyDataIR();
+  ~SpdyDataIR() override;
 
   base::StringPiece data() const { return data_; }
 
@@ -663,7 +663,7 @@ class NET_EXPORT_PRIVATE SpdyDataIR
     data_ = data;
   }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   // Used to store data that this SpdyDataIR should own.
@@ -698,7 +698,7 @@ class NET_EXPORT_PRIVATE SpdySynStreamIR
     unidirectional_ = unidirectional;
   }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   SpdyStreamId associated_to_stream_id_;
@@ -713,7 +713,7 @@ class NET_EXPORT_PRIVATE SpdySynReplyIR : public SpdyFrameWithNameValueBlockIR {
   explicit SpdySynReplyIR(SpdyStreamId stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id) {}
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdySynReplyIR);
@@ -724,7 +724,7 @@ class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
   SpdyRstStreamIR(SpdyStreamId stream_id, SpdyRstStreamStatus status,
                   base::StringPiece description);
 
-  virtual ~SpdyRstStreamIR();
+  ~SpdyRstStreamIR() override;
 
   SpdyRstStreamStatus status() const {
     return status_;
@@ -739,7 +739,7 @@ class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
     description_ = description;
   }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   SpdyRstStreamStatus status_;
@@ -763,7 +763,7 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
 
   SpdySettingsIR();
 
-  virtual ~SpdySettingsIR();
+  ~SpdySettingsIR() override;
 
   // Overwrites as appropriate.
   const ValueMap& values() const { return values_; }
@@ -785,7 +785,7 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
     is_ack_ = is_ack;
   }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   ValueMap values_;
@@ -804,7 +804,7 @@ class NET_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
   bool is_ack() const { return is_ack_; }
   void set_is_ack(bool is_ack) { is_ack_ = is_ack; }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   SpdyPingId id_;
@@ -817,7 +817,7 @@ class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
  public:
   SpdyGoAwayIR(SpdyStreamId last_good_stream_id, SpdyGoAwayStatus status,
                const base::StringPiece& description);
-  virtual ~SpdyGoAwayIR();
+  ~SpdyGoAwayIR() override;
   SpdyStreamId last_good_stream_id() const { return last_good_stream_id_; }
   void set_last_good_stream_id(SpdyStreamId last_good_stream_id) {
     DCHECK_LE(0u, last_good_stream_id);
@@ -832,7 +832,7 @@ class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
 
   const base::StringPiece& description() const;
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   SpdyStreamId last_good_stream_id_;
@@ -849,7 +849,7 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
       has_priority_(false),
       priority_(0) {}
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
   bool has_priority() const { return has_priority_; }
   void set_has_priority(bool has_priority) { has_priority_ = has_priority; }
@@ -876,7 +876,7 @@ class NET_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
     delta_ = delta;
   }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   int32 delta_;
@@ -890,7 +890,7 @@ class NET_EXPORT_PRIVATE SpdyBlockedIR
   explicit SpdyBlockedIR(SpdyStreamId stream_id)
       : SpdyFrameWithStreamIdIR(stream_id) {}
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
@@ -905,7 +905,7 @@ class NET_EXPORT_PRIVATE SpdyPushPromiseIR
   SpdyStreamId promised_stream_id() const { return promised_stream_id_; }
   void set_promised_stream_id(SpdyStreamId id) { promised_stream_id_ = id; }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   SpdyStreamId promised_stream_id_;
@@ -921,7 +921,7 @@ class NET_EXPORT_PRIVATE SpdyContinuationIR
       : SpdyFrameWithNameValueBlockIR(stream_id),
         end_headers_(false) {}
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
   bool end_headers() const { return end_headers_; }
   void set_end_headers(bool end_headers) {end_headers_ = end_headers;}
@@ -955,7 +955,7 @@ class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
     origin_ = origin;
   }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   uint32 max_age_;
@@ -980,7 +980,7 @@ class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
   bool exclusive() const { return exclusive_; }
   void set_exclusive(bool exclusive) { exclusive_ = exclusive; }
 
-  virtual void Visit(SpdyFrameVisitor* visitor) const override;
+  void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
   SpdyStreamId parent_stream_id_;

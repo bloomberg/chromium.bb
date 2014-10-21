@@ -30,55 +30,53 @@ class HttpBasicStream : public HttpStream {
   // Constructs a new HttpBasicStream. InitializeStream must be called to
   // initialize it correctly.
   HttpBasicStream(ClientSocketHandle* connection, bool using_proxy);
-  virtual ~HttpBasicStream();
+  ~HttpBasicStream() override;
 
   // HttpStream methods:
-  virtual int InitializeStream(const HttpRequestInfo* request_info,
-                               RequestPriority priority,
-                               const BoundNetLog& net_log,
-                               const CompletionCallback& callback) override;
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override;
 
-  virtual int SendRequest(const HttpRequestHeaders& headers,
-                          HttpResponseInfo* response,
-                          const CompletionCallback& callback) override;
+  int SendRequest(const HttpRequestHeaders& headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override;
 
-  virtual UploadProgress GetUploadProgress() const override;
+  UploadProgress GetUploadProgress() const override;
 
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) override;
+  int ReadResponseHeaders(const CompletionCallback& callback) override;
 
-  virtual int ReadResponseBody(IOBuffer* buf,
-                               int buf_len,
-                               const CompletionCallback& callback) override;
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override;
 
-  virtual void Close(bool not_reusable) override;
+  void Close(bool not_reusable) override;
 
-  virtual HttpStream* RenewStreamForAuth() override;
+  HttpStream* RenewStreamForAuth() override;
 
-  virtual bool IsResponseBodyComplete() const override;
+  bool IsResponseBodyComplete() const override;
 
-  virtual bool CanFindEndOfResponse() const override;
+  bool CanFindEndOfResponse() const override;
 
-  virtual bool IsConnectionReused() const override;
+  bool IsConnectionReused() const override;
 
-  virtual void SetConnectionReused() override;
+  void SetConnectionReused() override;
 
-  virtual bool IsConnectionReusable() const override;
+  bool IsConnectionReusable() const override;
 
-  virtual int64 GetTotalReceivedBytes() const override;
+  int64 GetTotalReceivedBytes() const override;
 
-  virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
 
-  virtual void GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetSSLInfo(SSLInfo* ssl_info) override;
 
-  virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) override;
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
 
-  virtual bool IsSpdyHttpStream() const override;
+  bool IsSpdyHttpStream() const override;
 
-  virtual void Drain(HttpNetworkSession* session) override;
+  void Drain(HttpNetworkSession* session) override;
 
-  virtual void SetPriority(RequestPriority priority) override;
+  void SetPriority(RequestPriority priority) override;
 
  private:
   HttpStreamParser* parser() const { return state_.parser(); }

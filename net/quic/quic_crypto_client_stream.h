@@ -29,11 +29,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
                          QuicClientSessionBase* session,
                          ProofVerifyContext* verify_context,
                          QuicCryptoClientConfig* crypto_config);
-  virtual ~QuicCryptoClientStream();
+  ~QuicCryptoClientStream() override;
 
   // CryptoFramerVisitorInterface implementation
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) override;
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
   // Performs a crypto handshake with the server. Returns true if the crypto
   // handshake is started successfully.
@@ -59,10 +58,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   class ChannelIDSourceCallbackImpl : public ChannelIDSourceCallback {
    public:
     explicit ChannelIDSourceCallbackImpl(QuicCryptoClientStream* stream);
-    virtual ~ChannelIDSourceCallbackImpl();
+    ~ChannelIDSourceCallbackImpl() override;
 
     // ChannelIDSourceCallback interface.
-    virtual void Run(scoped_ptr<ChannelIDKey>* channel_id_key) override;
+    void Run(scoped_ptr<ChannelIDKey>* channel_id_key) override;
 
     // Cancel causes any future callbacks to be ignored. It must be called on
     // the same thread as the callback will be made on.
@@ -78,12 +77,12 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   class ProofVerifierCallbackImpl : public ProofVerifierCallback {
    public:
     explicit ProofVerifierCallbackImpl(QuicCryptoClientStream* stream);
-    virtual ~ProofVerifierCallbackImpl();
+    ~ProofVerifierCallbackImpl() override;
 
     // ProofVerifierCallback interface.
-    virtual void Run(bool ok,
-                     const string& error_details,
-                     scoped_ptr<ProofVerifyDetails>* details) override;
+    void Run(bool ok,
+             const string& error_details,
+             scoped_ptr<ProofVerifyDetails>* details) override;
 
     // Cancel causes any future callbacks to be ignored. It must be called on
     // the same thread as the callback will be made on.

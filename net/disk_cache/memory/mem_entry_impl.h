@@ -87,26 +87,38 @@ class MemEntryImpl : public Entry {
   }
 
   // Entry interface.
-  virtual void Doom() override;
-  virtual void Close() override;
-  virtual std::string GetKey() const override;
-  virtual base::Time GetLastUsed() const override;
-  virtual base::Time GetLastModified() const override;
-  virtual int32 GetDataSize(int index) const override;
-  virtual int ReadData(int index, int offset, IOBuffer* buf, int buf_len,
-                       const CompletionCallback& callback) override;
-  virtual int WriteData(int index, int offset, IOBuffer* buf, int buf_len,
-                        const CompletionCallback& callback,
-                        bool truncate) override;
-  virtual int ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
-                             const CompletionCallback& callback) override;
-  virtual int WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
-                              const CompletionCallback& callback) override;
-  virtual int GetAvailableRange(int64 offset, int len, int64* start,
-                                const CompletionCallback& callback) override;
-  virtual bool CouldBeSparse() const override;
-  virtual void CancelSparseIO() override {}
-  virtual int ReadyForSparseIO(const CompletionCallback& callback) override;
+  void Doom() override;
+  void Close() override;
+  std::string GetKey() const override;
+  base::Time GetLastUsed() const override;
+  base::Time GetLastModified() const override;
+  int32 GetDataSize(int index) const override;
+  int ReadData(int index,
+               int offset,
+               IOBuffer* buf,
+               int buf_len,
+               const CompletionCallback& callback) override;
+  int WriteData(int index,
+                int offset,
+                IOBuffer* buf,
+                int buf_len,
+                const CompletionCallback& callback,
+                bool truncate) override;
+  int ReadSparseData(int64 offset,
+                     IOBuffer* buf,
+                     int buf_len,
+                     const CompletionCallback& callback) override;
+  int WriteSparseData(int64 offset,
+                      IOBuffer* buf,
+                      int buf_len,
+                      const CompletionCallback& callback) override;
+  int GetAvailableRange(int64 offset,
+                        int len,
+                        int64* start,
+                        const CompletionCallback& callback) override;
+  bool CouldBeSparse() const override;
+  void CancelSparseIO() override {}
+  int ReadyForSparseIO(const CompletionCallback& callback) override;
 
  private:
   typedef base::hash_map<int, MemEntryImpl*> EntryMap;
@@ -115,7 +127,7 @@ class MemEntryImpl : public Entry {
     NUM_STREAMS = 3
   };
 
-  virtual ~MemEntryImpl();
+  ~MemEntryImpl() override;
 
   // Do all the work for corresponding public functions.  Implemented as
   // separate functions to make logging of results simpler.

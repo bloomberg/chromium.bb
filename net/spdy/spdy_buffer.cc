@@ -45,7 +45,7 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
         offset_(offset) {}
 
  private:
-  virtual ~SharedFrameIOBuffer() {
+  ~SharedFrameIOBuffer() override {
     // Prevent ~IOBuffer() from trying to delete |data_|.
     data_ = NULL;
   }

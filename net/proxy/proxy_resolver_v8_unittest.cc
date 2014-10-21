@@ -26,15 +26,15 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   MockJSBindings() : my_ip_address_count(0), my_ip_address_ex_count(0),
                      should_terminate(false) {}
 
-  virtual void Alert(const base::string16& message) override {
+  void Alert(const base::string16& message) override {
     VLOG(1) << "PAC-alert: " << message;  // Helpful when debugging.
     alerts.push_back(base::UTF16ToUTF8(message));
   }
 
-  virtual bool ResolveDns(const std::string& host,
-                          ResolveDnsOperation op,
-                          std::string* output,
-                          bool* terminate) override {
+  bool ResolveDns(const std::string& host,
+                  ResolveDnsOperation op,
+                  std::string* output,
+                  bool* terminate) override {
     *terminate = should_terminate;
 
     if (op == MY_IP_ADDRESS) {
@@ -65,8 +65,7 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
     return false;
   }
 
-  virtual void OnError(int line_number,
-                       const base::string16& message) override {
+  void OnError(int line_number, const base::string16& message) override {
     // Helpful when debugging.
     VLOG(1) << "PAC-error: [" << line_number << "] " << message;
 
@@ -102,8 +101,7 @@ class ProxyResolverV8WithMockBindings : public ProxyResolverV8 {
     set_js_bindings(&mock_js_bindings_);
   }
 
-  virtual ~ProxyResolverV8WithMockBindings() {
-  }
+  ~ProxyResolverV8WithMockBindings() override {}
 
   MockJSBindings* mock_js_bindings() {
     return &mock_js_bindings_;

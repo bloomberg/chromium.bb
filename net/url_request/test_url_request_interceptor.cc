@@ -30,10 +30,10 @@ class TestURLRequestJob : public net::URLRequestFileJob {
                                file_path,
                                worker_task_runner) {}
 
-  virtual int GetResponseCode() const override { return 200; }
+  int GetResponseCode() const override { return 200; }
 
  private:
-  virtual ~TestURLRequestJob() {}
+  ~TestURLRequestJob() override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestJob);
 };
@@ -54,7 +54,7 @@ class TestURLRequestInterceptor::Delegate : public net::URLRequestInterceptor {
         network_task_runner_(network_task_runner),
         worker_task_runner_(worker_task_runner),
         hit_count_(0) {}
-  virtual ~Delegate() {}
+  ~Delegate() override {}
 
   void Register() {
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
@@ -91,7 +91,7 @@ class TestURLRequestInterceptor::Delegate : public net::URLRequestInterceptor {
   typedef std::map<GURL, base::FilePath> ResponseMap;
 
   // When computing matches, this ignores the query parameters of the url.
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     DCHECK(network_task_runner_->RunsTasksOnCurrentThread());

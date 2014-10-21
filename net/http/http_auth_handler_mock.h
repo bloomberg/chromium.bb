@@ -33,7 +33,7 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
   class Factory : public HttpAuthHandlerFactory {
    public:
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
     void AddMockHandler(HttpAuthHandler* handler, HttpAuth::Target target);
 
@@ -42,14 +42,13 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
     }
 
     // HttpAuthHandlerFactory:
-    virtual int CreateAuthHandler(
-        HttpAuthChallengeTokenizer* challenge,
-        HttpAuth::Target target,
-        const GURL& origin,
-        CreateReason reason,
-        int nonce_count,
-        const BoundNetLog& net_log,
-        scoped_ptr<HttpAuthHandler>* handler) override;
+    int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
+                          HttpAuth::Target target,
+                          const GURL& origin,
+                          CreateReason reason,
+                          int nonce_count,
+                          const BoundNetLog& net_log,
+                          scoped_ptr<HttpAuthHandler>* handler) override;
 
    private:
     ScopedVector<HttpAuthHandler> handlers_[HttpAuth::AUTH_NUM_TARGETS];
@@ -58,7 +57,7 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
 
   HttpAuthHandlerMock();
 
-  virtual ~HttpAuthHandlerMock();
+  ~HttpAuthHandlerMock() override;
 
   void SetResolveExpectation(Resolve resolve);
 
@@ -87,19 +86,19 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
   }
 
   // HttpAuthHandler:
-  virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
+  HttpAuth::AuthorizationResult HandleAnotherChallenge(
       HttpAuthChallengeTokenizer* challenge) override;
-  virtual bool NeedsIdentity() override;
-  virtual bool AllowsDefaultCredentials() override;
-  virtual bool AllowsExplicitCredentials() override;
+  bool NeedsIdentity() override;
+  bool AllowsDefaultCredentials() override;
+  bool AllowsExplicitCredentials() override;
 
  protected:
-  virtual bool Init(HttpAuthChallengeTokenizer* challenge) override;
+  bool Init(HttpAuthChallengeTokenizer* challenge) override;
 
-  virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
-                                    const HttpRequestInfo* request,
-                                    const CompletionCallback& callback,
-                                    std::string* auth_token) override;
+  int GenerateAuthTokenImpl(const AuthCredentials* credentials,
+                            const HttpRequestInfo* request,
+                            const CompletionCallback& callback,
+                            std::string* auth_token) override;
 
  private:
   void OnResolveCanonicalName();

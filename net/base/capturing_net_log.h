@@ -72,7 +72,7 @@ class CapturingNetLog : public NetLog {
   typedef std::vector<CapturedEntry> CapturedEntryList;
 
   CapturingNetLog();
-  virtual ~CapturingNetLog();
+  ~CapturingNetLog() override;
 
   void SetLogLevel(LogLevel log_level);
 
@@ -89,7 +89,7 @@ class CapturingNetLog : public NetLog {
   class Observer : public NetLog::ThreadSafeObserver {
    public:
     Observer();
-    virtual ~Observer();
+    ~Observer() override;
 
     // Returns the list of all entries in the log.
     void GetEntries(CapturedEntryList* entry_list) const;
@@ -105,7 +105,7 @@ class CapturingNetLog : public NetLog {
 
    private:
     // ThreadSafeObserver implementation:
-    virtual void OnAddEntry(const Entry& entry) override;
+    void OnAddEntry(const Entry& entry) override;
 
     // Needs to be "mutable" so can use it in GetEntries().
     mutable base::Lock lock_;

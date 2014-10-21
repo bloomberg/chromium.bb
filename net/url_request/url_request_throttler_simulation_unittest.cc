@@ -135,11 +135,11 @@ class Server : public DiscreteTimeSimulation::Actor {
     end_downtime_ = start_time + duration;
   }
 
-  virtual void AdvanceTime(const TimeTicks& absolute_time) override {
+  void AdvanceTime(const TimeTicks& absolute_time) override {
     now_ = absolute_time;
   }
 
-  virtual void PerformAction() override {
+  void PerformAction() override {
     // We are inserted at the end of the actor's list, so all Requester
     // instances have already done their bit.
     if (num_current_tick_queries_ > max_experienced_queries_per_tick_)
@@ -306,17 +306,13 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
       : URLRequestThrottlerEntry(manager, std::string()),
         mock_backoff_entry_(&backoff_policy_) {}
 
-  virtual const BackoffEntry* GetBackoffEntry() const override {
+  const BackoffEntry* GetBackoffEntry() const override {
     return &mock_backoff_entry_;
   }
 
-  virtual BackoffEntry* GetBackoffEntry() override {
-    return &mock_backoff_entry_;
-  }
+  BackoffEntry* GetBackoffEntry() override { return &mock_backoff_entry_; }
 
-  virtual TimeTicks ImplGetTimeNow() const override {
-    return fake_now_;
-  }
+  TimeTicks ImplGetTimeNow() const override { return fake_now_; }
 
   void SetFakeNow(const TimeTicks& fake_time) {
     fake_now_ = fake_time;
@@ -328,7 +324,7 @@ class MockURLRequestThrottlerEntry : public URLRequestThrottlerEntry {
   }
 
  protected:
-  virtual ~MockURLRequestThrottlerEntry() {}
+  ~MockURLRequestThrottlerEntry() override {}
 
  private:
   TimeTicks fake_now_;
@@ -414,14 +410,14 @@ class Requester : public DiscreteTimeSimulation::Actor {
     DCHECK(server_);
   }
 
-  virtual void AdvanceTime(const TimeTicks& absolute_time) override {
+  void AdvanceTime(const TimeTicks& absolute_time) override {
     if (time_of_last_success_.is_null())
       time_of_last_success_ = absolute_time;
 
     throttler_entry_->SetFakeNow(absolute_time);
   }
 
-  virtual void PerformAction() override {
+  void PerformAction() override {
     TimeDelta effective_delay = time_between_requests_;
     TimeDelta current_jitter = TimeDelta::FromMilliseconds(
         request_jitter_.InMilliseconds() * base::RandDouble());

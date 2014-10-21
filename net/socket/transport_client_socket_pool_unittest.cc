@@ -465,7 +465,7 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  virtual ~RequestSocketCallback() {}
+  ~RequestSocketCallback() override {}
 
   const CompletionCallback& callback() const { return callback_; }
 

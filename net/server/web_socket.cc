@@ -54,7 +54,7 @@ class WebSocketHixie76 : public net::WebSocket {
     return new WebSocketHixie76(server, connection, request, pos);
   }
 
-  virtual void Accept(const HttpServerRequestInfo& request) override {
+  void Accept(const HttpServerRequestInfo& request) override {
     std::string key1 = request.GetHeaderValue("sec-websocket-key1");
     std::string key2 = request.GetHeaderValue("sec-websocket-key2");
 
@@ -86,7 +86,7 @@ class WebSocketHixie76 : public net::WebSocket {
                      std::string(reinterpret_cast<char*>(digest.a), 16));
   }
 
-  virtual ParseResult Read(std::string* message) override {
+  ParseResult Read(std::string* message) override {
     DCHECK(message);
     HttpConnection::ReadIOBuffer* read_buf = connection_->read_buf();
     if (read_buf->StartOfBuffer()[0])
@@ -103,7 +103,7 @@ class WebSocketHixie76 : public net::WebSocket {
     return FRAME_OK;
   }
 
-  virtual void Send(const std::string& message) override {
+  void Send(const std::string& message) override {
     char message_start = 0;
     char message_end = -1;
     server_->SendRaw(connection_->id(), std::string(1, message_start));
@@ -199,7 +199,7 @@ class WebSocketHybi17 : public WebSocket {
     return new WebSocketHybi17(server, connection, request, pos);
   }
 
-  virtual void Accept(const HttpServerRequestInfo& request) override {
+  void Accept(const HttpServerRequestInfo& request) override {
     static const char* const kWebSocketGuid =
         "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     std::string key = request.GetHeaderValue("sec-websocket-key");
@@ -217,7 +217,7 @@ class WebSocketHybi17 : public WebSocket {
                            encoded_hash.c_str()));
   }
 
-  virtual ParseResult Read(std::string* message) override {
+  ParseResult Read(std::string* message) override {
     HttpConnection::ReadIOBuffer* read_buf = connection_->read_buf();
     base::StringPiece frame(read_buf->StartOfBuffer(), read_buf->GetSize());
     int bytes_consumed = 0;
@@ -230,7 +230,7 @@ class WebSocketHybi17 : public WebSocket {
     return result;
   }
 
-  virtual void Send(const std::string& message) override {
+  void Send(const std::string& message) override {
     if (closed_)
       return;
     server_->SendRaw(connection_->id(),

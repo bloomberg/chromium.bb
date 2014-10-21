@@ -24,11 +24,10 @@ class NET_EXPORT_PRIVATE NetworkDelegateErrorObserver
  public:
   NetworkDelegateErrorObserver(NetworkDelegate* network_delegate,
                                base::MessageLoopProxy* origin_loop);
-  virtual ~NetworkDelegateErrorObserver();
+  ~NetworkDelegateErrorObserver() override;
 
   // ProxyResolverErrorObserver implementation.
-  virtual void OnPACScriptError(int line_number, const base::string16& error)
-      override;
+  void OnPACScriptError(int line_number, const base::string16& error) override;
 
  private:
   class Core;

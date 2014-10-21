@@ -125,7 +125,7 @@ class StreamReleaserCallback : public TestCompletionCallbackBase {
  public:
   StreamReleaserCallback();
 
-  virtual ~StreamReleaserCallback();
+  ~StreamReleaserCallback() override;
 
   // Returns a callback that releases |request|'s stream.
   CompletionCallback MakeCallback(SpdyStreamRequest* request);
@@ -157,11 +157,11 @@ class MockECSignatureCreator : public crypto::ECSignatureCreator {
   explicit MockECSignatureCreator(crypto::ECPrivateKey* key);
 
   // crypto::ECSignatureCreator
-  virtual bool Sign(const uint8* data,
-                    int data_len,
-                    std::vector<uint8>* signature) override;
-  virtual bool DecodeSignature(const std::vector<uint8>& signature,
-                               std::vector<uint8>* out_raw_sig) override;
+  bool Sign(const uint8* data,
+            int data_len,
+            std::vector<uint8>* signature) override;
+  bool DecodeSignature(const std::vector<uint8>& signature,
+                       std::vector<uint8>* out_raw_sig) override;
 
  private:
   crypto::ECPrivateKey* key_;
@@ -173,11 +173,10 @@ class MockECSignatureCreator : public crypto::ECSignatureCreator {
 class MockECSignatureCreatorFactory : public crypto::ECSignatureCreatorFactory {
  public:
   MockECSignatureCreatorFactory();
-  virtual ~MockECSignatureCreatorFactory();
+  ~MockECSignatureCreatorFactory() override;
 
   // crypto::ECSignatureCreatorFactory
-  virtual crypto::ECSignatureCreator* Create(
-      crypto::ECPrivateKey* key) override;
+  crypto::ECSignatureCreator* Create(crypto::ECPrivateKey* key) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreatorFactory);
@@ -232,7 +231,7 @@ class SpdyURLRequestContext : public URLRequestContext {
   SpdyURLRequestContext(NextProto protocol,
                         bool force_spdy_over_ssl,
                         bool force_spdy_always);
-  virtual ~SpdyURLRequestContext();
+  ~SpdyURLRequestContext() override;
 
   MockClientSocketFactory& socket_factory() { return socket_factory_; }
 

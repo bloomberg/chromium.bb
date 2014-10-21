@@ -66,8 +66,7 @@ class TestProxyDelegate : public ProxyDelegate {
         on_tunnel_headers_received_called_(false) {
   }
 
-  virtual ~TestProxyDelegate() override {
-  }
+  ~TestProxyDelegate() override {}
 
   bool on_before_tunnel_request_called() const {
     return on_before_tunnel_request_called_;
@@ -89,31 +88,26 @@ class TestProxyDelegate : public ProxyDelegate {
   }
 
   // ProxyDelegate:
-  virtual void OnResolveProxy(const GURL& url,
-                              int load_flags,
-                              const ProxyService& proxy_service,
-                              ProxyInfo* result) override {
-  }
+  void OnResolveProxy(const GURL& url,
+                      int load_flags,
+                      const ProxyService& proxy_service,
+                      ProxyInfo* result) override {}
 
-  virtual void OnFallback(const ProxyServer& bad_proxy,
-                          int net_error) override {
-  }
+  void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
 
-  virtual void OnBeforeSendHeaders(URLRequest* request,
-                                   const ProxyInfo& proxy_info,
-                                   HttpRequestHeaders* headers) override {
-  }
+  void OnBeforeSendHeaders(URLRequest* request,
+                           const ProxyInfo& proxy_info,
+                           HttpRequestHeaders* headers) override {}
 
-  virtual void OnBeforeTunnelRequest(
-      const net::HostPortPair& proxy_server,
-      net::HttpRequestHeaders* extra_headers) override {
+  void OnBeforeTunnelRequest(const net::HostPortPair& proxy_server,
+                             net::HttpRequestHeaders* extra_headers) override {
     on_before_tunnel_request_called_ = true;
     if (extra_headers) {
       extra_headers->SetHeader("Foo", proxy_server.ToString());
     }
   }
 
-  virtual void OnTunnelHeadersReceived(
+  void OnTunnelHeadersReceived(
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
       const net::HttpResponseHeaders& response_headers) override {

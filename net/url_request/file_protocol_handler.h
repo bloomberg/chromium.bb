@@ -28,10 +28,11 @@ class NET_EXPORT FileProtocolHandler :
  public:
   explicit FileProtocolHandler(
       const scoped_refptr<base::TaskRunner>& file_task_runner);
-  virtual ~FileProtocolHandler();
-  virtual URLRequestJob* MaybeCreateJob(
-      URLRequest* request, NetworkDelegate* network_delegate) const override;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override;
+  ~FileProtocolHandler() override;
+  URLRequestJob* MaybeCreateJob(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const override;
+  bool IsSafeRedirectTarget(const GURL& location) const override;
 
  private:
   const scoped_refptr<base::TaskRunner> file_task_runner_;

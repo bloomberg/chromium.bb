@@ -47,7 +47,7 @@ class NET_EXPORT StreamListenSocket
 #endif
 
  public:
-  virtual ~StreamListenSocket();
+  ~StreamListenSocket() override;
 
   // TODO(erikkay): this delegate should really be split into two parts
   // to split up the listener from the connected socket.  Perhaps this class
@@ -116,8 +116,8 @@ class NET_EXPORT StreamListenSocket
   HANDLE socket_event_;
 #elif defined(OS_POSIX)
   // Called by MessagePumpLibevent when the socket is ready to do I/O.
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
   WaitState wait_state_;
   // The socket's libevent wrapper.
   base::MessageLoopForIO::FileDescriptorWatcher watcher_;

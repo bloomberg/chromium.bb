@@ -52,51 +52,49 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
   explicit MockWebSocketHandshakeStream(StreamType type) : type_(type) {}
 
-  virtual ~MockWebSocketHandshakeStream() {}
+  ~MockWebSocketHandshakeStream() override {}
 
   StreamType type() const {
     return type_;
   }
 
   // HttpStreamBase methods
-  virtual int InitializeStream(const HttpRequestInfo* request_info,
-                               RequestPriority priority,
-                               const BoundNetLog& net_log,
-                               const CompletionCallback& callback) override {
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
-  virtual int SendRequest(const HttpRequestHeaders& request_headers,
-                          HttpResponseInfo* response,
-                          const CompletionCallback& callback) override {
+  int SendRequest(const HttpRequestHeaders& request_headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) override {
+  int ReadResponseHeaders(const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
-  virtual int ReadResponseBody(IOBuffer* buf,
-                               int buf_len,
-                               const CompletionCallback& callback) override {
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
-  virtual void Close(bool not_reusable) override {}
-  virtual bool IsResponseBodyComplete() const override { return false; }
-  virtual bool CanFindEndOfResponse() const override { return false; }
-  virtual bool IsConnectionReused() const override { return false; }
-  virtual void SetConnectionReused() override {}
-  virtual bool IsConnectionReusable() const override { return false; }
-  virtual int64 GetTotalReceivedBytes() const override { return 0; }
-  virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
-      override {
+  void Close(bool not_reusable) override {}
+  bool IsResponseBodyComplete() const override { return false; }
+  bool CanFindEndOfResponse() const override { return false; }
+  bool IsConnectionReused() const override { return false; }
+  void SetConnectionReused() override {}
+  bool IsConnectionReusable() const override { return false; }
+  int64 GetTotalReceivedBytes() const override { return 0; }
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     return false;
   }
-  virtual void GetSSLInfo(SSLInfo* ssl_info) override {}
-  virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) override {}
-  virtual bool IsSpdyHttpStream() const override { return false; }
-  virtual void Drain(HttpNetworkSession* session) override {}
-  virtual void SetPriority(RequestPriority priority) override {}
+  void GetSSLInfo(SSLInfo* ssl_info) override {}
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
+  bool IsSpdyHttpStream() const override { return false; }
+  void Drain(HttpNetworkSession* session) override {}
+  void SetPriority(RequestPriority priority) override {}
 
-  virtual scoped_ptr<WebSocketStream> Upgrade() override {
+  scoped_ptr<WebSocketStream> Upgrade() override {
     return scoped_ptr<WebSocketStream>();
   }
 
@@ -124,7 +122,7 @@ class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
 
  private:
   // HttpStreamFactoryImpl methods.
-  virtual void OnPreconnectsCompleteInternal() override {
+  void OnPreconnectsCompleteInternal() override {
     preconnect_done_ = true;
     if (waiting_for_preconnect_)
       base::MessageLoop::current()->Quit();
@@ -142,10 +140,9 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
 
   // HttpStreamRequest::Delegate
 
-  virtual void OnStreamReady(
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      HttpStreamBase* stream) override {
+  void OnStreamReady(const SSLConfig& used_ssl_config,
+                     const ProxyInfo& used_proxy_info,
+                     HttpStreamBase* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->Quit();
@@ -154,7 +151,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     used_proxy_info_ = used_proxy_info;
   }
 
-  virtual void OnWebSocketHandshakeStreamReady(
+  void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
       WebSocketHandshakeStreamBase* stream) override {
@@ -166,27 +163,24 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     used_proxy_info_ = used_proxy_info;
   }
 
-  virtual void OnStreamFailed(
-      int status,
-      const SSLConfig& used_ssl_config) override {}
+  void OnStreamFailed(int status, const SSLConfig& used_ssl_config) override {}
 
-  virtual void OnCertificateError(
-      int status,
-      const SSLConfig& used_ssl_config,
-      const SSLInfo& ssl_info) override {}
+  void OnCertificateError(int status,
+                          const SSLConfig& used_ssl_config,
+                          const SSLInfo& ssl_info) override {}
 
-  virtual void OnNeedsProxyAuth(const HttpResponseInfo& proxy_response,
-                                const SSLConfig& used_ssl_config,
-                                const ProxyInfo& used_proxy_info,
-                                HttpAuthController* auth_controller) override {}
+  void OnNeedsProxyAuth(const HttpResponseInfo& proxy_response,
+                        const SSLConfig& used_ssl_config,
+                        const ProxyInfo& used_proxy_info,
+                        HttpAuthController* auth_controller) override {}
 
-  virtual void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
-                                 SSLCertRequestInfo* cert_info) override {}
+  void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
+                         SSLCertRequestInfo* cert_info) override {}
 
-  virtual void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
-                                          const SSLConfig& used_ssl_config,
-                                          const ProxyInfo& used_proxy_info,
-                                          HttpStreamBase* stream) override {}
+  void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
+                                  const SSLConfig& used_ssl_config,
+                                  const ProxyInfo& used_proxy_info,
+                                  HttpStreamBase* stream) override {}
 
   void WaitForStream() {
     while (!stream_done_) {
@@ -232,7 +226,7 @@ class WebSocketSpdyHandshakeStream : public MockWebSocketHandshakeStream {
       : MockWebSocketHandshakeStream(kStreamTypeSpdy),
         spdy_session_(spdy_session) {}
 
-  virtual ~WebSocketSpdyHandshakeStream() {}
+  ~WebSocketSpdyHandshakeStream() override {}
 
   SpdySession* spdy_session() { return spdy_session_.get(); }
 
@@ -247,7 +241,7 @@ class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
       : MockWebSocketHandshakeStream(kStreamTypeBasic),
         connection_(connection.Pass()) {}
 
-  virtual ~WebSocketBasicHandshakeStream() {
+  ~WebSocketBasicHandshakeStream() override {
     connection_->socket()->Disconnect();
   }
 
@@ -260,15 +254,15 @@ class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
 class WebSocketStreamCreateHelper
     : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  virtual ~WebSocketStreamCreateHelper() {}
+  ~WebSocketStreamCreateHelper() override {}
 
-  virtual WebSocketHandshakeStreamBase* CreateBasicStream(
+  WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
     return new WebSocketBasicHandshakeStream(connection.Pass());
   }
 
-  virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
+  WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<SpdySession>& spdy_session,
       bool use_relative_url) override {
     return new WebSocketSpdyHandshakeStream(spdy_session);

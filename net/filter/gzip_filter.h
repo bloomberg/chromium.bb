@@ -27,7 +27,7 @@ class GZipHeader;
 
 class GZipFilter : public Filter {
  public:
-  virtual ~GZipFilter();
+  ~GZipFilter() override;
 
   // Initializes filter decoding mode and internal control blocks.
   // Parameter filter_type specifies the type of filter, which corresponds to
@@ -48,8 +48,7 @@ class GZipFilter : public Filter {
   // stream_buffer_. On the other hand, *dest_len can be 0 upon successful
   // return. For example, the internal zlib may process some pre-filter data
   // but not produce output yet.
-  virtual FilterStatus ReadFilteredData(char* dest_buffer,
-                                        int* dest_len) override;
+  FilterStatus ReadFilteredData(char* dest_buffer, int* dest_len) override;
 
  private:
   enum DecodingStatus {

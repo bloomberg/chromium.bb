@@ -18,9 +18,9 @@ class QuicServerId;
 class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
  public:
   MockCryptoClientStreamFactory();
-  virtual ~MockCryptoClientStreamFactory() {}
+  ~MockCryptoClientStreamFactory() override {}
 
-  virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
+  QuicCryptoClientStream* CreateQuicCryptoClientStream(
       const QuicServerId& server_id,
       QuicClientSession* session,
       QuicCryptoClientConfig* crypto_config) override;

@@ -55,26 +55,23 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   QuicSession(QuicConnection* connection, const QuicConfig& config);
   void InitializeSession();
 
-  virtual ~QuicSession();
+  ~QuicSession() override;
 
   // QuicConnectionVisitorInterface methods:
-  virtual void OnStreamFrames(
-      const std::vector<QuicStreamFrame>& frames) override;
-  virtual void OnRstStream(const QuicRstStreamFrame& frame) override;
-  virtual void OnGoAway(const QuicGoAwayFrame& frame) override;
-  virtual void OnWindowUpdateFrames(
+  void OnStreamFrames(const std::vector<QuicStreamFrame>& frames) override;
+  void OnRstStream(const QuicRstStreamFrame& frame) override;
+  void OnGoAway(const QuicGoAwayFrame& frame) override;
+  void OnWindowUpdateFrames(
       const std::vector<QuicWindowUpdateFrame>& frames) override;
-  virtual void OnBlockedFrames(
-      const std::vector<QuicBlockedFrame>& frames) override;
-  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
-  virtual void OnWriteBlocked() override {}
-  virtual void OnSuccessfulVersionNegotiation(
-      const QuicVersion& version) override;
-  virtual void OnCanWrite() override;
-  virtual void OnCongestionWindowChange(QuicTime now) override {}
-  virtual bool WillingAndAbleToWrite() const override;
-  virtual bool HasPendingHandshake() const override;
-  virtual bool HasOpenDataStreams() const override;
+  void OnBlockedFrames(const std::vector<QuicBlockedFrame>& frames) override;
+  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
+  void OnWriteBlocked() override {}
+  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
+  void OnCanWrite() override;
+  void OnCongestionWindowChange(QuicTime now) override {}
+  bool WillingAndAbleToWrite() const override;
+  bool HasPendingHandshake() const override;
+  bool HasOpenDataStreams() const override;
 
   // Called by the headers stream when headers have been received for a stream.
   virtual void OnStreamHeaders(QuicStreamId stream_id,

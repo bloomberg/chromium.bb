@@ -42,14 +42,13 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
       QuicCryptoClientConfig* crypto_config,
       HandshakeMode handshake_mode,
       const ProofVerifyDetails* proof_verify_details_);
-  virtual ~MockCryptoClientStream();
+  ~MockCryptoClientStream() override;
 
   // CryptoFramerVisitorInterface implementation.
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) override;
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
   // QuicCryptoClientStream implementation.
-  virtual bool CryptoConnect() override;
+  bool CryptoConnect() override;
 
   // Invokes the sessions's CryptoHandshakeEvent method with the specified
   // event.

@@ -208,50 +208,49 @@ namespace {
 class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
  public:
   PriorityGetter() : priority_(0) {}
-  virtual ~PriorityGetter() {}
+  ~PriorityGetter() override {}
 
   SpdyPriority priority() const {
     return priority_;
   }
 
-  virtual void OnError(SpdyFramer::SpdyError error_code) override {}
-  virtual void OnStreamError(SpdyStreamId stream_id,
-                             const std::string& description) override {}
-  virtual void OnSynStream(SpdyStreamId stream_id,
-                           SpdyStreamId associated_stream_id,
-                           SpdyPriority priority,
-                           bool fin,
-                           bool unidirectional,
-                           const SpdyHeaderBlock& headers) override {
+  void OnError(SpdyFramer::SpdyError error_code) override {}
+  void OnStreamError(SpdyStreamId stream_id,
+                     const std::string& description) override {}
+  void OnSynStream(SpdyStreamId stream_id,
+                   SpdyStreamId associated_stream_id,
+                   SpdyPriority priority,
+                   bool fin,
+                   bool unidirectional,
+                   const SpdyHeaderBlock& headers) override {
     priority_ = priority;
   }
-  virtual void OnSynReply(SpdyStreamId stream_id,
-                          bool fin,
-                          const SpdyHeaderBlock& headers) override {}
-  virtual void OnHeaders(SpdyStreamId stream_id,
-                         bool fin,
-                         const SpdyHeaderBlock& headers) override {}
-  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
-                                 size_t length,
-                                 bool fin) override {}
-  virtual void OnStreamFrameData(SpdyStreamId stream_id,
-                                 const char* data,
-                                 size_t len,
-                                 bool fin) override {}
-  virtual void OnSettings(bool clear_persisted) override {}
-  virtual void OnSetting(
-      SpdySettingsIds id, uint8 flags, uint32 value) override {}
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override {}
-  virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) override {}
-  virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) override {}
-  virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) override {}
-  virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id,
-                             const SpdyHeaderBlock& headers) override {}
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+  void OnSynReply(SpdyStreamId stream_id,
+                  bool fin,
+                  const SpdyHeaderBlock& headers) override {}
+  void OnHeaders(SpdyStreamId stream_id,
+                 bool fin,
+                 const SpdyHeaderBlock& headers) override {}
+  void OnDataFrameHeader(SpdyStreamId stream_id,
+                         size_t length,
+                         bool fin) override {}
+  void OnStreamFrameData(SpdyStreamId stream_id,
+                         const char* data,
+                         size_t len,
+                         bool fin) override {}
+  void OnSettings(bool clear_persisted) override {}
+  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override {}
+  void OnPing(SpdyPingId unique_id, bool is_ack) override {}
+  void OnRstStream(SpdyStreamId stream_id,
+                   SpdyRstStreamStatus status) override {}
+  void OnGoAway(SpdyStreamId last_accepted_stream_id,
+                SpdyGoAwayStatus status) override {}
+  void OnWindowUpdate(SpdyStreamId stream_id,
+                      uint32 delta_window_size) override {}
+  void OnPushPromise(SpdyStreamId stream_id,
+                     SpdyStreamId promised_stream_id,
+                     const SpdyHeaderBlock& headers) override {}
+  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     return false;
   }
 
@@ -613,46 +612,46 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
       : MockClientSocket(BoundNetLog()),
         read_result_(read_result) {}
 
-  virtual ~FakeSpdySessionClientSocket() {}
+  ~FakeSpdySessionClientSocket() override {}
 
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) override {
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override {
     return read_result_;
   }
 
-  virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) override {
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
   // Return kProtoUnknown to use the pool's default protocol.
-  virtual NextProto GetNegotiatedProtocol() const override {
-    return kProtoUnknown;
-  }
+  NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
 
   // The functions below are not expected to be called.
 
-  virtual int Connect(const CompletionCallback& callback) override {
+  int Connect(const CompletionCallback& callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  virtual bool WasEverUsed() const override {
+  bool WasEverUsed() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool UsingTCPFastOpen() const override {
+  bool UsingTCPFastOpen() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool WasNpnNegotiated() const override {
+  bool WasNpnNegotiated() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) override {
+  bool GetSSLInfo(SSLInfo* ssl_info) override {
     ADD_FAILURE();
     return false;
   }

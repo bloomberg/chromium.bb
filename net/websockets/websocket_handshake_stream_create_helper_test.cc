@@ -59,15 +59,15 @@ class MockClientSocketHandleFactory {
 
 class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
  public:
-  virtual ~TestConnectDelegate() {}
+  ~TestConnectDelegate() override {}
 
-  virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) override {}
-  virtual void OnFailure(const std::string& failure_message) override {}
-  virtual void OnStartOpeningHandshake(
+  void OnSuccess(scoped_ptr<WebSocketStream> stream) override {}
+  void OnFailure(const std::string& failure_message) override {}
+  void OnStartOpeningHandshake(
       scoped_ptr<WebSocketHandshakeRequestInfo> request) override {}
-  virtual void OnFinishOpeningHandshake(
+  void OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) override {}
-  virtual void OnSSLCertificateError(
+  void OnSSLCertificateError(
       scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
       const SSLInfo& ssl_info,

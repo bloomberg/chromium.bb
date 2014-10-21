@@ -90,51 +90,45 @@ class TaggingEncrypter : public QuicEncrypter {
       : tag_(tag) {
   }
 
-  virtual ~TaggingEncrypter() {}
+  ~TaggingEncrypter() override {}
 
   // QuicEncrypter interface.
-  virtual bool SetKey(StringPiece key) override { return true; }
-  virtual bool SetNoncePrefix(StringPiece nonce_prefix) override {
-    return true;
-  }
+  bool SetKey(StringPiece key) override { return true; }
+  bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
-  virtual bool Encrypt(StringPiece nonce,
-                       StringPiece associated_data,
-                       StringPiece plaintext,
-                       unsigned char* output) override {
+  bool Encrypt(StringPiece nonce,
+               StringPiece associated_data,
+               StringPiece plaintext,
+               unsigned char* output) override {
     memcpy(output, plaintext.data(), plaintext.size());
     output += plaintext.size();
     memset(output, tag_, kTagSize);
     return true;
   }
 
-  virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
-                                  StringPiece associated_data,
-                                  StringPiece plaintext) override {
+  QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                          StringPiece associated_data,
+                          StringPiece plaintext) override {
     const size_t len = plaintext.size() + kTagSize;
     uint8* buffer = new uint8[len];
     Encrypt(StringPiece(), associated_data, plaintext, buffer);
     return new QuicData(reinterpret_cast<char*>(buffer), len, true);
   }
 
-  virtual size_t GetKeySize() const override { return 0; }
-  virtual size_t GetNoncePrefixSize() const override { return 0; }
+  size_t GetKeySize() const override { return 0; }
+  size_t GetNoncePrefixSize() const override { return 0; }
 
-  virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) const override {
+  size_t GetMaxPlaintextSize(size_t ciphertext_size) const override {
     return ciphertext_size - kTagSize;
   }
 
-  virtual size_t GetCiphertextSize(size_t plaintext_size) const override {
+  size_t GetCiphertextSize(size_t plaintext_size) const override {
     return plaintext_size + kTagSize;
   }
 
-  virtual StringPiece GetKey() const override {
-    return StringPiece();
-  }
+  StringPiece GetKey() const override { return StringPiece(); }
 
-  virtual StringPiece GetNoncePrefix() const override {
-    return StringPiece();
-  }
+  StringPiece GetNoncePrefix() const override { return StringPiece(); }
 
  private:
   enum {
@@ -150,19 +144,17 @@ class TaggingEncrypter : public QuicEncrypter {
 // have the same value and then removes them.
 class TaggingDecrypter : public QuicDecrypter {
  public:
-  virtual ~TaggingDecrypter() {}
+  ~TaggingDecrypter() override {}
 
   // QuicDecrypter interface
-  virtual bool SetKey(StringPiece key) override { return true; }
-  virtual bool SetNoncePrefix(StringPiece nonce_prefix) override {
-    return true;
-  }
+  bool SetKey(StringPiece key) override { return true; }
+  bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
-  virtual bool Decrypt(StringPiece nonce,
-                       StringPiece associated_data,
-                       StringPiece ciphertext,
-                       unsigned char* output,
-                       size_t* output_length) override {
+  bool Decrypt(StringPiece nonce,
+               StringPiece associated_data,
+               StringPiece ciphertext,
+               unsigned char* output,
+               size_t* output_length) override {
     if (ciphertext.size() < kTagSize) {
       return false;
     }
@@ -174,9 +166,9 @@ class TaggingDecrypter : public QuicDecrypter {
     return true;
   }
 
-  virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
-                                  StringPiece associated_data,
-                                  StringPiece ciphertext) override {
+  QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                          StringPiece associated_data,
+                          StringPiece ciphertext) override {
     if (ciphertext.size() < kTagSize) {
       return nullptr;
     }
@@ -190,8 +182,8 @@ class TaggingDecrypter : public QuicDecrypter {
                         true /* owns buffer */);
   }
 
-  virtual StringPiece GetKey() const override { return StringPiece(); }
-  virtual StringPiece GetNoncePrefix() const override { return StringPiece(); }
+  StringPiece GetKey() const override { return StringPiece(); }
+  StringPiece GetNoncePrefix() const override { return StringPiece(); }
 
  protected:
   virtual uint8 GetTag(StringPiece ciphertext) {
@@ -219,12 +211,10 @@ class TaggingDecrypter : public QuicDecrypter {
 class StrictTaggingDecrypter : public TaggingDecrypter {
  public:
   explicit StrictTaggingDecrypter(uint8 tag) : tag_(tag) {}
-  virtual ~StrictTaggingDecrypter() {}
+  ~StrictTaggingDecrypter() override {}
 
   // TaggingQuicDecrypter
-  virtual uint8 GetTag(StringPiece ciphertext) override {
-    return tag_;
-  }
+  uint8 GetTag(StringPiece ciphertext) override { return tag_; }
 
  private:
   const uint8 tag_;
@@ -238,8 +228,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
         : QuicAlarm(delegate) {
     }
 
-    virtual void SetImpl() override {}
-    virtual void CancelImpl() override {}
+    void SetImpl() override {}
+    void CancelImpl() override {}
     using QuicAlarm::Fire;
   };
 
@@ -250,15 +240,11 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   }
 
   // QuicConnectionHelperInterface
-  virtual const QuicClock* GetClock() const override {
-    return clock_;
-  }
+  const QuicClock* GetClock() const override { return clock_; }
 
-  virtual QuicRandom* GetRandomGenerator() override {
-    return random_generator_;
-  }
+  QuicRandom* GetRandomGenerator() override { return random_generator_; }
 
-  virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override {
+  QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override {
     return new TestAlarm(delegate);
   }
 
@@ -285,10 +271,10 @@ class TestPacketWriter : public QuicPacketWriter {
   }
 
   // QuicPacketWriter interface
-  virtual WriteResult WritePacket(
-      const char* buffer, size_t buf_len,
-      const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address) override {
+  WriteResult WritePacket(const char* buffer,
+                          size_t buf_len,
+                          const IPAddressNumber& self_address,
+                          const IPEndPoint& peer_address) override {
     QuicEncryptedPacket packet(buffer, buf_len);
     ++packets_write_attempts_;
 
@@ -313,13 +299,13 @@ class TestPacketWriter : public QuicPacketWriter {
     return WriteResult(WRITE_STATUS_OK, last_packet_size_);
   }
 
-  virtual bool IsWriteBlockedDataBuffered() const override {
+  bool IsWriteBlockedDataBuffered() const override {
     return is_write_blocked_data_buffered_;
   }
 
-  virtual bool IsWriteBlocked() const override { return write_blocked_; }
+  bool IsWriteBlocked() const override { return write_blocked_; }
 
-  virtual void SetWritable() override { write_blocked_ = false; }
+  void SetWritable() override { write_blocked_ = false; }
 
   void BlockOnNextWrite() { block_on_next_write_ = true; }
 
@@ -590,8 +576,8 @@ class TestConnection : public QuicConnection {
 class FecQuicConnectionDebugVisitor
     : public QuicConnectionDebugVisitor {
  public:
-  virtual void OnRevivedPacket(const QuicPacketHeader& header,
-                               StringPiece data) override {
+  void OnRevivedPacket(const QuicPacketHeader& header,
+                       StringPiece data) override {
     revived_header_ = header;
   }
 

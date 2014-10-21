@@ -27,7 +27,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
           WebSocketHandshakeStreamBase::CreateHelper*
               websocket_handshake_stream_create_helper,
           const BoundNetLog& net_log);
-  virtual ~Request();
+  ~Request() override;
 
   // The GURL from the HttpRequestInfo the started the Request.
   const GURL& url() const { return url_; }
@@ -98,13 +98,12 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
 
   // HttpStreamRequest methods.
 
-  virtual int RestartTunnelWithProxyAuth(
-      const AuthCredentials& credentials) override;
-  virtual void SetPriority(RequestPriority priority) override;
-  virtual LoadState GetLoadState() const override;
-  virtual bool was_npn_negotiated() const override;
-  virtual NextProto protocol_negotiated() const override;
-  virtual bool using_spdy() const override;
+  int RestartTunnelWithProxyAuth(const AuthCredentials& credentials) override;
+  void SetPriority(RequestPriority priority) override;
+  LoadState GetLoadState() const override;
+  bool was_npn_negotiated() const override;
+  NextProto protocol_negotiated() const override;
+  bool using_spdy() const override;
 
  private:
   // Used to orphan all jobs in |jobs_| other than |job| which becomes "bound"

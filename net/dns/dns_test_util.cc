@@ -25,9 +25,9 @@ namespace {
 
 class MockAddressSorter : public AddressSorter {
  public:
-  virtual ~MockAddressSorter() {}
-  virtual void Sort(const AddressList& list,
-                    const CallbackType& callback) const override {
+  ~MockAddressSorter() override {}
+  void Sort(const AddressList& list,
+            const CallbackType& callback) const override {
     // Do nothing.
     callback.Run(true, list);
   }
@@ -166,9 +166,9 @@ class MockTransactionFactory : public DnsTransactionFactory {
   explicit MockTransactionFactory(const MockDnsClientRuleList& rules)
       : rules_(rules) {}
 
-  virtual ~MockTransactionFactory() {}
+  ~MockTransactionFactory() override {}
 
-  virtual scoped_ptr<DnsTransaction> CreateTransaction(
+  scoped_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname,
       uint16 qtype,
       const DnsTransactionFactory::CallbackType& callback,

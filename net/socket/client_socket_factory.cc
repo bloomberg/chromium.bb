@@ -50,24 +50,24 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
     CertDatabase::GetInstance()->AddObserver(this);
   }
 
-  virtual ~DefaultClientSocketFactory() {
+  ~DefaultClientSocketFactory() override {
     // Note: This code never runs, as the factory is defined as a Leaky
     // singleton.
     CertDatabase::GetInstance()->RemoveObserver(this);
   }
 
-  virtual void OnCertAdded(const X509Certificate* cert) override {
+  void OnCertAdded(const X509Certificate* cert) override {
     ClearSSLSessionCache();
   }
 
-  virtual void OnCACertChanged(const X509Certificate* cert) override {
+  void OnCACertChanged(const X509Certificate* cert) override {
     // Per wtc, we actually only need to flush when trust is reduced.
     // Always flush now because OnCACertChanged does not tell us this.
     // See comments in ClientSocketPoolManager::OnCACertChanged.
     ClearSSLSessionCache();
   }
 
-  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+  scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
@@ -76,7 +76,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
         new UDPClientSocket(bind_type, rand_int_cb, net_log, source));
   }
 
-  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
+  scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* net_log,
       const NetLog::Source& source) override {
@@ -84,7 +84,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
         new TCPClientSocket(addresses, net_log, source));
   }
 
-  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+  scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
       scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
@@ -120,9 +120,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
 #endif
   }
 
-  virtual void ClearSSLSessionCache() override {
-    SSLClientSocket::ClearSessionCache();
-  }
+  void ClearSSLSessionCache() override { SSLClientSocket::ClearSessionCache(); }
 
  private:
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;

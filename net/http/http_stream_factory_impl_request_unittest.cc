@@ -28,34 +28,30 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
  public:
   DoNothingRequestDelegate() {}
 
-  virtual ~DoNothingRequestDelegate() {}
+  ~DoNothingRequestDelegate() override {}
 
   // HttpStreamRequest::Delegate
-  virtual void OnStreamReady(
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      HttpStreamBase* stream) override {}
-  virtual void OnWebSocketHandshakeStreamReady(
+  void OnStreamReady(const SSLConfig& used_ssl_config,
+                     const ProxyInfo& used_proxy_info,
+                     HttpStreamBase* stream) override {}
+  void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
       WebSocketHandshakeStreamBase* stream) override {}
-  virtual void OnStreamFailed(
-      int status,
-      const SSLConfig& used_ssl_config) override {}
-  virtual void OnCertificateError(
-      int status,
-      const SSLConfig& used_ssl_config,
-      const SSLInfo& ssl_info) override {}
-  virtual void OnNeedsProxyAuth(const HttpResponseInfo& proxy_response,
-                                const SSLConfig& used_ssl_config,
-                                const ProxyInfo& used_proxy_info,
-                                HttpAuthController* auth_controller) override {}
-  virtual void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
-                                 SSLCertRequestInfo* cert_info) override {}
-  virtual void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
-                                          const SSLConfig& used_ssl_config,
-                                          const ProxyInfo& used_proxy_info,
-                                          HttpStreamBase* stream) override {}
+  void OnStreamFailed(int status, const SSLConfig& used_ssl_config) override {}
+  void OnCertificateError(int status,
+                          const SSLConfig& used_ssl_config,
+                          const SSLInfo& ssl_info) override {}
+  void OnNeedsProxyAuth(const HttpResponseInfo& proxy_response,
+                        const SSLConfig& used_ssl_config,
+                        const ProxyInfo& used_proxy_info,
+                        HttpAuthController* auth_controller) override {}
+  void OnNeedsClientAuth(const SSLConfig& used_ssl_config,
+                         SSLCertRequestInfo* cert_info) override {}
+  void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
+                                  const SSLConfig& used_ssl_config,
+                                  const ProxyInfo& used_proxy_info,
+                                  HttpStreamBase* stream) override {}
 };
 
 }  // namespace

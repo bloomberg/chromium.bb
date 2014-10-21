@@ -23,7 +23,7 @@ class X509Certificate;
 
 class SSLServerSocket : public SSLSocket {
  public:
-  virtual ~SSLServerSocket() {}
+  ~SSLServerSocket() override {}
 
   // Perform the SSL server handshake, and notify the supplied callback
   // if the process completes asynchronously.  If Disconnect is called before

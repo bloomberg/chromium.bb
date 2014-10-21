@@ -37,21 +37,21 @@ class NET_EXPORT_PRIVATE AeadBaseDecrypter : public QuicDecrypter {
                     size_t auth_tag_size,
                     size_t nonce_prefix_size);
 #endif
-  virtual ~AeadBaseDecrypter();
+  ~AeadBaseDecrypter() override;
 
   // QuicDecrypter implementation
-  virtual bool SetKey(base::StringPiece key) override;
-  virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
-  virtual bool Decrypt(base::StringPiece nonce,
-                       base::StringPiece associated_data,
-                       base::StringPiece ciphertext,
-                       unsigned char* output,
-                       size_t* output_length) override;
-  virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
-                                  base::StringPiece associated_data,
-                                  base::StringPiece ciphertext) override;
-  virtual base::StringPiece GetKey() const override;
-  virtual base::StringPiece GetNoncePrefix() const override;
+  bool SetKey(base::StringPiece key) override;
+  bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
+  bool Decrypt(base::StringPiece nonce,
+               base::StringPiece associated_data,
+               base::StringPiece ciphertext,
+               unsigned char* output,
+               size_t* output_length) override;
+  QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                          base::StringPiece associated_data,
+                          base::StringPiece ciphertext) override;
+  base::StringPiece GetKey() const override;
+  base::StringPiece GetNoncePrefix() const override;
 
  protected:
   // Make these constants available to the subclasses so that the subclasses

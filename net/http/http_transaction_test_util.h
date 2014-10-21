@@ -168,61 +168,57 @@ class MockNetworkTransaction
  public:
   MockNetworkTransaction(net::RequestPriority priority,
                          MockNetworkLayer* factory);
-  virtual ~MockNetworkTransaction();
+  ~MockNetworkTransaction() override;
 
-  virtual int Start(const net::HttpRequestInfo* request,
-                    const net::CompletionCallback& callback,
-                    const net::BoundNetLog& net_log) override;
+  int Start(const net::HttpRequestInfo* request,
+            const net::CompletionCallback& callback,
+            const net::BoundNetLog& net_log) override;
 
-  virtual int RestartIgnoringLastError(
+  int RestartIgnoringLastError(
       const net::CompletionCallback& callback) override;
 
-  virtual int RestartWithCertificate(
-      net::X509Certificate* client_cert,
-      const net::CompletionCallback& callback) override;
+  int RestartWithCertificate(net::X509Certificate* client_cert,
+                             const net::CompletionCallback& callback) override;
 
-  virtual int RestartWithAuth(
-      const net::AuthCredentials& credentials,
-      const net::CompletionCallback& callback) override;
+  int RestartWithAuth(const net::AuthCredentials& credentials,
+                      const net::CompletionCallback& callback) override;
 
-  virtual bool IsReadyToRestartForAuth() override;
+  bool IsReadyToRestartForAuth() override;
 
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
 
-  virtual void StopCaching() override;
+  void StopCaching() override;
 
-  virtual bool GetFullRequestHeaders(
-      net::HttpRequestHeaders* headers) const override;
+  bool GetFullRequestHeaders(net::HttpRequestHeaders* headers) const override;
 
-  virtual int64 GetTotalReceivedBytes() const override;
+  int64 GetTotalReceivedBytes() const override;
 
-  virtual void DoneReading() override;
+  void DoneReading() override;
 
-  virtual const net::HttpResponseInfo* GetResponseInfo() const override;
+  const net::HttpResponseInfo* GetResponseInfo() const override;
 
-  virtual net::LoadState GetLoadState() const override;
+  net::LoadState GetLoadState() const override;
 
-  virtual net::UploadProgress GetUploadProgress() const override;
+  net::UploadProgress GetUploadProgress() const override;
 
-  virtual void SetQuicServerInfo(
-      net::QuicServerInfo* quic_server_info) override;
+  void SetQuicServerInfo(net::QuicServerInfo* quic_server_info) override;
 
-  virtual bool GetLoadTimingInfo(
-      net::LoadTimingInfo* load_timing_info) const override;
+  bool GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
 
-  virtual void SetPriority(net::RequestPriority priority) override;
+  void SetPriority(net::RequestPriority priority) override;
 
-  virtual void SetWebSocketHandshakeStreamCreateHelper(
+  void SetWebSocketHandshakeStreamCreateHelper(
       CreateHelper* create_helper) override;
 
-  virtual void SetBeforeNetworkStartCallback(
+  void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
 
-  virtual void SetBeforeProxyHeadersSentCallback(
+  void SetBeforeProxyHeadersSentCallback(
       const BeforeProxyHeadersSentCallback& callback) override;
 
-  virtual int ResumeNetworkStart() override;
+  int ResumeNetworkStart() override;
 
   CreateHelper* websocket_handshake_stream_create_helper() {
     return websocket_handshake_stream_create_helper_;
@@ -260,7 +256,7 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
                          public base::SupportsWeakPtr<MockNetworkLayer> {
  public:
   MockNetworkLayer();
-  virtual ~MockNetworkLayer();
+  ~MockNetworkLayer() override;
 
   int transaction_count() const { return transaction_count_; }
   bool done_reading_called() const { return done_reading_called_; }
@@ -290,11 +286,10 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
   }
 
   // net::HttpTransactionFactory:
-  virtual int CreateTransaction(
-      net::RequestPriority priority,
-      scoped_ptr<net::HttpTransaction>* trans) override;
-  virtual net::HttpCache* GetCache() override;
-  virtual net::HttpNetworkSession* GetSession() override;
+  int CreateTransaction(net::RequestPriority priority,
+                        scoped_ptr<net::HttpTransaction>* trans) override;
+  net::HttpCache* GetCache() override;
+  net::HttpNetworkSession* GetSession() override;
 
  private:
   int transaction_count_;

@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE MappedFile : public File {
   bool Preload();
 
  private:
-  virtual ~MappedFile();
+  ~MappedFile() override;
 
   bool init_;
 #if defined(OS_WIN)

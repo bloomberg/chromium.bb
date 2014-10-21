@@ -34,65 +34,60 @@ class VisitorShim : public QuicConnectionVisitorInterface {
  public:
   explicit VisitorShim(QuicSession* session) : session_(session) {}
 
-  virtual void OnStreamFrames(const vector<QuicStreamFrame>& frames) override {
+  void OnStreamFrames(const vector<QuicStreamFrame>& frames) override {
     session_->OnStreamFrames(frames);
     session_->PostProcessAfterData();
   }
-  virtual void OnRstStream(const QuicRstStreamFrame& frame) override {
+  void OnRstStream(const QuicRstStreamFrame& frame) override {
     session_->OnRstStream(frame);
     session_->PostProcessAfterData();
   }
 
-  virtual void OnGoAway(const QuicGoAwayFrame& frame) override {
+  void OnGoAway(const QuicGoAwayFrame& frame) override {
     session_->OnGoAway(frame);
     session_->PostProcessAfterData();
   }
 
-  virtual void OnWindowUpdateFrames(const vector<QuicWindowUpdateFrame>& frames)
-      override {
+  void OnWindowUpdateFrames(
+      const vector<QuicWindowUpdateFrame>& frames) override {
     session_->OnWindowUpdateFrames(frames);
     session_->PostProcessAfterData();
   }
 
-  virtual void OnBlockedFrames(const vector<QuicBlockedFrame>& frames)
-      override {
+  void OnBlockedFrames(const vector<QuicBlockedFrame>& frames) override {
     session_->OnBlockedFrames(frames);
     session_->PostProcessAfterData();
   }
 
-  virtual void OnCanWrite() override {
+  void OnCanWrite() override {
     session_->OnCanWrite();
     session_->PostProcessAfterData();
   }
 
-  virtual void OnCongestionWindowChange(QuicTime now) override {
+  void OnCongestionWindowChange(QuicTime now) override {
     session_->OnCongestionWindowChange(now);
   }
 
-  virtual void OnSuccessfulVersionNegotiation(
-      const QuicVersion& version) override {
+  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override {
     session_->OnSuccessfulVersionNegotiation(version);
   }
 
-  virtual void OnConnectionClosed(
-      QuicErrorCode error, bool from_peer) override {
+  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override {
     session_->OnConnectionClosed(error, from_peer);
     // The session will go away, so don't bother with cleanup.
   }
 
-  virtual void OnWriteBlocked() override {
-    session_->OnWriteBlocked();
-  }
+  void OnWriteBlocked() override { session_->OnWriteBlocked(); }
 
-  virtual bool WillingAndAbleToWrite() const override {
+  bool WillingAndAbleToWrite() const override {
     return session_->WillingAndAbleToWrite();
   }
 
-  virtual bool HasPendingHandshake() const override {
+  bool HasPendingHandshake() const override {
     return session_->HasPendingHandshake();
   }
 
-  virtual bool HasOpenDataStreams() const override {
+  bool HasOpenDataStreams() const override {
     return session_->HasOpenDataStreams();
   }
 

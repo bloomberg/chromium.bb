@@ -82,25 +82,23 @@ class MockPersistentCookieStore
     return commands_;
   }
 
-  virtual void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback) override;
 
-  virtual void LoadCookiesForKey(const std::string& key,
-    const LoadedCallback& loaded_callback) override;
+  void LoadCookiesForKey(const std::string& key,
+                         const LoadedCallback& loaded_callback) override;
 
-  virtual void AddCookie(const CanonicalCookie& cookie) override;
+  void AddCookie(const CanonicalCookie& cookie) override;
 
-  virtual void UpdateCookieAccessTime(
-      const CanonicalCookie& cookie) override;
+  void UpdateCookieAccessTime(const CanonicalCookie& cookie) override;
 
-  virtual void DeleteCookie(
-      const CanonicalCookie& cookie) override;
+  void DeleteCookie(const CanonicalCookie& cookie) override;
 
-  virtual void Flush(const base::Closure& callback) override;
+  void Flush(const base::Closure& callback) override;
 
-  virtual void SetForceKeepSessionState() override;
+  void SetForceKeepSessionState() override;
 
  protected:
-  virtual ~MockPersistentCookieStore();
+  ~MockPersistentCookieStore() override;
 
  private:
   CommandList commands_;
@@ -127,15 +125,14 @@ class MockCookieMonsterDelegate : public CookieMonsterDelegate {
 
   void reset() { changes_.clear(); }
 
-  virtual void OnCookieChanged(
-      const CanonicalCookie& cookie,
-      bool removed,
-      CookieMonsterDelegate::ChangeCause cause) override;
+  void OnCookieChanged(const CanonicalCookie& cookie,
+                       bool removed,
+                       CookieMonsterDelegate::ChangeCause cause) override;
 
-  virtual void OnLoaded() override;
+  void OnLoaded() override;
 
  private:
-  virtual ~MockCookieMonsterDelegate();
+  ~MockCookieMonsterDelegate() override;
 
   std::vector<CookieNotification> changes_;
 
@@ -161,23 +158,23 @@ class MockSimplePersistentCookieStore
  public:
   MockSimplePersistentCookieStore();
 
-  virtual void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback) override;
 
-  virtual void LoadCookiesForKey(const std::string& key,
-      const LoadedCallback& loaded_callback) override;
+  void LoadCookiesForKey(const std::string& key,
+                         const LoadedCallback& loaded_callback) override;
 
-  virtual void AddCookie(const CanonicalCookie& cookie) override;
+  void AddCookie(const CanonicalCookie& cookie) override;
 
-  virtual void UpdateCookieAccessTime(const CanonicalCookie& cookie) override;
+  void UpdateCookieAccessTime(const CanonicalCookie& cookie) override;
 
-  virtual void DeleteCookie(const CanonicalCookie& cookie) override;
+  void DeleteCookie(const CanonicalCookie& cookie) override;
 
-  virtual void Flush(const base::Closure& callback) override;
+  void Flush(const base::Closure& callback) override;
 
-  virtual void SetForceKeepSessionState() override;
+  void SetForceKeepSessionState() override;
 
  protected:
-  virtual ~MockSimplePersistentCookieStore();
+  ~MockSimplePersistentCookieStore() override;
 
  private:
   typedef std::map<int64, CanonicalCookie> CanonicalCookieMap;

@@ -20,20 +20,20 @@ namespace net {
 class NET_EXPORT UploadBytesElementReader : public UploadElementReader {
  public:
   UploadBytesElementReader(const char* bytes, uint64 length);
-  virtual ~UploadBytesElementReader();
+  ~UploadBytesElementReader() override;
 
   const char* bytes() const { return bytes_; }
   uint64 length() const { return length_; }
 
   // UploadElementReader overrides:
-  virtual const UploadBytesElementReader* AsBytesReader() const override;
-  virtual int Init(const CompletionCallback& callback) override;
-  virtual uint64 GetContentLength() const override;
-  virtual uint64 BytesRemaining() const override;
-  virtual bool IsInMemory() const override;
-  virtual int Read(IOBuffer* buf,
-                   int buf_length,
-                   const CompletionCallback& callback) override;
+  const UploadBytesElementReader* AsBytesReader() const override;
+  int Init(const CompletionCallback& callback) override;
+  uint64 GetContentLength() const override;
+  uint64 BytesRemaining() const override;
+  bool IsInMemory() const override;
+  int Read(IOBuffer* buf,
+           int buf_length,
+           const CompletionCallback& callback) override;
 
  private:
   const char* const bytes_;
@@ -49,7 +49,7 @@ class NET_EXPORT UploadOwnedBytesElementReader
  public:
   // |data| is cleared by this ctor.
   explicit UploadOwnedBytesElementReader(std::vector<char>* data);
-  virtual ~UploadOwnedBytesElementReader();
+  ~UploadOwnedBytesElementReader() override;
 
   // Creates UploadOwnedBytesElementReader with a string.
   static UploadOwnedBytesElementReader* CreateWithString(

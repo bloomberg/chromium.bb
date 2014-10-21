@@ -21,14 +21,14 @@ namespace net {
 class NET_EXPORT_PRIVATE TimeLossAlgorithm : public LossDetectionInterface {
  public:
   TimeLossAlgorithm();
-  virtual ~TimeLossAlgorithm() {}
+  ~TimeLossAlgorithm() override {}
 
-  virtual LossDetectionType GetLossDetectionType() const override;
+  LossDetectionType GetLossDetectionType() const override;
 
   // Declares pending packets less than the largest observed lost when it has
   // been 1.25 RTT since they were sent.  Packets larger than the largest
   // observed are retransmitted via TLP.
-  virtual SequenceNumberSet DetectLostPackets(
+  SequenceNumberSet DetectLostPackets(
       const QuicUnackedPacketMap& unacked_packets,
       const QuicTime& time,
       QuicPacketSequenceNumber largest_observed,
@@ -39,7 +39,7 @@ class NET_EXPORT_PRIVATE TimeLossAlgorithm : public LossDetectionInterface {
   // TODO(ianswett): Ideally the RTT variance and the RTT would be used to
   // determine the time a packet is considered lost.
   // TODO(ianswett): Consider using Max(1.25 * srtt, 1.125 * last_rtt).
-  virtual QuicTime GetLossTimeout() const override;
+  QuicTime GetLossTimeout() const override;
 
  private:
   QuicTime loss_detection_timeout_;

@@ -16,10 +16,10 @@ namespace net {
 class MockBackoffEntry : public BackoffEntry {
  public:
   explicit MockBackoffEntry(const BackoffEntry::Policy* const policy);
-  virtual ~MockBackoffEntry();
+  ~MockBackoffEntry() override;
 
   // BackoffEntry overrides.
-  virtual base::TimeTicks ImplGetTimeNow() const override;
+  base::TimeTicks ImplGetTimeNow() const override;
 
   void set_fake_now(const base::TimeTicks& now);
 
@@ -42,11 +42,11 @@ class MockURLRequestThrottlerHeaderAdapter
   MockURLRequestThrottlerHeaderAdapter(const std::string& retry_value,
                                        const std::string& opt_out_value,
                                        int response_code);
-  virtual ~MockURLRequestThrottlerHeaderAdapter();
+  ~MockURLRequestThrottlerHeaderAdapter() override;
 
   // URLRequestThrottlerHeaderInterface overrides.
-  virtual std::string GetNormalizedValue(const std::string& key) const override;
-  virtual int GetResponseCode() const override;
+  std::string GetNormalizedValue(const std::string& key) const override;
+  int GetResponseCode() const override;
 
  private:
   std::string fake_retry_value_;

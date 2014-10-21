@@ -219,7 +219,7 @@ class NET_EXPORT URLRequestJob
 
   // base::PowerObserver methods:
   // We invoke URLRequestJob::Kill on suspend (crbug.com/4606).
-  virtual void OnSuspend() override;
+  void OnSuspend() override;
 
   // Called after a NetworkDelegate has been informed that the URLRequest
   // will be destroyed. This is used to track that no pending callbacks
@@ -229,7 +229,7 @@ class NET_EXPORT URLRequestJob
 
  protected:
   friend class base::RefCounted<URLRequestJob>;
-  virtual ~URLRequestJob();
+  ~URLRequestJob() override;
 
   // Notifies the job that a certificate is requested.
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);

@@ -26,17 +26,17 @@ class TestTaskRunner : public base::TaskRunner {
   explicit TestTaskRunner(MockClock* clock);
 
   // base::TaskRunner implementation.
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
   const std::vector<PostedTask>& GetPostedTasks() const;
 
   void RunNextTask();
 
  protected:
-  virtual ~TestTaskRunner();
+  ~TestTaskRunner() override;
 
  private:
   std::vector<PostedTask>::iterator FindNextTask();

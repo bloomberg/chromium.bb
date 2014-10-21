@@ -61,7 +61,7 @@ class NET_EXPORT SpdySessionPool
       size_t max_concurrent_streams_limit,
       SpdySessionPool::TimeFunc time_func,
       const std::string& trusted_spdy_proxy);
-  virtual ~SpdySessionPool();
+  ~SpdySessionPool() override;
 
   // In the functions below, a session is "available" if this pool has
   // a reference to it and there is some SpdySessionKey for which
@@ -133,19 +133,19 @@ class NET_EXPORT SpdySessionPool
   // We flush all idle sessions and release references to the active ones so
   // they won't get re-used.  The active ones will either complete successfully
   // or error out due to the IP address change.
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
   // SSLConfigService::Observer methods:
 
   // We perform the same flushing as described above when SSL settings change.
-  virtual void OnSSLConfigChanged() override;
+  void OnSSLConfigChanged() override;
 
   // CertDatabase::Observer methods:
 
   // We perform the same flushing as described above when certificate database
   // is changed.
-  virtual void OnCertAdded(const X509Certificate* cert) override;
-  virtual void OnCACertChanged(const X509Certificate* cert) override;
+  void OnCertAdded(const X509Certificate* cert) override;
+  void OnCACertChanged(const X509Certificate* cert) override;
 
  private:
   friend class SpdySessionPoolPeer;  // For testing.

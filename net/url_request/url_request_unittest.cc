@@ -367,22 +367,22 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
                        const AuthCallback& callback);
 
   // TestNetworkDelegate implementation.
-  virtual int OnBeforeURLRequest(URLRequest* request,
-                                 const CompletionCallback& callback,
-                                 GURL* new_url) override;
+  int OnBeforeURLRequest(URLRequest* request,
+                         const CompletionCallback& callback,
+                         GURL* new_url) override;
 
-  virtual int OnBeforeSendHeaders(URLRequest* request,
-                                  const CompletionCallback& callback,
-                                  HttpRequestHeaders* headers) override;
+  int OnBeforeSendHeaders(URLRequest* request,
+                          const CompletionCallback& callback,
+                          HttpRequestHeaders* headers) override;
 
-  virtual int OnHeadersReceived(
+  int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
 
-  virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
+  NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
@@ -596,7 +596,7 @@ class TestURLRequestContextWithProxy : public TestURLRequestContext {
     set_network_delegate(delegate);
     Init();
   }
-  virtual ~TestURLRequestContextWithProxy() {}
+  ~TestURLRequestContextWithProxy() override {}
 };
 
 }  // namespace
@@ -1105,11 +1105,9 @@ class RestartTestJob : public URLRequestTestJob {
   RestartTestJob(URLRequest* request, NetworkDelegate* network_delegate)
     : URLRequestTestJob(request, network_delegate, true) {}
  protected:
-  virtual void StartAsync() override {
-    this->NotifyRestartRequired();
-  }
+  void StartAsync() override { this->NotifyRestartRequired(); }
  private:
-  virtual ~RestartTestJob() {}
+  ~RestartTestJob() override {}
 };
 
 class CancelTestJob : public URLRequestTestJob {
@@ -1117,11 +1115,9 @@ class CancelTestJob : public URLRequestTestJob {
   explicit CancelTestJob(URLRequest* request, NetworkDelegate* network_delegate)
     : URLRequestTestJob(request, network_delegate, true) {}
  protected:
-  virtual void StartAsync() override {
-    request_->Cancel();
-  }
+  void StartAsync() override { request_->Cancel(); }
  private:
-  virtual ~CancelTestJob() {}
+  ~CancelTestJob() override {}
 };
 
 class CancelThenRestartTestJob : public URLRequestTestJob {
@@ -1131,12 +1127,12 @@ class CancelThenRestartTestJob : public URLRequestTestJob {
       : URLRequestTestJob(request, network_delegate, true) {
   }
  protected:
-  virtual void StartAsync() override {
+  void StartAsync() override {
     request_->Cancel();
     this->NotifyRestartRequired();
   }
  private:
-  virtual ~CancelThenRestartTestJob() {}
+  ~CancelThenRestartTestJob() override {}
 };
 
 // An Interceptor for use with interceptor tests
@@ -1156,13 +1152,12 @@ class TestInterceptor : URLRequest::Interceptor {
     URLRequest::Deprecated::RegisterRequestInterceptor(this);
   }
 
-  virtual ~TestInterceptor() {
+  ~TestInterceptor() override {
     URLRequest::Deprecated::UnregisterRequestInterceptor(this);
   }
 
-  virtual URLRequestJob* MaybeIntercept(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) override {
+  URLRequestJob* MaybeIntercept(URLRequest* request,
+                                NetworkDelegate* network_delegate) override {
     if (restart_main_request_) {
       restart_main_request_ = false;
       did_restart_main_ = true;
@@ -1197,10 +1192,9 @@ class TestInterceptor : URLRequest::Interceptor {
     return job;
   }
 
-  virtual URLRequestJob* MaybeInterceptRedirect(
-      URLRequest* request,
-      NetworkDelegate* network_delegate,
-      const GURL& location) override {
+  URLRequestJob* MaybeInterceptRedirect(URLRequest* request,
+                                        NetworkDelegate* network_delegate,
+                                        const GURL& location) override {
     if (cancel_redirect_request_) {
       cancel_redirect_request_ = false;
       did_cancel_redirect_ = true;
@@ -1217,8 +1211,9 @@ class TestInterceptor : URLRequest::Interceptor {
                                  true);
   }
 
-  virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest* request, NetworkDelegate* network_delegate) override {
+  URLRequestJob* MaybeInterceptResponse(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) override {
     if (cancel_final_request_) {
       cancel_final_request_ = false;
       did_cancel_final_ = true;
@@ -2396,10 +2391,10 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
  public:
   explicit FixedDateNetworkDelegate(const std::string& fixed_date)
       : fixed_date_(fixed_date) {}
-  virtual ~FixedDateNetworkDelegate() {}
+  ~FixedDateNetworkDelegate() override {}
 
   // NetworkDelegate implementation
-  virtual int OnHeadersReceived(
+  int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
@@ -3991,24 +3986,24 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
 class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
  public:
   AsyncLoggingNetworkDelegate() {}
-  virtual ~AsyncLoggingNetworkDelegate() {}
+  ~AsyncLoggingNetworkDelegate() override {}
 
   // NetworkDelegate implementation.
-  virtual int OnBeforeURLRequest(URLRequest* request,
-                                 const CompletionCallback& callback,
-                                 GURL* new_url) override {
+  int OnBeforeURLRequest(URLRequest* request,
+                         const CompletionCallback& callback,
+                         GURL* new_url) override {
     TestNetworkDelegate::OnBeforeURLRequest(request, callback, new_url);
     return RunCallbackAsynchronously(request, callback);
   }
 
-  virtual int OnBeforeSendHeaders(URLRequest* request,
-                                  const CompletionCallback& callback,
-                                  HttpRequestHeaders* headers) override {
+  int OnBeforeSendHeaders(URLRequest* request,
+                          const CompletionCallback& callback,
+                          HttpRequestHeaders* headers) override {
     TestNetworkDelegate::OnBeforeSendHeaders(request, callback, headers);
     return RunCallbackAsynchronously(request, callback);
   }
 
-  virtual int OnHeadersReceived(
+  int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
@@ -4022,7 +4017,7 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
     return RunCallbackAsynchronously(request, callback);
   }
 
-  virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
+  NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
@@ -4083,12 +4078,12 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
     else if (cancel_stage == CANCEL_ON_READ_COMPLETED)
       set_cancel_in_received_data(true);
   }
-  virtual ~AsyncLoggingUrlRequestDelegate() {}
+  ~AsyncLoggingUrlRequestDelegate() override {}
 
   // URLRequest::Delegate implementation:
-  void virtual OnReceivedRedirect(URLRequest* request,
-                                  const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override {
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override {
     *defer_redirect = true;
     AsyncDelegateLogger::Run(
         request,
@@ -4100,7 +4095,7 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
             base::Unretained(this), request, redirect_info));
   }
 
-  virtual void OnResponseStarted(URLRequest* request) override {
+  void OnResponseStarted(URLRequest* request) override {
     AsyncDelegateLogger::Run(
       request,
       LOAD_STATE_WAITING_FOR_DELEGATE,
@@ -4111,8 +4106,7 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
           base::Unretained(this), request));
   }
 
-  virtual void OnReadCompleted(URLRequest* request,
-                               int bytes_read) override {
+  void OnReadCompleted(URLRequest* request, int bytes_read) override {
     AsyncDelegateLogger::Run(
         request,
         LOAD_STATE_IDLE,
@@ -4578,9 +4572,9 @@ const char kExtraHeader[] = "Allow-Snafu";
 const char kExtraValue[] = "fubar";
 
 class RedirectWithAdditionalHeadersDelegate : public TestDelegate {
-  virtual void OnReceivedRedirect(URLRequest* request,
-                                  const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override {
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override {
     TestDelegate::OnReceivedRedirect(request, redirect_info, defer_redirect);
     request->SetExtraRequestHeaderByName(kExtraHeader, kExtraValue, false);
   }
@@ -4615,9 +4609,9 @@ namespace {
 const char kExtraHeaderToRemove[] = "To-Be-Removed";
 
 class RedirectWithHeaderRemovalDelegate : public TestDelegate {
-  virtual void OnReceivedRedirect(URLRequest* request,
-                                  const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override {
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override {
     TestDelegate::OnReceivedRedirect(request, redirect_info, defer_redirect);
     request->RemoveRequestHeaderByName(kExtraHeaderToRemove);
   }
@@ -6811,9 +6805,8 @@ class SSLClientAuthTestDelegate : public TestDelegate {
  public:
   SSLClientAuthTestDelegate() : on_certificate_requested_count_(0) {
   }
-  virtual void OnCertificateRequested(
-      URLRequest* request,
-      SSLCertRequestInfo* cert_request_info) override {
+  void OnCertificateRequested(URLRequest* request,
+                              SSLCertRequestInfo* cert_request_info) override {
     on_certificate_requested_count_++;
     base::MessageLoop::current()->Quit();
   }
@@ -7092,7 +7085,7 @@ class TestSSLConfigService : public SSLConfigService {
   }
 
   // SSLConfigService:
-  virtual void GetSSLConfig(SSLConfig* config) override {
+  void GetSSLConfig(SSLConfig* config) override {
     *config = SSLConfig();
     config->rev_checking_enabled = online_rev_checking_;
     config->verify_ev_cert = ev_enabled_;
@@ -7104,7 +7097,7 @@ class TestSSLConfigService : public SSLConfigService {
   }
 
  protected:
-  virtual ~TestSSLConfigService() {}
+  ~TestSSLConfigService() override {}
 
  private:
   const bool ev_enabled_;
@@ -7664,7 +7657,7 @@ TEST_F(HTTPSOCSPTest, Invalid) {
 
 class HTTPSHardFailTest : public HTTPSOCSPTest {
  protected:
-  virtual void SetupContext(URLRequestContext* context) override {
+  void SetupContext(URLRequestContext* context) override {
     context->set_ssl_config_service(
         new TestSSLConfigService(false /* check for EV */,
                                  false /* online revocation checking */,
@@ -7702,7 +7695,7 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
 
 class HTTPSEVCRLSetTest : public HTTPSOCSPTest {
  protected:
-  virtual void SetupContext(URLRequestContext* context) override {
+  void SetupContext(URLRequestContext* context) override {
     context->set_ssl_config_service(
         new TestSSLConfigService(true /* check for EV */,
                                  false /* online revocation checking */,
@@ -7887,7 +7880,7 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSetAndRevokedNonEVCert) {
 
 class HTTPSCRLSetTest : public HTTPSOCSPTest {
  protected:
-  virtual void SetupContext(URLRequestContext* context) override {
+  void SetupContext(URLRequestContext* context) override {
     context->set_ssl_config_service(
         new TestSSLConfigService(false /* check for EV */,
                                  false /* online revocation checking */,

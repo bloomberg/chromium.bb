@@ -8191,20 +8191,20 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
   class FakeUploadElementReader : public UploadElementReader {
    public:
     FakeUploadElementReader() {}
-    virtual ~FakeUploadElementReader() {}
+    ~FakeUploadElementReader() override {}
 
     const CompletionCallback& callback() const { return callback_; }
 
     // UploadElementReader overrides:
-    virtual int Init(const CompletionCallback& callback) override {
+    int Init(const CompletionCallback& callback) override {
       callback_ = callback;
       return ERR_IO_PENDING;
     }
-    virtual uint64 GetContentLength() const override { return 0; }
-    virtual uint64 BytesRemaining() const override { return 0; }
-    virtual int Read(IOBuffer* buf,
-                     int buf_length,
-                     const CompletionCallback& callback) override {
+    uint64 GetContentLength() const override { return 0; }
+    uint64 BytesRemaining() const override { return 0; }
+    int Read(IOBuffer* buf,
+             int buf_length,
+             const CompletionCallback& callback) override {
       return ERR_FAILED;
     }
 
@@ -9097,13 +9097,13 @@ TEST_P(HttpNetworkTransactionTest, StallAlternateProtocolForNpnSpdy) {
 class CapturingProxyResolver : public ProxyResolver {
  public:
   CapturingProxyResolver() : ProxyResolver(false /* expects_pac_bytes */) {}
-  virtual ~CapturingProxyResolver() {}
+  ~CapturingProxyResolver() override {}
 
-  virtual int GetProxyForURL(const GURL& url,
-                             ProxyInfo* results,
-                             const CompletionCallback& callback,
-                             RequestHandle* request,
-                             const BoundNetLog& net_log) override {
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const CompletionCallback& callback,
+                     RequestHandle* request,
+                     const BoundNetLog& net_log) override {
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("myproxy", 80));
     results->UseProxyServer(proxy_server);
@@ -9111,21 +9111,17 @@ class CapturingProxyResolver : public ProxyResolver {
     return OK;
   }
 
-  virtual void CancelRequest(RequestHandle request) override {
-    NOTREACHED();
-  }
+  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
 
-  virtual LoadState GetLoadState(RequestHandle request) const override {
+  LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
   }
 
-  virtual void CancelSetPacScript() override {
-    NOTREACHED();
-  }
+  void CancelSetPacScript() override { NOTREACHED(); }
 
-  virtual int SetPacScript(const scoped_refptr<ProxyResolverScriptData>&,
-                           const CompletionCallback& /*callback*/) override {
+  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>&,
+                   const CompletionCallback& /*callback*/) override {
     return OK;
   }
 
@@ -10060,13 +10056,13 @@ class UrlRecordingHttpAuthHandlerMock : public HttpAuthHandlerMock {
  public:
   explicit UrlRecordingHttpAuthHandlerMock(GURL* url) : url_(url) {}
 
-  virtual ~UrlRecordingHttpAuthHandlerMock() {}
+  ~UrlRecordingHttpAuthHandlerMock() override {}
 
  protected:
-  virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
-                                    const HttpRequestInfo* request,
-                                    const CompletionCallback& callback,
-                                    std::string* auth_token) override {
+  int GenerateAuthTokenImpl(const AuthCredentials* credentials,
+                            const HttpRequestInfo* request,
+                            const CompletionCallback& callback,
+                            std::string* auth_token) override {
     *url_ = request->url;
     return HttpAuthHandlerMock::GenerateAuthTokenImpl(
         credentials, request, callback, auth_token);
@@ -11153,31 +11149,31 @@ class OneTimeCachingHostResolver : public net::HostResolver {
  public:
   explicit OneTimeCachingHostResolver(const HostPortPair& host_port)
       : host_port_(host_port) {}
-  virtual ~OneTimeCachingHostResolver() {}
+  ~OneTimeCachingHostResolver() override {}
 
   RuleBasedHostResolverProc* rules() { return host_resolver_.rules(); }
 
   // HostResolver methods:
-  virtual int Resolve(const RequestInfo& info,
-                      RequestPriority priority,
-                      AddressList* addresses,
-                      const CompletionCallback& callback,
-                      RequestHandle* out_req,
-                      const BoundNetLog& net_log) override {
+  int Resolve(const RequestInfo& info,
+              RequestPriority priority,
+              AddressList* addresses,
+              const CompletionCallback& callback,
+              RequestHandle* out_req,
+              const BoundNetLog& net_log) override {
     return host_resolver_.Resolve(
         info, priority, addresses, callback, out_req, net_log);
   }
 
-  virtual int ResolveFromCache(const RequestInfo& info,
-                               AddressList* addresses,
-                               const BoundNetLog& net_log) override {
+  int ResolveFromCache(const RequestInfo& info,
+                       AddressList* addresses,
+                       const BoundNetLog& net_log) override {
     int rv = host_resolver_.ResolveFromCache(info, addresses, net_log);
     if (rv == OK && info.host_port_pair().Equals(host_port_))
       host_resolver_.GetHostCache()->clear();
     return rv;
   }
 
-  virtual void CancelRequest(RequestHandle req) override {
+  void CancelRequest(RequestHandle req) override {
     host_resolver_.CancelRequest(req);
   }
 
@@ -12202,92 +12198,81 @@ class FakeStream : public HttpStreamBase,
                    public base::SupportsWeakPtr<FakeStream> {
  public:
   explicit FakeStream(RequestPriority priority) : priority_(priority) {}
-  virtual ~FakeStream() {}
+  ~FakeStream() override {}
 
   RequestPriority priority() const { return priority_; }
 
-  virtual int InitializeStream(const HttpRequestInfo* request_info,
-                               RequestPriority priority,
-                               const BoundNetLog& net_log,
-                               const CompletionCallback& callback) override {
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual int SendRequest(const HttpRequestHeaders& request_headers,
-                          HttpResponseInfo* response,
-                          const CompletionCallback& callback) override {
+  int SendRequest(const HttpRequestHeaders& request_headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) override {
+  int ReadResponseHeaders(const CompletionCallback& callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  virtual int ReadResponseBody(IOBuffer* buf, int buf_len,
-                               const CompletionCallback& callback) override {
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  virtual void Close(bool not_reusable) override {}
+  void Close(bool not_reusable) override {}
 
-  virtual bool IsResponseBodyComplete() const override {
+  bool IsResponseBodyComplete() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool CanFindEndOfResponse() const override {
-    return false;
-  }
+  bool CanFindEndOfResponse() const override { return false; }
 
-  virtual bool IsConnectionReused() const override {
+  bool IsConnectionReused() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual void SetConnectionReused() override {
-    ADD_FAILURE();
-  }
+  void SetConnectionReused() override { ADD_FAILURE(); }
 
-  virtual bool IsConnectionReusable() const override {
+  bool IsConnectionReusable() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual int64 GetTotalReceivedBytes() const override {
+  int64 GetTotalReceivedBytes() const override {
     ADD_FAILURE();
     return 0;
   }
 
-  virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override {
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual void GetSSLInfo(SSLInfo* ssl_info) override {
+  void GetSSLInfo(SSLInfo* ssl_info) override { ADD_FAILURE(); }
+
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {
     ADD_FAILURE();
   }
 
-  virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) override {
-    ADD_FAILURE();
-  }
-
-  virtual bool IsSpdyHttpStream() const override {
+  bool IsSpdyHttpStream() const override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual void Drain(HttpNetworkSession* session) override {
-    ADD_FAILURE();
-  }
+  void Drain(HttpNetworkSession* session) override { ADD_FAILURE(); }
 
-  virtual void SetPriority(RequestPriority priority) override {
-    priority_ = priority;
-  }
+  void SetPriority(RequestPriority priority) override { priority_ = priority; }
 
  private:
   RequestPriority priority_;
@@ -12313,7 +12298,7 @@ class FakeStreamRequest : public HttpStreamRequest,
         delegate_(delegate),
         websocket_stream_create_helper_(create_helper) {}
 
-  virtual ~FakeStreamRequest() {}
+  ~FakeStreamRequest() override {}
 
   RequestPriority priority() const { return priority_; }
 
@@ -12333,32 +12318,23 @@ class FakeStreamRequest : public HttpStreamRequest,
     return weak_stream;
   }
 
-  virtual int RestartTunnelWithProxyAuth(
-      const AuthCredentials& credentials) override {
+  int RestartTunnelWithProxyAuth(const AuthCredentials& credentials) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  virtual LoadState GetLoadState() const override {
+  LoadState GetLoadState() const override {
     ADD_FAILURE();
     return LoadState();
   }
 
-  virtual void SetPriority(RequestPriority priority) override {
-    priority_ = priority;
-  }
+  void SetPriority(RequestPriority priority) override { priority_ = priority; }
 
-  virtual bool was_npn_negotiated() const override {
-    return false;
-  }
+  bool was_npn_negotiated() const override { return false; }
 
-  virtual NextProto protocol_negotiated() const override {
-    return kProtoUnknown;
-  }
+  NextProto protocol_negotiated() const override { return kProtoUnknown; }
 
-  virtual bool using_spdy() const override {
-    return false;
-  }
+  bool using_spdy() const override { return false; }
 
  private:
   RequestPriority priority_;
@@ -12372,7 +12348,7 @@ class FakeStreamRequest : public HttpStreamRequest,
 class FakeStreamFactory : public HttpStreamFactory {
  public:
   FakeStreamFactory() {}
-  virtual ~FakeStreamFactory() {}
+  ~FakeStreamFactory() override {}
 
   // Returns a WeakPtr<> to the last HttpStreamRequest returned by
   // RequestStream() (which may be NULL if it was destroyed already).
@@ -12380,19 +12356,18 @@ class FakeStreamFactory : public HttpStreamFactory {
     return last_stream_request_;
   }
 
-  virtual HttpStreamRequest* RequestStream(
-      const HttpRequestInfo& info,
-      RequestPriority priority,
-      const SSLConfig& server_ssl_config,
-      const SSLConfig& proxy_ssl_config,
-      HttpStreamRequest::Delegate* delegate,
-      const BoundNetLog& net_log) override {
+  HttpStreamRequest* RequestStream(const HttpRequestInfo& info,
+                                   RequestPriority priority,
+                                   const SSLConfig& server_ssl_config,
+                                   const SSLConfig& proxy_ssl_config,
+                                   HttpStreamRequest::Delegate* delegate,
+                                   const BoundNetLog& net_log) override {
     FakeStreamRequest* fake_request = new FakeStreamRequest(priority, delegate);
     last_stream_request_ = fake_request->AsWeakPtr();
     return fake_request;
   }
 
-  virtual HttpStreamRequest* RequestWebSocketHandshakeStream(
+  HttpStreamRequest* RequestWebSocketHandshakeStream(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
@@ -12406,15 +12381,15 @@ class FakeStreamFactory : public HttpStreamFactory {
     return fake_request;
   }
 
-  virtual void PreconnectStreams(int num_streams,
-                                 const HttpRequestInfo& info,
-                                 RequestPriority priority,
-                                 const SSLConfig& server_ssl_config,
-                                 const SSLConfig& proxy_ssl_config) override {
+  void PreconnectStreams(int num_streams,
+                         const HttpRequestInfo& info,
+                         RequestPriority priority,
+                         const SSLConfig& server_ssl_config,
+                         const SSLConfig& proxy_ssl_config) override {
     ADD_FAILURE();
   }
 
-  virtual const HostMappingRules* GetHostMappingRules() const override {
+  const HostMappingRules* GetHostMappingRules() const override {
     ADD_FAILURE();
     return NULL;
   }
@@ -12430,21 +12405,21 @@ class FakeStreamFactory : public HttpStreamFactory {
 class FakeWebSocketStreamCreateHelper :
       public WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  virtual WebSocketHandshakeStreamBase* CreateBasicStream(
+  WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
     NOTREACHED();
     return NULL;
   }
 
-  virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
+  WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<SpdySession>& session,
       bool use_relative_url) override {
     NOTREACHED();
     return NULL;
   };
 
-  virtual ~FakeWebSocketStreamCreateHelper() {}
+  ~FakeWebSocketStreamCreateHelper() override {}
 
   virtual scoped_ptr<WebSocketStream> Upgrade() {
     NOTREACHED();

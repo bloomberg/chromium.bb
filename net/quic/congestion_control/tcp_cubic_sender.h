@@ -35,38 +35,38 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                  bool reno,
                  QuicTcpCongestionWindow max_tcp_congestion_window,
                  QuicConnectionStats* stats);
-  virtual ~TcpCubicSender();
+  ~TcpCubicSender() override;
 
   // Start implementation of SendAlgorithmInterface.
-  virtual void SetFromConfig(const QuicConfig& config, bool is_server) override;
-  virtual void SetNumEmulatedConnections(int num_connections) override;
-  virtual void OnIncomingQuicCongestionFeedbackFrame(
+  void SetFromConfig(const QuicConfig& config, bool is_server) override;
+  void SetNumEmulatedConnections(int num_connections) override;
+  void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time) override;
-  virtual void OnCongestionEvent(bool rtt_updated,
-                                 QuicByteCount bytes_in_flight,
-                                 const CongestionVector& acked_packets,
-                                 const CongestionVector& lost_packets) override;
-  virtual bool OnPacketSent(QuicTime sent_time,
-                            QuicByteCount bytes_in_flight,
-                            QuicPacketSequenceNumber sequence_number,
-                            QuicByteCount bytes,
-                            HasRetransmittableData is_retransmittable) override;
-  virtual void OnRetransmissionTimeout(bool packets_retransmitted) override;
-  virtual void RevertRetransmissionTimeout() override;
-  virtual QuicTime::Delta TimeUntilSend(
+  void OnCongestionEvent(bool rtt_updated,
+                         QuicByteCount bytes_in_flight,
+                         const CongestionVector& acked_packets,
+                         const CongestionVector& lost_packets) override;
+  bool OnPacketSent(QuicTime sent_time,
+                    QuicByteCount bytes_in_flight,
+                    QuicPacketSequenceNumber sequence_number,
+                    QuicByteCount bytes,
+                    HasRetransmittableData is_retransmittable) override;
+  void OnRetransmissionTimeout(bool packets_retransmitted) override;
+  void RevertRetransmissionTimeout() override;
+  QuicTime::Delta TimeUntilSend(
       QuicTime now,
       QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) const override;
-  virtual QuicBandwidth PacingRate() const override;
-  virtual QuicBandwidth BandwidthEstimate() const override;
-  virtual bool HasReliableBandwidthEstimate() const override;
-  virtual QuicTime::Delta RetransmissionDelay() const override;
-  virtual QuicByteCount GetCongestionWindow() const override;
-  virtual bool InSlowStart() const override;
-  virtual bool InRecovery() const override;
-  virtual QuicByteCount GetSlowStartThreshold() const override;
-  virtual CongestionControlType GetCongestionControlType() const override;
+  QuicBandwidth PacingRate() const override;
+  QuicBandwidth BandwidthEstimate() const override;
+  bool HasReliableBandwidthEstimate() const override;
+  QuicTime::Delta RetransmissionDelay() const override;
+  QuicByteCount GetCongestionWindow() const override;
+  bool InSlowStart() const override;
+  bool InRecovery() const override;
+  QuicByteCount GetSlowStartThreshold() const override;
+  CongestionControlType GetCongestionControlType() const override;
   // End implementation of SendAlgorithmInterface.
 
  private:

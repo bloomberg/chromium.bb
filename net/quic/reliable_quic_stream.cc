@@ -76,12 +76,11 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
         num_retransmitted_bytes_(0) {
   }
 
-  virtual void OnAckNotification(int num_original_packets,
-                                 int num_original_bytes,
-                                 int num_retransmitted_packets,
-                                 int num_retransmitted_bytes,
-                                 QuicTime::Delta delta_largest_observed)
-      override {
+  void OnAckNotification(int num_original_packets,
+                         int num_original_bytes,
+                         int num_retransmitted_packets,
+                         int num_retransmitted_bytes,
+                         QuicTime::Delta delta_largest_observed) override {
     DCHECK_LT(0, pending_acks_);
     --pending_acks_;
     num_original_packets_ += num_original_packets;
@@ -106,8 +105,7 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
 
  protected:
   // Delegates are ref counted.
-  virtual ~ProxyAckNotifierDelegate() override {
-  }
+  ~ProxyAckNotifierDelegate() override {}
 
  private:
   // Original delegate.  delegate_->OnAckNotification will be called when:

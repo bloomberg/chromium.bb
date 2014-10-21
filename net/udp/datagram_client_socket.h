@@ -15,7 +15,7 @@ class IPEndPoint;
 class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
                                                 public Socket {
  public:
-  virtual ~DatagramClientSocket() {}
+  ~DatagramClientSocket() override {}
 
   // Initialize this socket as a client socket to server at |address|.
   // Returns a network error code.

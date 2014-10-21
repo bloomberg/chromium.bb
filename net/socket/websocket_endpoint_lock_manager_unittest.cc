@@ -22,57 +22,51 @@ class FakeStreamSocket : public StreamSocket {
   FakeStreamSocket() {}
 
   // StreamSocket implementation
-  virtual int Connect(const CompletionCallback& callback) override {
+  int Connect(const CompletionCallback& callback) override {
     return ERR_FAILED;
   }
 
-  virtual void Disconnect() override { return; }
+  void Disconnect() override { return; }
 
-  virtual bool IsConnected() const override { return false; }
+  bool IsConnected() const override { return false; }
 
-  virtual bool IsConnectedAndIdle() const override { return false; }
+  bool IsConnectedAndIdle() const override { return false; }
 
-  virtual int GetPeerAddress(IPEndPoint* address) const override {
-    return ERR_FAILED;
-  }
+  int GetPeerAddress(IPEndPoint* address) const override { return ERR_FAILED; }
 
-  virtual int GetLocalAddress(IPEndPoint* address) const override {
-    return ERR_FAILED;
-  }
+  int GetLocalAddress(IPEndPoint* address) const override { return ERR_FAILED; }
 
-  virtual const BoundNetLog& NetLog() const override { return bound_net_log_; }
+  const BoundNetLog& NetLog() const override { return bound_net_log_; }
 
-  virtual void SetSubresourceSpeculation() override { return; }
-  virtual void SetOmniboxSpeculation() override { return; }
+  void SetSubresourceSpeculation() override { return; }
+  void SetOmniboxSpeculation() override { return; }
 
-  virtual bool WasEverUsed() const override { return false; }
+  bool WasEverUsed() const override { return false; }
 
-  virtual bool UsingTCPFastOpen() const override { return false; }
+  bool UsingTCPFastOpen() const override { return false; }
 
-  virtual bool WasNpnNegotiated() const override { return false; }
+  bool WasNpnNegotiated() const override { return false; }
 
-  virtual NextProto GetNegotiatedProtocol() const override {
-    return kProtoUnknown;
-  }
+  NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
 
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
+  bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
 
   // Socket implementation
-  virtual int Read(IOBuffer* buf,
-                   int buf_len,
-                   const CompletionCallback& callback) override {
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override {
     return ERR_FAILED;
   }
 
-  virtual int Write(IOBuffer* buf,
-                    int buf_len,
-                    const CompletionCallback& callback) override {
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override {
     return ERR_FAILED;
   }
 
-  virtual int SetReceiveBufferSize(int32 size) override { return ERR_FAILED; }
+  int SetReceiveBufferSize(int32 size) override { return ERR_FAILED; }
 
-  virtual int SetSendBufferSize(int32 size) override { return ERR_FAILED; }
+  int SetSendBufferSize(int32 size) override { return ERR_FAILED; }
 
  private:
   BoundNetLog bound_net_log_;
@@ -84,7 +78,7 @@ class FakeWaiter : public WebSocketEndpointLockManager::Waiter {
  public:
   FakeWaiter() : called_(false) {}
 
-  virtual void GotEndpointLock() override {
+  void GotEndpointLock() override {
     CHECK(!called_);
     called_ = true;
   }

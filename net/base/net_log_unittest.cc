@@ -75,14 +75,12 @@ class CountingObserver : public NetLog::ThreadSafeObserver {
  public:
   CountingObserver() : count_(0) {}
 
-  virtual ~CountingObserver() {
+  ~CountingObserver() override {
     if (net_log())
       net_log()->RemoveThreadSafeObserver(this);
   }
 
-  virtual void OnAddEntry(const NetLog::Entry& entry) override {
-    ++count_;
-  }
+  void OnAddEntry(const NetLog::Entry& entry) override { ++count_; }
 
   int count() const { return count_; }
 
@@ -94,12 +92,12 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
  public:
   LoggingObserver() {}
 
-  virtual ~LoggingObserver() {
+  ~LoggingObserver() override {
     if (net_log())
       net_log()->RemoveThreadSafeObserver(this);
   }
 
-  virtual void OnAddEntry(const NetLog::Entry& entry) override {
+  void OnAddEntry(const NetLog::Entry& entry) override {
     base::Value* value = entry.ToValue();
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(value->GetAsDictionary(&dict));
@@ -138,7 +136,7 @@ class NetLogTestThread : public base::SimpleThread {
     net_log_ = net_log;
   }
 
-  virtual void Run() override {
+  void Run() override {
     start_event_->Wait();
     RunTestThread();
   }
@@ -162,10 +160,10 @@ class NetLogTestThread : public base::SimpleThread {
 class AddEventsTestThread : public NetLogTestThread {
  public:
   AddEventsTestThread() {}
-  virtual ~AddEventsTestThread() {}
+  ~AddEventsTestThread() override {}
 
  private:
-  virtual void RunTestThread() override {
+  void RunTestThread() override {
     for (int i = 0; i < kEvents; ++i)
       AddEvent(net_log_);
   }
@@ -178,12 +176,10 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
  public:
   AddRemoveObserverTestThread() {}
 
-  virtual ~AddRemoveObserverTestThread() {
-    EXPECT_TRUE(!observer_.net_log());
-  }
+  ~AddRemoveObserverTestThread() override { EXPECT_TRUE(!observer_.net_log()); }
 
  private:
-  virtual void RunTestThread() override {
+  void RunTestThread() override {
     for (int i = 0; i < kEvents; ++i) {
       ASSERT_FALSE(observer_.net_log());
 

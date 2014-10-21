@@ -22,18 +22,18 @@ class MockCertVerifier : public CertVerifier {
   // handle a certificate or certificate and host.
   MockCertVerifier();
 
-  virtual ~MockCertVerifier();
+  ~MockCertVerifier() override;
 
   // CertVerifier implementation
-  virtual int Verify(X509Certificate* cert,
-                     const std::string& hostname,
-                     int flags,
-                     CRLSet* crl_set,
-                     CertVerifyResult* verify_result,
-                     const CompletionCallback& callback,
-                     RequestHandle* out_req,
-                     const BoundNetLog& net_log) override;
-  virtual void CancelRequest(RequestHandle req) override;
+  int Verify(X509Certificate* cert,
+             const std::string& hostname,
+             int flags,
+             CRLSet* crl_set,
+             CertVerifyResult* verify_result,
+             const CompletionCallback& callback,
+             RequestHandle* out_req,
+             const BoundNetLog& net_log) override;
+  void CancelRequest(RequestHandle req) override;
 
   // Sets the default return value for Verify() for certificates/hosts that do
   // not have explicit results added via the AddResult*() methods.

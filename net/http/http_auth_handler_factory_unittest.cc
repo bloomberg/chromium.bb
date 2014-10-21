@@ -19,15 +19,15 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
  public:
   explicit MockHttpAuthHandlerFactory(int return_code) :
       return_code_(return_code) {}
-  virtual ~MockHttpAuthHandlerFactory() {}
+  ~MockHttpAuthHandlerFactory() override {}
 
-  virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
-                                HttpAuth::Target target,
-                                const GURL& origin,
-                                CreateReason reason,
-                                int nonce_count,
-                                const BoundNetLog& net_log,
-                                scoped_ptr<HttpAuthHandler>* handler) override {
+  int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
+                        HttpAuth::Target target,
+                        const GURL& origin,
+                        CreateReason reason,
+                        int nonce_count,
+                        const BoundNetLog& net_log,
+                        scoped_ptr<HttpAuthHandler>* handler) override {
     handler->reset();
     return return_code_;
   }

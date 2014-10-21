@@ -201,36 +201,35 @@ class BalsaFrame {
 
  private:
   class DoNothingBalsaVisitor : public BalsaVisitorInterface {
-    virtual void ProcessBodyInput(const char *input, size_t size) override {}
-    virtual void ProcessBodyData(const char *input, size_t size) override {}
-    virtual void ProcessHeaderInput(const char *input, size_t size) override {}
-    virtual void ProcessTrailerInput(const char *input, size_t size) override {}
-    virtual void ProcessHeaders(const BalsaHeaders& headers) override {}
-    virtual void ProcessRequestFirstLine(const char* line_input,
-                                         size_t line_length,
-                                         const char* method_input,
-                                         size_t method_length,
-                                         const char* request_uri_input,
-                                         size_t request_uri_length,
-                                         const char* version_input,
-                                         size_t version_length) override {}
-    virtual void ProcessResponseFirstLine(const char *line_input,
-                                          size_t line_length,
-                                          const char *version_input,
-                                          size_t version_length,
-                                          const char *status_input,
-                                          size_t status_length,
-                                          const char *reason_input,
-                                          size_t reason_length) override {}
-    virtual void ProcessChunkLength(size_t chunk_length) override {}
-    virtual void ProcessChunkExtensions(const char *input,
-                                        size_t size) override {}
-    virtual void HeaderDone() override {}
-    virtual void MessageDone() override {}
-    virtual void HandleHeaderError(BalsaFrame* framer) override {}
-    virtual void HandleHeaderWarning(BalsaFrame* framer) override {}
-    virtual void HandleChunkingError(BalsaFrame* framer) override {}
-    virtual void HandleBodyError(BalsaFrame* framer) override {}
+    void ProcessBodyInput(const char* input, size_t size) override {}
+    void ProcessBodyData(const char* input, size_t size) override {}
+    void ProcessHeaderInput(const char* input, size_t size) override {}
+    void ProcessTrailerInput(const char* input, size_t size) override {}
+    void ProcessHeaders(const BalsaHeaders& headers) override {}
+    void ProcessRequestFirstLine(const char* line_input,
+                                 size_t line_length,
+                                 const char* method_input,
+                                 size_t method_length,
+                                 const char* request_uri_input,
+                                 size_t request_uri_length,
+                                 const char* version_input,
+                                 size_t version_length) override {}
+    void ProcessResponseFirstLine(const char* line_input,
+                                  size_t line_length,
+                                  const char* version_input,
+                                  size_t version_length,
+                                  const char* status_input,
+                                  size_t status_length,
+                                  const char* reason_input,
+                                  size_t reason_length) override {}
+    void ProcessChunkLength(size_t chunk_length) override {}
+    void ProcessChunkExtensions(const char* input, size_t size) override {}
+    void HeaderDone() override {}
+    void MessageDone() override {}
+    void HandleHeaderError(BalsaFrame* framer) override {}
+    void HandleHeaderWarning(BalsaFrame* framer) override {}
+    void HandleChunkingError(BalsaFrame* framer) override {}
+    void HandleBodyError(BalsaFrame* framer) override {}
   };
 
   bool last_char_was_slash_r_;

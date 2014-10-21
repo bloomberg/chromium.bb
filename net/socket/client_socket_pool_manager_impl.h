@@ -71,31 +71,31 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
                               bool enable_ssl_connect_job_waiting,
                               ProxyDelegate* proxy_delegate,
                               HttpNetworkSession::SocketPoolType pool_type);
-  virtual ~ClientSocketPoolManagerImpl();
+  ~ClientSocketPoolManagerImpl() override;
 
-  virtual void FlushSocketPoolsWithError(int error) override;
-  virtual void CloseIdleSockets() override;
+  void FlushSocketPoolsWithError(int error) override;
+  void CloseIdleSockets() override;
 
-  virtual TransportClientSocketPool* GetTransportSocketPool() override;
+  TransportClientSocketPool* GetTransportSocketPool() override;
 
-  virtual SSLClientSocketPool* GetSSLSocketPool() override;
+  SSLClientSocketPool* GetSSLSocketPool() override;
 
-  virtual SOCKSClientSocketPool* GetSocketPoolForSOCKSProxy(
+  SOCKSClientSocketPool* GetSocketPoolForSOCKSProxy(
       const HostPortPair& socks_proxy) override;
 
-  virtual HttpProxyClientSocketPool* GetSocketPoolForHTTPProxy(
+  HttpProxyClientSocketPool* GetSocketPoolForHTTPProxy(
       const HostPortPair& http_proxy) override;
 
-  virtual SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
+  SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
       const HostPortPair& proxy_server) override;
 
   // Creates a Value summary of the state of the socket pools. The caller is
   // responsible for deleting the returned value.
-  virtual base::Value* SocketPoolInfoToValue() const override;
+  base::Value* SocketPoolInfoToValue() const override;
 
   // CertDatabase::Observer methods:
-  virtual void OnCertAdded(const X509Certificate* cert) override;
-  virtual void OnCACertChanged(const X509Certificate* cert) override;
+  void OnCertAdded(const X509Certificate* cert) override;
+  void OnCACertChanged(const X509Certificate* cert) override;
 
  private:
   typedef internal::OwnedPoolMap<HostPortPair, TransportClientSocketPool*>

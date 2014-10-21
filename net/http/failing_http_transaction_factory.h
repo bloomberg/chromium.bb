@@ -23,14 +23,13 @@ class NET_EXPORT FailingHttpTransactionFactory : public HttpTransactionFactory {
  public:
   // The caller must guarantee that |session| outlives this object.
   FailingHttpTransactionFactory(HttpNetworkSession* session, Error error);
-  virtual ~FailingHttpTransactionFactory();
+  ~FailingHttpTransactionFactory() override;
 
   // HttpTransactionFactory:
-  virtual int CreateTransaction(
-      RequestPriority priority,
-      scoped_ptr<HttpTransaction>* trans) override;
-  virtual HttpCache* GetCache() override;
-  virtual HttpNetworkSession* GetSession() override;
+  int CreateTransaction(RequestPriority priority,
+                        scoped_ptr<HttpTransaction>* trans) override;
+  HttpCache* GetCache() override;
+  HttpNetworkSession* GetSession() override;
 
  private:
   HttpNetworkSession* session_;

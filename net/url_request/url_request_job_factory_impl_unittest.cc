@@ -26,7 +26,7 @@ class MockURLRequestJob : public URLRequestJob {
         status_(status),
         weak_factory_(this) {}
 
-  virtual void Start() override {
+  void Start() override {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
     base::MessageLoop::current()->PostTask(
@@ -35,7 +35,7 @@ class MockURLRequestJob : public URLRequestJob {
   }
 
  protected:
-  virtual ~MockURLRequestJob() {}
+  ~MockURLRequestJob() override {}
 
  private:
   void StartAsync() {
@@ -49,8 +49,9 @@ class MockURLRequestJob : public URLRequestJob {
 
 class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual URLRequestJob* MaybeCreateJob(
-      URLRequest* request, NetworkDelegate* network_delegate) const override {
+  URLRequestJob* MaybeCreateJob(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const override {
     return new MockURLRequestJob(
         request,
         network_delegate,

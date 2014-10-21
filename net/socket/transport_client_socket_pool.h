@@ -164,10 +164,10 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
                       HostResolver* host_resolver,
                       Delegate* delegate,
                       NetLog* net_log);
-  virtual ~TransportConnectJob();
+  ~TransportConnectJob() override;
 
   // ConnectJob methods.
-  virtual LoadState GetLoadState() const override;
+  LoadState GetLoadState() const override;
 
   // Rolls |addrlist| forward until the first IPv4 address, if any.
   // WARNING: this method should only be used to implement the prefer-IPv4 hack.
@@ -194,7 +194,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   // Begins the host resolution and the TCP connect.  Returns OK on success
   // and ERR_IO_PENDING if it cannot immediately service the request.
   // Otherwise, it returns a net error code.
-  virtual int ConnectInternal() override;
+  int ConnectInternal() override;
 
   TransportConnectJobHelper helper_;
 
@@ -223,43 +223,41 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
       ClientSocketFactory* client_socket_factory,
       NetLog* net_log);
 
-  virtual ~TransportClientSocketPool();
+  ~TransportClientSocketPool() override;
 
   // ClientSocketPool implementation.
-  virtual int RequestSocket(const std::string& group_name,
-                            const void* resolve_info,
-                            RequestPriority priority,
-                            ClientSocketHandle* handle,
-                            const CompletionCallback& callback,
-                            const BoundNetLog& net_log) override;
-  virtual void RequestSockets(const std::string& group_name,
-                              const void* params,
-                              int num_sockets,
-                              const BoundNetLog& net_log) override;
-  virtual void CancelRequest(const std::string& group_name,
-                             ClientSocketHandle* handle) override;
-  virtual void ReleaseSocket(const std::string& group_name,
-                             scoped_ptr<StreamSocket> socket,
-                             int id) override;
-  virtual void FlushWithError(int error) override;
-  virtual void CloseIdleSockets() override;
-  virtual int IdleSocketCount() const override;
-  virtual int IdleSocketCountInGroup(
-      const std::string& group_name) const override;
-  virtual LoadState GetLoadState(
-      const std::string& group_name,
-      const ClientSocketHandle* handle) const override;
-  virtual base::DictionaryValue* GetInfoAsValue(
+  int RequestSocket(const std::string& group_name,
+                    const void* resolve_info,
+                    RequestPriority priority,
+                    ClientSocketHandle* handle,
+                    const CompletionCallback& callback,
+                    const BoundNetLog& net_log) override;
+  void RequestSockets(const std::string& group_name,
+                      const void* params,
+                      int num_sockets,
+                      const BoundNetLog& net_log) override;
+  void CancelRequest(const std::string& group_name,
+                     ClientSocketHandle* handle) override;
+  void ReleaseSocket(const std::string& group_name,
+                     scoped_ptr<StreamSocket> socket,
+                     int id) override;
+  void FlushWithError(int error) override;
+  void CloseIdleSockets() override;
+  int IdleSocketCount() const override;
+  int IdleSocketCountInGroup(const std::string& group_name) const override;
+  LoadState GetLoadState(const std::string& group_name,
+                         const ClientSocketHandle* handle) const override;
+  base::DictionaryValue* GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override;
-  virtual base::TimeDelta ConnectionTimeout() const override;
-  virtual ClientSocketPoolHistograms* histograms() const override;
+  base::TimeDelta ConnectionTimeout() const override;
+  ClientSocketPoolHistograms* histograms() const override;
 
   // HigherLayeredPool implementation.
-  virtual bool IsStalled() const override;
-  virtual void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
-  virtual void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
+  bool IsStalled() const override;
+  void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
+  void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
  protected:
   // Methods shared with WebSocketTransportClientSocketPool
@@ -280,16 +278,16 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
           host_resolver_(host_resolver),
           net_log_(net_log) {}
 
-    virtual ~TransportConnectJobFactory() {}
+    ~TransportConnectJobFactory() override {}
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
 
-    virtual scoped_ptr<ConnectJob> NewConnectJob(
+    scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate) const override;
 
-    virtual base::TimeDelta ConnectionTimeout() const override;
+    base::TimeDelta ConnectionTimeout() const override;
 
    private:
     ClientSocketFactory* const client_socket_factory_;

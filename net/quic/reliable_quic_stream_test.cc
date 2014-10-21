@@ -48,14 +48,14 @@ class TestStream : public ReliableQuicStream {
       : ReliableQuicStream(id, session),
         should_process_data_(should_process_data) {}
 
-  virtual uint32 ProcessRawData(const char* data, uint32 data_len) override {
+  uint32 ProcessRawData(const char* data, uint32 data_len) override {
     EXPECT_NE(0u, data_len);
     DVLOG(1) << "ProcessData data_len: " << data_len;
     data_ += string(data, data_len);
     return should_process_data_ ? data_len : 0;
   }
 
-  virtual QuicPriority EffectivePriority() const override {
+  QuicPriority EffectivePriority() const override {
     return QuicUtils::HighestPriority();
   }
 

@@ -2839,53 +2839,50 @@ namespace {
 class FrameSerializationVisitor : public SpdyFrameVisitor {
  public:
   explicit FrameSerializationVisitor(SpdyFramer* framer) : framer_(framer) {}
-  virtual ~FrameSerializationVisitor() {}
+  ~FrameSerializationVisitor() override {}
 
   SpdySerializedFrame* ReleaseSerializedFrame() { return frame_.release(); }
 
-  virtual void VisitData(const SpdyDataIR& data) override {
+  void VisitData(const SpdyDataIR& data) override {
     frame_.reset(framer_->SerializeData(data));
   }
-  virtual void VisitSynStream(const SpdySynStreamIR& syn_stream) override {
+  void VisitSynStream(const SpdySynStreamIR& syn_stream) override {
     frame_.reset(framer_->SerializeSynStream(syn_stream));
   }
-  virtual void VisitSynReply(const SpdySynReplyIR& syn_reply) override {
+  void VisitSynReply(const SpdySynReplyIR& syn_reply) override {
     frame_.reset(framer_->SerializeSynReply(syn_reply));
   }
-  virtual void VisitRstStream(const SpdyRstStreamIR& rst_stream) override {
+  void VisitRstStream(const SpdyRstStreamIR& rst_stream) override {
     frame_.reset(framer_->SerializeRstStream(rst_stream));
   }
-  virtual void VisitSettings(const SpdySettingsIR& settings) override {
+  void VisitSettings(const SpdySettingsIR& settings) override {
     frame_.reset(framer_->SerializeSettings(settings));
   }
-  virtual void VisitPing(const SpdyPingIR& ping) override {
+  void VisitPing(const SpdyPingIR& ping) override {
     frame_.reset(framer_->SerializePing(ping));
   }
-  virtual void VisitGoAway(const SpdyGoAwayIR& goaway) override {
+  void VisitGoAway(const SpdyGoAwayIR& goaway) override {
     frame_.reset(framer_->SerializeGoAway(goaway));
   }
-  virtual void VisitHeaders(const SpdyHeadersIR& headers) override {
+  void VisitHeaders(const SpdyHeadersIR& headers) override {
     frame_.reset(framer_->SerializeHeaders(headers));
   }
-  virtual void VisitWindowUpdate(
-      const SpdyWindowUpdateIR& window_update) override {
+  void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) override {
     frame_.reset(framer_->SerializeWindowUpdate(window_update));
   }
-  virtual void VisitBlocked(const SpdyBlockedIR& blocked) override {
+  void VisitBlocked(const SpdyBlockedIR& blocked) override {
     frame_.reset(framer_->SerializeBlocked(blocked));
   }
-  virtual void VisitPushPromise(
-      const SpdyPushPromiseIR& push_promise) override {
+  void VisitPushPromise(const SpdyPushPromiseIR& push_promise) override {
     frame_.reset(framer_->SerializePushPromise(push_promise));
   }
-  virtual void VisitContinuation(
-      const SpdyContinuationIR& continuation) override {
+  void VisitContinuation(const SpdyContinuationIR& continuation) override {
     frame_.reset(framer_->SerializeContinuation(continuation));
   }
-  virtual void VisitAltSvc(const SpdyAltSvcIR& altsvc) override {
+  void VisitAltSvc(const SpdyAltSvcIR& altsvc) override {
     frame_.reset(framer_->SerializeAltSvc(altsvc));
   }
-  virtual void VisitPriority(const SpdyPriorityIR& priority) override {
+  void VisitPriority(const SpdyPriorityIR& priority) override {
     frame_.reset(framer_->SerializePriority(priority));
   }
 

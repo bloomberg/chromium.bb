@@ -19,9 +19,7 @@ class MockSSLConfigService : public SSLConfigService {
   explicit MockSSLConfigService(const SSLConfig& config) : config_(config) {}
 
   // SSLConfigService implementation
-  virtual void GetSSLConfig(SSLConfig* config) override {
-    *config = config_;
-  }
+  void GetSSLConfig(SSLConfig* config) override { *config = config_; }
 
   // Sets the SSLConfig to be returned by GetSSLConfig and processes any
   // updates.
@@ -32,7 +30,7 @@ class MockSSLConfigService : public SSLConfigService {
   }
 
  private:
-  virtual ~MockSSLConfigService() {}
+  ~MockSSLConfigService() override {}
 
   SSLConfig config_;
 };

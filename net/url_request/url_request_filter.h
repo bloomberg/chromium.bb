@@ -67,7 +67,7 @@ class NET_EXPORT URLRequestFilter : public URLRequestInterceptor {
   int hit_count() const { return hit_count_; }
 
   // URLRequestInterceptor implementation:
-  virtual URLRequestJob* MaybeInterceptRequest(
+  URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override;
 
@@ -79,7 +79,7 @@ class NET_EXPORT URLRequestFilter : public URLRequestInterceptor {
   typedef base::hash_map<std::string, URLRequestInterceptor*> URLInterceptorMap;
 
   URLRequestFilter();
-  virtual ~URLRequestFilter();
+  ~URLRequestFilter() override;
 
   // Maps hostnames to interceptors.  Hostnames take priority over URLs.
   HostnameInterceptorMap hostname_interceptor_map_;

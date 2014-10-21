@@ -79,8 +79,7 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
                         base::ThreadTaskRunnerHandle::Get(),
                         net::DISK_CACHE,
                         index_file_directory) {}
-  virtual ~WrappedSimpleIndexFile() {
-  }
+  ~WrappedSimpleIndexFile() override {}
 
   const base::FilePath& GetIndexFilePath() const {
     return index_file_;

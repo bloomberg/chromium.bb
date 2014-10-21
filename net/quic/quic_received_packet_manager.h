@@ -96,7 +96,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   };
 
   explicit QuicReceivedPacketManager(QuicConnectionStats* stats);
-  virtual ~QuicReceivedPacketManager();
+  ~QuicReceivedPacketManager() override;
 
   // Updates the internal state concerning which packets have been received.
   // bytes: the packet size in bytes including Quic Headers.
@@ -128,7 +128,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   // QuicReceivedEntropyHashCalculatorInterface
   // Called by QuicFramer, when the outgoing ack gets truncated, to recalculate
   // the received entropy hash for the truncated ack frame.
-  virtual QuicPacketEntropyHash EntropyHash(
+  QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const override;
 
   // Updates internal state based on |stop_waiting|.

@@ -18,11 +18,11 @@ class NET_EXPORT URLRequestAboutJob : public URLRequestJob {
   URLRequestAboutJob(URLRequest* request, NetworkDelegate* network_delegate);
 
   // URLRequestJob:
-  virtual void Start() override;
-  virtual bool GetMimeType(std::string* mime_type) const override;
+  void Start() override;
+  bool GetMimeType(std::string* mime_type) const override;
 
  private:
-  virtual ~URLRequestAboutJob();
+  ~URLRequestAboutJob() override;
 
   void StartAsync();
 

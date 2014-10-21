@@ -26,10 +26,9 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
  public:
   OneShotVisitor() : error_(false) {}
 
-  virtual void OnError(CryptoFramer* framer) override { error_ = true; }
+  void OnError(CryptoFramer* framer) override { error_ = true; }
 
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) override {
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
     out_.reset(new CryptoHandshakeMessage(message));
   }
 

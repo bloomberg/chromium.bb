@@ -27,7 +27,7 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
         optional_port_(optional_port) {
   }
 
-  virtual bool Matches(const GURL& url) const override {
+  bool Matches(const GURL& url) const override {
     if (optional_port_ != -1 && url.EffectiveIntPort() != optional_port_)
       return false;  // Didn't match port expectation.
 
@@ -40,7 +40,7 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
                         hostname_pattern_);
   }
 
-  virtual std::string ToString() const override {
+  std::string ToString() const override {
     std::string str;
     if (!optional_scheme_.empty())
       base::StringAppendF(&str, "%s://", optional_scheme_.c_str());
@@ -50,7 +50,7 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
     return str;
   }
 
-  virtual Rule* Clone() const override {
+  Rule* Clone() const override {
     return new HostnamePatternRule(optional_scheme_,
                                    hostname_pattern_,
                                    optional_port_);
@@ -64,20 +64,16 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
 
 class BypassLocalRule : public ProxyBypassRules::Rule {
  public:
-  virtual bool Matches(const GURL& url) const override {
+  bool Matches(const GURL& url) const override {
     const std::string& host = url.host();
     if (host == "127.0.0.1" || host == "[::1]")
       return true;
     return host.find('.') == std::string::npos;
   }
 
-  virtual std::string ToString() const override {
-    return "<local>";
-  }
+  std::string ToString() const override { return "<local>"; }
 
-  virtual Rule* Clone() const override {
-    return new BypassLocalRule();
-  }
+  Rule* Clone() const override { return new BypassLocalRule(); }
 };
 
 // Rule for matching a URL that is an IP address, if that IP address falls
@@ -96,7 +92,7 @@ class BypassIPBlockRule : public ProxyBypassRules::Rule {
         prefix_length_in_bits_(prefix_length_in_bits) {
   }
 
-  virtual bool Matches(const GURL& url) const override {
+  bool Matches(const GURL& url) const override {
     if (!url.HostIsIPAddress())
       return false;
 
@@ -113,11 +109,9 @@ class BypassIPBlockRule : public ProxyBypassRules::Rule {
                                  prefix_length_in_bits_);
   }
 
-  virtual std::string ToString() const override {
-    return description_;
-  }
+  std::string ToString() const override { return description_; }
 
-  virtual Rule* Clone() const override {
+  Rule* Clone() const override {
     return new BypassIPBlockRule(description_,
                                  optional_scheme_,
                                  ip_prefix_,

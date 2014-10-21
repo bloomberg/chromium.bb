@@ -29,18 +29,17 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   // RequestWebSocketHandshakeStream may only be called if |for_websockets|
   // is true.
   HttpStreamFactoryImpl(HttpNetworkSession* session, bool for_websockets);
-  virtual ~HttpStreamFactoryImpl();
+  ~HttpStreamFactoryImpl() override;
 
   // HttpStreamFactory interface
-  virtual HttpStreamRequest* RequestStream(
-      const HttpRequestInfo& info,
-      RequestPriority priority,
-      const SSLConfig& server_ssl_config,
-      const SSLConfig& proxy_ssl_config,
-      HttpStreamRequest::Delegate* delegate,
-      const BoundNetLog& net_log) override;
+  HttpStreamRequest* RequestStream(const HttpRequestInfo& info,
+                                   RequestPriority priority,
+                                   const SSLConfig& server_ssl_config,
+                                   const SSLConfig& proxy_ssl_config,
+                                   HttpStreamRequest::Delegate* delegate,
+                                   const BoundNetLog& net_log) override;
 
-  virtual HttpStreamRequest* RequestWebSocketHandshakeStream(
+  HttpStreamRequest* RequestWebSocketHandshakeStream(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
@@ -49,12 +48,12 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       const BoundNetLog& net_log) override;
 
-  virtual void PreconnectStreams(int num_streams,
-                                 const HttpRequestInfo& info,
-                                 RequestPriority priority,
-                                 const SSLConfig& server_ssl_config,
-                                 const SSLConfig& proxy_ssl_config) override;
-  virtual const HostMappingRules* GetHostMappingRules() const override;
+  void PreconnectStreams(int num_streams,
+                         const HttpRequestInfo& info,
+                         RequestPriority priority,
+                         const SSLConfig& server_ssl_config,
+                         const SSLConfig& proxy_ssl_config) override;
+  const HostMappingRules* GetHostMappingRules() const override;
 
   size_t num_orphaned_jobs() const { return orphaned_job_set_.size(); }
 

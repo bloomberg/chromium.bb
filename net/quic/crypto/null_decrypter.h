@@ -19,21 +19,21 @@ class QuicDataReader;
 class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
  public:
   NullDecrypter();
-  virtual ~NullDecrypter() {}
+  ~NullDecrypter() override {}
 
   // QuicDecrypter implementation
-  virtual bool SetKey(base::StringPiece key) override;
-  virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
-  virtual bool Decrypt(base::StringPiece nonce,
-                       base::StringPiece associated_data,
-                       base::StringPiece ciphertext,
-                       unsigned char* output,
-                       size_t* output_length) override;
-  virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
-                                  base::StringPiece associated_data,
-                                  base::StringPiece ciphertext) override;
-  virtual base::StringPiece GetKey() const override;
-  virtual base::StringPiece GetNoncePrefix() const override;
+  bool SetKey(base::StringPiece key) override;
+  bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
+  bool Decrypt(base::StringPiece nonce,
+               base::StringPiece associated_data,
+               base::StringPiece ciphertext,
+               unsigned char* output,
+               size_t* output_length) override;
+  QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                          base::StringPiece associated_data,
+                          base::StringPiece ciphertext) override;
+  base::StringPiece GetKey() const override;
+  base::StringPiece GetNoncePrefix() const override;
 
  private:
   bool ReadHash(QuicDataReader* reader, uint128* hash);

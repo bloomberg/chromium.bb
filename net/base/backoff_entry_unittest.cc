@@ -23,11 +23,9 @@ class TestBackoffEntry : public BackoffEntry {
     SetCustomReleaseTime(TimeTicks());
   }
 
-  virtual ~TestBackoffEntry() {}
+  ~TestBackoffEntry() override {}
 
-  virtual TimeTicks ImplGetTimeNow() const override {
-    return now_;
-  }
+  TimeTicks ImplGetTimeNow() const override { return now_; }
 
   void set_now(const TimeTicks& now) {
     now_ = now;

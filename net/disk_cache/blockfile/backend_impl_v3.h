@@ -50,7 +50,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   BackendImplV3(const base::FilePath& path,
                 const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
                 net::NetLog* net_log);
-  virtual ~BackendImplV3();
+  ~BackendImplV3() override;
 
   // Performs general initialization for this current instance of the cache.
   int Init(const CompletionCallback& callback);
@@ -172,23 +172,25 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   int SelfCheck();
 
   // Backend implementation.
-  virtual net::CacheType GetCacheType() const override;
-  virtual int32 GetEntryCount() const override;
-  virtual int OpenEntry(const std::string& key, Entry** entry,
-                        const CompletionCallback& callback) override;
-  virtual int CreateEntry(const std::string& key, Entry** entry,
-                          const CompletionCallback& callback) override;
-  virtual int DoomEntry(const std::string& key,
-                        const CompletionCallback& callback) override;
-  virtual int DoomAllEntries(const CompletionCallback& callback) override;
-  virtual int DoomEntriesBetween(base::Time initial_time,
-                                 base::Time end_time,
-                                 const CompletionCallback& callback) override;
-  virtual int DoomEntriesSince(base::Time initial_time,
-                               const CompletionCallback& callback) override;
-  virtual scoped_ptr<Iterator> CreateIterator() override;
-  virtual void GetStats(StatsItems* stats) override;
-  virtual void OnExternalCacheHit(const std::string& key) override;
+  net::CacheType GetCacheType() const override;
+  int32 GetEntryCount() const override;
+  int OpenEntry(const std::string& key,
+                Entry** entry,
+                const CompletionCallback& callback) override;
+  int CreateEntry(const std::string& key,
+                  Entry** entry,
+                  const CompletionCallback& callback) override;
+  int DoomEntry(const std::string& key,
+                const CompletionCallback& callback) override;
+  int DoomAllEntries(const CompletionCallback& callback) override;
+  int DoomEntriesBetween(base::Time initial_time,
+                         base::Time end_time,
+                         const CompletionCallback& callback) override;
+  int DoomEntriesSince(base::Time initial_time,
+                       const CompletionCallback& callback) override;
+  scoped_ptr<Iterator> CreateIterator() override;
+  void GetStats(StatsItems* stats) override;
+  void OnExternalCacheHit(const std::string& key) override;
 
  private:
   friend class EvictionV3;

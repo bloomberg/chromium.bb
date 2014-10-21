@@ -104,7 +104,7 @@ class NET_EXPORT IOBufferWithSize : public IOBuffer {
   // constructor IOBuffer(char*) thus allowing subclass to use underlying
   // memory it does not own.
   IOBufferWithSize(char* data, int size);
-  virtual ~IOBufferWithSize();
+  ~IOBufferWithSize() override;
 
   int size_;
 };
@@ -119,7 +119,7 @@ class NET_EXPORT StringIOBuffer : public IOBuffer {
   int size() const { return static_cast<int>(string_data_.size()); }
 
  private:
-  virtual ~StringIOBuffer();
+  ~StringIOBuffer() override;
 
   std::string string_data_;
 };
@@ -162,7 +162,7 @@ class NET_EXPORT DrainableIOBuffer : public IOBuffer {
   int size() const { return size_; }
 
  private:
-  virtual ~DrainableIOBuffer();
+  ~DrainableIOBuffer() override;
 
   scoped_refptr<IOBuffer> base_;
   int size_;
@@ -202,7 +202,7 @@ class NET_EXPORT GrowableIOBuffer : public IOBuffer {
   char* StartOfBuffer();
 
  private:
-  virtual ~GrowableIOBuffer();
+  ~GrowableIOBuffer() override;
 
   scoped_ptr<char, base::FreeDeleter> real_data_;
   int capacity_;
@@ -222,7 +222,7 @@ class NET_EXPORT PickledIOBuffer : public IOBuffer {
   void Done();
 
  private:
-  virtual ~PickledIOBuffer();
+  ~PickledIOBuffer() override;
 
   Pickle pickle_;
 };
@@ -237,7 +237,7 @@ class NET_EXPORT WrappedIOBuffer : public IOBuffer {
   explicit WrappedIOBuffer(const char* data);
 
  protected:
-  virtual ~WrappedIOBuffer();
+  ~WrappedIOBuffer() override;
 };
 
 }  // namespace net

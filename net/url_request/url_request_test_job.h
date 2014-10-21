@@ -108,19 +108,15 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   static URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler();
 
   // Job functions
-  virtual void SetPriority(RequestPriority priority) override;
-  virtual void Start() override;
-  virtual bool ReadRawData(IOBuffer* buf,
-                           int buf_size,
-                           int *bytes_read) override;
-  virtual void Kill() override;
-  virtual bool GetMimeType(std::string* mime_type) const override;
-  virtual void GetResponseInfo(HttpResponseInfo* info) override;
-  virtual void GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override;
-  virtual int GetResponseCode() const override;
-  virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) override;
+  void SetPriority(RequestPriority priority) override;
+  void Start() override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  void Kill() override;
+  bool GetMimeType(std::string* mime_type) const override;
+  void GetResponseInfo(HttpResponseInfo* info) override;
+  void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  int GetResponseCode() const override;
+  bool IsRedirectResponse(GURL* location, int* http_status_code) override;
 
  protected:
   // Override to specify whether the next read done from this job will
@@ -133,7 +129,7 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
   // When the stage is DONE, this job will not be put on the queue.
   enum Stage { WAITING, DATA_AVAILABLE, ALL_DATA, DONE };
 
-  virtual ~URLRequestTestJob();
+  ~URLRequestTestJob() override;
 
   // Call to process the next opeation, usually sending a notification, and
   // advancing the stage if necessary. THIS MAY DELETE THE OBJECT.

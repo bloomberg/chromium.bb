@@ -208,13 +208,13 @@ typedef std::vector<MockDnsClientRule> MockDnsClientRuleList;
 class MockDnsClient : public DnsClient {
  public:
   MockDnsClient(const DnsConfig& config, const MockDnsClientRuleList& rules);
-  virtual ~MockDnsClient();
+  ~MockDnsClient() override;
 
   // DnsClient interface:
-  virtual void SetConfig(const DnsConfig& config) override;
-  virtual const DnsConfig* GetConfig() const override;
-  virtual DnsTransactionFactory* GetTransactionFactory() override;
-  virtual AddressSorter* GetAddressSorter() override;
+  void SetConfig(const DnsConfig& config) override;
+  const DnsConfig* GetConfig() const override;
+  DnsTransactionFactory* GetTransactionFactory() override;
+  AddressSorter* GetAddressSorter() override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();

@@ -87,7 +87,7 @@ typedef internal::TestCompletionCallbackTemplate<int64>
 class TestCompletionCallback : public TestCompletionCallbackBase {
  public:
   TestCompletionCallback();
-  virtual ~TestCompletionCallback();
+  ~TestCompletionCallback() override;
 
   const CompletionCallback& callback() const { return callback_; }
 
@@ -100,7 +100,7 @@ class TestCompletionCallback : public TestCompletionCallbackBase {
 class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
  public:
   TestInt64CompletionCallback();
-  virtual ~TestInt64CompletionCallback();
+  ~TestInt64CompletionCallback() override;
 
   const Int64CompletionCallback& callback() const { return callback_; }
 
@@ -114,10 +114,10 @@ class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
 class ReleaseBufferCompletionCallback: public TestCompletionCallback {
  public:
   explicit ReleaseBufferCompletionCallback(IOBuffer* buffer);
-  virtual ~ReleaseBufferCompletionCallback();
+  ~ReleaseBufferCompletionCallback() override;
 
  private:
-  virtual void SetResult(int result) override;
+  void SetResult(int result) override;
 
   IOBuffer* buffer_;
   DISALLOW_COPY_AND_ASSIGN(ReleaseBufferCompletionCallback);

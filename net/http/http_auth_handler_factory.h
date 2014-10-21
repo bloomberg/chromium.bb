@@ -130,7 +130,7 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
     : public HttpAuthHandlerFactory {
  public:
   HttpAuthHandlerRegistryFactory();
-  virtual ~HttpAuthHandlerRegistryFactory();
+  ~HttpAuthHandlerRegistryFactory() override;
 
   // Sets an URL security manager into the factory associated with |scheme|.
   void SetURLSecurityManager(const std::string& scheme,
@@ -183,13 +183,13 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
 
   // Creates an auth handler by dispatching out to the registered factories
   // based on the first token in |challenge|.
-  virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
-                                HttpAuth::Target target,
-                                const GURL& origin,
-                                CreateReason reason,
-                                int digest_nonce_count,
-                                const BoundNetLog& net_log,
-                                scoped_ptr<HttpAuthHandler>* handler) override;
+  int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
+                        HttpAuth::Target target,
+                        const GURL& origin,
+                        CreateReason reason,
+                        int digest_nonce_count,
+                        const BoundNetLog& net_log,
+                        scoped_ptr<HttpAuthHandler>* handler) override;
 
  private:
   typedef std::map<std::string, HttpAuthHandlerFactory*> FactoryMap;

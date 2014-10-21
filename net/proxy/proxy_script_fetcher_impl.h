@@ -36,7 +36,7 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
   // fetcher and the context; you can break such cycles by calling Cancel().
   explicit ProxyScriptFetcherImpl(URLRequestContext* url_request_context);
 
-  virtual ~ProxyScriptFetcherImpl();
+  ~ProxyScriptFetcherImpl() override;
 
   // Used by unit-tests to modify the default limits.
   base::TimeDelta SetTimeoutConstraint(base::TimeDelta timeout);
@@ -45,19 +45,20 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
   void OnResponseCompleted(URLRequest* request);
 
   // ProxyScriptFetcher methods:
-  virtual int Fetch(const GURL& url, base::string16* text,
-                    const net::CompletionCallback& callback) override;
-  virtual void Cancel() override;
-  virtual URLRequestContext* GetRequestContext() const override;
+  int Fetch(const GURL& url,
+            base::string16* text,
+            const net::CompletionCallback& callback) override;
+  void Cancel() override;
+  URLRequestContext* GetRequestContext() const override;
 
   // URLRequest::Delegate methods:
-  virtual void OnAuthRequired(URLRequest* request,
-                              AuthChallengeInfo* auth_info) override;
-  virtual void OnSSLCertificateError(URLRequest* request,
-                                     const SSLInfo& ssl_info,
-                                     bool is_hsts_ok) override;
-  virtual void OnResponseStarted(URLRequest* request) override;
-  virtual void OnReadCompleted(URLRequest* request, int num_bytes) override;
+  void OnAuthRequired(URLRequest* request,
+                      AuthChallengeInfo* auth_info) override;
+  void OnSSLCertificateError(URLRequest* request,
+                             const SSLInfo& ssl_info,
+                             bool is_hsts_ok) override;
+  void OnResponseStarted(URLRequest* request) override;
+  void OnReadCompleted(URLRequest* request, int num_bytes) override;
 
  private:
   enum { kBufSize = 4096 };

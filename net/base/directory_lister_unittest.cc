@@ -27,15 +27,14 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
         quit_loop_after_each_file_(quit_loop_after_each_file) {
   }
 
-  virtual void OnListFile(
-      const DirectoryLister::DirectoryListerData& data) override {
+  void OnListFile(const DirectoryLister::DirectoryListerData& data) override {
     file_list_.push_back(data.info);
     paths_.push_back(data.path);
     if (quit_loop_after_each_file_)
       base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnListDone(int error) override {
+  void OnListDone(int error) override {
     error_ = error;
     base::MessageLoop::current()->Quit();
     if (recursive_)

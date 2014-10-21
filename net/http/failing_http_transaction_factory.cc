@@ -29,43 +29,38 @@ namespace {
 class FailingHttpTransaction : public HttpTransaction {
  public:
   explicit FailingHttpTransaction(Error error);
-  virtual ~FailingHttpTransaction();
+  ~FailingHttpTransaction() override;
 
   // HttpTransaction
-  virtual int Start(const HttpRequestInfo* request_info,
-                    const CompletionCallback& callback,
-                    const BoundNetLog& net_log) override;
-  virtual int RestartIgnoringLastError(
-      const CompletionCallback& callback) override;
-  virtual int RestartWithCertificate(
-      X509Certificate* client_cert,
-      const CompletionCallback& callback) override;
-  virtual int RestartWithAuth(
-      const AuthCredentials& credentials,
-      const CompletionCallback& callback) override;
-  virtual bool IsReadyToRestartForAuth() override;
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) override;
-  virtual void StopCaching() override;
-  virtual bool GetFullRequestHeaders(
-      HttpRequestHeaders* headers) const override;
-  virtual int64 GetTotalReceivedBytes() const override;
-  virtual void DoneReading() override;
-  virtual const HttpResponseInfo* GetResponseInfo() const override;
-  virtual LoadState GetLoadState() const override;
-  virtual UploadProgress GetUploadProgress() const override;
-  virtual void SetQuicServerInfo(
-      net::QuicServerInfo* quic_server_info) override;
-  virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override;
-  virtual void SetPriority(RequestPriority priority) override;
-  virtual void SetWebSocketHandshakeStreamCreateHelper(
+  int Start(const HttpRequestInfo* request_info,
+            const CompletionCallback& callback,
+            const BoundNetLog& net_log) override;
+  int RestartIgnoringLastError(const CompletionCallback& callback) override;
+  int RestartWithCertificate(X509Certificate* client_cert,
+                             const CompletionCallback& callback) override;
+  int RestartWithAuth(const AuthCredentials& credentials,
+                      const CompletionCallback& callback) override;
+  bool IsReadyToRestartForAuth() override;
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override;
+  void StopCaching() override;
+  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
+  int64 GetTotalReceivedBytes() const override;
+  void DoneReading() override;
+  const HttpResponseInfo* GetResponseInfo() const override;
+  LoadState GetLoadState() const override;
+  UploadProgress GetUploadProgress() const override;
+  void SetQuicServerInfo(net::QuicServerInfo* quic_server_info) override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  void SetPriority(RequestPriority priority) override;
+  void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
-  virtual void SetBeforeNetworkStartCallback(
+  void SetBeforeNetworkStartCallback(
       const BeforeNetworkStartCallback& callback) override;
-  virtual void SetBeforeProxyHeadersSentCallback(
+  void SetBeforeProxyHeadersSentCallback(
       const BeforeProxyHeadersSentCallback& callback) override;
-  virtual int ResumeNetworkStart() override;
+  int ResumeNetworkStart() override;
 
  private:
   Error error_;

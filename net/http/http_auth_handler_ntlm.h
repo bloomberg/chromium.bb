@@ -39,16 +39,15 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   class Factory : public HttpAuthHandlerFactory {
    public:
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
-    virtual int CreateAuthHandler(
-        HttpAuthChallengeTokenizer* challenge,
-        HttpAuth::Target target,
-        const GURL& origin,
-        CreateReason reason,
-        int digest_nonce_count,
-        const BoundNetLog& net_log,
-        scoped_ptr<HttpAuthHandler>* handler) override;
+    int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
+                          HttpAuth::Target target,
+                          const GURL& origin,
+                          CreateReason reason,
+                          int digest_nonce_count,
+                          const BoundNetLog& net_log,
+                          scoped_ptr<HttpAuthHandler>* handler) override;
 #if defined(NTLM_SSPI)
     // Set the SSPILibrary to use. Typically the only callers which need to use
     // this are unit tests which pass in a mocked-out version of the SSPI
@@ -104,11 +103,11 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
                       URLSecurityManager* url_security_manager);
 #endif
 
-  virtual bool NeedsIdentity() override;
+  bool NeedsIdentity() override;
 
-  virtual bool AllowsDefaultCredentials() override;
+  bool AllowsDefaultCredentials() override;
 
-  virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
+  HttpAuth::AuthorizationResult HandleAnotherChallenge(
       HttpAuthChallengeTokenizer* challenge) override;
 
  protected:
@@ -116,15 +115,15 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   // It does nothing in the portable implementation.
   int InitializeBeforeFirstChallenge();
 
-  virtual bool Init(HttpAuthChallengeTokenizer* tok) override;
+  bool Init(HttpAuthChallengeTokenizer* tok) override;
 
-  virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
-                                    const HttpRequestInfo* request,
-                                    const CompletionCallback& callback,
-                                    std::string* auth_token) override;
+  int GenerateAuthTokenImpl(const AuthCredentials* credentials,
+                            const HttpRequestInfo* request,
+                            const CompletionCallback& callback,
+                            std::string* auth_token) override;
 
  private:
-  virtual ~HttpAuthHandlerNTLM();
+  ~HttpAuthHandlerNTLM() override;
 
 #if defined(NTLM_PORTABLE)
   // For unit tests to override the GenerateRandom and GetHostName functions.

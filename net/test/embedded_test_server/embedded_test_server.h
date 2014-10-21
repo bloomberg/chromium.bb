@@ -35,7 +35,7 @@ class HttpListenSocket : public TCPListenSocket {
  public:
   HttpListenSocket(const SocketDescriptor socket_descriptor,
                    StreamListenSocket::Delegate* delegate);
-  virtual ~HttpListenSocket();
+  ~HttpListenSocket() override;
   virtual void Listen();
 
   // Listen on the current IO thread. If the IO thread has changed since this
@@ -106,7 +106,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   // Creates a http test server. InitializeAndWaitUntilReady() must be called
   // to start the server.
   EmbeddedTestServer();
-  virtual ~EmbeddedTestServer();
+  ~EmbeddedTestServer() override;
 
   // Initializes and waits until the server is ready to accept requests.
   bool InitializeAndWaitUntilReady() WARN_UNUSED_RESULT;
@@ -166,12 +166,12 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
                      scoped_ptr<HttpRequest> request);
 
   // StreamListenSocket::Delegate overrides:
-  virtual void DidAccept(StreamListenSocket* server,
-                         scoped_ptr<StreamListenSocket> connection) override;
-  virtual void DidRead(StreamListenSocket* connection,
-                       const char* data,
-                       int length) override;
-  virtual void DidClose(StreamListenSocket* connection) override;
+  void DidAccept(StreamListenSocket* server,
+                 scoped_ptr<StreamListenSocket> connection) override;
+  void DidRead(StreamListenSocket* connection,
+               const char* data,
+               int length) override;
+  void DidClose(StreamListenSocket* connection) override;
 
   HttpConnection* FindConnection(StreamListenSocket* socket);
 

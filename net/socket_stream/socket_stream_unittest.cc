@@ -59,7 +59,7 @@ class SocketStreamEventRecorder : public SocketStream::Delegate {
   // with the error code.
   explicit SocketStreamEventRecorder(const CompletionCallback& callback)
       : callback_(callback) {}
-  virtual ~SocketStreamEventRecorder() {}
+  ~SocketStreamEventRecorder() override {}
 
   void SetOnStartOpenConnection(
       const base::Callback<int(SocketStreamEvent*)>& callback) {
@@ -88,9 +88,8 @@ class SocketStreamEventRecorder : public SocketStream::Delegate {
     on_error_ = callback;
   }
 
-  virtual int OnStartOpenConnection(
-      SocketStream* socket,
-      const CompletionCallback& callback) override {
+  int OnStartOpenConnection(SocketStream* socket,
+                            const CompletionCallback& callback) override {
     connection_callback_ = callback;
     events_.push_back(
         SocketStreamEvent(SocketStreamEvent::EVENT_START_OPEN_CONNECTION,
@@ -99,8 +98,8 @@ class SocketStreamEventRecorder : public SocketStream::Delegate {
       return on_start_open_connection_.Run(&events_.back());
     return OK;
   }
-  virtual void OnConnected(SocketStream* socket,
-                           int num_pending_send_allowed) override {
+  void OnConnected(SocketStream* socket,
+                   int num_pending_send_allowed) override {
     events_.push_back(
         SocketStreamEvent(SocketStreamEvent::EVENT_CONNECTED,
                           socket, num_pending_send_allowed, std::string(),
@@ -108,23 +107,23 @@ class SocketStreamEventRecorder : public SocketStream::Delegate {
     if (!on_connected_.is_null())
       on_connected_.Run(&events_.back());
   }
-  virtual void OnSentData(SocketStream* socket,
-                          int amount_sent) override {
+  void OnSentData(SocketStream* socket, int amount_sent) override {
     events_.push_back(
         SocketStreamEvent(SocketStreamEvent::EVENT_SENT_DATA, socket,
                           amount_sent, std::string(), NULL, OK));
     if (!on_sent_data_.is_null())
       on_sent_data_.Run(&events_.back());
   }
-  virtual void OnReceivedData(SocketStream* socket,
-                              const char* data, int len) override {
+  void OnReceivedData(SocketStream* socket,
+                      const char* data,
+                      int len) override {
     events_.push_back(
         SocketStreamEvent(SocketStreamEvent::EVENT_RECEIVED_DATA, socket, len,
                           std::string(data, len), NULL, OK));
     if (!on_received_data_.is_null())
       on_received_data_.Run(&events_.back());
   }
-  virtual void OnClose(SocketStream* socket) override {
+  void OnClose(SocketStream* socket) override {
     events_.push_back(
         SocketStreamEvent(SocketStreamEvent::EVENT_CLOSE, socket, 0,
                           std::string(), NULL, OK));
@@ -133,15 +132,15 @@ class SocketStreamEventRecorder : public SocketStream::Delegate {
     if (!callback_.is_null())
       callback_.Run(OK);
   }
-  virtual void OnAuthRequired(SocketStream* socket,
-                              AuthChallengeInfo* auth_info) override {
+  void OnAuthRequired(SocketStream* socket,
+                      AuthChallengeInfo* auth_info) override {
     events_.push_back(
         SocketStreamEvent(SocketStreamEvent::EVENT_AUTH_REQUIRED, socket, 0,
                           std::string(), auth_info, OK));
     if (!on_auth_required_.is_null())
       on_auth_required_.Run(&events_.back());
   }
-  virtual void OnError(const SocketStream* socket, int error) override {
+  void OnError(const SocketStream* socket, int error) override {
     events_.push_back(
         SocketStreamEvent(SocketStreamEvent::EVENT_ERROR, NULL, 0,
                           std::string(), NULL, error));
@@ -195,10 +194,10 @@ class SelfDeletingDelegate : public SocketStream::Delegate {
   explicit SelfDeletingDelegate(const CompletionCallback& callback)
       : socket_stream_(), callback_(callback) {}
 
-  virtual ~SelfDeletingDelegate() {}
+  ~SelfDeletingDelegate() override {}
 
   // Call DetachDelegate(), delete |this|, then run the callback.
-  virtual void OnError(const SocketStream* socket, int error) override {
+  void OnError(const SocketStream* socket, int error) override {
     // callback_ will be deleted when we delete |this|, so copy it to call it
     // afterwards.
     CompletionCallback callback = callback_;
@@ -214,18 +213,19 @@ class SelfDeletingDelegate : public SocketStream::Delegate {
     EXPECT_EQ(socket_stream_->delegate(), this);
   }
 
-  virtual void OnConnected(SocketStream* socket, int max_pending_send_allowed)
-      override {
+  void OnConnected(SocketStream* socket,
+                   int max_pending_send_allowed) override {
     ADD_FAILURE() << "OnConnected() should not be called";
   }
-  virtual void OnSentData(SocketStream* socket, int amount_sent) override {
+  void OnSentData(SocketStream* socket, int amount_sent) override {
     ADD_FAILURE() << "OnSentData() should not be called";
   }
-  virtual void OnReceivedData(SocketStream* socket, const char* data, int len)
-      override {
+  void OnReceivedData(SocketStream* socket,
+                      const char* data,
+                      int len) override {
     ADD_FAILURE() << "OnReceivedData() should not be called";
   }
-  virtual void OnClose(SocketStream* socket) override {
+  void OnClose(SocketStream* socket) override {
     ADD_FAILURE() << "OnClose() should not be called";
   }
 
@@ -243,18 +243,17 @@ class TestURLRequestContextWithProxy : public TestURLRequestContext {
     context_storage_.set_proxy_service(ProxyService::CreateFixed(proxy));
     Init();
   }
-  virtual ~TestURLRequestContextWithProxy() {}
+  ~TestURLRequestContextWithProxy() override {}
 };
 
 class TestSocketStreamNetworkDelegate : public TestNetworkDelegate {
  public:
   TestSocketStreamNetworkDelegate()
       : before_connect_result_(OK) {}
-  virtual ~TestSocketStreamNetworkDelegate() {}
+  ~TestSocketStreamNetworkDelegate() override {}
 
-  virtual int OnBeforeSocketStreamConnect(
-      SocketStream* stream,
-      const CompletionCallback& callback) override {
+  int OnBeforeSocketStreamConnect(SocketStream* stream,
+                                  const CompletionCallback& callback) override {
     return before_connect_result_;
   }
 

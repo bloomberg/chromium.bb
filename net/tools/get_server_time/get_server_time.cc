@@ -72,21 +72,22 @@ class QuitDelegate : public net::URLFetcherDelegate {
  public:
   QuitDelegate() {}
 
-  virtual ~QuitDelegate() {}
+  ~QuitDelegate() override {}
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
     base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnURLFetchDownloadProgress(
-      const net::URLFetcher* source,
-      int64 current, int64 total) override {
+  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                  int64 current,
+                                  int64 total) override {
     NOTREACHED();
   }
 
-  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) override {
+  void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                int64 current,
+                                int64 total) override {
     NOTREACHED();
   }
 
@@ -100,13 +101,13 @@ class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
   PrintingLogObserver() {}
 
-  virtual ~PrintingLogObserver() {
+  ~PrintingLogObserver() override {
     // This is guaranteed to be safe as this program is single threaded.
     net_log()->RemoveThreadSafeObserver(this);
   }
 
   // NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) override {
+  void OnAddEntry(const net::NetLog::Entry& entry) override {
     // The log level of the entry is unknown, so just assume it maps
     // to VLOG(1).
     if (!VLOG_IS_ON(1))

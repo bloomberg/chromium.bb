@@ -192,38 +192,35 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
 // This fake EventInterface is for tests which need a WebSocketEventInterface
 // implementation but are not verifying how it is used.
 class FakeWebSocketEventInterface : public WebSocketEventInterface {
-  virtual ChannelState OnAddChannelResponse(
-      bool fail,
-      const std::string& selected_protocol,
-      const std::string& extensions) override {
+  ChannelState OnAddChannelResponse(bool fail,
+                                    const std::string& selected_protocol,
+                                    const std::string& extensions) override {
     return fail ? CHANNEL_DELETED : CHANNEL_ALIVE;
   }
-  virtual ChannelState OnDataFrame(bool fin,
-                                   WebSocketMessageType type,
-                                   const std::vector<char>& data) override {
+  ChannelState OnDataFrame(bool fin,
+                           WebSocketMessageType type,
+                           const std::vector<char>& data) override {
     return CHANNEL_ALIVE;
   }
-  virtual ChannelState OnFlowControl(int64 quota) override {
-    return CHANNEL_ALIVE;
-  }
-  virtual ChannelState OnClosingHandshake() override { return CHANNEL_ALIVE; }
-  virtual ChannelState OnFailChannel(const std::string& message) override {
+  ChannelState OnFlowControl(int64 quota) override { return CHANNEL_ALIVE; }
+  ChannelState OnClosingHandshake() override { return CHANNEL_ALIVE; }
+  ChannelState OnFailChannel(const std::string& message) override {
     return CHANNEL_DELETED;
   }
-  virtual ChannelState OnDropChannel(bool was_clean,
-                                     uint16 code,
-                                     const std::string& reason) override {
+  ChannelState OnDropChannel(bool was_clean,
+                             uint16 code,
+                             const std::string& reason) override {
     return CHANNEL_DELETED;
   }
-  virtual ChannelState OnStartOpeningHandshake(
+  ChannelState OnStartOpeningHandshake(
       scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
     return CHANNEL_ALIVE;
   }
-  virtual ChannelState OnFinishOpeningHandshake(
+  ChannelState OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
     return CHANNEL_ALIVE;
   }
-  virtual ChannelState OnSSLCertificateError(
+  ChannelState OnSSLCertificateError(
       scoped_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
       const SSLInfo& ssl_info,
@@ -245,23 +242,23 @@ class FakeWebSocketStream : public WebSocketStream {
                       const std::string& extensions)
       : protocol_(protocol), extensions_(extensions) {}
 
-  virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
-                         const CompletionCallback& callback) override {
+  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+                 const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
-                          const CompletionCallback& callback) override {
+  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+                  const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual void Close() override {}
+  void Close() override {}
 
   // Returns the string passed to the constructor.
-  virtual std::string GetSubProtocol() const override { return protocol_; }
+  std::string GetSubProtocol() const override { return protocol_; }
 
   // Returns the string passed to the constructor.
-  virtual std::string GetExtensions() const override { return extensions_; }
+  std::string GetExtensions() const override { return extensions_; }
 
  private:
   // The string to return from GetSubProtocol().
@@ -456,7 +453,7 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
   ReadableFakeWebSocketStream() : index_(0), read_frames_pending_(false) {}
 
   // Check that all the prepared responses have been consumed.
-  virtual ~ReadableFakeWebSocketStream() {
+  ~ReadableFakeWebSocketStream() override {
     CHECK(index_ >= responses_.size());
     CHECK(!read_frames_pending_);
   }
@@ -492,8 +489,8 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
         new Response(async, error, ScopedVector<WebSocketFrame>()));
   }
 
-  virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
-                         const CompletionCallback& callback) override {
+  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+                 const CompletionCallback& callback) override {
     CHECK(!read_frames_pending_);
     if (index_ >= responses_.size())
       return ERR_IO_PENDING;
@@ -549,8 +546,8 @@ class ReadableFakeWebSocketStream : public FakeWebSocketStream {
 // synchronously.
 class WriteableFakeWebSocketStream : public FakeWebSocketStream {
  public:
-  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
-                          const CompletionCallback& callback) override {
+  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+                  const CompletionCallback& callback) override {
     return OK;
   }
 };
@@ -558,8 +555,8 @@ class WriteableFakeWebSocketStream : public FakeWebSocketStream {
 // A FakeWebSocketStream where writes always fail.
 class UnWriteableFakeWebSocketStream : public FakeWebSocketStream {
  public:
-  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
-                          const CompletionCallback& callback) override {
+  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+                  const CompletionCallback& callback) override {
     return ERR_CONNECTION_RESET;
   }
 };
@@ -574,8 +571,8 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
  public:
   EchoeyFakeWebSocketStream() : read_frames_(NULL), done_(false) {}
 
-  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
-                          const CompletionCallback& callback) override {
+  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+                  const CompletionCallback& callback) override {
     // Users of WebSocketStream will not expect the ReadFrames() callback to be
     // called from within WriteFrames(), so post it to the message loop instead.
     stored_frames_.insert(stored_frames_.end(), frames->begin(), frames->end());
@@ -584,8 +581,8 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
     return OK;
   }
 
-  virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
-                         const CompletionCallback& callback) override {
+  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+                 const CompletionCallback& callback) override {
     read_callback_ = callback;
     read_frames_ = frames;
     if (done_)
@@ -647,8 +644,8 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
  public:
   ResetOnWriteFakeWebSocketStream() : closed_(false), weak_ptr_factory_(this) {}
 
-  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
-                          const CompletionCallback& callback) override {
+  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+                  const CompletionCallback& callback) override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ResetOnWriteFakeWebSocketStream::CallCallbackUnlessClosed,
@@ -664,13 +661,13 @@ class ResetOnWriteFakeWebSocketStream : public FakeWebSocketStream {
     return ERR_IO_PENDING;
   }
 
-  virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
-                         const CompletionCallback& callback) override {
+  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+                 const CompletionCallback& callback) override {
     read_callback_ = callback;
     return ERR_IO_PENDING;
   }
 
-  virtual void Close() override { closed_ = true; }
+  void Close() override { closed_ = true; }
 
  private:
   void CallCallbackUnlessClosed(const CompletionCallback& callback, int value) {
@@ -736,8 +733,8 @@ std::vector<char> AsVector(const std::string& s) {
 class FakeSSLErrorCallbacks
     : public WebSocketEventInterface::SSLErrorCallbacks {
  public:
-  virtual void CancelSSLRequest(int error, const SSLInfo* ssl_info) override {}
-  virtual void ContinueSSLRequest() override {}
+  void CancelSSLRequest(int error, const SSLInfo* ssl_info) override {}
+  void ContinueSSLRequest() override {}
 };
 
 // Base class for all test fixtures.
@@ -847,7 +844,7 @@ class WebSocketChannelDeletingTest : public WebSocketChannelTest {
                   EVENT_ON_SSL_CERTIFICATE_ERROR) {}
   // Create a ChannelDeletingFakeWebSocketEventInterface. Defined out-of-line to
   // avoid circular dependency.
-  virtual scoped_ptr<WebSocketEventInterface> CreateEventInterface() override;
+  scoped_ptr<WebSocketEventInterface> CreateEventInterface() override;
 
   // Tests can set deleting_ to a bitmap of EventInterfaceCall members that they
   // want to cause Channel deletion. The default is for all calls to cause
@@ -864,46 +861,45 @@ class ChannelDeletingFakeWebSocketEventInterface
       WebSocketChannelDeletingTest* fixture)
       : fixture_(fixture) {}
 
-  virtual ChannelState OnAddChannelResponse(
-      bool fail,
-      const std::string& selected_protocol,
-      const std::string& extensions) override {
+  ChannelState OnAddChannelResponse(bool fail,
+                                    const std::string& selected_protocol,
+                                    const std::string& extensions) override {
     return fixture_->DeleteIfDeleting(EVENT_ON_ADD_CHANNEL_RESPONSE);
   }
 
-  virtual ChannelState OnDataFrame(bool fin,
-                                   WebSocketMessageType type,
-                                   const std::vector<char>& data) override {
+  ChannelState OnDataFrame(bool fin,
+                           WebSocketMessageType type,
+                           const std::vector<char>& data) override {
     return fixture_->DeleteIfDeleting(EVENT_ON_DATA_FRAME);
   }
 
-  virtual ChannelState OnFlowControl(int64 quota) override {
+  ChannelState OnFlowControl(int64 quota) override {
     return fixture_->DeleteIfDeleting(EVENT_ON_FLOW_CONTROL);
   }
 
-  virtual ChannelState OnClosingHandshake() override {
+  ChannelState OnClosingHandshake() override {
     return fixture_->DeleteIfDeleting(EVENT_ON_CLOSING_HANDSHAKE);
   }
 
-  virtual ChannelState OnFailChannel(const std::string& message) override {
+  ChannelState OnFailChannel(const std::string& message) override {
     return fixture_->DeleteIfDeleting(EVENT_ON_FAIL_CHANNEL);
   }
 
-  virtual ChannelState OnDropChannel(bool was_clean,
-                                     uint16 code,
-                                     const std::string& reason) override {
+  ChannelState OnDropChannel(bool was_clean,
+                             uint16 code,
+                             const std::string& reason) override {
     return fixture_->DeleteIfDeleting(EVENT_ON_DROP_CHANNEL);
   }
 
-  virtual ChannelState OnStartOpeningHandshake(
+  ChannelState OnStartOpeningHandshake(
       scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
     return fixture_->DeleteIfDeleting(EVENT_ON_START_OPENING_HANDSHAKE);
   }
-  virtual ChannelState OnFinishOpeningHandshake(
+  ChannelState OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
     return fixture_->DeleteIfDeleting(EVENT_ON_FINISH_OPENING_HANDSHAKE);
   }
-  virtual ChannelState OnSSLCertificateError(
+  ChannelState OnSSLCertificateError(
       scoped_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
       const SSLInfo& ssl_info,
@@ -946,7 +942,7 @@ class WebSocketChannelEventInterfaceTest : public WebSocketChannelTest {
   // object before calling CreateChannelAndConnect() or
   // CreateChannelAndConnectSuccessfully(). This will only work once per test
   // case, but once should be enough.
-  virtual scoped_ptr<WebSocketEventInterface> CreateEventInterface() override {
+  scoped_ptr<WebSocketEventInterface> CreateEventInterface() override {
     return scoped_ptr<WebSocketEventInterface>(event_interface_.release());
   }
 
@@ -960,7 +956,7 @@ class WebSocketChannelStreamTest : public WebSocketChannelTest {
   WebSocketChannelStreamTest()
       : mock_stream_(new StrictMock<MockWebSocketStream>) {}
 
-  virtual void CreateChannelAndConnectSuccessfully() override {
+  void CreateChannelAndConnectSuccessfully() override {
     set_stream(mock_stream_.Pass());
     WebSocketChannelTest::CreateChannelAndConnectSuccessfully();
   }
@@ -3314,7 +3310,7 @@ class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
  protected:
   WebSocketChannelStreamTimeoutTest() {}
 
-  virtual void CreateChannelAndConnectSuccessfully() override {
+  void CreateChannelAndConnectSuccessfully() override {
     set_stream(mock_stream_.Pass());
     CreateChannelAndConnect();
     channel_->SendFlowControl(kPlentyOfQuota);

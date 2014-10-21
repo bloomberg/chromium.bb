@@ -121,7 +121,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
     : public QuicPacketGenerator::DebugDelegate,
       public QuicSentPacketManager::DebugDelegate {
  public:
-  virtual ~QuicConnectionDebugVisitor() {}
+  ~QuicConnectionDebugVisitor() override {}
 
   // Called when a packet has been sent.
   virtual void OnPacketSent(const SerializedPacket& serialized_packet,
@@ -252,7 +252,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                  bool owns_writer,
                  bool is_server,
                  const QuicVersionVector& supported_versions);
-  virtual ~QuicConnection();
+  ~QuicConnection() override;
 
   // Sets connection parameters from the supplied |config|.
   void SetFromConfig(const QuicConfig& config);
@@ -299,7 +299,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void SendConnectionCloseWithDetails(QuicErrorCode error,
                                               const std::string& details);
   // Notifies the visitor of the close and marks the connection as disconnected.
-  virtual void CloseConnection(QuicErrorCode error, bool from_peer) override;
+  void CloseConnection(QuicErrorCode error, bool from_peer) override;
   virtual void SendGoAway(QuicErrorCode error,
                           QuicStreamId last_good_stream_id,
                           const std::string& reason);
@@ -317,7 +317,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // QuicBlockedWriterInterface
   // Called when the underlying connection becomes writable to allow queued
   // writes to happen.
-  virtual void OnCanWrite() override;
+  void OnCanWrite() override;
 
   // Called when an error occurs while attempting to write a packet to the
   // network.
@@ -335,47 +335,44 @@ class NET_EXPORT_PRIVATE QuicConnection
   }
 
   // From QuicFramerVisitorInterface
-  virtual void OnError(QuicFramer* framer) override;
-  virtual bool OnProtocolVersionMismatch(QuicVersion received_version) override;
-  virtual void OnPacket() override;
-  virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& packet) override;
-  virtual void OnVersionNegotiationPacket(
+  void OnError(QuicFramer* framer) override;
+  bool OnProtocolVersionMismatch(QuicVersion received_version) override;
+  void OnPacket() override;
+  void OnPublicResetPacket(const QuicPublicResetPacket& packet) override;
+  void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override;
-  virtual void OnRevivedPacket() override;
-  virtual bool OnUnauthenticatedPublicHeader(
+  void OnRevivedPacket() override;
+  bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header) override;
-  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
-  virtual void OnDecryptedPacket(EncryptionLevel level) override;
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) override;
-  virtual void OnFecProtectedPayload(base::StringPiece payload) override;
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame) override;
-  virtual bool OnAckFrame(const QuicAckFrame& frame) override;
-  virtual bool OnCongestionFeedbackFrame(
+  bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
+  void OnDecryptedPacket(EncryptionLevel level) override;
+  bool OnPacketHeader(const QuicPacketHeader& header) override;
+  void OnFecProtectedPayload(base::StringPiece payload) override;
+  bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool OnAckFrame(const QuicAckFrame& frame) override;
+  bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) override;
-  virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
-  virtual bool OnPingFrame(const QuicPingFrame& frame) override;
-  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
-  virtual bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) override;
-  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
-  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
-  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
-  virtual void OnFecData(const QuicFecData& fec) override;
-  virtual void OnPacketComplete() override;
+  bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
+  bool OnPingFrame(const QuicPingFrame& frame) override;
+  bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
+  bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
+  bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
+  bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
+  bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  void OnFecData(const QuicFecData& fec) override;
+  void OnPacketComplete() override;
 
   // QuicPacketGenerator::DelegateInterface
-  virtual bool ShouldGeneratePacket(TransmissionType transmission_type,
-                                    HasRetransmittableData retransmittable,
-                                    IsHandshake handshake) override;
-  virtual QuicAckFrame* CreateAckFrame() override;
-  virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() override;
-  virtual QuicStopWaitingFrame* CreateStopWaitingFrame() override;
-  virtual void OnSerializedPacket(const SerializedPacket& packet) override;
+  bool ShouldGeneratePacket(TransmissionType transmission_type,
+                            HasRetransmittableData retransmittable,
+                            IsHandshake handshake) override;
+  QuicAckFrame* CreateAckFrame() override;
+  QuicCongestionFeedbackFrame* CreateFeedbackFrame() override;
+  QuicStopWaitingFrame* CreateStopWaitingFrame() override;
+  void OnSerializedPacket(const SerializedPacket& packet) override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
-  virtual void OnCongestionWindowChange(
-      QuicByteCount congestion_window) override;
+  void OnCongestionWindowChange(QuicByteCount congestion_window) override;
 
   // Called by the crypto stream when the handshake completes. In the server's
   // case this is when the SHLO has been ACKed. Clients call this on receipt of

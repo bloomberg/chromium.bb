@@ -122,15 +122,13 @@ class URLFetcherCore
                              base::FilePath* out_response_path);
 
   // Overridden from URLRequest::Delegate:
-  virtual void OnReceivedRedirect(URLRequest* request,
-                                  const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override;
-  virtual void OnResponseStarted(URLRequest* request) override;
-  virtual void OnReadCompleted(URLRequest* request,
-                               int bytes_read) override;
-  virtual void OnCertificateRequested(
-      URLRequest* request,
-      SSLCertRequestInfo* cert_request_info) override;
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
+  void OnResponseStarted(URLRequest* request) override;
+  void OnReadCompleted(URLRequest* request, int bytes_read) override;
+  void OnCertificateRequested(URLRequest* request,
+                              SSLCertRequestInfo* cert_request_info) override;
 
   URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
@@ -161,7 +159,7 @@ class URLFetcherCore
     DISALLOW_COPY_AND_ASSIGN(Registry);
   };
 
-  virtual ~URLFetcherCore();
+  ~URLFetcherCore() override;
 
   // Wrapper functions that allow us to ensure actions happen on the right
   // thread.

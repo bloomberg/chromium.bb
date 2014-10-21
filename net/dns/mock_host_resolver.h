@@ -55,7 +55,7 @@ class MockHostResolverBase : public HostResolver,
                              public base::SupportsWeakPtr<MockHostResolverBase>,
                              public base::NonThreadSafe {
  public:
-  virtual ~MockHostResolverBase();
+  ~MockHostResolverBase() override;
 
   RuleBasedHostResolverProc* rules() { return rules_.get(); }
   void set_rules(RuleBasedHostResolverProc* rules) { rules_ = rules; }
@@ -74,17 +74,17 @@ class MockHostResolverBase : public HostResolver,
   }
 
   // HostResolver methods:
-  virtual int Resolve(const RequestInfo& info,
-                      RequestPriority priority,
-                      AddressList* addresses,
-                      const CompletionCallback& callback,
-                      RequestHandle* out_req,
-                      const BoundNetLog& net_log) override;
-  virtual int ResolveFromCache(const RequestInfo& info,
-                               AddressList* addresses,
-                               const BoundNetLog& net_log) override;
-  virtual void CancelRequest(RequestHandle req) override;
-  virtual HostCache* GetHostCache() override;
+  int Resolve(const RequestInfo& info,
+              RequestPriority priority,
+              AddressList* addresses,
+              const CompletionCallback& callback,
+              RequestHandle* out_req,
+              const BoundNetLog& net_log) override;
+  int ResolveFromCache(const RequestInfo& info,
+                       AddressList* addresses,
+                       const BoundNetLog& net_log) override;
+  void CancelRequest(RequestHandle req) override;
+  HostCache* GetHostCache() override;
 
   // Resolves all pending requests. It is only valid to invoke this if
   // set_ondemand_mode was set before. The requests are resolved asynchronously,
@@ -144,7 +144,7 @@ class MockHostResolverBase : public HostResolver,
 class MockHostResolver : public MockHostResolverBase {
  public:
   MockHostResolver() : MockHostResolverBase(false /*use_caching*/) {}
-  virtual ~MockHostResolver() {}
+  ~MockHostResolver() override {}
 };
 
 // Same as MockHostResolver, except internally it uses a host-cache.
@@ -155,7 +155,7 @@ class MockHostResolver : public MockHostResolverBase {
 class MockCachingHostResolver : public MockHostResolverBase {
  public:
   MockCachingHostResolver() : MockHostResolverBase(true /*use_caching*/) {}
-  virtual ~MockCachingHostResolver() {}
+  ~MockCachingHostResolver() override {}
 };
 
 // RuleBasedHostResolverProc applies a set of rules to map a host string to
@@ -202,17 +202,17 @@ class RuleBasedHostResolverProc : public HostResolverProc {
   void ClearRules();
 
   // HostResolverProc methods:
-  virtual int Resolve(const std::string& host,
-                      AddressFamily address_family,
-                      HostResolverFlags host_resolver_flags,
-                      AddressList* addrlist,
-                      int* os_error) override;
+  int Resolve(const std::string& host,
+              AddressFamily address_family,
+              HostResolverFlags host_resolver_flags,
+              AddressList* addrlist,
+              int* os_error) override;
 
  private:
   struct Rule;
   typedef std::list<Rule> RuleList;
 
-  virtual ~RuleBasedHostResolverProc();
+  ~RuleBasedHostResolverProc() override;
 
   RuleList rules_;
 };
@@ -223,16 +223,16 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc();
 // HangingHostResolver never completes its |Resolve| request.
 class HangingHostResolver : public HostResolver {
  public:
-  virtual int Resolve(const RequestInfo& info,
-                      RequestPriority priority,
-                      AddressList* addresses,
-                      const CompletionCallback& callback,
-                      RequestHandle* out_req,
-                      const BoundNetLog& net_log) override;
-  virtual int ResolveFromCache(const RequestInfo& info,
-                               AddressList* addresses,
-                               const BoundNetLog& net_log) override;
-  virtual void CancelRequest(RequestHandle req) override {}
+  int Resolve(const RequestInfo& info,
+              RequestPriority priority,
+              AddressList* addresses,
+              const CompletionCallback& callback,
+              RequestHandle* out_req,
+              const BoundNetLog& net_log) override;
+  int ResolveFromCache(const RequestInfo& info,
+                       AddressList* addresses,
+                       const BoundNetLog& net_log) override;
+  void CancelRequest(RequestHandle req) override {}
 };
 
 // This class sets the default HostResolverProc for a particular scope.  The

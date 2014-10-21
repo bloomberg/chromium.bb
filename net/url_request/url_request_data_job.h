@@ -30,13 +30,13 @@ class NET_EXPORT URLRequestDataJob : public URLRequestSimpleJob {
   URLRequestDataJob(URLRequest* request, NetworkDelegate* network_delegate);
 
   // URLRequestSimpleJob
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* data,
-                      const CompletionCallback& callback) const override;
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* data,
+              const CompletionCallback& callback) const override;
 
  private:
-  virtual ~URLRequestDataJob();
+  ~URLRequestDataJob() override;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestDataJob);
 };

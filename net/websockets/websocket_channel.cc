@@ -153,27 +153,27 @@ class WebSocketChannel::ConnectDelegate
  public:
   explicit ConnectDelegate(WebSocketChannel* creator) : creator_(creator) {}
 
-  virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) override {
+  void OnSuccess(scoped_ptr<WebSocketStream> stream) override {
     creator_->OnConnectSuccess(stream.Pass());
     // |this| may have been deleted.
   }
 
-  virtual void OnFailure(const std::string& message) override {
+  void OnFailure(const std::string& message) override {
     creator_->OnConnectFailure(message);
     // |this| has been deleted.
   }
 
-  virtual void OnStartOpeningHandshake(
+  void OnStartOpeningHandshake(
       scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
     creator_->OnStartOpeningHandshake(request.Pass());
   }
 
-  virtual void OnFinishOpeningHandshake(
+  void OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
     creator_->OnFinishOpeningHandshake(response.Pass());
   }
 
-  virtual void OnSSLCertificateError(
+  void OnSSLCertificateError(
       scoped_ptr<WebSocketEventInterface::SSLErrorCallbacks>
           ssl_error_callbacks,
       const SSLInfo& ssl_info,

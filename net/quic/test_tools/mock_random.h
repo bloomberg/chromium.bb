@@ -18,12 +18,11 @@ class MockRandom : public QuicRandom {
 
   // QuicRandom:
   // Fills the |data| buffer with a repeating byte, initially 'r'.
-  virtual void RandBytes(void* data, size_t len) override;
+  void RandBytes(void* data, size_t len) override;
   // Returns base + the current increment.
-  virtual uint64 RandUint64() override;
+  uint64 RandUint64() override;
   // Does nothing.
-  virtual void Reseed(const void* additional_entropy,
-                      size_t entropy_len) override;
+  void Reseed(const void* additional_entropy, size_t entropy_len) override;
 
   // ChangeValue increments |increment_|. This causes the value returned by
   // |RandUint64| and the byte that |RandBytes| fills with, to change.

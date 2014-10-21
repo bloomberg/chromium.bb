@@ -103,46 +103,34 @@ const size_t kPublicResetPacketMessageTagOffset =
 
 class TestEncrypter : public QuicEncrypter {
  public:
-  virtual ~TestEncrypter() {}
-  virtual bool SetKey(StringPiece key) override {
-    return true;
-  }
-  virtual bool SetNoncePrefix(StringPiece nonce_prefix) override {
-    return true;
-  }
-  virtual bool Encrypt(StringPiece nonce,
-                       StringPiece associated_data,
-                       StringPiece plaintext,
-                       unsigned char* output) override {
+  ~TestEncrypter() override {}
+  bool SetKey(StringPiece key) override { return true; }
+  bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
+  bool Encrypt(StringPiece nonce,
+               StringPiece associated_data,
+               StringPiece plaintext,
+               unsigned char* output) override {
     CHECK(false) << "Not implemented";
     return false;
   }
-  virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
-                                  StringPiece associated_data,
-                                  StringPiece plaintext) override {
+  QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                          StringPiece associated_data,
+                          StringPiece plaintext) override {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     plaintext_ = plaintext.as_string();
     return new QuicData(plaintext.data(), plaintext.length());
   }
-  virtual size_t GetKeySize() const override {
-    return 0;
-  }
-  virtual size_t GetNoncePrefixSize() const override {
-    return 0;
-  }
-  virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) const override {
+  size_t GetKeySize() const override { return 0; }
+  size_t GetNoncePrefixSize() const override { return 0; }
+  size_t GetMaxPlaintextSize(size_t ciphertext_size) const override {
     return ciphertext_size;
   }
-  virtual size_t GetCiphertextSize(size_t plaintext_size) const override {
+  size_t GetCiphertextSize(size_t plaintext_size) const override {
     return plaintext_size;
   }
-  virtual StringPiece GetKey() const override {
-    return StringPiece();
-  }
-  virtual StringPiece GetNoncePrefix() const override {
-    return StringPiece();
-  }
+  StringPiece GetKey() const override { return StringPiece(); }
+  StringPiece GetNoncePrefix() const override { return StringPiece(); }
   QuicPacketSequenceNumber sequence_number_;
   string associated_data_;
   string plaintext_;
@@ -150,35 +138,27 @@ class TestEncrypter : public QuicEncrypter {
 
 class TestDecrypter : public QuicDecrypter {
  public:
-  virtual ~TestDecrypter() {}
-  virtual bool SetKey(StringPiece key) override {
-    return true;
-  }
-  virtual bool SetNoncePrefix(StringPiece nonce_prefix) override {
-    return true;
-  }
-  virtual bool Decrypt(StringPiece nonce,
-                       StringPiece associated_data,
-                       StringPiece ciphertext,
-                       unsigned char* output,
-                       size_t* output_length) override {
+  ~TestDecrypter() override {}
+  bool SetKey(StringPiece key) override { return true; }
+  bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
+  bool Decrypt(StringPiece nonce,
+               StringPiece associated_data,
+               StringPiece ciphertext,
+               unsigned char* output,
+               size_t* output_length) override {
     CHECK(false) << "Not implemented";
     return false;
   }
-  virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
-                                  StringPiece associated_data,
-                                  StringPiece ciphertext) override {
+  QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                          StringPiece associated_data,
+                          StringPiece ciphertext) override {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
     return new QuicData(ciphertext.data(), ciphertext.length());
   }
-  virtual StringPiece GetKey() const override {
-    return StringPiece();
-  }
-  virtual StringPiece GetNoncePrefix() const override {
-    return StringPiece();
-  }
+  StringPiece GetKey() const override { return StringPiece(); }
+  StringPiece GetNoncePrefix() const override { return StringPiece(); }
   QuicPacketSequenceNumber sequence_number_;
   string associated_data_;
   string ciphertext_;
@@ -198,7 +178,7 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
         accept_public_header_(true) {
   }
 
-  virtual ~TestQuicVisitor() {
+  ~TestQuicVisitor() override {
     STLDeleteElements(&stream_frames_);
     STLDeleteElements(&ack_frames_);
     STLDeleteElements(&congestion_feedback_frames_);
@@ -207,70 +187,66 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     STLDeleteElements(&fec_data_);
   }
 
-  virtual void OnError(QuicFramer* f) override {
+  void OnError(QuicFramer* f) override {
     DVLOG(1) << "QuicFramer Error: " << QuicUtils::ErrorToString(f->error())
              << " (" << f->error() << ")";
     ++error_count_;
   }
 
-  virtual void OnPacket() override {}
+  void OnPacket() override {}
 
-  virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& packet) override {
+  void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {
     public_reset_packet_.reset(new QuicPublicResetPacket(packet));
   }
 
-  virtual void OnVersionNegotiationPacket(
+  void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {
     version_negotiation_packet_.reset(new QuicVersionNegotiationPacket(packet));
   }
 
-  virtual void OnRevivedPacket() override {
-    ++revived_packets_;
-  }
+  void OnRevivedPacket() override { ++revived_packets_; }
 
-  virtual bool OnProtocolVersionMismatch(QuicVersion version) override {
+  bool OnProtocolVersionMismatch(QuicVersion version) override {
     DVLOG(1) << "QuicFramer Version Mismatch, version: " << version;
     ++version_mismatch_;
     return true;
   }
 
-  virtual bool OnUnauthenticatedPublicHeader(
+  bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header) override {
     public_header_.reset(new QuicPacketPublicHeader(header));
     return accept_public_header_;
   }
 
-  virtual bool OnUnauthenticatedHeader(
-      const QuicPacketHeader& header) override {
+  bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override {
     return true;
   }
 
-  virtual void OnDecryptedPacket(EncryptionLevel level) override {}
+  void OnDecryptedPacket(EncryptionLevel level) override {}
 
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) override {
+  bool OnPacketHeader(const QuicPacketHeader& header) override {
     ++packet_count_;
     header_.reset(new QuicPacketHeader(header));
     return accept_packet_;
   }
 
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame) override {
+  bool OnStreamFrame(const QuicStreamFrame& frame) override {
     ++frame_count_;
     stream_frames_.push_back(new QuicStreamFrame(frame));
     return true;
   }
 
-  virtual void OnFecProtectedPayload(StringPiece payload) override {
+  void OnFecProtectedPayload(StringPiece payload) override {
     fec_protected_payload_ = payload.as_string();
   }
 
-  virtual bool OnAckFrame(const QuicAckFrame& frame) override {
+  bool OnAckFrame(const QuicAckFrame& frame) override {
     ++frame_count_;
     ack_frames_.push_back(new QuicAckFrame(frame));
     return true;
   }
 
-  virtual bool OnCongestionFeedbackFrame(
+  bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) override {
     ++frame_count_;
     congestion_feedback_frames_.push_back(
@@ -278,50 +254,46 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     return true;
   }
 
-  virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
+  bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     ++frame_count_;
     stop_waiting_frames_.push_back(new QuicStopWaitingFrame(frame));
     return true;
   }
 
-  virtual bool OnPingFrame(const QuicPingFrame& frame) override {
+  bool OnPingFrame(const QuicPingFrame& frame) override {
     ++frame_count_;
     ping_frames_.push_back(new QuicPingFrame(frame));
     return true;
   }
 
-  virtual void OnFecData(const QuicFecData& fec) override {
+  void OnFecData(const QuicFecData& fec) override {
     ++fec_count_;
     fec_data_.push_back(new QuicFecData(fec));
   }
 
-  virtual void OnPacketComplete() override {
-    ++complete_packets_;
-  }
+  void OnPacketComplete() override { ++complete_packets_; }
 
-  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {
+  bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {
     rst_stream_frame_ = frame;
     return true;
   }
 
-  virtual bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) override {
+  bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override {
     connection_close_frame_ = frame;
     return true;
   }
 
-  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override {
+  bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override {
     goaway_frame_ = frame;
     return true;
   }
 
-  virtual bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame)
-      override {
+  bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {
     window_update_frame_ = frame;
     return true;
   }
 
-  virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) override {
+  bool OnBlockedFrame(const QuicBlockedFrame& frame) override {
     blocked_frame_ = frame;
     return true;
   }

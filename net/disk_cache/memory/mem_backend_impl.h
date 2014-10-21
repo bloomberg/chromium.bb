@@ -26,7 +26,7 @@ class MemEntryImpl;
 class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
  public:
   explicit MemBackendImpl(net::NetLog* net_log);
-  virtual ~MemBackendImpl();
+  ~MemBackendImpl() override;
 
   // Returns an instance of a Backend implemented only in memory. The returned
   // object should be deleted when not needed anymore. max_bytes is the maximum
@@ -63,24 +63,26 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   void RemoveFromRankingList(MemEntryImpl* entry);
 
   // Backend interface.
-  virtual net::CacheType GetCacheType() const override;
-  virtual int32 GetEntryCount() const override;
-  virtual int OpenEntry(const std::string& key, Entry** entry,
-                        const CompletionCallback& callback) override;
-  virtual int CreateEntry(const std::string& key, Entry** entry,
-                          const CompletionCallback& callback) override;
-  virtual int DoomEntry(const std::string& key,
-                        const CompletionCallback& callback) override;
-  virtual int DoomAllEntries(const CompletionCallback& callback) override;
-  virtual int DoomEntriesBetween(base::Time initial_time,
-                                 base::Time end_time,
-                                 const CompletionCallback& callback) override;
-  virtual int DoomEntriesSince(base::Time initial_time,
-                               const CompletionCallback& callback) override;
-  virtual scoped_ptr<Iterator> CreateIterator() override;
-  virtual void GetStats(
-      std::vector<std::pair<std::string, std::string> >* stats) override {}
-  virtual void OnExternalCacheHit(const std::string& key) override;
+  net::CacheType GetCacheType() const override;
+  int32 GetEntryCount() const override;
+  int OpenEntry(const std::string& key,
+                Entry** entry,
+                const CompletionCallback& callback) override;
+  int CreateEntry(const std::string& key,
+                  Entry** entry,
+                  const CompletionCallback& callback) override;
+  int DoomEntry(const std::string& key,
+                const CompletionCallback& callback) override;
+  int DoomAllEntries(const CompletionCallback& callback) override;
+  int DoomEntriesBetween(base::Time initial_time,
+                         base::Time end_time,
+                         const CompletionCallback& callback) override;
+  int DoomEntriesSince(base::Time initial_time,
+                       const CompletionCallback& callback) override;
+  scoped_ptr<Iterator> CreateIterator() override;
+  void GetStats(
+      std::vector<std::pair<std::string, std::string>>* stats) override {}
+  void OnExternalCacheHit(const std::string& key) override;
 
  private:
   class MemIterator;

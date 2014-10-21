@@ -17,7 +17,7 @@ class SSLInfo;
 
 class NET_EXPORT_PRIVATE StreamSocket : public Socket {
  public:
-  virtual ~StreamSocket() {}
+  ~StreamSocket() override {}
 
   // Called to establish a connection.  Returns OK if the connection could be
   // established synchronously.  Otherwise, ERR_IO_PENDING is returned and the

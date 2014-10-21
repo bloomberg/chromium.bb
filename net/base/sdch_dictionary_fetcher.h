@@ -41,15 +41,15 @@ class NET_EXPORT SdchDictionaryFetcher
   // this object.
   SdchDictionaryFetcher(SdchFetcher::Delegate* consumer,
                         URLRequestContext* context);
-  virtual ~SdchDictionaryFetcher();
+  ~SdchDictionaryFetcher() override;
 
   // Implementation of SdchFetcher methods.
-  virtual void Schedule(const GURL& dictionary_url) override;
-  virtual void Cancel() override;
+  void Schedule(const GURL& dictionary_url) override;
+  void Cancel() override;
 
   // Implementation of URLRequest::Delegate methods.
-  virtual void OnResponseStarted(URLRequest* request) override;
-  virtual void OnReadCompleted(URLRequest* request, int bytes_read) override;
+  void OnResponseStarted(URLRequest* request) override;
+  void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
   enum State {

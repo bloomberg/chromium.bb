@@ -16,12 +16,12 @@ namespace net {
 class NET_EXPORT ProxyConfigServiceFixed : public ProxyConfigService {
  public:
   explicit ProxyConfigServiceFixed(const ProxyConfig& pc);
-  virtual ~ProxyConfigServiceFixed();
+  ~ProxyConfigServiceFixed() override;
 
   // ProxyConfigService methods:
-  virtual void AddObserver(Observer* observer) override {}
-  virtual void RemoveObserver(Observer* observer) override {}
-  virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
+  void AddObserver(Observer* observer) override {}
+  void RemoveObserver(Observer* observer) override {}
+  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
 
  private:
   ProxyConfig pc_;

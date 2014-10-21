@@ -121,7 +121,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
  public:
   BufferedSpdyFramer(SpdyMajorVersion version,
                      bool enable_compression);
-  virtual ~BufferedSpdyFramer();
+  ~BufferedSpdyFramer() override;
 
   // Sets callbacks to be called from the buffered spdy framer.  A visitor must
   // be set, or else the framer will likely crash.  It is acceptable for the
@@ -135,41 +135,39 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void set_debug_visitor(SpdyFramerDebugVisitorInterface* debug_visitor);
 
   // SpdyFramerVisitorInterface
-  virtual void OnError(SpdyFramer* spdy_framer) override;
-  virtual void OnSynStream(SpdyStreamId stream_id,
-                           SpdyStreamId associated_stream_id,
-                           SpdyPriority priority,
-                           bool fin,
-                           bool unidirectional) override;
-  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) override;
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override;
-  virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
-                                        const char* header_data,
-                                        size_t len) override;
-  virtual void OnStreamFrameData(SpdyStreamId stream_id,
-                                 const char* data,
-                                 size_t len,
-                                 bool fin) override;
-  virtual void OnSettings(bool clear_persisted) override;
-  virtual void OnSetting(
-      SpdySettingsIds id, uint8 flags, uint32 value) override;
-  virtual void OnSettingsAck() override;
-  virtual void OnSettingsEnd() override;
-  virtual void OnPing(SpdyPingId unique_id, bool is_ack) override;
-  virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) override;
-  virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) override;
-  virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) override;
-  virtual void OnPushPromise(SpdyStreamId stream_id,
-                             SpdyStreamId promised_stream_id,
-                             bool end) override;
-  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
-                                 size_t length,
-                                 bool fin) override;
-  virtual void OnContinuation(SpdyStreamId stream_id, bool end) override;
-  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
+  void OnError(SpdyFramer* spdy_framer) override;
+  void OnSynStream(SpdyStreamId stream_id,
+                   SpdyStreamId associated_stream_id,
+                   SpdyPriority priority,
+                   bool fin,
+                   bool unidirectional) override;
+  void OnSynReply(SpdyStreamId stream_id, bool fin) override;
+  void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override;
+  bool OnControlFrameHeaderData(SpdyStreamId stream_id,
+                                const char* header_data,
+                                size_t len) override;
+  void OnStreamFrameData(SpdyStreamId stream_id,
+                         const char* data,
+                         size_t len,
+                         bool fin) override;
+  void OnSettings(bool clear_persisted) override;
+  void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override;
+  void OnSettingsAck() override;
+  void OnSettingsEnd() override;
+  void OnPing(SpdyPingId unique_id, bool is_ack) override;
+  void OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) override;
+  void OnGoAway(SpdyStreamId last_accepted_stream_id,
+                SpdyGoAwayStatus status) override;
+  void OnWindowUpdate(SpdyStreamId stream_id,
+                      uint32 delta_window_size) override;
+  void OnPushPromise(SpdyStreamId stream_id,
+                     SpdyStreamId promised_stream_id,
+                     bool end) override;
+  void OnDataFrameHeader(SpdyStreamId stream_id,
+                         size_t length,
+                         bool fin) override;
+  void OnContinuation(SpdyStreamId stream_id, bool end) override;
+  bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);

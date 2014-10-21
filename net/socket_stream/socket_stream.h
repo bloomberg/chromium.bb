@@ -212,7 +212,7 @@ class NET_EXPORT SocketStream
     std::string headers_;
 
     private:
-     virtual ~RequestHeaders();
+     ~RequestHeaders() override;
   };
 
   class ResponseHeaders : public IOBuffer {
@@ -225,7 +225,7 @@ class NET_EXPORT SocketStream
     void Realloc(size_t new_size);
 
    private:
-     virtual ~ResponseHeaders();
+    ~ResponseHeaders() override;
 
     scoped_ptr<char, base::FreeDeleter> headers_;
   };

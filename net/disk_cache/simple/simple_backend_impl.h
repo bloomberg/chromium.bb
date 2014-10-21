@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
       net::NetLog* net_log);
 
-  virtual ~SimpleBackendImpl();
+  ~SimpleBackendImpl() override;
 
   net::CacheType cache_type() const { return cache_type_; }
   SimpleIndex* index() { return index_.get(); }
@@ -84,28 +84,30 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   void OnDoomComplete(uint64 entry_hash);
 
   // SimpleIndexDelegate:
-  virtual void DoomEntries(std::vector<uint64>* entry_hashes,
-                           const CompletionCallback& callback) override;
+  void DoomEntries(std::vector<uint64>* entry_hashes,
+                   const CompletionCallback& callback) override;
 
   // Backend:
-  virtual net::CacheType GetCacheType() const override;
-  virtual int32 GetEntryCount() const override;
-  virtual int OpenEntry(const std::string& key, Entry** entry,
-                        const CompletionCallback& callback) override;
-  virtual int CreateEntry(const std::string& key, Entry** entry,
-                          const CompletionCallback& callback) override;
-  virtual int DoomEntry(const std::string& key,
-                        const CompletionCallback& callback) override;
-  virtual int DoomAllEntries(const CompletionCallback& callback) override;
-  virtual int DoomEntriesBetween(base::Time initial_time,
-                                 base::Time end_time,
-                                 const CompletionCallback& callback) override;
-  virtual int DoomEntriesSince(base::Time initial_time,
-                               const CompletionCallback& callback) override;
-  virtual scoped_ptr<Iterator> CreateIterator() override;
-  virtual void GetStats(
-      std::vector<std::pair<std::string, std::string> >* stats) override;
-  virtual void OnExternalCacheHit(const std::string& key) override;
+  net::CacheType GetCacheType() const override;
+  int32 GetEntryCount() const override;
+  int OpenEntry(const std::string& key,
+                Entry** entry,
+                const CompletionCallback& callback) override;
+  int CreateEntry(const std::string& key,
+                  Entry** entry,
+                  const CompletionCallback& callback) override;
+  int DoomEntry(const std::string& key,
+                const CompletionCallback& callback) override;
+  int DoomAllEntries(const CompletionCallback& callback) override;
+  int DoomEntriesBetween(base::Time initial_time,
+                         base::Time end_time,
+                         const CompletionCallback& callback) override;
+  int DoomEntriesSince(base::Time initial_time,
+                       const CompletionCallback& callback) override;
+  scoped_ptr<Iterator> CreateIterator() override;
+  void GetStats(
+      std::vector<std::pair<std::string, std::string>>* stats) override;
+  void OnExternalCacheHit(const std::string& key) override;
 
  private:
   class SimpleIterator;

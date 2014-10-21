@@ -17,24 +17,24 @@ namespace net {
 class NET_EXPORT_PRIVATE NullEncrypter : public QuicEncrypter {
  public:
   NullEncrypter();
-  virtual ~NullEncrypter() {}
+  ~NullEncrypter() override {}
 
   // QuicEncrypter implementation
-  virtual bool SetKey(base::StringPiece key) override;
-  virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
-  virtual bool Encrypt(base::StringPiece nonce,
-                       base::StringPiece associated_data,
-                       base::StringPiece plaintext,
-                       unsigned char* output) override;
-  virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
-                                  base::StringPiece associated_data,
-                                  base::StringPiece plaintext) override;
-  virtual size_t GetKeySize() const override;
-  virtual size_t GetNoncePrefixSize() const override;
-  virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) const override;
-  virtual size_t GetCiphertextSize(size_t plaintext_size) const override;
-  virtual base::StringPiece GetKey() const override;
-  virtual base::StringPiece GetNoncePrefix() const override;
+  bool SetKey(base::StringPiece key) override;
+  bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
+  bool Encrypt(base::StringPiece nonce,
+               base::StringPiece associated_data,
+               base::StringPiece plaintext,
+               unsigned char* output) override;
+  QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                          base::StringPiece associated_data,
+                          base::StringPiece plaintext) override;
+  size_t GetKeySize() const override;
+  size_t GetNoncePrefixSize() const override;
+  size_t GetMaxPlaintextSize(size_t ciphertext_size) const override;
+  size_t GetCiphertextSize(size_t plaintext_size) const override;
+  base::StringPiece GetKey() const override;
+  base::StringPiece GetNoncePrefix() const override;
 
  private:
   size_t GetHashLength() const;

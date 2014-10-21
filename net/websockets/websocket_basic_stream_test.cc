@@ -90,7 +90,7 @@ class StrictStaticSocketDataProvider : public StaticSocketDataProvider {
       : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
         strict_mode_(strict_mode) {}
 
-  virtual ~StrictStaticSocketDataProvider() {
+  ~StrictStaticSocketDataProvider() override {
     if (strict_mode_) {
       EXPECT_EQ(read_count(), read_index());
       EXPECT_EQ(write_count(), write_index());

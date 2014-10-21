@@ -20,10 +20,10 @@ namespace net {
 class FileNetLogObserver : public NetLog::ThreadSafeObserver {
  public:
   explicit FileNetLogObserver(FILE* destination);
-  virtual ~FileNetLogObserver();
+  ~FileNetLogObserver() override;
 
   // NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLog::Entry& entry) override;
 
  private:
   FILE* const destination_;

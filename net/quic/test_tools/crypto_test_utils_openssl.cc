@@ -26,12 +26,11 @@ namespace test {
 class TestChannelIDKey : public ChannelIDKey {
  public:
   explicit TestChannelIDKey(EVP_PKEY* ecdsa_key) : ecdsa_key_(ecdsa_key) {}
-  virtual ~TestChannelIDKey() override {}
+  ~TestChannelIDKey() override {}
 
   // ChannelIDKey implementation.
 
-  virtual bool Sign(StringPiece signed_data,
-                    string* out_signature) const override {
+  bool Sign(StringPiece signed_data, string* out_signature) const override {
     crypto::ScopedEVP_MD_CTX md_ctx(EVP_MD_CTX_create());
     if (!md_ctx ||
         EVP_DigestSignInit(md_ctx.get(), nullptr, EVP_sha256(), nullptr,
@@ -75,7 +74,7 @@ class TestChannelIDKey : public ChannelIDKey {
     return true;
   }
 
-  virtual string SerializeKey() const override {
+  string SerializeKey() const override {
     // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
     // key, is 0x04 (meaning uncompressed) followed by the x and y field
     // elements as 32-byte, big-endian numbers.
@@ -99,11 +98,11 @@ class TestChannelIDKey : public ChannelIDKey {
 
 class TestChannelIDSource : public ChannelIDSource {
  public:
-  virtual ~TestChannelIDSource() {}
+  ~TestChannelIDSource() override {}
 
   // ChannelIDSource implementation.
 
-  virtual QuicAsyncStatus GetChannelIDKey(
+  QuicAsyncStatus GetChannelIDKey(
       const string& hostname,
       scoped_ptr<ChannelIDKey>* channel_id_key,
       ChannelIDSourceCallback* /*callback*/) override {

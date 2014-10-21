@@ -31,11 +31,11 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
                                HttpCache* http_cache);
 
   // QuicServerInfo implementation.
-  virtual void Start() override;
-  virtual int WaitForDataReady(const CompletionCallback& callback) override;
-  virtual bool IsDataReady() override;
-  virtual bool IsReadyToPersist() override;
-  virtual void Persist() override;
+  void Start() override;
+  int WaitForDataReady(const CompletionCallback& callback) override;
+  bool IsDataReady() override;
+  bool IsReadyToPersist() override;
+  void Persist() override;
 
  private:
   struct CacheOperationDataShim;
@@ -55,7 +55,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
     NONE,
   };
 
-  virtual ~DiskCacheBasedQuicServerInfo();
+  ~DiskCacheBasedQuicServerInfo() override;
 
   std::string key() const;
 

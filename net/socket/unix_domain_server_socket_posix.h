@@ -44,20 +44,20 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
 
   UnixDomainServerSocket(const AuthCallback& auth_callack,
                          bool use_abstract_namespace);
-  virtual ~UnixDomainServerSocket();
+  ~UnixDomainServerSocket() override;
 
   // Gets credentials of peer to check permissions.
   static bool GetPeerCredentials(SocketDescriptor socket_fd,
                                  Credentials* credentials);
 
   // ServerSocket implementation.
-  virtual int Listen(const IPEndPoint& address, int backlog) override;
-  virtual int ListenWithAddressAndPort(const std::string& unix_domain_path,
-                                       int port_unused,
-                                       int backlog) override;
-  virtual int GetLocalAddress(IPEndPoint* address) const override;
-  virtual int Accept(scoped_ptr<StreamSocket>* socket,
-                     const CompletionCallback& callback) override;
+  int Listen(const IPEndPoint& address, int backlog) override;
+  int ListenWithAddressAndPort(const std::string& unix_domain_path,
+                               int port_unused,
+                               int backlog) override;
+  int GetLocalAddress(IPEndPoint* address) const override;
+  int Accept(scoped_ptr<StreamSocket>* socket,
+             const CompletionCallback& callback) override;
 
   // Accepts an incoming connection on |listen_socket_|, but passes back
   // a raw SocketDescriptor instead of a StreamSocket.

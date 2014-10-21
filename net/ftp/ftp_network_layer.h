@@ -19,13 +19,13 @@ class HostResolver;
 class NET_EXPORT FtpNetworkLayer : public FtpTransactionFactory {
  public:
   explicit FtpNetworkLayer(HostResolver* host_resolver);
-  virtual ~FtpNetworkLayer();
+  ~FtpNetworkLayer() override;
 
   static FtpTransactionFactory* CreateFactory(HostResolver* host_resolver);
 
   // FtpTransactionFactory methods:
-  virtual FtpTransaction* CreateTransaction() override;
-  virtual void Suspend(bool suspend) override;
+  FtpTransaction* CreateTransaction() override;
+  void Suspend(bool suspend) override;
 
  private:
   scoped_refptr<FtpNetworkSession> session_;

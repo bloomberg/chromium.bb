@@ -278,7 +278,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // If destroyed after Start() has been called but while IO is pending,
   // then the request will be effectively canceled and the delegate
   // will not have any more of its methods called.
-  virtual ~URLRequest();
+  ~URLRequest() override;
 
   // Changes the default cookie policy from allowing all cookies to blocking all
   // cookies. Embedders that want to implement a more flexible policy should

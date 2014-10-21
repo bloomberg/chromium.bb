@@ -66,7 +66,7 @@ class EmbeddedTestServerTest: public testing::Test,
   }
 
   // URLFetcherDelegate override.
-  virtual void OnURLFetchComplete(const URLFetcher* source) override {
+  void OnURLFetchComplete(const URLFetcher* source) override {
     ++num_responses_received_;
     if (num_responses_received_ == num_responses_expected_)
       base::MessageLoop::current()->Quit();
@@ -260,7 +260,7 @@ class EmbeddedTestServerThreadingTestDelegate
         message_loop_present_on_shutdown_(message_loop_present_on_shutdown) {}
 
   // base::PlatformThread::Delegate:
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner;
     base::Thread io_thread("io_thread");
     base::Thread::Options thread_options;
@@ -298,7 +298,7 @@ class EmbeddedTestServerThreadingTestDelegate
   }
 
   // URLFetcherDelegate override.
-  virtual void OnURLFetchComplete(const URLFetcher* source) override {
+  void OnURLFetchComplete(const URLFetcher* source) override {
     base::MessageLoop::current()->Quit();
   }
 

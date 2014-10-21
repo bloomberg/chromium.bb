@@ -23,16 +23,16 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
  public:
   QuicDefaultPacketWriter();
   explicit QuicDefaultPacketWriter(DatagramClientSocket* socket);
-  virtual ~QuicDefaultPacketWriter();
+  ~QuicDefaultPacketWriter() override;
 
   // QuicPacketWriter
-  virtual WriteResult WritePacket(const char* buffer,
-                                  size_t buf_len,
-                                  const IPAddressNumber& self_address,
-                                  const IPEndPoint& peer_address) override;
-  virtual bool IsWriteBlockedDataBuffered() const override;
-  virtual bool IsWriteBlocked() const override;
-  virtual void SetWritable() override;
+  WriteResult WritePacket(const char* buffer,
+                          size_t buf_len,
+                          const IPAddressNumber& self_address,
+                          const IPEndPoint& peer_address) override;
+  bool IsWriteBlockedDataBuffered() const override;
+  bool IsWriteBlocked() const override;
+  void SetWritable() override;
 
   void OnWriteComplete(int rv);
   void SetConnection(QuicConnection* connection) {

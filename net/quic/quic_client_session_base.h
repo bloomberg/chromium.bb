@@ -16,7 +16,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSession {
   QuicClientSessionBase(QuicConnection* connection,
                         const QuicConfig& config);
 
-  virtual ~QuicClientSessionBase();
+  ~QuicClientSessionBase() override;
 
   // Called when the proof in |cached| is marked valid.  If this is a secure
   // QUIC session, then this will happen only after the proof verifier
@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSession {
       const ProofVerifyDetails& verify_details) = 0;
 
   // Override base class to set FEC policy before any data is sent by client.
-  virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
+  void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicClientSessionBase);

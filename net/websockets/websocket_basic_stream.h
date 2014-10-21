@@ -40,20 +40,20 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // The destructor has to make sure the connection is closed when we finish so
   // that it does not get returned to the pool.
-  virtual ~WebSocketBasicStream();
+  ~WebSocketBasicStream() override;
 
   // WebSocketStream implementation.
-  virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
-                         const CompletionCallback& callback) override;
+  int ReadFrames(ScopedVector<WebSocketFrame>* frames,
+                 const CompletionCallback& callback) override;
 
-  virtual int WriteFrames(ScopedVector<WebSocketFrame>* frames,
-                          const CompletionCallback& callback) override;
+  int WriteFrames(ScopedVector<WebSocketFrame>* frames,
+                  const CompletionCallback& callback) override;
 
-  virtual void Close() override;
+  void Close() override;
 
-  virtual std::string GetSubProtocol() const override;
+  std::string GetSubProtocol() const override;
 
-  virtual std::string GetExtensions() const override;
+  std::string GetExtensions() const override;
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods for testing only.

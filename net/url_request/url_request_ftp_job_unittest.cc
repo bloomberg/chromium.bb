@@ -67,18 +67,15 @@ class SimpleProxyConfigService : public ProxyConfigService {
     config_.proxy_rules().ParseFromString("ftp=localhost");
   }
 
-  virtual void AddObserver(Observer* observer) override {
-    observer_ = observer;
-  }
+  void AddObserver(Observer* observer) override { observer_ = observer; }
 
-  virtual void RemoveObserver(Observer* observer) override {
+  void RemoveObserver(Observer* observer) override {
     if (observer_ == observer) {
       observer_ = NULL;
     }
   }
 
-  virtual ConfigAvailability GetLatestProxyConfig(
-      ProxyConfig* config) override {
+  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override {
     *config = config_;
     return CONFIG_VALID;
   }
@@ -108,16 +105,14 @@ class TestURLRequestFtpJob : public URLRequestFtpJob {
   using URLRequestFtpJob::priority;
 
  protected:
-  virtual ~TestURLRequestFtpJob() {}
+  ~TestURLRequestFtpJob() override {}
 };
 
 class MockFtpTransactionFactory : public FtpTransactionFactory {
  public:
-  virtual FtpTransaction* CreateTransaction() override {
-    return NULL;
-  }
+  FtpTransaction* CreateTransaction() override { return NULL; }
 
-  virtual void Suspend(bool suspend) override {}
+  void Suspend(bool suspend) override {}
 };
 
 // Fixture for priority-related tests. Priority matters when there is

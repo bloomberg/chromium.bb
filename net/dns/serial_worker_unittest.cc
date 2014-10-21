@@ -21,16 +21,16 @@ class SerialWorkerTest : public testing::Test {
    public:
     explicit TestSerialWorker(SerialWorkerTest* t)
       : test_(t) {}
-    virtual void DoWork() override {
+    void DoWork() override {
       ASSERT_TRUE(test_);
       test_->OnWork();
     }
-    virtual void OnWorkFinished() override {
+    void OnWorkFinished() override {
       ASSERT_TRUE(test_);
       test_->OnWorkFinished();
     }
    private:
-    virtual ~TestSerialWorker() {}
+    ~TestSerialWorker() override {}
     SerialWorkerTest* test_;
   };
 

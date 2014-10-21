@@ -263,7 +263,7 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   explicit ConfigReader(DnsConfigServicePosix* service)
       : service_(service), success_(false) {}
 
-  virtual void DoWork() override {
+  void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     ConfigParsePosixResult result = ReadDnsConfig(&dns_config_);
     switch (result) {
@@ -285,7 +285,7 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
                         base::TimeTicks::Now() - start_time);
   }
 
-  virtual void OnWorkFinished() override {
+  void OnWorkFinished() override {
     DCHECK(!IsCancelled());
     if (success_) {
       service_->OnConfigRead(dns_config_);
@@ -295,7 +295,7 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   }
 
  private:
-  virtual ~ConfigReader() {}
+  ~ConfigReader() override {}
 
   DnsConfigServicePosix* service_;
   // Written in DoWork, read in OnWorkFinished, no locking necessary.
@@ -312,9 +312,9 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
       :  service_(service), path_(kFilePathHosts), success_(false) {}
 
  private:
-  virtual ~HostsReader() {}
+  ~HostsReader() override {}
 
-  virtual void DoWork() override {
+  void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     success_ = ParseHostsFile(path_, &hosts_);
     UMA_HISTOGRAM_BOOLEAN("AsyncDNS.HostParseResult", success_);
@@ -322,7 +322,7 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
                         base::TimeTicks::Now() - start_time);
   }
 
-  virtual void OnWorkFinished() override {
+  void OnWorkFinished() override {
     if (success_) {
       service_->OnHostsRead(hosts_);
     } else {

@@ -107,7 +107,7 @@ class BackendIO : public BackgroundIO {
     OP_IS_READY
   };
 
-  virtual ~BackendIO();
+  ~BackendIO() override;
 
   // Returns true if this operation returns an entry.
   bool ReturnsEntry();
@@ -149,7 +149,7 @@ class InFlightBackendIO : public InFlightIO {
   InFlightBackendIO(
       BackendImpl* backend,
       const scoped_refptr<base::SingleThreadTaskRunner>& background_thread);
-  virtual ~InFlightBackendIO();
+  ~InFlightBackendIO() override;
 
   // Proxied operations.
   void Init(const net::CompletionCallback& callback);
@@ -204,8 +204,7 @@ class InFlightBackendIO : public InFlightIO {
   base::WeakPtr<InFlightBackendIO> GetWeakPtr();
 
  protected:
-  virtual void OnOperationComplete(BackgroundIO* operation,
-                                   bool cancel) override;
+  void OnOperationComplete(BackgroundIO* operation, bool cancel) override;
 
  private:
   void PostOperation(BackendIO* operation);

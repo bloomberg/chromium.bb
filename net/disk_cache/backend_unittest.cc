@@ -1840,10 +1840,10 @@ TEST_F(DiskCacheTest, WrongVersion) {
 
 class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
  public:
-  virtual ~BadEntropyProvider() {}
+  ~BadEntropyProvider() override {}
 
-  virtual double GetEntropyForTrial(const std::string& trial_name,
-                                    uint32 randomization_seed) const override {
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32 randomization_seed) const override {
     return 0.5;
   }
 };

@@ -33,15 +33,14 @@ class NET_EXPORT_PRIVATE ServerHelloNotifier : public
       : server_stream_(stream) {}
 
   // QuicAckNotifier::DelegateInterface implementation
-  virtual void OnAckNotification(
-      int num_original_packets,
-      int num_original_bytes,
-      int num_retransmitted_packets,
-      int num_retransmitted_bytes,
-      QuicTime::Delta delta_largest_observed) override;
+  void OnAckNotification(int num_original_packets,
+                         int num_original_bytes,
+                         int num_retransmitted_packets,
+                         int num_retransmitted_bytes,
+                         QuicTime::Delta delta_largest_observed) override;
 
  private:
-  virtual ~ServerHelloNotifier() {}
+  ~ServerHelloNotifier() override {}
 
   QuicCryptoServerStream* server_stream_;
 
@@ -52,15 +51,14 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
  public:
   QuicCryptoServerStream(const QuicCryptoServerConfig& crypto_config,
                          QuicSession* session);
-  virtual ~QuicCryptoServerStream();
+  ~QuicCryptoServerStream() override;
 
   // Cancel any outstanding callbacks, such as asynchronous validation of client
   // hello.
   void CancelOutstandingCallbacks();
 
   // CryptoFramerVisitorInterface implementation
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) override;
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
   // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
   // SHA-256 hash of the client's ChannelID key and returns true, if the client
@@ -110,8 +108,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
     void Cancel();
 
     // From ValidateClientHelloResultCallback
-    virtual void RunImpl(const CryptoHandshakeMessage& client_hello,
-                         const Result& result) override;
+    void RunImpl(const CryptoHandshakeMessage& client_hello,
+                 const Result& result) override;
 
    private:
     QuicCryptoServerStream* parent_;

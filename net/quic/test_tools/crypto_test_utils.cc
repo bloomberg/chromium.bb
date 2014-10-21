@@ -41,10 +41,9 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
       : error_(false) {
   }
 
-  virtual void OnError(CryptoFramer* framer) override { error_ = true; }
+  void OnError(CryptoFramer* framer) override { error_ = true; }
 
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) override {
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
     messages_.push_back(message);
   }
 
@@ -137,13 +136,12 @@ class AsyncTestChannelIDSource : public ChannelIDSource,
   // Takes ownership of |sync_source|, a synchronous ChannelIDSource.
   explicit AsyncTestChannelIDSource(ChannelIDSource* sync_source)
       : sync_source_(sync_source) {}
-  virtual ~AsyncTestChannelIDSource() {}
+  ~AsyncTestChannelIDSource() override {}
 
   // ChannelIDSource implementation.
-  virtual QuicAsyncStatus GetChannelIDKey(
-      const string& hostname,
-      scoped_ptr<ChannelIDKey>* channel_id_key,
-      ChannelIDSourceCallback* callback) override {
+  QuicAsyncStatus GetChannelIDKey(const string& hostname,
+                                  scoped_ptr<ChannelIDKey>* channel_id_key,
+                                  ChannelIDSourceCallback* callback) override {
     // Synchronous mode.
     if (!callback) {
       return sync_source_->GetChannelIDKey(hostname, channel_id_key, nullptr);
@@ -160,7 +158,7 @@ class AsyncTestChannelIDSource : public ChannelIDSource,
   }
 
   // CallbackSource implementation.
-  virtual void RunPendingCallbacks() override {
+  void RunPendingCallbacks() override {
     if (callback_.get()) {
       callback_->Run(&channel_id_key_);
       callback_.reset();
@@ -353,22 +351,22 @@ class MockCommonCertSets : public CommonCertSets {
         index_(index) {
   }
 
-  virtual StringPiece GetCommonHashes() const override {
+  StringPiece GetCommonHashes() const override {
     CHECK(false) << "not implemented";
     return StringPiece();
   }
 
-  virtual StringPiece GetCert(uint64 hash, uint32 index) const override {
+  StringPiece GetCert(uint64 hash, uint32 index) const override {
     if (hash == hash_ && index == index_) {
       return cert_;
     }
     return StringPiece();
   }
 
-  virtual bool MatchCert(StringPiece cert,
-                         StringPiece common_set_hashes,
-                         uint64* out_hash,
-                         uint32* out_index) const override {
+  bool MatchCert(StringPiece cert,
+                 StringPiece common_set_hashes,
+                 uint64* out_hash,
+                 uint32* out_index) const override {
     if (cert != cert_) {
       return false;
     }

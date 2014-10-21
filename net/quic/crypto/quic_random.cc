@@ -17,14 +17,13 @@ class DefaultRandom : public QuicRandom {
   static DefaultRandom* GetInstance();
 
   // QuicRandom implementation
-  virtual void RandBytes(void* data, size_t len) override;
-  virtual uint64 RandUint64() override;
-  virtual void Reseed(const void* additional_entropy,
-                      size_t entropy_len) override;
+  void RandBytes(void* data, size_t len) override;
+  uint64 RandUint64() override;
+  void Reseed(const void* additional_entropy, size_t entropy_len) override;
 
  private:
   DefaultRandom() {};
-  virtual ~DefaultRandom() {}
+  ~DefaultRandom() override {}
 
   friend struct DefaultSingletonTraits<DefaultRandom>;
   DISALLOW_COPY_AND_ASSIGN(DefaultRandom);

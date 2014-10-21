@@ -21,9 +21,9 @@ class FileCallbackTest: public disk_cache::FileIOCallback {
         helper_(helper),
         max_id_(max_id) {
   }
-  virtual ~FileCallbackTest() {}
+  ~FileCallbackTest() override {}
 
-  virtual void OnFileIOComplete(int bytes_copied) override;
+  void OnFileIOComplete(int bytes_copied) override;
 
  private:
   int id_;
@@ -45,12 +45,12 @@ class TestFileBlock : public disk_cache::FileBlock {
   TestFileBlock() {
     CacheTestFillBuffer(buffer_, sizeof(buffer_), false);
   }
-  virtual ~TestFileBlock() {}
+  ~TestFileBlock() override {}
 
   // FileBlock interface.
-  virtual void* buffer() const override { return const_cast<char*>(buffer_); }
-  virtual size_t size() const override { return sizeof(buffer_); }
-  virtual int offset() const override { return 1024; }
+  void* buffer() const override { return const_cast<char*>(buffer_); }
+  size_t size() const override { return sizeof(buffer_); }
+  int offset() const override { return 1024; }
 
  private:
   char buffer_[20];

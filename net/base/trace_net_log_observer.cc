@@ -24,9 +24,9 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
   explicit TracedValue(scoped_ptr<base::Value> value) : value_(value.Pass()) {}
 
  private:
-  virtual ~TracedValue() {}
+  ~TracedValue() override {}
 
-  virtual void AppendAsTraceFormat(std::string* out) const override {
+  void AppendAsTraceFormat(std::string* out) const override {
     if (value_) {
       std::string tmp;
       base::JSONWriter::Write(value_.get(), &tmp);

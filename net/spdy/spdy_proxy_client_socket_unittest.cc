@@ -1317,8 +1317,7 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  virtual ~DeleteSockCallback() {
-  }
+  ~DeleteSockCallback() override {}
 
   const CompletionCallback& callback() const { return callback_; }
 

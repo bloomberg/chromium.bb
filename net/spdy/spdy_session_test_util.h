@@ -26,11 +26,11 @@ class SpdySessionTestTaskObserver : public base::MessageLoop::TaskObserver {
   //  function = "DoFoo"
   SpdySessionTestTaskObserver(const std::string& file_name,
                               const std::string& function_name);
-  virtual ~SpdySessionTestTaskObserver();
+  ~SpdySessionTestTaskObserver() override;
 
   // Implements MessageLoop::TaskObserver.
-  virtual void WillProcessTask(const base::PendingTask& pending_task) override;
-  virtual void DidProcessTask(const base::PendingTask& pending_task) override;
+  void WillProcessTask(const base::PendingTask& pending_task) override;
+  void DidProcessTask(const base::PendingTask& pending_task) override;
 
   // Returns the number of tasks posted by the given function and file.
   uint16 executed_count() const { return executed_count_; }

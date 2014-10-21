@@ -31,17 +31,17 @@ class CTLogVerifier;
 class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
  public:
   MultiLogCTVerifier();
-  virtual ~MultiLogCTVerifier();
+  ~MultiLogCTVerifier() override;
 
   void AddLog(scoped_ptr<CTLogVerifier> log_verifier);
   void AddLogs(ScopedVector<CTLogVerifier> log_verifiers);
 
   // CTVerifier implementation:
-  virtual int Verify(X509Certificate* cert,
-                     const std::string& stapled_ocsp_response,
-                     const std::string& sct_list_from_tls_extension,
-                     ct::CTVerifyResult* result,
-                     const BoundNetLog& net_log) override;
+  int Verify(X509Certificate* cert,
+             const std::string& stapled_ocsp_response,
+             const std::string& sct_list_from_tls_extension,
+             ct::CTVerifyResult* result,
+             const BoundNetLog& net_log) override;
 
  private:
   // Mapping from a log's ID to the verifier for this log.

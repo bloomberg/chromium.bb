@@ -20,10 +20,10 @@ class NET_EXPORT URLRequestErrorJob : public URLRequestJob {
                      NetworkDelegate* network_delegate,
                      int error);
 
-  virtual void Start() override;
+  void Start() override;
 
  private:
-  virtual ~URLRequestErrorJob();
+  ~URLRequestErrorJob() override;
 
   void StartAsync();
 

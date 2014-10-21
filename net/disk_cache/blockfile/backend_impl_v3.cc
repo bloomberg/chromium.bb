@@ -1510,8 +1510,8 @@ int BackendImplV3::DoomEntriesSince(base::Time initial_time,
 
 class BackendImplV3::NotImplementedIterator : public Backend::Iterator {
  public:
-  virtual int OpenNextEntry(disk_cache::Entry** next_entry,
-                            const net::CompletionCallback& callback) override {
+  int OpenNextEntry(disk_cache::Entry** next_entry,
+                    const net::CompletionCallback& callback) override {
     return net::ERR_NOT_IMPLEMENTED;
   }
 };

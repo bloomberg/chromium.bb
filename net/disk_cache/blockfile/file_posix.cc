@@ -24,7 +24,7 @@ class FileWorkerPool : public base::SequencedWorkerPool {
   FileWorkerPool() : base::SequencedWorkerPool(kMaxThreads, "CachePool") {}
 
  protected:
-  virtual ~FileWorkerPool() {}
+  ~FileWorkerPool() override {}
 };
 
 base::LazyInstance<FileWorkerPool>::Leaky s_worker_pool =

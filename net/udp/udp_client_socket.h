@@ -21,20 +21,22 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
                   const RandIntCallback& rand_int_cb,
                   net::NetLog* net_log,
                   const net::NetLog::Source& source);
-  virtual ~UDPClientSocket();
+  ~UDPClientSocket() override;
 
   // DatagramClientSocket implementation.
-  virtual int Connect(const IPEndPoint& address) override;
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) override;
-  virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) override;
-  virtual void Close() override;
-  virtual int GetPeerAddress(IPEndPoint* address) const override;
-  virtual int GetLocalAddress(IPEndPoint* address) const override;
-  virtual int SetReceiveBufferSize(int32 size) override;
-  virtual int SetSendBufferSize(int32 size) override;
-  virtual const BoundNetLog& NetLog() const override;
+  int Connect(const IPEndPoint& address) override;
+  int Read(IOBuffer* buf,
+           int buf_len,
+           const CompletionCallback& callback) override;
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback) override;
+  void Close() override;
+  int GetPeerAddress(IPEndPoint* address) const override;
+  int GetLocalAddress(IPEndPoint* address) const override;
+  int SetReceiveBufferSize(int32 size) override;
+  int SetSendBufferSize(int32 size) override;
+  const BoundNetLog& NetLog() const override;
 
  private:
   UDPSocket socket_;

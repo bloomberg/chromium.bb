@@ -59,9 +59,7 @@ class RequeingBufferProducer : public SpdyBufferProducer {
         base::Bind(RequeingBufferProducer::ConsumeCallback, queue));
   }
 
-  virtual scoped_ptr<SpdyBuffer> ProduceBuffer() override {
-    return buffer_.Pass();
-  }
+  scoped_ptr<SpdyBuffer> ProduceBuffer() override { return buffer_.Pass(); }
 
   static void ConsumeCallback(SpdyWriteQueue* queue,
                               size_t size,

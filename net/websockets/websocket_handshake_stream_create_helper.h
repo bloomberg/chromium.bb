@@ -31,17 +31,17 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
       WebSocketStream::ConnectDelegate* connect_delegate,
       const std::vector<std::string>& requested_subprotocols);
 
-  virtual ~WebSocketHandshakeStreamCreateHelper();
+  ~WebSocketHandshakeStreamCreateHelper() override;
 
   // WebSocketHandshakeStreamBase::CreateHelper methods
 
   // Create a WebSocketBasicHandshakeStream.
-  virtual WebSocketHandshakeStreamBase* CreateBasicStream(
+  WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
       bool using_proxy) override;
 
   // Unimplemented as of November 2013.
-  virtual WebSocketHandshakeStreamBase* CreateSpdyStream(
+  WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<SpdySession>& session,
       bool use_relative_url) override;
 

@@ -32,7 +32,7 @@ class HttpResponse{
 class BasicHttpResponse : public HttpResponse {
  public:
   BasicHttpResponse();
-  virtual ~BasicHttpResponse();
+  ~BasicHttpResponse() override;
 
   // The response code.
   HttpStatusCode code() const { return code_; }
@@ -54,7 +54,7 @@ class BasicHttpResponse : public HttpResponse {
   }
 
   // Generates and returns a http response string.
-  virtual std::string ToResponseString() const override;
+  std::string ToResponseString() const override;
 
  private:
   HttpStatusCode code_;

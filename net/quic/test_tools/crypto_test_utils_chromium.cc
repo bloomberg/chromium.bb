@@ -34,7 +34,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
         ImportCertFromFile(GetTestCertsDirectory(), cert_file);
     scoped_root_.Reset(root_cert.get());
   }
-  virtual ~TestProofVerifierChromium() {}
+  ~TestProofVerifierChromium() override {}
 
  private:
   ScopedTestRoot scoped_root_;
@@ -52,14 +52,14 @@ class FakeProofSource : public ProofSource {
     certs_[0] = kLeafCert;
     certs_[1] = kIntermediateCert;
   }
-  virtual ~FakeProofSource() {}
+  ~FakeProofSource() override {}
 
   // ProofSource interface
-  virtual bool GetProof(const std::string& hostname,
-                        const std::string& server_config,
-                        bool ecdsa_ok,
-                        const std::vector<std::string>** out_certs,
-                        std::string* out_signature) override {
+  bool GetProof(const std::string& hostname,
+                const std::string& server_config,
+                bool ecdsa_ok,
+                const std::vector<std::string>** out_certs,
+                std::string* out_signature) override {
     *out_certs = &certs_;
     *out_signature = kSignature;
     return true;
@@ -73,18 +73,17 @@ class FakeProofSource : public ProofSource {
 class FakeProofVerifier : public ProofVerifier {
  public:
   FakeProofVerifier() {}
-  virtual ~FakeProofVerifier() {}
+  ~FakeProofVerifier() override {}
 
   // ProofVerifier interface
-  virtual QuicAsyncStatus VerifyProof(
-      const std::string& hostname,
-      const std::string& server_config,
-      const std::vector<std::string>& certs,
-      const std::string& signature,
-      const ProofVerifyContext* verify_context,
-      std::string* error_details,
-      scoped_ptr<ProofVerifyDetails>* verify_details,
-      ProofVerifierCallback* callback) override {
+  QuicAsyncStatus VerifyProof(const std::string& hostname,
+                              const std::string& server_config,
+                              const std::vector<std::string>& certs,
+                              const std::string& signature,
+                              const ProofVerifyContext* verify_context,
+                              std::string* error_details,
+                              scoped_ptr<ProofVerifyDetails>* verify_details,
+                              ProofVerifierCallback* callback) override {
     error_details->clear();
     scoped_ptr<ProofVerifyDetailsChromium> verify_details_chromium(
         new ProofVerifyDetailsChromium);

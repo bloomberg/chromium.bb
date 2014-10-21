@@ -40,7 +40,7 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
     // URLRequest::SetUserData().
     static const void* DataKey() { return kWebSocketHandshakeUserDataKey; }
 
-    virtual ~CreateHelper() {}
+    ~CreateHelper() override {}
 
     // Create a WebSocketBasicHandshakeStream. This is called after the
     // underlying connection has been established but before any handshake data
@@ -58,7 +58,7 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
 
   // This has to have an inline implementation so that the net/url_request/
   // tests do not fail on iOS.
-  virtual ~WebSocketHandshakeStreamBase() {}
+  ~WebSocketHandshakeStreamBase() override {}
 
   // After the handshake has completed, this method creates a WebSocketStream
   // (of the appropriate type) from the WebSocketHandshakeStreamBase object.

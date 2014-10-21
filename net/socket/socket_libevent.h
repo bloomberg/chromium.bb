@@ -27,7 +27,7 @@ class NET_EXPORT_PRIVATE SocketLibevent
     : public base::MessageLoopForIO::Watcher {
  public:
   SocketLibevent();
-  virtual ~SocketLibevent();
+  ~SocketLibevent() override;
 
   // Opens a socket and returns net::OK if |address_family| is AF_INET, AF_INET6
   // or AF_UNIX. Otherwise, it does DCHECK() and returns a net error.
@@ -81,8 +81,8 @@ class NET_EXPORT_PRIVATE SocketLibevent
 
  private:
   // base::MessageLoopForIO::Watcher methods.
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   int DoAccept(scoped_ptr<SocketLibevent>* socket);
   void AcceptCompleted();

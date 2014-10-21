@@ -38,9 +38,9 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
         ok_(ok),
         error_details_(error_details) {}
 
-  virtual void Run(bool ok,
-                   const string& error_details,
-                   scoped_ptr<ProofVerifyDetails>* details) override {
+  void Run(bool ok,
+           const string& error_details,
+           scoped_ptr<ProofVerifyDetails>* details) override {
     *ok_ = ok;
     *error_details_ = error_details;
 

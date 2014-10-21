@@ -18,10 +18,10 @@ namespace test {
 namespace {
 
 class TestProofVerifyDetails : public ProofVerifyDetails {
-  virtual ~TestProofVerifyDetails() {}
+  ~TestProofVerifyDetails() override {}
 
   // ProofVerifyDetails implementation
-  virtual ProofVerifyDetails* Clone() const override {
+  ProofVerifyDetails* Clone() const override {
     return new TestProofVerifyDetails;
   }
 };

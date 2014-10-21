@@ -119,9 +119,9 @@ class DefaultPollPolicy : public ProxyService::PacPollPolicy {
  public:
   DefaultPollPolicy() {}
 
-  virtual Mode GetNextDelay(int initial_error,
-                            TimeDelta current_delay,
-                            TimeDelta* next_delay) const override {
+  Mode GetNextDelay(int initial_error,
+                    TimeDelta current_delay,
+                    TimeDelta* next_delay) const override {
     if (initial_error != OK) {
       // Re-try policy for failures.
       const int kDelay1Seconds = 8;
@@ -160,10 +160,9 @@ class DefaultPollPolicy : public ProxyService::PacPollPolicy {
 class ProxyConfigServiceDirect : public ProxyConfigService {
  public:
   // ProxyConfigService implementation:
-  virtual void AddObserver(Observer* observer) override {}
-  virtual void RemoveObserver(Observer* observer) override {}
-  virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* config)
-      override {
+  void AddObserver(Observer* observer) override {}
+  void RemoveObserver(Observer* observer) override {}
+  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override {
     *config = ProxyConfig::CreateDirect();
     config->set_source(PROXY_CONFIG_SOURCE_UNKNOWN);
     return CONFIG_VALID;
@@ -176,28 +175,24 @@ class ProxyResolverNull : public ProxyResolver {
   ProxyResolverNull() : ProxyResolver(false /*expects_pac_bytes*/) {}
 
   // ProxyResolver implementation.
-  virtual int GetProxyForURL(const GURL& url,
-                             ProxyInfo* results,
-                             const CompletionCallback& callback,
-                             RequestHandle* request,
-                             const BoundNetLog& net_log) override {
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const CompletionCallback& callback,
+                     RequestHandle* request,
+                     const BoundNetLog& net_log) override {
     return ERR_NOT_IMPLEMENTED;
   }
 
-  virtual void CancelRequest(RequestHandle request) override {
-    NOTREACHED();
-  }
+  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
 
-  virtual LoadState GetLoadState(RequestHandle request) const override {
+  LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
   }
 
-  virtual void CancelSetPacScript() override {
-    NOTREACHED();
-  }
+  void CancelSetPacScript() override { NOTREACHED(); }
 
-  virtual int SetPacScript(
+  int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& /*script_data*/,
       const CompletionCallback& /*callback*/) override {
     return ERR_NOT_IMPLEMENTED;
@@ -212,31 +207,26 @@ class ProxyResolverFromPacString : public ProxyResolver {
       : ProxyResolver(false /*expects_pac_bytes*/),
         pac_string_(pac_string) {}
 
-  virtual int GetProxyForURL(const GURL& url,
-                             ProxyInfo* results,
-                             const CompletionCallback& callback,
-                             RequestHandle* request,
-                             const BoundNetLog& net_log) override {
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const CompletionCallback& callback,
+                     RequestHandle* request,
+                     const BoundNetLog& net_log) override {
     results->UsePacString(pac_string_);
     return OK;
   }
 
-  virtual void CancelRequest(RequestHandle request) override {
-    NOTREACHED();
-  }
+  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
 
-  virtual LoadState GetLoadState(RequestHandle request) const override {
+  LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
   }
 
-  virtual void CancelSetPacScript() override {
-    NOTREACHED();
-  }
+  void CancelSetPacScript() override { NOTREACHED(); }
 
-  virtual int SetPacScript(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      const CompletionCallback& callback) override {
+  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& pac_script,
+                   const CompletionCallback& callback) override {
     return OK;
   }
 
@@ -250,7 +240,7 @@ class ProxyResolverFactoryForSystem : public ProxyResolverFactory {
   ProxyResolverFactoryForSystem()
       : ProxyResolverFactory(false /*expects_pac_bytes*/) {}
 
-  virtual ProxyResolver* CreateProxyResolver() override {
+  ProxyResolver* CreateProxyResolver() override {
     DCHECK(IsSupported());
 #if defined(OS_WIN)
     return new ProxyResolverWinHttp();

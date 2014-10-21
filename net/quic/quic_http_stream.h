@@ -29,47 +29,45 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
  public:
   explicit QuicHttpStream(const base::WeakPtr<QuicClientSession>& session);
 
-  virtual ~QuicHttpStream();
+  ~QuicHttpStream() override;
 
   // HttpStream implementation.
-  virtual int InitializeStream(const HttpRequestInfo* request_info,
-                               RequestPriority priority,
-                               const BoundNetLog& net_log,
-                               const CompletionCallback& callback) override;
-  virtual int SendRequest(const HttpRequestHeaders& request_headers,
-                          HttpResponseInfo* response,
-                          const CompletionCallback& callback) override;
-  virtual UploadProgress GetUploadProgress() const override;
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) override;
-  virtual int ReadResponseBody(IOBuffer* buf,
-                               int buf_len,
-                               const CompletionCallback& callback) override;
-  virtual void Close(bool not_reusable) override;
-  virtual HttpStream* RenewStreamForAuth() override;
-  virtual bool IsResponseBodyComplete() const override;
-  virtual bool CanFindEndOfResponse() const override;
-  virtual bool IsConnectionReused() const override;
-  virtual void SetConnectionReused() override;
-  virtual bool IsConnectionReusable() const override;
-  virtual int64 GetTotalReceivedBytes() const override;
-  virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override;
-  virtual void GetSSLInfo(SSLInfo* ssl_info) override;
-  virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) override;
-  virtual bool IsSpdyHttpStream() const override;
-  virtual void Drain(HttpNetworkSession* session) override;
-  virtual void SetPriority(RequestPriority priority) override;
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override;
+  int SendRequest(const HttpRequestHeaders& request_headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override;
+  UploadProgress GetUploadProgress() const override;
+  int ReadResponseHeaders(const CompletionCallback& callback) override;
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override;
+  void Close(bool not_reusable) override;
+  HttpStream* RenewStreamForAuth() override;
+  bool IsResponseBodyComplete() const override;
+  bool CanFindEndOfResponse() const override;
+  bool IsConnectionReused() const override;
+  void SetConnectionReused() override;
+  bool IsConnectionReusable() const override;
+  int64 GetTotalReceivedBytes() const override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  void GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
+  bool IsSpdyHttpStream() const override;
+  void Drain(HttpNetworkSession* session) override;
+  void SetPriority(RequestPriority priority) override;
 
   // QuicReliableClientStream::Delegate implementation
-  virtual int OnDataReceived(const char* data, int length) override;
-  virtual void OnClose(QuicErrorCode error) override;
-  virtual void OnError(int error) override;
-  virtual bool HasSendHeadersComplete() override;
+  int OnDataReceived(const char* data, int length) override;
+  void OnClose(QuicErrorCode error) override;
+  void OnError(int error) override;
+  bool HasSendHeadersComplete() override;
 
   // QuicClientSession::Observer implementation
-  virtual void OnCryptoHandshakeConfirmed() override;
-  virtual void OnSessionClosed(int error) override;
+  void OnCryptoHandshakeConfirmed() override;
+  void OnSessionClosed(int error) override;
 
  private:
   friend class test::QuicHttpStreamPeer;

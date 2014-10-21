@@ -27,8 +27,9 @@ base::LazyInstance<URLRequestJobList>::Leaky
 class TestJobProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
  public:
   // URLRequestJobFactory::ProtocolHandler implementation:
-  virtual URLRequestJob* MaybeCreateJob(
-      URLRequest* request, NetworkDelegate* network_delegate) const override {
+  URLRequestJob* MaybeCreateJob(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const override {
     return new URLRequestTestJob(request, network_delegate);
   }
 };

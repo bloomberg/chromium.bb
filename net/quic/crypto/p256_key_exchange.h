@@ -26,7 +26,7 @@ namespace net {
 // Diffie-Hellman on NIST P-256.
 class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
  public:
-  virtual ~P256KeyExchange();
+  ~P256KeyExchange() override;
 
   // New creates a new key exchange object from a private key. If
   // |private_key| is invalid, nullptr is returned.
@@ -38,11 +38,11 @@ class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   static std::string NewPrivateKey();
 
   // KeyExchange interface.
-  virtual KeyExchange* NewKeyPair(QuicRandom* rand) const override;
-  virtual bool CalculateSharedKey(const base::StringPiece& peer_public_value,
-                                  std::string* shared_key) const override;
-  virtual base::StringPiece public_value() const override;
-  virtual QuicTag tag() const override;
+  KeyExchange* NewKeyPair(QuicRandom* rand) const override;
+  bool CalculateSharedKey(const base::StringPiece& peer_public_value,
+                          std::string* shared_key) const override;
+  base::StringPiece public_value() const override;
+  QuicTag tag() const override;
 
  private:
   enum {

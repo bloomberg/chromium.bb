@@ -105,9 +105,9 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
   }
 
   // ProxyScriptFetcher implementation.
-  virtual int Fetch(const GURL& url,
-                    base::string16* text,
-                    const CompletionCallback& callback) override {
+  int Fetch(const GURL& url,
+            base::string16* text,
+            const CompletionCallback& callback) override {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
     int rv = rule.fetch_error;
     EXPECT_NE(ERR_UNEXPECTED, rv);
@@ -116,9 +116,9 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
     return rv;
   }
 
-  virtual void Cancel() override {}
+  void Cancel() override {}
 
-  virtual URLRequestContext* GetRequestContext() const override {
+  URLRequestContext* GetRequestContext() const override {
     return request_context_;
   }
 
@@ -131,12 +131,12 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
 class MockDhcpProxyScriptFetcher : public DhcpProxyScriptFetcher {
  public:
   MockDhcpProxyScriptFetcher();
-  virtual ~MockDhcpProxyScriptFetcher();
+  ~MockDhcpProxyScriptFetcher() override;
 
-  virtual int Fetch(base::string16* utf16_text,
-                    const CompletionCallback& callback) override;
-  virtual void Cancel() override;
-  virtual const GURL& GetPacURL() const override;
+  int Fetch(base::string16* utf16_text,
+            const CompletionCallback& callback) override;
+  void Cancel() override;
+  const GURL& GetPacURL() const override;
 
   virtual void SetPacURL(const GURL& url);
 
@@ -642,18 +642,15 @@ class SynchronousSuccessDhcpFetcher : public DhcpProxyScriptFetcher {
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {
   }
 
-  virtual int Fetch(base::string16* utf16_text,
-                    const CompletionCallback& callback) override {
+  int Fetch(base::string16* utf16_text,
+            const CompletionCallback& callback) override {
     *utf16_text = expected_text_;
     return OK;
   }
 
-  virtual void Cancel() override {
-  }
+  void Cancel() override {}
 
-  virtual const GURL& GetPacURL() const override {
-    return gurl_;
-  }
+  const GURL& GetPacURL() const override { return gurl_; }
 
   const base::string16& expected_text() const {
     return expected_text_;
@@ -722,10 +719,10 @@ class AsyncFailDhcpFetcher
       public base::SupportsWeakPtr<AsyncFailDhcpFetcher> {
  public:
   AsyncFailDhcpFetcher() {}
-  virtual ~AsyncFailDhcpFetcher() {}
+  ~AsyncFailDhcpFetcher() override {}
 
-  virtual int Fetch(base::string16* utf16_text,
-                    const CompletionCallback& callback) override {
+  int Fetch(base::string16* utf16_text,
+            const CompletionCallback& callback) override {
     callback_ = callback;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -733,13 +730,9 @@ class AsyncFailDhcpFetcher
     return ERR_IO_PENDING;
   }
 
-  virtual void Cancel() override {
-    callback_.Reset();
-  }
+  void Cancel() override { callback_.Reset(); }
 
-  virtual const GURL& GetPacURL() const override {
-    return dummy_gurl_;
-  }
+  const GURL& GetPacURL() const override { return dummy_gurl_; }
 
   void CallbackWithFailure() {
     if (!callback_.is_null())

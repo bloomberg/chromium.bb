@@ -58,7 +58,7 @@ class TestURLRequestContext : public URLRequestContext {
   // URLRequestContext before it is constructed completely. If
   // |delay_initialization| is true, Init() needs be be called manually.
   explicit TestURLRequestContext(bool delay_initialization);
-  virtual ~TestURLRequestContext();
+  ~TestURLRequestContext() override;
 
   void Init();
 
@@ -108,12 +108,12 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       scoped_ptr<TestURLRequestContext> context);
 
   // URLRequestContextGetter implementation.
-  virtual TestURLRequestContext* GetURLRequestContext() override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override;
+  TestURLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override;
 
  protected:
-  virtual ~TestURLRequestContextGetter();
+  ~TestURLRequestContextGetter() override;
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
@@ -125,7 +125,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
 class TestDelegate : public URLRequest::Delegate {
  public:
   TestDelegate();
-  virtual ~TestDelegate();
+  ~TestDelegate() override;
 
   void set_cancel_in_received_redirect(bool val) { cancel_in_rr_ = val; }
   void set_cancel_in_response_started(bool val) { cancel_in_rs_ = val; }
@@ -169,21 +169,20 @@ class TestDelegate : public URLRequest::Delegate {
   void ClearFullRequestHeaders();
 
   // URLRequest::Delegate:
-  virtual void OnReceivedRedirect(URLRequest* request,
-                                  const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override;
-  virtual void OnBeforeNetworkStart(URLRequest* request, bool* defer) override;
-  virtual void OnAuthRequired(URLRequest* request,
-                              AuthChallengeInfo* auth_info) override;
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
+  void OnBeforeNetworkStart(URLRequest* request, bool* defer) override;
+  void OnAuthRequired(URLRequest* request,
+                      AuthChallengeInfo* auth_info) override;
   // NOTE: |fatal| causes |certificate_errors_are_fatal_| to be set to true.
   // (Unit tests use this as a post-condition.) But for policy, this method
   // consults |allow_certificate_errors_|.
-  virtual void OnSSLCertificateError(URLRequest* request,
-                                     const SSLInfo& ssl_info,
-                                     bool fatal) override;
-  virtual void OnResponseStarted(URLRequest* request) override;
-  virtual void OnReadCompleted(URLRequest* request,
-                               int bytes_read) override;
+  void OnSSLCertificateError(URLRequest* request,
+                             const SSLInfo& ssl_info,
+                             bool fatal) override;
+  void OnResponseStarted(URLRequest* request) override;
+  void OnReadCompleted(URLRequest* request, int bytes_read) override;
 
  private:
   static const int kBufferSize = 4096;
@@ -229,7 +228,7 @@ class TestNetworkDelegate : public NetworkDelegate {
   };
 
   TestNetworkDelegate();
-  virtual ~TestNetworkDelegate();
+  ~TestNetworkDelegate() override;
 
   // Writes the LoadTimingInfo during the most recent call to OnBeforeRedirect.
   bool GetLoadTimingInfoBeforeRedirect(
@@ -284,51 +283,45 @@ class TestNetworkDelegate : public NetworkDelegate {
 
  protected:
   // NetworkDelegate:
-  virtual int OnBeforeURLRequest(URLRequest* request,
-                                 const CompletionCallback& callback,
-                                 GURL* new_url) override;
-  virtual int OnBeforeSendHeaders(URLRequest* request,
-                                  const CompletionCallback& callback,
-                                  HttpRequestHeaders* headers) override;
-  virtual void OnBeforeSendProxyHeaders(
-      net::URLRequest* request,
-      const net::ProxyInfo& proxy_info,
-      net::HttpRequestHeaders* headers) override;
-  virtual void OnSendHeaders(URLRequest* request,
-                             const HttpRequestHeaders& headers) override;
-  virtual int OnHeadersReceived(
+  int OnBeforeURLRequest(URLRequest* request,
+                         const CompletionCallback& callback,
+                         GURL* new_url) override;
+  int OnBeforeSendHeaders(URLRequest* request,
+                          const CompletionCallback& callback,
+                          HttpRequestHeaders* headers) override;
+  void OnBeforeSendProxyHeaders(net::URLRequest* request,
+                                const net::ProxyInfo& proxy_info,
+                                net::HttpRequestHeaders* headers) override;
+  void OnSendHeaders(URLRequest* request,
+                     const HttpRequestHeaders& headers) override;
+  int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
-  virtual void OnBeforeRedirect(URLRequest* request,
-                                const GURL& new_location) override;
-  virtual void OnResponseStarted(URLRequest* request) override;
-  virtual void OnRawBytesRead(const URLRequest& request,
-                              int bytes_read) override;
-  virtual void OnCompleted(URLRequest* request, bool started) override;
-  virtual void OnURLRequestDestroyed(URLRequest* request) override;
-  virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) override;
-  virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
+  void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
+  void OnResponseStarted(URLRequest* request) override;
+  void OnRawBytesRead(const URLRequest& request, int bytes_read) override;
+  void OnCompleted(URLRequest* request, bool started) override;
+  void OnURLRequestDestroyed(URLRequest* request) override;
+  void OnPACScriptError(int line_number, const base::string16& error) override;
+  NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
       AuthCredentials* credentials) override;
-  virtual bool OnCanGetCookies(const URLRequest& request,
-                               const CookieList& cookie_list) override;
-  virtual bool OnCanSetCookie(const URLRequest& request,
-                              const std::string& cookie_line,
-                              CookieOptions* options) override;
-  virtual bool OnCanAccessFile(const URLRequest& request,
-                               const base::FilePath& path) const override;
-  virtual bool OnCanThrottleRequest(
-      const URLRequest& request) const override;
-  virtual int OnBeforeSocketStreamConnect(
-      SocketStream* stream,
-      const CompletionCallback& callback) override;
-  virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+  bool OnCanGetCookies(const URLRequest& request,
+                       const CookieList& cookie_list) override;
+  bool OnCanSetCookie(const URLRequest& request,
+                      const std::string& cookie_line,
+                      CookieOptions* options) override;
+  bool OnCanAccessFile(const URLRequest& request,
+                       const base::FilePath& path) const override;
+  bool OnCanThrottleRequest(const URLRequest& request) const override;
+  int OnBeforeSocketStreamConnect(SocketStream* stream,
+                                  const CompletionCallback& callback) override;
+  bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,
       const GURL& referrer_url) const override;
@@ -406,7 +399,7 @@ class TestJobInterceptor : public URLRequestJobFactory::ProtocolHandler {
  public:
   TestJobInterceptor();
 
-  virtual URLRequestJob* MaybeCreateJob(
+  URLRequestJob* MaybeCreateJob(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override;
   void set_main_intercept_job(URLRequestJob* job);

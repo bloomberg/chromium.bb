@@ -103,9 +103,9 @@ class DefaultPacketWriterFactory : public QuicConnection::PacketWriterFactory {
  public:
   explicit DefaultPacketWriterFactory(DatagramClientSocket* socket)
       : socket_(socket) {}
-  virtual ~DefaultPacketWriterFactory() {}
+  ~DefaultPacketWriterFactory() override {}
 
-  virtual QuicPacketWriter* Create(QuicConnection* connection) const override;
+  QuicPacketWriter* Create(QuicConnection* connection) const override;
 
  private:
   DatagramClientSocket* socket_;

@@ -20,15 +20,13 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
  public:
   URLRequestSimpleJob(URLRequest* request, NetworkDelegate* network_delegate);
 
-  virtual void Start() override;
-  virtual bool ReadRawData(IOBuffer* buf,
-                           int buf_size,
-                           int *bytes_read) override;
-  virtual bool GetMimeType(std::string* mime_type) const override;
-  virtual bool GetCharset(std::string* charset) override;
+  void Start() override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  bool GetMimeType(std::string* mime_type) const override;
+  bool GetCharset(std::string* charset) override;
 
  protected:
-  virtual ~URLRequestSimpleJob();
+  ~URLRequestSimpleJob() override;
 
   // Subclasses must override the way response data is determined.
   // The return value should be:

@@ -496,12 +496,13 @@ struct Context {
 class FakeWebSocketHandshakeStreamCreateHelper
     : public net::WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  virtual ~FakeWebSocketHandshakeStreamCreateHelper() {}
-  virtual net::WebSocketHandshakeStreamBase* CreateBasicStream(
-      scoped_ptr<net::ClientSocketHandle> connect, bool using_proxy) override {
+  ~FakeWebSocketHandshakeStreamCreateHelper() override {}
+  net::WebSocketHandshakeStreamBase* CreateBasicStream(
+      scoped_ptr<net::ClientSocketHandle> connect,
+      bool using_proxy) override {
     return NULL;
   }
-  virtual net::WebSocketHandshakeStreamBase* CreateSpdyStream(
+  net::WebSocketHandshakeStreamBase* CreateSpdyStream(
       const base::WeakPtr<net::SpdySession>& session,
       bool use_relative_url) override {
     return NULL;

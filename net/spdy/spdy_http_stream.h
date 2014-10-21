@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
  public:
   // |spdy_session| must not be NULL.
   SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session, bool direct);
-  virtual ~SpdyHttpStream();
+  ~SpdyHttpStream() override;
 
   SpdyStream* stream() { return stream_.get(); }
 
@@ -41,47 +41,45 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // HttpStream implementation.
 
-  virtual int InitializeStream(const HttpRequestInfo* request_info,
-                               RequestPriority priority,
-                               const BoundNetLog& net_log,
-                               const CompletionCallback& callback) override;
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override;
 
-  virtual int SendRequest(const HttpRequestHeaders& headers,
-                          HttpResponseInfo* response,
-                          const CompletionCallback& callback) override;
-  virtual UploadProgress GetUploadProgress() const override;
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) override;
-  virtual int ReadResponseBody(IOBuffer* buf,
-                               int buf_len,
-                               const CompletionCallback& callback) override;
-  virtual void Close(bool not_reusable) override;
-  virtual HttpStream* RenewStreamForAuth() override;
-  virtual bool IsResponseBodyComplete() const override;
-  virtual bool CanFindEndOfResponse() const override;
+  int SendRequest(const HttpRequestHeaders& headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override;
+  UploadProgress GetUploadProgress() const override;
+  int ReadResponseHeaders(const CompletionCallback& callback) override;
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override;
+  void Close(bool not_reusable) override;
+  HttpStream* RenewStreamForAuth() override;
+  bool IsResponseBodyComplete() const override;
+  bool CanFindEndOfResponse() const override;
 
   // Must not be called if a NULL SpdySession was pssed into the
   // constructor.
-  virtual bool IsConnectionReused() const override;
+  bool IsConnectionReused() const override;
 
-  virtual void SetConnectionReused() override;
-  virtual bool IsConnectionReusable() const override;
-  virtual int64 GetTotalReceivedBytes() const override;
-  virtual bool GetLoadTimingInfo(
-      LoadTimingInfo* load_timing_info) const override;
-  virtual void GetSSLInfo(SSLInfo* ssl_info) override;
-  virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) override;
-  virtual bool IsSpdyHttpStream() const override;
-  virtual void Drain(HttpNetworkSession* session) override;
-  virtual void SetPriority(RequestPriority priority) override;
+  void SetConnectionReused() override;
+  bool IsConnectionReusable() const override;
+  int64 GetTotalReceivedBytes() const override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  void GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
+  bool IsSpdyHttpStream() const override;
+  void Drain(HttpNetworkSession* session) override;
+  void SetPriority(RequestPriority priority) override;
 
   // SpdyStream::Delegate implementation.
-  virtual void OnRequestHeadersSent() override;
-  virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
+  void OnRequestHeadersSent() override;
+  SpdyResponseHeadersStatus OnResponseHeadersUpdated(
       const SpdyHeaderBlock& response_headers) override;
-  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
-  virtual void OnDataSent() override;
-  virtual void OnClose(int status) override;
+  void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) override;
+  void OnDataSent() override;
+  void OnClose(int status) override;
 
  private:
   // Must be called only when |request_info_| is non-NULL.

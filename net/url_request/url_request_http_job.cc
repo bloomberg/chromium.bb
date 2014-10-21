@@ -55,20 +55,20 @@ namespace net {
 class URLRequestHttpJob::HttpFilterContext : public FilterContext {
  public:
   explicit HttpFilterContext(URLRequestHttpJob* job);
-  virtual ~HttpFilterContext();
+  ~HttpFilterContext() override;
 
   // FilterContext implementation.
-  virtual bool GetMimeType(std::string* mime_type) const override;
-  virtual bool GetURL(GURL* gurl) const override;
-  virtual bool GetContentDisposition(std::string* disposition) const override;
-  virtual base::Time GetRequestTime() const override;
-  virtual bool IsCachedContent() const override;
-  virtual bool IsDownload() const override;
-  virtual bool SdchResponseExpected() const override;
-  virtual int64 GetByteReadCount() const override;
-  virtual int GetResponseCode() const override;
-  virtual const URLRequestContext* GetURLRequestContext() const override;
-  virtual void RecordPacketStats(StatisticSelector statistic) const override;
+  bool GetMimeType(std::string* mime_type) const override;
+  bool GetURL(GURL* gurl) const override;
+  bool GetContentDisposition(std::string* disposition) const override;
+  base::Time GetRequestTime() const override;
+  bool IsCachedContent() const override;
+  bool IsDownload() const override;
+  bool SdchResponseExpected() const override;
+  int64 GetByteReadCount() const override;
+  int GetResponseCode() const override;
+  const URLRequestContext* GetURLRequestContext() const override;
+  void RecordPacketStats(StatisticSelector statistic) const override;
 
   // Method to allow us to reset filter context for a response that should have
   // been SDCH encoded when there is an update due to an explicit HTTP header.

@@ -43,7 +43,7 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
   using URLRequestHttpJob::priority;
 
  protected:
-  virtual ~TestURLRequestHttpJob() {}
+  ~TestURLRequestHttpJob() override {}
 };
 
 class URLRequestHttpJobTest : public ::testing::Test {
@@ -253,61 +253,59 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   }
 
   // Fake implementation of HttpStreamBase methods.
-  virtual int InitializeStream(const HttpRequestInfo* request_info,
-                               RequestPriority priority,
-                               const BoundNetLog& net_log,
-                               const CompletionCallback& callback) override {
+  int InitializeStream(const HttpRequestInfo* request_info,
+                       RequestPriority priority,
+                       const BoundNetLog& net_log,
+                       const CompletionCallback& callback) override {
     initialize_stream_was_called_ = true;
     return ERR_IO_PENDING;
   }
 
-  virtual int SendRequest(const HttpRequestHeaders& request_headers,
-                          HttpResponseInfo* response,
-                          const CompletionCallback& callback) override {
+  int SendRequest(const HttpRequestHeaders& request_headers,
+                  HttpResponseInfo* response,
+                  const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual int ReadResponseHeaders(const CompletionCallback& callback) override {
+  int ReadResponseHeaders(const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual int ReadResponseBody(IOBuffer* buf,
-                               int buf_len,
-                               const CompletionCallback& callback) override {
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
 
-  virtual void Close(bool not_reusable) override {}
+  void Close(bool not_reusable) override {}
 
-  virtual bool IsResponseBodyComplete() const override { return false; }
+  bool IsResponseBodyComplete() const override { return false; }
 
-  virtual bool CanFindEndOfResponse() const override { return false; }
+  bool CanFindEndOfResponse() const override { return false; }
 
-  virtual bool IsConnectionReused() const override { return false; }
-  virtual void SetConnectionReused() override {}
+  bool IsConnectionReused() const override { return false; }
+  void SetConnectionReused() override {}
 
-  virtual bool IsConnectionReusable() const override { return false; }
+  bool IsConnectionReusable() const override { return false; }
 
-  virtual int64 GetTotalReceivedBytes() const override { return 0; }
+  int64 GetTotalReceivedBytes() const override { return 0; }
 
-  virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const
-      override {
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     return false;
   }
 
-  virtual void GetSSLInfo(SSLInfo* ssl_info) override {}
+  void GetSSLInfo(SSLInfo* ssl_info) override {}
 
-  virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info)
-      override {}
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
 
-  virtual bool IsSpdyHttpStream() const override { return false; }
+  bool IsSpdyHttpStream() const override { return false; }
 
-  virtual void Drain(HttpNetworkSession* session) override {}
+  void Drain(HttpNetworkSession* session) override {}
 
-  virtual void SetPriority(RequestPriority priority) override {}
+  void SetPriority(RequestPriority priority) override {}
 
   // Fake implementation of WebSocketHandshakeStreamBase method(s)
-  virtual scoped_ptr<WebSocketStream> Upgrade() override {
+  scoped_ptr<WebSocketStream> Upgrade() override {
     return scoped_ptr<WebSocketStream>();
   }
 

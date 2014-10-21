@@ -27,13 +27,13 @@ class ProxyConfigServiceMac : public ProxyConfigService {
   // (however it may be constructed from a different thread).
   explicit ProxyConfigServiceMac(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner);
-  virtual ~ProxyConfigServiceMac();
+  ~ProxyConfigServiceMac() override;
 
  public:
   // ProxyConfigService implementation:
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  ConfigAvailability GetLatestProxyConfig(ProxyConfig* config) override;
 
  private:
   class Helper;
@@ -46,10 +46,9 @@ class ProxyConfigServiceMac : public ProxyConfigService {
         : proxy_config_service_(proxy_config_service) {}
 
     // NetworkConfigWatcherMac::Delegate implementation:
-    virtual void StartReachabilityNotifications() override {}
-    virtual void SetDynamicStoreNotificationKeys(
-        SCDynamicStoreRef store) override;
-    virtual void OnNetworkConfigChange(CFArrayRef changed_keys) override;
+    void StartReachabilityNotifications() override {}
+    void SetDynamicStoreNotificationKeys(SCDynamicStoreRef store) override;
+    void OnNetworkConfigChange(CFArrayRef changed_keys) override;
 
    private:
     ProxyConfigServiceMac* const proxy_config_service_;

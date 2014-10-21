@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
 
   // When the verifier is destroyed, all certificate verifications requests are
   // canceled, and their completion callbacks will not be called.
-  virtual ~MultiThreadedCertVerifier();
+  ~MultiThreadedCertVerifier() override;
 
   // Configures a source of additional certificates that should be treated as
   // trust anchors during verification, provided that the underlying
@@ -54,16 +54,16 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
       CertTrustAnchorProvider* trust_anchor_provider);
 
   // CertVerifier implementation
-  virtual int Verify(X509Certificate* cert,
-                     const std::string& hostname,
-                     int flags,
-                     CRLSet* crl_set,
-                     CertVerifyResult* verify_result,
-                     const CompletionCallback& callback,
-                     CertVerifier::RequestHandle* out_req,
-                     const BoundNetLog& net_log) override;
+  int Verify(X509Certificate* cert,
+             const std::string& hostname,
+             int flags,
+             CRLSet* crl_set,
+             CertVerifyResult* verify_result,
+             const CompletionCallback& callback,
+             CertVerifier::RequestHandle* out_req,
+             const BoundNetLog& net_log) override;
 
-  virtual void CancelRequest(CertVerifier::RequestHandle req) override;
+  void CancelRequest(CertVerifier::RequestHandle req) override;
 
  private:
   friend class CertVerifierWorker;  // Calls HandleResult.
@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
                     const CertVerifyResult& verify_result);
 
   // CertDatabase::Observer methods:
-  virtual void OnCACertChanged(const X509Certificate* cert) override;
+  void OnCACertChanged(const X509Certificate* cert) override;
 
   // For unit testing.
   void ClearCache() { cache_.Clear(); }

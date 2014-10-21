@@ -31,12 +31,10 @@ class TLS10SSLConfigService : public SSLConfigService {
     ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1;
   }
 
-  virtual void GetSSLConfig(SSLConfig* config) override {
-    *config = ssl_config_;
-  }
+  void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
 
  private:
-  virtual ~TLS10SSLConfigService() {}
+  ~TLS10SSLConfigService() override {}
 
   SSLConfig ssl_config_;
 };
@@ -48,12 +46,10 @@ class TLS11SSLConfigService : public SSLConfigService {
     ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_1;
   }
 
-  virtual void GetSSLConfig(SSLConfig* config) override {
-    *config = ssl_config_;
-  }
+  void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
 
  private:
-  virtual ~TLS11SSLConfigService() {}
+  ~TLS11SSLConfigService() override {}
 
   SSLConfig ssl_config_;
 };

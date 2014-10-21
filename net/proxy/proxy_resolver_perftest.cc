@@ -199,20 +199,17 @@ class MockJSBindings : public net::ProxyResolverV8::JSBindings {
  public:
   MockJSBindings() {}
 
-  virtual void Alert(const base::string16& message) override {
-    CHECK(false);
-  }
+  void Alert(const base::string16& message) override { CHECK(false); }
 
-  virtual bool ResolveDns(const std::string& host,
-                          ResolveDnsOperation op,
-                          std::string* output,
-                          bool* terminate) override {
+  bool ResolveDns(const std::string& host,
+                  ResolveDnsOperation op,
+                  std::string* output,
+                  bool* terminate) override {
     CHECK(false);
     return false;
   }
 
-  virtual void OnError(int line_number,
-                       const base::string16& message) override {
+  void OnError(int line_number, const base::string16& message) override {
     CHECK(false);
   }
 };

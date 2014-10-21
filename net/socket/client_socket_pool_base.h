@@ -219,7 +219,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
       base::TimeDelta used_idle_socket_timeout,
       ConnectJobFactory* connect_job_factory);
 
-  virtual ~ClientSocketPoolBaseHelper();
+  ~ClientSocketPoolBaseHelper() override;
 
   // Adds a lower layered pool to |this|, and adds |this| as a higher layered
   // pool on top of |lower_pool|.
@@ -327,10 +327,10 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   void EnableConnectBackupJobs();
 
   // ConnectJob::Delegate methods:
-  virtual void OnConnectJobComplete(int result, ConnectJob* job) override;
+  void OnConnectJobComplete(int result, ConnectJob* job) override;
 
   // NetworkChangeNotifier::IPAddressObserver methods:
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
  private:
   friend class base::RefCounted<ClientSocketPoolBaseHelper>;

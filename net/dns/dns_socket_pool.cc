@@ -95,21 +95,18 @@ class NullDnsSocketPool : public DnsSocketPool {
      : DnsSocketPool(factory) {
   }
 
-  virtual void Initialize(
-      const std::vector<IPEndPoint>* nameservers,
-      NetLog* net_log) override {
+  void Initialize(const std::vector<IPEndPoint>* nameservers,
+                  NetLog* net_log) override {
     InitializeInternal(nameservers, net_log);
   }
 
-  virtual scoped_ptr<DatagramClientSocket> AllocateSocket(
+  scoped_ptr<DatagramClientSocket> AllocateSocket(
       unsigned server_index) override {
     return CreateConnectedSocket(server_index);
   }
 
-  virtual void FreeSocket(
-      unsigned server_index,
-      scoped_ptr<DatagramClientSocket> socket) override {
-  }
+  void FreeSocket(unsigned server_index,
+                  scoped_ptr<DatagramClientSocket> socket) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullDnsSocketPool);
@@ -127,18 +124,16 @@ class DefaultDnsSocketPool : public DnsSocketPool {
      : DnsSocketPool(factory) {
   };
 
-  virtual ~DefaultDnsSocketPool();
+  ~DefaultDnsSocketPool() override;
 
-  virtual void Initialize(
-      const std::vector<IPEndPoint>* nameservers,
-      NetLog* net_log) override;
+  void Initialize(const std::vector<IPEndPoint>* nameservers,
+                  NetLog* net_log) override;
 
-  virtual scoped_ptr<DatagramClientSocket> AllocateSocket(
+  scoped_ptr<DatagramClientSocket> AllocateSocket(
       unsigned server_index) override;
 
-  virtual void FreeSocket(
-      unsigned server_index,
-      scoped_ptr<DatagramClientSocket> socket) override;
+  void FreeSocket(unsigned server_index,
+                  scoped_ptr<DatagramClientSocket> socket) override;
 
  private:
   void FillPool(unsigned server_index, unsigned size);

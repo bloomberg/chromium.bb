@@ -35,16 +35,16 @@ class NET_EXPORT URLRequestInterceptingJobFactory
   URLRequestInterceptingJobFactory(
       scoped_ptr<URLRequestJobFactory> job_factory,
       scoped_ptr<URLRequestInterceptor> interceptor);
-  virtual ~URLRequestInterceptingJobFactory();
+  ~URLRequestInterceptingJobFactory() override;
 
   // URLRequestJobFactory implementation
-  virtual URLRequestJob* MaybeCreateJobWithProtocolHandler(
+  URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       URLRequest* request,
       NetworkDelegate* network_delegate) const override;
-  virtual bool IsHandledProtocol(const std::string& scheme) const override;
-  virtual bool IsHandledURL(const GURL& url) const override;
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override;
+  bool IsHandledProtocol(const std::string& scheme) const override;
+  bool IsHandledURL(const GURL& url) const override;
+  bool IsSafeRedirectTarget(const GURL& location) const override;
 
  private:
   scoped_ptr<URLRequestJobFactory> job_factory_;

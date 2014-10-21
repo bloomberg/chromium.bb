@@ -128,9 +128,9 @@ class MockClientSocket : public StreamSocket {
   }
 
   // Socket implementation.
-  virtual int Read(
-      IOBuffer* /* buf */, int len,
-      const CompletionCallback& /* callback */) override {
+  int Read(IOBuffer* /* buf */,
+           int len,
+           const CompletionCallback& /* callback */) override {
     if (has_unread_data_ && len > 0) {
       has_unread_data_ = false;
       was_used_to_convey_data_ = true;
@@ -139,54 +139,44 @@ class MockClientSocket : public StreamSocket {
     return ERR_UNEXPECTED;
   }
 
-  virtual int Write(
-      IOBuffer* /* buf */, int len,
-      const CompletionCallback& /* callback */) override {
+  int Write(IOBuffer* /* buf */,
+            int len,
+            const CompletionCallback& /* callback */) override {
     was_used_to_convey_data_ = true;
     return len;
   }
-  virtual int SetReceiveBufferSize(int32 size) override { return OK; }
-  virtual int SetSendBufferSize(int32 size) override { return OK; }
+  int SetReceiveBufferSize(int32 size) override { return OK; }
+  int SetSendBufferSize(int32 size) override { return OK; }
 
   // StreamSocket implementation.
-  virtual int Connect(const CompletionCallback& callback) override {
+  int Connect(const CompletionCallback& callback) override {
     connected_ = true;
     return OK;
   }
 
-  virtual void Disconnect() override { connected_ = false; }
-  virtual bool IsConnected() const override { return connected_; }
-  virtual bool IsConnectedAndIdle() const override {
+  void Disconnect() override { connected_ = false; }
+  bool IsConnected() const override { return connected_; }
+  bool IsConnectedAndIdle() const override {
     return connected_ && !has_unread_data_;
   }
 
-  virtual int GetPeerAddress(IPEndPoint* /* address */) const override {
+  int GetPeerAddress(IPEndPoint* /* address */) const override {
     return ERR_UNEXPECTED;
   }
 
-  virtual int GetLocalAddress(IPEndPoint* /* address */) const override {
+  int GetLocalAddress(IPEndPoint* /* address */) const override {
     return ERR_UNEXPECTED;
   }
 
-  virtual const BoundNetLog& NetLog() const override {
-    return net_log_;
-  }
+  const BoundNetLog& NetLog() const override { return net_log_; }
 
-  virtual void SetSubresourceSpeculation() override {}
-  virtual void SetOmniboxSpeculation() override {}
-  virtual bool WasEverUsed() const override {
-    return was_used_to_convey_data_;
-  }
-  virtual bool UsingTCPFastOpen() const override { return false; }
-  virtual bool WasNpnNegotiated() const override {
-    return false;
-  }
-  virtual NextProto GetNegotiatedProtocol() const override {
-    return kProtoUnknown;
-  }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) override {
-    return false;
-  }
+  void SetSubresourceSpeculation() override {}
+  void SetOmniboxSpeculation() override {}
+  bool WasEverUsed() const override { return was_used_to_convey_data_; }
+  bool UsingTCPFastOpen() const override { return false; }
+  bool WasNpnNegotiated() const override { return false; }
+  NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
+  bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
 
  private:
   bool connected_;
@@ -203,7 +193,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
  public:
   MockClientSocketFactory() : allocation_count_(0) {}
 
-  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+  scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
@@ -212,7 +202,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
     return scoped_ptr<DatagramClientSocket>();
   }
 
-  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
+  scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* /* net_log */,
       const NetLog::Source& /*source*/) override {
@@ -220,7 +210,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
     return scoped_ptr<StreamSocket>();
   }
 
-  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+  scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
       scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
@@ -229,9 +219,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
     return scoped_ptr<SSLClientSocket>();
   }
 
-  virtual void ClearSSLSessionCache() override {
-    NOTIMPLEMENTED();
-  }
+  void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
 
   void WaitForSignal(TestConnectJob* job) { waiting_jobs_.push_back(job); }
 
@@ -291,9 +279,9 @@ class TestConnectJob : public ConnectJob {
 
   // From ConnectJob:
 
-  virtual LoadState GetLoadState() const override { return load_state_; }
+  LoadState GetLoadState() const override { return load_state_; }
 
-  virtual void GetAdditionalErrorState(ClientSocketHandle* handle) override {
+  void GetAdditionalErrorState(ClientSocketHandle* handle) override {
     if (store_additional_error_state_) {
       // Set all of the additional error state fields in some way.
       handle->set_is_ssl_error(true);
@@ -306,7 +294,7 @@ class TestConnectJob : public ConnectJob {
  private:
   // From ConnectJob:
 
-  virtual int ConnectInternal() override {
+  int ConnectInternal() override {
     AddressList ignored;
     client_socket_factory_->CreateTransportClientSocket(
         ignored, NULL, net::NetLog::Source());
@@ -439,7 +427,7 @@ class TestConnectJobFactory
         net_log_(net_log) {
   }
 
-  virtual ~TestConnectJobFactory() {}
+  ~TestConnectJobFactory() override {}
 
   void set_job_type(TestConnectJob::JobType job_type) { job_type_ = job_type; }
 
@@ -454,7 +442,7 @@ class TestConnectJobFactory
 
   // ConnectJobFactory implementation.
 
-  virtual scoped_ptr<ConnectJob> NewConnectJob(
+  scoped_ptr<ConnectJob> NewConnectJob(
       const std::string& group_name,
       const TestClientSocketPoolBase::Request& request,
       ConnectJob::Delegate* delegate) const override {
@@ -473,7 +461,7 @@ class TestConnectJobFactory
                                                      net_log_));
   }
 
-  virtual base::TimeDelta ConnectionTimeout() const override {
+  base::TimeDelta ConnectionTimeout() const override {
     return timeout_duration_;
   }
 
@@ -502,92 +490,78 @@ class TestClientSocketPool : public ClientSocketPool {
               unused_idle_socket_timeout, used_idle_socket_timeout,
               connect_job_factory) {}
 
-  virtual ~TestClientSocketPool() {}
+  ~TestClientSocketPool() override {}
 
-  virtual int RequestSocket(
-      const std::string& group_name,
-      const void* params,
-      net::RequestPriority priority,
-      ClientSocketHandle* handle,
-      const CompletionCallback& callback,
-      const BoundNetLog& net_log) override {
+  int RequestSocket(const std::string& group_name,
+                    const void* params,
+                    net::RequestPriority priority,
+                    ClientSocketHandle* handle,
+                    const CompletionCallback& callback,
+                    const BoundNetLog& net_log) override {
     const scoped_refptr<TestSocketParams>* casted_socket_params =
         static_cast<const scoped_refptr<TestSocketParams>*>(params);
     return base_.RequestSocket(group_name, *casted_socket_params, priority,
                                handle, callback, net_log);
   }
 
-  virtual void RequestSockets(const std::string& group_name,
-                              const void* params,
-                              int num_sockets,
-                              const BoundNetLog& net_log) override {
+  void RequestSockets(const std::string& group_name,
+                      const void* params,
+                      int num_sockets,
+                      const BoundNetLog& net_log) override {
     const scoped_refptr<TestSocketParams>* casted_params =
         static_cast<const scoped_refptr<TestSocketParams>*>(params);
 
     base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
   }
 
-  virtual void CancelRequest(
-      const std::string& group_name,
-      ClientSocketHandle* handle) override {
+  void CancelRequest(const std::string& group_name,
+                     ClientSocketHandle* handle) override {
     base_.CancelRequest(group_name, handle);
   }
 
-  virtual void ReleaseSocket(
-      const std::string& group_name,
-      scoped_ptr<StreamSocket> socket,
-      int id) override {
+  void ReleaseSocket(const std::string& group_name,
+                     scoped_ptr<StreamSocket> socket,
+                     int id) override {
     base_.ReleaseSocket(group_name, socket.Pass(), id);
   }
 
-  virtual void FlushWithError(int error) override {
-    base_.FlushWithError(error);
-  }
+  void FlushWithError(int error) override { base_.FlushWithError(error); }
 
-  virtual bool IsStalled() const override {
-    return base_.IsStalled();
-  }
+  bool IsStalled() const override { return base_.IsStalled(); }
 
-  virtual void CloseIdleSockets() override {
-    base_.CloseIdleSockets();
-  }
+  void CloseIdleSockets() override { base_.CloseIdleSockets(); }
 
-  virtual int IdleSocketCount() const override {
-    return base_.idle_socket_count();
-  }
+  int IdleSocketCount() const override { return base_.idle_socket_count(); }
 
-  virtual int IdleSocketCountInGroup(
-      const std::string& group_name) const override {
+  int IdleSocketCountInGroup(const std::string& group_name) const override {
     return base_.IdleSocketCountInGroup(group_name);
   }
 
-  virtual LoadState GetLoadState(
-      const std::string& group_name,
-      const ClientSocketHandle* handle) const override {
+  LoadState GetLoadState(const std::string& group_name,
+                         const ClientSocketHandle* handle) const override {
     return base_.GetLoadState(group_name, handle);
   }
 
-  virtual void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override {
+  void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override {
     base_.AddHigherLayeredPool(higher_pool);
   }
 
-  virtual void RemoveHigherLayeredPool(
-      HigherLayeredPool* higher_pool) override {
+  void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override {
     base_.RemoveHigherLayeredPool(higher_pool);
   }
 
-  virtual base::DictionaryValue* GetInfoAsValue(
+  base::DictionaryValue* GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override {
     return base_.GetInfoAsValue(name, type);
   }
 
-  virtual base::TimeDelta ConnectionTimeout() const override {
+  base::TimeDelta ConnectionTimeout() const override {
     return base_.ConnectionTimeout();
   }
 
-  virtual ClientSocketPoolHistograms* histograms() const override {
+  ClientSocketPoolHistograms* histograms() const override {
     return base_.histograms();
   }
 
@@ -651,9 +625,9 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
  public:
   TestConnectJobDelegate()
       : have_result_(false), waiting_for_result_(false), result_(OK) {}
-  virtual ~TestConnectJobDelegate() {}
+  ~TestConnectJobDelegate() override {}
 
-  virtual void OnConnectJobComplete(int result, ConnectJob* job) override {
+  void OnConnectJobComplete(int result, ConnectJob* job) override {
     result_ = result;
     scoped_ptr<ConnectJob> owned_job(job);
     scoped_ptr<StreamSocket> socket = owned_job->PassSocket();
@@ -1473,7 +1447,7 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  virtual ~RequestSocketCallback() {}
+  ~RequestSocketCallback() override {}
 
   const CompletionCallback& callback() const { return callback_; }
 
@@ -2591,7 +2565,7 @@ class TestReleasingSocketRequest : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  virtual ~TestReleasingSocketRequest() {}
+  ~TestReleasingSocketRequest() override {}
 
   ClientSocketHandle* handle() { return &handle_; }
 
@@ -2716,7 +2690,7 @@ class ConnectWithinCallback : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  virtual ~ConnectWithinCallback() {}
+  ~ConnectWithinCallback() override {}
 
   int WaitForNestedResult() {
     return nested_callback_.WaitForResult();

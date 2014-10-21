@@ -152,8 +152,8 @@ class FailingUDPClientSocket : public MockUDPClientSocket {
                          net::NetLog* net_log)
       : MockUDPClientSocket(data, net_log) {
   }
-  virtual ~FailingUDPClientSocket() {}
-  virtual int Connect(const IPEndPoint& endpoint) override {
+  ~FailingUDPClientSocket() override {}
+  int Connect(const IPEndPoint& endpoint) override {
     return ERR_CONNECTION_REFUSED;
   }
 
@@ -169,8 +169,8 @@ class TestUDPClientSocket : public MockUDPClientSocket {
                       net::NetLog* net_log)
       : MockUDPClientSocket(data, net_log), factory_(factory) {
   }
-  virtual ~TestUDPClientSocket() {}
-  virtual int Connect(const IPEndPoint& endpoint) override;
+  ~TestUDPClientSocket() override {}
+  int Connect(const IPEndPoint& endpoint) override;
 
  private:
   TestSocketFactory* factory_;
@@ -182,9 +182,9 @@ class TestUDPClientSocket : public MockUDPClientSocket {
 class TestSocketFactory : public MockClientSocketFactory {
  public:
   TestSocketFactory() : fail_next_socket_(false) {}
-  virtual ~TestSocketFactory() {}
+  ~TestSocketFactory() override {}
 
-  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+  scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       net::NetLog* net_log,

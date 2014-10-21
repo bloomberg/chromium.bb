@@ -36,19 +36,17 @@ class MockCertVerifyProc : public CertVerifyProc {
   MockCertVerifyProc() {}
 
  private:
-  virtual ~MockCertVerifyProc() {}
+  ~MockCertVerifyProc() override {}
 
   // CertVerifyProc implementation
-  virtual bool SupportsAdditionalTrustAnchors() const override {
-    return false;
-  }
+  bool SupportsAdditionalTrustAnchors() const override { return false; }
 
-  virtual int VerifyInternal(X509Certificate* cert,
-                             const std::string& hostname,
-                             int flags,
-                             CRLSet* crl_set,
-                             const CertificateList& additional_trust_anchors,
-                             CertVerifyResult* verify_result) override {
+  int VerifyInternal(X509Certificate* cert,
+                     const std::string& hostname,
+                     int flags,
+                     CRLSet* crl_set,
+                     const CertificateList& additional_trust_anchors,
+                     CertVerifyResult* verify_result) override {
     verify_result->Reset();
     verify_result->verified_cert = cert;
     verify_result->cert_status = CERT_STATUS_COMMON_NAME_INVALID;

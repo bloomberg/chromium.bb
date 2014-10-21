@@ -121,8 +121,8 @@ class DnsConfigServiceTest : public testing::Test {
  protected:
   class TestDnsConfigService : public DnsConfigService {
    public:
-    virtual void ReadNow() override {}
-    virtual bool StartWatching() override { return true; }
+    void ReadNow() override {}
+    bool StartWatching() override { return true; }
 
     // Expose the protected methods to this test suite.
     void InvalidateConfig() {

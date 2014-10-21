@@ -88,34 +88,30 @@ class NetWatcher :
  public:
   NetWatcher() {}
 
-  virtual ~NetWatcher() {}
+  ~NetWatcher() override {}
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() override {
-    LOG(INFO) << "OnIPAddressChanged()";
-  }
+  void OnIPAddressChanged() override { LOG(INFO) << "OnIPAddressChanged()"; }
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override {
     LOG(INFO) << "OnConnectionTypeChanged("
               << ConnectionTypeToString(type) << ")";
   }
 
   // net::NetworkChangeNotifier::DNSObserver implementation.
-  virtual void OnDNSChanged() override {
-    LOG(INFO) << "OnDNSChanged()";
-  }
+  void OnDNSChanged() override { LOG(INFO) << "OnDNSChanged()"; }
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override {
     LOG(INFO) << "OnNetworkChanged("
               << ConnectionTypeToString(type) << ")";
   }
 
   // net::ProxyConfigService::Observer implementation.
-  virtual void OnProxyConfigChanged(
+  void OnProxyConfigChanged(
       const net::ProxyConfig& config,
       net::ProxyConfigService::ConfigAvailability availability) override {
     LOG(INFO) << "OnProxyConfigChanged("

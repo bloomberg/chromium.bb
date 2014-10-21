@@ -88,20 +88,19 @@ class NET_EXPORT_PRIVATE MultiThreadedProxyResolver
   MultiThreadedProxyResolver(ProxyResolverFactory* resolver_factory,
                              size_t max_num_threads);
 
-  virtual ~MultiThreadedProxyResolver();
+  ~MultiThreadedProxyResolver() override;
 
   // ProxyResolver implementation:
-  virtual int GetProxyForURL(const GURL& url,
-                             ProxyInfo* results,
-                             const CompletionCallback& callback,
-                             RequestHandle* request,
-                             const BoundNetLog& net_log) override;
-  virtual void CancelRequest(RequestHandle request) override;
-  virtual LoadState GetLoadState(RequestHandle request) const override;
-  virtual void CancelSetPacScript() override;
-  virtual int SetPacScript(
-      const scoped_refptr<ProxyResolverScriptData>& script_data,
-      const CompletionCallback& callback) override;
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const CompletionCallback& callback,
+                     RequestHandle* request,
+                     const BoundNetLog& net_log) override;
+  void CancelRequest(RequestHandle request) override;
+  LoadState GetLoadState(RequestHandle request) const override;
+  void CancelSetPacScript() override;
+  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
+                   const CompletionCallback& callback) override;
 
  private:
   class Executor;

@@ -23,12 +23,12 @@ namespace internal {
 class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
  public:
   DnsConfigServicePosix();
-  virtual ~DnsConfigServicePosix();
+  ~DnsConfigServicePosix() override;
 
  protected:
   // DnsConfigService:
-  virtual void ReadNow() override;
-  virtual bool StartWatching() override;
+  void ReadNow() override;
+  bool StartWatching() override;
 
  private:
   class Watcher;

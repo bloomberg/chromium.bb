@@ -34,16 +34,16 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
                    FtpAuthCache* ftp_auth_cache);
 
  protected:
-  virtual ~URLRequestFtpJob();
+  ~URLRequestFtpJob() override;
 
   // Overridden from URLRequestJob:
-  virtual bool IsSafeRedirect(const GURL& location) override;
-  virtual bool GetMimeType(std::string* mime_type) const override;
-  virtual void GetResponseInfo(HttpResponseInfo* info) override;
-  virtual HostPortPair GetSocketAddress() const override;
-  virtual void SetPriority(RequestPriority priority) override;
-  virtual void Start() override;
-  virtual void Kill() override;
+  bool IsSafeRedirect(const GURL& location) override;
+  bool GetMimeType(std::string* mime_type) const override;
+  void GetResponseInfo(HttpResponseInfo* info) override;
+  HostPortPair GetSocketAddress() const override;
+  void SetPriority(RequestPriority priority) override;
+  void Start() override;
+  void Kill() override;
 
   RequestPriority priority() const { return priority_; }
 
@@ -62,18 +62,16 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   void LogFtpServerType(char server_type);
 
   // Overridden from URLRequestJob:
-  virtual LoadState GetLoadState() const override;
-  virtual bool NeedsAuth() override;
-  virtual void GetAuthChallengeInfo(
+  LoadState GetLoadState() const override;
+  bool NeedsAuth() override;
+  void GetAuthChallengeInfo(
       scoped_refptr<AuthChallengeInfo>* auth_info) override;
-  virtual void SetAuth(const AuthCredentials& credentials) override;
-  virtual void CancelAuth() override;
+  void SetAuth(const AuthCredentials& credentials) override;
+  void CancelAuth() override;
 
   // TODO(ibrar):  Yet to give another look at this function.
-  virtual UploadProgress GetUploadProgress() const override;
-  virtual bool ReadRawData(IOBuffer* buf,
-                           int buf_size,
-                           int *bytes_read) override;
+  UploadProgress GetUploadProgress() const override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
 
   void HandleAuthNeededResponse();
 

@@ -1254,13 +1254,13 @@ class BackendImpl::IteratorImpl : public Backend::Iterator {
         iterator_(new Rankings::Iterator()) {
   }
 
-  virtual ~IteratorImpl() {
+  ~IteratorImpl() override {
     if (background_queue_)
       background_queue_->EndEnumeration(iterator_.Pass());
   }
 
-  virtual int OpenNextEntry(Entry** next_entry,
-                            const net::CompletionCallback& callback) override {
+  int OpenNextEntry(Entry** next_entry,
+                    const net::CompletionCallback& callback) override {
     if (!background_queue_)
       return net::ERR_FAILED;
     background_queue_->OpenNextEntry(iterator_.get(), next_entry, callback);

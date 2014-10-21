@@ -19,31 +19,30 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerBasic : public HttpAuthHandler {
   class NET_EXPORT_PRIVATE Factory : public HttpAuthHandlerFactory {
    public:
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
-    virtual int CreateAuthHandler(
-        HttpAuthChallengeTokenizer* challenge,
-        HttpAuth::Target target,
-        const GURL& origin,
-        CreateReason reason,
-        int digest_nonce_count,
-        const BoundNetLog& net_log,
-        scoped_ptr<HttpAuthHandler>* handler) override;
+    int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
+                          HttpAuth::Target target,
+                          const GURL& origin,
+                          CreateReason reason,
+                          int digest_nonce_count,
+                          const BoundNetLog& net_log,
+                          scoped_ptr<HttpAuthHandler>* handler) override;
   };
 
-  virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
+  HttpAuth::AuthorizationResult HandleAnotherChallenge(
       HttpAuthChallengeTokenizer* challenge) override;
 
  protected:
-  virtual bool Init(HttpAuthChallengeTokenizer* challenge) override;
+  bool Init(HttpAuthChallengeTokenizer* challenge) override;
 
-  virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
-                                    const HttpRequestInfo* request,
-                                    const CompletionCallback& callback,
-                                    std::string* auth_token) override;
+  int GenerateAuthTokenImpl(const AuthCredentials* credentials,
+                            const HttpRequestInfo* request,
+                            const CompletionCallback& callback,
+                            std::string* auth_token) override;
 
  private:
-  virtual ~HttpAuthHandlerBasic() {}
+  ~HttpAuthHandlerBasic() override {}
 
   bool ParseChallenge(HttpAuthChallengeTokenizer* challenge);
 };

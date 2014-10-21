@@ -41,33 +41,28 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   // backing store will be updated.
   explicit DefaultChannelIDStore(PersistentStore* store);
 
-  virtual ~DefaultChannelIDStore();
+  ~DefaultChannelIDStore() override;
 
   // ChannelIDStore implementation.
-  virtual int GetChannelID(
-      const std::string& server_identifier,
-      base::Time* expiration_time,
-      std::string* private_key_result,
-      std::string* cert_result,
-      const GetChannelIDCallback& callback) override;
-  virtual void SetChannelID(
-      const std::string& server_identifier,
-      base::Time creation_time,
-      base::Time expiration_time,
-      const std::string& private_key,
-      const std::string& cert) override;
-  virtual void DeleteChannelID(
-      const std::string& server_identifier,
-      const base::Closure& callback) override;
-  virtual void DeleteAllCreatedBetween(
-      base::Time delete_begin,
-      base::Time delete_end,
-      const base::Closure& callback) override;
-  virtual void DeleteAll(const base::Closure& callback) override;
-  virtual void GetAllChannelIDs(
-      const GetChannelIDListCallback& callback) override;
-  virtual int GetChannelIDCount() override;
-  virtual void SetForceKeepSessionState() override;
+  int GetChannelID(const std::string& server_identifier,
+                   base::Time* expiration_time,
+                   std::string* private_key_result,
+                   std::string* cert_result,
+                   const GetChannelIDCallback& callback) override;
+  void SetChannelID(const std::string& server_identifier,
+                    base::Time creation_time,
+                    base::Time expiration_time,
+                    const std::string& private_key,
+                    const std::string& cert) override;
+  void DeleteChannelID(const std::string& server_identifier,
+                       const base::Closure& callback) override;
+  void DeleteAllCreatedBetween(base::Time delete_begin,
+                               base::Time delete_end,
+                               const base::Closure& callback) override;
+  void DeleteAll(const base::Closure& callback) override;
+  void GetAllChannelIDs(const GetChannelIDListCallback& callback) override;
+  int GetChannelIDCount() override;
+  void SetForceKeepSessionState() override;
 
  private:
   class Task;

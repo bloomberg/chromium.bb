@@ -23,7 +23,7 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public AeadBaseEncrypter {
   };
 
   Aes128Gcm12Encrypter();
-  virtual ~Aes128Gcm12Encrypter();
+  ~Aes128Gcm12Encrypter() override;
 
 #if !defined(USE_OPENSSL)
  protected:

@@ -30,17 +30,17 @@ int GetChecksum(const IndexCell& source) {
 class MockIndexBackend : public disk_cache::IndexTableBackend {
  public:
   MockIndexBackend() : grow_called_(false), buffer_len_(-1) {}
-  virtual ~MockIndexBackend() {}
+  ~MockIndexBackend() override {}
 
   bool grow_called() const { return grow_called_; }
   int buffer_len() const { return buffer_len_; }
 
-  virtual void GrowIndex() override { grow_called_ = true; }
-  virtual void SaveIndex(net::IOBuffer* buffer, int buffer_len) override {
+  void GrowIndex() override { grow_called_ = true; }
+  void SaveIndex(net::IOBuffer* buffer, int buffer_len) override {
     buffer_len_ = buffer_len;
   }
-  virtual void DeleteCell(EntryCell cell) override {}
-  virtual void FixCell(EntryCell cell) override {}
+  void DeleteCell(EntryCell cell) override {}
+  void FixCell(EntryCell cell) override {}
 
  private:
   bool grow_called_;

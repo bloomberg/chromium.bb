@@ -24,7 +24,7 @@ class IOBuffer;
 class NET_EXPORT_PRIVATE HttpStream : public HttpStreamBase {
  public:
   HttpStream() {}
-  virtual ~HttpStream() {}
+  ~HttpStream() override {}
 
   // Queries the UploadDataStream for its progress (bytes sent).
   virtual UploadProgress GetUploadProgress() const = 0;
