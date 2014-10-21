@@ -411,6 +411,16 @@ You are signing in with a managed account and giving its administrator control o
         Add to homescreen
       </message>
 
+      <!-- Network prediction internal values -->
+      <message name="IDS_NEVER_PREFETCH_BANDWIDTH_ENTRY" desc="Option to always disable the prefetching of web pages. [CHAR-LIMIT=16]">
+        Never
+      </message>
+      <message name="IDS_WIFI_PREFETCH_BANDWIDTH_ENTRY" desc="Option that enables the prefetching of web pages when connected via wi-fi. [CHAR-LIMIT=16]">
+        Only on Wi-Fi
+      </message>
+      <message name="IDS_ALWAYS_PREFETCH_BANDWIDTH_ENTRY" desc="Option to always prefetch web pages regardless of connection. [CHAR-LIMIT=16]">
+        Always
+      </message>
     </messages>
   </release>
 </grit>
