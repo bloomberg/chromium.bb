@@ -33,9 +33,9 @@ class RenderCdmFactory : public media::CdmFactory {
   RenderCdmFactory();
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-  virtual ~RenderCdmFactory();
+  ~RenderCdmFactory() override;
 
-  virtual scoped_ptr<media::MediaKeys> Create(
+  scoped_ptr<media::MediaKeys> Create(
       const std::string& key_system,
       const GURL& security_origin,
       const media::SessionMessageCB& session_message_cb,

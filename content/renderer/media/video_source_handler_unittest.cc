@@ -27,8 +27,7 @@ static const std::string kUnknownStreamUrl = "unknown_stream_url";
 
 class FakeFrameReader : public FrameReaderInterface {
  public:
-  virtual void GotFrame(
-      const scoped_refptr<media::VideoFrame>& frame) override {
+  void GotFrame(const scoped_refptr<media::VideoFrame>& frame) override {
     last_frame_ = frame;
   }
 

@@ -29,7 +29,7 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
     : NON_EXPORTED_BASE(public cricket::VideoCapturer) {
  public:
   explicit WebRtcVideoCapturerAdapter(bool is_screencast);
-  virtual ~WebRtcVideoCapturerAdapter();
+  ~WebRtcVideoCapturerAdapter() override;
 
   // OnFrameCaptured delivers video frames to libjingle. It must be called on
   // libjingles worker thread.
@@ -39,14 +39,14 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
  private:
   // cricket::VideoCapturer implementation.
   // These methods are accessed from a libJingle worker thread.
-  virtual cricket::CaptureState Start(
+  cricket::CaptureState Start(
       const cricket::VideoFormat& capture_format) override;
-  virtual void Stop() override;
-  virtual bool IsRunning() override;
-  virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) override;
-  virtual bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
-                                    cricket::VideoFormat* best_format) override;
-  virtual bool IsScreencast() const override;
+  void Stop() override;
+  bool IsRunning() override;
+  bool GetPreferredFourccs(std::vector<uint32>* fourccs) override;
+  bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
+                            cricket::VideoFormat* best_format) override;
+  bool IsScreencast() const override;
 
   void UpdateI420Buffer(const scoped_refptr<media::VideoFrame>& src);
 

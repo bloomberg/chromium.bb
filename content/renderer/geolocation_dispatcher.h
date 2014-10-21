@@ -31,7 +31,7 @@ class GeolocationDispatcher : public RenderFrameObserver,
 
  private:
   // RenderFrame::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebGeolocationClient
   virtual void startUpdating();

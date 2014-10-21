@@ -18,15 +18,15 @@ class RenderViewMouseLockDispatcher : public MouseLockDispatcher,
                                       public RenderViewObserver {
  public:
   explicit RenderViewMouseLockDispatcher(RenderViewImpl* render_view_impl);
-  virtual ~RenderViewMouseLockDispatcher();
+  ~RenderViewMouseLockDispatcher() override;
 
  private:
   // MouseLockDispatcher implementation.
-  virtual void SendLockMouseRequest(bool unlocked_by_target) override;
-  virtual void SendUnlockMouseRequest() override;
+  void SendLockMouseRequest(bool unlocked_by_target) override;
+  void SendUnlockMouseRequest() override;
 
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnLockMouseACK(bool succeeded);
 

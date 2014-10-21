@@ -21,7 +21,7 @@ namespace content {
 class NotificationPermissionDispatcher : public RenderFrameObserver {
  public:
   explicit NotificationPermissionDispatcher(RenderFrame* render_frame);
-  virtual ~NotificationPermissionDispatcher();
+  ~NotificationPermissionDispatcher() override;
 
   // Requests permission to display Web Notifications for |origin|. The callback
   // will be invoked when the permission status is available. This class will
@@ -32,7 +32,7 @@ class NotificationPermissionDispatcher : public RenderFrameObserver {
 
  private:
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnPermissionRequestComplete(
       int request_id, blink::WebNotificationPermission result);

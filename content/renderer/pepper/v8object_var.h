@@ -33,8 +33,8 @@ class CONTENT_EXPORT V8ObjectVar : public Var {
   V8ObjectVar(PP_Instance instance, v8::Handle<v8::Object> v8_object);
 
   // Var overrides.
-  virtual V8ObjectVar* AsV8ObjectVar() override;
-  virtual PP_VarType GetType() const override;
+  V8ObjectVar* AsV8ObjectVar() override;
+  PP_VarType GetType() const override;
 
   // Returns the underlying v8 object corresponding to this V8ObjectVar. This
   // should only be used on the stack.
@@ -52,7 +52,7 @@ class CONTENT_EXPORT V8ObjectVar : public Var {
   static scoped_refptr<V8ObjectVar> FromPPVar(PP_Var var);
 
  private:
-  virtual ~V8ObjectVar();
+  ~V8ObjectVar() override;
 
   content::PepperPluginInstanceImpl* instance_;
 

@@ -23,11 +23,11 @@ namespace content {
 class IdleUserDetector : public RenderViewObserver {
  public:
   IdleUserDetector(RenderView* render_view);
-  virtual ~IdleUserDetector();
+  ~IdleUserDetector() override;
 
  private:
   // RenderViewObserver implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnHandleInputEvent(const blink::WebInputEvent* event,
                           const ui::LatencyInfo& latency_info,

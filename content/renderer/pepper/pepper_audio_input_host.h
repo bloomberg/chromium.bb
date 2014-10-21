@@ -27,9 +27,9 @@ class PepperAudioInputHost : public ppapi::host::ResourceHost {
   PepperAudioInputHost(RendererPpapiHostImpl* host,
                        PP_Instance instance,
                        PP_Resource resource);
-  virtual ~PepperAudioInputHost();
+  ~PepperAudioInputHost() override;
 
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

@@ -28,9 +28,9 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
                         PP_Instance instance,
                         PP_Resource resource);
 
-  virtual ~PepperVideoSourceHost();
+  ~PepperVideoSourceHost() override;
 
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
@@ -43,12 +43,11 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
     explicit FrameReceiver(const base::WeakPtr<PepperVideoSourceHost>& host);
 
     // FrameReaderInterface implementation.
-    virtual void GotFrame(const scoped_refptr<media::VideoFrame>& frame)
-        override;
+    void GotFrame(const scoped_refptr<media::VideoFrame>& frame) override;
 
    private:
     friend class base::RefCountedThreadSafe<FrameReceiver>;
-    virtual ~FrameReceiver();
+    ~FrameReceiver() override;
 
     base::WeakPtr<PepperVideoSourceHost> host_;
     // |thread_checker_| is bound to the main render thread.

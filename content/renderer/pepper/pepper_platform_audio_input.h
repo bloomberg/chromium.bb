@@ -58,17 +58,16 @@ class PepperPlatformAudioInput
   void ShutDown();
 
   // media::AudioInputIPCDelegate.
-  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                               base::SyncSocket::Handle socket_handle,
-                               int length,
-                               int total_segments) override;
-  virtual void OnVolume(double volume) override;
-  virtual void OnStateChanged(media::AudioInputIPCDelegate::State state)
-      override;
-  virtual void OnIPCClosed() override;
+  void OnStreamCreated(base::SharedMemoryHandle handle,
+                       base::SyncSocket::Handle socket_handle,
+                       int length,
+                       int total_segments) override;
+  void OnVolume(double volume) override;
+  void OnStateChanged(media::AudioInputIPCDelegate::State state) override;
+  void OnIPCClosed() override;
 
  protected:
-  virtual ~PepperPlatformAudioInput();
+  ~PepperPlatformAudioInput() override;
 
  private:
   friend class base::RefCountedThreadSafe<PepperPlatformAudioInput>;

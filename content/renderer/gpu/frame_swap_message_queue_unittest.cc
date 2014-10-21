@@ -255,7 +255,7 @@ class NotifiesDeletionMessage : public IPC::Message {
  public:
   NotifiesDeletionMessage(bool* deleted, const IPC::Message& other)
       : IPC::Message(other), deleted_(deleted) {}
-  virtual ~NotifiesDeletionMessage() { *deleted_ = true; }
+  ~NotifiesDeletionMessage() override { *deleted_ = true; }
 
  private:
   bool* deleted_;

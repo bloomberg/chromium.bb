@@ -35,7 +35,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       public base::SupportsWeakPtr<MediaStreamDispatcher> {
  public:
   explicit MediaStreamDispatcher(RenderFrame* render_frame);
-  virtual ~MediaStreamDispatcher();
+  ~MediaStreamDispatcher() override;
 
   // Request a new media stream to be created.
   // This can be used either by WebKit or a plugin.
@@ -111,9 +111,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
   struct Stream;
 
   // RenderFrameObserver override.
-  virtual void OnDestruct() override;
-  virtual bool Send(IPC::Message* message) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
+  bool Send(IPC::Message* message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Messages from the browser.
   void OnStreamGenerated(

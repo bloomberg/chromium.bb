@@ -33,12 +33,12 @@ class PPB_Broker_Impl : public ppapi::Resource,
   explicit PPB_Broker_Impl(PP_Instance instance);
 
   // Resource override.
-  virtual ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() override;
+  ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() override;
 
   // PPB_BrokerTrusted implementation.
-  virtual int32_t Connect(
+  int32_t Connect(
       scoped_refptr<ppapi::TrackedCallback> connect_callback) override;
-  virtual int32_t GetHandle(int32_t* handle) override;
+  int32_t GetHandle(int32_t* handle) override;
 
   // Returns the URL of the document this plug-in runs in. This is necessary to
   // decide whether to grant access to the PPAPI broker.
@@ -47,10 +47,10 @@ class PPB_Broker_Impl : public ppapi::Resource,
   void BrokerConnected(int32_t handle, int32_t result);
 
  private:
-  virtual ~PPB_Broker_Impl();
+  ~PPB_Broker_Impl() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnPpapiBrokerChannelCreated(base::ProcessId broker_pid,
                                    const IPC::ChannelHandle& handle);

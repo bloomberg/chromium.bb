@@ -115,20 +115,20 @@ int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
 
 class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
  public:
-  virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const override {
+  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
+                                               const GURL& url) const override {
     return NULL;
   }
-  virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                                     const GURL& url) const override {
+  WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+                             const GURL& url) const override {
     return WebUI::kNoWebUI;
   }
-  virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+  bool UseWebUIForURL(BrowserContext* browser_context,
+                      const GURL& url) const override {
     return HasWebUIScheme(url);
   }
-  virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const override {
+  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
+                              const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 };
@@ -2171,7 +2171,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
 
 class SuppressErrorPageTest : public RenderViewTest {
  public:
-  virtual ContentRendererClient* CreateContentRendererClient() override {
+  ContentRendererClient* CreateContentRendererClient() override {
     return new TestContentRendererClient;
   }
 
@@ -2186,18 +2186,17 @@ class SuppressErrorPageTest : public RenderViewTest {
  private:
   class TestContentRendererClient : public ContentRendererClient {
    public:
-    virtual bool ShouldSuppressErrorPage(RenderFrame* render_frame,
-                                         const GURL& url) override {
+    bool ShouldSuppressErrorPage(RenderFrame* render_frame,
+                                 const GURL& url) override {
       return url == GURL("http://example.com/suppress");
     }
 
-    virtual void GetNavigationErrorStrings(
-        content::RenderView* render_view,
-        blink::WebFrame* frame,
-        const blink::WebURLRequest& failed_request,
-        const blink::WebURLError& error,
-        std::string* error_html,
-        base::string16* error_description) override {
+    void GetNavigationErrorStrings(content::RenderView* render_view,
+                                   blink::WebFrame* frame,
+                                   const blink::WebURLRequest& failed_request,
+                                   const blink::WebURLError& error,
+                                   std::string* error_html,
+                                   base::string16* error_description) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }

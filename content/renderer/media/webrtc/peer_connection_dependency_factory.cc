@@ -123,7 +123,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
         socket_factory_(socket_factory) {
   }
 
-  virtual cricket::PortAllocator* CreatePortAllocator(
+  cricket::PortAllocator* CreatePortAllocator(
       const std::vector<StunConfiguration>& stun_servers,
       const std::vector<TurnConfiguration>& turn_configurations) override {
     P2PPortAllocator::Config config;
@@ -153,7 +153,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   }
 
  protected:
-  virtual ~P2PPortAllocatorFactory() {}
+  ~P2PPortAllocatorFactory() override {}
 
  private:
   scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;

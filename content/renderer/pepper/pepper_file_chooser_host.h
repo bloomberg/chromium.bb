@@ -38,9 +38,9 @@ class CONTENT_EXPORT PepperFileChooserHost
   PepperFileChooserHost(RendererPpapiHost* host,
                         PP_Instance instance,
                         PP_Resource resource);
-  virtual ~PepperFileChooserHost();
+  ~PepperFileChooserHost() override;
 
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

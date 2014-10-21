@@ -118,7 +118,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
  protected:
   friend class base::RefCountedThreadSafe<WebRtcAudioCapturer>;
-  virtual ~WebRtcAudioCapturer();
+  ~WebRtcAudioCapturer() override;
 
  private:
   class TrackOwner;
@@ -132,11 +132,11 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // AudioCapturerSource::CaptureCallback implementation.
   // Called on the AudioInputDevice audio thread.
-  virtual void Capture(const media::AudioBus* audio_source,
-                       int audio_delay_milliseconds,
-                       double volume,
-                       bool key_pressed) override;
-  virtual void OnCaptureError() override;
+  void Capture(const media::AudioBus* audio_source,
+               int audio_delay_milliseconds,
+               double volume,
+               bool key_pressed) override;
+  void OnCaptureError() override;
 
   // Initializes the default audio capturing source using the provided render
   // view id and device information. Return true if success, otherwise false.

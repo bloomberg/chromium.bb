@@ -202,18 +202,18 @@ class CreateSessionDescriptionRequest
       PeerConnectionTracker::Action action)
       : webkit_request_(request), tracker_(handler, action) {}
 
-  virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
+  void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     tracker_.TrackOnSuccess(desc);
     webkit_request_.requestSucceeded(CreateWebKitSessionDescription(desc));
     delete desc;
   }
-  virtual void OnFailure(const std::string& error) override {
+  void OnFailure(const std::string& error) override {
     tracker_.TrackOnFailure(error);
     webkit_request_.requestFailed(base::UTF8ToUTF16(error));
   }
 
  protected:
-  virtual ~CreateSessionDescriptionRequest() {}
+  ~CreateSessionDescriptionRequest() override {}
 
  private:
   blink::WebRTCSessionDescriptionRequest webkit_request_;
@@ -231,17 +231,17 @@ class SetSessionDescriptionRequest
       PeerConnectionTracker::Action action)
       : webkit_request_(request), tracker_(handler, action) {}
 
-  virtual void OnSuccess() override {
+  void OnSuccess() override {
     tracker_.TrackOnSuccess(NULL);
     webkit_request_.requestSucceeded();
   }
-  virtual void OnFailure(const std::string& error) override {
+  void OnFailure(const std::string& error) override {
     tracker_.TrackOnFailure(error);
     webkit_request_.requestFailed(base::UTF8ToUTF16(error));
   }
 
  protected:
-  virtual ~SetSessionDescriptionRequest() {}
+  ~SetSessionDescriptionRequest() override {}
 
  private:
   blink::WebRTCVoidRequest webkit_request_;
@@ -258,7 +258,7 @@ class StatsResponse : public webrtc::StatsObserver {
     TRACE_EVENT_ASYNC_BEGIN0("webrtc", "getStats_Native", this);
   }
 
-  virtual void OnComplete(const StatsReports& reports) override {
+  void OnComplete(const StatsReports& reports) override {
     TRACE_EVENT0("webrtc", "StatsResponse::OnComplete")
     for (StatsReports::const_iterator it = reports.begin();
          it != reports.end(); ++it) {
@@ -347,17 +347,17 @@ namespace {
 class PeerConnectionUMAObserver : public webrtc::UMAObserver {
  public:
   PeerConnectionUMAObserver() {}
-  virtual ~PeerConnectionUMAObserver() {}
+  ~PeerConnectionUMAObserver() override {}
 
-  virtual void IncrementCounter(
+  void IncrementCounter(
       webrtc::PeerConnectionUMAMetricsCounter counter) override {
     UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics",
                               counter,
                               webrtc::kBoundary);
   }
 
-  virtual void AddHistogramSample(
-      webrtc::PeerConnectionUMAMetricsName type, int value) override {
+  void AddHistogramSample(webrtc::PeerConnectionUMAMetricsName type,
+                          int value) override {
     switch (type) {
       case webrtc::kTimeToConnect:
         UMA_HISTOGRAM_MEDIUM_TIMES(

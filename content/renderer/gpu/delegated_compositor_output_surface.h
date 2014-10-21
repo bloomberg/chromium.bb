@@ -18,7 +18,7 @@ class DelegatedCompositorOutputSurface : public CompositorOutputSurface {
       uint32 output_surface_id,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
-  virtual ~DelegatedCompositorOutputSurface() {}
+  ~DelegatedCompositorOutputSurface() override {}
 };
 
 }  // namespace content

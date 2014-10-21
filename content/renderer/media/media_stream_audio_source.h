@@ -46,7 +46,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
   }
 
  protected:
-  virtual void DoStopSource() override;
+  void DoStopSource() override;
 
  private:
   const int render_view_id_;  // Render view ID that created this source.

@@ -39,9 +39,9 @@ class MessageThrottlingFilter : public IPC::MessageFilter {
   void Shutdown() { sender_ = NULL; }
 
  private:
-  virtual ~MessageThrottlingFilter() {}
+  ~MessageThrottlingFilter() override {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   int GetPendingCount() { return IncrementPendingCountN(0); }
   int IncrementPendingCount() { return IncrementPendingCountN(1); }
@@ -109,20 +109,25 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   void Shutdown();
 
   // DOMStorageProxy interface for use by DOMStorageCachedArea.
-  virtual void LoadArea(int connection_id, DOMStorageValuesMap* values,
-                        bool* send_log_get_messages,
-                        const CompletionCallback& callback) override;
-  virtual void SetItem(int connection_id, const base::string16& key,
-                       const base::string16& value, const GURL& page_url,
-                       const CompletionCallback& callback) override;
-  virtual void LogGetItem(int connection_id, const base::string16& key,
-                          const base::NullableString16& value) override;
-  virtual void RemoveItem(int connection_id, const base::string16& key,
-                          const GURL& page_url,
-                          const CompletionCallback& callback) override;
-  virtual void ClearArea(int connection_id,
-                        const GURL& page_url,
-                        const CompletionCallback& callback) override;
+  void LoadArea(int connection_id,
+                DOMStorageValuesMap* values,
+                bool* send_log_get_messages,
+                const CompletionCallback& callback) override;
+  void SetItem(int connection_id,
+               const base::string16& key,
+               const base::string16& value,
+               const GURL& page_url,
+               const CompletionCallback& callback) override;
+  void LogGetItem(int connection_id,
+                  const base::string16& key,
+                  const base::NullableString16& value) override;
+  void RemoveItem(int connection_id,
+                  const base::string16& key,
+                  const GURL& page_url,
+                  const CompletionCallback& callback) override;
+  void ClearArea(int connection_id,
+                 const GURL& page_url,
+                 const CompletionCallback& callback) override;
 
  private:
   // Struct to hold references to our contained areas and
@@ -139,8 +144,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   typedef std::map<std::string, CachedAreaHolder> CachedAreaMap;
   typedef std::list<CompletionCallback> CallbackList;
 
-  virtual ~ProxyImpl() {
-  }
+  ~ProxyImpl() override {}
 
   // Sudden termination is disabled when there are callbacks pending
   // to more reliably commit changes during shutdown.

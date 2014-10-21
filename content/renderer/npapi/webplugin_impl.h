@@ -56,7 +56,7 @@ class WebPluginImpl : public WebPlugin,
       const base::FilePath& file_path,
       const base::WeakPtr<RenderViewImpl>& render_view,
       RenderFrameImpl* render_frame);
-  virtual ~WebPluginImpl();
+  ~WebPluginImpl() override;
 
   // Helper function for sorting post data.
   CONTENT_EXPORT static bool SetPostData(blink::WebURLRequest* request,
@@ -94,40 +94,38 @@ class WebPluginImpl : public WebPlugin,
   virtual bool isPlaceholder() override;
 
   // WebPlugin implementation:
-  virtual void SetWindow(gfx::PluginWindowHandle window) override;
-  virtual void SetAcceptsInputEvents(bool accepts) override;
-  virtual void WillDestroyWindow(gfx::PluginWindowHandle window) override;
-  virtual void CancelResource(unsigned long id) override;
-  virtual void Invalidate() override;
-  virtual void InvalidateRect(const gfx::Rect& rect) override;
-  virtual NPObject* GetWindowScriptNPObject() override;
-  virtual NPObject* GetPluginElement() override;
-  virtual bool FindProxyForUrl(const GURL& url,
-                               std::string* proxy_list) override;
-  virtual void SetCookie(const GURL& url,
-                         const GURL& first_party_for_cookies,
-                         const std::string& cookie) override;
-  virtual std::string GetCookies(const GURL& url,
-                                 const GURL& first_party_for_cookies) override;
-  virtual void HandleURLRequest(const char* url,
-                                const char *method,
-                                const char* target,
-                                const char* buf,
-                                unsigned int len,
-                                int notify_id,
-                                bool popups_allowed,
-                                bool notify_redirects) override;
-  virtual void CancelDocumentLoad() override;
-  virtual void InitiateHTTPRangeRequest(const char* url,
-                                        const char* range_info,
-                                        int pending_request_id) override;
-  virtual void DidStartLoading() override;
-  virtual void DidStopLoading() override;
-  virtual bool IsOffTheRecord() override;
-  virtual void SetDeferResourceLoading(unsigned long resource_id,
-                                       bool defer) override;
-  virtual void URLRedirectResponse(bool allow, int resource_id) override;
-  virtual bool CheckIfRunInsecureContent(const GURL& url) override;
+  void SetWindow(gfx::PluginWindowHandle window) override;
+  void SetAcceptsInputEvents(bool accepts) override;
+  void WillDestroyWindow(gfx::PluginWindowHandle window) override;
+  void CancelResource(unsigned long id) override;
+  void Invalidate() override;
+  void InvalidateRect(const gfx::Rect& rect) override;
+  NPObject* GetWindowScriptNPObject() override;
+  NPObject* GetPluginElement() override;
+  bool FindProxyForUrl(const GURL& url, std::string* proxy_list) override;
+  void SetCookie(const GURL& url,
+                 const GURL& first_party_for_cookies,
+                 const std::string& cookie) override;
+  std::string GetCookies(const GURL& url,
+                         const GURL& first_party_for_cookies) override;
+  void HandleURLRequest(const char* url,
+                        const char* method,
+                        const char* target,
+                        const char* buf,
+                        unsigned int len,
+                        int notify_id,
+                        bool popups_allowed,
+                        bool notify_redirects) override;
+  void CancelDocumentLoad() override;
+  void InitiateHTTPRangeRequest(const char* url,
+                                const char* range_info,
+                                int pending_request_id) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  bool IsOffTheRecord() override;
+  void SetDeferResourceLoading(unsigned long resource_id, bool defer) override;
+  void URLRedirectResponse(bool allow, int resource_id) override;
+  bool CheckIfRunInsecureContent(const GURL& url) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
                          gfx::NativeViewId dummy_activation_window) { }
@@ -135,13 +133,13 @@ class WebPluginImpl : public WebPlugin,
   void ReportExecutableMemory(size_t size) { }
 #endif
 #if defined(OS_MACOSX)
-  virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
+  WebPluginAcceleratedSurface* GetAcceleratedSurface(
       gfx::GpuPreference gpu_preference) override;
-  virtual void AcceleratedPluginEnabledRendering() override;
-  virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
-                                                   int32 height,
-                                                   uint32 surface_id) override;
-  virtual void AcceleratedPluginSwappedIOSurface() override;
+  void AcceleratedPluginEnabledRendering() override;
+  void AcceleratedPluginAllocatedIOSurface(int32 width,
+                                           int32 height,
+                                           uint32 surface_id) override;
+  void AcceleratedPluginSwappedIOSurface() override;
 #endif
 
  private:

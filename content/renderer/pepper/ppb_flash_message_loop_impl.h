@@ -20,20 +20,19 @@ class PPB_Flash_MessageLoop_Impl
   static PP_Resource Create(PP_Instance instance);
 
   // Resource.
-  virtual ppapi::thunk::PPB_Flash_MessageLoop_API* AsPPB_Flash_MessageLoop_API()
+  ppapi::thunk::PPB_Flash_MessageLoop_API* AsPPB_Flash_MessageLoop_API()
       override;
 
   // PPB_Flash_MessageLoop_API implementation.
-  virtual int32_t Run() override;
-  virtual void Quit() override;
-  virtual void RunFromHostProxy(const RunFromHostProxyCallback& callback)
-      override;
+  int32_t Run() override;
+  void Quit() override;
+  void RunFromHostProxy(const RunFromHostProxyCallback& callback) override;
 
  private:
   class State;
 
   explicit PPB_Flash_MessageLoop_Impl(PP_Instance instance);
-  virtual ~PPB_Flash_MessageLoop_Impl();
+  ~PPB_Flash_MessageLoop_Impl() override;
 
   // If |callback| is valid, it will be called when the message loop is signaled
   // to quit, and the result passed into it will be the same value as what this

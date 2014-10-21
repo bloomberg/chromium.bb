@@ -32,32 +32,28 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
                             PP_VideoDecoder_Profile profile);
 
   // PPB_VideoDecoder_Dev_API implementation.
-  virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-                         scoped_refptr<ppapi::TrackedCallback> callback)
-      override;
-  virtual void AssignPictureBuffers(uint32_t no_of_buffers,
-                                    const PP_PictureBuffer_Dev* buffers)
-      override;
-  virtual void ReusePictureBuffer(int32_t picture_buffer_id) override;
-  virtual int32_t Flush(scoped_refptr<ppapi::TrackedCallback> callback)
-      override;
-  virtual int32_t Reset(scoped_refptr<ppapi::TrackedCallback> callback)
-      override;
-  virtual void Destroy() override;
+  int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+                 scoped_refptr<ppapi::TrackedCallback> callback) override;
+  void AssignPictureBuffers(uint32_t no_of_buffers,
+                            const PP_PictureBuffer_Dev* buffers) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
+  int32_t Flush(scoped_refptr<ppapi::TrackedCallback> callback) override;
+  int32_t Reset(scoped_refptr<ppapi::TrackedCallback> callback) override;
+  void Destroy() override;
 
   // media::VideoDecodeAccelerator::Client implementation.
-  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
-                                     const gfx::Size& dimensions,
-                                     uint32 texture_target) override;
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) override;
-  virtual void PictureReady(const media::Picture& picture) override;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
-  virtual void NotifyFlushDone() override;
-  virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) override;
-  virtual void NotifyResetDone() override;
+  void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                             const gfx::Size& dimensions,
+                             uint32 texture_target) override;
+  void DismissPictureBuffer(int32 picture_buffer_id) override;
+  void PictureReady(const media::Picture& picture) override;
+  void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  void NotifyFlushDone() override;
+  void NotifyEndOfBitstreamBuffer(int32 buffer_id) override;
+  void NotifyResetDone() override;
 
  private:
-  virtual ~PPB_VideoDecoder_Impl();
+  ~PPB_VideoDecoder_Impl() override;
 
   explicit PPB_VideoDecoder_Impl(PP_Instance instance);
   bool Init(PP_Resource graphics_context,

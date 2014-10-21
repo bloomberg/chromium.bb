@@ -42,7 +42,7 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   void ViewFlushedPaint();
 
  private:
-  virtual ~PepperCompositorHost();
+  ~PepperCompositorHost() override;
 
   void ImageReleased(int32_t id,
                      const scoped_ptr<base::SharedMemory>& shared_memory,
@@ -58,12 +58,12 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
                    scoped_ptr<base::SharedMemory> image_shm);
 
   // ResourceMessageHandler overrides:
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
   // ppapi::host::ResourceHost overrides:
-  virtual bool IsCompositorHost() override;
+  bool IsCompositorHost() override;
 
   // Message handlers:
   int32_t OnHostMsgCommitLayers(

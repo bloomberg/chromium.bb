@@ -24,11 +24,9 @@ class PepperInProcessRouter::Channel : public IPC::Sender {
   Channel(const base::Callback<bool(IPC::Message*)>& callback)
       : callback_(callback) {}
 
-  virtual ~Channel() {}
+  ~Channel() override {}
 
-  virtual bool Send(IPC::Message* message) override {
-    return callback_.Run(message);
-  }
+  bool Send(IPC::Message* message) override { return callback_.Run(message); }
 
  private:
   base::Callback<bool(IPC::Message*)> callback_;

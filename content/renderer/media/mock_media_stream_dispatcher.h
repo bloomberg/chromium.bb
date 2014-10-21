@@ -16,26 +16,26 @@ namespace content {
 class MockMediaStreamDispatcher : public MediaStreamDispatcher {
  public:
   MockMediaStreamDispatcher();
-  virtual ~MockMediaStreamDispatcher();
+  ~MockMediaStreamDispatcher() override;
 
-  virtual void GenerateStream(
+  void GenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamOptions& components,
       const GURL& url) override;
-  virtual void CancelGenerateStream(
+  void CancelGenerateStream(
       int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>&
-          event_handler) override;
-  virtual void EnumerateDevices(
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler)
+      override;
+  void EnumerateDevices(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       MediaStreamType type,
       const GURL& security_origin) override;
-  virtual void StopStreamDevice(const StreamDeviceInfo& device_info) override;
-  virtual bool IsStream(const std::string& label) override;
-  virtual int video_session_id(const std::string& label, int index) override;
-  virtual int audio_session_id(const std::string& label, int index) override;
+  void StopStreamDevice(const StreamDeviceInfo& device_info) override;
+  bool IsStream(const std::string& label) override;
+  int video_session_id(const std::string& label, int index) override;
+  int audio_session_id(const std::string& label, int index) override;
 
   int audio_input_request_id() const { return audio_input_request_id_; }
   int audio_output_request_id() const { return audio_output_request_id_; }

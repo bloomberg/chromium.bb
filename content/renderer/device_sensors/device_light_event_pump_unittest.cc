@@ -41,14 +41,14 @@ class DeviceLightEventPumpForTesting : public DeviceLightEventPump {
  public:
   DeviceLightEventPumpForTesting()
       : DeviceLightEventPump(0) {}
-  virtual ~DeviceLightEventPumpForTesting() {}
+  ~DeviceLightEventPumpForTesting() override {}
 
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceLightEventPump::OnDidStart(renderer_handle);
   }
-  virtual void SendStartMessage() override { }
-  virtual void SendStopMessage() override { }
-  virtual void FireEvent() override {
+  void SendStartMessage() override {}
+  void SendStopMessage() override {}
+  void FireEvent() override {
     DeviceLightEventPump::FireEvent();
     Stop();
     base::MessageLoop::current()->QuitWhenIdle();

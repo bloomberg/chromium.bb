@@ -49,22 +49,22 @@ class CONTENT_EXPORT RTCVideoEncoder
       webrtc::VideoCodecType type,
       media::VideoCodecProfile profile,
       const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
-  virtual ~RTCVideoEncoder();
+  ~RTCVideoEncoder() override;
 
   // webrtc::VideoEncoder implementation.  Tasks are posted to |impl_| using the
   // appropriate VEA methods.
-  virtual int32_t InitEncode(const webrtc::VideoCodec* codec_settings,
-                             int32_t number_of_cores,
-                             uint32_t max_payload_size) override;
-  virtual int32_t Encode(
+  int32_t InitEncode(const webrtc::VideoCodec* codec_settings,
+                     int32_t number_of_cores,
+                     uint32_t max_payload_size) override;
+  int32_t Encode(
       const webrtc::I420VideoFrame& input_image,
       const webrtc::CodecSpecificInfo* codec_specific_info,
       const std::vector<webrtc::VideoFrameType>* frame_types) override;
-  virtual int32_t RegisterEncodeCompleteCallback(
+  int32_t RegisterEncodeCompleteCallback(
       webrtc::EncodedImageCallback* callback) override;
-  virtual int32_t Release() override;
-  virtual int32_t SetChannelParameters(uint32_t packet_loss, int rtt) override;
-  virtual int32_t SetRates(uint32_t new_bit_rate, uint32_t frame_rate) override;
+  int32_t Release() override;
+  int32_t SetChannelParameters(uint32_t packet_loss, int rtt) override;
+  int32_t SetRates(uint32_t new_bit_rate, uint32_t frame_rate) override;
 
  private:
   class Impl;

@@ -64,19 +64,19 @@ class CONTENT_EXPORT ResourceConverter {
 class ResourceConverterImpl : public ResourceConverter {
  public:
   explicit ResourceConverterImpl(PP_Instance instance);
-  virtual ~ResourceConverterImpl();
+  ~ResourceConverterImpl() override;
 
   // ResourceConverter overrides.
-  virtual void Reset() override;
-  virtual bool NeedsFlush() override;
-  virtual void Flush(const base::Callback<void(bool)>& callback) override;
-  virtual bool FromV8Value(v8::Handle<v8::Object> val,
-                           v8::Handle<v8::Context> context,
-                           PP_Var* result,
-                           bool* was_resource) override;
-  virtual bool ToV8Value(const PP_Var& var,
-                         v8::Handle<v8::Context> context,
-                         v8::Handle<v8::Value>* result) override;
+  void Reset() override;
+  bool NeedsFlush() override;
+  void Flush(const base::Callback<void(bool)>& callback) override;
+  bool FromV8Value(v8::Handle<v8::Object> val,
+                   v8::Handle<v8::Context> context,
+                   PP_Var* result,
+                   bool* was_resource) override;
+  bool ToV8Value(const PP_Var& var,
+                 v8::Handle<v8::Context> context,
+                 v8::Handle<v8::Value>* result) override;
 
  private:
   // Creates a resource var with the given |pending_renderer_id| and

@@ -23,7 +23,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   // This function takes the RenderView and instance that the mock resource
   // host will be associated with.
   MockRendererPpapiHost(RenderView* render_view, PP_Instance instance);
-  virtual ~MockRendererPpapiHost();
+  ~MockRendererPpapiHost() override;
 
   ppapi::proxy::ResourceMessageTestSink& sink() { return sink_; }
   PP_Instance pp_instance() const { return pp_instance_; }
@@ -32,34 +32,30 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   void set_has_user_gesture(bool gesture) { has_user_gesture_ = gesture; }
 
   // RendererPpapiHost.
-  virtual ppapi::host::PpapiHost* GetPpapiHost() override;
-  virtual bool IsValidInstance(PP_Instance instance) const override;
-  virtual PepperPluginInstance* GetPluginInstance(PP_Instance instance) const
-      override;
-  virtual RenderFrame* GetRenderFrameForInstance(PP_Instance instance) const
-      override;
-  virtual RenderView* GetRenderViewForInstance(PP_Instance instance) const
-      override;
-  virtual blink::WebPluginContainer* GetContainerForInstance(
+  ppapi::host::PpapiHost* GetPpapiHost() override;
+  bool IsValidInstance(PP_Instance instance) const override;
+  PepperPluginInstance* GetPluginInstance(PP_Instance instance) const override;
+  RenderFrame* GetRenderFrameForInstance(PP_Instance instance) const override;
+  RenderView* GetRenderViewForInstance(PP_Instance instance) const override;
+  blink::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const override;
-  virtual base::ProcessId GetPluginPID() const override;
-  virtual bool HasUserGesture(PP_Instance instance) const override;
-  virtual int GetRoutingIDForWidget(PP_Instance instance) const override;
-  virtual gfx::Point PluginPointToRenderFrame(PP_Instance instance,
-                                              const gfx::Point& pt) const
-      override;
-  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+  base::ProcessId GetPluginPID() const override;
+  bool HasUserGesture(PP_Instance instance) const override;
+  int GetRoutingIDForWidget(PP_Instance instance) const override;
+  gfx::Point PluginPointToRenderFrame(PP_Instance instance,
+                                      const gfx::Point& pt) const override;
+  IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) override;
-  virtual bool IsRunningInProcess() const override;
-  virtual std::string GetPluginName() const override;
-  virtual void SetToExternalPluginHost() override;
-  virtual void CreateBrowserResourceHosts(
+  bool IsRunningInProcess() const override;
+  std::string GetPluginName() const override;
+  void SetToExternalPluginHost() override;
+  void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
-      const base::Callback<void(const std::vector<int>&)>& callback) const
-      override;
-  virtual GURL GetDocumentURL(PP_Instance instance) const override;
+      const base::Callback<void(const std::vector<int>&)>& callback)
+      const override;
+  GURL GetDocumentURL(PP_Instance instance) const override;
 
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;

@@ -109,14 +109,14 @@ FetcherDelegate* FetcherDelegate::instance_ = NULL;
 
 class EvilFetcherDelegate : public FetcherDelegate {
  public:
-  virtual ~EvilFetcherDelegate() {}
+  ~EvilFetcherDelegate() override {}
 
   void SetFetcher(ResourceFetcher* fetcher) {
     fetcher_.reset(fetcher);
   }
 
-  virtual void OnURLFetchComplete(const WebURLResponse& response,
-                                  const std::string& data) override {
+  void OnURLFetchComplete(const WebURLResponse& response,
+                          const std::string& data) override {
     FetcherDelegate::OnURLFetchComplete(response, data);
 
     // Destroy the ResourceFetcher here.  We are testing that upon returning
@@ -132,7 +132,7 @@ class EvilFetcherDelegate : public FetcherDelegate {
 
 class ResourceFetcherTests : public ContentBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN)
     // Don't want to try to create a GPU process.

@@ -45,8 +45,8 @@ class CONTENT_EXPORT RtcDataChannelHandler
   virtual void close() override;
 
   // webrtc::DataChannelObserver implementation.
-  virtual void OnStateChange() override;
-  virtual void OnMessage(const webrtc::DataBuffer& buffer) override;
+  void OnStateChange() override;
+  void OnMessage(const webrtc::DataBuffer& buffer) override;
 
  private:
   void RecordMessageSent(size_t num_bytes);

@@ -47,16 +47,16 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
   // stream_id and the destination render_view_id.
   class AudioInputIPCImpl;
 
-  virtual ~AudioInputMessageFilter();
+  ~AudioInputMessageFilter() override;
 
   // Sends an IPC message using |channel_|.
   void Send(IPC::Message* message);
 
   // IPC::MessageFilter override. Called on |io_message_loop_|.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
   // Received when browser process has created an audio input stream.
   void OnStreamCreated(int stream_id,

@@ -250,38 +250,36 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   // IPC::Sender
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // RenderFrame implementation:
-  virtual RenderView* GetRenderView() override;
-  virtual int GetRoutingID() override;
-  virtual blink::WebLocalFrame* GetWebFrame() override;
-  virtual WebPreferences& GetWebkitPreferences() override;
-  virtual int ShowContextMenu(ContextMenuClient* client,
-                              const ContextMenuParams& params) override;
-  virtual void CancelContextMenu(int request_id) override;
-  virtual blink::WebNode GetContextMenuNode() const override;
-  virtual blink::WebPlugin* CreatePlugin(
-      blink::WebFrame* frame,
-      const WebPluginInfo& info,
-      const blink::WebPluginParams& params) override;
-  virtual void LoadURLExternally(blink::WebLocalFrame* frame,
-                                 const blink::WebURLRequest& request,
-                                 blink::WebNavigationPolicy policy) override;
-  virtual void ExecuteJavaScript(const base::string16& javascript) override;
-  virtual bool IsHidden() override;
-  virtual ServiceRegistry* GetServiceRegistry() override;
-  virtual bool IsFTPDirectoryListing() override;
-  virtual void AttachGuest(int element_instance_id) override;
-  virtual void SetSelectedText(const base::string16& selection_text,
-                               size_t offset,
-                               const gfx::Range& range) override;
-  virtual void EnsureMojoBuiltinsAreAvailable(
-      v8::Isolate* isolate,
-      v8::Handle<v8::Context> context) override;
+  RenderView* GetRenderView() override;
+  int GetRoutingID() override;
+  blink::WebLocalFrame* GetWebFrame() override;
+  WebPreferences& GetWebkitPreferences() override;
+  int ShowContextMenu(ContextMenuClient* client,
+                      const ContextMenuParams& params) override;
+  void CancelContextMenu(int request_id) override;
+  blink::WebNode GetContextMenuNode() const override;
+  blink::WebPlugin* CreatePlugin(blink::WebFrame* frame,
+                                 const WebPluginInfo& info,
+                                 const blink::WebPluginParams& params) override;
+  void LoadURLExternally(blink::WebLocalFrame* frame,
+                         const blink::WebURLRequest& request,
+                         blink::WebNavigationPolicy policy) override;
+  void ExecuteJavaScript(const base::string16& javascript) override;
+  bool IsHidden() override;
+  ServiceRegistry* GetServiceRegistry() override;
+  bool IsFTPDirectoryListing() override;
+  void AttachGuest(int element_instance_id) override;
+  void SetSelectedText(const base::string16& selection_text,
+                       size_t offset,
+                       const gfx::Range& range) override;
+  void EnsureMojoBuiltinsAreAvailable(v8::Isolate* isolate,
+                                      v8::Handle<v8::Context> context) override;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
@@ -467,9 +465,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didChangeManifest(blink::WebLocalFrame*);
 
   // WebMediaPlayerDelegate implementation:
-  virtual void DidPlay(blink::WebMediaPlayer* player) override;
-  virtual void DidPause(blink::WebMediaPlayer* player) override;
-  virtual void PlayerGone(blink::WebMediaPlayer* player) override;
+  void DidPlay(blink::WebMediaPlayer* player) override;
+  void DidPause(blink::WebMediaPlayer* player) override;
+  void PlayerGone(blink::WebMediaPlayer* player) override;
 
   // TODO(nasko): Make all tests in RenderViewImplTest friends and then move
   // this back to private member.

@@ -31,16 +31,15 @@ class ResourceFetcherImpl : public ResourceFetcher,
                             public WebURLLoaderClientImpl {
  public:
   // ResourceFetcher implementation:
-  virtual void SetMethod(const std::string& method) override;
-  virtual void SetBody(const std::string& body) override;
-  virtual void SetHeader(const std::string& header,
-                         const std::string& value) override;
-  virtual void Start(blink::WebFrame* frame,
-                     blink::WebURLRequest::RequestContext request_context,
-                     blink::WebURLRequest::FrameType frame_type,
-                     LoaderType loader_type,
-                     const Callback& callback) override;
-  virtual void SetTimeout(const base::TimeDelta& timeout) override;
+  void SetMethod(const std::string& method) override;
+  void SetBody(const std::string& body) override;
+  void SetHeader(const std::string& header, const std::string& value) override;
+  void Start(blink::WebFrame* frame,
+             blink::WebURLRequest::RequestContext request_context,
+             blink::WebURLRequest::FrameType frame_type,
+             LoaderType loader_type,
+             const Callback& callback) override;
+  void SetTimeout(const base::TimeDelta& timeout) override;
 
  private:
   friend class ResourceFetcher;
@@ -54,8 +53,8 @@ class ResourceFetcherImpl : public ResourceFetcher,
   void TimeoutFired();
 
   // WebURLLoaderClientImpl methods:
-  virtual void OnLoadComplete() override;
-  virtual void Cancel() override;
+  void OnLoadComplete() override;
+  void Cancel() override;
 
   scoped_ptr<blink::WebURLLoader> loader_;
 

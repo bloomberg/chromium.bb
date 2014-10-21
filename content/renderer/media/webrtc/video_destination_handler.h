@@ -57,15 +57,15 @@ class CONTENT_EXPORT PpFrameWriter
 
  protected:
   // MediaStreamVideoSource implementation.
-  virtual void GetCurrentSupportedFormats(
+  void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) override;
-  virtual void StartSourceImpl(
+  void StartSourceImpl(
       const media::VideoCaptureFormat& format,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
-  virtual void StopSourceImpl() override;
+  void StopSourceImpl() override;
 
  private:
   class FrameWriterDelegate;

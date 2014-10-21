@@ -35,7 +35,7 @@ class TestRenderWidget : public RenderWidget {
   MockWebWidget mock_webwidget_;
 
  private:
-  virtual ~TestRenderWidget() { webwidget_ = NULL; }
+  ~TestRenderWidget() override { webwidget_ = NULL; }
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderWidget);
 };

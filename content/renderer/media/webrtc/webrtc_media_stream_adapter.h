@@ -31,7 +31,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
  public:
   WebRtcMediaStreamAdapter(const blink::WebMediaStream& web_stream,
                            PeerConnectionDependencyFactory* factory);
-  virtual ~WebRtcMediaStreamAdapter();
+  ~WebRtcMediaStreamAdapter() override;
 
   bool IsEqual(const blink::WebMediaStream& web_stream) {
     return web_stream_.extraData() == web_stream.extraData();
@@ -43,8 +43,8 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
 
  protected:
   // MediaStreamObserver implementation.
-  virtual void TrackAdded(const blink::WebMediaStreamTrack& track) override;
-  virtual void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
+  void TrackAdded(const blink::WebMediaStreamTrack& track) override;
+  void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
 
  private:
   void CreateAudioTrack(const blink::WebMediaStreamTrack& track);

@@ -84,7 +84,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   static const int kUnknownFrameRate;
 
  protected:
-  virtual void DoStopSource() override;
+  void DoStopSource() override;
 
   // Sets ready state and notifies the ready state to all registered tracks.
   virtual void SetReadyState(blink::WebMediaStreamSource::ReadyState state);

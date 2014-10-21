@@ -25,10 +25,10 @@ class RenderViewImpl;
 class TextInputClientObserver : public RenderViewObserver {
  public:
   explicit TextInputClientObserver(RenderViewImpl* render_view);
-  virtual ~TextInputClientObserver();
+  ~TextInputClientObserver() override;
 
   // RenderViewObserver overrides:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // Returns the WebView of the RenderView.

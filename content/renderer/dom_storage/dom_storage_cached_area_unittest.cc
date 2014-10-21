@@ -23,10 +23,10 @@ class MockProxy : public DOMStorageProxy {
 
   // DOMStorageProxy interface for use by DOMStorageCachedArea.
 
-  virtual void LoadArea(int connection_id,
-                        DOMStorageValuesMap* values,
-                        bool* send_log_get_messages,
-                        const CompletionCallback& callback) override {
+  void LoadArea(int connection_id,
+                DOMStorageValuesMap* values,
+                bool* send_log_get_messages,
+                const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_load_area_ = true;
     observed_connection_id_ = connection_id;
@@ -34,11 +34,11 @@ class MockProxy : public DOMStorageProxy {
     *send_log_get_messages = false;
   }
 
-  virtual void SetItem(int connection_id,
-                       const base::string16& key,
-                       const base::string16& value,
-                       const GURL& page_url,
-                       const CompletionCallback& callback) override {
+  void SetItem(int connection_id,
+               const base::string16& key,
+               const base::string16& value,
+               const GURL& page_url,
+               const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_set_item_ = true;
     observed_connection_id_ = connection_id;
@@ -47,15 +47,14 @@ class MockProxy : public DOMStorageProxy {
     observed_page_url_ = page_url;
   }
 
-  virtual void LogGetItem(int connection_id,
-                          const base::string16& key,
-                          const base::NullableString16& value) override {
-  }
+  void LogGetItem(int connection_id,
+                  const base::string16& key,
+                  const base::NullableString16& value) override {}
 
-  virtual void RemoveItem(int connection_id,
-                          const base::string16& key,
-                          const GURL& page_url,
-                          const CompletionCallback& callback) override {
+  void RemoveItem(int connection_id,
+                  const base::string16& key,
+                  const GURL& page_url,
+                  const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_remove_item_ = true;
     observed_connection_id_ = connection_id;
@@ -63,9 +62,9 @@ class MockProxy : public DOMStorageProxy {
     observed_page_url_ = page_url;
   }
 
-  virtual void ClearArea(int connection_id,
-                         const GURL& page_url,
-                         const CompletionCallback& callback) override {
+  void ClearArea(int connection_id,
+                 const GURL& page_url,
+                 const CompletionCallback& callback) override {
     pending_callbacks_.push_back(callback);
     observed_clear_area_ = true;
     observed_connection_id_ = connection_id;
@@ -110,7 +109,7 @@ class MockProxy : public DOMStorageProxy {
   GURL observed_page_url_;
 
  private:
-  virtual ~MockProxy() {}
+  ~MockProxy() override {}
 };
 
 }  // namespace

@@ -93,7 +93,7 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   }
 
  protected:
-  virtual ~InternalDocumentStateData();
+  ~InternalDocumentStateData() override;
 
  private:
   bool did_first_visually_non_empty_layout_;

@@ -33,19 +33,19 @@ class MailboxOutputSurface : public CompositorOutputSurface {
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
       cc::ResourceFormat format);
-  virtual ~MailboxOutputSurface();
+  ~MailboxOutputSurface() override;
 
   // cc::OutputSurface implementation.
-  virtual void EnsureBackbuffer() override;
-  virtual void DiscardBackbuffer() override;
-  virtual void Reshape(const gfx::Size& size, float scale_factor) override;
-  virtual void BindFramebuffer() override;
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
+  void Reshape(const gfx::Size& size, float scale_factor) override;
+  void BindFramebuffer() override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 
  private:
   // CompositorOutputSurface overrides.
-  virtual void OnSwapAck(uint32 output_surface_id,
-                         const cc::CompositorFrameAck& ack) override;
+  void OnSwapAck(uint32 output_surface_id,
+                 const cc::CompositorFrameAck& ack) override;
 
   size_t GetNumAcksPending();
 

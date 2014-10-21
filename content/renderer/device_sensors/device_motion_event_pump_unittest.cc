@@ -45,14 +45,14 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
  public:
   DeviceMotionEventPumpForTesting()
       : DeviceMotionEventPump(0) { }
-  virtual ~DeviceMotionEventPumpForTesting() { }
+  ~DeviceMotionEventPumpForTesting() override {}
 
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceMotionEventPump::OnDidStart(renderer_handle);
   }
-  virtual void SendStartMessage() override { }
-  virtual void SendStopMessage() override { }
-  virtual void FireEvent() override {
+  void SendStartMessage() override {}
+  void SendStopMessage() override {}
+  void FireEvent() override {
     DeviceMotionEventPump::FireEvent();
     Stop();
     base::MessageLoop::current()->QuitWhenIdle();

@@ -23,10 +23,10 @@ namespace content {
 class EmbeddedWorkerDispatcher : public IPC::Listener {
  public:
   EmbeddedWorkerDispatcher();
-  virtual ~EmbeddedWorkerDispatcher();
+  ~EmbeddedWorkerDispatcher() override;
 
   // IPC::Listener overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void WorkerContextDestroyed(int embedded_worker_id);
 

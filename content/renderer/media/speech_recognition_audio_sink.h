@@ -42,23 +42,25 @@ class CONTENT_EXPORT SpeechRecognitionAudioSink
                              scoped_ptr<base::SyncSocket> socket,
                              const OnStoppedCB& on_stopped_cb);
 
-  virtual ~SpeechRecognitionAudioSink();
+  ~SpeechRecognitionAudioSink() override;
 
   // Returns whether the provided track is supported.
   static bool IsSupportedTrack(const blink::WebMediaStreamTrack& track);
 
  private:
   // content::MediaStreamAudioSink implementation.
-  virtual void OnReadyStateChanged(
+  void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
 
-  virtual void OnData(const int16* audio_data, int sample_rate,
-                      int number_of_channels, int number_of_frames) override;
-  virtual void OnSetFormat(const media::AudioParameters& params) override;
+  void OnData(const int16* audio_data,
+              int sample_rate,
+              int number_of_channels,
+              int number_of_frames) override;
+  void OnSetFormat(const media::AudioParameters& params) override;
 
   // media::AudioConverter::Inputcallback implementation.
-  virtual double ProvideInput(media::AudioBus* audio_bus,
-                              base::TimeDelta buffer_delay) override;
+  double ProvideInput(media::AudioBus* audio_bus,
+                      base::TimeDelta buffer_delay) override;
 
   // Returns the pointer to the audio input buffer mapped in the shared memory.
   media::AudioInputBuffer* GetAudioInputBuffer() const;

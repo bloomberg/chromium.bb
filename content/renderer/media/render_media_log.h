@@ -27,13 +27,13 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
   RenderMediaLog();
 
   // MediaLog implementation.
-  virtual void AddEvent(scoped_ptr<media::MediaLogEvent> event) override;
+  void AddEvent(scoped_ptr<media::MediaLogEvent> event) override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
 
  private:
-  virtual ~RenderMediaLog();
+  ~RenderMediaLog() override;
 
   scoped_refptr<base::MessageLoopProxy> render_loop_;
   scoped_ptr<base::TickClock> tick_clock_;

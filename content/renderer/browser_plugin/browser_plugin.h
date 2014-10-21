@@ -129,10 +129,9 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual void extendSelectionAndDelete(int before, int after) override;
 
   // MouseLockDispatcher::LockTarget implementation.
-  virtual void OnLockMouseACK(bool succeeded) override;
-  virtual void OnMouseLockLost() override;
-  virtual bool HandleMouseLockedInputEvent(
-          const blink::WebMouseEvent& event) override;
+  void OnLockMouseACK(bool succeeded) override;
+  void OnMouseLockLost() override;
+  bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override;
 
  private:
   friend class base::DeleteHelper<BrowserPlugin>;
@@ -152,7 +151,7 @@ class CONTENT_EXPORT BrowserPlugin :
                 blink::WebFrame* frame,
                 scoped_ptr<BrowserPluginDelegate> delegate);
 
-  virtual ~BrowserPlugin();
+  ~BrowserPlugin() override;
 
   int width() const { return plugin_rect_.width(); }
   int height() const { return plugin_rect_.height(); }

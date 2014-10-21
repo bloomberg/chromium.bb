@@ -39,7 +39,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
 
  private:
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Disconnects the worker (stops listening for incoming messages).
   void Disconnect();

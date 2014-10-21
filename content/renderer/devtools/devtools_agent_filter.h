@@ -33,14 +33,14 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   static void SendRpcMessage(const DevToolsMessageData& data);
 
   // IPC::MessageFilter override. Called on IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Called on the main thread.
   void AddEmbeddedWorkerRouteOnMainThread(int32 routing_id);
   void RemoveEmbeddedWorkerRouteOnMainThread(int32 routing_id);
 
  protected:
-  virtual ~DevToolsAgentFilter();
+  ~DevToolsAgentFilter() override;
 
  private:
   void OnDispatchOnInspectorBackend(const std::string& message);

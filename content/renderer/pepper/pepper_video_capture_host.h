@@ -31,11 +31,11 @@ class PepperVideoCaptureHost : public ppapi::host::ResourceHost {
                          PP_Instance instance,
                          PP_Resource resource);
 
-  virtual ~PepperVideoCaptureHost();
+  ~PepperVideoCaptureHost() override;
 
   bool Init();
 
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

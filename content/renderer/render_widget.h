@@ -135,10 +135,10 @@ class CONTENT_EXPORT RenderWidget
 #endif  // defined(VIDEO_HOLE)
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // IPC::Sender
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // blink::WebWidgetClient
   virtual void willBeginCompositorFrame();
@@ -321,7 +321,7 @@ class CONTENT_EXPORT RenderWidget
                bool hidden,
                bool never_visible);
 
-  virtual ~RenderWidget();
+  ~RenderWidget() override;
 
   // Initializes this view with the given opener.  CompleteInit must be called
   // later.

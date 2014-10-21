@@ -18,18 +18,17 @@ struct GamepadHardwareBuffer;
 class GamepadSharedMemoryReader : public RendererGamepadProvider {
  public:
   explicit GamepadSharedMemoryReader(RenderThread* thread);
-  virtual ~GamepadSharedMemoryReader();
+  ~GamepadSharedMemoryReader() override;
 
   // RendererGamepadProvider implementation.
-  virtual void SampleGamepads(
-      blink::WebGamepads& gamepads) override;
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
-  virtual void Start(blink::WebPlatformEventListener* listener) override;
+  void SampleGamepads(blink::WebGamepads& gamepads) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void Start(blink::WebPlatformEventListener* listener) override;
 
  protected:
   // PlatformEventObserver protected methods.
-  virtual void SendStartMessage() override;
-  virtual void SendStopMessage() override;
+  void SendStartMessage() override;
+  void SendStopMessage() override;
 
  private:
   void OnGamepadConnected(int index, const blink::WebGamepad& gamepad);

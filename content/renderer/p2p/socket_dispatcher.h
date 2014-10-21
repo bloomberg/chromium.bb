@@ -55,13 +55,13 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   explicit P2PSocketDispatcher(base::MessageLoopProxy* ipc_message_loop);
 
   // NetworkListManager interface:
-  virtual void AddNetworkListObserver(
+  void AddNetworkListObserver(
       NetworkListObserver* network_list_observer) override;
-  virtual void RemoveNetworkListObserver(
+  void RemoveNetworkListObserver(
       NetworkListObserver* network_list_observer) override;
 
  protected:
-  virtual ~P2PSocketDispatcher();
+  ~P2PSocketDispatcher() override;
 
  private:
   friend class P2PAsyncAddressResolver;
@@ -71,10 +71,10 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   virtual void Send(IPC::Message* message);
 
   // IPC::MessageFilter override. Called on IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
   // Returns the IO message loop.
   base::MessageLoopProxy* message_loop();

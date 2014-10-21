@@ -29,16 +29,16 @@ class CompositorSoftwareOutputDevice
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   CompositorSoftwareOutputDevice();
-  virtual ~CompositorSoftwareOutputDevice();
+  ~CompositorSoftwareOutputDevice() override;
 
-  virtual void Resize(const gfx::Size& pixel_size, float scale_factor) override;
+  void Resize(const gfx::Size& pixel_size, float scale_factor) override;
 
-  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
-  virtual void EnsureBackbuffer() override;
-  virtual void DiscardBackbuffer() override;
+  SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
+  void EndPaint(cc::SoftwareFrameData* frame_data) override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
 
-  virtual void ReclaimSoftwareFrame(unsigned id) override;
+  void ReclaimSoftwareFrame(unsigned id) override;
 
  private:
   // Internal buffer class that manages shared memory lifetime and ownership.

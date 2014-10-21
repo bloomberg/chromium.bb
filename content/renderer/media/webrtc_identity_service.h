@@ -28,7 +28,7 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
   typedef base::Callback<void(int error)> FailureCallback;
 
   WebRTCIdentityService();
-  virtual ~WebRTCIdentityService();
+  ~WebRTCIdentityService() override;
 
   // Sends an identity request.
   //
@@ -58,7 +58,7 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
   // For unittest to override.
   virtual bool Send(IPC::Message* message);
   // RenderProcessObserver implementation. Protected for testing.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
  private:
   struct RequestInfo {

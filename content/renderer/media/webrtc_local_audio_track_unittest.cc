@@ -45,10 +45,10 @@ class FakeAudioThread : public base::PlatformThread::Delegate {
     audio_bus_ = media::AudioBus::Create(params);
   }
 
-  virtual ~FakeAudioThread() { DCHECK(thread_.is_null()); }
+  ~FakeAudioThread() override { DCHECK(thread_.is_null()); }
 
   // base::PlatformThread::Delegate:
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     while (true) {
       if (closure_.IsSignaled())
         return;

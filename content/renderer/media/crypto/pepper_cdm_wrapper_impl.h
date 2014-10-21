@@ -44,10 +44,10 @@ class PepperCdmWrapperImpl : public PepperCdmWrapper {
                                              const std::string& pluginType,
                                              const GURL& security_origin);
 
-  virtual ~PepperCdmWrapperImpl();
+  ~PepperCdmWrapperImpl() override;
 
   // Returns the ContentDecryptorDelegate* associated with this plugin.
-  virtual ContentDecryptorDelegate* GetCdmDelegate() override;
+  ContentDecryptorDelegate* GetCdmDelegate() override;
 
  private:
   typedef scoped_ptr<blink::WebHelperPlugin, WebHelperPluginDeleter>

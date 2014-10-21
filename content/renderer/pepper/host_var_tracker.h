@@ -31,7 +31,7 @@ namespace content {
 class HostVarTracker : public ppapi::VarTracker {
  public:
   HostVarTracker();
-  virtual ~HostVarTracker();
+  ~HostVarTracker() override;
 
   // Tracks all live V8ObjectVar. This is so we can map between instance +
   // V8Object and get the V8ObjectVar corresponding to it. This Add/Remove
@@ -46,27 +46,25 @@ class HostVarTracker : public ppapi::VarTracker {
   CONTENT_EXPORT int GetLiveV8ObjectVarsForTest(PP_Instance instance);
 
   // VarTracker public implementation.
-  virtual PP_Var MakeResourcePPVarFromMessage(
-      PP_Instance instance,
-      const IPC::Message& creation_message,
-      int pending_renderer_id,
-      int pending_browser_id) override;
-  virtual ppapi::ResourceVar* MakeResourceVar(PP_Resource pp_resource) override;
-  virtual void DidDeleteInstance(PP_Instance pp_instance) override;
+  PP_Var MakeResourcePPVarFromMessage(PP_Instance instance,
+                                      const IPC::Message& creation_message,
+                                      int pending_renderer_id,
+                                      int pending_browser_id) override;
+  ppapi::ResourceVar* MakeResourceVar(PP_Resource pp_resource) override;
+  void DidDeleteInstance(PP_Instance pp_instance) override;
 
-  virtual int TrackSharedMemoryHandle(PP_Instance instance,
-                                      base::SharedMemoryHandle file,
-                                      uint32 size_in_bytes) override;
-  virtual bool StopTrackingSharedMemoryHandle(int id,
-                                              PP_Instance instance,
-                                              base::SharedMemoryHandle* handle,
-                                              uint32* size_in_bytes) override;
+  int TrackSharedMemoryHandle(PP_Instance instance,
+                              base::SharedMemoryHandle file,
+                              uint32 size_in_bytes) override;
+  bool StopTrackingSharedMemoryHandle(int id,
+                                      PP_Instance instance,
+                                      base::SharedMemoryHandle* handle,
+                                      uint32* size_in_bytes) override;
 
  private:
   // VarTracker private implementation.
-  virtual ppapi::ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes)
-      override;
-  virtual ppapi::ArrayBufferVar* CreateShmArrayBuffer(
+  ppapi::ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) override;
+  ppapi::ArrayBufferVar* CreateShmArrayBuffer(
       uint32 size_in_bytes,
       base::SharedMemoryHandle handle) override;
 

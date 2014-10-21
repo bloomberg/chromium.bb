@@ -58,13 +58,13 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
   }
 
  protected:
-  virtual ~SharedAudioRenderer() {
+  ~SharedAudioRenderer() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DVLOG(1) << __FUNCTION__;
     Stop();
   }
 
-  virtual void Start() override {
+  void Start() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (started_)
       return;
@@ -72,7 +72,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     delegate_->Start();
   }
 
-  virtual void Play() override {
+  void Play() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(started_);
     if (playing_state_.playing())
@@ -81,7 +81,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  virtual void Pause() override {
+  void Pause() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(started_);
     if (!playing_state_.playing())
@@ -90,7 +90,7 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  virtual void Stop() override {
+  void Stop() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!started_)
       return;
@@ -99,19 +99,19 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     delegate_->Stop();
   }
 
-  virtual void SetVolume(float volume) override {
+  void SetVolume(float volume) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(volume >= 0.0f && volume <= 1.0f);
     playing_state_.set_volume(volume);
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  virtual base::TimeDelta GetCurrentRenderTime() const override {
+  base::TimeDelta GetCurrentRenderTime() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return delegate_->GetCurrentRenderTime();
   }
 
-  virtual bool IsLocalRenderer() const override {
+  bool IsLocalRenderer() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return delegate_->IsLocalRenderer();
   }

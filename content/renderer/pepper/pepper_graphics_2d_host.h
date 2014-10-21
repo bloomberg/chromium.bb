@@ -51,13 +51,13 @@ class CONTENT_EXPORT PepperGraphics2DHost
       PP_Bool is_always_opaque,
       scoped_refptr<PPB_ImageData_Impl> backing_store);
 
-  virtual ~PepperGraphics2DHost();
+  ~PepperGraphics2DHost() override;
 
   // ppapi::host::ResourceHost override.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
-  virtual bool IsGraphics2DHost() override;
+  bool IsGraphics2DHost() override;
 
   bool ReadImageData(PP_Resource image, const PP_Point* top_left);
   // Assciates this device with the given plugin instance. You can pass NULL

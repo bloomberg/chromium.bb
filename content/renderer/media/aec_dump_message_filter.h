@@ -49,7 +49,7 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~AecDumpMessageFilter();
+  ~AecDumpMessageFilter() override;
 
  private:
   // Sends an IPC message using |sender_|.
@@ -64,10 +64,10 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   void UnregisterAecDumpConsumer(int id);
 
   // IPC::MessageFilter override. Called on |io_message_loop|.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
   // Accessed on |io_message_loop|.
   void OnEnableAecDump(int id, IPC::PlatformFileForTransit file_handle);

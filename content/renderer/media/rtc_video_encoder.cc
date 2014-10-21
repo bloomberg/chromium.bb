@@ -113,13 +113,13 @@ class RTCVideoEncoder::Impl
   void Destroy();
 
   // media::VideoEncodeAccelerator::Client implementation.
-  virtual void RequireBitstreamBuffers(unsigned int input_count,
-                                       const gfx::Size& input_coded_size,
-                                       size_t output_buffer_size) override;
-  virtual void BitstreamBufferReady(int32 bitstream_buffer_id,
-                                    size_t payload_size,
-                                    bool key_frame) override;
-  virtual void NotifyError(media::VideoEncodeAccelerator::Error error) override;
+  void RequireBitstreamBuffers(unsigned int input_count,
+                               const gfx::Size& input_coded_size,
+                               size_t output_buffer_size) override;
+  void BitstreamBufferReady(int32 bitstream_buffer_id,
+                            size_t payload_size,
+                            bool key_frame) override;
+  void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
  private:
   friend class base::RefCountedThreadSafe<Impl>;
@@ -131,7 +131,7 @@ class RTCVideoEncoder::Impl
     kOutputBufferCount = 3,
   };
 
-  virtual ~Impl();
+  ~Impl() override;
 
   // Perform encoding on an input frame from the input queue.
   void EncodeOneFrame();

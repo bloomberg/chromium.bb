@@ -35,7 +35,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
 
  private:
   // RenderFrame::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebPushClient implementation.
   virtual void registerPushMessaging(

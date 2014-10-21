@@ -114,11 +114,10 @@ class WebMediaPlayerMS
   virtual unsigned videoDecodedByteCount() const;
 
   // VideoFrameProvider implementation.
-  virtual void SetVideoFrameProviderClient(
+  void SetVideoFrameProviderClient(
       cc::VideoFrameProvider::Client* client) override;
-  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
-  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
-      override;
+  scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
+  void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame) override;
 
  private:
   // The callback for VideoFrameProvider to signal a new frame is available.

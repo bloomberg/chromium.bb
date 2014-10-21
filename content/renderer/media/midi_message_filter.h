@@ -47,17 +47,17 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~MidiMessageFilter();
+  ~MidiMessageFilter() override;
 
  private:
   // Sends an IPC message using |sender_|.
   void Send(IPC::Message* message);
 
   // IPC::MessageFilter override. Called on |io_message_loop|.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
   // Called when the browser process has approved (or denied) access to
   // MIDI hardware.

@@ -25,30 +25,29 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   static PP_Resource Create(PP_Instance instance, bool vertical);
 
   // Resource overrides.
-  virtual PPB_Scrollbar_API* AsPPB_Scrollbar_API() override;
-  virtual void InstanceWasDeleted() override;
+  PPB_Scrollbar_API* AsPPB_Scrollbar_API() override;
+  void InstanceWasDeleted() override;
 
   // PPB_Scrollbar_API implementation.
-  virtual uint32_t GetThickness() override;
-  virtual bool IsOverlay() override;
-  virtual uint32_t GetValue() override;
-  virtual void SetValue(uint32_t value) override;
-  virtual void SetDocumentSize(uint32_t size) override;
-  virtual void SetTickMarks(const PP_Rect* tick_marks, uint32_t count) override;
-  virtual void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) override;
+  uint32_t GetThickness() override;
+  bool IsOverlay() override;
+  uint32_t GetValue() override;
+  void SetValue(uint32_t value) override;
+  void SetDocumentSize(uint32_t size) override;
+  void SetTickMarks(const PP_Rect* tick_marks, uint32_t count) override;
+  void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) override;
 
  private:
-  virtual ~PPB_Scrollbar_Impl();
+  ~PPB_Scrollbar_Impl() override;
 
   explicit PPB_Scrollbar_Impl(PP_Instance instance);
   void Init(bool vertical);
 
   // PPB_Widget private implementation.
-  virtual PP_Bool PaintInternal(const gfx::Rect& rect,
-                                PPB_ImageData_Impl* image) override;
-  virtual PP_Bool HandleEventInternal(const ppapi::InputEventData& data)
-      override;
-  virtual void SetLocationInternal(const PP_Rect* location) override;
+  PP_Bool PaintInternal(const gfx::Rect& rect,
+                        PPB_ImageData_Impl* image) override;
+  PP_Bool HandleEventInternal(const ppapi::InputEventData& data) override;
+  void SetLocationInternal(const PP_Rect* location) override;
 
   // blink::WebPluginScrollbarClient implementation.
   virtual void valueChanged(blink::WebPluginScrollbar* scrollbar) override;

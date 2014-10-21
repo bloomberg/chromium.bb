@@ -24,9 +24,9 @@ class CONTENT_EXPORT RTCMediaConstraints
   RTCMediaConstraints();
   explicit RTCMediaConstraints(
       const blink::WebMediaConstraints& constraints);
-  virtual ~RTCMediaConstraints();
-  virtual const Constraints& GetMandatory() const override;
-  virtual const Constraints& GetOptional() const override;
+  ~RTCMediaConstraints() override;
+  const Constraints& GetMandatory() const override;
+  const Constraints& GetOptional() const override;
   // Adds a mandatory constraint, optionally overriding an existing one.
   // If the constraint is already set and |override_if_exists| is false,
   // the function will return false, otherwise true.

@@ -80,13 +80,13 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
   virtual bool Send(IPC::Message* message);
 
   // IPC::MessageFilter override. Called on IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  void OnChannelClosing() override;
 
  protected:
-  virtual ~VideoCaptureMessageFilter();
+  ~VideoCaptureMessageFilter() override;
 
  private:
   typedef std::map<int32, Delegate*> Delegates;

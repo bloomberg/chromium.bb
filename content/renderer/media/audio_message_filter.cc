@@ -24,16 +24,16 @@ class AudioMessageFilter::AudioOutputIPCImpl
   AudioOutputIPCImpl(const scoped_refptr<AudioMessageFilter>& filter,
                      int render_view_id,
                      int render_frame_id);
-  virtual ~AudioOutputIPCImpl();
+  ~AudioOutputIPCImpl() override;
 
   // media::AudioOutputIPC implementation.
-  virtual void CreateStream(media::AudioOutputIPCDelegate* delegate,
-                            const media::AudioParameters& params,
-                            int session_id) override;
-  virtual void PlayStream() override;
-  virtual void PauseStream() override;
-  virtual void CloseStream() override;
-  virtual void SetVolume(double volume) override;
+  void CreateStream(media::AudioOutputIPCDelegate* delegate,
+                    const media::AudioParameters& params,
+                    int session_id) override;
+  void PlayStream() override;
+  void PauseStream() override;
+  void CloseStream() override;
+  void SetVolume(double volume) override;
 
  private:
   const scoped_refptr<AudioMessageFilter> filter_;

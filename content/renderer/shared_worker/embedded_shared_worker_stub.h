@@ -42,8 +42,8 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
       int route_id);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   // blink::WebSharedWorkerClient implementation.
   virtual void workerContextClosed() override;
@@ -63,7 +63,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   virtual void saveDevToolsAgentState(const blink::WebString& state) override;
 
  private:
-  virtual ~EmbeddedSharedWorkerStub();
+  ~EmbeddedSharedWorkerStub() override;
 
   void Shutdown();
   bool Send(IPC::Message* message);

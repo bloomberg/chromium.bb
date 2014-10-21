@@ -53,18 +53,18 @@ class CompositorOutputSurface
       scoped_ptr<cc::SoftwareOutputDevice> software,
       scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
       bool use_swap_compositor_frame_message);
-  virtual ~CompositorOutputSurface();
+  ~CompositorOutputSurface() override;
 
   // cc::OutputSurface implementation.
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 #if defined(OS_ANDROID)
   virtual void SetNeedsBeginFrame(bool enable) override;
 #endif
 
   // TODO(epenner): This seems out of place here and would be a better fit
   // int CompositorThread after it is fully refactored (http://crbug/170828)
-  virtual void UpdateSmoothnessTakesPriority(bool prefer_smoothness) override;
+  void UpdateSmoothnessTakesPriority(bool prefer_smoothness) override;
 
  protected:
   void ShortcutSwapAck(uint32 output_surface_id,

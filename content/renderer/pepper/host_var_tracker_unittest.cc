@@ -36,7 +36,7 @@ class MyObject : public gin::Wrappable<MyObject> {
 
  private:
   MyObject() { ++g_v8objects_alive; }
-  virtual ~MyObject() { --g_v8objects_alive; }
+  ~MyObject() override { --g_v8objects_alive; }
 
   DISALLOW_COPY_AND_ASSIGN(MyObject);
 };
@@ -51,9 +51,9 @@ class PepperTryCatchForTest : public PepperTryCatch {
         handle_scope_(instance->GetIsolate()),
         context_scope_(v8::Context::New(instance->GetIsolate())) {}
 
-  virtual void SetException(const char* message) override { NOTREACHED(); }
-  virtual bool HasException() override { return false; }
-  virtual v8::Handle<v8::Context> GetContext() override {
+  void SetException(const char* message) override { NOTREACHED(); }
+  bool HasException() override { return false; }
+  v8::Handle<v8::Context> GetContext() override {
     return instance_->GetIsolate()->GetCurrentContext();
   }
 

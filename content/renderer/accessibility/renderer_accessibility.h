@@ -61,7 +61,7 @@ enum RendererAccessibilityType {
 class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
  public:
   explicit RendererAccessibility(RenderFrameImpl* render_frame);
-  virtual ~RendererAccessibility();
+  ~RendererAccessibility() override;
 
   // Called when an accessibility notification occurs in Blink.
   virtual void HandleWebAccessibilityEvent(

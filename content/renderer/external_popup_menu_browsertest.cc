@@ -133,7 +133,7 @@ class ExternalPopupMenuRemoveTest : public ExternalPopupMenuTest {
   ExternalPopupMenuRemoveTest() {}
 
  protected:
-  virtual bool ShouldRemoveSelectOnChange() const override { return true; }
+  bool ShouldRemoveSelectOnChange() const override { return true; }
 };
 
 // Tests that nothing bad happen when the page removes the select when it

@@ -61,7 +61,7 @@ class MessageChannel :
   static MessageChannel* Create(PepperPluginInstanceImpl* instance,
                                 v8::Persistent<v8::Object>* result);
 
-  virtual ~MessageChannel();
+  ~MessageChannel() override;
 
   // Called when the instance is deleted. The MessageChannel might outlive the
   // plugin instance because it is garbage collected.
@@ -93,22 +93,21 @@ class MessageChannel :
   explicit MessageChannel(PepperPluginInstanceImpl* instance);
 
   // gin::NamedPropertyInterceptor
-  virtual v8::Local<v8::Value> GetNamedProperty(
-      v8::Isolate* isolate,
-      const std::string& property) override;
-  virtual bool SetNamedProperty(v8::Isolate* isolate,
-                                const std::string& property,
-                                v8::Local<v8::Value> value) override;
-  virtual std::vector<std::string> EnumerateNamedProperties(
+  v8::Local<v8::Value> GetNamedProperty(v8::Isolate* isolate,
+                                        const std::string& property) override;
+  bool SetNamedProperty(v8::Isolate* isolate,
+                        const std::string& property,
+                        v8::Local<v8::Value> value) override;
+  std::vector<std::string> EnumerateNamedProperties(
       v8::Isolate* isolate) override;
 
   // gin::Wrappable
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   // ppapi::proxy::HostDispatcher::SyncMessageStatusObserver
-  virtual void BeginBlockOnSyncMessage() override;
-  virtual void EndBlockOnSyncMessage() override;
+  void BeginBlockOnSyncMessage() override;
+  void EndBlockOnSyncMessage() override;
 
   // Post a message to the plugin's HandleMessage function for this channel's
   // instance.

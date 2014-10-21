@@ -25,21 +25,21 @@ class PluginChannelHost : public NPChannelBase {
       const IPC::ChannelHandle& channel_handle,
       base::MessageLoopProxy* ipc_message_loop);
 
-  virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
-                    bool create_pipe_now,
-                    base::WaitableEvent* shutdown_event) override;
+  bool Init(base::MessageLoopProxy* ipc_message_loop,
+            bool create_pipe_now,
+            base::WaitableEvent* shutdown_event) override;
 
-  virtual int GenerateRouteID() override;
+  int GenerateRouteID() override;
 
   void AddRoute(int route_id, IPC::Listener* listener,
                 NPObjectBase* npobject);
   void RemoveRoute(int route_id);
 
   // NPChannelBase override:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // IPC::Listener override
-  virtual void OnChannelError() override;
+  void OnChannelError() override;
 
   static void Broadcast(IPC::Message* message) {
     NPChannelBase::Broadcast(message);
@@ -50,11 +50,11 @@ class PluginChannelHost : public NPChannelBase {
  private:
   // Called on the render thread
   PluginChannelHost();
-  virtual ~PluginChannelHost();
+  ~PluginChannelHost() override;
 
   static NPChannelBase* ClassFactory() { return new PluginChannelHost(); }
 
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
   void OnSetException(const std::string& message);
   void OnPluginShuttingDown();
 

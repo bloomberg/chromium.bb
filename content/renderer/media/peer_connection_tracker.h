@@ -36,7 +36,7 @@ class RTCPeerConnectionHandler;
 class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
  public:
   PeerConnectionTracker();
-  virtual ~PeerConnectionTracker();
+  ~PeerConnectionTracker() override;
 
   enum Source {
     SOURCE_LOCAL,
@@ -51,7 +51,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   };
 
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
   //
   // The following methods send an update to the browser process when a

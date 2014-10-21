@@ -70,7 +70,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
                         public P2PSocketClientDelegate {
  public:
   IpcPacketSocket();
-  virtual ~IpcPacketSocket();
+  ~IpcPacketSocket() override;
 
   // Always takes ownership of client even if initialization fails.
   bool Init(P2PSocketType type, P2PSocketClientImpl* client,
@@ -78,31 +78,32 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
             const rtc::SocketAddress& remote_address);
 
   // rtc::AsyncPacketSocket interface.
-  virtual rtc::SocketAddress GetLocalAddress() const override;
-  virtual rtc::SocketAddress GetRemoteAddress() const override;
-  virtual int Send(const void *pv, size_t cb,
-                   const rtc::PacketOptions& options) override;
-  virtual int SendTo(const void *pv, size_t cb,
-                     const rtc::SocketAddress& addr,
-                     const rtc::PacketOptions& options) override;
-  virtual int Close() override;
-  virtual State GetState() const override;
-  virtual int GetOption(rtc::Socket::Option option, int* value) override;
-  virtual int SetOption(rtc::Socket::Option option, int value) override;
-  virtual int GetError() const override;
-  virtual void SetError(int error) override;
+  rtc::SocketAddress GetLocalAddress() const override;
+  rtc::SocketAddress GetRemoteAddress() const override;
+  int Send(const void* pv,
+           size_t cb,
+           const rtc::PacketOptions& options) override;
+  int SendTo(const void* pv,
+             size_t cb,
+             const rtc::SocketAddress& addr,
+             const rtc::PacketOptions& options) override;
+  int Close() override;
+  State GetState() const override;
+  int GetOption(rtc::Socket::Option option, int* value) override;
+  int SetOption(rtc::Socket::Option option, int value) override;
+  int GetError() const override;
+  void SetError(int error) override;
 
   // P2PSocketClientDelegate implementation.
-  virtual void OnOpen(const net::IPEndPoint& local_address,
-                      const net::IPEndPoint& remote_address) override;
-  virtual void OnIncomingTcpConnection(
-      const net::IPEndPoint& address,
-      P2PSocketClient* client) override;
-  virtual void OnSendComplete() override;
-  virtual void OnError() override;
-  virtual void OnDataReceived(const net::IPEndPoint& address,
-                              const std::vector<char>& data,
-                              const base::TimeTicks& timestamp) override;
+  void OnOpen(const net::IPEndPoint& local_address,
+              const net::IPEndPoint& remote_address) override;
+  void OnIncomingTcpConnection(const net::IPEndPoint& address,
+                               P2PSocketClient* client) override;
+  void OnSendComplete() override;
+  void OnError() override;
+  void OnDataReceived(const net::IPEndPoint& address,
+                      const std::vector<char>& data,
+                      const base::TimeTicks& timestamp) override;
 
  private:
   enum InternalState {
@@ -172,14 +173,13 @@ class AsyncAddressResolverImpl :  public base::NonThreadSafe,
                                   public rtc::AsyncResolverInterface {
  public:
   AsyncAddressResolverImpl(P2PSocketDispatcher* dispatcher);
-  virtual ~AsyncAddressResolverImpl();
+  ~AsyncAddressResolverImpl() override;
 
   // rtc::AsyncResolverInterface interface.
-  virtual void Start(const rtc::SocketAddress& addr) override;
-  virtual bool GetResolvedAddress(
-      int family, rtc::SocketAddress* addr) const override;
-  virtual int GetError() const override;
-  virtual void Destroy(bool wait) override;
+  void Start(const rtc::SocketAddress& addr) override;
+  bool GetResolvedAddress(int family, rtc::SocketAddress* addr) const override;
+  int GetError() const override;
+  void Destroy(bool wait) override;
 
  private:
   virtual void OnAddressResolved(const net::IPAddressList& addresses);

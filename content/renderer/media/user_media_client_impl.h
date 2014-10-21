@@ -69,27 +69,23 @@ class CONTENT_EXPORT UserMediaClientImpl
       const blink::WebMediaStreamTrackSourcesRequest& sources_request) override;
 
   // MediaStreamDispatcherEventHandler implementation.
-  virtual void OnStreamGenerated(
-      int request_id,
-      const std::string& label,
-      const StreamDeviceInfoArray& audio_array,
-      const StreamDeviceInfoArray& video_array) override;
-  virtual void OnStreamGenerationFailed(
-      int request_id,
-      MediaStreamRequestResult result) override;
-  virtual void OnDeviceStopped(const std::string& label,
-                               const StreamDeviceInfo& device_info) override;
-  virtual void OnDevicesEnumerated(
-      int request_id,
-      const StreamDeviceInfoArray& device_array) override;
-  virtual void OnDeviceOpened(
-      int request_id,
-      const std::string& label,
-      const StreamDeviceInfo& device_info) override;
-  virtual void OnDeviceOpenFailed(int request_id) override;
+  void OnStreamGenerated(int request_id,
+                         const std::string& label,
+                         const StreamDeviceInfoArray& audio_array,
+                         const StreamDeviceInfoArray& video_array) override;
+  void OnStreamGenerationFailed(int request_id,
+                                MediaStreamRequestResult result) override;
+  void OnDeviceStopped(const std::string& label,
+                       const StreamDeviceInfo& device_info) override;
+  void OnDevicesEnumerated(int request_id,
+                           const StreamDeviceInfoArray& device_array) override;
+  void OnDeviceOpened(int request_id,
+                      const std::string& label,
+                      const StreamDeviceInfo& device_info) override;
+  void OnDeviceOpenFailed(int request_id) override;
 
   // RenderFrameObserver override
-  virtual void FrameWillClose() override;
+  void FrameWillClose() override;
 
  protected:
   // Called when |source| has been stopped from JavaScript.

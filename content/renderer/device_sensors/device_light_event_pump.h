@@ -23,24 +23,24 @@ class CONTENT_EXPORT DeviceLightEventPump
     : public DeviceSensorEventPump<blink::WebDeviceLightListener> {
  public:
   explicit DeviceLightEventPump(RenderThread* thread);
-  virtual ~DeviceLightEventPump();
+  ~DeviceLightEventPump() override;
 
   // Sets the listener to receive updates for device light data at
   // regular intervals. Returns true if the registration was successful.
   bool SetListener(blink::WebDeviceLightListener* listener);
 
   // PlatformEventObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
-  virtual void SendFakeDataForTesting(void* data) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void SendFakeDataForTesting(void* data) override;
 
  protected:
   // Methods overriden from base class DeviceSensorEventPump
-  virtual void FireEvent() override;
-  virtual bool InitializeReader(base::SharedMemoryHandle handle) override;
+  void FireEvent() override;
+  bool InitializeReader(base::SharedMemoryHandle handle) override;
 
   // PlatformEventObserver implementation.
-  virtual void SendStartMessage() override;
-  virtual void SendStopMessage() override;
+  void SendStartMessage() override;
+  void SendStopMessage() override;
 
  private:
   bool ShouldFireEvent(double data) const;

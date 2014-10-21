@@ -10,7 +10,7 @@ class BMPImageDecoderTest : public ImageDecoderTest {
   BMPImageDecoderTest() : ImageDecoderTest("bmp") { }
 
  protected:
-  virtual blink::WebImageDecoder* CreateWebKitImageDecoder() const override {
+  blink::WebImageDecoder* CreateWebKitImageDecoder() const override {
     return new blink::WebImageDecoder(blink::WebImageDecoder::TypeBMP);
   }
 

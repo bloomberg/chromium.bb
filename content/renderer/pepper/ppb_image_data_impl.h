@@ -84,21 +84,21 @@ class CONTENT_EXPORT PPB_ImageData_Impl
   TransportDIB* GetTransportDIB() const;
 
   // Resource override.
-  virtual ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() override;
+  ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() override;
 
   // PPB_ImageData_API implementation.
-  virtual PP_Bool Describe(PP_ImageDataDesc* desc) override;
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
-  virtual SkCanvas* GetPlatformCanvas() override;
-  virtual SkCanvas* GetCanvas() override;
-  virtual void SetIsCandidateForReuse() override;
+  PP_Bool Describe(PP_ImageDataDesc* desc) override;
+  void* Map() override;
+  void Unmap() override;
+  int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
+  SkCanvas* GetPlatformCanvas() override;
+  SkCanvas* GetCanvas() override;
+  void SetIsCandidateForReuse() override;
 
   const SkBitmap* GetMappedBitmap() const;
 
  private:
-  virtual ~PPB_ImageData_Impl();
+  ~PPB_ImageData_Impl() override;
 
   PP_ImageDataFormat format_;
   int width_;
@@ -113,22 +113,22 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   // |is_browser_allocated| indicates whether the backing shared memory should
   // be allocated by the browser process.
   ImageDataPlatformBackend(bool is_browser_allocated);
-  virtual ~ImageDataPlatformBackend();
+  ~ImageDataPlatformBackend() override;
 
   // PPB_ImageData_Impl::Backend implementation.
-  virtual bool Init(PPB_ImageData_Impl* impl,
-                    PP_ImageDataFormat format,
-                    int width,
-                    int height,
-                    bool init_to_zero) override;
-  virtual bool IsMapped() const override;
-  virtual TransportDIB* GetTransportDIB() const override;
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
-  virtual SkCanvas* GetPlatformCanvas() override;
-  virtual SkCanvas* GetCanvas() override;
-  virtual const SkBitmap* GetMappedBitmap() const override;
+  bool Init(PPB_ImageData_Impl* impl,
+            PP_ImageDataFormat format,
+            int width,
+            int height,
+            bool init_to_zero) override;
+  bool IsMapped() const override;
+  TransportDIB* GetTransportDIB() const override;
+  void* Map() override;
+  void Unmap() override;
+  int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
+  SkCanvas* GetPlatformCanvas() override;
+  SkCanvas* GetCanvas() override;
+  const SkBitmap* GetMappedBitmap() const override;
 
  private:
   // This will be NULL before initialization, and if this PPB_ImageData_Impl is
@@ -148,22 +148,22 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
 class ImageDataSimpleBackend : public PPB_ImageData_Impl::Backend {
  public:
   ImageDataSimpleBackend();
-  virtual ~ImageDataSimpleBackend();
+  ~ImageDataSimpleBackend() override;
 
   // PPB_ImageData_Impl::Backend implementation.
-  virtual bool Init(PPB_ImageData_Impl* impl,
-                    PP_ImageDataFormat format,
-                    int width,
-                    int height,
-                    bool init_to_zero) override;
-  virtual bool IsMapped() const override;
-  virtual TransportDIB* GetTransportDIB() const override;
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
-  virtual SkCanvas* GetPlatformCanvas() override;
-  virtual SkCanvas* GetCanvas() override;
-  virtual const SkBitmap* GetMappedBitmap() const override;
+  bool Init(PPB_ImageData_Impl* impl,
+            PP_ImageDataFormat format,
+            int width,
+            int height,
+            bool init_to_zero) override;
+  bool IsMapped() const override;
+  TransportDIB* GetTransportDIB() const override;
+  void* Map() override;
+  void Unmap() override;
+  int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
+  SkCanvas* GetPlatformCanvas() override;
+  SkCanvas* GetCanvas() override;
+  const SkBitmap* GetMappedBitmap() const override;
 
  private:
   scoped_ptr<base::SharedMemory> shared_memory_;

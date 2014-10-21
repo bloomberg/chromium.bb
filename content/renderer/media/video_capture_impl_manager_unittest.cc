@@ -35,9 +35,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
         destruct_callback_(destruct_callback) {
   }
 
-  virtual ~MockVideoCaptureImpl() {
-    destruct_callback_.Run();
-  }
+  ~MockVideoCaptureImpl() override { destruct_callback_.Run(); }
 
  private:
   base::Closure destruct_callback_;
@@ -51,10 +49,10 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
       base::Closure destruct_video_capture_callback)
       : destruct_video_capture_callback_(
           destruct_video_capture_callback) {}
-  virtual ~MockVideoCaptureImplManager() {}
+  ~MockVideoCaptureImplManager() override {}
 
  protected:
-  virtual VideoCaptureImpl* CreateVideoCaptureImplForTesting(
+  VideoCaptureImpl* CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId id,
       VideoCaptureMessageFilter* filter) const override {
     return new MockVideoCaptureImpl(id,

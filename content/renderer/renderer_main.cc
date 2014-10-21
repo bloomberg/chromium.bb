@@ -80,13 +80,13 @@ class RendererMessageLoopObserver : public base::MessageLoop::TaskObserver {
       : process_times_(base::Histogram::FactoryGet(
             "Chrome.ProcMsgL RenderThread",
             1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag)) {}
-  virtual ~RendererMessageLoopObserver() {}
+  ~RendererMessageLoopObserver() override {}
 
-  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
+  void WillProcessTask(const base::PendingTask& pending_task) override {
     begin_process_message_ = base::TimeTicks::Now();
   }
 
-  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
+  void DidProcessTask(const base::PendingTask& pending_task) override {
     if (!begin_process_message_.is_null())
       process_times_->AddTime(base::TimeTicks::Now() - begin_process_message_);
   }

@@ -44,7 +44,7 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // blink::WebSpeechRecognizer implementation.
   virtual void start(const blink::WebSpeechRecognitionHandle&,

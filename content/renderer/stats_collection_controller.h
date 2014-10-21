@@ -27,10 +27,10 @@ class StatsCollectionController
 
  private:
   StatsCollectionController();
-  virtual ~StatsCollectionController();
+  ~StatsCollectionController() override;
 
   // gin::WrappableBase
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   // Retrieves a histogram and returns a JSON representation of it.

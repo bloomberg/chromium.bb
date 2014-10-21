@@ -38,7 +38,7 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
   class AudioSink : public MediaStreamAudioSink {
    public:
     explicit AudioSink(PepperMediaStreamAudioTrackHost* host);
-    virtual ~AudioSink();
+    ~AudioSink() override;
 
     // Enqueues a free buffer index into |buffers_| which will be used for
     // sending audio samples to plugin.
@@ -64,11 +64,11 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
 
     // MediaStreamAudioSink overrides:
     // These two functions should be called on the audio thread.
-    virtual void OnData(const int16* audio_data,
-                        int sample_rate,
-                        int number_of_channels,
-                        int number_of_frames) override;
-    virtual void OnSetFormat(const media::AudioParameters& params) override;
+    void OnData(const int16* audio_data,
+                int sample_rate,
+                int number_of_channels,
+                int number_of_frames) override;
+    void OnSetFormat(const media::AudioParameters& params) override;
 
     // Unowned host which is available during the AudioSink's lifespan.
     // It is mainly used in the main thread. But the audio thread will use
@@ -148,10 +148,10 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     DISALLOW_COPY_AND_ASSIGN(AudioSink);
   };
 
-  virtual ~PepperMediaStreamAudioTrackHost();
+  ~PepperMediaStreamAudioTrackHost() override;
 
   // ResourceMessageHandler overrides:
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
@@ -161,13 +161,13 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
       const ppapi::MediaStreamAudioTrackShared::Attributes& attributes);
 
   // PepperMediaStreamTrackHostBase overrides:
-  virtual void OnClose() override;
+  void OnClose() override;
 
   // MediaStreamBufferManager::Delegate overrides:
-  virtual void OnNewBufferEnqueued() override;
+  void OnNewBufferEnqueued() override;
 
   // ResourceHost overrides:
-  virtual void DidConnectPendingHostToResource() override;
+  void DidConnectPendingHostToResource() override;
 
   blink::WebMediaStreamTrack track_;
 

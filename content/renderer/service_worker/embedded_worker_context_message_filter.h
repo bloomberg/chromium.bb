@@ -18,12 +18,12 @@ class EmbeddedWorkerContextMessageFilter : public ChildMessageFilter {
   EmbeddedWorkerContextMessageFilter();
 
  protected:
-  virtual ~EmbeddedWorkerContextMessageFilter();
+  ~EmbeddedWorkerContextMessageFilter() override;
 
   // ChildMessageFilter implementation:
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;

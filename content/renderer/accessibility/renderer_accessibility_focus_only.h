@@ -50,16 +50,16 @@ namespace content {
 class RendererAccessibilityFocusOnly : public RendererAccessibility {
  public:
   explicit RendererAccessibilityFocusOnly(RenderFrameImpl* render_frame);
-  virtual ~RendererAccessibilityFocusOnly();
+  ~RendererAccessibilityFocusOnly() override;
 
   // RendererAccessibility implementation.
-  virtual void HandleWebAccessibilityEvent(
-      const blink::WebAXObject& obj, blink::WebAXEvent event) override;
-  virtual RendererAccessibilityType GetType() override;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
+  void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
+                                   blink::WebAXEvent event) override;
+  RendererAccessibilityType GetType() override;
+  void FocusedNodeChanged(const blink::WebNode& node) override;
 
   // RenderFrameObserver implementation.
-  virtual void DidFinishLoad() override;
+  void DidFinishLoad() override;
 
  private:
   void HandleFocusedNodeChanged(const blink::WebNode& node,

@@ -42,57 +42,51 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
-  virtual ~PpapiDecryptor();
+  ~PpapiDecryptor() override;
 
   // media::MediaKeys implementation.
-  virtual void SetServerCertificate(
+  void SetServerCertificate(
       const uint8* certificate_data,
       int certificate_data_length,
       scoped_ptr<media::SimpleCdmPromise> promise) override;
-  virtual void CreateSession(
-      const std::string& init_data_type,
-      const uint8* init_data,
-      int init_data_length,
-      SessionType session_type,
-      scoped_ptr<media::NewSessionCdmPromise> promise) override;
-  virtual void LoadSession(
-      const std::string& web_session_id,
-      scoped_ptr<media::NewSessionCdmPromise> promise) override;
-  virtual void UpdateSession(
-      const std::string& web_session_id,
-      const uint8* response,
-      int response_length,
-      scoped_ptr<media::SimpleCdmPromise> promise) override;
-  virtual void CloseSession(
-      const std::string& web_session_id,
-      scoped_ptr<media::SimpleCdmPromise> promise) override;
-  virtual void RemoveSession(
-      const std::string& web_session_id,
-      scoped_ptr<media::SimpleCdmPromise> promise) override;
-  virtual void GetUsableKeyIds(
-      const std::string& web_session_id,
-      scoped_ptr<media::KeyIdsPromise> promise) override;
-  virtual Decryptor* GetDecryptor() override;
+  void CreateSession(const std::string& init_data_type,
+                     const uint8* init_data,
+                     int init_data_length,
+                     SessionType session_type,
+                     scoped_ptr<media::NewSessionCdmPromise> promise) override;
+  void LoadSession(const std::string& web_session_id,
+                   scoped_ptr<media::NewSessionCdmPromise> promise) override;
+  void UpdateSession(const std::string& web_session_id,
+                     const uint8* response,
+                     int response_length,
+                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+  void CloseSession(const std::string& web_session_id,
+                    scoped_ptr<media::SimpleCdmPromise> promise) override;
+  void RemoveSession(const std::string& web_session_id,
+                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+  void GetUsableKeyIds(const std::string& web_session_id,
+                       scoped_ptr<media::KeyIdsPromise> promise) override;
+  Decryptor* GetDecryptor() override;
 
   // media::Decryptor implementation.
-  virtual void RegisterNewKeyCB(StreamType stream_type,
-                                const NewKeyCB& key_added_cb) override;
-  virtual void Decrypt(StreamType stream_type,
-                       const scoped_refptr<media::DecoderBuffer>& encrypted,
-                       const DecryptCB& decrypt_cb) override;
-  virtual void CancelDecrypt(StreamType stream_type) override;
-  virtual void InitializeAudioDecoder(const media::AudioDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) override;
-  virtual void InitializeVideoDecoder(const media::VideoDecoderConfig& config,
-                                      const DecoderInitCB& init_cb) override;
-  virtual void DecryptAndDecodeAudio(
+  void RegisterNewKeyCB(StreamType stream_type,
+                        const NewKeyCB& key_added_cb) override;
+  void Decrypt(StreamType stream_type,
+               const scoped_refptr<media::DecoderBuffer>& encrypted,
+               const DecryptCB& decrypt_cb) override;
+  void CancelDecrypt(StreamType stream_type) override;
+  void InitializeAudioDecoder(const media::AudioDecoderConfig& config,
+                              const DecoderInitCB& init_cb) override;
+  void InitializeVideoDecoder(const media::VideoDecoderConfig& config,
+                              const DecoderInitCB& init_cb) override;
+  void DecryptAndDecodeAudio(
       const scoped_refptr<media::DecoderBuffer>& encrypted,
       const AudioDecodeCB& audio_decode_cb) override;
-  virtual void DecryptAndDecodeVideo(
+  void DecryptAndDecodeVideo(
       const scoped_refptr<media::DecoderBuffer>& encrypted,
       const VideoDecodeCB& video_decode_cb) override;
-  virtual void ResetDecoder(StreamType stream_type) override;
-  virtual void DeinitializeDecoder(StreamType stream_type) override;
+  void ResetDecoder(StreamType stream_type) override;
+  void DeinitializeDecoder(StreamType stream_type) override;
 
  private:
   PpapiDecryptor(

@@ -23,17 +23,17 @@ class WebRtcAudioSinkAdapter : public MediaStreamAudioSink {
  public:
   explicit WebRtcAudioSinkAdapter(
       webrtc::AudioTrackSinkInterface* sink);
-  virtual ~WebRtcAudioSinkAdapter();
+  ~WebRtcAudioSinkAdapter() override;
 
   bool IsEqual(const webrtc::AudioTrackSinkInterface* other) const;
 
  private:
   // MediaStreamAudioSink implementation.
-  virtual void OnData(const int16* audio_data,
-                      int sample_rate,
-                      int number_of_channels,
-                      int number_of_frames) override;
-  virtual void OnSetFormat(const media::AudioParameters& params) override;
+  void OnData(const int16* audio_data,
+              int sample_rate,
+              int number_of_channels,
+              int number_of_frames) override;
+  void OnSetFormat(const media::AudioParameters& params) override;
 
   webrtc::AudioTrackSinkInterface* const sink_;
 

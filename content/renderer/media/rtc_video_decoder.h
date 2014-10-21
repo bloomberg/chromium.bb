@@ -45,7 +45,7 @@ class CONTENT_EXPORT RTCVideoDecoder
     : NON_EXPORTED_BASE(public webrtc::VideoDecoder),
       public media::VideoDecodeAccelerator::Client {
  public:
-  virtual ~RTCVideoDecoder();
+  ~RTCVideoDecoder() override;
 
   // Creates a RTCVideoDecoder. Returns NULL if failed. The video decoder will
   // run on the message loop of |factories|.
@@ -55,35 +55,34 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // webrtc::VideoDecoder implementation.
   // Called on WebRTC DecodingThread.
-  virtual int32_t InitDecode(const webrtc::VideoCodec* codecSettings,
-                             int32_t numberOfCores) override;
+  int32_t InitDecode(const webrtc::VideoCodec* codecSettings,
+                     int32_t numberOfCores) override;
   // Called on WebRTC DecodingThread.
-  virtual int32_t Decode(
-      const webrtc::EncodedImage& inputImage,
-      bool missingFrames,
-      const webrtc::RTPFragmentationHeader* fragmentation,
-      const webrtc::CodecSpecificInfo* codecSpecificInfo = NULL,
-      int64_t renderTimeMs = -1) override;
+  int32_t Decode(const webrtc::EncodedImage& inputImage,
+                 bool missingFrames,
+                 const webrtc::RTPFragmentationHeader* fragmentation,
+                 const webrtc::CodecSpecificInfo* codecSpecificInfo = NULL,
+                 int64_t renderTimeMs = -1) override;
   // Called on WebRTC DecodingThread.
-  virtual int32_t RegisterDecodeCompleteCallback(
+  int32_t RegisterDecodeCompleteCallback(
       webrtc::DecodedImageCallback* callback) override;
   // Called on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  virtual int32_t Release() override;
+  int32_t Release() override;
   // Called on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  virtual int32_t Reset() override;
+  int32_t Reset() override;
 
   // VideoDecodeAccelerator::Client implementation.
-  virtual void ProvidePictureBuffers(uint32 count,
-                                     const gfx::Size& size,
-                                     uint32 texture_target) override;
-  virtual void DismissPictureBuffer(int32 id) override;
-  virtual void PictureReady(const media::Picture& picture) override;
-  virtual void NotifyEndOfBitstreamBuffer(int32 id) override;
-  virtual void NotifyFlushDone() override;
-  virtual void NotifyResetDone() override;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  void ProvidePictureBuffers(uint32 count,
+                             const gfx::Size& size,
+                             uint32 texture_target) override;
+  void DismissPictureBuffer(int32 id) override;
+  void PictureReady(const media::Picture& picture) override;
+  void NotifyEndOfBitstreamBuffer(int32 id) override;
+  void NotifyFlushDone() override;
+  void NotifyResetDone() override;
+  void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
  private:
   class SHMBuffer;

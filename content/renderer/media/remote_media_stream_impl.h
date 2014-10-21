@@ -30,13 +30,13 @@ class CONTENT_EXPORT RemoteMediaStreamImpl
  public:
   explicit RemoteMediaStreamImpl(
       webrtc::MediaStreamInterface* webrtc_stream);
-  virtual ~RemoteMediaStreamImpl();
+  ~RemoteMediaStreamImpl() override;
 
   const blink::WebMediaStream& webkit_stream() { return webkit_stream_; }
 
  private:
   // webrtc::ObserverInterface implementation.
-  virtual void OnChanged() override;
+  void OnChanged() override;
 
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
   ScopedVector<RemoteMediaStreamTrackAdapter> video_track_observers_;

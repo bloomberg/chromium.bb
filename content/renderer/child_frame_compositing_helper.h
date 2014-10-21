@@ -74,7 +74,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   void ChildFrameGone();
 
   // cc::DelegatedFrameProviderClient implementation.
-  virtual void UnusedResourcesAreAvailable() override;
+  void UnusedResourcesAreAvailable() override;
   void SetContentsOpaque(bool);
 
  protected:

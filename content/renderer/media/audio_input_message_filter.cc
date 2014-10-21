@@ -32,17 +32,17 @@ class AudioInputMessageFilter::AudioInputIPCImpl
  public:
   AudioInputIPCImpl(const scoped_refptr<AudioInputMessageFilter>& filter,
                     int render_view_id);
-  virtual ~AudioInputIPCImpl();
+  ~AudioInputIPCImpl() override;
 
   // media::AudioInputIPC implementation.
-  virtual void CreateStream(media::AudioInputIPCDelegate* delegate,
-                            int session_id,
-                            const media::AudioParameters& params,
-                            bool automatic_gain_control,
-                            uint32 total_segments) override;
-  virtual void RecordStream() override;
-  virtual void SetVolume(double volume) override;
-  virtual void CloseStream() override;
+  void CreateStream(media::AudioInputIPCDelegate* delegate,
+                    int session_id,
+                    const media::AudioParameters& params,
+                    bool automatic_gain_control,
+                    uint32 total_segments) override;
+  void RecordStream() override;
+  void SetVolume(double volume) override;
+  void CloseStream() override;
 
  private:
   const scoped_refptr<AudioInputMessageFilter> filter_;

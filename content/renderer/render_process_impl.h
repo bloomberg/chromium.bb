@@ -15,11 +15,11 @@ namespace content {
 class RenderProcessImpl : public RenderProcess {
  public:
   RenderProcessImpl();
-  virtual ~RenderProcessImpl();
+  ~RenderProcessImpl() override;
 
   // RenderProcess implementation.
-  virtual void AddBindings(int bindings) override;
-  virtual int GetEnabledBindings() const override;
+  void AddBindings(int bindings) override;
+  int GetEnabledBindings() const override;
 
  private:
   // Bitwise-ORed set of extra bindings that have been enabled anywhere in this

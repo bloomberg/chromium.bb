@@ -50,19 +50,18 @@ class PepperVideoDecoderHost;
 class VideoDecoderShim : public media::VideoDecodeAccelerator {
  public:
   explicit VideoDecoderShim(PepperVideoDecoderHost* host);
-  virtual ~VideoDecoderShim();
+  ~VideoDecoderShim() override;
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool Initialize(
-      media::VideoCodecProfile profile,
-      media::VideoDecodeAccelerator::Client* client) override;
-  virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  virtual void AssignPictureBuffers(
+  bool Initialize(media::VideoCodecProfile profile,
+                  media::VideoDecodeAccelerator::Client* client) override;
+  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  virtual void ReusePictureBuffer(int32 picture_buffer_id) override;
-  virtual void Flush() override;
-  virtual void Reset() override;
-  virtual void Destroy() override;
+  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void Flush() override;
+  void Reset() override;
+  void Destroy() override;
 
  private:
   enum State {

@@ -27,19 +27,18 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
       base::SharedMemoryHandle* shared_state_handle);
 
   // PPB_Graphics3D_API trusted implementation.
-  virtual PP_Bool SetGetBuffer(int32_t transfer_buffer_id) override;
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
-                                                          int32* id) override;
-  virtual PP_Bool DestroyTransferBuffer(int32_t id) override;
-  virtual PP_Bool Flush(int32_t put_offset) override;
-  virtual gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
-                                                        int32_t end) override;
-  virtual gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
-                                                            int32_t end)
-      override;
-  virtual uint32_t InsertSyncPoint() override;
-  virtual uint32_t InsertFutureSyncPoint() override;
-  virtual void RetireSyncPoint(uint32_t) override;
+  PP_Bool SetGetBuffer(int32_t transfer_buffer_id) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
+                                                  int32* id) override;
+  PP_Bool DestroyTransferBuffer(int32_t id) override;
+  PP_Bool Flush(int32_t put_offset) override;
+  gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
+                                                int32_t end) override;
+  gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
+                                                    int32_t end) override;
+  uint32_t InsertSyncPoint() override;
+  uint32_t InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32_t) override;
 
   // Binds/unbinds the graphics of this context with the associated instance.
   // Returns true if binding/unbinding is successful.
@@ -63,11 +62,11 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   GpuChannelHost* channel() { return channel_.get(); }
 
  protected:
-  virtual ~PPB_Graphics3D_Impl();
+  ~PPB_Graphics3D_Impl() override;
   // ppapi::PPB_Graphics3D_Shared overrides.
-  virtual gpu::CommandBuffer* GetCommandBuffer() override;
-  virtual gpu::GpuControl* GetGpuControl() override;
-  virtual int32 DoSwapBuffers() override;
+  gpu::CommandBuffer* GetCommandBuffer() override;
+  gpu::GpuControl* GetGpuControl() override;
+  int32 DoSwapBuffers() override;
 
  private:
   explicit PPB_Graphics3D_Impl(PP_Instance instance);

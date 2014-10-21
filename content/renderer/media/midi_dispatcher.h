@@ -28,7 +28,7 @@ class MidiDispatcher : public RenderFrameObserver,
 
  private:
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // blink::WebMIDIClient implementation.
   virtual void requestSysexPermission(

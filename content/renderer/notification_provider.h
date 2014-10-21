@@ -23,11 +23,11 @@ class NotificationProvider : public RenderFrameObserver,
                              public blink::WebNotificationPresenter {
  public:
   explicit NotificationProvider(RenderFrame* render_frame);
-  virtual ~NotificationProvider();
+  ~NotificationProvider() override;
 
  private:
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // blink::WebNotificationPresenter implementation.
   virtual bool show(const blink::WebNotification& proxy);

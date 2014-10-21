@@ -23,11 +23,11 @@ namespace {
 class RendererClipboardWriteContext : public ClipboardClient::WriteContext {
  public:
   RendererClipboardWriteContext();
-  virtual ~RendererClipboardWriteContext();
-  virtual void WriteBitmapFromPixels(ui::Clipboard::ObjectMap* objects,
-                                     const void* pixels,
-                                     const gfx::Size& size) override;
-  virtual void Flush(const ui::Clipboard::ObjectMap& objects) override;
+  ~RendererClipboardWriteContext() override;
+  void WriteBitmapFromPixels(ui::Clipboard::ObjectMap* objects,
+                             const void* pixels,
+                             const gfx::Size& size) override;
+  void Flush(const ui::Clipboard::ObjectMap& objects) override;
 
  private:
   scoped_ptr<base::SharedMemory> shared_buf_;

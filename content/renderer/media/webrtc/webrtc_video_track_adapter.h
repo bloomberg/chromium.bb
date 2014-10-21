@@ -31,7 +31,7 @@ class WebRtcVideoTrackAdapter : public MediaStreamVideoSink {
  public:
   WebRtcVideoTrackAdapter(const blink::WebMediaStreamTrack& track,
                           PeerConnectionDependencyFactory* factory);
-  virtual ~WebRtcVideoTrackAdapter();
+  ~WebRtcVideoTrackAdapter() override;
 
   webrtc::VideoTrackInterface* webrtc_video_track() {
     return video_track_.get();
@@ -39,7 +39,7 @@ class WebRtcVideoTrackAdapter : public MediaStreamVideoSink {
 
  protected:
   // Implementation of MediaStreamSink.
-  virtual void OnEnabledChanged(bool enabled) override;
+  void OnEnabledChanged(bool enabled) override;
 
  private:
   // Used to DCHECK that we are called on the correct thread.

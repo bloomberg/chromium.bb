@@ -338,7 +338,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
             "  return HasGpuProcess();"
             "};") {}
 
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
       v8::Handle<v8::String> name) override {
     if (name->Equals(

@@ -26,17 +26,16 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   V8ValueConverterImpl();
 
   // V8ValueConverter implementation.
-  virtual void SetDateAllowed(bool val) override;
-  virtual void SetRegExpAllowed(bool val) override;
-  virtual void SetFunctionAllowed(bool val) override;
-  virtual void SetStripNullFromObjects(bool val) override;
-  virtual void SetStrategy(Strategy* strategy) override;
-  virtual v8::Handle<v8::Value> ToV8Value(
+  void SetDateAllowed(bool val) override;
+  void SetRegExpAllowed(bool val) override;
+  void SetFunctionAllowed(bool val) override;
+  void SetStripNullFromObjects(bool val) override;
+  void SetStrategy(Strategy* strategy) override;
+  v8::Handle<v8::Value> ToV8Value(
       const base::Value* value,
       v8::Handle<v8::Context> context) const override;
-  virtual base::Value* FromV8Value(
-      v8::Handle<v8::Value> value,
-      v8::Handle<v8::Context> context) const override;
+  base::Value* FromV8Value(v8::Handle<v8::Value> value,
+                           v8::Handle<v8::Context> context) const override;
 
  private:
   friend class ScopedAvoidIdentityHashForTesting;

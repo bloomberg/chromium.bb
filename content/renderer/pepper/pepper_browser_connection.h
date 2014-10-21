@@ -32,9 +32,9 @@ class PepperBrowserConnection
   typedef base::Callback<void(const std::vector<int>&)>
       PendingResourceIDCallback;
   explicit PepperBrowserConnection(RenderFrame* render_frame);
-  virtual ~PepperBrowserConnection();
+  ~PepperBrowserConnection() override;
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // TODO(teravest): Instead of having separate methods per message, we should
   // add generic functionality similar to PluginResource::Call().

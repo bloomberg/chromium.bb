@@ -37,7 +37,7 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   PepperVideoDecoderHost(RendererPpapiHost* host,
                          PP_Instance instance,
                          PP_Resource resource);
-  virtual ~PepperVideoDecoderHost();
+  ~PepperVideoDecoderHost() override;
 
  private:
   struct PendingDecode {
@@ -52,20 +52,20 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   friend class VideoDecoderShim;
 
   // ResourceHost implementation.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
   // media::VideoDecodeAccelerator::Client implementation.
-  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
-                                     const gfx::Size& dimensions,
-                                     uint32 texture_target) override;
-  virtual void DismissPictureBuffer(int32 picture_buffer_id) override;
-  virtual void PictureReady(const media::Picture& picture) override;
-  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override;
-  virtual void NotifyFlushDone() override;
-  virtual void NotifyResetDone() override;
-  virtual void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+  void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                             const gfx::Size& dimensions,
+                             uint32 texture_target) override;
+  void DismissPictureBuffer(int32 picture_buffer_id) override;
+  void PictureReady(const media::Picture& picture) override;
+  void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override;
+  void NotifyFlushDone() override;
+  void NotifyResetDone() override;
+  void NotifyError(media::VideoDecodeAccelerator::Error error) override;
 
   int32_t OnHostMsgInitialize(ppapi::host::HostMessageContext* context,
                               const ppapi::HostResource& graphics_context,

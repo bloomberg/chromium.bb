@@ -35,15 +35,15 @@ class SessionUpdatedPromise : public media::CdmPromiseTemplate<> {
       : caller_promise_(caller_promise.Pass()),
         additional_resolve_cb_(additional_resolve_cb) {}
 
-  virtual void resolve() override {
+  void resolve() override {
     MarkPromiseSettled();
     additional_resolve_cb_.Run();
     caller_promise_->resolve();
   }
 
-  virtual void reject(media::MediaKeys::Exception exception_code,
-                      uint32 system_code,
-                      const std::string& error_message) override {
+  void reject(media::MediaKeys::Exception exception_code,
+              uint32 system_code,
+              const std::string& error_message) override {
     MarkPromiseSettled();
     caller_promise_->reject(exception_code, system_code, error_message);
   }
@@ -64,15 +64,15 @@ class SessionLoadedPromise : public media::CdmPromiseTemplate<std::string> {
       : caller_promise_(caller_promise.Pass()),
         additional_resolve_cb_(additional_resolve_cb) {}
 
-  virtual void resolve(const std::string& web_session_id) override {
+  void resolve(const std::string& web_session_id) override {
     MarkPromiseSettled();
     additional_resolve_cb_.Run();
     caller_promise_->resolve(web_session_id);
   }
 
-  virtual void reject(media::MediaKeys::Exception exception_code,
-                      uint32 system_code,
-                      const std::string& error_message) override {
+  void reject(media::MediaKeys::Exception exception_code,
+              uint32 system_code,
+              const std::string& error_message) override {
     MarkPromiseSettled();
     caller_promise_->reject(exception_code, system_code, error_message);
   }

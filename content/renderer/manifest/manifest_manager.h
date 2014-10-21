@@ -33,15 +33,15 @@ class ManifestManager : public RenderFrameObserver {
   typedef base::Callback<void(const Manifest&)> GetManifestCallback;
 
   explicit ManifestManager(RenderFrame* render_frame);
-  virtual ~ManifestManager();
+  ~ManifestManager() override;
 
   // Will call the given |callback| with the Manifest associated with the
   // RenderFrame if any. Will pass an empty Manifest in case of error.
   void GetManifest(const GetManifestCallback& callback);
 
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidChangeManifest() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidChangeManifest() override;
 
  private:
   enum ResolveState {

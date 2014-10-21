@@ -48,7 +48,7 @@ namespace content {
 class CONTENT_EXPORT VideoCaptureImpl
     : public VideoCaptureMessageFilter::Delegate {
  public:
-  virtual ~VideoCaptureImpl();
+  ~VideoCaptureImpl() override;
 
   VideoCaptureImpl(media::VideoCaptureSessionId session_id,
                    VideoCaptureMessageFilter* filter);
@@ -108,24 +108,24 @@ class CONTENT_EXPORT VideoCaptureImpl
   typedef std::map<int, ClientInfo> ClientInfoMap;
 
   // VideoCaptureMessageFilter::Delegate interface.
-  virtual void OnBufferCreated(base::SharedMemoryHandle handle,
-                               int length,
-                               int buffer_id) override;
-  virtual void OnBufferDestroyed(int buffer_id) override;
-  virtual void OnBufferReceived(int buffer_id,
-                                const media::VideoCaptureFormat& format,
-                                const gfx::Rect& visible_rect,
-                                base::TimeTicks) override;
-  virtual void OnMailboxBufferReceived(int buffer_id,
-                                       const gpu::MailboxHolder& mailbox_holder,
-                                       const media::VideoCaptureFormat& format,
-                                       base::TimeTicks timestamp) override;
-  virtual void OnStateChanged(VideoCaptureState state) override;
-  virtual void OnDeviceSupportedFormatsEnumerated(
+  void OnBufferCreated(base::SharedMemoryHandle handle,
+                       int length,
+                       int buffer_id) override;
+  void OnBufferDestroyed(int buffer_id) override;
+  void OnBufferReceived(int buffer_id,
+                        const media::VideoCaptureFormat& format,
+                        const gfx::Rect& visible_rect,
+                        base::TimeTicks) override;
+  void OnMailboxBufferReceived(int buffer_id,
+                               const gpu::MailboxHolder& mailbox_holder,
+                               const media::VideoCaptureFormat& format,
+                               base::TimeTicks timestamp) override;
+  void OnStateChanged(VideoCaptureState state) override;
+  void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) override;
-  virtual void OnDeviceFormatsInUseReceived(
+  void OnDeviceFormatsInUseReceived(
       const media::VideoCaptureFormats& formats_in_use) override;
-  virtual void OnDelegateAdded(int32 device_id) override;
+  void OnDelegateAdded(int32 device_id) override;
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.

@@ -34,7 +34,7 @@ class DevToolsAgent : public RenderViewObserver,
                       public blink::WebDevToolsAgentClient {
  public:
   explicit DevToolsAgent(RenderViewImpl* render_view);
-  virtual ~DevToolsAgent();
+  ~DevToolsAgent() override;
 
   // Returns agent instance for its routing id.
   static DevToolsAgent* FromRoutingId(int routing_id);
@@ -45,7 +45,7 @@ class DevToolsAgent : public RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebDevToolsAgentClient implementation
   virtual void sendMessageToInspectorFrontend(const blink::WebString& data);

@@ -25,9 +25,9 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
  public:
   EmbeddedWorkerDevToolsAgent(blink::WebEmbeddedWorker* webworker,
                               int route_id);
-  virtual ~EmbeddedWorkerDevToolsAgent();
+  ~EmbeddedWorkerDevToolsAgent() override;
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnAttach(const std::string& host_id);

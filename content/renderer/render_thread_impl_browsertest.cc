@@ -24,9 +24,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
 class DummyListener : public IPC::Listener {
  public:
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
-    return true;
-  }
+  bool OnMessageReceived(const IPC::Message& message) override { return true; }
 };
 
 void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {

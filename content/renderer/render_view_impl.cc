@@ -461,19 +461,16 @@ class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
   explicit WebWidgetLockTarget(blink::WebWidget* webwidget)
       : webwidget_(webwidget) {}
 
-  virtual void OnLockMouseACK(bool succeeded) override {
+  void OnLockMouseACK(bool succeeded) override {
     if (succeeded)
       webwidget_->didAcquirePointerLock();
     else
       webwidget_->didNotAcquirePointerLock();
   }
 
-  virtual void OnMouseLockLost() override {
-    webwidget_->didLosePointerLock();
-  }
+  void OnMouseLockLost() override { webwidget_->didLosePointerLock(); }
 
-  virtual bool HandleMouseLockedInputEvent(
-      const blink::WebMouseEvent &event) override {
+  bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override {
     // The WebWidget handles mouse lock in WebKit's handleInputEvent().
     return false;
   }

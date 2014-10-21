@@ -38,31 +38,31 @@ class PepperInProcessResourceCreation : public ResourceCreationImpl {
  public:
   PepperInProcessResourceCreation(RendererPpapiHostImpl* host_impl,
                                   PepperPluginInstanceImpl* instance);
-  virtual ~PepperInProcessResourceCreation();
+  ~PepperInProcessResourceCreation() override;
 
   // ResourceCreation_API implementation.
-  virtual PP_Resource CreateBrowserFont(
+  PP_Resource CreateBrowserFont(
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description) override;
-  virtual PP_Resource CreateFileChooser(PP_Instance instance,
-                                        PP_FileChooserMode_Dev mode,
-                                        const PP_Var& accept_types) override;
-  virtual PP_Resource CreateFileIO(PP_Instance instance) override;
-  virtual PP_Resource CreateFileRef(PP_Instance instance,
-                                    const ppapi::FileRefCreateInfo& create_info)
-      override;
-  virtual PP_Resource CreateFileSystem(PP_Instance instance,
-                                       PP_FileSystemType type) override;
-  virtual PP_Resource CreateGraphics2D(PP_Instance pp_instance,
-                                       const PP_Size* size,
-                                       PP_Bool is_always_opaque) override;
-  virtual PP_Resource CreatePrinting(PP_Instance instance) override;
-  virtual PP_Resource CreateTrueTypeFont(
+  PP_Resource CreateFileChooser(PP_Instance instance,
+                                PP_FileChooserMode_Dev mode,
+                                const PP_Var& accept_types) override;
+  PP_Resource CreateFileIO(PP_Instance instance) override;
+  PP_Resource CreateFileRef(
+      PP_Instance instance,
+      const ppapi::FileRefCreateInfo& create_info) override;
+  PP_Resource CreateFileSystem(PP_Instance instance,
+                               PP_FileSystemType type) override;
+  PP_Resource CreateGraphics2D(PP_Instance pp_instance,
+                               const PP_Size* size,
+                               PP_Bool is_always_opaque) override;
+  PP_Resource CreatePrinting(PP_Instance instance) override;
+  PP_Resource CreateTrueTypeFont(
       PP_Instance instance,
       const struct PP_TrueTypeFontDesc_Dev* desc) override;
-  virtual PP_Resource CreateURLLoader(PP_Instance instance) override;
-  virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) override;
-  virtual PP_Resource CreateWebSocket(PP_Instance instance) override;
+  PP_Resource CreateURLLoader(PP_Instance instance) override;
+  PP_Resource CreateURLRequestInfo(PP_Instance instance) override;
+  PP_Resource CreateWebSocket(PP_Instance instance) override;
 
  private:
   // Non-owning pointer to the host for the current plugin.

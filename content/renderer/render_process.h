@@ -19,7 +19,7 @@ namespace content {
 class RenderProcess : public ChildProcess {
  public:
   RenderProcess() {}
-  virtual ~RenderProcess() {}
+  ~RenderProcess() override {}
 
   // Keep track of the cumulative set of enabled bindings for this process,
   // across any view.

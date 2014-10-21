@@ -27,7 +27,7 @@ class MediaStreamTrackMetricsObserver : public webrtc::ObserverInterface {
       MediaStreamTrackMetrics::StreamType stream_type,
       MediaStreamInterface* stream,
       MediaStreamTrackMetrics* owner);
-  virtual ~MediaStreamTrackMetricsObserver();
+  ~MediaStreamTrackMetricsObserver() override;
 
   // Sends begin/end messages for all tracks currently tracked.
   void SendLifetimeMessages(MediaStreamTrackMetrics::LifetimeEvent event);
@@ -39,7 +39,7 @@ class MediaStreamTrackMetricsObserver : public webrtc::ObserverInterface {
   typedef std::set<std::string> IdSet;
 
   // webrtc::ObserverInterface implementation.
-  virtual void OnChanged() override;
+  void OnChanged() override;
 
   template <class T>
   IdSet GetTrackIds(const std::vector<rtc::scoped_refptr<T> >& tracks) {

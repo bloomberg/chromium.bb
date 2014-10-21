@@ -22,13 +22,13 @@ static const int FAKE_ERROR = 100;
 
 class WebRTCIdentityServiceForTest : public WebRTCIdentityService {
  public:
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     messages_.push_back(*message);
     delete message;
     return true;
   }
 
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override {
+  bool OnControlMessageReceived(const IPC::Message& message) override {
     return WebRTCIdentityService::OnControlMessageReceived(message);
   }
 

@@ -356,14 +356,13 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
   PluginInstanceLockTarget(PepperPluginInstanceImpl* plugin)
       : plugin_(plugin) {}
 
-  virtual void OnLockMouseACK(bool succeeded) override {
+  void OnLockMouseACK(bool succeeded) override {
     plugin_->OnLockMouseACK(succeeded);
   }
 
-  virtual void OnMouseLockLost() override { plugin_->OnMouseLockLost(); }
+  void OnMouseLockLost() override { plugin_->OnMouseLockLost(); }
 
-  virtual bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event)
-      override {
+  bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override {
     plugin_->HandleMouseLockedInputEvent(event);
     return true;
   }

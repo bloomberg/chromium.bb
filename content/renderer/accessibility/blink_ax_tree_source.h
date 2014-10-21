@@ -17,7 +17,7 @@ class BlinkAXTreeSource
     : public ui::AXTreeSource<blink::WebAXObject> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame);
-  virtual ~BlinkAXTreeSource();
+  ~BlinkAXTreeSource() override;
 
   // Call this to have BlinkAXTreeSource collect a mapping from
   // node ids to the frame routing id for an out-of-process iframe during
@@ -30,20 +30,19 @@ class BlinkAXTreeSource
   bool IsInTree(blink::WebAXObject node) const;
 
   // AXTreeSource implementation.
-  virtual blink::WebAXObject GetRoot() const override;
-  virtual blink::WebAXObject GetFromId(int32 id) const override;
-  virtual int32 GetId(blink::WebAXObject node) const override;
-  virtual void GetChildren(
+  blink::WebAXObject GetRoot() const override;
+  blink::WebAXObject GetFromId(int32 id) const override;
+  int32 GetId(blink::WebAXObject node) const override;
+  void GetChildren(
       blink::WebAXObject node,
       std::vector<blink::WebAXObject>* out_children) const override;
-  virtual blink::WebAXObject GetParent(blink::WebAXObject node) const
-      override;
-  virtual void SerializeNode(blink::WebAXObject node,
-                             ui::AXNodeData* out_data) const override;
-  virtual bool IsValid(blink::WebAXObject node) const override;
-  virtual bool IsEqual(blink::WebAXObject node1,
-                       blink::WebAXObject node2) const override;
-  virtual blink::WebAXObject GetNull() const override;
+  blink::WebAXObject GetParent(blink::WebAXObject node) const override;
+  void SerializeNode(blink::WebAXObject node,
+                     ui::AXNodeData* out_data) const override;
+  bool IsValid(blink::WebAXObject node) const override;
+  bool IsEqual(blink::WebAXObject node1,
+               blink::WebAXObject node2) const override;
+  blink::WebAXObject GetNull() const override;
 
   blink::WebDocument GetMainDocument() const;
 

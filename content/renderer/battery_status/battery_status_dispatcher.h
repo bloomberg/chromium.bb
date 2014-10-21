@@ -20,16 +20,16 @@ class CONTENT_EXPORT BatteryStatusDispatcher
           public PlatformEventObserver<blink::WebBatteryStatusListener>) {
  public:
   explicit BatteryStatusDispatcher(RenderThread* thread);
-  virtual ~BatteryStatusDispatcher();
+  ~BatteryStatusDispatcher() override;
 
   // PlatformEventObserver public methods.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
-  virtual void SendFakeDataForTesting(void* data) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void SendFakeDataForTesting(void* data) override;
 
  protected:
   // PlatformEventObserver protected methods.
-  virtual void SendStartMessage() override;
-  virtual void SendStopMessage() override;
+  void SendStartMessage() override;
+  void SendStopMessage() override;
 
  private:
   void OnDidChange(const blink::WebBatteryStatus& status);

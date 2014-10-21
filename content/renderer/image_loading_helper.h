@@ -25,7 +25,7 @@ class ImageLoadingHelper : public RenderFrameObserver {
   explicit ImageLoadingHelper(RenderFrame* render_frame);
 
  private:
-  virtual ~ImageLoadingHelper();
+  ~ImageLoadingHelper() override;
 
   // Message handler.
   void OnDownloadImage(int id,
@@ -60,7 +60,7 @@ class ImageLoadingHelper : public RenderFrameObserver {
   SkBitmap ImageFromDataUrl(const GURL&) const;
 
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   typedef ScopedVector<MultiResolutionImageResourceFetcher>
       ImageResourceFetcherList;

@@ -99,11 +99,11 @@ class RemoteAudioMediaStreamTrackAdapter
   RemoteAudioMediaStreamTrackAdapter(
       webrtc::MediaStreamTrackInterface* webrtc_track,
       const blink::WebMediaStreamTrack& webkit_track);
-  virtual ~RemoteAudioMediaStreamTrackAdapter();
+  ~RemoteAudioMediaStreamTrackAdapter() override;
 
  private:
   // webrtc::ObserverInterface implementation.
-  virtual void OnChanged() override;
+  void OnChanged() override;
 
   webrtc::MediaStreamTrackInterface::TrackState state_;
 

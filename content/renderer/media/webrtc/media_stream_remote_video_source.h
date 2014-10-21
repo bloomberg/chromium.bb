@@ -27,17 +27,17 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 
  protected:
   // Implements MediaStreamVideoSource.
-  virtual void GetCurrentSupportedFormats(
+  void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) override;
 
-  virtual void StartSourceImpl(
+  void StartSourceImpl(
       const media::VideoCaptureFormat& format,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
 
-  virtual void StopSourceImpl() override;
+  void StopSourceImpl() override;
 
   // Used by tests to test that a frame can be received and that the
   // MediaStreamRemoteVideoSource behaves as expected.
@@ -45,7 +45,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 
  private:
   // webrtc::ObserverInterface implementation.
-  virtual void OnChanged() override;
+  void OnChanged() override;
 
   scoped_refptr<webrtc::VideoTrackInterface> remote_track_;
   webrtc::MediaStreamTrackInterface::TrackState last_state_;

@@ -22,13 +22,13 @@ class ServiceRegistry;
 class CONTENT_EXPORT ServiceRegistryJsWrapper
     : public gin::Wrappable<ServiceRegistryJsWrapper> {
  public:
-  virtual ~ServiceRegistryJsWrapper();
+  ~ServiceRegistryJsWrapper() override;
   static gin::Handle<ServiceRegistryJsWrapper> Create(
       v8::Isolate* isolate,
       ServiceRegistry* service_registry);
 
   // gin::Wrappable<ServiceRegistryJsWrapper> overrides.
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   // JS interface implementation.

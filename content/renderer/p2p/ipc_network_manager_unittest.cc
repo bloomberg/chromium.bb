@@ -14,13 +14,13 @@ namespace {
 
 class MockP2PSocketDispatcher : public NetworkListManager {
  public:
-  virtual void AddNetworkListObserver(
+  void AddNetworkListObserver(
       NetworkListObserver* network_list_observer) override {}
 
-  virtual void RemoveNetworkListObserver(
+  void RemoveNetworkListObserver(
       NetworkListObserver* network_list_observer) override {}
 
-  virtual ~MockP2PSocketDispatcher() {}
+  ~MockP2PSocketDispatcher() override {}
 };
 
 }  // namespace

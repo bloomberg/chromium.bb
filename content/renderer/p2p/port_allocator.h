@@ -42,9 +42,9 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
                    rtc::NetworkManager* network_manager,
                    rtc::PacketSocketFactory* socket_factory,
                    const Config& config);
-  virtual ~P2PPortAllocator();
+  ~P2PPortAllocator() override;
 
-  virtual cricket::PortAllocatorSession* CreateSessionInternal(
+  cricket::PortAllocatorSession* CreateSessionInternal(
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
@@ -67,11 +67,11 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession {
       int component,
       const std::string& ice_username_fragment,
       const std::string& ice_password);
-  virtual ~P2PPortAllocatorSession();
+  ~P2PPortAllocatorSession() override;
 
  protected:
   // Overrides for cricket::BasicPortAllocatorSession.
-  virtual void GetPortConfigurations() override;
+  void GetPortConfigurations() override;
 
  private:
   P2PPortAllocator* allocator_;

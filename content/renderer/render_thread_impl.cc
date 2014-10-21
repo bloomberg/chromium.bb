@@ -198,7 +198,7 @@ class RenderViewZoomer : public RenderViewVisitor {
                                         zoom_level_(zoom_level) {
   }
 
-  virtual bool Visit(RenderView* render_view) override {
+  bool Visit(RenderView* render_view) override {
     WebView* webview = render_view->GetWebView();
     WebDocument document = webview->mainFrame()->document();
 
@@ -284,7 +284,7 @@ class RenderFrameSetupImpl : public mojo::InterfaceImpl<RenderFrameSetup> {
       : routing_id_highmark_(-1) {
   }
 
-  virtual void GetServiceProviderForFrame(
+  void GetServiceProviderForFrame(
       int32_t frame_routing_id,
       mojo::InterfaceRequest<mojo::ServiceProvider> request) override {
     // TODO(morrita): This is for investigating http://crbug.com/415059 and
@@ -335,12 +335,11 @@ blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
 class MemoryObserver : public base::MessageLoop::TaskObserver {
  public:
   MemoryObserver() {}
-  virtual ~MemoryObserver() {}
+  ~MemoryObserver() override {}
 
-  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
-  }
+  void WillProcessTask(const base::PendingTask& pending_task) override {}
 
-  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
+  void DidProcessTask(const base::PendingTask& pending_task) override {
     LOCAL_HISTOGRAM_MEMORY_KB("Memory.RendererUsed", GetMemoryUsageKB());
   }
 

@@ -48,14 +48,14 @@ class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
  public:
   DeviceOrientationEventPumpForTesting()
       : DeviceOrientationEventPump(0) { }
-  virtual ~DeviceOrientationEventPumpForTesting() { }
+  ~DeviceOrientationEventPumpForTesting() override {}
 
   void OnDidStart(base::SharedMemoryHandle renderer_handle) {
     DeviceOrientationEventPump::OnDidStart(renderer_handle);
   }
-  virtual void SendStartMessage() override { }
-  virtual void SendStopMessage() override { }
-  virtual void FireEvent() override {
+  void SendStartMessage() override {}
+  void SendStopMessage() override {}
+  void FireEvent() override {
     DeviceOrientationEventPump::FireEvent();
     Stop();
     base::MessageLoop::current()->QuitWhenIdle();

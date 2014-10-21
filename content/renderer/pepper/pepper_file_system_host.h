@@ -39,13 +39,13 @@ class PepperFileSystemHost
                        PP_Resource resource,
                        const GURL& root_url,
                        PP_FileSystemType type);
-  virtual ~PepperFileSystemHost();
+  ~PepperFileSystemHost() override;
 
   // ppapi::host::ResourceHost override.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
-  virtual bool IsFileSystemHost() override;
+  bool IsFileSystemHost() override;
 
   // Supports FileRefs direct access on the host side.
   PP_FileSystemType GetType() const { return type_; }

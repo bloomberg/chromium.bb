@@ -21,7 +21,7 @@ class PepperMediaStreamTrackHostBase
   PepperMediaStreamTrackHostBase(RendererPpapiHost* host,
                                  PP_Instance instance,
                                  PP_Resource resource);
-  virtual ~PepperMediaStreamTrackHostBase();
+  ~PepperMediaStreamTrackHostBase() override;
 
   enum TrackType {
     kRead,
@@ -46,7 +46,7 @@ class PepperMediaStreamTrackHostBase
   void SendEnqueueBuffersMessageToPlugin(const std::vector<int32_t>& indices);
 
   // ResourceMessageHandler overrides:
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

@@ -21,13 +21,12 @@ class PeerConnectionIdentityService
  public:
   explicit PeerConnectionIdentityService(const GURL& origin);
 
-  virtual ~PeerConnectionIdentityService();
+  ~PeerConnectionIdentityService() override;
 
   // webrtc::DTLSIdentityServiceInterface implementation.
-  virtual bool RequestIdentity(
-      const std::string& identity_name,
-      const std::string& common_name,
-      webrtc::DTLSIdentityRequestObserver* observer) override;
+  bool RequestIdentity(const std::string& identity_name,
+                       const std::string& common_name,
+                       webrtc::DTLSIdentityRequestObserver* observer) override;
 
  private:
   void OnIdentityReady(const std::string& certificate,

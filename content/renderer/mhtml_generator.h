@@ -15,11 +15,11 @@ class RenderViewImpl;
 class MHTMLGenerator : public RenderViewObserver {
  public:
   explicit MHTMLGenerator(RenderViewImpl* render_view);
-  virtual ~MHTMLGenerator();
+  ~MHTMLGenerator() override;
 
  private:
   // RenderViewObserver implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnSavePageAsMHTML(int job_id,
                          IPC::PlatformFileForTransit file_for_transit);

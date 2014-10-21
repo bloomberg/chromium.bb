@@ -46,7 +46,7 @@ class CONTENT_EXPORT LocalRTCStatsResponse
                             blink::WebString name, blink::WebString value);
 
  protected:
-  virtual ~LocalRTCStatsResponse() {}
+  ~LocalRTCStatsResponse() override {}
   // Constructor for creating mocks.
   LocalRTCStatsResponse() {}
 
@@ -68,7 +68,7 @@ class CONTENT_EXPORT LocalRTCStatsRequest
   virtual scoped_refptr<LocalRTCStatsResponse> createResponse();
 
  protected:
-  virtual ~LocalRTCStatsRequest();
+  ~LocalRTCStatsRequest() override;
 
  private:
   blink::WebRTCStatsRequest impl_;
@@ -159,22 +159,20 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void stop() override;
 
   // webrtc::PeerConnectionObserver implementation
-  virtual void OnError() override;
+  void OnError() override;
   // Triggered when the SignalingState changed.
-  virtual void OnSignalingChange(
+  void OnSignalingChange(
       webrtc::PeerConnectionInterface::SignalingState new_state) override;
-  virtual void OnAddStream(webrtc::MediaStreamInterface* stream) override;
-  virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
-  virtual void OnIceCandidate(
-      const webrtc::IceCandidateInterface* candidate) override;
-  virtual void OnIceConnectionChange(
+  void OnAddStream(webrtc::MediaStreamInterface* stream) override;
+  void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
+  void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
+  void OnIceConnectionChange(
       webrtc::PeerConnectionInterface::IceConnectionState new_state) override;
-  virtual void OnIceGatheringChange(
+  void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
 
-  virtual void OnDataChannel(
-      webrtc::DataChannelInterface* data_channel) override;
-  virtual void OnRenegotiationNeeded() override;
+  void OnDataChannel(webrtc::DataChannelInterface* data_channel) override;
+  void OnRenegotiationNeeded() override;
 
   // Delegate functions to allow for mocking of WebKit interfaces.
   // getStats takes ownership of request parameter.

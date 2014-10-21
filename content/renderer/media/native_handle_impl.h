@@ -15,11 +15,11 @@ class NativeHandleImpl : public webrtc::NativeHandle {
  public:
   // Wraps a video frame in the handle.
   explicit NativeHandleImpl(scoped_refptr<media::VideoFrame> frame);
-  virtual ~NativeHandleImpl();
+  ~NativeHandleImpl() override;
 
   // Retrieves the video frame in the handle. The frame is still ref-counted by
   // the handle. The ref count decreases when NativeHandleImpl is destroyed.
-  virtual void* GetHandle() override;
+  void* GetHandle() override;
 
  private:
   scoped_refptr<media::VideoFrame> frame_;

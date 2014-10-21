@@ -41,8 +41,8 @@ class RendererWebColorChooserImpl : public blink::WebColorChooser,
   // Don't destroy the RendererWebColorChooserImpl when the RenderFrame goes
   // away. RendererWebColorChooserImpl is owned by
   // blink::ColorChooserUIController.
-  virtual void OnDestruct() override {}
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override {}
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnDidChooseColorResponse(int color_chooser_id, SkColor color);
   void OnDidEndColorChooser(int color_chooser_id);

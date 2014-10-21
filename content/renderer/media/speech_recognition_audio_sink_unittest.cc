@@ -65,8 +65,8 @@ class MockSyncSocket : public base::SyncSocket {
         on_send_cb_(on_send_cb),
         in_failure_mode_(false) {}
 
-  virtual size_t Send(const void* buffer, size_t length) override;
-  virtual size_t Receive(void* buffer, size_t length) override;
+  size_t Send(const void* buffer, size_t length) override;
+  size_t Receive(void* buffer, size_t length) override;
 
   // When |in_failure_mode_| == true, the socket fails to send.
   void SetFailureMode(bool in_failure_mode) {

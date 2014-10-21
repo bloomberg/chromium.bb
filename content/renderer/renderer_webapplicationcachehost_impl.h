@@ -18,10 +18,10 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
       AppCacheBackend* backend);
 
   // WebApplicationCacheHostImpl:
-  virtual void OnLogMessage(AppCacheLogLevel log_level,
-                            const std::string& message) override;
-  virtual void OnContentBlocked(const GURL& manifest_url) override;
-  virtual void OnCacheSelected(const AppCacheInfo& info) override;
+  void OnLogMessage(AppCacheLogLevel log_level,
+                    const std::string& message) override;
+  void OnContentBlocked(const GURL& manifest_url) override;
+  void OnCacheSelected(const AppCacheInfo& info) override;
 
  private:
   RenderViewImpl* GetRenderView();

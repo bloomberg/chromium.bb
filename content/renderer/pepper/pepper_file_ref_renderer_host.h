@@ -35,17 +35,17 @@ class PepperFileRefRendererHost : public ppapi::host::ResourceHost {
                             PP_Resource resource,
                             const base::FilePath& external_path);
 
-  virtual ~PepperFileRefRendererHost();
+  ~PepperFileRefRendererHost() override;
 
   PP_FileSystemType GetFileSystemType() const;
   GURL GetFileSystemURL() const;
   base::FilePath GetExternalFilePath() const;
 
   // ppapi::host::ResourceHost override.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
-  virtual bool IsFileRefHost() override;
+  bool IsFileRefHost() override;
 
  private:
   PP_FileSystemType file_system_type_;

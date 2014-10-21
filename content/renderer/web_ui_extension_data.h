@@ -19,7 +19,7 @@ class WebUIExtensionData
       public RenderViewObserverTracker<WebUIExtensionData> {
  public:
   explicit WebUIExtensionData(RenderView* render_view);
-  virtual ~WebUIExtensionData();
+  ~WebUIExtensionData() override;
 
   // Returns value for a given |key|. Will return an empty string if no such key
   // exists in the |variable_map_|.
@@ -27,7 +27,7 @@ class WebUIExtensionData
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
 

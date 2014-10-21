@@ -21,9 +21,9 @@ class WebAudioCapturerSource;
 class MockVideoRenderer : public cricket::VideoRenderer {
  public:
   MockVideoRenderer();
-  virtual ~MockVideoRenderer();
-  virtual bool SetSize(int width, int height, int reserved) override;
-  virtual bool RenderFrame(const cricket::VideoFrame* frame) override;
+  ~MockVideoRenderer() override;
+  bool SetSize(int width, int height, int reserved) override;
+  bool RenderFrame(const cricket::VideoFrame* frame) override;
 
   int width() const { return width_; }
   int height() const { return height_; }
@@ -39,14 +39,14 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
  public:
   MockVideoSource();
 
-  virtual void RegisterObserver(webrtc::ObserverInterface* observer) override;
-  virtual void UnregisterObserver(webrtc::ObserverInterface* observer) override;
-  virtual MediaSourceInterface::SourceState state() const override;
-  virtual cricket::VideoCapturer* GetVideoCapturer() override;
-  virtual void AddSink(cricket::VideoRenderer* output) override;
-  virtual void RemoveSink(cricket::VideoRenderer* output) override;
-  virtual cricket::VideoRenderer* FrameInput() override;
-  virtual const cricket::VideoOptions* options() const override;
+  void RegisterObserver(webrtc::ObserverInterface* observer) override;
+  void UnregisterObserver(webrtc::ObserverInterface* observer) override;
+  MediaSourceInterface::SourceState state() const override;
+  cricket::VideoCapturer* GetVideoCapturer() override;
+  void AddSink(cricket::VideoRenderer* output) override;
+  void RemoveSink(cricket::VideoRenderer* output) override;
+  cricket::VideoRenderer* FrameInput() override;
+  const cricket::VideoOptions* options() const override;
 
   // Changes the state of the source to live and notifies the observer.
   void SetLive();
@@ -61,7 +61,7 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   int GetFrameNum() const;
 
  protected:
-  virtual ~MockVideoSource();
+  ~MockVideoSource() override;
 
  private:
   void FireOnChanged();
@@ -77,9 +77,9 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   explicit MockAudioSource(
       const webrtc::MediaConstraintsInterface* constraints);
 
-  virtual void RegisterObserver(webrtc::ObserverInterface* observer) override;
-  virtual void UnregisterObserver(webrtc::ObserverInterface* observer) override;
-  virtual MediaSourceInterface::SourceState state() const override;
+  void RegisterObserver(webrtc::ObserverInterface* observer) override;
+  void UnregisterObserver(webrtc::ObserverInterface* observer) override;
+  MediaSourceInterface::SourceState state() const override;
 
   // Changes the state of the source to live and notifies the observer.
   void SetLive();
@@ -96,7 +96,7 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   }
 
  protected:
-  virtual ~MockAudioSource();
+  ~MockAudioSource() override;
 
  private:
   webrtc::ObserverInterface* observer_;
@@ -109,21 +109,20 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
  public:
   MockWebRtcVideoTrack(const std::string& id,
                       webrtc::VideoSourceInterface* source);
-  virtual void AddRenderer(webrtc::VideoRendererInterface* renderer) override;
-  virtual void RemoveRenderer(
-      webrtc::VideoRendererInterface* renderer) override;
-  virtual std::string kind() const override;
-  virtual std::string id() const override;
-  virtual bool enabled() const override;
-  virtual TrackState state() const override;
-  virtual bool set_enabled(bool enable) override;
-  virtual bool set_state(TrackState new_state) override;
-  virtual void RegisterObserver(webrtc::ObserverInterface* observer) override;
-  virtual void UnregisterObserver(webrtc::ObserverInterface* observer) override;
-  virtual webrtc::VideoSourceInterface* GetSource() const override;
+  void AddRenderer(webrtc::VideoRendererInterface* renderer) override;
+  void RemoveRenderer(webrtc::VideoRendererInterface* renderer) override;
+  std::string kind() const override;
+  std::string id() const override;
+  bool enabled() const override;
+  TrackState state() const override;
+  bool set_enabled(bool enable) override;
+  bool set_state(TrackState new_state) override;
+  void RegisterObserver(webrtc::ObserverInterface* observer) override;
+  void UnregisterObserver(webrtc::ObserverInterface* observer) override;
+  webrtc::VideoSourceInterface* GetSource() const override;
 
  protected:
-  virtual ~MockWebRtcVideoTrack();
+  ~MockWebRtcVideoTrack() override;
 
  private:
   bool enabled_;
@@ -138,22 +137,22 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
  public:
   explicit MockMediaStream(const std::string& label);
 
-  virtual bool AddTrack(webrtc::AudioTrackInterface* track) override;
-  virtual bool AddTrack(webrtc::VideoTrackInterface* track) override;
-  virtual bool RemoveTrack(webrtc::AudioTrackInterface* track) override;
-  virtual bool RemoveTrack(webrtc::VideoTrackInterface* track) override;
-  virtual std::string label() const override;
-  virtual webrtc::AudioTrackVector GetAudioTracks() override;
-  virtual webrtc::VideoTrackVector GetVideoTracks() override;
-  virtual rtc::scoped_refptr<webrtc::AudioTrackInterface>
-      FindAudioTrack(const std::string& track_id) override;
-  virtual rtc::scoped_refptr<webrtc::VideoTrackInterface>
-      FindVideoTrack(const std::string& track_id) override;
-  virtual void RegisterObserver(webrtc::ObserverInterface* observer) override;
-  virtual void UnregisterObserver(webrtc::ObserverInterface* observer) override;
+  bool AddTrack(webrtc::AudioTrackInterface* track) override;
+  bool AddTrack(webrtc::VideoTrackInterface* track) override;
+  bool RemoveTrack(webrtc::AudioTrackInterface* track) override;
+  bool RemoveTrack(webrtc::VideoTrackInterface* track) override;
+  std::string label() const override;
+  webrtc::AudioTrackVector GetAudioTracks() override;
+  webrtc::VideoTrackVector GetVideoTracks() override;
+  rtc::scoped_refptr<webrtc::AudioTrackInterface> FindAudioTrack(
+      const std::string& track_id) override;
+  rtc::scoped_refptr<webrtc::VideoTrackInterface> FindVideoTrack(
+      const std::string& track_id) override;
+  void RegisterObserver(webrtc::ObserverInterface* observer) override;
+  void UnregisterObserver(webrtc::ObserverInterface* observer) override;
 
  protected:
-  virtual ~MockMediaStream();
+  ~MockMediaStream() override;
 
  private:
   void NotifyObservers();
@@ -172,51 +171,49 @@ class MockPeerConnectionDependencyFactory
      : public PeerConnectionDependencyFactory {
  public:
   MockPeerConnectionDependencyFactory();
-  virtual ~MockPeerConnectionDependencyFactory();
+  ~MockPeerConnectionDependencyFactory() override;
 
-  virtual scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
+  scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       const webrtc::MediaConstraintsInterface* constraints,
       blink::WebFrame* frame,
       webrtc::PeerConnectionObserver* observer) override;
-  virtual scoped_refptr<webrtc::AudioSourceInterface>
-      CreateLocalAudioSource(
-          const webrtc::MediaConstraintsInterface* constraints) override;
-  virtual WebRtcVideoCapturerAdapter* CreateVideoCapturer(
+  scoped_refptr<webrtc::AudioSourceInterface> CreateLocalAudioSource(
+      const webrtc::MediaConstraintsInterface* constraints) override;
+  WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture) override;
-  virtual scoped_refptr<webrtc::VideoSourceInterface>
-      CreateVideoSource(
-          cricket::VideoCapturer* capturer,
-          const blink::WebMediaConstraints& constraints) override;
-  virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
+  scoped_refptr<webrtc::VideoSourceInterface> CreateVideoSource(
+      cricket::VideoCapturer* capturer,
+      const blink::WebMediaConstraints& constraints) override;
+  scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
       blink::WebMediaStreamSource* source) override;
-  virtual scoped_refptr<webrtc::MediaStreamInterface>
-      CreateLocalMediaStream(const std::string& label) override;
-  virtual scoped_refptr<webrtc::VideoTrackInterface>
-      CreateLocalVideoTrack(const std::string& id,
-                            webrtc::VideoSourceInterface* source) override;
-  virtual scoped_refptr<webrtc::VideoTrackInterface>
-      CreateLocalVideoTrack(const std::string& id,
-                            cricket::VideoCapturer* capturer) override;
-  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
+  scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
+      const std::string& label) override;
+  scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
+      const std::string& id,
+      webrtc::VideoSourceInterface* source) override;
+  scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
+      const std::string& id,
+      cricket::VideoCapturer* capturer) override;
+  webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
       const std::string& sdp,
       webrtc::SdpParseError* error) override;
-  virtual webrtc::IceCandidateInterface* CreateIceCandidate(
+  webrtc::IceCandidateInterface* CreateIceCandidate(
       const std::string& sdp_mid,
       int sdp_mline_index,
       const std::string& sdp) override;
 
-  virtual scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
-      int render_view_id, const StreamDeviceInfo& device_info,
+  scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
+      int render_view_id,
+      const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
       MediaStreamAudioSource* audio_source) override;
   void FailToCreateNextAudioCapturer() {
     fail_to_create_next_audio_capturer_ = true;
   }
 
-  virtual void StartLocalAudioTrack(
-      WebRtcLocalAudioTrack* audio_track) override;
+  void StartLocalAudioTrack(WebRtcLocalAudioTrack* audio_track) override;
 
   MockAudioSource* last_audio_source() { return last_audio_source_.get(); }
   MockVideoSource* last_video_source() { return last_video_source_.get(); }

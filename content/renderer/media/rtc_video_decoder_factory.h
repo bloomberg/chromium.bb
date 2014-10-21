@@ -27,16 +27,16 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
  public:
   explicit RTCVideoDecoderFactory(
       const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
-  virtual ~RTCVideoDecoderFactory();
+  ~RTCVideoDecoderFactory() override;
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  virtual webrtc::VideoDecoder* CreateVideoDecoder(webrtc::VideoCodecType type)
-      override;
+  webrtc::VideoDecoder* CreateVideoDecoder(
+      webrtc::VideoCodecType type) override;
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
   // this runs.
-  virtual void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) override;
+  void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) override;
 
  private:
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;

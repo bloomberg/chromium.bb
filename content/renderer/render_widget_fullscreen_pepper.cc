@@ -50,12 +50,12 @@ namespace {
 class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
  public:
   explicit FullscreenMouseLockDispatcher(RenderWidgetFullscreenPepper* widget);
-  virtual ~FullscreenMouseLockDispatcher();
+  ~FullscreenMouseLockDispatcher() override;
 
  private:
   // MouseLockDispatcher implementation.
-  virtual void SendLockMouseRequest(bool unlocked_by_target) override;
-  virtual void SendUnlockMouseRequest() override;
+  void SendLockMouseRequest(bool unlocked_by_target) override;
+  void SendUnlockMouseRequest() override;
 
   RenderWidgetFullscreenPepper* widget_;
 

@@ -58,39 +58,38 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
 
   // MediaStreamAudioRenderer implementation.
   // Called on the main thread.
-  virtual void Start() override;
-  virtual void Stop() override;
-  virtual void Play() override;
-  virtual void Pause() override;
-  virtual void SetVolume(float volume) override;
-  virtual base::TimeDelta GetCurrentRenderTime() const override;
-  virtual bool IsLocalRenderer() const override;
+  void Start() override;
+  void Stop() override;
+  void Play() override;
+  void Pause() override;
+  void SetVolume(float volume) override;
+  base::TimeDelta GetCurrentRenderTime() const override;
+  bool IsLocalRenderer() const override;
 
   const base::TimeDelta& total_render_time() const {
     return total_render_time_;
   }
 
  protected:
-  virtual ~WebRtcLocalAudioRenderer();
+  ~WebRtcLocalAudioRenderer() override;
 
  private:
   // MediaStreamAudioSink implementation.
 
   // Called on the AudioInputDevice worker thread.
-  virtual void OnData(const int16* audio_data,
-                      int sample_rate,
-                      int number_of_channels,
-                      int number_of_frames) override;
+  void OnData(const int16* audio_data,
+              int sample_rate,
+              int number_of_channels,
+              int number_of_frames) override;
 
   // Called on the AudioInputDevice worker thread.
-  virtual void OnSetFormat(const media::AudioParameters& params) override;
+  void OnSetFormat(const media::AudioParameters& params) override;
 
   // media::AudioRendererSink::RenderCallback implementation.
   // Render() is called on the AudioOutputDevice thread and OnRenderError()
   // on the IO thread.
-  virtual int Render(media::AudioBus* audio_bus,
-                     int audio_delay_milliseconds) override;
-  virtual void OnRenderError() override;
+  int Render(media::AudioBus* audio_bus, int audio_delay_milliseconds) override;
+  void OnRenderError() override;
 
   // Initializes and starts the |sink_| if
   //  we have received valid |source_params_| &&

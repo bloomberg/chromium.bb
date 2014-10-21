@@ -120,8 +120,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   RenderThreadImpl();
   // Constructor that's used when running in single process mode.
   explicit RenderThreadImpl(const std::string& channel_name);
-  virtual ~RenderThreadImpl();
-  virtual void Shutdown() override;
+  ~RenderThreadImpl() override;
+  void Shutdown() override;
 
   // When initializing WebKit, ensure that any schemes needed for the content
   // module are registered properly.  Static to allow sharing with tests.
@@ -132,42 +132,41 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   static void NotifyTimezoneChange();
 
   // RenderThread implementation:
-  virtual bool Send(IPC::Message* msg) override;
-  virtual base::MessageLoop* GetMessageLoop() override;
-  virtual IPC::SyncChannel* GetChannel() override;
-  virtual std::string GetLocale() override;
-  virtual IPC::SyncMessageFilter* GetSyncMessageFilter() override;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
-      override;
-  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) override;
-  virtual void RemoveRoute(int32 routing_id) override;
-  virtual int GenerateRoutingID() override;
-  virtual void AddFilter(IPC::MessageFilter* filter) override;
-  virtual void RemoveFilter(IPC::MessageFilter* filter) override;
-  virtual void AddObserver(RenderProcessObserver* observer) override;
-  virtual void RemoveObserver(RenderProcessObserver* observer) override;
-  virtual void SetResourceDispatcherDelegate(
+  bool Send(IPC::Message* msg) override;
+  base::MessageLoop* GetMessageLoop() override;
+  IPC::SyncChannel* GetChannel() override;
+  std::string GetLocale() override;
+  IPC::SyncMessageFilter* GetSyncMessageFilter() override;
+  scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() override;
+  void AddRoute(int32 routing_id, IPC::Listener* listener) override;
+  void RemoveRoute(int32 routing_id) override;
+  int GenerateRoutingID() override;
+  void AddFilter(IPC::MessageFilter* filter) override;
+  void RemoveFilter(IPC::MessageFilter* filter) override;
+  void AddObserver(RenderProcessObserver* observer) override;
+  void RemoveObserver(RenderProcessObserver* observer) override;
+  void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) override;
-  virtual void EnsureWebKitInitialized() override;
-  virtual void RecordAction(const base::UserMetricsAction& action) override;
-  virtual void RecordComputedAction(const std::string& action) override;
-  virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
+  void EnsureWebKitInitialized() override;
+  void RecordAction(const base::UserMetricsAction& action) override;
+  void RecordComputedAction(const std::string& action) override;
+  scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
-  virtual void RegisterExtension(v8::Extension* extension) override;
-  virtual void ScheduleIdleHandler(int64 initial_delay_ms) override;
-  virtual void IdleHandler() override;
-  virtual int64 GetIdleNotificationDelayInMs() const override;
-  virtual void SetIdleNotificationDelayInMs(
+  void RegisterExtension(v8::Extension* extension) override;
+  void ScheduleIdleHandler(int64 initial_delay_ms) override;
+  void IdleHandler() override;
+  int64 GetIdleNotificationDelayInMs() const override;
+  void SetIdleNotificationDelayInMs(
       int64 idle_notification_delay_in_ms) override;
-  virtual void UpdateHistograms(int sequence_number) override;
-  virtual int PostTaskToAllWebWorkers(const base::Closure& closure) override;
-  virtual bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
-  virtual base::WaitableEvent* GetShutdownEvent() override;
+  void UpdateHistograms(int sequence_number) override;
+  int PostTaskToAllWebWorkers(const base::Closure& closure) override;
+  bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
+  base::WaitableEvent* GetShutdownEvent() override;
 #if defined(OS_WIN)
   virtual void PreCacheFont(const LOGFONT& log_font) override;
   virtual void ReleaseCachedFonts() override;
 #endif
-  virtual ServiceRegistry* GetServiceRegistry() override;
+  ServiceRegistry* GetServiceRegistry() override;
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
@@ -401,15 +400,14 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
  private:
   // ChildThread
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
+  bool OnControlMessageReceived(const IPC::Message& msg) override;
 
   // GpuChannelHostFactory implementation:
-  virtual bool IsMainThread() override;
-  virtual base::MessageLoop* GetMainLoop() override;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() override;
-  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) override;
-  virtual CreateCommandBufferResult CreateViewCommandBuffer(
+  bool IsMainThread() override;
+  base::MessageLoop* GetMainLoop() override;
+  scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() override;
+  scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
+  CreateCommandBufferResult CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) override;

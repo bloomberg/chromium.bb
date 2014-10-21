@@ -20,24 +20,24 @@ class PeerConnectionAudioSinkOwner : public MediaStreamAudioTrackSink {
   explicit PeerConnectionAudioSinkOwner(PeerConnectionAudioSink* sink);
 
   // MediaStreamAudioTrackSink implementation.
-  virtual int OnData(const int16* audio_data,
-                     int sample_rate,
-                     int number_of_channels,
-                     int number_of_frames,
-                     const std::vector<int>& channels,
-                     int audio_delay_milliseconds,
-                     int current_volume,
-                     bool need_audio_processing,
-                     bool key_pressed) override;
-  virtual void OnSetFormat(const media::AudioParameters& params) override;
-  virtual void OnReadyStateChanged(
+  int OnData(const int16* audio_data,
+             int sample_rate,
+             int number_of_channels,
+             int number_of_frames,
+             const std::vector<int>& channels,
+             int audio_delay_milliseconds,
+             int current_volume,
+             bool need_audio_processing,
+             bool key_pressed) override;
+  void OnSetFormat(const media::AudioParameters& params) override;
+  void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
-  virtual void Reset() override;
-  virtual bool IsEqual(const MediaStreamAudioSink* other) const override;
-  virtual bool IsEqual(const PeerConnectionAudioSink* other) const override;
+  void Reset() override;
+  bool IsEqual(const MediaStreamAudioSink* other) const override;
+  bool IsEqual(const PeerConnectionAudioSink* other) const override;
 
  protected:
-  virtual ~PeerConnectionAudioSinkOwner() {}
+  ~PeerConnectionAudioSinkOwner() override {}
 
  private:
   mutable base::Lock lock_;

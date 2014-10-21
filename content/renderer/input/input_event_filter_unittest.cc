@@ -80,7 +80,7 @@ class InputEventRecorder {
 
 class IPCMessageRecorder : public IPC::Listener {
  public:
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     messages_.push_back(message);
     return true;
   }
