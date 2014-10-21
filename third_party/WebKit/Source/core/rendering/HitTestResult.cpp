@@ -47,6 +47,7 @@ using namespace HTMLNames;
 
 HitTestResult::HitTestResult()
     : m_isOverWidget(false)
+    , m_isFirstLetter(false)
 {
 }
 
@@ -54,6 +55,7 @@ HitTestResult::HitTestResult(const LayoutPoint& point)
     : m_hitTestLocation(point)
     , m_pointInInnerNodeFrame(point)
     , m_isOverWidget(false)
+    , m_isFirstLetter(false)
 {
 }
 
@@ -61,6 +63,7 @@ HitTestResult::HitTestResult(const LayoutPoint& centerPoint, unsigned topPadding
     : m_hitTestLocation(centerPoint, topPadding, rightPadding, bottomPadding, leftPadding)
     , m_pointInInnerNodeFrame(centerPoint)
     , m_isOverWidget(false)
+    , m_isFirstLetter(false)
 {
 }
 
@@ -68,6 +71,7 @@ HitTestResult::HitTestResult(const HitTestLocation& other)
     : m_hitTestLocation(other)
     , m_pointInInnerNodeFrame(m_hitTestLocation.point())
     , m_isOverWidget(false)
+    , m_isFirstLetter(false)
 {
 }
 
@@ -81,6 +85,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     , m_innerURLElement(other.URLElement())
     , m_scrollbar(other.scrollbar())
     , m_isOverWidget(other.isOverWidget())
+    , m_isFirstLetter(other.m_isFirstLetter)
 {
     // Only copy the NodeSet in case of rect hit test.
     m_rectBasedTestResult = adoptPtrWillBeNoop(other.m_rectBasedTestResult ? new NodeSet(*other.m_rectBasedTestResult) : 0);
@@ -100,6 +105,7 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     m_localPoint = other.localPoint();
     m_innerURLElement = other.URLElement();
     m_scrollbar = other.scrollbar();
+    m_isFirstLetter = other.m_isFirstLetter;
     m_isOverWidget = other.isOverWidget();
 
     // Only copy the NodeSet in case of rect hit test.
@@ -134,7 +140,12 @@ PositionWithAffinity HitTestResult::position() const
 
 RenderObject* HitTestResult::renderer() const
 {
-    return m_innerNode ? m_innerNode->renderer() : 0;
+    if (!m_innerNode)
+        return 0;
+    RenderObject* renderer = m_innerNode->renderer();
+    if (!m_isFirstLetter || !renderer || !renderer->isText() || !toRenderText(renderer)->isTextFragment())
+        return renderer;
+    return toRenderTextFragment(renderer)->firstRenderTextInFirstLetter();
 }
 
 void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()

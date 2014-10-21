@@ -29,10 +29,8 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
-#include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderObject.h"
@@ -43,30 +41,6 @@
 
 namespace blink {
 
-RenderTreeBuilder::RenderTreeBuilder(Node* node, RenderStyle* style)
-    : m_node(node)
-    , m_renderingParent(nullptr)
-    , m_style(style)
-{
-    ASSERT(!node->renderer());
-    ASSERT(node->needsAttach());
-    ASSERT(node->document().inStyleRecalc());
-
-    // FIXME: We should be able to ASSERT(node->inActiveDocument()) but childrenChanged is called
-    // before ChildNodeInsertionNotifier in ContainerNode's methods and some implementations
-    // will trigger a layout inside childrenChanged.
-    // Mainly HTMLTextAreaElement::childrenChanged calls HTMLTextFormControlElement::setSelectionRange
-    // which does an updateLayoutIgnorePendingStylesheets.
-
-    Element* element = node->isElementNode() ? toElement(node) : 0;
-    if (element && element->isFirstLetterPseudoElement()) {
-        if (RenderObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element))
-            m_renderingParent = nextRenderer->parent();
-    } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(node, &m_parentDetails)) {
-        m_renderingParent = containerNode->renderer();
-    }
-}
-
 RenderObject* RenderTreeBuilder::nextRenderer() const
 {
     ASSERT(m_renderingParent);
@@ -76,11 +50,8 @@ RenderObject* RenderTreeBuilder::nextRenderer() const
     if (element && element->isInTopLayer())
         return NodeRenderingTraversal::nextInTopLayer(element);
 
-    if (element && element->isFirstLetterPseudoElement())
-        return FirstLetterPseudoElement::firstLetterTextRenderer(*element);
-
     // Avoid an O(N^2) walk over the children when reattaching all children of a node.
-    if (m_renderingParent->node() && m_renderingParent->node()->needsAttach())
+    if (m_renderingParent->needsAttach())
         return 0;
 
     return NodeRenderingTraversal::nextSiblingRenderer(m_node);
@@ -92,15 +63,15 @@ RenderObject* RenderTreeBuilder::parentRenderer() const
 
     Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
 
-    if (element && m_renderingParent) {
-        // FIXME: Guarding this by m_renderingParent isn't quite right as the spec for
+    if (element && m_renderingParent->renderer()) {
+        // FIXME: Guarding this by m_renderingParent->renderer() isn't quite right as the spec for
         // top layer only talks about display: none ancestors so putting a <dialog> inside an
         // <optgroup> seems like it should still work even though this check will prevent it.
         if (element->isInTopLayer())
             return m_node->document().renderView();
     }
 
-    return m_renderingParent;
+    return m_renderingParent->renderer();
 }
 
 bool RenderTreeBuilder::shouldCreateRenderer() const
@@ -109,12 +80,11 @@ bool RenderTreeBuilder::shouldCreateRenderer() const
         return false;
     if (m_node->isSVGElement()) {
         // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
-        if (!isSVGSVGElement(*m_node) && (!m_renderingParent->node() || !m_renderingParent->node()->isSVGElement()))
+        if (!isSVGSVGElement(*m_node) && !m_renderingParent->isSVGElement())
             return false;
         if (!toSVGElement(m_node)->isValid())
             return false;
     }
-
     RenderObject* parentRenderer = this->parentRenderer();
     if (!parentRenderer)
         return false;

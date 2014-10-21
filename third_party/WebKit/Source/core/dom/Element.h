@@ -555,7 +555,6 @@ private:
     inline void checkForEmptyStyleChange();
 
     void updatePseudoElement(PseudoId, StyleRecalcChange);
-    bool updateFirstLetter(Element*);
 
     inline void createPseudoElementIfNeeded(PseudoId);
 

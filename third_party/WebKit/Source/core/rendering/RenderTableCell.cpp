@@ -233,6 +233,8 @@ void RenderTableCell::layout()
 {
     ASSERT(needsLayout());
 
+    updateFirstLetter();
+
     int oldCellBaseline = cellBaselinePosition();
     layoutBlock(cellWidthChanged());
 

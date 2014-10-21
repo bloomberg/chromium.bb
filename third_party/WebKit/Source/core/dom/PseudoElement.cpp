@@ -27,18 +27,12 @@
 #include "config.h"
 #include "core/dom/PseudoElement.h"
 
-#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/style/ContentData.h"
 
 namespace blink {
-
-PassRefPtrWillBeRawPtr<PseudoElement> PseudoElement::create(Element* parent, PseudoId pseudoId)
-{
-    return adoptRefWillBeNoop(new PseudoElement(parent, pseudoId));
-}
 
 const QualifiedName& pseudoElementTagName(PseudoId pseudoId)
 {
@@ -54,10 +48,6 @@ const QualifiedName& pseudoElementTagName(PseudoId pseudoId)
     case BACKDROP: {
         DEFINE_STATIC_LOCAL(QualifiedName, backdrop, (nullAtom, "<pseudo:backdrop>", nullAtom));
         return backdrop;
-    }
-    case FIRST_LETTER: {
-        DEFINE_STATIC_LOCAL(QualifiedName, firstLetter, (nullAtom, "<pseudo:first-letter>", nullAtom));
-        return firstLetter;
     }
     default: {
         ASSERT_NOT_REACHED();
@@ -119,7 +109,6 @@ void PseudoElement::attach(const AttachContext& context)
     RenderObject* renderer = this->renderer();
     if (!renderer)
         return;
-
     RenderStyle* style = renderer->style();
     if (style->styleType() != BEFORE && style->styleType() != AFTER)
         return;
@@ -152,6 +141,10 @@ void PseudoElement::didRecalcStyle(StyleRecalcChange)
     for (RenderObject* child = renderer->nextInPreOrder(renderer); child; child = child->nextInPreOrder(renderer)) {
         // We only manage the style for the generated content items.
         if (!child->isText() && !child->isQuote() && !child->isImage())
+            continue;
+
+        // The style for the RenderTextFragment for first letter is managed by an enclosing block, not by us.
+        if (child->style()->styleType() == FIRST_LETTER)
             continue;
 
         child->setPseudoStyle(renderer->style());

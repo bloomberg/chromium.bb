@@ -148,7 +148,6 @@ private:
 
     RefPtrWillBeMember<PseudoElement> m_generatedBefore;
     RefPtrWillBeMember<PseudoElement> m_generatedAfter;
-    RefPtrWillBeMember<PseudoElement> m_generatedFirstLetter;
     RefPtrWillBeMember<PseudoElement> m_backdrop;
 
     explicit ElementRareData(RenderObject*);
@@ -174,13 +173,12 @@ inline ElementRareData::~ElementRareData()
 #endif
     ASSERT(!m_generatedBefore);
     ASSERT(!m_generatedAfter);
-    ASSERT(!m_generatedFirstLetter);
     ASSERT(!m_backdrop);
 }
 
 inline bool ElementRareData::hasPseudoElements() const
 {
-    return m_generatedBefore || m_generatedAfter || m_backdrop || m_generatedFirstLetter;
+    return m_generatedBefore || m_generatedAfter || m_backdrop;
 }
 
 inline void ElementRareData::clearPseudoElements()
@@ -188,7 +186,6 @@ inline void ElementRareData::clearPseudoElements()
     setPseudoElement(BEFORE, nullptr);
     setPseudoElement(AFTER, nullptr);
     setPseudoElement(BACKDROP, nullptr);
-    setPseudoElement(FIRST_LETTER, nullptr);
 }
 
 inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtrWillBeRawPtr<PseudoElement> element)
@@ -209,11 +206,6 @@ inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtrWillB
             m_backdrop->dispose();
         m_backdrop = element;
         break;
-    case FIRST_LETTER:
-        if (m_generatedFirstLetter)
-            m_generatedFirstLetter->dispose();
-        m_generatedFirstLetter = element;
-        break;
     default:
         ASSERT_NOT_REACHED();
     }
@@ -228,8 +220,6 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
         return m_generatedAfter.get();
     case BACKDROP:
         return m_backdrop.get();
-    case FIRST_LETTER:
-        return m_generatedFirstLetter.get();
     default:
         return 0;
     }

@@ -39,7 +39,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     short indices[2];
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
-    void* pointers[14];
+    void* pointers[13];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
@@ -70,7 +70,6 @@ void ElementRareData::traceAfterDispatch(Visitor* visitor)
     visitor->trace(m_cssomWrapper);
     visitor->trace(m_generatedBefore);
     visitor->trace(m_generatedAfter);
-    visitor->trace(m_generatedFirstLetter);
     visitor->trace(m_backdrop);
     NodeRareData::traceAfterDispatch(visitor);
 }

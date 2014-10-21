@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/VisiblePosition.h"
@@ -762,28 +761,34 @@ void TextIterator::handleTextBox()
     }
 }
 
+static inline RenderText* firstRenderTextInFirstLetter(RenderBoxModelObject* firstLetter)
+{
+    if (!firstLetter)
+        return 0;
+
+    // FIXME: Should this check descendent objects?
+    for (RenderObject* current = firstLetter->slowFirstChild(); current; current = current->nextSibling()) {
+        if (current->isText())
+            return toRenderText(current);
+    }
+    return 0;
+}
+
 void TextIterator::handleTextNodeFirstLetter(RenderTextFragment* renderer)
 {
+    if (renderer->firstLetter()) {
+        RenderBoxModelObject* r = renderer->firstLetter();
+        if (r->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
+            return;
+        if (RenderText* firstLetter = firstRenderTextInFirstLetter(r)) {
+            m_handledFirstLetter = true;
+            m_remainingTextBox = m_textBox;
+            m_textBox = firstLetter->firstTextBox();
+            m_sortedTextBoxes.clear();
+            m_firstLetterText = firstLetter;
+        }
+    }
     m_handledFirstLetter = true;
-
-    if (!renderer->isRemainingTextRenderer())
-        return;
-
-    FirstLetterPseudoElement* firstLetterElement = renderer->firstLetterPseudoElement();
-    if (!firstLetterElement)
-        return;
-
-    RenderObject* pseudoRenderer = firstLetterElement->renderer();
-    if (pseudoRenderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
-        return;
-
-    RenderObject* firstLetter = pseudoRenderer->slowFirstChild();
-    ASSERT(firstLetter);
-
-    m_remainingTextBox = m_textBox;
-    m_textBox = toRenderText(firstLetter)->firstTextBox();
-    m_sortedTextBoxes.clear();
-    m_firstLetterText = toRenderText(firstLetter);
 }
 
 bool TextIterator::handleReplacedElement()
@@ -845,18 +850,11 @@ bool TextIterator::hasVisibleTextNode(RenderText* renderer)
 {
     if (renderer->style()->visibility() == VISIBLE)
         return true;
-
-    if (!renderer->isTextFragment())
-        return false;
-
-    RenderTextFragment* fragment = toRenderTextFragment(renderer);
-    if (!fragment->isRemainingTextRenderer())
-        return false;
-
-    RenderObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
-    if (pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE)
-        return true;
-
+    if (renderer->isTextFragment()) {
+        RenderTextFragment* fragment = toRenderTextFragment(renderer);
+        if (fragment->firstLetter() && fragment->firstLetter()->style()->visibility() == VISIBLE)
+            return true;
+    }
     return false;
 }
 
@@ -1530,14 +1528,7 @@ RenderText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset,
 
     m_shouldHandleFirstLetter = false;
     offsetInNode = 0;
-
-    ASSERT(fragment->isRemainingTextRenderer());
-    ASSERT(fragment->firstLetterPseudoElement());
-
-    RenderObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->renderer();
-    ASSERT(pseudoElementRenderer);
-    ASSERT(pseudoElementRenderer->slowFirstChild());
-    RenderText* firstLetterRenderer = toRenderText(pseudoElementRenderer->slowFirstChild());
+    RenderText* firstLetterRenderer = firstRenderTextInFirstLetter(fragment->firstLetter());
 
     m_offset = firstLetterRenderer->caretMaxOffset();
     m_offset += collapsedSpaceLength(firstLetterRenderer, m_offset);

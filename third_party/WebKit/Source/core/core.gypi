@@ -2147,8 +2147,6 @@
             'dom/ExecutionContext.cpp',
             'dom/ExecutionContext.h',
             'dom/ExecutionContextTask.h',
-            'dom/FirstLetterPseudoElement.h',
-            'dom/FirstLetterPseudoElement.cpp',
             'dom/Fullscreen.cpp',
             'dom/Fullscreen.h',
             'dom/GlobalEventHandlers.h',
