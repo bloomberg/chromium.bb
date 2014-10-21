@@ -43,7 +43,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
-#include "platform/scheduler/Scheduler.h"
 #include "public/platform/WebThreadedDataReceiver.h"
 #include "wtf/Functional.h"
 
@@ -412,7 +411,7 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
 {
     TRACE_EVENT0("blink", "HTMLDocumentParser::processParsedChunkFromBackgroundParser");
 
-    ASSERT_WITH_SECURITY_IMPLICATION(!document()->activeParserCount());
+    ASSERT_WITH_SECURITY_IMPLICATION(document()->activeParserCount() == 1);
     ASSERT(!isParsingFragment());
     ASSERT(!isWaitingForScripts());
     ASSERT(!isStopped());
@@ -424,8 +423,6 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
     ASSERT(!m_tokenizer);
     ASSERT(!m_token);
     ASSERT(!m_lastChunkBeforeScript);
-
-    ActiveParserSession session(contextForParsingSession());
 
     OwnPtr<ParsedChunk> chunk(popChunk);
     OwnPtr<CompactHTMLTokenStream> tokens = chunk->tokens.release();
@@ -486,9 +483,6 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
 
 void HTMLDocumentParser::pumpPendingSpeculations()
 {
-    // FIXME: Share this constant with the parser scheduler.
-    const double parserTimeLimit = 0.500;
-
 #if !ENABLE(OILPAN)
     // ASSERT that this object is both attached to the Document and protected.
     ASSERT(refCount() >= 2);
@@ -507,8 +501,7 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willWriteHTML(document(), lineNumber().zeroBasedInt());
 
-    double startTime = currentTime();
-
+    SpeculationsPumpSession session(contextForParsingSession());
     while (!m_speculations.isEmpty()) {
         processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
 
@@ -516,10 +509,8 @@ void HTMLDocumentParser::pumpPendingSpeculations()
         if (isStopped() || isWaitingForScripts())
             break;
 
-        if ((Scheduler::shared()->shouldYieldForHighPriorityWork() || currentTime() - startTime > parserTimeLimit) && !m_speculations.isEmpty()) {
-            m_parserScheduler->scheduleForResume();
+        if (m_speculations.isEmpty() || m_parserScheduler->yieldIfNeeded(session))
             break;
-        }
     }
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endLine", lineNumber().zeroBasedInt());

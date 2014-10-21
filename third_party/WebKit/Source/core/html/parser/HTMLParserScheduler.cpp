@@ -29,6 +29,8 @@
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/frame/FrameView.h"
+#include "platform/scheduler/Scheduler.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
@@ -55,6 +57,21 @@ PumpSession::PumpSession(unsigned& nestingLevel, Document* document)
 
 PumpSession::~PumpSession()
 {
+}
+
+SpeculationsPumpSession::SpeculationsPumpSession(Document* document)
+    : ActiveParserSession(document)
+    , m_startTime(currentTime())
+{
+}
+
+SpeculationsPumpSession::~SpeculationsPumpSession()
+{
+}
+
+inline double SpeculationsPumpSession::elapsedTime() const
+{
+    return currentTime() - m_startTime;
 }
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser)
@@ -96,6 +113,28 @@ void HTMLParserScheduler::resume()
         return;
     m_isSuspendedWithActiveTimer = false;
     m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
+}
+
+inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session) const
+{
+    if (Scheduler::shared()->shouldYieldForHighPriorityWork())
+        return true;
+
+    const double parserTimeLimit = 0.5;
+    if (session.elapsedTime() > parserTimeLimit)
+        return true;
+
+    return false;
+}
+
+bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session)
+{
+    if (shouldYield(session)) {
+        scheduleForResume();
+        return true;
+    }
+
+    return false;
 }
 
 }
