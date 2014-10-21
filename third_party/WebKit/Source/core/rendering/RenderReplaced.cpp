@@ -79,6 +79,8 @@ void RenderReplaced::layout()
 {
     ASSERT(needsLayout());
 
+    LayoutRect oldContentRect = replacedContentRect();
+
     setHeight(minimumReplacedHeight());
 
     updateLogicalWidth();
@@ -90,6 +92,9 @@ void RenderReplaced::layout()
     invalidateBackgroundObscurationStatus();
 
     clearNeedsLayout();
+
+    if (replacedContentRect() != oldContentRect)
+        setShouldDoFullPaintInvalidation();
 }
 
 void RenderReplaced::intrinsicSizeChanged()

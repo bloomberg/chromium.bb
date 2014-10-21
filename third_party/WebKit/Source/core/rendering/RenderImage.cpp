@@ -391,10 +391,7 @@ void RenderImage::updateAltText()
 
 void RenderImage::layout()
 {
-    LayoutRect oldContentRect = replacedContentRect();
     RenderReplaced::layout();
-    if (replacedContentRect() != oldContentRect)
-        setShouldDoFullPaintInvalidation();
     updateInnerContentRect();
 }
 
