@@ -161,7 +161,7 @@ video::-internal-media-controls-overlay-cast-button {
     margin-top: 0px;
     border: none;
     box-sizing: border-box;
-    background-color: rgba(0,0,0,0.5);
+    background-color: transparent;
     width: 30px;
     height: 30px;
     padding: 0;

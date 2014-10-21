@@ -1439,6 +1439,10 @@ crbug.com/334269 [ SnowLeopard ] virtual/textblob/fast/text/whitespace/014.html 
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/018.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] virtual/textblob/fast/text/whitespace/018.html [ NeedsManualRebaseline ]
 
+crbug.com/424180 media/video-controls-with-cast-rendering.html [ NeedsRebaseline ]
+crbug.com/424180 media/video-overlay-cast-dark-rendering.html [ NeedsRebaseline ]
+crbug.com/424180 media/video-overlay-cast-light-rendering.html [ NeedsRebaseline ]
+
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ipa-tone-letters.html [ Pass Failure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ Pass Failure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/ellipsis-stroked.html [ Pass Failure ]
