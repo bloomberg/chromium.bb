@@ -19,18 +19,17 @@ class ShellAccessTokenStore : public content::AccessTokenStore {
       content::ShellBrowserContext* shell_browser_context);
 
  private:
-  virtual ~ShellAccessTokenStore();
+  ~ShellAccessTokenStore() override;
 
   void GetRequestContextOnUIThread(
       content::ShellBrowserContext* shell_browser_context);
   void RespondOnOriginatingThread(const LoadAccessTokensCallbackType& callback);
 
   // AccessTokenStore
-  virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& callback) override;
+  void LoadAccessTokens(const LoadAccessTokensCallbackType& callback) override;
 
-  virtual void SaveAccessToken(
-      const GURL& server_url, const base::string16& access_token) override;
+  void SaveAccessToken(const GURL& server_url,
+                       const base::string16& access_token) override;
 
   content::ShellBrowserContext* shell_browser_context_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;

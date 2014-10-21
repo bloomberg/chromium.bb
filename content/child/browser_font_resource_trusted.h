@@ -39,29 +39,26 @@ class BrowserFontResource_Trusted
       const PP_BrowserFont_Trusted_Description& desc);
 
   // Resource override.
-  virtual ::ppapi::thunk::PPB_BrowserFont_Trusted_API*
-      AsPPB_BrowserFont_Trusted_API() override;
+  ::ppapi::thunk::PPB_BrowserFont_Trusted_API* AsPPB_BrowserFont_Trusted_API()
+      override;
 
   // PPB_BrowserFont_Trusted_API implementation.
-  virtual PP_Bool Describe(PP_BrowserFont_Trusted_Description* description,
-                           PP_BrowserFont_Trusted_Metrics* metrics) override;
-  virtual PP_Bool DrawTextAt(PP_Resource image_data,
-                             const PP_BrowserFont_Trusted_TextRun* text,
-                             const PP_Point* position,
-                             uint32_t color,
-                             const PP_Rect* clip,
-                             PP_Bool image_data_is_opaque) override;
-  virtual int32_t MeasureText(
-      const PP_BrowserFont_Trusted_TextRun* text) override;
-  virtual uint32_t CharacterOffsetForPixel(
-      const PP_BrowserFont_Trusted_TextRun* text,
-      int32_t pixel_position) override;
-  virtual int32_t PixelOffsetForCharacter(
-      const PP_BrowserFont_Trusted_TextRun* text,
-      uint32_t char_offset) override;
+  PP_Bool Describe(PP_BrowserFont_Trusted_Description* description,
+                   PP_BrowserFont_Trusted_Metrics* metrics) override;
+  PP_Bool DrawTextAt(PP_Resource image_data,
+                     const PP_BrowserFont_Trusted_TextRun* text,
+                     const PP_Point* position,
+                     uint32_t color,
+                     const PP_Rect* clip,
+                     PP_Bool image_data_is_opaque) override;
+  int32_t MeasureText(const PP_BrowserFont_Trusted_TextRun* text) override;
+  uint32_t CharacterOffsetForPixel(const PP_BrowserFont_Trusted_TextRun* text,
+                                   int32_t pixel_position) override;
+  int32_t PixelOffsetForCharacter(const PP_BrowserFont_Trusted_TextRun* text,
+                                  uint32_t char_offset) override;
 
  private:
-  virtual ~BrowserFontResource_Trusted();
+  ~BrowserFontResource_Trusted() override;
 
   // Internal version of DrawTextAt that takes a mapped PlatformCanvas.
   void DrawTextToCanvas(SkCanvas* destination,

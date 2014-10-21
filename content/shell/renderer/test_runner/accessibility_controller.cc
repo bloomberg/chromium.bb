@@ -26,10 +26,10 @@ class AccessibilityControllerBindings
  private:
   explicit AccessibilityControllerBindings(
       base::WeakPtr<AccessibilityController> controller);
-  virtual ~AccessibilityControllerBindings();
+  ~AccessibilityControllerBindings() override;
 
   // gin::Wrappable:
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   void LogAccessibilityEvents();

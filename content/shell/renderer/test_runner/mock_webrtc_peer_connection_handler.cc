@@ -35,7 +35,7 @@ class RTCSessionDescriptionRequestSuccededTask
         request_(request),
         result_(result) {}
 
-  virtual void RunIfValid() override { request_.requestSucceeded(result_); }
+  void RunIfValid() override { request_.requestSucceeded(result_); }
 
  private:
   WebRTCSessionDescriptionRequest request_;
@@ -51,7 +51,7 @@ class RTCSessionDescriptionRequestFailedTask
       : WebMethodTask<MockWebRTCPeerConnectionHandler>(object),
         request_(request) {}
 
-  virtual void RunIfValid() override { request_.requestFailed("TEST_ERROR"); }
+  void RunIfValid() override { request_.requestFailed("TEST_ERROR"); }
 
  private:
   WebRTCSessionDescriptionRequest request_;
@@ -67,7 +67,7 @@ class RTCStatsRequestSucceededTask
         request_(request),
         response_(response) {}
 
-  virtual void RunIfValid() override { request_.requestSucceeded(response_); }
+  void RunIfValid() override { request_.requestSucceeded(response_); }
 
  private:
   blink::WebRTCStatsRequest request_;
@@ -84,7 +84,7 @@ class RTCVoidRequestTask
         request_(request),
         succeeded_(succeeded) {}
 
-  virtual void RunIfValid() override {
+  void RunIfValid() override {
     if (succeeded_)
       request_.requestSucceeded();
     else
@@ -109,7 +109,7 @@ class RTCPeerConnectionStateTask
         connection_state_(connection_state),
         gathering_state_(gathering_state) {}
 
-  virtual void RunIfValid() override {
+  void RunIfValid() override {
     client_->didChangeICEGatheringState(gathering_state_);
     client_->didChangeICEConnectionState(connection_state_);
   }
@@ -130,7 +130,7 @@ class RemoteDataChannelTask
         client_(client),
         delegate_(delegate) {}
 
-  virtual void RunIfValid() override {
+  void RunIfValid() override {
     WebRTCDataChannelInit init;
     WebRTCDataChannelHandler* remote_data_channel =
         new MockWebRTCDataChannelHandler(

@@ -65,16 +65,16 @@ class GpuChannelManager : public IPC::Listener,
                     base::MessageLoopProxy* io_message_loop,
                     base::WaitableEvent* shutdown_event,
                     IPC::SyncChannel* channel);
-  virtual ~GpuChannelManager();
+  ~GpuChannelManager() override;
 
   // Remove the channel for a particular renderer.
   void RemoveChannel(int client_id);
 
   // Listener overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Sender overrides.
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   bool HandleMessagesScheduled();
   uint64 MessagesProcessed();

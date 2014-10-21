@@ -21,10 +21,10 @@ namespace content {
 class TestRenderFrameHostCreationObserver : public WebContentsObserver {
  public:
   explicit TestRenderFrameHostCreationObserver(WebContents* web_contents);
-  virtual ~TestRenderFrameHostCreationObserver();
+  ~TestRenderFrameHostCreationObserver() override;
 
   // WebContentsObserver implementation.
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
 
   RenderFrameHost* last_created_frame() const { return last_created_frame_; }
 
@@ -41,23 +41,21 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       FrameTreeNode* frame_tree_node,
                       int routing_id,
                       bool is_swapped_out);
-  virtual ~TestRenderFrameHost();
+  ~TestRenderFrameHost() override;
 
   // RenderFrameHostImpl overrides (same values, but in Test* types)
-  virtual TestRenderViewHost* GetRenderViewHost() override;
+  TestRenderViewHost* GetRenderViewHost() override;
 
   // RenderFrameHostTester implementation.
-  virtual TestRenderFrameHost* AppendChild(
-      const std::string& frame_name) override;
-  virtual void SendNavigate(int page_id, const GURL& url) override;
-  virtual void SendFailedNavigate(int page_id, const GURL& url) override;
-  virtual void SendNavigateWithTransition(
-      int page_id,
-      const GURL& url,
-      ui::PageTransition transition) override;
-  virtual void SetContentsMimeType(const std::string& mime_type) override;
-  virtual void SendBeforeUnloadACK(bool proceed) override;
-  virtual void SimulateSwapOutACK() override;
+  TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
+  void SendNavigate(int page_id, const GURL& url) override;
+  void SendFailedNavigate(int page_id, const GURL& url) override;
+  void SendNavigateWithTransition(int page_id,
+                                  const GURL& url,
+                                  ui::PageTransition transition) override;
+  void SetContentsMimeType(const std::string& mime_type) override;
+  void SendBeforeUnloadACK(bool proceed) override;
+  void SimulateSwapOutACK() override;
 
   void SendNavigateWithTransitionAndResponseCode(
       int page_id,

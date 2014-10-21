@@ -143,12 +143,12 @@ class ConvertableToTraceFormatWrapper
   explicit ConvertableToTraceFormatWrapper(
       const blink::WebConvertableToTraceFormat& convertable)
       : convertable_(convertable) {}
-  virtual void AppendAsTraceFormat(std::string* out) const override {
+  void AppendAsTraceFormat(std::string* out) const override {
     *out += convertable_.asTraceFormat().utf8();
   }
 
  private:
-  virtual ~ConvertableToTraceFormatWrapper() {}
+  ~ConvertableToTraceFormatWrapper() override {}
 
   blink::WebConvertableToTraceFormat convertable_;
 };

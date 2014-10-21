@@ -33,7 +33,7 @@ class NPObjectProxy : public IPC::Listener,
                       public IPC::Sender,
                       public NPObjectBase {
  public:
-  virtual ~NPObjectProxy();
+  ~NPObjectProxy() override;
 
   static NPObject* Create(NPChannelBase* channel,
                           int route_id,
@@ -42,7 +42,7 @@ class NPObjectProxy : public IPC::Listener,
                           NPP owner);
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
   int route_id() { return route_id_; }
   NPChannelBase* channel() { return channel_.get(); }
 
@@ -94,9 +94,9 @@ class NPObjectProxy : public IPC::Listener,
   static const NPClass* npclass() { return &npclass_proxy_; }
 
   // NPObjectBase implementation.
-  virtual NPObject* GetUnderlyingNPObject() override;
+  NPObject* GetUnderlyingNPObject() override;
 
-  virtual IPC::Listener* GetChannelListener() override;
+  IPC::Listener* GetChannelListener() override;
 
  private:
   NPObjectProxy(NPChannelBase* channel,
@@ -105,8 +105,8 @@ class NPObjectProxy : public IPC::Listener,
                 const GURL& page_url);
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelError() override;
 
   static NPObject* NPAllocate(NPP, NPClass*);
   static void NPDeallocate(NPObject* npObj);

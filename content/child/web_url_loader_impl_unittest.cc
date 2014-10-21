@@ -68,34 +68,34 @@ class TestBridge : public ResourceLoaderBridge,
     url_(info.url) {
   }
 
-  virtual ~TestBridge() {}
+  ~TestBridge() override {}
 
   // ResourceLoaderBridge implementation:
-  virtual void SetRequestBody(ResourceRequestBody* request_body) override {}
+  void SetRequestBody(ResourceRequestBody* request_body) override {}
 
-  virtual bool Start(RequestPeer* peer) override {
+  bool Start(RequestPeer* peer) override {
     EXPECT_FALSE(peer_);
     peer_ = peer;
     return true;
   }
 
-  virtual void Cancel() override {
+  void Cancel() override {
     EXPECT_FALSE(canceled_);
     canceled_ = true;
   }
 
-  virtual void SetDefersLoading(bool value) override {}
+  void SetDefersLoading(bool value) override {}
 
-  virtual void DidChangePriority(net::RequestPriority new_priority,
-                                 int intra_priority_value) override {}
+  void DidChangePriority(net::RequestPriority new_priority,
+                         int intra_priority_value) override {}
 
-  virtual bool AttachThreadedDataReceiver(
+  bool AttachThreadedDataReceiver(
       blink::WebThreadedDataReceiver* threaded_data_receiver) override {
     NOTREACHED();
     return false;
   }
 
-  virtual void SyncLoad(SyncLoadResponse* response) override {}
+  void SyncLoad(SyncLoadResponse* response) override {}
 
   RequestPeer* peer() { return peer_; }
 
@@ -114,11 +114,10 @@ class TestBridge : public ResourceLoaderBridge,
 class TestResourceDispatcher : public ResourceDispatcher {
  public:
   TestResourceDispatcher() : ResourceDispatcher(NULL) {}
-  virtual ~TestResourceDispatcher() {}
+  ~TestResourceDispatcher() override {}
 
   // ResourceDispatcher implementation:
-  virtual ResourceLoaderBridge* CreateBridge(
-      const RequestInfo& request_info) override {
+  ResourceLoaderBridge* CreateBridge(const RequestInfo& request_info) override {
     EXPECT_FALSE(bridge_.get());
     TestBridge* bridge = new TestBridge(request_info);
     bridge_ = bridge->AsWeakPtr();

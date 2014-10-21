@@ -52,7 +52,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       WebServiceWorkerGetRegistrationCallbacks;
 
   explicit ServiceWorkerDispatcher(ThreadSafeSender* thread_safe_sender);
-  virtual ~ServiceWorkerDispatcher();
+  ~ServiceWorkerDispatcher() override;
 
   void OnMessageReceived(const IPC::Message& msg);
   bool Send(IPC::Message* msg);
@@ -147,7 +147,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   friend class WebServiceWorkerRegistrationImpl;
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() override;
+  void OnWorkerRunLoopStopped() override;
 
   void OnAssociateRegistration(int thread_id,
                                int provider_id,

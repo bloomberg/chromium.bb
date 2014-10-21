@@ -28,9 +28,9 @@ class NewTrackTask : public WebMethodTask<MockWebMediaStreamCenter> {
     DCHECK(!stream_.isNull());
   }
 
-  virtual ~NewTrackTask() {}
+  ~NewTrackTask() override {}
 
-  virtual void RunIfValid() override {
+  void RunIfValid() override {
     blink::WebMediaStreamSource source;
     blink::WebMediaStreamTrack track;
     source.initialize("MagicVideoDevice#1",

@@ -35,17 +35,17 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
                                        Usage usage);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual uint32 GetStride() const override;
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const override;
+  void* Map() override;
+  void Unmap() override;
+  uint32 GetStride() const override;
+  gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:
   GpuMemoryBufferImplSharedMemory(const gfx::Size& size,
                                   Format format,
                                   const DestructionCallback& callback,
                                   scoped_ptr<base::SharedMemory> shared_memory);
-  virtual ~GpuMemoryBufferImplSharedMemory();
+  ~GpuMemoryBufferImplSharedMemory() override;
 
   scoped_ptr<base::SharedMemory> shared_memory_;
 

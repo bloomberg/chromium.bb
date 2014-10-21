@@ -36,12 +36,12 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
                      net::URLRequestContextGetter* request_context_getter);
 
  private:
-  virtual ~LayoutTestMessageFilter();
+  ~LayoutTestMessageFilter() override;
 
   // BrowserMessageFilter implementation.
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnReadFileToString(const base::FilePath& local_file,
                           std::string* contents);

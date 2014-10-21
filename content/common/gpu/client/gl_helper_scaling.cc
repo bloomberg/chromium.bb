@@ -155,15 +155,15 @@ class ScalerImpl : public GLHelper::ScalerInterface,
     }
   }
 
-  virtual ~ScalerImpl() {
+  ~ScalerImpl() override {
     if (intermediate_texture_) {
       gl_->DeleteTextures(1, &intermediate_texture_);
     }
   }
 
   // GLHelperShader::ShaderInterface implementation.
-  virtual void Execute(GLuint source_texture,
-                       const std::vector<GLuint>& dest_textures) override {
+  void Execute(GLuint source_texture,
+               const std::vector<GLuint>& dest_textures) override {
     if (subscaler_) {
       subscaler_->Scale(source_texture, intermediate_texture_);
       source_texture = intermediate_texture_;
@@ -214,25 +214,25 @@ class ScalerImpl : public GLHelper::ScalerInterface,
   }
 
   // GLHelper::ScalerInterface implementation.
-  virtual void Scale(GLuint source_texture, GLuint dest_texture) override {
+  void Scale(GLuint source_texture, GLuint dest_texture) override {
     std::vector<GLuint> tmp(1);
     tmp[0] = dest_texture;
     Execute(source_texture, tmp);
   }
 
-  virtual const gfx::Size& SrcSize() override {
+  const gfx::Size& SrcSize() override {
     if (subscaler_) {
       return subscaler_->SrcSize();
     }
     return spec_.src_size;
   }
-  virtual const gfx::Rect& SrcSubrect() override {
+  const gfx::Rect& SrcSubrect() override {
     if (subscaler_) {
       return subscaler_->SrcSubrect();
     }
     return spec_.src_subrect;
   }
-  virtual const gfx::Size& DstSize() override { return spec_.dst_size; }
+  const gfx::Size& DstSize() override { return spec_.dst_size; }
 
  private:
   GLES2Interface* gl_;

@@ -37,7 +37,7 @@ class NPObjectStub : public IPC::Listener,
                int route_id,
                int render_view_id,
                const GURL& page_url);
-  virtual ~NPObjectStub();
+  ~NPObjectStub() override;
 
   // Schedules tear-down of this stub.  The underlying NPObject reference is
   // released, and further invokations from the IPC channel will fail once this
@@ -47,16 +47,16 @@ class NPObjectStub : public IPC::Listener,
   void DeleteSoon();
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // NPObjectBase implementation.
-  virtual NPObject* GetUnderlyingNPObject() override;
-  virtual IPC::Listener* GetChannelListener() override;
+  NPObject* GetUnderlyingNPObject() override;
+  IPC::Listener* GetChannelListener() override;
 
  private:
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   // message handlers
   void OnRelease(IPC::Message* reply_msg);

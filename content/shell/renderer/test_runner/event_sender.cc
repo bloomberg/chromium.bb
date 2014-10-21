@@ -233,9 +233,7 @@ class MouseDownTask : public WebMethodTask<EventSender> {
         button_number_(button_number),
         modifiers_(modifiers) {}
 
-  virtual void RunIfValid() override {
-    object_->MouseDown(button_number_, modifiers_);
-  }
+  void RunIfValid() override { object_->MouseDown(button_number_, modifiers_); }
 
  private:
   int button_number_;
@@ -249,9 +247,7 @@ class MouseUpTask : public WebMethodTask<EventSender> {
         button_number_(button_number),
         modifiers_(modifiers) {}
 
-  virtual void RunIfValid() override {
-    object_->MouseUp(button_number_, modifiers_);
-  }
+  void RunIfValid() override { object_->MouseUp(button_number_, modifiers_); }
 
  private:
   int button_number_;
@@ -269,7 +265,7 @@ class KeyDownTask : public WebMethodTask<EventSender> {
         modifiers_(modifiers),
         location_(location) {}
 
-  virtual void RunIfValid() override {
+  void RunIfValid() override {
     object_->KeyDown(code_str_, modifiers_, location_);
   }
 
@@ -344,10 +340,10 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
 
  private:
   explicit EventSenderBindings(base::WeakPtr<EventSender> sender);
-  virtual ~EventSenderBindings();
+  ~EventSenderBindings() override;
 
   // gin::Wrappable:
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   // Bound methods:

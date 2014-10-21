@@ -80,21 +80,20 @@ class GpuCommandBufferStub
       bool software,
       const GURL& active_url);
 
-  virtual ~GpuCommandBufferStub();
+  ~GpuCommandBufferStub() override;
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // GpuMemoryManagerClient implementation:
-  virtual gfx::Size GetSurfaceSize() const override;
-  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const override;
-  virtual void SetMemoryAllocation(
-      const gpu::MemoryAllocation& allocation) override;
-  virtual void SuggestHaveFrontBuffer(bool suggest_have_frontbuffer) override;
-  virtual bool GetTotalGpuMemory(uint64* bytes) override;
+  gfx::Size GetSurfaceSize() const override;
+  gpu::gles2::MemoryTracker* GetMemoryTracker() const override;
+  void SetMemoryAllocation(const gpu::MemoryAllocation& allocation) override;
+  void SuggestHaveFrontBuffer(bool suggest_have_frontbuffer) override;
+  bool GetTotalGpuMemory(uint64* bytes) override;
 
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();

@@ -67,7 +67,7 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
           CreateTrackingGroup(channel->renderer_pid(), this)) {
   }
 
-  virtual void TrackMemoryAllocatedChange(
+  void TrackMemoryAllocatedChange(
       size_t old_size,
       size_t new_size,
       gpu::gles2::MemoryTracker::Pool pool) override {
@@ -75,13 +75,12 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
         old_size, new_size, pool);
   }
 
-  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) override {
+  bool EnsureGPUMemoryAvailable(size_t size_needed) override {
     return tracking_group_->EnsureGPUMemoryAvailable(size_needed);
   };
 
  private:
-  virtual ~GpuCommandBufferMemoryTracker() {
-  }
+  ~GpuCommandBufferMemoryTracker() override {}
   scoped_ptr<GpuMemoryTrackingGroup> tracking_group_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
@@ -117,7 +116,7 @@ class DevToolsChannelData : public base::debug::ConvertableToTraceFormat {
   static scoped_refptr<base::debug::ConvertableToTraceFormat> CreateForChannel(
       GpuChannel* channel);
 
-  virtual void AppendAsTraceFormat(std::string* out) const override {
+  void AppendAsTraceFormat(std::string* out) const override {
     std::string tmp;
     base::JSONWriter::Write(value_.get(), &tmp);
     *out += tmp;
@@ -125,7 +124,7 @@ class DevToolsChannelData : public base::debug::ConvertableToTraceFormat {
 
  private:
   explicit DevToolsChannelData(base::Value* value) : value_(value) {}
-  virtual ~DevToolsChannelData() {}
+  ~DevToolsChannelData() override {}
   scoped_ptr<base::Value> value_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsChannelData);
 };

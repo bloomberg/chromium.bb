@@ -26,7 +26,7 @@ class CONTENT_EXPORT ServiceRegistryImpl
  public:
   ServiceRegistryImpl();
   explicit ServiceRegistryImpl(mojo::ScopedMessagePipeHandle handle);
-  virtual ~ServiceRegistryImpl();
+  ~ServiceRegistryImpl() override;
 
   // Binds to a remote ServiceProvider. This will expose added services to the
   // remote ServiceProvider with the corresponding handle and enable
@@ -35,23 +35,20 @@ class CONTENT_EXPORT ServiceRegistryImpl
   void BindRemoteServiceProvider(mojo::ScopedMessagePipeHandle handle);
 
   // ServiceRegistry overrides.
-  virtual void AddService(
-      const std::string& service_name,
-      const base::Callback<void(mojo::ScopedMessagePipeHandle)> service_factory)
-      override;
-  virtual void RemoveService(const std::string& service_name) override;
-  virtual void ConnectToRemoteService(
-      const base::StringPiece& service_name,
-      mojo::ScopedMessagePipeHandle handle) override;
+  void AddService(const std::string& service_name,
+                  const base::Callback<void(mojo::ScopedMessagePipeHandle)>
+                      service_factory) override;
+  void RemoveService(const std::string& service_name) override;
+  void ConnectToRemoteService(const base::StringPiece& service_name,
+                              mojo::ScopedMessagePipeHandle handle) override;
 
   base::WeakPtr<ServiceRegistry> GetWeakPtr();
 
  private:
   // mojo::InterfaceImpl<mojo::ServiceProvider> overrides.
-  virtual void ConnectToService(
-      const mojo::String& name,
-      mojo::ScopedMessagePipeHandle client_handle) override;
-  virtual void OnConnectionError() override;
+  void ConnectToService(const mojo::String& name,
+                        mojo::ScopedMessagePipeHandle client_handle) override;
+  void OnConnectionError() override;
 
   std::map<std::string, base::Callback<void(mojo::ScopedMessagePipeHandle)> >
       service_factories_;

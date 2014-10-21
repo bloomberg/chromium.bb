@@ -29,7 +29,7 @@ class PluginStringStream : public PluginStream {
                     const std::string& mime_type);
 
  private:
-  virtual ~PluginStringStream();
+  ~PluginStringStream() override;
 
   DISALLOW_COPY_AND_ASSIGN(PluginStringStream);
 };

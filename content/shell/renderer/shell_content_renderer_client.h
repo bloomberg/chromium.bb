@@ -20,17 +20,17 @@ class WebTestProxyBase;
 class ShellContentRendererClient : public ContentRendererClient {
  public:
   ShellContentRendererClient();
-  virtual ~ShellContentRendererClient();
+  ~ShellContentRendererClient() override;
 
   // ContentRendererClient implementation.
-  virtual void RenderThreadStarted() override;
-  virtual void RenderViewCreated(RenderView* render_view) override;
+  void RenderThreadStarted() override;
+  void RenderViewCreated(RenderView* render_view) override;
 
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
   // need that outside of layout tests?
-  virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
-  virtual bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;
-  virtual bool IsPluginAllowedToUseDevChannelAPIs() override;
+  bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
+  bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;
+  bool IsPluginAllowedToUseDevChannelAPIs() override;
 
  private:
   scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;

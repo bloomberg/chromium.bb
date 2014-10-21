@@ -37,7 +37,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
       base::SupportsUserData* document_state);
 
   ServiceWorkerNetworkProvider();
-  virtual ~ServiceWorkerNetworkProvider();
+  ~ServiceWorkerNetworkProvider() override;
 
   int provider_id() const { return provider_id_; }
   ServiceWorkerProviderContext* context() { return context_.get(); }

@@ -103,9 +103,9 @@ void InvokeTaskHelper(void* context) {
 class SyncNavigationStateVisitor : public RenderViewVisitor {
  public:
   SyncNavigationStateVisitor() {}
-  virtual ~SyncNavigationStateVisitor() {}
+  ~SyncNavigationStateVisitor() override {}
 
-  virtual bool Visit(RenderView* render_view) override {
+  bool Visit(RenderView* render_view) override {
     SyncNavigationState(render_view);
     return true;
   }
@@ -119,11 +119,11 @@ class ProxyToRenderViewVisitor : public RenderViewVisitor {
       : proxy_(proxy),
         render_view_(NULL) {
   }
-  virtual ~ProxyToRenderViewVisitor() {}
+  ~ProxyToRenderViewVisitor() override {}
 
   RenderView* render_view() const { return render_view_; }
 
-  virtual bool Visit(RenderView* render_view) override {
+  bool Visit(RenderView* render_view) override {
     WebKitTestRunner* test_runner = WebKitTestRunner::Get(render_view);
     if (!test_runner) {
       NOTREACHED();
@@ -147,9 +147,9 @@ class NavigateAwayVisitor : public RenderViewVisitor {
  public:
   explicit NavigateAwayVisitor(RenderView* main_render_view)
       : main_render_view_(main_render_view) {}
-  virtual ~NavigateAwayVisitor() {}
+  ~NavigateAwayVisitor() override {}
 
-  virtual bool Visit(RenderView* render_view) override {
+  bool Visit(RenderView* render_view) override {
     if (render_view == main_render_view_)
       return true;
     render_view->GetWebView()->mainFrame()->loadRequest(
@@ -166,9 +166,9 @@ class NavigateAwayVisitor : public RenderViewVisitor {
 class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
  public:
   explicit UseSynchronousResizeModeVisitor(bool enable) : enable_(enable) {}
-  virtual ~UseSynchronousResizeModeVisitor() {}
+  ~UseSynchronousResizeModeVisitor() override {}
 
-  virtual bool Visit(RenderView* render_view) override {
+  bool Visit(RenderView* render_view) override {
     UseSynchronousResizeMode(render_view, enable_);
     return true;
   }

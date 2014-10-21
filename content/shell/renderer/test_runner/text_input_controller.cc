@@ -29,10 +29,10 @@ class TextInputControllerBindings
  private:
   explicit TextInputControllerBindings(
       base::WeakPtr<TextInputController> controller);
-  virtual ~TextInputControllerBindings();
+  ~TextInputControllerBindings() override;
 
   // gin::Wrappable:
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   void InsertText(const std::string& text);

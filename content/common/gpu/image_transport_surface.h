@@ -113,12 +113,12 @@ class ImageTransportHelper
                        GpuChannelManager* manager,
                        GpuCommandBufferStub* stub,
                        gfx::PluginWindowHandle handle);
-  virtual ~ImageTransportHelper();
+  ~ImageTransportHelper() override;
 
   bool Initialize();
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Helper send functions. Caller fills in the surface specific params
   // like size and surface id. The helper fills in the rest.
@@ -184,25 +184,25 @@ class PassThroughImageTransportSurface
                                    gfx::GLSurface* surface);
 
   // GLSurface implementation.
-  virtual bool Initialize() override;
-  virtual void Destroy() override;
-  virtual bool SwapBuffers() override;
-  virtual bool PostSubBuffer(int x, int y, int width, int height) override;
-  virtual bool OnMakeCurrent(gfx::GLContext* context) override;
+  bool Initialize() override;
+  void Destroy() override;
+  bool SwapBuffers() override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
+  bool OnMakeCurrent(gfx::GLContext* context) override;
 
   // ImageTransportSurface implementation.
 #if defined(OS_MACOSX)
-  virtual void OnBufferPresented(
+  void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
 #endif
-  virtual void OnResize(gfx::Size size, float scale_factor) override;
-  virtual gfx::Size GetSize() override;
-  virtual void SetLatencyInfo(
+  void OnResize(gfx::Size size, float scale_factor) override;
+  gfx::Size GetSize() override;
+  void SetLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info) override;
-  virtual void WakeUpGpu() override;
+  void WakeUpGpu() override;
 
  protected:
-  virtual ~PassThroughImageTransportSurface();
+  ~PassThroughImageTransportSurface() override;
 
   // If updated vsync parameters can be determined, send this information to
   // the browser.

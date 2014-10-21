@@ -117,7 +117,7 @@ bool CreateWaitAndExitThread(base::TimeDelta duration) {
 class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
  public:
   // IPC::MessageFilter
-  virtual void OnChannelError() override {
+  void OnChannelError() override {
     // For renderer/worker processes:
     // On POSIX, at least, one can install an unload handler which loops
     // forever and leave behind a renderer process which eats 100% CPU forever.
@@ -151,7 +151,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~SuicideOnChannelErrorFilter() {}
+  ~SuicideOnChannelErrorFilter() override {}
 };
 
 #endif  // OS(POSIX)

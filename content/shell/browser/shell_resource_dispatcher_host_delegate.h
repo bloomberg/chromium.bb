@@ -15,11 +15,12 @@ class ShellResourceDispatcherHostDelegate
     : public ResourceDispatcherHostDelegate {
  public:
   ShellResourceDispatcherHostDelegate();
-  virtual ~ShellResourceDispatcherHostDelegate();
+  ~ShellResourceDispatcherHostDelegate() override;
 
   // ResourceDispatcherHostDelegate implementation.
-  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info, net::URLRequest* request) override;
+  ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      net::AuthChallengeInfo* auth_info,
+      net::URLRequest* request) override;
 
   // Used for content_browsertests.
   void set_login_request_callback(

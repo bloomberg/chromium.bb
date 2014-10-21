@@ -46,7 +46,7 @@ class UserMediaRequestTask : public WebMethodTask<MockWebUserMediaClient> {
     DCHECK(!result_.isNull());
   }
 
-  virtual void RunIfValid() override { request_.requestSucceeded(result_); }
+  void RunIfValid() override { request_.requestSucceeded(result_); }
 
  private:
   WebUserMediaRequest request_;
@@ -65,9 +65,7 @@ class UserMediaRequestConstraintFailedTask
         request_(request),
         constraint_(constraint) {}
 
-  virtual void RunIfValid() override {
-    request_.requestFailedConstraint(constraint_);
-  }
+  void RunIfValid() override { request_.requestFailedConstraint(constraint_); }
 
  private:
   WebUserMediaRequest request_;
@@ -84,7 +82,7 @@ class UserMediaRequestPermissionDeniedTask
       : WebMethodTask<MockWebUserMediaClient>(object),
         request_(request) {}
 
-  virtual void RunIfValid() override { request_.requestFailed(); }
+  void RunIfValid() override { request_.requestFailed(); }
 
  private:
   WebUserMediaRequest request_;
@@ -101,7 +99,7 @@ class MediaDevicesRequestTask : public WebMethodTask<MockWebUserMediaClient> {
         request_(request),
         result_(result) {}
 
-  virtual void RunIfValid() override { request_.requestSucceeded(result_); }
+  void RunIfValid() override { request_.requestSucceeded(result_); }
 
  private:
   WebMediaDevicesRequest request_;
@@ -119,7 +117,7 @@ class SourcesRequestTask : public WebMethodTask<MockWebUserMediaClient> {
         request_(request),
         result_(result) {}
 
-  virtual void RunIfValid() override { request_.requestSucceeded(result_); }
+  void RunIfValid() override { request_.requestSucceeded(result_); }
 
  private:
   WebMediaStreamTrackSourcesRequest request_;

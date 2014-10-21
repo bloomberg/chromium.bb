@@ -40,7 +40,7 @@ public:
     EvaluateJSAfterRemovingPluginElement(NPP, const string& identifier);
 
 private:
-    virtual NPError NPP_DestroyStream(NPStream*, NPReason) override;
+ NPError NPP_DestroyStream(NPStream*, NPReason) override;
 
     bool m_didExecuteScript;
 };

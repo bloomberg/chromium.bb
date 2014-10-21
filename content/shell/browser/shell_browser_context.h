@@ -27,7 +27,7 @@ class ShellDownloadManagerDelegate;
 class ShellBrowserContext : public BrowserContext {
  public:
   ShellBrowserContext(bool off_the_record, net::NetLog* net_log);
-  virtual ~ShellBrowserContext();
+  ~ShellBrowserContext() override;
 
   void set_guest_manager_for_testing(
       BrowserPluginGuestManager* guest_manager) {
@@ -35,24 +35,23 @@ class ShellBrowserContext : public BrowserContext {
   }
 
   // BrowserContext implementation.
-  virtual base::FilePath GetPath() const override;
-  virtual bool IsOffTheRecord() const override;
-  virtual DownloadManagerDelegate* GetDownloadManagerDelegate() override;
-  virtual net::URLRequestContextGetter* GetRequestContext() override;
-  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
+  base::FilePath GetPath() const override;
+  bool IsOffTheRecord() const override;
+  DownloadManagerDelegate* GetDownloadManagerDelegate() override;
+  net::URLRequestContextGetter* GetRequestContext() override;
+  net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) override;
-  virtual net::URLRequestContextGetter* GetMediaRequestContext() override;
-  virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
+  net::URLRequestContextGetter* GetMediaRequestContext() override;
+  net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) override;
-  virtual net::URLRequestContextGetter*
-      GetMediaRequestContextForStoragePartition(
-          const base::FilePath& partition_path,
-          bool in_memory) override;
-  virtual ResourceContext* GetResourceContext() override;
-  virtual BrowserPluginGuestManager* GetGuestManager() override;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
-  virtual PushMessagingService* GetPushMessagingService() override;
-  virtual SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory) override;
+  ResourceContext* GetResourceContext() override;
+  BrowserPluginGuestManager* GetGuestManager() override;
+  storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  PushMessagingService* GetPushMessagingService() override;
+  SSLHostStateDelegate* GetSSLHostStateDelegate() override;
 
   net::URLRequestContextGetter* CreateRequestContext(
       ProtocolHandlerMap* protocol_handlers,
@@ -68,11 +67,11 @@ class ShellBrowserContext : public BrowserContext {
   class ShellResourceContext : public ResourceContext {
    public:
     ShellResourceContext();
-    virtual ~ShellResourceContext();
+    ~ShellResourceContext() override;
 
     // ResourceContext implementation:
-    virtual net::HostResolver* GetHostResolver() override;
-    virtual net::URLRequestContext* GetRequestContext() override;
+    net::HostResolver* GetHostResolver() override;
+    net::URLRequestContext* GetRequestContext() override;
 
     void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
       getter_ = getter;

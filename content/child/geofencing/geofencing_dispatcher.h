@@ -27,7 +27,7 @@ class ThreadSafeSender;
 class GeofencingDispatcher : public WorkerTaskRunner::Observer {
  public:
   explicit GeofencingDispatcher(ThreadSafeSender* sender);
-  virtual ~GeofencingDispatcher();
+  ~GeofencingDispatcher() override;
 
   bool Send(IPC::Message* msg);
   void OnMessageReceived(const IPC::Message& msg);
@@ -63,7 +63,7 @@ class GeofencingDispatcher : public WorkerTaskRunner::Observer {
       const std::map<std::string, blink::WebCircularGeofencingRegion>& regions);
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() override;
+  void OnWorkerRunLoopStopped() override;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   IDMap<blink::WebGeofencingCallbacks, IDMapOwnPointer>

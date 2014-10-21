@@ -56,7 +56,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // General functions ---------------------------------------------------------
 
-  virtual ~RenderProcessHost() {}
+  ~RenderProcessHost() override {}
 
   // Initialize the new renderer process, returning true on success. This must
   // be called once before the object can be used, but can be called after

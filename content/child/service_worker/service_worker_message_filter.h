@@ -25,14 +25,14 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   explicit ServiceWorkerMessageFilter(ThreadSafeSender* thread_safe_sender);
 
  protected:
-  virtual ~ServiceWorkerMessageFilter();
+  ~ServiceWorkerMessageFilter() override;
 
  private:
   // ChildMessageFilter implementation:
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnStaleMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnStaleMessageReceived(const IPC::Message& msg) override;
 
   // Message handlers for stale messages.
   void OnStaleRegistered(

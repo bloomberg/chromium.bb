@@ -27,10 +27,10 @@ class LayoutTestDevToolsFrontend : public ShellDevToolsFrontend {
  private:
   LayoutTestDevToolsFrontend(Shell* frontend_shell,
                              DevToolsAgentHost* agent_host);
-  virtual ~LayoutTestDevToolsFrontend();
+  ~LayoutTestDevToolsFrontend() override;
 
   // WebContentsObserver implementation.
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestDevToolsFrontend);
 };

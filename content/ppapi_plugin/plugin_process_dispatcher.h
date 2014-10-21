@@ -19,7 +19,7 @@ class PluginProcessDispatcher : public ppapi::proxy::PluginDispatcher {
   PluginProcessDispatcher(PP_GetInterface_Func get_interface,
                           const ppapi::PpapiPermissions& permissions,
                           bool incognito);
-  virtual ~PluginProcessDispatcher();
+  ~PluginProcessDispatcher() override;
 
  private:
   ScopedChildProcessReference process_ref_;

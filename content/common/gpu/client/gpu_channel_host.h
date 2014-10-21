@@ -101,7 +101,7 @@ class GpuChannelHost : public IPC::Sender,
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxyImpl* CreateViewCommandBuffer(
@@ -166,7 +166,7 @@ class GpuChannelHost : public IPC::Sender,
   GpuChannelHost(GpuChannelHostFactory* factory,
                  const gpu::GPUInfo& gpu_info,
                  cc::GpuMemoryBufferManager* gpu_memory_buffer_manager);
-  virtual ~GpuChannelHost();
+  ~GpuChannelHost() override;
   void Connect(const IPC::ChannelHandle& channel_handle,
                base::WaitableEvent* shutdown_event);
 
@@ -186,8 +186,8 @@ class GpuChannelHost : public IPC::Sender,
 
     // IPC::MessageFilter implementation
     // (called on the IO thread):
-    virtual bool OnMessageReceived(const IPC::Message& msg) override;
-    virtual void OnChannelError() override;
+    bool OnMessageReceived(const IPC::Message& msg) override;
+    void OnChannelError() override;
 
     // The following methods can be called on any thread.
 
@@ -195,7 +195,7 @@ class GpuChannelHost : public IPC::Sender,
     bool IsLost() const;
 
    private:
-    virtual ~MessageFilter();
+    ~MessageFilter() override;
 
     // Threading notes: |listeners_| is only accessed on the IO thread. Every
     // other field is protected by |lock_|.

@@ -128,7 +128,7 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 #endif
 
  protected:
-  virtual ~RenderView() {}
+  ~RenderView() override {}
 
  private:
   // This interface should only be implemented inside content.

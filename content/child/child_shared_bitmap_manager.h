@@ -16,14 +16,14 @@ namespace content {
 class ChildSharedBitmapManager : public cc::SharedBitmapManager {
  public:
   ChildSharedBitmapManager(scoped_refptr<ThreadSafeSender> sender);
-  virtual ~ChildSharedBitmapManager();
+  ~ChildSharedBitmapManager() override;
 
-  virtual scoped_ptr<cc::SharedBitmap> AllocateSharedBitmap(
+  scoped_ptr<cc::SharedBitmap> AllocateSharedBitmap(
       const gfx::Size& size) override;
-  virtual scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
+  scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
       const cc::SharedBitmapId&) override;
-  virtual scoped_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
+  scoped_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
       base::SharedMemory* mem) override;
 
  private:

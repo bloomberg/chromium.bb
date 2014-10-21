@@ -17,7 +17,7 @@ class RenderFrame;
 class LayoutTestRenderFrameObserver : public RenderFrameObserver {
  public:
   explicit LayoutTestRenderFrameObserver(RenderFrame* render_frame);
-  virtual ~LayoutTestRenderFrameObserver() {}
+  ~LayoutTestRenderFrameObserver() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderFrameObserver);

@@ -21,9 +21,9 @@ class ClientCallTask : public MockWebSpeechRecognizer::Task {
   ClientCallTask(MockWebSpeechRecognizer* mock, ClientFunctionPointer function)
       : MockWebSpeechRecognizer::Task(mock), function_(function) {}
 
-  virtual ~ClientCallTask() {}
+  ~ClientCallTask() override {}
 
-  virtual void run() override {
+  void run() override {
     (recognizer_->Client()->*function_)(recognizer_->Handle());
   }
 
@@ -43,9 +43,9 @@ class ResultTask : public MockWebSpeechRecognizer::Task {
         transcript_(transcript),
         confidence_(confidence) {}
 
-  virtual ~ResultTask() {}
+  ~ResultTask() override {}
 
-  virtual void run() override {
+  void run() override {
     blink::WebVector<blink::WebString> transcripts(static_cast<size_t>(1));
     blink::WebVector<float> confidences(static_cast<size_t>(1));
     transcripts[0] = transcript_;
@@ -72,9 +72,9 @@ class NoMatchTask : public MockWebSpeechRecognizer::Task {
   NoMatchTask(MockWebSpeechRecognizer* mock)
       : MockWebSpeechRecognizer::Task(mock) {}
 
-  virtual ~NoMatchTask() {}
+  ~NoMatchTask() override {}
 
-  virtual void run() override {
+  void run() override {
     recognizer_->Client()->didReceiveNoMatch(
         recognizer_->Handle(), blink::WebSpeechRecognitionResult());
   }
@@ -91,9 +91,9 @@ class ErrorTask : public MockWebSpeechRecognizer::Task {
             const blink::WebString& message)
       : MockWebSpeechRecognizer::Task(mock), code_(code), message_(message) {}
 
-  virtual ~ErrorTask() {}
+  ~ErrorTask() override {}
 
-  virtual void run() override {
+  void run() override {
     recognizer_->Client()->didReceiveError(
         recognizer_->Handle(), message_, code_);
   }

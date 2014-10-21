@@ -27,41 +27,41 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   static void SetSwapProcessesForRedirect(bool swap);
 
   ShellContentBrowserClient();
-  virtual ~ShellContentBrowserClient();
+  ~ShellContentBrowserClient() override;
 
   // ContentBrowserClient overrides.
-  virtual BrowserMainParts* CreateBrowserMainParts(
+  BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
-  virtual void RenderProcessWillLaunch(RenderProcessHost* host) override;
-  virtual net::URLRequestContextGetter* CreateRequestContext(
+  void RenderProcessWillLaunch(RenderProcessHost* host) override;
+  net::URLRequestContextGetter* CreateRequestContext(
       BrowserContext* browser_context,
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override;
-  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       BrowserContext* browser_context,
       const base::FilePath& partition_path,
       bool in_memory,
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override;
-  virtual bool IsHandledURL(const GURL& url) override;
-  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
-                                              int child_process_id) override;
-  virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,
-                                   const GURL& url,
-                                   WebPreferences* prefs) override;
-  virtual void ResourceDispatcherHostCreated() override;
-  virtual AccessTokenStore* CreateAccessTokenStore() override;
-  virtual std::string GetDefaultDownloadName() override;
-  virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
+  bool IsHandledURL(const GURL& url) override;
+  void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
+                                      int child_process_id) override;
+  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+                           const GURL& url,
+                           WebPreferences* prefs) override;
+  void ResourceDispatcherHostCreated() override;
+  AccessTokenStore* CreateAccessTokenStore() override;
+  std::string GetDefaultDownloadName() override;
+  WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) override;
-  virtual QuotaPermissionContext* CreateQuotaPermissionContext() override;
-  virtual SpeechRecognitionManagerDelegate*
-      GetSpeechRecognitionManagerDelegate() override;
-  virtual net::NetLog* GetNetLog() override;
-  virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
-                                              const GURL& current_url,
-                                              const GURL& new_url) override;
-  virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  QuotaPermissionContext* CreateQuotaPermissionContext() override;
+  SpeechRecognitionManagerDelegate* GetSpeechRecognitionManagerDelegate()
+      override;
+  net::NetLog* GetNetLog() override;
+  bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
+                                      const GURL& current_url,
+                                      const GURL& new_url) override;
+  DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(

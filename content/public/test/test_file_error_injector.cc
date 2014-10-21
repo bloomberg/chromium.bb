@@ -40,19 +40,17 @@ class DownloadFileWithErrors: public DownloadFileImpl {
       const ConstructionCallback& ctor_callback,
       const DestructionCallback& dtor_callback);
 
-  virtual ~DownloadFileWithErrors();
+  ~DownloadFileWithErrors() override;
 
-  virtual void Initialize(const InitializeCallback& callback) override;
+  void Initialize(const InitializeCallback& callback) override;
 
   // DownloadFile interface.
-  virtual DownloadInterruptReason AppendDataToFile(
-      const char* data, size_t data_len) override;
-  virtual void RenameAndUniquify(
-      const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) override;
-  virtual void RenameAndAnnotate(
-      const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) override;
+  DownloadInterruptReason AppendDataToFile(const char* data,
+                                           size_t data_len) override;
+  void RenameAndUniquify(const base::FilePath& full_path,
+                         const RenameCompletionCallback& callback) override;
+  void RenameAndAnnotate(const base::FilePath& full_path,
+                         const RenameCompletionCallback& callback) override;
 
  private:
   // Error generating helper.
@@ -254,10 +252,10 @@ class DownloadFileWithErrorsFactory : public DownloadFileFactory {
   DownloadFileWithErrorsFactory(
       const DownloadFileWithErrors::ConstructionCallback& ctor_callback,
       const DownloadFileWithErrors::DestructionCallback& dtor_callback);
-  virtual ~DownloadFileWithErrorsFactory();
+  ~DownloadFileWithErrorsFactory() override;
 
   // DownloadFileFactory interface.
-  virtual DownloadFile* CreateFile(
+  DownloadFile* CreateFile(
       scoped_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       const GURL& url,

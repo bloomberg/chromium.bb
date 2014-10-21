@@ -35,15 +35,15 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
   explicit WebStorageQuotaDispatcherCallback(
       blink::WebStorageQuotaCallbacks callback)
       : callbacks_(callback) {}
-  virtual ~WebStorageQuotaDispatcherCallback() {}
+  ~WebStorageQuotaDispatcherCallback() override {}
 
-  virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) override {
+  void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) override {
     callbacks_.didQueryStorageUsageAndQuota(usage, quota);
   }
-  virtual void DidGrantStorageQuota(int64 usage, int64 granted_quota) override {
+  void DidGrantStorageQuota(int64 usage, int64 granted_quota) override {
     callbacks_.didGrantStorageQuota(usage, granted_quota);
   }
-  virtual void DidFail(storage::QuotaStatusCode error) override {
+  void DidFail(storage::QuotaStatusCode error) override {
     callbacks_.didFail(static_cast<WebStorageQuotaError>(error));
   }
 

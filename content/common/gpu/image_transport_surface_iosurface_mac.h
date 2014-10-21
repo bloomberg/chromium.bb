@@ -20,18 +20,19 @@ class IOSurfaceStorageProvider
     : public ImageTransportSurfaceFBO::StorageProvider {
  public:
   IOSurfaceStorageProvider(ImageTransportSurfaceFBO* transport_surface);
-  virtual ~IOSurfaceStorageProvider();
+  ~IOSurfaceStorageProvider() override;
 
   // ImageTransportSurfaceFBO::StorageProvider implementation:
-  virtual gfx::Size GetRoundedSize(gfx::Size size) override;
-  virtual bool AllocateColorBufferStorage(
-      CGLContextObj context, GLuint texture,
-      gfx::Size pixel_size, float scale_factor) override;
-  virtual void FreeColorBufferStorage() override;
-  virtual void SwapBuffers(const gfx::Size& size, float scale_factor) override;
-  virtual void WillWriteToBackbuffer() override;
-  virtual void DiscardBackbuffer() override;
-  virtual void SwapBuffersAckedByBrowser(bool disable_throttling) override;
+  gfx::Size GetRoundedSize(gfx::Size size) override;
+  bool AllocateColorBufferStorage(CGLContextObj context,
+                                  GLuint texture,
+                                  gfx::Size pixel_size,
+                                  float scale_factor) override;
+  void FreeColorBufferStorage() override;
+  void SwapBuffers(const gfx::Size& size, float scale_factor) override;
+  void WillWriteToBackbuffer() override;
+  void DiscardBackbuffer() override;
+  void SwapBuffersAckedByBrowser(bool disable_throttling) override;
 
  private:
   ImageTransportSurfaceFBO* transport_surface_;

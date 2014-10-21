@@ -33,7 +33,7 @@ class TestNotificationTracker : public NotificationObserver {
   // ListenFor for the notifications you are interested in.
   TestNotificationTracker();
 
-  virtual ~TestNotificationTracker();
+  ~TestNotificationTracker() override;
 
   // Makes this object listen for the given notification with the given source.
   void ListenFor(int type, const NotificationSource& source);
@@ -69,9 +69,10 @@ class TestNotificationTracker : public NotificationObserver {
   const Event& at(size_t i) const { return events_[i]; }
 
  protected:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
+
  private:
   NotificationRegistrar registrar_;
 

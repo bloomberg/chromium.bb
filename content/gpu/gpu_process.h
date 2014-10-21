@@ -12,7 +12,7 @@ namespace content {
 class GpuProcess : public ChildProcess {
  public:
   GpuProcess();
-  virtual ~GpuProcess();
+  ~GpuProcess() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuProcess);

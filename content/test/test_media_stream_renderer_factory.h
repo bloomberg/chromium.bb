@@ -16,15 +16,15 @@ namespace content {
 class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
  public:
   TestMediaStreamRendererFactory();
-  virtual ~TestMediaStreamRendererFactory();
+  ~TestMediaStreamRendererFactory() override;
 
   // MediaStreamRendererFactory implementation.
-  virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
+  scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
       const GURL& url,
       const base::Closure& error_cb,
       const VideoFrameProvider::RepaintCB& repaint_cb) override;
 
-  virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
+  scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,
       int render_view_id,
       int render_frame_id) override;

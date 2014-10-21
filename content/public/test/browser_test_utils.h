@@ -228,7 +228,7 @@ class TitleWatcher : public WebContentsObserver {
   // will wait for.
   TitleWatcher(WebContents* web_contents,
                const base::string16& expected_title);
-  virtual ~TitleWatcher();
+  ~TitleWatcher() override;
 
   // Adds another title to watch for.
   void AlsoWaitForTitle(const base::string16& expected_title);
@@ -240,8 +240,8 @@ class TitleWatcher : public WebContentsObserver {
 
  private:
   // Overridden WebContentsObserver methods.
-  virtual void DidStopLoading(RenderViewHost* render_view_host) override;
-  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
+  void DidStopLoading(RenderViewHost* render_view_host) override;
+  void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
 
   void TestTitle();
 
@@ -258,14 +258,14 @@ class TitleWatcher : public WebContentsObserver {
 class WebContentsDestroyedWatcher : public WebContentsObserver {
  public:
   explicit WebContentsDestroyedWatcher(WebContents* web_contents);
-  virtual ~WebContentsDestroyedWatcher();
+  ~WebContentsDestroyedWatcher() override;
 
   // Waits until the WebContents is destroyed.
   void Wait();
 
  private:
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
@@ -284,17 +284,17 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
                            WatchType type);
   // Waits for the render process that contains the specified web contents.
   RenderProcessHostWatcher(WebContents* web_contents, WatchType type);
-  virtual ~RenderProcessHostWatcher();
+  ~RenderProcessHostWatcher() override;
 
   // Waits until the renderer process exits.
   void Wait();
 
  private:
   // Overridden RenderProcessHost::LifecycleObserver methods.
-  virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::TerminationStatus status,
-                                   int exit_code) override;
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override;
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   RenderProcessHost* render_process_host_;
   WatchType type_;
@@ -312,7 +312,7 @@ class DOMMessageQueue : public NotificationObserver {
   // DOMAutomationController. Do not construct this until the browser has
   // started.
   DOMMessageQueue();
-  virtual ~DOMMessageQueue();
+  ~DOMMessageQueue() override;
 
   // Removes all messages in the message queue.
   void ClearQueue();
@@ -322,9 +322,9 @@ class DOMMessageQueue : public NotificationObserver {
   bool WaitForMessage(std::string* message) WARN_UNUSED_RESULT;
 
   // Overridden NotificationObserver methods.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
  private:
   NotificationRegistrar registrar_;

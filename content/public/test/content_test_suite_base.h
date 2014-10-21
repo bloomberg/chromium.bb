@@ -19,7 +19,7 @@ class ContentTestSuiteBase : public base::TestSuite {
  protected:
   ContentTestSuiteBase(int argc, char** argv);
 
-  virtual void Initialize() override;
+  void Initialize() override;
 
   // The methods below are for unit test setup.
 

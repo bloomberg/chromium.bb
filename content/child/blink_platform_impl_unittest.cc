@@ -25,7 +25,7 @@ class TestBlinkPlatformImpl : public BlinkPlatformImpl {
     return BlinkPlatformImpl::monotonicallyIncreasingTime();
   }
 
-  virtual void OnStartSharedTimer(base::TimeDelta delay) override {
+  void OnStartSharedTimer(base::TimeDelta delay) override {
     shared_timer_delay_ = delay;
   }
 

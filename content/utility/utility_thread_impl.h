@@ -28,11 +28,11 @@ class UtilityThreadImpl : public UtilityThread,
   UtilityThreadImpl();
   // Constructor that's used when running in single process mode.
   explicit UtilityThreadImpl(const std::string& channel_name);
-  virtual ~UtilityThreadImpl();
-  virtual void Shutdown() override;
+  ~UtilityThreadImpl() override;
+  void Shutdown() override;
 
-  virtual bool Send(IPC::Message* msg) override;
-  virtual void ReleaseProcessIfNeeded() override;
+  bool Send(IPC::Message* msg) override;
+  void ReleaseProcessIfNeeded() override;
 #if defined(OS_WIN)
   virtual void PreCacheFont(const LOGFONT& log_font) override;
   virtual void ReleaseCachedFonts() override;
@@ -42,7 +42,7 @@ class UtilityThreadImpl : public UtilityThread,
   void Init();
 
   // ChildThread implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
+  bool OnControlMessageReceived(const IPC::Message& msg) override;
 
   // IPC message handlers.
   void OnBatchModeStarted();

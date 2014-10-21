@@ -78,53 +78,55 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                                        const std::string& mime_type);
 
   // WebPluginDelegate implementation
-  virtual bool Initialize(const GURL& url,
-                          const std::vector<std::string>& arg_names,
-                          const std::vector<std::string>& arg_values,
-                          bool load_manually) override;
-  virtual void PluginDestroyed() override;
-  virtual void UpdateGeometry(const gfx::Rect& window_rect,
-                              const gfx::Rect& clip_rect) override;
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& rect) override;
-  virtual void SetFocus(bool focused) override;
-  virtual bool HandleInputEvent(const blink::WebInputEvent& event,
-                                WebCursor::CursorInfo* cursor_info) override;
-  virtual NPObject* GetPluginScriptableObject() override;
-  virtual NPP GetPluginNPP() override;
-  virtual bool GetFormValue(base::string16* value) override;
-  virtual void DidFinishLoadWithReason(const GURL& url,
-                                       NPReason reason,
-                                       int notify_id) override;
-  virtual int GetProcessId() override;
-  virtual void SendJavaScriptStream(const GURL& url,
-                                    const std::string& result,
-                                    bool success,
-                                    int notify_id) override;
-  virtual void DidReceiveManualResponse(const GURL& url,
-                                        const std::string& mime_type,
-                                        const std::string& headers,
-                                        uint32 expected_length,
-                                        uint32 last_modified) override;
-  virtual void DidReceiveManualData(const char* buffer, int length) override;
-  virtual void DidFinishManualLoading() override;
-  virtual void DidManualLoadFail() override;
-  virtual WebPluginResourceClient* CreateResourceClient(
-      unsigned long resource_id, const GURL& url, int notify_id) override;
-  virtual WebPluginResourceClient* CreateSeekableResourceClient(
-      unsigned long resource_id, int range_request_id) override;
-  virtual void FetchURL(unsigned long resource_id,
-                        int notify_id,
-                        const GURL& url,
-                        const GURL& first_party_for_cookies,
-                        const std::string& method,
-                        const char* buf,
-                        unsigned int len,
-                        const GURL& referrer,
-                        bool notify_redirects,
-                        bool is_plugin_src_load,
-                        int origin_pid,
-                        int render_frame_id,
-                        int render_view_id) override;
+  bool Initialize(const GURL& url,
+                  const std::vector<std::string>& arg_names,
+                  const std::vector<std::string>& arg_values,
+                  bool load_manually) override;
+  void PluginDestroyed() override;
+  void UpdateGeometry(const gfx::Rect& window_rect,
+                      const gfx::Rect& clip_rect) override;
+  void Paint(SkCanvas* canvas, const gfx::Rect& rect) override;
+  void SetFocus(bool focused) override;
+  bool HandleInputEvent(const blink::WebInputEvent& event,
+                        WebCursor::CursorInfo* cursor_info) override;
+  NPObject* GetPluginScriptableObject() override;
+  NPP GetPluginNPP() override;
+  bool GetFormValue(base::string16* value) override;
+  void DidFinishLoadWithReason(const GURL& url,
+                               NPReason reason,
+                               int notify_id) override;
+  int GetProcessId() override;
+  void SendJavaScriptStream(const GURL& url,
+                            const std::string& result,
+                            bool success,
+                            int notify_id) override;
+  void DidReceiveManualResponse(const GURL& url,
+                                const std::string& mime_type,
+                                const std::string& headers,
+                                uint32 expected_length,
+                                uint32 last_modified) override;
+  void DidReceiveManualData(const char* buffer, int length) override;
+  void DidFinishManualLoading() override;
+  void DidManualLoadFail() override;
+  WebPluginResourceClient* CreateResourceClient(unsigned long resource_id,
+                                                const GURL& url,
+                                                int notify_id) override;
+  WebPluginResourceClient* CreateSeekableResourceClient(
+      unsigned long resource_id,
+      int range_request_id) override;
+  void FetchURL(unsigned long resource_id,
+                int notify_id,
+                const GURL& url,
+                const GURL& first_party_for_cookies,
+                const std::string& method,
+                const char* buf,
+                unsigned int len,
+                const GURL& referrer,
+                bool notify_redirects,
+                bool is_plugin_src_load,
+                int origin_pid,
+                int render_frame_id,
+                int render_view_id) override;
   // End of WebPluginDelegate implementation.
 
   gfx::PluginWindowHandle windowed_handle() const { return windowed_handle_; }
@@ -197,7 +199,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   friend class WebPluginDelegate;
 
   WebPluginDelegateImpl(WebPlugin* plugin, PluginInstance* instance);
-  virtual ~WebPluginDelegateImpl();
+  ~WebPluginDelegateImpl() override;
 
   // Called by Initialize() for platform-specific initialization.
   // If this returns false, the plugin shouldn't be started--see Initialize().

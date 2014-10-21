@@ -62,7 +62,7 @@ class JavascriptTestObserver : public NotificationObserver {
   JavascriptTestObserver(WebContents* web_contents,
                          TestMessageHandler* handler);
 
-  virtual ~JavascriptTestObserver();
+  ~JavascriptTestObserver() override;
 
   // Pump the message loop until the message handler indicates the Javascript
   // test is done running.  Return true if the test jig functioned correctly and
@@ -73,10 +73,9 @@ class JavascriptTestObserver : public NotificationObserver {
   // while Run() is pumping the message loop.
   void Reset();
 
-  virtual void Observe(
-      int type,
-      const NotificationSource& source,
-      const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
  private:
   // This message did not signal the end of a test, keep going.

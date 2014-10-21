@@ -19,7 +19,7 @@ class RsaPssImplementation : public RsaHashedAlgorithm {
       : RsaHashedAlgorithm(blink::WebCryptoKeyUsageVerify,
                            blink::WebCryptoKeyUsageSign) {}
 
-  virtual const char* GetJwkAlgorithm(
+  const char* GetJwkAlgorithm(
       const blink::WebCryptoAlgorithmId hash) const override {
     switch (hash) {
       case blink::WebCryptoAlgorithmIdSha1:
@@ -35,19 +35,19 @@ class RsaPssImplementation : public RsaHashedAlgorithm {
     }
   }
 
-  virtual Status Sign(const blink::WebCryptoAlgorithm& algorithm,
-                      const blink::WebCryptoKey& key,
-                      const CryptoData& data,
-                      std::vector<uint8_t>* buffer) const override {
+  Status Sign(const blink::WebCryptoAlgorithm& algorithm,
+              const blink::WebCryptoKey& key,
+              const CryptoData& data,
+              std::vector<uint8_t>* buffer) const override {
     return RsaSign(
         key, algorithm.rsaPssParams()->saltLengthBytes(), data, buffer);
   }
 
-  virtual Status Verify(const blink::WebCryptoAlgorithm& algorithm,
-                        const blink::WebCryptoKey& key,
-                        const CryptoData& signature,
-                        const CryptoData& data,
-                        bool* signature_match) const override {
+  Status Verify(const blink::WebCryptoAlgorithm& algorithm,
+                const blink::WebCryptoKey& key,
+                const CryptoData& signature,
+                const CryptoData& data,
+                bool* signature_match) const override {
     return RsaVerify(key,
                      algorithm.rsaPssParams()->saltLengthBytes(),
                      signature,

@@ -148,7 +148,7 @@ class WindowedNotificationObserver : public NotificationObserver {
       int notification_type,
       const ConditionTestCallbackWithoutSourceAndDetails& callback);
 
-  virtual ~WindowedNotificationObserver();
+  ~WindowedNotificationObserver() override;
 
   // Adds an additional notification type to wait for. The condition will be met
   // if any of the registered notification types from their respective sources
@@ -172,9 +172,9 @@ class WindowedNotificationObserver : public NotificationObserver {
   }
 
   // NotificationObserver:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
  private:
   bool seen_;
@@ -204,12 +204,11 @@ class WindowedNotificationObserver : public NotificationObserver {
 class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
  public:
   InProcessUtilityThreadHelper();
-  virtual ~InProcessUtilityThreadHelper();
+  ~InProcessUtilityThreadHelper() override;
 
  private:
-  virtual void BrowserChildProcessHostConnected(
-      const ChildProcessData& data) override;
-  virtual void BrowserChildProcessHostDisconnected(
+  void BrowserChildProcessHostConnected(const ChildProcessData& data) override;
+  void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
 
   int child_thread_count_;

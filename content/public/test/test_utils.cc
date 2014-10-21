@@ -74,12 +74,11 @@ void ScriptCallback::ResultCallback(const base::Value* result) {
 class TaskObserver : public base::MessageLoop::TaskObserver {
  public:
   TaskObserver() : processed_(false) {}
-  virtual ~TaskObserver() {}
+  ~TaskObserver() override {}
 
   // MessageLoop::TaskObserver overrides.
-  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
-  }
-  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
+  void WillProcessTask(const base::PendingTask& pending_task) override {}
+  void DidProcessTask(const base::PendingTask& pending_task) override {
     processed_ = true;
   }
 

@@ -15,7 +15,7 @@ namespace content {
 class ShellNetLog : public net::NetLog {
  public:
   explicit ShellNetLog(const std::string& app_name);
-  virtual ~ShellNetLog();
+  ~ShellNetLog() override;
 
  private:
   scoped_ptr<net::NetLogLogger> net_log_logger_;

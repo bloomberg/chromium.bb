@@ -36,7 +36,7 @@ class ChildProcessHostDelegate;
 class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
                                             public IPC::Listener {
  public:
-  virtual ~ChildProcessHostImpl();
+  ~ChildProcessHostImpl() override;
 
   // Public and static for reuse by RenderMessageFilter.
   static void AllocateSharedMemory(
@@ -55,13 +55,13 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   static int GenerateChildProcessUniqueId();
 
   // ChildProcessHost implementation
-  virtual bool Send(IPC::Message* message) override;
-  virtual void ForceShutdown() override;
-  virtual std::string CreateChannel() override;
-  virtual bool IsChannelOpening() override;
-  virtual void AddFilter(IPC::MessageFilter* filter) override;
+  bool Send(IPC::Message* message) override;
+  void ForceShutdown() override;
+  std::string CreateChannel() override;
+  bool IsChannelOpening() override;
+  void AddFilter(IPC::MessageFilter* filter) override;
 #if defined(OS_POSIX)
-  virtual base::ScopedFD TakeClientFileDescriptor() override;
+  base::ScopedFD TakeClientFileDescriptor() override;
 #endif
 
  private:
@@ -70,10 +70,10 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   explicit ChildProcessHostImpl(ChildProcessHostDelegate* delegate);
 
   // IPC::Listener methods:
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
-  virtual void OnBadMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
+  void OnBadMessageReceived(const IPC::Message& message) override;
 
   // Message handlers:
   void OnShutdownRequest();

@@ -36,7 +36,7 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   virtual ~ResourceContext() {}
 #else
   ResourceContext();
-  virtual ~ResourceContext();
+  ~ResourceContext() override;
 #endif
   virtual net::HostResolver* GetHostResolver() = 0;
 

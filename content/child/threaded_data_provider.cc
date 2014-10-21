@@ -31,11 +31,11 @@ class DataProviderMessageFilter : public IPC::MessageFilter {
       int request_id);
 
   // IPC::ChannelProxy::MessageFilter
-  virtual void OnFilterAdded(IPC::Sender* sender) override final;
-  virtual bool OnMessageReceived(const IPC::Message& message) override final;
+  void OnFilterAdded(IPC::Sender* sender) final;
+  bool OnMessageReceived(const IPC::Message& message) final;
 
  private:
-  virtual ~DataProviderMessageFilter() { }
+  ~DataProviderMessageFilter() override {}
 
   void OnReceivedData(int request_id, int data_offset, int data_length,
                       int encoded_data_length);

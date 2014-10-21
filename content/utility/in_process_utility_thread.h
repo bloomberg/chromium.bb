@@ -17,12 +17,12 @@ class ChildProcess;
 class InProcessUtilityThread : public base::Thread {
  public:
   InProcessUtilityThread(const std::string& channel_id);
-  virtual ~InProcessUtilityThread();
+  ~InProcessUtilityThread() override;
 
  private:
   // base::Thread implementation:
-  virtual void Init() override;
-  virtual void CleanUp() override;
+  void Init() override;
+  void CleanUp() override;
 
   void InitInternal();
 

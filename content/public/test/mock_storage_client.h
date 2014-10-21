@@ -39,7 +39,7 @@ class MockStorageClient : public QuotaClient {
                     const MockOriginData* mock_data,
                     QuotaClient::ID id,
                     size_t mock_data_size);
-  virtual ~MockStorageClient();
+  ~MockStorageClient() override;
 
   // To add or modify mock data in this client.
   void AddOriginAndNotify(
@@ -53,19 +53,20 @@ class MockStorageClient : public QuotaClient {
   base::Time IncrementMockTime();
 
   // QuotaClient methods.
-  virtual QuotaClient::ID id() const override;
-  virtual void OnQuotaManagerDestroyed() override;
-  virtual void GetOriginUsage(const GURL& origin_url,
-                              StorageType type,
-                              const GetUsageCallback& callback) override;
-  virtual void GetOriginsForType(StorageType type,
-                                 const GetOriginsCallback& callback) override;
-  virtual void GetOriginsForHost(StorageType type, const std::string& host,
-                                 const GetOriginsCallback& callback) override;
-  virtual void DeleteOriginData(const GURL& origin,
-                                StorageType type,
-                                const DeletionCallback& callback) override;
-  virtual bool DoesSupport(storage::StorageType type) const override;
+  QuotaClient::ID id() const override;
+  void OnQuotaManagerDestroyed() override;
+  void GetOriginUsage(const GURL& origin_url,
+                      StorageType type,
+                      const GetUsageCallback& callback) override;
+  void GetOriginsForType(StorageType type,
+                         const GetOriginsCallback& callback) override;
+  void GetOriginsForHost(StorageType type,
+                         const std::string& host,
+                         const GetOriginsCallback& callback) override;
+  void DeleteOriginData(const GURL& origin,
+                        StorageType type,
+                        const DeletionCallback& callback) override;
+  bool DoesSupport(storage::StorageType type) const override;
 
  private:
   void RunGetOriginUsage(const GURL& origin_url,

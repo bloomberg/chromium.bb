@@ -25,8 +25,8 @@ class BlinkPlatformImpl;
 class PluginThread : public ChildThread {
  public:
   PluginThread();
-  virtual ~PluginThread();
-  virtual void Shutdown() override;
+  ~PluginThread() override;
+  void Shutdown() override;
 
   // Returns the one plugin thread.
   static PluginThread* current();
@@ -36,7 +36,7 @@ class PluginThread : public ChildThread {
   void SetForcefullyTerminatePluginProcess();
 
  private:
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
+  bool OnControlMessageReceived(const IPC::Message& msg) override;
 
   // Callback for when a channel has been created.
   void OnCreateChannel(int renderer_id, bool incognito);

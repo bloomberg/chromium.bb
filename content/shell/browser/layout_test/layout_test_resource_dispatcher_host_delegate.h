@@ -15,11 +15,12 @@ class LayoutTestResourceDispatcherHostDelegate
     : public ShellResourceDispatcherHostDelegate {
  public:
   LayoutTestResourceDispatcherHostDelegate();
-  virtual ~LayoutTestResourceDispatcherHostDelegate();
+  ~LayoutTestResourceDispatcherHostDelegate() override;
 
   // ResourceDispatcherHostDelegate implementation.
-  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info, net::URLRequest* request) override;
+  ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      net::AuthChallengeInfo* auth_info,
+      net::URLRequest* request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestResourceDispatcherHostDelegate);

@@ -23,11 +23,11 @@ class MockResourceContext : public ResourceContext {
   // Does not take ownership of |test_request_context|.
   explicit MockResourceContext(net::URLRequestContext* test_request_context);
 
-  virtual ~MockResourceContext();
+  ~MockResourceContext() override;
 
   // ResourceContext implementation:
-  virtual net::HostResolver* GetHostResolver() override;
-  virtual net::URLRequestContext* GetRequestContext() override;
+  net::HostResolver* GetHostResolver() override;
+  net::URLRequestContext* GetRequestContext() override;
 
  private:
   net::URLRequestContext* test_request_context_;

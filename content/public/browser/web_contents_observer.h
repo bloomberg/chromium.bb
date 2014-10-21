@@ -323,10 +323,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                  RenderFrameHost* render_frame_host);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
   int routing_id() const;
 
   WebContents* web_contents() const;
@@ -341,7 +341,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // observing.
   WebContentsObserver();
 
-  virtual ~WebContentsObserver();
+  ~WebContentsObserver() override;
 
   // Start observing a different WebContents; used with the default constructor.
   void Observe(WebContents* web_contents);

@@ -48,10 +48,10 @@ struct SiteIsolationResponseMetaData;
 class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
  public:
   explicit ResourceDispatcher(IPC::Sender* sender);
-  virtual ~ResourceDispatcher();
+  ~ResourceDispatcher() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Creates a ResourceLoaderBridge for this type of dispatcher, this is so
   // this can be tested regardless of the ResourceLoaderBridge::Create

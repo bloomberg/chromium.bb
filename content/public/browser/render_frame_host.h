@@ -33,7 +33,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns NULL if the IDs do not correspond to a live RenderFrameHost.
   static RenderFrameHost* FromID(int render_process_id, int render_frame_id);
 
-  virtual ~RenderFrameHost() {}
+  ~RenderFrameHost() override {}
 
   // Returns the route id for this frame.
   virtual int GetRoutingID() = 0;

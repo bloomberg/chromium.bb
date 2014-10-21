@@ -27,7 +27,7 @@ class ChildProcessHostDelegate;
 // processes that run independent of the browser process.
 class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
  public:
-  virtual ~ChildProcessHost() {}
+  ~ChildProcessHost() override {}
 
   // This is a value never returned as the unique id of any child processes of
   // any kind, including the values returned by RenderProcessHost::GetID().

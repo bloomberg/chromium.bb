@@ -13,7 +13,7 @@ namespace content {
 class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   ShellCrashReporterClient();
-  virtual ~ShellCrashReporterClient();
+  ~ShellCrashReporterClient() override;
 
 #if defined(OS_WIN)
   // Returns a textual description of the product type and version to include
@@ -36,15 +36,14 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
 
   // The location where minidump files should be written. Returns true if
   // |crash_dir| was set.
-  virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
+  bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
 
 #if defined(OS_ANDROID)
   // Returns the descriptor key of the android minidump global descriptor.
   virtual int GetAndroidMinidumpDescriptor() override;
 #endif
 
-  virtual bool EnableBreakpadForProcess(
-      const std::string& process_type) override;
+  bool EnableBreakpadForProcess(const std::string& process_type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellCrashReporterClient);

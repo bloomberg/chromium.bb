@@ -50,7 +50,7 @@ struct ResourceRedirectDetails : public ResourceRequestDetails {
   ResourceRedirectDetails(const net::URLRequest* request,
                           int cert_id,
                           const GURL& new_url);
-  virtual ~ResourceRedirectDetails();
+  ~ResourceRedirectDetails() override;
 
   // The URL to which we are being redirected.
   GURL new_url;

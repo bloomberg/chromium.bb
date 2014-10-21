@@ -38,41 +38,41 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
   virtual const char* GetJwkAlgorithm(
       const blink::WebCryptoAlgorithmId hash) const = 0;
 
-  virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
-                             bool extractable,
-                             blink::WebCryptoKeyUsageMask usage_mask,
-                             GenerateKeyResult* result) const override;
+  Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                     bool extractable,
+                     blink::WebCryptoKeyUsageMask usage_mask,
+                     GenerateKeyResult* result) const override;
 
-  virtual Status VerifyKeyUsagesBeforeImportKey(
+  Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,
       blink::WebCryptoKeyUsageMask usage_mask) const override;
 
-  virtual Status ImportKeyPkcs8(const CryptoData& key_data,
-                                const blink::WebCryptoAlgorithm& algorithm,
-                                bool extractable,
-                                blink::WebCryptoKeyUsageMask usage_mask,
-                                blink::WebCryptoKey* key) const override;
+  Status ImportKeyPkcs8(const CryptoData& key_data,
+                        const blink::WebCryptoAlgorithm& algorithm,
+                        bool extractable,
+                        blink::WebCryptoKeyUsageMask usage_mask,
+                        blink::WebCryptoKey* key) const override;
 
-  virtual Status ImportKeySpki(const CryptoData& key_data,
-                               const blink::WebCryptoAlgorithm& algorithm,
-                               bool extractable,
-                               blink::WebCryptoKeyUsageMask usage_mask,
-                               blink::WebCryptoKey* key) const override;
+  Status ImportKeySpki(const CryptoData& key_data,
+                       const blink::WebCryptoAlgorithm& algorithm,
+                       bool extractable,
+                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKey* key) const override;
 
-  virtual Status ImportKeyJwk(const CryptoData& key_data,
-                              const blink::WebCryptoAlgorithm& algorithm,
-                              bool extractable,
-                              blink::WebCryptoKeyUsageMask usage_mask,
-                              blink::WebCryptoKey* key) const override;
+  Status ImportKeyJwk(const CryptoData& key_data,
+                      const blink::WebCryptoAlgorithm& algorithm,
+                      bool extractable,
+                      blink::WebCryptoKeyUsageMask usage_mask,
+                      blink::WebCryptoKey* key) const override;
 
-  virtual Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
-                                std::vector<uint8_t>* buffer) const override;
+  Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
+                        std::vector<uint8_t>* buffer) const override;
 
-  virtual Status ExportKeySpki(const blink::WebCryptoKey& key,
-                               std::vector<uint8_t>* buffer) const override;
+  Status ExportKeySpki(const blink::WebCryptoKey& key,
+                       std::vector<uint8_t>* buffer) const override;
 
-  virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                              std::vector<uint8_t>* buffer) const override;
+  Status ExportKeyJwk(const blink::WebCryptoKey& key,
+                      std::vector<uint8_t>* buffer) const override;
 
  private:
   blink::WebCryptoKeyUsageMask all_public_key_usages_;

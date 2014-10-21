@@ -16,16 +16,16 @@ class NavigationObserver: public WebContentsObserver {
  public:
   explicit NavigationObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
-  virtual ~NavigationObserver() {}
+  ~NavigationObserver() override {}
 
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override {
     navigation_url_ = url;
   }
 
-  virtual void DidGetRedirectForResourceRequest(
+  void DidGetRedirectForResourceRequest(
       RenderViewHost* render_view_host,
       const ResourceRedirectDetails& details) override {
     redirect_url_ = details.new_url;

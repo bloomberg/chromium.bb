@@ -38,7 +38,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
       int process_type,
       BrowserChildProcessHostDelegate* delegate);
 
-  virtual ~BrowserChildProcessHost() {}
+  ~BrowserChildProcessHost() override {}
 
   // Derived classes call this to launch the child process asynchronously.
   // Takes ownership of |cmd_line| and |delegate|.

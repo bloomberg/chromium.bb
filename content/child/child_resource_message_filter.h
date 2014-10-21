@@ -32,10 +32,10 @@ class ChildResourceMessageFilter : public IPC::MessageFilter {
   explicit ChildResourceMessageFilter(ResourceDispatcher* resource_dispatcher);
 
   // IPC::MessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~ChildResourceMessageFilter();
+  ~ChildResourceMessageFilter() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   ResourceDispatcher* resource_dispatcher_;

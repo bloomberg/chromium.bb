@@ -19,13 +19,13 @@ class DownloadManagerDelegate;
 class LayoutTestBrowserContext : public ShellBrowserContext {
  public:
   LayoutTestBrowserContext(bool off_the_record, net::NetLog* net_log);
-  virtual ~LayoutTestBrowserContext();
+  ~LayoutTestBrowserContext() override;
 
   // BrowserContext implementation.
-  virtual DownloadManagerDelegate* GetDownloadManagerDelegate() override;
+  DownloadManagerDelegate* GetDownloadManagerDelegate() override;
 
  protected:
-  virtual ShellURLRequestContextGetter* CreateURLRequestContextGetter(
+  ShellURLRequestContextGetter* CreateURLRequestContextGetter(
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override;
 

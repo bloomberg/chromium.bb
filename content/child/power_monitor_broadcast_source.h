@@ -23,14 +23,14 @@ class CONTENT_EXPORT PowerMonitorBroadcastSource :
     public base::PowerMonitorSource {
  public:
   explicit PowerMonitorBroadcastSource();
-  virtual ~PowerMonitorBroadcastSource();
+  ~PowerMonitorBroadcastSource() override;
 
   IPC::MessageFilter* GetMessageFilter();
 
  private:
   friend class PowerMessageFilter;
 
-  virtual bool IsOnBatteryPowerImpl() override;
+  bool IsOnBatteryPowerImpl() override;
 
   void OnPowerStateChange(bool on_battery_power);
   void OnSuspend();

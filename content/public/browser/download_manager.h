@@ -56,7 +56,7 @@ struct DownloadCreateInfo;
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
  public:
-  virtual ~DownloadManager() {}
+  ~DownloadManager() override {}
 
   // Sets/Gets the delegate for this DownloadManager. The delegate has to live
   // past its Shutdown method being called (by the DownloadManager).

@@ -39,10 +39,10 @@ class EnsureTerminateMessageFilter : public IPC::MessageFilter {
   EnsureTerminateMessageFilter() {}
 
  protected:
-  virtual ~EnsureTerminateMessageFilter() {}
+  ~EnsureTerminateMessageFilter() override {}
 
   // IPC::MessageFilter:
-  virtual void OnChannelError() override {
+  void OnChannelError() override {
     // How long we wait before forcibly shutting down the process.
     const base::TimeDelta kPluginProcessTerminateTimeout =
         base::TimeDelta::FromSeconds(3);

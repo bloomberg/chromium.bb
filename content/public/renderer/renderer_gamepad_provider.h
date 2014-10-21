@@ -21,7 +21,7 @@ class RendererGamepadProvider
   explicit RendererGamepadProvider(RenderThread* thread)
       : PlatformEventObserver<blink::WebGamepadListener>(thread) { }
 
-  virtual ~RendererGamepadProvider() {}
+  ~RendererGamepadProvider() override {}
 
   // Provides latest snapshot of gamepads.
   virtual void SampleGamepads(blink::WebGamepads& gamepads) = 0;

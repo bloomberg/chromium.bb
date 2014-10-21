@@ -48,7 +48,7 @@ class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
   }
 
   // WebContentsObserver
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     shell_->OnDevToolsWebContentsDestroyed();
   }
 

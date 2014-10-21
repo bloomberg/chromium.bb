@@ -73,11 +73,11 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // must be terminated before Shutdown returns. In particular, if a subsystem
   // has a thread that post tasks to ChildProcess::main_thread(), that thread
   // should be joined in Shutdown().
-  virtual ~ChildThread();
+  ~ChildThread() override;
   virtual void Shutdown();
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -173,16 +173,16 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   }
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
 
  private:
   class ChildThreadMessageRouter : public MessageRouter {
    public:
     // |sender| must outlive this object.
     explicit ChildThreadMessageRouter(IPC::Sender* sender);
-    virtual bool Send(IPC::Message* msg) override;
+    bool Send(IPC::Message* msg) override;
 
    private:
     IPC::Sender* const sender_;

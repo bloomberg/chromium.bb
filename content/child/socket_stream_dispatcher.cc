@@ -38,9 +38,9 @@ class IPCWebSocketStreamHandleBridge : public WebSocketStreamHandleBridge {
   static IPCWebSocketStreamHandleBridge* FromSocketId(int id);
 
   // WebSocketStreamHandleBridge methods.
-  virtual void Connect(const GURL& url) override;
-  virtual bool Send(const std::vector<char>& data) override;
-  virtual void Close() override;
+  void Connect(const GURL& url) override;
+  bool Send(const std::vector<char>& data) override;
+  void Close() override;
 
   // Called by SocketStreamDispatcher.
   void OnConnected(int max_amount_send_allowed);
@@ -50,7 +50,7 @@ class IPCWebSocketStreamHandleBridge : public WebSocketStreamHandleBridge {
   void OnFailed(int error_code, const std::string& error_msg);
 
  private:
-  virtual ~IPCWebSocketStreamHandleBridge();
+  ~IPCWebSocketStreamHandleBridge() override;
 
   // The ID for this bridge and corresponding SocketStream instance in the
   // browser process.

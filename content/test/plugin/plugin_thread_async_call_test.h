@@ -18,12 +18,15 @@ namespace NPAPIClient {
 class PluginThreadAsyncCallTest : public PluginTest {
  public:
   PluginThreadAsyncCallTest(NPP id, NPNetscapeFuncs *host_functions);
-  virtual ~PluginThreadAsyncCallTest();
+  ~PluginThreadAsyncCallTest() override;
 
-  virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved) override;
+  NPError New(uint16 mode,
+              int16 argc,
+              const char* argn[],
+              const char* argv[],
+              NPSavedData* saved) override;
 
-  virtual NPError Destroy() override;
+  NPError Destroy() override;
 
   void AsyncCall();
   void OnCallSucceeded();

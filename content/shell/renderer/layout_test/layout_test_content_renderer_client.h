@@ -28,23 +28,21 @@ class WebTestProxyBase;
 class LayoutTestContentRendererClient : public ShellContentRendererClient {
  public:
   LayoutTestContentRendererClient();
-  virtual ~LayoutTestContentRendererClient();
+  ~LayoutTestContentRendererClient() override;
 
   // ShellContentRendererClient implementation.
-  virtual void RenderThreadStarted() override;
-  virtual void RenderFrameCreated(RenderFrame* render_frame) override;
-  virtual void RenderViewCreated(RenderView* render_view) override;
-  virtual blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
+  void RenderThreadStarted() override;
+  void RenderFrameCreated(RenderFrame* render_frame) override;
+  void RenderViewCreated(RenderView* render_view) override;
+  blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client) override;
-  virtual blink::WebRTCPeerConnectionHandler*
-  OverrideCreateWebRTCPeerConnectionHandler(
+  blink::WebRTCPeerConnectionHandler* OverrideCreateWebRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client) override;
-  virtual blink::WebMIDIAccessor* OverrideCreateMIDIAccessor(
+  blink::WebMIDIAccessor* OverrideCreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client) override;
-  virtual blink::WebAudioDevice* OverrideCreateAudioDevice(
-      double sample_rate) override;
-  virtual blink::WebClipboard* OverrideWebClipboard() override;
-  virtual blink::WebThemeEngine* OverrideThemeEngine() override;
+  blink::WebAudioDevice* OverrideCreateAudioDevice(double sample_rate) override;
+  blink::WebClipboard* OverrideWebClipboard() override;
+  blink::WebThemeEngine* OverrideThemeEngine() override;
 
  private:
   void WebTestProxyCreated(RenderView* render_view, WebTestProxyBase* proxy);

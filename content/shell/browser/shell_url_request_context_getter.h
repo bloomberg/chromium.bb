@@ -42,15 +42,14 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       net::NetLog* net_log);
 
   // net::URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext() override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override;
-
+  net::URLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override;
 
   net::HostResolver* host_resolver();
 
  protected:
-  virtual ~ShellURLRequestContextGetter();
+  ~ShellURLRequestContextGetter() override;
 
   // Used by subclasses to create their own implementation of NetworkDelegate
   // and net::ProxyService.

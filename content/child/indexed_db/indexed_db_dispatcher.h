@@ -52,7 +52,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
   // two copies of RenderThreadImpl on the same thread.  Everyone else probably
   // wants to use ThreadSpecificInstance().
   explicit IndexedDBDispatcher(ThreadSafeSender* thread_safe_sender);
-  virtual ~IndexedDBDispatcher();
+  ~IndexedDBDispatcher() override;
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.
@@ -60,7 +60,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
       ThreadSafeSender* thread_safe_sender);
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() override;
+  void OnWorkerRunLoopStopped() override;
 
   static blink::WebIDBMetadata ConvertMetadata(
       const IndexedDBDatabaseMetadata& idb_metadata);

@@ -58,7 +58,7 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
              int client_id,
              bool software,
              bool allow_future_sync_points);
-  virtual ~GpuChannel();
+  ~GpuChannel() override;
 
   void Init(base::MessageLoopProxy* io_message_loop,
             base::WaitableEvent* shutdown_event);
@@ -84,11 +84,11 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   }
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelError() override;
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // Requeue the message that is currently being processed to the beginning of
   // the queue. Used when the processing of a message gets aborted because of

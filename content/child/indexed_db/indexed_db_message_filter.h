@@ -28,14 +28,14 @@ class IndexedDBMessageFilter : public ChildMessageFilter {
   explicit IndexedDBMessageFilter(ThreadSafeSender* thread_safe_sender);
 
  protected:
-  virtual ~IndexedDBMessageFilter();
+  ~IndexedDBMessageFilter() override;
 
  private:
   // ChildMessageFilter implementation:
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnStaleMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnStaleMessageReceived(const IPC::Message& msg) override;
 
   void OnStaleSuccessIDBDatabase(int32 ipc_thread_id,
                                  int32 ipc_callbacks_id,

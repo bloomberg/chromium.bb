@@ -25,24 +25,24 @@ class TestNavigationObserver::TestWebContentsObserver
 
  private:
   // WebContentsObserver:
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override {
     parent_->OnNavigationEntryCommitted(this, web_contents(), load_details);
   }
 
-  virtual void DidAttachInterstitialPage() override {
+  void DidAttachInterstitialPage() override {
     parent_->OnDidAttachInterstitialPage(web_contents());
   }
 
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     parent_->OnWebContentsDestroyed(this, web_contents());
   }
 
-  virtual void DidStartLoading(RenderViewHost* render_view_host) override {
+  void DidStartLoading(RenderViewHost* render_view_host) override {
     parent_->OnDidStartLoading(web_contents());
   }
 
-  virtual void DidStopLoading(RenderViewHost* render_view_host) override {
+  void DidStopLoading(RenderViewHost* render_view_host) override {
     parent_->OnDidStopLoading(web_contents());
   }
 

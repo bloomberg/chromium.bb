@@ -34,21 +34,21 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   CommandBufferProxyImpl* GetCommandBufferProxy();
 
   // ContextProviderWebContext implementation.
-  virtual WebGraphicsContext3DCommandBufferImpl* WebContext3D() override;
+  WebGraphicsContext3DCommandBufferImpl* WebContext3D() override;
 
   // cc::ContextProvider implementation.
-  virtual bool BindToCurrentThread() override;
-  virtual gpu::gles2::GLES2Interface* ContextGL() override;
-  virtual gpu::ContextSupport* ContextSupport() override;
-  virtual class GrContext* GrContext() override;
-  virtual Capabilities ContextCapabilities() override;
-  virtual bool IsContextLost() override;
-  virtual void VerifyContexts() override;
-  virtual void DeleteCachedResources() override;
-  virtual bool DestroyedOnMainThread() override;
-  virtual void SetLostContextCallback(
+  bool BindToCurrentThread() override;
+  gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::ContextSupport* ContextSupport() override;
+  class GrContext* GrContext() override;
+  Capabilities ContextCapabilities() override;
+  bool IsContextLost() override;
+  void VerifyContexts() override;
+  void DeleteCachedResources() override;
+  bool DestroyedOnMainThread() override;
+  void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
-  virtual void SetMemoryPolicyChangedCallback(
+  void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& memory_policy_changed_callback)
       override;
 
@@ -56,7 +56,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   ContextProviderCommandBuffer(
       scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       const std::string& debug_name);
-  virtual ~ContextProviderCommandBuffer();
+  ~ContextProviderCommandBuffer() override;
 
   void OnLostContext();
   void OnMemoryAllocationChanged(const gpu::MemoryAllocation& allocation);

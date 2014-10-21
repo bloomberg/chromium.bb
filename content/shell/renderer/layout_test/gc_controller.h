@@ -25,10 +25,10 @@ class GCController : public gin::Wrappable<GCController> {
 
  private:
   GCController();
-  virtual ~GCController();
+  ~GCController() override;
 
   // gin::Wrappable.
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   void Collect(const gin::Arguments& args);

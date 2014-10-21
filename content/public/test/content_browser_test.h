@@ -24,7 +24,7 @@ class ContentBrowserTest : public BrowserTestBase {
   virtual void TearDown() override;
 
   // BrowserTestBase:
-  virtual void RunTestOnMainThreadLoop() override;
+  void RunTestOnMainThreadLoop() override;
 
  protected:
   // Creates a new window and loads about:blank.

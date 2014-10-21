@@ -67,7 +67,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // because RenderWidgetHost is a virtual base class.
   static RenderViewHost* From(RenderWidgetHost* rwh);
 
-  virtual ~RenderViewHost() {}
+  ~RenderViewHost() override {}
 
   // Returns the main frame for this render view.
   virtual RenderFrameHost* GetMainFrame() = 0;

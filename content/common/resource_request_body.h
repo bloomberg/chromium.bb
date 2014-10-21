@@ -52,7 +52,7 @@ class CONTENT_EXPORT ResourceRequestBody
 
  private:
   friend class base::RefCountedThreadSafe<ResourceRequestBody>;
-  virtual ~ResourceRequestBody();
+  ~ResourceRequestBody() override;
 
   std::vector<Element> elements_;
   int64 identifier_;

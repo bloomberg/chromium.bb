@@ -45,16 +45,16 @@ class GpuChildThread : public ChildThread {
   // For single-process mode.
   explicit GpuChildThread(const std::string& channel_id);
 
-  virtual ~GpuChildThread();
+  ~GpuChildThread() override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void Init(const base::Time& process_start_time);
   void StopWatchdog();
 
   // ChildThread overrides.
-  virtual bool Send(IPC::Message* msg) override;
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
+  bool Send(IPC::Message* msg) override;
+  bool OnControlMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

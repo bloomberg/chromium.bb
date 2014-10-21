@@ -22,13 +22,13 @@ class WorkerThreadTaskRunner : public base::TaskRunner {
   static scoped_refptr<WorkerThreadTaskRunner> current();
 
   // TaskRunner overrides.
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
  protected:
-  virtual ~WorkerThreadTaskRunner();
+  ~WorkerThreadTaskRunner() override;
 
  private:
   const int worker_thread_id_;

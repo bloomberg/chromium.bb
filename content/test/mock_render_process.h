@@ -13,11 +13,11 @@ namespace content {
 class MockRenderProcess : public RenderProcess {
  public:
   MockRenderProcess();
-  virtual ~MockRenderProcess();
+  ~MockRenderProcess() override;
 
   // RenderProcess implementation.
-  virtual void AddBindings(int bindings) override;
-  virtual int GetEnabledBindings() const override;
+  void AddBindings(int bindings) override;
+  int GetEnabledBindings() const override;
 
  private:
   int enabled_bindings_;

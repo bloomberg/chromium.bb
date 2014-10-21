@@ -65,9 +65,9 @@ class DOMOperationObserver : public NotificationObserver,
     message_loop_runner_ = new MessageLoopRunner;
   }
 
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override {
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override {
     DCHECK(type == NOTIFICATION_DOM_OPERATION_RESPONSE);
     Details<DomOperationNotificationDetails> dom_op_details(details);
     response_ = dom_op_details->json;
@@ -76,7 +76,7 @@ class DOMOperationObserver : public NotificationObserver,
   }
 
   // Overridden from WebContentsObserver:
-  virtual void RenderProcessGone(base::TerminationStatus status) override {
+  void RenderProcessGone(base::TerminationStatus status) override {
     message_loop_runner_->Quit();
   }
 
@@ -104,15 +104,11 @@ class InterstitialObserver : public content::WebContentsObserver {
         attach_callback_(attach_callback),
         detach_callback_(detach_callback) {
   }
-  virtual ~InterstitialObserver() {}
+  ~InterstitialObserver() override {}
 
   // WebContentsObserver methods:
-  virtual void DidAttachInterstitialPage() override {
-    attach_callback_.Run();
-  }
-  virtual void DidDetachInterstitialPage() override {
-    detach_callback_.Run();
-  }
+  void DidAttachInterstitialPage() override { attach_callback_.Run(); }
+  void DidDetachInterstitialPage() override { detach_callback_.Run(); }
 
  private:
   base::Closure attach_callback_;

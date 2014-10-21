@@ -28,8 +28,7 @@ public:
   int GetLastEchoSize() const;
 
 private:
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate*) override;
+ gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate*) override;
 
   base::WeakPtr<IPCEcho> native_;
 };

@@ -19,7 +19,7 @@ namespace content {
 class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
  public:
   FakeSpeechRecognitionManager();
-  virtual ~FakeSpeechRecognitionManager();
+  ~FakeSpeechRecognitionManager() override;
 
   const std::string& grammar() const {
     return grammar_;
@@ -42,23 +42,22 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
   void SetFakeResult(const std::string& result);
 
   // SpeechRecognitionManager methods.
-  virtual int CreateSession(
-      const SpeechRecognitionSessionConfig& config) override;
-  virtual void StartSession(int session_id) override;
-  virtual void AbortSession(int session_id) override;
-  virtual void StopAudioCaptureForSession(int session_id) override;
-  virtual void AbortAllSessionsForRenderProcess(int render_process_id) override;
-  virtual void AbortAllSessionsForRenderView(int render_process_id,
-                                             int render_view_id) override;
-  virtual bool HasAudioInputDevices() override;
-  virtual base::string16 GetAudioInputDeviceModel() override;
-  virtual void ShowAudioInputSettings() override {}
-  virtual int GetSession(int render_process_id,
-                         int render_view_id,
-                         int request_id) const override;
-  virtual const SpeechRecognitionSessionConfig& GetSessionConfig(
+  int CreateSession(const SpeechRecognitionSessionConfig& config) override;
+  void StartSession(int session_id) override;
+  void AbortSession(int session_id) override;
+  void StopAudioCaptureForSession(int session_id) override;
+  void AbortAllSessionsForRenderProcess(int render_process_id) override;
+  void AbortAllSessionsForRenderView(int render_process_id,
+                                     int render_view_id) override;
+  bool HasAudioInputDevices() override;
+  base::string16 GetAudioInputDeviceModel() override;
+  void ShowAudioInputSettings() override {}
+  int GetSession(int render_process_id,
+                 int render_view_id,
+                 int request_id) const override;
+  const SpeechRecognitionSessionConfig& GetSessionConfig(
       int session_id) const override;
-  virtual SpeechRecognitionSessionContext GetSessionContext(
+  SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const override;
 
  private:

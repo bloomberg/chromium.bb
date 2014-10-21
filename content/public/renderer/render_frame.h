@@ -120,7 +120,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       v8::Handle<v8::Context> context) = 0;
 
  protected:
-  virtual ~RenderFrame() {}
+  ~RenderFrame() override {}
 
  private:
   // This interface should only be implemented inside content.

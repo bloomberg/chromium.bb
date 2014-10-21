@@ -34,25 +34,23 @@ class ShellDevToolsFrontend : public WebContentsObserver,
 
  protected:
   ShellDevToolsFrontend(Shell* frontend_shell, DevToolsAgentHost* agent_host);
-  virtual ~ShellDevToolsFrontend();
+  ~ShellDevToolsFrontend() override;
 
  private:
   // WebContentsObserver overrides
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) override;
-  virtual void DocumentOnLoadCompletedInMainFrame() override;
-  virtual void WebContentsDestroyed() override;
+  void RenderViewCreated(RenderViewHost* render_view_host) override;
+  void DocumentOnLoadCompletedInMainFrame() override;
+  void WebContentsDestroyed() override;
 
   // content::DevToolsFrontendHost::Delegate implementation.
-  virtual void HandleMessageFromDevToolsFrontend(
-      const std::string& message) override;
-  virtual void HandleMessageFromDevToolsFrontendToBackend(
+  void HandleMessageFromDevToolsFrontend(const std::string& message) override;
+  void HandleMessageFromDevToolsFrontendToBackend(
       const std::string& message) override;
 
   // content::DevToolsAgentHostClient implementation.
-  virtual void DispatchProtocolMessage(
-      DevToolsAgentHost* agent_host, const std::string& message) override;
-  virtual void AgentHostClosed(
-      DevToolsAgentHost* agent_host, bool replaced) override;
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               const std::string& message) override;
+  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
 
   Shell* frontend_shell_;
   scoped_refptr<DevToolsAgentHost> agent_host_;

@@ -34,20 +34,18 @@ class VTVideoDecodeAccelerator
       public base::NonThreadSafe {
  public:
   explicit VTVideoDecodeAccelerator(CGLContextObj cgl_context);
-  virtual ~VTVideoDecodeAccelerator();
+  ~VTVideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.
-  virtual bool Initialize(
-      media::VideoCodecProfile profile,
-      Client* client) override;
-  virtual void Decode(const media::BitstreamBuffer& bitstream) override;
-  virtual void AssignPictureBuffers(
+  bool Initialize(media::VideoCodecProfile profile, Client* client) override;
+  void Decode(const media::BitstreamBuffer& bitstream) override;
+  void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& pictures) override;
-  virtual void ReusePictureBuffer(int32_t picture_id) override;
-  virtual void Flush() override;
-  virtual void Reset() override;
-  virtual void Destroy() override;
-  virtual bool CanDecodeOnIOThread() override;
+  void ReusePictureBuffer(int32_t picture_id) override;
+  void Flush() override;
+  void Reset() override;
+  void Destroy() override;
+  bool CanDecodeOnIOThread() override;
 
   // Called by OutputThunk() when VideoToolbox finishes decoding a frame.
   void Output(

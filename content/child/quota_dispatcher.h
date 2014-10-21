@@ -45,7 +45,7 @@ class QuotaDispatcher : public WorkerTaskRunner::Observer {
 
   QuotaDispatcher(ThreadSafeSender* thread_safe_sender,
                   QuotaMessageFilter* quota_message_filter);
-  virtual ~QuotaDispatcher();
+  ~QuotaDispatcher() override;
 
   // |thread_safe_sender| and |quota_message_filter| are used if
   // calling this leads to construction.
@@ -54,7 +54,7 @@ class QuotaDispatcher : public WorkerTaskRunner::Observer {
       QuotaMessageFilter* quota_message_filter);
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() override;
+  void OnWorkerRunLoopStopped() override;
 
   void OnMessageReceived(const IPC::Message& msg);
 

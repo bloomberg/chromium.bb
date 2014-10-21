@@ -18,7 +18,7 @@ class ChildMessageFilter::Internal : public IPC::MessageFilter {
  public:
   explicit Internal(ChildMessageFilter* filter) : filter_(filter) {}
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) override {
+  bool OnMessageReceived(const IPC::Message& msg) override {
     scoped_refptr<base::TaskRunner> runner =
         filter_->OverrideTaskRunnerForMessage(msg);
     if (runner.get() && !runner->RunsTasksOnCurrentThread()) {
@@ -35,7 +35,7 @@ class ChildMessageFilter::Internal : public IPC::MessageFilter {
   }
 
  private:
-  virtual ~Internal() {}
+  ~Internal() override {}
   scoped_refptr<ChildMessageFilter> filter_;
 
   DISALLOW_COPY_AND_ASSIGN(Internal);

@@ -16,9 +16,9 @@ struct CONTENT_EXPORT SyntheticTapGestureParams
  public:
   SyntheticTapGestureParams();
   SyntheticTapGestureParams(const SyntheticTapGestureParams& other);
-  virtual ~SyntheticTapGestureParams();
+  ~SyntheticTapGestureParams() override;
 
-  virtual GestureType GetGestureType() const override;
+  GestureType GetGestureType() const override;
 
   gfx::Point position;
   int duration_ms;

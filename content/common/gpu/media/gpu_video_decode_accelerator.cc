@@ -76,20 +76,18 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   MessageFilter(GpuVideoDecodeAccelerator* owner, int32 host_route_id)
       : owner_(owner), host_route_id_(host_route_id) {}
 
-  virtual void OnChannelError() override { sender_ = NULL; }
+  void OnChannelError() override { sender_ = NULL; }
 
-  virtual void OnChannelClosing() override { sender_ = NULL; }
+  void OnChannelClosing() override { sender_ = NULL; }
 
-  virtual void OnFilterAdded(IPC::Sender* sender) override {
-    sender_ = sender;
-  }
+  void OnFilterAdded(IPC::Sender* sender) override { sender_ = sender; }
 
-  virtual void OnFilterRemoved() override {
+  void OnFilterRemoved() override {
     // This will delete |owner_| and |this|.
     owner_->OnFilterRemoved();
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) override {
+  bool OnMessageReceived(const IPC::Message& msg) override {
     if (msg.routing_id() != host_route_id_)
       return false;
 
@@ -111,7 +109,7 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~MessageFilter() {}
+  ~MessageFilter() override {}
 
  private:
   GpuVideoDecodeAccelerator* owner_;

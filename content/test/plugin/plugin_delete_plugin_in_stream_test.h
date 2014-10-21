@@ -18,9 +18,12 @@ class DeletePluginInStreamTest : public PluginTest {
   //
   // NPAPI functions
   //
-  virtual NPError SetWindow(NPWindow* pNPWindow) override;
-  virtual NPError NewStream(NPMIMEType type, NPStream* stream,
-                            NPBool seekable, uint16* stype) override;
+  NPError SetWindow(NPWindow* pNPWindow) override;
+  NPError NewStream(NPMIMEType type,
+                    NPStream* stream,
+                    NPBool seekable,
+                    uint16* stype) override;
+
  private:
   bool test_started_;
   std::string self_url_;

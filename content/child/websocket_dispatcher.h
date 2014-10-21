@@ -25,14 +25,14 @@ class WebSocketBridge;
 class WebSocketDispatcher : public IPC::Listener {
  public:
   WebSocketDispatcher();
-  virtual ~WebSocketDispatcher();
+  ~WebSocketDispatcher() override;
 
   // Returns a unique channel id
   int AddBridge(WebSocketBridge* bridge);
   void RemoveBridge(int channel_id);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   WebSocketBridge* GetBridge(int channel_id, uint32 type);

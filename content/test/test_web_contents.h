@@ -24,32 +24,31 @@ class WebContentsTester;
 // and does not do anything involving views.
 class TestWebContents : public WebContentsImpl, public WebContentsTester {
  public:
-  virtual ~TestWebContents();
+  ~TestWebContents() override;
 
   static TestWebContents* Create(BrowserContext* browser_context,
                                  SiteInstance* instance);
 
   // WebContentsImpl overrides (returning the same values, but in Test* types)
-  virtual TestRenderFrameHost* GetMainFrame() override;
-  virtual TestRenderViewHost* GetRenderViewHost() const override;
+  TestRenderFrameHost* GetMainFrame() override;
+  TestRenderViewHost* GetRenderViewHost() const override;
 
   // WebContentsTester implementation.
-  virtual void CommitPendingNavigation() override;
-  virtual TestRenderFrameHost* GetPendingMainFrame() const override;
-  virtual void NavigateAndCommit(const GURL& url) override;
-  virtual void TestSetIsLoading(bool value) override;
-  virtual void ProceedWithCrossSiteNavigation() override;
-  virtual void TestDidNavigate(RenderFrameHost* render_frame_host,
-                               int page_id,
-                               const GURL& url,
-                               ui::PageTransition transition) override;
-  virtual void TestDidNavigateWithReferrer(
-      RenderFrameHost* render_frame_host,
-      int page_id,
-      const GURL& url,
-      const Referrer& referrer,
-      ui::PageTransition transition) override;
-  virtual WebPreferences TestComputeWebkitPrefs() override;
+  void CommitPendingNavigation() override;
+  TestRenderFrameHost* GetPendingMainFrame() const override;
+  void NavigateAndCommit(const GURL& url) override;
+  void TestSetIsLoading(bool value) override;
+  void ProceedWithCrossSiteNavigation() override;
+  void TestDidNavigate(RenderFrameHost* render_frame_host,
+                       int page_id,
+                       const GURL& url,
+                       ui::PageTransition transition) override;
+  void TestDidNavigateWithReferrer(RenderFrameHost* render_frame_host,
+                                   int page_id,
+                                   const GURL& url,
+                                   const Referrer& referrer,
+                                   ui::PageTransition transition) override;
+  WebPreferences TestComputeWebkitPrefs() override;
 
   // State accessor.
   bool cross_navigation_pending() {
@@ -57,19 +56,18 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   }
 
   // Prevent interaction with views.
-  virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host,
-      int opener_route_id,
-      int proxy_routing_id,
-      bool for_main_frame) override;
-  virtual void UpdateRenderViewSizeForRenderManager() override {}
+  bool CreateRenderViewForRenderManager(RenderViewHost* render_view_host,
+                                        int opener_route_id,
+                                        int proxy_routing_id,
+                                        bool for_main_frame) override;
+  void UpdateRenderViewSizeForRenderManager() override {}
 
   // Returns a clone of this TestWebContents. The returned object is also a
   // TestWebContents. The caller owns the returned object.
-  virtual WebContents* Clone() override;
+  WebContents* Clone() override;
 
   // Allow mocking of the RenderViewHostDelegateView.
-  virtual RenderViewHostDelegateView* GetDelegateView() override;
+  RenderViewHostDelegateView* GetDelegateView() override;
   void set_delegate_view(RenderViewHostDelegateView* view) {
     delegate_view_override_ = view;
   }
@@ -89,9 +87,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   // Compares the arguments passed in with the expected arguments passed in
   // to |ExpectSetHistoryLengthAndPrune()|.
-  virtual void SetHistoryLengthAndPrune(const SiteInstance* site_instance,
-                                        int history_length,
-                                        int32 min_page_id) override;
+  void SetHistoryLengthAndPrune(const SiteInstance* site_instance,
+                                int history_length,
+                                int32 min_page_id) override;
 
   void TestDidFinishLoad(const GURL& url);
   void TestDidFailLoadWithError(const GURL& url,
@@ -104,25 +102,22 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
  private:
   // WebContentsImpl overrides
-  virtual void CreateNewWindow(
+  void CreateNewWindow(
       int render_process_id,
       int route_id,
       int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) override;
-  virtual void CreateNewWidget(int render_process_id,
-                               int route_id,
-                               blink::WebPopupType popup_type) override;
-  virtual void CreateNewFullscreenWidget(int render_process_id,
-                                         int route_id) override;
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) override;
-  virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) override;
-  virtual void ShowCreatedFullscreenWidget(int route_id) override;
-
+  void CreateNewWidget(int render_process_id,
+                       int route_id,
+                       blink::WebPopupType popup_type) override;
+  void CreateNewFullscreenWidget(int render_process_id, int route_id) override;
+  void ShowCreatedWindow(int route_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_pos,
+                         bool user_gesture) override;
+  void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos) override;
+  void ShowCreatedFullscreenWidget(int route_id) override;
 
   RenderViewHostDelegateView* delegate_view_override_;
 

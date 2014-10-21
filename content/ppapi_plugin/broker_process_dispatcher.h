@@ -23,10 +23,10 @@ class BrokerProcessDispatcher
  public:
   BrokerProcessDispatcher(PP_GetInterface_Func get_plugin_interface,
                           PP_ConnectInstance_Func connect_instance);
-  virtual ~BrokerProcessDispatcher();
+  ~BrokerProcessDispatcher() override;
 
   // IPC::Listener overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   void OnGetPermissionSettingsCompleted(
       uint32 request_id,

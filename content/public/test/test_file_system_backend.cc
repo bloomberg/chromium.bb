@@ -42,13 +42,12 @@ class TestFileUtil : public storage::LocalFileUtil {
  public:
   explicit TestFileUtil(const base::FilePath& base_path)
       : base_path_(base_path) {}
-  virtual ~TestFileUtil() {}
+  ~TestFileUtil() override {}
 
   // LocalFileUtil overrides.
-  virtual base::File::Error GetLocalFilePath(
-      FileSystemOperationContext* context,
-      const FileSystemURL& file_system_url,
-      base::FilePath* local_file_path) override {
+  base::File::Error GetLocalFilePath(FileSystemOperationContext* context,
+                                     const FileSystemURL& file_system_url,
+                                     base::FilePath* local_file_path) override {
     *local_file_path = base_path_.Append(file_system_url.path());
     return base::File::FILE_OK;
   }
@@ -62,24 +61,24 @@ class TestFileUtil : public storage::LocalFileUtil {
 class TestWatcherManager : public storage::WatcherManager {
  public:
   TestWatcherManager() : weak_ptr_factory_(this) {}
-  virtual ~TestWatcherManager() {}
+  ~TestWatcherManager() override {}
 
   // storage::WatcherManager overrides.
-  virtual void AddObserver(Observer* observer) override {
+  void AddObserver(Observer* observer) override {
     observers_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(Observer* observer) override {
+  void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(Observer* observer) const override {
+  bool HasObserver(Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
 
-  virtual void WatchDirectory(const storage::FileSystemURL& url,
-                              bool recursive,
-                              const StatusCallback& callback) override {
+  void WatchDirectory(const storage::FileSystemURL& url,
+                      bool recursive,
+                      const StatusCallback& callback) override {
     if (recursive) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -113,8 +112,8 @@ class TestWatcherManager : public storage::WatcherManager {
                    url));
   }
 
-  virtual void UnwatchEntry(const storage::FileSystemURL& url,
-                            const StatusCallback& callback) override {
+  void UnwatchEntry(const storage::FileSystemURL& url,
+                    const StatusCallback& callback) override {
     const GURL gurl = url.ToGURL();
     if (watched_urls_.find(gurl) == watched_urls_.end()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -159,10 +158,10 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
                                          public storage::FileUpdateObserver {
  public:
   QuotaUtil() : usage_(0) {}
-  virtual ~QuotaUtil() {}
+  ~QuotaUtil() override {}
 
   // FileSystemQuotaUtil overrides.
-  virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
+  base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
@@ -171,7 +170,7 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
     return base::File::FILE_OK;
   }
 
-  virtual scoped_refptr<storage::QuotaReservation>
+  scoped_refptr<storage::QuotaReservation>
   CreateQuotaReservationOnFileTaskRunner(
       const GURL& origin_url,
       storage::FileSystemType type) override {
@@ -179,32 +178,29 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
     return scoped_refptr<storage::QuotaReservation>();
   }
 
-  virtual void GetOriginsForTypeOnFileTaskRunner(
-      storage::FileSystemType type,
-      std::set<GURL>* origins) override {
+  void GetOriginsForTypeOnFileTaskRunner(storage::FileSystemType type,
+                                         std::set<GURL>* origins) override {
     NOTREACHED();
   }
 
-  virtual void GetOriginsForHostOnFileTaskRunner(
-      storage::FileSystemType type,
-      const std::string& host,
-      std::set<GURL>* origins) override {
+  void GetOriginsForHostOnFileTaskRunner(storage::FileSystemType type,
+                                         const std::string& host,
+                                         std::set<GURL>* origins) override {
     NOTREACHED();
   }
 
-  virtual int64 GetOriginUsageOnFileTaskRunner(
-      FileSystemContext* context,
-      const GURL& origin_url,
-      storage::FileSystemType type) override {
+  int64 GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
+                                       const GURL& origin_url,
+                                       storage::FileSystemType type) override {
     return usage_;
   }
 
   // FileUpdateObserver overrides.
-  virtual void OnStartUpdate(const FileSystemURL& url) override {}
-  virtual void OnUpdate(const FileSystemURL& url, int64 delta) override {
+  void OnStartUpdate(const FileSystemURL& url) override {}
+  void OnUpdate(const FileSystemURL& url, int64 delta) override {
     usage_ += delta;
   }
-  virtual void OnEndUpdate(const FileSystemURL& url) override {}
+  void OnEndUpdate(const FileSystemURL& url) override {}
 
  private:
   int64 usage_;

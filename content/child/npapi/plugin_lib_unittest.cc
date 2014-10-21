@@ -20,7 +20,7 @@ class PluginLibTest : public PluginLib {
   using PluginLib::Unload;
 
  protected:
-  virtual ~PluginLibTest() {}
+  ~PluginLibTest() override {}
 };
 
 TEST(PluginLibLoading, UnloadAllPlugins) {

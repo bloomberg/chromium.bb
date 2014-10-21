@@ -85,11 +85,11 @@ class LocalHostResolverProc : public net::HostResolverProc {
  public:
   LocalHostResolverProc() : HostResolverProc(NULL) {}
 
-  virtual int Resolve(const std::string& host,
-                      net::AddressFamily address_family,
-                      net::HostResolverFlags host_resolver_flags,
-                      net::AddressList* addrlist,
-                      int* os_error) override {
+  int Resolve(const std::string& host,
+              net::AddressFamily address_family,
+              net::HostResolverFlags host_resolver_flags,
+              net::AddressList* addrlist,
+              int* os_error) override {
     const char* kLocalHostNames[] = {"localhost", "127.0.0.1", "::1"};
     bool local = false;
 
@@ -119,7 +119,7 @@ class LocalHostResolverProc : public net::HostResolverProc {
   }
 
  private:
-  virtual ~LocalHostResolverProc() {}
+  ~LocalHostResolverProc() override {}
 };
 
 void TraceDisableRecordingComplete(const base::Closure& quit,

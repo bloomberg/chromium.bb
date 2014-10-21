@@ -48,7 +48,7 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   virtual ~WebFileSystemImpl();
 
   // WorkerTaskRunner::Observer implementation.
-  virtual void OnWorkerRunLoopStopped() override;
+  void OnWorkerRunLoopStopped() override;
 
   // WebFileSystem implementation.
   virtual void openFileSystem(

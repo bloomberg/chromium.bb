@@ -83,17 +83,17 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
         a_stub_is_descheduled_(false),
         future_sync_points_(future_sync_points) {}
 
-  virtual void OnFilterAdded(IPC::Sender* sender) override {
+  void OnFilterAdded(IPC::Sender* sender) override {
     DCHECK(!sender_);
     sender_ = sender;
   }
 
-  virtual void OnFilterRemoved() override {
+  void OnFilterRemoved() override {
     DCHECK(sender_);
     sender_ = NULL;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     DCHECK(sender_);
 
     bool handled = false;
@@ -166,7 +166,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~GpuChannelMessageFilter() {}
+  ~GpuChannelMessageFilter() override {}
 
  private:
   enum PreemptionState {

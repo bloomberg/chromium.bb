@@ -23,7 +23,7 @@ namespace content {
 class MockBlobURLRequestContext : public net::URLRequestContext {
  public:
   MockBlobURLRequestContext(storage::FileSystemContext* file_system_context);
-  virtual ~MockBlobURLRequestContext();
+  ~MockBlobURLRequestContext() override;
 
   storage::BlobStorageContext* blob_storage_context() const {
     return blob_storage_context_.get();

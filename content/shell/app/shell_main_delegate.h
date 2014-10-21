@@ -21,19 +21,18 @@ class BrowserMainRunner;
 class ShellMainDelegate : public ContentMainDelegate {
  public:
   ShellMainDelegate();
-  virtual ~ShellMainDelegate();
+  ~ShellMainDelegate() override;
 
   // ContentMainDelegate implementation:
-  virtual bool BasicStartupComplete(int* exit_code) override;
-  virtual void PreSandboxStartup() override;
-  virtual int RunProcess(
-      const std::string& process_type,
-      const MainFunctionParams& main_function_params) override;
+  bool BasicStartupComplete(int* exit_code) override;
+  void PreSandboxStartup() override;
+  int RunProcess(const std::string& process_type,
+                 const MainFunctionParams& main_function_params) override;
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
   virtual void ZygoteForked() override;
 #endif
-  virtual ContentBrowserClient* CreateContentBrowserClient() override;
-  virtual ContentRendererClient* CreateContentRendererClient() override;
+  ContentBrowserClient* CreateContentBrowserClient() override;
+  ContentRendererClient* CreateContentRendererClient() override;
 
   static void InitializeResourceBundle();
 

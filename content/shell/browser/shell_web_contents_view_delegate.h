@@ -14,11 +14,11 @@ namespace content {
 class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
  public:
   explicit ShellWebContentsViewDelegate(WebContents* web_contents);
-  virtual ~ShellWebContentsViewDelegate();
+  ~ShellWebContentsViewDelegate() override;
 
   // Overridden from WebContentsViewDelegate:
-  virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
-                               const ContextMenuParams& params) override;
+  void ShowContextMenu(RenderFrameHost* render_frame_host,
+                       const ContextMenuParams& params) override;
 
 #if defined(OS_MACOSX)
   void ActionPerformed(int id);

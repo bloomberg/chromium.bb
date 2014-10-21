@@ -144,7 +144,7 @@ class WebContents : public PageNavigator,
 
   CONTENT_EXPORT static WebContents* FromRenderFrameHost(RenderFrameHost* rfh);
 
-  virtual ~WebContents() {}
+  ~WebContents() override {}
 
   // Intrinsic tab state -------------------------------------------------------
 

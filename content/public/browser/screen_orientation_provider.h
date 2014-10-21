@@ -23,7 +23,7 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
  public:
   ScreenOrientationProvider(ScreenOrientationDispatcherHost* dispatcher_host,
                             WebContents* web_contents);
-  virtual ~ScreenOrientationProvider();
+  ~ScreenOrientationProvider() override;
 
   // Lock the screen orientation to |orientations|.
   void LockOrientation(int request_id,
@@ -41,7 +41,7 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
   static void SetDelegate(ScreenOrientationDelegate* delegate_);
 
   // WebContentsObserver
-  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override;
 
  private:
   struct LockInformation {

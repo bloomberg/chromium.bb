@@ -14,10 +14,10 @@ namespace content {
 class NotifyDoneForwarder : public WebContentsObserver,
                             public WebContentsUserData<NotifyDoneForwarder> {
  public:
-  virtual ~NotifyDoneForwarder();
+  ~NotifyDoneForwarder() override;
 
   // WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   friend class WebContentsUserData<NotifyDoneForwarder>;

@@ -45,7 +45,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   static TestPlugin* create(blink::WebFrame* frame,
                             const blink::WebPluginParams& params,
                             WebTestDelegate* delegate);
-  virtual ~TestPlugin();
+  ~TestPlugin() override;
 
   static const blink::WebString& MimeType();
   static const blink::WebString& CanCreateWithoutRendererMimeType();
@@ -85,7 +85,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   virtual bool isPlaceholder();
 
   // cc::TextureLayerClient methods:
-  virtual bool PrepareTextureMailbox(
+  bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,
       bool use_shared_memory) override;

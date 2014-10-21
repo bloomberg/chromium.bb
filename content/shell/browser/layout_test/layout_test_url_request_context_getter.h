@@ -40,12 +40,12 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
       net::NetLog* net_log);
 
  protected:
-  virtual ~LayoutTestURLRequestContextGetter();
+  ~LayoutTestURLRequestContextGetter() override;
 
   // ShellURLRequestContextGetter implementation.
-  virtual net::NetworkDelegate* CreateNetworkDelegate() override;
-  virtual net::ProxyConfigService* GetProxyConfigService() override;
-  virtual net::ProxyService* GetProxyService() override;
+  net::NetworkDelegate* CreateNetworkDelegate() override;
+  net::ProxyConfigService* GetProxyConfigService() override;
+  net::ProxyService* GetProxyService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestURLRequestContextGetter);

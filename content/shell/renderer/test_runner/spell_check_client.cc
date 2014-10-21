@@ -20,9 +20,9 @@ class HostMethodTask : public WebMethodTask<SpellCheckClient> {
   HostMethodTask(SpellCheckClient* object, CallbackMethodType callback)
       : WebMethodTask<SpellCheckClient>(object), callback_(callback) {}
 
-  virtual ~HostMethodTask() {}
+  ~HostMethodTask() override {}
 
-  virtual void RunIfValid() override { (object_->*callback_)(); }
+  void RunIfValid() override { (object_->*callback_)(); }
 
  private:
   CallbackMethodType callback_;

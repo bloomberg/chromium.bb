@@ -22,25 +22,29 @@ class PluginGetURLTest : public PluginTest {
  public:
   // Constructor.
   PluginGetURLTest(NPP id, NPNetscapeFuncs *host_functions);
-  virtual ~PluginGetURLTest();
+  ~PluginGetURLTest() override;
 
   //
   // NPAPI functions
   //
-  virtual NPError New(uint16 mode, int16 argc, const char* argn[],
-                      const char* argv[], NPSavedData* saved) override;
-  virtual NPError SetWindow(NPWindow* pNPWindow) override;
-  virtual NPError NewStream(NPMIMEType type, NPStream* stream,
-                            NPBool seekable, uint16* stype) override;
-  virtual int32   WriteReady(NPStream *stream) override;
-  virtual int32   Write(NPStream *stream, int32 offset, int32 len,
-                        void *buffer) override;
-  virtual NPError DestroyStream(NPStream *stream, NPError reason) override;
-  virtual void    StreamAsFile(NPStream* stream, const char* fname) override;
-  virtual void    URLNotify(const char* url, NPReason reason,
-                            void* data) override;
-  virtual void    URLRedirectNotify(const char* url, int32_t status,
-                                    void* notify_data) override;
+  NPError New(uint16 mode,
+              int16 argc,
+              const char* argn[],
+              const char* argv[],
+              NPSavedData* saved) override;
+  NPError SetWindow(NPWindow* pNPWindow) override;
+  NPError NewStream(NPMIMEType type,
+                    NPStream* stream,
+                    NPBool seekable,
+                    uint16* stype) override;
+  int32 WriteReady(NPStream* stream) override;
+  int32 Write(NPStream* stream, int32 offset, int32 len, void* buffer) override;
+  NPError DestroyStream(NPStream* stream, NPError reason) override;
+  void StreamAsFile(NPStream* stream, const char* fname) override;
+  void URLNotify(const char* url, NPReason reason, void* data) override;
+  void URLRedirectNotify(const char* url,
+                         int32_t status,
+                         void* notify_data) override;
 
  private:
   bool tests_started_;

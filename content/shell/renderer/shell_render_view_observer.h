@@ -22,15 +22,15 @@ class RenderView;
 class ShellRenderViewObserver : public RenderViewObserver {
  public:
   explicit ShellRenderViewObserver(RenderView* render_view);
-  virtual ~ShellRenderViewObserver();
+  ~ShellRenderViewObserver() override;
 
  private:
   // Message handlers.
   void OnEchoPong(int id, const std::string& body);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidClearWindowObject(blink::WebLocalFrame* frame) override;
 
   scoped_ptr<IPCEcho> ipc_echo_;
   DISALLOW_COPY_AND_ASSIGN(ShellRenderViewObserver);

@@ -31,7 +31,7 @@ class GpuVideoEncodeAccelerator
       public GpuCommandBufferStub::DestructionObserver {
  public:
   GpuVideoEncodeAccelerator(int32 host_route_id, GpuCommandBufferStub* stub);
-  virtual ~GpuVideoEncodeAccelerator();
+  ~GpuVideoEncodeAccelerator() override;
 
   // Initialize this accelerator with the given parameters and send
   // |init_done_msg| when complete.
@@ -42,19 +42,19 @@ class GpuVideoEncodeAccelerator
                   IPC::Message* init_done_msg);
 
   // IPC::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // media::VideoEncodeAccelerator::Client implementation.
-  virtual void RequireBitstreamBuffers(unsigned int input_count,
-                                       const gfx::Size& input_coded_size,
-                                       size_t output_buffer_size) override;
-  virtual void BitstreamBufferReady(int32 bitstream_buffer_id,
-                                    size_t payload_size,
-                                    bool key_frame) override;
-  virtual void NotifyError(media::VideoEncodeAccelerator::Error error) override;
+  void RequireBitstreamBuffers(unsigned int input_count,
+                               const gfx::Size& input_coded_size,
+                               size_t output_buffer_size) override;
+  void BitstreamBufferReady(int32 bitstream_buffer_id,
+                            size_t payload_size,
+                            bool key_frame) override;
+  void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
-  virtual void OnWillDestroyStub() override;
+  void OnWillDestroyStub() override;
 
   // Static query for supported profiles.  This query calls the appropriate
   // platform-specific version.

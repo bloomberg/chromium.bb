@@ -70,18 +70,18 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
  public:
   IPCResourceLoaderBridge(ResourceDispatcher* dispatcher,
                           const RequestInfo& request_info);
-  virtual ~IPCResourceLoaderBridge();
+  ~IPCResourceLoaderBridge() override;
 
   // ResourceLoaderBridge
-  virtual void SetRequestBody(ResourceRequestBody* request_body) override;
-  virtual bool Start(RequestPeer* peer) override;
-  virtual void Cancel() override;
-  virtual void SetDefersLoading(bool value) override;
-  virtual void DidChangePriority(net::RequestPriority new_priority,
-                                 int intra_priority_value) override;
-  virtual bool AttachThreadedDataReceiver(
+  void SetRequestBody(ResourceRequestBody* request_body) override;
+  bool Start(RequestPeer* peer) override;
+  void Cancel() override;
+  void SetDefersLoading(bool value) override;
+  void DidChangePriority(net::RequestPriority new_priority,
+                         int intra_priority_value) override;
+  bool AttachThreadedDataReceiver(
       blink::WebThreadedDataReceiver* threaded_data_receiver) override;
-  virtual void SyncLoad(SyncLoadResponse* response) override;
+  void SyncLoad(SyncLoadResponse* response) override;
 
  private:
   // The resource dispatcher for this loader.  The bridge doesn't own it, but

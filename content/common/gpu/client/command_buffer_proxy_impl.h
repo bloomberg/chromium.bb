@@ -62,7 +62,7 @@ class CommandBufferProxyImpl
       const std::string& msg, int id)> GpuConsoleMessageCallback;
 
   CommandBufferProxyImpl(GpuChannelHost* channel, int route_id);
-  virtual ~CommandBufferProxyImpl();
+  ~CommandBufferProxyImpl() override;
 
   // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
   // returns it as an owned pointer to a media::VideoDecodeAccelerator.  Returns
@@ -81,41 +81,40 @@ class CommandBufferProxyImpl
   scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder();
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   // CommandBuffer implementation:
-  virtual bool Initialize() override;
-  virtual State GetLastState() override;
-  virtual int32 GetLastToken() override;
-  virtual void Flush(int32 put_offset) override;
-  virtual void WaitForTokenInRange(int32 start, int32 end) override;
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override;
-  virtual void SetGetBuffer(int32 shm_id) override;
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                          int32* id) override;
-  virtual void DestroyTransferBuffer(int32 id) override;
+  bool Initialize() override;
+  State GetLastState() override;
+  int32 GetLastToken() override;
+  void Flush(int32 put_offset) override;
+  void WaitForTokenInRange(int32 start, int32 end) override;
+  void WaitForGetOffsetInRange(int32 start, int32 end) override;
+  void SetGetBuffer(int32 shm_id) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                  int32* id) override;
+  void DestroyTransferBuffer(int32 id) override;
 
   // gpu::GpuControl implementation:
-  virtual gpu::Capabilities GetCapabilities() override;
-  virtual int32 CreateImage(ClientBuffer buffer,
-                            size_t width,
-                            size_t height,
-                            unsigned internalformat) override;
-  virtual void DestroyImage(int32 id) override;
-  virtual int32 CreateGpuMemoryBufferImage(size_t width,
-                                           size_t height,
-                                           unsigned internalformat,
-                                           unsigned usage) override;
-  virtual uint32 InsertSyncPoint() override;
-  virtual uint32_t InsertFutureSyncPoint() override;
-  virtual void RetireSyncPoint(uint32_t sync_point) override;
-  virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) override;
-  virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) override;
-  virtual void SetSurfaceVisible(bool visible) override;
-  virtual uint32 CreateStreamTexture(uint32 texture_id) override;
+  gpu::Capabilities GetCapabilities() override;
+  int32 CreateImage(ClientBuffer buffer,
+                    size_t width,
+                    size_t height,
+                    unsigned internalformat) override;
+  void DestroyImage(int32 id) override;
+  int32 CreateGpuMemoryBufferImage(size_t width,
+                                   size_t height,
+                                   unsigned internalformat,
+                                   unsigned usage) override;
+  uint32 InsertSyncPoint() override;
+  uint32_t InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32_t sync_point) override;
+  void SignalSyncPoint(uint32 sync_point,
+                       const base::Closure& callback) override;
+  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SetSurfaceVisible(bool visible) override;
+  uint32 CreateStreamTexture(uint32 texture_id) override;
 
   int GetRouteID() const;
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
@@ -143,7 +142,7 @@ class CommandBufferProxyImpl
   // ContentGLContext::MakeCurrent prior to every GL call. It saves returning 6
   // ints redundantly when only the error is needed for the
   // CommandBufferProxyImpl implementation.
-  virtual gpu::error::Error GetLastError() override;
+  gpu::error::Error GetLastError() override;
 
   GpuChannelHost* channel() const { return channel_; }
 

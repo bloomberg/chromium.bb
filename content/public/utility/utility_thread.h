@@ -22,7 +22,7 @@ class CONTENT_EXPORT UtilityThread : public IPC::Sender {
   static UtilityThread* Get();
 
   UtilityThread();
-  virtual ~UtilityThread();
+  ~UtilityThread() override;
 
   // Releases the process if we are not (or no longer) in batch mode.
   virtual void ReleaseProcessIfNeeded() = 0;

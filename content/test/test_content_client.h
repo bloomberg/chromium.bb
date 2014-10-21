@@ -17,11 +17,11 @@ namespace content {
 class TestContentClient : public ContentClient {
  public:
   TestContentClient();
-  virtual ~TestContentClient();
+  ~TestContentClient() override;
 
   // ContentClient:
-  virtual std::string GetUserAgent() const override;
-  virtual base::StringPiece GetDataResource(
+  std::string GetUserAgent() const override;
+  base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
 

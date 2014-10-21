@@ -42,7 +42,7 @@ class UtilityProcessHost : public IPC::Sender,
       const scoped_refptr<UtilityProcessHostClient>& client,
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
 
-  virtual ~UtilityProcessHost() {}
+  ~UtilityProcessHost() override {}
 
   // Starts utility process in batch mode. Caller must call EndBatchMode()
   // to finish the utility process.

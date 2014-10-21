@@ -79,11 +79,9 @@ class PluginChannel::MessageFilter : public IPC::MessageFilter {
   }
 
   // IPC::MessageFilter:
-  virtual void OnFilterAdded(IPC::Sender* sender) override {
-    sender_ = sender;
-  }
+  void OnFilterAdded(IPC::Sender* sender) override { sender_ = sender; }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(PluginChannel::MessageFilter, message)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(PluginMsg_Init, OnInit)
       IPC_MESSAGE_HANDLER(PluginMsg_SignalModalDialogEvent,
@@ -96,7 +94,7 @@ class PluginChannel::MessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  virtual ~MessageFilter() {
+  ~MessageFilter() override {
     // Clean up in case of renderer crash.
     for (ModalDialogEventMap::iterator i = modal_dialog_event_map_.begin();
         i != modal_dialog_event_map_.end(); ++i) {

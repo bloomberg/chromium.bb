@@ -20,12 +20,12 @@ class GeofencingMessageFilter : public ChildMessageFilter {
   explicit GeofencingMessageFilter(ThreadSafeSender* thread_safe_sender);
 
  private:
-  virtual ~GeofencingMessageFilter();
+  ~GeofencingMessageFilter() override;
 
   // ChildMessageFilter implementation:
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

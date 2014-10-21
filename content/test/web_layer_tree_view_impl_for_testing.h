@@ -65,27 +65,27 @@ class WebLayerTreeViewImplForTesting
   virtual void clearSelection() override;
 
   // cc::LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame(int frame_id) override {}
-  virtual void DidBeginMainFrame() override {}
-  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
-  virtual void Layout() override;
-  virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
-                                   const gfx::Vector2d& outer_delta,
-                                   float page_scale,
-                                   float top_controls_delta) override;
-  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
-                                   float page_scale,
-                                   float top_controls_delta) override;
-  virtual void RequestNewOutputSurface(bool fallback) override;
-  virtual void DidInitializeOutputSurface() override {}
-  virtual void WillCommit() override {}
-  virtual void DidCommit() override {}
-  virtual void DidCommitAndDrawFrame() override {}
-  virtual void DidCompleteSwapBuffers() override {}
+  void WillBeginMainFrame(int frame_id) override {}
+  void DidBeginMainFrame() override {}
+  void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
+  void Layout() override;
+  void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
+                           const gfx::Vector2d& outer_delta,
+                           float page_scale,
+                           float top_controls_delta) override;
+  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                           float page_scale,
+                           float top_controls_delta) override;
+  void RequestNewOutputSurface(bool fallback) override;
+  void DidInitializeOutputSurface() override {}
+  void WillCommit() override {}
+  void DidCommit() override {}
+  void DidCommitAndDrawFrame() override {}
+  void DidCompleteSwapBuffers() override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  virtual void DidPostSwapBuffers() override {}
-  virtual void DidAbortSwapBuffers() override {}
+  void DidPostSwapBuffers() override {}
+  void DidAbortSwapBuffers() override {}
 
  private:
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;

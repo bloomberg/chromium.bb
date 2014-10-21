@@ -17,10 +17,10 @@ class DBMessageFilter : public IPC::MessageFilter {
   DBMessageFilter();
 
   // IPC::MessageFilter
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~DBMessageFilter() {}
+  ~DBMessageFilter() override {}
 
  private:
   void OnDatabaseUpdateSize(const std::string& origin_identifier,

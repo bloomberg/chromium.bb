@@ -56,7 +56,7 @@ class Shell : public WebContentsDelegate,
   static const int kDefaultTestWindowWidthDip;
   static const int kDefaultTestWindowHeightDip;
 
-  virtual ~Shell();
+  ~Shell() override;
 
   void LoadURL(const GURL& url);
   void LoadURLForFrame(const GURL& url, const std::string& frame_name);
@@ -113,49 +113,46 @@ class Shell : public WebContentsDelegate,
 #endif
 
   // WebContentsDelegate
-  virtual WebContents* OpenURLFromTab(WebContents* source,
-                                      const OpenURLParams& params) override;
-  virtual void AddNewContents(WebContents* source,
-                              WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual void LoadingStateChanged(WebContents* source,
-                                   bool to_different_document) override;
+  WebContents* OpenURLFromTab(WebContents* source,
+                              const OpenURLParams& params) override;
+  void AddNewContents(WebContents* source,
+                      WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  void LoadingStateChanged(WebContents* source,
+                           bool to_different_document) override;
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(WebContents* source,
                                    double progress) override;
 #endif
-  virtual void ToggleFullscreenModeForTab(WebContents* web_contents,
-                                          bool enter_fullscreen) override;
-  virtual bool IsFullscreenForTabOrPending(
+  void ToggleFullscreenModeForTab(WebContents* web_contents,
+                                  bool enter_fullscreen) override;
+  bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const override;
-  virtual void RequestToLockMouse(WebContents* web_contents,
-                                  bool user_gesture,
-                                  bool last_unlocked_by_target) override;
-  virtual void CloseContents(WebContents* source) override;
-  virtual bool CanOverscrollContent() const override;
-  virtual void DidNavigateMainFramePostCommit(
-      WebContents* web_contents) override;
-  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  void RequestToLockMouse(WebContents* web_contents,
+                          bool user_gesture,
+                          bool last_unlocked_by_target) override;
+  void CloseContents(WebContents* source) override;
+  bool CanOverscrollContent() const override;
+  void DidNavigateMainFramePostCommit(WebContents* web_contents) override;
+  JavaScriptDialogManager* GetJavaScriptDialogManager() override;
 #if defined(OS_MACOSX)
-  virtual void HandleKeyboardEvent(
-      WebContents* source,
-      const NativeWebKeyboardEvent& event) override;
+  void HandleKeyboardEvent(WebContents* source,
+                           const NativeWebKeyboardEvent& event) override;
 #endif
-  virtual bool AddMessageToConsole(WebContents* source,
-                                   int32 level,
-                                   const base::string16& message,
-                                   int32 line_no,
-                                   const base::string16& source_id) override;
-  virtual void RendererUnresponsive(WebContents* source) override;
-  virtual void ActivateContents(WebContents* contents) override;
-  virtual void DeactivateContents(WebContents* contents) override;
-  virtual void WorkerCrashed(WebContents* source) override;
-  virtual bool HandleContextMenu(const content::ContextMenuParams& params)
-      override;
-  virtual void WebContentsFocused(WebContents* contents) override;
+  bool AddMessageToConsole(WebContents* source,
+                           int32 level,
+                           const base::string16& message,
+                           int32 line_no,
+                           const base::string16& source_id) override;
+  void RendererUnresponsive(WebContents* source) override;
+  void ActivateContents(WebContents* contents) override;
+  void DeactivateContents(WebContents* contents) override;
+  void WorkerCrashed(WebContents* source) override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  void WebContentsFocused(WebContents* contents) override;
 
  private:
   enum UIControl {
@@ -214,7 +211,7 @@ class Shell : public WebContentsDelegate,
   gfx::NativeView GetContentView();
 
   // WebContentsObserver
-  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
+  void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
 
   void InnerShowDevTools(const std::string& settings,
                          const std::string& frontend_url);

@@ -18,16 +18,16 @@ class DevToolsHttpHandler;
 class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
  public:
   explicit ShellDevToolsDelegate(BrowserContext* browser_context);
-  virtual ~ShellDevToolsDelegate();
+  ~ShellDevToolsDelegate() override;
 
   // Stops http server.
   void Stop();
 
   // DevToolsHttpHandlerDelegate implementation.
-  virtual std::string GetDiscoveryPageHTML() override;
-  virtual bool BundlesFrontendResources() override;
-  virtual base::FilePath GetDebugFrontendDir() override;
-  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
+  std::string GetDiscoveryPageHTML() override;
+  bool BundlesFrontendResources() override;
+  base::FilePath GetDebugFrontendDir() override;
+  scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) override;
 
@@ -45,19 +45,18 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
 class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
  public:
   explicit ShellDevToolsManagerDelegate(BrowserContext* browser_context);
-  virtual ~ShellDevToolsManagerDelegate();
+  ~ShellDevToolsManagerDelegate() override;
 
   // DevToolsManagerDelegate implementation.
-  virtual void Inspect(BrowserContext* browser_context,
-                       DevToolsAgentHost* agent_host) override {}
-  virtual void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
-                                         bool attached) override {}
-  virtual base::DictionaryValue* HandleCommand(
-      DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command) override;
-  virtual scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) override;
-  virtual void EnumerateTargets(TargetCallback callback) override;
-  virtual std::string GetPageThumbnailData(const GURL& url) override;
+  void Inspect(BrowserContext* browser_context,
+               DevToolsAgentHost* agent_host) override {}
+  void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
+                                 bool attached) override {}
+  base::DictionaryValue* HandleCommand(DevToolsAgentHost* agent_host,
+                                       base::DictionaryValue* command) override;
+  scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) override;
+  void EnumerateTargets(TargetCallback callback) override;
+  std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   BrowserContext* browser_context_;

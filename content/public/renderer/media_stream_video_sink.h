@@ -63,7 +63,7 @@ class CONTENT_EXPORT MediaStreamVideoSink : public MediaStreamSink {
                                    const blink::WebMediaStreamTrack& track);
 
  protected:
-  virtual ~MediaStreamVideoSink() {}
+  ~MediaStreamVideoSink() override {}
 };
 
 

@@ -32,11 +32,14 @@ class PluginArgumentsTest : public PluginTest {
   PluginArgumentsTest(NPP id, NPNetscapeFuncs *host_functions);
 
   // Initialize this PluginTest based on the arguments from NPP_New.
-  virtual NPError  New(uint16 mode, int16 argc, const char* argn[],
-                       const char* argv[], NPSavedData* saved) override;
+  NPError New(uint16 mode,
+              int16 argc,
+              const char* argn[],
+              const char* argv[],
+              NPSavedData* saved) override;
 
   // NPAPI SetWindow handler.
-  virtual NPError SetWindow(NPWindow* pNPWindow) override;
+  NPError SetWindow(NPWindow* pNPWindow) override;
 };
 
 }  // namespace NPAPIClient

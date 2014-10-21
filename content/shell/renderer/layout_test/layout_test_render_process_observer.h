@@ -28,15 +28,15 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
   static LayoutTestRenderProcessObserver* GetInstance();
 
   LayoutTestRenderProcessObserver();
-  virtual ~LayoutTestRenderProcessObserver();
+  ~LayoutTestRenderProcessObserver() override;
 
   void SetTestDelegate(WebTestDelegate* delegate);
   void SetMainWindow(RenderView* view);
 
   // RenderProcessObserver implementation.
-  virtual void WebKitInitialized() override;
-  virtual void OnRenderProcessShutdown() override;
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  void WebKitInitialized() override;
+  void OnRenderProcessShutdown() override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
   WebTestDelegate* test_delegate() const {
     return test_delegate_;

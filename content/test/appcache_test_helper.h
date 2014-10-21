@@ -20,18 +20,17 @@ namespace content {
 class AppCacheTestHelper : public AppCacheStorage::Delegate {
  public:
   AppCacheTestHelper();
-  virtual ~AppCacheTestHelper();
+  ~AppCacheTestHelper() override;
   void AddGroupAndCache(AppCacheServiceImpl* appcache_service,
                         const GURL& manifest_url);
 
   void GetOriginsWithCaches(AppCacheServiceImpl* appcache_service,
                             std::set<GURL>* origins);
  private:
-  virtual void OnGroupAndNewestCacheStored(
-      AppCacheGroup* group,
-      AppCache* newest_cache,
-      bool success,
-      bool would_exceed_quota) override;
+  void OnGroupAndNewestCacheStored(AppCacheGroup* group,
+                                   AppCache* newest_cache,
+                                   bool success,
+                                   bool would_exceed_quota) override;
   void OnGotAppCacheInfo(int rv);
 
   int group_id_;

@@ -25,17 +25,16 @@ class GamepadController
       public RendererGamepadProvider {
  public:
   static base::WeakPtr<GamepadController> Create(WebTestDelegate* delegate);
-  virtual ~GamepadController();
+  ~GamepadController() override;
 
   void Reset();
   void Install(blink::WebFrame* frame);
 
   // RendererGamepadProvider implementation.
-  virtual void SampleGamepads(
-      blink::WebGamepads& gamepads) override;
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
-  virtual void SendStartMessage() override;
-  virtual void SendStopMessage() override;
+  void SampleGamepads(blink::WebGamepads& gamepads) override;
+  bool OnControlMessageReceived(const IPC::Message& msg) override;
+  void SendStartMessage() override;
+  void SendStopMessage() override;
 
  private:
   friend class GamepadControllerBindings;

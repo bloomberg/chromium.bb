@@ -19,15 +19,16 @@ class ShellSpeechRecognitionManagerDelegate
     : public SpeechRecognitionManagerDelegate {
  public:
   ShellSpeechRecognitionManagerDelegate() {}
-  virtual ~ShellSpeechRecognitionManagerDelegate() {}
+  ~ShellSpeechRecognitionManagerDelegate() override {}
 
   // SpeechRecognitionManagerDelegate methods.
-  virtual void GetDiagnosticInformation(
-      bool* can_report_metrics, std::string* hardware_info) override {}
-  virtual void CheckRecognitionIsAllowed(int session_id,
+  void GetDiagnosticInformation(bool* can_report_metrics,
+                                std::string* hardware_info) override {}
+  void CheckRecognitionIsAllowed(
+      int session_id,
       base::Callback<void(bool ask_user, bool is_allowed)> callback) override;
-  virtual SpeechRecognitionEventListener* GetEventListener() override;
-  virtual bool FilterProfanities(int render_process_id) override;
+  SpeechRecognitionEventListener* GetEventListener() override;
+  bool FilterProfanities(int render_process_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellSpeechRecognitionManagerDelegate);

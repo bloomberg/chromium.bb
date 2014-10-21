@@ -33,17 +33,17 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
   static bool IsConfigurationSupported(Format format, Usage usage);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual uint32 GetStride() const override;
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const override;
+  void* Map() override;
+  void Unmap() override;
+  uint32 GetStride() const override;
+  gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:
   GpuMemoryBufferImplOzoneNativeBuffer(const gfx::Size& size,
                                        Format format,
                                        const DestructionCallback& callback,
                                        const gfx::GpuMemoryBufferId& id);
-  virtual ~GpuMemoryBufferImplOzoneNativeBuffer();
+  ~GpuMemoryBufferImplOzoneNativeBuffer() override;
 
   gfx::GpuMemoryBufferId id_;
 

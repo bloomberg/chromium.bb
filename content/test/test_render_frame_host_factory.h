@@ -20,11 +20,11 @@ namespace content {
 class TestRenderFrameHostFactory : public RenderFrameHostFactory {
  public:
   TestRenderFrameHostFactory();
-  virtual ~TestRenderFrameHostFactory();
+  ~TestRenderFrameHostFactory() override;
 
  protected:
   // RenderFrameHostFactory implementation.
-  virtual scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
+  scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
       RenderViewHostImpl* render_view_host,
       RenderFrameHostDelegate* delegate,
       FrameTree* frame_tree,

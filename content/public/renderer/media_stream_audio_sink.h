@@ -51,7 +51,7 @@ class CONTENT_EXPORT MediaStreamAudioSink : public MediaStreamSink {
   virtual void OnSetFormat(const media::AudioParameters& params) = 0;
 
  protected:
-  virtual ~MediaStreamAudioSink() {}
+  ~MediaStreamAudioSink() override {}
 };
 
 }  // namespace content

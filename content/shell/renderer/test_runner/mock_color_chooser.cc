@@ -17,7 +17,7 @@ class HostMethodTask : public WebMethodTask<MockColorChooser> {
       : WebMethodTask<MockColorChooser>(object),
         callback_(callback) {}
 
-  virtual void RunIfValid() override { (object_->*callback_)(); }
+  void RunIfValid() override { (object_->*callback_)(); }
 
  private:
   CallbackMethodType callback_;

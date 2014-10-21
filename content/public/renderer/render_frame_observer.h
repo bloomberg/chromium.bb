@@ -75,17 +75,17 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidCommitCompositorFrame() {}
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
 
   RenderFrame* render_frame() const;
   int routing_id() const { return routing_id_; }
 
  protected:
   explicit RenderFrameObserver(RenderFrame* render_frame);
-  virtual ~RenderFrameObserver();
+  ~RenderFrameObserver() override;
 
  private:
   friend class RenderFrameImpl;

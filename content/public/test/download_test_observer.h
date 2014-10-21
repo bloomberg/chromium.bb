@@ -27,7 +27,7 @@ class DownloadUpdatedObserver : public DownloadItem::Observer {
   // The filter passed may be called multiple times, even after it
   // returns true.
   DownloadUpdatedObserver(DownloadItem* item, EventFilter filter);
-  virtual ~DownloadUpdatedObserver();
+  ~DownloadUpdatedObserver() override;
 
   // Returns when either the event has been seen (at least once since
   // object construction) or the item is destroyed.  Return value indicates
@@ -37,8 +37,8 @@ class DownloadUpdatedObserver : public DownloadItem::Observer {
 
  private:
   // DownloadItem::Observer
-  virtual void OnDownloadUpdated(DownloadItem* item) override;
-  virtual void OnDownloadDestroyed(DownloadItem* item) override;
+  void OnDownloadUpdated(DownloadItem* item) override;
+  void OnDownloadDestroyed(DownloadItem* item) override;
 
   DownloadItem* item_;
   EventFilter filter_;
@@ -74,7 +74,7 @@ class DownloadTestObserver : public DownloadManager::Observer,
                        size_t wait_count,
                        DangerousDownloadAction dangerous_download_action);
 
-  virtual ~DownloadTestObserver();
+  ~DownloadTestObserver() override;
 
   // Wait for one of the finish conditions.
   void WaitForFinished();
@@ -83,13 +83,12 @@ class DownloadTestObserver : public DownloadManager::Observer,
   bool IsFinished() const;
 
   // DownloadItem::Observer
-  virtual void OnDownloadUpdated(DownloadItem* download) override;
-  virtual void OnDownloadDestroyed(DownloadItem* download) override;
+  void OnDownloadUpdated(DownloadItem* download) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
 
   // DownloadManager::Observer
-  virtual void OnDownloadCreated(
-      DownloadManager* manager, DownloadItem* item) override;
-  virtual void ManagerGoingDown(DownloadManager* manager) override;
+  void OnDownloadCreated(DownloadManager* manager, DownloadItem* item) override;
+  void ManagerGoingDown(DownloadManager* manager) override;
 
   size_t NumDangerousDownloadsSeen() const;
 
@@ -178,10 +177,10 @@ class DownloadTestObserverTerminal : public DownloadTestObserver {
       size_t wait_count,
       DangerousDownloadAction dangerous_download_action);
 
-  virtual ~DownloadTestObserverTerminal();
+  ~DownloadTestObserverTerminal() override;
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) override;
+  bool IsDownloadInFinalState(DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverTerminal);
 };
@@ -198,10 +197,10 @@ class DownloadTestObserverInProgress : public DownloadTestObserver {
   DownloadTestObserverInProgress(
       DownloadManager* download_manager, size_t wait_count);
 
-  virtual ~DownloadTestObserverInProgress();
+  ~DownloadTestObserverInProgress() override;
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) override;
+  bool IsDownloadInFinalState(DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInProgress);
 };
@@ -215,10 +214,10 @@ class DownloadTestObserverInterrupted : public DownloadTestObserver {
       size_t wait_count,
       DangerousDownloadAction dangerous_download_action);
 
-  virtual ~DownloadTestObserverInterrupted();
+  ~DownloadTestObserverInterrupted() override;
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) override;
+  bool IsDownloadInFinalState(DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInterrupted);
 };
@@ -240,18 +239,16 @@ class DownloadTestFlushObserver
   void WaitForFlush();
 
   // DownloadsManager observer methods.
-  virtual void OnDownloadCreated(
-      DownloadManager* manager,
-      DownloadItem* item) override;
+  void OnDownloadCreated(DownloadManager* manager, DownloadItem* item) override;
 
   // DownloadItem observer methods.
-  virtual void OnDownloadUpdated(DownloadItem* download) override;
-  virtual void OnDownloadDestroyed(DownloadItem* download) override;
+  void OnDownloadUpdated(DownloadItem* download) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadTestFlushObserver>;
 
-  virtual ~DownloadTestFlushObserver();
+  ~DownloadTestFlushObserver() override;
 
  private:
   typedef std::set<DownloadItem*> DownloadSet;

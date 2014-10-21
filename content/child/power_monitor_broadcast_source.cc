@@ -19,7 +19,7 @@ class PowerMessageFilter : public IPC::MessageFilter {
         message_loop_(message_loop) {
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PowerMessageFilter, message)
       IPC_MESSAGE_HANDLER(PowerMonitorMsg_PowerStateChange, OnPowerStateChange)
@@ -37,7 +37,7 @@ class PowerMessageFilter : public IPC::MessageFilter {
  private:
   friend class base::RefCounted<PowerMessageFilter>;
 
-  virtual ~PowerMessageFilter() {};
+  ~PowerMessageFilter() override{};
 
   void OnPowerStateChange(bool on_battery_power) {
     message_loop_->PostTask(FROM_HERE,

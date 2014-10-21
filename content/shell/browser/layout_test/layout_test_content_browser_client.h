@@ -17,23 +17,23 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   static LayoutTestContentBrowserClient* Get();
 
   LayoutTestContentBrowserClient();
-  virtual ~LayoutTestContentBrowserClient();
+  ~LayoutTestContentBrowserClient() override;
 
   // Will be lazily created when running layout tests.
   LayoutTestNotificationManager* GetLayoutTestNotificationManager();
 
   // ContentBrowserClient overrides.
-  virtual void RenderProcessWillLaunch(RenderProcessHost* host) override;
-  virtual void RequestDesktopNotificationPermission(
+  void RenderProcessWillLaunch(RenderProcessHost* host) override;
+  void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       RenderFrameHost* render_frame_host,
       const base::Callback<void(blink::WebNotificationPermission)>& callback)
-          override;
-  virtual blink::WebNotificationPermission
-      CheckDesktopNotificationPermission(
-          const GURL& source_url,
-          ResourceContext* context,
-          int render_process_id) override;
+      override;
+  blink::WebNotificationPermission CheckDesktopNotificationPermission(
+      const GURL& source_url,
+      ResourceContext* context,
+      int render_process_id) override;
+
  private:
   scoped_ptr<LayoutTestNotificationManager> layout_test_notification_manager_;
 };

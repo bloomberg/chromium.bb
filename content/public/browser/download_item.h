@@ -99,7 +99,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
     virtual ~Observer() {}
   };
 
-  virtual ~DownloadItem() {}
+  ~DownloadItem() override {}
 
   // Observation ---------------------------------------------------------------
 

@@ -32,13 +32,13 @@ class QuotaMessageFilter : public ChildMessageFilter {
   void ClearThreadRequests(int thread_id);
 
  protected:
-  virtual ~QuotaMessageFilter();
+  ~QuotaMessageFilter() override;
 
  private:
   // ChildMessageFilter implementation:
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   typedef std::map<int, int> RequestIdToThreadId;
 

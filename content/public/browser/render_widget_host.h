@@ -114,7 +114,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // hosts.
   static scoped_ptr<RenderWidgetHostIterator> GetRenderWidgetHosts();
 
-  virtual ~RenderWidgetHost() {}
+  ~RenderWidgetHost() override {}
 
   // Update the text direction of the focused input element and notify it to a
   // renderer process.

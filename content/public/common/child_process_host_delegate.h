@@ -16,7 +16,7 @@ namespace content {
 // Interface that all users of ChildProcessHost need to provide.
 class ChildProcessHostDelegate : public IPC::Listener {
  public:
-  virtual ~ChildProcessHostDelegate() {}
+  ~ChildProcessHostDelegate() override {}
 
   // Delegates return true if it's ok to shut down the child process (which is
   // the default return value). The exception is if the host is in the middle of

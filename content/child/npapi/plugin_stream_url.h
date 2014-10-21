@@ -39,28 +39,26 @@ class PluginStreamUrl : public PluginStream,
   // Stop sending the stream to the client.
   // Overrides the base Close so we can cancel our fetching the URL if
   // it is still loading.
-  virtual bool Close(NPReason reason) override;
-  virtual WebPluginResourceClient* AsResourceClient() override;
-  virtual void CancelRequest() override;
+  bool Close(NPReason reason) override;
+  WebPluginResourceClient* AsResourceClient() override;
+  void CancelRequest() override;
 
   // WebPluginResourceClient methods
-  virtual void WillSendRequest(const GURL& url, int http_status_code) override;
-  virtual void DidReceiveResponse(const std::string& mime_type,
-                                  const std::string& headers,
-                                  uint32 expected_length,
-                                  uint32 last_modified,
-                                  bool request_is_seekable) override;
-  virtual void DidReceiveData(const char* buffer,
-                              int length,
-                              int data_offset) override;
-  virtual void DidFinishLoading(unsigned long resource_id) override;
-  virtual void DidFail(unsigned long resource_id) override;
-  virtual bool IsMultiByteResponseExpected() override;
-  virtual int ResourceId() override;
-  virtual void AddRangeRequestResourceId(unsigned long resource_id) override;
+  void WillSendRequest(const GURL& url, int http_status_code) override;
+  void DidReceiveResponse(const std::string& mime_type,
+                          const std::string& headers,
+                          uint32 expected_length,
+                          uint32 last_modified,
+                          bool request_is_seekable) override;
+  void DidReceiveData(const char* buffer, int length, int data_offset) override;
+  void DidFinishLoading(unsigned long resource_id) override;
+  void DidFail(unsigned long resource_id) override;
+  bool IsMultiByteResponseExpected() override;
+  int ResourceId() override;
+  void AddRangeRequestResourceId(unsigned long resource_id) override;
 
  protected:
-  virtual ~PluginStreamUrl();
+  ~PluginStreamUrl() override;
 
  private:
   void SetDeferLoading(bool value);

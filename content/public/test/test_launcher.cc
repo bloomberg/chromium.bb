@@ -119,13 +119,12 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   }
 
   // base::TestLauncherDelegate:
-  virtual bool ShouldRunTest(const testing::TestCase* test_case,
-                             const testing::TestInfo* test_info) override;
-  virtual size_t RunTests(base::TestLauncher* test_launcher,
-                          const std::vector<std::string>& test_names) override;
-  virtual size_t RetryTests(
-      base::TestLauncher* test_launcher,
-      const std::vector<std::string>& test_names) override;
+  bool ShouldRunTest(const testing::TestCase* test_case,
+                     const testing::TestInfo* test_info) override;
+  size_t RunTests(base::TestLauncher* test_launcher,
+                  const std::vector<std::string>& test_names) override;
+  size_t RetryTests(base::TestLauncher* test_launcher,
+                    const std::vector<std::string>& test_names) override;
 
  private:
   void DoRunTest(base::TestLauncher* test_launcher,

@@ -33,17 +33,17 @@ class PluginChannel : public NPChannelBase {
   static void NotifyRenderersOfPendingShutdown();
 
   // IPC::Listener:
-  virtual bool Send(IPC::Message* msg) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool Send(IPC::Message* msg) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   int renderer_id() { return renderer_id_; }
 
-  virtual int GenerateRouteID() override;
+  int GenerateRouteID() override;
 
   // Returns the event that's set when a call to the renderer causes a modal
   // dialog to come up.
-  virtual base::WaitableEvent* GetModalDialogEvent(int render_view_id) override;
+  base::WaitableEvent* GetModalDialogEvent(int render_view_id) override;
 
   bool in_send() { return in_send_ != 0; }
 
@@ -57,13 +57,13 @@ class PluginChannel : public NPChannelBase {
 #endif
 
  protected:
-  virtual ~PluginChannel();
+  ~PluginChannel() override;
 
   // NPChannelBase::
-  virtual void CleanUp() override;
-  virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
-                    bool create_pipe_now,
-                    base::WaitableEvent* shutdown_event) override;
+  void CleanUp() override;
+  bool Init(base::MessageLoopProxy* ipc_message_loop,
+            bool create_pipe_now,
+            base::WaitableEvent* shutdown_event) override;
 
  private:
   class MessageFilter;
@@ -71,7 +71,7 @@ class PluginChannel : public NPChannelBase {
   // Called on the plugin thread
   PluginChannel();
 
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) override;
+  bool OnControlMessageReceived(const IPC::Message& msg) override;
 
   static NPChannelBase* ClassFactory() { return new PluginChannel(); }
 

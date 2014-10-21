@@ -30,11 +30,11 @@ class ShellPluginServiceFilter;
 class LayoutTestBrowserMainParts : public ShellBrowserMainParts {
  public:
   explicit LayoutTestBrowserMainParts(const MainFunctionParams& parameters);
-  virtual ~LayoutTestBrowserMainParts();
+  ~LayoutTestBrowserMainParts() override;
 
  private:
-  virtual void InitializeBrowserContexts() override;
-  virtual void InitializeMessageLoopContext() override;
+  void InitializeBrowserContexts() override;
+  void InitializeMessageLoopContext() override;
 
 #if defined(ENABLE_PLUGINS)
   scoped_ptr<ShellPluginServiceFilter> plugin_service_filter_;

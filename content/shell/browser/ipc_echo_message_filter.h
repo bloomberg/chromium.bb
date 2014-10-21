@@ -16,10 +16,10 @@ class IPCEchoMessageFilter : public BrowserMessageFilter {
   IPCEchoMessageFilter();
 
  private:
-  virtual ~IPCEchoMessageFilter();
+  ~IPCEchoMessageFilter() override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnEchoPing(int routing_id, int id, const std::string& body);
 

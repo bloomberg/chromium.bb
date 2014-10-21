@@ -15,7 +15,7 @@ class SocketStreamHandleData : public base::SupportsUserData::Data {
  public:
   explicit SocketStreamHandleData(int render_frame_id)
       : render_frame_id_(render_frame_id) {}
-  virtual ~SocketStreamHandleData() {}
+  ~SocketStreamHandleData() override {}
 
   int render_frame_id() const { return render_frame_id_; }
 

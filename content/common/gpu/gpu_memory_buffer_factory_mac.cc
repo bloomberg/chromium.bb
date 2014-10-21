@@ -15,7 +15,7 @@ namespace {
 class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
  public:
   // Overridden from GpuMemoryBufferFactory:
-  virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
+  gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
@@ -29,7 +29,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
         return gfx::GpuMemoryBufferHandle();
     }
   }
-  virtual void DestroyGpuMemoryBuffer(
+  void DestroyGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle) override {
     switch (handle.type) {
       case gfx::IO_SURFACE_BUFFER:
@@ -40,7 +40,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
         break;
     }
   }
-  virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
+  scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,

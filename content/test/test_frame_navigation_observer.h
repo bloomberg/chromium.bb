@@ -32,7 +32,7 @@ class TestFrameNavigationObserver : public WebContentsObserver {
   // As above but waits for one navigation.
   explicit TestFrameNavigationObserver(FrameTreeNode* node);
 
-  virtual ~TestFrameNavigationObserver();
+  ~TestFrameNavigationObserver() override;
 
   // Runs a nested message loop and blocks until the expected number of
   // navigations are complete.
@@ -40,15 +40,13 @@ class TestFrameNavigationObserver : public WebContentsObserver {
 
  private:
   // WebContentsObserver
-  virtual void DidStartProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
-  virtual void DidNavigateAnyFrame(
-      RenderFrameHost* render_frame_host,
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) override;
+  void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
+                                       const GURL& validated_url,
+                                       bool is_error_page,
+                                       bool is_iframe_srcdoc) override;
+  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                           const LoadCommittedDetails& details,
+                           const FrameNavigateParams& params) override;
 
   // The id of the FrameTreeNode in which navigations are peformed.
   int frame_tree_node_id_;

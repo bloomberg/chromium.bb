@@ -21,7 +21,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       AllocationCallback;
   typedef base::Closure DestructionCallback;
 
-  virtual ~GpuMemoryBufferImpl();
+  ~GpuMemoryBufferImpl() override;
 
   // Creates a GPU memory buffer instance with |size| and |format| for |usage|
   // by the current process and |client_id|.
@@ -64,9 +64,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   static size_t BytesPerPixel(Format format);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual bool IsMapped() const override;
-  virtual Format GetFormat() const override;
-  virtual ClientBuffer AsClientBuffer() override;
+  bool IsMapped() const override;
+  Format GetFormat() const override;
+  ClientBuffer AsClientBuffer() override;
 
  protected:
   GpuMemoryBufferImpl(const gfx::Size& size,

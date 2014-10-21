@@ -40,17 +40,17 @@ class BitmapData;
 class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
  public:
   HostSharedBitmapManager();
-  virtual ~HostSharedBitmapManager();
+  ~HostSharedBitmapManager() override;
 
   static HostSharedBitmapManager* current();
 
   // cc::SharedBitmapManager implementation.
-  virtual scoped_ptr<cc::SharedBitmap> AllocateSharedBitmap(
+  scoped_ptr<cc::SharedBitmap> AllocateSharedBitmap(
       const gfx::Size& size) override;
-  virtual scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
+  scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size& size,
       const cc::SharedBitmapId&) override;
-  virtual scoped_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
+  scoped_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
       base::SharedMemory*) override;
 
   void AllocateSharedBitmapForChild(

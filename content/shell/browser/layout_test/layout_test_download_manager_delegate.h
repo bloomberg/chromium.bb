@@ -18,12 +18,11 @@ class DownloadItem;
 class LayoutTestDownloadManagerDelegate : public ShellDownloadManagerDelegate {
  public:
   LayoutTestDownloadManagerDelegate();
-  virtual ~LayoutTestDownloadManagerDelegate();
+  ~LayoutTestDownloadManagerDelegate() override;
 
   // ShellDownloadManagerDelegate implementation.
-  virtual bool ShouldOpenDownload(
-      DownloadItem* item,
-      const DownloadOpenDelayedCallback& callback) override;
+  bool ShouldOpenDownload(DownloadItem* item,
+                          const DownloadOpenDelayedCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestDownloadManagerDelegate);

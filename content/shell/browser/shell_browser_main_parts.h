@@ -32,15 +32,15 @@ class ShellDevToolsDelegate;
 class ShellBrowserMainParts : public BrowserMainParts {
  public:
   explicit ShellBrowserMainParts(const MainFunctionParams& parameters);
-  virtual ~ShellBrowserMainParts();
+  ~ShellBrowserMainParts() override;
 
   // BrowserMainParts overrides.
-  virtual void PreEarlyInitialization() override;
-  virtual void PreMainMessageLoopStart() override;
-  virtual void PostMainMessageLoopStart() override;
-  virtual void PreMainMessageLoopRun() override;
-  virtual bool MainMessageLoopRun(int* result_code) override;
-  virtual void PostMainMessageLoopRun() override;
+  void PreEarlyInitialization() override;
+  void PreMainMessageLoopStart() override;
+  void PostMainMessageLoopStart() override;
+  void PreMainMessageLoopRun() override;
+  bool MainMessageLoopRun(int* result_code) override;
+  void PostMainMessageLoopRun() override;
 
   ShellDevToolsDelegate* devtools_delegate() {
     return devtools_delegate_.get();

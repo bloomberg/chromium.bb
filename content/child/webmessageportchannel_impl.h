@@ -52,7 +52,7 @@ class WebMessagePortChannelImpl
 
  private:
   friend class base::RefCountedThreadSafe<WebMessagePortChannelImpl>;
-  virtual ~WebMessagePortChannelImpl();
+  ~WebMessagePortChannelImpl() override;
 
   // WebMessagePortChannel implementation.
   virtual void setClient(blink::WebMessagePortChannelClient* client);
@@ -69,7 +69,7 @@ class WebMessagePortChannelImpl
                    blink::WebMessagePortChannelArray* channels);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnMessage(const base::string16& message,
                  const std::vector<int>& sent_message_port_ids,
