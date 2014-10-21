@@ -95,7 +95,10 @@ TEST(ParseWebViewsInfo, Types) {
   AssertTypeIsOk("background_page", WebViewInfo::kBackgroundPage);
   AssertTypeIsOk("page", WebViewInfo::kPage);
   AssertTypeIsOk("worker", WebViewInfo::kWorker);
+  AssertTypeIsOk("webview", WebViewInfo::kWebView);
+  AssertTypeIsOk("iframe", WebViewInfo::kIFrame);
   AssertTypeIsOk("other", WebViewInfo::kOther);
+  AssertTypeIsOk("service_worker", WebViewInfo::kServiceWorker);
   AssertFails("[{\"type\": \"\", \"id\": \"1\", \"url\": \"http://page1\"}]");
 }
 
