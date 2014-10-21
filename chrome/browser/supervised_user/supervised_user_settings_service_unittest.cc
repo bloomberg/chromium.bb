@@ -20,10 +20,10 @@ namespace {
 class MockSyncErrorFactory : public syncer::SyncErrorFactory {
  public:
   explicit MockSyncErrorFactory(syncer::ModelType type);
-  virtual ~MockSyncErrorFactory();
+  ~MockSyncErrorFactory() override;
 
   // SyncErrorFactory implementation:
-  virtual syncer::SyncError CreateAndUploadError(
+  syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message) override;
 

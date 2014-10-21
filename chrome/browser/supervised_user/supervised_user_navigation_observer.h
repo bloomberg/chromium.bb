@@ -29,7 +29,7 @@ class SupervisedUserNavigationObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<SupervisedUserNavigationObserver> {
  public:
-  virtual ~SupervisedUserNavigationObserver();
+  ~SupervisedUserNavigationObserver() override;
 
   // Sets the specific infobar as dismissed.
   void WarnInfoBarDismissed();
@@ -51,7 +51,7 @@ class SupervisedUserNavigationObserver
   explicit SupervisedUserNavigationObserver(content::WebContents* web_contents);
 
   // content::WebContentsObserver implementation.
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;

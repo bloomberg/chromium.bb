@@ -33,8 +33,8 @@ class SupervisedUserResourceThrottleTest : public InProcessBrowserTest {
   virtual ~SupervisedUserResourceThrottleTest() {}
 
  private:
-  virtual void SetUpOnMainThread() override;
-  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+  void SetUpCommandLine(CommandLine* command_line) override;
 
   SupervisedUserService* supervised_user_service_;
 };

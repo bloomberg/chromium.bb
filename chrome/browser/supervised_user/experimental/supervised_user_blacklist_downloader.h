@@ -35,11 +35,11 @@ class SupervisedUserBlacklistDownloader : public net::URLFetcherDelegate {
       const base::FilePath& path,
       net::URLRequestContextGetter* request_context,
       const DownloadFinishedCallback& callback);
-  virtual ~SupervisedUserBlacklistDownloader();
+  ~SupervisedUserBlacklistDownloader() override;
 
  private:
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   void OnFileExistsCheckDone(bool exists);
 

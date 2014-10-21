@@ -36,15 +36,9 @@ class FakeSupervisedUserSigninManagerWrapper
   FakeSupervisedUserSigninManagerWrapper()
       : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
 
-  virtual std::string GetEffectiveUsername() const override {
-    return kAccountId;
-  }
-  virtual std::string GetAccountIdToUse() const override {
-    return kAccountId;
-  }
-  virtual std::string GetSyncScopeToUse() const override {
-    return kApiScope;
-  }
+  std::string GetEffectiveUsername() const override { return kAccountId; }
+  std::string GetAccountIdToUse() const override { return kAccountId; }
+  std::string GetSyncScopeToUse() const override { return kApiScope; }
 };
 
 }  // namespace

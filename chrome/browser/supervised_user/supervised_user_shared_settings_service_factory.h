@@ -24,10 +24,10 @@ class SupervisedUserSharedSettingsServiceFactory
       SupervisedUserSharedSettingsServiceFactory>;
 
   SupervisedUserSharedSettingsServiceFactory();
-  virtual ~SupervisedUserSharedSettingsServiceFactory();
+  ~SupervisedUserSharedSettingsServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

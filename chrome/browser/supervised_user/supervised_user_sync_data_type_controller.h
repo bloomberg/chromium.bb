@@ -26,11 +26,11 @@ class SupervisedUserSyncDataTypeController
       sync_driver::SyncApiComponentFactory* sync_factory,
       Profile* profile);
 
-  virtual bool ReadyForStart() const override;
+  bool ReadyForStart() const override;
 
  private:
   // DataTypeController is RefCounted.
-  virtual ~SupervisedUserSyncDataTypeController();
+  ~SupervisedUserSyncDataTypeController() override;
 
   Profile* profile_;
 

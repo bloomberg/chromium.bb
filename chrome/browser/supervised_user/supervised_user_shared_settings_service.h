@@ -51,7 +51,7 @@ class SupervisedUserSharedSettingsService : public KeyedService,
   // |SupervisedUserSharedSettingsServiceFactory::GetForProfile(...)| instead to
   // get an instance of this service in production code.
   explicit SupervisedUserSharedSettingsService(PrefService* prefs);
-  virtual ~SupervisedUserSharedSettingsService();
+  ~SupervisedUserSharedSettingsService() override;
 
   // Returns the value for the given |key| and the supervised user identified by
   // |su_id|. If either the supervised user or the key does not exist, NULL is
@@ -89,18 +89,17 @@ class SupervisedUserSharedSettingsService : public KeyedService,
                                                    bool acknowledged);
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // SyncableService implementation:
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 

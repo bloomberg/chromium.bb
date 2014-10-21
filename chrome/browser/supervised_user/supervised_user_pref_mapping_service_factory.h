@@ -23,10 +23,10 @@ class SupervisedUserPrefMappingServiceFactory
   friend struct DefaultSingletonTraits<SupervisedUserPrefMappingServiceFactory>;
 
   SupervisedUserPrefMappingServiceFactory();
-  virtual ~SupervisedUserPrefMappingServiceFactory();
+  ~SupervisedUserPrefMappingServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

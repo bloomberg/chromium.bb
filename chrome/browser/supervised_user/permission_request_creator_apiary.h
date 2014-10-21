@@ -35,16 +35,15 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
       scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
       net::URLRequestContextGetter* context,
       const GURL& apiary_url);
-  virtual ~PermissionRequestCreatorApiary();
+  ~PermissionRequestCreatorApiary() override;
 
   static scoped_ptr<PermissionRequestCreator> CreateWithProfile(
       Profile* profile, const GURL& apiary_url);
 
   // PermissionRequestCreator implementation:
-  virtual bool IsEnabled() const override;
-  virtual void CreatePermissionRequest(
-      const GURL& url_requested,
-      const SuccessCallback& callback) override;
+  bool IsEnabled() const override;
+  void CreatePermissionRequest(const GURL& url_requested,
+                               const SuccessCallback& callback) override;
 
   void set_url_fetcher_id_for_testing(int id) { url_fetcher_id_ = id; }
 
@@ -53,14 +52,14 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   typedef ScopedVector<Request>::iterator RequestIterator;
 
   // OAuth2TokenService::Consumer implementation:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   std::string GetApiScopeToUse() const;
 

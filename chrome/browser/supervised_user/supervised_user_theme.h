@@ -19,12 +19,12 @@ class SupervisedUserTheme : public CustomThemeSupplier {
   SupervisedUserTheme();
 
   // Overridden from CustomThemeSupplier:
-  virtual bool GetColor(int id, SkColor* color) const override;
-  virtual gfx::Image GetImageNamed(int id) override;
-  virtual bool HasCustomImage(int id) const override;
+  bool GetColor(int id, SkColor* color) const override;
+  gfx::Image GetImageNamed(int id) override;
+  bool HasCustomImage(int id) const override;
 
  private:
-  virtual ~SupervisedUserTheme();
+  ~SupervisedUserTheme() override;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserTheme);
 };

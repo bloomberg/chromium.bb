@@ -46,7 +46,7 @@ class SupervisedUserSyncService : public KeyedService,
   // Represents a non-existing avatar on Chrome and Chrome OS.
   static const int kNoAvatar;
 
-  virtual ~SupervisedUserSyncService();
+  ~SupervisedUserSyncService() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -107,18 +107,17 @@ class SupervisedUserSyncService : public KeyedService,
   void GetSupervisedUsersAsync(const SupervisedUsersCallback& callback);
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // SyncableService implementation:
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 

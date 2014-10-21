@@ -65,7 +65,7 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
         FROM_HERE,
         base::Bind(&TabCloser::CloseTabImpl, weak_ptr_factory_.GetWeakPtr()));
   }
-  virtual ~TabCloser() {}
+  ~TabCloser() override {}
 
   void CloseTabImpl() {
     // On Android, FindBrowserWithWebContents and TabStripModel don't exist.

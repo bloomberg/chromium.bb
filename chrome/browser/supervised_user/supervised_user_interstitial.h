@@ -34,18 +34,18 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   SupervisedUserInterstitial(content::WebContents* web_contents,
                              const GURL& url,
                              const base::Callback<void(bool)>& callback);
-  virtual ~SupervisedUserInterstitial();
+  ~SupervisedUserInterstitial() override;
 
   bool Init();
 
   // InterstitialPageDelegate implementation.
-  virtual std::string GetHTMLContents() override;
-  virtual void CommandReceived(const std::string& command) override;
-  virtual void OnProceed() override;
-  virtual void OnDontProceed() override;
+  std::string GetHTMLContents() override;
+  void CommandReceived(const std::string& command) override;
+  void OnProceed() override;
+  void OnDontProceed() override;
 
   // SupervisedUserServiceObserver implementation.
-  virtual void OnURLFilterChanged() override;
+  void OnURLFilterChanged() override;
   // TODO(treib): Also listen to OnCustodianInfoChanged and update as required.
 
   void OnAccessRequestAdded(bool success);

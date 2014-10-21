@@ -18,10 +18,10 @@ class CustodianProfileDownloaderService : public KeyedService,
   typedef base::Callback<void(const base::string16& /* full name */)>
       DownloadProfileCallback;
 
-  virtual ~CustodianProfileDownloaderService();
+  ~CustodianProfileDownloaderService() override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Downloads the GAIA account information for the |custodian_profile_|.
   // This is a best-effort attempt with no error reporting nor timeout.
@@ -31,12 +31,12 @@ class CustodianProfileDownloaderService : public KeyedService,
   void DownloadProfile(const DownloadProfileCallback& callback);
 
   // ProfileDownloaderDelegate:
-  virtual bool NeedsProfilePicture() const override;
-  virtual int GetDesiredImageSideLength() const override;
-  virtual std::string GetCachedPictureURL() const override;
-  virtual Profile* GetBrowserProfile() override;
-  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
-  virtual void OnProfileDownloadFailure(
+  bool NeedsProfilePicture() const override;
+  int GetDesiredImageSideLength() const override;
+  std::string GetCachedPictureURL() const override;
+  Profile* GetBrowserProfile() override;
+  void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
+  void OnProfileDownloadFailure(
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) override;
 

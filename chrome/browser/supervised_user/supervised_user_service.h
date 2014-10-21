@@ -91,10 +91,10 @@ class SupervisedUserService : public KeyedService,
     virtual GURL GetBlacklistURL() const = 0;
   };
 
-  virtual ~SupervisedUserService();
+  ~SupervisedUserService() override;
 
   // ProfileKeyedService override:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -179,30 +179,29 @@ class SupervisedUserService : public KeyedService,
 
 #if defined(ENABLE_EXTENSIONS)
   // extensions::ManagementPolicy::Provider implementation:
-  virtual std::string GetDebugPolicyProviderName() const override;
-  virtual bool UserMayLoad(const extensions::Extension* extension,
-                           base::string16* error) const override;
-  virtual bool UserMayModifySettings(const extensions::Extension* extension,
-                                     base::string16* error) const override;
+  std::string GetDebugPolicyProviderName() const override;
+  bool UserMayLoad(const extensions::Extension* extension,
+                   base::string16* error) const override;
+  bool UserMayModifySettings(const extensions::Extension* extension,
+                             base::string16* error) const override;
 
   // extensions::ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
-  virtual void OnExtensionUnloaded(
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 #endif
 
   // SyncTypePreferenceProvider implementation:
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const override;
+  syncer::ModelTypeSet GetPreferredDataTypes() const override;
 
   // ProfileSyncServiceObserver implementation:
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
   // chrome::BrowserListObserver implementation:
-  virtual void OnBrowserSetLastActive(Browser* browser) override;
+  void OnBrowserSetLastActive(Browser* browser) override;
 
  private:
   friend class SupervisedUserServiceExtensionTestBase;

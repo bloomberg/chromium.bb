@@ -21,14 +21,14 @@ class SupervisedUserResourceThrottle : public content::ResourceThrottle {
   SupervisedUserResourceThrottle(const net::URLRequest* request,
                                  bool is_main_frame,
                                  const SupervisedUserURLFilter* url_filter);
-  virtual ~SupervisedUserResourceThrottle();
+  ~SupervisedUserResourceThrottle() override;
 
   // content::ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) override;
+  void WillStartRequest(bool* defer) override;
 
-  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  void WillRedirectRequest(const GURL& new_url, bool* defer) override;
 
-  virtual const char* GetNameForLogging() const override;
+  const char* GetNameForLogging() const override;
 
  private:
   void ShowInterstitialIfNeeded(bool is_redirect,

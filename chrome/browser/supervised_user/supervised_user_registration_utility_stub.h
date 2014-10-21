@@ -17,11 +17,11 @@ class SupervisedUserRegistrationUtilityStub
     : public SupervisedUserRegistrationUtility {
  public:
   SupervisedUserRegistrationUtilityStub();
-  virtual ~SupervisedUserRegistrationUtilityStub();
+  ~SupervisedUserRegistrationUtilityStub() override;
 
-  virtual void Register(const std::string& supervised_user_id,
-                        const SupervisedUserRegistrationInfo& info,
-                        const RegistrationCallback& callback) override;
+  void Register(const std::string& supervised_user_id,
+                const SupervisedUserRegistrationInfo& info,
+                const RegistrationCallback& callback) override;
 
   bool register_was_called() { return register_was_called_; }
 

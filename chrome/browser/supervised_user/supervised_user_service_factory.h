@@ -25,12 +25,12 @@ class SupervisedUserServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<SupervisedUserServiceFactory>;
 
   SupervisedUserServiceFactory();
-  virtual ~SupervisedUserServiceFactory();
+  ~SupervisedUserServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

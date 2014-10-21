@@ -61,9 +61,7 @@ class SupervisedUserURLFilterObserver :
   }
 
   // SupervisedUserURLFilter::Observer
-  virtual void OnSiteListUpdated() override {
-    message_loop_runner_->Quit();
-  }
+  void OnSiteListUpdated() override { message_loop_runner_->Quit(); }
 
  private:
   void Reset() {
@@ -208,7 +206,7 @@ namespace {
 class MockPermissionRequestCreator : public PermissionRequestCreator {
  public:
   MockPermissionRequestCreator() : enabled_(false) {}
-  virtual ~MockPermissionRequestCreator() {}
+  ~MockPermissionRequestCreator() override {}
 
   void set_enabled(bool enabled) {
     enabled_ = enabled;
@@ -227,13 +225,10 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
 
  private:
   // PermissionRequestCreator:
-  virtual bool IsEnabled() const override {
-    return enabled_;
-  }
+  bool IsEnabled() const override { return enabled_; }
 
-  virtual void CreatePermissionRequest(
-      const GURL& url_requested,
-      const SuccessCallback& callback) override {
+  void CreatePermissionRequest(const GURL& url_requested,
+                               const SuccessCallback& callback) override {
     ASSERT_TRUE(enabled_);
     requested_urls_.push_back(url_requested);
     callbacks_.push_back(callback);

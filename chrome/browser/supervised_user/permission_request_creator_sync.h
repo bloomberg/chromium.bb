@@ -22,13 +22,12 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
       ProfileSyncService* sync_service,
       const std::string& name,
       const std::string& supervised_user_id);
-  virtual ~PermissionRequestCreatorSync();
+  ~PermissionRequestCreatorSync() override;
 
   // PermissionRequestCreator implementation:
-  virtual bool IsEnabled() const override;
-  virtual void CreatePermissionRequest(
-      const GURL& url_requested,
-      const SuccessCallback& callback) override;
+  bool IsEnabled() const override;
+  void CreatePermissionRequest(const GURL& url_requested,
+                               const SuccessCallback& callback) override;
 
  private:
   SupervisedUserSettingsService* settings_service_;

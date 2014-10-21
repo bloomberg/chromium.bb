@@ -27,10 +27,10 @@ class SupervisedUserPrefMappingService : public KeyedService {
   SupervisedUserPrefMappingService(
       PrefService* prefs,
       SupervisedUserSharedSettingsService* shared_settings);
-  virtual ~SupervisedUserPrefMappingService();
+  ~SupervisedUserPrefMappingService() override;
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void Init();
 

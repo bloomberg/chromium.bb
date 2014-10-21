@@ -22,10 +22,10 @@ class SupervisedUserSyncServiceFactory
   friend struct DefaultSingletonTraits<SupervisedUserSyncServiceFactory>;
 
   SupervisedUserSyncServiceFactory();
-  virtual ~SupervisedUserSyncServiceFactory();
+  ~SupervisedUserSyncServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

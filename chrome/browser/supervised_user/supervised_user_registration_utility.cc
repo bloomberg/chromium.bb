@@ -49,7 +49,7 @@ class SupervisedUserRegistrationUtilityImpl
       SupervisedUserSyncService* service,
       SupervisedUserSharedSettingsService* shared_settings_service);
 
-  virtual ~SupervisedUserRegistrationUtilityImpl();
+  ~SupervisedUserRegistrationUtilityImpl() override;
 
   // Registers a new supervised user with the server. |supervised_user_id| is a
   // new unique ID for the new supervised user. If its value is the same as that
@@ -59,15 +59,15 @@ class SupervisedUserRegistrationUtilityImpl
   // the user and his avatar. |callback| is called with the result of the
   // registration. We use the info here and not the profile, because on Chrome
   // OS the profile of the supervised user does not yet exist.
-  virtual void Register(const std::string& supervised_user_id,
-                        const SupervisedUserRegistrationInfo& info,
-                        const RegistrationCallback& callback) override;
+  void Register(const std::string& supervised_user_id,
+                const SupervisedUserRegistrationInfo& info,
+                const RegistrationCallback& callback) override;
 
   // SupervisedUserSyncServiceObserver:
-  virtual void OnSupervisedUserAcknowledged(
+  void OnSupervisedUserAcknowledged(
       const std::string& supervised_user_id) override;
-  virtual void OnSupervisedUsersSyncingStopped() override;
-  virtual void OnSupervisedUsersChanged() override;
+  void OnSupervisedUsersSyncingStopped() override;
+  void OnSupervisedUsersChanged() override;
 
  private:
   // Fetches the supervised user token when we have the device name.

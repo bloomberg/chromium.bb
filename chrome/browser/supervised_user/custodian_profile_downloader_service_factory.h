@@ -23,10 +23,10 @@ class CustodianProfileDownloaderServiceFactory
       DefaultSingletonTraits<CustodianProfileDownloaderServiceFactory>;
 
   CustodianProfileDownloaderServiceFactory();
-  virtual ~CustodianProfileDownloaderServiceFactory();
+  ~CustodianProfileDownloaderServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

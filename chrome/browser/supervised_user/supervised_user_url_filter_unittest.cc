@@ -23,9 +23,7 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
   }
 
   // SupervisedUserURLFilter::Observer:
-  virtual void OnSiteListUpdated() override {
-    run_loop_.Quit();
-  }
+  void OnSiteListUpdated() override { run_loop_.Quit(); }
 
  protected:
   bool IsURLWhitelisted(const std::string& url) {
