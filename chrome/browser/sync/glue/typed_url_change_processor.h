@@ -50,36 +50,36 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
                           TypedUrlModelAssociator* model_associator,
                           history::HistoryBackend* history_backend,
                           sync_driver::DataTypeErrorHandler* error_handler);
-  virtual ~TypedUrlChangeProcessor();
+  ~TypedUrlChangeProcessor() override;
 
   // content::NotificationObserver implementation.
   // History -> sync API change application.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // history::HistoryBackendObserver:
-  virtual void OnURLVisited(history::HistoryBackend* history_backend,
-                            ui::PageTransition transition,
-                            const history::URLRow& row,
-                            const history::RedirectList& redirects,
-                            base::Time visit_time) override;
+  void OnURLVisited(history::HistoryBackend* history_backend,
+                    ui::PageTransition transition,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
+                    base::Time visit_time) override;
 
   // sync API model -> WebDataService change application.
-  virtual void ApplyChangesFromSyncModel(
+  void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
       int64 model_version,
       const syncer::ImmutableChangeRecordList& changes) override;
 
   // Commit changes here, after we've released the transaction lock to avoid
   // jank.
-  virtual void CommitChangesFromSyncModel() override;
+  void CommitChangesFromSyncModel() override;
 
   // Stop processing changes and wait for being destroyed.
   void Disconnect();
 
  protected:
-  virtual void StartImpl() override;
+  void StartImpl() override;
 
  private:
   friend class ScopedStopObserving<TypedUrlChangeProcessor>;

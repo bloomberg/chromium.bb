@@ -16,7 +16,7 @@ class MigrationWaiter;
 class MigrationWatcher : public browser_sync::MigrationObserver {
  public:
   explicit MigrationWatcher(ProfileSyncServiceHarness* harness);
-  virtual ~MigrationWatcher();
+  ~MigrationWatcher() override;
 
   // Returns true if the observed profile has a migration in progress.
   bool HasPendingBackendMigration() const;
@@ -25,7 +25,7 @@ class MigrationWatcher : public browser_sync::MigrationObserver {
   syncer::ModelTypeSet GetMigratedTypes() const;
 
   // Implementation of browser_sync::MigrationObserver.
-  virtual void OnMigrationStateChange() override;
+  void OnMigrationStateChange() override;
 
   // Registers the |waiter| to receive callbacks on migration state change.
   void set_migration_waiter(MigrationWaiter* waiter);

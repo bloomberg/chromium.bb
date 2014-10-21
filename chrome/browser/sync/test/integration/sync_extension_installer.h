@@ -26,12 +26,12 @@ class Profile;
 class SyncedExtensionInstaller : public content::NotificationObserver {
  public:
   explicit SyncedExtensionInstaller(Profile* profile);
-  virtual ~SyncedExtensionInstaller();
+  ~SyncedExtensionInstaller() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   void DoInstallSyncedExtensions();

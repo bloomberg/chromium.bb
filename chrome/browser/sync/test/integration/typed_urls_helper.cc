@@ -27,16 +27,16 @@ class FlushHistoryDBQueueTask : public history::HistoryDBTask {
  public:
   explicit FlushHistoryDBQueueTask(base::WaitableEvent* event)
       : wait_event_(event) {}
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     wait_event_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {}
+  void DoneRunOnMainThread() override {}
 
  private:
-  virtual ~FlushHistoryDBQueueTask() {}
+  ~FlushHistoryDBQueueTask() override {}
 
   base::WaitableEvent* wait_event_;
 };
@@ -46,18 +46,18 @@ class GetTypedUrlsTask : public history::HistoryDBTask {
   GetTypedUrlsTask(history::URLRows* rows, base::WaitableEvent* event)
       : rows_(rows), wait_event_(event) {}
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     // Fetch the typed URLs.
     backend->GetAllTypedURLs(rows_);
     wait_event_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {}
+  void DoneRunOnMainThread() override {}
 
  private:
-  virtual ~GetTypedUrlsTask() {}
+  ~GetTypedUrlsTask() override {}
 
   history::URLRows* rows_;
   base::WaitableEvent* wait_event_;
@@ -71,18 +71,18 @@ class GetUrlTask : public history::HistoryDBTask {
              base::WaitableEvent* event)
       : url_(url), row_(row), wait_event_(event), found_(found) {}
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     // Fetch the typed URLs.
     *found_ = backend->GetURL(url_, row_);
     wait_event_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {}
+  void DoneRunOnMainThread() override {}
 
  private:
-  virtual ~GetUrlTask() {}
+  ~GetUrlTask() override {}
 
   GURL url_;
   history::URLRow* row_;
@@ -97,18 +97,18 @@ class GetVisitsTask : public history::HistoryDBTask {
                 base::WaitableEvent* event)
       : id_(id), visits_(visits), wait_event_(event) {}
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     // Fetch the visits.
     backend->GetVisitsForURL(id_, visits_);
     wait_event_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {}
+  void DoneRunOnMainThread() override {}
 
  private:
-  virtual ~GetVisitsTask() {}
+  ~GetVisitsTask() override {}
 
   history::URLID id_;
   history::VisitVector* visits_;
@@ -121,18 +121,18 @@ class RemoveVisitsTask : public history::HistoryDBTask {
                    base::WaitableEvent* event)
       : visits_(visits), wait_event_(event) {}
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     // Fetch the visits.
     backend->RemoveVisits(visits_);
     wait_event_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {}
+  void DoneRunOnMainThread() override {}
 
  private:
-  virtual ~RemoveVisitsTask() {}
+  ~RemoveVisitsTask() override {}
 
   const history::VisitVector& visits_;
   base::WaitableEvent* wait_event_;
@@ -395,10 +395,10 @@ namespace {
 class ProfilesHaveSameURLsChecker : public MultiClientStatusChangeChecker {
  public:
   ProfilesHaveSameURLsChecker();
-  virtual ~ProfilesHaveSameURLsChecker();
+  ~ProfilesHaveSameURLsChecker() override;
 
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
 };
 
 ProfilesHaveSameURLsChecker::ProfilesHaveSameURLsChecker()

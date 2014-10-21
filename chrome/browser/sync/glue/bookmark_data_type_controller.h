@@ -25,26 +25,25 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
                              ProfileSyncService* sync_service);
 
   // FrontendDataTypeController interface.
-  virtual syncer::ModelType type() const override;
+  syncer::ModelType type() const override;
 
   // content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
-  virtual ~BookmarkDataTypeController();
+  ~BookmarkDataTypeController() override;
 
   // FrontendDataTypeController interface.
-  virtual bool StartModels() override;
-  virtual void CleanUpState() override;
-  virtual void CreateSyncComponents() override;
+  bool StartModels() override;
+  void CleanUpState() override;
+  void CreateSyncComponents() override;
 
   // BaseBookmarkModelObserver interface.
-  virtual void BookmarkModelChanged() override;
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) override;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
+  void BookmarkModelChanged() override;
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
 
   // Helper that returns true iff both the bookmark model and the history
   // service have finished loading.

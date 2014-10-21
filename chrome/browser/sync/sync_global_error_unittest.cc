@@ -35,16 +35,14 @@ class FakeLoginUI : public LoginUIService::LoginUI {
  public:
   FakeLoginUI() : focus_ui_call_count_(0) {}
 
-  virtual ~FakeLoginUI() {}
+  ~FakeLoginUI() override {}
 
   int focus_ui_call_count() const { return focus_ui_call_count_; }
 
  private:
   // Overridden from LoginUIService::LoginUI:
-  virtual void FocusUI() override {
-    ++focus_ui_call_count_;
-  }
-  virtual void CloseUI() override {}
+  void FocusUI() override { ++focus_ui_call_count_; }
+  void CloseUI() override {}
 
   int focus_ui_call_count_;
 };

@@ -20,7 +20,8 @@ class EnableDisableSingleClientTest : public SyncTest {
   virtual ~EnableDisableSingleClientTest() {}
 
   // Don't use self-notifications as they can trigger additional sync cycles.
-  virtual bool TestUsesSelfNotifications() override { return false; }
+  bool TestUsesSelfNotifications() override { return false; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
 };

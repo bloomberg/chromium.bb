@@ -41,9 +41,9 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       base::Closure callback);
-  virtual ~SyncBackendHostForProfileSyncTest();
+  ~SyncBackendHostForProfileSyncTest() override;
 
-  virtual void RequestConfigureSyncer(
+  void RequestConfigureSyncer(
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet to_download,
       syncer::ModelTypeSet to_purge,
@@ -51,12 +51,12 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
       syncer::ModelTypeSet to_unapply,
       syncer::ModelTypeSet to_ignore,
       const syncer::ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(syncer::ModelTypeSet,
-                                syncer::ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+          ready_task,
       const base::Closure& retry_callback) override;
 
  protected:
-  virtual void InitCore(scoped_ptr<DoInitializeOptions> options) override;
+  void InitCore(scoped_ptr<DoInitializeOptions> options) override;
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -78,13 +78,13 @@ class TestProfileSyncService : public ProfileSyncService {
       ProfileOAuth2TokenService* oauth2_token_service,
       browser_sync::ProfileSyncServiceStartBehavior behavior);
 
-  virtual ~TestProfileSyncService();
+  ~TestProfileSyncService() override;
 
-  virtual void OnConfigureDone(
+  void OnConfigureDone(
       const sync_driver::DataTypeManager::ConfigureResult& result) override;
 
   // We implement our own version to avoid some DCHECKs.
-  virtual syncer::UserShare* GetUserShare() const override;
+  syncer::UserShare* GetUserShare() const override;
 
   static TestProfileSyncService* BuildAutoStartAsyncInit(
       Profile* profile, base::Closure callback);
@@ -102,10 +102,9 @@ class TestProfileSyncService : public ProfileSyncService {
   // Return NULL handle to use in backend initialization to avoid receiving
   // js messages on UI loop when it's being destroyed, which are not deleted
   // and cause memory leak in test.
-  virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler()
-      override;
+  syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler() override;
 
-  virtual bool NeedBackup() const override;
+  bool NeedBackup() const override;
 
  private:
   syncer::TestIdFactory id_factory_;

@@ -32,7 +32,7 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
  public:
   explicit QuiesceStatusChangeChecker(
       std::vector<ProfileSyncService*> services);
-  virtual ~QuiesceStatusChangeChecker();
+  ~QuiesceStatusChangeChecker() override;
 
   // Blocks until all clients have quiesced or we time out.
   void Wait();
@@ -41,8 +41,8 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
   void OnServiceStateChanged(ProfileSyncService* service);
 
   // Implementation of StatusChangeChecker.
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
 
  private:
   std::vector<ProfileSyncService*> services_;

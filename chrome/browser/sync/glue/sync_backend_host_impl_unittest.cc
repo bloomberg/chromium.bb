@@ -115,11 +115,10 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
        fake_manager_(fake_manager) {
     *fake_manager_ = NULL;
   }
-  virtual ~FakeSyncManagerFactory() {}
+  ~FakeSyncManagerFactory() override {}
 
   // SyncManagerFactory implementation.  Called on the sync thread.
-  virtual scoped_ptr<SyncManager> CreateSyncManager(
-      std::string name) override {
+  scoped_ptr<SyncManager> CreateSyncManager(std::string name) override {
     *fake_manager_ = new FakeSyncManager(initial_sync_ended_types_,
                                          progress_marker_types_,
                                          configure_fail_types_);

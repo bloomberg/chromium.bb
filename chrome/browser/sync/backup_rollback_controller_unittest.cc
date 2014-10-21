@@ -31,13 +31,11 @@ class FakeSyncPrefs : public sync_driver::SyncPrefs {
  public:
   FakeSyncPrefs() : rollback_tries_left_(0) {}
 
-  virtual int GetRemainingRollbackTries() const override {
+  int GetRemainingRollbackTries() const override {
     return rollback_tries_left_;
   }
 
-  virtual void SetRemainingRollbackTries(int v) override {
-    rollback_tries_left_ = v;
-  }
+  void SetRemainingRollbackTries(int v) override { rollback_tries_left_ = v; }
 
  private:
   int rollback_tries_left_;

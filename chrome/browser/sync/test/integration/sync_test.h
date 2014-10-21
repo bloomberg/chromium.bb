@@ -107,7 +107,7 @@ class SyncTest : public InProcessBrowserTest {
   virtual void TearDown() override;
 
   // Sets up command line flags required for sync tests.
-  virtual void SetUpCommandLine(base::CommandLine* cl) override;
+  void SetUpCommandLine(base::CommandLine* cl) override;
 
   // Used to get the number of sync clients used by a test.
   int num_clients() WARN_UNUSED_RESULT { return num_clients_; }
@@ -227,15 +227,15 @@ class SyncTest : public InProcessBrowserTest {
 
   // BrowserTestBase override. Destroys all the sync clients and sync
   // profiles created by a test.
-  virtual void TearDownOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // InProcessBrowserTest override. Changes behavior of the default host
   // resolver to avoid DNS lookup errors.
-  virtual void SetUpInProcessBrowserTestFixture() override;
+  void SetUpInProcessBrowserTestFixture() override;
 
   // InProcessBrowserTest override. Resets the host resolver its default
   // behavior.
-  virtual void TearDownInProcessBrowserTestFixture() override;
+  void TearDownInProcessBrowserTestFixture() override;
 
   // Creates Profile, Browser and ProfileSyncServiceHarness instances for
   // |index|. Used by SetupClients().

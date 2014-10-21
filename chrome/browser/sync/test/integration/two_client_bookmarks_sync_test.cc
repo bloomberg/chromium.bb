@@ -66,7 +66,7 @@ class TwoClientBookmarksSyncTest : public SyncTest {
   TwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientBookmarksSyncTest() {}
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     SyncTest::TearDownInProcessBrowserTestFixture();
     policy_provider_.Shutdown();
   }

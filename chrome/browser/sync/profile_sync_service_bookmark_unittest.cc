@@ -279,17 +279,16 @@ class ExtensiveChangesBookmarkModelObserver : public BaseBookmarkModelObserver {
         completed_count_at_started_(0),
         completed_count_(0) {}
 
-  virtual void ExtensiveBookmarkChangesBeginning(
-      BookmarkModel* model) override {
+  void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override {
     ++started_count_;
     completed_count_at_started_ = completed_count_;
   }
 
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override {
+  void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override {
     ++completed_count_;
   }
 
-  virtual void BookmarkModelChanged() override {}
+  void BookmarkModelChanged() override {}
 
   int get_started() const {
     return started_count_;

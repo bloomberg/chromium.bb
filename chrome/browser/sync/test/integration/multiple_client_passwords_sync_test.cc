@@ -35,9 +35,7 @@ class MultipleClientPasswordsSyncTest : public SyncTest {
   MultipleClientPasswordsSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientPasswordsSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() override {
-    return false;
-  }
+  bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientPasswordsSyncTest);

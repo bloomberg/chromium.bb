@@ -20,9 +20,7 @@ class MultipleClientTypedUrlsSyncTest : public SyncTest {
   MultipleClientTypedUrlsSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
   virtual ~MultipleClientTypedUrlsSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() override {
-    return false;
-  }
+  bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientTypedUrlsSyncTest);

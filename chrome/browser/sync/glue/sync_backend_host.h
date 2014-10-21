@@ -52,7 +52,7 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
 
   // Stubs used by implementing classes.
   SyncBackendHost();
-  virtual ~SyncBackendHost();
+  ~SyncBackendHost() override;
 
   // Called on the frontend's thread to kick off asynchronous initialization.
   // Optionally deletes the "Sync Data" folder during init in order to make

@@ -23,7 +23,7 @@ class MultiClientStatusChangeChecker
  public:
   explicit MultiClientStatusChangeChecker(
       std::vector<ProfileSyncService*> services);
-  virtual ~MultiClientStatusChangeChecker();
+  ~MultiClientStatusChangeChecker() override;
 
   // Called when waiting times out.
   void OnTimeout();
@@ -32,7 +32,7 @@ class MultiClientStatusChangeChecker
   void Wait();
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
   // StatusChangeChecker implementations and stubs.
   virtual bool IsExitConditionSatisfied() = 0;

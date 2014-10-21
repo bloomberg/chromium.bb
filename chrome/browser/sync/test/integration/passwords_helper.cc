@@ -44,7 +44,7 @@ class PasswordStoreConsumerHelper
   explicit PasswordStoreConsumerHelper(std::vector<PasswordForm>* result)
       : password_manager::PasswordStoreConsumer(), result_(result) {}
 
-  virtual void OnGetPasswordStoreResults(
+  void OnGetPasswordStoreResults(
       const std::vector<PasswordForm*>& result) override {
     result_->clear();
     for (std::vector<PasswordForm*>::const_iterator it = result.begin();
@@ -217,10 +217,10 @@ namespace {
 class SamePasswordFormsChecker : public MultiClientStatusChangeChecker {
  public:
   SamePasswordFormsChecker();
-  virtual ~SamePasswordFormsChecker();
+  ~SamePasswordFormsChecker() override;
 
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
 
  private:
   bool in_progress_;
@@ -287,10 +287,10 @@ class SamePasswordFormsAsVerifierChecker
     : public SingleClientStatusChangeChecker {
  public:
   explicit SamePasswordFormsAsVerifierChecker(int index);
-  virtual ~SamePasswordFormsAsVerifierChecker();
+  ~SamePasswordFormsAsVerifierChecker() override;
 
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
 
  private:
   int index_;

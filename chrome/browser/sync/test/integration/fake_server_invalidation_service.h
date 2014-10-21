@@ -27,22 +27,21 @@ class FakeServerInvalidationService : public invalidation::InvalidationService,
                                       public FakeServer::Observer {
  public:
   FakeServerInvalidationService();
-  virtual ~FakeServerInvalidationService();
+  ~FakeServerInvalidationService() override;
 
-  virtual void RegisterInvalidationHandler(
+  void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredInvalidationIds(
-      syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) override;
-  virtual void UnregisterInvalidationHandler(
+  void UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
+                                       const syncer::ObjectIdSet& ids) override;
+  void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
 
-  virtual syncer::InvalidatorState GetInvalidatorState() const override;
-  virtual std::string GetInvalidatorClientId() const override;
-  virtual invalidation::InvalidationLogger* GetInvalidationLogger() override;
-  virtual void RequestDetailedStatus(
+  syncer::InvalidatorState GetInvalidatorState() const override;
+  std::string GetInvalidatorClientId() const override;
+  invalidation::InvalidationLogger* GetInvalidationLogger() override;
+  void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
-  virtual IdentityProvider* GetIdentityProvider() override;
+  IdentityProvider* GetIdentityProvider() override;
 
   // Functions to enable or disable sending of self-notifications.  In the real
   // world, clients do not receive notifications of their own commits.
@@ -50,9 +49,8 @@ class FakeServerInvalidationService : public invalidation::InvalidationService,
   void DisableSelfNotifications();
 
   // FakeServer::Observer:
-  virtual void OnCommit(
-      const std::string& committer_id,
-      syncer::ModelTypeSet committed_model_types) override;
+  void OnCommit(const std::string& committer_id,
+                syncer::ModelTypeSet committed_model_types) override;
 
  private:
   std::string client_id_;

@@ -27,14 +27,12 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
   explicit SyncDisabledChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  virtual bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied() override {
     return !service()->setup_in_progress() &&
            !service()->HasSyncSetupCompleted();
   }
 
-  virtual std::string GetDebugMessage() const override {
-    return "Sync Disabled";
-  }
+  std::string GetDebugMessage() const override { return "Sync Disabled"; }
 };
 
 class TypeDisabledChecker : public SingleClientStatusChangeChecker {
@@ -43,13 +41,11 @@ class TypeDisabledChecker : public SingleClientStatusChangeChecker {
                                syncer::ModelType type)
       : SingleClientStatusChangeChecker(service), type_(type) {}
 
-  virtual bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied() override {
     return !service()->GetActiveDataTypes().Has(type_);
   }
 
-  virtual std::string GetDebugMessage() const override {
-    return "Type disabled";
-  }
+  std::string GetDebugMessage() const override { return "Type disabled"; }
  private:
    syncer::ModelType type_;
 };
@@ -82,18 +78,18 @@ class ActionableErrorChecker : public SingleClientStatusChangeChecker {
   explicit ActionableErrorChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  virtual ~ActionableErrorChecker() {}
+  ~ActionableErrorChecker() override {}
 
   // Checks if an actionable error has been hit. Called repeatedly each time PSS
   // notifies observers of a state change.
-  virtual bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied() override {
     ProfileSyncService::Status status;
     service()->QueryDetailedSyncStatus(&status);
     return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
             service()->HasUnrecoverableError());
   }
 
-  virtual std::string GetDebugMessage() const override {
+  std::string GetDebugMessage() const override {
     return "ActionableErrorChecker";
   }
 

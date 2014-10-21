@@ -41,14 +41,14 @@ using testing::Return;
 class NoOpAutofillBackend : public AutofillWebDataBackend {
  public:
   NoOpAutofillBackend() {}
-  virtual ~NoOpAutofillBackend() {}
-  virtual WebDatabase* GetDatabase() override { return NULL; }
-  virtual void AddObserver(
+  ~NoOpAutofillBackend() override {}
+  WebDatabase* GetDatabase() override { return NULL; }
+  void AddObserver(
       autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
-  virtual void RemoveObserver(
+  void RemoveObserver(
       autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
-  virtual void RemoveExpiredFormElements() override {}
-  virtual void NotifyOfMultipleAutofillChanges() override {}
+  void RemoveExpiredFormElements() override {}
+  void NotifyOfMultipleAutofillChanges() override {}
 };
 
 // Fake WebDataService implementation that stubs out the database loading.
@@ -70,11 +70,9 @@ class FakeWebDataService : public AutofillWebDataService {
       db_loaded_callback_.Run();
   }
 
-  virtual bool IsDatabaseLoaded() override {
-    return is_database_loaded_;
-  }
+  bool IsDatabaseLoaded() override { return is_database_loaded_; }
 
-  virtual void RegisterDBLoadedCallback(
+  void RegisterDBLoadedCallback(
       const base::Callback<void(void)>& callback) override {
     db_loaded_callback_ = callback;
   }
@@ -90,8 +88,7 @@ class FakeWebDataService : public AutofillWebDataService {
   }
 
  private:
-  virtual ~FakeWebDataService() {
-  }
+  ~FakeWebDataService() override {}
 
   void CreateSyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
@@ -118,7 +115,7 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
       : MockWebDataServiceWrapper(new FakeWebDataService(), NULL) {
   }
 
-  virtual void Shutdown() override {
+  void Shutdown() override {
     static_cast<FakeWebDataService*>(
         fake_autofill_web_data_.get())->ShutdownOnUIThread();
     // Make sure WebDataService is shutdown properly on DB thread before we

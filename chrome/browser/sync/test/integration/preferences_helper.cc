@@ -216,11 +216,11 @@ namespace {
 class PrefMatchChecker : public StatusChangeChecker {
  public:
   explicit PrefMatchChecker(const char* path);
-  virtual ~PrefMatchChecker();
+  ~PrefMatchChecker() override;
 
   // StatusChangeChecker implementation.
   virtual bool IsExitConditionSatisfied() = 0;
-  virtual std::string GetDebugMessage() const override;
+  std::string GetDebugMessage() const override;
 
   // Wait for condition to become true.
   void Wait();
@@ -278,10 +278,10 @@ void PrefMatchChecker::RegisterPrefListener(PrefService* pref_service) {
 class ListPrefMatchChecker : public PrefMatchChecker {
  public:
   explicit ListPrefMatchChecker(const char* path);
-  virtual ~ListPrefMatchChecker();
+  ~ListPrefMatchChecker() override;
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied() override;
 };
 
 ListPrefMatchChecker::ListPrefMatchChecker(const char* path)
@@ -299,10 +299,10 @@ bool ListPrefMatchChecker::IsExitConditionSatisfied() {
 class BooleanPrefMatchChecker : public PrefMatchChecker {
  public:
   explicit BooleanPrefMatchChecker(const char* path);
-  virtual ~BooleanPrefMatchChecker();
+  ~BooleanPrefMatchChecker() override;
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied() override;
 };
 
 BooleanPrefMatchChecker::BooleanPrefMatchChecker(const char* path)
@@ -320,10 +320,10 @@ bool BooleanPrefMatchChecker::IsExitConditionSatisfied() {
 class IntegerPrefMatchChecker : public PrefMatchChecker {
  public:
   explicit IntegerPrefMatchChecker(const char* path);
-  virtual ~IntegerPrefMatchChecker();
+  ~IntegerPrefMatchChecker() override;
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied() override;
 };
 
 IntegerPrefMatchChecker::IntegerPrefMatchChecker(const char* path)
@@ -341,10 +341,10 @@ bool IntegerPrefMatchChecker::IsExitConditionSatisfied() {
 class StringPrefMatchChecker : public PrefMatchChecker {
  public:
   explicit StringPrefMatchChecker(const char* path);
-  virtual ~StringPrefMatchChecker();
+  ~StringPrefMatchChecker() override;
 
   // Implementation of PrefMatchChecker.
-  virtual bool IsExitConditionSatisfied() override;
+  bool IsExitConditionSatisfied() override;
 };
 
 StringPrefMatchChecker::StringPrefMatchChecker(const char* path)

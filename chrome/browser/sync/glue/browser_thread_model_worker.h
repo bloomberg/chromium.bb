@@ -29,13 +29,13 @@ class BrowserThreadModelWorker : public syncer::ModelSafeWorker {
                            syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on the sync thread.
-  virtual void RegisterForLoopDestruction() override;
-  virtual syncer::ModelSafeGroup GetModelSafeGroup() override;
+  void RegisterForLoopDestruction() override;
+  syncer::ModelSafeGroup GetModelSafeGroup() override;
 
  protected:
-  virtual ~BrowserThreadModelWorker();
+  ~BrowserThreadModelWorker() override;
 
-  virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
+  syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
       const syncer::WorkCallback& work) override;
 
   // Marked pure virtual so subclasses have to override, but there is
@@ -61,13 +61,12 @@ class DatabaseModelWorker : public BrowserThreadModelWorker {
   explicit DatabaseModelWorker(syncer::WorkerLoopDestructionObserver* observer);
 
  protected:
-  virtual void CallDoWorkAndSignalTask(
-      const syncer::WorkCallback& work,
-      base::WaitableEvent* done,
-      syncer::SyncerError* error) override;
+  void CallDoWorkAndSignalTask(const syncer::WorkCallback& work,
+                               base::WaitableEvent* done,
+                               syncer::SyncerError* error) override;
 
  private:
-  virtual ~DatabaseModelWorker();
+  ~DatabaseModelWorker() override;
 };
 
 class FileModelWorker : public BrowserThreadModelWorker {
@@ -75,13 +74,12 @@ class FileModelWorker : public BrowserThreadModelWorker {
   explicit FileModelWorker(syncer::WorkerLoopDestructionObserver* observer);
 
  protected:
-  virtual void CallDoWorkAndSignalTask(
-      const syncer::WorkCallback& work,
-      base::WaitableEvent* done,
-      syncer::SyncerError* error) override;
+  void CallDoWorkAndSignalTask(const syncer::WorkCallback& work,
+                               base::WaitableEvent* done,
+                               syncer::SyncerError* error) override;
 
  private:
-  virtual ~FileModelWorker();
+  ~FileModelWorker() override;
 };
 
 }  // namespace browser_sync

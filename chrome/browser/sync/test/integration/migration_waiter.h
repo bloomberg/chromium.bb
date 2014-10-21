@@ -22,11 +22,11 @@ class MigrationWaiter : public StatusChangeChecker {
   MigrationWaiter(syncer::ModelTypeSet expected_types,
                   MigrationWatcher* watcher);
 
-  virtual ~MigrationWaiter();
+  ~MigrationWaiter() override;
 
   // Implementation of StatusChangeChecker.
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
 
   // Function to trigger the waiting.
   void Wait();

@@ -32,17 +32,17 @@ class NotificationServiceSessionsRouter
   NotificationServiceSessionsRouter(
       Profile* profile,
       const syncer::SyncableService::StartSyncFlare& flare);
-  virtual ~NotificationServiceSessionsRouter();
+  ~NotificationServiceSessionsRouter() override;
 
   // content::NotificationObserver implementation.
   // BrowserSessionProvider -> sync API model change application.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // SessionsSyncManager::LocalEventRouter implementation.
-  virtual void StartRoutingTo(LocalSessionEventHandler* handler) override;
-  virtual void Stop() override;
+  void StartRoutingTo(LocalSessionEventHandler* handler) override;
+  void Stop() override;
 
  private:
   // Called when the URL visited in |web_contents| was blocked by the

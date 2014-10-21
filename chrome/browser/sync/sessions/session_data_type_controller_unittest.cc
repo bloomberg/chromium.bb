@@ -28,22 +28,22 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
   explicit MockSyncedWindowDelegate(Profile* profile)
     : is_restore_in_progress_(false),
       profile_(profile) {}
-  virtual ~MockSyncedWindowDelegate() {}
+  ~MockSyncedWindowDelegate() override {}
 
-  virtual bool HasWindow() const override { return false; }
-  virtual SessionID::id_type GetSessionId() const override { return 0; }
-  virtual int GetTabCount() const override { return 0; }
-  virtual int GetActiveIndex() const override { return 0; }
-  virtual bool IsApp() const override { return false; }
-  virtual bool IsTypeTabbed() const override { return false; }
-  virtual bool IsTypePopup() const override { return false; }
-  virtual bool IsTabPinned(const SyncedTabDelegate* tab) const override {
+  bool HasWindow() const override { return false; }
+  SessionID::id_type GetSessionId() const override { return 0; }
+  int GetTabCount() const override { return 0; }
+  int GetActiveIndex() const override { return 0; }
+  bool IsApp() const override { return false; }
+  bool IsTypeTabbed() const override { return false; }
+  bool IsTypePopup() const override { return false; }
+  bool IsTabPinned(const SyncedTabDelegate* tab) const override {
     return false;
   }
-  virtual SyncedTabDelegate* GetTabAt(int index) const override { return NULL; }
-  virtual SessionID::id_type GetTabIdAt(int index) const override { return 0; }
+  SyncedTabDelegate* GetTabAt(int index) const override { return NULL; }
+  SessionID::id_type GetTabIdAt(int index) const override { return 0; }
 
-  virtual bool IsSessionRestoreInProgress() const override {
+  bool IsSessionRestoreInProgress() const override {
     return is_restore_in_progress_;
   }
 
@@ -65,8 +65,7 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
 
 class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
  public:
-  virtual const std::set<SyncedWindowDelegate*>
-  GetSyncedWindowDelegates() override {
+  const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
     return delegates_;
   }
 

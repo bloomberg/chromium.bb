@@ -49,18 +49,17 @@ class FaviconCache : public syncer::SyncableService,
                      public content::NotificationObserver {
  public:
   FaviconCache(Profile* profile, int max_sync_favicon_limit);
-  virtual ~FaviconCache();
+  ~FaviconCache() override;
 
   // SyncableService implementation.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
@@ -98,9 +97,9 @@ class FaviconCache : public syncer::SyncableService,
                              int64 visit_time_ms);
 
   // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   friend class SyncFaviconCacheTest;

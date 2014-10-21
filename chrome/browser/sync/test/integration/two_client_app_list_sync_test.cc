@@ -84,12 +84,12 @@ class TwoClientAppListSyncTest : public SyncTest {
   virtual ~TwoClientAppListSyncTest() {}
 
   // SyncTest
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     SyncTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(app_list::switches::kEnableSyncAppList);
   }
 
-  virtual bool SetupClients() override {
+  bool SetupClients() override {
     if (!SyncTest::SetupClients())
       return false;
 
@@ -99,7 +99,7 @@ class TwoClientAppListSyncTest : public SyncTest {
     return true;
   }
 
-  virtual bool SetupSync() override {
+  bool SetupSync() override {
     if (!SyncTest::SetupSync())
       return false;
     WaitForExtensionServicesToLoad();

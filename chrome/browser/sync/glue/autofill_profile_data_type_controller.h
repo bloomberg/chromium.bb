@@ -29,21 +29,20 @@ class AutofillProfileDataTypeController
       Profile* profile);
 
   // NonUIDataTypeController implementation.
-  virtual syncer::ModelType type() const override;
-  virtual syncer::ModelSafeGroup model_safe_group() const override;
+  syncer::ModelType type() const override;
+  syncer::ModelSafeGroup model_safe_group() const override;
 
   // PersonalDataManagerObserver implementation:
-  virtual void OnPersonalDataChanged() override;
+  void OnPersonalDataChanged() override;
 
  protected:
-  virtual ~AutofillProfileDataTypeController();
+  ~AutofillProfileDataTypeController() override;
 
   // NonUIDataTypeController implementation.
-  virtual bool PostTaskOnBackendThread(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task) override;
-  virtual bool StartModels() override;
-  virtual void StopModels() override;
+  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
+                               const base::Closure& task) override;
+  bool StartModels() override;
+  void StopModels() override;
 
  private:
   // Callback to notify that WebDatabase has loaded.

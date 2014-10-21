@@ -40,41 +40,40 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       const GURL& sync_service_url,
       OAuth2TokenService* token_service,
       net::URLRequestContextGetter* url_request_context_getter);
-  virtual ~ProfileSyncComponentsFactoryImpl();
+  ~ProfileSyncComponentsFactoryImpl() override;
 
-  virtual void RegisterDataTypes(ProfileSyncService* pss) override;
+  void RegisterDataTypes(ProfileSyncService* pss) override;
 
-  virtual sync_driver::DataTypeManager* CreateDataTypeManager(
+  sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
       const sync_driver::DataTypeController::TypeMap* controllers,
       const sync_driver::DataTypeEncryptionHandler* encryption_handler,
       browser_sync::SyncBackendHost* backend,
-      sync_driver::DataTypeManagerObserver* observer)
-          override;
+      sync_driver::DataTypeManagerObserver* observer) override;
 
-  virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
+  browser_sync::SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
       Profile* profile,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) override;
 
-  virtual scoped_ptr<sync_driver::LocalDeviceInfoProvider>
-      CreateLocalDeviceInfoProvider() override;
+  scoped_ptr<sync_driver::LocalDeviceInfoProvider>
+  CreateLocalDeviceInfoProvider() override;
 
-  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
-  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       const scoped_refptr<syncer::AttachmentStore>& attachment_store,
       const syncer::UserShare& user_share,
       syncer::AttachmentService::Delegate* delegate) override;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
-  virtual SyncComponents CreateBookmarkSyncComponents(
+  SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
       sync_driver::DataTypeErrorHandler* error_handler) override;
-  virtual SyncComponents CreateTypedUrlSyncComponents(
+  SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
       sync_driver::DataTypeErrorHandler* error_handler) override;

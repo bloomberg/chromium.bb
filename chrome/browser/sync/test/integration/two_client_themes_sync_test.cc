@@ -25,9 +25,7 @@ class TwoClientThemesSyncTest : public SyncTest {
   TwoClientThemesSyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientThemesSyncTest() {}
 
-  virtual bool TestUsesSelfNotifications() override {
-    return false;
-  }
+  bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientThemesSyncTest);

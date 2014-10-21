@@ -58,7 +58,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   //      loops are destroyed. Registrar destroys itself on last worker
   //      notification. Sync thread will be stopped if ownership was not
   //      released.
-  virtual ~SyncBackendRegistrar();
+  ~SyncBackendRegistrar() override;
 
   // Informs the SyncBackendRegistrar of the currently enabled set of types.
   // These types will be placed in the passive group.  This function should be
@@ -105,18 +105,18 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
   // SyncManager::ChangeDelegate implementation.  May be called from
   // any thread.
-  virtual void OnChangesApplied(
+  void OnChangesApplied(
       syncer::ModelType model_type,
       int64 model_version,
       const syncer::BaseTransaction* trans,
       const syncer::ImmutableChangeRecordList& changes) override;
-  virtual void OnChangesComplete(syncer::ModelType model_type) override;
+  void OnChangesComplete(syncer::ModelType model_type) override;
 
   void GetWorkers(std::vector<scoped_refptr<syncer::ModelSafeWorker> >* out);
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out);
 
   // syncer::WorkerLoopDestructionObserver implementation.
-  virtual void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) override;
+  void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) override;
 
   // Release ownership of |sync_thread_|. Called when sync is disabled.
   scoped_ptr<base::Thread> ReleaseSyncThread();

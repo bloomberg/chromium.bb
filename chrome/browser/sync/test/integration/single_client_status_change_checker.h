@@ -19,7 +19,7 @@ class SingleClientStatusChangeChecker
   : public MultiClientStatusChangeChecker {
  public:
   explicit SingleClientStatusChangeChecker(ProfileSyncService* service);
-  virtual ~SingleClientStatusChangeChecker();
+  ~SingleClientStatusChangeChecker() override;
 
   // StatusChangeChecker implementations and stubs.
   virtual bool IsExitConditionSatisfied() = 0;

@@ -136,7 +136,7 @@ class TabEventHandler : public browser_sync::LocalSessionEventHandler {
         TestTimeouts::action_max_timeout());
   }
 
-  virtual void OnLocalTabModified(
+  void OnLocalTabModified(
       browser_sync::SyncedTabDelegate* modified_tab) override {
     // Unwind to ensure SessionsSyncManager has processed the event.
     base::MessageLoop::current()->PostTask(
@@ -144,7 +144,7 @@ class TabEventHandler : public browser_sync::LocalSessionEventHandler {
         base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()));
   }
 
-  virtual void OnFaviconPageUrlsUpdated(
+  void OnFaviconPageUrlsUpdated(
       const std::set<GURL>& updated_page_urls) override {
     // Unwind to ensure SessionsSyncManager has processed the event.
     base::MessageLoop::current()->PostTask(
@@ -367,10 +367,11 @@ class CheckForeignSessionsChecker : public MultiClientStatusChangeChecker {
  public:
   CheckForeignSessionsChecker(int index,
                               const std::vector<ScopedWindowMap>& windows);
-  virtual ~CheckForeignSessionsChecker();
+  ~CheckForeignSessionsChecker() override;
 
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
  private:
   int index_;
   const std::vector<ScopedWindowMap>& windows_;

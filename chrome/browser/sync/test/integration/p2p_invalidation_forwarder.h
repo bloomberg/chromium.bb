@@ -27,11 +27,11 @@ class P2PInvalidationForwarder : public ProfileSyncServiceObserver {
   P2PInvalidationForwarder(
       ProfileSyncService* sync_service,
       invalidation::P2PInvalidationService* invalidation_service);
-  virtual ~P2PInvalidationForwarder();
+  ~P2PInvalidationForwarder() override;
 
   // Implementation of ProfileSyncServiceObserver
-  virtual void OnStateChanged() override;
-  virtual void OnSyncCycleCompleted() override;
+  void OnStateChanged() override;
+  void OnSyncCycleCompleted() override;
 
  private:
   ProfileSyncService* sync_service_;

@@ -89,39 +89,37 @@ class SessionsSyncManager : public syncer::SyncableService,
   SessionsSyncManager(Profile* profile,
                       sync_driver::LocalDeviceInfoProvider* local_device,
                       scoped_ptr<LocalSessionEventRouter> router);
-  virtual ~SessionsSyncManager();
+  ~SessionsSyncManager() override;
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
   // OpenTabsUIDelegate implementation.
-  virtual bool GetSyncedFaviconForPageURL(
+  bool GetSyncedFaviconForPageURL(
       const std::string& pageurl,
       scoped_refptr<base::RefCountedMemory>* favicon_png) const override;
-  virtual bool GetAllForeignSessions(
+  bool GetAllForeignSessions(
       std::vector<const SyncedSession*>* sessions) override;
-  virtual bool GetForeignSession(
-      const std::string& tag,
-      std::vector<const SessionWindow*>* windows) override;
-  virtual bool GetForeignTab(const std::string& tag,
-                             const SessionID::id_type tab_id,
-                             const SessionTab** tab) override;
-  virtual void DeleteForeignSession(const std::string& tag) override;
-  virtual bool GetLocalSession(const SyncedSession* * local_session) override;
+  bool GetForeignSession(const std::string& tag,
+                         std::vector<const SessionWindow*>* windows) override;
+  bool GetForeignTab(const std::string& tag,
+                     const SessionID::id_type tab_id,
+                     const SessionTab** tab) override;
+  void DeleteForeignSession(const std::string& tag) override;
+  bool GetLocalSession(const SyncedSession** local_session) override;
 
   // LocalSessionEventHandler implementation.
-  virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
-  virtual void OnFaviconPageUrlsUpdated(
+  void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
+  void OnFaviconPageUrlsUpdated(
       const std::set<GURL>& updated_favicon_page_urls) override;
 
   // Returns the tag used to uniquely identify this machine's session in the

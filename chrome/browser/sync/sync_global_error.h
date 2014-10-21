@@ -20,27 +20,27 @@ class SyncGlobalError : public GlobalErrorWithStandardBubble,
  public:
   SyncGlobalError(SyncErrorController* error_controller,
                   ProfileSyncService* profile_sync_service);
-  virtual ~SyncGlobalError();
+  ~SyncGlobalError() override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // GlobalErrorWithStandardBubble:
-  virtual bool HasMenuItem() override;
-  virtual int MenuItemCommandID() override;
-  virtual base::string16 MenuItemLabel() override;
-  virtual void ExecuteMenuItem(Browser* browser) override;
-  virtual bool HasBubbleView() override;
-  virtual base::string16 GetBubbleViewTitle() override;
-  virtual std::vector<base::string16> GetBubbleViewMessages() override;
-  virtual base::string16 GetBubbleViewAcceptButtonLabel() override;
-  virtual base::string16 GetBubbleViewCancelButtonLabel() override;
-  virtual void OnBubbleViewDidClose(Browser* browser) override;
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) override;
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) override;
+  bool HasMenuItem() override;
+  int MenuItemCommandID() override;
+  base::string16 MenuItemLabel() override;
+  void ExecuteMenuItem(Browser* browser) override;
+  bool HasBubbleView() override;
+  base::string16 GetBubbleViewTitle() override;
+  std::vector<base::string16> GetBubbleViewMessages() override;
+  base::string16 GetBubbleViewAcceptButtonLabel() override;
+  base::string16 GetBubbleViewCancelButtonLabel() override;
+  void OnBubbleViewDidClose(Browser* browser) override;
+  void BubbleViewAcceptButtonPressed(Browser* browser) override;
+  void BubbleViewCancelButtonPressed(Browser* browser) override;
 
   // SyncErrorController::Observer:
-  virtual void OnErrorChanged() override;
+  void OnErrorChanged() override;
 
  private:
   base::string16 bubble_accept_label_;

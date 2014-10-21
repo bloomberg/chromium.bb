@@ -29,11 +29,11 @@ class SearchEngineDataTypeController
   TemplateURLService::Subscription* GetSubscriptionForTesting();
 
  private:
-  virtual ~SearchEngineDataTypeController();
+  ~SearchEngineDataTypeController() override;
 
   // FrontendDataTypeController implementations.
-  virtual bool StartModels() override;
-  virtual void StopModels() override;
+  bool StartModels() override;
+  void StopModels() override;
 
   void OnTemplateURLServiceLoaded();
 

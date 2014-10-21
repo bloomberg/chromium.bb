@@ -26,14 +26,14 @@ class ProfileSyncAuthProvider : public OAuth2TokenService::Consumer,
   ProfileSyncAuthProvider(ProfileOAuth2TokenService* token_service,
                           const std::string& account_id,
                           const std::string& scope);
-  virtual ~ProfileSyncAuthProvider();
+  ~ProfileSyncAuthProvider() override;
 
   // OAuth2TokenService::Consumer implementation.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // Request access token from OAuth2TokenService. Once access token is received
   // result should be posted to callback on task_runner thread.

@@ -23,10 +23,10 @@ class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ProfileSyncServiceFactory>;
 
   ProfileSyncServiceFactory();
-  virtual ~ProfileSyncServiceFactory();
+  ~ProfileSyncServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 };
 

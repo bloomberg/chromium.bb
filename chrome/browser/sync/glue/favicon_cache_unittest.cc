@@ -38,15 +38,14 @@ const int kMaxSyncFavicons = kFaviconBatchSize*2;
 class TestChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   TestChangeProcessor();
-  virtual ~TestChangeProcessor();
+  ~TestChangeProcessor() override;
 
   // Store a copy of all the changes passed in so we can examine them later.
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      override {
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
     return syncer::SyncDataList();
   }
 

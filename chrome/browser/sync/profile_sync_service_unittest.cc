@@ -48,21 +48,21 @@ class FakeDataTypeManager : public sync_driver::DataTypeManager {
  public:
   explicit FakeDataTypeManager(sync_driver::DataTypeManagerObserver* observer)
      : observer_(observer) {}
-  virtual ~FakeDataTypeManager() {};
+  ~FakeDataTypeManager() override{};
 
-  virtual void Configure(syncer::ModelTypeSet desired_types,
-                         syncer::ConfigureReason reason) override {
+  void Configure(syncer::ModelTypeSet desired_types,
+                 syncer::ConfigureReason reason) override {
     sync_driver::DataTypeManager::ConfigureResult result;
     result.status = sync_driver::DataTypeManager::OK;
     observer_->OnConfigureDone(result);
   }
 
-  virtual void ReenableType(syncer::ModelType type) override {}
-  virtual void ResetDataTypeErrors() override {}
-  virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
-                                 syncer::ConfigureReason reason) override {}
-  virtual void Stop() override {};
-  virtual State state() const override {
+  void ReenableType(syncer::ModelType type) override {}
+  void ResetDataTypeErrors() override {}
+  void PurgeForMigration(syncer::ModelTypeSet undesired_types,
+                         syncer::ConfigureReason reason) override {}
+  void Stop() override{};
+  State state() const override {
     return sync_driver::DataTypeManager::CONFIGURED;
   };
 
@@ -82,7 +82,7 @@ class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
  public:
   explicit TestProfileSyncServiceObserver(ProfileSyncService* service)
       : service_(service), first_setup_in_progress_(false) {}
-  virtual void OnStateChanged() override {
+  void OnStateChanged() override {
     first_setup_in_progress_ = service_->FirstSetupInProgress();
   }
   bool first_setup_in_progress() const { return first_setup_in_progress_; }
@@ -95,7 +95,7 @@ class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
 // call back when asked to initialized.  Allows us to test things
 // that could happen while backend init is in progress.
 class SyncBackendHostNoReturn : public SyncBackendHostMock {
-  virtual void Initialize(
+  void Initialize(
       sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -115,7 +115,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       std::vector<bool>* delete_dir_param)
      : delete_dir_param_(delete_dir_param) {}
 
-  virtual void Initialize(
+  void Initialize(
       sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,

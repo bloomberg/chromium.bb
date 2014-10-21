@@ -14,37 +14,35 @@ namespace browser_sync {
 class TestHttpBridge : public syncer::HttpPostProviderInterface {
  public:
   // Begin syncer::HttpPostProviderInterface implementation:
-  virtual void SetExtraRequestHeaders(const char * headers) override {}
+  void SetExtraRequestHeaders(const char* headers) override {}
 
-  virtual void SetURL(const char* url, int port) override {}
+  void SetURL(const char* url, int port) override {}
 
-  virtual void SetPostPayload(const char* content_type,
-                              int content_length,
-                              const char* content) override {}
+  void SetPostPayload(const char* content_type,
+                      int content_length,
+                      const char* content) override {}
 
-  virtual bool MakeSynchronousPost(int* error_code,
-                                   int* response_code) override;
+  bool MakeSynchronousPost(int* error_code, int* response_code) override;
 
-  virtual int GetResponseContentLength() const override;
+  int GetResponseContentLength() const override;
 
-  virtual const char* GetResponseContent() const override;
+  const char* GetResponseContent() const override;
 
-  virtual const std::string GetResponseHeaderValue(
-      const std::string&) const override;
+  const std::string GetResponseHeaderValue(const std::string&) const override;
 
-  virtual void Abort() override;
+  void Abort() override;
   // End syncer::HttpPostProviderInterface implementation.
 };
 
 class TestHttpBridgeFactory : public syncer::HttpPostProviderFactory {
  public:
   TestHttpBridgeFactory();
-  virtual ~TestHttpBridgeFactory();
+  ~TestHttpBridgeFactory() override;
 
   // syncer::HttpPostProviderFactory:
-  virtual void Init(const std::string& user_agent) override;
-  virtual syncer::HttpPostProviderInterface* Create() override;
-  virtual void Destroy(syncer::HttpPostProviderInterface* http) override;
+  void Init(const std::string& user_agent) override;
+  syncer::HttpPostProviderInterface* Create() override;
+  void Destroy(syncer::HttpPostProviderInterface* http) override;
 };
 
 }  // namespace browser_sync

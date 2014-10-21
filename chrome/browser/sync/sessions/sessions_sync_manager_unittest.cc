@@ -50,41 +50,29 @@ class SyncedWindowDelegateOverride : public SyncedWindowDelegate {
   explicit SyncedWindowDelegateOverride(SyncedWindowDelegate* wrapped)
       : wrapped_(wrapped) {
   }
-  virtual ~SyncedWindowDelegateOverride() {}
+  ~SyncedWindowDelegateOverride() override {}
 
-  virtual bool HasWindow() const override {
-    return wrapped_->HasWindow();
-  }
+  bool HasWindow() const override { return wrapped_->HasWindow(); }
 
-  virtual SessionID::id_type GetSessionId() const override {
+  SessionID::id_type GetSessionId() const override {
     return wrapped_->GetSessionId();
   }
 
-  virtual int GetTabCount() const override {
-    return wrapped_->GetTabCount();
-  }
+  int GetTabCount() const override { return wrapped_->GetTabCount(); }
 
-  virtual int GetActiveIndex() const override {
-    return wrapped_->GetActiveIndex();
-  }
+  int GetActiveIndex() const override { return wrapped_->GetActiveIndex(); }
 
-  virtual bool IsApp() const override {
-    return wrapped_->IsApp();
-  }
+  bool IsApp() const override { return wrapped_->IsApp(); }
 
-  virtual bool IsTypeTabbed() const override {
-    return wrapped_->IsTypeTabbed();
-  }
+  bool IsTypeTabbed() const override { return wrapped_->IsTypeTabbed(); }
 
-  virtual bool IsTypePopup() const override {
-    return wrapped_->IsTypePopup();
-  }
+  bool IsTypePopup() const override { return wrapped_->IsTypePopup(); }
 
-  virtual bool IsTabPinned(const SyncedTabDelegate* tab) const override {
+  bool IsTabPinned(const SyncedTabDelegate* tab) const override {
     return wrapped_->IsTabPinned(tab);
   }
 
-  virtual SyncedTabDelegate* GetTabAt(int index) const override {
+  SyncedTabDelegate* GetTabAt(int index) const override {
     if (tab_overrides_.find(index) != tab_overrides_.end())
       return tab_overrides_.find(index)->second;
 
@@ -98,13 +86,13 @@ class SyncedWindowDelegateOverride : public SyncedWindowDelegate {
     tab_id_overrides_[index] = tab_id;
   }
 
-  virtual SessionID::id_type GetTabIdAt(int index) const override {
+  SessionID::id_type GetTabIdAt(int index) const override {
     if (tab_id_overrides_.find(index) != tab_id_overrides_.end())
       return tab_id_overrides_.find(index)->second;
     return wrapped_->GetTabIdAt(index);
   }
 
-  virtual bool IsSessionRestoreInProgress() const override {
+  bool IsSessionRestoreInProgress() const override {
     return wrapped_->IsSessionRestoreInProgress();
   }
 
@@ -120,8 +108,7 @@ class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
       const std::set<SyncedWindowDelegate*>& delegates)
       : delegates_(delegates) {}
 
-  virtual const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates()
-      override {
+  const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
     return delegates_;
   }
  private:
@@ -132,7 +119,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
  public:
   explicit TestSyncProcessorStub(syncer::SyncChangeList* output)
       : output_(output) {}
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     if (error_.IsSet()) {
@@ -147,8 +134,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
     return syncer::SyncError();
   }
 
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const override {
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
     return sync_data_to_return_;
   }
 
@@ -220,9 +206,9 @@ void AddTabsToSyncDataList(const std::vector<sync_pb::SessionSpecifics> tabs,
 
 class DummyRouter : public LocalSessionEventRouter {
  public:
-  virtual ~DummyRouter() {}
-  virtual void StartRoutingTo(LocalSessionEventHandler* handler) override {}
-  virtual void Stop() override {}
+  ~DummyRouter() override {}
+  void StartRoutingTo(LocalSessionEventHandler* handler) override {}
+  void Stop() override {}
 };
 
 scoped_ptr<LocalSessionEventRouter> NewDummyRouter() {
@@ -364,16 +350,14 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
                             is_supervised_(false),
                             sync_id_(-1),
                             blocked_navigations_(NULL) {}
-  virtual ~SyncedTabDelegateFake() {}
+  ~SyncedTabDelegateFake() override {}
 
-  virtual int GetCurrentEntryIndex() const override {
-    return current_entry_index_;
-  }
+  int GetCurrentEntryIndex() const override { return current_entry_index_; }
   void set_current_entry_index(int i) {
     current_entry_index_ = i;
   }
 
-  virtual content::NavigationEntry* GetEntryAtIndex(int i) const override {
+  content::NavigationEntry* GetEntryAtIndex(int i) const override {
     const int size = entries_.size();
     return (size < i + 1) ? NULL : entries_[i];
   }
@@ -382,65 +366,43 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
     entries_.push_back(entry);
   }
 
-  virtual int GetEntryCount() const override {
-    return entries_.size();
-  }
+  int GetEntryCount() const override { return entries_.size(); }
 
-  virtual int GetPendingEntryIndex() const override {
-    return pending_entry_index_;
-  }
+  int GetPendingEntryIndex() const override { return pending_entry_index_; }
   void set_pending_entry_index(int i) {
     pending_entry_index_ = i;
   }
 
-  virtual SessionID::id_type GetWindowId() const override {
+  SessionID::id_type GetWindowId() const override {
     return SessionID::id_type();
   }
 
-  virtual SessionID::id_type GetSessionId() const override {
+  SessionID::id_type GetSessionId() const override {
     return SessionID::id_type();
   }
 
-  virtual bool IsBeingDestroyed() const override { return false; }
-  virtual Profile* profile() const override { return NULL; }
-  virtual std::string GetExtensionAppId() const override {
-    return std::string();
-  }
-  virtual content::NavigationEntry* GetPendingEntry() const override {
-   return NULL;
-  }
-  virtual content::NavigationEntry* GetActiveEntry() const override {
-   return NULL;
-  }
-  virtual bool ProfileIsSupervised() const override {
-   return is_supervised_;
-  }
+  bool IsBeingDestroyed() const override { return false; }
+  Profile* profile() const override { return NULL; }
+  std::string GetExtensionAppId() const override { return std::string(); }
+  content::NavigationEntry* GetPendingEntry() const override { return NULL; }
+  content::NavigationEntry* GetActiveEntry() const override { return NULL; }
+  bool ProfileIsSupervised() const override { return is_supervised_; }
   void set_is_supervised(bool is_supervised) { is_supervised_ = is_supervised; }
-  virtual const std::vector<const content::NavigationEntry*>*
-      GetBlockedNavigations() const override {
+  const std::vector<const content::NavigationEntry*>* GetBlockedNavigations()
+      const override {
     return blocked_navigations_;
   }
   void set_blocked_navigations(
       std::vector<const content::NavigationEntry*>* navs) {
     blocked_navigations_ = navs;
   }
-  virtual bool IsPinned() const override {
-   return false;
-  }
-  virtual bool HasWebContents() const override {
-   return false;
-  }
-  virtual content::WebContents* GetWebContents() const override {
-   return NULL;
-  }
+  bool IsPinned() const override { return false; }
+  bool HasWebContents() const override { return false; }
+  content::WebContents* GetWebContents() const override { return NULL; }
 
   // Session sync related methods.
-  virtual int GetSyncId() const override {
-   return sync_id_;
-  }
-  virtual void SetSyncId(int sync_id) override {
-    sync_id_ = sync_id;
-  }
+  int GetSyncId() const override { return sync_id_; }
+  void SetSyncId(int sync_id) override { sync_id_ = sync_id; }
 
   void reset() {
     current_entry_index_ = 0;
@@ -1838,9 +1800,9 @@ class SessionNotificationObserver : public content::NotificationObserver {
     registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
                    content::NotificationService::AllSources());
   }
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
         notified_of_update_ = true;

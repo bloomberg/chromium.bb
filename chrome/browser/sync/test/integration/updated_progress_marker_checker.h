@@ -21,10 +21,10 @@
 class UpdatedProgressMarkerChecker : public SingleClientStatusChangeChecker {
  public:
   explicit UpdatedProgressMarkerChecker(ProfileSyncService* service);
-  virtual ~UpdatedProgressMarkerChecker();
+  ~UpdatedProgressMarkerChecker() override;
 
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_UPDATED_PROGRESS_MARKER_CHECKER_H_

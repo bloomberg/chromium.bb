@@ -47,10 +47,10 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
                                    profile,
                                    sync_service),
         mock_(mock) {}
-  virtual syncer::ModelType type() const override { return syncer::BOOKMARKS; }
+  syncer::ModelType type() const override { return syncer::BOOKMARKS; }
 
  private:
-  virtual void CreateSyncComponents() override {
+  void CreateSyncComponents() override {
     ProfileSyncComponentsFactory::SyncComponents sync_components =
         profile_sync_factory_->
             CreateBookmarkSyncComponents(sync_service_, this);
@@ -60,26 +60,20 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
 
   // We mock the following methods because their default implementations do
   // nothing, but we still want to make sure they're called appropriately.
-  virtual bool StartModels() override {
-    return mock_->StartModels();
-  }
-  virtual void CleanUpState() override {
-    mock_->CleanUpState();
-  }
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) override {
+  bool StartModels() override { return mock_->StartModels(); }
+  void CleanUpState() override { mock_->CleanUpState(); }
+  void RecordUnrecoverableError(const tracked_objects::Location& from_here,
+                                const std::string& message) override {
     mock_->RecordUnrecoverableError(from_here, message);
   }
-  virtual void RecordAssociationTime(base::TimeDelta time) override {
+  void RecordAssociationTime(base::TimeDelta time) override {
     mock_->RecordAssociationTime(time);
   }
-  virtual void RecordStartFailure(
-      DataTypeController::ConfigureResult result) override {
+  void RecordStartFailure(DataTypeController::ConfigureResult result) override {
     mock_->RecordStartFailure(result);
   }
  private:
-  virtual ~FrontendDataTypeControllerFake() {}
+  ~FrontendDataTypeControllerFake() override {}
   FrontendDataTypeControllerMock* mock_;
 };
 

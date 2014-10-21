@@ -25,7 +25,7 @@ class SyncErrorController : public ProfileSyncServiceObserver {
   };
 
   explicit SyncErrorController(ProfileSyncService* service);
-  virtual ~SyncErrorController();
+  ~SyncErrorController() override;
 
   // True if there exists an error worth elevating to the user.
   bool HasError();
@@ -34,7 +34,7 @@ class SyncErrorController : public ProfileSyncServiceObserver {
   void RemoveObserver(Observer* observer);
 
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
  private:
   ProfileSyncService* service_;

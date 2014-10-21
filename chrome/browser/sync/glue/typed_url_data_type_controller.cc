@@ -38,8 +38,8 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
         dtc_(dtc) {
   }
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     // Set the backend, then release our reference before executing the task.
     dtc_->SetBackend(backend);
     dtc_ = NULL;
@@ -53,10 +53,10 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {}
+  void DoneRunOnMainThread() override {}
 
  protected:
-  virtual ~RunTaskOnHistoryThread() {}
+  ~RunTaskOnHistoryThread() override {}
 
   scoped_ptr<base::Closure> task_;
   scoped_refptr<TypedUrlDataTypeController> dtc_;

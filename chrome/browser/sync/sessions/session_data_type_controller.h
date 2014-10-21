@@ -29,17 +29,17 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
                             sync_driver::LocalDeviceInfoProvider* local_device);
 
   // NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // UIDataTypeController interface.
-  virtual bool StartModels() override;
-  virtual void StopModels() override;
-  virtual bool ReadyForStart() const override;
+  bool StartModels() override;
+  void StopModels() override;
+  bool ReadyForStart() const override;
 
  protected:
-  virtual ~SessionDataTypeController();
+  ~SessionDataTypeController() override;
 
  private:
   bool IsWaiting();

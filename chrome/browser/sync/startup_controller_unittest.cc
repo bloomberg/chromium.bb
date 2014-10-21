@@ -36,13 +36,9 @@ class FakeSupervisedUserSigninManagerWrapper
  public:
   FakeSupervisedUserSigninManagerWrapper()
       : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
-  virtual std::string GetEffectiveUsername() const override {
-    return account_;
-  }
+  std::string GetEffectiveUsername() const override { return account_; }
 
-  virtual std::string GetAccountIdToUse() const override {
-    return account_;
-  }
+  std::string GetAccountIdToUse() const override { return account_; }
 
   void set_account(const std::string& account) { account_ = account; }
 

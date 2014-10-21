@@ -20,12 +20,12 @@ namespace browser_sync {
 class ExtensionsActivityMonitor : public content::NotificationObserver {
  public:
   ExtensionsActivityMonitor();
-  virtual ~ExtensionsActivityMonitor();
+  ~ExtensionsActivityMonitor() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   const scoped_refptr<syncer::ExtensionsActivity>& GetExtensionsActivity();
 

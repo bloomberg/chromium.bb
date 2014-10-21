@@ -291,7 +291,7 @@ class TestRegistrar : public SyncBackendRegistrar {
       : SyncBackendRegistrar("test", profile, scoped_ptr<base::Thread>()),
         test_(test) {}
 
-  virtual ~TestRegistrar() { test_->registrar_destroyed_.Signal(); }
+  ~TestRegistrar() override { test_->registrar_destroyed_.Signal(); }
 
  private:
   SyncBackendRegistrarShutdownTest* test_;

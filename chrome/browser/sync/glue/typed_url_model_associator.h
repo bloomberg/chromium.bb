@@ -51,27 +51,27 @@ class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
   TypedUrlModelAssociator(ProfileSyncService* sync_service,
                           history::HistoryBackend* history_backend,
                           sync_driver::DataTypeErrorHandler* error_handler);
-  virtual ~TypedUrlModelAssociator();
+  ~TypedUrlModelAssociator() override;
 
   // AssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual syncer::SyncError AssociateModels(
+  syncer::SyncError AssociateModels(
       syncer::SyncMergeResult* local_merge_result,
       syncer::SyncMergeResult* syncer_merge_result) override;
 
   // Clears all associations.
-  virtual syncer::SyncError DisassociateModels() override;
+  syncer::SyncError DisassociateModels() override;
 
   // Called from the main thread, to abort the currently active model
   // association (for example, if we are shutting down).
-  virtual void AbortAssociation() override;
+  void AbortAssociation() override;
 
   // The has_nodes out param is true if the sync model has nodes other
   // than the permanent tagged nodes.
-  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) override;
+  bool SyncModelHasUserCreatedNodes(bool* has_nodes) override;
 
-  virtual bool CryptoReadyIfNecessary() override;
+  bool CryptoReadyIfNecessary() override;
 
   // Delete all typed url nodes.
   bool DeleteAllNodes(syncer::WriteTransaction* trans);

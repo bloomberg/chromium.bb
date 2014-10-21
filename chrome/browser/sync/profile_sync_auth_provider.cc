@@ -25,9 +25,8 @@ class ProfileSyncAuthProvider::SyncThreadProxy
       scoped_refptr<base::SingleThreadTaskRunner> provider_task_runner);
 
   // syncer::SyncAuthProvider implementation.
-  virtual void RequestAccessToken(
-      const RequestTokenCallback& callback) override;
-  virtual void InvalidateAccessToken(const std::string& token) override;
+  void RequestAccessToken(const RequestTokenCallback& callback) override;
+  void InvalidateAccessToken(const std::string& token) override;
 
  private:
   base::WeakPtr<ProfileSyncAuthProvider> provider_impl_;

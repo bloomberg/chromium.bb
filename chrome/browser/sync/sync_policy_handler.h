@@ -18,11 +18,11 @@ class PolicyMap;
 class SyncPolicyHandler : public policy::TypeCheckingPolicyHandler {
  public:
   SyncPolicyHandler();
-  virtual ~SyncPolicyHandler();
+  ~SyncPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPolicyHandler);
