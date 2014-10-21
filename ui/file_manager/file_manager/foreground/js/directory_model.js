@@ -175,7 +175,7 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
 
   // If the change is deletion of currentDir, move up to its parent directory.
   directoryEntry.getDirectory(directoryEntry.fullPath, {create: false},
-      null,
+      function() {},
       function() {
         var volumeInfo = this.volumeManager_.getVolumeInfo(directoryEntry);
         if (volumeInfo) {

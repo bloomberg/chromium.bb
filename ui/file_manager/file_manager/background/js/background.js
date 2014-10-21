@@ -202,7 +202,7 @@ FileBrowserBackground.prototype.canClose = function() {
  * @param {string} devicePath Device path to a volume to be opened.
  * @private
  */
-FileBrowserBackground.prototype.navigateToVolume = function(devicePath) {
+FileBrowserBackground.prototype.navigateToVolume_ = function(devicePath) {
   VolumeManager.getInstance().then(function(volumeManager) {
     var volumeInfoList = volumeManager.volumeInfoList;
     for (var i = 0; i < volumeInfoList.length; i++) {

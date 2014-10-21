@@ -524,7 +524,11 @@ VolumeItem.prototype.updateSubDirectories = function(recursive) {
         entries.push(this.volumeInfo.fakeEntries[key]);
     }
     // This list is sorted by URL on purpose.
-    entries.sort(function(a, b) { return a.toURL() < b.toURL(); });
+    entries.sort(function(a, b) {
+      if (a.toURL() === b.toURL())
+        return 0;
+      return b.toURL() > a.toURL() ? 1 : -1;
+    });
 
     for (var i = 0; i < entries.length; i++) {
       var item = new DirectoryItem(

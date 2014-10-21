@@ -44,7 +44,7 @@ ShareClient.Observer.prototype.onLoaded = function() {
 /**
  * Notifies when the the embedded dialog failed to load.
  */
-ShareClient.Observer.prototype.onLoadingFailed = function() {
+ShareClient.Observer.prototype.onLoadFailed = function() {
 };
 
 /**

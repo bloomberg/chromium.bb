@@ -378,7 +378,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
   var onViewFiles = function(result) {
     switch (result) {
       case 'opened':
-        callback(success, entries);
+        callback(true, entries);
         break;
       case 'message_sent':
         util.isTeleported(window).then(function(teleported) {
@@ -387,10 +387,10 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
                 this.fileManager_.ui.alertDialog, entries);
           }
         }.bind(this));
-        callback(success, entries);
+        callback(true, entries);
         break;
       case 'empty':
-        callback(success, entries);
+        callback(true, entries);
         break;
       case 'failed':
         onViewFilesFailure();

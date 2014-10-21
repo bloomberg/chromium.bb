@@ -154,7 +154,7 @@ DriveSyncHandler.prototype.removeItem_ = function(status) {
  */
 DriveSyncHandler.prototype.requestCancel_ = function(entry) {
   // Cancel all jobs.
-  chrome.fileManagerPrivate.cancelFileTransfers(function() {});
+  chrome.fileManagerPrivate.cancelFileTransfers();
 };
 
 /**

@@ -193,7 +193,7 @@ FileTransferController.prototype = {
     dataTransfer.effectAllowed = effectAllowed;
     dataTransfer.setData('fs/effectallowed', effectAllowed);
     dataTransfer.setData('fs/missingFileContents',
-                         !this.isAllSelectedFilesAvailable_());
+                         (!this.isAllSelectedFilesAvailable_()).toString());
 
     for (var i = 0; i < this.selectedFileObjects_.length; i++) {
       dataTransfer.items.add(this.selectedFileObjects_[i]);
@@ -398,7 +398,7 @@ FileTransferController.prototype = {
                     dialogResult,
                     function() {
                       // TODO(hirono): Check chrome.runtime.lastError here.
-                      fulfill();
+                      fulfill(null);
                     });
               }).then(requestDriveShare.bind(null, index + 1));
             };
@@ -449,7 +449,7 @@ FileTransferController.prototype = {
     var imagePromise = metadataPromise.then(function(metadata) {
       return new Promise(function(fulfill, reject) {
         var loader = new ThumbnailLoader(
-            entry, ThumbnailLoader.LoaderType.Image, metadata);
+            entry, ThumbnailLoader.LoaderType.IMAGE, metadata);
         loader.loadDetachedImage(function(result) {
           if (result)
             fulfill(loader.getImage());
@@ -557,8 +557,8 @@ FileTransferController.prototype = {
     }
 
     var dt = event.dataTransfer;
-    var canCopy = this.canCopyOrDrag_(dt);
-    var canCut = this.canCutOrDrag_(dt);
+    var canCopy = this.canCopyOrDrag_();
+    var canCut = this.canCutOrDrag_();
     if (canCopy || canCut) {
       if (canCopy && canCut) {
         this.cutOrCopy_(dt, 'all');

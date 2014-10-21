@@ -230,7 +230,7 @@ FileGrid.Item.decorate = function(li, entry, grid) {
   // TODO(mtomasz): Pass the metadata cache and the volume manager directly
   // instead of accessing private members of grid.
   FileGrid.decorateThumbnail(
-      li, entry, grid.metadataCache_, grid.volumeManager_, true);
+      li, entry, grid.metadataCache_, grid.volumeManager_);
 
   // Override the default role 'listitem' to 'option' to match the parent's
   // role (listbox).
@@ -297,7 +297,7 @@ FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
   var horizontalEndIndex = Math.min(this.columns, this.getHitIndex_(
       right, itemMetrics.width, itemMetrics.marginLeft));
   var verticalStartIndex = this.getHitIndex_(
-      y, itemMetrics.height, itemMetrics.height - itemMetrics.bottom);
+      y, itemMetrics.height, itemMetrics.height - itemMetrics.marginBottom);
   var verticalEndIndex = this.getHitIndex_(
       bottom, itemMetrics.height, itemMetrics.marginTop);
   for (var verticalIndex = verticalStartIndex;

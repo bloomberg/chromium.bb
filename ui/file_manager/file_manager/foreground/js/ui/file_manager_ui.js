@@ -177,7 +177,7 @@ FileManagerUI.prototype.initDialogType_ = function() {
       break;
 
     default:
-      throw new Error('Unknown dialog type: ' + this.dialogType);
+      throw new Error('Unknown dialog type: ' + this.dialogType_);
   }
 
   this.okButton.textContent = okLabel;

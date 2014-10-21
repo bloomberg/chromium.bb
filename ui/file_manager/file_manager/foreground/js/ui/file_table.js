@@ -422,10 +422,10 @@ FileTable.prototype.fitColumn = function(index) {
  * @param {boolean} use12hourClock True if 12 hours clock, False if 24 hours.
  */
 FileTable.prototype.setDateTimeFormat = function(use12hourClock) {
-  this.timeFormatter_ = Intl.DateTimeFormat(
+  this.timeFormatter_ = new Intl.DateTimeFormat(
       [] /* default locale */,
       {hour: 'numeric', minute: 'numeric', hour12: use12hourClock});
-  this.dateFormatter_ = Intl.DateTimeFormat(
+  this.dateFormatter_ = new Intl.DateTimeFormat(
       [] /* default locale */,
       {
         year: 'numeric', month: 'short', day: 'numeric',

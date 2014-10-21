@@ -257,7 +257,7 @@ SuggestAppsDialog.prototype.showInternal_ =
     if (!show) {
       console.error('SuggestAppsDialog can\'t be shown');
       this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
-      this.onHide();
+      this.onHide_();
       return;
     }
 
@@ -331,7 +331,7 @@ SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
  * @private
  */
 SuggestAppsDialog.prototype.onWidgetLoadFailed_ = function(event) {
-  SuggestAppsDialog.Metrics.recordLoad(SuggestAppsDialog.Metrics.LOAD.FAILURE);
+  SuggestAppsDialog.Metrics.recordLoad(SuggestAppsDialog.Metrics.LOAD.FAILED);
 
   this.frame_.classList.remove('show-spinner');
   this.state_ = SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING;
@@ -388,7 +388,7 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
   switch (result) {
     case AppInstaller.Result.SUCCESS:
       SuggestAppsDialog.Metrics.recordInstall(
-          SuggestAppsDialog.Metrics.INSTALL.SUCCESS);
+          SuggestAppsDialog.Metrics.INSTALL.SUCCEEDED);
       this.hide();
       break;
     case AppInstaller.Result.CANCELLED:
@@ -477,12 +477,12 @@ SuggestAppsDialog.prototype.onHide_ = function(opt_originalOnHide) {
     case SuggestAppsDialog.State.CANCELED_CLOSING:
       result = SuggestAppsDialog.Result.USER_CANCELL;
       SuggestAppsDialog.Metrics.recordCloseDialog(
-          SuggestAppsDialog.Metrics.CLOSE_DIALOG.USER_CANCELL);
+          SuggestAppsDialog.Metrics.CLOSE_DIALOG.USER_CANCELLED);
       break;
     case SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING:
       result = SuggestAppsDialog.Result.WEBSTORE_LINK_OPENED;
       SuggestAppsDialog.Metrics.recordCloseDialog(
-          SuggestAppsDialog.Metrics.CLOSE_DIALOG.WEB_STORE_LINK);
+          SuggestAppsDialog.Metrics.CLOSE_DIALOG.WEBSTORE_LINK_OPENED);
       break;
     default:
       result = SuggestAppsDialog.Result.USER_CANCELL;
@@ -515,7 +515,7 @@ SuggestAppsDialog.Metrics.LOAD = {
  * @const
  */
 SuggestAppsDialog.Metrics.CLOSE_DIALOG = {
-  UNKOWN_ERROR: 0,
+  UNKNOWN_ERROR: 0,
   ITEM_INSTALLED: 1,
   USER_CANCELLED: 2,
   WEBSTORE_LINK_OPENED: 3,

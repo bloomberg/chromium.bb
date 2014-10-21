@@ -1465,7 +1465,7 @@ FileOperationManager.prototype.zipSelection = function(
     dirEntry, selectionEntries) {
   var zipTask = new FileOperationManager.ZipTask(
       selectionEntries, dirEntry, dirEntry);
-  zipTask.taskId = this.generateTaskId(this.copyTasks_);
+  zipTask.taskId = this.generateTaskId();
   zipTask.zip = true;
   this.eventRouter_.sendProgressEvent('BEGIN',
                                       zipTask.getStatus(),
