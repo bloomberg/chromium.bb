@@ -176,7 +176,7 @@ jboolean ProfileSyncServiceAndroid::IsEncryptEverythingEnabled(
 
 jboolean ProfileSyncServiceAndroid::IsSyncInitialized(JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return sync_service_->SyncActive();
+  return sync_service_->backend_initialized();
 }
 
 jboolean ProfileSyncServiceAndroid::IsFirstSetupInProgress(
