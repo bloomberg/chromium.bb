@@ -395,7 +395,6 @@
             'cronet',
             'cronet_sample_apk_java',
             'cronet_stub',
-            '../base/base.gyp:base_java',
             '../base/base.gyp:base_java_test_support',
           ],
           'variables': {
@@ -464,7 +463,7 @@
         {
           # cronet_test_apk creates a .jar as a side effect. Any java targets
           # that need that .jar in their classpath should depend on this target,
-          # cronet_sample_apk_java. Dependents of cronet_test_apk receive its
+          # cronet_test_apk_java. Dependents of cronet_test_apk receive its
           # jar path in the variable 'apk_output_jar_path'. This target should
           # only be used by targets which instrument cronet_test_apk.
           'target_name': 'cronet_test_apk_java',
@@ -479,8 +478,6 @@
           'type': 'none',
           'dependencies': [
             'cronet_test_apk_java',
-            '../base/base.gyp:base_java',
-            '../base/base.gyp:base_javatests',
             '../base/base.gyp:base_java_test_support',
           ],
           'variables': {
