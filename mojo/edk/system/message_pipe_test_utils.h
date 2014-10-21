@@ -49,7 +49,7 @@ class ChannelThread {
 class MultiprocessMessagePipeTestBase : public testing::Test {
  public:
   MultiprocessMessagePipeTestBase();
-  virtual ~MultiprocessMessagePipeTestBase();
+  ~MultiprocessMessagePipeTestBase() override;
 
  protected:
   void Init(scoped_refptr<ChannelEndpoint> ep);

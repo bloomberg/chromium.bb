@@ -99,7 +99,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
   MessagePipe();
 
   friend class base::RefCountedThreadSafe<MessagePipe>;
-  virtual ~MessagePipe();
+  ~MessagePipe();
 
   // This is used internally by |WriteMessage()| and by |EnqueueMessage()|.
   // |transports| may be non-null only if it's nonempty and |message| has no

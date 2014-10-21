@@ -102,7 +102,7 @@ class ScopedTestChannel {
 class EmbedderTest : public testing::Test {
  public:
   EmbedderTest() : test_io_thread_(base::TestIOThread::kAutoStart) {}
-  virtual ~EmbedderTest() {}
+  ~EmbedderTest() override {}
 
  protected:
   base::TestIOThread* test_io_thread() { return &test_io_thread_; }

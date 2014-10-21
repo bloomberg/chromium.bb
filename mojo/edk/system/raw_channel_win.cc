@@ -72,10 +72,10 @@ base::LazyInstance<VistaOrHigherFunctions> g_vista_or_higher_functions =
 class RawChannelWin : public RawChannel {
  public:
   RawChannelWin(embedder::ScopedPlatformHandle handle);
-  virtual ~RawChannelWin();
+  ~RawChannelWin() override;
 
   // |RawChannel| public methods:
-  virtual size_t GetSerializedPlatformHandleSize() const override;
+  size_t GetSerializedPlatformHandleSize() const override;
 
  private:
   // RawChannelIOHandler receives OS notifications for I/O completion. It must
@@ -109,9 +109,9 @@ class RawChannelWin : public RawChannel {
     // |base::MessageLoopForIO::IOHandler| implementation:
     // Must be called on the I/O thread. It could be called before or after
     // detached from the owner.
-    virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
-                               DWORD bytes_transferred,
-                               DWORD error) override;
+    void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                       DWORD bytes_transferred,
+                       DWORD error) override;
 
     // Must be called on the I/O thread under |owner_->write_lock()|.
     // After this call, the owner must not make any further calls on this
@@ -121,7 +121,7 @@ class RawChannelWin : public RawChannel {
                                scoped_ptr<WriteBuffer> write_buffer);
 
    private:
-    virtual ~RawChannelIOHandler();
+    ~RawChannelIOHandler() override;
 
     // Returns true if |owner_| has been reset and there is not pending read or
     // write.
@@ -160,17 +160,17 @@ class RawChannelWin : public RawChannel {
   };
 
   // |RawChannel| private methods:
-  virtual IOResult Read(size_t* bytes_read) override;
-  virtual IOResult ScheduleRead() override;
-  virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
+  IOResult Read(size_t* bytes_read) override;
+  IOResult ScheduleRead() override;
+  embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) override;
-  virtual IOResult WriteNoLock(size_t* platform_handles_written,
-                               size_t* bytes_written) override;
-  virtual IOResult ScheduleWriteNoLock() override;
-  virtual bool OnInit() override;
-  virtual void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
-                                scoped_ptr<WriteBuffer> write_buffer) override;
+  IOResult WriteNoLock(size_t* platform_handles_written,
+                       size_t* bytes_written) override;
+  IOResult ScheduleWriteNoLock() override;
+  bool OnInit() override;
+  void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
+                        scoped_ptr<WriteBuffer> write_buffer) override;
 
   // Passed to |io_handler_| during initialization.
   embedder::ScopedPlatformHandle handle_;

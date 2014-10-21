@@ -33,9 +33,9 @@ class ChannelTest : public testing::Test {
   ChannelTest()
       : io_thread_(base::TestIOThread::kAutoStart),
         init_result_(TRISTATE_UNKNOWN) {}
-  virtual ~ChannelTest() {}
+  ~ChannelTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&ChannelTest::SetUpOnIOThread, base::Unretained(this)));

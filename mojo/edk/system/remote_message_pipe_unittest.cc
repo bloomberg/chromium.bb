@@ -44,16 +44,16 @@ namespace {
 class RemoteMessagePipeTest : public testing::Test {
  public:
   RemoteMessagePipeTest() : io_thread_(base::TestIOThread::kAutoStart) {}
-  virtual ~RemoteMessagePipeTest() {}
+  ~RemoteMessagePipeTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
                    base::Unretained(this)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,

@@ -42,16 +42,16 @@ void WaitReadable(PlatformHandle h) {
 class PlatformChannelPairPosixTest : public testing::Test {
  public:
   PlatformChannelPairPosixTest() {}
-  virtual ~PlatformChannelPairPosixTest() {}
+  ~PlatformChannelPairPosixTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Make sure |SIGPIPE| isn't being ignored.
     struct sigaction action = {};
     action.sa_handler = SIG_DFL;
     ASSERT_EQ(0, sigaction(SIGPIPE, &action, &old_action_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Restore the |SIGPIPE| handler.
     ASSERT_EQ(0, sigaction(SIGPIPE, &old_action_, nullptr));
   }

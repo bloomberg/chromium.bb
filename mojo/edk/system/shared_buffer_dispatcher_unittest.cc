@@ -43,7 +43,7 @@ void RevalidateCreateOptions(
 class SharedBufferDispatcherTest : public testing::Test {
  public:
   SharedBufferDispatcherTest() {}
-  virtual ~SharedBufferDispatcherTest() {}
+  ~SharedBufferDispatcherTest() override {}
 
   embedder::PlatformSupport* platform_support() { return &platform_support_; }
 

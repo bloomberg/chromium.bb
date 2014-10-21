@@ -25,10 +25,10 @@ class CoreTestBase : public testing::Test {
   typedef CoreTestBase_MockHandleInfo MockHandleInfo;
 
   CoreTestBase();
-  virtual ~CoreTestBase();
+  ~CoreTestBase() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   // |info| must remain alive until the returned handle is closed.

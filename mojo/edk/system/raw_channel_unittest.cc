@@ -73,16 +73,16 @@ bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
 class RawChannelTest : public testing::Test {
  public:
   RawChannelTest() : io_thread_(base::TestIOThread::kManualStart) {}
-  virtual ~RawChannelTest() {}
+  ~RawChannelTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     embedder::PlatformChannelPair channel_pair;
     handles[0] = channel_pair.PassServerHandle();
     handles[1] = channel_pair.PassClientHandle();
     io_thread_.Start();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     io_thread_.Stop();
     handles[0].reset();
     handles[1].reset();
