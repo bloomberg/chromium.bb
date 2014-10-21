@@ -5,9 +5,18 @@
 #include "config.h"
 #include "web/ExternalPopupMenu.h"
 
+#include "core/HTMLNames.h"
+#include "core/html/HTMLSelectElement.h"
+#include "core/rendering/RenderMenuList.h"
+#include "core/testing/URLTestHelpers.h"
 #include "platform/PopupMenu.h"
 #include "platform/PopupMenuClient.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebExternalPopupMenu.h"
 #include "public/web/WebPopupMenuInfo.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
 using namespace blink;
@@ -91,6 +100,114 @@ TEST_F(ExternalPopupMenuDisplayNoneItemsTest, IndexMappingTest)
     // Invalid index, methods should return -1.
     EXPECT_EQ(-1, ExternalPopupMenu::toExternalPopupMenuItemIndex(8, m_popupMenuClient));
     EXPECT_EQ(-1, ExternalPopupMenu::toPopupMenuItemIndex(8, m_popupMenuClient));
+}
+
+class ExternalPopupMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    virtual WebExternalPopupMenu* createExternalPopupMenu(const WebPopupMenuInfo&, WebExternalPopupMenuClient*) override
+    {
+        return &m_mockWebExternalPopupMenu;
+    }
+private:
+    class MockWebExternalPopupMenu : public WebExternalPopupMenu {
+        virtual void show(const WebRect& bounds) override { }
+        virtual void close() override { }
+    };
+    MockWebExternalPopupMenu m_mockWebExternalPopupMenu;
+};
+
+class ExternalPopupMenuTest : public testing::Test {
+public:
+    ExternalPopupMenuTest() : m_baseURL("http://www.test.com") { }
+
+protected:
+    virtual void SetUp() override
+    {
+        m_helper.initialize(false, &m_webFrameClient, &m_webViewClient);
+        webView()->setUseExternalPopupMenus(true);
+    }
+    virtual void TearDown() override
+    {
+        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
+    }
+
+    void registerMockedURLLoad(const std::string& fileName)
+    {
+        URLTestHelpers::registerMockedURLLoad(URLTestHelpers::toKURL(m_baseURL + fileName), WebString::fromUTF8(fileName.c_str()), WebString::fromUTF8("popup/"), WebString::fromUTF8("text/html"));
+    }
+
+    void loadFrame(const std::string& fileName)
+    {
+        FrameTestHelpers::loadFrame(mainFrame(), m_baseURL + fileName);
+    }
+
+    WebViewImpl* webView() const { return m_helper.webViewImpl(); }
+    WebLocalFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
+
+private:
+    std::string m_baseURL;
+    FrameTestHelpers::TestWebViewClient m_webViewClient;
+    ExternalPopupMenuWebFrameClient m_webFrameClient;
+    FrameTestHelpers::WebViewHelper m_helper;
+};
+
+TEST_F(ExternalPopupMenuTest, DidAcceptIndex)
+{
+    registerMockedURLLoad("select.html");
+    loadFrame("select.html");
+
+    HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
+    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    ASSERT_TRUE(menuList);
+
+    menuList->showPopup();
+    ASSERT_TRUE(menuList->popupIsVisible());
+
+    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
+    client->didAcceptIndex(2);
+    EXPECT_FALSE(menuList->popupIsVisible());
+    ASSERT_STREQ("2", menuList->text().utf8().data());
+    EXPECT_EQ(2, select->selectedIndex());
+}
+
+TEST_F(ExternalPopupMenuTest, DidAcceptIndices)
+{
+    registerMockedURLLoad("select.html");
+    loadFrame("select.html");
+
+    HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
+    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    ASSERT_TRUE(menuList);
+
+    menuList->showPopup();
+    ASSERT_TRUE(menuList->popupIsVisible());
+
+    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
+    int indices[] = { 2 };
+    WebVector<int> indicesVector(indices, 1);
+    client->didAcceptIndices(indicesVector);
+    EXPECT_FALSE(menuList->popupIsVisible());
+    EXPECT_STREQ("2", menuList->text().utf8().data());
+    EXPECT_EQ(2, select->selectedIndex());
+}
+
+TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect)
+{
+    registerMockedURLLoad("select.html");
+    loadFrame("select.html");
+
+    HTMLSelectElement* select = toHTMLSelectElement(mainFrame()->frame()->document()->getElementById("select"));
+    RenderMenuList* menuList = toRenderMenuList(select->renderer());
+    ASSERT_TRUE(menuList);
+
+    menuList->showPopup();
+    ASSERT_TRUE(menuList->popupIsVisible());
+
+    WebExternalPopupMenuClient* client = static_cast<ExternalPopupMenu*>(menuList->popup());
+    WebVector<int> indices;
+    client->didAcceptIndices(indices);
+    EXPECT_FALSE(menuList->popupIsVisible());
+    EXPECT_EQ(-1, select->selectedIndex());
 }
 
 } // namespace

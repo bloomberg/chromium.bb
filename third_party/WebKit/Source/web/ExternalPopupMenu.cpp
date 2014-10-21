@@ -162,17 +162,14 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     // method.
     RefPtrWillBeRawPtr<ExternalPopupMenu> protect(this);
 
+    m_popupMenuClient->popupDidHide();
+
     if (!indices.size())
         m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
     else {
         for (size_t i = 0; i < indices.size(); ++i)
             m_popupMenuClient->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *m_popupMenuClient), (i > 0), false, (i == indices.size() - 1));
     }
-
-    // The call to valueChanged above might have lead to a call to
-    // disconnectClient, so we might not have a PopupMenuClient anymore.
-    if (m_popupMenuClient)
-        m_popupMenuClient->popupDidHide();
 
     m_webExternalPopupMenu = 0;
 }

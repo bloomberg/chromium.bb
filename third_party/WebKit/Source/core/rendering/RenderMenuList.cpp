@@ -568,6 +568,8 @@ int RenderMenuList::selectedIndex() const
 void RenderMenuList::popupDidHide()
 {
     m_popupIsVisible = false;
+    // Ensure the text is updated which wasn't updated when the popup is visible.
+    updateFromElement();
 }
 
 bool RenderMenuList::itemIsSeparator(unsigned listIndex) const

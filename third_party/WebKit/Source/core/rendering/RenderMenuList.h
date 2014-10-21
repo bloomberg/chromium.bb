@@ -45,6 +45,7 @@ public:
     bool popupIsVisible() const { return m_popupIsVisible; }
     void showPopup();
     void hidePopup();
+    PopupMenu* popup() const { return m_popup.get(); }
 
     void setOptionsChanged(bool changed) { m_optionsChanged = changed; }
 
