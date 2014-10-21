@@ -46,7 +46,11 @@ public:
         return adoptRef(new CalculationValue(value, range));
     }
 
-    float evaluate(float maxValue) const { return pixels() + percent() / 100 * maxValue; }
+    float evaluate(float maxValue) const
+    {
+        float value = pixels() + percent() / 100 * maxValue;
+        return (isNonNegative() && value < 0) ? 0 : value;
+    }
     bool operator==(const CalculationValue& o) const { return pixels() == o.pixels() && percent() == o.percent(); }
     bool isNonNegative() const { return m_isNonNegative; }
     float pixels() const { return m_value.pixels; }
