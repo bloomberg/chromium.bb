@@ -7,19 +7,44 @@
 <script>
 var test = function()
 {
-    const requestRegExp = /\/initiator.css$/;
+    function step1()
+    {
+        InspectorTest.makeSimpleXHR("GET", "resources/binary.data", false, step2);
+    }
 
-    function onRequestFinished()
+    function step2()
     {
         var writer = new WebInspector.HARWriter();
         var stream = new InspectorTest.StringOutputStream(onSaved);
         writer.write(stream, InspectorTest.networkRequests(), new WebInspector.Progress());
     }
 
+    function dumpContent(content)
+    {
+        if (!content) {
+            InspectorTest.addResult("    NOT FOUND");
+            return;
+        }
+        var propertyNames = Object.keys(content);
+        propertyNames.sort();
+        for (var i = 0; i < propertyNames.length; ++i) {
+            var prop = propertyNames[i];
+            InspectorTest.addResult("    " + prop + ": " + JSON.stringify(content[prop]));
+        }
+    }
+
     function onSaved(data)
     {
         var har = JSON.parse(data);
-        InspectorTest.addResult("initiator.css: " + findEntry(har, requestRegExp).response.content.text);
+
+        InspectorTest.addResult("initiator.css:");
+        dumpContent(findEntry(har, /\/initiator\.css$/).response.content);
+
+        InspectorTest.addResult("");
+
+        InspectorTest.addResult("binary.data:");
+        dumpContent(findEntry(har, /\/binary\.data$/).response.content);
+
         InspectorTest.completeTest();
     }
 
@@ -35,7 +60,7 @@ var test = function()
         return null;
     }
 
-    InspectorTest.makeSimpleXHR("GET", "resources/initiator.css", false, onRequestFinished);
+    InspectorTest.makeSimpleXHR("GET", "resources/initiator.css", false, step1);
 }
 </script>
 
