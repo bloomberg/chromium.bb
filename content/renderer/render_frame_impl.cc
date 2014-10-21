@@ -1701,13 +1701,14 @@ RenderFrameImpl::createContentDecryptionModule(
     const blink::WebString& key_system) {
   DCHECK(!frame_ || frame_ == frame);
 
-  RenderCdmFactory cdm_factory(
 #if defined(ENABLE_PEPPER_CDMS)
-      base::Bind(&PepperCdmWrapperImpl::Create, frame)
+  RenderCdmFactory cdm_factory(
+      base::Bind(&PepperCdmWrapperImpl::Create, frame));
 #elif defined(ENABLE_BROWSER_CDMS)
-      GetCdmManager()
+  RenderCdmFactory cdm_factory(GetCdmManager());
+#else
+  RenderCdmFactory cdm_factory;
 #endif
-  );
 
   return WebContentDecryptionModuleImpl::Create(&cdm_factory, security_origin,
                                                 key_system);

@@ -180,11 +180,12 @@ EncryptedMediaPlayerSupportImpl::GenerateKeyRequestInternal(
 
     GURL security_origin(frame->document().securityOrigin().toString());
 
-    RenderCdmFactory cdm_factory(
 #if defined(ENABLE_PEPPER_CDMS)
-        base::Bind(&PepperCdmWrapperImpl::Create, frame)
+    RenderCdmFactory cdm_factory(
+        base::Bind(&PepperCdmWrapperImpl::Create, frame));
+#else
+    RenderCdmFactory cdm_factory;
 #endif
-    );
 
     if (!proxy_decryptor_->InitializeCDM(&cdm_factory, key_system,
                                          security_origin)) {
