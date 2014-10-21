@@ -7,30 +7,37 @@
 
 namespace content {
 
+// Push registration success / error codes for internal use & reporting in UMA.
 enum PushRegistrationStatus {
   // Registration was successful.
-  PUSH_REGISTRATION_STATUS_SUCCESS,
+  PUSH_REGISTRATION_STATUS_SUCCESS = 0,
 
   // Registration failed because there is no Service Worker.
-  PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER,
+  PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER = 1,
 
   // Registration failed because the push service is not available.
-  PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE,
+  PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE = 2,
 
   // Registration failed because the maximum number of registratons has been
   // reached.
-  PUSH_REGISTRATION_STATUS_LIMIT_REACHED,
+  PUSH_REGISTRATION_STATUS_LIMIT_REACHED = 3,
 
   // Registration failed because permission was denied.
-  PUSH_REGISTRATION_STATUS_PERMISSION_DENIED,
+  PUSH_REGISTRATION_STATUS_PERMISSION_DENIED = 4,
 
   // Registration failed in the push service implemented by the embedder.
-  PUSH_REGISTRATION_STATUS_SERVICE_ERROR,
+  PUSH_REGISTRATION_STATUS_SERVICE_ERROR = 5,
+
+  // NOTE: Do not renumber these as that would confuse interpretation of
+  // previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
+  // update PUSH_REGISTRATION_STATUS_LAST below.
 
   // Used for IPC message range checks.
   PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_SERVICE_ERROR
 };
 
+// Push message delivery success / error codes for internal use.
 enum PushDeliveryStatus {
   // The message was successfully delivered.
   PUSH_DELIVERY_STATUS_SUCCESS,
@@ -40,6 +47,8 @@ enum PushDeliveryStatus {
 
   // The message could not be delivered because of a service worker error.
   PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR,
+
+  // When making changes, update PUSH_DELIVERY_STATUS_LAST below.
 
   // Used for IPC message range checks.
   PUSH_DELIVERY_STATUS_LAST = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR

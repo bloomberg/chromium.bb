@@ -26733,6 +26733,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PushMessaging.RegistrationStatus"
+    enum="PushRegistrationStatus">
+  <owner>johnme@google.com</owner>
+  <owner>mvanouwerkerk@google.com</owner>
+  <summary>
+    When a webpage registers for push messaging, this records whether the
+    request is successful, or otherwise the type of error encountered.
+  </summary>
+</histogram>
+
 <histogram name="Quickoffice.csvFormattedCellCount">
   <owner>dskelton@google.com</owner>
   <summary>
@@ -50567,6 +50577,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="20" label="DOMAIN_TWIMG_COM"/>
   <int value="21" label="DOMAIN_AKAMAIHD_NET"/>
   <int value="22" label="DOMAIN_NUM_EVENTS"/>
+</enum>
+
+<enum name="PushRegistrationStatus" type="int">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Page has no active Service Worker"/>
+  <int value="2" label="Push service not available"/>
+  <int value="3" label="Registration limit reached"/>
+  <int value="4" label="Permission denied"/>
+  <int value="5" label="Push service error"/>
 </enum>
 
 <enum name="QuicAddressMismatch" type="int">

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -16,6 +17,15 @@
 #include "content/public/browser/push_messaging_service.h"
 
 namespace content {
+namespace {
+
+void RecordRegistrationStatus(PushRegistrationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.RegistrationStatus",
+                            status,
+                            PUSH_REGISTRATION_STATUS_LAST + 1);
+}
+
+}  // namespace
 
 PushMessagingMessageFilter::PushMessagingMessageFilter(
     int render_process_id,
@@ -50,10 +60,13 @@ void PushMessagingMessageFilter::OnRegister(int render_frame_id,
       service_worker_context_->context()->GetProviderHost(
           render_process_id_, service_worker_provider_id);
   if (!service_worker_host || !service_worker_host->active_version()) {
+    PushRegistrationStatus status =
+        PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER;
     Send(new PushMessagingMsg_RegisterError(
         render_frame_id,
         callbacks_id,
-        PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER));
+        status));
+    RecordRegistrationStatus(status);
     return;
   }
   BrowserThread::PostTask(
@@ -78,10 +91,13 @@ void PushMessagingMessageFilter::DoRegister(
     int64 service_worker_registration_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!service()) {
+    PushRegistrationStatus status =
+        PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
     Send(new PushMessagingMsg_RegisterError(
         render_frame_id,
         callbacks_id,
-        PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
+        status));
+    RecordRegistrationStatus(status);
     return;
   }
   service()->Register(origin,
@@ -110,6 +126,7 @@ void PushMessagingMessageFilter::DidRegister(
     Send(new PushMessagingMsg_RegisterError(
         render_frame_id, callbacks_id, status));
   }
+  RecordRegistrationStatus(status);
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {
