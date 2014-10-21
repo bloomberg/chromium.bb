@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/capi_util.h"
 #include "crypto/scoped_capi_types.h"
+#include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 
 #pragma comment(lib, "crypt32.lib")
@@ -313,6 +314,24 @@ SHA1HashValue X509Certificate::CalculateFingerprint(
   if (!rv)
     memset(sha1.data, 0, sizeof(sha1.data));
   return sha1;
+}
+
+// static
+SHA256HashValue X509Certificate::CalculateFingerprint256(OSCertHandle cert) {
+  DCHECK(NULL != cert->pbCertEncoded);
+  DCHECK_NE(0u, cert->cbCertEncoded);
+
+  SHA256HashValue sha256;
+  size_t sha256_size = sizeof(sha256.data);
+
+  // Use crypto::SHA256HashString for two reasons:
+  // * < Windows Vista does not have universal SHA-256 support.
+  // * More efficient on Windows > Vista (less overhead since non-default CSP
+  // is not needed).
+  base::StringPiece der_cert(reinterpret_cast<const char*>(cert->pbCertEncoded),
+                             cert->cbCertEncoded);
+  crypto::SHA256HashString(der_cert, sha256.data, sha256_size);
+  return sha256;
 }
 
 // TODO(wtc): This function is implemented with NSS low-level hash
