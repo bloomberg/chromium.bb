@@ -18,12 +18,12 @@ class TabContentsInformation
     : public NotificationObservingWebContentsInformation {
  public:
   TabContentsInformation();
-  virtual ~TabContentsInformation();
+  ~TabContentsInformation() override;
 
   // WebContentsInformation implementation.
-  virtual bool CheckOwnership(content::WebContents* web_contents) override;
-  virtual void GetAll(const NewWebContentsCallback& callback) override;
-  virtual scoped_ptr<RendererResource> MakeResource(
+  bool CheckOwnership(content::WebContents* web_contents) override;
+  void GetAll(const NewWebContentsCallback& callback) override;
+  scoped_ptr<RendererResource> MakeResource(
       content::WebContents* web_contents) override;
 
  private:

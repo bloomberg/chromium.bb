@@ -37,13 +37,13 @@ namespace task_manager {
 class GuestResource : public RendererResource {
  public:
   explicit GuestResource(content::RenderViewHost* render_view_host);
-  virtual ~GuestResource();
+  ~GuestResource() override;
 
   // Resource methods:
-  virtual Type GetType() const override;
-  virtual base::string16 GetTitle() const override;
-  virtual gfx::ImageSkia GetIcon() const override;
-  virtual content::WebContents* GetWebContents() const override;
+  Type GetType() const override;
+  base::string16 GetTitle() const override;
+  gfx::ImageSkia GetIcon() const override;
+  content::WebContents* GetWebContents() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestResource);

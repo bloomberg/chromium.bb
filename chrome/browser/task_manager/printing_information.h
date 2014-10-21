@@ -18,12 +18,12 @@ class PrintingResource;
 class PrintingInformation : public NotificationObservingWebContentsInformation {
  public:
   PrintingInformation();
-  virtual ~PrintingInformation();
+  ~PrintingInformation() override;
 
-  virtual bool CheckOwnership(content::WebContents* web_contents) override;
-  virtual void GetAll(const NewWebContentsCallback& callback) override;
+  bool CheckOwnership(content::WebContents* web_contents) override;
+  void GetAll(const NewWebContentsCallback& callback) override;
 
-  virtual scoped_ptr<RendererResource> MakeResource(
+  scoped_ptr<RendererResource> MakeResource(
       content::WebContents* web_contents) override;
 
  private:

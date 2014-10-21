@@ -42,11 +42,11 @@ class BackgroundContentsResource : public RendererResource {
  public:
   BackgroundContentsResource(BackgroundContents* background_contents,
                              const base::string16& application_name);
-  virtual ~BackgroundContentsResource();
+  ~BackgroundContentsResource() override;
 
   // Resource methods:
-  virtual base::string16 GetTitle() const override;
-  virtual gfx::ImageSkia GetIcon() const override;
+  base::string16 GetTitle() const override;
+  gfx::ImageSkia GetIcon() const override;
 
   const base::string16& application_name() const { return application_name_; }
 

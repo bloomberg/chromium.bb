@@ -32,13 +32,13 @@ namespace task_manager {
 class PanelResource : public RendererResource {
  public:
   explicit PanelResource(Panel* panel);
-  virtual ~PanelResource();
+  ~PanelResource() override;
 
   // Resource methods:
-  virtual Type GetType() const override;
-  virtual base::string16 GetTitle() const override;
-  virtual gfx::ImageSkia GetIcon() const override;
-  virtual content::WebContents* GetWebContents() const override;
+  Type GetType() const override;
+  base::string16 GetTitle() const override;
+  gfx::ImageSkia GetIcon() const override;
+  content::WebContents* GetWebContents() const override;
 
  private:
   Panel* panel_;

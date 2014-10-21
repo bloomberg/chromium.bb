@@ -165,7 +165,7 @@ class TaskManagerModelGpuDataManagerObserver
     content::GpuDataManager::GetInstance()->AddObserver(this);
   }
 
-  virtual ~TaskManagerModelGpuDataManagerObserver() {
+  ~TaskManagerModelGpuDataManagerObserver() override {
     content::GpuDataManager::GetInstance()->RemoveObserver(this);
   }
 
@@ -175,9 +175,8 @@ class TaskManagerModelGpuDataManagerObserver
         video_memory_usage_stats);
   }
 
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-          override {
+  void OnVideoMemoryUsageStatsUpdate(const content::GPUVideoMemoryUsageStats&
+                                         video_memory_usage_stats) override {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       NotifyVideoMemoryUsageStats(video_memory_usage_stats);
     } else {

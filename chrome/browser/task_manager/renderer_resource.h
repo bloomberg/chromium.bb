@@ -20,33 +20,32 @@ class RendererResource : public Resource {
  public:
   RendererResource(base::ProcessHandle process,
                    content::RenderViewHost* render_view_host);
-  virtual ~RendererResource();
+  ~RendererResource() override;
 
   // Resource methods:
-  virtual base::string16 GetProfileName() const override;
-  virtual base::ProcessHandle GetProcess() const override;
-  virtual int GetUniqueChildProcessId() const override;
-  virtual Type GetType() const override;
-  virtual int GetRoutingID() const override;
+  base::string16 GetProfileName() const override;
+  base::ProcessHandle GetProcess() const override;
+  int GetUniqueChildProcessId() const override;
+  Type GetType() const override;
+  int GetRoutingID() const override;
 
-  virtual bool ReportsCacheStats() const override;
-  virtual blink::WebCache::ResourceTypeStats GetWebCoreCacheStats() const
-      override;
-  virtual bool ReportsV8MemoryStats() const override;
-  virtual size_t GetV8MemoryAllocated() const override;
-  virtual size_t GetV8MemoryUsed() const override;
+  bool ReportsCacheStats() const override;
+  blink::WebCache::ResourceTypeStats GetWebCoreCacheStats() const override;
+  bool ReportsV8MemoryStats() const override;
+  size_t GetV8MemoryAllocated() const override;
+  size_t GetV8MemoryUsed() const override;
 
   // RenderResources always provide the network usage.
-  virtual bool SupportNetworkUsage() const override;
-  virtual void SetSupportNetworkUsage() override { }
+  bool SupportNetworkUsage() const override;
+  void SetSupportNetworkUsage() override {}
 
-  virtual void Refresh() override;
+  void Refresh() override;
 
-  virtual void NotifyResourceTypeStats(
+  void NotifyResourceTypeStats(
       const blink::WebCache::ResourceTypeStats& stats) override;
 
-  virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
-                                 size_t v8_memory_used) override;
+  void NotifyV8HeapStats(size_t v8_memory_allocated,
+                         size_t v8_memory_used) override;
 
   content::RenderViewHost* render_view_host() const {
     return render_view_host_;

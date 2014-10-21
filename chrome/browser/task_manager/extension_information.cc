@@ -47,12 +47,12 @@ class ExtensionProcessResource : public RendererResource {
  public:
   explicit ExtensionProcessResource(const Extension* extension,
                                     content::RenderViewHost* render_view_host);
-  virtual ~ExtensionProcessResource();
+  ~ExtensionProcessResource() override;
 
   // Resource methods:
-  virtual base::string16 GetTitle() const override;
-  virtual gfx::ImageSkia GetIcon() const override;
-  virtual Type GetType() const override;
+  base::string16 GetTitle() const override;
+  gfx::ImageSkia GetIcon() const override;
+  Type GetType() const override;
 
  private:
   // Returns true if the associated extension has a background page.

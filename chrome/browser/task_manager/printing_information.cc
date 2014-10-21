@@ -30,13 +30,13 @@ namespace task_manager {
 class PrintingResource : public RendererResource {
  public:
   explicit PrintingResource(content::WebContents* web_contents);
-  virtual ~PrintingResource();
+  ~PrintingResource() override;
 
   // Resource methods:
-  virtual Type GetType() const override;
-  virtual base::string16 GetTitle() const override;
-  virtual gfx::ImageSkia GetIcon() const override;
-  virtual content::WebContents* GetWebContents() const override;
+  Type GetType() const override;
+  base::string16 GetTitle() const override;
+  gfx::ImageSkia GetIcon() const override;
+  content::WebContents* GetWebContents() const override;
 
  private:
   content::WebContents* web_contents_;

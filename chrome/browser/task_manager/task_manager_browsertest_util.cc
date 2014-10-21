@@ -34,21 +34,13 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
         required_count_(required_count),
         title_pattern_(title_pattern) {}
 
-  virtual void OnModelChanged() override {
-    OnResourceChange();
-  }
+  void OnModelChanged() override { OnResourceChange(); }
 
-  virtual void OnItemsChanged(int start, int length) override {
-    OnResourceChange();
-  }
+  void OnItemsChanged(int start, int length) override { OnResourceChange(); }
 
-  virtual void OnItemsAdded(int start, int length) override {
-    OnResourceChange();
-  }
+  void OnItemsAdded(int start, int length) override { OnResourceChange(); }
 
-  virtual void OnItemsRemoved(int start, int length) override {
-    OnResourceChange();
-  }
+  void OnItemsRemoved(int start, int length) override { OnResourceChange(); }
 
   void RunUntilSatisfied() {
     // See if the condition is satisfied without having to run the loop. This

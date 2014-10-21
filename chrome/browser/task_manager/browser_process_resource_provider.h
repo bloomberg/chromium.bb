@@ -30,25 +30,25 @@ namespace task_manager {
 class BrowserProcessResource : public Resource {
  public:
   BrowserProcessResource();
-  virtual ~BrowserProcessResource();
+  ~BrowserProcessResource() override;
 
   // Resource methods:
-  virtual base::string16 GetTitle() const override;
-  virtual base::string16 GetProfileName() const override;
-  virtual gfx::ImageSkia GetIcon() const override;
-  virtual base::ProcessHandle GetProcess() const override;
-  virtual int GetUniqueChildProcessId() const override;
-  virtual Type GetType() const override;
+  base::string16 GetTitle() const override;
+  base::string16 GetProfileName() const override;
+  gfx::ImageSkia GetIcon() const override;
+  base::ProcessHandle GetProcess() const override;
+  int GetUniqueChildProcessId() const override;
+  Type GetType() const override;
 
-  virtual bool SupportNetworkUsage() const override;
-  virtual void SetSupportNetworkUsage() override;
+  bool SupportNetworkUsage() const override;
+  void SetSupportNetworkUsage() override;
 
-  virtual bool ReportsSqliteMemoryUsed() const override;
-  virtual size_t SqliteMemoryUsedBytes() const override;
+  bool ReportsSqliteMemoryUsed() const override;
+  size_t SqliteMemoryUsedBytes() const override;
 
-  virtual bool ReportsV8MemoryStats() const override;
-  virtual size_t GetV8MemoryAllocated() const override;
-  virtual size_t GetV8MemoryUsed() const override;
+  bool ReportsV8MemoryStats() const override;
+  size_t GetV8MemoryAllocated() const override;
+  size_t GetV8MemoryUsed() const override;
 
  private:
   base::ProcessHandle process_;
@@ -63,18 +63,16 @@ class BrowserProcessResourceProvider : public ResourceProvider {
  public:
   explicit BrowserProcessResourceProvider(TaskManager* task_manager);
 
-  virtual Resource* GetResource(int origin_pid,
-                                int child_id,
-                                int route_id) override;
-  virtual void StartUpdating() override;
-  virtual void StopUpdating() override;
+  Resource* GetResource(int origin_pid, int child_id, int route_id) override;
+  void StartUpdating() override;
+  void StopUpdating() override;
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().
   bool updating_;
 
  private:
-  virtual ~BrowserProcessResourceProvider();
+  ~BrowserProcessResourceProvider() override;
 
   TaskManager* task_manager_;
   BrowserProcessResource resource_;

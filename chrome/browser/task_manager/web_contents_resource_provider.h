@@ -38,11 +38,11 @@ class WebContentsResourceProvider : public ResourceProvider {
                               scoped_ptr<WebContentsInformation> info);
 
   // ResourceProvider implementation.
-  virtual RendererResource* GetResource(int origin_pid,
-                                        int child_id,
-                                        int route_id) override;
-  virtual void StartUpdating() override;
-  virtual void StopUpdating() override;
+  RendererResource* GetResource(int origin_pid,
+                                int child_id,
+                                int route_id) override;
+  void StartUpdating() override;
+  void StopUpdating() override;
 
   // Start observing |web_contents| for changes via WebContentsObserver, and
   // add it to the task manager.
@@ -56,7 +56,7 @@ class WebContentsResourceProvider : public ResourceProvider {
   WebContentsInformation* info() { return info_.get(); }
 
  protected:
-  virtual ~WebContentsResourceProvider();
+  ~WebContentsResourceProvider() override;
 
  private:
   typedef std::map<content::WebContents*, TaskManagerWebContentsEntry*>
