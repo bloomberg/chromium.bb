@@ -42,6 +42,10 @@ void GLFenceEGL::ClientWait() {
 }
 
 void GLFenceEGL::ServerWait() {
+  if (!gfx::g_driver_egl.ext.b_EGL_KHR_wait_sync) {
+    ClientWait();
+    return;
+  }
   if (!flush_event_.get() || flush_event_->IsSignaled()) {
     EGLint flags = 0;
     eglWaitSyncKHR(display_, sync_, flags);
