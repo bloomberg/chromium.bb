@@ -52,7 +52,6 @@ class AccessibilityModeTest : public ContentBrowserTest {
       case AccessibilityModeOff:
       case AccessibilityModeTreeOnly:
         return false;
-      case AccessibilityModeEditableTextOnly:
       case AccessibilityModeComplete:
         return true;
       default:

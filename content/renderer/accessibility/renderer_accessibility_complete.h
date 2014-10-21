@@ -27,8 +27,7 @@ namespace content {
 class RenderViewImpl;
 
 // This is the subclass of RendererAccessibility that implements
-// complete accessibility support for assistive technology (as opposed to
-// partial support - see RendererAccessibilityFocusOnly).
+// complete accessibility support for assistive technology.
 //
 // This version turns on Blink's accessibility code and sends
 // a serialized representation of that tree whenever it changes. It also

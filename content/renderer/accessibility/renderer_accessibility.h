@@ -19,13 +19,7 @@ class RenderFrameImpl;
 enum RendererAccessibilityType {
   // Turns on Blink accessibility and provides a full accessibility
   // implementation for when assistive technology is running.
-  RendererAccessibilityTypeComplete,
-
-  // Does not turn on Blink accessibility. Only sends a minimal accessible tree
-  // to the browser whenever focus changes. This mode is currently used to
-  // support opening the on-screen keyboard in response to touch events on
-  // Windows 8 in Metro mode.
-  RendererAccessibilityTypeFocusOnly
+  RendererAccessibilityTypeComplete
 };
 
 // The browser process implement native accessibility APIs, allowing
@@ -46,17 +40,11 @@ enum RendererAccessibilityType {
 // from other processes.
 //
 // This base class just contains common code and will not do anything by itself.
-// The two subclasses are:
+// The subclass is:
 //
 //   RendererAccessibilityComplete - turns on Blink accessibility and
 //       provides a full accessibility implementation for when
 //       assistive technology is running.
-//
-//   RendererAccessibilityFocusOnly - does not turn on Blink
-//       accessibility. Only sends a minimal accessible tree to the
-//       browser whenever focus changes. This mode is currently used
-//       to support opening the on-screen keyboard in response to
-//       touch events on Windows 8 in Metro mode.
 //
 class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
  public:

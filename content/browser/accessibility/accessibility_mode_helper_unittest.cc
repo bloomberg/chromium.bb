@@ -6,7 +6,6 @@
 #include "content/common/view_message_enums.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 namespace content {
 
 TEST(AccessibilityModeHelperTest, TestNoOpRemove) {
@@ -21,22 +20,12 @@ TEST(AccessibilityModeHelperTest, TestRemoveSelf) {
   EXPECT_EQ(kBaseMode,
             RemoveAccessibilityModeFrom(AccessibilityModeComplete,
                                         AccessibilityModeComplete));
-
-  EXPECT_EQ(
-      kBaseMode,
-      RemoveAccessibilityModeFrom(AccessibilityModeEditableTextOnly,
-                                  AccessibilityModeEditableTextOnly));
 }
 
 TEST(AccessibilityModeHelperTest, TestAddMode) {
-  EXPECT_EQ(
-      AccessibilityModeComplete,
-      AddAccessibilityModeTo(AccessibilityModeEditableTextOnly,
-                             AccessibilityModeComplete));
-  EXPECT_EQ(
-      AccessibilityModeComplete,
-      AddAccessibilityModeTo(AccessibilityModeEditableTextOnly,
-                             AccessibilityModeTreeOnly));
+  EXPECT_EQ(AccessibilityModeComplete,
+            AddAccessibilityModeTo(AccessibilityModeTreeOnly,
+                                   AccessibilityModeComplete));
 }
 
 }  // namespace content

@@ -22,10 +22,6 @@ enum AccessibilityMode {
   // All accessibility is off.
   AccessibilityModeOff = 0,
 
-  // Renderer accessibility is on, platform APIs are called, but only limited
-  // information is available (see AccessibilityModeFlagEditableTextOnly).
-  AccessibilityModeEditableTextOnly = AccessibilityModeFlagPlatform,
-
   // Renderer accessibility is on, and platform APIs are called.
   AccessibilityModeComplete =
       AccessibilityModeFlagPlatform | AccessibilityModeFlagFullTree,

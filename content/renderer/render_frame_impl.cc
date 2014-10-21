@@ -53,9 +53,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
-#include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
@@ -1370,10 +1368,6 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
 
   if (accessibility_mode_ & AccessibilityModeFlagFullTree)
     renderer_accessibility_ = new RendererAccessibilityComplete(this);
-#if !defined(OS_ANDROID)
-  else
-    renderer_accessibility_ = new RendererAccessibilityFocusOnly(this);
-#endif
 }
 
 void RenderFrameImpl::OnDisownOpener() {

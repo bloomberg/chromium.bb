@@ -31,7 +31,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
-#include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/render_process.h"
@@ -2418,12 +2417,6 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_EQ(AccessibilityModeComplete, frame()->accessibility_mode());
   ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
   ASSERT_EQ(RendererAccessibilityTypeComplete,
-            frame()->renderer_accessibility()->GetType());
-
-  frame()->OnSetAccessibilityMode(AccessibilityModeEditableTextOnly);
-  ASSERT_EQ(AccessibilityModeEditableTextOnly, frame()->accessibility_mode());
-  ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
-  ASSERT_EQ(RendererAccessibilityTypeFocusOnly,
             frame()->renderer_accessibility()->GetType());
 }
 

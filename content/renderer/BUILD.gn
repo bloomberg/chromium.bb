@@ -80,7 +80,6 @@ source_set("renderer") {
 
   if (is_android) {
     sources -= [
-      "accessibility/renderer_accessibility_focus_only.cc",
       "media/audio_decoder.cc",
       "media/crypto/encrypted_media_player_support_impl.cc",
     ]

@@ -84,8 +84,6 @@
       'renderer/accessibility/renderer_accessibility.h',
       'renderer/accessibility/renderer_accessibility_complete.cc',
       'renderer/accessibility/renderer_accessibility_complete.h',
-      'renderer/accessibility/renderer_accessibility_focus_only.cc',
-      'renderer/accessibility/renderer_accessibility_focus_only.h',
       'renderer/active_notification_tracker.cc',
       'renderer/active_notification_tracker.h',
       'renderer/android/address_detector.cc',
@@ -734,7 +732,6 @@
     }],
     ['OS=="android"', {
       'sources!': [
-        'renderer/accessibility/renderer_accessibility_focus_only.cc',
         'renderer/media/audio_decoder.cc',
         'renderer/media/crypto/encrypted_media_player_support_impl.cc',
       ],
