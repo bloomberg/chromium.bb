@@ -291,6 +291,19 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
     @Override
     public boolean closeTab(Tab tabToClose, boolean animate, boolean uponExit, boolean canUndo) {
+        return closeTab(tabToClose, animate, uponExit, canUndo, canUndo);
+    }
+
+    /**
+     * See TabModel.java documentation for description of other parameters.
+     * @param notify Whether or not to notify observers about the pending closure. If this is
+     *               {@code true}, {@link #supportsPendingClosures()} is {@code true},
+     *               and canUndo is {@code true}, observers will be notified of the pending
+     *               closure. Observers will still be notified of a committed/cancelled closure
+     *               even if they are not notified of a pending closure to start with.
+     */
+    private boolean closeTab(Tab tabToClose, boolean animate, boolean uponExit,
+            boolean canUndo, boolean notify) {
         if (tabToClose == null) {
             assert false : "Tab is null!";
             return false;
@@ -303,7 +316,7 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
         canUndo &= supportsPendingClosures();
 
-        if (canUndo) {
+        if (notify && canUndo) {
             for (TabModelObserver obs : mObservers) obs.tabPendingClosure(tabToClose);
         }
         startTabClosure(tabToClose, animate, uponExit, canUndo);
@@ -319,6 +332,29 @@ public abstract class TabModelBase extends TabModelJniBridge {
         while (getCount() > 0) {
             TabModelUtils.closeTabByIndex(this, 0);
         }
+    }
+
+    /**
+     * Close all tabs on this model without notifying observers about pending tab closures.
+     *
+     * @param animate true iff the closing animation should be displayed
+     * @param uponExit true iff the tabs are being closed upon application exit (after user presses
+     *                 the system back button)
+     * @param canUndo Whether or not this action can be undone. If this is {@code true} and
+     *                {@link #supportsPendingClosures()} is {@code true}, these {@link Tab}s
+     *                will not actually be closed until {@link #commitTabClosure(int)} or
+     *                {@link #commitAllTabClosures()} is called, but they will be effectively
+     *                removed from this list.
+     * @return a list containing the ids of tabs that have been closed
+     */
+    public ArrayList<Integer> closeAllTabs(boolean animate, boolean uponExit, boolean canUndo) {
+        ArrayList<Integer> closedTabs = new ArrayList<Integer>();
+        while (getCount() > 0) {
+            Tab tab = getTabAt(0);
+            closedTabs.add(tab.getId());
+            closeTab(tab, animate, uponExit, canUndo, false);
+        }
+        return closedTabs;
     }
 
     @Override
