@@ -232,7 +232,6 @@
         "sys/mount.h",
         "sys/poll.h",
         "sys/select.h",
-        "sys/signal.h",
         "sys/socket.h",
         "sys/termios.h",
         "sys/time.h",
