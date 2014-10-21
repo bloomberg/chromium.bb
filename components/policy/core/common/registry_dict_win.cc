@@ -53,9 +53,9 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
         if (converted)
           result->Append(converted.release());
       }
-      return result.PassAs<base::Value>();
+      return result.Pass();
     }
-    return make_scoped_ptr(value.DeepCopy()).Pass();
+    return make_scoped_ptr(value.DeepCopy());
   }
 
   // Else, do some conversions to map windows registry data types to JSON types.
@@ -108,7 +108,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
           if (converted)
             result->Append(converted.release());
         }
-        return result.PassAs<base::Value>();
+        return result.Pass();
       }
       // Fall through in order to accept lists encoded as JSON strings.
     }

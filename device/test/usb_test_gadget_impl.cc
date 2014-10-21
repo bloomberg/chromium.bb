@@ -141,7 +141,7 @@ scoped_ptr<UsbTestGadget> UsbTestGadget::Claim() {
   VLOG(1) << "It took " << (kClaimRetries - retries)
           << " retries to find an unclaimed device.";
 
-  return gadget.PassAs<UsbTestGadget>();
+  return gadget.Pass();
 }
 
 UsbTestGadgetImpl::UsbTestGadgetImpl() {
@@ -181,7 +181,7 @@ scoped_ptr<net::URLFetcher> UsbTestGadgetImpl::CreateURLFetcher(
           request_context_.get(),
           base::MessageLoop::current()->message_loop_proxy()));
 
-  return url_fetcher.PassAs<net::URLFetcher>();
+  return url_fetcher;
 }
 
 int UsbTestGadgetImpl::SimplePOSTRequest(const GURL& url,
