@@ -51,3 +51,7 @@ Test set size: 588
     expected return: ./Source/devtools/front_end/>Ad<vanced>S<earch>Con<troller.pl (score: 129)
       actual return: ./Source/devtools/front_end/>Ad<vanced>S<earch>Con<troller.pl (score: 129)
 
+=== Test query: execontext
+    expected return: dom/>Exec<utionC>ontext<.cpp (score: 253)
+      actual return: dom/>Exec<utionC>ontext<.cpp (score: 253)
+

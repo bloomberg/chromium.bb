@@ -30,6 +30,13 @@ function test()
         for(var i = 0; i < TestQueries.length; ++i) {
             runQuery(files, TestQueries[i][0], TestQueries[i][1]);
         }
+
+        runQuery([
+            "svg/SVGTextRunRenderingContext.cpp",
+            "dom/ExecutionContext.cpp",
+            "testing/NullExecutionContext.cpp"
+        ], "execontext", "dom/ExecutionContext.cpp");
+
         InspectorTest.completeTest();
     }
 
