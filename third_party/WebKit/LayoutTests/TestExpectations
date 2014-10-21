@@ -1495,3 +1495,5 @@ crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ P
 crbug.com/422846 [ Linux ] virtual/textblob/fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 
 crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnlyFailure ]
+
+crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
