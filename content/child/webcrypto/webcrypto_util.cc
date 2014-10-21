@@ -133,12 +133,6 @@ bool KeyUsageAllows(const blink::WebCryptoKey& key,
   return ((key.usages() & usage) != 0);
 }
 
-bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id) {
-  return alg_id == blink::WebCryptoAlgorithmIdRsaOaep ||
-         alg_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-         alg_id == blink::WebCryptoAlgorithmIdRsaPss;
-}
-
 // The WebCrypto spec defines the default value for the tag length, as well as
 // the allowed values for tag length.
 Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,

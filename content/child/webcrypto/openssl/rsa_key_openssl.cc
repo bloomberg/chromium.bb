@@ -69,7 +69,6 @@ Status CreateRsaHashedKeyAlgorithm(
     blink::WebCryptoAlgorithmId hash_algorithm,
     EVP_PKEY* key,
     blink::WebCryptoKeyAlgorithm* key_algorithm) {
-  DCHECK(IsAlgorithmRsa(rsa_algorithm));
   DCHECK_EQ(EVP_PKEY_RSA, EVP_PKEY_id(key));
 
   crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(key));
