@@ -287,10 +287,21 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   // See comment in browser_accessibility_win.cc for details.
   // The difference here is that we can only expose one accessible
   // name on Android, not 2 or 3 like on Windows or Mac.
-  //
-  // The basic rule is: prefer description (aria-labelledby or aria-label),
-  // then help (title), then name (inner text), then value (control value).
-  // However, if title_elem_id is set, that means there's a label element
+
+  // First, always return the |value| attribute if this is an
+  // accessible text.
+  if (!value().empty() &&
+      (GetRole() == ui::AX_ROLE_EDITABLE_TEXT ||
+       GetRole() == ui::AX_ROLE_TEXT_AREA ||
+       GetRole() == ui::AX_ROLE_TEXT_FIELD ||
+       HasState(ui::AX_STATE_EDITABLE))) {
+    return base::UTF8ToUTF16(value());
+  }
+
+  // If there's no text value, the basic rule is: prefer description
+  // (aria-labelledby or aria-label), then help (title), then name
+  // (inner text), then value (control value).  However, if
+  // title_elem_id is set, that means there's a label element
   // supplying the name and then name takes precedence over help.
   // TODO(dmazzoni): clean this up by providing more granular labels in
   // Blink, making the platform-specific mapping to accessible text simpler.

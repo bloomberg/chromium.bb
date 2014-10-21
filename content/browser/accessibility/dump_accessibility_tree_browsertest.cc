@@ -698,6 +698,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("input-text-name-calc.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputTextValue) {
+  RunTest(FILE_PATH_LITERAL("input-text-value.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputTime) {
   RunTest(FILE_PATH_LITERAL("input-time.html"));
 }

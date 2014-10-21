@@ -1,0 +1,13 @@
+android.webkit.WebView focusable focused scrollable
+    android.view.View
+        android.view.View clickable name='l1'
+        android.widget.EditText editable_text focusable input_type=1
+        android.view.View clickable name='l2'
+        android.widget.EditText clickable editable_text focusable name='value' input_type=1
+        android.widget.EditText clickable editable_text focusable name='l2' input_type=1
+        android.widget.EditText clickable editable_text focusable name='value' input_type=1
+        android.view.View clickable name='Email'
+        android.widget.EditText clickable editable_text focusable name='Email' input_type=1
+        android.widget.EditText clickable editable_text focusable name='value' input_type=1
+        android.widget.EditText clickable editable_text focusable multiline name='l5'
+        android.widget.EditText clickable editable_text focusable multiline name='Value'
