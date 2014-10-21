@@ -123,9 +123,6 @@ void CoreInitializer::shutdown()
     ScriptStreamerThread::shutdown();
     HTMLParserThread::shutdown();
 
-    // Make sure we stop WorkerThreads before Partition::shutdown() which frees ExecutionContext.
-    WorkerThread::terminateAndWaitForAllWorkers();
-
     Partitions::shutdown();
 }
 
