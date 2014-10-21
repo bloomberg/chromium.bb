@@ -139,16 +139,17 @@ bool ReadFileToString(const FilePath& path,
     return false;
   }
 
-  char buf[1 << 16];
+  const size_t kBufferSize = 1 << 16;
+  scoped_ptr<char[]> buf(new char[kBufferSize]);
   size_t len;
   size_t size = 0;
   bool read_status = true;
 
   // Many files supplied in |path| have incorrect size (proc files etc).
   // Hence, the file is read sequentially as opposed to a one-shot read.
-  while ((len = fread(buf, 1, sizeof(buf), file)) > 0) {
+  while ((len = fread(buf.get(), 1, kBufferSize, file)) > 0) {
     if (contents)
-      contents->append(buf, std::min(len, max_size - size));
+      contents->append(buf.get(), std::min(len, max_size - size));
 
     if ((max_size - size) < len) {
       read_status = false;
