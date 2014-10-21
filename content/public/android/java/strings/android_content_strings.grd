@@ -99,9 +99,6 @@
       <message desc="Contextual action bar item for using the selected text in a internet search. [CHAR-LIMIT=24]" name="IDS_ACTIONBAR_WEB_SEARCH">
         Web search
       </message>
-      <message desc="Content description for the content view that holds the web contents [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_CONTENT_VIEW">
-        Web View
-      </message>
       <message desc="NO DESCRIPTION [CHAR-LIMIT=32]" name="IDS_MEDIA_PLAYER_ERROR_TITLE">
         Cannot play video
       </message>

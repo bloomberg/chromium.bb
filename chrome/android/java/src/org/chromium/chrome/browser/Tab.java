@@ -15,6 +15,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -806,6 +807,8 @@ public class Tab implements NavigationClient {
     protected void initContentViewCore(long nativeWebContents) {
         ContentViewCore cvc = new ContentViewCore(mContext);
         ContentView cv = ContentView.newInstance(mContext, cvc);
+        cv.setContentDescription(mContext.getResources().getString(
+                R.string.accessibility_content_view));
         cvc.initialize(cv, cv, nativeWebContents, getWindowAndroid());
         setContentViewCore(cvc);
     }
@@ -1111,6 +1114,8 @@ public class Tab implements NavigationClient {
             long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
         ContentViewCore cvc = new ContentViewCore(mContext);
         ContentView cv = ContentView.newInstance(mContext, cvc);
+        cv.setContentDescription(mContext.getResources().getString(
+                R.string.accessibility_content_view));
         cvc.initialize(cv, cv, newWebContents, getWindowAndroid());
         swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
     }

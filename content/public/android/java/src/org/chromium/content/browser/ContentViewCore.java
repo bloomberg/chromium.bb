@@ -675,14 +675,6 @@ public class ContentViewCore
 
         mContainerView = containerView;
         mPositionObserver = new ViewPositionObserver(mContainerView);
-        String contentDescription = "Web View";
-        if (R.string.accessibility_content_view == 0) {
-            Log.w(TAG, "Setting contentDescription to 'Web View' as no value was specified.");
-        } else {
-            contentDescription = mContext.getResources().getString(
-                    R.string.accessibility_content_view);
-        }
-        mContainerView.setContentDescription(contentDescription);
         mContainerView.setWillNotDraw(false);
         mContainerView.setClickable(true);
         TraceEvent.end();

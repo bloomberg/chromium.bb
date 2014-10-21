@@ -262,6 +262,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_MENU_BACK" desc="Content description for the backard navigation button.">
         Go back
       </message>
+      <message name="IDS_ACCESSIBILITY_CONTENT_VIEW" desc="Content description for the content view that holds the web contents [CHAR-LIMIT=30]">
+        Web View
+      </message>
       <!-- ContextMenu -->
       <message name="IDS_CONTEXTMENU_OPEN_IN_NEW_TAB" desc="Context sensitive menu item to open the selected link in a new tab. [CHAR-LIMIT=30]">
         Open in new tab
