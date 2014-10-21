@@ -8,7 +8,7 @@ DeviceMetrics::DeviceMetrics(int width, int height, double device_scale_factor)
   : width(width),
     height(height),
     device_scale_factor(device_scale_factor),
-    mobile(true),
+    mobile(false),
     fit_window(false),
     text_autosizing(true),
     font_scale_factor(1) {}
