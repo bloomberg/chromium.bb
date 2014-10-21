@@ -89,11 +89,11 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
     sequence_checker_.DetachFromSequence();
   }
 
-  virtual ~WorkerObserver() {
+  ~WorkerObserver() override {
     DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   }
 
-  virtual void OnPendingFileListUpdated(int item_count) override {
+  void OnPendingFileListUpdated(int item_count) override {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
       if (sync_engine_)
         sync_engine_->OnPendingFileListUpdated(item_count);
@@ -108,11 +108,11 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
                    item_count));
   }
 
-  virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
-                                   SyncFileType file_type,
-                                   SyncFileStatus file_status,
-                                   SyncAction sync_action,
-                                   SyncDirection direction) override {
+  void OnFileStatusChanged(const storage::FileSystemURL& url,
+                           SyncFileType file_type,
+                           SyncFileStatus file_status,
+                           SyncAction sync_action,
+                           SyncDirection direction) override {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
       if (sync_engine_)
         sync_engine_->OnFileStatusChanged(
@@ -128,8 +128,8 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
                    url, file_type, file_status, sync_action, direction));
   }
 
-  virtual void UpdateServiceState(RemoteServiceState state,
-                                  const std::string& description) override {
+  void UpdateServiceState(RemoteServiceState state,
+                          const std::string& description) override {
     if (ui_task_runner_->RunsTasksOnCurrentThread()) {
       if (sync_engine_)
         sync_engine_->UpdateServiceState(state, description);

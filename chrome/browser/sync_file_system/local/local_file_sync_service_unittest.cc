@@ -148,7 +148,7 @@ class LocalFileSyncServiceTest
   }
 
   // LocalChangeObserver overrides.
-  virtual void OnLocalChangeAvailable(int64 num_changes) override {
+  void OnLocalChangeAvailable(int64 num_changes) override {
     num_changes_ = num_changes;
   }
 

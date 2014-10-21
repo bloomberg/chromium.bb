@@ -26,21 +26,17 @@ class BaseTimerHelper : public SyncProcessRunner::TimerHelper {
  public:
   BaseTimerHelper() {}
 
-  virtual bool IsRunning() override {
-    return timer_.IsRunning();
-  }
+  bool IsRunning() override { return timer_.IsRunning(); }
 
-  virtual void Start(const tracked_objects::Location& from_here,
-                     const base::TimeDelta& delay,
-                     const base::Closure& closure) override {
+  void Start(const tracked_objects::Location& from_here,
+             const base::TimeDelta& delay,
+             const base::Closure& closure) override {
     timer_.Start(from_here, delay, closure);
   }
 
-  virtual base::TimeTicks Now() const override {
-    return base::TimeTicks::Now();
-  }
+  base::TimeTicks Now() const override { return base::TimeTicks::Now(); }
 
-  virtual ~BaseTimerHelper() {}
+  ~BaseTimerHelper() override {}
 
  private:
   base::OneShotTimer<SyncProcessRunner> timer_;

@@ -47,9 +47,9 @@ class RemoteToLocalSyncer : public SyncTask {
   // Conflicting trackers will have low priority for RemoteToLocalSyncer so that
   // it should be resolved by LocatToRemoteSyncer.
   explicit RemoteToLocalSyncer(SyncEngineContext* sync_context);
-  virtual ~RemoteToLocalSyncer();
+  ~RemoteToLocalSyncer() override;
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
+  void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
   void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
   const storage::FileSystemURL& url() const { return url_; }

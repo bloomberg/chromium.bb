@@ -45,9 +45,9 @@ class MockSyncTask : public ExclusiveTask {
   explicit MockSyncTask(bool used_network) {
     set_used_network(used_network);
   }
-  virtual ~MockSyncTask() {}
+  ~MockSyncTask() override {}
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) override {
+  void RunExclusive(const SyncStatusCallback& callback) override {
     callback.Run(SYNC_STATUS_OK);
   }
 
@@ -58,23 +58,22 @@ class MockSyncTask : public ExclusiveTask {
 class MockExtensionService : public TestExtensionService {
  public:
   MockExtensionService() {}
-  virtual ~MockExtensionService() {}
+  ~MockExtensionService() override {}
 
-  virtual const extensions::ExtensionSet* extensions() const override {
+  const extensions::ExtensionSet* extensions() const override {
     return &extensions_;
   }
 
-  virtual void AddExtension(const extensions::Extension* extension) override {
+  void AddExtension(const extensions::Extension* extension) override {
     extensions_.Insert(make_scoped_refptr(extension));
   }
 
-  virtual const extensions::Extension* GetInstalledExtension(
+  const extensions::Extension* GetInstalledExtension(
       const std::string& extension_id) const override {
     return extensions_.GetByID(extension_id);
   }
 
-  virtual bool IsExtensionEnabled(
-      const std::string& extension_id) const override {
+  bool IsExtensionEnabled(const std::string& extension_id) const override {
     return extensions_.Contains(extension_id) &&
         !disabled_extensions_.Contains(extension_id);
   }

@@ -155,11 +155,11 @@ class DriveBackendSyncTest : public testing::Test,
     RevokeSyncableFileSystem();
   }
 
-  virtual void OnRemoteChangeQueueUpdated(int64 pending_changes_hint) override {
+  void OnRemoteChangeQueueUpdated(int64 pending_changes_hint) override {
     pending_remote_changes_ = pending_changes_hint;
   }
 
-  virtual void OnLocalChangeAvailable(int64 pending_changes_hint) override {
+  void OnLocalChangeAvailable(int64 pending_changes_hint) override {
     pending_local_changes_ = pending_changes_hint;
   }
 

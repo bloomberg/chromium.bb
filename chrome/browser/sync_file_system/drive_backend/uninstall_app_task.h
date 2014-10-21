@@ -37,9 +37,9 @@ class UninstallAppTask : public ExclusiveTask {
   UninstallAppTask(SyncEngineContext* sync_context,
                    const std::string& app_id,
                    UninstallFlag uninstall_flag);
-  virtual ~UninstallAppTask();
+  ~UninstallAppTask() override;
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) override;
+  void RunExclusive(const SyncStatusCallback& callback) override;
 
  private:
   void DidDeleteAppRoot(const SyncStatusCallback& callback,

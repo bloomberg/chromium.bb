@@ -22,9 +22,9 @@ namespace {
 class SyncTaskAdapter : public ExclusiveTask {
  public:
   explicit SyncTaskAdapter(const SyncTaskManager::Task& task) : task_(task) {}
-  virtual ~SyncTaskAdapter() {}
+  ~SyncTaskAdapter() override {}
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) override {
+  void RunExclusive(const SyncStatusCallback& callback) override {
     task_.Run(callback);
   }
 

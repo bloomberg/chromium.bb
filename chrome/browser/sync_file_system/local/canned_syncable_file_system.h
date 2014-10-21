@@ -75,7 +75,7 @@ class CannedSyncableFileSystem
       leveldb::Env* env_override,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
-  virtual ~CannedSyncableFileSystem();
+  ~CannedSyncableFileSystem() override;
 
   // SetUp must be called before using this instance.
   void SetUp(QuotaMode quota_mode);
@@ -159,8 +159,8 @@ class CannedSyncableFileSystem
   storage::FileSystemOperationRunner* operation_runner();
 
   // LocalFileSyncStatus::Observer overrides.
-  virtual void OnSyncEnabled(const storage::FileSystemURL& url) override;
-  virtual void OnWriteEnabled(const storage::FileSystemURL& url) override;
+  void OnSyncEnabled(const storage::FileSystemURL& url) override;
+  void OnWriteEnabled(const storage::FileSystemURL& url) override;
 
   // Operation methods body.
   // They can be also called directly if the caller is already on IO thread.

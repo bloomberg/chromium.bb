@@ -54,11 +54,11 @@ class SyncableFileOperationRunner
 
   SyncableFileOperationRunner(int64 max_inflight_tasks,
                               LocalFileSyncStatus* sync_status);
-  virtual ~SyncableFileOperationRunner();
+  ~SyncableFileOperationRunner() override;
 
   // LocalFileSyncStatus::Observer overrides.
-  virtual void OnSyncEnabled(const storage::FileSystemURL& url) override;
-  virtual void OnWriteEnabled(const storage::FileSystemURL& url) override;
+  void OnSyncEnabled(const storage::FileSystemURL& url) override;
+  void OnWriteEnabled(const storage::FileSystemURL& url) override;
 
   // Runs the given |task| if no sync operation is running on any of
   // its target_paths(). This also runs pending tasks that have become

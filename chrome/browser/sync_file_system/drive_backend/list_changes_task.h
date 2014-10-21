@@ -29,9 +29,9 @@ class SyncEngineContext;
 class ListChangesTask : public SyncTask {
  public:
   explicit ListChangesTask(SyncEngineContext* sync_context);
-  virtual ~ListChangesTask();
+  ~ListChangesTask() override;
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
+  void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
 
  private:
   void StartListing(scoped_ptr<SyncTaskToken> token);

@@ -23,47 +23,46 @@ class LocalFileSyncContext;
 class SyncFileSystemBackend : public storage::FileSystemBackend {
  public:
   explicit SyncFileSystemBackend(Profile* profile);
-  virtual ~SyncFileSystemBackend();
+  ~SyncFileSystemBackend() override;
 
   static SyncFileSystemBackend* CreateForTesting();
 
   // FileSystemBackend overrides.
-  virtual bool CanHandleType(storage::FileSystemType type) const override;
-  virtual void Initialize(storage::FileSystemContext* context) override;
-  virtual void ResolveURL(const storage::FileSystemURL& url,
-                          storage::OpenFileSystemMode mode,
-                          const OpenFileSystemCallback& callback) override;
-  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+  bool CanHandleType(storage::FileSystemType type) const override;
+  void Initialize(storage::FileSystemContext* context) override;
+  void ResolveURL(const storage::FileSystemURL& url,
+                  storage::OpenFileSystemMode mode,
+                  const OpenFileSystemCallback& callback) override;
+  storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) override;
-  virtual storage::WatcherManager* GetWatcherManager(
+  storage::WatcherManager* GetWatcherManager(
       storage::FileSystemType type) override;
-  virtual storage::CopyOrMoveFileValidatorFactory*
-      GetCopyOrMoveFileValidatorFactory(storage::FileSystemType type,
-                                        base::File::Error* error_code) override;
-  virtual storage::FileSystemOperation* CreateFileSystemOperation(
+  storage::CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
+      storage::FileSystemType type,
+      base::File::Error* error_code) override;
+  storage::FileSystemOperation* CreateFileSystemOperation(
       const storage::FileSystemURL& url,
       storage::FileSystemContext* context,
       base::File::Error* error_code) const override;
-  virtual bool SupportsStreaming(
-      const storage::FileSystemURL& url) const override;
-  virtual bool HasInplaceCopyImplementation(
+  bool SupportsStreaming(const storage::FileSystemURL& url) const override;
+  bool HasInplaceCopyImplementation(
       storage::FileSystemType type) const override;
-  virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& url,
       int64 offset,
       int64 max_bytes_to_read,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context) const override;
-  virtual scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
+  scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
       int64 offset,
       storage::FileSystemContext* context) const override;
-  virtual storage::FileSystemQuotaUtil* GetQuotaUtil() override;
-  virtual const storage::UpdateObserverList* GetUpdateObservers(
+  storage::FileSystemQuotaUtil* GetQuotaUtil() override;
+  const storage::UpdateObserverList* GetUpdateObservers(
       storage::FileSystemType type) const override;
-  virtual const storage::ChangeObserverList* GetChangeObservers(
+  const storage::ChangeObserverList* GetChangeObservers(
       storage::FileSystemType type) const override;
-  virtual const storage::AccessObserverList* GetAccessObservers(
+  const storage::AccessObserverList* GetAccessObservers(
       storage::FileSystemType type) const override;
 
   static SyncFileSystemBackend* GetBackend(
@@ -81,9 +80,9 @@ class SyncFileSystemBackend : public storage::FileSystemBackend {
     explicit ProfileHolder(Profile* profile);
 
     // NotificationObserver override.
-    virtual void Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) override;
+    void Observe(int type,
+                 const content::NotificationSource& source,
+                 const content::NotificationDetails& details) override;
 
     Profile* GetProfile();
 

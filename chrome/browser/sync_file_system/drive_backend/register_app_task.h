@@ -34,10 +34,10 @@ class TrackerIDSet;
 class RegisterAppTask : public ExclusiveTask {
  public:
   RegisterAppTask(SyncEngineContext* sync_context, const std::string& app_id);
-  virtual ~RegisterAppTask();
+  ~RegisterAppTask() override;
 
   bool CanFinishImmediately();
-  virtual void RunExclusive(const SyncStatusCallback& callback) override;
+  void RunExclusive(const SyncStatusCallback& callback) override;
 
  private:
   void CreateAppRootFolder(const SyncStatusCallback& callback);

@@ -67,19 +67,16 @@ class TaskManagerClient
     base::MessageLoop::current()->RunUntilIdle();
     maybe_schedule_next_task_count_ = 0;
   }
-  virtual ~TaskManagerClient() {}
+  ~TaskManagerClient() override {}
 
   // DriveFileSyncManager::Client overrides.
-  virtual void MaybeScheduleNextTask() override {
-    ++maybe_schedule_next_task_count_;
-  }
-  virtual void NotifyLastOperationStatus(
-      SyncStatusCode last_operation_status,
-      bool last_operation_used_network) override {
+  void MaybeScheduleNextTask() override { ++maybe_schedule_next_task_count_; }
+  void NotifyLastOperationStatus(SyncStatusCode last_operation_status,
+                                 bool last_operation_used_network) override {
     last_operation_status_ = last_operation_status;
   }
 
-  virtual void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog>) override {}
+  void RecordTaskLog(scoped_ptr<TaskLogger::TaskLog>) override {}
 
   void ScheduleTask(SyncStatusCode status_to_return,
                     const SyncStatusCallback& callback) {
@@ -141,9 +138,9 @@ class MultihopSyncTask : public ExclusiveTask {
     DCHECK(task_completed_);
   }
 
-  virtual ~MultihopSyncTask() {}
+  ~MultihopSyncTask() override {}
 
-  virtual void RunExclusive(const SyncStatusCallback& callback) override {
+  void RunExclusive(const SyncStatusCallback& callback) override {
     DCHECK(!*task_started_);
     *task_started_ = true;
     base::MessageLoop::current()->PostTask(
@@ -188,10 +185,9 @@ class BackgroundTask : public SyncTask {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~BackgroundTask() {
-  }
+  ~BackgroundTask() override {}
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
+  void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
     scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
     task_blocker->app_id = app_id_;
     task_blocker->paths.push_back(path_);
@@ -245,10 +241,9 @@ class BlockerUpdateTestHelper : public SyncTask {
         weak_ptr_factory_(this) {
   }
 
-  virtual ~BlockerUpdateTestHelper() {
-  }
+  ~BlockerUpdateTestHelper() override {}
 
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
+  void RunPreflight(scoped_ptr<SyncTaskToken> token) override {
     UpdateBlocker(token.Pass());
   }
 

@@ -16,15 +16,11 @@ namespace {
 class FakeClient : public SyncProcessRunner::Client {
  public:
   FakeClient() : service_state_(SYNC_SERVICE_RUNNING) {}
-  virtual ~FakeClient() {}
+  ~FakeClient() override {}
 
-  virtual SyncServiceState GetSyncServiceState() override {
-    return service_state_;
-  }
+  SyncServiceState GetSyncServiceState() override { return service_state_; }
 
-  virtual SyncFileSystemService* GetSyncService() override {
-    return nullptr;
-  }
+  SyncFileSystemService* GetSyncService() override { return nullptr; }
 
   void set_service_state(SyncServiceState service_state) {
     service_state_ = service_state;
@@ -39,22 +35,18 @@ class FakeClient : public SyncProcessRunner::Client {
 class FakeTimerHelper : public SyncProcessRunner::TimerHelper {
  public:
   FakeTimerHelper() {}
-  virtual ~FakeTimerHelper() {}
+  ~FakeTimerHelper() override {}
 
-  virtual bool IsRunning() override {
-    return !timer_task_.is_null();
-  }
+  bool IsRunning() override { return !timer_task_.is_null(); }
 
-  virtual void Start(const tracked_objects::Location& from_here,
-                     const base::TimeDelta& delay,
-                     const base::Closure& closure) override {
+  void Start(const tracked_objects::Location& from_here,
+             const base::TimeDelta& delay,
+             const base::Closure& closure) override {
     scheduled_time_ = current_time_ + delay;
     timer_task_ = closure;
   }
 
-  virtual base::TimeTicks Now() const override {
-    return current_time_;
-  }
+  base::TimeTicks Now() const override { return current_time_; }
 
   void SetCurrentTime(const base::TimeTicks& current_time) {
     current_time_ = current_time;
@@ -94,13 +86,12 @@ class FakeSyncProcessRunner : public SyncProcessRunner {
         max_parallel_task_(max_parallel_task) {
   }
 
-  virtual void StartSync(const SyncStatusCallback& callback) override {
+  void StartSync(const SyncStatusCallback& callback) override {
     EXPECT_LT(running_tasks_.size(), max_parallel_task_);
     running_tasks_.push(callback);
   }
 
-  virtual ~FakeSyncProcessRunner() {
-  }
+  ~FakeSyncProcessRunner() override {}
 
   void UpdateChanges(int num_changes) {
     OnChangesUpdated(num_changes);

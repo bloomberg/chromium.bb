@@ -41,8 +41,8 @@ class ConflictResolver : public SyncTask {
   typedef std::vector<std::string> FileIDList;
 
   explicit ConflictResolver(SyncEngineContext* sync_context);
-  virtual ~ConflictResolver();
-  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
+  ~ConflictResolver() override;
+  void RunPreflight(scoped_ptr<SyncTaskToken> token) override;
   void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
  private:

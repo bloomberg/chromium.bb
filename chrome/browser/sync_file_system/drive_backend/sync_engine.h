@@ -85,7 +85,7 @@ class SyncEngine : public RemoteFileSyncService,
   static void AppendDependsOnFactories(
       std::set<BrowserContextKeyedServiceFactory*>* factories);
 
-  virtual ~SyncEngine();
+  ~SyncEngine() override;
   void Reset();
 
   // Can be called more than once.
@@ -101,59 +101,53 @@ class SyncEngine : public RemoteFileSyncService,
       scoped_ptr<SyncWorkerInterface> sync_worker);
 
   // RemoteFileSyncService overrides.
-  virtual void AddServiceObserver(SyncServiceObserver* observer) override;
-  virtual void AddFileStatusObserver(FileStatusObserver* observer) override;
-  virtual void RegisterOrigin(
-      const GURL& origin,
-      const SyncStatusCallback& callback) override;
-  virtual void EnableOrigin(
-      const GURL& origin,
-      const SyncStatusCallback& callback) override;
-  virtual void DisableOrigin(
-      const GURL& origin,
-      const SyncStatusCallback& callback) override;
-  virtual void UninstallOrigin(
-      const GURL& origin,
-      UninstallFlag flag,
-      const SyncStatusCallback& callback) override;
-  virtual void ProcessRemoteChange(const SyncFileCallback& callback) override;
-  virtual void SetRemoteChangeProcessor(
-      RemoteChangeProcessor* processor) override;
-  virtual LocalChangeProcessor* GetLocalChangeProcessor() override;
-  virtual RemoteServiceState GetCurrentState() const override;
-  virtual void GetOriginStatusMap(const StatusMapCallback& callback) override;
-  virtual void DumpFiles(const GURL& origin,
-                         const ListCallback& callback) override;
-  virtual void DumpDatabase(const ListCallback& callback) override;
-  virtual void SetSyncEnabled(bool enabled) override;
-  virtual void PromoteDemotedChanges(const base::Closure& callback) override;
+  void AddServiceObserver(SyncServiceObserver* observer) override;
+  void AddFileStatusObserver(FileStatusObserver* observer) override;
+  void RegisterOrigin(const GURL& origin,
+                      const SyncStatusCallback& callback) override;
+  void EnableOrigin(const GURL& origin,
+                    const SyncStatusCallback& callback) override;
+  void DisableOrigin(const GURL& origin,
+                     const SyncStatusCallback& callback) override;
+  void UninstallOrigin(const GURL& origin,
+                       UninstallFlag flag,
+                       const SyncStatusCallback& callback) override;
+  void ProcessRemoteChange(const SyncFileCallback& callback) override;
+  void SetRemoteChangeProcessor(RemoteChangeProcessor* processor) override;
+  LocalChangeProcessor* GetLocalChangeProcessor() override;
+  RemoteServiceState GetCurrentState() const override;
+  void GetOriginStatusMap(const StatusMapCallback& callback) override;
+  void DumpFiles(const GURL& origin, const ListCallback& callback) override;
+  void DumpDatabase(const ListCallback& callback) override;
+  void SetSyncEnabled(bool enabled) override;
+  void PromoteDemotedChanges(const base::Closure& callback) override;
 
   // LocalChangeProcessor overrides.
-  virtual void ApplyLocalChange(const FileChange& local_change,
-                                const base::FilePath& local_path,
-                                const SyncFileMetadata& local_metadata,
-                                const storage::FileSystemURL& url,
-                                const SyncStatusCallback& callback) override;
+  void ApplyLocalChange(const FileChange& local_change,
+                        const base::FilePath& local_path,
+                        const SyncFileMetadata& local_metadata,
+                        const storage::FileSystemURL& url,
+                        const SyncStatusCallback& callback) override;
 
   // drive::DriveNotificationObserver overrides.
-  virtual void OnNotificationReceived() override;
-  virtual void OnPushNotificationEnabled(bool enabled) override;
+  void OnNotificationReceived() override;
+  void OnPushNotificationEnabled(bool enabled) override;
 
   // drive::DriveServiceObserver overrides.
-  virtual void OnReadyToSendRequests() override;
-  virtual void OnRefreshTokenInvalid() override;
+  void OnReadyToSendRequests() override;
+  void OnRefreshTokenInvalid() override;
 
   // net::NetworkChangeNotifier::NetworkChangeObserver overrides.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // SigninManagerBase::Observer overrides.
-  virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
  private:
   class WorkerObserver;

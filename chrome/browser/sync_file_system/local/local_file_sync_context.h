@@ -206,8 +206,8 @@ class LocalFileSyncContext
 
  protected:
   // LocalFileSyncStatus::Observer overrides. They are called on IO thread.
-  virtual void OnSyncEnabled(const storage::FileSystemURL& url) override;
-  virtual void OnWriteEnabled(const storage::FileSystemURL& url) override;
+  void OnSyncEnabled(const storage::FileSystemURL& url) override;
+  void OnWriteEnabled(const storage::FileSystemURL& url) override;
 
  private:
   typedef base::Callback<void(base::File::Error result)> StatusCallback;
@@ -216,7 +216,7 @@ class LocalFileSyncContext
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
   friend class CannedSyncableFileSystem;
 
-  virtual ~LocalFileSyncContext();
+  ~LocalFileSyncContext() override;
 
   void ShutdownOnIOThread();
 
