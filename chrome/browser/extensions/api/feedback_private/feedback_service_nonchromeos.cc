@@ -18,14 +18,14 @@ class FeedbackServiceImpl
       public base::SupportsWeakPtr<FeedbackServiceImpl> {
  public:
   FeedbackServiceImpl();
-  virtual ~FeedbackServiceImpl();
+  ~FeedbackServiceImpl() override;
 
-  virtual std::string GetUserEmail() override;
-  virtual void GetHistograms(std::string* histograms) override;
+  std::string GetUserEmail() override;
+  void GetHistograms(std::string* histograms) override;
 
  private:
   // Overridden from FeedbackService:
-  virtual base::WeakPtr<FeedbackService> GetWeakPtr() override;
+  base::WeakPtr<FeedbackService> GetWeakPtr() override;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackServiceImpl);
 };

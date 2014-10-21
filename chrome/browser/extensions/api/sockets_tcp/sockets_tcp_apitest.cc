@@ -38,12 +38,12 @@ class SocketsTcpApiTest : public ExtensionApiTest {
                             new extensions::MockHostResolverCreator()) {
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
         resolver_creator_->CreateMockHostResolver());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     extensions::HostResolverWrapper::GetInstance()->
         SetHostResolverForTesting(NULL);
     resolver_creator_->DeleteMockHostResolver();

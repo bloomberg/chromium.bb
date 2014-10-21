@@ -50,13 +50,13 @@ class SimpleExtensionLoadPrompt : public ExtensionInstallPrompt::Delegate {
   SimpleExtensionLoadPrompt(const Extension* extension,
                             Profile* profile,
                             const base::Closure& callback);
-  virtual ~SimpleExtensionLoadPrompt();
+  ~SimpleExtensionLoadPrompt() override;
 
   void ShowPrompt();
 
   // ExtensionInstallUI::Delegate
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
  private:
   scoped_ptr<ExtensionInstallPrompt> install_ui_;

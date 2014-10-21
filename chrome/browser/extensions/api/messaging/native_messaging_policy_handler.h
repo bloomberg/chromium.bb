@@ -24,13 +24,13 @@ class NativeMessagingHostListPolicyHandler
   NativeMessagingHostListPolicyHandler(const char* policy_name,
                                        const char* pref_path,
                                        bool allow_wildcards);
-  virtual ~NativeMessagingHostListPolicyHandler();
+  ~NativeMessagingHostListPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const policy::PolicyMap& policies,
+                           policy::PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  protected:
   const char* pref_path() const;

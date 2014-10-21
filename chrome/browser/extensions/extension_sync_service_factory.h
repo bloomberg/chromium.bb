@@ -22,11 +22,11 @@ class ExtensionSyncServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ExtensionSyncServiceFactory>;
 
   ExtensionSyncServiceFactory();
-  virtual ~ExtensionSyncServiceFactory();
+  ~ExtensionSyncServiceFactory() override;
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

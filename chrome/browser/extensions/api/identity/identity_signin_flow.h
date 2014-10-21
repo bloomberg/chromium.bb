@@ -34,13 +34,13 @@ class IdentitySigninFlow : public OAuth2TokenService::Observer {
 
   IdentitySigninFlow(Delegate* delegate,
                      Profile* profile);
-  virtual ~IdentitySigninFlow();
+  ~IdentitySigninFlow() override;
 
   // Starts the flow. Should only be called once.
   void Start();
 
   // OAuth2TokenService::Observer implementation:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
  private:
   Delegate* delegate_;

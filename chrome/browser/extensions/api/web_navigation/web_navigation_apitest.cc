@@ -119,11 +119,9 @@ class TestNavigationListener
     }
 
     // content::ResourceThrottle implementation.
-    virtual void WillStartRequest(bool* defer) override {
-      *defer = true;
-    }
+    void WillStartRequest(bool* defer) override { *defer = true; }
 
-    virtual const char* GetNameForLogging() const override {
+    const char* GetNameForLogging() const override {
       return "TestNavigationListener::Throttle";
     }
   };
@@ -163,11 +161,11 @@ class DelayLoadStartAndExecuteJavascript
                    content::NotificationService::AllSources());
     test_navigation_listener_->DelayRequestsForURL(delay_url_);
   }
-  virtual ~DelayLoadStartAndExecuteJavascript() {}
+  ~DelayLoadStartAndExecuteJavascript() override {}
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     if (type != chrome::NOTIFICATION_TAB_ADDED) {
       NOTREACHED();
       return;
@@ -177,7 +175,7 @@ class DelayLoadStartAndExecuteJavascript
     registrar_.RemoveAll();
   }
 
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
@@ -189,7 +187,7 @@ class DelayLoadStartAndExecuteJavascript
     script_was_executed_ = true;
   }
 
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override {
@@ -224,9 +222,9 @@ class TestResourceDispatcherHostDelegate
       : ChromeResourceDispatcherHostDelegate(prerender_tracker),
         test_navigation_listener_(test_navigation_listener) {
   }
-  virtual ~TestResourceDispatcherHostDelegate() {}
+  ~TestResourceDispatcherHostDelegate() override {}
 
-  virtual void RequestBeginning(
+  void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
@@ -258,7 +256,7 @@ class WebNavigationApiTest : public ExtensionApiTest {
   WebNavigationApiTest() {}
   virtual ~WebNavigationApiTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     FrameNavigationState::set_allow_extension_scheme(true);
@@ -269,7 +267,7 @@ class WebNavigationApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     test_navigation_listener_ = new TestNavigationListener();
     resource_dispatcher_host_delegate_.reset(

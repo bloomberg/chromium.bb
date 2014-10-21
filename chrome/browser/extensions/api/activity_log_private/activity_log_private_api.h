@@ -26,12 +26,12 @@ class ActivityLogAPI : public BrowserContextKeyedAPI,
                        public EventRouter::Observer {
  public:
   explicit ActivityLogAPI(content::BrowserContext* context);
-  virtual ~ActivityLogAPI();
+  ~ActivityLogAPI() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ActivityLogAPI>* GetFactoryInstance();
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Lookup whether the extension ID is whitelisted.
   static bool IsExtensionWhitelisted(const std::string& extension_id);
@@ -42,12 +42,12 @@ class ActivityLogAPI : public BrowserContextKeyedAPI,
 
   // ActivityLog::Observer
   // We pass this along to activityLogPrivate.onExtensionActivity.
-  virtual void OnExtensionActivity(scoped_refptr<Action> activity) override;
+  void OnExtensionActivity(scoped_refptr<Action> activity) override;
 
   // EventRouter::Observer
   // We only keep track of OnExtensionActivity if we have any listeners.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
   content::BrowserContext* browser_context_;
   ActivityLog* activity_log_;
@@ -68,10 +68,10 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
                              ACTIVITYLOGPRIVATE_GETEXTENSIONACTIVITIES)
 
  protected:
-  virtual ~ActivityLogPrivateGetExtensionActivitiesFunction() {}
+  ~ActivityLogPrivateGetExtensionActivitiesFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnLookupCompleted(
@@ -86,10 +86,10 @@ class ActivityLogPrivateDeleteActivitiesFunction
                              ACTIVITYLOGPRIVATE_DELETEACTIVITIES)
 
  protected:
-  virtual ~ActivityLogPrivateDeleteActivitiesFunction() {}
+  ~ActivityLogPrivateDeleteActivitiesFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // The implementation of activityLogPrivate.deleteDatabase
@@ -100,10 +100,10 @@ class ActivityLogPrivateDeleteDatabaseFunction
                              ACTIVITYLOGPRIVATE_DELETEDATABASE)
 
  protected:
-  virtual ~ActivityLogPrivateDeleteDatabaseFunction() {}
+  ~ActivityLogPrivateDeleteDatabaseFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // The implementation of activityLogPrivate.deleteUrls
@@ -114,10 +114,10 @@ class ActivityLogPrivateDeleteUrlsFunction
                              ACTIVITYLOGPRIVATE_DELETEURLS)
 
  protected:
-  virtual ~ActivityLogPrivateDeleteUrlsFunction() {}
+  ~ActivityLogPrivateDeleteUrlsFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 }  // namespace extensions

@@ -212,7 +212,7 @@ class NotificationsObserver : public content::NotificationObserver {
     }
   }
 
-  virtual ~NotificationsObserver() {
+  ~NotificationsObserver() override {
     for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
       registrar_.Remove(this,
                         kNotificationsObserved[i],
@@ -236,9 +236,9 @@ class NotificationsObserver : public content::NotificationObserver {
   }
 
  private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     if (!quit_closure_.is_null())
       quit_closure_.Run();
     for (size_t i = 0; i < arraysize(kNotificationsObserved); ++i) {
@@ -292,9 +292,9 @@ class MockService : public TestExtensionService {
         downloader_delegate_override_(NULL) {
   }
 
-  virtual ~MockService() {}
+  ~MockService() override {}
 
-  virtual PendingExtensionManager* pending_extension_manager() override {
+  PendingExtensionManager* pending_extension_manager() override {
     ADD_FAILURE() << "Subclass should override this if it will "
                   << "be accessed by a test.";
     return &pending_extension_manager_;
@@ -435,30 +435,30 @@ class ServiceForManifestTests : public MockService {
         registry_(ExtensionRegistry::Get(profile())) {
   }
 
-  virtual ~ServiceForManifestTests() {}
+  ~ServiceForManifestTests() override {}
 
-  virtual const Extension* GetExtensionById(
-      const std::string& id, bool include_disabled) const override {
+  const Extension* GetExtensionById(const std::string& id,
+                                    bool include_disabled) const override {
     const Extension* result = registry_->enabled_extensions().GetByID(id);
     if (result || !include_disabled)
       return result;
     return registry_->disabled_extensions().GetByID(id);
   }
 
-  virtual const ExtensionSet* extensions() const override {
+  const ExtensionSet* extensions() const override {
     return &registry_->enabled_extensions();
   }
 
-  virtual PendingExtensionManager* pending_extension_manager() override {
+  PendingExtensionManager* pending_extension_manager() override {
     return &pending_extension_manager_;
   }
 
-  virtual const Extension* GetPendingExtensionUpdate(
+  const Extension* GetPendingExtensionUpdate(
       const std::string& id) const override {
     return NULL;
   }
 
-  virtual bool IsExtensionEnabled(const std::string& id) const override {
+  bool IsExtensionEnabled(const std::string& id) const override {
     return !registry_->disabled_extensions().Contains(id);
   }
 
@@ -491,11 +491,10 @@ class ServiceForDownloadTests : public MockService {
     fake_crx_installers_[id] = crx_installer;
   }
 
-  virtual bool UpdateExtension(
-      const std::string& id,
-      const base::FilePath& extension_path,
-      bool file_ownership_passed,
-      CrxInstaller** out_crx_installer) override {
+  bool UpdateExtension(const std::string& id,
+                       const base::FilePath& extension_path,
+                       bool file_ownership_passed,
+                       CrxInstaller** out_crx_installer) override {
     extension_id_ = id;
     install_path_ = extension_path;
 
@@ -507,12 +506,12 @@ class ServiceForDownloadTests : public MockService {
     return false;
   }
 
-  virtual PendingExtensionManager* pending_extension_manager() override {
+  PendingExtensionManager* pending_extension_manager() override {
     return &pending_extension_manager_;
   }
 
-  virtual const Extension* GetExtensionById(
-      const std::string& id, bool) const override {
+  const Extension* GetExtensionById(const std::string& id,
+                                    bool) const override {
     last_inquired_extension_id_ = id;
     return NULL;
   }

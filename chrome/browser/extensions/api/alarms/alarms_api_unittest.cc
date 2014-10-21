@@ -30,9 +30,8 @@ namespace {
 // Test delegate which quits the message loop when an alarm fires.
 class AlarmDelegate : public AlarmManager::Delegate {
  public:
-  virtual ~AlarmDelegate() {}
-  virtual void OnAlarm(const std::string& extension_id,
-                       const Alarm& alarm) override {
+  ~AlarmDelegate() override {}
+  void OnAlarm(const std::string& extension_id, const Alarm& alarm) override {
     alarms_seen.push_back(alarm.js_alarm->name);
     if (base::MessageLoop::current()->is_running())
       base::MessageLoop::current()->Quit();

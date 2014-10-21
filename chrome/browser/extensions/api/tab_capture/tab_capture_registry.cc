@@ -45,7 +45,7 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
     DCHECK(registry_);
   }
 
-  virtual ~LiveRequest() {}
+  ~LiveRequest() override {}
 
   // Accessors.
   const std::string& extension_id() const {
@@ -96,25 +96,25 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
   }
 
  protected:
-  virtual void DidShowFullscreenWidget(int routing_id) override {
+  void DidShowFullscreenWidget(int routing_id) override {
     is_fullscreened_ = true;
     if (capture_state_ == tab_capture::TAB_CAPTURE_STATE_ACTIVE)
       registry_->DispatchStatusChangeEvent(this);
   }
 
-  virtual void DidDestroyFullscreenWidget(int routing_id) override {
+  void DidDestroyFullscreenWidget(int routing_id) override {
     is_fullscreened_ = false;
     if (capture_state_ == tab_capture::TAB_CAPTURE_STATE_ACTIVE)
       registry_->DispatchStatusChangeEvent(this);
   }
 
-  virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
     is_fullscreened_ = entered_fullscreen;
     if (capture_state_ == tab_capture::TAB_CAPTURE_STATE_ACTIVE)
       registry_->DispatchStatusChangeEvent(this);
   }
 
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     registry_->KillRequest(this);  // Deletes |this|.
   }
 

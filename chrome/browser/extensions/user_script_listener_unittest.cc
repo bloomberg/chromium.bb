@@ -48,18 +48,10 @@ class ThrottleController : public base::SupportsUserData::Data,
   }
 
   // ResourceController implementation:
-  virtual void Resume() override {
-    request_->Start();
-  }
-  virtual void Cancel() override {
-    NOTREACHED();
-  }
-  virtual void CancelAndIgnore() override {
-    NOTREACHED();
-  }
-  virtual void CancelWithError(int error_code) override {
-    NOTREACHED();
-  }
+  void Resume() override { request_->Start(); }
+  void Cancel() override { NOTREACHED(); }
+  void CancelAndIgnore() override { NOTREACHED(); }
+  void CancelWithError(int error_code) override { NOTREACHED(); }
 
  private:
   net::URLRequest* request_;
@@ -78,7 +70,7 @@ class SimpleTestJob : public net::URLRequestTestJob {
                                kTestData,
                                true) {}
  private:
-  virtual ~SimpleTestJob() {}
+  ~SimpleTestJob() override {}
 };
 
 // Yoinked from extension_manifest_unittest.cc.
@@ -109,10 +101,10 @@ class SimpleTestJobURLRequestInterceptor
     : public net::URLRequestInterceptor {
  public:
   SimpleTestJobURLRequestInterceptor() {}
-  virtual ~SimpleTestJobURLRequestInterceptor() {}
+  ~SimpleTestJobURLRequestInterceptor() override {}
 
   // net::URLRequestJobFactory::ProtocolHandler
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return new SimpleTestJob(request, network_delegate);

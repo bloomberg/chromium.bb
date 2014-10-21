@@ -23,14 +23,14 @@ class DevModeBubbleController : public ExtensionMessageBubbleController {
   static bool IsDevModeExtension(const Extension* extension);
 
   explicit DevModeBubbleController(Profile* profile);
-  virtual ~DevModeBubbleController();
+  ~DevModeBubbleController() override;
 
   // Whether the controller knows of extensions to list in the bubble. Returns
   // true if so.
   bool ShouldShow();
 
   // ExtensionMessageBubbleController methods.
-  virtual void Show(ExtensionMessageBubble* bubble) override;
+  void Show(ExtensionMessageBubble* bubble) override;
 
  private:
   // A weak pointer to the profile we are associated with. Not owned by us.

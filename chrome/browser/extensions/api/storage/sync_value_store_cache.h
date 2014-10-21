@@ -34,15 +34,15 @@ class SyncValueStoreCache : public ValueStoreCache {
       const scoped_refptr<SettingsStorageFactory>& factory,
       const scoped_refptr<SettingsObserverList>& observers,
       const base::FilePath& profile_path);
-  virtual ~SyncValueStoreCache();
+  ~SyncValueStoreCache() override;
 
   syncer::SyncableService* GetSyncableService(syncer::ModelType type) const;
 
   // ValueStoreCache implementation:
-  virtual void RunWithValueStoreForExtension(
+  void RunWithValueStoreForExtension(
       const StorageCallback& callback,
       scoped_refptr<const Extension> extension) override;
-  virtual void DeleteStorageSoon(const std::string& extension_id) override;
+  void DeleteStorageSoon(const std::string& extension_id) override;
 
  private:
   void InitOnFileThread(const scoped_refptr<SettingsStorageFactory>& factory,

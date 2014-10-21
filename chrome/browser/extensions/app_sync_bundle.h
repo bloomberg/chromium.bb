@@ -32,7 +32,7 @@ class ExtensionSet;
 class AppSyncBundle : public SyncBundle {
  public:
   explicit AppSyncBundle(ExtensionSyncService* extension_sync_service);
-  virtual ~AppSyncBundle();
+  ~AppSyncBundle() override;
 
   // Setup this bundle to be sync application data.
   void SetupSync(syncer::SyncChangeProcessor* sync_proccessor,
@@ -80,10 +80,10 @@ class AppSyncBundle : public SyncBundle {
 
   // Overrides for SyncBundle.
   // Returns true if SetupSync has been called, false otherwise.
-  virtual bool IsSyncing() const override;
+  bool IsSyncing() const override;
 
   // Sync a newly-installed application or change an existing one.
-  virtual void SyncChangeIfNeeded(const Extension& extension) override;
+  void SyncChangeIfNeeded(const Extension& extension) override;
 
  private:
   // Add a synced app.

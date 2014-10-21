@@ -85,11 +85,11 @@ class NotificationsApiDelegate : public NotificationDelegate {
     DCHECK(api_function_.get());
   }
 
-  virtual void Display() override { }
+  void Display() override {}
 
-  virtual void Error() override {}
+  void Error() override {}
 
-  virtual void Close(bool by_user) override {
+  void Close(bool by_user) override {
     EventRouter::UserGestureState gesture =
         by_user ? EventRouter::USER_GESTURE_ENABLED
                 : EventRouter::USER_GESTURE_NOT_ENABLED;
@@ -98,19 +98,19 @@ class NotificationsApiDelegate : public NotificationDelegate {
     SendEvent(notifications::OnClosed::kEventName, gesture, args.Pass());
   }
 
-  virtual void Click() override {
+  void Click() override {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     SendEvent(notifications::OnClicked::kEventName,
               EventRouter::USER_GESTURE_ENABLED,
               args.Pass());
   }
 
-  virtual bool HasClickedListener() override {
+  bool HasClickedListener() override {
     return EventRouter::Get(profile_)->HasEventListener(
         notifications::OnClicked::kEventName);
   }
 
-  virtual void ButtonClick(int index) override {
+  void ButtonClick(int index) override {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(index));
     SendEvent(notifications::OnButtonClicked::kEventName,
@@ -118,12 +118,10 @@ class NotificationsApiDelegate : public NotificationDelegate {
               args.Pass());
   }
 
-  virtual std::string id() const override {
-    return scoped_id_;
-  }
+  std::string id() const override { return scoped_id_; }
 
  private:
-  virtual ~NotificationsApiDelegate() {}
+  ~NotificationsApiDelegate() override {}
 
   void SendEvent(const std::string& name,
                  EventRouter::UserGestureState user_gesture,

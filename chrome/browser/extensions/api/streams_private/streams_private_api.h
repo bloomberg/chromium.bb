@@ -29,7 +29,7 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   static StreamsPrivateAPI* Get(content::BrowserContext* context);
 
   explicit StreamsPrivateAPI(content::BrowserContext* context);
-  virtual ~StreamsPrivateAPI();
+  ~StreamsPrivateAPI() override;
 
   // Send the onExecuteMimeTypeHandler event to |extension_id|.
   // |web_contents| is used to determine the tabId where the document is being
@@ -56,10 +56,9 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
                             linked_ptr<content::StreamHandle> > > StreamMap;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -85,10 +84,10 @@ class StreamsPrivateAbortFunction : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("streamsPrivate.abort", STREAMSPRIVATE_ABORT)
 
  protected:
-  virtual ~StreamsPrivateAbortFunction() {}
+  ~StreamsPrivateAbortFunction() override {}
 
   // ExtensionFunction:
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
   void OnClose();

@@ -35,13 +35,11 @@ class WindowsEventRouter : public WindowControllerListObserver,
                           public content::NotificationObserver {
  public:
   explicit WindowsEventRouter(Profile* profile);
-  virtual ~WindowsEventRouter();
+  ~WindowsEventRouter() override;
 
   // WindowControllerListObserver methods:
-  virtual void OnWindowControllerAdded(
-      WindowController* window_controller) override;
-  virtual void OnWindowControllerRemoved(
-      WindowController* window) override;
+  void OnWindowControllerAdded(WindowController* window_controller) override;
+  void OnWindowControllerRemoved(WindowController* window) override;
 
 #if defined(TOOLKIT_VIEWS)
   virtual void OnNativeFocusChange(gfx::NativeView focused_before,
@@ -49,9 +47,9 @@ class WindowsEventRouter : public WindowControllerListObserver,
 #endif
 
   // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // |window_controller| is NULL to indicate a focused window has lost focus.
   void OnActiveWindowChanged(WindowController* window_controller);

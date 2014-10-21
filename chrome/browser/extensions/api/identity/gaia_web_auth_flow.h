@@ -64,19 +64,19 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
                   const ExtensionTokenKey* token_key,
                   const std::string& oauth2_client_id,
                   const std::string& locale);
-  virtual ~GaiaWebAuthFlow();
+  ~GaiaWebAuthFlow() override;
 
   // Starts the flow by fetching an ubertoken. Can override for testing.
   virtual void Start();
 
   // UbertokenConsumer implementation:
-  virtual void OnUbertokenSuccess(const std::string& token) override;
-  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
+  void OnUbertokenSuccess(const std::string& token) override;
+  void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
 
   // WebAuthFlow::Delegate implementation.
-  virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) override;
-  virtual void OnAuthFlowURLChange(const GURL& redirect_url) override;
-  virtual void OnAuthFlowTitleChange(const std::string& title) override;
+  void OnAuthFlowFailure(WebAuthFlow::Failure failure) override;
+  void OnAuthFlowURLChange(const GURL& redirect_url) override;
+  void OnAuthFlowTitleChange(const std::string& title) override;
 
  private:
   // Creates a WebAuthFlow, which will navigate to |url|. Can override

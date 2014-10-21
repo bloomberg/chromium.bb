@@ -117,7 +117,7 @@ class WebstoreInstaller : public content::NotificationObserver,
         scoped_ptr<base::DictionaryValue> parsed_manifest,
         bool strict_manifest_check);
 
-    virtual ~Approval();
+    ~Approval() override;
 
     // The extension id that was approved for installation.
     std::string extension_id;
@@ -194,14 +194,14 @@ class WebstoreInstaller : public content::NotificationObserver,
   void Start();
 
   // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver.
-  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension,
-                                    bool is_update) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
 
   // Removes the reference to the delegate passed in the constructor. Used when
   // the delegate object must be deleted before this object.
@@ -216,7 +216,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   friend struct content::BrowserThread::DeleteOnThread<
    content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebstoreInstaller>;
-  virtual ~WebstoreInstaller();
+  ~WebstoreInstaller() override;
 
   // Helper to get install URL.
   static GURL GetWebstoreInstallURL(const std::string& extension_id,
@@ -227,8 +227,8 @@ class WebstoreInstaller : public content::NotificationObserver,
                          content::DownloadInterruptReason interrupt_reason);
 
   // DownloadItem::Observer implementation:
-  virtual void OnDownloadUpdated(content::DownloadItem* download) override;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadUpdated(content::DownloadItem* download) override;
+  void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   // Downloads next pending module in |pending_modules_|.
   void DownloadNextPendingModule();

@@ -34,7 +34,7 @@ class ExternalPolicyLoader : public ExternalLoader,
   ExternalPolicyLoader(ExtensionManagement* settings, InstallationType type);
 
   // ExtensionManagement::Observer implementation
-  virtual void OnExtensionManagementSettingsChanged() override;
+  void OnExtensionManagementSettingsChanged() override;
 
   // Adds an extension to be updated to the pref dictionary.
   static void AddExtension(base::DictionaryValue* dict,
@@ -42,12 +42,12 @@ class ExternalPolicyLoader : public ExternalLoader,
                            const std::string& update_url);
 
  protected:
-  virtual void StartLoading() override;
+  void StartLoading() override;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  virtual ~ExternalPolicyLoader();
+  ~ExternalPolicyLoader() override;
 
   ExtensionManagement* settings_;
   InstallationType type_;

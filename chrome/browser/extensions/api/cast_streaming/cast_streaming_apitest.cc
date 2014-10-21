@@ -37,7 +37,7 @@ namespace extensions {
 
 class CastStreamingApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
@@ -110,7 +110,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
             WithFakeAesKeyAndIv(media::cast::GetDefaultVideoReceiverConfig())) {
   }
 
-  virtual ~TestPatternReceiver() {}
+  ~TestPatternReceiver() override {}
 
   void AddExpectedTone(int tone_frequency) {
     expected_tones_.push_back(tone_frequency);
@@ -153,9 +153,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   }
 
   // Invoked by InProcessReceiver for each received audio frame.
-  virtual void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
-                            const base::TimeTicks& playout_time,
-                            bool is_continuous) override {
+  void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
+                    const base::TimeTicks& playout_time,
+                    bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
     if (audio_frame->frames() <= 0) {
@@ -192,9 +192,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
   }
 
-  virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks& playout_time,
-                            bool is_continuous) override {
+  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+                    const base::TimeTicks& playout_time,
+                    bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
     CHECK(video_frame->format() == media::VideoFrame::YV12 ||
@@ -321,7 +321,7 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
     CastStreamingApiTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(::switches::kWindowSize, "128,128");
     CastStreamingApiTest::SetUpCommandLine(command_line);
   }

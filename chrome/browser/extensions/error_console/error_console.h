@@ -49,7 +49,7 @@ class ErrorConsole : public content::NotificationObserver,
   };
 
   explicit ErrorConsole(Profile* profile);
-  virtual ~ErrorConsole();
+  ~ErrorConsole() override;
 
   // Convenience method to return the ErrorConsole for a given profile.
   static ErrorConsole* Get(Profile* profile);
@@ -126,27 +126,25 @@ class ErrorConsole : public content::NotificationObserver,
 
   // ExtensionRegistry implementation. If the Apps Developer Tools app is
   // installed or uninstalled, we may need to turn the ErrorConsole on/off.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension,
-                                    bool is_update) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // Add manifest errors from an extension's install warnings.
   void AddManifestErrorsForExtension(const Extension* extension);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns the applicable bit mask of reporting preferences for the extension.
   int GetMaskForExtension(const std::string& extension_id) const;

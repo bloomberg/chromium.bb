@@ -38,7 +38,7 @@ class ScopedActiveInstall : public InstallObserver {
   // is still deregistered upon destruction.
   ScopedActiveInstall(InstallTracker* tracker, const std::string& extension_id);
 
-  virtual ~ScopedActiveInstall();
+  ~ScopedActiveInstall() override;
 
   // Ensures that the active install is not deregistered upon destruction. This
   // may be necessary if the extension install outlives the lifetime of this
@@ -49,7 +49,7 @@ class ScopedActiveInstall : public InstallObserver {
   void Init();
 
   // InstallObserver implementation.
-  virtual void OnShutdown() override;
+  void OnShutdown() override;
 
   InstallTracker* tracker_;
   ScopedObserver<InstallTracker, InstallObserver> tracker_observer_;

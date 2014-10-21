@@ -43,7 +43,7 @@ class EntryWatcherService : public KeyedService,
       content::BrowserContext* context)> GetFileSystemContextImplCallback;
 
   explicit EntryWatcherService(content::BrowserContext* context);
-  virtual ~EntryWatcherService();
+  ~EntryWatcherService() override;
 
   // Watches a directory. Only one watcher can be set per the same |url| and
   // |extension_id|.
@@ -61,8 +61,8 @@ class EntryWatcherService : public KeyedService,
       const std::string& extension_id);
 
   // storage::WatcherManager::Observer overrides.
-  virtual void OnEntryChanged(const storage::FileSystemURL& url) override;
-  virtual void OnEntryRemoved(const storage::FileSystemURL& url) override;
+  void OnEntryChanged(const storage::FileSystemURL& url) override;
+  void OnEntryRemoved(const storage::FileSystemURL& url) override;
 
   // Sets a custom dispatcher for tests in order to be able to verify dispatched
   // events.

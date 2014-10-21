@@ -48,11 +48,11 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
         letter_(letter),
         color_(color),
         output_size_(output_size) {}
-  virtual ~GeneratedIconImageSource() {}
+  ~GeneratedIconImageSource() override {}
 
  private:
   // gfx::CanvasImageSource overrides:
-  virtual void Draw(gfx::Canvas* canvas) override {
+  void Draw(gfx::Canvas* canvas) override {
     const unsigned char kLuminanceThreshold = 190;
     const int icon_size = output_size_ * 3 / 4;
     const int icon_inset = output_size_ / 8;

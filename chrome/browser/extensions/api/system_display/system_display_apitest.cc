@@ -69,42 +69,34 @@ class MockScreen : public Screen {
       displays_.push_back(display);
     }
   }
-  virtual ~MockScreen() {}
+  ~MockScreen() override {}
 
  protected:
   // Overridden from gfx::Screen:
-  virtual bool IsDIPEnabled() override { return true; }
-  virtual gfx::Point GetCursorScreenPoint() override  { return gfx::Point(); }
-  virtual gfx::NativeWindow GetWindowUnderCursor() override {
+  bool IsDIPEnabled() override { return true; }
+  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+  gfx::NativeWindow GetWindowUnderCursor() override {
     return gfx::NativeWindow();
   }
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) override {
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return gfx::NativeWindow();
   }
-  virtual int GetNumDisplays() const override {
-    return displays_.size();
-  }
-  virtual std::vector<gfx::Display> GetAllDisplays() const override {
+  int GetNumDisplays() const override { return displays_.size(); }
+  std::vector<gfx::Display> GetAllDisplays() const override {
     return displays_;
   }
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView window) const override {
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView window) const override {
     return gfx::Display(0);
   }
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override {
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     return gfx::Display(0);
   }
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override {
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     return gfx::Display(0);
   }
-  virtual gfx::Display GetPrimaryDisplay() const override {
-    return displays_[0];
-  }
-  virtual void AddObserver(gfx::DisplayObserver* observer) override {}
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {}
+  gfx::Display GetPrimaryDisplay() const override { return displays_[0]; }
+  void AddObserver(gfx::DisplayObserver* observer) override {}
+  void RemoveObserver(gfx::DisplayObserver* observer) override {}
 
  private:
   std::vector<gfx::Display> displays_;
@@ -117,12 +109,11 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
   MockDisplayInfoProvider() {}
 
-  virtual ~MockDisplayInfoProvider() {}
+  ~MockDisplayInfoProvider() override {}
 
-  virtual bool SetInfo(
-      const std::string& display_id,
-      const core_api::system_display::DisplayProperties& params,
-      std::string* error) override {
+  bool SetInfo(const std::string& display_id,
+               const core_api::system_display::DisplayProperties& params,
+               std::string* error) override {
     // Should get called only once per test case.
     EXPECT_FALSE(set_info_value_);
     set_info_value_ = params.ToValue();
@@ -130,7 +121,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     return true;
   }
 
-  virtual gfx::Screen* GetActiveScreen() override { return NULL; }
+  gfx::Screen* GetActiveScreen() override { return NULL; }
 
   scoped_ptr<base::DictionaryValue> GetSetInfoValue() {
     return set_info_value_.Pass();
@@ -143,7 +134,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
  private:
   // Update the content of the |unit| obtained for |display| using
   // platform specific method.
-  virtual void UpdateDisplayUnitInfoForPlatform(
+  void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
       extensions::core_api::system_display::DisplayUnitInfo* unit) override {
     int64 id = display.id();
@@ -177,7 +168,7 @@ class SystemDisplayApiTest: public ExtensionApiTest {
 
   virtual ~SystemDisplayApiTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     ANNOTATE_LEAKING_OBJECT_PTR(
         gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
@@ -185,7 +176,7 @@ class SystemDisplayApiTest: public ExtensionApiTest {
     DisplayInfoProvider::InitializeForTesting(provider_.get());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
 #if defined(OS_CHROMEOS)
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                    ash::Shell::GetScreen());

@@ -95,7 +95,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
   MockSyncChangeProcessor() : fail_all_requests_(false) {}
 
   // syncer::SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
     if (fail_all_requests_) {
@@ -112,8 +112,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
     return syncer::SyncError();
   }
 
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
-      override {
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
     return syncer::SyncDataList();
   }
 
@@ -171,8 +170,8 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
   }
 
   // SettingsStorageFactory implementation.
-  virtual ValueStore* Create(const base::FilePath& base_path,
-                             const std::string& extension_id) override {
+  ValueStore* Create(const base::FilePath& base_path,
+                     const std::string& extension_id) override {
     TestingValueStore* new_storage = new TestingValueStore();
     DCHECK(!created_.count(extension_id));
     created_[extension_id] = new_storage;
@@ -181,13 +180,12 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
 
   // Testing value stores don't actually create a real database. Don't delete
   // any files.
-  virtual void DeleteDatabaseIfExists(
-      const base::FilePath& base_path,
-      const std::string& extension_id) override {}
+  void DeleteDatabaseIfExists(const base::FilePath& base_path,
+                              const std::string& extension_id) override {}
 
  private:
   // SettingsStorageFactory is refcounted.
-  virtual ~TestingValueStoreFactory() {}
+  ~TestingValueStoreFactory() override {}
 
   // None of these storage areas are owned by this factory, so care must be
   // taken when calling GetExisting.

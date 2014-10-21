@@ -24,10 +24,10 @@ class SystemIndicatorManagerFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<SystemIndicatorManagerFactory>;
 
   SystemIndicatorManagerFactory();
-  virtual ~SystemIndicatorManagerFactory();
+  ~SystemIndicatorManagerFactory() override;
 
   // BrowserContextKeyedBaseFactory implementation.
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

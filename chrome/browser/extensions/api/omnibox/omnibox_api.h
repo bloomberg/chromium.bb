@@ -77,17 +77,17 @@ class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("omnibox.sendSuggestions", OMNIBOX_SENDSUGGESTIONS)
 
  protected:
-  virtual ~OmniboxSendSuggestionsFunction() {}
+  ~OmniboxSendSuggestionsFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class OmniboxAPI : public BrowserContextKeyedAPI,
                    public ExtensionRegistryObserver {
  public:
   explicit OmniboxAPI(content::BrowserContext* context);
-  virtual ~OmniboxAPI();
+  ~OmniboxAPI() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<OmniboxAPI>* GetFactoryInstance();
@@ -96,7 +96,7 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
   static OmniboxAPI* Get(content::BrowserContext* context);
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Returns the icon to display in the omnibox for the given extension.
   gfx::Image GetOmniboxIcon(const std::string& extension_id);
@@ -113,12 +113,11 @@ class OmniboxAPI : public BrowserContextKeyedAPI,
   void OnTemplateURLsLoaded();
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
@@ -156,10 +155,10 @@ class OmniboxSetDefaultSuggestionFunction : public ChromeSyncExtensionFunction {
                              OMNIBOX_SETDEFAULTSUGGESTION)
 
  protected:
-  virtual ~OmniboxSetDefaultSuggestionFunction() {}
+  ~OmniboxSetDefaultSuggestionFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // If the extension has set a custom default suggestion via

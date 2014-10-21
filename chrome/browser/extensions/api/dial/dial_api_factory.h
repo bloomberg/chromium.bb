@@ -23,13 +23,13 @@ class DialAPIFactory : public RefcountedBrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<DialAPIFactory>;
 
   DialAPIFactory();
-  virtual ~DialAPIFactory();
+  ~DialAPIFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+  scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(DialAPIFactory);
 };

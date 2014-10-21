@@ -552,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Enabled) {
 
 class ExtensionContextMenuBrowserLazyTest :
     public ExtensionContextMenuBrowserTest {
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionContextMenuBrowserTest::SetUpOnMainThread();
     // Set shorter delays to prevent test timeouts.
     extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);

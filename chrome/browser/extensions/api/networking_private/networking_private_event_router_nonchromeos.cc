@@ -20,20 +20,20 @@ class NetworkingPrivateEventRouterImpl
       NetworkingPrivateServiceClient::Observer {
  public:
   explicit NetworkingPrivateEventRouterImpl(Profile* profile);
-  virtual ~NetworkingPrivateEventRouterImpl();
+  ~NetworkingPrivateEventRouterImpl() override;
 
  protected:
   // KeyedService overrides:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // EventRouter::Observer overrides:
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // NetworkingPrivateServiceClient::Observer overrides:
-  virtual void OnNetworksChangedEvent(
+  void OnNetworksChangedEvent(
       const std::vector<std::string>& network_guids) override;
-  virtual void OnNetworkListChangedEvent(
+  void OnNetworkListChangedEvent(
       const std::vector<std::string>& network_guids) override;
 
  private:

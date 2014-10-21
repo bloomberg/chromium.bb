@@ -33,10 +33,10 @@ class MediaGalleriesPrivateAPI : public BrowserContextKeyedAPI,
                                  public EventRouter::Observer {
  public:
   explicit MediaGalleriesPrivateAPI(content::BrowserContext* context);
-  virtual ~MediaGalleriesPrivateAPI();
+  ~MediaGalleriesPrivateAPI() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<MediaGalleriesPrivateAPI>*
@@ -46,7 +46,7 @@ class MediaGalleriesPrivateAPI : public BrowserContextKeyedAPI,
   static MediaGalleriesPrivateAPI* Get(content::BrowserContext* context);
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
 
   MediaGalleriesPrivateEventRouter* GetEventRouter();
   GalleryWatchStateTracker* GetGalleryWatchStateTracker();
@@ -85,10 +85,10 @@ class MediaGalleriesPrivateAddGalleryWatchFunction
                              MEDIAGALLERIESPRIVATE_ADDGALLERYWATCH);
 
  protected:
-  virtual ~MediaGalleriesPrivateAddGalleryWatchFunction();
+  ~MediaGalleriesPrivateAddGalleryWatchFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -105,10 +105,10 @@ class MediaGalleriesPrivateRemoveGalleryWatchFunction
                              MEDIAGALLERIESPRIVATE_REMOVEGALLERYWATCH);
 
  protected:
-  virtual ~MediaGalleriesPrivateRemoveGalleryWatchFunction();
+  ~MediaGalleriesPrivateRemoveGalleryWatchFunction() override;
 
   // SyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
@@ -121,10 +121,10 @@ class MediaGalleriesPrivateGetAllGalleryWatchFunction
   DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.getAllGalleryWatch",
                              MEDIAGALLERIESPRIVATE_GETALLGALLERYWATCH);
  protected:
-  virtual ~MediaGalleriesPrivateGetAllGalleryWatchFunction();
+  ~MediaGalleriesPrivateGetAllGalleryWatchFunction() override;
 
   // SyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnPreferencesInit();
@@ -137,10 +137,10 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
   DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.removeAllGalleryWatch",
                              MEDIAGALLERIESPRIVATE_REMOVEALLGALLERYWATCH);
  protected:
-  virtual ~MediaGalleriesPrivateRemoveAllGalleryWatchFunction();
+  ~MediaGalleriesPrivateRemoveAllGalleryWatchFunction() override;
 
   // SyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnPreferencesInit();

@@ -200,63 +200,57 @@ class ExtensionService
                    bool extensions_enabled,
                    extensions::OneShotEvent* ready);
 
-  virtual ~ExtensionService();
+  ~ExtensionService() override;
 
   // ExtensionServiceInterface implementation.
   //
   // NOTE: Many of these methods are DEPRECATED. See the interface for details.
-  virtual const extensions::ExtensionSet* extensions() const override;
-  virtual extensions::PendingExtensionManager*
-      pending_extension_manager() override;
-  virtual const extensions::Extension* GetExtensionById(
-      const std::string& id, bool include_disabled) const override;
-  virtual const extensions::Extension* GetInstalledExtension(
-      const std::string& id) const override;
-  virtual bool UpdateExtension(
+  const extensions::ExtensionSet* extensions() const override;
+  extensions::PendingExtensionManager* pending_extension_manager() override;
+  const extensions::Extension* GetExtensionById(
       const std::string& id,
-      const base::FilePath& extension_path,
-      bool file_ownership_passed,
-      extensions::CrxInstaller** out_crx_installer) override;
-  virtual bool IsExtensionEnabled(
-      const std::string& extension_id) const override;
-  virtual void UnloadExtension(
+      bool include_disabled) const override;
+  const extensions::Extension* GetInstalledExtension(
+      const std::string& id) const override;
+  bool UpdateExtension(const std::string& id,
+                       const base::FilePath& extension_path,
+                       bool file_ownership_passed,
+                       extensions::CrxInstaller** out_crx_installer) override;
+  bool IsExtensionEnabled(const std::string& extension_id) const override;
+  void UnloadExtension(
       const std::string& extension_id,
       extensions::UnloadedExtensionInfo::Reason reason) override;
-  virtual void RemoveComponentExtension(const std::string& extension_id)
-      override;
-  virtual void AddExtension(const extensions::Extension* extension) override;
-  virtual void AddComponentExtension(const extensions::Extension* extension)
-      override;
-  virtual const extensions::Extension* GetPendingExtensionUpdate(
+  void RemoveComponentExtension(const std::string& extension_id) override;
+  void AddExtension(const extensions::Extension* extension) override;
+  void AddComponentExtension(const extensions::Extension* extension) override;
+  const extensions::Extension* GetPendingExtensionUpdate(
       const std::string& extension_id) const override;
-  virtual void FinishDelayedInstallation(
-     const std::string& extension_id) override;
-  virtual void CheckManagementPolicy() override;
-  virtual void CheckForUpdatesSoon() override;
-  virtual bool is_ready() override;
-  virtual base::SequencedTaskRunner* GetFileTaskRunner() override;
+  void FinishDelayedInstallation(const std::string& extension_id) override;
+  void CheckManagementPolicy() override;
+  void CheckForUpdatesSoon() override;
+  bool is_ready() override;
+  base::SequencedTaskRunner* GetFileTaskRunner() override;
 
   // ExternalProvider::Visitor implementation.
   // Exposed for testing.
-  virtual bool OnExternalExtensionFileFound(
-      const std::string& id,
-      const base::Version* version,
-      const base::FilePath& path,
-      extensions::Manifest::Location location,
-      int creation_flags,
-      bool mark_acknowledged) override;
-  virtual bool OnExternalExtensionUpdateUrlFound(
+  bool OnExternalExtensionFileFound(const std::string& id,
+                                    const base::Version* version,
+                                    const base::FilePath& path,
+                                    extensions::Manifest::Location location,
+                                    int creation_flags,
+                                    bool mark_acknowledged) override;
+  bool OnExternalExtensionUpdateUrlFound(
       const std::string& id,
       const std::string& install_parameter,
       const GURL& update_url,
       extensions::Manifest::Location location,
       int creation_flags,
       bool mark_acknowledged) override;
-  virtual void OnExternalProviderReady(
+  void OnExternalProviderReady(
       const extensions::ExternalProviderInterface* provider) override;
 
   // ExtensionManagement::Observer implementation:
-  virtual void OnExtensionManagementSettingsChanged() override;
+  void OnExtensionManagementSettingsChanged() override;
 
   // Initialize and start all installed extensions.
   void Init();
@@ -485,12 +479,12 @@ class ExtensionService
   void ReloadExtensionImpl(const std::string& extension_id, bool be_noisy);
 
   // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // extensions::Blacklist::Observer implementation.
-  virtual void OnBlacklistUpdated() override;
+  void OnBlacklistUpdated() override;
 
   // Similar to FinishInstallation, but first checks if there still is an update
   // pending for the extension, and makes sure the extension is still idle.

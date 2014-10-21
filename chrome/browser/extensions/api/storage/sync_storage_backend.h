@@ -45,23 +45,22 @@ class SyncStorageBackend : public syncer::SyncableService {
       syncer::ModelType sync_type,
       const syncer::SyncableService::StartSyncFlare& flare);
 
-  virtual ~SyncStorageBackend();
+  ~SyncStorageBackend() override;
 
   virtual ValueStore* GetStorage(const std::string& extension_id);
   virtual void DeleteStorage(const std::string& extension_id);
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const override;
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
+  void StopSyncing(syncer::ModelType type) override;
 
  private:
   // Gets a weak reference to the storage area for a given extension,

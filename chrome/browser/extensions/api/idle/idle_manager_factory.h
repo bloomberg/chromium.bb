@@ -23,15 +23,15 @@ class IdleManagerFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<IdleManagerFactory>;
 
   IdleManagerFactory();
-  virtual ~IdleManagerFactory();
+  ~IdleManagerFactory() override;
 
   // BrowserContextKeyedBaseFactory implementation.
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 }  // namespace extensions

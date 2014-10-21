@@ -65,9 +65,9 @@ class ExtensionTestNotificationObserver::NotificationSet
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar notification_registrar_;
   base::CallbackList<void()> callback_list_;

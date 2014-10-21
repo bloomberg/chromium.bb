@@ -16,10 +16,10 @@ class IdentityPrivateGetStringsFunction : public SyncExtensionFunction {
   IdentityPrivateGetStringsFunction();
 
  protected:
-  virtual ~IdentityPrivateGetStringsFunction();
+  ~IdentityPrivateGetStringsFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IdentityPrivateGetStringsFunction);

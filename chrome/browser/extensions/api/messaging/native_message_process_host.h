@@ -39,7 +39,7 @@ class NativeMessageProcessHost :
 #endif  // !defined(OS_POSIX)
     public NativeMessageHost {
  public:
-  virtual ~NativeMessageProcessHost();
+  ~NativeMessageProcessHost() override;
 
   // Create using specified |launcher|. Used in tests.
   static scoped_ptr<NativeMessageHost> CreateWithLauncher(
@@ -48,15 +48,14 @@ class NativeMessageProcessHost :
       scoped_ptr<NativeProcessLauncher> launcher);
 
   // extensions::NativeMessageHost implementation.
-  virtual void OnMessage(const std::string& message) override;
-  virtual void Start(Client* client) override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> task_runner()
-      const override;
+  void OnMessage(const std::string& message) override;
+  void Start(Client* client) override;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
 #if defined(OS_POSIX)
   // MessageLoopForIO::Watcher interface
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 #endif  // !defined(OS_POSIX)
 
   // Try and read a single message from |read_file_|. This should only be called

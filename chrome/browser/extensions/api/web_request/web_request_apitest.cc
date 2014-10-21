@@ -39,11 +39,11 @@ class CancelLoginDialog : public content::NotificationObserver {
                    content::NotificationService::AllSources());
   }
 
-  virtual ~CancelLoginDialog() {}
+  ~CancelLoginDialog() override {}
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     LoginHandler* handler =
         content::Details<LoginNotificationDetails>(details).ptr()->handler();
     handler->CancelAuth();
@@ -59,7 +59,7 @@ class CancelLoginDialog : public content::NotificationObserver {
 
 class ExtensionWebRequestApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     host_resolver()->AddRule("*", "127.0.0.1");
   }

@@ -30,9 +30,9 @@ class FakeDriveServiceFactory
   explicit FakeDriveServiceFactory(
       drive::FakeDriveService::ChangeObserver* change_observer)
       : change_observer_(change_observer) {}
-  virtual ~FakeDriveServiceFactory() {}
+  ~FakeDriveServiceFactory() override {}
 
-  virtual scoped_ptr<drive::DriveServiceInterface> CreateDriveService(
+  scoped_ptr<drive::DriveServiceInterface> CreateDriveService(
       OAuth2TokenService* oauth2_token_service,
       net::URLRequestContextGetter* url_request_context_getter,
       base::SequencedTaskRunner* blocking_task_runner) override {
@@ -59,14 +59,14 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         remote_service_(NULL) {
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     real_minimum_preserved_space_ =
         storage::QuotaManager::kMinimumPreserveForSystem;
     storage::QuotaManager::kMinimumPreserveForSystem = 0;
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     storage::QuotaManager::kMinimumPreserveForSystem =
         real_minimum_preserved_space_;
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
@@ -81,7 +81,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
 
     SyncFileSystemServiceFactory* factory =
@@ -116,7 +116,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   // drive::FakeDriveService::ChangeObserver override.
-  virtual void OnNewChangeAvailable() override {
+  void OnNewChangeAvailable() override {
     sync_engine()->OnNotificationReceived();
   }
 

@@ -39,7 +39,7 @@ class ExtensionRendererState::RenderViewHostObserver
         render_view_host_(host) {
   }
 
-  virtual void RenderViewDeleted(content::RenderViewHost* host) override {
+  void RenderViewDeleted(content::RenderViewHost* host) override {
     if (host != render_view_host_)
       return;
     BrowserThread::PostTask(
@@ -69,13 +69,13 @@ class ExtensionRendererState::TabObserver
     : public content::NotificationObserver {
  public:
   TabObserver();
-  virtual ~TabObserver();
+  ~TabObserver() override;
 
  private:
   // content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 };

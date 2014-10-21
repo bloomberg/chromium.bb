@@ -29,7 +29,7 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
  public:
   ExternalInstallManager(content::BrowserContext* browser_context,
                          bool is_first_run);
-  virtual ~ExternalInstallManager();
+  ~ExternalInstallManager() override;
 
   // Removes the global error, if one existed.
   void RemoveExternalInstallError();
@@ -56,20 +56,19 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
 
  private:
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension,
-                                    bool is_update) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Adds a global error informing the user that an external extension was
   // installed. If |is_new_profile| is true, then this error is from the first

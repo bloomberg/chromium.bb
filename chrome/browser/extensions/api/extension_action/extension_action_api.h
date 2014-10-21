@@ -55,7 +55,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   };
 
   explicit ExtensionActionAPI(content::BrowserContext* context);
-  virtual ~ExtensionActionAPI();
+  ~ExtensionActionAPI() override;
 
   // Convenience method to get the instance for a profile.
   static ExtensionActionAPI* Get(content::BrowserContext* context);
@@ -124,7 +124,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                content::WebContents* web_contents);
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
   static const char* service_name() { return "ExtensionActionAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
 
@@ -148,8 +148,8 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
 
  protected:
   ExtensionActionFunction();
-  virtual ~ExtensionActionFunction();
-  virtual bool RunSync() override;
+  ~ExtensionActionFunction() override;
+  bool RunSync() override;
   virtual bool RunExtensionAction() = 0;
 
   bool ExtractDataFromArguments();
@@ -181,80 +181,80 @@ class ExtensionActionFunction : public ChromeSyncExtensionFunction {
 // show
 class ExtensionActionShowFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionShowFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionShowFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // hide
 class ExtensionActionHideFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionHideFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionHideFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // setIcon
 class ExtensionActionSetIconFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionSetIconFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionSetIconFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // setTitle
 class ExtensionActionSetTitleFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionSetTitleFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionSetTitleFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // setPopup
 class ExtensionActionSetPopupFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionSetPopupFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionSetPopupFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // setBadgeText
 class ExtensionActionSetBadgeTextFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionSetBadgeTextFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionSetBadgeTextFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // setBadgeBackgroundColor
 class ExtensionActionSetBadgeBackgroundColorFunction
     : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionSetBadgeBackgroundColorFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionSetBadgeBackgroundColorFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // getTitle
 class ExtensionActionGetTitleFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionGetTitleFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionGetTitleFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // getPopup
 class ExtensionActionGetPopupFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionGetPopupFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionGetPopupFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // getBadgeText
 class ExtensionActionGetBadgeTextFunction : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionGetBadgeTextFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionGetBadgeTextFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 // getBadgeBackgroundColor
 class ExtensionActionGetBadgeBackgroundColorFunction
     : public ExtensionActionFunction {
  protected:
-  virtual ~ExtensionActionGetBadgeBackgroundColorFunction() {}
-  virtual bool RunExtensionAction() override;
+  ~ExtensionActionGetBadgeBackgroundColorFunction() override {}
+  bool RunExtensionAction() override;
 };
 
 //
@@ -266,7 +266,7 @@ class BrowserActionSetIconFunction : public ExtensionActionSetIconFunction {
   DECLARE_EXTENSION_FUNCTION("browserAction.setIcon", BROWSERACTION_SETICON)
 
  protected:
-  virtual ~BrowserActionSetIconFunction() {}
+  ~BrowserActionSetIconFunction() override {}
 };
 
 class BrowserActionSetTitleFunction : public ExtensionActionSetTitleFunction {
@@ -274,7 +274,7 @@ class BrowserActionSetTitleFunction : public ExtensionActionSetTitleFunction {
   DECLARE_EXTENSION_FUNCTION("browserAction.setTitle", BROWSERACTION_SETTITLE)
 
  protected:
-  virtual ~BrowserActionSetTitleFunction() {}
+  ~BrowserActionSetTitleFunction() override {}
 };
 
 class BrowserActionSetPopupFunction : public ExtensionActionSetPopupFunction {
@@ -282,7 +282,7 @@ class BrowserActionSetPopupFunction : public ExtensionActionSetPopupFunction {
   DECLARE_EXTENSION_FUNCTION("browserAction.setPopup", BROWSERACTION_SETPOPUP)
 
  protected:
-  virtual ~BrowserActionSetPopupFunction() {}
+  ~BrowserActionSetPopupFunction() override {}
 };
 
 class BrowserActionGetTitleFunction : public ExtensionActionGetTitleFunction {
@@ -290,7 +290,7 @@ class BrowserActionGetTitleFunction : public ExtensionActionGetTitleFunction {
   DECLARE_EXTENSION_FUNCTION("browserAction.getTitle", BROWSERACTION_GETTITLE)
 
  protected:
-  virtual ~BrowserActionGetTitleFunction() {}
+  ~BrowserActionGetTitleFunction() override {}
 };
 
 class BrowserActionGetPopupFunction : public ExtensionActionGetPopupFunction {
@@ -298,7 +298,7 @@ class BrowserActionGetPopupFunction : public ExtensionActionGetPopupFunction {
   DECLARE_EXTENSION_FUNCTION("browserAction.getPopup", BROWSERACTION_GETPOPUP)
 
  protected:
-  virtual ~BrowserActionGetPopupFunction() {}
+  ~BrowserActionGetPopupFunction() override {}
 };
 
 class BrowserActionSetBadgeTextFunction
@@ -308,7 +308,7 @@ class BrowserActionSetBadgeTextFunction
                              BROWSERACTION_SETBADGETEXT)
 
  protected:
-  virtual ~BrowserActionSetBadgeTextFunction() {}
+  ~BrowserActionSetBadgeTextFunction() override {}
 };
 
 class BrowserActionSetBadgeBackgroundColorFunction
@@ -318,7 +318,7 @@ class BrowserActionSetBadgeBackgroundColorFunction
                              BROWSERACTION_SETBADGEBACKGROUNDCOLOR)
 
  protected:
-  virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
+  ~BrowserActionSetBadgeBackgroundColorFunction() override {}
 };
 
 class BrowserActionGetBadgeTextFunction
@@ -328,7 +328,7 @@ class BrowserActionGetBadgeTextFunction
                              BROWSERACTION_GETBADGETEXT)
 
  protected:
-  virtual ~BrowserActionGetBadgeTextFunction() {}
+  ~BrowserActionGetBadgeTextFunction() override {}
 };
 
 class BrowserActionGetBadgeBackgroundColorFunction
@@ -338,7 +338,7 @@ class BrowserActionGetBadgeBackgroundColorFunction
                              BROWSERACTION_GETBADGEBACKGROUNDCOLOR)
 
  protected:
-  virtual ~BrowserActionGetBadgeBackgroundColorFunction() {}
+  ~BrowserActionGetBadgeBackgroundColorFunction() override {}
 };
 
 class BrowserActionEnableFunction : public ExtensionActionShowFunction {
@@ -346,7 +346,7 @@ class BrowserActionEnableFunction : public ExtensionActionShowFunction {
   DECLARE_EXTENSION_FUNCTION("browserAction.enable", BROWSERACTION_ENABLE)
 
  protected:
-  virtual ~BrowserActionEnableFunction() {}
+  ~BrowserActionEnableFunction() override {}
 };
 
 class BrowserActionDisableFunction : public ExtensionActionHideFunction {
@@ -354,7 +354,7 @@ class BrowserActionDisableFunction : public ExtensionActionHideFunction {
   DECLARE_EXTENSION_FUNCTION("browserAction.disable", BROWSERACTION_DISABLE)
 
  protected:
-  virtual ~BrowserActionDisableFunction() {}
+  ~BrowserActionDisableFunction() override {}
 };
 
 class BrowserActionOpenPopupFunction : public ChromeAsyncExtensionFunction,
@@ -365,14 +365,14 @@ class BrowserActionOpenPopupFunction : public ChromeAsyncExtensionFunction,
   BrowserActionOpenPopupFunction();
 
  private:
-  virtual ~BrowserActionOpenPopupFunction() {}
+  ~BrowserActionOpenPopupFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
   void OpenPopupTimedOut();
 
   content::NotificationRegistrar registrar_;
@@ -392,7 +392,7 @@ class PageActionShowFunction : public extensions::ExtensionActionShowFunction {
   DECLARE_EXTENSION_FUNCTION("pageAction.show", PAGEACTION_SHOW)
 
  protected:
-  virtual ~PageActionShowFunction() {}
+  ~PageActionShowFunction() override {}
 };
 
 class PageActionHideFunction : public extensions::ExtensionActionHideFunction {
@@ -400,7 +400,7 @@ class PageActionHideFunction : public extensions::ExtensionActionHideFunction {
   DECLARE_EXTENSION_FUNCTION("pageAction.hide", PAGEACTION_HIDE)
 
  protected:
-  virtual ~PageActionHideFunction() {}
+  ~PageActionHideFunction() override {}
 };
 
 class PageActionSetIconFunction
@@ -409,7 +409,7 @@ class PageActionSetIconFunction
   DECLARE_EXTENSION_FUNCTION("pageAction.setIcon", PAGEACTION_SETICON)
 
  protected:
-  virtual ~PageActionSetIconFunction() {}
+  ~PageActionSetIconFunction() override {}
 };
 
 class PageActionSetTitleFunction
@@ -418,7 +418,7 @@ class PageActionSetTitleFunction
   DECLARE_EXTENSION_FUNCTION("pageAction.setTitle", PAGEACTION_SETTITLE)
 
  protected:
-  virtual ~PageActionSetTitleFunction() {}
+  ~PageActionSetTitleFunction() override {}
 };
 
 class PageActionSetPopupFunction
@@ -427,7 +427,7 @@ class PageActionSetPopupFunction
   DECLARE_EXTENSION_FUNCTION("pageAction.setPopup", PAGEACTION_SETPOPUP)
 
  protected:
-  virtual ~PageActionSetPopupFunction() {}
+  ~PageActionSetPopupFunction() override {}
 };
 
 class PageActionGetTitleFunction
@@ -436,7 +436,7 @@ class PageActionGetTitleFunction
   DECLARE_EXTENSION_FUNCTION("pageAction.getTitle", PAGEACTION_GETTITLE)
 
  protected:
-  virtual ~PageActionGetTitleFunction() {}
+  ~PageActionGetTitleFunction() override {}
 };
 
 class PageActionGetPopupFunction
@@ -445,7 +445,7 @@ class PageActionGetPopupFunction
   DECLARE_EXTENSION_FUNCTION("pageAction.getPopup", PAGEACTION_GETPOPUP)
 
  protected:
-  virtual ~PageActionGetPopupFunction() {}
+  ~PageActionGetPopupFunction() override {}
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_ACTION_API_H_

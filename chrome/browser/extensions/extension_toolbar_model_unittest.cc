@@ -82,7 +82,7 @@ class ExtensionToolbarModelTestObserver
     : public ExtensionToolbarModel::Observer {
  public:
   explicit ExtensionToolbarModelTestObserver(ExtensionToolbarModel* model);
-  virtual ~ExtensionToolbarModelTestObserver();
+  ~ExtensionToolbarModelTestObserver() override;
 
   size_t inserted_count() const { return inserted_count_; }
   size_t removed_count() const { return removed_count_; }
@@ -91,39 +91,33 @@ class ExtensionToolbarModelTestObserver
 
  private:
   // ExtensionToolbarModel::Observer:
-  virtual void ToolbarExtensionAdded(const Extension* extension,
-                                     int index) override {
+  void ToolbarExtensionAdded(const Extension* extension, int index) override {
     ++inserted_count_;
   }
 
-  virtual void ToolbarExtensionRemoved(const Extension* extension) override {
+  void ToolbarExtensionRemoved(const Extension* extension) override {
     ++removed_count_;
   }
 
-  virtual void ToolbarExtensionMoved(const Extension* extension,
-                                     int index) override {
+  void ToolbarExtensionMoved(const Extension* extension, int index) override {
     ++moved_count_;
   }
 
-  virtual void ToolbarExtensionUpdated(const Extension* extension) override {
-  }
+  void ToolbarExtensionUpdated(const Extension* extension) override {}
 
-  virtual bool ShowExtensionActionPopup(const Extension* extension,
-                                        bool grant_active_tab) override {
+  bool ShowExtensionActionPopup(const Extension* extension,
+                                bool grant_active_tab) override {
     return false;
   }
 
-  virtual void ToolbarVisibleCountChanged() override {
-  }
+  void ToolbarVisibleCountChanged() override {}
 
-  virtual void ToolbarHighlightModeChanged(bool is_highlighting) override {
+  void ToolbarHighlightModeChanged(bool is_highlighting) override {
     // Add one if highlighting, subtract one if not.
     highlight_mode_count_ += is_highlighting ? 1 : -1;
   }
 
-  virtual Browser* GetBrowser() override {
-    return NULL;
-  }
+  Browser* GetBrowser() override { return NULL; }
 
   ExtensionToolbarModel* model_;
 

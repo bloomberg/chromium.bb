@@ -34,7 +34,7 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
                       net::URLRequestContextGetter* request_context,
                       const GURL& referrer_url,
                       const std::string webstore_item_id);
-  virtual ~WebstoreDataFetcher();
+  ~WebstoreDataFetcher() override;
 
   void Start();
 
@@ -47,7 +47,7 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
   void OnJsonParseFailure(const std::string& error);
 
   // net::URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   WebstoreDataFetcherDelegate* delegate_;
   net::URLRequestContextGetter* request_context_;

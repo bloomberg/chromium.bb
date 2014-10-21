@@ -23,15 +23,15 @@ namespace extensions {
 class ChromeNotificationObserver : public content::NotificationObserver {
  public:
   ChromeNotificationObserver();
-  virtual ~ChromeNotificationObserver();
+  ~ChromeNotificationObserver() override;
 
   // Notification handlers:
   void OnRendererProcessCreated(content::RenderProcessHost* process);
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   content::NotificationRegistrar registrar_;

@@ -16,7 +16,7 @@ class SpellcheckAPI : public BrowserContextKeyedAPI,
                       public ExtensionRegistryObserver {
  public:
   explicit SpellcheckAPI(content::BrowserContext* context);
-  virtual ~SpellcheckAPI();
+  ~SpellcheckAPI() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<SpellcheckAPI>* GetFactoryInstance();
@@ -25,12 +25,11 @@ class SpellcheckAPI : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<SpellcheckAPI>;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

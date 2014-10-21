@@ -17,10 +17,10 @@ class WriteFromFileOperation : public Operation {
                          const ExtensionId& extension_id,
                          const base::FilePath& user_file_path,
                          const std::string& storage_unit_id);
-  virtual void StartImpl() override;
+  void StartImpl() override;
 
  private:
-  virtual ~WriteFromFileOperation();
+  ~WriteFromFileOperation() override;
 };
 
 }  // namespace image_writer

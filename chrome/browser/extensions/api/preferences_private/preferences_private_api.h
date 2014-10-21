@@ -22,14 +22,14 @@ class PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction
   PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction();
 
  protected:
-  virtual ~PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction();
+  ~PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction() override;
 
  private:
   // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() override;
+  void OnStateChanged() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   DISALLOW_COPY_AND_ASSIGN(
       PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction);

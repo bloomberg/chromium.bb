@@ -29,11 +29,11 @@ class ExternalComponentLoader : public ExternalLoader {
   static bool IsModifiable(const extensions::Extension* extension);
 
  protected:
-  virtual void StartLoading() override;
+  void StartLoading() override;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
-  virtual ~ExternalComponentLoader();
+  ~ExternalComponentLoader() override;
 
   // The profile that this loader is associated with. It listens for
   // preference changes for that profile.

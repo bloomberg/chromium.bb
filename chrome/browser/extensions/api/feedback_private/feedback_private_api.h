@@ -21,7 +21,7 @@ using extensions::api::feedback_private::SystemInformation;
 class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
  public:
   explicit FeedbackPrivateAPI(content::BrowserContext* context);
-  virtual ~FeedbackPrivateAPI();
+  ~FeedbackPrivateAPI() override;
 
   FeedbackService* GetService() const;
   void RequestFeedback(const std::string& description_template,
@@ -58,10 +58,10 @@ class FeedbackPrivateGetStringsFunction : public ChromeSyncExtensionFunction {
   }
 
  protected:
-  virtual ~FeedbackPrivateGetStringsFunction() {}
+  ~FeedbackPrivateGetStringsFunction() override {}
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
   static base::Closure* test_callback_;
@@ -73,8 +73,8 @@ class FeedbackPrivateGetUserEmailFunction : public ChromeSyncExtensionFunction {
                              FEEDBACKPRIVATE_GETUSEREMAIL);
 
  protected:
-  virtual ~FeedbackPrivateGetUserEmailFunction() {}
-  virtual bool RunSync() override;
+  ~FeedbackPrivateGetUserEmailFunction() override {}
+  bool RunSync() override;
 };
 
 class FeedbackPrivateGetSystemInformationFunction
@@ -84,8 +84,8 @@ class FeedbackPrivateGetSystemInformationFunction
                              FEEDBACKPRIVATE_GETSYSTEMINFORMATION);
 
  protected:
-  virtual ~FeedbackPrivateGetSystemInformationFunction() {}
-  virtual bool RunAsync() override;
+  ~FeedbackPrivateGetSystemInformationFunction() override {}
+  bool RunAsync() override;
 
  private:
   void OnCompleted(
@@ -99,8 +99,8 @@ class FeedbackPrivateSendFeedbackFunction
                              FEEDBACKPRIVATE_SENDFEEDBACK);
 
  protected:
-  virtual ~FeedbackPrivateSendFeedbackFunction() {}
-  virtual bool RunAsync() override;
+  ~FeedbackPrivateSendFeedbackFunction() override {}
+  bool RunAsync() override;
 
  private:
   void OnCompleted(bool success);

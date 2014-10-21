@@ -103,19 +103,17 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
   void set_record_oauth2_grant(bool record) { record_oauth2_grant_ = record; }
 
   // Overriding some of the ExtensionInstallUI API.
-  virtual void ConfirmInstall(
-      Delegate* delegate,
-      const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) override {
+  void ConfirmInstall(Delegate* delegate,
+                      const Extension* extension,
+                      const ShowDialogCallback& show_dialog_callback) override {
     proxy_->set_confirmation_requested();
     delegate->InstallUIProceed();
   }
-  virtual void OnInstallSuccess(const Extension* extension,
-                                SkBitmap* icon) override {
+  void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {
     proxy_->set_extension_id(extension->id());
     base::MessageLoopForUI::current()->Quit();
   }
-  virtual void OnInstallFailure(const CrxInstallerError& error) override {
+  void OnInstallFailure(const CrxInstallerError& error) override {
     proxy_->set_error(error.message());
     base::MessageLoopForUI::current()->Quit();
   }
@@ -149,12 +147,12 @@ class ManagementPolicyMock : public extensions::ManagementPolicy::Provider {
  public:
   ManagementPolicyMock() {}
 
-  virtual std::string GetDebugPolicyProviderName() const override {
+  std::string GetDebugPolicyProviderName() const override {
     return "ManagementPolicyMock";
   }
 
-  virtual bool UserMayLoad(const Extension* extension,
-                           base::string16* error) const override {
+  bool UserMayLoad(const Extension* extension,
+                   base::string16* error) const override {
     *error = base::UTF8ToUTF16("Dummy error message");
     return false;
   }

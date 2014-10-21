@@ -39,10 +39,9 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
  public:
   explicit DefaultAlarmDelegate(content::BrowserContext* context)
       : browser_context_(context) {}
-  virtual ~DefaultAlarmDelegate() {}
+  ~DefaultAlarmDelegate() override {}
 
-  virtual void OnAlarm(const std::string& extension_id,
-                       const Alarm& alarm) override {
+  void OnAlarm(const std::string& extension_id, const Alarm& alarm) override {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(alarm.js_alarm->ToValue().release());
     scoped_ptr<Event> event(new Event(alarms::OnAlarm::kEventName,

@@ -33,10 +33,10 @@ class StandardManagementPolicyProvider;
 class TestExtensionSystem : public ExtensionSystem {
  public:
   explicit TestExtensionSystem(Profile* profile);
-  virtual ~TestExtensionSystem();
+  ~TestExtensionSystem() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Creates an ExtensionPrefs with the testing profile and returns it.
   // Useful for tests that need to modify prefs before creating the
@@ -60,32 +60,31 @@ class TestExtensionSystem : public ExtensionSystem {
 
   void CreateSocketManager();
 
-  virtual void InitForRegularProfile(bool extensions_enabled) override {}
+  void InitForRegularProfile(bool extensions_enabled) override {}
   void SetExtensionService(ExtensionService* service);
-  virtual ExtensionService* extension_service() override;
-  virtual RuntimeData* runtime_data() override;
-  virtual ManagementPolicy* management_policy() override;
-  virtual SharedUserScriptMaster* shared_user_script_master() override;
-  virtual ProcessManager* process_manager() override;
-  virtual StateStore* state_store() override;
-  virtual StateStore* rules_store() override;
+  ExtensionService* extension_service() override;
+  RuntimeData* runtime_data() override;
+  ManagementPolicy* management_policy() override;
+  SharedUserScriptMaster* shared_user_script_master() override;
+  ProcessManager* process_manager() override;
+  StateStore* state_store() override;
+  StateStore* rules_store() override;
   TestingValueStore* value_store() { return value_store_; }
-  virtual InfoMap* info_map() override;
-  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() override;
+  InfoMap* info_map() override;
+  LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   void SetEventRouter(scoped_ptr<EventRouter> event_router);
-  virtual EventRouter* event_router() override;
-  virtual WarningService* warning_service() override;
-  virtual Blacklist* blacklist() override;
-  virtual ErrorConsole* error_console() override;
-  virtual InstallVerifier* install_verifier() override;
-  virtual QuotaService* quota_service() override;
-  virtual const OneShotEvent& ready() const override;
-  virtual ContentVerifier* content_verifier() override;
-  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+  EventRouter* event_router() override;
+  WarningService* warning_service() override;
+  Blacklist* blacklist() override;
+  ErrorConsole* error_console() override;
+  InstallVerifier* install_verifier() override;
+  QuotaService* quota_service() override;
+  const OneShotEvent& ready() const override;
+  ContentVerifier* content_verifier() override;
+  scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
-  virtual DeclarativeUserScriptMaster*
-      GetDeclarativeUserScriptMasterByExtension(
-          const ExtensionId& extension_id) override;
+  DeclarativeUserScriptMaster* GetDeclarativeUserScriptMasterByExtension(
+      const ExtensionId& extension_id) override;
 
   // Note that you probably want to use base::RunLoop().RunUntilIdle() right
   // after this to run all the accumulated tasks.

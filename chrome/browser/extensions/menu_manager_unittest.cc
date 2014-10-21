@@ -488,7 +488,7 @@ class MockExtensionSystem : public TestExtensionSystem {
   explicit MockExtensionSystem(Profile* profile)
       : TestExtensionSystem(profile) {}
 
-  virtual EventRouter* event_router() override {
+  EventRouter* event_router() override {
     if (!mock_event_router_)
       mock_event_router_.reset(new MockEventRouter(profile_));
     return mock_event_router_.get();

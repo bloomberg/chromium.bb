@@ -25,7 +25,7 @@ class TokenCacheService : public KeyedService,
                           public SigninManagerBase::Observer {
  public:
   explicit TokenCacheService(Profile* profile);
-  virtual ~TokenCacheService();
+  ~TokenCacheService() override;
 
   // Store a token for the currently logged in user. We will look it up later by
   // the name given here, and we will expire the token after the timeout.  For a
@@ -39,15 +39,15 @@ class TokenCacheService : public KeyedService,
   std::string RetrieveToken(const std::string& token_name);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   friend class TokenCacheTest;
   FRIEND_TEST_ALL_PREFIXES(TokenCacheTest, SignoutTest);
 
   // SigninManagerBase::Observer:
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   struct TokenCacheData {
     std::string token;

@@ -46,7 +46,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
   ManagedValueStoreCache(content::BrowserContext* context,
                          const scoped_refptr<SettingsStorageFactory>& factory,
                          const scoped_refptr<SettingsObserverList>& observers);
-  virtual ~ManagedValueStoreCache();
+  ~ManagedValueStoreCache() override;
 
  private:
   class ExtensionTracker;
@@ -56,17 +56,17 @@ class ManagedValueStoreCache : public ValueStoreCache,
       PolicyValueStoreMap;
 
   // ValueStoreCache implementation:
-  virtual void ShutdownOnUI() override;
-  virtual void RunWithValueStoreForExtension(
+  void ShutdownOnUI() override;
+  void RunWithValueStoreForExtension(
       const StorageCallback& callback,
       scoped_refptr<const Extension> extension) override;
-  virtual void DeleteStorageSoon(const std::string& extension_id) override;
+  void DeleteStorageSoon(const std::string& extension_id) override;
 
   // PolicyService::Observer implementation:
-  virtual void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
-  virtual void OnPolicyUpdated(const policy::PolicyNamespace& ns,
-                               const policy::PolicyMap& previous,
-                               const policy::PolicyMap& current) override;
+  void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
 
   // Posted by OnPolicyUpdated() to update a PolicyValueStore on the FILE
   // thread.

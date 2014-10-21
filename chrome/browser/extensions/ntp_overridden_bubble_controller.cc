@@ -30,30 +30,27 @@ class NtpOverriddenBubbleDelegate
     : public extensions::ExtensionMessageBubbleController::Delegate {
  public:
   NtpOverriddenBubbleDelegate(ExtensionService* service, Profile* profile);
-  virtual ~NtpOverriddenBubbleDelegate();
+  ~NtpOverriddenBubbleDelegate() override;
 
   // ExtensionMessageBubbleController::Delegate methods.
-  virtual bool ShouldIncludeExtension(const std::string& extension_id) override;
-  virtual void AcknowledgeExtension(
+  bool ShouldIncludeExtension(const std::string& extension_id) override;
+  void AcknowledgeExtension(
       const std::string& extension_id,
-      extensions::ExtensionMessageBubbleController::BubbleAction
-          user_action) override;
-  virtual void PerformAction(const extensions::ExtensionIdList& list) override;
-  virtual base::string16 GetTitle() const override;
-  virtual base::string16 GetMessageBody(
-      bool anchored_to_browser_action) const override;
-  virtual base::string16 GetOverflowText(
+      extensions::ExtensionMessageBubbleController::BubbleAction user_action)
+      override;
+  void PerformAction(const extensions::ExtensionIdList& list) override;
+  base::string16 GetTitle() const override;
+  base::string16 GetMessageBody(bool anchored_to_browser_action) const override;
+  base::string16 GetOverflowText(
       const base::string16& overflow_count) const override;
-  virtual GURL GetLearnMoreUrl() const override;
-  virtual base::string16 GetActionButtonLabel() const override;
-  virtual base::string16 GetDismissButtonLabel() const override;
-  virtual bool ShouldShowExtensionList() const override;
-  virtual void RestrictToSingleExtension(
-      const std::string& extension_id) override;
-  virtual void LogExtensionCount(size_t count) override;
-  virtual void LogAction(
-      extensions::ExtensionMessageBubbleController::BubbleAction
-          action) override;
+  GURL GetLearnMoreUrl() const override;
+  base::string16 GetActionButtonLabel() const override;
+  base::string16 GetDismissButtonLabel() const override;
+  bool ShouldShowExtensionList() const override;
+  void RestrictToSingleExtension(const std::string& extension_id) override;
+  void LogExtensionCount(size_t count) override;
+  void LogAction(extensions::ExtensionMessageBubbleController::BubbleAction
+                     action) override;
 
  private:
   // Our extension service. Weak, not owned by us.

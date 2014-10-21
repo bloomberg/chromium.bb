@@ -15,20 +15,20 @@ class CryptoVerifyImpl
     : public extensions::NetworkingPrivateServiceClient::CryptoVerify {
  public:
   CryptoVerifyImpl();
-  virtual ~CryptoVerifyImpl();
+  ~CryptoVerifyImpl() override;
 
   // NetworkingPrivateServiceClient::CryptoVerify
-  virtual void VerifyDestination(const Credentials& credentials,
-                                 bool* verified,
-                                 std::string* error) override;
-  virtual void VerifyAndEncryptCredentials(
+  void VerifyDestination(const Credentials& credentials,
+                         bool* verified,
+                         std::string* error) override;
+  void VerifyAndEncryptCredentials(
       const std::string& network_guid,
       const Credentials& credentials,
       const VerifyAndEncryptCredentialsCallback& callback) override;
-  virtual void VerifyAndEncryptData(const Credentials& credentials,
-                                    const std::string& data,
-                                    std::string* base64_encoded_ciphertext,
-                                    std::string* error) override;
+  void VerifyAndEncryptData(const Credentials& credentials,
+                            const std::string& data,
+                            std::string* base64_encoded_ciphertext,
+                            std::string* error) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptoVerifyImpl);

@@ -28,19 +28,19 @@ class NetworkingPrivateEventRouterFactory
 
  protected:
   // BrowserContextKeyedBaseFactory overrides:
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
  private:
   friend struct DefaultSingletonTraits<NetworkingPrivateEventRouterFactory>;
 
   NetworkingPrivateEventRouterFactory();
-  virtual ~NetworkingPrivateEventRouterFactory();
+  ~NetworkingPrivateEventRouterFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouterFactory);

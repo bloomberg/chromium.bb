@@ -13,7 +13,7 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
  public:
   MockCpuInfoProviderImpl() {}
 
-  virtual bool QueryInfo() override {
+  bool QueryInfo() override {
     info_.num_of_processors = 4;
     info_.arch_name = "x86";
     info_.model_name = "unknown";
@@ -33,7 +33,7 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
   }
 
  private:
-  virtual ~MockCpuInfoProviderImpl() {}
+  ~MockCpuInfoProviderImpl() override {}
 };
 
 class SystemCpuApiTest: public ExtensionApiTest {
@@ -41,7 +41,7 @@ class SystemCpuApiTest: public ExtensionApiTest {
   SystemCpuApiTest() {}
   virtual ~SystemCpuApiTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 };

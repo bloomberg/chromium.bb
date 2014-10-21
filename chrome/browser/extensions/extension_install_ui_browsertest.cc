@@ -197,9 +197,9 @@ class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest,
  public:
   NewTabUISortingBrowserTest() {}
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     if (type != chrome::NOTIFICATION_APP_LAUNCHER_REORDERED) {
       observer_->Observe(type, source, details);
       return;

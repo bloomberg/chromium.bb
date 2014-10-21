@@ -37,19 +37,18 @@ class DialAPI : public RefcountedKeyedService,
   void SendErrorOnUIThread(const DialRegistry::DialErrorCode type);
 
  private:
-  virtual ~DialAPI();
+  ~DialAPI() override;
 
   // RefcountedKeyedService:
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
   // EventRouter::Observer:
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // DialRegistry::Observer:
-  virtual void OnDialDeviceEvent(
-      const DialRegistry::DeviceList& devices) override;
-  virtual void OnDialError(DialRegistry::DialErrorCode type) override;
+  void OnDialDeviceEvent(const DialRegistry::DeviceList& devices) override;
+  void OnDialError(DialRegistry::DialErrorCode type) override;
 
   // Methods to notify the DialRegistry on the correct thread of new/removed
   // listeners.
@@ -75,12 +74,12 @@ class DialDiscoverNowFunction : public AsyncApiFunction {
   DialDiscoverNowFunction();
 
  protected:
-  virtual ~DialDiscoverNowFunction() {}
+  ~DialDiscoverNowFunction() override {}
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
-  virtual bool Respond() override;
+  bool Prepare() override;
+  void Work() override;
+  bool Respond() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("dial.discoverNow", DIAL_DISCOVERNOW)

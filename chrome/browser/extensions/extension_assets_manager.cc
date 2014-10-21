@@ -22,11 +22,11 @@ class ExtensionAssetsManagerImpl :  public ExtensionAssetsManager {
   }
 
   // Override from ExtensionAssetsManager.
-  virtual void InstallExtension(const Extension* extension,
-                                const base::FilePath& unpacked_extension_root,
-                                const base::FilePath& local_install_dir,
-                                Profile* profile,
-                                InstallExtensionCallback callback) override {
+  void InstallExtension(const Extension* extension,
+                        const base::FilePath& unpacked_extension_root,
+                        const base::FilePath& local_install_dir,
+                        Profile* profile,
+                        InstallExtensionCallback callback) override {
     callback.Run(file_util::InstallExtension(
         unpacked_extension_root,
         extension->id(),
@@ -34,11 +34,10 @@ class ExtensionAssetsManagerImpl :  public ExtensionAssetsManager {
         local_install_dir));
   }
 
-  virtual void UninstallExtension(
-      const std::string& id,
-      Profile* profile,
-      const base::FilePath& local_install_dir,
-      const base::FilePath& extension_root) override {
+  void UninstallExtension(const std::string& id,
+                          Profile* profile,
+                          const base::FilePath& local_install_dir,
+                          const base::FilePath& extension_root) override {
     file_util::UninstallExtension(local_install_dir, id);
   }
 
@@ -46,7 +45,7 @@ class ExtensionAssetsManagerImpl :  public ExtensionAssetsManager {
   friend struct DefaultSingletonTraits<ExtensionAssetsManagerImpl>;
 
   ExtensionAssetsManagerImpl() {}
-  virtual ~ExtensionAssetsManagerImpl() {}
+  ~ExtensionAssetsManagerImpl() override {}
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAssetsManagerImpl);
 };

@@ -21,10 +21,10 @@ class ContentSettingsContentSettingClearFunction
   DECLARE_EXTENSION_FUNCTION("contentSettings.clear", CONTENTSETTINGS_CLEAR)
 
  protected:
-  virtual ~ContentSettingsContentSettingClearFunction() {}
+  ~ContentSettingsContentSettingClearFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ContentSettingsContentSettingGetFunction
@@ -33,10 +33,10 @@ class ContentSettingsContentSettingGetFunction
   DECLARE_EXTENSION_FUNCTION("contentSettings.get", CONTENTSETTINGS_GET)
 
  protected:
-  virtual ~ContentSettingsContentSettingGetFunction() {}
+  ~ContentSettingsContentSettingGetFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ContentSettingsContentSettingSetFunction
@@ -45,10 +45,10 @@ class ContentSettingsContentSettingSetFunction
   DECLARE_EXTENSION_FUNCTION("contentSettings.set", CONTENTSETTINGS_SET)
 
  protected:
-  virtual ~ContentSettingsContentSettingSetFunction() {}
+  ~ContentSettingsContentSettingSetFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ContentSettingsContentSettingGetResourceIdentifiersFunction
@@ -58,10 +58,10 @@ class ContentSettingsContentSettingGetResourceIdentifiersFunction
                              CONTENTSETTINGS_GETRESOURCEIDENTIFIERS)
 
  protected:
-  virtual ~ContentSettingsContentSettingGetResourceIdentifiersFunction() {}
+  ~ContentSettingsContentSettingGetResourceIdentifiersFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest,

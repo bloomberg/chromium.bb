@@ -19,8 +19,8 @@ class SyncedNotificationsPrivateGetInitialDataFunction
                              SYNCEDNOTIFICATIONSPRIVATE_GETINITIALDATA);
 
  protected:
-  virtual ~SyncedNotificationsPrivateGetInitialDataFunction();
-  virtual ResponseAction Run() override;
+  ~SyncedNotificationsPrivateGetInitialDataFunction() override;
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedNotificationsPrivateGetInitialDataFunction);
@@ -34,8 +34,8 @@ class SyncedNotificationsPrivateUpdateNotificationFunction
                              SYNCEDNOTIFICATIONSPRIVATE_UPDATENOTIFICATION);
 
  protected:
-  virtual ~SyncedNotificationsPrivateUpdateNotificationFunction();
-  virtual ResponseAction Run() override;
+  ~SyncedNotificationsPrivateUpdateNotificationFunction() override;
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -50,8 +50,8 @@ class SyncedNotificationsPrivateSetRenderContextFunction
                              SYNCEDNOTIFICATIONSPRIVATE_SETRENDERCONTEXT);
 
  protected:
-  virtual ~SyncedNotificationsPrivateSetRenderContextFunction();
-  virtual ResponseAction Run() override;
+  ~SyncedNotificationsPrivateSetRenderContextFunction() override;
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedNotificationsPrivateSetRenderContextFunction);

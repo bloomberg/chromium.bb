@@ -19,13 +19,12 @@ class ChromeComponentExtensionResourceManager
     : public ComponentExtensionResourceManager {
  public:
   ChromeComponentExtensionResourceManager();
-  virtual ~ChromeComponentExtensionResourceManager();
+  ~ChromeComponentExtensionResourceManager() override;
 
   // Overridden from ComponentExtensionResourceManager:
-  virtual bool IsComponentExtensionResource(
-    const base::FilePath& extension_path,
-    const base::FilePath& resource_path,
-    int* resource_id) override;
+  bool IsComponentExtensionResource(const base::FilePath& extension_path,
+                                    const base::FilePath& resource_path,
+                                    int* resource_id) override;
 
  private:
   void AddComponentResourceEntries(const GritResourceMap* entries, size_t size);

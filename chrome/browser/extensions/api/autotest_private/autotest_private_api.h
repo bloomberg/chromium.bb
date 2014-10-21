@@ -18,8 +18,8 @@ class AutotestPrivateLogoutFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.logout", AUTOTESTPRIVATE_LOGOUT)
 
  private:
-  virtual ~AutotestPrivateLogoutFunction() {}
-  virtual bool RunSync() override;
+  ~AutotestPrivateLogoutFunction() override {}
+  bool RunSync() override;
 };
 
 class AutotestPrivateRestartFunction : public ChromeSyncExtensionFunction {
@@ -27,8 +27,8 @@ class AutotestPrivateRestartFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.restart", AUTOTESTPRIVATE_RESTART)
 
  private:
-  virtual ~AutotestPrivateRestartFunction() {}
-  virtual bool RunSync() override;
+  ~AutotestPrivateRestartFunction() override {}
+  bool RunSync() override;
 };
 
 class AutotestPrivateShutdownFunction : public ChromeSyncExtensionFunction {
@@ -37,8 +37,8 @@ class AutotestPrivateShutdownFunction : public ChromeSyncExtensionFunction {
                              AUTOTESTPRIVATE_SHUTDOWN)
 
  private:
-  virtual ~AutotestPrivateShutdownFunction() {}
-  virtual bool RunSync() override;
+  ~AutotestPrivateShutdownFunction() override {}
+  bool RunSync() override;
 };
 
 class AutotestPrivateLoginStatusFunction : public ChromeSyncExtensionFunction {
@@ -47,8 +47,8 @@ class AutotestPrivateLoginStatusFunction : public ChromeSyncExtensionFunction {
                              AUTOTESTPRIVATE_LOGINSTATUS)
 
  private:
-  virtual ~AutotestPrivateLoginStatusFunction() {}
-  virtual bool RunSync() override;
+  ~AutotestPrivateLoginStatusFunction() override {}
+  bool RunSync() override;
 };
 
 class AutotestPrivateLockScreenFunction : public ChromeSyncExtensionFunction {
@@ -57,8 +57,8 @@ class AutotestPrivateLockScreenFunction : public ChromeSyncExtensionFunction {
                              AUTOTESTPRIVATE_LOCKSCREEN)
 
  private:
-  virtual ~AutotestPrivateLockScreenFunction() {}
-  virtual bool RunSync() override;
+  ~AutotestPrivateLockScreenFunction() override {}
+  bool RunSync() override;
 };
 
 class AutotestPrivateGetExtensionsInfoFunction
@@ -68,8 +68,8 @@ class AutotestPrivateGetExtensionsInfoFunction
                              AUTOTESTPRIVATE_GETEXTENSIONSINFO)
 
  private:
-  virtual ~AutotestPrivateGetExtensionsInfoFunction() {}
-  virtual bool RunSync() override;
+  ~AutotestPrivateGetExtensionsInfoFunction() override {}
+  bool RunSync() override;
 };
 
 class AutotestPrivateSimulateAsanMemoryBugFunction
@@ -79,8 +79,8 @@ class AutotestPrivateSimulateAsanMemoryBugFunction
                              AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG)
 
  private:
-  virtual ~AutotestPrivateSimulateAsanMemoryBugFunction() {}
-  virtual bool RunSync() override;
+  ~AutotestPrivateSimulateAsanMemoryBugFunction() override {}
+  bool RunSync() override;
 };
 
 // Don't kill the browser when we're in a browser test.
@@ -100,7 +100,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
   friend class BrowserContextKeyedAPIFactory<AutotestPrivateAPI>;
 
   AutotestPrivateAPI();
-  virtual ~AutotestPrivateAPI();
+  ~AutotestPrivateAPI() override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "AutotestPrivateAPI"; }

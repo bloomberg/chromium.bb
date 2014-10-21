@@ -13,10 +13,10 @@ class CommandLinePrivateHasSwitchFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("commandLinePrivate.hasSwitch",
                              COMMANDLINEPRIVATE_HASSWITCH)
  protected:
-  virtual ~CommandLinePrivateHasSwitchFunction() {}
+  ~CommandLinePrivateHasSwitchFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

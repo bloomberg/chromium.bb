@@ -34,19 +34,19 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   base::FilePath temp_dir() const { return temp_dir_; }
 
  private:
-  virtual ~MockSandboxedUnpackerClient() {}
+  ~MockSandboxedUnpackerClient() override {}
 
-  virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
-                               const base::FilePath& extension_root,
-                               const base::DictionaryValue* original_manifest,
-                               const Extension* extension,
-                               const SkBitmap& install_icon) override {
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_root,
+                       const base::DictionaryValue* original_manifest,
+                       const Extension* extension,
+                       const SkBitmap& install_icon) override {
     temp_dir_ = temp_dir;
     quit_closure_.Run();
 
   }
 
-  virtual void OnUnpackFailure(const base::string16& error) override {
+  void OnUnpackFailure(const base::string16& error) override {
     ASSERT_TRUE(false);
   }
 

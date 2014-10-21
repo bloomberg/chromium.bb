@@ -93,7 +93,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   };
 
   explicit IdentityAPI(content::BrowserContext* context);
-  virtual ~IdentityAPI();
+  ~IdentityAPI() override;
 
   // Request serialization queue for getAuthToken.
   IdentityMintRequestQueue* mint_queue();
@@ -113,14 +113,14 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   std::string FindAccountKeyByGaiaId(const std::string& gaia_id);
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
   static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
 
   // gaia::AccountTracker::Observer implementation:
-  virtual void OnAccountAdded(const gaia::AccountIds& ids) override;
-  virtual void OnAccountRemoved(const gaia::AccountIds& ids) override;
-  virtual void OnAccountSignInChanged(const gaia::AccountIds& ids,
-                                      bool is_signed_in) override;
+  void OnAccountAdded(const gaia::AccountIds& ids) override;
+  void OnAccountRemoved(const gaia::AccountIds& ids) override;
+  void OnAccountSignInChanged(const gaia::AccountIds& ids,
+                              bool is_signed_in) override;
 
   void AddShutdownObserver(ShutdownObserver* observer);
   void RemoveShutdownObserver(ShutdownObserver* observer);
@@ -153,10 +153,10 @@ class IdentityGetAccountsFunction : public ChromeUIThreadExtensionFunction {
   IdentityGetAccountsFunction();
 
  private:
-  virtual ~IdentityGetAccountsFunction();
+  ~IdentityGetAccountsFunction() override;
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 // identity.getAuthToken fetches an OAuth 2 function for the
@@ -194,28 +194,28 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   }
 
  protected:
-  virtual ~IdentityGetAuthTokenFunction();
+  ~IdentityGetAuthTokenFunction() override;
 
   // IdentitySigninFlow::Delegate implementation:
-  virtual void SigninSuccess() override;
-  virtual void SigninFailed() override;
+  void SigninSuccess() override;
+  void SigninFailed() override;
 
   // GaiaWebAuthFlow::Delegate implementation:
-  virtual void OnGaiaFlowFailure(GaiaWebAuthFlow::Failure failure,
-                                 GoogleServiceAuthError service_error,
-                                 const std::string& oauth_error) override;
-  virtual void OnGaiaFlowCompleted(const std::string& access_token,
-                                   const std::string& expiration) override;
+  void OnGaiaFlowFailure(GaiaWebAuthFlow::Failure failure,
+                         GoogleServiceAuthError service_error,
+                         const std::string& oauth_error) override;
+  void OnGaiaFlowCompleted(const std::string& access_token,
+                           const std::string& expiration) override;
 
   // Starts a login access token request.
   virtual void StartLoginAccessTokenRequest();
 
   // OAuth2TokenService::Consumer implementation:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // Starts a mint token request to GAIA.
   // Exposed for testing.
@@ -236,7 +236,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, NoninteractiveShutdown);
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Helpers to report async function results to the caller.
   void StartAsyncRun();
@@ -250,18 +250,16 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   void CompleteMintTokenFlow();
 
   // IdentityMintRequestQueue::Request implementation:
-  virtual void StartMintToken(IdentityMintRequestQueue::MintType type) override;
+  void StartMintToken(IdentityMintRequestQueue::MintType type) override;
 
   // OAuth2MintTokenFlow::Delegate implementation:
-  virtual void OnMintTokenSuccess(const std::string& access_token,
-                                  int time_to_live) override;
-  virtual void OnMintTokenFailure(
-      const GoogleServiceAuthError& error) override;
-  virtual void OnIssueAdviceSuccess(
-      const IssueAdviceInfo& issue_advice) override;
+  void OnMintTokenSuccess(const std::string& access_token,
+                          int time_to_live) override;
+  void OnMintTokenFailure(const GoogleServiceAuthError& error) override;
+  void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice) override;
 
   // IdentityAPI::ShutdownObserver implementation:
-  virtual void OnShutdown() override;
+  void OnShutdown() override;
 
 #if defined(OS_CHROMEOS)
   // Starts a login access token request for device robot account. This method
@@ -306,10 +304,10 @@ class IdentityGetProfileUserInfoFunction
   IdentityGetProfileUserInfoFunction();
 
  private:
-  virtual ~IdentityGetProfileUserInfoFunction();
+  ~IdentityGetProfileUserInfoFunction() override;
 
   // UIThreadExtensionFunction implementation.
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class IdentityRemoveCachedAuthTokenFunction
@@ -320,10 +318,10 @@ class IdentityRemoveCachedAuthTokenFunction
   IdentityRemoveCachedAuthTokenFunction();
 
  protected:
-  virtual ~IdentityRemoveCachedAuthTokenFunction();
+  ~IdentityRemoveCachedAuthTokenFunction() override;
 
   // SyncExtensionFunction implementation:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class IdentityLaunchWebAuthFlowFunction : public ChromeAsyncExtensionFunction,
@@ -338,13 +336,13 @@ class IdentityLaunchWebAuthFlowFunction : public ChromeAsyncExtensionFunction,
   void InitFinalRedirectURLPrefixForTest(const std::string& extension_id);
 
  private:
-  virtual ~IdentityLaunchWebAuthFlowFunction();
-  virtual bool RunAsync() override;
+  ~IdentityLaunchWebAuthFlowFunction() override;
+  bool RunAsync() override;
 
   // WebAuthFlow::Delegate implementation.
-  virtual void OnAuthFlowFailure(WebAuthFlow::Failure failure) override;
-  virtual void OnAuthFlowURLChange(const GURL& redirect_url) override;
-  virtual void OnAuthFlowTitleChange(const std::string& title) override {}
+  void OnAuthFlowFailure(WebAuthFlow::Failure failure) override;
+  void OnAuthFlowURLChange(const GURL& redirect_url) override;
+  void OnAuthFlowTitleChange(const std::string& title) override {}
 
   // Helper to initialize final URL prefix.
   void InitFinalRedirectURLPrefix(const std::string& extension_id);

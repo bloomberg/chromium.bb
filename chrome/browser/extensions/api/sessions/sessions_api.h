@@ -28,8 +28,8 @@ class SessionId;
 
 class SessionsGetRecentlyClosedFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~SessionsGetRecentlyClosedFunction() {}
-  virtual bool RunSync() override;
+  ~SessionsGetRecentlyClosedFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("sessions.getRecentlyClosed",
                              SESSIONS_GETRECENTLYCLOSED)
 
@@ -46,8 +46,8 @@ class SessionsGetRecentlyClosedFunction : public ChromeSyncExtensionFunction {
 
 class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~SessionsGetDevicesFunction() {}
-  virtual bool RunSync() override;
+  ~SessionsGetDevicesFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("sessions.getDevices", SESSIONS_GETDEVICES)
 
  private:
@@ -67,8 +67,8 @@ class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
 
 class SessionsRestoreFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~SessionsRestoreFunction() {}
-  virtual bool RunSync() override;
+  ~SessionsRestoreFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("sessions.restore", SESSIONS_RESTORE)
 
  private:
@@ -84,16 +84,16 @@ class SessionsRestoreFunction : public ChromeSyncExtensionFunction {
 class SessionsEventRouter : public TabRestoreServiceObserver {
  public:
   explicit SessionsEventRouter(Profile* profile);
-  virtual ~SessionsEventRouter();
+  ~SessionsEventRouter() override;
 
   // Observer callback for TabRestoreServiceObserver. Sends data on
   // recently closed tabs to the javascript side of this page to
   // display to the user.
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(TabRestoreService* service) override;
 
   // Observer callback to notice when our associated TabRestoreService
   // is destroyed.
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
 
  private:
   Profile* profile_;
@@ -108,17 +108,16 @@ class SessionsAPI : public BrowserContextKeyedAPI,
                     public extensions::EventRouter::Observer {
  public:
   explicit SessionsAPI(content::BrowserContext* context);
-  virtual ~SessionsAPI();
+  ~SessionsAPI() override;
 
   // BrowserContextKeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<SessionsAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      override;
+  void OnListenerAdded(const extensions::EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<SessionsAPI>;

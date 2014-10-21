@@ -31,7 +31,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
                 public DnsSdRegistry::DnsSdObserver {
  public:
   explicit MDnsAPI(content::BrowserContext* context);
-  virtual ~MDnsAPI();
+  ~MDnsAPI() override;
 
   static MDnsAPI* Get(content::BrowserContext* context);
 
@@ -49,13 +49,12 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<MDnsAPI>;
 
   // EventRouter::Observer:
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // DnsSdRegistry::Observer
-  virtual void OnDnsSdEvent(
-      const std::string& service_type,
-      const DnsSdRegistry::DnsSdServiceList& services) override;
+  void OnDnsSdEvent(const std::string& service_type,
+                    const DnsSdRegistry::DnsSdServiceList& services) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

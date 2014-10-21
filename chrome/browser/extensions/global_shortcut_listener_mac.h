@@ -28,7 +28,7 @@ namespace extensions {
 class GlobalShortcutListenerMac : public GlobalShortcutListener {
  public:
   GlobalShortcutListenerMac();
-  virtual ~GlobalShortcutListenerMac();
+  ~GlobalShortcutListenerMac() override;
 
  private:
   typedef int KeyId;
@@ -41,12 +41,10 @@ class GlobalShortcutListenerMac : public GlobalShortcutListener {
   bool OnMediaKeyEvent(int key_code);
 
   // GlobalShortcutListener implementation.
-  virtual void StartListening() override;
-  virtual void StopListening() override;
-  virtual bool RegisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
-  virtual void UnregisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
+  void StartListening() override;
+  void StopListening() override;
+  bool RegisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
+  void UnregisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
 
   // Mac-specific functions for registering hot keys with modifiers.
   bool RegisterHotKey(const ui::Accelerator& accelerator, KeyId hot_key_id);

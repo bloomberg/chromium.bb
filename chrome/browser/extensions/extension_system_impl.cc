@@ -159,9 +159,9 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
   explicit ContentVerifierDelegateImpl(ExtensionService* service)
       : service_(service->AsWeakPtr()), default_mode_(GetDefaultMode()) {}
 
-  virtual ~ContentVerifierDelegateImpl() {}
+  ~ContentVerifierDelegateImpl() override {}
 
-  virtual Mode ShouldBeVerified(const Extension& extension) override {
+  Mode ShouldBeVerified(const Extension& extension) override {
 #if defined(OS_CHROMEOS)
     if (ExtensionAssetsManagerChromeOS::IsSharedInstall(&extension))
       return ContentVerifierDelegate::ENFORCE_STRICT;
@@ -184,15 +184,15 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
     return default_mode_;
   }
 
-  virtual const ContentVerifierKey& PublicKey() override {
+  const ContentVerifierKey& PublicKey() override {
     static ContentVerifierKey key(
         extension_misc::kWebstoreSignaturesPublicKey,
         extension_misc::kWebstoreSignaturesPublicKeySize);
     return key;
   }
 
-  virtual GURL GetSignatureFetchUrl(const std::string& extension_id,
-                                    const base::Version& version) override {
+  GURL GetSignatureFetchUrl(const std::string& extension_id,
+                            const base::Version& version) override {
     // TODO(asargent) Factor out common code from the extension updater's
     // ManifestFetchData class that can be shared for use here.
     std::vector<std::string> parts;
@@ -210,13 +210,13 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
     return base_url.ReplaceComponents(replacements);
   }
 
-  virtual std::set<base::FilePath> GetBrowserImagePaths(
+  std::set<base::FilePath> GetBrowserImagePaths(
       const extensions::Extension* extension) override {
     return extension_file_util::GetBrowserImagePaths(extension);
   }
 
-  virtual void VerifyFailed(const std::string& extension_id,
-                            ContentVerifyJob::FailureReason reason) override {
+  void VerifyFailed(const std::string& extension_id,
+                    ContentVerifyJob::FailureReason reason) override {
     if (!service_)
       return;
     ExtensionRegistry* registry = ExtensionRegistry::Get(service_->profile());

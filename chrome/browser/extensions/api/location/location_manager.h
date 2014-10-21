@@ -35,7 +35,7 @@ class LocationManager : public BrowserContextKeyedAPI,
                         public ExtensionRegistryObserver {
  public:
   explicit LocationManager(content::BrowserContext* context);
-  virtual ~LocationManager();
+  ~LocationManager() override;
 
   // Adds location request for the given extension, and starts the location
   // tracking.
@@ -77,12 +77,11 @@ class LocationManager : public BrowserContextKeyedAPI,
                           const content::Geoposition& position);
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "LocationManager"; }

@@ -33,7 +33,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
                               public KeyedService {
  public:
   ExtensionToolbarModel(Profile* profile, ExtensionPrefs* extension_prefs);
-  virtual ~ExtensionToolbarModel();
+  ~ExtensionToolbarModel() override;
 
   // A class which is informed of changes to the model; represents the view of
   // MVC. Also used for signaling view changes such as showing extension popups.
@@ -139,27 +139,25 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Callback when extensions are ready.
   void OnReady();
 
   // ExtensionRegistryObserver:
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // ExtensionActionAPI::Observer:
-  virtual void OnExtensionActionUpdated(
+  void OnExtensionActionUpdated(
       ExtensionAction* extension_action,
       content::WebContents* web_contents,
       content::BrowserContext* browser_context) override;

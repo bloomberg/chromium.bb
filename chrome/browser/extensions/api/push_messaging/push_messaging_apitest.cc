@@ -73,7 +73,7 @@ class PushMessagingApiTest : public ExtensionApiTest {
       : fake_invalidation_service_(NULL) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
@@ -83,7 +83,7 @@ class PushMessagingApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUp();
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     fake_invalidation_service_ =
         static_cast<invalidation::FakeInvalidationService*>(

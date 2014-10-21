@@ -16,7 +16,7 @@ namespace extensions {
 class CopresencePrivateFunction : public ChromeUIThreadExtensionFunction {
  protected:
   copresence::WhispernetClient* GetWhispernetClient();
-  virtual ~CopresencePrivateFunction() {}
+  ~CopresencePrivateFunction() override {}
 };
 
 class CopresencePrivateSendFoundFunction : public CopresencePrivateFunction {
@@ -25,8 +25,8 @@ class CopresencePrivateSendFoundFunction : public CopresencePrivateFunction {
                              COPRESENCEPRIVATE_SENDFOUND);
 
  protected:
-  virtual ~CopresencePrivateSendFoundFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ~CopresencePrivateSendFoundFunction() override {}
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class CopresencePrivateSendSamplesFunction : public CopresencePrivateFunction {
@@ -35,8 +35,8 @@ class CopresencePrivateSendSamplesFunction : public CopresencePrivateFunction {
                              COPRESENCEPRIVATE_SENDSAMPLES);
 
  protected:
-  virtual ~CopresencePrivateSendSamplesFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ~CopresencePrivateSendSamplesFunction() override {}
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class CopresencePrivateSendDetectFunction : public CopresencePrivateFunction {
@@ -45,8 +45,8 @@ class CopresencePrivateSendDetectFunction : public CopresencePrivateFunction {
                              COPRESENCEPRIVATE_SENDDETECT);
 
  protected:
-  virtual ~CopresencePrivateSendDetectFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ~CopresencePrivateSendDetectFunction() override {}
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class CopresencePrivateSendInitializedFunction
@@ -56,8 +56,8 @@ class CopresencePrivateSendInitializedFunction
                              COPRESENCEPRIVATE_SENDINITIALIZED);
 
  protected:
-  virtual ~CopresencePrivateSendInitializedFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ~CopresencePrivateSendInitializedFunction() override {}
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

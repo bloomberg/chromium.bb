@@ -119,7 +119,7 @@ class MessageService : public BrowserContextKeyedAPI,
   static void AllocatePortIdPair(int* port1, int* port2);
 
   explicit MessageService(content::BrowserContext* context);
-  virtual ~MessageService();
+  ~MessageService() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<MessageService>* GetFactoryInstance();
@@ -196,9 +196,9 @@ class MessageService : public BrowserContextKeyedAPI,
   void AddChannel(MessageChannel* channel, int receiver_port_id);
 
   // content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // A process that might be in our list of channels has closed.
   void OnProcessClosed(content::RenderProcessHost* process);

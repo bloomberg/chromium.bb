@@ -69,7 +69,7 @@ class CommandService : public BrowserContextKeyedAPI,
 
   // Constructs a CommandService object for the given profile.
   explicit CommandService(content::BrowserContext* context);
-  virtual ~CommandService();
+  ~CommandService() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CommandService>* GetFactoryInstance();
@@ -179,16 +179,14 @@ class CommandService : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
 
   // ExtensionRegistryObserver.
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // Updates keybindings for a given |extension|'s page action, browser action
   // and named commands. Assigns new keybindings and removes relinquished

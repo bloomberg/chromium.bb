@@ -19,12 +19,12 @@ class StateStore;
 class StateStoreNotificationObserver : public content::NotificationObserver {
  public:
   explicit StateStoreNotificationObserver(StateStore* state_store);
-  virtual ~StateStoreNotificationObserver();
+  ~StateStoreNotificationObserver() override;
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   StateStore* state_store_;  // Not owned.

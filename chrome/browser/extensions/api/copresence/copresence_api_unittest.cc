@@ -71,9 +71,9 @@ class MockCopresenceManager : public CopresenceManager {
  public:
   explicit MockCopresenceManager(CopresenceDelegate* delegate)
       : delegate_(delegate) {}
-  virtual ~MockCopresenceManager() {}
+  ~MockCopresenceManager() override {}
 
-  virtual void ExecuteReportRequest(
+  void ExecuteReportRequest(
       ReportRequest request,
       const std::string& app_id,
       const copresence::StatusCallback& status_callback) override {

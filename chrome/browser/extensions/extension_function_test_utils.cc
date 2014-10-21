@@ -32,17 +32,14 @@ class TestFunctionDispatcherDelegate
  public:
   explicit TestFunctionDispatcherDelegate(Browser* browser) :
       browser_(browser) {}
-  virtual ~TestFunctionDispatcherDelegate() {}
+  ~TestFunctionDispatcherDelegate() override {}
 
  private:
-  virtual extensions::WindowController* GetExtensionWindowController()
-      const override {
+  extensions::WindowController* GetExtensionWindowController() const override {
     return browser_->extension_window_controller();
   }
 
-  virtual WebContents* GetAssociatedWebContents() const override {
-    return NULL;
-  }
+  WebContents* GetAssociatedWebContents() const override { return NULL; }
 
   Browser* browser_;
 };
@@ -209,9 +206,9 @@ class SendResponseDelegate
     return *response_.get();
   }
 
-  virtual void OnSendResponse(UIThreadExtensionFunction* function,
-                              bool success,
-                              bool bad_message) override {
+  void OnSendResponse(UIThreadExtensionFunction* function,
+                      bool success,
+                      bool bad_message) override {
     ASSERT_FALSE(bad_message);
     ASSERT_FALSE(HasResponse());
     response_.reset(new bool);

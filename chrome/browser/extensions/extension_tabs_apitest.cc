@@ -38,7 +38,7 @@
 class ExtensionApiNewTabTest : public ExtensionApiTest {
  public:
   ExtensionApiNewTabTest() {}
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Override the default which InProcessBrowserTest adds if it doesn't see a
     // homepage.
@@ -165,7 +165,7 @@ class ExtensionApiCaptureTest : public ExtensionApiTest {
     ExtensionApiTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 };

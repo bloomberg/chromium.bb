@@ -37,7 +37,7 @@ class ExtensionWebUI : public content::WebUIController {
 
   ExtensionWebUI(content::WebUI* web_ui, const GURL& url);
 
-  virtual ~ExtensionWebUI();
+  ~ExtensionWebUI() override;
 
   virtual extensions::BookmarkManagerPrivateDragEventRouter*
       bookmark_manager_private_drag_event_router();

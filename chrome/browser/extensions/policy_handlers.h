@@ -24,13 +24,13 @@ class ExtensionListPolicyHandler
   ExtensionListPolicyHandler(const char* policy_name,
                              const char* pref_path,
                              bool allow_wildcards);
-  virtual ~ExtensionListPolicyHandler();
+  ~ExtensionListPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const policy::PolicyMap& policies,
+                           policy::PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  protected:
   const char* pref_path() const;
@@ -51,13 +51,13 @@ class ExtensionInstallForcelistPolicyHandler
     : public policy::TypeCheckingPolicyHandler {
  public:
   ExtensionInstallForcelistPolicyHandler();
-  virtual ~ExtensionInstallForcelistPolicyHandler();
+  ~ExtensionInstallForcelistPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const policy::PolicyMap& policies,
+                           policy::PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   // Parses the data in |policy_value| and writes them to |extension_dict|.
@@ -75,13 +75,13 @@ class ExtensionURLPatternListPolicyHandler
  public:
   ExtensionURLPatternListPolicyHandler(const char* policy_name,
                                        const char* pref_path);
-  virtual ~ExtensionURLPatternListPolicyHandler();
+  ~ExtensionURLPatternListPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const policy::PolicyMap& policies,
+                           policy::PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   const char* pref_path_;
@@ -93,13 +93,13 @@ class ExtensionSettingsPolicyHandler
     : public policy::SchemaValidatingPolicyHandler {
  public:
   explicit ExtensionSettingsPolicyHandler(const policy::Schema& chrome_schema);
-  virtual ~ExtensionSettingsPolicyHandler();
+  ~ExtensionSettingsPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const policy::PolicyMap& policies,
+                           policy::PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsPolicyHandler);

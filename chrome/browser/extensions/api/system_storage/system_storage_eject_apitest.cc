@@ -36,7 +36,7 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
   virtual ~SystemStorageEjectApiTest() {}
 
  protected:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     monitor_ = TestStorageMonitor::CreateForBrowserTests();
     ExtensionApiTest::SetUpOnMainThread();
   }

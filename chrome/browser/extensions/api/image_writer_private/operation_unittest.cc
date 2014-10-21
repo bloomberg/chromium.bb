@@ -37,7 +37,7 @@ class OperationForTest : public Operation {
                    const std::string& device_path)
       : Operation(manager_, extension_id, device_path) {}
 
-  virtual void StartImpl() override {}
+  void StartImpl() override {}
 
   // Expose internal stages for testing.
   void Unzip(const base::Closure& continuation) {
@@ -60,7 +60,7 @@ class OperationForTest : public Operation {
   base::FilePath GetImagePath() { return image_path_; }
 
  private:
-  virtual ~OperationForTest() {};
+  ~OperationForTest() override{};
 };
 
 class ImageWriterOperationTest : public ImageWriterUnitTestBase {

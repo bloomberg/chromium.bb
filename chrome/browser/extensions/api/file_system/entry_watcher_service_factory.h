@@ -34,12 +34,12 @@ class EntryWatcherServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<EntryWatcherServiceFactory>;
 
   EntryWatcherServiceFactory();
-  virtual ~EntryWatcherServiceFactory();
+  ~EntryWatcherServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(EntryWatcherServiceFactory);
 };

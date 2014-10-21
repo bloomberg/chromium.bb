@@ -112,71 +112,66 @@ class NetworkingPrivateServiceClient
                                  CryptoVerify* crypto_verify);
 
   // KeyedService
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // NetworkingPrivateDelegate
-  virtual void GetProperties(const std::string& guid,
-                             const DictionaryCallback& success_callback,
-                             const FailureCallback& failure_callback) override;
-  virtual void GetManagedProperties(
-      const std::string& guid,
-      const DictionaryCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  virtual void GetState(const std::string& guid,
-                        const DictionaryCallback& success_callback,
-                        const FailureCallback& failure_callback) override;
-  virtual void SetProperties(const std::string& guid,
-                             scoped_ptr<base::DictionaryValue> properties_dict,
-                             const VoidCallback& success_callback,
-                             const FailureCallback& failure_callback) override;
-  virtual void CreateNetwork(bool shared,
-                             scoped_ptr<base::DictionaryValue> properties_dict,
-                             const StringCallback& success_callback,
-                             const FailureCallback& failure_callback) override;
-  virtual void GetNetworks(const std::string& network_type,
-                           bool configured_only,
-                           bool visible_only,
-                           int limit,
-                           const NetworkListCallback& success_callback,
-                           const FailureCallback& failure_callback) override;
-  virtual void StartConnect(const std::string& guid,
-                            const VoidCallback& success_callback,
+  void GetProperties(const std::string& guid,
+                     const DictionaryCallback& success_callback,
+                     const FailureCallback& failure_callback) override;
+  void GetManagedProperties(const std::string& guid,
+                            const DictionaryCallback& success_callback,
                             const FailureCallback& failure_callback) override;
-  virtual void StartDisconnect(
-      const std::string& guid,
-      const VoidCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  virtual void VerifyDestination(
-      const VerificationProperties& verification_properties,
-      const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  virtual void VerifyAndEncryptCredentials(
+  void GetState(const std::string& guid,
+                const DictionaryCallback& success_callback,
+                const FailureCallback& failure_callback) override;
+  void SetProperties(const std::string& guid,
+                     scoped_ptr<base::DictionaryValue> properties_dict,
+                     const VoidCallback& success_callback,
+                     const FailureCallback& failure_callback) override;
+  void CreateNetwork(bool shared,
+                     scoped_ptr<base::DictionaryValue> properties_dict,
+                     const StringCallback& success_callback,
+                     const FailureCallback& failure_callback) override;
+  void GetNetworks(const std::string& network_type,
+                   bool configured_only,
+                   bool visible_only,
+                   int limit,
+                   const NetworkListCallback& success_callback,
+                   const FailureCallback& failure_callback) override;
+  void StartConnect(const std::string& guid,
+                    const VoidCallback& success_callback,
+                    const FailureCallback& failure_callback) override;
+  void StartDisconnect(const std::string& guid,
+                       const VoidCallback& success_callback,
+                       const FailureCallback& failure_callback) override;
+  void VerifyDestination(const VerificationProperties& verification_properties,
+                         const BoolCallback& success_callback,
+                         const FailureCallback& failure_callback) override;
+  void VerifyAndEncryptCredentials(
       const std::string& guid,
       const VerificationProperties& verification_properties,
       const StringCallback& success_callback,
       const FailureCallback& failure_callback) override;
-  virtual void VerifyAndEncryptData(
+  void VerifyAndEncryptData(
       const VerificationProperties& verification_properties,
       const std::string& data,
       const StringCallback& success_callback,
       const FailureCallback& failure_callback) override;
-  virtual void SetWifiTDLSEnabledState(
+  void SetWifiTDLSEnabledState(
       const std::string& ip_or_mac_address,
       bool enabled,
       const StringCallback& success_callback,
       const FailureCallback& failure_callback) override;
-  virtual void GetWifiTDLSStatus(
-      const std::string& ip_or_mac_address,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  virtual void GetCaptivePortalStatus(
-      const std::string& guid,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override;
-  virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override;
-  virtual bool EnableNetworkType(const std::string& type) override;
-  virtual bool DisableNetworkType(const std::string& type) override;
-  virtual bool RequestScan() override;
+  void GetWifiTDLSStatus(const std::string& ip_or_mac_address,
+                         const StringCallback& success_callback,
+                         const FailureCallback& failure_callback) override;
+  void GetCaptivePortalStatus(const std::string& guid,
+                              const StringCallback& success_callback,
+                              const FailureCallback& failure_callback) override;
+  scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override;
+  bool EnableNetworkType(const std::string& type) override;
+  bool DisableNetworkType(const std::string& type) override;
+  bool RequestScan() override;
 
   // Adds observer to network events.
   void AddObserver(Observer* network_events_observer);
@@ -186,7 +181,7 @@ class NetworkingPrivateServiceClient
   void RemoveObserver(Observer* network_events_observer);
 
   // NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:
@@ -214,7 +209,7 @@ class NetworkingPrivateServiceClient
   };
   typedef IDMap<ServiceCallbacks, IDMapOwnPointer> ServiceCallbacksMap;
 
-  virtual ~NetworkingPrivateServiceClient();
+  ~NetworkingPrivateServiceClient() override;
 
   // Callback wrappers.
   void AfterGetProperties(ServiceCallbacksID callback_id,

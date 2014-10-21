@@ -34,13 +34,13 @@ namespace extensions {
 class CookiesEventRouter : public content::NotificationObserver {
  public:
   explicit CookiesEventRouter(content::BrowserContext* context);
-  virtual ~CookiesEventRouter();
+  ~CookiesEventRouter() override;
 
  private:
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Handler for the COOKIE_CHANGED event. The method takes the details of such
   // an event and constructs a suitable JSON formatted extension event from it.
@@ -68,10 +68,10 @@ class CookiesGetFunction : public ChromeAsyncExtensionFunction {
   CookiesGetFunction();
 
  protected:
-  virtual ~CookiesGetFunction();
+  ~CookiesGetFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void GetCookieOnIOThread();
@@ -91,10 +91,10 @@ class CookiesGetAllFunction : public ChromeAsyncExtensionFunction {
   CookiesGetAllFunction();
 
  protected:
-  virtual ~CookiesGetAllFunction();
+  ~CookiesGetAllFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void GetAllCookiesOnIOThread();
@@ -114,8 +114,8 @@ class CookiesSetFunction : public ChromeAsyncExtensionFunction {
   CookiesSetFunction();
 
  protected:
-  virtual ~CookiesSetFunction();
-  virtual bool RunAsync() override;
+  ~CookiesSetFunction() override;
+  bool RunAsync() override;
 
  private:
   void SetCookieOnIOThread();
@@ -137,10 +137,10 @@ class CookiesRemoveFunction : public ChromeAsyncExtensionFunction {
   CookiesRemoveFunction();
 
  protected:
-  virtual ~CookiesRemoveFunction();
+  ~CookiesRemoveFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void RemoveCookieOnIOThread();
@@ -159,27 +159,26 @@ class CookiesGetAllCookieStoresFunction : public ChromeSyncExtensionFunction {
                              COOKIES_GETALLCOOKIESTORES)
 
  protected:
-  virtual ~CookiesGetAllCookieStoresFunction() {}
+  ~CookiesGetAllCookieStoresFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class CookiesAPI : public BrowserContextKeyedAPI,
                    public extensions::EventRouter::Observer {
  public:
   explicit CookiesAPI(content::BrowserContext* context);
-  virtual ~CookiesAPI();
+  ~CookiesAPI() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CookiesAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      override;
+  void OnListenerAdded(const extensions::EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<CookiesAPI>;

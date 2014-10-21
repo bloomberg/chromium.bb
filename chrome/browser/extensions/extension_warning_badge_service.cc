@@ -24,18 +24,18 @@ namespace {
 class ErrorBadge : public GlobalError {
  public:
   explicit ErrorBadge(ExtensionWarningBadgeService* badge_service);
-  virtual ~ErrorBadge();
+  ~ErrorBadge() override;
 
   // Implementation for GlobalError:
-  virtual bool HasMenuItem() override;
-  virtual int MenuItemCommandID() override;
-  virtual base::string16 MenuItemLabel() override;
-  virtual void ExecuteMenuItem(Browser* browser) override;
+  bool HasMenuItem() override;
+  int MenuItemCommandID() override;
+  base::string16 MenuItemLabel() override;
+  void ExecuteMenuItem(Browser* browser) override;
 
-  virtual bool HasBubbleView() override;
-  virtual bool HasShownBubbleView() override;
-  virtual void ShowBubbleView(Browser* browser) override;
-  virtual GlobalErrorBubbleViewBase* GetBubbleView() override;
+  bool HasBubbleView() override;
+  bool HasShownBubbleView() override;
+  void ShowBubbleView(Browser* browser) override;
+  GlobalErrorBubbleViewBase* GetBubbleView() override;
 
   static int GetMenuItemCommandID();
 

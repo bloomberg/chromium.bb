@@ -22,7 +22,7 @@ const char kGaiaAuthExtensionOrigin[] =
 class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
  public:
   explicit GaiaAuthExtensionLoader(content::BrowserContext* context);
-  virtual ~GaiaAuthExtensionLoader();
+  ~GaiaAuthExtensionLoader() override;
 
   // Load the gaia auth extension if the extension is not loaded yet.
   void LoadIfNeeded();
@@ -39,7 +39,7 @@ class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
   friend class BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>;
 
   // KeyedService overrides:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

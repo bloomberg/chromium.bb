@@ -22,7 +22,7 @@ class ChromeContentBrowserClientExtensionsPart
     : public ChromeContentBrowserClientParts {
  public:
   ChromeContentBrowserClientExtensionsPart();
-  virtual ~ChromeContentBrowserClientExtensionsPart();
+  ~ChromeContentBrowserClientExtensionsPart() override;
 
   // Corresponds to the ChromeContentBrowserClient function of the same name.
   static GURL GetEffectiveURL(Profile* profile, const GURL& url);
@@ -56,26 +56,22 @@ class ChromeContentBrowserClientExtensionsPart
 
  private:
   // ChromeContentBrowserClientParts:
-  virtual void RenderProcessWillLaunch(
-      content::RenderProcessHost* host) override;
-  virtual void SiteInstanceGotProcess(
-      content::SiteInstance* site_instance) override;
-  virtual void SiteInstanceDeleting(
-      content::SiteInstance* site_instance) override;
-  virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
-                                   const GURL& url,
-                                   content::WebPreferences* web_prefs) override;
-  virtual void BrowserURLHandlerCreated(
-      content::BrowserURLHandler* handler) override;
-  virtual void GetAdditionalAllowedSchemesForFileSystem(
+  void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+  void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;
+  void SiteInstanceDeleting(content::SiteInstance* site_instance) override;
+  void OverrideWebkitPrefs(content::RenderViewHost* rvh,
+                           const GURL& url,
+                           content::WebPreferences* web_prefs) override;
+  void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) override;
+  void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_allowed_schemes) override;
-  virtual void GetURLRequestAutoMountHandlers(
+  void GetURLRequestAutoMountHandlers(
       std::vector<storage::URLRequestAutoMountHandler>* handlers) override;
-  virtual void GetAdditionalFileSystemBackends(
+  void GetAdditionalFileSystemBackends(
       content::BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
       ScopedVector<storage::FileSystemBackend>* additional_backends) override;
-  virtual void AppendExtraRendererCommandLineSwitches(
+  void AppendExtraRendererCommandLineSwitches(
       base::CommandLine* command_line,
       content::RenderProcessHost* process,
       Profile* profile) override;

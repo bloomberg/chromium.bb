@@ -17,7 +17,7 @@ class SystemIndicatorSetIconFunction : public ExtensionActionSetIconFunction {
   DECLARE_EXTENSION_FUNCTION("systemIndicator.setIcon", SYSTEMINDICATOR_SETICON)
 
  protected:
-  virtual ~SystemIndicatorSetIconFunction() {}
+  ~SystemIndicatorSetIconFunction() override {}
 };
 
 class SystemIndicatorEnableFunction : public ExtensionActionShowFunction {
@@ -25,7 +25,7 @@ class SystemIndicatorEnableFunction : public ExtensionActionShowFunction {
   DECLARE_EXTENSION_FUNCTION("systemIndicator.enable", SYSTEMINDICATOR_ENABLE)
 
  protected:
-  virtual ~SystemIndicatorEnableFunction() {}
+  ~SystemIndicatorEnableFunction() override {}
 };
 
 class SystemIndicatorDisableFunction : public ExtensionActionHideFunction {
@@ -33,7 +33,7 @@ class SystemIndicatorDisableFunction : public ExtensionActionHideFunction {
   DECLARE_EXTENSION_FUNCTION("systemIndicator.disable", SYSTEMINDICATOR_DISABLE)
 
  protected:
-  virtual ~SystemIndicatorDisableFunction() {}
+  ~SystemIndicatorDisableFunction() override {}
 };
 
 }  // namespace extensions

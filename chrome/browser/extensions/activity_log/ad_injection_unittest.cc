@@ -36,7 +36,7 @@ scoped_refptr<Action> CreateAction(const std::string& api_name,
 class TestRapporService : public rappor::RapporService {
  public:
   TestRapporService();
-  virtual ~TestRapporService();
+  ~TestRapporService() override;
 
   // Returns the active reports. This also clears the internal map of metrics
   // as a biproduct, so if comparing numbers of reports, the comparison should

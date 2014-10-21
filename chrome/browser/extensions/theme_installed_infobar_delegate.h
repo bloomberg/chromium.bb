@@ -39,22 +39,21 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                                 const extensions::Extension* new_theme,
                                 const std::string& previous_theme_id,
                                 bool previous_using_system_theme);
-  virtual ~ThemeInstalledInfoBarDelegate();
+  ~ThemeInstalledInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const override;
-  virtual Type GetInfoBarType() const override;
-  virtual ThemeInstalledInfoBarDelegate*
-      AsThemePreviewInfobarDelegate() override;
-  virtual base::string16 GetMessageText() const override;
-  virtual int GetButtons() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Cancel() override;
+  int GetIconID() const override;
+  Type GetInfoBarType() const override;
+  ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate() override;
+  base::string16 GetMessageText() const override;
+  int GetButtons() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Cancel() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   ExtensionService* extension_service_;
   ThemeService* theme_service_;

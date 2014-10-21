@@ -70,11 +70,9 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
   }
 
  protected:
-  virtual ~TestWebRequestRulesRegistry() {}
+  ~TestWebRequestRulesRegistry() override {}
 
-  virtual void ClearCacheOnNavigation() override {
-    ++num_clear_cache_calls_;
-  }
+  void ClearCacheOnNavigation() override { ++num_clear_cache_calls_; }
 
  private:
   int num_clear_cache_calls_;

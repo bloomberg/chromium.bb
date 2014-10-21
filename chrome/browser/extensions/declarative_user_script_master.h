@@ -25,7 +25,7 @@ class DeclarativeUserScriptMaster : public ExtensionRegistryObserver {
  public:
   DeclarativeUserScriptMaster(Profile* profile,
                               const ExtensionId& extension_id);
-  virtual ~DeclarativeUserScriptMaster();
+  ~DeclarativeUserScriptMaster() override;
 
   // Adds script to shared memory region. This may not happen right away if a
   // script load is in progress.
@@ -43,10 +43,9 @@ class DeclarativeUserScriptMaster : public ExtensionRegistryObserver {
 
  private:
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // ID of extension that owns scripts that this component manages.
   ExtensionId extension_id_;

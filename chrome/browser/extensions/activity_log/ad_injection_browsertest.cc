@@ -93,7 +93,7 @@ class ActivityLogObserver : public ActivityLog::Observer {
   bool found_multiple_injections() const { return found_multiple_injections_; }
 
  private:
-  virtual void OnExtensionActivity(scoped_refptr<Action> action) override;
+  void OnExtensionActivity(scoped_refptr<Action> action) override;
 
   ScopedObserver<ActivityLog, ActivityLog::Observer> scoped_observer_;
 
@@ -139,10 +139,10 @@ void ActivityLogObserver::OnExtensionActivity(scoped_refptr<Action> action) {
 class TestAdNetworkDatabase : public AdNetworkDatabase {
  public:
   TestAdNetworkDatabase();
-  virtual ~TestAdNetworkDatabase();
+  ~TestAdNetworkDatabase() override;
 
  private:
-  virtual bool IsAdNetwork(const GURL& url) const override;
+  bool IsAdNetwork(const GURL& url) const override;
 
   GURL ad_network_url1_;
   GURL ad_network_url2_;
@@ -173,8 +173,8 @@ class AdInjectionBrowserTest : public ExtensionBrowserTest {
   AdInjectionBrowserTest();
   virtual ~AdInjectionBrowserTest();
 
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // Handle the "Reset Begin" stage of the test.
   testing::AssertionResult HandleResetBeginStage();
@@ -385,8 +385,8 @@ IN_PROC_BROWSER_TEST_F(AdInjectionBrowserTest, DetectAdInjections) {
 // If this test grows, we should consolidate it and AdInjectionBrowserTest.
 class ExecuteScriptAdInjectionBrowserTest : public ExtensionBrowserTest {
  protected:
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 };
 
 void ExecuteScriptAdInjectionBrowserTest::SetUpOnMainThread() {

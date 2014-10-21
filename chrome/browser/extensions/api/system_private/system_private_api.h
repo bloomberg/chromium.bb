@@ -19,10 +19,10 @@ class SystemPrivateGetIncognitoModeAvailabilityFunction
                              SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY)
 
  protected:
-  virtual ~SystemPrivateGetIncognitoModeAvailabilityFunction() {}
+  ~SystemPrivateGetIncognitoModeAvailabilityFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // API function which returns the status of system update.
@@ -33,10 +33,10 @@ class SystemPrivateGetUpdateStatusFunction
                              SYSTEMPRIVATE_GETUPDATESTATUS)
 
  protected:
-  virtual ~SystemPrivateGetUpdateStatusFunction() {}
+  ~SystemPrivateGetUpdateStatusFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // API function which returns the Google API key.
@@ -45,10 +45,10 @@ class SystemPrivateGetApiKeyFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getApiKey", SYSTEMPRIVATE_GETAPIKEY)
 
  protected:
-  virtual ~SystemPrivateGetApiKeyFunction() {}
+  ~SystemPrivateGetApiKeyFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // Dispatches systemPrivate.onBrightnessChanged event for extensions.

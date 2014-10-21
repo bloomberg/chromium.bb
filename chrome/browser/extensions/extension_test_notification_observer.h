@@ -27,7 +27,7 @@ class ExtensionTestNotificationObserver
       public extensions::ExtensionActionAPI::Observer {
  public:
   explicit ExtensionTestNotificationObserver(Browser* browser);
-  virtual ~ExtensionTestNotificationObserver();
+  ~ExtensionTestNotificationObserver() override;
 
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count);
@@ -78,9 +78,9 @@ class ExtensionTestNotificationObserver
   }
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   class NotificationSet;
@@ -100,7 +100,7 @@ class ExtensionTestNotificationObserver
   void MaybeQuit();
 
   // extensions::ExtensionActionAPI::Observer:
-  virtual void OnPageActionsUpdated(content::WebContents* contents) override;
+  void OnPageActionsUpdated(content::WebContents* contents) override;
 
   Browser* browser_;
   Profile* profile_;

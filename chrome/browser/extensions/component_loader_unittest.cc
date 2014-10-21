@@ -36,33 +36,27 @@ class MockExtensionService : public TestExtensionService {
   MockExtensionService() : ready_(false), unloaded_count_(0) {
   }
 
-  virtual void AddComponentExtension(const Extension* extension) override {
+  void AddComponentExtension(const Extension* extension) override {
     EXPECT_FALSE(extension_set_.Contains(extension->id()));
     // ExtensionService must become the owner of the extension object.
     extension_set_.Insert(extension);
   }
 
-  virtual void UnloadExtension(
-      const std::string& extension_id,
-      UnloadedExtensionInfo::Reason reason) override {
+  void UnloadExtension(const std::string& extension_id,
+                       UnloadedExtensionInfo::Reason reason) override {
     ASSERT_TRUE(extension_set_.Contains(extension_id));
     // Remove the extension with the matching id.
     extension_set_.Remove(extension_id);
     unloaded_count_++;
   }
 
-  virtual void RemoveComponentExtension(const std::string & extension_id)
-      override {
+  void RemoveComponentExtension(const std::string& extension_id) override {
     UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_DISABLE);
   }
 
-  virtual bool is_ready() override {
-    return ready_;
-  }
+  bool is_ready() override { return ready_; }
 
-  virtual const ExtensionSet* extensions() const override {
-    return &extension_set_;
-  }
+  const ExtensionSet* extensions() const override { return &extension_set_; }
 
   void set_ready(bool ready) {
     ready_ = ready;

@@ -12,8 +12,8 @@ class IdltestSendArrayBufferFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("idltest.sendArrayBuffer", IDLTEST_SENDARRAYBUFFER)
 
  protected:
-  virtual ~IdltestSendArrayBufferFunction() {}
-  virtual bool RunSync() override;
+  ~IdltestSendArrayBufferFunction() override {}
+  bool RunSync() override;
 };
 
 class IdltestSendArrayBufferViewFunction : public SyncExtensionFunction {
@@ -22,8 +22,8 @@ class IdltestSendArrayBufferViewFunction : public SyncExtensionFunction {
                              IDLTEST_SENDARRAYBUFFERVIEW)
 
  protected:
-  virtual ~IdltestSendArrayBufferViewFunction() {}
-  virtual bool RunSync() override;
+  ~IdltestSendArrayBufferViewFunction() override {}
+  bool RunSync() override;
 };
 
 class IdltestGetArrayBufferFunction : public SyncExtensionFunction {
@@ -31,8 +31,8 @@ class IdltestGetArrayBufferFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("idltest.getArrayBuffer", IDLTEST_GETARRAYBUFFER)
 
  protected:
-  virtual ~IdltestGetArrayBufferFunction() {}
-  virtual bool RunSync() override;
+  ~IdltestGetArrayBufferFunction() override {}
+  bool RunSync() override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IDLTEST_IDLTEST_API_H_

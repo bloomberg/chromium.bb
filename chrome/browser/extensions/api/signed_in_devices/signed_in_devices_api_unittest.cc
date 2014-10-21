@@ -30,9 +30,9 @@ namespace extensions {
 
 class MockDeviceInfoTracker : public DeviceInfoTracker {
  public:
-  virtual ~MockDeviceInfoTracker() {}
+  ~MockDeviceInfoTracker() override {}
 
-  virtual scoped_ptr<DeviceInfo> GetDeviceInfo(
+  scoped_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override {
     NOTREACHED();
     return scoped_ptr<DeviceInfo>();
@@ -47,7 +47,7 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
                           device_info->signin_scoped_device_id());
   }
 
-  virtual ScopedVector<DeviceInfo> GetAllDeviceInfo() const override {
+  ScopedVector<DeviceInfo> GetAllDeviceInfo() const override {
     ScopedVector<DeviceInfo> list;
 
     for (std::vector<const DeviceInfo*>::const_iterator iter = devices_.begin();
@@ -59,9 +59,9 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
     return list.Pass();
   }
 
-  virtual void AddObserver(Observer* observer) override { NOTREACHED(); }
+  void AddObserver(Observer* observer) override { NOTREACHED(); }
 
-  virtual void RemoveObserver(Observer* observer) override { NOTREACHED(); }
+  void RemoveObserver(Observer* observer) override { NOTREACHED(); }
 
   void Add(const DeviceInfo* device) { devices_.push_back(device); }
 

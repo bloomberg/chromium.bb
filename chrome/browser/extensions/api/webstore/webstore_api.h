@@ -34,7 +34,7 @@ class WebstoreAPI : public BrowserContextKeyedAPI,
                     public InstallObserver {
  public:
   explicit WebstoreAPI(content::BrowserContext* browser_context);
-  virtual ~WebstoreAPI();
+  ~WebstoreAPI() override;
 
   static WebstoreAPI* Get(content::BrowserContext* browser_context);
 
@@ -76,15 +76,14 @@ class WebstoreAPI : public BrowserContextKeyedAPI,
                        ObservedInstallInfoList* listeners);
 
   // InstallObserver implementation.
-  virtual void OnBeginExtensionDownload(const std::string& extension_id)
-      override;
-  virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) override;
-  virtual void OnBeginCrxInstall(const std::string& extension_id) override;
-  virtual void OnShutdown() override;
+  void OnBeginExtensionDownload(const std::string& extension_id) override;
+  void OnDownloadProgress(const std::string& extension_id,
+                          int percent_downloaded) override;
+  void OnBeginCrxInstall(const std::string& extension_id) override;
+  void OnShutdown() override;
 
   // BrowserContextKeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "WebstoreAPI"; }

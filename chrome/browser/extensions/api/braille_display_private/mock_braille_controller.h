@@ -16,9 +16,9 @@ class MockBrailleController : public StubBrailleController {
  public:
   MockBrailleController();
 
-  virtual scoped_ptr<DisplayState> GetDisplayState() override;
-  virtual void AddObserver(BrailleObserver* observer) override;
-  virtual void RemoveObserver(BrailleObserver* observer) override;
+  scoped_ptr<DisplayState> GetDisplayState() override;
+  void AddObserver(BrailleObserver* observer) override;
+  void RemoveObserver(BrailleObserver* observer) override;
 
   // Sets the available flag without calling the observer.
   void SetAvailable(bool available);

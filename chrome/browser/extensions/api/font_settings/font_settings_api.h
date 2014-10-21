@@ -77,7 +77,7 @@ class FontSettingsEventRouter {
 class FontSettingsAPI : public BrowserContextKeyedAPI {
  public:
   explicit FontSettingsAPI(content::BrowserContext* context);
-  virtual ~FontSettingsAPI();
+  ~FontSettingsAPI() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<FontSettingsAPI>* GetFactoryInstance();
@@ -102,10 +102,10 @@ class FontSettingsClearFontFunction : public ChromeSyncExtensionFunction {
  protected:
   // RefCounted types have non-public destructors, as with all extension
   // functions in this file.
-  virtual ~FontSettingsClearFontFunction() {}
+  ~FontSettingsClearFontFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // fontSettings.getFont API function.
@@ -114,10 +114,10 @@ class FontSettingsGetFontFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fontSettings.getFont", FONTSETTINGS_GETFONT)
 
  protected:
-  virtual ~FontSettingsGetFontFunction() {}
+  ~FontSettingsGetFontFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // fontSettings.setFont API function.
@@ -126,10 +126,10 @@ class FontSettingsSetFontFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("fontSettings.setFont", FONTSETTINGS_SETFONT)
 
  protected:
-  virtual ~FontSettingsSetFontFunction() {}
+  ~FontSettingsSetFontFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // fontSettings.getFontList API function.
@@ -139,10 +139,10 @@ class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
                              FONTSETTINGS_GETFONTLIST)
 
  protected:
-  virtual ~FontSettingsGetFontListFunction() {}
+  ~FontSettingsGetFontListFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void FontListHasLoaded(scoped_ptr<base::ListValue> list);
@@ -152,10 +152,10 @@ class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
 // Base class for extension API functions that clear a browser font pref.
 class ClearFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~ClearFontPrefExtensionFunction() {}
+  ~ClearFontPrefExtensionFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
   // Implementations should return the name of the preference to clear, like
   // "webkit.webprefs.default_font_size".
@@ -165,10 +165,10 @@ class ClearFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
 // Base class for extension API functions that get a browser font pref.
 class GetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~GetFontPrefExtensionFunction() {}
+  ~GetFontPrefExtensionFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
   // Implementations should return the name of the preference to get, like
   // "webkit.webprefs.default_font_size".
@@ -182,10 +182,10 @@ class GetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
 // Base class for extension API functions that set a browser font pref.
 class SetFontPrefExtensionFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~SetFontPrefExtensionFunction() {}
+  ~SetFontPrefExtensionFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
   // Implementations should return the name of the preference to set, like
   // "webkit.webprefs.default_font_size".
@@ -206,10 +206,10 @@ class FontSettingsClearDefaultFontSizeFunction
                              FONTSETTINGS_CLEARDEFAULTFONTSIZE)
 
  protected:
-  virtual ~FontSettingsClearDefaultFontSizeFunction() {}
+  ~FontSettingsClearDefaultFontSizeFunction() override {}
 
   // ClearFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
+  const char* GetPrefName() override;
 };
 
 class FontSettingsGetDefaultFontSizeFunction
@@ -219,11 +219,11 @@ class FontSettingsGetDefaultFontSizeFunction
                              FONTSETTINGS_GETDEFAULTFONTSIZE)
 
  protected:
-  virtual ~FontSettingsGetDefaultFontSizeFunction() {}
+  ~FontSettingsGetDefaultFontSizeFunction() override {}
 
   // GetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
-  virtual const char* GetKey() override;
+  const char* GetPrefName() override;
+  const char* GetKey() override;
 };
 
 class FontSettingsSetDefaultFontSizeFunction
@@ -233,11 +233,11 @@ class FontSettingsSetDefaultFontSizeFunction
                              FONTSETTINGS_SETDEFAULTFONTSIZE)
 
  protected:
-  virtual ~FontSettingsSetDefaultFontSizeFunction() {}
+  ~FontSettingsSetDefaultFontSizeFunction() override {}
 
   // SetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
-  virtual const char* GetKey() override;
+  const char* GetPrefName() override;
+  const char* GetKey() override;
 };
 
 class FontSettingsClearDefaultFixedFontSizeFunction
@@ -247,10 +247,10 @@ class FontSettingsClearDefaultFixedFontSizeFunction
                              FONTSETTINGS_CLEARDEFAULTFIXEDFONTSIZE)
 
  protected:
-  virtual ~FontSettingsClearDefaultFixedFontSizeFunction() {}
+  ~FontSettingsClearDefaultFixedFontSizeFunction() override {}
 
   // ClearFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
+  const char* GetPrefName() override;
 };
 
 class FontSettingsGetDefaultFixedFontSizeFunction
@@ -260,11 +260,11 @@ class FontSettingsGetDefaultFixedFontSizeFunction
                              FONTSETTINGS_GETDEFAULTFIXEDFONTSIZE)
 
  protected:
-  virtual ~FontSettingsGetDefaultFixedFontSizeFunction() {}
+  ~FontSettingsGetDefaultFixedFontSizeFunction() override {}
 
   // GetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
-  virtual const char* GetKey() override;
+  const char* GetPrefName() override;
+  const char* GetKey() override;
 };
 
 class FontSettingsSetDefaultFixedFontSizeFunction
@@ -274,11 +274,11 @@ class FontSettingsSetDefaultFixedFontSizeFunction
                              FONTSETTINGS_SETDEFAULTFIXEDFONTSIZE)
 
  protected:
-  virtual ~FontSettingsSetDefaultFixedFontSizeFunction() {}
+  ~FontSettingsSetDefaultFixedFontSizeFunction() override {}
 
   // SetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
-  virtual const char* GetKey() override;
+  const char* GetPrefName() override;
+  const char* GetKey() override;
 };
 
 class FontSettingsClearMinimumFontSizeFunction
@@ -288,10 +288,10 @@ class FontSettingsClearMinimumFontSizeFunction
                              FONTSETTINGS_CLEARMINIMUMFONTSIZE)
 
  protected:
-  virtual ~FontSettingsClearMinimumFontSizeFunction() {}
+  ~FontSettingsClearMinimumFontSizeFunction() override {}
 
   // ClearFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
+  const char* GetPrefName() override;
 };
 
 class FontSettingsGetMinimumFontSizeFunction
@@ -301,11 +301,11 @@ class FontSettingsGetMinimumFontSizeFunction
                              FONTSETTINGS_GETMINIMUMFONTSIZE)
 
  protected:
-  virtual ~FontSettingsGetMinimumFontSizeFunction() {}
+  ~FontSettingsGetMinimumFontSizeFunction() override {}
 
   // GetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
-  virtual const char* GetKey() override;
+  const char* GetPrefName() override;
+  const char* GetKey() override;
 };
 
 class FontSettingsSetMinimumFontSizeFunction
@@ -315,11 +315,11 @@ class FontSettingsSetMinimumFontSizeFunction
                              FONTSETTINGS_SETMINIMUMFONTSIZE)
 
  protected:
-  virtual ~FontSettingsSetMinimumFontSizeFunction() {}
+  ~FontSettingsSetMinimumFontSizeFunction() override {}
 
   // SetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() override;
-  virtual const char* GetKey() override;
+  const char* GetPrefName() override;
+  const char* GetKey() override;
 };
 
 }  // namespace extensions

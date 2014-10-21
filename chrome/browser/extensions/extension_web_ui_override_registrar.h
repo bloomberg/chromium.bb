@@ -21,7 +21,7 @@ class ExtensionWebUIOverrideRegistrar : public BrowserContextKeyedAPI,
                                         public ExtensionRegistryObserver {
  public:
   explicit ExtensionWebUIOverrideRegistrar(content::BrowserContext* context);
-  virtual ~ExtensionWebUIOverrideRegistrar();
+  ~ExtensionWebUIOverrideRegistrar() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
@@ -31,12 +31,11 @@ class ExtensionWebUIOverrideRegistrar : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

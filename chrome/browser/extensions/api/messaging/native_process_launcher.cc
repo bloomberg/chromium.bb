@@ -39,11 +39,11 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
  public:
   NativeProcessLauncherImpl(bool allow_user_level_hosts,
                             intptr_t native_window);
-  virtual ~NativeProcessLauncherImpl();
+  ~NativeProcessLauncherImpl() override;
 
-  virtual void Launch(const GURL& origin,
-                      const std::string& native_host_name,
-                      LaunchedCallback callback) const override;
+  void Launch(const GURL& origin,
+              const std::string& native_host_name,
+              LaunchedCallback callback) const override;
 
  private:
   class Core : public base::RefCountedThreadSafe<Core> {

@@ -35,26 +35,25 @@ class DevModeBubbleDelegate
     : public ExtensionMessageBubbleController::Delegate {
  public:
   explicit DevModeBubbleDelegate(Profile* profile);
-  virtual ~DevModeBubbleDelegate();
+  ~DevModeBubbleDelegate() override;
 
   // ExtensionMessageBubbleController::Delegate methods.
-  virtual bool ShouldIncludeExtension(const std::string& extension_id) override;
-  virtual void AcknowledgeExtension(
+  bool ShouldIncludeExtension(const std::string& extension_id) override;
+  void AcknowledgeExtension(
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) override;
-  virtual void PerformAction(const ExtensionIdList& list) override;
-  virtual void OnClose() override;
-  virtual base::string16 GetTitle() const override;
-  virtual base::string16 GetMessageBody(
-      bool anchored_to_browser_action) const override;
-  virtual base::string16 GetOverflowText(
+  void PerformAction(const ExtensionIdList& list) override;
+  void OnClose() override;
+  base::string16 GetTitle() const override;
+  base::string16 GetMessageBody(bool anchored_to_browser_action) const override;
+  base::string16 GetOverflowText(
       const base::string16& overflow_count) const override;
-  virtual GURL GetLearnMoreUrl() const override;
-  virtual base::string16 GetActionButtonLabel() const override;
-  virtual base::string16 GetDismissButtonLabel() const override;
-  virtual bool ShouldShowExtensionList() const override;
-  virtual void LogExtensionCount(size_t count) override;
-  virtual void LogAction(
+  GURL GetLearnMoreUrl() const override;
+  base::string16 GetActionButtonLabel() const override;
+  base::string16 GetDismissButtonLabel() const override;
+  bool ShouldShowExtensionList() const override;
+  void LogExtensionCount(size_t count) override;
+  void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) override;
 
  private:

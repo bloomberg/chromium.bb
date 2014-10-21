@@ -34,22 +34,21 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
                                public KeyedService {
  public:
   SystemIndicatorManager(Profile* profile, StatusTray* status_tray);
-  virtual ~SystemIndicatorManager();
+  ~SystemIndicatorManager() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(::SystemIndicatorApiTest, SystemIndicator);
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // ExtensionActionAPI::Observer implementation.
-  virtual void OnExtensionActionUpdated(
+  void OnExtensionActionUpdated(
       ExtensionAction* extension_action,
       content::WebContents* web_contents,
       content::BrowserContext* browser_context) override;

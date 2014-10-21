@@ -26,7 +26,7 @@ namespace {
 class MockExtensionErrorUI : public ExtensionErrorUI {
  public:
   explicit MockExtensionErrorUI(ExtensionErrorUI::Delegate* delegate);
-  virtual ~MockExtensionErrorUI();
+  ~MockExtensionErrorUI() override;
 
   // Wrappers around the similar methods in ExtensionErrorUI.
   void CloseUI();
@@ -37,9 +37,9 @@ class MockExtensionErrorUI : public ExtensionErrorUI {
 
  private:
   // ExtensionErrorUI implementation.
-  virtual bool ShowErrorInBubbleView() override;
-  virtual void ShowExtensions() override;
-  virtual void Close() override;
+  bool ShowErrorInBubbleView() override;
+  void ShowExtensions() override;
+  void Close() override;
 
   // Keep a copy of the delegate around for ourselves.
   ExtensionErrorUI::Delegate* delegate_;

@@ -96,10 +96,10 @@ class PreferenceAPI : public PreferenceAPIBase,
                       public ContentSettingsStore::Observer {
  public:
   explicit PreferenceAPI(content::BrowserContext* context);
-  virtual ~PreferenceAPI();
+  ~PreferenceAPI() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<PreferenceAPI>* GetFactoryInstance();
@@ -108,22 +108,22 @@ class PreferenceAPI : public PreferenceAPIBase,
   static PreferenceAPI* Get(content::BrowserContext* context);
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<PreferenceAPI>;
 
   // ContentSettingsStore::Observer implementation.
-  virtual void OnContentSettingChanged(const std::string& extension_id,
-                                       bool incognito) override;
+  void OnContentSettingChanged(const std::string& extension_id,
+                               bool incognito) override;
 
   // Clears incognito session-only content settings for all extensions.
   void ClearIncognitoSessionOnlyContentSettings();
 
   // PreferenceAPIBase implementation.
-  virtual ExtensionPrefs* extension_prefs() override;
-  virtual ExtensionPrefValueMap* extension_pref_value_map() override;
-  virtual scoped_refptr<ContentSettingsStore> content_settings_store() override;
+  ExtensionPrefs* extension_prefs() override;
+  ExtensionPrefValueMap* extension_pref_value_map() override;
+  scoped_refptr<ContentSettingsStore> content_settings_store() override;
 
   Profile* profile_;
 
@@ -169,7 +169,7 @@ class PreferenceFunction : public ChromeSyncExtensionFunction {
  protected:
   enum PermissionType { PERMISSION_TYPE_READ, PERMISSION_TYPE_WRITE };
 
-  virtual ~PreferenceFunction();
+  ~PreferenceFunction() override;
 
   // Given an |extension_pref_key|, provides its |browser_pref_key| from the
   // static map in preference_api.cc. Returns true if the corresponding
@@ -186,10 +186,10 @@ class GetPreferenceFunction : public PreferenceFunction {
   DECLARE_EXTENSION_FUNCTION("types.ChromeSetting.get", TYPES_CHROMESETTING_GET)
 
  protected:
-  virtual ~GetPreferenceFunction();
+  ~GetPreferenceFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class SetPreferenceFunction : public PreferenceFunction {
@@ -197,10 +197,10 @@ class SetPreferenceFunction : public PreferenceFunction {
   DECLARE_EXTENSION_FUNCTION("types.ChromeSetting.set", TYPES_CHROMESETTING_SET)
 
  protected:
-  virtual ~SetPreferenceFunction();
+  ~SetPreferenceFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ClearPreferenceFunction : public PreferenceFunction {
@@ -209,10 +209,10 @@ class ClearPreferenceFunction : public PreferenceFunction {
                              TYPES_CHROMESETTING_CLEAR)
 
  protected:
-  virtual ~ClearPreferenceFunction();
+  ~ClearPreferenceFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

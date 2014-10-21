@@ -36,7 +36,7 @@ class FeedbackTest : public ExtensionBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(::switches::kEnableUserMediaScreenCapturing);
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }

@@ -154,7 +154,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   friend class ProcessHostClient;
   friend class SandboxedUnpackerTest;
 
-  virtual ~SandboxedUnpacker();
+  ~SandboxedUnpacker() override;
 
   // Set |temp_dir_| as a temporary directory to unpack the extension in.
   // Return true on success.
@@ -175,8 +175,8 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   void StartProcessOnIOThread(const base::FilePath& temp_crx_path);
 
   // UtilityProcessHostClient
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
 
   // IPC message handlers.
   void OnUnpackExtensionSucceeded(const base::DictionaryValue& manifest);

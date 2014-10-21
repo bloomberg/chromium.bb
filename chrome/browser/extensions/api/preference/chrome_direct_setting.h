@@ -17,7 +17,7 @@ namespace chromedirectsetting {
 class DirectSettingFunctionBase : public ChromeSyncExtensionFunction {
  protected:
   DirectSettingFunctionBase();
-  virtual ~DirectSettingFunctionBase();
+  ~DirectSettingFunctionBase() override;
 
   // Returns the user pref service.
   PrefService* GetPrefService();
@@ -38,10 +38,10 @@ class GetDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
-  virtual ~GetDirectSettingFunction();
+  ~GetDirectSettingFunction() override;
   DISALLOW_COPY_AND_ASSIGN(GetDirectSettingFunction);
 };
 
@@ -54,10 +54,10 @@ class SetDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
-  virtual ~SetDirectSettingFunction();
+  ~SetDirectSettingFunction() override;
   DISALLOW_COPY_AND_ASSIGN(SetDirectSettingFunction);
 };
 
@@ -70,10 +70,10 @@ class ClearDirectSettingFunction : public DirectSettingFunctionBase {
 
  protected:
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
-  virtual ~ClearDirectSettingFunction();
+  ~ClearDirectSettingFunction() override;
   DISALLOW_COPY_AND_ASSIGN(ClearDirectSettingFunction);
 };
 

@@ -49,9 +49,9 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
       : ExtensionInstallPrompt(contents)
   {}
 
-  virtual ~ProgrammableInstallPrompt() {}
+  ~ProgrammableInstallPrompt() override {}
 
-  virtual void ConfirmStandaloneInstall(
+  void ConfirmStandaloneInstall(
       Delegate* delegate,
       const Extension* extension,
       SkBitmap* icon,
@@ -93,13 +93,13 @@ class WebstoreInlineInstallerForTest : public WebstoreInlineInstaller {
         programmable_prompt_(NULL) {
   }
 
-  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override {
+  scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override {
     programmable_prompt_ = new ProgrammableInstallPrompt(web_contents());
     return make_scoped_ptr(programmable_prompt_);
   }
 
  private:
-  virtual ~WebstoreInlineInstallerForTest() {}
+  ~WebstoreInlineInstallerForTest() override {}
 
   friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
 
@@ -113,8 +113,8 @@ class WebstoreInlineInstallerForTest : public WebstoreInlineInstaller {
 
 class WebstoreInlineInstallerForTestFactory :
     public WebstoreInlineInstallerFactory {
-  virtual ~WebstoreInlineInstallerForTestFactory() {}
-  virtual WebstoreInlineInstaller* CreateInstaller(
+  ~WebstoreInlineInstallerForTestFactory() override {}
+  WebstoreInlineInstaller* CreateInstaller(
       WebContents* contents,
       const std::string& webstore_item_id,
       const GURL& requestor_url,

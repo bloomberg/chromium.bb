@@ -86,26 +86,22 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // ExtensionRegistryObserver.
   // We keep track of whether the whitelisted extension is installed; if it is,
   // we want to recompute whether to have logging enabled.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // ApiActivityMonitor.
-  virtual void OnApiEventDispatched(
-      const std::string& extension_id,
-      const std::string& event_name,
-      scoped_ptr<base::ListValue> event_args) override;
-  virtual void OnApiFunctionCalled(
-      const std::string& extension_id,
-      const std::string& api_name,
-      scoped_ptr<base::ListValue> event_args) override;
+  void OnApiEventDispatched(const std::string& extension_id,
+                            const std::string& event_name,
+                            scoped_ptr<base::ListValue> event_args) override;
+  void OnApiFunctionCalled(const std::string& extension_id,
+                           const std::string& api_name,
+                           scoped_ptr<base::ListValue> event_args) override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -132,7 +128,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<ActivityLog>;
 
   explicit ActivityLog(content::BrowserContext* context);
-  virtual ~ActivityLog();
+  ~ActivityLog() override;
 
   // Specifies if the Watchdog app is active (installed & enabled).
   // If so, we need to log to the database and stream to the API.
@@ -149,10 +145,9 @@ class ActivityLog : public BrowserContextKeyedAPI,
 
   // ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.
-  virtual void OnScriptsExecuted(
-      const content::WebContents* web_contents,
-      const ExecutingScriptsMap& extension_ids,
-      const GURL& on_url) override;
+  void OnScriptsExecuted(const content::WebContents* web_contents,
+                         const ExecutingScriptsMap& extension_ids,
+                         const GURL& on_url) override;
 
   // At the moment, ActivityLog will use only one policy for summarization.
   // These methods are used to choose and set the most appropriate policy.

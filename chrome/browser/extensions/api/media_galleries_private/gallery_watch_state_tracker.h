@@ -37,7 +37,7 @@ class GalleryWatchStateTracker
       public MediaGalleriesPreferences::GalleryChangeObserver {
  public:
   explicit GalleryWatchStateTracker(Profile* profile);
-  virtual ~GalleryWatchStateTracker();
+  ~GalleryWatchStateTracker() override;
 
   // Returns the GalleryWatchStateTracker associated with the |profile|.
   // Returns NULL if GalleryWatchStateTracker does not exists.
@@ -56,16 +56,16 @@ class GalleryWatchStateTracker
   // Updates the state of the gallery watchers on the receipt of access
   // permission changed event for the extension specified by the
   // |extension_id|.
-  virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
-                                 const std::string& extension_id,
-                                 MediaGalleryPrefId gallery_id) override;
+  void OnPermissionAdded(MediaGalleriesPreferences* pref,
+                         const std::string& extension_id,
+                         MediaGalleryPrefId gallery_id) override;
 
-  virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
-                                   const std::string& extension_id,
-                                   MediaGalleryPrefId gallery_id) override;
+  void OnPermissionRemoved(MediaGalleriesPreferences* pref,
+                           const std::string& extension_id,
+                           MediaGalleryPrefId gallery_id) override;
 
-  virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId gallery_id) override;
+  void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                        MediaGalleryPrefId gallery_id) override;
 
   // Returns a set of watched gallery identifiers for the extension specified
   // by the |extension_id|.
@@ -90,12 +90,11 @@ class GalleryWatchStateTracker
   typedef std::map<std::string, WatchedGalleriesMap> WatchedExtensionsMap;
 
   // extensions::ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Syncs media gallery watch data for the given extension to/from the state
   // storage.

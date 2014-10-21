@@ -74,9 +74,7 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
   // InProcessBrowserTest override. Destroys the sync client and sync
   // profile created by the test.  We must clean up ProfileSyncServiceHarness
   // now before the profile is cleaned up.
-  virtual void TearDownOnMainThread() override {
-    sync_setup_helper_.reset();
-  }
+  void TearDownOnMainThread() override { sync_setup_helper_.reset(); }
 
   const SyncSetupHelper* sync_setup_helper() const {
     return sync_setup_helper_.get();
@@ -85,13 +83,13 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
  protected:
   // Override InProcessBrowserTest. Change behavior of the default host
   // resolver to avoid DNS lookup errors, so we can make network calls.
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     // The resolver object lifetime is managed by sync_test_setup, not here.
     EnableDNSLookupForThisTest(
         new net::RuleBasedHostResolverProc(host_resolver()));
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     DisableDNSLookupForThisTest();
   }
 

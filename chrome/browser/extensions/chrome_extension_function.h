@@ -60,10 +60,10 @@ class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
 
   // Gets the "current" web contents if any. If there is no associated web
   // contents then defaults to the foremost one.
-  virtual content::WebContents* GetAssociatedWebContents() override;
+  content::WebContents* GetAssociatedWebContents() override;
 
  protected:
-  virtual ~ChromeUIThreadExtensionFunction();
+  ~ChromeUIThreadExtensionFunction() override;
 };
 
 // A chrome specific analog to AsyncExtensionFunction. This has access to a
@@ -78,7 +78,7 @@ class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   ChromeAsyncExtensionFunction();
 
  protected:
-  virtual ~ChromeAsyncExtensionFunction();
+  ~ChromeAsyncExtensionFunction() override;
 
   // Deprecated, see AsyncExtensionFunction::RunAsync.
   virtual bool RunAsync() = 0;
@@ -87,7 +87,7 @@ class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   static bool ValidationFailure(ChromeAsyncExtensionFunction* function);
 
  private:
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 };
 
 // A chrome specific analog to SyncExtensionFunction. This has access to a
@@ -102,7 +102,7 @@ class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   ChromeSyncExtensionFunction();
 
  protected:
-  virtual ~ChromeSyncExtensionFunction();
+  ~ChromeSyncExtensionFunction() override;
 
   // Deprecated, see SyncExtensionFunction::RunSync.
   virtual bool RunSync() = 0;
@@ -111,7 +111,7 @@ class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   static bool ValidationFailure(ChromeSyncExtensionFunction* function);
 
  private:
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_

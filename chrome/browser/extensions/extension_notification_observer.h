@@ -26,7 +26,7 @@ class ExtensionNotificationObserver : public content::NotificationObserver {
   ExtensionNotificationObserver(content::NotificationSource source,
                                 const std::set<std::string>& extension_ids);
 
-  virtual ~ExtensionNotificationObserver();
+  ~ExtensionNotificationObserver() override;
 
   // Each of these methods returns a testing::AssertionSuccess if exactly those
   // notifications occurred for any extensions in |extension_ids|, and no more,
@@ -51,9 +51,9 @@ class ExtensionNotificationObserver : public content::NotificationObserver {
 
  private:
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Checks then clears notifications for our extensions.
   testing::AssertionResult CheckNotifications(

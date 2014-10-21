@@ -13,20 +13,20 @@ class ChromeExtensionWebRequestEventRouterDelegate :
   public extensions::WebRequestEventRouterDelegate {
  public:
   ChromeExtensionWebRequestEventRouterDelegate();
-  virtual ~ChromeExtensionWebRequestEventRouterDelegate();
+  ~ChromeExtensionWebRequestEventRouterDelegate() override;
 
   // WebRequestEventRouterDelegate implementation.
-  virtual void ExtractExtraRequestDetails(
-    net::URLRequest* request, base::DictionaryValue* out) override;
-  virtual bool OnGetMatchingListenersImplCheck(
-    int tab_id, int window_id, net::URLRequest* request) override;
-  virtual void LogExtensionActivity(
-    content::BrowserContext* browser_context,
-    bool is_incognito,
-    const std::string& extension_id,
-    const GURL& url,
-    const std::string& api_call,
-    scoped_ptr<base::DictionaryValue> details) override;
+  void ExtractExtraRequestDetails(net::URLRequest* request,
+                                  base::DictionaryValue* out) override;
+  bool OnGetMatchingListenersImplCheck(int tab_id,
+                                       int window_id,
+                                       net::URLRequest* request) override;
+  void LogExtensionActivity(content::BrowserContext* browser_context,
+                            bool is_incognito,
+                            const std::string& extension_id,
+                            const GURL& url,
+                            const std::string& api_call,
+                            scoped_ptr<base::DictionaryValue> details) override;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_CHROME_EXTENSION_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_

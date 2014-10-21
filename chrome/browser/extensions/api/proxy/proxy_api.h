@@ -28,14 +28,13 @@ class EventRouterForwarder;
 class ProxyPrefTransformer : public PrefTransformerInterface {
  public:
   ProxyPrefTransformer();
-  virtual ~ProxyPrefTransformer();
+  ~ProxyPrefTransformer() override;
 
   // Implementation of PrefTransformerInterface.
-  virtual base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
-                                              std::string* error,
-                                              bool* bad_message) override;
-  virtual base::Value* BrowserToExtensionPref(
-      const base::Value* browser_pref) override;
+  base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
+                                      std::string* error,
+                                      bool* bad_message) override;
+  base::Value* BrowserToExtensionPref(const base::Value* browser_pref) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyPrefTransformer);

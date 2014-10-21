@@ -18,7 +18,7 @@ using extensions::image_writer::FakeImageWriterClient;
 
 class ImageWriterPrivateApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     test_utils_.SetUp(true);
 
@@ -61,7 +61,7 @@ class ImageWriterPrivateApiTest : public ExtensionApiTest {
     RemovableStorageProvider::SetDeviceListForTesting(device_list);
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
+  void TearDownInProcessBrowserTestFixture() override {
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
     test_utils_.TearDown();
     RemovableStorageProvider::ClearDeviceListForTesting();

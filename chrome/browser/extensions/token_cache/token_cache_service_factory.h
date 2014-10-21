@@ -22,12 +22,12 @@ class TokenCacheServiceFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   TokenCacheServiceFactory();
-  virtual ~TokenCacheServiceFactory();
+  ~TokenCacheServiceFactory() override;
 
   friend struct DefaultSingletonTraits<TokenCacheServiceFactory>;
 
   // Inherited from BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
    DISALLOW_COPY_AND_ASSIGN(TokenCacheServiceFactory);

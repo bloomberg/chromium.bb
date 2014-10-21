@@ -124,13 +124,13 @@ PrefMappingEntry kPrefMapping[] = {
 
 class IdentityPrefTransformer : public PrefTransformerInterface {
  public:
-  virtual base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
-                                              std::string* error,
-                                              bool* bad_message) override {
+  base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
+                                      std::string* error,
+                                      bool* bad_message) override {
     return extension_pref->DeepCopy();
   }
 
-  virtual base::Value* BrowserToExtensionPref(
+  base::Value* BrowserToExtensionPref(
       const base::Value* browser_pref) override {
     return browser_pref->DeepCopy();
   }
@@ -138,13 +138,13 @@ class IdentityPrefTransformer : public PrefTransformerInterface {
 
 class InvertBooleanTransformer : public PrefTransformerInterface {
  public:
-  virtual base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
-                                              std::string* error,
-                                              bool* bad_message) override {
+  base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
+                                      std::string* error,
+                                      bool* bad_message) override {
     return InvertBooleanValue(extension_pref);
   }
 
-  virtual base::Value* BrowserToExtensionPref(
+  base::Value* BrowserToExtensionPref(
       const base::Value* browser_pref) override {
     return InvertBooleanValue(browser_pref);
   }

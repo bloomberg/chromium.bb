@@ -69,7 +69,7 @@ class Blacklist : public content::NotificationObserver,
 
   explicit Blacklist(ExtensionPrefs* prefs);
 
-  virtual ~Blacklist();
+  ~Blacklist() override;
 
   // From the set of extension IDs passed in via |ids|, asynchronously checks
   // which are blacklisted and includes them in the resulting map passed
@@ -112,9 +112,9 @@ class Blacklist : public content::NotificationObserver,
   static scoped_refptr<SafeBrowsingDatabaseManager> GetDatabaseManager();
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void GetBlacklistStateForIDs(const GetBlacklistedIDsCallback& callback,
                                const std::set<std::string>& blacklisted_ids);

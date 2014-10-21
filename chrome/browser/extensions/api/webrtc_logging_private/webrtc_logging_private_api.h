@@ -19,7 +19,7 @@ namespace extensions {
 // TODO(grunell). Merge this with WebrtcAudioPrivateTabIdFunction.
 class WebrtcLoggingPrivateTabIdFunction : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~WebrtcLoggingPrivateTabIdFunction() {}
+  ~WebrtcLoggingPrivateTabIdFunction() override {}
 
   content::RenderProcessHost* RphFromTabIdAndSecurityOrigin(
       int tab_id, const std::string& security_origin);
@@ -33,10 +33,10 @@ class WebrtcLoggingPrivateSetMetaDataFunction
   WebrtcLoggingPrivateSetMetaDataFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateSetMetaDataFunction();
+  ~WebrtcLoggingPrivateSetMetaDataFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Must be called on UI thread.
   void SetMetaDataCallback(bool success, const std::string& error_message);
@@ -50,10 +50,10 @@ class WebrtcLoggingPrivateStartFunction
   WebrtcLoggingPrivateStartFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateStartFunction();
+  ~WebrtcLoggingPrivateStartFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Must be called on UI thread.
   void StartCallback(bool success, const std::string& error_message);
@@ -67,10 +67,10 @@ class WebrtcLoggingPrivateSetUploadOnRenderCloseFunction
   WebrtcLoggingPrivateSetUploadOnRenderCloseFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateSetUploadOnRenderCloseFunction();
+  ~WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class WebrtcLoggingPrivateStopFunction
@@ -81,10 +81,10 @@ class WebrtcLoggingPrivateStopFunction
   WebrtcLoggingPrivateStopFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateStopFunction();
+  ~WebrtcLoggingPrivateStopFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Must be called on UI thread.
   void StopCallback(bool success, const std::string& error_message);
@@ -98,10 +98,10 @@ class WebrtcLoggingPrivateUploadFunction
   WebrtcLoggingPrivateUploadFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateUploadFunction();
+  ~WebrtcLoggingPrivateUploadFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Must be called on UI thread.
   void UploadCallback(bool success, const std::string& report_id,
@@ -116,10 +116,10 @@ class WebrtcLoggingPrivateDiscardFunction
   WebrtcLoggingPrivateDiscardFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateDiscardFunction();
+  ~WebrtcLoggingPrivateDiscardFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Must be called on UI thread.
   void DiscardCallback(bool success, const std::string& error_message);
@@ -133,10 +133,10 @@ class WebrtcLoggingPrivateStartRtpDumpFunction
   WebrtcLoggingPrivateStartRtpDumpFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateStartRtpDumpFunction();
+  ~WebrtcLoggingPrivateStartRtpDumpFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Must be called on UI thread.
   void StartRtpDumpCallback(bool success, const std::string& error_message);
@@ -150,10 +150,10 @@ class WebrtcLoggingPrivateStopRtpDumpFunction
   WebrtcLoggingPrivateStopRtpDumpFunction();
 
  private:
-  virtual ~WebrtcLoggingPrivateStopRtpDumpFunction();
+  ~WebrtcLoggingPrivateStopRtpDumpFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // Must be called on UI thread.
   void StopRtpDumpCallback(bool success, const std::string& error_message);

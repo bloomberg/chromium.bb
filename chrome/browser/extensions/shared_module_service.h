@@ -36,7 +36,7 @@ class SharedModuleService : public ExtensionRegistryObserver {
   };
 
   explicit SharedModuleService(content::BrowserContext* context);
-  virtual ~SharedModuleService();
+  ~SharedModuleService() override;
 
   // Checks an extension's imports. Imports that are not installed are stored
   // in |missing_modules|, and imports that are out of date are stored in
@@ -59,13 +59,12 @@ class SharedModuleService : public ExtensionRegistryObserver {
   void PruneSharedModules();
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension,
-                                    bool is_update) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

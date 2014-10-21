@@ -12,10 +12,10 @@ namespace extensions {
 class ExperienceSamplingPrivateGetBrowserInfoFunction
     : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~ExperienceSamplingPrivateGetBrowserInfoFunction() {}
+  ~ExperienceSamplingPrivateGetBrowserInfoFunction() override {}
 
   // ExtensionFuction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("experienceSamplingPrivate.getBrowserInfo",

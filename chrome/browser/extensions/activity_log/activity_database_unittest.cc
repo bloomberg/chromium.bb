@@ -53,10 +53,10 @@ class ActivityDatabaseTestPolicy : public ActivityDatabase::Delegate {
   virtual void Record(ActivityDatabase* db, scoped_refptr<Action> action);
 
  protected:
-  virtual bool InitDatabase(sql::Connection* db) override;
-  virtual bool FlushDatabase(sql::Connection*) override;
-  virtual void OnDatabaseFailure() override {}
-  virtual void OnDatabaseClose() override { delete this; }
+  bool InitDatabase(sql::Connection* db) override;
+  bool FlushDatabase(sql::Connection*) override;
+  void OnDatabaseFailure() override {}
+  void OnDatabaseClose() override { delete this; }
 
   std::vector<scoped_refptr<Action> > queue_;
 };

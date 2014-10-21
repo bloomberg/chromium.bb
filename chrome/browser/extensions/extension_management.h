@@ -63,7 +63,7 @@ class ExtensionManagement : public KeyedService {
   };
 
   explicit ExtensionManagement(PrefService* pref_service);
-  virtual ~ExtensionManagement();
+  ~ExtensionManagement() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -168,14 +168,14 @@ class ExtensionManagementFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ExtensionManagementFactory>;
 
   ExtensionManagementFactory();
-  virtual ~ExtensionManagementFactory();
+  ~ExtensionManagementFactory() override;
 
   // BrowserContextKeyedServiceExtensionManagementFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagementFactory);

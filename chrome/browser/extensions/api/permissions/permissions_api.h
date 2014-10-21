@@ -20,10 +20,10 @@ class PermissionsContainsFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("permissions.contains", PERMISSIONS_CONTAINS)
 
  protected:
-  virtual ~PermissionsContainsFunction() {}
+  ~PermissionsContainsFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // chrome.permissions.getAll
@@ -32,10 +32,10 @@ class PermissionsGetAllFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("permissions.getAll", PERMISSIONS_GETALL)
 
  protected:
-  virtual ~PermissionsGetAllFunction() {}
+  ~PermissionsGetAllFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // chrome.permissions.remove
@@ -44,10 +44,10 @@ class PermissionsRemoveFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("permissions.remove", PERMISSIONS_REMOVE)
 
  protected:
-  virtual ~PermissionsRemoveFunction() {}
+  ~PermissionsRemoveFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // chrome.permissions.request
@@ -63,14 +63,14 @@ class PermissionsRequestFunction : public ChromeAsyncExtensionFunction,
   static void SetIgnoreUserGestureForTests(bool ignore);
 
   // ExtensionInstallPrompt::Delegate:
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
  protected:
-  virtual ~PermissionsRequestFunction();
+  ~PermissionsRequestFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   scoped_ptr<ExtensionInstallPrompt> install_ui_;

@@ -22,13 +22,13 @@ class NativeMessagePort::Core : public NativeMessageHost::Client {
       scoped_ptr<NativeMessageHost> host,
       base::WeakPtr<NativeMessagePort> port,
       scoped_refptr<base::SingleThreadTaskRunner> message_service_task_runner_);
-  virtual ~Core();
+  ~Core() override;
 
   void OnMessageFromChrome(const std::string& message);
 
   // NativeMessageHost::Client implementation.
-  virtual void PostMessageFromNativeHost(const std::string& message) override;
-  virtual void CloseChannel(const std::string& error_message) override;
+  void PostMessageFromNativeHost(const std::string& message) override;
+  void CloseChannel(const std::string& error_message) override;
 
  private:
   scoped_ptr<NativeMessageHost> host_;

@@ -34,7 +34,7 @@ class ActiveTabPermissionGranter
   ActiveTabPermissionGranter(content::WebContents* web_contents,
                              int tab_id,
                              Profile* profile);
-  virtual ~ActiveTabPermissionGranter();
+  ~ActiveTabPermissionGranter() override;
 
   // If |extension| has the activeTab or tabCapture permission, grants
   // tab-specific permissions to it until the next page navigation or refresh.
@@ -42,16 +42,15 @@ class ActiveTabPermissionGranter
 
  private:
   // content::WebContentsObserver implementation.
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   // extensions::ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Clears any tab-specific permissions for all extensions on |tab_id_| and
   // notifies renderers.

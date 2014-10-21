@@ -51,19 +51,19 @@ base::string16 GetMenuItemLabel(const Extension* extension) {
 class ExternalInstallMenuAlert : public GlobalError {
  public:
   explicit ExternalInstallMenuAlert(ExternalInstallError* error);
-  virtual ~ExternalInstallMenuAlert();
+  ~ExternalInstallMenuAlert() override;
 
  private:
   // GlobalError implementation.
-  virtual Severity GetSeverity() override;
-  virtual bool HasMenuItem() override;
-  virtual int MenuItemCommandID() override;
-  virtual base::string16 MenuItemLabel() override;
-  virtual void ExecuteMenuItem(Browser* browser) override;
-  virtual bool HasBubbleView() override;
-  virtual bool HasShownBubbleView() override;
-  virtual void ShowBubbleView(Browser* browser) override;
-  virtual GlobalErrorBubbleViewBase* GetBubbleView() override;
+  Severity GetSeverity() override;
+  bool HasMenuItem() override;
+  int MenuItemCommandID() override;
+  base::string16 MenuItemLabel() override;
+  void ExecuteMenuItem(Browser* browser) override;
+  bool HasBubbleView() override;
+  bool HasShownBubbleView() override;
+  void ShowBubbleView(Browser* browser) override;
+  GlobalErrorBubbleViewBase* GetBubbleView() override;
 
   // The owning ExternalInstallError.
   ExternalInstallError* error_;
@@ -76,25 +76,25 @@ class ExternalInstallBubbleAlert : public GlobalErrorWithStandardBubble {
  public:
   explicit ExternalInstallBubbleAlert(ExternalInstallError* error,
                                       ExtensionInstallPrompt::Prompt* prompt);
-  virtual ~ExternalInstallBubbleAlert();
+  ~ExternalInstallBubbleAlert() override;
 
  private:
   // GlobalError implementation.
-  virtual Severity GetSeverity() override;
-  virtual bool HasMenuItem() override;
-  virtual int MenuItemCommandID() override;
-  virtual base::string16 MenuItemLabel() override;
-  virtual void ExecuteMenuItem(Browser* browser) override;
+  Severity GetSeverity() override;
+  bool HasMenuItem() override;
+  int MenuItemCommandID() override;
+  base::string16 MenuItemLabel() override;
+  void ExecuteMenuItem(Browser* browser) override;
 
   // GlobalErrorWithStandardBubble implementation.
-  virtual gfx::Image GetBubbleViewIcon() override;
-  virtual base::string16 GetBubbleViewTitle() override;
-  virtual std::vector<base::string16> GetBubbleViewMessages() override;
-  virtual base::string16 GetBubbleViewAcceptButtonLabel() override;
-  virtual base::string16 GetBubbleViewCancelButtonLabel() override;
-  virtual void OnBubbleViewDidClose(Browser* browser) override;
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) override;
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) override;
+  gfx::Image GetBubbleViewIcon() override;
+  base::string16 GetBubbleViewTitle() override;
+  std::vector<base::string16> GetBubbleViewMessages() override;
+  base::string16 GetBubbleViewAcceptButtonLabel() override;
+  base::string16 GetBubbleViewCancelButtonLabel() override;
+  void OnBubbleViewDidClose(Browser* browser) override;
+  void BubbleViewAcceptButtonPressed(Browser* browser) override;
+  void BubbleViewCancelButtonPressed(Browser* browser) override;
 
   // The owning ExternalInstallError.
   ExternalInstallError* error_;

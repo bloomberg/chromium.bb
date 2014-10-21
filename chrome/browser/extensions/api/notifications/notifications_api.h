@@ -25,7 +25,7 @@ class NotificationsApiFunction : public ChromeAsyncExtensionFunction {
 
  protected:
   NotificationsApiFunction();
-  virtual ~NotificationsApiFunction();
+  ~NotificationsApiFunction() override;
 
   bool CreateNotification(const std::string& id,
                           api::notifications::NotificationOptions* options);
@@ -45,7 +45,7 @@ class NotificationsApiFunction : public ChromeAsyncExtensionFunction {
   virtual bool RunNotificationsApi() = 0;
 
   // UITHreadExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   message_center::NotificationType MapApiTemplateTypeToType(
       api::notifications::TemplateType type);
@@ -56,10 +56,10 @@ class NotificationsCreateFunction : public NotificationsApiFunction {
   NotificationsCreateFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() override;
+  bool RunNotificationsApi() override;
 
  protected:
-  virtual ~NotificationsCreateFunction();
+  ~NotificationsCreateFunction() override;
 
  private:
   scoped_ptr<api::notifications::Create::Params> params_;
@@ -72,10 +72,10 @@ class NotificationsUpdateFunction : public NotificationsApiFunction {
   NotificationsUpdateFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() override;
+  bool RunNotificationsApi() override;
 
  protected:
-  virtual ~NotificationsUpdateFunction();
+  ~NotificationsUpdateFunction() override;
 
  private:
   scoped_ptr<api::notifications::Update::Params> params_;
@@ -88,10 +88,10 @@ class NotificationsClearFunction : public NotificationsApiFunction {
   NotificationsClearFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() override;
+  bool RunNotificationsApi() override;
 
  protected:
-  virtual ~NotificationsClearFunction();
+  ~NotificationsClearFunction() override;
 
  private:
   scoped_ptr<api::notifications::Clear::Params> params_;
@@ -104,10 +104,10 @@ class NotificationsGetAllFunction : public NotificationsApiFunction {
   NotificationsGetAllFunction();
 
   // NotificationsApiFunction:
-  virtual bool RunNotificationsApi() override;
+  bool RunNotificationsApi() override;
 
  protected:
-  virtual ~NotificationsGetAllFunction();
+  ~NotificationsGetAllFunction() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("notifications.getAll", NOTIFICATIONS_GET_ALL)
@@ -119,11 +119,11 @@ class NotificationsGetPermissionLevelFunction
   NotificationsGetPermissionLevelFunction();
 
   // NotificationsApiFunction:
-  virtual bool CanRunWhileDisabled() const override;
-  virtual bool RunNotificationsApi() override;
+  bool CanRunWhileDisabled() const override;
+  bool RunNotificationsApi() override;
 
  protected:
-  virtual ~NotificationsGetPermissionLevelFunction();
+  ~NotificationsGetPermissionLevelFunction() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("notifications.getPermissionLevel",

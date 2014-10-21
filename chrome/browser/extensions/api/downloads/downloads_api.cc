@@ -297,12 +297,13 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
  public:
   DownloadFileIconExtractorImpl() {}
 
-  virtual ~DownloadFileIconExtractorImpl() {}
+  ~DownloadFileIconExtractorImpl() override {}
 
-  virtual bool ExtractIconURLForPath(const base::FilePath& path,
-                                     float scale,
-                                     IconLoader::IconSize icon_size,
-                                     IconURLCallback callback) override;
+  bool ExtractIconURLForPath(const base::FilePath& path,
+                             float scale,
+                             IconLoader::IconSize icon_size,
+                             IconURLCallback callback) override;
+
  private:
   void OnIconLoadComplete(
       float scale, const IconURLCallback& callback, gfx::Image* icon);
@@ -599,7 +600,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
     download_item->SetUserData(kKey, this);
   }
 
-  virtual ~ExtensionDownloadsEventRouterData() {
+  ~ExtensionDownloadsEventRouterData() override {
     if (updated_ > 0) {
       UMA_HISTOGRAM_PERCENTAGE("Download.OnChanged",
                                (changed_fired_ * 100 / updated_));
@@ -889,11 +890,9 @@ class ManagerDestructionObserver : public DownloadManager::Observer {
     manager_->AddObserver(this);
   }
 
-  virtual ~ManagerDestructionObserver() {
-    manager_->RemoveObserver(this);
-  }
+  ~ManagerDestructionObserver() override { manager_->RemoveObserver(this); }
 
-  virtual void ManagerGoingDown(DownloadManager* manager) override {
+  void ManagerGoingDown(DownloadManager* manager) override {
     manager_file_existence_last_checked_->erase(manager);
     if (manager_file_existence_last_checked_->size() == 0) {
       delete manager_file_existence_last_checked_;

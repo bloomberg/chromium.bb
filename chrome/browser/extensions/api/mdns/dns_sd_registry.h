@@ -89,12 +89,12 @@ class DnsSdRegistry : public DnsSdDelegate {
       local_discovery::ServiceDiscoverySharedClient* discovery_client);
 
   // DnsSdDelegate implementation:
-  virtual void ServiceChanged(const std::string& service_type,
-                              bool added,
-                              const DnsSdService& service) override;
-  virtual void ServiceRemoved(const std::string& service_type,
-                              const std::string& service_name) override;
-  virtual void ServicesFlushed(const std::string& service_type) override;
+  void ServiceChanged(const std::string& service_type,
+                      bool added,
+                      const DnsSdService& service) override;
+  void ServiceRemoved(const std::string& service_type,
+                      const std::string& service_name) override;
+  void ServicesFlushed(const std::string& service_type) override;
 
   DnsSdServiceTypeDataMap service_data_map_;
 

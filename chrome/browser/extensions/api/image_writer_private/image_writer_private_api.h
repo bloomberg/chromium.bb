@@ -18,8 +18,8 @@ class ImageWriterPrivateWriteFromUrlFunction
   ImageWriterPrivateWriteFromUrlFunction();
 
  private:
-  virtual ~ImageWriterPrivateWriteFromUrlFunction();
-  virtual bool RunAsync() override;
+  ~ImageWriterPrivateWriteFromUrlFunction() override;
+  bool RunAsync() override;
   void OnWriteStarted(bool success, const std::string& error);
 };
 
@@ -31,8 +31,8 @@ class ImageWriterPrivateWriteFromFileFunction
   ImageWriterPrivateWriteFromFileFunction();
 
  private:
-  virtual ~ImageWriterPrivateWriteFromFileFunction();
-  virtual bool RunAsync() override;
+  ~ImageWriterPrivateWriteFromFileFunction() override;
+  bool RunAsync() override;
   void OnWriteStarted(bool success, const std::string& error);
 };
 
@@ -44,8 +44,8 @@ class ImageWriterPrivateCancelWriteFunction
   ImageWriterPrivateCancelWriteFunction();
 
  private:
-  virtual ~ImageWriterPrivateCancelWriteFunction();
-  virtual bool RunAsync() override;
+  ~ImageWriterPrivateCancelWriteFunction() override;
+  bool RunAsync() override;
   void OnWriteCancelled(bool success, const std::string& error);
 };
 
@@ -57,8 +57,8 @@ class ImageWriterPrivateDestroyPartitionsFunction
   ImageWriterPrivateDestroyPartitionsFunction();
 
  private:
-  virtual ~ImageWriterPrivateDestroyPartitionsFunction();
-  virtual bool RunAsync() override;
+  ~ImageWriterPrivateDestroyPartitionsFunction() override;
+  bool RunAsync() override;
   void OnDestroyComplete(bool success, const std::string& error);
 };
 
@@ -70,8 +70,8 @@ class ImageWriterPrivateListRemovableStorageDevicesFunction
   ImageWriterPrivateListRemovableStorageDevicesFunction();
 
  private:
-  virtual ~ImageWriterPrivateListRemovableStorageDevicesFunction();
-  virtual bool RunAsync() override;
+  ~ImageWriterPrivateListRemovableStorageDevicesFunction() override;
+  bool RunAsync() override;
   void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list,
                          bool success);
 };

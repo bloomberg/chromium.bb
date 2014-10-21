@@ -42,18 +42,16 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
         weak_factory_(this) {
     expectation_->picker_created = true;
   }
-  virtual ~FakeDesktopMediaPicker() {
-    expectation_->picker_deleted = true;
-  }
+  ~FakeDesktopMediaPicker() override { expectation_->picker_deleted = true; }
 
   // DesktopMediaPicker interface.
-  virtual void Show(content::WebContents* web_contents,
-                    gfx::NativeWindow context,
-                    gfx::NativeWindow parent,
-                    const base::string16& app_name,
-                    const base::string16& target_name,
-                    scoped_ptr<DesktopMediaList> model,
-                    const DoneCallback& done_callback) override {
+  void Show(content::WebContents* web_contents,
+            gfx::NativeWindow context,
+            gfx::NativeWindow parent,
+            const base::string16& app_name,
+            const base::string16& target_name,
+            scoped_ptr<DesktopMediaList> model,
+            const DoneCallback& done_callback) override {
     if (!expectation_->cancelled) {
       // Post a task to call the callback asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -84,7 +82,7 @@ class FakeDesktopMediaPickerFactory :
     public DesktopCaptureChooseDesktopMediaFunction::PickerFactory {
  public:
   FakeDesktopMediaPickerFactory() {}
-  virtual ~FakeDesktopMediaPickerFactory() {}
+  ~FakeDesktopMediaPickerFactory() override {}
 
   void SetTestFlags(TestFlags* test_flags, int tests_count) {
     test_flags_ = test_flags;
@@ -93,9 +91,8 @@ class FakeDesktopMediaPickerFactory :
   }
 
   // DesktopCaptureChooseDesktopMediaFunction::PickerFactory interface.
-  virtual scoped_ptr<DesktopMediaList> CreateModel(
-      bool show_screens,
-      bool show_windows) override {
+  scoped_ptr<DesktopMediaList> CreateModel(bool show_screens,
+                                           bool show_windows) override {
     EXPECT_LE(current_test_, tests_count_);
     if (current_test_ >= tests_count_)
       return scoped_ptr<DesktopMediaList>();
@@ -104,7 +101,7 @@ class FakeDesktopMediaPickerFactory :
     return scoped_ptr<DesktopMediaList>(new FakeDesktopMediaList());
   }
 
-  virtual scoped_ptr<DesktopMediaPicker> CreatePicker() override {
+  scoped_ptr<DesktopMediaPicker> CreatePicker() override {
     EXPECT_LE(current_test_, tests_count_);
     if (current_test_ >= tests_count_)
       return scoped_ptr<DesktopMediaPicker>();

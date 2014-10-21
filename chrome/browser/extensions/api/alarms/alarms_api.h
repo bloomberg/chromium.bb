@@ -24,10 +24,10 @@ class AlarmsCreateFunction : public ChromeAsyncExtensionFunction {
   // of |clock|. Used for testing.
   explicit AlarmsCreateFunction(base::Clock* clock);
  protected:
-  virtual ~AlarmsCreateFunction();
+  ~AlarmsCreateFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
   DECLARE_EXTENSION_FUNCTION("alarms.create", ALARMS_CREATE)
  private:
   void Callback();
@@ -41,10 +41,10 @@ class AlarmsCreateFunction : public ChromeAsyncExtensionFunction {
 
 class AlarmsGetFunction : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~AlarmsGetFunction() {}
+  ~AlarmsGetFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Callback(const std::string& name, Alarm* alarm);
@@ -53,10 +53,10 @@ class AlarmsGetFunction : public ChromeAsyncExtensionFunction {
 
 class AlarmsGetAllFunction : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~AlarmsGetAllFunction() {}
+  ~AlarmsGetAllFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Callback(const AlarmList* alarms);
@@ -65,10 +65,10 @@ class AlarmsGetAllFunction : public ChromeAsyncExtensionFunction {
 
 class AlarmsClearFunction : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~AlarmsClearFunction() {}
+  ~AlarmsClearFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Callback(const std::string& name, bool success);
@@ -77,10 +77,10 @@ class AlarmsClearFunction : public ChromeAsyncExtensionFunction {
 
 class AlarmsClearAllFunction : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~AlarmsClearAllFunction() {}
+  ~AlarmsClearAllFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Callback();

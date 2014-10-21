@@ -19,12 +19,12 @@ namespace extensions {
 class ExtensionErrorUIDefault : public ExtensionErrorUI {
  public:
   explicit ExtensionErrorUIDefault(ExtensionErrorUI::Delegate* delegate);
-  virtual ~ExtensionErrorUIDefault();
+  ~ExtensionErrorUIDefault() override;
 
   // ExtensionErrorUI implementation:
-  virtual bool ShowErrorInBubbleView() override;
-  virtual void ShowExtensions() override;
-  virtual void Close() override;
+  bool ShowErrorInBubbleView() override;
+  void ShowExtensions() override;
+  void Close() override;
 
  private:
   class ExtensionGlobalError : public GlobalErrorWithStandardBubble {
@@ -33,17 +33,17 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
 
    private:
     // GlobalError methods.
-    virtual bool HasMenuItem() override;
-    virtual int MenuItemCommandID() override;
-    virtual base::string16 MenuItemLabel() override;
-    virtual void ExecuteMenuItem(Browser* browser) override;
-    virtual base::string16 GetBubbleViewTitle() override;
-    virtual std::vector<base::string16> GetBubbleViewMessages() override;
-    virtual base::string16 GetBubbleViewAcceptButtonLabel() override;
-    virtual base::string16 GetBubbleViewCancelButtonLabel() override;
-    virtual void OnBubbleViewDidClose(Browser* browser) override;
-    virtual void BubbleViewAcceptButtonPressed(Browser* browser) override;
-    virtual void BubbleViewCancelButtonPressed(Browser* browser) override;
+    bool HasMenuItem() override;
+    int MenuItemCommandID() override;
+    base::string16 MenuItemLabel() override;
+    void ExecuteMenuItem(Browser* browser) override;
+    base::string16 GetBubbleViewTitle() override;
+    std::vector<base::string16> GetBubbleViewMessages() override;
+    base::string16 GetBubbleViewAcceptButtonLabel() override;
+    base::string16 GetBubbleViewCancelButtonLabel() override;
+    void OnBubbleViewDidClose(Browser* browser) override;
+    void BubbleViewAcceptButtonPressed(Browser* browser) override;
+    void BubbleViewCancelButtonPressed(Browser* browser) override;
 
     // The ExtensionErrorUIDefault who owns us.
     ExtensionErrorUIDefault* error_ui_;

@@ -29,12 +29,12 @@ const int kPollInterval = 1;
 class DefaultEventDelegate : public IdleManager::EventDelegate {
  public:
   explicit DefaultEventDelegate(Profile* profile);
-  virtual ~DefaultEventDelegate();
+  ~DefaultEventDelegate() override;
 
-  virtual void OnStateChanged(const std::string& extension_id,
-                              IdleState new_state) override;
-  virtual void RegisterObserver(EventRouter::Observer* observer) override;
-  virtual void UnregisterObserver(EventRouter::Observer* observer) override;
+  void OnStateChanged(const std::string& extension_id,
+                      IdleState new_state) override;
+  void RegisterObserver(EventRouter::Observer* observer) override;
+  void UnregisterObserver(EventRouter::Observer* observer) override;
 
  private:
   Profile* profile_;
@@ -71,12 +71,11 @@ void DefaultEventDelegate::UnregisterObserver(EventRouter::Observer* observer) {
 class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
  public:
   DefaultIdleProvider();
-  virtual ~DefaultIdleProvider();
+  ~DefaultIdleProvider() override;
 
-  virtual void CalculateIdleState(int idle_threshold,
-                                  IdleCallback notify) override;
-  virtual void CalculateIdleTime(IdleTimeCallback notify) override;
-  virtual bool CheckIdleStateIsLocked() override;
+  void CalculateIdleState(int idle_threshold, IdleCallback notify) override;
+  void CalculateIdleTime(IdleTimeCallback notify) override;
+  bool CheckIdleStateIsLocked() override;
 };
 
 DefaultIdleProvider::DefaultIdleProvider() {

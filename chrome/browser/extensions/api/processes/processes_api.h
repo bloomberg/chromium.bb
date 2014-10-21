@@ -34,7 +34,7 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
                              public content::NotificationObserver {
  public:
   explicit ProcessesEventRouter(content::BrowserContext* context);
-  virtual ~ProcessesEventRouter();
+  ~ProcessesEventRouter() override;
 
   // Called when an extension process wants to listen to process events.
   void ListenerAdded();
@@ -51,16 +51,16 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
 
  private:
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // TaskManagerModelObserver methods.
-  virtual void OnItemsAdded(int start, int length) override;
-  virtual void OnModelChanged() override {}
-  virtual void OnItemsChanged(int start, int length) override;
-  virtual void OnItemsRemoved(int start, int length) override {}
-  virtual void OnItemsToBeRemoved(int start, int length) override;
+  void OnItemsAdded(int start, int length) override;
+  void OnModelChanged() override {}
+  void OnItemsChanged(int start, int length) override;
+  void OnItemsRemoved(int start, int length) override {}
+  void OnItemsToBeRemoved(int start, int length) override;
 
   // Internal helpers for processing notifications.
   void ProcessHangEvent(content::RenderWidgetHost* widget);
@@ -98,10 +98,10 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
                      public EventRouter::Observer {
  public:
   explicit ProcessesAPI(content::BrowserContext* context);
-  virtual ~ProcessesAPI();
+  ~ProcessesAPI() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ProcessesAPI>* GetFactoryInstance();
@@ -112,8 +112,8 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
   ProcessesEventRouter* processes_event_router();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ProcessesAPI>;
@@ -138,8 +138,8 @@ class GetProcessIdForTabFunction : public ChromeAsyncExtensionFunction {
   GetProcessIdForTabFunction();
 
  private:
-  virtual ~GetProcessIdForTabFunction() {}
-  virtual bool RunAsync() override;
+  ~GetProcessIdForTabFunction() override {}
+  bool RunAsync() override;
 
   void GetProcessIdForTab();
 
@@ -160,8 +160,8 @@ class TerminateFunction : public ChromeAsyncExtensionFunction {
   TerminateFunction();
 
  private:
-  virtual ~TerminateFunction() {}
-  virtual bool RunAsync() override;
+  ~TerminateFunction() override {}
+  bool RunAsync() override;
 
   void TerminateProcess();
 
@@ -179,8 +179,8 @@ class GetProcessInfoFunction : public ChromeAsyncExtensionFunction {
   GetProcessInfoFunction();
 
  private:
-  virtual ~GetProcessInfoFunction();
-  virtual bool RunAsync() override;
+  ~GetProcessInfoFunction() override;
+  bool RunAsync() override;
 
   void GatherProcessInfo();
 

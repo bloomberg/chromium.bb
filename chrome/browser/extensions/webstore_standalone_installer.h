@@ -62,7 +62,7 @@ class WebstoreStandaloneInstaller
   void BeginInstall();
 
  protected:
-  virtual ~WebstoreStandaloneInstaller();
+  ~WebstoreStandaloneInstaller() override;
 
   // Runs the callback; primarily used for running a callback before it is
   // cleared in AbortInstall().
@@ -152,8 +152,8 @@ class WebstoreStandaloneInstaller
   virtual scoped_ptr<WebstoreInstaller::Approval> CreateApproval() const;
 
   // ExtensionInstallPrompt::Delegate interface implementation.
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
   // Accessors to be used by subclasses.
   bool show_user_count() const { return show_user_count_; }
@@ -193,27 +193,24 @@ class WebstoreStandaloneInstaller
   // informs our delegate of success/failure.
 
   // WebstoreDataFetcherDelegate interface implementation.
-  virtual void OnWebstoreRequestFailure() override;
+  void OnWebstoreRequestFailure() override;
 
-  virtual void OnWebstoreResponseParseSuccess(
+  void OnWebstoreResponseParseSuccess(
       scoped_ptr<base::DictionaryValue> webstore_data) override;
 
-  virtual void OnWebstoreResponseParseFailure(
-      const std::string& error) override;
+  void OnWebstoreResponseParseFailure(const std::string& error) override;
 
   // WebstoreInstallHelper::Delegate interface implementation.
-  virtual void OnWebstoreParseSuccess(
-      const std::string& id,
-      const SkBitmap& icon,
-      base::DictionaryValue* parsed_manifest) override;
-  virtual void OnWebstoreParseFailure(
-      const std::string& id,
-      InstallHelperResultCode result_code,
-      const std::string& error_message) override;
+  void OnWebstoreParseSuccess(const std::string& id,
+                              const SkBitmap& icon,
+                              base::DictionaryValue* parsed_manifest) override;
+  void OnWebstoreParseFailure(const std::string& id,
+                              InstallHelperResultCode result_code,
+                              const std::string& error_message) override;
 
   // WebstoreInstaller::Delegate interface implementation.
-  virtual void OnExtensionInstallSuccess(const std::string& id) override;
-  virtual void OnExtensionInstallFailure(
+  void OnExtensionInstallSuccess(const std::string& id) override;
+  void OnExtensionInstallFailure(
       const std::string& id,
       const std::string& error,
       WebstoreInstaller::FailureReason reason) override;

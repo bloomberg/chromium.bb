@@ -51,14 +51,11 @@ class TestFaviconDownloader : public FaviconDownloader {
                        base::Unretained(this))),
         id_counter_(0) {
   }
-  virtual ~TestFaviconDownloader() {}
+  ~TestFaviconDownloader() override {}
 
-  virtual int DownloadImage(const GURL& url) override {
-    return id_counter_++;
-  }
+  int DownloadImage(const GURL& url) override { return id_counter_++; }
 
-  virtual std::vector<content::FaviconURL> GetFaviconURLsFromWebContents()
-      override {
+  std::vector<content::FaviconURL> GetFaviconURLsFromWebContents() override {
     return initial_favicon_urls_;
   }
 

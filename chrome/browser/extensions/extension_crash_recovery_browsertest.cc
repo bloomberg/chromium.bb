@@ -130,7 +130,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
 
 class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
  protected:
-  virtual void AcceptNotification(size_t index) override {
+  void AcceptNotification(size_t index) override {
     message_center::MessageCenter* message_center =
         message_center::MessageCenter::Get();
     ASSERT_GT(message_center->NotificationCount(), index);
@@ -143,7 +143,7 @@ class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
     WaitForExtensionLoad();
   }
 
-  virtual void CancelNotification(size_t index) override {
+  void CancelNotification(size_t index) override {
     message_center::MessageCenter* message_center =
         message_center::MessageCenter::Get();
     ASSERT_GT(message_center->NotificationCount(), index);
@@ -156,7 +156,7 @@ class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
         NotificationUIManager::GetProfileID(browser()->profile())));
   }
 
-  virtual size_t CountBalloons() override {
+  size_t CountBalloons() override {
     return message_center::MessageCenter::Get()->NotificationCount();
   }
 };

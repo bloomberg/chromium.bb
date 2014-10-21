@@ -28,7 +28,7 @@ class BlacklistStateFetcher : public net::URLFetcherDelegate {
 
   BlacklistStateFetcher();
 
-  virtual ~BlacklistStateFetcher();
+  ~BlacklistStateFetcher() override;
 
   virtual void Request(const std::string& id, const RequestCallback& callback);
 
@@ -39,7 +39,7 @@ class BlacklistStateFetcher : public net::URLFetcherDelegate {
 
  protected:
   // net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   typedef std::multimap<std::string, RequestCallback> CallbackMultiMap;

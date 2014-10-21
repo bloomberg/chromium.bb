@@ -84,7 +84,7 @@ class SafeBrowsingClientImpl
 
  private:
   friend class base::RefCountedThreadSafe<SafeBrowsingClientImpl>;
-  virtual ~SafeBrowsingClientImpl() {}
+  ~SafeBrowsingClientImpl() override {}
 
   // Pass |database_manager| as a parameter to avoid touching
   // SafeBrowsingService on the IO thread.
@@ -103,8 +103,7 @@ class SafeBrowsingClientImpl
     AddRef();  // Balanced in OnCheckExtensionsResult
   }
 
-  virtual void OnCheckExtensionsResult(
-      const std::set<std::string>& hits) override {
+  void OnCheckExtensionsResult(const std::set<std::string>& hits) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     callback_message_loop_->PostTask(FROM_HERE, base::Bind(callback_, hits));
     Release();  // Balanced in StartCheck.

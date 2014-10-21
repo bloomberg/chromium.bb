@@ -20,10 +20,10 @@ namespace extensions {
 class HotwordPrivateEventService : public BrowserContextKeyedAPI {
  public:
   explicit HotwordPrivateEventService(content::BrowserContext* context);
-  virtual ~HotwordPrivateEventService();
+  ~HotwordPrivateEventService() override;
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
   static BrowserContextKeyedAPIFactory<HotwordPrivateEventService>*
       GetFactoryInstance();
   static const char* service_name();
@@ -50,10 +50,10 @@ class HotwordPrivateSetEnabledFunction : public ChromeSyncExtensionFunction {
                              HOTWORDPRIVATE_SETENABLED)
 
  protected:
-  virtual ~HotwordPrivateSetEnabledFunction() {}
+  ~HotwordPrivateSetEnabledFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class HotwordPrivateSetAudioLoggingEnabledFunction
@@ -63,10 +63,10 @@ class HotwordPrivateSetAudioLoggingEnabledFunction
                              HOTWORDPRIVATE_SETAUDIOLOGGINGENABLED)
 
  protected:
-  virtual ~HotwordPrivateSetAudioLoggingEnabledFunction() {}
+  ~HotwordPrivateSetAudioLoggingEnabledFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction
@@ -76,10 +76,10 @@ class HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction
                              HOTWORDPRIVATE_SETHOTWORDALWAYSONSEARCHENABLED)
 
  protected:
-  virtual ~HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction() {}
+  ~HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
@@ -88,10 +88,10 @@ class HotwordPrivateGetStatusFunction : public ChromeSyncExtensionFunction {
                              HOTWORDPRIVATE_GETSTATUS)
 
  protected:
-  virtual ~HotwordPrivateGetStatusFunction() {}
+  ~HotwordPrivateGetStatusFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class HotwordPrivateSetHotwordSessionStateFunction
@@ -101,10 +101,10 @@ class HotwordPrivateSetHotwordSessionStateFunction
                              HOTWORDPRIVATE_SETHOTWORDSESSIONSTATE);
 
  protected:
-  virtual ~HotwordPrivateSetHotwordSessionStateFunction() {}
+  ~HotwordPrivateSetHotwordSessionStateFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class HotwordPrivateNotifyHotwordRecognitionFunction
@@ -114,10 +114,10 @@ class HotwordPrivateNotifyHotwordRecognitionFunction
                              HOTWORDPRIVATE_NOTIFYHOTWORDRECOGNITION);
 
  protected:
-  virtual ~HotwordPrivateNotifyHotwordRecognitionFunction() {}
+  ~HotwordPrivateNotifyHotwordRecognitionFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class HotwordPrivateGetLaunchStateFunction :
@@ -127,10 +127,10 @@ class HotwordPrivateGetLaunchStateFunction :
                              HOTWORDPRIVATE_GETLAUNCHSTATE)
 
  protected:
-  virtual ~HotwordPrivateGetLaunchStateFunction() {}
+  ~HotwordPrivateGetLaunchStateFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

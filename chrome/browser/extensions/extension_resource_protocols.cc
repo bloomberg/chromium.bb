@@ -33,13 +33,12 @@ class ExtensionResourcesJob : public net::URLRequestFileJob {
                     base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         weak_ptr_factory_(this) {}
 
-  virtual void Start() override;
+  void Start() override;
 
-  virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) override;
+  bool IsRedirectResponse(GURL* location, int* http_status_code) override;
 
  protected:
-  virtual ~ExtensionResourcesJob() {}
+  ~ExtensionResourcesJob() override {}
 
   void ResolvePathDone(const base::FilePath& resolved_path);
 
@@ -76,9 +75,9 @@ class ExtensionResourceProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   ExtensionResourceProtocolHandler() {}
-  virtual ~ExtensionResourceProtocolHandler() {}
+  ~ExtensionResourceProtocolHandler() override {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 

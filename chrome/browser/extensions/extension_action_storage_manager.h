@@ -27,19 +27,19 @@ class ExtensionActionStorageManager : public ExtensionActionAPI::Observer,
                                       public ExtensionRegistryObserver {
  public:
   explicit ExtensionActionStorageManager(content::BrowserContext* context);
-  virtual ~ExtensionActionStorageManager();
+  ~ExtensionActionStorageManager() override;
 
  private:
   // ExtensionActionAPI::Observer:
-  virtual void OnExtensionActionUpdated(
+  void OnExtensionActionUpdated(
       ExtensionAction* extension_action,
       content::WebContents* web_contents,
       content::BrowserContext* browser_context) override;
-  virtual void OnExtensionActionAPIShuttingDown() override;
+  void OnExtensionActionAPIShuttingDown() override;
 
   // ExtensionRegistryObserver:
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
 
   // Reads/Writes the ExtensionAction's default values to/from storage.
   void WriteToStorage(ExtensionAction* extension_action);

@@ -31,7 +31,7 @@ class ExtensionInfoBarDelegate : public infobars::InfoBarDelegate,
                                  public content::NotificationObserver,
                                  public extensions::ExtensionRegistryObserver {
  public:
-  virtual ~ExtensionInfoBarDelegate();
+  ~ExtensionInfoBarDelegate() override;
 
   // Creates an extension infobar and delegate and adds the infobar to the
   // infobar service for |web_contents|.
@@ -68,19 +68,18 @@ class ExtensionInfoBarDelegate : public infobars::InfoBarDelegate,
       scoped_ptr<ExtensionInfoBarDelegate> delegate);
 
   // InfoBarDelegate.
-  virtual bool EqualsDelegate(
-      infobars::InfoBarDelegate* delegate) const override;
-  virtual void InfoBarDismissed() override;
-  virtual Type GetInfoBarType() const override;
-  virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() override;
+  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
+  void InfoBarDismissed() override;
+  Type GetInfoBarType() const override;
+  ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate() override;
 
   // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver.
-  virtual void OnExtensionUnloaded(
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;

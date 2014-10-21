@@ -44,7 +44,7 @@ class SignedInDevicesChangeObserver
                                 Profile* profile);
   virtual ~SignedInDevicesChangeObserver();
 
-  virtual void OnDeviceInfoChange() override;
+  void OnDeviceInfoChange() override;
 
   const std::string& extension_id() {
     return extension_id_;
@@ -63,21 +63,20 @@ class SignedInDevicesManager : public BrowserContextKeyedAPI,
   // Default constructor used for testing.
   SignedInDevicesManager();
   explicit SignedInDevicesManager(content::BrowserContext* context);
-  virtual ~SignedInDevicesManager();
+  ~SignedInDevicesManager() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<SignedInDevicesManager>*
       GetFactoryInstance();
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // EventRouter::Observer:
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<SignedInDevicesManager>;

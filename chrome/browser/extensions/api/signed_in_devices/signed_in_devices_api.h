@@ -39,10 +39,10 @@ ScopedVector<sync_driver::DeviceInfo> GetAllSignedInDevices(
 
 class SignedInDevicesGetFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~SignedInDevicesGetFunction() {}
+  ~SignedInDevicesGetFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("signedInDevices.get", SIGNED_IN_DEVICES_GET)
 };
 

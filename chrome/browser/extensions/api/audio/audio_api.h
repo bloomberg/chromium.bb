@@ -16,7 +16,7 @@ class AudioService;
 class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
  public:
   explicit AudioAPI(content::BrowserContext* context);
-  virtual ~AudioAPI();
+  ~AudioAPI() override;
 
   AudioService* GetService() const;
 
@@ -24,7 +24,7 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
   static BrowserContextKeyedAPIFactory<AudioAPI>* GetFactoryInstance();
 
   // AudioService::Observer implementation.
-  virtual void OnDeviceChanged() override;
+  void OnDeviceChanged() override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<AudioAPI>;
@@ -44,8 +44,8 @@ class AudioGetInfoFunction : public ChromeAsyncExtensionFunction {
                              AUDIO_GETINFO);
 
  protected:
-  virtual ~AudioGetInfoFunction() {}
-  virtual bool RunAsync() override;
+  ~AudioGetInfoFunction() override {}
+  bool RunAsync() override;
 
  private:
   void OnGetInfoCompleted(const OutputInfo& output_info,
@@ -59,8 +59,8 @@ class AudioSetActiveDevicesFunction : public ChromeSyncExtensionFunction {
                              AUDIO_SETACTIVEDEVICES);
 
  protected:
-  virtual ~AudioSetActiveDevicesFunction() {}
-  virtual bool RunSync() override;
+  ~AudioSetActiveDevicesFunction() override {}
+  bool RunSync() override;
 };
 
 class AudioSetPropertiesFunction : public ChromeSyncExtensionFunction {
@@ -69,8 +69,8 @@ class AudioSetPropertiesFunction : public ChromeSyncExtensionFunction {
                              AUDIO_SETPROPERTIES);
 
  protected:
-  virtual ~AudioSetPropertiesFunction() {}
-  virtual bool RunSync() override;
+  ~AudioSetPropertiesFunction() override {}
+  bool RunSync() override;
 };
 
 

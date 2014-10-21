@@ -348,19 +348,16 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 
   // Simulate a user abort on an extension installation.
-  virtual void ConfirmInstall(
-      Delegate* delegate,
-      const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) override {
+  void ConfirmInstall(Delegate* delegate,
+                      const Extension* extension,
+                      const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIAbort(true);
     base::MessageLoopForUI::current()->Quit();
   }
 
-  virtual void OnInstallSuccess(const Extension* extension,
-                                SkBitmap* icon) override {}
+  void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {}
 
-  virtual void OnInstallFailure(
-      const extensions::CrxInstallerError& error) override {}
+  void OnInstallFailure(const extensions::CrxInstallerError& error) override {}
 };
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
@@ -370,10 +367,9 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
     : ExtensionInstallPrompt(web_contents) {}
 
   // Proceed without confirmation prompt.
-  virtual void ConfirmInstall(
-      Delegate* delegate,
-      const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) override {
+  void ConfirmInstall(Delegate* delegate,
+                      const Extension* extension,
+                      const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIProceed();
   }
 };

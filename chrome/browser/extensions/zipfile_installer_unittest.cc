@@ -42,12 +42,11 @@ struct MockExtensionRegistryObserver : public ExtensionRegistryObserver {
     runner->Run();
   }
 
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override {
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override {
     last_extension_installed = extension->id();
     quit_closure_.Run();
   }

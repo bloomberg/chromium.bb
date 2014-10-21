@@ -81,7 +81,7 @@ class SkewedTickClock : public base::DefaultTickClock {
  public:
   explicit SkewedTickClock(const base::TimeDelta& delta) : delta_(delta) {
   }
-  virtual base::TimeTicks NowTicks() override {
+  base::TimeTicks NowTicks() override {
     return DefaultTickClock::NowTicks() + delta_;
   }
  private:
@@ -96,7 +96,7 @@ class SkewedCastEnvironment : public media::cast::StandaloneCastEnvironment {
   }
 
  protected:
-  virtual ~SkewedCastEnvironment() {}
+  ~SkewedCastEnvironment() override {}
 };
 
 // We log one of these for each call to OnAudioFrame/OnVideoFrame.
@@ -239,9 +239,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 
  private:
   // Invoked by InProcessReceiver for each received audio frame.
-  virtual void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
-                            const base::TimeTicks& playout_time,
-                            bool is_continuous) override {
+  void OnAudioFrame(scoped_ptr<media::AudioBus> audio_frame,
+                    const base::TimeTicks& playout_time,
+                    bool is_continuous) override {
     CHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
     if (audio_frame->frames() <= 0) {
@@ -260,9 +260,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
   }
 
-  virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks& render_time,
-                            bool is_continuous) override {
+  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+                    const base::TimeTicks& render_time,
+                    bool is_continuous) override {
     CHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
     TRACE_EVENT_INSTANT1(
@@ -360,7 +360,7 @@ class CastV2PerformanceTest
     ExtensionApiTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     // Some of the tests may launch http requests through JSON or AJAX
     // which causes a security error (cross domain request) when the page
     // is loaded from the local file system ( file:// ). The following switch

@@ -30,7 +30,7 @@ class PolicyValueStore : public ValueStore {
   PolicyValueStore(const std::string& extension_id,
                    const scoped_refptr<SettingsObserverList>& observers,
                    scoped_ptr<ValueStore> delegate);
-  virtual ~PolicyValueStore();
+  ~PolicyValueStore() override;
 
   // Stores |policy| in the persistent database represented by the |delegate_|
   // and notifies observers with the changes from the previous policy.
@@ -40,24 +40,23 @@ class PolicyValueStore : public ValueStore {
   void DeleteStorage();
 
   // ValueStore implementation:
-  virtual size_t GetBytesInUse(const std::string& key) override;
-  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) override;
-  virtual size_t GetBytesInUse() override;
-  virtual ReadResult Get(const std::string& key) override;
-  virtual ReadResult Get(const std::vector<std::string>& keys) override;
-  virtual ReadResult Get() override;
-  virtual WriteResult Set(
-      WriteOptions options,
-      const std::string& key,
-      const base::Value& value) override;
-  virtual WriteResult Set(
-      WriteOptions options, const base::DictionaryValue& values) override;
-  virtual WriteResult Remove(const std::string& key) override;
-  virtual WriteResult Remove(const std::vector<std::string>& keys) override;
-  virtual WriteResult Clear() override;
+  size_t GetBytesInUse(const std::string& key) override;
+  size_t GetBytesInUse(const std::vector<std::string>& keys) override;
+  size_t GetBytesInUse() override;
+  ReadResult Get(const std::string& key) override;
+  ReadResult Get(const std::vector<std::string>& keys) override;
+  ReadResult Get() override;
+  WriteResult Set(WriteOptions options,
+                  const std::string& key,
+                  const base::Value& value) override;
+  WriteResult Set(WriteOptions options,
+                  const base::DictionaryValue& values) override;
+  WriteResult Remove(const std::string& key) override;
+  WriteResult Remove(const std::vector<std::string>& keys) override;
+  WriteResult Clear() override;
   // Hopefully, as a Read-Only database, there is no reason to use these.
-  virtual bool Restore() override;
-  virtual bool RestoreKey(const std::string& key) override;
+  bool Restore() override;
+  bool RestoreKey(const std::string& key) override;
 
   // For unit tests.
   ValueStore* delegate() { return delegate_.get(); }

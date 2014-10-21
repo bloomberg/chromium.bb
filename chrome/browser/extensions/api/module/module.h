@@ -22,10 +22,10 @@ class ExtensionSetUpdateUrlDataFunction : public ChromeSyncExtensionFunction {
                              EXTENSION_SETUPDATEURLDATA)
 
  protected:
-  virtual ~ExtensionSetUpdateUrlDataFunction() {}
+  ~ExtensionSetUpdateUrlDataFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ExtensionIsAllowedIncognitoAccessFunction
@@ -35,10 +35,10 @@ class ExtensionIsAllowedIncognitoAccessFunction
                              EXTENSION_ISALLOWEDINCOGNITOACCESS)
 
  protected:
-  virtual ~ExtensionIsAllowedIncognitoAccessFunction() {}
+  ~ExtensionIsAllowedIncognitoAccessFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ExtensionIsAllowedFileSchemeAccessFunction
@@ -48,10 +48,10 @@ class ExtensionIsAllowedFileSchemeAccessFunction
                              EXTENSION_ISALLOWEDFILESCHEMEACCESS)
 
  protected:
-  virtual ~ExtensionIsAllowedFileSchemeAccessFunction() {}
+  ~ExtensionIsAllowedFileSchemeAccessFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

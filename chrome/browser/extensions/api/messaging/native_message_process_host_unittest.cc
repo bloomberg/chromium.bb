@@ -78,9 +78,9 @@ class FakeLauncher : public NativeProcessLauncher {
         base::File(write_file, write_flags)));
   }
 
-  virtual void Launch(const GURL& origin,
-                      const std::string& native_host_name,
-                      LaunchedCallback callback) const override {
+  void Launch(const GURL& origin,
+              const std::string& native_host_name,
+              LaunchedCallback callback) const override {
     callback.Run(NativeProcessLauncher::RESULT_SUCCESS,
                  base::kNullProcessHandle,
                  read_file_.Pass(), write_file_.Pass());
@@ -112,7 +112,7 @@ class NativeMessagingTest : public ::testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void PostMessageFromNativeHost(const std::string& message) override {
+  void PostMessageFromNativeHost(const std::string& message) override {
     last_message_ = message;
 
     // Parse the message.
@@ -130,7 +130,7 @@ class NativeMessagingTest : public ::testing::Test,
       run_loop_->Quit();
   }
 
-  virtual void CloseChannel(const std::string& error_message) override {
+  void CloseChannel(const std::string& error_message) override {
     channel_closed_ = true;
     if (run_loop_)
       run_loop_->Quit();

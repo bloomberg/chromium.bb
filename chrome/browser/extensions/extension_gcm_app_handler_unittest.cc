@@ -140,29 +140,24 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
         app_handler_count_drop_to_zero_(false) {
   }
 
-  virtual ~FakeExtensionGCMAppHandler() {
-  }
+  ~FakeExtensionGCMAppHandler() override {}
 
-  virtual void OnMessage(
+  void OnMessage(const std::string& app_id,
+                 const gcm::GCMClient::IncomingMessage& message) override {}
+
+  void OnMessagesDeleted(const std::string& app_id) override {}
+
+  void OnSendError(
       const std::string& app_id,
-      const gcm::GCMClient::IncomingMessage& message) override {
-  }
+      const gcm::GCMClient::SendErrorDetails& send_error_details) override {}
 
-  virtual void OnMessagesDeleted(const std::string& app_id) override {
-  }
-
-  virtual void OnSendError(
-      const std::string& app_id,
-      const gcm::GCMClient::SendErrorDetails& send_error_details) override {
-  }
-
-  virtual void OnUnregisterCompleted(const std::string& app_id,
-                                     gcm::GCMClient::Result result) override {
+  void OnUnregisterCompleted(const std::string& app_id,
+                             gcm::GCMClient::Result result) override {
     unregistration_result_ = result;
     waiter_->SignalCompleted();
   }
 
-  virtual void RemoveAppHandler(const std::string& app_id) override{
+  void RemoveAppHandler(const std::string& app_id) override {
     ExtensionGCMAppHandler::RemoveAppHandler(app_id);
     if (!GetGCMDriver()->app_handlers().size())
       app_handler_count_drop_to_zero_ = true;

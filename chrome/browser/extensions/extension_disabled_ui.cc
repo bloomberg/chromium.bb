@@ -96,11 +96,11 @@ class ExtensionDisabledDialogDelegate
  private:
   friend class base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate>;
 
-  virtual ~ExtensionDisabledDialogDelegate();
+  ~ExtensionDisabledDialogDelegate() override;
 
   // ExtensionInstallPrompt::Delegate:
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
   // The UI for showing the install dialog when enabling.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
@@ -150,32 +150,32 @@ class ExtensionDisabledGlobalError
                                const Extension* extension,
                                bool is_remote_install,
                                const gfx::Image& icon);
-  virtual ~ExtensionDisabledGlobalError();
+  ~ExtensionDisabledGlobalError() override;
 
   // GlobalError implementation.
-  virtual Severity GetSeverity() override;
-  virtual bool HasMenuItem() override;
-  virtual int MenuItemCommandID() override;
-  virtual base::string16 MenuItemLabel() override;
-  virtual void ExecuteMenuItem(Browser* browser) override;
-  virtual gfx::Image GetBubbleViewIcon() override;
-  virtual base::string16 GetBubbleViewTitle() override;
-  virtual std::vector<base::string16> GetBubbleViewMessages() override;
-  virtual base::string16 GetBubbleViewAcceptButtonLabel() override;
-  virtual base::string16 GetBubbleViewCancelButtonLabel() override;
-  virtual void OnBubbleViewDidClose(Browser* browser) override;
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) override;
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) override;
-  virtual bool ShouldCloseOnDeactivate() const override;
+  Severity GetSeverity() override;
+  bool HasMenuItem() override;
+  int MenuItemCommandID() override;
+  base::string16 MenuItemLabel() override;
+  void ExecuteMenuItem(Browser* browser) override;
+  gfx::Image GetBubbleViewIcon() override;
+  base::string16 GetBubbleViewTitle() override;
+  std::vector<base::string16> GetBubbleViewMessages() override;
+  base::string16 GetBubbleViewAcceptButtonLabel() override;
+  base::string16 GetBubbleViewCancelButtonLabel() override;
+  void OnBubbleViewDidClose(Browser* browser) override;
+  void BubbleViewAcceptButtonPressed(Browser* browser) override;
+  void BubbleViewCancelButtonPressed(Browser* browser) override;
+  bool ShouldCloseOnDeactivate() const override;
 
   // ExtensionUninstallDialog::Delegate implementation.
-  virtual void ExtensionUninstallAccepted() override;
-  virtual void ExtensionUninstallCanceled() override;
+  void ExtensionUninstallAccepted() override;
+  void ExtensionUninstallCanceled() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   ExtensionService* service_;

@@ -41,18 +41,16 @@ class ObfuscatedGaiaIdFetcher : public OAuth2ApiCallFlow {
   // TODO(petewil): Someday let's make a profile keyed service to cache
   // the Gaia ID.
   explicit ObfuscatedGaiaIdFetcher(Delegate* delegate);
-  virtual ~ObfuscatedGaiaIdFetcher();
+  ~ObfuscatedGaiaIdFetcher() override;
 
   static OAuth2TokenService::ScopeSet GetScopes();
 
  protected:
   // OAuth2ApiCallFlow implementation
-  virtual GURL CreateApiCallUrl() override;
-  virtual std::string CreateApiCallBody() override;
-  virtual void ProcessApiCallSuccess(
-      const net::URLFetcher* source) override;
-  virtual void ProcessApiCallFailure(
-      const net::URLFetcher* source) override;
+  GURL CreateApiCallUrl() override;
+  std::string CreateApiCallBody() override;
+  void ProcessApiCallSuccess(const net::URLFetcher* source) override;
+  void ProcessApiCallFailure(const net::URLFetcher* source) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedGaiaIdFetcherTest, SetUp);

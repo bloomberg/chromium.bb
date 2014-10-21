@@ -20,13 +20,12 @@ namespace extensions {
 class StartupHelper : public PackExtensionJob::Client {
  public:
   StartupHelper();
-  virtual ~StartupHelper();
+  ~StartupHelper() override;
 
-  virtual void OnPackSuccess(
-      const base::FilePath& crx_path,
-      const base::FilePath& output_private_key_path) override;
-  virtual void OnPackFailure(const std::string& error_message,
-                             ExtensionCreator::ErrorType type) override;
+  void OnPackSuccess(const base::FilePath& crx_path,
+                     const base::FilePath& output_private_key_path) override;
+  void OnPackFailure(const std::string& error_message,
+                     ExtensionCreator::ErrorType type) override;
 
   // Handle --pack-extension flag from the |cmd_line| by packing the specified
   // extension. Returns false if the pack job failed.

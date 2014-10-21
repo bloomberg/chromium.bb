@@ -41,9 +41,9 @@ class ExtensionFromWebAppTest
 
  private:
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     if (type ==
         extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED) {
       const Extension* extension =

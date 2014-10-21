@@ -19,10 +19,10 @@ class MetricsPrivateGetIsCrashReportingEnabledFunction
                              METRICSPRIVATE_GETISCRASHRECORDINGENABLED)
 
  protected:
-  virtual ~MetricsPrivateGetIsCrashReportingEnabledFunction() {}
+  ~MetricsPrivateGetIsCrashReportingEnabledFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateGetFieldTrialFunction : public SyncExtensionFunction {
@@ -31,10 +31,10 @@ class MetricsPrivateGetFieldTrialFunction : public SyncExtensionFunction {
                              METRICSPRIVATE_GETFIELDTRIAL)
 
  protected:
-  virtual ~MetricsPrivateGetFieldTrialFunction() {}
+  ~MetricsPrivateGetFieldTrialFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateGetVariationParamsFunction : public SyncExtensionFunction {
@@ -43,10 +43,10 @@ class MetricsPrivateGetVariationParamsFunction : public SyncExtensionFunction {
                              METRICSPRIVATE_GETVARIATIONPARAMS)
 
  protected:
-  virtual ~MetricsPrivateGetVariationParamsFunction() {}
+  ~MetricsPrivateGetVariationParamsFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
@@ -55,15 +55,15 @@ class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
                              METRICSPRIVATE_RECORDUSERACTION)
 
  protected:
-  virtual ~MetricsPrivateRecordUserActionFunction() {}
+  ~MetricsPrivateRecordUserActionFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsHistogramHelperFunction : public SyncExtensionFunction {
  protected:
-  virtual ~MetricsHistogramHelperFunction() {}
+  ~MetricsHistogramHelperFunction() override {}
   virtual bool RecordValue(const std::string& name,
                            base::HistogramType type,
                            int min, int max, size_t buckets,
@@ -77,10 +77,10 @@ class MetricsPrivateRecordValueFunction
                              METRICSPRIVATE_RECORDVALUE)
 
  protected:
-  virtual ~MetricsPrivateRecordValueFunction() {}
+  ~MetricsPrivateRecordValueFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordSparseValueFunction
@@ -90,10 +90,10 @@ class MetricsPrivateRecordSparseValueFunction
                              METRICSPRIVATE_RECORDSPARSEVALUE)
 
  protected:
-  virtual ~MetricsPrivateRecordSparseValueFunction() {}
+  ~MetricsPrivateRecordSparseValueFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordPercentageFunction
@@ -103,10 +103,10 @@ class MetricsPrivateRecordPercentageFunction
                              METRICSPRIVATE_RECORDPERCENTAGE)
 
  protected:
-  virtual ~MetricsPrivateRecordPercentageFunction() {}
+  ~MetricsPrivateRecordPercentageFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordCountFunction
@@ -116,10 +116,10 @@ class MetricsPrivateRecordCountFunction
                              METRICSPRIVATE_RECORDCOUNT)
 
  protected:
-  virtual ~MetricsPrivateRecordCountFunction() {}
+  ~MetricsPrivateRecordCountFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordSmallCountFunction
@@ -129,10 +129,10 @@ class MetricsPrivateRecordSmallCountFunction
                              METRICSPRIVATE_RECORDSMALLCOUNT)
 
  protected:
-  virtual ~MetricsPrivateRecordSmallCountFunction() {}
+  ~MetricsPrivateRecordSmallCountFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordMediumCountFunction
@@ -142,10 +142,10 @@ class MetricsPrivateRecordMediumCountFunction
                              METRICSPRIVATE_RECORDMEDIUMCOUNT)
 
  protected:
-  virtual ~MetricsPrivateRecordMediumCountFunction() {}
+  ~MetricsPrivateRecordMediumCountFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordTimeFunction : public MetricsHistogramHelperFunction {
@@ -154,10 +154,10 @@ class MetricsPrivateRecordTimeFunction : public MetricsHistogramHelperFunction {
                              METRICSPRIVATE_RECORDTIME)
 
  protected:
-  virtual ~MetricsPrivateRecordTimeFunction() {}
+  ~MetricsPrivateRecordTimeFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordMediumTimeFunction
@@ -167,10 +167,10 @@ class MetricsPrivateRecordMediumTimeFunction
                              METRICSPRIVATE_RECORDMEDIUMTIME)
 
  protected:
-  virtual ~MetricsPrivateRecordMediumTimeFunction() {}
+  ~MetricsPrivateRecordMediumTimeFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class MetricsPrivateRecordLongTimeFunction
@@ -180,10 +180,10 @@ class MetricsPrivateRecordLongTimeFunction
                              METRICSPRIVATE_RECORDLONGTIME)
 
  protected:
-  virtual ~MetricsPrivateRecordLongTimeFunction() {}
+  ~MetricsPrivateRecordLongTimeFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 } // namespace extensions

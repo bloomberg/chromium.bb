@@ -178,7 +178,7 @@ class WebstoreStartupInstallerSupervisedUsersTest
     : public WebstoreStartupInstallerTest {
  public:
   // InProcessBrowserTest overrides:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerSupervisedUsersTest,
 class WebstoreStartupInstallUnpackFailureTest
     : public WebstoreStartupInstallerTest {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
 
     GURL crx_url = GenerateTestServerUrl(
@@ -221,7 +221,7 @@ class WebstoreStartupInstallUnpackFailureTest
         switches::kAppsGalleryUpdateURL, crx_url.spec());
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     WebstoreStartupInstallerTest::SetUpInProcessBrowserTestFixture();
     extensions::ExtensionInstallUI::set_disable_failure_ui_for_tests();
   }
@@ -246,14 +246,14 @@ class CommandLineWebstoreInstall
   CommandLineWebstoreInstall() : saw_install_(false), browser_open_count_(0) {}
   virtual ~CommandLineWebstoreInstall() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WebstoreStartupInstallerTest::SetUpOnMainThread();
     extensions::ExtensionRegistry::Get(browser()->profile())->AddObserver(this);
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                    content::NotificationService::AllSources());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     extensions::ExtensionRegistry::Get(browser()->profile())
         ->RemoveObserver(this);
     WebstoreStartupInstallerTest::TearDownOnMainThread();
@@ -264,19 +264,18 @@ class CommandLineWebstoreInstall
   int browser_open_count() { return browser_open_count_; }
 
   // NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_OPENED);
     ++browser_open_count_;
   }
 
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override {
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override {
     EXPECT_EQ(extension->id(), kTestExtensionId);
     saw_install_ = true;
   }

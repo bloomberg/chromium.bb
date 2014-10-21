@@ -21,7 +21,7 @@ class ExtensionViewHostMac : public ExtensionViewHost {
                        const GURL& url,
                        ViewType host_type)
       : ExtensionViewHost(extension, site_instance, url, host_type) {}
-  virtual ~ExtensionViewHostMac();
+  ~ExtensionViewHostMac() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewHostMac);

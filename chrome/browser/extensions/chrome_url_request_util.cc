@@ -59,10 +59,10 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
   }
 
   // Overridden from URLRequestSimpleJob:
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* data,
-                      const net::CompletionCallback& callback) const override {
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* data,
+              const net::CompletionCallback& callback) const override {
     // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
     tracked_objects::ScopedProfile tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -96,12 +96,12 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     return net::ERR_IO_PENDING;
   }
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) override {
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
     *info = response_info_;
   }
 
  private:
-  virtual ~URLRequestResourceBundleJob() {}
+  ~URLRequestResourceBundleJob() override {}
 
   void OnMimeTypeRead(std::string* out_mime_type,
                       std::string* charset,

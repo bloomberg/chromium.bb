@@ -215,13 +215,13 @@ class StorageEventObserver
   };
   typedef std::map<GURL, StorageState> OriginStorageStateMap;
 
-  virtual ~StorageEventObserver() {
+  ~StorageEventObserver() override {
     DCHECK(origin_state_map_.empty());
     StopObserving();
   }
 
   // storage::StorageObserver implementation.
-  virtual void OnStorageEvent(const Event& event) override {
+  void OnStorageEvent(const Event& event) override {
     OriginStorageStateMap::iterator iter =
         origin_state_map_.find(event.filter.origin);
     if (iter == origin_state_map_.end())

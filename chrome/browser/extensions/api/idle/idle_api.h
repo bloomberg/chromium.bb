@@ -16,10 +16,10 @@ class IdleQueryStateFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("idle.queryState", IDLE_QUERYSTATE)
 
  protected:
-  virtual ~IdleQueryStateFunction() {}
+  ~IdleQueryStateFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void IdleStateCallback(IdleState state);
@@ -32,10 +32,10 @@ class IdleSetDetectionIntervalFunction : public ChromeSyncExtensionFunction {
                              IDLE_SETDETECTIONINTERVAL)
 
  protected:
-  virtual ~IdleSetDetectionIntervalFunction() {}
+  ~IdleSetDetectionIntervalFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

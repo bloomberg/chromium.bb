@@ -34,7 +34,7 @@ class PushMessagingEventRouter
     : public PushMessagingInvalidationHandlerDelegate {
  public:
   explicit PushMessagingEventRouter(content::BrowserContext* context);
-  virtual ~PushMessagingEventRouter();
+  ~PushMessagingEventRouter() override;
 
   // For testing purposes.
   void TriggerMessageForTest(const std::string& extension_id,
@@ -43,9 +43,9 @@ class PushMessagingEventRouter
 
  private:
   // InvalidationHandlerDelegate implementation.
-  virtual void OnMessage(const std::string& extension_id,
-                         int subchannel,
-                         const std::string& payload) override;
+  void OnMessage(const std::string& extension_id,
+                 int subchannel,
+                 const std::string& payload) override;
 
   content::BrowserContext* const browser_context_;
 
@@ -61,10 +61,10 @@ class PushMessagingGetChannelIdFunction
   PushMessagingGetChannelIdFunction();
 
  protected:
-  virtual ~PushMessagingGetChannelIdFunction();
+  ~PushMessagingGetChannelIdFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
   DECLARE_EXTENSION_FUNCTION("pushMessaging.getChannelId",
                              PUSHMESSAGING_GETCHANNELID)
 
@@ -82,21 +82,18 @@ class PushMessagingGetChannelIdFunction
   void StartAccessTokenFetch();
 
   // OAuth2TokenService::Observer implementation.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // OAuth2TokenService::Consumer implementation.
-  virtual void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const std::string& access_token,
-      const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(
-      const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // ObfuscatedGiaiaIdFetcher::Delegate implementation.
-  virtual void OnObfuscatedGaiaIdFetchSuccess(const std::string& gaia_id)
-      override;
-  virtual void OnObfuscatedGaiaIdFetchFailure(
+  void OnObfuscatedGaiaIdFetchSuccess(const std::string& gaia_id) override;
+  void OnObfuscatedGaiaIdFetchFailure(
       const GoogleServiceAuthError& error) override;
 
   scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
@@ -110,13 +107,13 @@ class PushMessagingAPI : public BrowserContextKeyedAPI,
                          public ExtensionRegistryObserver {
  public:
   explicit PushMessagingAPI(content::BrowserContext* context);
-  virtual ~PushMessagingAPI();
+  ~PushMessagingAPI() override;
 
   // Convenience method to get the PushMessagingAPI for a BrowserContext.
   static PushMessagingAPI* Get(content::BrowserContext* context);
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<PushMessagingAPI>* GetFactoryInstance();
@@ -140,18 +137,16 @@ class PushMessagingAPI : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
 
   // Overridden from ExtensionRegistryObserver.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override;
 
   // Initialize |event_router_| and |handler_|.
   bool InitEventRouterAndHandler();

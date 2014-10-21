@@ -150,16 +150,16 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
       PasswordMap;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // local_discovery::PrivetDeviceLister implementation.
-  virtual void DeviceChanged(
+  void DeviceChanged(
       bool added,
       const std::string& name,
       const local_discovery::DeviceDescription& description) override;
-  virtual void DeviceRemoved(const std::string& name) override;
-  virtual void DeviceCacheFlushed() override;
+  void DeviceRemoved(const std::string& name) override;
+  void DeviceCacheFlushed() override;
 
   void SendMessageInternal(int session_id,
                            const std::string& api,
@@ -197,14 +197,14 @@ class GcdPrivateRequest : public local_discovery::PrivetV3Session::Request {
                     const base::DictionaryValue& input,
                     const GcdPrivateAPIImpl::MessageResponseCallback& callback,
                     GcdPrivateSessionHolder* session_holder);
-  virtual ~GcdPrivateRequest();
+  ~GcdPrivateRequest() override;
 
   // local_discovery::PrivetV3Session::Request implementation.
-  virtual std::string GetName() override;
-  virtual const base::DictionaryValue& GetInput() override;
-  virtual void OnError() override;
-  virtual void OnParsedJson(const base::DictionaryValue& value,
-                            bool has_error) override;
+  std::string GetName() override;
+  const base::DictionaryValue& GetInput() override;
+  void OnError() override;
+  void OnParsedJson(const base::DictionaryValue& value,
+                    bool has_error) override;
 
   void RunCallback(gcd_private::Status status,
                    const base::DictionaryValue& value);
@@ -227,7 +227,7 @@ class GcdPrivateSessionHolder
   GcdPrivateSessionHolder(const std::string& ip_address,
                           int port,
                           net::URLRequestContextGetter* request_context);
-  virtual ~GcdPrivateSessionHolder();
+  ~GcdPrivateSessionHolder() override;
 
   void Start(const ConfirmationCodeCallback& callback);
 
@@ -243,10 +243,10 @@ class GcdPrivateSessionHolder
 
  private:
   // local_discovery::PrivetV3Session::Delegate implementation.
-  virtual void OnSetupConfirmationNeeded(
+  void OnSetupConfirmationNeeded(
       const std::string& confirmation_code,
       api::gcd_private::ConfirmationType confirmation_type) override;
-  virtual void OnSessionStatus(api::gcd_private::Status status) override;
+  void OnSessionStatus(api::gcd_private::Status status) override;
 
   scoped_ptr<local_discovery::PrivetHTTPClient> http_client_;
   scoped_ptr<local_discovery::PrivetV3Session> privet_session_;

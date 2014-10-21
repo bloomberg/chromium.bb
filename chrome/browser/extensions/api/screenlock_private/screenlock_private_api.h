@@ -18,10 +18,10 @@ class ScreenlockPrivateGetLockedFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.getLocked",
                              SCREENLOCKPRIVATE_GETLOCKED)
   ScreenlockPrivateGetLockedFunction();
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
-  virtual ~ScreenlockPrivateGetLockedFunction();
+  ~ScreenlockPrivateGetLockedFunction() override;
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateGetLockedFunction);
 };
 
@@ -30,10 +30,10 @@ class ScreenlockPrivateSetLockedFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.setLocked",
                              SCREENLOCKPRIVATE_SETLOCKED)
   ScreenlockPrivateSetLockedFunction();
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
-  virtual ~ScreenlockPrivateSetLockedFunction();
+  ~ScreenlockPrivateSetLockedFunction() override;
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateSetLockedFunction);
 };
 
@@ -43,10 +43,10 @@ class ScreenlockPrivateAcceptAuthAttemptFunction
   DECLARE_EXTENSION_FUNCTION("screenlockPrivate.acceptAuthAttempt",
                              SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT)
   ScreenlockPrivateAcceptAuthAttemptFunction();
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
-  virtual ~ScreenlockPrivateAcceptAuthAttemptFunction();
+  ~ScreenlockPrivateAcceptAuthAttemptFunction() override;
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateAcceptAuthAttemptFunction);
 };
 
@@ -54,7 +54,7 @@ class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
                                      public ScreenlockBridge::Observer {
  public:
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
-  virtual ~ScreenlockPrivateEventRouter();
+  ~ScreenlockPrivateEventRouter() override;
 
   bool OnAuthAttempted(ScreenlockBridge::LockHandler::AuthType auth_type,
                        const std::string& value);
@@ -63,12 +63,12 @@ class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
   static extensions::BrowserContextKeyedAPIFactory<
       ScreenlockPrivateEventRouter>*
       GetFactoryInstance();
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // ScreenlockBridge::Observer
-  virtual void OnScreenDidLock() override;
-  virtual void OnScreenDidUnlock() override;
-  virtual void OnFocusedUserChanged(const std::string& user_id) override;
+  void OnScreenDidLock() override;
+  void OnScreenDidUnlock() override;
+  void OnFocusedUserChanged(const std::string& user_id) override;
 
  private:
   friend class extensions::BrowserContextKeyedAPIFactory<

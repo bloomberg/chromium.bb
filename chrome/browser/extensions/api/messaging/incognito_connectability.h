@@ -64,7 +64,7 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
   friend class BrowserContextKeyedAPIFactory<IncognitoConnectability>;
 
   explicit IncognitoConnectability(content::BrowserContext* context);
-  virtual ~IncognitoConnectability();
+  ~IncognitoConnectability() override;
 
   typedef std::map<std::string, std::set<GURL> > ExtensionToOriginsMap;
 

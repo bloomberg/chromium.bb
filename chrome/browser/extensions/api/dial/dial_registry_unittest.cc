@@ -48,7 +48,7 @@ class MockDialRegistry : public DialRegistry {
     time_ = Time::Now();
   }
 
-  virtual ~MockDialRegistry() {
+  ~MockDialRegistry() override {
     // Don't let the DialRegistry delete this.
     DialService* tmp = dial_.release();
     if (tmp != NULL)
@@ -64,15 +64,11 @@ class MockDialRegistry : public DialRegistry {
   Time time_;
 
  protected:
-  virtual base::Time Now() const override {
-    return time_;
-  }
+  base::Time Now() const override { return time_; }
 
-  virtual DialService* CreateDialService() override {
-    return &mock_service_;
-  }
+  DialService* CreateDialService() override { return &mock_service_; }
 
-  virtual void ClearDialService() override {
+  void ClearDialService() override {
     // Release the pointer but don't delete the object because the test owns it.
     CHECK_EQ(&mock_service_, dial_.release());
   }

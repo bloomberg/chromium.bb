@@ -35,7 +35,7 @@ class ExtensionDevToolsClientHost;
 class DebuggerFunction : public ChromeAsyncExtensionFunction {
  protected:
   DebuggerFunction();
-  virtual ~DebuggerFunction();
+  ~DebuggerFunction() override;
 
   void FormatErrorMessage(const std::string& format);
 
@@ -55,10 +55,10 @@ class DebuggerAttachFunction : public DebuggerFunction {
   DebuggerAttachFunction();
 
  protected:
-  virtual ~DebuggerAttachFunction();
+  ~DebuggerAttachFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements the debugger.detach() extension function.
@@ -69,10 +69,10 @@ class DebuggerDetachFunction : public DebuggerFunction {
   DebuggerDetachFunction();
 
  protected:
-  virtual ~DebuggerDetachFunction();
+  ~DebuggerDetachFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements the debugger.sendCommand() extension function.
@@ -84,10 +84,10 @@ class DebuggerSendCommandFunction : public DebuggerFunction {
   void SendResponseBody(base::DictionaryValue* result);
 
  protected:
-  virtual ~DebuggerSendCommandFunction();
+  ~DebuggerSendCommandFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 // Implements the debugger.getTargets() extension function.
@@ -98,10 +98,10 @@ class DebuggerGetTargetsFunction : public DebuggerFunction {
   DebuggerGetTargetsFunction();
 
  protected:
-  virtual ~DebuggerGetTargetsFunction();
+  ~DebuggerGetTargetsFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void SendTargetList(const std::vector<DevToolsTargetImpl*>& target_list);

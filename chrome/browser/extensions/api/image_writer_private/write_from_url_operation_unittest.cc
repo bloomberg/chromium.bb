@@ -43,7 +43,7 @@ class OperationForTest : public WriteFromUrlOperation {
                               hash,
                               storage_unit_id) {}
 
-  virtual void StartImpl() override {}
+  void StartImpl() override {}
 
   // Expose stages for testing.
   void GetDownloadTarget(const base::Closure& continuation) {
@@ -66,7 +66,7 @@ class OperationForTest : public WriteFromUrlOperation {
   base::FilePath GetImagePath() { return image_path_; }
 
  private:
-  virtual ~OperationForTest() {};
+  ~OperationForTest() override{};
 };
 
 class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {

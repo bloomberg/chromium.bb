@@ -59,7 +59,7 @@ class UserScriptLoader : public content::NotificationObserver,
   UserScriptLoader(Profile* profile,
                    const ExtensionId& owner_extension_id,
                    bool listen_for_extension_system_loaded);
-  virtual ~UserScriptLoader();
+  ~UserScriptLoader() override;
 
   // Add |scripts| to the set of scripts managed by this loader.
   void AddScripts(const std::set<UserScript>& scripts);
@@ -78,15 +78,14 @@ class UserScriptLoader : public content::NotificationObserver,
 
  private:
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Initiates script load when we have been waiting for the extension system
   // to be ready.

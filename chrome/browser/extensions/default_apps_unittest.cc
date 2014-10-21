@@ -22,9 +22,10 @@ class MockExternalLoader : public ExternalLoader {
  public:
   MockExternalLoader() {}
 
-  virtual void StartLoading() override {}
+  void StartLoading() override {}
+
  private:
-  virtual ~MockExternalLoader() {}
+  ~MockExternalLoader() override {}
 };
 
 class DefaultAppsTest : public testing::Test {
@@ -73,8 +74,7 @@ TEST_F(DefaultAppsTest, Install) {
   EXPECT_TRUE(state == default_apps::kAlreadyInstalledDefaultApps);
 
   class DefaultTestingProfile : public TestingProfile {
-    virtual  bool WasCreatedByVersionOrLater(
-        const std::string& version) override {
+    bool WasCreatedByVersionOrLater(const std::string& version) override {
       return false;
     }
   };

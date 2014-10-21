@@ -16,14 +16,14 @@ class SettingsApiBubble;
 class SettingsApiBubbleController : public ExtensionMessageBubbleController {
  public:
   SettingsApiBubbleController(Profile* profile, SettingsApiOverrideType type);
-  virtual ~SettingsApiBubbleController();
+  ~SettingsApiBubbleController() override;
 
   // Whether the controller knows that we should show the bubble for extension
   // with |extension_id|. Returns true if so.
   bool ShouldShow(const std::string& extension_id);
 
   // ExtensionMessageBubbleController:
-  virtual bool CloseOnDeactivate() override;
+  bool CloseOnDeactivate() override;
 
  private:
   // A weak pointer to the profile we are associated with. Not owned by us.

@@ -31,8 +31,8 @@ class AppLoadObserver : public ExtensionRegistryObserver {
     extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   }
 
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override {
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override {
     callback_.Run(extension);
   }
 
@@ -64,7 +64,7 @@ const int kGraylistedPath = base::DIR_HOME;
 
 class FileSystemApiTest : public PlatformAppBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     test_root_folder_ = test_data_dir_.AppendASCII("api_test")
         .AppendASCII("file_system");
@@ -72,9 +72,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
         "test_root", test_root_folder_);
   }
 
-  virtual void SetUpOnMainThread() override {
-    ClearCommandLineArgs();
-  }
+  void SetUpOnMainThread() override { ClearCommandLineArgs(); }
 
   virtual void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();

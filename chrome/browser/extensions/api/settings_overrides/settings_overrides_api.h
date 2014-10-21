@@ -23,7 +23,7 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
                              public ExtensionRegistryObserver {
  public:
   explicit SettingsOverridesAPI(content::BrowserContext* context);
-  virtual ~SettingsOverridesAPI();
+  ~SettingsOverridesAPI() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<SettingsOverridesAPI>*
@@ -42,15 +42,14 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
                  const std::string& pref_key);
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void OnTemplateURLsLoaded();
 

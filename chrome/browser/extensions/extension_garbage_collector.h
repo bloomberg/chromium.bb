@@ -27,7 +27,7 @@ namespace extensions {
 class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
  public:
   explicit ExtensionGarbageCollector(content::BrowserContext* context);
-  virtual ~ExtensionGarbageCollector();
+  ~ExtensionGarbageCollector() override;
 
   static ExtensionGarbageCollector* Get(content::BrowserContext* context);
 
@@ -35,12 +35,12 @@ class ExtensionGarbageCollector : public KeyedService, public InstallObserver {
   void GarbageCollectExtensionsForTest();
 
   // Overriddes for KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Overriddes for InstallObserver
-  virtual void OnBeginCrxInstall(const std::string& extension_id) override;
-  virtual void OnFinishCrxInstall(const std::string& extension_id,
-                                  bool success) override;
+  void OnBeginCrxInstall(const std::string& extension_id) override;
+  void OnFinishCrxInstall(const std::string& extension_id,
+                          bool success) override;
 
  protected:
   // Cleans up the extension install directory. It can end up with garbage in it

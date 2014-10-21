@@ -122,7 +122,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
                         content::WebContents* contents)
       : BookmarkAppHelper(service, web_app_info, contents) {}
 
-  virtual ~TestBookmarkAppHelper() {}
+  ~TestBookmarkAppHelper() override {}
 
   void CreationComplete(const extensions::Extension* extension,
                         const WebApplicationInfo& web_app_info) {

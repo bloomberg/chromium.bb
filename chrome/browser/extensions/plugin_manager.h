@@ -27,7 +27,7 @@ class PluginManager : public BrowserContextKeyedAPI,
                       public ExtensionRegistryObserver {
  public:
   explicit PluginManager(content::BrowserContext* context);
-  virtual ~PluginManager();
+  ~PluginManager() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<PluginManager>* GetFactoryInstance();
@@ -55,12 +55,11 @@ class PluginManager : public BrowserContextKeyedAPI,
 #endif  // !defined(DISABLE_NACL)
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "PluginManager"; }

@@ -34,7 +34,7 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
         policy_check_called_(false),
         blacklist_state_(NOT_BLACKLISTED) {}
 
-  virtual ~ExtensionInstallCheckerForTest() {}
+  ~ExtensionInstallCheckerForTest() override {}
 
   void set_requirements_error(const std::string& error) {
     requirements_error_ = error;
@@ -60,23 +60,23 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
   }
 
  protected:
-  virtual void CheckRequirements() override {
+  void CheckRequirements() override {
     requirements_check_called_ = true;
     MockCheckRequirements(current_sequence_number());
   }
 
-  virtual void CheckManagementPolicy() override {
+  void CheckManagementPolicy() override {
     policy_check_called_ = true;
     OnManagementPolicyCheckDone(policy_check_error_.empty(),
                                 policy_check_error_);
   }
 
-  virtual void CheckBlacklistState() override {
+  void CheckBlacklistState() override {
     blacklist_check_called_ = true;
     MockCheckBlacklistState(current_sequence_number());
   }
 
-  virtual void ResetResults() override {
+  void ResetResults() override {
     ExtensionInstallChecker::ResetResults();
 
     requirements_check_called_ = false;
@@ -98,7 +98,7 @@ class ExtensionInstallCheckerForTest : public ExtensionInstallChecker {
 // checks.
 class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
  protected:
-  virtual void CheckRequirements() override {
+  void CheckRequirements() override {
     requirements_check_called_ = true;
 
     base::MessageLoop::current()->PostTask(
@@ -108,7 +108,7 @@ class ExtensionInstallCheckerAsync : public ExtensionInstallCheckerForTest {
                    current_sequence_number()));
   }
 
-  virtual void CheckBlacklistState() override {
+  void CheckBlacklistState() override {
     blacklist_check_called_ = true;
 
     base::MessageLoop::current()->PostTask(

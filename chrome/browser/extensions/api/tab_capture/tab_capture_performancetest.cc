@@ -103,7 +103,7 @@ class TabCapturePerformanceTest
     ExtensionApiTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     if (!ScalingMethod().empty()) {
       command_line->AppendSwitchASCII(switches::kTabCaptureUpscaleQuality,
                                       ScalingMethod());

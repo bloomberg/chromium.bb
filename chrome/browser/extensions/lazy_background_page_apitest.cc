@@ -61,7 +61,7 @@ class LoadedIncognitoObserver : public extensions::ExtensionRegistryObserver {
   }
 
  private:
-  virtual void OnExtensionUnloaded(
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override {
@@ -85,7 +85,7 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
   LazyBackgroundPageApiTest() {}
   virtual ~LazyBackgroundPageApiTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     // Set shorter delays to prevent test timeouts.
     extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);

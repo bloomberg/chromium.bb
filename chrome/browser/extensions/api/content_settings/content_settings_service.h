@@ -20,7 +20,7 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
                                public ExtensionPrefsObserver {
  public:
   explicit ContentSettingsService(content::BrowserContext* context);
-  virtual ~ContentSettingsService();
+  ~ContentSettingsService() override;
 
   scoped_refptr<ContentSettingsStore> content_settings_store() const {
     return content_settings_store_;
@@ -34,15 +34,14 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
       GetFactoryInstance();
 
   // ExtensionPrefsObserver implementation.
-  virtual void OnExtensionRegistered(const std::string& extension_id,
-                                     const base::Time& install_time,
-                                     bool is_enabled) override;
-  virtual void OnExtensionPrefsLoaded(const std::string& extension_id,
-                                      const ExtensionPrefs* prefs) override;
-  virtual void OnExtensionPrefsDeleted(const std::string& extension_id)
-      override;
-  virtual void OnExtensionStateChanged(const std::string& extension_id,
-                                       bool state) override;
+  void OnExtensionRegistered(const std::string& extension_id,
+                             const base::Time& install_time,
+                             bool is_enabled) override;
+  void OnExtensionPrefsLoaded(const std::string& extension_id,
+                              const ExtensionPrefs* prefs) override;
+  void OnExtensionPrefsDeleted(const std::string& extension_id) override;
+  void OnExtensionStateChanged(const std::string& extension_id,
+                               bool state) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ContentSettingsService>;

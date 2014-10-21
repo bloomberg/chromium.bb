@@ -40,10 +40,10 @@ class ExtensionViewHost::AssociatedWebContentsObserver
   AssociatedWebContentsObserver(ExtensionViewHost* host,
                                 WebContents* web_contents)
       : WebContentsObserver(web_contents), host_(host) {}
-  virtual ~AssociatedWebContentsObserver() {}
+  ~AssociatedWebContentsObserver() override {}
 
   // content::WebContentsObserver:
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     // Deleting |this| from here is safe.
     host_->SetAssociatedWebContents(NULL);
   }

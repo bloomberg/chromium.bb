@@ -14,13 +14,13 @@ class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
  public:
   MockMemoryInfoProviderImpl() {}
 
-  virtual bool QueryInfo() override {
+  bool QueryInfo() override {
     info_.capacity = 4096;
     info_.available_capacity = 1024;
     return true;
   }
  private:
-  virtual ~MockMemoryInfoProviderImpl() {}
+  ~MockMemoryInfoProviderImpl() override {}
 };
 
 class SystemMemoryApiTest: public ExtensionApiTest {
@@ -28,7 +28,7 @@ class SystemMemoryApiTest: public ExtensionApiTest {
   SystemMemoryApiTest() {}
   virtual ~SystemMemoryApiTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     message_loop_.reset(new base::MessageLoopForUI);
   }

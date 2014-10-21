@@ -42,11 +42,10 @@ class MockEventDelegate : public IdleManager::EventDelegate {
 class TestIdleProvider : public IdleManager::IdleTimeProvider {
  public:
   TestIdleProvider();
-  virtual ~TestIdleProvider();
-  virtual void CalculateIdleState(int idle_threshold,
-                                  IdleCallback notify) override;
-  virtual void CalculateIdleTime(IdleTimeCallback notify) override;
-  virtual bool CheckIdleStateIsLocked() override;
+  ~TestIdleProvider() override;
+  void CalculateIdleState(int idle_threshold, IdleCallback notify) override;
+  void CalculateIdleTime(IdleTimeCallback notify) override;
+  bool CheckIdleStateIsLocked() override;
 
   void set_idle_time(int idle_time);
   void set_locked(bool locked);

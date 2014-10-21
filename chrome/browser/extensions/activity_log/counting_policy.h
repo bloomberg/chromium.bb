@@ -23,21 +23,21 @@ namespace extensions {
 class CountingPolicy : public ActivityLogDatabasePolicy {
  public:
   explicit CountingPolicy(Profile* profile);
-  virtual ~CountingPolicy();
+  ~CountingPolicy() override;
 
-  virtual void ProcessAction(scoped_refptr<Action> action) override;
+  void ProcessAction(scoped_refptr<Action> action) override;
 
-  virtual void ReadFilteredData(
+  void ReadFilteredData(
       const std::string& extension_id,
       const Action::ActionType type,
       const std::string& api_name,
       const std::string& page_url,
       const std::string& arg_url,
       const int days_ago,
-      const base::Callback
-          <void(scoped_ptr<Action::ActionVector>)>& callback) override;
+      const base::Callback<void(scoped_ptr<Action::ActionVector>)>& callback)
+      override;
 
-  virtual void Close() override;
+  void Close() override;
 
   // Gets or sets the amount of time that old records are kept in the database.
   const base::TimeDelta& retention_time() const { return retention_time_; }
@@ -46,16 +46,16 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   }
 
   // Remove actions (rows) which IDs are specified in the action_ids array.
-  virtual void RemoveActions(const std::vector<int64>& action_ids) override;
+  void RemoveActions(const std::vector<int64>& action_ids) override;
 
   // Clean the URL data stored for this policy.
-  virtual void RemoveURLs(const std::vector<GURL>&) override;
+  void RemoveURLs(const std::vector<GURL>&) override;
 
   // Clean the data related to this extension for this policy.
-  virtual void RemoveExtensionData(const std::string& extension_id) override;
+  void RemoveExtensionData(const std::string& extension_id) override;
 
   // Delete everything in the database.
-  virtual void DeleteDatabase() override;
+  void DeleteDatabase() override;
 
   // The main database table, and the name for a read-only view that
   // decompresses string values for easier parsing.
@@ -65,10 +65,10 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
  protected:
   // The ActivityDatabase::Delegate interface.  These are always called from
   // the database thread.
-  virtual bool InitDatabase(sql::Connection* db) override;
-  virtual bool FlushDatabase(sql::Connection* db) override;
-  virtual void OnDatabaseFailure() override;
-  virtual void OnDatabaseClose() override;
+  bool InitDatabase(sql::Connection* db) override;
+  bool FlushDatabase(sql::Connection* db) override;
+  void OnDatabaseFailure() override;
+  void OnDatabaseClose() override;
 
  private:
   // A type used to track pending writes to the database.  The key is an action

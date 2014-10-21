@@ -36,9 +36,9 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
   static void SetTestDelegate(TestDelegate* delegate);
 
  private:
-  virtual ~PageCaptureSaveAsMHTMLFunction();
-  virtual bool RunAsync() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  ~PageCaptureSaveAsMHTMLFunction() override;
+  bool RunAsync() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Called on the file thread.
   void CreateTemporaryFile();

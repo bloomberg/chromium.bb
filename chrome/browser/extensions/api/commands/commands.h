@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
 class GetAllCommandsFunction : public ChromeSyncExtensionFunction {
-  virtual ~GetAllCommandsFunction() {}
-  virtual bool RunSync() override;
+  ~GetAllCommandsFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("commands.getAll", COMMANDS_GETALL)
 };
 

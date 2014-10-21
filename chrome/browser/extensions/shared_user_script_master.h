@@ -29,19 +29,18 @@ class ExtensionRegistry;
 class SharedUserScriptMaster : public ExtensionRegistryObserver {
  public:
   explicit SharedUserScriptMaster(Profile* profile);
-  virtual ~SharedUserScriptMaster();
+  ~SharedUserScriptMaster() override;
 
   // Provides access to loader state method: scripts_ready().
   bool scripts_ready() const { return loader_.scripts_ready(); }
 
  private:
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Gets an extension's scripts' metadata; i.e., gets a list of UserScript
   // objects that contains script info, but not the contents of the scripts.

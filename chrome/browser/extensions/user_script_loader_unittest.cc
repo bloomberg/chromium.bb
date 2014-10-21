@@ -63,9 +63,9 @@ class UserScriptLoaderTest : public testing::Test,
     ui_thread_.reset();
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK(type == extensions::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
     shared_memory_ = content::Details<base::SharedMemory>(details).ptr();

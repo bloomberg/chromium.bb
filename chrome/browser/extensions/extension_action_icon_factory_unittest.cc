@@ -145,7 +145,7 @@ class ExtensionActionIconFactoryTest
   }
 
   // ExtensionActionIconFactory::Observer overrides:
-  virtual void OnIconUpdated() override {
+  void OnIconUpdated() override {
     if (quit_in_icon_updated_)
       base::MessageLoop::current()->Quit();
   }

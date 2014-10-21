@@ -32,10 +32,10 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
                              NETWORKINGPRIVATE_GETPROPERTIES);
 
  protected:
-  virtual ~NetworkingPrivateGetPropertiesFunction();
+  ~NetworkingPrivateGetPropertiesFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::DictionaryValue> result);
@@ -53,10 +53,10 @@ class NetworkingPrivateGetManagedPropertiesFunction
                              NETWORKINGPRIVATE_GETMANAGEDPROPERTIES);
 
  protected:
-  virtual ~NetworkingPrivateGetManagedPropertiesFunction();
+  ~NetworkingPrivateGetManagedPropertiesFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::DictionaryValue> result);
@@ -73,10 +73,10 @@ class NetworkingPrivateGetStateFunction : public AsyncExtensionFunction {
                              NETWORKINGPRIVATE_GETSTATE);
 
  protected:
-  virtual ~NetworkingPrivateGetStateFunction();
+  ~NetworkingPrivateGetStateFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::DictionaryValue> result);
@@ -93,10 +93,10 @@ class NetworkingPrivateSetPropertiesFunction : public AsyncExtensionFunction {
                              NETWORKINGPRIVATE_SETPROPERTIES);
 
  protected:
-  virtual ~NetworkingPrivateSetPropertiesFunction();
+  ~NetworkingPrivateSetPropertiesFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success();
@@ -113,10 +113,10 @@ class NetworkingPrivateCreateNetworkFunction : public AsyncExtensionFunction {
                              NETWORKINGPRIVATE_CREATENETWORK);
 
  protected:
-  virtual ~NetworkingPrivateCreateNetworkFunction();
+  ~NetworkingPrivateCreateNetworkFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success(const std::string& guid);
@@ -133,10 +133,10 @@ class NetworkingPrivateGetNetworksFunction : public AsyncExtensionFunction {
                              NETWORKINGPRIVATE_GETNETWORKS);
 
  protected:
-  virtual ~NetworkingPrivateGetNetworksFunction();
+  ~NetworkingPrivateGetNetworksFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::ListValue> network_list);
@@ -154,10 +154,10 @@ class NetworkingPrivateGetVisibleNetworksFunction
                              NETWORKINGPRIVATE_GETVISIBLENETWORKS);
 
  protected:
-  virtual ~NetworkingPrivateGetVisibleNetworksFunction();
+  ~NetworkingPrivateGetVisibleNetworksFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success(scoped_ptr<base::ListValue> network_list);
@@ -175,10 +175,10 @@ class NetworkingPrivateGetEnabledNetworkTypesFunction
                              NETWORKINGPRIVATE_GETENABLEDNETWORKTYPES);
 
  protected:
-  virtual ~NetworkingPrivateGetEnabledNetworkTypesFunction();
+  ~NetworkingPrivateGetEnabledNetworkTypesFunction() override;
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetEnabledNetworkTypesFunction);
@@ -193,10 +193,10 @@ class NetworkingPrivateEnableNetworkTypeFunction
                              NETWORKINGPRIVATE_ENABLENETWORKTYPE);
 
  protected:
-  virtual ~NetworkingPrivateEnableNetworkTypeFunction();
+  ~NetworkingPrivateEnableNetworkTypeFunction() override;
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEnableNetworkTypeFunction);
@@ -211,10 +211,10 @@ class NetworkingPrivateDisableNetworkTypeFunction
                              NETWORKINGPRIVATE_DISABLENETWORKTYPE);
 
  protected:
-  virtual ~NetworkingPrivateDisableNetworkTypeFunction();
+  ~NetworkingPrivateDisableNetworkTypeFunction() override;
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDisableNetworkTypeFunction);
@@ -229,10 +229,10 @@ class NetworkingPrivateRequestNetworkScanFunction
                              NETWORKINGPRIVATE_REQUESTNETWORKSCAN);
 
  protected:
-  virtual ~NetworkingPrivateRequestNetworkScanFunction();
+  ~NetworkingPrivateRequestNetworkScanFunction() override;
 
   // SyncExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateRequestNetworkScanFunction);
@@ -247,10 +247,10 @@ class NetworkingPrivateStartConnectFunction : public AsyncExtensionFunction {
                              NETWORKINGPRIVATE_STARTCONNECT);
 
  protected:
-  virtual ~NetworkingPrivateStartConnectFunction();
+  ~NetworkingPrivateStartConnectFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success();
@@ -267,10 +267,10 @@ class NetworkingPrivateStartDisconnectFunction : public AsyncExtensionFunction {
                              NETWORKINGPRIVATE_STARTDISCONNECT);
 
  protected:
-  virtual ~NetworkingPrivateStartDisconnectFunction();
+  ~NetworkingPrivateStartDisconnectFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void Success();
@@ -288,10 +288,10 @@ class NetworkingPrivateVerifyDestinationFunction
                              NETWORKINGPRIVATE_VERIFYDESTINATION);
 
  protected:
-  virtual ~NetworkingPrivateVerifyDestinationFunction();
+  ~NetworkingPrivateVerifyDestinationFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   void Success(bool result);
   void Failure(const std::string& error);
@@ -309,10 +309,10 @@ class NetworkingPrivateVerifyAndEncryptCredentialsFunction
                              NETWORKINGPRIVATE_VERIFYANDENCRYPTCREDENTIALS);
 
  protected:
-  virtual ~NetworkingPrivateVerifyAndEncryptCredentialsFunction();
+  ~NetworkingPrivateVerifyAndEncryptCredentialsFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -331,10 +331,10 @@ class NetworkingPrivateVerifyAndEncryptDataFunction
                              NETWORKINGPRIVATE_VERIFYANDENCRYPTDATA);
 
  protected:
-  virtual ~NetworkingPrivateVerifyAndEncryptDataFunction();
+  ~NetworkingPrivateVerifyAndEncryptDataFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -352,10 +352,10 @@ class NetworkingPrivateSetWifiTDLSEnabledStateFunction
                              NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE);
 
  protected:
-  virtual ~NetworkingPrivateSetWifiTDLSEnabledStateFunction();
+  ~NetworkingPrivateSetWifiTDLSEnabledStateFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -373,10 +373,10 @@ class NetworkingPrivateGetWifiTDLSStatusFunction
                              NETWORKINGPRIVATE_GETWIFITDLSSTATUS);
 
  protected:
-  virtual ~NetworkingPrivateGetWifiTDLSStatusFunction();
+  ~NetworkingPrivateGetWifiTDLSStatusFunction() override;
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   void Success(const std::string& result);
   void Failure(const std::string& error);
@@ -393,10 +393,10 @@ class NetworkingPrivateGetCaptivePortalStatusFunction
                              NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS);
 
   // AsyncExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  protected:
-  virtual ~NetworkingPrivateGetCaptivePortalStatusFunction();
+  ~NetworkingPrivateGetCaptivePortalStatusFunction() override;
 
  private:
   void Success(const std::string& result);

@@ -55,7 +55,7 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
                               ExtensionFilter extension_filter,
                               Delegate* delegate);
 
-  virtual ~ExtensionKeybindingRegistry();
+  ~ExtensionKeybindingRegistry() override;
 
   // Enables/Disables general shortcut handling in Chrome. Implemented in
   // platform-specific ExtensionKeybindingsRegistry* files.
@@ -126,17 +126,16 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
 
  private:
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Returns true if the |extension| matches our extension filter.
   bool ExtensionMatchesFilter(const extensions::Extension* extension);

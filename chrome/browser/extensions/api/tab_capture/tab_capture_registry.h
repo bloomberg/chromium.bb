@@ -68,7 +68,7 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   class LiveRequest;
 
   explicit TabCaptureRegistry(content::BrowserContext* context);
-  virtual ~TabCaptureRegistry();
+  ~TabCaptureRegistry() override;
 
   // Used by BrowserContextKeyedAPI.
   static const char* service_name() {
@@ -79,17 +79,15 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // MediaCaptureDevicesDispatcher::Observer implementation.
-  virtual void OnRequestUpdate(
-      int original_target_render_process_id,
-      int original_target_render_frame_id,
-      content::MediaStreamType stream_type,
-      const content::MediaRequestState state) override;
+  void OnRequestUpdate(int original_target_render_process_id,
+                       int original_target_render_frame_id,
+                       content::MediaStreamType stream_type,
+                       const content::MediaRequestState state) override;
 
   // Send a StatusChanged event containing the current state of |request|.
   void DispatchStatusChangeEvent(const LiveRequest* request) const;

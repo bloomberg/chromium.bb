@@ -27,25 +27,24 @@ class BrailleDisplayPrivateAPI : public BrowserContextKeyedAPI,
                                  EventRouter::Observer {
  public:
   explicit BrailleDisplayPrivateAPI(content::BrowserContext* context);
-  virtual ~BrailleDisplayPrivateAPI();
+  ~BrailleDisplayPrivateAPI() override;
 
   // ProfileKeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<BrailleDisplayPrivateAPI>*
       GetFactoryInstance();
 
   // BrailleObserver implementation.
-  virtual void OnBrailleDisplayStateChanged(
+  void OnBrailleDisplayStateChanged(
       const api::braille_display_private::DisplayState& display_state) override;
-  virtual void OnBrailleKeyEvent(
+  void OnBrailleKeyEvent(
       const api::braille_display_private::KeyEvent& keyEvent) override;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
-
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<BrailleDisplayPrivateAPI>;
@@ -85,10 +84,10 @@ class BrailleDisplayPrivateGetDisplayStateFunction : public AsyncApiFunction {
   DECLARE_EXTENSION_FUNCTION("brailleDisplayPrivate.getDisplayState",
                              BRAILLEDISPLAYPRIVATE_GETDISPLAYSTATE)
  protected:
-  virtual ~BrailleDisplayPrivateGetDisplayStateFunction() {}
-  virtual bool Prepare() override;
-  virtual void Work() override;
-  virtual bool Respond() override;
+  ~BrailleDisplayPrivateGetDisplayStateFunction() override {}
+  bool Prepare() override;
+  void Work() override;
+  bool Respond() override;
 };
 
 class BrailleDisplayPrivateWriteDotsFunction : public AsyncApiFunction {
@@ -98,10 +97,10 @@ class BrailleDisplayPrivateWriteDotsFunction : public AsyncApiFunction {
   BrailleDisplayPrivateWriteDotsFunction();
 
  protected:
-  virtual ~BrailleDisplayPrivateWriteDotsFunction();
-  virtual bool Prepare() override;
-  virtual void Work() override;
-  virtual bool Respond() override;
+  ~BrailleDisplayPrivateWriteDotsFunction() override;
+  bool Prepare() override;
+  void Work() override;
+  bool Respond() override;
 
  private:
   scoped_ptr<braille_display_private::WriteDots::Params> params_;

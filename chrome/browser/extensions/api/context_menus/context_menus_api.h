@@ -14,10 +14,10 @@ class ContextMenusCreateFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("contextMenus.create", CONTEXTMENUS_CREATE)
 
  protected:
-  virtual ~ContextMenusCreateFunction() {}
+  ~ContextMenusCreateFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ContextMenusUpdateFunction : public ChromeSyncExtensionFunction {
@@ -25,10 +25,10 @@ class ContextMenusUpdateFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("contextMenus.update", CONTEXTMENUS_UPDATE)
 
  protected:
-  virtual ~ContextMenusUpdateFunction() {}
+  ~ContextMenusUpdateFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ContextMenusRemoveFunction : public ChromeSyncExtensionFunction {
@@ -36,10 +36,10 @@ class ContextMenusRemoveFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("contextMenus.remove", CONTEXTMENUS_REMOVE)
 
  protected:
-  virtual ~ContextMenusRemoveFunction() {}
+  ~ContextMenusRemoveFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ContextMenusRemoveAllFunction : public ChromeSyncExtensionFunction {
@@ -47,10 +47,10 @@ class ContextMenusRemoveAllFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("contextMenus.removeAll", CONTEXTMENUS_REMOVEALL)
 
  protected:
-  virtual ~ContextMenusRemoveAllFunction() {}
+  ~ContextMenusRemoveAllFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

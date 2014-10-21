@@ -21,10 +21,10 @@ class VirtualKeyboardPrivateInsertTextFunction : public SyncExtensionFunction {
                              VIRTUALKEYBOARDPRIVATE_INSERTTEXT);
 
  protected:
-  virtual ~VirtualKeyboardPrivateInsertTextFunction() {}
+  ~VirtualKeyboardPrivateInsertTextFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
@@ -33,10 +33,10 @@ class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
                              VIRTUALKEYBOARDPRIVATE_MOVECURSOR);
 
  protected:
-  virtual ~VirtualKeyboardPrivateMoveCursorFunction() {}
+  ~VirtualKeyboardPrivateMoveCursorFunction() override {}
 
   // ExtensionFunction.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateSendKeyEventFunction
@@ -47,10 +47,10 @@ class VirtualKeyboardPrivateSendKeyEventFunction
       VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT);
 
  protected:
-  virtual ~VirtualKeyboardPrivateSendKeyEventFunction() {}
+  ~VirtualKeyboardPrivateSendKeyEventFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateHideKeyboardFunction
@@ -61,10 +61,10 @@ class VirtualKeyboardPrivateHideKeyboardFunction
       VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD);
 
  protected:
-  virtual ~VirtualKeyboardPrivateHideKeyboardFunction() {}
+  ~VirtualKeyboardPrivateHideKeyboardFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateLockKeyboardFunction
@@ -75,10 +75,10 @@ class VirtualKeyboardPrivateLockKeyboardFunction
       VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD);
 
  protected:
-  virtual ~VirtualKeyboardPrivateLockKeyboardFunction() {}
+  ~VirtualKeyboardPrivateLockKeyboardFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateKeyboardLoadedFunction
@@ -89,10 +89,10 @@ class VirtualKeyboardPrivateKeyboardLoadedFunction
       VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED);
 
  protected:
-  virtual ~VirtualKeyboardPrivateKeyboardLoadedFunction() {}
+  ~VirtualKeyboardPrivateKeyboardLoadedFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateGetKeyboardConfigFunction
@@ -103,10 +103,10 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
       VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG);
 
  protected:
-  virtual ~VirtualKeyboardPrivateGetKeyboardConfigFunction() {}
+  ~VirtualKeyboardPrivateGetKeyboardConfigFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class VirtualKeyboardPrivateOpenSettingsFunction
@@ -116,17 +116,17 @@ class VirtualKeyboardPrivateOpenSettingsFunction
                              VIRTUALKEYBOARDPRIVATE_OPENSETTINGS);
 
  protected:
-  virtual ~VirtualKeyboardPrivateOpenSettingsFunction() {}
+  ~VirtualKeyboardPrivateOpenSettingsFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 
 class InputAPI : public BrowserContextKeyedAPI {
  public:
   explicit InputAPI(content::BrowserContext* context);
-  virtual ~InputAPI();
+  ~InputAPI() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<InputAPI>* GetFactoryInstance();

@@ -22,14 +22,13 @@ class NetworkingPrivateCredentialsGetterMac
  public:
   explicit NetworkingPrivateCredentialsGetterMac();
 
-  virtual void Start(
-      const std::string& network_guid,
-      const std::string& public_key,
-      const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-          VerifyAndEncryptCredentialsCallback& callback) override;
+  void Start(const std::string& network_guid,
+             const std::string& public_key,
+             const extensions::NetworkingPrivateServiceClient::CryptoVerify::
+                 VerifyAndEncryptCredentialsCallback& callback) override;
 
  private:
-  virtual ~NetworkingPrivateCredentialsGetterMac();
+  ~NetworkingPrivateCredentialsGetterMac() override;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCredentialsGetterMac);
 };

@@ -75,21 +75,21 @@ class FakeImageWriterClient : public ImageWriterUtilityClient {
  public:
   FakeImageWriterClient();
 
-  virtual void Write(const ProgressCallback& progress_callback,
-                     const SuccessCallback& success_callback,
-                     const ErrorCallback& error_callback,
-                     const base::FilePath& source,
-                     const base::FilePath& target) override;
+  void Write(const ProgressCallback& progress_callback,
+             const SuccessCallback& success_callback,
+             const ErrorCallback& error_callback,
+             const base::FilePath& source,
+             const base::FilePath& target) override;
 
-  virtual void Verify(const ProgressCallback& progress_callback,
-                      const SuccessCallback& success_callback,
-                      const ErrorCallback& error_callback,
-                      const base::FilePath& source,
-                      const base::FilePath& target) override;
+  void Verify(const ProgressCallback& progress_callback,
+              const SuccessCallback& success_callback,
+              const ErrorCallback& error_callback,
+              const base::FilePath& source,
+              const base::FilePath& target) override;
 
-  virtual void Cancel(const CancelCallback& cancel_callback) override;
+  void Cancel(const CancelCallback& cancel_callback) override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Sets a callback for when a Write call is made.
   void SetWriteCallback(const base::Closure& write_callback);
@@ -106,7 +106,7 @@ class FakeImageWriterClient : public ImageWriterUtilityClient {
   void Cancel();
 
  private:
-  virtual ~FakeImageWriterClient();
+  ~FakeImageWriterClient() override;
 
   ProgressCallback progress_callback_;
   SuccessCallback success_callback_;

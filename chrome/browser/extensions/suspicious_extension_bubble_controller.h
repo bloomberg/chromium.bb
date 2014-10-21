@@ -21,14 +21,14 @@ class SuspiciousExtensionBubbleController
   static void ClearProfileListForTesting();
 
   explicit SuspiciousExtensionBubbleController(Profile* profile);
-  virtual ~SuspiciousExtensionBubbleController();
+  ~SuspiciousExtensionBubbleController() override;
 
   // Whether the controller knows of extensions to list in the bubble. Returns
   // true if so.
   bool ShouldShow();
 
   // ExtensionMessageBubbleController methods.
-  virtual void Show(ExtensionMessageBubble* bubble) override;
+  void Show(ExtensionMessageBubble* bubble) override;
 
  private:
   // A weak pointer to the profile we are associated with. Not owned by us.

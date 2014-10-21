@@ -41,7 +41,7 @@ class ActiveScriptController : public content::WebContentsObserver,
                                public ExtensionRegistryObserver {
  public:
   explicit ActiveScriptController(content::WebContents* web_contents);
-  virtual ~ActiveScriptController();
+  ~ActiveScriptController() override;
 
   // Returns the ActiveScriptController for the given |web_contents|, or NULL
   // if one does not exist.
@@ -117,16 +117,15 @@ class ActiveScriptController : public content::WebContentsObserver,
   void LogUMA() const;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidNavigateMainFrame(
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
   // ExtensionRegistryObserver:
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // The associated browser context.
   content::BrowserContext* browser_context_;

@@ -17,19 +17,19 @@ namespace extensions {
 class ExtensionCacheFake : public ExtensionCache {
  public:
   ExtensionCacheFake();
-  virtual ~ExtensionCacheFake();
+  ~ExtensionCacheFake() override;
 
   // Implementation of ExtensionCache.
-  virtual void Start(const base::Closure& callback) override;
-  virtual void Shutdown(const base::Closure& callback) override;
-  virtual void AllowCaching(const std::string& id) override;
-  virtual bool GetExtension(const std::string& id,
-                            base::FilePath* file_path,
-                            std::string* version) override;
-  virtual void PutExtension(const std::string& id,
-                            const base::FilePath& file_path,
-                            const std::string& version,
-                            const PutExtensionCallback& callback) override;
+  void Start(const base::Closure& callback) override;
+  void Shutdown(const base::Closure& callback) override;
+  void AllowCaching(const std::string& id) override;
+  bool GetExtension(const std::string& id,
+                    base::FilePath* file_path,
+                    std::string* version) override;
+  void PutExtension(const std::string& id,
+                    const base::FilePath& file_path,
+                    const std::string& version,
+                    const PutExtensionCallback& callback) override;
 
  private:
   typedef std::map<std::string, std::pair<std::string, base::FilePath> > Map;

@@ -68,7 +68,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
   };
 
   explicit AlarmManager(content::BrowserContext* context);
-  virtual ~AlarmManager();
+  ~AlarmManager() override;
 
   // Override the default delegate. Callee assumes onwership. Used for testing.
   void set_delegate(Delegate* delegate) { delegate_.reset(delegate); }
@@ -202,12 +202,11 @@ class AlarmManager : public BrowserContextKeyedAPI,
   void RunWhenReady(const std::string& extension_id, const ReadyAction& action);
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

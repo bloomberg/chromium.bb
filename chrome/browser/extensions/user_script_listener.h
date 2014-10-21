@@ -55,7 +55,7 @@ class UserScriptListener
 
   typedef std::list<URLPattern> URLPatterns;
 
-  virtual ~UserScriptListener();
+  ~UserScriptListener() override;
 
   bool ShouldDelayRequest(const GURL& url,
                           content::ResourceType resource_type);
@@ -101,9 +101,9 @@ class UserScriptListener
                           URLPatterns* patterns);
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

@@ -74,12 +74,12 @@ class ExtensionIconManagerTest : public testing::Test {
 class TestIconManager : public ExtensionIconManager {
  public:
   explicit TestIconManager(ExtensionIconManagerTest* test) : test_(test) {}
-  virtual ~TestIconManager() {}
+  ~TestIconManager() override {}
 
   // Overrides the ImageLoader callback, and calls through to the base class'
   // implementation. Then it lets the test know that an image load was observed.
-  virtual void OnImageLoaded(const std::string& extension_id,
-                             const gfx::Image& image) override {
+  void OnImageLoaded(const std::string& extension_id,
+                     const gfx::Image& image) override {
     ExtensionIconManager::OnImageLoaded(extension_id, image);
     test_->ImageLoadObserved();
   }

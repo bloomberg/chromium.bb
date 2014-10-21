@@ -278,7 +278,7 @@ class MenuManager : public content::NotificationObserver,
   static const char kOnWebviewContextMenus[];
 
   MenuManager(content::BrowserContext* context, StateStore* store_);
-  virtual ~MenuManager();
+  ~MenuManager() override;
 
   // Convenience function to get the MenuManager for a browser context.
   static MenuManager* Get(content::BrowserContext* context);
@@ -340,16 +340,16 @@ class MenuManager : public content::NotificationObserver,
   const SkBitmap& GetIconForExtension(const std::string& extension_id);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Stores the menu items for the extension in the state storage.
   void WriteToStorage(const Extension* extension,

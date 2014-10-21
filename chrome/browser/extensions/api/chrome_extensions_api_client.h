@@ -14,32 +14,30 @@ namespace extensions {
 class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
  public:
   ChromeExtensionsAPIClient();
-  virtual ~ChromeExtensionsAPIClient();
+  ~ChromeExtensionsAPIClient() override;
 
   // ExtensionsApiClient implementation.
-  virtual void AddAdditionalValueStoreCaches(
+  void AddAdditionalValueStoreCaches(
       content::BrowserContext* context,
       const scoped_refptr<SettingsStorageFactory>& factory,
-      const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
+      const scoped_refptr<ObserverListThreadSafe<SettingsObserver>>& observers,
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches)
       override;
-  virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
-  virtual ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
+  AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
+  ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
       ExtensionOptionsGuest* guest) const override;
-  virtual scoped_ptr<MimeHandlerViewGuestDelegate>
-      CreateMimeHandlerViewGuestDelegate(
-          MimeHandlerViewGuest* guest) const override;
-  virtual WebViewGuestDelegate* CreateWebViewGuestDelegate(
+  scoped_ptr<MimeHandlerViewGuestDelegate> CreateMimeHandlerViewGuestDelegate(
+      MimeHandlerViewGuest* guest) const override;
+  WebViewGuestDelegate* CreateWebViewGuestDelegate(
       WebViewGuest* web_view_guest) const override;
-  virtual WebViewPermissionHelperDelegate*
-      CreateWebViewPermissionHelperDelegate(
-          WebViewPermissionHelper* web_view_permission_helper) const override;
-  virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
+  WebViewPermissionHelperDelegate* CreateWebViewPermissionHelperDelegate(
+      WebViewPermissionHelper* web_view_permission_helper) const override;
+  WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()
       const override;
-  virtual scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(
+  scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(
       content::BrowserContext* browser_context,
       RulesCacheDelegate* cache_delegate) const override;
-  virtual scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
+  scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
       content::WebContents* web_contents) const override;
 
  private:

@@ -40,7 +40,7 @@ class UserGestureCatcher : public content::NotificationObserver {
                    content::NotificationService::AllSources());
   }
 
-  virtual ~UserGestureCatcher() {}
+  ~UserGestureCatcher() override {}
 
   bool GetNextResult() {
     if (results_.empty()) {
@@ -59,9 +59,9 @@ class UserGestureCatcher : public content::NotificationObserver {
   }
 
  private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     results_.push_back(
         static_cast<content::Source<extensions::TestSendMessageFunction> >(
             source)

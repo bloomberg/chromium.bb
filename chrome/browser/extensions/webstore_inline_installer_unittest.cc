@@ -28,7 +28,7 @@ class TestWebstoreInlineInstaller : public WebstoreInlineInstaller {
   }
 
  protected:
-  virtual ~TestWebstoreInlineInstaller();
+  ~TestWebstoreInlineInstaller() override;
 };
 
 void TestInstallerCallback(bool success,

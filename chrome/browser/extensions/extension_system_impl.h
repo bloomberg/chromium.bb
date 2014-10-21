@@ -29,46 +29,44 @@ class StateStoreNotificationObserver;
 class ExtensionSystemImpl : public ExtensionSystem {
  public:
   explicit ExtensionSystemImpl(Profile* profile);
-  virtual ~ExtensionSystemImpl();
+  ~ExtensionSystemImpl() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
-  virtual void InitForRegularProfile(bool extensions_enabled) override;
+  void InitForRegularProfile(bool extensions_enabled) override;
 
-  virtual ExtensionService* extension_service() override;  // shared
-  virtual RuntimeData* runtime_data() override;  // shared
-  virtual ManagementPolicy* management_policy() override;  // shared
+  ExtensionService* extension_service() override;  // shared
+  RuntimeData* runtime_data() override;            // shared
+  ManagementPolicy* management_policy() override;  // shared
   // shared
-  virtual SharedUserScriptMaster* shared_user_script_master() override;
-  virtual ProcessManager* process_manager() override;
-  virtual StateStore* state_store() override;  // shared
-  virtual StateStore* rules_store() override;  // shared
-  virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
-      override;  // shared
-  virtual InfoMap* info_map() override; // shared
-  virtual EventRouter* event_router() override;  // shared
-  virtual WarningService* warning_service() override;
-  virtual Blacklist* blacklist() override;  // shared
-  virtual ErrorConsole* error_console() override;
-  virtual InstallVerifier* install_verifier() override;
-  virtual QuotaService* quota_service() override;  // shared
+  SharedUserScriptMaster* shared_user_script_master() override;
+  ProcessManager* process_manager() override;
+  StateStore* state_store() override;                              // shared
+  StateStore* rules_store() override;                              // shared
+  LazyBackgroundTaskQueue* lazy_background_task_queue() override;  // shared
+  InfoMap* info_map() override;                                    // shared
+  EventRouter* event_router() override;                            // shared
+  WarningService* warning_service() override;
+  Blacklist* blacklist() override;  // shared
+  ErrorConsole* error_console() override;
+  InstallVerifier* install_verifier() override;
+  QuotaService* quota_service() override;  // shared
 
-  virtual void RegisterExtensionWithRequestContexts(
+  void RegisterExtensionWithRequestContexts(
       const Extension* extension) override;
 
-  virtual void UnregisterExtensionWithRequestContexts(
+  void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
       const UnloadedExtensionInfo::Reason reason) override;
 
-  virtual const OneShotEvent& ready() const override;
-  virtual ContentVerifier* content_verifier() override;  // shared
-  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+  const OneShotEvent& ready() const override;
+  ContentVerifier* content_verifier() override;  // shared
+  scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
 
-  virtual DeclarativeUserScriptMaster*
-      GetDeclarativeUserScriptMasterByExtension(
-          const ExtensionId& extension_id) override;  // shared
+  DeclarativeUserScriptMaster* GetDeclarativeUserScriptMasterByExtension(
+      const ExtensionId& extension_id) override;  // shared
 
  private:
   friend class ExtensionSystemSharedFactory;
@@ -78,7 +76,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   class Shared : public KeyedService {
    public:
     explicit Shared(Profile* profile);
-    virtual ~Shared();
+    ~Shared() override;
 
     // Initialization takes place in phases.
     virtual void InitPrefs();
@@ -87,7 +85,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     void Init(bool extensions_enabled);
 
     // KeyedService implementation.
-    virtual void Shutdown() override;
+    void Shutdown() override;
 
     StateStore* state_store();
     StateStore* rules_store();

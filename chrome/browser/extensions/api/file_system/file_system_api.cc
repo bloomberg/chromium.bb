@@ -443,21 +443,21 @@ class FileSystemChooseEntryFunction::FilePicker
                                     NULL);
   }
 
-  virtual ~FilePicker() {}
+  ~FilePicker() override {}
 
  private:
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override {
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override {
     std::vector<base::FilePath> paths;
     paths.push_back(path);
     MultiFilesSelected(paths, params);
   }
 
-  virtual void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
-                                         int index,
-                                         void* params) override {
+  void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
+                                 int index,
+                                 void* params) override {
     // Normally, file.local_path is used because it is a native path to the
     // local read-only cached file in the case of remote file system like
     // Chrome OS's Google Drive integration. Here, however, |file.file_path| is
@@ -469,13 +469,13 @@ class FileSystemChooseEntryFunction::FilePicker
     FileSelected(file.file_path, index, params);
   }
 
-  virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
-                                  void* params) override {
+  void MultiFilesSelected(const std::vector<base::FilePath>& files,
+                          void* params) override {
     function_->FilesSelected(files);
     delete this;
   }
 
-  virtual void MultiFilesSelectedWithExtraInfo(
+  void MultiFilesSelectedWithExtraInfo(
       const std::vector<ui::SelectedFileInfo>& files,
       void* params) override {
     std::vector<base::FilePath> paths;
@@ -486,7 +486,7 @@ class FileSystemChooseEntryFunction::FilePicker
     MultiFilesSelected(paths, params);
   }
 
-  virtual void FileSelectionCanceled(void* params) override {
+  void FileSelectionCanceled(void* params) override {
     function_->FileSelectionCanceled();
     delete this;
   }

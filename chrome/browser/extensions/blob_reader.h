@@ -32,7 +32,7 @@ class BlobReader : public net::URLFetcherDelegate {
   BlobReader(Profile* profile,
              const std::string& blob_uuid,
              BlobReadCallback callback);
-  virtual ~BlobReader();
+  ~BlobReader() override;
 
   void SetByteRange(int64 offset, int64 length);
 
@@ -40,7 +40,7 @@ class BlobReader : public net::URLFetcherDelegate {
 
  private:
   // Overridden from net::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   BlobReadCallback callback_;
   scoped_ptr<net::URLFetcher> fetcher_;

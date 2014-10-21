@@ -26,12 +26,12 @@ class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ExtensionSystemSharedFactory>;
 
   ExtensionSystemSharedFactory();
-  virtual ~ExtensionSystemSharedFactory();
+  ~ExtensionSystemSharedFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemSharedFactory);
@@ -42,7 +42,7 @@ class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
 class ExtensionSystemFactory : public ExtensionSystemProvider {
  public:
   // ExtensionSystem provider implementation:
-  virtual ExtensionSystem* GetForBrowserContext(
+  ExtensionSystem* GetForBrowserContext(
       content::BrowserContext* context) override;
 
   static ExtensionSystemFactory* GetInstance();
@@ -51,14 +51,14 @@ class ExtensionSystemFactory : public ExtensionSystemProvider {
   friend struct DefaultSingletonTraits<ExtensionSystemFactory>;
 
   ExtensionSystemFactory();
-  virtual ~ExtensionSystemFactory();
+  ~ExtensionSystemFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemFactory);
 };

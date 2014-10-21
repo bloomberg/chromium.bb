@@ -48,11 +48,11 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
                        const std::string& extension_id,
                        AlertType error_type,
                        ExternalInstallManager* manager);
-  virtual ~ExternalInstallError();
+  ~ExternalInstallError() override;
 
   // ExtensionInstallPrompt::Delegate implementation.
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
   // Show the associated dialog. This should only be called once the dialog is
   // ready.
@@ -66,11 +66,10 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
 
  private:
   // WebstoreDataFetcherDelegate implementation.
-  virtual void OnWebstoreRequestFailure() override;
-  virtual void OnWebstoreResponseParseSuccess(
+  void OnWebstoreRequestFailure() override;
+  void OnWebstoreResponseParseSuccess(
       scoped_ptr<base::DictionaryValue> webstore_data) override;
-  virtual void OnWebstoreResponseParseFailure(
-      const std::string& error) override;
+  void OnWebstoreResponseParseFailure(const std::string& error) override;
 
   // Called when data fetching has completed (either successfully or not).
   void OnFetchComplete();

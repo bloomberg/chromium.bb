@@ -43,7 +43,7 @@ class ExtensionSyncService : public syncer::SyncableService,
                        extensions::ExtensionPrefs* extension_prefs,
                        ExtensionService* extension_service);
 
-  virtual ~ExtensionSyncService();
+  ~ExtensionSyncService() override;
 
   // Convenience function to get the ExtensionSyncService for a Profile.
   static ExtensionSyncService* Get(Profile* profile);
@@ -58,15 +58,14 @@ class ExtensionSyncService : public syncer::SyncableService,
       const extensions::Extension& extension);
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 

@@ -30,20 +30,18 @@ class ExtensionRegistry;
 class LocationBarController : public ExtensionRegistryObserver {
  public:
   explicit LocationBarController(content::WebContents* web_contents);
-  virtual ~LocationBarController();
+  ~LocationBarController() override;
 
   // Returns the actions which should be displayed in the location bar.
   std::vector<ExtensionAction*> GetCurrentActions();
 
  private:
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // The associated WebContents.
   content::WebContents* web_contents_;

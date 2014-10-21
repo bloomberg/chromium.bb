@@ -76,7 +76,7 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   void Start();
 
  private:
-  virtual ~WebstoreInstallHelper();
+  ~WebstoreInstallHelper() override;
 
   void StartWorkOnIOThread();
   void StartFetchedImageDecode();
@@ -84,10 +84,10 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   void ReportResultFromUIThread();
 
   // Implementing the net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Implementing pieces of the UtilityProcessHostClient interface.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
   void OnDecodeImageSucceeded(const SkBitmap& decoded_image);

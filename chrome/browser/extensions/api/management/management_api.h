@@ -27,14 +27,14 @@ class ExtensionRegistry;
 
 class ManagementFunction : public ChromeSyncExtensionFunction {
  protected:
-  virtual ~ManagementFunction() {}
+  ~ManagementFunction() override {}
 
   ExtensionService* service();
 };
 
 class AsyncManagementFunction : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~AsyncManagementFunction() {}
+  ~AsyncManagementFunction() override {}
 
   ExtensionService* service();
 };
@@ -44,10 +44,10 @@ class ManagementGetAllFunction : public ManagementFunction {
   DECLARE_EXTENSION_FUNCTION("management.getAll", MANAGEMENT_GETALL)
 
  protected:
-  virtual ~ManagementGetAllFunction() {}
+  ~ManagementGetAllFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ManagementGetFunction : public ManagementFunction {
@@ -55,10 +55,10 @@ class ManagementGetFunction : public ManagementFunction {
   DECLARE_EXTENSION_FUNCTION("management.get", MANAGEMENT_GET)
 
  protected:
-  virtual ~ManagementGetFunction() {}
+  ~ManagementGetFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ManagementGetSelfFunction : public ManagementFunction {
@@ -66,10 +66,10 @@ class ManagementGetSelfFunction : public ManagementFunction {
   DECLARE_EXTENSION_FUNCTION("management.getSelf", MANAGEMENT_GETSELF)
 
  protected:
-  virtual ~ManagementGetSelfFunction() {}
+  ~ManagementGetSelfFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
@@ -78,10 +78,10 @@ class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
                              MANAGEMENT_GETPERMISSIONWARNINGSBYID)
 
  protected:
-  virtual ~ManagementGetPermissionWarningsByIdFunction() {}
+  ~ManagementGetPermissionWarningsByIdFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ManagementGetPermissionWarningsByManifestFunction
@@ -96,10 +96,10 @@ class ManagementGetPermissionWarningsByManifestFunction
   void OnParseFailure(const std::string& error);
 
  protected:
-  virtual ~ManagementGetPermissionWarningsByManifestFunction() {}
+  ~ManagementGetPermissionWarningsByManifestFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class ManagementLaunchAppFunction : public ManagementFunction {
@@ -107,10 +107,10 @@ class ManagementLaunchAppFunction : public ManagementFunction {
   DECLARE_EXTENSION_FUNCTION("management.launchApp", MANAGEMENT_LAUNCHAPP)
 
  protected:
-  virtual ~ManagementLaunchAppFunction() {}
+  ~ManagementLaunchAppFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ManagementSetEnabledFunction : public AsyncManagementFunction,
@@ -121,14 +121,14 @@ class ManagementSetEnabledFunction : public AsyncManagementFunction,
   ManagementSetEnabledFunction();
 
  protected:
-  virtual ~ManagementSetEnabledFunction();
+  ~ManagementSetEnabledFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // ExtensionInstallPrompt::Delegate.
-  virtual void InstallUIProceed() override;
-  virtual void InstallUIAbort(bool user_initiated) override;
+  void InstallUIProceed() override;
+  void InstallUIAbort(bool user_initiated) override;
 
  private:
   std::string extension_id_;
@@ -145,11 +145,11 @@ class ManagementUninstallFunctionBase : public AsyncManagementFunction,
   static void SetAutoConfirmForTest(bool should_proceed);
 
   // ExtensionUninstallDialog::Delegate implementation.
-  virtual void ExtensionUninstallAccepted() override;
-  virtual void ExtensionUninstallCanceled() override;
+  void ExtensionUninstallAccepted() override;
+  void ExtensionUninstallCanceled() override;
 
  protected:
-  virtual ~ManagementUninstallFunctionBase();
+  ~ManagementUninstallFunctionBase() override;
 
   bool Uninstall(const std::string& extension_id, bool show_confirm_dialog);
  private:
@@ -170,9 +170,9 @@ class ManagementUninstallFunction : public ManagementUninstallFunctionBase {
   ManagementUninstallFunction();
 
  private:
-  virtual ~ManagementUninstallFunction();
+  ~ManagementUninstallFunction() override;
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
@@ -183,9 +183,9 @@ class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
   ManagementUninstallSelfFunction();
 
  private:
-  virtual ~ManagementUninstallSelfFunction();
+  ~ManagementUninstallSelfFunction() override;
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {
@@ -200,9 +200,9 @@ class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {
   static void SetAutoConfirmForTest(bool should_proceed);
 
  protected:
-  virtual ~ManagementCreateAppShortcutFunction();
+  ~ManagementCreateAppShortcutFunction() override;
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class ManagementSetLaunchTypeFunction : public ManagementFunction {
@@ -211,9 +211,9 @@ class ManagementSetLaunchTypeFunction : public ManagementFunction {
       MANAGEMENT_SETLAUNCHTYPE);
 
  protected:
-  virtual ~ManagementSetLaunchTypeFunction() {}
+  ~ManagementSetLaunchTypeFunction() override {}
 
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
@@ -224,9 +224,9 @@ class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
   ManagementGenerateAppForLinkFunction();
 
  protected:
-  virtual ~ManagementGenerateAppForLinkFunction();
+  ~ManagementGenerateAppForLinkFunction() override;
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void OnFaviconForApp(const favicon_base::FaviconImageResult& image_result);
@@ -245,23 +245,21 @@ class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
 class ManagementEventRouter : public ExtensionRegistryObserver {
  public:
   explicit ManagementEventRouter(content::BrowserContext* context);
-  virtual ~ManagementEventRouter();
+  ~ManagementEventRouter() override;
 
  private:
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension,
-                                    bool is_update) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // Dispatches management api events to listening extensions.
   void BroadcastEvent(const Extension* extension, const char* event_name);
@@ -278,16 +276,16 @@ class ManagementAPI : public BrowserContextKeyedAPI,
                       public EventRouter::Observer {
  public:
   explicit ManagementAPI(content::BrowserContext* context);
-  virtual ~ManagementAPI();
+  ~ManagementAPI() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ManagementAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ManagementAPI>;

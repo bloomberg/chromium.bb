@@ -25,20 +25,19 @@ class SyncedNotificationsShim : public syncer::SyncableService {
 
   explicit SyncedNotificationsShim(const EventLauncher& event_launcher,
                                    const base::Closure& refresh_request);
-  virtual ~SyncedNotificationsShim();
+  ~SyncedNotificationsShim() override;
 
   // SyncableService interface.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
 
   // JS interface methods (see synced_notifications_private.h).
   bool GetInitialData(

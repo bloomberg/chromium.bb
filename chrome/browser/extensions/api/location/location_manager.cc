@@ -57,8 +57,7 @@ class DistanceBasedUpdatePolicy : public UpdatePolicy {
   {}
 
   // UpdatePolicy Implementation
-  virtual bool ShouldSendUpdate(const content::Geoposition& position) const
-      override {
+  bool ShouldSendUpdate(const content::Geoposition& position) const override {
     return !last_updated_position_.Validate() ||
         Distance(position.latitude,
                  position.longitude,
@@ -67,13 +66,12 @@ class DistanceBasedUpdatePolicy : public UpdatePolicy {
             distance_update_threshold_meters_;
   }
 
-  virtual void OnPositionReported(const content::Geoposition& position)
-      override {
+  void OnPositionReported(const content::Geoposition& position) override {
     last_updated_position_ = position;
   }
 
  private:
-  virtual ~DistanceBasedUpdatePolicy() {}
+  ~DistanceBasedUpdatePolicy() override {}
 
   // Calculates the distance between two latitude and longitude points.
   static double Distance(const double latitude1,
@@ -117,17 +115,17 @@ class TimeBasedUpdatePolicy : public UpdatePolicy {
   {}
 
   // UpdatePolicy Implementation
-  virtual bool ShouldSendUpdate(const content::Geoposition&) const override {
+  bool ShouldSendUpdate(const content::Geoposition&) const override {
     return (base::Time::Now() - last_update_time_).InMilliseconds() >
         time_between_updates_ms_;
   }
 
-  virtual void OnPositionReported(const content::Geoposition&) override {
+  void OnPositionReported(const content::Geoposition&) override {
     last_update_time_ = base::Time::Now();
   }
 
  private:
-  virtual ~TimeBasedUpdatePolicy() {}
+  ~TimeBasedUpdatePolicy() override {}
 
   base::Time last_update_time_;
   const double time_between_updates_ms_;

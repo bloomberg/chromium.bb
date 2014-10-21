@@ -37,9 +37,9 @@ class AutomationInternalEnableTabFunction
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableTab",
                              AUTOMATIONINTERNAL_ENABLETAB)
  protected:
-  virtual ~AutomationInternalEnableTabFunction() {}
+  ~AutomationInternalEnableTabFunction() override {}
 
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 class AutomationInternalPerformActionFunction
@@ -47,9 +47,9 @@ class AutomationInternalPerformActionFunction
   DECLARE_EXTENSION_FUNCTION("automationInternal.performAction",
                              AUTOMATIONINTERNAL_PERFORMACTION)
  protected:
-  virtual ~AutomationInternalPerformActionFunction() {}
+  ~AutomationInternalPerformActionFunction() override {}
 
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
   // Helper function to route an action to an action adapter.
@@ -63,9 +63,9 @@ class AutomationInternalEnableDesktopFunction
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableDesktop",
                              AUTOMATIONINTERNAL_ENABLEDESKTOP)
  protected:
-  virtual ~AutomationInternalEnableDesktopFunction() {}
+  ~AutomationInternalEnableDesktopFunction() override {}
 
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

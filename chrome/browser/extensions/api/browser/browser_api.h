@@ -16,9 +16,9 @@ class BrowserOpenTabFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("browser.openTab", BROWSER_OPENTAB)
 
  protected:
-  virtual ~BrowserOpenTabFunction();
+  ~BrowserOpenTabFunction() override;
 
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace api

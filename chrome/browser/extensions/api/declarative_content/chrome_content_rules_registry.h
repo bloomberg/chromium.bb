@@ -70,36 +70,34 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
   // ChromeContentRulesRegistry implementation:
   // Applies all content rules given an update (CSS match change or
   // page navigation, for now) from the renderer.
-  virtual void Apply(
-      content::WebContents* contents,
-      const std::vector<std::string>& matching_css_selectors) override;
+  void Apply(content::WebContents* contents,
+             const std::vector<std::string>& matching_css_selectors) override;
 
   // Applies all content rules given that a tab was just navigated.
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       content::WebContents* tab,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
   // Implementation of RulesRegistry:
-  virtual std::string AddRulesImpl(
+  std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) override;
-  virtual std::string RemoveRulesImpl(
+      const std::vector<linked_ptr<RulesRegistry::Rule>>& rules) override;
+  std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) override;
-  virtual std::string RemoveAllRulesImpl(
-      const std::string& extension_id) override;
+  std::string RemoveAllRulesImpl(const std::string& extension_id) override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;
 
  protected:
-  virtual ~ChromeContentRulesRegistry();
+  ~ChromeContentRulesRegistry() override;
 
   // Virtual for testing:
   virtual base::Time GetExtensionInstallationTime(

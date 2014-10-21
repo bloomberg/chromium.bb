@@ -19,19 +19,19 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
   MockExtensionSpecialStoragePolicy();
 
   // storage::SpecialStoragePolicy:
-  virtual bool IsStorageProtected(const GURL& origin) override;
-  virtual bool IsStorageUnlimited(const GURL& origin) override;
-  virtual bool IsStorageSessionOnly(const GURL& origin) override;
-  virtual bool CanQueryDiskSize(const GURL& origin) override;
-  virtual bool IsFileHandler(const std::string& extension_id) override;
-  virtual bool HasSessionOnlyOrigins() override;
+  bool IsStorageProtected(const GURL& origin) override;
+  bool IsStorageUnlimited(const GURL& origin) override;
+  bool IsStorageSessionOnly(const GURL& origin) override;
+  bool CanQueryDiskSize(const GURL& origin) override;
+  bool IsFileHandler(const std::string& extension_id) override;
+  bool HasSessionOnlyOrigins() override;
 
   void AddProtected(const GURL& origin) {
     protected_.insert(origin);
   }
 
  private:
-  virtual ~MockExtensionSpecialStoragePolicy();
+  ~MockExtensionSpecialStoragePolicy() override;
 
   std::set<GURL> protected_;
 

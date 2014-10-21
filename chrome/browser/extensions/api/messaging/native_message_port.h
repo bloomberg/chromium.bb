@@ -18,11 +18,11 @@ class NativeMessagePort : public MessageService::MessagePort {
   NativeMessagePort(base::WeakPtr<MessageService> message_service,
                     int port_id,
                     scoped_ptr<NativeMessageHost> native_message_host);
-  virtual ~NativeMessagePort();
+  ~NativeMessagePort() override;
 
   // MessageService::MessagePort implementation.
-  virtual void DispatchOnMessage(const Message& message,
-                                 int target_port_id) override;
+  void DispatchOnMessage(const Message& message, int target_port_id) override;
+
  private:
   class Core;
   void PostMessageFromNativeHost(const std::string& message);

@@ -51,7 +51,7 @@ class TabHelper : public content::WebContentsObserver,
                   public content::NotificationObserver,
                   public content::WebContentsUserData<TabHelper> {
  public:
-  virtual ~TabHelper();
+  ~TabHelper() override;
 
   void CreateApplicationShortcuts();
   void CreateHostedAppFromWebContents();
@@ -141,23 +141,20 @@ class TabHelper : public content::WebContentsObserver,
                                const WebApplicationInfo& web_app_info);
 
   // content::WebContentsObserver overrides.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
-  virtual void DidNavigateMainFrame(
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) override;
-  virtual void DidCloneToNewWebContents(
+  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+  void DidCloneToNewWebContents(
       content::WebContents* old_web_contents,
       content::WebContents* new_web_contents) override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate overrides.
-  virtual extensions::WindowController* GetExtensionWindowController()
-      const override;
-  virtual content::WebContents* GetAssociatedWebContents() const override;
+  extensions::WindowController* GetExtensionWindowController() const override;
+  content::WebContents* GetAssociatedWebContents() const override;
 
   // Message handlers.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& info);
@@ -197,9 +194,9 @@ class TabHelper : public content::WebContentsObserver,
                                        webstore_install::Result result);
 
   // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Requests application info for the specified page. This is an asynchronous
   // request. The delegate is notified by way of OnDidGetApplicationInfo when

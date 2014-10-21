@@ -28,10 +28,10 @@ class CopresenceService : public BrowserContextKeyedAPI,
                           public copresence::CopresenceDelegate {
  public:
   explicit CopresenceService(content::BrowserContext* context);
-  virtual ~CopresenceService();
+  ~CopresenceService() override;
 
   // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // These accessors will always return an object (except during shutdown).
   // If the object doesn't exist, they will create one first.
@@ -56,14 +56,13 @@ class CopresenceService : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<CopresenceService>;
 
   // CopresenceDelegate implementation
-  virtual void HandleMessages(
-      const std::string& app_id,
-      const std::string& subscription_id,
-      const std::vector<copresence::Message>& message) override;
-  virtual net::URLRequestContextGetter* GetRequestContext() const override;
-  virtual const std::string GetPlatformVersionString() const override;
-  virtual const std::string GetAPIKey() const override;
-  virtual copresence::WhispernetClient* GetWhispernetClient() override;
+  void HandleMessages(const std::string& app_id,
+                      const std::string& subscription_id,
+                      const std::vector<copresence::Message>& message) override;
+  net::URLRequestContextGetter* GetRequestContext() const override;
+  const std::string GetPlatformVersionString() const override;
+  const std::string GetAPIKey() const override;
+  copresence::WhispernetClient* GetWhispernetClient() override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "CopresenceService"; }
@@ -89,8 +88,8 @@ class CopresenceExecuteFunction : public ChromeUIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("copresence.execute", COPRESENCE_EXECUTE);
 
  protected:
-  virtual ~CopresenceExecuteFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ~CopresenceExecuteFunction() override {}
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
   void SendResult(copresence::CopresenceStatus status);
@@ -101,8 +100,8 @@ class CopresenceSetApiKeyFunction : public ChromeUIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("copresence.setApiKey", COPRESENCE_SETAPIKEY);
 
  protected:
-  virtual ~CopresenceSetApiKeyFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ~CopresenceSetApiKeyFunction() override {}
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

@@ -35,7 +35,7 @@ class WebNavigationTabObserver
       public content::WebContentsObserver,
       public content::WebContentsUserData<WebNavigationTabObserver> {
  public:
-  virtual ~WebNavigationTabObserver();
+  ~WebNavigationTabObserver() override;
 
   // Returns the object for the given |web_contents|.
   static WebNavigationTabObserver* Get(content::WebContents* web_contents);
@@ -47,49 +47,46 @@ class WebNavigationTabObserver
   content::RenderViewHost* GetRenderViewHostInProcess(int process_id) const;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver implementation.
-  virtual void RenderFrameDeleted(
-      content::RenderFrameHost* render_frame_host) override;
-  virtual void RenderViewDeleted(
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
+  void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) override;
-  virtual void AboutToNavigateRenderView(
-      content::RenderViewHost* render_view_host) override;
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;
-  virtual void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description) override;
-  virtual void DocumentLoadedInFrame(
+  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url,
+                              int error_code,
+                              const base::string16& error_description) override;
+  void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
-  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) override;
-  virtual void DidFailLoad(content::RenderFrameHost* render_frame_host,
-                           const GURL& validated_url,
-                           int error_code,
-                           const base::string16& error_description) override;
-  virtual void DidGetRedirectForResourceRequest(
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void DidFailLoad(content::RenderFrameHost* render_frame_host,
+                   const GURL& validated_url,
+                   int error_code,
+                   const base::string16& error_description) override;
+  void DidGetRedirectForResourceRequest(
       content::RenderViewHost* render_view_host,
       const content::ResourceRedirectDetails& details) override;
-  virtual void DidOpenRequestedURL(content::WebContents* new_contents,
-                                   const GURL& url,
-                                   const content::Referrer& referrer,
-                                   WindowOpenDisposition disposition,
-                                   ui::PageTransition transition,
-                                   int64 source_frame_num) override;
-  virtual void WebContentsDestroyed() override;
+  void DidOpenRequestedURL(content::WebContents* new_contents,
+                           const GURL& url,
+                           const content::Referrer& referrer,
+                           WindowOpenDisposition disposition,
+                           ui::PageTransition transition,
+                           int64 source_frame_num) override;
+  void WebContentsDestroyed() override;
 
  private:
   explicit WebNavigationTabObserver(content::WebContents* web_contents);
@@ -132,7 +129,7 @@ class WebNavigationEventRouter : public TabStripModelObserver,
                                  public content::NotificationObserver {
  public:
   explicit WebNavigationEventRouter(Profile* profile);
-  virtual ~WebNavigationEventRouter();
+  ~WebNavigationEventRouter() override;
 
  private:
   // Used to cache the information about newly created WebContents objects.
@@ -151,19 +148,19 @@ class WebNavigationEventRouter : public TabStripModelObserver,
   };
 
   // TabStripModelObserver implementation.
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* old_contents,
-                             content::WebContents* new_contents,
-                             int index) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
 
   // chrome::BrowserListObserver implementation.
-  virtual void OnBrowserAdded(Browser* browser) override;
-  virtual void OnBrowserRemoved(Browser* browser) override;
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Handler for the NOTIFICATION_RETARGETING event. The method takes the
   // details of such an event and stores them for the later
@@ -193,15 +190,15 @@ class WebNavigationEventRouter : public TabStripModelObserver,
 
 // API function that returns the state of a given frame.
 class WebNavigationGetFrameFunction : public ChromeSyncExtensionFunction {
-  virtual ~WebNavigationGetFrameFunction() {}
-  virtual bool RunSync() override;
+  ~WebNavigationGetFrameFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("webNavigation.getFrame", WEBNAVIGATION_GETFRAME)
 };
 
 // API function that returns the states of all frames in a given tab.
 class WebNavigationGetAllFramesFunction : public ChromeSyncExtensionFunction {
-  virtual ~WebNavigationGetAllFramesFunction() {}
-  virtual bool RunSync() override;
+  ~WebNavigationGetAllFramesFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("webNavigation.getAllFrames",
                              WEBNAVIGATION_GETALLFRAMES)
 };
@@ -210,17 +207,16 @@ class WebNavigationAPI : public BrowserContextKeyedAPI,
                          public extensions::EventRouter::Observer {
  public:
   explicit WebNavigationAPI(content::BrowserContext* context);
-  virtual ~WebNavigationAPI();
+  ~WebNavigationAPI() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<WebNavigationAPI>* GetFactoryInstance();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
-      override;
+  void OnListenerAdded(const extensions::EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebNavigationAPI>;

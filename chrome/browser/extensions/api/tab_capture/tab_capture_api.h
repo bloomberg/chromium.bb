@@ -19,10 +19,10 @@ class TabCaptureCaptureFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tabCapture.capture", TABCAPTURE_CAPTURE)
 
  protected:
-  virtual ~TabCaptureCaptureFunction() {}
+  ~TabCaptureCaptureFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class TabCaptureGetCapturedTabsFunction : public ChromeSyncExtensionFunction {
@@ -31,10 +31,10 @@ class TabCaptureGetCapturedTabsFunction : public ChromeSyncExtensionFunction {
                              TABCAPTURE_GETCAPTUREDTABS)
 
  protected:
-  virtual ~TabCaptureGetCapturedTabsFunction() {}
+  ~TabCaptureGetCapturedTabsFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

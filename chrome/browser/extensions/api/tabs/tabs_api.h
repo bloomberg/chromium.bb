@@ -49,28 +49,28 @@ void ZoomModeToZoomSettings(ZoomController::ZoomMode zoom_mode,
 
 // Windows
 class WindowsGetFunction : public ChromeSyncExtensionFunction {
-  virtual ~WindowsGetFunction() {}
-  virtual bool RunSync() override;
+  ~WindowsGetFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("windows.get", WINDOWS_GET)
 };
 class WindowsGetCurrentFunction : public ChromeSyncExtensionFunction {
-  virtual ~WindowsGetCurrentFunction() {}
-  virtual bool RunSync() override;
+  ~WindowsGetCurrentFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("windows.getCurrent", WINDOWS_GETCURRENT)
 };
 class WindowsGetLastFocusedFunction : public ChromeSyncExtensionFunction {
-  virtual ~WindowsGetLastFocusedFunction() {}
-  virtual bool RunSync() override;
+  ~WindowsGetLastFocusedFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("windows.getLastFocused", WINDOWS_GETLASTFOCUSED)
 };
 class WindowsGetAllFunction : public ChromeSyncExtensionFunction {
-  virtual ~WindowsGetAllFunction() {}
-  virtual bool RunSync() override;
+  ~WindowsGetAllFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("windows.getAll", WINDOWS_GETALL)
 };
 class WindowsCreateFunction : public ChromeSyncExtensionFunction {
-  virtual ~WindowsCreateFunction() {}
-  virtual bool RunSync() override;
+  ~WindowsCreateFunction() override {}
+  bool RunSync() override;
   // Returns whether the window should be created in incognito mode.
   // |create_data| are the options passed by the extension. It may be NULL.
   // |urls| is the list of urls to open. If we are creating an incognito window,
@@ -85,55 +85,55 @@ class WindowsCreateFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("windows.create", WINDOWS_CREATE)
 };
 class WindowsUpdateFunction : public ChromeSyncExtensionFunction {
-  virtual ~WindowsUpdateFunction() {}
-  virtual bool RunSync() override;
+  ~WindowsUpdateFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("windows.update", WINDOWS_UPDATE)
 };
 class WindowsRemoveFunction : public ChromeSyncExtensionFunction {
-  virtual ~WindowsRemoveFunction() {}
-  virtual bool RunSync() override;
+  ~WindowsRemoveFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("windows.remove", WINDOWS_REMOVE)
 };
 
 // Tabs
 class TabsGetFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsGetFunction() {}
-  virtual bool RunSync() override;
+  ~TabsGetFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.get", TABS_GET)
 };
 class TabsGetCurrentFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsGetCurrentFunction() {}
-  virtual bool RunSync() override;
+  ~TabsGetCurrentFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.getCurrent", TABS_GETCURRENT)
 };
 class TabsGetSelectedFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsGetSelectedFunction() {}
-  virtual bool RunSync() override;
+  ~TabsGetSelectedFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.getSelected", TABS_GETSELECTED)
 };
 class TabsGetAllInWindowFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsGetAllInWindowFunction() {}
-  virtual bool RunSync() override;
+  ~TabsGetAllInWindowFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.getAllInWindow", TABS_GETALLINWINDOW)
 };
 class TabsQueryFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsQueryFunction() {}
-  virtual bool RunSync() override;
+  ~TabsQueryFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.query", TABS_QUERY)
 };
 class TabsCreateFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsCreateFunction() {}
-  virtual bool RunSync() override;
+  ~TabsCreateFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.create", TABS_CREATE)
 };
 class TabsDuplicateFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsDuplicateFunction() {}
-  virtual bool RunSync() override;
+  ~TabsDuplicateFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.duplicate", TABS_DUPLICATE)
 };
 class TabsHighlightFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsHighlightFunction() {}
-  virtual bool RunSync() override;
+  ~TabsHighlightFunction() override {}
+  bool RunSync() override;
   bool HighlightTab(TabStripModel* tabstrip,
                     ui::ListSelectionModel* selection,
                     int *active_index,
@@ -145,7 +145,7 @@ class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
   TabsUpdateFunction();
 
  protected:
-  virtual ~TabsUpdateFunction() {}
+  ~TabsUpdateFunction() override {}
   virtual bool UpdateURL(const std::string& url,
                          int tab_id,
                          bool* is_async);
@@ -154,7 +154,7 @@ class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
   content::WebContents* web_contents_;
 
  private:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
   void OnExecuteCodeFinished(const std::string& error,
                              const GURL& on_url,
                              const base::ListValue& script_result);
@@ -162,8 +162,8 @@ class TabsUpdateFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tabs.update", TABS_UPDATE)
 };
 class TabsMoveFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsMoveFunction() {}
-  virtual bool RunSync() override;
+  ~TabsMoveFunction() override {}
+  bool RunSync() override;
   bool MoveTab(int tab_id,
                int* new_index,
                int iteration,
@@ -172,25 +172,25 @@ class TabsMoveFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tabs.move", TABS_MOVE)
 };
 class TabsReloadFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsReloadFunction() {}
-  virtual bool RunSync() override;
+  ~TabsReloadFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("tabs.reload", TABS_RELOAD)
 };
 class TabsRemoveFunction : public ChromeSyncExtensionFunction {
-  virtual ~TabsRemoveFunction() {}
-  virtual bool RunSync() override;
+  ~TabsRemoveFunction() override {}
+  bool RunSync() override;
   bool RemoveTab(int tab_id);
   DECLARE_EXTENSION_FUNCTION("tabs.remove", TABS_REMOVE)
 };
 class TabsDetectLanguageFunction : public ChromeAsyncExtensionFunction,
                                    public content::NotificationObserver {
  private:
-  virtual ~TabsDetectLanguageFunction() {}
-  virtual bool RunAsync() override;
+  ~TabsDetectLanguageFunction() override {}
+  bool RunAsync() override;
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
   void GotLanguage(const std::string& language);
   content::NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION("tabs.detectLanguage", TABS_DETECTLANGUAGE)
@@ -202,15 +202,15 @@ class TabsCaptureVisibleTabFunction
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
-  virtual ~TabsCaptureVisibleTabFunction() {}
+  ~TabsCaptureVisibleTabFunction() override {}
 
  private:
   ChromeExtensionFunctionDetails chrome_details_;
 
   // extensions::CaptureWebContentsFunction:
-  virtual bool IsScreenshotEnabled() override;
-  virtual content::WebContents* GetWebContentsForID(int id) override;
-  virtual void OnCaptureFailure(FailureReason reason) override;
+  bool IsScreenshotEnabled() override;
+  content::WebContents* GetWebContentsForID(int id) override;
+  void OnCaptureFailure(FailureReason reason) override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.captureVisibleTab", TABS_CAPTUREVISIBLETAB)
 };
@@ -221,18 +221,18 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
   ExecuteCodeInTabFunction();
 
  protected:
-  virtual ~ExecuteCodeInTabFunction();
+  ~ExecuteCodeInTabFunction() override;
 
   // ExtensionFunction:
-  virtual bool HasPermission() override;
+  bool HasPermission() override;
 
   // Initialize the |execute_tab_id_| and |details_| if they haven't already
   // been. Returns whether initialization was successful.
-  virtual bool Init() override;
-  virtual bool CanExecuteScriptOnPage() override;
-  virtual ScriptExecutor* GetScriptExecutor() override;
-  virtual bool IsWebView() const override;
-  virtual const GURL& GetWebViewSrc() const override;
+  bool Init() override;
+  bool CanExecuteScriptOnPage() override;
+  ScriptExecutor* GetScriptExecutor() override;
+  bool IsWebView() const override;
+  const GURL& GetWebViewSrc() const override;
 
  private:
   const ChromeExtensionFunctionDetails chrome_details_;
@@ -243,31 +243,30 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
  protected:
-  virtual bool ShouldInsertCSS() const override;
+  bool ShouldInsertCSS() const override;
 
  private:
-  virtual ~TabsExecuteScriptFunction() {}
+  ~TabsExecuteScriptFunction() override {}
 
-  virtual void OnExecuteCodeFinished(
-      const std::string& error,
-      const GURL& on_url,
-      const base::ListValue& script_result) override;
+  void OnExecuteCodeFinished(const std::string& error,
+                             const GURL& on_url,
+                             const base::ListValue& script_result) override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.executeScript", TABS_EXECUTESCRIPT)
 };
 
 class TabsInsertCSSFunction : public ExecuteCodeInTabFunction {
  private:
-  virtual ~TabsInsertCSSFunction() {}
+  ~TabsInsertCSSFunction() override {}
 
-  virtual bool ShouldInsertCSS() const override;
+  bool ShouldInsertCSS() const override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.insertCSS", TABS_INSERTCSS)
 };
 
 class ZoomAPIFunction : public ChromeAsyncExtensionFunction {
  protected:
-  virtual ~ZoomAPIFunction() {}
+  ~ZoomAPIFunction() override {}
 
   // Gets the WebContents for |tab_id| if it is specified. Otherwise get the
   // WebContents for the active tab in the current window. Calling this function
@@ -280,36 +279,36 @@ class ZoomAPIFunction : public ChromeAsyncExtensionFunction {
 
 class TabsSetZoomFunction : public ZoomAPIFunction {
  private:
-  virtual ~TabsSetZoomFunction() {}
+  ~TabsSetZoomFunction() override {}
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.setZoom", TABS_SETZOOM)
 };
 
 class TabsGetZoomFunction : public ZoomAPIFunction {
  private:
-  virtual ~TabsGetZoomFunction() {}
+  ~TabsGetZoomFunction() override {}
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.getZoom", TABS_GETZOOM)
 };
 
 class TabsSetZoomSettingsFunction : public ZoomAPIFunction {
  private:
-  virtual ~TabsSetZoomSettingsFunction() {}
+  ~TabsSetZoomSettingsFunction() override {}
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.setZoomSettings", TABS_SETZOOMSETTINGS)
 };
 
 class TabsGetZoomSettingsFunction : public ZoomAPIFunction {
  private:
-  virtual ~TabsGetZoomSettingsFunction() {}
+  ~TabsGetZoomSettingsFunction() override {}
 
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.getZoomSettings", TABS_GETZOOMSETTINGS)
 };

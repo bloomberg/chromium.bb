@@ -27,7 +27,7 @@ class ExtensionActionManager : public KeyedService,
                                public ExtensionRegistryObserver {
  public:
   explicit ExtensionActionManager(Profile* profile);
-  virtual ~ExtensionActionManager();
+  ~ExtensionActionManager() override;
 
   // Returns this profile's ExtensionActionManager.  One instance is
   // shared between a profile and its incognito version.
@@ -56,10 +56,9 @@ class ExtensionActionManager : public KeyedService,
 
  private:
   // Implement ExtensionRegistryObserver.
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   Profile* profile_;
 

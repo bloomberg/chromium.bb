@@ -21,10 +21,9 @@ class BlacklistStateFetcherMock : public BlacklistStateFetcher {
  public:
   BlacklistStateFetcherMock();
 
-  virtual ~BlacklistStateFetcherMock();
+  ~BlacklistStateFetcherMock() override;
 
-  virtual void Request(const std::string& id,
-                       const RequestCallback& callback) override;
+  void Request(const std::string& id, const RequestCallback& callback) override;
 
   void SetState(const std::string& id, BlacklistState state);
 

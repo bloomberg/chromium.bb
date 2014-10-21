@@ -46,13 +46,13 @@ class DesktopCaptureChooseDesktopMediaFunction
   void Cancel();
 
  private:
-  virtual ~DesktopCaptureChooseDesktopMediaFunction();
+  ~DesktopCaptureChooseDesktopMediaFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   // content::WebContentsObserver overrides.
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   void OnPickerDialogResults(content::DesktopMediaID source);
 
@@ -73,10 +73,10 @@ class DesktopCaptureCancelChooseDesktopMediaFunction
   DesktopCaptureCancelChooseDesktopMediaFunction();
 
  private:
-  virtual ~DesktopCaptureCancelChooseDesktopMediaFunction();
+  ~DesktopCaptureCancelChooseDesktopMediaFunction() override;
 
   // ExtensionFunction overrides.
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class DesktopCaptureRequestsRegistry {

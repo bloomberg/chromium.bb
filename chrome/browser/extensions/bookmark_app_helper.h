@@ -42,7 +42,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
   BookmarkAppHelper(ExtensionService* service,
                     WebApplicationInfo web_app_info,
                     content::WebContents* contents);
-  virtual ~BookmarkAppHelper();
+  ~BookmarkAppHelper() override;
 
   // This finds the closest not-smaller bitmap in |bitmaps| for each size in
   // |sizes| and resizes it to that size. This returns a map of sizes to bitmaps
@@ -71,9 +71,9 @@ class BookmarkAppHelper : public content::NotificationObserver {
                          const std::map<GURL, std::vector<SkBitmap> >& bitmaps);
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // The WebApplicationInfo that the bookmark app is being created for.
   WebApplicationInfo web_app_info_;
