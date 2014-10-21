@@ -1138,9 +1138,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     for output, res in gyp.xcode_emulation.GetMacBundleResources(
         generator_default_variables['PRODUCT_DIR'], self.xcode_settings,
         map(Sourceify, map(self.Absolutify, resources))):
-      self.WriteDoCmd([output], [res], 'mac_tool,,,copy-bundle-resource',
-                      part_of_all=True)
-      bundle_deps.append(output)
+      _, ext = os.path.splitext(output)
+      if ext != '.xcassets':
+        # Make does not supports '.xcassets' emulation.
+        self.WriteDoCmd([output], [res], 'mac_tool,,,copy-bundle-resource',
+                        part_of_all=True)
+        bundle_deps.append(output)
 
 
   def WriteMacInfoPlist(self, bundle_deps):
