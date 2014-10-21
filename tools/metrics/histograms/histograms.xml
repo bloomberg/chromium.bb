@@ -17215,8 +17215,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.QuicServerInfo.DiskCacheReadTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of 10/2014. Replaced by DiskCacheWaitForDataReadyTime.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>Time spent to load QUIC server information from disk cache.</summary>
+</histogram>
+
+<histogram name="Net.QuicServerInfo.DiskCacheWaitForDataReadyTime"
+    units="milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Time spent waiting to load QUIC server information from disk cache.
+  </summary>
 </histogram>
 
 <histogram name="Net.QuicSession.21CumulativePacketsReceived"

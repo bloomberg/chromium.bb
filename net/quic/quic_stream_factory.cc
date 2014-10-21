@@ -312,7 +312,6 @@ void QuicStreamFactory::Job::OnIOComplete(int rv) {
 int QuicStreamFactory::Job::DoResolveHost() {
   // Start loading the data now, and wait for it after we resolve the host.
   if (server_info_) {
-    disk_cache_load_start_time_ = base::TimeTicks::Now();
     server_info_->Start();
   }
 
@@ -351,6 +350,7 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
   if (!server_info_)
     return OK;
 
+  disk_cache_load_start_time_ = base::TimeTicks::Now();
   return server_info_->WaitForDataReady(
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
                  weak_factory_.GetWeakPtr()));
@@ -358,7 +358,7 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
 
 int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
   if (server_info_) {
-    UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheReadTime",
+    UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheWaitForDataReadyTime",
                         base::TimeTicks::Now() - disk_cache_load_start_time_);
   }
 
