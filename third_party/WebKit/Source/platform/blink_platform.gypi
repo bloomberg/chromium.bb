@@ -304,7 +304,6 @@
       'exported/WebRTCStatsRequest.cpp',
       'exported/WebRTCStatsResponse.cpp',
       'exported/WebRTCVoidRequest.cpp',
-      'exported/WebSchedulerProxy.cpp',
       'exported/WebScrollbarImpl.cpp',
       'exported/WebScrollbarImpl.h',
       'exported/WebScrollbarThemeClientImpl.cpp',
