@@ -28,6 +28,15 @@ TestConfig.prototype.loadQueryParams = function() {
   this.useMSE = this.useMSE == '1' || this.useMSE == 'true';
   this.usePrefixedEME =
       this.usePrefixedEME == '1' || this.usePrefixedEME == 'true';
+
+  // Validate that the prefixed/unprefixed EME is available.
+  if (this.usePrefixedEME) {
+    if (EME_DISABLED_OPTIONS.indexOf(EME_PREFIXED_VERSION) >= 0)
+      Utils.failTest('Prefixed EME not available.')
+  } else {
+    if (EME_DISABLED_OPTIONS.indexOf(EME_UNPREFIXED_VERSION) >= 0)
+      Utils.failTest('Unprefixed EME not available.')
+  }
 };
 
 TestConfig.updateDocument = function() {

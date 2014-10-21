@@ -700,6 +700,10 @@ void ClearKeyCdm::OnSessionMessage(const std::string& web_session_id,
 
 void ClearKeyCdm::OnSessionKeysChange(const std::string& web_session_id,
                                       bool has_additional_usable_key) {
+  // Ignore the message when we are waiting to update the loadable session.
+  if (web_session_id == session_id_for_emulated_loadsession_)
+    return;
+
   host_->OnSessionUsableKeysChange(web_session_id.data(),
                                    web_session_id.length(),
                                    has_additional_usable_key);
@@ -749,6 +753,9 @@ void ClearKeyCdm::OnSessionUpdated(uint32 promise_id,
     // |promise_id| is the LoadSession() promise, so resolve appropriately.
     host_->OnResolveNewSessionPromise(
         promise_id, kLoadableWebSessionId, strlen(kLoadableWebSessionId));
+    // Generate the UsableKeys event now that the session is "loaded".
+    host_->OnSessionUsableKeysChange(
+        kLoadableWebSessionId, strlen(kLoadableWebSessionId), true);
     return;
   }
 
