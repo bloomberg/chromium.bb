@@ -1423,6 +1423,9 @@
       'browser/ui/elide_url.h',
       'browser/ui/extensions/application_launch.cc',
       'browser/ui/extensions/application_launch.h',
+      'browser/ui/extensions/application_launch_web_app.h',
+      'browser/ui/extensions/app_launch_params.cc',
+      'browser/ui/extensions/app_launch_params.h',
       'browser/ui/extensions/extension_install_ui_default.cc',
       'browser/ui/extensions/extension_install_ui_default.h',
       'browser/ui/extensions/extension_install_ui_factory.h',
@@ -2467,13 +2470,15 @@
     ],
     # Used when not using android and not using Athena.
     'chrome_browser_ui_non_athena_non_android_sources': [
-      'browser/ui/extensions/extension_install_ui_factory.cc', 
+      'browser/ui/extensions/application_launch_web_app.cc',
+      'browser/ui/extensions/extension_install_ui_factory.cc',
     ],
     # Used when athena is enabled.
     'chrome_browser_ui_athena_sources': [
       #TODO(mukai): Port AppListService to Athena (crbug.com/417571)
       'browser/ui/app_list/app_list_service_disabled.cc',
 
+      'browser/ui/athena/extensions/application_launch_web_app_athena.cc',
       'browser/ui/athena/extensions/extension_install_ui_factory_athena.cc', 
       'browser/ui/views/athena/athena_util.cc',
       'browser/ui/views/athena/athena_util.h',
