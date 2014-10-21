@@ -101,10 +101,10 @@ Status ParseBlinkVersionString(const std::string& blink_version,
                   "unrecognized Blink version string: " + blink_version);
   }
 
-  // Chrome OS reports its Blink revision as a (non-abbreviated) git hash. In
-  // this case, ignore it and don't set |blink_revision|. For Chrome (and for
-  // Chrome OS) we use the build number instead of the blink revision for
-  // decisions about backwards compatibility.
+  // Chrome OS reports its Blink revision as a git hash. In this case, ignore it
+  // and don't set |blink_revision|. For Chrome (and for Chrome OS) we use the
+  // build number instead of the blink revision for decisions about backwards
+  // compatibility.
   std::string revision = blink_version.substr(before + 1, after - before - 1);
   if (!IsGitHash(revision) && !base::StringToInt(revision, blink_revision)) {
     return Status(kUnknownError, "unrecognized Blink revision: " + revision);
@@ -114,7 +114,9 @@ Status ParseBlinkVersionString(const std::string& blink_version,
 }
 
 bool IsGitHash(const std::string& revision) {
-  const int kGitHashLength = 40;
-  return revision.size() == kGitHashLength
+  const int kShortGitHashLength = 7;
+  const int kFullGitHashLength = 40;
+  return kShortGitHashLength <= revision.size()
+      && revision.size() <= kFullGitHashLength
       && base::ContainsOnlyChars(revision, "0123456789abcdefABCDEF");
 }

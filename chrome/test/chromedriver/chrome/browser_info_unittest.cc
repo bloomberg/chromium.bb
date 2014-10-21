@@ -85,6 +85,10 @@ TEST(IsGitHash, GitHash) {
   ASSERT_TRUE(IsGitHash("28f741cfcabffe68a9c12c4e7152569c906bd88f"));
 }
 
+TEST(IsGitHash, ShortGitHash) {
+  ASSERT_TRUE(IsGitHash("1493aa5"));
+}
+
 TEST(IsGitHash, GitHashWithUpperCaseCharacters) {
   ASSERT_TRUE(IsGitHash("28F741CFCABFFE68A9C12C4E7152569C906BD88F"));
 }
