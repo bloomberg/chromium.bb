@@ -92,7 +92,8 @@ class AutofillDialogViews : public AutofillDialogView,
                             FieldValueMap* output) override;
   virtual base::string16 GetCvc() override;
   virtual bool SaveDetailsLocally() override;
-  virtual const content::NavigationController* ShowSignIn() override;
+  virtual const content::NavigationController* ShowSignIn(
+      const GURL& url) override;
   virtual void HideSignIn() override;
   virtual void ModelChanged() override;
   virtual void OnSignInResize(const gfx::Size& pref_size) override;

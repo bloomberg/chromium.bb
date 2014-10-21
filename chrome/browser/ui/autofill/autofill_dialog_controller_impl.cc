@@ -969,10 +969,6 @@ bool AutofillDialogControllerImpl::ShouldShowSignInWebView() const {
   return !signin_registrar_.IsEmpty();
 }
 
-GURL AutofillDialogControllerImpl::SignInUrl() const {
-  return wallet::GetSignInUrl();
-}
-
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
   return IsAutofillEnabled() &&
       !IsPayingWithWallet() &&
@@ -1173,7 +1169,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
 
     case REQUIRES_SIGN_IN:
       if (handling_use_wallet_link_click_)
-        SignInLinkClicked();
+        ShowSignIn(wallet::GetSignInUrl(GetWalletClient()->user_index()));
       // Fall through.
     case SIGN_IN_DISABLED:
       // Switch to the local account and refresh the dialog.
@@ -2269,6 +2265,10 @@ void AutofillDialogControllerImpl::LinkClicked(const GURL& url) {
 }
 
 void AutofillDialogControllerImpl::SignInLinkClicked() {
+  AddAccount();
+}
+
+void AutofillDialogControllerImpl::ShowSignIn(const GURL& url) {
   ScopedViewUpdates updates(view_.get());
 
   if (SignedInState() == NOT_CHECKED) {
@@ -2278,7 +2278,8 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
   } else if (signin_registrar_.IsEmpty()) {
     // Start sign in.
     waiting_for_explicit_sign_in_response_ = true;
-    content::Source<content::NavigationController> source(view_->ShowSignIn());
+    content::Source<content::NavigationController> source(
+        view_->ShowSignIn(url));
     signin_registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
 
@@ -2625,13 +2626,10 @@ void AutofillDialogControllerImpl::OnPassiveSigninFailure(
   signin_helper_.reset();
   passive_failed_ = true;
 
-  if (handling_use_wallet_link_click_ ||
-      GetWalletClient()->user_index() != 0) {
-    // TODO(estade): When a secondary account is selected and fails passive
-    // auth, we show a sign in page. Currently we show the generic add account
-    // page, but we should instead show sign in for the selected account.
-    // http://crbug.com/323327
-    SignInLinkClicked();
+  // When the user clicks on "use wallet" or a second account and passive auth
+  // fails, try explicit sign in.
+  if (handling_use_wallet_link_click_ || GetWalletClient()->user_index() != 0) {
+    ShowSignIn(wallet::GetSignInUrl(GetWalletClient()->user_index()));
     handling_use_wallet_link_click_ = false;
   }
 
@@ -2747,7 +2745,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
 }
 
 void AutofillDialogControllerImpl::AddAccount() {
-  SignInLinkClicked();
+  ShowSignIn(wallet::GetAddAccountUrl());
 }
 
 void AutofillDialogControllerImpl::UpdateAccountChooserView() {

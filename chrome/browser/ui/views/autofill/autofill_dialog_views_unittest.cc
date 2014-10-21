@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "components/web_modal/test_web_contents_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -124,7 +125,7 @@ TEST_F(AutofillDialogViewsTest, SignInFocus) {
   views::View* notification_area = dialog()->GetNotificationAreaForTesting();
   views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
 
-  dialog()->ShowSignIn();
+  dialog()->ShowSignIn(wallet::GetAddAccountUrl());
 
   // The sign in view should be the only showing and focusable view.
   EXPECT_TRUE(sign_in_web_view->IsFocusable());
@@ -141,7 +142,7 @@ TEST_F(AutofillDialogViewsTest, SignInFocus) {
   EXPECT_FALSE(loading_shield->IsFocusable());
   EXPECT_FALSE(sign_in_web_view->IsFocusable());
 
-  dialog()->ShowSignIn();
+  dialog()->ShowSignIn(wallet::GetAddAccountUrl());
 
   EXPECT_TRUE(sign_in_web_view->IsFocusable());
   EXPECT_FALSE(loading_shield->IsFocusable());

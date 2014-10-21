@@ -17,6 +17,8 @@
 @class AutofillOverlayController;
 @class AutofillSignInContainer;
 
+class GURL;
+
 namespace content {
 class NavigationController;
 class WebContents;
@@ -25,7 +27,6 @@ class WebContents;
 namespace autofill {
 class AutofillDialogCocoa;
 }  // autofill
-
 
 // Forwarding AutofillDialogView calls.
 @protocol AutofillDialogBridge
@@ -38,12 +39,12 @@ class AutofillDialogCocoa;
 - (void)updateSection:(autofill::DialogSection)section;
 - (void)updateForErrors;
 - (void)fillSection:(autofill::DialogSection)section
-           forType:(const autofill::ServerFieldType)type;
+            forType:(const autofill::ServerFieldType)type;
 - (void)getInputs:(autofill::FieldValueMap*)outputs
        forSection:(autofill::DialogSection)section;
 - (NSString*)getCvc;
 - (BOOL)saveDetailsLocally;
-- (content::NavigationController*)showSignIn;
+- (content::NavigationController*)showSignIn:(const GURL&)url;
 - (void)hideSignIn;
 - (void)modelChanged;
 - (void)updateErrorBubble;

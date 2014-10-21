@@ -1403,7 +1403,8 @@ bool AutofillDialogViews::SaveDetailsLocally() {
   return save_in_chrome_checkbox_->checked();
 }
 
-const content::NavigationController* AutofillDialogViews::ShowSignIn() {
+const content::NavigationController* AutofillDialogViews::ShowSignIn(
+    const GURL& url) {
   // The initial minimum width and height are set such that the dialog
   // won't change size before the page is loaded.
   int min_width = GetContentsBounds().width();
@@ -1418,7 +1419,7 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
           sign_in_web_view_->GetWebContents(),
           delegate_->GetWebContents(),
           gfx::Size(min_width, min_height), GetMaximumSignInViewSize()));
-  sign_in_web_view_->LoadInitialURL(delegate_->SignInUrl());
+  sign_in_web_view_->LoadInitialURL(url);
 
   ShowDialogInMode(SIGN_IN);
 

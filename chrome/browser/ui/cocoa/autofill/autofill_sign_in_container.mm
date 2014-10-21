@@ -80,7 +80,7 @@ void CocoaSignInDelegate::HandleKeyboardEvent(
   [self setView:webContentView];
 }
 
-- (void)loadSignInPage {
+- (void)loadSignInPage:(const GURL&)url {
   DCHECK(webContents_.get());
 
   // Ensure initial minimum size doesn't cause resize.
@@ -98,11 +98,10 @@ void CocoaSignInDelegate::HandleKeyboardEvent(
           gfx::Size(NSSizeToCGSize(initialMinSize)),
           gfx::Size(NSSizeToCGSize(maxSize_)),
           [self view]));
-  webContents_->GetController().LoadURL(
-      dialog_->delegate()->SignInUrl(),
-      content::Referrer(),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      std::string());
+  webContents_->GetController().LoadURL(url,
+                                        content::Referrer(),
+                                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                        std::string());
 }
 
 - (content::NavigationController*)navigationController {

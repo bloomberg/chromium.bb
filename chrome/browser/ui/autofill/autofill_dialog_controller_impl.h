@@ -113,7 +113,6 @@ class AutofillDialogControllerImpl
   virtual bool ShouldShowSpinner() const override;
   virtual bool ShouldShowAccountChooser() const override;
   virtual bool ShouldShowSignInWebView() const override;
-  virtual GURL SignInUrl() const override;
   virtual bool ShouldOfferToSaveInChrome() const override;
   virtual bool ShouldSaveInChrome() const override;
   virtual ui::MenuModel* MenuModelForAccountChooser() override;
@@ -326,6 +325,9 @@ class AutofillDialogControllerImpl
 
   // Whether the user is known to be signed in.
   DialogSignedInState SignedInState() const;
+
+  // Tells the view to shows the webpage at |url|. Virtual for testing.
+  virtual void ShowSignIn(const GURL& url);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerI18nTest,

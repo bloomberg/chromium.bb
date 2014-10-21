@@ -138,7 +138,8 @@ TEST(WalletServiceUrl, IsSignInContinueUrl) {
 }
 
 TEST(WalletServiceUrl, IsSignInRelatedUrl) {
-  EXPECT_TRUE(IsSignInRelatedUrl(GetSignInUrl()));
+  EXPECT_TRUE(IsSignInRelatedUrl(GetSignInUrl(0)));
+  EXPECT_TRUE(IsSignInRelatedUrl(GetAddAccountUrl()));
   EXPECT_TRUE(IsSignInRelatedUrl(GURL("https://accounts.youtube.com")));
   EXPECT_TRUE(IsSignInRelatedUrl(GURL("https://accounts.youtube.com/")));
   EXPECT_TRUE(IsSignInRelatedUrl(GURL("https://accounts.google.com")));

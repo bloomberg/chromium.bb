@@ -24,8 +24,11 @@ GURL GetSaveToWalletNoEscrowUrl(size_t user_index);
 GURL GetSaveToWalletUrl(size_t user_index);
 GURL GetPassiveAuthUrl(size_t user_index);
 
-// URL to visit for presenting the user with a sign-in dialog.
-GURL GetSignInUrl();
+// URL to visit for presenting the user when first signing in.
+GURL GetAddAccountUrl();
+
+// (Re-)sign into a specific account.
+GURL GetSignInUrl(size_t user_index);
 
 // The the URL to use as a continue parameter in the sign-in URL.
 // A redirect to this URL will occur once sign-in is complete.

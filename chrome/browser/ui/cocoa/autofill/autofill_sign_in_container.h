@@ -9,6 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 
+class GURL;
+
 namespace autofill {
 class AutofillDialogCocoa;
 class AutofillDialogSignInDelegate;
@@ -38,7 +40,7 @@ class NavigationController;
 @property(assign, nonatomic) NSSize preferredSize;
 
 - (id)initWithDialog:(autofill::AutofillDialogCocoa*)dialog;
-- (void)loadSignInPage;
+- (void)loadSignInPage:(const GURL&)url;
 - (content::NavigationController*)navigationController;
 - (void)constrainSizeToMinimum:(NSSize)minSize maximum:(NSSize)maximum;
 - (content::WebContents*)webContents;

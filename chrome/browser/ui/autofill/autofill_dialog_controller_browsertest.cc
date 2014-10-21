@@ -141,8 +141,12 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual ~TestAutofillDialogController() {}
 
-  virtual GURL SignInUrl() const override {
+  GURL FakeSignInUrl() const {
     return GURL(chrome::kChromeUIVersionURL);
+  }
+
+  virtual void ShowSignIn(const GURL& url) override {
+    AutofillDialogControllerImpl::ShowSignIn(FakeSignInUrl());
   }
 
   virtual void ViewClosed() override {
@@ -1174,7 +1178,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
       wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
 
   NavEntryCommittedObserver sign_in_page_observer(
-      controller()->SignInUrl(),
+      controller()->FakeSignInUrl(),
       content::NotificationService::AllSources());
 
   // Simulate a user clicking "Sign In" (which loads dialog's web contents).
@@ -1191,7 +1195,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
       wallet::GetSignInContinueUrl(),
       content::NotificationService::AllSources());
 
-  EXPECT_EQ(sign_in_contents->GetURL(), controller()->SignInUrl());
+  EXPECT_EQ(sign_in_contents->GetURL(), controller()->FakeSignInUrl());
 
   AccountChooserModel* account_chooser_model =
       controller()->AccountChooserModelForTesting();
@@ -1250,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
       account_chooser_model->GetItemCount() - 1);
 
   NavEntryCommittedObserver sign_in_page_observer(
-      controller()->SignInUrl(),
+      controller()->FakeSignInUrl(),
       content::NotificationService::AllSources());
 
   // Simulate a user clicking "add account".
@@ -1268,7 +1272,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
       wallet::GetSignInContinueUrl(),
       content::NotificationService::AllSources());
 
-  EXPECT_EQ(sign_in_contents->GetURL(), controller()->SignInUrl());
+  EXPECT_EQ(sign_in_contents->GetURL(), controller()->FakeSignInUrl());
 
   EXPECT_FALSE(account_chooser_model->WalletIsSelected());
 
@@ -1407,7 +1411,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
 
   NavEntryCommittedObserver sign_in_page_observer(
-      controller()->SignInUrl(),
+      controller()->FakeSignInUrl(),
       content::NotificationService::AllSources());
 
   controller()->SignInLinkClicked();

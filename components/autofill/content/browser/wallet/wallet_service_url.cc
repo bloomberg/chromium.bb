@@ -141,7 +141,7 @@ GURL GetPassiveAuthUrl(size_t user_index) {
       .Resolve("passiveauth?isChromePayments=true");
 }
 
-GURL GetSignInUrl() {
+GURL GetAddAccountUrl() {
   GURL url(GaiaUrls::GetInstance()->add_account_url());
   url = net::AppendQueryParameter(url, "nui", "1");
   // Prevents promos from showing (see http://crbug.com/235227).
@@ -149,6 +149,17 @@ GURL GetSignInUrl() {
   url = net::AppendQueryParameter(url,
                                   "continue",
                                   GetSignInContinueUrl().spec());
+  return url;
+}
+
+GURL GetSignInUrl(size_t user_index) {
+  GURL url(GaiaUrls::GetInstance()->service_login_url());
+  url = net::AppendQueryParameter(
+      url, "authuser", base::SizeTToString(user_index));
+  // Prevents promos from showing (see http://crbug.com/235227).
+  url = net::AppendQueryParameter(url, "sarp", "1");
+  url =
+      net::AppendQueryParameter(url, "continue", GetSignInContinueUrl().spec());
   return url;
 }
 
@@ -187,11 +198,11 @@ bool IsSignInContinueUrl(const GURL& url, size_t* user_index) {
 
 bool IsSignInRelatedUrl(const GURL& url) {
   size_t unused;
-  return url.GetOrigin() == GetSignInUrl().GetOrigin() ||
-      StartsWith(base::UTF8ToUTF16(url.GetOrigin().host()),
-                 base::ASCIIToUTF16("accounts."),
-                 false) ||
-      IsSignInContinueUrl(url, &unused);
+  return url.GetOrigin() == GetAddAccountUrl().GetOrigin() ||
+         StartsWith(base::UTF8ToUTF16(url.GetOrigin().host()),
+                    base::ASCIIToUTF16("accounts."),
+                    false) ||
+         IsSignInContinueUrl(url, &unused);
 }
 
 bool IsUsingProd() {

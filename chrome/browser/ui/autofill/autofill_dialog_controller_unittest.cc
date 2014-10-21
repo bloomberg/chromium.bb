@@ -210,7 +210,8 @@ class TestAutofillDialogView : public AutofillDialogView {
     return save_details_locally_checked_;
   }
 
-  virtual const content::NavigationController* ShowSignIn() override {
+  virtual const content::NavigationController* ShowSignIn(const GURL& url)
+      override {
     return NULL;
   }
   virtual void HideSignIn() override {}

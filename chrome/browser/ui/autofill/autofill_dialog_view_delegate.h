@@ -66,9 +66,6 @@ class AutofillDialogViewDelegate {
   // Whether the sign in web view should be displayed.
   virtual bool ShouldShowSignInWebView() const = 0;
 
-  // The URL to sign in to Google.
-  virtual GURL SignInUrl() const = 0;
-
   // Whether to show the checkbox to save data locally (in Autofill).
   virtual bool ShouldOfferToSaveInChrome() const = 0;
 
