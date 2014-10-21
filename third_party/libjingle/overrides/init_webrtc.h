@@ -23,9 +23,21 @@ class WebRtcVideoEncoderFactory;
 
 namespace webrtc {
 class AudioDeviceModule;
+namespace metrics {
+class Histogram;
+}  // namespace metrics
 }  // namespace webrtc
 
 typedef std::string (*FieldTrialFindFullName)(const std::string& trial_name);
+
+typedef webrtc::metrics::Histogram* (*RtcHistogramFactoryGetCounts)(
+    const std::string& name, int min, int max, int bucket_count);
+typedef webrtc::metrics::Histogram* (*RtcHistogramFactoryGetEnumeration)(
+    const std::string& name, int boundary);
+typedef void (*RtcHistogramAdd)(
+    webrtc::metrics::Histogram* histogram_pointer,
+    const std::string& name,
+    int sample);
 
 typedef cricket::MediaEngineInterface* (*CreateWebRtcMediaEngineFunction)(
     webrtc::AudioDeviceModule* adm,
@@ -44,6 +56,7 @@ typedef void (*InitDiagnosticLoggingDelegateFunctionFunction)(
 // as well as provide pointers back to a couple webrtc factory functions.
 // The reason we get pointers to these functions this way is to avoid having
 // to go through GetProcAddress et al and rely on specific name mangling.
+// TODO(tommi): The number of functions is growing. Use a struct.
 typedef bool (*InitializeModuleFunction)(
     const base::CommandLine& command_line,
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -51,6 +64,9 @@ typedef bool (*InitializeModuleFunction)(
     DellocateFunction dealloc,
 #endif
     FieldTrialFindFullName field_trial_find,
+    RtcHistogramFactoryGetCounts factory_get_counts,
+    RtcHistogramFactoryGetEnumeration factory_get_enumeration,
+    RtcHistogramAdd histogram_add,
     logging::LogMessageHandlerFunction log_handler,
     webrtc::GetCategoryEnabledPtr trace_get_category_enabled,
     webrtc::AddTraceEventPtr trace_add_trace_event,
