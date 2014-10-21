@@ -17,6 +17,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -111,6 +112,9 @@ struct ResourceResponseInfo {
   // The original URL of the response which was fetched by the ServiceWorker.
   // This may be empty if the response was created inside the ServiceWorker.
   GURL original_url_via_service_worker;
+
+  // The type of the response which was fetched by the ServiceWorker.
+  blink::WebServiceWorkerResponseType response_type_via_service_worker;
 
   // ServiceWorker Timing Information. These will be set if the response is
   // provided by the ServiceWorker, or kept empty.

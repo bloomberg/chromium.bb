@@ -55,6 +55,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       provider_host_(provider_host),
       response_type_(NOT_DETERMINED),
       is_started_(false),
+      service_worker_response_type_(blink::WebServiceWorkerResponseTypeDefault),
       blob_storage_context_(blob_storage_context),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
@@ -215,6 +216,7 @@ void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
     bool* was_fetched_via_service_worker,
     bool* was_fallback_required_by_service_worker,
     GURL* original_url_via_service_worker,
+    blink::WebServiceWorkerResponseType* response_type_via_service_worker,
     base::TimeTicks* fetch_start_time,
     base::TimeTicks* fetch_ready_time,
     base::TimeTicks* fetch_end_time) const {
@@ -222,11 +224,14 @@ void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
     *was_fetched_via_service_worker = false;
     *was_fallback_required_by_service_worker = false;
     *original_url_via_service_worker = GURL();
+    *response_type_via_service_worker =
+        blink::WebServiceWorkerResponseTypeDefault;
     return;
   }
   *was_fetched_via_service_worker = true;
   *was_fallback_required_by_service_worker = fall_back_required_;
   *original_url_via_service_worker = response_url_;
+  *response_type_via_service_worker = service_worker_response_type_;
   *fetch_start_time = fetch_start_time_;
   *fetch_ready_time = fetch_ready_time_;
   *fetch_end_time = fetch_end_time_;
@@ -449,6 +454,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   }
 
   response_url_ = response.url;
+  service_worker_response_type_ = response.response_type;
   CreateResponseHeader(
       response.status_code, response.status_text, response.headers);
   load_timing_info_.receive_headers_end = base::TimeTicks::Now();

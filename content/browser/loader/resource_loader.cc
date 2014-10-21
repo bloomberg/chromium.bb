@@ -62,6 +62,7 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
         &response->head.was_fetched_via_service_worker,
         &response->head.was_fallback_required_by_service_worker,
         &response->head.original_url_via_service_worker,
+        &response->head.response_type_via_service_worker,
         &response->head.service_worker_fetch_start,
         &response->head.service_worker_fetch_ready,
         &response->head.service_worker_fetch_end);

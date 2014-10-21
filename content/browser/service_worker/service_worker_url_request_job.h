@@ -19,6 +19,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 
 namespace storage {
 class BlobDataHandle;
@@ -95,12 +96,14 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   const net::HttpResponseInfo* http_info() const;
 
-  void GetExtraResponseInfo(bool* was_fetched_via_service_worker,
-                            bool* was_fallback_required_by_service_worker,
-                            GURL* original_url_via_service_worker,
-                            base::TimeTicks* fetch_start_time,
-                            base::TimeTicks* fetch_ready_time,
-                            base::TimeTicks* fetch_end_time) const;
+  void GetExtraResponseInfo(
+      bool* was_fetched_via_service_worker,
+      bool* was_fallback_required_by_service_worker,
+      GURL* original_url_via_service_worker,
+      blink::WebServiceWorkerResponseType* response_type_via_service_worker,
+      base::TimeTicks* fetch_start_time,
+      base::TimeTicks* fetch_ready_time,
+      base::TimeTicks* fetch_end_time) const;
 
  protected:
   virtual ~ServiceWorkerURLRequestJob();
@@ -161,6 +164,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // Headers that have not yet been committed to |http_response_info_|.
   scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
   GURL response_url_;
+  blink::WebServiceWorkerResponseType service_worker_response_type_;
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
