@@ -533,9 +533,10 @@ def main():
       json_text = f.read()
     try:
       config = json.loads(json_text)
-    except ValueError:
-      print >> sys.stderr, "%s: error parsing JSON" % json_file
-      raise
+    except ValueError, e:
+      print >> sys.stderr, "%s: error parsing JSON: %s" % (json_file, e)
+      found_invalid_config = True
+      continue
     if 'monitored_domain' not in config:
       print >> sys.stderr, '%s: no monitored_domain found' % json_file
       found_invalid_config = True
