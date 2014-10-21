@@ -78,17 +78,23 @@ from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
-from utilities import KNOWN_COMPONENTS
+from utilities import KNOWN_COMPONENTS, idl_filename_to_component, is_valid_component_dependency
 
 
-def render_template(interface_info, header_template, cpp_template,
-                    template_context):
+def render_template(include_paths, header_template, cpp_template,
+                    template_context, component=None):
     template_context['code_generator'] = module_pyname
 
     # Add includes for any dependencies
     template_context['header_includes'] = sorted(
         template_context['header_includes'])
-    includes.update(interface_info.get('dependencies_include_paths', []))
+
+    for include_path in include_paths:
+        if component:
+            dependency = idl_filename_to_component(include_path)
+            assert is_valid_component_dependency(component, dependency)
+        includes.add(include_path)
+
     template_context['cpp_includes'] = sorted(includes)
 
     header_text = header_template.render(template_context)
@@ -152,19 +158,30 @@ class CodeGeneratorV8(CodeGeneratorBase):
         # Store other interfaces for introspection
         interfaces.update(definitions.interfaces)
 
+        interface_info = self.interfaces_info[interface_name]
+        component = idl_filename_to_component(
+            interface_info.get('full_path'))
+        include_paths = interface_info.get('dependencies_include_paths')
+
         # Select appropriate Jinja template and contents function
         if interface.is_callback:
             header_template_filename = 'callback_interface.h'
             cpp_template_filename = 'callback_interface.cpp'
             interface_context = v8_callback_interface.callback_interface_context
+        elif interface.is_partial:
+            interface_context = v8_interface.interface_context
+            header_template_filename = 'partial_interface.h'
+            cpp_template_filename = 'partial_interface.cpp'
+            interface_name += 'Partial'
+            assert component == 'core'
+            component = 'modules'
+            include_paths = interface_info.get('dependencies_other_component_include_paths')
         else:
             header_template_filename = 'interface.h'
             cpp_template_filename = 'interface.cpp'
             interface_context = v8_interface.interface_context
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
-
-        interface_info = self.interfaces_info[interface_name]
 
         template_context = interface_context(interface)
         # Add the include for interface itself
@@ -173,7 +190,8 @@ class CodeGeneratorV8(CodeGeneratorBase):
         else:
             template_context['header_includes'].add(interface_info['include_path'])
         header_text, cpp_text = render_template(
-            interface_info, header_template, cpp_template, template_context)
+            include_paths, header_template, cpp_template, template_context,
+            component)
         header_path, cpp_path = self.output_paths(interface_name)
         return (
             (header_path, header_text),
@@ -186,10 +204,11 @@ class CodeGeneratorV8(CodeGeneratorBase):
         cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
         template_context = v8_dictionary.dictionary_context(dictionary)
         interface_info = self.interfaces_info[dictionary_name]
+        include_paths = interface_info.get('dependencies_include_paths')
         # Add the include for interface itself
         template_context['header_includes'].add(interface_info['include_path'])
         header_text, cpp_text = render_template(
-            interface_info, header_template, cpp_template, template_context)
+            include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(dictionary_name)
         return (
             (header_path, header_text),
@@ -217,8 +236,9 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         cpp_template = self.jinja_env.get_template('dictionary_impl.cpp')
         template_context = v8_dictionary.dictionary_impl_context(
             dictionary, self.interfaces_info)
+        include_paths = interface_info.get('dependencies_include_paths')
         header_text, cpp_text = render_template(
-            interface_info, header_template, cpp_template, template_context)
+            include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(
             definition_name, interface_info)
         return (

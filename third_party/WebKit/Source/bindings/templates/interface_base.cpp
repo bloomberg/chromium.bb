@@ -6,12 +6,13 @@
 
 #include "config.h"
 {% filter conditional(conditional_string) %}
-#include "{{v8_class}}.h"
+#include "{{v8_class_or_partial}}.h"
 
-{% for filename in cpp_includes if filename != '%s.h' % v8_class %}
+{% for filename in cpp_includes if filename != '%s.h' % cpp_class_or_partial %}
 #include "{{filename}}"
 {% endfor %}
 
+{% block initialize_script_wrappable %}{% endblock %}
 namespace blink {
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
@@ -25,7 +26,9 @@ namespace blink {
                                 'WrapperTypeObjectPrototype' %}
 {% set dom_template = '%s::domTemplate' % v8_class if not is_array_buffer_or_view else '0' %}
 
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
+{% set wrapper_type_info_const = '' if has_partial_interface else 'const ' %}
+{% if not is_partial %}
+{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
 {% if is_script_wrappable %}
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
@@ -37,8 +40,14 @@ template<>
 const WrapperTypeInfo& {{cpp_class}}::s_wrapperTypeInfo = {{v8_class}}::wrapperTypeInfo;
 
 {% endif %}
+{% endif %}
 {% if not is_array_buffer_or_view %}
-namespace {{cpp_class}}V8Internal {
+namespace {{cpp_class_or_partial}}V8Internal {
+{% if has_partial_interface %}
+{% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
+static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
+{% endfor %}
+{% endif %}
 
 {# Constants #}
 {% from 'constants.cpp' import constant_getter_callback
@@ -110,7 +119,7 @@ static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8:
 
 static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    {{cpp_class}}V8Internal::{{cpp_class}}ForceSetAttributeOnThis(name, v8Value, info);
+    {{cpp_class_or_partial}}V8Internal::{{cpp_class}}ForceSetAttributeOnThis(name, v8Value, info);
 }
 
 {% endif %}
@@ -141,17 +150,24 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {% for method in methods %}
 {% if method.should_be_exposed_to_script %}
 {% for world_suffix in method.world_suffixes %}
-{% if not method.is_custom %}
+{% if not method.is_custom and method.visible %}
 {{generate_method(method, world_suffix)}}
 {% endif %}
-{% if method.overloads %}
+{% if method.overloads and method.overloads.visible %}
 {{overload_resolution_method(method.overloads, world_suffix)}}
 {% endif %}
 {% if not method.overload_index or method.overloads %}
+{# Document about the following condition: #}
+{# https://docs.google.com/document/d/1qBC7Therp437Jbt_QYAtNYMZs6zQ_7_tnMkNUG_ACqs/edit?usp=sharing #}
+{% if (method.overloads and method.overloads.visible and
+        (not method.overloads.has_partial_overloads or not is_partial)) or
+      (not method.overloads and method.visible) %}
 {# A single callback is generated for overloaded methods #}
+{# with considering partial overloads #}
 {{method_callback(method, world_suffix)}}
 {% endif %}
-{% if method.is_do_not_check_security %}
+{% endif %}
+{% if method.is_do_not_check_security and method.visible %}
 {{origin_safe_method_getter(method, world_suffix)}}
 {% endif %}
 {% endfor %}
@@ -185,12 +201,13 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {% block named_property_deleter_callback %}{% endblock %}
 {% block named_property_enumerator %}{% endblock %}
 {% block named_property_enumerator_callback %}{% endblock %}
-} // namespace {{cpp_class}}V8Internal
+} // namespace {{cpp_class_or_partial}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}
 {% block shadow_attributes %}{% endblock %}
 {##############################################################################}
 {% block install_attributes %}
+{% from 'attributes.cpp' import attribute_configuration with context %}
 {% if has_attribute_configuration %}
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
     {% for attribute in attributes
@@ -211,6 +228,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {% endblock %}
 {##############################################################################}
 {% block install_accessors %}
+{% from 'attributes.cpp' import attribute_configuration with context %}
 {% if has_accessors %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for attribute in attributes if attribute.is_expose_js_accessors and attribute.should_be_exposed_to_script %}
@@ -244,10 +262,19 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% block install_dom_template %}
 {% if not is_array_buffer_or_view %}
 {% from 'methods.cpp' import install_custom_signature with context %}
+{% from 'attributes.cpp' import attribute_configuration with context %}
 {% from 'constants.cpp' import install_constants with context %}
+{% if has_partial_interface or is_partial %}
+void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+{% else %}
 static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+{% endif %}
 {
+    {% if is_partial %}
+    {{v8_class}}::install{{v8_class}}Template(functionTemplate, isolate);
+    {% else %}
     functionTemplate->ReadOnlyPrototype();
+    {% endif %}
 
     v8::Local<v8::Signature> defaultSignature;
     {% set parent_template =
@@ -313,7 +340,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {{install_constants() | indent}}
     {% endif %}
     {# Special operations #}
-    {# V8 has access-check callback API and it is used on Window instead of
+    {# V8 has access-check callback API and it\'s used on Window instead of
        deleters or enumerators; see ObjectTemplate::SetAccessCheckCallbacks.
        In addition, the getter should be set on the prototype template, to get
        the implementation straight out of the Window prototype, regardless of
@@ -355,7 +382,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     functionTemplate->{{set_on_template}}()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
     {% endif %}
     {% if iterator_method %}
-    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
     {% endif %}
     {# End special operations #}
@@ -388,6 +415,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {% endfilter %}
     {% endfor %}
     {# Special interfaces #}
+    {% if not is_partial %}
     {% if interface_name == 'Window' %}
 
     prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
@@ -405,6 +433,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
+    {% endif %}
 }
 
 {% endif %}{# not is_array_buffer_or_view #}
@@ -414,45 +443,13 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
 {% block has_instance %}{% endblock %}
 {% block to_impl %}{% endblock %}
 {% block to_impl_with_type_check %}{% endblock %}
-{##############################################################################}
-{% block install_conditional_attributes %}
-{% if has_conditional_attributes %}
-void {{v8_class}}::installConditionallyEnabledProperties(v8::Handle<v8::Object> instanceObject, v8::Isolate* isolate)
-{
-    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
-    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-
-    {% for attribute in attributes if attribute.per_context_enabled_function or attribute.exposed_test %}
-    {% filter per_context_enabled(attribute.per_context_enabled_function) %}
-    {% filter exposed(attribute.exposed_test) %}
-    static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-    {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
-    {% endfilter %}
-    {% endfilter %}
-    {% endfor %}
-}
-
-{% endif %}
-{% endblock %}
+{% block install_conditional_attributes %}{% endblock %}
 {##############################################################################}
 {% block install_conditional_methods %}
-{% if conditionally_enabled_methods %}
-void {{v8_class}}::installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
-{
-    {# Define per-context enabled operations #}
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
-    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-    ASSERT(context);
-
-    {% for method in conditionally_enabled_methods %}
-    {% filter per_context_enabled(method.per_context_enabled_function) %}
-    {% filter exposed(method.exposed_test) %}
-    prototypeObject->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
-    {% endfilter %}
-    {% endfilter %}
-    {% endfor %}
-}
+{% from 'methods.cpp' import install_conditionally_enabled_methods
+        with context %}
+{% if is_partial or conditionally_enabled_methods %}
+{{install_conditionally_enabled_methods()}}
 
 {% endif %}
 {% endblock %}
@@ -472,5 +469,6 @@ void {{v8_class}}::installConditionallyEnabledMethods(v8::Handle<v8::Object> pro
 {{attribute_setter_implemented_in_private_script(attribute)}}
 {% endif %}
 {% endfor %}
+{% block partial_interface %}{% endblock %}
 } // namespace blink
 {% endfilter %}

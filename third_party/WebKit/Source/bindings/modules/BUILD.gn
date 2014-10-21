@@ -10,14 +10,6 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 
 visibility = [ "//third_party/WebKit/*" ]
 
-core_idl_files_list = "$target_gen_dir/core_idl_files.tmp"
-write_file(core_idl_files_list,
-           rebase_path(core_idl_files, root_build_dir))
-
-modules_idl_files_list = "$target_gen_dir/modules_idl_files.tmp"
-write_file(modules_idl_files_list,
-           rebase_path(modules_idl_files, root_build_dir))
-
 # GYP version: Source/bindings/modules/generated.gyp:bindings_modules_generated
 group("bindings_modules_generated") {
   deps = [
@@ -73,8 +65,7 @@ make_names("bindings_modules_generated_event_target_modules_names") {
 # GYP version: Source/bindings/modules/generated.gyp:interfaces_info_individual_modules
 compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources_static = modules_static_idl_files
-  # No generated files currently, will add with constructors
-  sources_generated = []
+  sources_generated = modules_generated_dependency_idl_files
   output_file =
     "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle"
   deps = [
@@ -125,7 +116,7 @@ compute_global_objects("modules_global_objects") {
 
 # GYP version: Source/bindings/modules/generated.gyp:modules_core_global_constructors_idls
 generate_global_constructors("modules_core_global_constructors_idls") {
-  sources = core_idl_files
+  sources = core_idl_files + core_idl_with_modules_dependency_files
   global_objects_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
   interfaces = modules_core_global_constructors_original_interfaces
   component = "Core"

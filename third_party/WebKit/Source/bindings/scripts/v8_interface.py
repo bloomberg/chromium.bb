@@ -46,7 +46,7 @@ import v8_methods
 import v8_types
 from v8_types import cpp_ptr_type, cpp_template_type
 import v8_utilities
-from v8_utilities import (capitalize, conditional_string, cpp_name, gc_type,
+from v8_utilities import (cpp_name_or_partial, capitalize, conditional_string, cpp_name, gc_type,
                           has_extended_attribute_value, runtime_enabled_function_name,
                           extended_attribute_value_as_list)
 
@@ -77,9 +77,20 @@ def interface_context(interface):
     includes.update(INTERFACE_CPP_INCLUDES)
     header_includes = set(INTERFACE_H_INCLUDES)
 
-    parent_interface = interface.parent
-    if parent_interface:
-        header_includes.update(v8_types.includes_for_interface(parent_interface))
+    if interface.is_partial:
+        # A partial interface definition cannot specify that the interface
+        # inherits from another interface. Inheritance must be specified on
+        # the original interface definition.
+        parent_interface = None
+        is_event_target = False
+        # partial interface needs the definition of its original interface.
+        includes.add('bindings/core/v8/V8%s.h' % interface.name)
+    else:
+        parent_interface = interface.parent
+        if parent_interface:
+            header_includes.update(v8_types.includes_for_interface(parent_interface))
+        is_event_target = inherits_interface(interface.name, 'EventTarget')
+
     extended_attributes = interface.extended_attributes
 
     is_array_buffer_or_view = interface.idl_type.is_array_buffer_or_view
@@ -114,7 +125,11 @@ def interface_context(interface):
 
     # [Iterable]
     iterator_method = None
-    if 'Iterable' in extended_attributes:
+    # FIXME: support Iterable in partial interfaces. However, we don't
+    # need to support iterator overloads between interface and
+    # partial interface definitions.
+    # http://heycam.github.io/webidl/#idl-overloading
+    if 'Iterable' in extended_attributes and not interface.is_partial:
         iterator_operation = IdlOperation(interface.idl_name)
         iterator_operation.name = 'iterator'
         iterator_operation.idl_type = IdlType('Iterator')
@@ -161,9 +176,15 @@ def interface_context(interface):
 
     wrapper_class_id = ('NodeClassId' if inherits_interface(interface.name, 'Node') else 'ObjectClassId')
 
+    v8_class_name = v8_utilities.v8_class_name(interface)
+    cpp_class_name = cpp_name(interface)
+    cpp_class_name_or_partial = cpp_name_or_partial(interface)
+    v8_class_name_or_partial = v8_utilities.v8_class_name_or_partial(interface)
+
     context = {
         'conditional_string': conditional_string(interface),  # [Conditional]
-        'cpp_class': cpp_name(interface),
+        'cpp_class': cpp_class_name,
+        'cpp_class_or_partial': cpp_class_name_or_partial,
         'gc_type': this_gc_type,
         # FIXME: Remove 'EventTarget' special handling, http://crbug.com/383699
         'has_access_check_callbacks': (is_check_security and
@@ -172,6 +193,7 @@ def interface_context(interface):
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
+        'has_partial_interface': len(interface.partial_interfaces) > 0,
         'has_visit_dom_wrapper': has_visit_dom_wrapper,
         'header_includes': header_includes,
         'interface_name': interface.name,
@@ -179,9 +201,10 @@ def interface_context(interface):
         'is_array_buffer_or_view': is_array_buffer_or_view,
         'is_check_security': is_check_security,
         'is_dependent_lifetime': is_dependent_lifetime,
-        'is_event_target': inherits_interface(interface.name, 'EventTarget'),
+        'is_event_target': is_event_target,
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
+        'is_partial': interface.is_partial,
         'is_script_wrappable': is_script_wrappable,
         'is_typed_array_type': is_typed_array_type,
         'iterator_method': iterator_method,
@@ -198,7 +221,8 @@ def interface_context(interface):
         'reachable_node_function': reachable_node_function,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
-        'v8_class': v8_utilities.v8_class_name(interface),
+        'v8_class': v8_class_name,
+        'v8_class_or_partial': v8_class_name_or_partial,
         'wrapper_class_id': wrapper_class_id,
     }
 
@@ -210,7 +234,7 @@ def interface_context(interface):
                     # Handle named constructors separately
                     if constructor.name == 'Constructor']
     if len(constructors) > 1:
-        context['constructor_overloads'] = overloads_context(constructors)
+        context['constructor_overloads'] = overloads_context(interface, constructors)
 
     # [CustomConstructor]
     custom_constructors = [{  # Only needed for computing interface length
@@ -230,8 +254,12 @@ def interface_context(interface):
     # [NamedConstructor]
     named_constructor = named_constructor_context(interface)
 
-    if (constructors or custom_constructors or has_event_constructor or
-        named_constructor):
+    if constructors or custom_constructors or has_event_constructor or named_constructor:
+        if interface.is_partial:
+            raise Exception('[Constructor] and [NamedConstructor] MUST NOT be'
+                            ' specified on partial interface definitions:'
+                            '%s' % interface.name)
+
         includes.add('bindings/core/v8/V8ObjectConstructor.h')
         includes.add('core/frame/LocalDOMWindow.h')
 
@@ -276,6 +304,11 @@ def interface_context(interface):
     # Attributes
     attributes = [v8_attributes.attribute_context(interface, attribute)
                   for attribute in interface.attributes]
+
+    has_conditional_attributes = any(attribute['per_context_enabled_function'] or attribute['exposed_test'] for attribute in attributes)
+    if has_conditional_attributes and interface.is_partial:
+        raise Exception('Conditional attributes between partial interfaces in modules and the original interfaces(%s) in core are not allowed.' % interface.name)
+
     context.update({
         'attributes': attributes,
         'has_accessors': any(attribute['is_expose_js_accessors'] and attribute['should_be_exposed_to_script'] for attribute in attributes),
@@ -286,16 +319,27 @@ def interface_context(interface):
                   attribute['per_context_enabled_function'])
              and attribute['should_be_exposed_to_script']
              for attribute in attributes),
-        'has_conditional_attributes': any(attribute['per_context_enabled_function'] or attribute['exposed_test'] for attribute in attributes),
+        'has_conditional_attributes': has_conditional_attributes,
         'has_constructor_attributes': any(attribute['constructor_type'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
     })
 
     # Methods
-    methods = [v8_methods.method_context(interface, method)
-               for method in interface.operations
-               if method.name]  # Skip anonymous special operations (methods)
-    compute_method_overloads_context(methods)
+    methods = []
+    if interface.original_interface:
+        methods.extend([v8_methods.method_context(interface, operation, is_visible=False)
+                        for operation in interface.original_interface.operations
+                        if operation.name])
+    methods.extend([v8_methods.method_context(interface, method)
+                    for method in interface.operations
+                    if method.name])  # Skip anonymous special operations (methods)
+    if interface.partial_interfaces:
+        assert len(interface.partial_interfaces) == len(set(interface.partial_interfaces))
+        for partial_interface in interface.partial_interfaces:
+            methods.extend([v8_methods.method_context(interface, operation, is_visible=False)
+                            for operation in partial_interface.operations
+                            if operation.name])
+    compute_method_overloads_context(interface, methods)
 
     # Stringifier
     if interface.stringifier:
@@ -321,11 +365,18 @@ def interface_context(interface):
 
         if 'overloads' in method:
             overloads = method['overloads']
+            if not overloads['visible']:
+                continue
+            # original interface will register instead of partial interface.
+            if overloads['has_partial_overloads'] and interface.is_partial:
+                continue
             per_context_enabled_function = overloads['per_context_enabled_function_all']
             conditionally_exposed_function = overloads['exposed_test_all']
             runtime_enabled_function = overloads['runtime_enabled_function_all']
             has_custom_registration = overloads['has_custom_registration_all']
         else:
+            if not method['visible']:
+                continue
             per_context_enabled_function = method['per_context_enabled_function']
             conditionally_exposed_function = method['exposed_test']
             runtime_enabled_function = method['runtime_enabled_function']
@@ -400,16 +451,16 @@ def constant_context(constant):
 # Overloads
 ################################################################################
 
-def compute_method_overloads_context(methods):
+def compute_method_overloads_context(interface, methods):
     # Regular methods
-    compute_method_overloads_context_by_type([method for method in methods
-                                              if not method['is_static']])
+    compute_method_overloads_context_by_type(
+        interface, [method for method in methods if not method['is_static']])
     # Static methods
-    compute_method_overloads_context_by_type([method for method in methods
-                                              if method['is_static']])
+    compute_method_overloads_context_by_type(
+        interface, [method for method in methods if method['is_static']])
 
 
-def compute_method_overloads_context_by_type(methods):
+def compute_method_overloads_context_by_type(interface, methods):
     """Computes |method.overload*| template values.
 
     Called separately for static and non-static (regular) methods,
@@ -423,7 +474,7 @@ def compute_method_overloads_context_by_type(methods):
     for name, overloads in method_overloads_by_name(methods):
         # Resolution function is generated after last overloaded function;
         # package necessary information into |method.overloads| for that method.
-        overloads[-1]['overloads'] = overloads_context(overloads)
+        overloads[-1]['overloads'] = overloads_context(interface, overloads)
         overloads[-1]['overloads']['name'] = name
 
 
@@ -441,7 +492,7 @@ def method_overloads_by_name(methods):
     return sort_and_groupby(overloaded_methods, itemgetter('name'))
 
 
-def overloads_context(overloads):
+def overloads_context(interface, overloads):
     """Returns |overloads| template values for a single name.
 
     Sets |method.overload_index| in place for |method| in |overloads|
@@ -487,6 +538,20 @@ def overloads_context(overloads):
         raise ValueError('Overloads of %s have conflicting Promise/non-Promise types'
                          % (name))
 
+    has_overload_visible = False
+    has_overload_not_visible = False
+    for overload in overloads:
+        if overload.get('visible', True):
+            # If there exists an overload which is visible, need to generate
+            # overload_resolution, i.e. overlods_visible should be True.
+            has_overload_visible = True
+        else:
+            has_overload_not_visible = True
+
+    # If some overloads are not visible and others are visible,
+    # the method is overloaded between core and modules.
+    has_partial_overloads = has_overload_visible and has_overload_not_visible
+
     return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         'exposed_test_all': common_value(overloads, 'exposed_test'),  # [Exposed]
@@ -504,6 +569,8 @@ def overloads_context(overloads):
             # sequence of possible lengths, otherwise invalid length means
             # "not enough arguments".
             if lengths[-1] - lengths[0] != len(lengths) - 1 else None,
+        'visible': has_overload_visible,
+        'has_partial_overloads': has_partial_overloads,
     }
 
 

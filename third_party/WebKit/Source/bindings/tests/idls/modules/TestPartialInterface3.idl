@@ -34,12 +34,10 @@
 ] partial interface TestInterface {
     const unsigned short PARTIAL3_UNSIGNED_SHORT = 0;
 
-    attribute long partial3LongAttribute;
-    static attribute long partial3StaticLongAttribute;
-
     void voidMethodPartialOverload(DOMString value);
-    static void voidMethodPartialOverload(DOMString value);
+    static void staticVoidMethodPartialOverload(DOMString value);
 
     void partial2VoidMethod(DOMString value);
+    void partial2VoidMethod(Node node);
     static void partial2StaticVoidMethod(DOMString value);
 };

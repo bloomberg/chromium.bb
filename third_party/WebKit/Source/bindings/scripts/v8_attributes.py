@@ -38,7 +38,7 @@ from idl_types import inherits_interface
 from v8_globals import includes, interfaces
 import v8_types
 import v8_utilities
-from v8_utilities import (capitalize, cpp_name, has_extended_attribute,
+from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extended_attribute,
                           has_extended_attribute_value, scoped_name, strip_suffix,
                           uncapitalize, extended_attribute_value_as_list)
 
@@ -434,14 +434,17 @@ def scoped_content_attribute_name(interface, attribute):
 # [Replaceable]
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
+    cpp_class_name_or_partial = cpp_name_or_partial(interface)
+
     extended_attributes = attribute.extended_attributes
     if (('Replaceable' in extended_attributes and
          'PutForwards' not in extended_attributes) or
         is_constructor_attribute(attribute)):
-        return '{0}V8Internal::{0}ForceSetAttributeOnThisCallback'.format(cpp_class_name)
+        return '%sV8Internal::%sForceSetAttributeOnThisCallback' % (
+            cpp_class_name_or_partial, cpp_class_name)
     if attribute.is_read_only and 'PutForwards' not in extended_attributes:
         return '0'
-    return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
+    return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name_or_partial, attribute.name)
 
 
 # [DoNotCheckSecurity], [Unforgeable]

@@ -37,5 +37,8 @@
         ],
       }],
     ],
+    'bindings_modules_v8_generated_partial_aggregate_files': [
+      '<(bindings_modules_v8_output_dir)/V8GeneratedModulesBindingsPartial.cpp',
+    ],
   },
 }

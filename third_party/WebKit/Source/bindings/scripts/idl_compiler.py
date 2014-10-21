@@ -52,6 +52,11 @@ def parse_options():
     parser.add_option('--output-directory')
     parser.add_option('--interfaces-info-file')
     parser.add_option('--write-file-only-if-changed', type='int')
+    # FIXME: We should always explicitly specify --target-component and
+    # remove the default behavior.
+    parser.add_option('--target-component',
+                      help='target component to generate code, defaults to '
+                      'component of input idl file')
     # ensure output comes last, so command line easy to parse via regexes
     parser.disable_interspersed_args()
 
@@ -83,7 +88,8 @@ class IdlCompiler(object):
 
     def __init__(self, output_directory, cache_directory='',
                  code_generator=None, interfaces_info=None,
-                 interfaces_info_filename='', only_if_changed=False):
+                 interfaces_info_filename='', only_if_changed=False,
+                 target_component=None):
         """
         Args:
             interfaces_info:
@@ -100,14 +106,16 @@ class IdlCompiler(object):
         self.interfaces_info = interfaces_info
         self.only_if_changed = only_if_changed
         self.output_directory = output_directory
+        self.target_component = target_component
         self.reader = IdlReader(interfaces_info, cache_directory)
 
     def compile_and_write(self, idl_filename):
         interface_name = idl_filename_to_interface_name(idl_filename)
-        component = idl_filename_to_component(idl_filename)
         definitions = self.reader.read_idl_definitions(idl_filename)
+        target_component = self.target_component or idl_filename_to_component(idl_filename)
+        target_definitions = definitions[target_component]
         output_code_list = self.code_generator.generate_code(
-            definitions[component], interface_name)
+            target_definitions, interface_name)
         for output_path, output_code in output_code_list:
             write_file(output_code, output_path, self.only_if_changed)
 
@@ -142,7 +150,8 @@ def generate_bindings(options, input_filename):
         options.output_directory,
         cache_directory=options.cache_directory,
         interfaces_info_filename=options.interfaces_info_file,
-        only_if_changed=options.write_file_only_if_changed)
+        only_if_changed=options.write_file_only_if_changed,
+        target_component=options.target_component)
     idl_compiler.compile_file(input_filename)
 
 

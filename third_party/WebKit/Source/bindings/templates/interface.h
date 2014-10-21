@@ -54,7 +54,11 @@ public:
     }
     {% endif %}
     static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    {% if has_partial_interface %}
+    static WrapperTypeInfo wrapperTypeInfo;
+    {% else %}
     static const WrapperTypeInfo wrapperTypeInfo;
+    {% endif %}
     static void refObject(ScriptWrappableBase*);
     static void derefObject(ScriptWrappableBase*);
     static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
@@ -163,11 +167,23 @@ public:
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if conditionally_enabled_methods %};
     {% else %} { }
     {% endif %}
+    {% if has_partial_interface %}
+    static void updateWrapperTypeInfo(InstallTemplateFunction, InstallConditionallyEnabledMethodsFunction);
+    static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
+    {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
+    static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+    {% endfor %}
+    {% endif %}
     {% if not has_custom_to_v8 and not is_script_wrappable %}
 
 private:
     friend v8::Handle<v8::Object> wrap({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper({{pass_cpp_type}}, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    {% endif %}
+    {% if has_partial_interface %}
+
+private:
+    static InstallTemplateFunction install{{v8_class}}TemplateFunction;
     {% endif %}
 };
 

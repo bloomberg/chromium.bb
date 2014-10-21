@@ -62,7 +62,7 @@ def use_local_result(method):
             idl_type.is_explicit_nullable)
 
 
-def method_context(interface, method):
+def method_context(interface, method, is_visible=True):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
@@ -183,6 +183,7 @@ def method_context(interface, method):
         'use_local_result': use_local_result(method),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
+        'visible': is_visible,
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings],
     }
 

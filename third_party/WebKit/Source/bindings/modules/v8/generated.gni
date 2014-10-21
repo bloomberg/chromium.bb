@@ -33,3 +33,10 @@ if (is_win && is_official_build) {
     "$bindings_modules_v8_output_dir/V8GeneratedModulesBindings19.cpp",
   ]
 }
+
+bindings_modules_generated_partial_aggregate_files = [
+  "$bindings_modules_v8_output_dir/V8GeneratedModulesBindingsPartial.cpp",
+]
+
+bindings_modules_generated_init_partial_interfaces_file =
+  "$bindings_modules_v8_output_dir/initPartialInterfacesInModules.cpp"

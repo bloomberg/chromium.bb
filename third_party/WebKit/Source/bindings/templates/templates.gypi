@@ -17,6 +17,8 @@
       'interface.cpp',
       'interface.h',
       'methods.cpp',
+      'partial_interface.cpp',
+      'partial_interface.h',
     ],
   },
 }

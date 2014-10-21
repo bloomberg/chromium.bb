@@ -142,7 +142,10 @@
       'modules_global_objects',
     ],
     'variables': {
-      'idl_files': '<(core_idl_files)',
+      'idl_files': [
+        '<@(core_idl_files)',
+        '<@(core_idl_with_modules_dependency_files)',
+      ],
       'global_objects_file':
         '<(bindings_modules_output_dir)/GlobalObjectsModules.pickle',
       'global_names_idl_files': [

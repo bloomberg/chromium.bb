@@ -19,6 +19,8 @@ source_set("modules") {
   sources = rebase_path(modules_files, ".", "//")
   sources += bindings_modules_v8_files
   sources += rebase_path(bindings_modules_generated_aggregate_files, ".", "//")
+  sources += rebase_path(bindings_modules_generated_partial_aggregate_files, ".", "//")
+  sources += rebase_path([ bindings_modules_generated_init_partial_interfaces_file ], ".", "//")
 
   if (!is_win) {
     sources -= [
@@ -54,6 +56,10 @@ source_set("modules") {
 # GYP version: WebKit/Source/modules/modules.gyp:modules_testing
 source_set("modules_testing") {
   sources = modules_testing_files
+  sources += [
+    "$bindings_modules_v8_output_dir/V8InternalsPartial.cpp",
+    "$bindings_modules_v8_output_dir/V8InternalsPartial.h",
+  ]
 
   configs += [
     "//third_party/WebKit/Source:config",

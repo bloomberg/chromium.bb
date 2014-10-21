@@ -25,7 +25,6 @@
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
 #include "bindings/tests/idls/core/TestPartialInterface.h"
 #include "bindings/tests/idls/core/TestPartialInterfaceImplementation.h"
-#include "bindings/tests/idls/modules/TestPartialInterfaceImplementation3.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -37,7 +36,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::refObject, V8TestInterface::derefObject, V8TestInterface::trace, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::visitDOMWrapper, V8TestInterface::installConditionallyEnabledMethods, V8TestInterface::installConditionallyEnabledProperties, &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::refObject, V8TestInterface::derefObject, V8TestInterface::trace, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::visitDOMWrapper, V8TestInterface::installConditionallyEnabledMethods, V8TestInterface::installConditionallyEnabledProperties, &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceImplementation.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -45,6 +44,10 @@ const WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, 
 const WrapperTypeInfo& TestInterfaceImplementation::s_wrapperTypeInfo = V8TestInterface::wrapperTypeInfo;
 
 namespace TestInterfaceImplementationV8Internal {
+static void (*voidMethodPartialOverloadMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
+static void (*staticVoidMethodPartialOverloadMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
+static void (*partial2VoidMethodMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
+static void (*partial2StaticVoidMethodMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
 
 static void testInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -897,62 +900,6 @@ static void partial2StaticLongAttributeAttributeSetterCallback(v8::Local<v8::Str
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void partial3LongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    v8SetReturnValueInt(info, TestPartialInterfaceImplementation3::partial3LongAttribute(*impl));
-}
-
-static void partial3LongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestInterfaceImplementationV8Internal::partial3LongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void partial3LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partial3LongAttribute", "TestInterface", holder, info.GetIsolate());
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    TestPartialInterfaceImplementation3::setPartial3LongAttribute(*impl, cppValue);
-}
-
-static void partial3LongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestInterfaceImplementationV8Internal::partial3LongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void partial3StaticLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8SetReturnValueInt(info, TestPartialInterfaceImplementation3::partial3StaticLongAttribute());
-}
-
-static void partial3StaticLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestInterfaceImplementationV8Internal::partial3StaticLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void partial3StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partial3StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    TestPartialInterfaceImplementation3::setPartial3StaticLongAttribute(cppValue);
-}
-
-static void partial3StaticLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestInterfaceImplementationV8Internal::partial3StaticLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void TestInterfaceImplementationConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> data = info.Data();
@@ -1173,29 +1120,31 @@ static void windowAndServiceWorkerExposedMethodMethodCallback(const v8::Function
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void voidMethodPartailOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    impl->voidMethodPartailOverload();
+    impl->voidMethodPartialOverload();
 }
 
-static void voidMethodPartailOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestInterfaceImplementationV8Internal::voidMethodPartailOverloadMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    double doubleArg;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(doubleArg, toDouble(info[0], exceptionState), exceptionState);
+        if (!std::isfinite(doubleArg)) {
+            exceptionState.throwTypeError("double parameter 1 is non-finite.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
+    }
+    impl->voidMethodPartialOverload(doubleArg);
 }
 
-static void voidMethodPartailOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void staticVoidMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceImplementation::voidMethodPartailOverload();
-}
-
-static void voidMethodPartailOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestInterfaceImplementationV8Internal::voidMethodPartailOverloadMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+    TestInterfaceImplementation::staticVoidMethodPartialOverload();
 }
 
 static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1455,16 +1404,27 @@ static void partial2StaticVoidMethod1Method(const v8::FunctionCallbackInfo<v8::V
 
 static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodPartialOverload", "TestInterface", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
-        return;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 0:
+        if (true) {
+            voidMethodPartialOverload1Method(info);
+            return;
+        }
+        break;
+    case 1:
+        if (info[0]->IsNumber()) {
+            voidMethodPartialOverload2Method(info);
+            return;
+        }
+        if (true) {
+            voidMethodPartialOverload2Method(info);
+            return;
+        }
+        break;
     }
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    V8StringResource<> value;
-    {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
-    }
-    TestPartialInterfaceImplementation3::voidMethodPartialOverload(*impl, value);
+    ASSERT(voidMethodPartialOverloadMethodForPartialInterface);
+    (voidMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
 static void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1474,34 +1434,28 @@ static void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackIn
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodPartialOverload", "TestInterface", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
-        return;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "staticVoidMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 0:
+        if (true) {
+            staticVoidMethodPartialOverload1Method(info);
+            return;
+        }
+        break;
+    case 1:
+        break;
     }
-    V8StringResource<> value;
-    {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
-    }
-    TestPartialInterfaceImplementation3::voidMethodPartialOverload(value);
+    ASSERT(staticVoidMethodPartialOverloadMethodForPartialInterface);
+    (staticVoidMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-static void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void staticVoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethod(info);
+    TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    V8StringResource<> value;
-    {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
-    }
-    TestPartialInterfaceImplementation3::partial2VoidMethod(*impl, value);
 }
 
 static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1515,18 +1469,10 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         }
         break;
     case 1:
-        if (true) {
-            partial2VoidMethod2Method(info);
-            return;
-        }
         break;
-    default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
     }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
+    ASSERT(partial2VoidMethodMethodForPartialInterface);
+    (partial2VoidMethodMethodForPartialInterface)(info);
 }
 
 static void partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1534,15 +1480,6 @@ static void partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestInterfaceImplementationV8Internal::partial2VoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8StringResource<> value;
-    {
-        TOSTRING_VOID_INTERNAL(value, info[0]);
-    }
-    TestPartialInterfaceImplementation3::partial2StaticVoidMethod(value);
 }
 
 static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1556,18 +1493,10 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
         }
         break;
     case 1:
-        if (true) {
-            partial2StaticVoidMethod2Method(info);
-            return;
-        }
         break;
-    default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
     }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
+    ASSERT(partial2StaticVoidMethodMethodForPartialInterface);
+    (partial2StaticVoidMethodMethodForPartialInterface)(info);
 }
 
 static void partial2StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1798,15 +1727,15 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
     {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethod", TestInterfaceImplementationV8Internal::voidMethodMethodCallback, TestInterfaceImplementationV8Internal::voidMethodMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"alwaysExposedMethod", TestInterfaceImplementationV8Internal::alwaysExposedMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"voidMethodPartailOverload", TestInterfaceImplementationV8Internal::voidMethodPartailOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"implementsVoidMethod", TestInterfaceImplementationV8Internal::implementsVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"implementsComplexMethod", TestInterfaceImplementationV8Internal::implementsComplexMethodMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"implementsCustomVoidMethod", TestInterfaceImplementationV8Internal::implementsCustomVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"implements3VoidMethod", TestInterfaceImplementationV8Internal::implements3VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodPartialOverload", TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"partial2VoidMethod", TestInterfaceImplementationV8Internal::partial2VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 
-static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -1867,7 +1796,6 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         {"IMPLEMENTS_CONSTANT_1", 1, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
         {"IMPLEMENTS_CONSTANT_2", 2, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
         {"PARTIAL2_UNSIGNED_SHORT", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"PARTIAL3_UNSIGNED_SHORT", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
     };
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants), isolate);
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
@@ -1883,10 +1811,6 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         "alwaysExposedStaticMethod", TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, alwaysExposedStaticMethodMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration voidMethodPartailOverloadMethodConfiguration = {
-        "voidMethodPartailOverload", TestInterfaceImplementationV8Internal::voidMethodPartailOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
-    };
-    V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, voidMethodPartailOverloadMethodConfiguration, isolate);
     static const V8DOMConfiguration::MethodConfiguration implementsStaticVoidMethodMethodConfiguration = {
         "implementsStaticVoidMethod", TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
@@ -1949,6 +1873,10 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
+    static const V8DOMConfiguration::MethodConfiguration staticVoidMethodPartialOverloadMethodConfiguration = {
+        "staticVoidMethodPartialOverload", TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
+    };
+    V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, staticVoidMethodPartialOverloadMethodConfiguration, isolate);
     static const V8DOMConfiguration::MethodConfiguration partial2StaticVoidMethodMethodConfiguration = {
         "partial2StaticVoidMethod", TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
@@ -1966,7 +1894,6 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "partialStaticLongAttribute"), TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(PARTIAL_CONDITION)
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "partial2StaticLongAttribute"), TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "partial3StaticLongAttribute"), TestInterfaceImplementationV8Internal::partial3StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial3StaticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
@@ -1974,7 +1901,8 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
 
 v8::Handle<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolate)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceTemplate);
+    ASSERT(V8TestInterface::installV8TestInterfaceTemplateFunction != V8TestInterface::installV8TestInterfaceTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface::installV8TestInterfaceTemplateFunction);
 }
 
 bool V8TestInterface::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
@@ -2022,16 +1950,6 @@ void V8TestInterface::installConditionallyEnabledProperties(v8::Handle<v8::Objec
         {"partial2StaticLongAttribute", TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
         V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
     }
-    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"partial3LongAttribute", TestInterfaceImplementationV8Internal::partial3LongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial3LongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
-    }
-    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"partial3StaticLongAttribute", TestInterfaceImplementationV8Internal::partial3StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial3StaticLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
-    }
 }
 
 void V8TestInterface::installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
@@ -2054,12 +1972,6 @@ void V8TestInterface::installConditionallyEnabledMethods(v8::Handle<v8::Object> 
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
-    }
-    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
-        prototypeObject->Set(v8AtomicString(isolate, "voidMethodPartialOverload"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
-    }
-    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
-        prototypeObject->Set(v8AtomicString(isolate, "voidMethodPartialOverload"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
     }
 }
 
@@ -2161,5 +2073,30 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeSetter(LocalFrame* 
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
 }
 
+InstallTemplateFunction V8TestInterface::installV8TestInterfaceTemplateFunction = (InstallTemplateFunction)&V8TestInterface::installV8TestInterfaceTemplate;
+
+void V8TestInterface::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction)
+{
+    V8TestInterface::installV8TestInterfaceTemplateFunction = installTemplateFunction;
+    if (installConditionallyEnabledMethodsFunction)
+        V8TestInterface::wrapperTypeInfo.installConditionallyEnabledMethodsFunction = installConditionallyEnabledMethodsFunction;
+}
+
+void V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
+{
+    TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodForPartialInterface = method;
+}
+void V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
+{
+    TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodForPartialInterface = method;
+}
+void V8TestInterface::registerPartial2VoidMethodMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
+{
+    TestInterfaceImplementationV8Internal::partial2VoidMethodMethodForPartialInterface = method;
+}
+void V8TestInterface::registerPartial2StaticVoidMethodMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
+{
+    TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodForPartialInterface = method;
+}
 } // namespace blink
 #endif // ENABLE(CONDITION)

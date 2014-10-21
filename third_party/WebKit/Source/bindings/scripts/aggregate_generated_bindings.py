@@ -53,7 +53,7 @@ import os
 import re
 import sys
 
-from utilities import idl_filename_to_interface_name, read_idl_files_list_from_file
+from utilities import idl_filename_to_component, idl_filename_to_interface_name, read_idl_files_list_from_file
 
 # A regexp for finding Conditional attributes in interface definitions.
 CONDITIONAL_PATTERN = re.compile(
@@ -135,7 +135,7 @@ def extract_meta_data(file_paths):
     return meta_data_list
 
 
-def generate_content(component_dir, files_meta_data_this_partition):
+def generate_content(component_dir, aggregate_partial_interfaces, files_meta_data_this_partition):
     # Add fixed content.
     output = [COPYRIGHT_TEMPLATE,
               '#define NO_IMPLICIT_ATOMICSTRING\n\n']
@@ -152,8 +152,13 @@ def generate_content(component_dir, files_meta_data_this_partition):
                 output.append('\n#if ENABLE(%s)\n' % conditional)
         prev_conditional = conditional
 
-        output.append('#include "bindings/%s/v8/V8%s.cpp"\n' %
-                      (component_dir, meta_data['name']))
+        if aggregate_partial_interfaces:
+            cpp_filename = 'V8%sPartial.cpp' % meta_data['name']
+        else:
+            cpp_filename = 'V8%s.cpp' % meta_data['name']
+
+        output.append('#include "bindings/%s/v8/%s"\n' %
+                      (component_dir, cpp_filename))
 
     if prev_conditional:
         output.append('#endif\n')
@@ -179,6 +184,12 @@ def main(args):
     output_file_names = args[in_out_break_index + 1:]
 
     idl_file_names = read_idl_files_list_from_file(input_file_name)
+    components = set([idl_filename_to_component(filename)
+                      for filename in idl_file_names])
+    if len(components) != 1:
+        raise Exception('Cannot aggregate generated codes in different components')
+    aggregate_partial_interfaces = component_dir not in components
+
     files_meta_data = extract_meta_data(idl_file_names)
     total_partitions = len(output_file_names)
     for partition, file_name in enumerate(output_file_names):
@@ -186,6 +197,7 @@ def main(args):
                 meta_data for meta_data in files_meta_data
                 if hash(meta_data['name']) % total_partitions == partition]
         file_contents = generate_content(component_dir,
+                                         aggregate_partial_interfaces,
                                          files_meta_data_this_partition)
         write_content(file_contents, file_name)
 

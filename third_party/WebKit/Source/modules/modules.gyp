@@ -53,6 +53,8 @@
       '<@(modules_files)',
       '<@(bindings_modules_v8_files)',
       '<@(bindings_modules_v8_generated_aggregate_files)',
+      '<@(bindings_modules_v8_generated_partial_aggregate_files)',
+      '<(bindings_modules_v8_output_dir)/initPartialInterfacesInModules.cpp',
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
     'msvs_disabled_warnings': [ 4267, 4334, ]
@@ -71,6 +73,8 @@
     ],
     'sources': [
       '<@(modules_testing_files)',
+      '<(bindings_modules_v8_output_dir)/V8InternalsPartial.cpp',
+      '<(bindings_modules_v8_output_dir)/V8InternalsPartial.h',
     ],
 
   }],

@@ -45,6 +45,7 @@ from bindings.scripts.compute_interfaces_info_individual import compute_info_ind
 import bindings.scripts.compute_interfaces_info_overall
 from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
+from bindings.scripts.utilities import idl_filename_to_component
 
 
 PASS_MESSAGE = 'All tests PASS!'
@@ -243,6 +244,19 @@ def bindings_tests(output_directory, verbose):
             idl_compiler = IdlCompilerV8(output_dir,
                                          interfaces_info=interfaces_info,
                                          only_if_changed=True)
+            if component == 'core':
+                partial_interface_output_dir = os.path.join(output_directory,
+                                                            'modules')
+                if not os.path.exists(partial_interface_output_dir):
+                    os.makedirs(partial_interface_output_dir)
+                idl_partial_interface_compiler = IdlCompilerV8(
+                    partial_interface_output_dir,
+                    interfaces_info=interfaces_info,
+                    only_if_changed=True,
+                    target_component='modules')
+            else:
+                idl_partial_interface_compiler = None
+
             dictionary_impl_compiler = IdlCompilerDictionaryImpl(
                 output_dir, interfaces_info=interfaces_info,
                 only_if_changed=True)
@@ -261,8 +275,12 @@ def bindings_tests(output_directory, verbose):
                 idl_basename = os.path.basename(idl_path)
                 idl_compiler.compile_file(idl_path)
                 definition_name, _ = os.path.splitext(idl_basename)
-                if (definition_name in interfaces_info and interfaces_info[definition_name]['is_dictionary']):
-                    dictionary_impl_compiler.compile_file(idl_path)
+                if definition_name in interfaces_info:
+                    interface_info = interfaces_info[definition_name]
+                    if interface_info['is_dictionary']:
+                        dictionary_impl_compiler.compile_file(idl_path)
+                    if component == 'core' and interface_info['dependencies_other_component_full_paths']:
+                        idl_partial_interface_compiler.compile_file(idl_path)
                 if verbose:
                     print 'Compiled: %s' % idl_path
     finally:

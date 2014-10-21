@@ -275,6 +275,8 @@ class IdlInterface(object):
         self.operations = []
         self.parent = None
         self.stringifier = None
+        self.original_interface = None
+        self.partial_interfaces = []
         if not node:  # Early exit for IdlException.__init__
             return
 

@@ -1021,6 +1021,8 @@ v8::Local<v8::Value> v8IteratorResult(ScriptState* scriptState, const T& value)
     return v8IteratorResult(scriptState->isolate(), V8ValueTraits<T>::toV8Value(value, scriptState->context()->Global(), scriptState->isolate()));
 }
 
+typedef void (*InstallTemplateFunction)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
+
 } // namespace blink
 
 #endif // V8Binding_h

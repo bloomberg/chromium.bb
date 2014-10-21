@@ -176,14 +176,14 @@ struct WrapperTypeInfo {
     // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.
     const gin::GinEmbedder ginEmbedder;
 
-    const DomTemplateFunction domTemplateFunction;
+    DomTemplateFunction domTemplateFunction;
     const RefObjectFunction refObjectFunction;
     const DerefObjectFunction derefObjectFunction;
     const TraceFunction traceFunction;
     const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
     const ToEventTargetFunction toEventTargetFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
-    const InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction;
+    InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction;
     const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
     const WrapperTypeInfo* parentClass;
     const WrapperTypePrototype wrapperTypePrototype;

@@ -30,6 +30,8 @@ aggregate_generated_bindings("bindings_core_v8_generated_aggregate") {
 idl_compiler("bindings_core_v8_generated_individual") {
   sources = core_interface_idl_files
   output_dir = bindings_core_v8_output_dir
+  output_name_suffix = ""
+  target_component = "core"
 }
 
 # bindings_core_dictionary_impl_generated in Source/bindings/core/v8/generated.gyp

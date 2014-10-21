@@ -427,8 +427,8 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 
 
 {##############################################################################}
-{% from 'methods.cpp' import generate_constructor with context %}
 {% block named_constructor %}
+{% from 'methods.cpp' import generate_constructor with context %}
 {% if named_constructor %}
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
@@ -601,8 +601,8 @@ void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, con
 
 
 {##############################################################################}
-{% from 'attributes.cpp' import attribute_configuration with context %}
 {% block shadow_attributes %}
+{% from 'attributes.cpp' import attribute_configuration with context %}
 {% if interface_name == 'Window' %}
 static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
     {% for attribute in attributes if attribute.is_unforgeable and attribute.should_be_exposed_to_script %}
@@ -730,7 +730,14 @@ V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8
 {% if not is_array_buffer_or_view %}
 v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), install{{v8_class}}Template);
+    {% if has_partial_interface %}
+    {% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) %}
+    ASSERT({{installTemplateFunction}} != {{v8_class}}::install{{v8_class}}Template);
+    {% else %}
+    {% set installTemplateFunction = 'install%sTemplate' % v8_class %}
+    {% endif %}
+{% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) if has_partial_interface else 'install%sTemplate' % v8_class %}
+    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), {{installTemplateFunction}});
 }
 
 {% endif %}
@@ -847,6 +854,30 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
     {% endif %}
 }
 
+{% endblock %}
+
+
+{##############################################################################}
+{% block install_conditional_attributes %}
+{% from 'attributes.cpp' import attribute_configuration with context %}
+{% if has_conditional_attributes %}
+void {{v8_class}}::installConditionallyEnabledProperties(v8::Handle<v8::Object> instanceObject, v8::Isolate* isolate)
+{
+    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
+    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+
+    {% for attribute in attributes if attribute.per_context_enabled_function or attribute.exposed_test %}
+    {% filter per_context_enabled(attribute.per_context_enabled_function) %}
+    {% filter exposed(attribute.exposed_test) %}
+    static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+    {{attribute_configuration(attribute)}};
+    V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
+    {% endfilter %}
+    {% endfilter %}
+    {% endfor %}
+}
+
+{% endif %}
 {% endblock %}
 
 
@@ -973,4 +1004,25 @@ v8::Handle<v8::Value> toV8NoInline({{cpp_class}}* impl, v8::Handle<v8::Object> c
     return toV8(impl, creationContext, isolate);
 }
 
+{% endblock %}
+
+{##############################################################################}
+{% block partial_interface %}
+{% if has_partial_interface %}
+InstallTemplateFunction {{v8_class}}::install{{v8_class}}TemplateFunction = (InstallTemplateFunction)&{{v8_class}}::install{{v8_class}}Template;
+
+void {{v8_class}}::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction)
+{
+    {{v8_class}}::install{{v8_class}}TemplateFunction = installTemplateFunction;
+    if (installConditionallyEnabledMethodsFunction)
+        {{v8_class}}::wrapperTypeInfo.installConditionallyEnabledMethodsFunction = installConditionallyEnabledMethodsFunction;
+}
+
+{% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
+void {{v8_class}}::register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
+{
+    {{cpp_class}}V8Internal::{{method.name}}MethodForPartialInterface = method;
+}
+{% endfor %}
+{% endif %}
 {% endblock %}

@@ -31,10 +31,27 @@ def idl_filename_to_component(idl_filename):
     path = os.path.dirname(os.path.realpath(idl_filename))
     while path:
         dirname, basename = os.path.split(path)
+        if not basename:
+            break
         if basename.lower() in KNOWN_COMPONENTS:
             return basename.lower()
         path = dirname
-    raise 'Unknown component type for %s' % idl_filename
+    raise Exception('Unknown component type for %s' % idl_filename)
+
+
+# See whether "component" can depend on "dependency" or not:
+# Suppose that we have interface X and Y:
+# - if X is a partial interface and Y is the original interface,
+#   use is_valid_component_dependency(X, Y).
+# - if X implements Y, use is_valid_component_dependency(X, Y)
+# Suppose that X is a cpp file and Y is a header file:
+# - if X includes Y, use is_valid_component_dependency(X, Y)
+def is_valid_component_dependency(component, dependency):
+    assert component in KNOWN_COMPONENTS
+    assert dependency in KNOWN_COMPONENTS
+    if component == 'core' and dependency == 'modules':
+        return False
+    return True
 
 
 ################################################################################

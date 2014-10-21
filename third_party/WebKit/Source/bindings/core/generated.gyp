@@ -21,7 +21,10 @@
   {
     'target_name': 'core_global_objects',
     'variables': {
-      'idl_files': '<(core_idl_files)',
+      'idl_files': [
+        '<@(core_idl_files)',
+        '<@(core_idl_with_modules_dependency_files)',
+      ],
       'output_file': '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
     },
     'includes': ['../../bindings/scripts/global_objects.gypi'],
@@ -33,7 +36,10 @@
       'core_global_objects',
     ],
     'variables': {
-      'idl_files': '<(core_idl_files)',
+      'idl_files': [
+        '<@(core_idl_files)',
+        '<@(core_idl_with_modules_dependency_files)',
+      ],
       'global_objects_file':
         '<(bindings_core_output_dir)/GlobalObjectsCore.pickle',
       'global_names_idl_files': [

@@ -219,9 +219,11 @@
                         '../modules/modules.gyp:modules_testing',
                         '../wtf/wtf.gyp:wtf',
                         '<(DEPTH)/skia/skia.gyp:skia',
+                        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                     ],
                     'include_dirs': [
                         '../../',
+                        '<(SHARED_INTERMEDIATE_DIR)/blink',  # gen/blink
                     ],
                     'sources': [
                         'WebTestingSupport.cpp',

@@ -35,7 +35,7 @@ public:
         return blink::toScriptWrappableBase(object)->toImpl<TestInterfaceImplementation>();
     }
     static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
-    static const WrapperTypeInfo wrapperTypeInfo;
+    static WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase*);
     static void derefObject(ScriptWrappableBase*);
     static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
@@ -52,6 +52,15 @@ public:
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*);
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
+    static void updateWrapperTypeInfo(InstallTemplateFunction, InstallConditionallyEnabledMethodsFunction);
+    static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
+    static void registerVoidMethodPartialOverloadMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+    static void registerStaticVoidMethodPartialOverloadMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+    static void registerPartial2VoidMethodMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+    static void registerPartial2StaticVoidMethodMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+
+private:
+    static InstallTemplateFunction installV8TestInterfaceTemplateFunction;
 };
 
 class TestInterfaceImplementation;

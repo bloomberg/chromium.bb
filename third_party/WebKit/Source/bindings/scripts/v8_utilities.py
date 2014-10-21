@@ -145,6 +145,13 @@ def v8_class_name(interface):
     return v8_types.v8_type(interface.name)
 
 
+def v8_class_name_or_partial(interface):
+    class_name = v8_class_name(interface)
+    if interface.is_partial:
+        return ''.join([class_name, 'Partial'])
+    return class_name
+
+
 ################################################################################
 # Specific extended attributes
 ################################################################################
@@ -294,6 +301,13 @@ def cpp_name(definition_or_member):
     if 'ImplementedAs' not in extended_attributes:
         return definition_or_member.name
     return extended_attributes['ImplementedAs']
+
+
+def cpp_name_or_partial(interface):
+    cpp_class_name = cpp_name(interface)
+    if interface.is_partial:
+        return ''.join([cpp_class_name, 'Partial'])
+    return cpp_class_name
 
 
 # [MeasureAs]

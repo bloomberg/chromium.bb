@@ -11,11 +11,13 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 core_definition_idl_files =
   core_dictionary_idl_files +
-  core_idl_files
+  core_idl_files +
+  core_idl_with_modules_dependency_files
 
 core_testing_definition_idl_files =
   core_testing_dictionary_idl_files +
-  webcore_testing_idl_files
+  webcore_testing_idl_files +
+  webcore_testing_idl_with_modules_dependency_files
 
 # IDL file lists; see: http://www.chromium.org/developers/web-idl-interfaces
 # Interface IDL files: generate individual bindings (includes testing)

@@ -89,8 +89,9 @@
 
     [Exposed=(Window,ServiceWorker)] void windowAndServiceWorkerExposedMethod();
 
-    void voidMethodPartailOverload();
-    static void voidMethodPartailOverload();
+    void voidMethodPartialOverload();
+    void voidMethodPartialOverload(double doubleArg);
+    static void staticVoidMethodPartialOverload();
 };
 
 TestInterface implements TestImplements;
