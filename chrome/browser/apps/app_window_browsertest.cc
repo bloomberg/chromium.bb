@@ -46,10 +46,9 @@ class GeometryCacheChangeHelper : AppWindowGeometryCache::Observer {
   }
 
   // Implements the content::NotificationObserver interface.
-  virtual void OnGeometryCacheChanged(const std::string& extension_id,
-                                      const std::string& window_id,
-                                      const gfx::Rect& bounds)
-      override {
+  void OnGeometryCacheChanged(const std::string& extension_id,
+                              const std::string& window_id,
+                              const gfx::Rect& bounds) override {
     if (extension_id != extension_id_ || window_id != window_id_)
       return;
 

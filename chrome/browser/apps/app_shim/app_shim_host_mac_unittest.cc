@@ -17,7 +17,7 @@ namespace {
 class TestingAppShimHost : public AppShimHost {
  public:
   TestingAppShimHost() {}
-  virtual ~TestingAppShimHost() {}
+  ~TestingAppShimHost() override {}
 
   bool ReceiveMessage(IPC::Message* message);
 
@@ -26,7 +26,7 @@ class TestingAppShimHost : public AppShimHost {
   }
 
  protected:
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
 
  private:
   ScopedVector<IPC::Message> sent_messages_;
@@ -82,26 +82,26 @@ class AppShimHostTest : public testing::Test,
   }
 
  protected:
-  virtual void OnShimLaunch(Host* host,
-                            apps::AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& file) override {
+  void OnShimLaunch(Host* host,
+                    apps::AppShimLaunchType launch_type,
+                    const std::vector<base::FilePath>& file) override {
     ++launch_count_;
     if (launch_type == apps::APP_SHIM_LAUNCH_NORMAL)
       ++launch_now_count_;
     host->OnAppLaunchComplete(launch_result_);
   }
 
-  virtual void OnShimClose(Host* host) override { ++close_count_; }
+  void OnShimClose(Host* host) override { ++close_count_; }
 
-  virtual void OnShimFocus(Host* host,
-                           apps::AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& file) override {
+  void OnShimFocus(Host* host,
+                   apps::AppShimFocusType focus_type,
+                   const std::vector<base::FilePath>& file) override {
     ++focus_count_;
   }
 
-  virtual void OnShimSetHidden(Host* host, bool hidden) override {}
+  void OnShimSetHidden(Host* host, bool hidden) override {}
 
-  virtual void OnShimQuit(Host* host) override { ++quit_count_; }
+  void OnShimQuit(Host* host) override { ++quit_count_; }
 
   apps::AppShimLaunchResult launch_result_;
   int launch_count_;

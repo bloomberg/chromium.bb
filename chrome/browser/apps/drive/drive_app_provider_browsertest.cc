@@ -48,11 +48,9 @@ class TestDriveServiceBridge : public DriveServiceBridge {
  public:
   explicit TestDriveServiceBridge(drive::DriveAppRegistry* registry)
       : registry_(registry) {}
-  virtual ~TestDriveServiceBridge() {}
+  ~TestDriveServiceBridge() override {}
 
-  virtual drive::DriveAppRegistry* GetAppRegistry() override {
-    return registry_;
-  }
+  drive::DriveAppRegistry* GetAppRegistry() override { return registry_; }
 
  private:
   drive::DriveAppRegistry* registry_;
@@ -63,7 +61,7 @@ class TestDriveServiceBridge : public DriveServiceBridge {
 class FakeUninstallSyncService : public DriveAppUninstallSyncService {
  public:
   FakeUninstallSyncService() {}
-  virtual ~FakeUninstallSyncService() {}
+  ~FakeUninstallSyncService() override {}
 
   bool IsUninstallTracked(const std::string& drive_app_id) const {
     return uninstalled_app_ids_.find(drive_app_id) !=
@@ -71,12 +69,10 @@ class FakeUninstallSyncService : public DriveAppUninstallSyncService {
   }
 
   // DriveAppUninstallSyncService
-  virtual void TrackUninstalledDriveApp(
-      const std::string& drive_app_id) override {
+  void TrackUninstalledDriveApp(const std::string& drive_app_id) override {
     uninstalled_app_ids_.insert(drive_app_id);
   }
-  virtual void UntrackUninstalledDriveApp(
-      const std::string& drive_app_id) override {
+  void UntrackUninstalledDriveApp(const std::string& drive_app_id) override {
     auto it = uninstalled_app_ids_.find(drive_app_id);
     if (it == uninstalled_app_ids_.end())
       return;
@@ -98,7 +94,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   virtual ~DriveAppProviderTest() {}
 
   // ExtensionBrowserTest:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     fake_drive_service_.reset(new drive::FakeDriveService);
@@ -119,7 +115,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
         ->ResetDriveAppProviderForTest();
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     provider_.reset();
     apps_registry_.reset();
     fake_drive_service_.reset();
@@ -207,8 +203,8 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   }
 
   // extensions::InstallObserver
-  virtual void OnFinishCrxInstall(const std::string& extension_id,
-                                  bool success) override {
+  void OnFinishCrxInstall(const std::string& extension_id,
+                          bool success) override {
     runner_->Quit();
   }
 

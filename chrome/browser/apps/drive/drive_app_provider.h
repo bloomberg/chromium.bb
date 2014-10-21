@@ -38,7 +38,7 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
  public:
   DriveAppProvider(Profile* profile,
                    DriveAppUninstallSyncService* uninstall_sync_service);
-  virtual ~DriveAppProvider();
+  ~DriveAppProvider() override;
 
   // Appends PKS factories this class depends on.
   static void AppendDependsOnFactories(
@@ -80,17 +80,15 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
   void UpdateDriveApps();
 
   // drive::DriveAppRegistryObserver overrides:
-  virtual void OnDriveAppRegistryUpdated() override;
+  void OnDriveAppRegistryUpdated() override;
 
   // extensions::ExtensionRegistryObserver overrides:
-  virtual void OnExtensionInstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      bool is_update) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   Profile* profile_;
   DriveAppUninstallSyncService* uninstall_sync_service_;

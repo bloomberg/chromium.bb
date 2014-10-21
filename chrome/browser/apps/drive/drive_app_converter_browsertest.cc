@@ -42,7 +42,7 @@ class DriveAppConverterTest : public ExtensionBrowserTest {
   virtual ~DriveAppConverterTest() {}
 
   // ExtensionBrowserTest:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     base::FilePath test_data_dir;

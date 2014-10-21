@@ -26,7 +26,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
   PlatformAppBrowserTest();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // Gets the first app window that is found for a given browser.
   static AppWindow* GetFirstAppWindowForBrowser(Browser* browser);
@@ -118,7 +118,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
 class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 }  // namespace extensions

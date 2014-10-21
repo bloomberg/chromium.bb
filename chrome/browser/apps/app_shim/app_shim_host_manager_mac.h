@@ -45,8 +45,8 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   virtual ~AppShimHostManager();
 
   // UnixDomainSocketAcceptor::Delegate implementation.
-  virtual void OnClientConnected(const IPC::ChannelHandle& handle) override;
-  virtual void OnListenError() override;
+  void OnClientConnected(const IPC::ChannelHandle& handle) override;
+  void OnListenError() override;
 
   // The |acceptor_| must be created on a thread which allows blocking I/O, so
   // part of the initialization of this class must be carried out on the file

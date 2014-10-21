@@ -27,8 +27,8 @@ class EphemeralAppTestBase : public extensions::PlatformAppBrowserTest {
   EphemeralAppTestBase();
   virtual ~EphemeralAppTestBase();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
 
  protected:
   base::FilePath GetTestPath(const char* test_path);

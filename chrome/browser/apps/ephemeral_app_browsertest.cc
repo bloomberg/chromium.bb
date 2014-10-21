@@ -105,7 +105,7 @@ class InstallObserver : public ExtensionRegistryObserver {
     registry_observer_.Add(ExtensionRegistry::Get(profile));
   }
 
-  virtual ~InstallObserver() {}
+  ~InstallObserver() override {}
 
   const InstallParameters& Last() {
     CHECK(!install_params_.empty());
@@ -113,12 +113,11 @@ class InstallObserver : public ExtensionRegistryObserver {
   }
 
  private:
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override {
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override {
     install_params_.push_back(
         InstallParameters(extension->id(), is_update, from_ephemeral));
   }
@@ -158,7 +157,7 @@ class PowerSaveBlockerStub : public content::PowerSaveBlocker {
     power_settings_->request_keep_awake();
   }
 
-  virtual ~PowerSaveBlockerStub() { power_settings_->release_keep_awake(); }
+  ~PowerSaveBlockerStub() override { power_settings_->release_keep_awake(); }
 
   static scoped_ptr<PowerSaveBlocker> Create(PowerSettingsMock* power_settings,
                                              PowerSaveBlockerType type,

@@ -31,7 +31,7 @@ const char kTestAppMode[] = "test_app";
 class TestShimClient : public IPC::Listener {
  public:
   TestShimClient();
-  virtual ~TestShimClient();
+  ~TestShimClient() override;
 
   template <class T>
   void Send(const T& message) {
@@ -40,8 +40,8 @@ class TestShimClient : public IPC::Listener {
 
  private:
   // IPC::Listener overrides:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   base::Thread io_thread_;
   scoped_ptr<IPC::ChannelProxy> channel_;
@@ -95,20 +95,20 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   void RunAndExitGracefully();
 
   // InProcessBrowserTest overrides:
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // AppShimHandler overrides:
-  virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
-                            apps::AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& files) override;
-  virtual void OnShimClose(apps::AppShimHandler::Host* host) override {}
-  virtual void OnShimFocus(apps::AppShimHandler::Host* host,
-                           apps::AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) override {}
-  virtual void OnShimSetHidden(apps::AppShimHandler::Host* host,
-                               bool hidden) override {}
-  virtual void OnShimQuit(apps::AppShimHandler::Host* host) override;
+  void OnShimLaunch(apps::AppShimHandler::Host* host,
+                    apps::AppShimLaunchType launch_type,
+                    const std::vector<base::FilePath>& files) override;
+  void OnShimClose(apps::AppShimHandler::Host* host) override {}
+  void OnShimFocus(apps::AppShimHandler::Host* host,
+                   apps::AppShimFocusType focus_type,
+                   const std::vector<base::FilePath>& files) override {}
+  void OnShimSetHidden(apps::AppShimHandler::Host* host, bool hidden) override {
+  }
+  void OnShimQuit(apps::AppShimHandler::Host* host) override;
 
   scoped_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;
@@ -230,8 +230,8 @@ class AppShimHostManagerBrowserTestSocketFiles
   base::FilePath version_path_;
 
  private:
-  virtual bool SetUpUserDataDirectory() override;
-  virtual void TearDownInProcessBrowserTestFixture() override;
+  bool SetUpUserDataDirectory() override;
+  void TearDownInProcessBrowserTestFixture() override;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTestSocketFiles);
 };

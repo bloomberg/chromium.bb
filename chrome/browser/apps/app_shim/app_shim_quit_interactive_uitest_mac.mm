@@ -36,16 +36,12 @@ class FakeHost : public apps::AppShimHandler::Host {
         app_id_(app_id),
         handler_(handler) {}
 
-  virtual void OnAppLaunchComplete(AppShimLaunchResult result) override {}
-  virtual void OnAppClosed() override {
-    handler_->OnShimClose(this);
-  }
-  virtual void OnAppHide() override {}
-  virtual void OnAppRequestUserAttention(AppShimAttentionType type) override {}
-  virtual base::FilePath GetProfilePath() const override {
-    return profile_path_;
-  }
-  virtual std::string GetAppId() const override { return app_id_; }
+  void OnAppLaunchComplete(AppShimLaunchResult result) override {}
+  void OnAppClosed() override { handler_->OnShimClose(this); }
+  void OnAppHide() override {}
+  void OnAppRequestUserAttention(AppShimAttentionType type) override {}
+  base::FilePath GetProfilePath() const override { return profile_path_; }
+  std::string GetAppId() const override { return app_id_; }
 
  private:
   base::FilePath profile_path_;
@@ -89,7 +85,7 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     content::RunAllPendingInMessageLoop();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     // Simulate an app shim initiated launch, i.e. launch app but not browser.
     app_path_ = test_data_dir_

@@ -58,10 +58,10 @@ class ExtensionInstallCheckerMock : public extensions::ExtensionInstallChecker {
       : extensions::ExtensionInstallChecker(profile),
         requirements_error_(requirements_error) {}
 
-  virtual ~ExtensionInstallCheckerMock() {}
+  ~ExtensionInstallCheckerMock() override {}
 
  private:
-  virtual void CheckRequirements() override {
+  void CheckRequirements() override {
     // Simulate an asynchronous operation.
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -103,7 +103,7 @@ class EphemeralAppLauncherForTest : public EphemeralAppLauncher {
  private:
   // Override necessary functions for testing.
 
-  virtual scoped_ptr<extensions::ExtensionInstallChecker> CreateInstallChecker()
+  scoped_ptr<extensions::ExtensionInstallChecker> CreateInstallChecker()
       override {
     if (requirements_check_error_.empty()) {
       return EphemeralAppLauncher::CreateInstallChecker();
@@ -114,19 +114,19 @@ class EphemeralAppLauncherForTest : public EphemeralAppLauncher {
     }
   }
 
-  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override {
+  scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override {
     install_prompt_created_ = true;
     return EphemeralAppLauncher::CreateInstallUI();
   }
 
-  virtual scoped_ptr<extensions::WebstoreInstaller::Approval> CreateApproval()
+  scoped_ptr<extensions::WebstoreInstaller::Approval> CreateApproval()
       const override {
     install_initiated_ = true;
     return EphemeralAppLauncher::CreateApproval();
   }
 
  private:
-  virtual ~EphemeralAppLauncherForTest() {}
+  ~EphemeralAppLauncherForTest() override {}
   friend class base::RefCountedThreadSafe<EphemeralAppLauncherForTest>;
 
   mutable bool install_initiated_;
@@ -174,12 +174,12 @@ class ManagementPolicyMock : public extensions::ManagementPolicy::Provider {
  public:
   ManagementPolicyMock() {}
 
-  virtual std::string GetDebugPolicyProviderName() const override {
+  std::string GetDebugPolicyProviderName() const override {
     return "ManagementPolicyMock";
   }
 
-  virtual bool UserMayLoad(const Extension* extension,
-                           base::string16* error) const override {
+  bool UserMayLoad(const Extension* extension,
+                   base::string16* error) const override {
     return false;
   }
 };
@@ -195,7 +195,7 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
                               kAppDomain,
                               kNonAppDomain) {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     WebstoreInstallerTest::SetUpCommandLine(command_line);
 
     // Make event pages get suspended immediately.
@@ -206,7 +206,7 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
     command_line->AppendSwitch(switches::kEnableEphemeralApps);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WebstoreInstallerTest::SetUpOnMainThread();
 
     // Disable ephemeral apps immediately after they stop running in tests.
@@ -304,7 +304,7 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
 
 class EphemeralAppLauncherTestDisabled : public EphemeralAppLauncherTest {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Skip EphemeralAppLauncherTest as it enables the feature.
     WebstoreInstallerTest::SetUpCommandLine(command_line);
   }

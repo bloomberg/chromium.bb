@@ -30,7 +30,7 @@ class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
 
   UnixDomainSocketAcceptor(const base::FilePath& path, Delegate* delegate);
 
-  virtual ~UnixDomainSocketAcceptor();
+  ~UnixDomainSocketAcceptor() override;
 
   // Call this to start listening on the socket.
   bool Listen();
@@ -40,8 +40,8 @@ class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
 
  private:
   bool CreateSocket();
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   base::MessageLoopForIO::FileDescriptorWatcher
       server_listen_connection_watcher_;

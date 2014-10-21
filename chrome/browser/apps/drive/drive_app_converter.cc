@@ -40,7 +40,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
       : converter_(converter),
         icon_url_(icon_url),
         expected_size_(expected_size) {}
-  virtual ~IconFetcher() {
+  ~IconFetcher() override {
     if (image_decoder_.get())
       image_decoder_->set_delegate(NULL);
   }
@@ -58,7 +58,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
 
  private:
   // net::URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
     CHECK_EQ(fetcher_.get(), source);
     scoped_ptr<net::URLFetcher> fetcher(fetcher_.Pass());
 
@@ -78,14 +78,14 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   }
 
   // ImageDecoder::Delegate overrides:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override {
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override {
     if (decoded_image.width() == expected_size_)
       icon_ = decoded_image;
     converter_->OnIconFetchComplete(this);
   }
 
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override {
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override {
     converter_->OnIconFetchComplete(this);
   }
 

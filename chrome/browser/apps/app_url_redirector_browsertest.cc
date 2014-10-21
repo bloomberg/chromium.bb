@@ -20,7 +20,7 @@ namespace extensions {
 
 class PlatformAppUrlRedirectorBrowserTest : public PlatformAppBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUpCommandLine(CommandLine* command_line) override;
 
  protected:
   // Performs the following sequence:

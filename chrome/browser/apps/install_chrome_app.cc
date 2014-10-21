@@ -51,10 +51,10 @@ class WebstoreInstallWithPromptAppsOnly
             extensions::WebstoreStandaloneInstaller::Callback()) {}
 
  private:
-  virtual ~WebstoreInstallWithPromptAppsOnly() {}
+  ~WebstoreInstallWithPromptAppsOnly() override {}
 
   // extensions::WebstoreStandaloneInstaller overrides:
-  virtual void OnManifestParsed() override;
+  void OnManifestParsed() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreInstallWithPromptAppsOnly);
 };

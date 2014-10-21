@@ -124,9 +124,9 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   }
 
   // AppShimHandler overrides:
-  virtual void OnShimLaunch(Host* host,
-                            apps::AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& files) override {
+  void OnShimLaunch(Host* host,
+                    apps::AppShimLaunchType launch_type,
+                    const std::vector<base::FilePath>& files) override {
     // Remove self and pass through to the default handler.
     apps::AppShimHandler::RemoveHandler(app_mode_id_);
     apps::AppShimHandler::GetForAppMode(app_mode_id_)
@@ -135,12 +135,12 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
     if (run_loop_.get())
       run_loop_->Quit();
   }
-  virtual void OnShimClose(Host* host) override {}
-  virtual void OnShimFocus(Host* host,
-                           apps::AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) override {}
-  virtual void OnShimSetHidden(Host* host, bool hidden) override {}
-  virtual void OnShimQuit(Host* host) override {}
+  void OnShimClose(Host* host) override {}
+  void OnShimFocus(Host* host,
+                   apps::AppShimFocusType focus_type,
+                   const std::vector<base::FilePath>& files) override {}
+  void OnShimSetHidden(Host* host, bool hidden) override {}
+  void OnShimQuit(Host* host) override {}
 
  private:
   std::string app_mode_id_;

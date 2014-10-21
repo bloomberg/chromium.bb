@@ -92,8 +92,7 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
         callback_(callback) {
   }
 
-  virtual ~EnableViaPrompt() {
-  }
+  ~EnableViaPrompt() override {}
 
   void Run() {
     flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
@@ -103,12 +102,12 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
 
  private:
   // ExtensionEnableFlowDelegate overrides.
-  virtual void ExtensionEnableFlowFinished() override {
+  void ExtensionEnableFlowFinished() override {
     callback_.Run();
     delete this;
   }
 
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) override {
+  void ExtensionEnableFlowAborted(bool user_initiated) override {
     callback_.Run();
     delete this;
   }

@@ -21,15 +21,15 @@ class EphemeralAppServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<EphemeralAppServiceFactory>;
 
   EphemeralAppServiceFactory();
-  virtual ~EphemeralAppServiceFactory();
+  ~EphemeralAppServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 #endif  // CHROME_BROWSER_APPS_EPHEMERAL_APP_SERVICE_FACTORY_H_

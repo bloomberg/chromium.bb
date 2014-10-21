@@ -84,17 +84,15 @@ const char library_name[] = "libppapi_tests.so";
 
 class EmptyHttpResponse : public net::test_server::HttpResponse {
  public:
-  virtual std::string ToResponseString() const override {
-    return std::string();
-  }
+  std::string ToResponseString() const override { return std::string(); }
 };
 
 class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
  public:
   TestInterstitialPageDelegate() {
   }
-  virtual ~TestInterstitialPageDelegate() {}
-  virtual std::string GetHTMLContents() override { return std::string(); }
+  ~TestInterstitialPageDelegate() override {}
+  std::string GetHTMLContents() override { return std::string(); }
 };
 
 class WebContentsHiddenObserver : public content::WebContentsObserver {
@@ -107,7 +105,7 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   }
 
   // WebContentsObserver.
-  virtual void WasHidden() override {
+  void WasHidden() override {
     hidden_observed_ = true;
     hidden_callback_.Run();
   }
@@ -146,9 +144,9 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   MockWebContentsDelegate()
       : requested_(false),
         checked_(false) {}
-  virtual ~MockWebContentsDelegate() {}
+  ~MockWebContentsDelegate() override {}
 
-  virtual void RequestMediaAccessPermission(
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override {
@@ -157,10 +155,9 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
       request_message_loop_runner_->Quit();
   }
 
-  virtual bool CheckMediaAccessPermission(
-      content::WebContents* web_contents,
-      const GURL& security_origin,
-      content::MediaStreamType type) override {
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override {
     checked_ = true;
     if (check_message_loop_runner_.get())
       check_message_loop_runner_->Quit();
@@ -200,13 +197,12 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
         expect_allow_(false),
         decision_made_(false),
         last_download_allowed_(false) {}
-  virtual ~MockDownloadWebContentsDelegate() {}
+  ~MockDownloadWebContentsDelegate() override {}
 
-  virtual void CanDownload(
-      content::RenderViewHost* render_view_host,
-      const GURL& url,
-      const std::string& request_method,
-      const base::Callback<void(bool)>& callback) override {
+  void CanDownload(content::RenderViewHost* render_view_host,
+                   const GURL& url,
+                   const std::string& request_method,
+                   const base::Callback<void(bool)>& callback) override {
     orig_delegate_->CanDownload(
         render_view_host, url, request_method,
         base::Bind(&MockDownloadWebContentsDelegate::DownloadDecided,
@@ -281,7 +277,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::TearDown();
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
@@ -292,7 +288,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     }
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
 
@@ -713,7 +709,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
 class WebViewDPITest : public WebViewTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     WebViewTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                                     base::StringPrintf("%f", scale()));
@@ -2240,7 +2236,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoContentSettingsAPI) {
 #if defined(ENABLE_PLUGINS)
 class WebViewPluginTest : public WebViewTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     WebViewTest::SetUpCommandLine(command_line);
 
     // Append the switch to register the pepper plugin.

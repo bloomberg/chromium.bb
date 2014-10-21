@@ -31,7 +31,7 @@ class AppShimHost : public IPC::Listener,
                     public base::NonThreadSafe {
  public:
   AppShimHost();
-  virtual ~AppShimHost();
+  ~AppShimHost() override;
 
   // Creates a new server-side IPC channel at |handle|, which should contain a
   // file descriptor of a channel created by an UnixDomainSocketAcceptor,
@@ -40,11 +40,11 @@ class AppShimHost : public IPC::Listener,
 
  protected:
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
 
  private:
   // The app shim process is requesting to be associated with the given profile
@@ -66,13 +66,12 @@ class AppShimHost : public IPC::Listener,
   void OnQuit();
 
   // apps::AppShimHandler::Host overrides:
-  virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result) override;
-  virtual void OnAppClosed() override;
-  virtual void OnAppHide() override;
-  virtual void OnAppRequestUserAttention(
-      apps::AppShimAttentionType type) override;
-  virtual base::FilePath GetProfilePath() const override;
-  virtual std::string GetAppId() const override;
+  void OnAppLaunchComplete(apps::AppShimLaunchResult result) override;
+  void OnAppClosed() override;
+  void OnAppHide() override;
+  void OnAppRequestUserAttention(apps::AppShimAttentionType type) override;
+  base::FilePath GetProfilePath() const override;
+  std::string GetAppId() const override;
 
   // Closes the channel and destroys the AppShimHost.
   void Close();

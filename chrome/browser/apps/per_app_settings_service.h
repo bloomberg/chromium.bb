@@ -16,7 +16,7 @@
 class PerAppSettingsService : public KeyedService {
  public:
   PerAppSettingsService();
-  virtual ~PerAppSettingsService();
+  ~PerAppSettingsService() override;
 
   // Sets/gets the desktop that |app_id| was last launched from.
   void SetDesktopLastLaunchedFrom(

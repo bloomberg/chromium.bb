@@ -32,7 +32,7 @@ class DriveAppConverter : public extensions::InstallObserver {
   DriveAppConverter(Profile* profile,
                     const drive::DriveAppInfo& drive_app_info,
                     const FinishedCallback& finished_callback);
-  virtual ~DriveAppConverter();
+  ~DriveAppConverter() override;
 
   void Start();
   bool IsStarted() const;
@@ -53,8 +53,8 @@ class DriveAppConverter : public extensions::InstallObserver {
   void PostInstallCleanUp();
 
   // extensions::InstallObserver:
-  virtual void OnFinishCrxInstall(const std::string& extension_id,
-                                  bool success) override;
+  void OnFinishCrxInstall(const std::string& extension_id,
+                          bool success) override;
 
   Profile* profile_;
   const drive::DriveAppInfo drive_app_info_;

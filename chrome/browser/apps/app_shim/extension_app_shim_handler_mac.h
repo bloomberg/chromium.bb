@@ -68,7 +68,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   };
 
   ExtensionAppShimHandler();
-  virtual ~ExtensionAppShimHandler();
+  ~ExtensionAppShimHandler() override;
 
   AppShimHandler::Host* FindHost(Profile* profile, const std::string& app_id);
 
@@ -93,29 +93,27 @@ class ExtensionAppShimHandler : public AppShimHandler,
   static void OnChromeWillHide();
 
   // AppShimHandler overrides:
-  virtual void OnShimLaunch(Host* host,
-                            AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& files) override;
-  virtual void OnShimClose(Host* host) override;
-  virtual void OnShimFocus(Host* host,
-                           AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) override;
-  virtual void OnShimSetHidden(Host* host, bool hidden) override;
-  virtual void OnShimQuit(Host* host) override;
+  void OnShimLaunch(Host* host,
+                    AppShimLaunchType launch_type,
+                    const std::vector<base::FilePath>& files) override;
+  void OnShimClose(Host* host) override;
+  void OnShimFocus(Host* host,
+                   AppShimFocusType focus_type,
+                   const std::vector<base::FilePath>& files) override;
+  void OnShimSetHidden(Host* host, bool hidden) override;
+  void OnShimQuit(Host* host) override;
 
   // AppLifetimeMonitor::Observer overrides:
-  virtual void OnAppStart(Profile* profile, const std::string& app_id) override;
-  virtual void OnAppActivated(Profile* profile,
-                              const std::string& app_id) override;
-  virtual void OnAppDeactivated(Profile* profile,
-                                const std::string& app_id) override;
-  virtual void OnAppStop(Profile* profile, const std::string& app_id) override;
-  virtual void OnChromeTerminating() override;
+  void OnAppStart(Profile* profile, const std::string& app_id) override;
+  void OnAppActivated(Profile* profile, const std::string& app_id) override;
+  void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
+  void OnAppStop(Profile* profile, const std::string& app_id) override;
+  void OnChromeTerminating() override;
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  protected:
   typedef std::map<std::pair<Profile*, std::string>, AppShimHandler::Host*>

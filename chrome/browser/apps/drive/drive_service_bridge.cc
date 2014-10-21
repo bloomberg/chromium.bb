@@ -28,19 +28,19 @@ class DriveServiceBridgeImpl : public DriveServiceBridge,
                                public drive::DriveNotificationObserver {
  public:
   explicit DriveServiceBridgeImpl(Profile* profile);
-  virtual ~DriveServiceBridgeImpl();
+  ~DriveServiceBridgeImpl() override;
 
   void Initialize();
 
   // DriveServiceBridge:
-  virtual drive::DriveAppRegistry* GetAppRegistry() override;
+  drive::DriveAppRegistry* GetAppRegistry() override;
 
   // drive::DriveServiceObserver:
-  virtual void OnReadyToSendRequests() override;
+  void OnReadyToSendRequests() override;
 
   // drive::DriveNotificationObserver:
-  virtual void OnNotificationReceived() override;
-  virtual void OnPushNotificationEnabled(bool enabled) override;
+  void OnNotificationReceived() override;
+  void OnPushNotificationEnabled(bool enabled) override;
 
  private:
   Profile* profile_;
