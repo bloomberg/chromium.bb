@@ -1121,4 +1121,23 @@ TEST_F(PinchViewportTest, TestTopControlsAdjustmentAndResize)
     EXPECT_POINT_EQ(pinchViewportExpected, pinchViewport.location());
 }
 
+// Tests that the layout viewport's scroll layer bounds are updated in a compositing
+// change update. crbug.com/423188.
+TEST_F(PinchViewportTest, TestChangingContentSizeAffectsScrollBounds)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(100, 150));
+
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    WebLayer* scrollLayer = frameView.layerForScrolling()->platformLayer();
+
+    frameView.setContentsSize(IntSize(1500, 2400));
+    frameView.updateLayoutAndStyleForPainting();
+
+    EXPECT_SIZE_EQ(IntSize(1500, 2400), IntSize(scrollLayer->bounds()));
+}
+
 } // namespace

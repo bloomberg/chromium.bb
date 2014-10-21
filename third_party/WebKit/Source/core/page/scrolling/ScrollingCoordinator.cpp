@@ -156,6 +156,8 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
     m_wasFrameScrollable = frameIsScrollable;
 
     if (WebLayer* scrollingWebLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : 0) {
+        scrollingWebLayer->setBounds(frameView->contentsSize());
+
         // If there is a non-root fullscreen element, prevent the main frame
         // from scrolling.
         Document* mainFrameDocument = m_page->deprecatedLocalMainFrame()->document();
@@ -167,11 +169,9 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
                 scrollingWebLayer->setBounds(IntSize());
             }
         } else {
-            if (m_page->settings().pinchVirtualViewportEnabled()) {
+            if (m_page->settings().pinchVirtualViewportEnabled())
                 toWebLayer(m_page->frameHost().pinchViewport().scrollLayer())->setUserScrollable(true, true);
-            } else {
-                scrollingWebLayer->setBounds(frameView->contentsSize());
-            }
+
         }
         scrollingWebLayer->setUserScrollable(frameView->userInputScrollable(HorizontalScrollbar), frameView->userInputScrollable(VerticalScrollbar));
     }
