@@ -190,7 +190,7 @@ window.addEventListener('message', function(evt) {
             encodeURIComponent(remote_image_url +
                                '&ACAOrigin=' + host_info['HTTP_ORIGIN']),
             '',
-            TAINTED),  // FIXME: This should be NOT_TAINTED.
+            NOT_TAINTED),
         create_test_promise(
             image_url +
             '&mode=cors&url=' +
@@ -204,7 +204,7 @@ window.addEventListener('message', function(evt) {
             encodeURIComponent(remote_image_url +
                                '&ACAOrigin=' + host_info['HTTP_ORIGIN']),
             'use-credentials',
-            TAINTED),  // FIXME: This should be NOT_TAINTED.
+            NOT_TAINTED),
         create_test_promise(
             image_url +
             '&mode=cors&url=' +
@@ -219,7 +219,7 @@ window.addEventListener('message', function(evt) {
             encodeURIComponent(remote_image_url +
                                '&ACAOrigin=' + host_info['HTTP_ORIGIN']),
             '',
-            TAINTED),  // FIXME: This should be NOT_TAINTED.
+            NOT_TAINTED),
         create_test_promise(
             remote_image_url +
             '&mode=cors&url=' +
@@ -233,7 +233,7 @@ window.addEventListener('message', function(evt) {
             encodeURIComponent(remote_image_url +
                                '&ACAOrigin=' + host_info['HTTP_ORIGIN']),
             'use-credentials',
-            TAINTED),  // FIXME: This should be NOT_TAINTED.
+            NOT_TAINTED),
         create_test_promise(
             remote_image_url +
             '&mode=cors&url=' +

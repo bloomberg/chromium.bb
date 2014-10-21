@@ -487,6 +487,8 @@ bool ImageResource::currentFrameKnownToBeOpaque(const RenderObject* renderer)
 
 bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin)
 {
+    if (response().wasFetchedViaServiceWorker())
+        return response().serviceWorkerResponseType() != WebServiceWorkerResponseTypeOpaque;
     if (!image()->currentFrameHasSingleSecurityOrigin())
         return false;
     if (passesAccessControlCheck(securityOrigin))
