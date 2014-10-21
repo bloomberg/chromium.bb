@@ -69,26 +69,24 @@ namespace blink {
     public:
         static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
-        virtual bool isLocalFrame() const override { return true; }
-
         void init();
         void setView(PassRefPtrWillBeRawPtr<FrameView>);
         void createView(const IntSize&, const Color&, bool,
             ScrollbarMode = ScrollbarAuto, bool horizontalLock = false,
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
 
+        // Frame overrides:
         virtual ~LocalFrame();
         virtual void trace(Visitor*) override;
-
+        virtual bool isLocalFrame() const override { return true; }
         virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
         virtual void detach() override;
+        virtual void disconnectOwnerElement() override;
 
         void addDestructionObserver(FrameDestructionObserver*);
         void removeDestructionObserver(FrameDestructionObserver*);
 
         void willDetachFrameHost();
-
-        virtual void disconnectOwnerElement() override;
 
         virtual void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>) override;
         FrameView* view() const;

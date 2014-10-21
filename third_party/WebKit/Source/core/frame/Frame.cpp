@@ -57,27 +57,6 @@ using namespace HTMLNames;
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
-Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
-    : m_treeNode(this)
-    , m_host(host)
-    , m_owner(owner)
-    , m_client(client)
-    , m_remotePlatformLayer(0)
-{
-    ASSERT(page());
-
-#ifndef NDEBUG
-    frameCounter.increment();
-#endif
-
-    if (m_owner) {
-        if (m_owner->isLocal())
-            toHTMLFrameOwnerElement(m_owner)->setContentFrame(*this);
-    } else {
-        page()->setMainFrame(this);
-    }
-}
-
 Frame::~Frame()
 {
     ASSERT(!m_owner);
@@ -126,9 +105,13 @@ void Frame::detachChildren()
         child->detach();
 }
 
-FrameHost* Frame::host() const
+void Frame::disconnectOwnerElement()
 {
-    return m_host;
+    if (m_owner) {
+        if (m_owner->isLocal())
+            toHTMLFrameOwnerElement(m_owner)->clearContentFrame();
+    }
+    m_owner = nullptr;
 }
 
 Page* Frame::page() const
@@ -138,11 +121,31 @@ Page* Frame::page() const
     return 0;
 }
 
-Settings* Frame::settings() const
+FrameHost* Frame::host() const
 {
-    if (m_host)
-        return &m_host->settings();
-    return 0;
+    return m_host;
+}
+
+bool Frame::isMainFrame() const
+{
+    Page* page = this->page();
+    return page && this == page->mainFrame();
+}
+
+bool Frame::isLocalRoot() const
+{
+    if (isRemoteFrame())
+        return false;
+
+    if (!tree().parent())
+        return true;
+
+    return tree().parent()->isRemoteFrame();
+}
+
+HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
+{
+    return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : 0;
 }
 
 void Frame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
@@ -196,35 +199,32 @@ void Frame::setRemotePlatformLayer(WebLayer* layer)
         renderer->layer()->updateSelfPaintingLayer();
 }
 
-bool Frame::isMainFrame() const
+Settings* Frame::settings() const
 {
-    Page* page = this->page();
-    return page && this == page->mainFrame();
+    if (m_host)
+        return &m_host->settings();
+    return 0;
 }
 
-bool Frame::isLocalRoot() const
+Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
+    : m_treeNode(this)
+    , m_host(host)
+    , m_owner(owner)
+    , m_client(client)
+    , m_remotePlatformLayer(0)
 {
-    if (isRemoteFrame())
-        return false;
+    ASSERT(page());
 
-    if (!tree().parent())
-        return true;
+#ifndef NDEBUG
+    frameCounter.increment();
+#endif
 
-    return tree().parent()->isRemoteFrame();
-}
-
-void Frame::disconnectOwnerElement()
-{
     if (m_owner) {
         if (m_owner->isLocal())
-            toHTMLFrameOwnerElement(m_owner)->clearContentFrame();
+            toHTMLFrameOwnerElement(m_owner)->setContentFrame(*this);
+    } else {
+        page()->setMainFrame(this);
     }
-    m_owner = nullptr;
-}
-
-HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
-{
-    return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : 0;
 }
 
 } // namespace blink

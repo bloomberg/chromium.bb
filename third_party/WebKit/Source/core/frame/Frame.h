@@ -52,15 +52,18 @@ struct Referrer;
 
 class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
+    virtual ~Frame();
+
+    virtual void trace(Visitor*);
+
     virtual bool isLocalFrame() const { return false; }
     virtual bool isRemoteFrame() const { return false; }
 
-    virtual ~Frame();
-    virtual void trace(Visitor*);
-
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) = 0;
+
     virtual void detach();
     void detachChildren();
+    virtual void disconnectOwnerElement();
 
     FrameClient* client() const;
 
@@ -72,8 +75,6 @@ public:
 
     bool isMainFrame() const;
     bool isLocalRoot() const;
-
-    virtual void disconnectOwnerElement();
 
     FrameOwner* owner() const;
     void setOwner(FrameOwner* owner) { m_owner = owner; }
