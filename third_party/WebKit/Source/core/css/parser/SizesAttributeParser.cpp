@@ -16,7 +16,6 @@ SizesAttributeParser::SizesAttributeParser(PassRefPtr<MediaValues> mediaValues, 
     : m_mediaValues(mediaValues)
     , m_length(0)
     , m_lengthWasSet(false)
-    , m_viewportDependant(false)
 {
     CSSTokenizer::tokenize(attribute, m_tokens);
     m_isValid = parse(m_tokens);
@@ -38,7 +37,6 @@ bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenIterator startT
         double length;
         if (!CSSPrimitiveValue::isLength(startToken->unitType()))
             return false;
-        m_viewportDependant = CSSPrimitiveValue::isViewportPercentageLength(startToken->unitType());
         if ((m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) && (length >= 0)) {
             result = clampTo<float>(length);
             return true;
@@ -47,7 +45,6 @@ bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenIterator startT
         SizesCalcParser calcParser(startToken, endToken, m_mediaValues);
         if (!calcParser.isValid())
             return false;
-        m_viewportDependant = calcParser.viewportDependant();
         result = calcParser.result();
         return true;
     } else if (type == NumberToken && !startToken->numericValue()) {
@@ -147,7 +144,6 @@ float SizesAttributeParser::effectiveSize()
 unsigned SizesAttributeParser::effectiveSizeDefaultValue()
 {
     // Returning the equivalent of "100vw"
-    m_viewportDependant = true;
     return m_mediaValues->viewportWidth();
 }
 

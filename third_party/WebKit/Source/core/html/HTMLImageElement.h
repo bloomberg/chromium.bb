@@ -149,8 +149,6 @@ private:
     unsigned m_elementCreatedByParser : 1;
     // Intrinsic sizing is viewport dependant if the 'w' descriptor was used for the picked resource.
     unsigned m_intrinsicSizingViewportDependant : 1;
-    // Effective size is viewport dependant if the sizes attribute's effective size used v* length units.
-    unsigned m_effectiveSizeViewportDependant : 1;
 };
 
 } // namespace blink

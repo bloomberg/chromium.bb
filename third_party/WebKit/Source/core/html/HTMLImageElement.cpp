@@ -85,7 +85,6 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     , m_formWasSetByParser(false)
     , m_elementCreatedByParser(createdByParser)
     , m_intrinsicSizingViewportDependant(false)
-    , m_effectiveSizeViewportDependant(false)
 {
     if (form && form->inDocument()) {
 #if ENABLE(OILPAN)
@@ -308,7 +307,6 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
             UseCounter::count(document(), UseCounter::Sizes);
         SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
         float effectiveSize = parser.length();
-        m_effectiveSizeViewportDependant = parser.viewportDependant();
         ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr), &document());
         if (candidate.isEmpty())
             continue;
@@ -645,12 +643,11 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
                 UseCounter::count(document(), UseCounter::Sizes);
             SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
             effectiveSize = parser.length();
-            m_effectiveSizeViewportDependant = parser.viewportDependant();
         }
         ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
         setBestFitURLAndDPRFromImageCandidate(candidate);
     }
-    if (m_intrinsicSizingViewportDependant && m_effectiveSizeViewportDependant && !m_listener) {
+    if (m_intrinsicSizingViewportDependant && !m_listener) {
         m_listener = ViewportChangeListener::create(this);
         document().mediaQueryMatcher().addViewportListener(m_listener);
     }

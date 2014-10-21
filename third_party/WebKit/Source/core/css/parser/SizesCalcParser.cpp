@@ -12,7 +12,6 @@ namespace blink {
 
 SizesCalcParser::SizesCalcParser(CSSParserTokenIterator start, CSSParserTokenIterator end, PassRefPtr<MediaValues> mediaValues)
     : m_mediaValues(mediaValues)
-    , m_viewportDependant(false)
     , m_result(0)
 {
     m_isValid = calcToReversePolishNotation(start, end) && calculate();
@@ -99,7 +98,6 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenIterator start, 
             appendNumber(*it);
             break;
         case DimensionToken:
-            m_viewportDependant = m_viewportDependant || CSSPrimitiveValue::isViewportPercentageLength(it->unitType());
             if (!CSSPrimitiveValue::isLength(it->unitType()) || !appendLength(*it))
                 return false;
             break;

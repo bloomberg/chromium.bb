@@ -18,7 +18,6 @@ class SizesAttributeParser {
 public:
     SizesAttributeParser(PassRefPtr<MediaValues>, const String&);
 
-    bool viewportDependant() const { return m_viewportDependant; }
     float length();
 
 private:
@@ -33,7 +32,6 @@ private:
     RefPtr<MediaValues> m_mediaValues;
     float m_length;
     bool m_lengthWasSet;
-    bool m_viewportDependant;
     Vector<CSSParserToken> m_tokens;
     bool m_isValid;
     MediaQueryBlockWatcher m_blockWatcher;

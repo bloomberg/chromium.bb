@@ -36,7 +36,6 @@ class SizesCalcParser {
 public:
     SizesCalcParser(CSSParserTokenIterator start, CSSParserTokenIterator end, PassRefPtr<MediaValues>);
 
-    bool viewportDependant() const { return m_viewportDependant; }
     float result() const;
     bool isValid() const { return m_isValid; }
 
@@ -50,7 +49,6 @@ private:
 
     Vector<SizesCalcValue> m_valueList;
     RefPtr<MediaValues> m_mediaValues;
-    bool m_viewportDependant;
     bool m_isValid;
     float m_result;
 };
