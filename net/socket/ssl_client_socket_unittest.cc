@@ -1822,7 +1822,7 @@ TEST_F(SSLClientSocketTest, Connect_WithZeroReturn) {
 
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   scoped_ptr<SSLClientSocket> sock(
-      CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
+      CreateSSLClientSocket(transport.Pass(),
                             test_server.host_port_pair(),
                             kDefaultSSLConfig));
 
@@ -1859,7 +1859,7 @@ TEST_F(SSLClientSocketTest, Read_WithZeroReturn) {
 
   SynchronousErrorStreamSocket* raw_transport = transport.get();
   scoped_ptr<SSLClientSocket> sock(
-      CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
+      CreateSSLClientSocket(transport.Pass(),
                             test_server.host_port_pair(),
                             ssl_config));
 

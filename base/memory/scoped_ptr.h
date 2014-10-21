@@ -73,16 +73,6 @@
 //
 //   scoped_ptr<Foo> foo(new Foo());
 //   scoped_ptr<FooParent> parent(foo.Pass());
-//
-// PassAs<>() should be used to upcast return value in return statement:
-//
-//   scoped_ptr<Foo> CreateFoo() {
-//     scoped_ptr<FooChild> result(new FooChild());
-//     return result.PassAs<Foo>();
-//   }
-//
-// Note that PassAs<>() is implemented only for scoped_ptr<T>, but not for
-// scoped_ptr<T[]>. This is because casting array pointers may not be safe.
 
 #ifndef BASE_MEMORY_SCOPED_PTR_H_
 #define BASE_MEMORY_SCOPED_PTR_H_
@@ -434,17 +424,6 @@ class scoped_ptr {
   // object will hold a nullptr, and will not own the object any more.
   element_type* release() WARN_UNUSED_RESULT {
     return impl_.release();
-  }
-
-  // C++98 doesn't support functions templates with default parameters which
-  // makes it hard to write a PassAs() that understands converting the deleter
-  // while preserving simple calling semantics.
-  //
-  // Until there is a use case for PassAs() with custom deleters, just ignore
-  // the custom deleter.
-  template <typename PassAsType>
-  scoped_ptr<PassAsType> PassAs() {
-    return scoped_ptr<PassAsType>(Pass());
   }
 
  private:

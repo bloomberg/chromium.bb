@@ -191,12 +191,6 @@ def CheckScopedPtr(input_api, output_api,
         errors.append(output_api.PresubmitError(
           '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
           (f.LocalPath(), line_number)))
-      # Disallow:
-      # foo.PassAs<T>();
-      if re.search(r'\bPassAs<.*?>\(\)', line):
-        errors.append(output_api.PresubmitError(
-          '%s:%d uses PassAs<T>(). Use Pass() instead.' %
-          (f.LocalPath(), line_number)))
   return errors
 
 def FindUnquotedQuote(contents, pos):
