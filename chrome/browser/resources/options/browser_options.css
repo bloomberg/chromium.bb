@@ -474,7 +474,7 @@ footer {
 }
 
 #about-button {
-  margin-right: 30px;
+  -webkit-margin-end: 30px;
 }
 
 /* An input that has no function except to take up the same amount of space as
