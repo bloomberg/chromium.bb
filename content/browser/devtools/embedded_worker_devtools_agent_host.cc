@@ -159,9 +159,6 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
   }
 }
 
-void EmbeddedWorkerDevToolsAgentHost::WorkerContextStarted() {
-}
-
 void EmbeddedWorkerDevToolsAgentHost::WorkerRestarted(WorkerId worker_id) {
   DCHECK_EQ(WORKER_TERMINATED, state_);
   state_ = IsAttached() ? WORKER_PAUSED_FOR_REATTACH : WORKER_UNINSPECTED;

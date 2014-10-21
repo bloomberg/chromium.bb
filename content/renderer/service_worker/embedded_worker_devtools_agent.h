@@ -34,7 +34,6 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
   void OnReattach(const std::string& host_id, const std::string& state);
   void OnDetach();
   void OnDispatchOnInspectorBackend(const std::string& message);
-  void OnResumeWorkerContext();
 
   blink::WebEmbeddedWorker* webworker_;
   int route_id_;

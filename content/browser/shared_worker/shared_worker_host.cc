@@ -45,19 +45,6 @@ void NotifyWorkerReadyForInspection(int worker_process_id,
       worker_process_id, worker_route_id);
 }
 
-void NotifyWorkerContextStarted(int worker_process_id, int worker_route_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
-            NotifyWorkerContextStarted, worker_process_id, worker_route_id));
-    return;
-  }
-  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerContextStarted(
-      worker_process_id, worker_route_id);
-}
-
 void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
@@ -196,7 +183,6 @@ void SharedWorkerHost::WorkerReadyForInspection() {
 void SharedWorkerHost::WorkerScriptLoaded() {
   UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoaded",
                       base::TimeTicks::Now() - creation_time_);
-  NotifyWorkerContextStarted(worker_process_id_, worker_route_id_);
 }
 
 void SharedWorkerHost::WorkerScriptLoadFailed() {

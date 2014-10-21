@@ -45,7 +45,6 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   void WorkerReadyForInspection();
-  void WorkerContextStarted();
   void WorkerRestarted(WorkerId worker_id);
   void WorkerDestroyed();
   bool Matches(const SharedWorkerInstance& other);

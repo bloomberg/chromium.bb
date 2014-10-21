@@ -38,8 +38,6 @@ bool SharedWorkerDevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_ResumeWorkerContext,
-                        OnResumeWorkerContext)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -85,10 +83,6 @@ void SharedWorkerDevToolsAgent::OnDetach() {
 void SharedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
     const std::string& message) {
   webworker_->dispatchDevToolsMessage(WebString::fromUTF8(message));
-}
-
-void SharedWorkerDevToolsAgent::OnResumeWorkerContext() {
-  webworker_->resumeWorkerContext();
 }
 
 bool SharedWorkerDevToolsAgent::Send(IPC::Message* message) {

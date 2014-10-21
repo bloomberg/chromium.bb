@@ -74,7 +74,6 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
                             int worker_route_id,
                             const ServiceWorkerIdentifier& service_worker_id);
   void WorkerReadyForInspection(int worker_process_id, int worker_route_id);
-  void WorkerContextStarted(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);
 
   void set_debug_service_worker_on_start(bool debug_on_start) {

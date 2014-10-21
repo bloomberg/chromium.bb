@@ -94,9 +94,6 @@ IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_AddMessageToConsole,
                     content::ConsoleMessageLevel /* level */,
                     std::string /* message */)
 
-// Worker DevTools agent should resume worker execution.
-IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_ResumeWorkerContext)
-
 //-----------------------------------------------------------------------------
 // These are messages sent from the browser to the renderer.
 
