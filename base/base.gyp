@@ -160,10 +160,14 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'DelayLoadDLLs': [
+                'cfgmgr32.dll',
                 'powrprof.dll',
+                'setupapi.dll',
               ],
               'AdditionalDependencies': [
+                'cfgmgr32.lib',
                 'powrprof.lib',
+                'setupapi.lib',
               ],
             },
           },
@@ -172,10 +176,14 @@
             'msvs_settings': {
               'VCLinkerTool': {
                 'DelayLoadDLLs': [
+                  'cfgmgr32.dll',
                   'powrprof.dll',
+                  'setupapi.dll',
                 ],
                 'AdditionalDependencies': [
+                  'cfgmgr32.lib',
                   'powrprof.lib',
+                  'setupapi.lib',
                 ],
               },
             },
@@ -1072,10 +1080,14 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'DelayLoadDLLs': [
+                'cfgmgr32.dll',
                 'powrprof.dll',
+                'setupapi.dll',
               ],
               'AdditionalDependencies': [
+                'cfgmgr32.lib',
                 'powrprof.lib',
+                'setupapi.lib',
               ],
             },
           },
@@ -1084,10 +1096,14 @@
             'msvs_settings': {
               'VCLinkerTool': {
                 'DelayLoadDLLs': [
+                  'cfgmgr32.dll',
                   'powrprof.dll',
+                  'setupapi.dll',
                 ],
                 'AdditionalDependencies': [
+                  'cfgmgr32.lib',
                   'powrprof.lib',
+                  'setupapi.lib',
                 ],
               },
             },

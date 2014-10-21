@@ -5,6 +5,7 @@
 #include "base/win/win_util.h"
 
 #include <aclapi.h>
+#include <cfgmgr32.h>
 #include <lm.h>
 #include <powrprof.h>
 #include <shellapi.h>
@@ -14,6 +15,7 @@
 #include <propkey.h>
 #include <propvarutil.h>
 #include <sddl.h>
+#include <setupapi.h>
 #include <signal.h>
 #include <stdlib.h>
 
@@ -52,6 +54,63 @@ void __cdecl ForceCrashOnSigAbort(int) {
 const wchar_t kWindows8OSKRegPath[] =
     L"Software\\Classes\\CLSID\\{054AAE20-4BEA-4347-8A35-64A533254A9D}"
     L"\\LocalServer32";
+
+// Returns true if a physical keyboard is detected on Windows 8 and up.
+// Uses the Setup APIs to enumerate the attached keyboards and returns true
+// if the keyboard count is more than 1. While this will work in most cases
+// it won't work if there are devices which expose keyboard interfaces which
+// are attached to the machine.
+bool IsKeyboardPresentOnSlate() {
+  // This function is only supported for Windows 8 and up.
+  DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN8);
+
+  // This function should be only invoked for machines with touch screens.
+  if ((GetSystemMetrics(SM_DIGITIZER) & NID_INTEGRATED_TOUCH)
+        != NID_INTEGRATED_TOUCH) {
+    return true;
+  }
+
+  const GUID KEYBOARD_CLASS_GUID =
+      { 0x4D36E96B, 0xE325,  0x11CE,
+          { 0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18 } };
+
+  // Query for all the keyboard devices.
+  HDEVINFO device_info =
+      SetupDiGetClassDevs(&KEYBOARD_CLASS_GUID, NULL, NULL, DIGCF_PRESENT);
+  if (device_info == INVALID_HANDLE_VALUE)
+    return false;
+
+  // Enumerate all keyboards and look for ACPI\PNP and HID\VID devices. If
+  // the count is more than 1 we assume that a keyboard is present. This is
+  // under the assumption that there will always be one keyboard device.
+  int keyboard_count = 0;
+  for (DWORD i = 0;; ++i) {
+    SP_DEVINFO_DATA device_info_data = { 0 };
+    device_info_data.cbSize = sizeof(device_info_data);
+    if (!SetupDiEnumDeviceInfo(device_info, i, &device_info_data))
+      break;
+    // Get the device ID.
+    wchar_t device_id[MAX_DEVICE_ID_LEN];
+    CONFIGRET status = CM_Get_Device_ID(device_info_data.DevInst,
+                                        device_id,
+                                        MAX_DEVICE_ID_LEN,
+                                        0);
+    if (status == CR_SUCCESS) {
+      // To reduce the scope of the hack we only look for PNP and HID
+      // keyboards.
+      if (StartsWith(L"ACPI\\PNP", device_id, false) ||
+          StartsWith(L"HID\\VID", device_id, false)) {
+        keyboard_count++;
+      }
+    }
+  }
+  // On a Windows machine, the API's always report 1 keyboard at least
+  // regardless of whether the machine has a keyboard attached or not.
+  // The heuristic we are using is to check the count and return true
+  // if the API's report more than one keyboard. Please note that this
+  // will break for non keyboard devices which expose a keyboard PDO.
+  return keyboard_count > 1;
+}
 
 }  // namespace
 
@@ -250,6 +309,9 @@ bool IsTabletDevice() {
 
 bool DisplayVirtualKeyboard() {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return false;
+
+  if (IsKeyboardPresentOnSlate())
     return false;
 
   static base::LazyInstance<string16>::Leaky osk_path =

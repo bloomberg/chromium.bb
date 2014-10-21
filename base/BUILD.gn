@@ -852,11 +852,15 @@ component("base") {
     #cflags = [ "/wd4267" ]
 
     libs = [
+      "cfgmgr32.lib",
       "netapi32.lib",
       "powrprof.lib",
+      "setupapi.lib",
     ]
     ldflags = [
+      "/DELAYLOAD:cfgmgr32.dll",
       "/DELAYLOAD:powrprof.dll",
+      "/DELAYLOAD:setupapi.dll",
     ]
   } else if (!is_nacl) {
     # Non-Windows.
