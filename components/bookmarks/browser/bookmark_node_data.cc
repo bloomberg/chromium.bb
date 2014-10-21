@@ -177,6 +177,22 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
     // on Linux (on Windows and Mac, there is no difference between these
     // functions).
     scw.WriteText(base::UTF8ToUTF16(url));
+  } else {
+    // We have either more than one URL, a folder, or a combination of URLs
+    // and folders.
+    base::string16 text;
+    for (size_t i = 0; i < elements.size(); i++) {
+      text += i == 0 ? base::ASCIIToUTF16("") : base::ASCIIToUTF16("\n");
+      if (!elements[i].is_url) {
+        // Then it's a folder. Only copy the name of the folder.
+        const base::string16 title = elements[i].title;
+        text += title;
+      } else {
+        const base::string16 url = base::UTF8ToUTF16(elements[i].url.spec());
+        text += url;
+      }
+    }
+    scw.WriteText(text);
   }
 
   Pickle pickle;
