@@ -93,7 +93,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   void RemoveObserver(Observer* observer);
 
   // Moves the given |extension|'s icon to the given |index|.
-  void MoveExtensionIcon(const Extension* extension, size_t index);
+  void MoveExtensionIcon(const std::string& id, size_t index);
 
   // Sets the number of extension icons that should be visible.
   // If count == size(), this will set the visible icon count to -1, meaning

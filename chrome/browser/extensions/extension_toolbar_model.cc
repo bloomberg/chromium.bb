@@ -80,19 +80,21 @@ void ExtensionToolbarModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ExtensionToolbarModel::MoveExtensionIcon(const Extension* extension,
+void ExtensionToolbarModel::MoveExtensionIcon(const std::string& id,
                                               size_t index) {
-  ExtensionList::iterator pos = std::find(toolbar_items_.begin(),
-      toolbar_items_.end(), extension);
+  ExtensionList::iterator pos = toolbar_items_.begin();
+  while (pos != toolbar_items_.end() && (*pos)->id() != id)
+    ++pos;
   if (pos == toolbar_items_.end()) {
     NOTREACHED();
     return;
   }
+  scoped_refptr<const Extension> extension = *pos;
   toolbar_items_.erase(pos);
 
   ExtensionIdList::iterator pos_id = std::find(last_known_positions_.begin(),
                                                last_known_positions_.end(),
-                                               extension->id());
+                                               id);
   if (pos_id != last_known_positions_.end())
     last_known_positions_.erase(pos_id);
 
@@ -104,19 +106,19 @@ void ExtensionToolbarModel::MoveExtensionIcon(const Extension* extension,
     last_known_positions_.insert(std::find(last_known_positions_.begin(),
                                            last_known_positions_.end(),
                                            (*iter)->id()),
-                                 extension->id());
+                                 id);
     toolbar_items_.insert(iter, extension);
   } else {
     // Otherwise, put |extension| at the end.
     DCHECK_EQ(toolbar_items_.size(), index);
     index = toolbar_items_.size();
-    toolbar_items_.push_back(make_scoped_refptr(extension));
-    last_known_positions_.push_back(extension->id());
+    toolbar_items_.push_back(extension);
+    last_known_positions_.push_back(id);
   }
 
   FOR_EACH_OBSERVER(
-      Observer, observers_, ToolbarExtensionMoved(extension, index));
-  MaybeUpdateVisibilityPref(extension, index);
+      Observer, observers_, ToolbarExtensionMoved(extension.get(), index));
+  MaybeUpdateVisibilityPref(extension.get(), index);
   UpdatePrefs();
 }
 
@@ -228,7 +230,7 @@ void ExtensionToolbarModel::Observe(
       new_index = new_size;
     }
     SetVisibleIconCount(new_size);
-    MoveExtensionIcon(extension, new_index);
+    MoveExtensionIcon(extension->id(), new_index);
   } else {  // Don't include all extensions.
     if (visible)
       AddExtension(extension);
@@ -602,7 +604,7 @@ void ExtensionToolbarModel::EnsureVisibility(
          extension != toolbar_items_.end(); ++extension) {
       if ((*extension)->id() == (*it)) {
         if (extension - toolbar_items_.begin() >= visible_icon_count_)
-          MoveExtensionIcon(extension->get(), 0);
+          MoveExtensionIcon((*extension)->id(), 0);
         break;
       }
     }

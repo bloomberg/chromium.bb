@@ -10,10 +10,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_testing_views.h"
+#include "chrome/browser/ui/views/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -35,15 +37,11 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
   return GetContainer(browser_)->VisibleBrowserActions();
 }
 
-ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
-  return extensions::ExtensionActionManager::Get(browser_->profile())->
-      GetBrowserAction(*GetContainer(browser_)->GetBrowserActionViewAt(index)->
-                       extension());
-}
-
 void BrowserActionTestUtil::InspectPopup(int index) {
-  GetContainer(browser_)->GetBrowserActionViewAt(index)->
-      view_controller()->InspectPopup();
+  BrowserActionView* view =
+      GetContainer(browser_)->GetBrowserActionViewAt(index);
+  static_cast<ExtensionActionViewController*>(view->view_controller())->
+      InspectPopup();
 }
 
 bool BrowserActionTestUtil::HasIcon(int index) {
@@ -59,12 +57,12 @@ gfx::Image BrowserActionTestUtil::GetIcon(int index) {
 
 void BrowserActionTestUtil::Press(int index) {
   GetContainer(browser_)->GetBrowserActionViewAt(index)->
-      view_controller()->ExecuteActionByUser();
+      view_controller()->ExecuteAction(true);
 }
 
 std::string BrowserActionTestUtil::GetExtensionId(int index) {
   return GetContainer(browser_)->GetBrowserActionViewAt(index)->
-      extension()->id();
+      view_controller()->GetId();
 }
 
 std::string BrowserActionTestUtil::GetTooltip(int index) {
@@ -75,7 +73,7 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
 }
 
 gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
-  return GetContainer(browser_)->TestGetPopup()->GetWidget()->GetNativeView();
+  return GetContainer(browser_)->TestGetPopup();
 }
 
 bool BrowserActionTestUtil::HasPopup() {

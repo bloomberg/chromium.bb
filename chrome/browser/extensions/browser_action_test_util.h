@@ -29,9 +29,6 @@ class BrowserActionTestUtil {
   // Returns the number of browser action currently visible.
   int VisibleBrowserActions();
 
-  // Returns the ExtensionAction for the given index.
-  ExtensionAction* GetExtensionAction(int index);
-
   // Inspects the extension popup for the action at the given index.
   void InspectPopup(int index);
 

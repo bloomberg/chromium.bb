@@ -117,19 +117,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move C to first position. Order is C A B.
-  model->MoveExtensionIcon(extension_c(), 0);
+  model->MoveExtensionIcon(extension_c()->id(), 0);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move B to third position. Order is still C A B.
-  model->MoveExtensionIcon(extension_b(), 2);
+  model->MoveExtensionIcon(extension_b()->id(), 2);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move B to middle position. Order is C B A.
-  model->MoveExtensionIcon(extension_b(), 1);
+  model->MoveExtensionIcon(extension_b()->id(), 1);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(2));

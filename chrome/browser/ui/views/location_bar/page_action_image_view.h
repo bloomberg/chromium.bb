@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/extensions/extension_action_view_controller.h"
-#include "chrome/browser/ui/views/extensions/extension_action_view_delegate.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate.h"
 #include "ui/views/controls/image_view.h"
 
 class Browser;
@@ -22,7 +22,7 @@ class WebContents;
 
 // PageActionImageView is used by the LocationBarView to display the icon for a
 // given PageAction and notify the extension when the icon is clicked.
-class PageActionImageView : public ExtensionActionViewDelegate,
+class PageActionImageView : public ToolbarActionViewDelegate,
                             public views::ImageView {
  public:
   PageActionImageView(LocationBarView* owner,
@@ -59,7 +59,7 @@ class PageActionImageView : public ExtensionActionViewDelegate,
   virtual void PaintChildren(gfx::Canvas* canvas,
                              const views::CullSet& cull_set) override;
 
-  // Overridden from ExtensionActionViewDelegate:
+  // ToolbarActionViewDelegate:
   virtual void OnIconUpdated() override;
   virtual views::View* GetAsView() override;
   virtual bool IsShownInMenu() override;
@@ -69,7 +69,7 @@ class PageActionImageView : public ExtensionActionViewDelegate,
       override;
   virtual views::View* GetReferenceViewForPopup() override;
   virtual views::MenuButton* GetContextMenuButton() override;
-  virtual content::WebContents* GetCurrentWebContents() override;
+  virtual content::WebContents* GetCurrentWebContents() const override;
   virtual void HideActivePopup() override;
 
   // The controller for this ExtensionAction view.

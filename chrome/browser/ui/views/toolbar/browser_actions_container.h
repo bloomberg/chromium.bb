@@ -164,6 +164,9 @@ class BrowserActionsContainer
     return browser_action_views_[index];
   }
 
+  // Returns the ID of the action represented by the view at |index|.
+  const std::string& GetIdAt(size_t index);
+
   // Returns the BrowserActionView* associated with the given |extension|, or
   // NULL if none exists.
   BrowserActionView* GetViewForExtension(
@@ -238,15 +241,15 @@ class BrowserActionsContainer
   virtual views::MenuButton* GetOverflowReferenceView() override;
   virtual void SetPopupOwner(BrowserActionView* popup_owner) override;
   virtual void HideActivePopup() override;
-  virtual BrowserActionView* GetMainViewForExtension(
-      const extensions::Extension* extension) override;
+  virtual BrowserActionView* GetMainViewForAction(
+      BrowserActionView* view) override;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() override;
 
   // Retrieve the current popup.  This should only be used by unit tests.
-  ExtensionPopup* TestGetPopup();
+  gfx::NativeView TestGetPopup();
 
   // Returns the width of an icon, optionally with its padding.
   static int IconWidth(bool include_padding);

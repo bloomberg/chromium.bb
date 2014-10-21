@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "extensions/browser/extension_registry.h"
@@ -26,16 +27,15 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
           extensions::ExtensionRegistry::Get(browser->profile())->
               enabled_extensions().GetByID(page_action->extension_id()),
           browser,
-          page_action,
-          this)),
+          page_action)),
       owner_(owner),
       preview_enabled_(false) {
   // There should be an associated focus manager so that we can safely register
   // accelerators for commands.
   DCHECK(GetFocusManagerForAccelerator());
   SetAccessibilityFocusable(true);
+  view_controller_->SetDelegate(this);
   view_controller_->RegisterCommand();
-  set_context_menu_controller(view_controller_.get());
 }
 
 PageActionImageView::~PageActionImageView() {
@@ -67,13 +67,13 @@ void PageActionImageView::OnMouseReleased(const ui::MouseEvent& event) {
     return;
   }
 
-  view_controller_->ExecuteActionByUser();
+  view_controller_->ExecuteAction(true);
 }
 
 bool PageActionImageView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
-    view_controller_->ExecuteActionByUser();
+    view_controller_->ExecuteAction(true);
     return true;
   }
   return false;
@@ -81,14 +81,13 @@ bool PageActionImageView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void PageActionImageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    view_controller_->ExecuteActionByUser();
+    view_controller_->ExecuteAction(true);
     event->SetHandled();
   }
 }
 
 void PageActionImageView::UpdateVisibility(content::WebContents* contents) {
-  int tab_id = view_controller_->GetCurrentTabId();
-
+  int tab_id = SessionTabHelper::IdForTab(contents);
   if (!contents ||
       tab_id == -1 ||
       (!preview_enabled_ && !extension_action()->GetIsVisible(tab_id))) {
@@ -101,7 +100,7 @@ void PageActionImageView::UpdateVisibility(content::WebContents* contents) {
   SetTooltipText(base::UTF8ToUTF16(tooltip_));
 
   // Set the image.
-  gfx::Image icon = view_controller_->GetIcon(tab_id);
+  gfx::Image icon = view_controller_->GetIcon(contents);
   if (!icon.IsEmpty())
     SetImage(*icon.ToImageSkia());
 
@@ -111,7 +110,7 @@ void PageActionImageView::UpdateVisibility(content::WebContents* contents) {
 void PageActionImageView::PaintChildren(gfx::Canvas* canvas,
                                         const views::CullSet& cull_set) {
   View::PaintChildren(canvas, cull_set);
-  int tab_id = view_controller_->GetCurrentTabId();
+  int tab_id = SessionTabHelper::IdForTab(GetCurrentWebContents());
   if (tab_id >= 0) {
     view_controller_->extension_action()->PaintBadge(
         canvas, GetLocalBounds(), tab_id);
@@ -151,7 +150,7 @@ views::MenuButton* PageActionImageView::GetContextMenuButton() {
   return NULL;  // No menu button for page action views.
 }
 
-content::WebContents* PageActionImageView::GetCurrentWebContents() {
+content::WebContents* PageActionImageView::GetCurrentWebContents() const {
   return owner_->GetWebContents();
 }
 

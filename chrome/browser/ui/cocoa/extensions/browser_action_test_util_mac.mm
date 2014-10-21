@@ -41,11 +41,6 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
   return [GetController(browser_) visibleButtonCount];
 }
 
-ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
-  NOTREACHED();
-  return NULL;
-}
-
 void BrowserActionTestUtil::InspectPopup(int index) {
   NOTREACHED();
 }

@@ -326,7 +326,7 @@ TEST_F(ExtensionToolbarModelUnitTest, BasicExtensionToolbarModelTest) {
   EXPECT_EQ(extension2.get(), GetExtensionAtIndex(0u));
 
   // Should be a no-op, but still fires the events.
-  toolbar_model()->MoveExtensionIcon(extension2.get(), 0);
+  toolbar_model()->MoveExtensionIcon(extension2->id(), 0);
   EXPECT_EQ(1u, observer()->moved_count());
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(extension2.get(), GetExtensionAtIndex(0u));
@@ -352,7 +352,7 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarReorderAndReinsert) {
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
 
   // Order is now A, B, C. Let's put C first.
-  toolbar_model()->MoveExtensionIcon(browser_action_c(), 0);
+  toolbar_model()->MoveExtensionIcon(browser_action_c()->id(), 0);
   EXPECT_EQ(1u, observer()->moved_count());
   EXPECT_EQ(3u, num_toolbar_items());
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(0u));
@@ -360,7 +360,7 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarReorderAndReinsert) {
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(2u));
 
   // Order is now C, A, B. Let's put A last.
-  toolbar_model()->MoveExtensionIcon(browser_action_a(), 2);
+  toolbar_model()->MoveExtensionIcon(browser_action_a()->id(), 2);
   EXPECT_EQ(2u, observer()->moved_count());
   EXPECT_EQ(3u, num_toolbar_items());
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(0u));
@@ -389,13 +389,13 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarReorderAndReinsert) {
   EXPECT_EQ(2u, num_toolbar_items());
 
   // Order is now C, A. Flip it.
-  toolbar_model()->MoveExtensionIcon(browser_action_a(), 0);
+  toolbar_model()->MoveExtensionIcon(browser_action_a()->id(), 0);
   EXPECT_EQ(3u, observer()->moved_count());
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(1u));
 
   // Move A to the location it already occupies.
-  toolbar_model()->MoveExtensionIcon(browser_action_a(), 0);
+  toolbar_model()->MoveExtensionIcon(browser_action_a()->id(), 0);
   EXPECT_EQ(4u, observer()->moved_count());
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(1u));
@@ -465,7 +465,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
   EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
 
   // Move browser_action_b() to be first.
-  toolbar_model()->MoveExtensionIcon(browser_action_b(), 0);
+  toolbar_model()->MoveExtensionIcon(browser_action_b()->id(), 0);
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(0u));
 
   // Uninstall Extension B.
@@ -783,7 +783,7 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
   extension_prefs->SetIsIncognitoEnabled(browser_action_c()->id(), true);
 
   // Move C to the second index.
-  toolbar_model()->MoveExtensionIcon(browser_action_c(), 1u);
+  toolbar_model()->MoveExtensionIcon(browser_action_c()->id(), 1u);
   // Set visible count to 2 so that c is overflowed. State is A C [B].
   toolbar_model()->SetVisibleIconCount(2);
   EXPECT_EQ(1u, observer()->moved_count());
@@ -819,7 +819,7 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
 
   // Moving icons in the incognito toolbar should not affect the regular
   // toolbar. Incognito currently has C B...
-  incognito_model->MoveExtensionIcon(browser_action_b(), 0u);
+  incognito_model->MoveExtensionIcon(browser_action_b()->id(), 0u);
   // So now it should be B C...
   EXPECT_EQ(1u, incognito_observer.moved_count());
   EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(0u, incognito_model));
@@ -835,7 +835,7 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
 
   // And performing moves on the regular model should have no effect on the
   // incognito model or its observers.
-  toolbar_model()->MoveExtensionIcon(browser_action_c(), 2u);
+  toolbar_model()->MoveExtensionIcon(browser_action_c()->id(), 2u);
   EXPECT_EQ(2u, observer()->moved_count());
   EXPECT_EQ(1u, incognito_observer.moved_count());
 }

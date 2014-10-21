@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_
 
-#include "chrome/browser/ui/views/extensions/extension_action_view_controller.h"
-#include "chrome/browser/ui/views/extensions/extension_action_view_delegate.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -27,14 +26,14 @@ class Image;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView
-// A wrapper around an ExtensionActionViewController to display an extension
+// A wrapper around a ToolbarActionViewController to display a toolbar action
 // action in the BrowserActionsContainer.
-// Despite its name, this class can handle either Browser Actions or Page
-// Actions.
+// Despite its name, this class can handle any type of toolbar action, including
+// extension actions (browser and page actions) and component actions.
 // TODO(devlin): Rename this and BrowserActionsContainer when more of the
 // toolbar redesign is done.
 class BrowserActionView : public views::MenuButton,
-                          public ExtensionActionViewDelegate,
+                          public ToolbarActionViewDelegate,
                           public views::ButtonListener,
                           public content::NotificationObserver {
  public:
@@ -66,47 +65,20 @@ class BrowserActionView : public views::MenuButton,
 
     // Returns the primary BrowserActionView associated with the given
     // |extension|.
-    virtual BrowserActionView* GetMainViewForExtension(
-        const extensions::Extension* extension) = 0;
+    virtual BrowserActionView* GetMainViewForAction(
+        BrowserActionView* view) = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
-  // The IconObserver will receive a notification when the button's icon has
-  // been updated.
-  class IconObserver {
-   public:
-    virtual void OnIconUpdated(const gfx::ImageSkia& icon) = 0;
-
-   protected:
-    virtual ~IconObserver() {}
-  };
-
-  BrowserActionView(const extensions::Extension* extension,
-                    ExtensionAction* extension_action,
+  BrowserActionView(scoped_ptr<ToolbarActionViewController> view_controller,
                     Browser* browser,
-                    BrowserActionView::Delegate* delegate);
+                    Delegate* delegate);
   virtual ~BrowserActionView();
-
-  const extensions::Extension* extension() const {
-    return view_controller_->extension();
-  }
-  ExtensionAction* extension_action() {
-    return view_controller_->extension_action();
-  }
-  ExtensionActionViewController* view_controller() {
-    return view_controller_.get();
-  }
-  void set_icon_observer(IconObserver* icon_observer) {
-    icon_observer_ = icon_observer;
-  }
 
   // Called to update the display to match the browser action's state.
   void UpdateState();
-
-  // Does this button's action have a popup?
-  bool IsPopup();
 
   // Overridden from views::View:
   virtual void GetAccessibleState(ui::AXViewState* state) override;
@@ -134,13 +106,13 @@ class BrowserActionView : public views::MenuButton,
   virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
       override;
 
-  // Whether the browser action is enabled on this tab. Note that we cannot use
-  // the built-in views enabled/SetEnabled because disabled views do not
-  // receive drag events.
-  bool IsEnabled(int tab_id) const;
+  // ToolbarActionViewDelegate: (public because called by others).
+  virtual content::WebContents* GetCurrentWebContents() const override;
 
-  // Gets the icon of this button and its badge.
-  gfx::ImageSkia GetIconWithBadge();
+  ToolbarActionViewController* view_controller() {
+    return view_controller_.get();
+  }
+  Browser* browser() { return browser_; }
 
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
@@ -154,16 +126,15 @@ class BrowserActionView : public views::MenuButton,
   virtual void PaintChildren(gfx::Canvas* canvas,
                              const views::CullSet& cull_set) override;
 
-  // ExtensionActionViewDelegate:
+  // ToolbarActionViewDelegate:
   virtual views::View* GetAsView() override;
   virtual bool IsShownInMenu() override;
   virtual views::FocusManager* GetFocusManagerForAccelerator() override;
   virtual views::Widget* GetParentForContextMenu() override;
-  virtual ExtensionActionViewController* GetPreferredPopupViewController()
+  virtual ToolbarActionViewController* GetPreferredPopupViewController()
       override;
   virtual views::View* GetReferenceViewForPopup() override;
   virtual views::MenuButton* GetContextMenuButton() override;
-  virtual content::WebContents* GetCurrentWebContents() override;
   virtual void HideActivePopup() override;
   virtual void OnIconUpdated() override;
   virtual void OnPopupShown(bool grant_tab_permissions) override;
@@ -175,20 +146,19 @@ class BrowserActionView : public views::MenuButton,
   // object.
   scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
 
-  // The controller for this ExtensionAction view.
-  scoped_ptr<ExtensionActionViewController> view_controller_;
+  // The controller for this toolbar action view.
+  scoped_ptr<ToolbarActionViewController> view_controller_;
+
+  // The associated browser.
+  Browser* browser_;
 
   // Delegate that usually represents a container for BrowserActionView.
-  BrowserActionView::Delegate* delegate_;
+  Delegate* delegate_;
 
   // Used to make sure we only register the command once.
-  bool called_registered_extension_command_;
+  bool called_register_command_;
 
   content::NotificationRegistrar registrar_;
-
-  // The observer that we need to notify when the icon of the button has been
-  // updated.
-  IconObserver* icon_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
 };

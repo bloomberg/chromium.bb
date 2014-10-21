@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_ACTION_VIEW_DELEGATE_H_
-#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_ACTION_VIEW_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_H_
 
 namespace content {
 class WebContents;
@@ -16,12 +16,12 @@ class View;
 class Widget;
 }
 
-class ExtensionActionViewController;
+class ToolbarActionViewController;
 
-// The view that surrounds an ExtensionAction and owns the
-// ExtensionActionViewController. Since different actions can subclass
+// The view that surrounds an ToolbarAction and owns the
+// ToolbarActionViewController. Since different actions can subclass
 // different views, we don't derive views::View directly here.
-class ExtensionActionViewDelegate {
+class ToolbarActionViewDelegate {
  public:
   // Returns |this| as a view. We need this because our subclasses implement
   // different kinds of views, and inheriting View here is a really bad idea.
@@ -37,9 +37,9 @@ class ExtensionActionViewDelegate {
   virtual views::Widget* GetParentForContextMenu() = 0;
 
   // In some cases (such as when an action is shown in a menu), a substitute
-  // ExtensionActionViewController should be used for showing popups. This
+  // ToolbarActionViewController should be used for showing popups. This
   // returns the preferred control.
-  virtual ExtensionActionViewController* GetPreferredPopupViewController() = 0;
+  virtual ToolbarActionViewController* GetPreferredPopupViewController() = 0;
 
   // Returns the reference view for the extension action's popup.
   virtual views::View* GetReferenceViewForPopup() = 0;
@@ -49,7 +49,7 @@ class ExtensionActionViewDelegate {
   virtual views::MenuButton* GetContextMenuButton() = 0;
 
   // Returns the current web contents.
-  virtual content::WebContents* GetCurrentWebContents() = 0;
+  virtual content::WebContents* GetCurrentWebContents() const = 0;
 
   // Hides whatever popup is active (even if it's not this one).
   virtual void HideActivePopup() = 0;
@@ -65,7 +65,7 @@ class ExtensionActionViewDelegate {
   virtual void CleanupPopup() {}
 
  protected:
-  virtual ~ExtensionActionViewDelegate() {}
+  virtual ~ToolbarActionViewDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_ACTION_VIEW_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_H_

@@ -241,12 +241,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   // is right now A B C.
   EXPECT_EQ(3u, first->VisibleBrowserActions());
   EXPECT_EQ(3u, second->VisibleBrowserActions());
-  EXPECT_EQ(extension_a(), first->GetBrowserActionViewAt(0u)->extension());
-  EXPECT_EQ(extension_a(), second->GetBrowserActionViewAt(0u)->extension());
-  EXPECT_EQ(extension_b(), first->GetBrowserActionViewAt(1u)->extension());
-  EXPECT_EQ(extension_b(), second->GetBrowserActionViewAt(1u)->extension());
-  EXPECT_EQ(extension_c(), first->GetBrowserActionViewAt(2u)->extension());
-  EXPECT_EQ(extension_c(), second->GetBrowserActionViewAt(2u)->extension());
+  EXPECT_EQ(extension_a()->id(), first->GetIdAt(0u));
+  EXPECT_EQ(extension_a()->id(), second->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), first->GetIdAt(1u));
+  EXPECT_EQ(extension_b()->id(), second->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), first->GetIdAt(2u));
+  EXPECT_EQ(extension_c()->id(), second->GetIdAt(2u));
 
   // Simulate a drag and drop to the right.
   ui::OSExchangeData drop_data;
@@ -265,12 +265,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
 
   // The new order, B A C, should be reflected in *both* containers, even
   // though the drag only happened in the first one.
-  EXPECT_EQ(extension_b(), first->GetBrowserActionViewAt(0u)->extension());
-  EXPECT_EQ(extension_b(), second->GetBrowserActionViewAt(0u)->extension());
-  EXPECT_EQ(extension_a(), first->GetBrowserActionViewAt(1u)->extension());
-  EXPECT_EQ(extension_a(), second->GetBrowserActionViewAt(1u)->extension());
-  EXPECT_EQ(extension_c(), first->GetBrowserActionViewAt(2u)->extension());
-  EXPECT_EQ(extension_c(), second->GetBrowserActionViewAt(2u)->extension());
+  EXPECT_EQ(extension_b()->id(), first->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), second->GetIdAt(0u));
+  EXPECT_EQ(extension_a()->id(), first->GetIdAt(1u));
+  EXPECT_EQ(extension_a()->id(), second->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), first->GetIdAt(2u));
+  EXPECT_EQ(extension_c()->id(), second->GetIdAt(2u));
 
   // Next, simulate a resize by shrinking the container.
   first->OnResize(1, true);
@@ -399,8 +399,7 @@ bool BrowserActionsContainerOverflowTest::ViewOrdersMatch() {
       overflow_bar_->num_browser_actions())
     return false;
   for (size_t i = 0; i < main_bar_->num_browser_actions(); ++i) {
-    if (main_bar_->GetBrowserActionViewAt(i)->extension() !=
-        overflow_bar_->GetBrowserActionViewAt(i)->extension())
+    if (main_bar_->GetIdAt(i) != overflow_bar_->GetIdAt(i))
       return false;
   }
   return true;
@@ -442,27 +441,27 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   // All actions are showing, and are in the installation order.
   EXPECT_EQ(-1, model()->GetVisibleIconCount());
   ASSERT_EQ(3u, main_bar()->num_browser_actions());
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
   EXPECT_TRUE(VerifyVisibleCount(3u));
 
   // Reduce the visible count to 2. Order should be unchanged (A B C), but
   // only A and B should be visible on the main bar.
   model()->SetVisibleIconCount(2u);
   overflow_bar()->Layout();  // Kick.
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
   EXPECT_TRUE(VerifyVisibleCount(2u));
 
   // Move extension C to the first position. Order should now be C A B, with
   // C and A visible in the main bar.
-  model()->MoveExtensionIcon(extension_c(), 0);
+  model()->MoveExtensionIcon(extension_c()->id(), 0);
   overflow_bar()->Layout();  // Kick.
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));
   EXPECT_TRUE(VerifyVisibleCount(2u));
 
   // Hide action A. This results in it being sent to overflow, and reducing the
@@ -473,9 +472,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
       extension_a()->id(),
       false);
   overflow_bar()->Layout();  // Kick.
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));
   EXPECT_TRUE(VerifyVisibleCount(1u));
 }
 
@@ -490,9 +489,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
 
   // Verify starting state is A B [C].
   ASSERT_EQ(3u, main_bar()->num_browser_actions());
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
   EXPECT_TRUE(VerifyVisibleCount(2u));
 
   // Drag extension A (on the main bar) to the left of extension C (in
@@ -510,9 +509,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   overflow_bar()->Layout();
 
   // Order should now be B [A C].
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
   VerifyVisibleCount(1u);
 
   // Drag extension A back from overflow to the main bar.
@@ -528,9 +527,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   main_bar()->OnPerformDrop(target_event2);
 
   // Order should be A B [C] again.
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
   VerifyVisibleCount(2u);
 
   // Drag extension C from overflow to the main bar (before extension B).
@@ -545,8 +544,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   main_bar()->OnPerformDrop(target_event3);
 
   // Order should be A C B, and there should be no extensions in overflow.
-  EXPECT_EQ(extension_a(), main_bar()->GetBrowserActionViewAt(0)->extension());
-  EXPECT_EQ(extension_c(), main_bar()->GetBrowserActionViewAt(1)->extension());
-  EXPECT_EQ(extension_b(), main_bar()->GetBrowserActionViewAt(2)->extension());
+  EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
+  EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(1u));
+  EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(2u));
   VerifyVisibleCount(3u);
 }

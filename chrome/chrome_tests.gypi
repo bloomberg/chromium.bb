@@ -646,6 +646,7 @@
       'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
       'browser/ui/views/select_file_dialog_extension_browsertest.cc',
       'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
+      'browser/ui/views/toolbar/component_toolbar_actions_browsertest.cc',
       'browser/ui/views/toolbar/toolbar_view_browsertest.cc',
       'browser/ui/views/translate/translate_bubble_view_browsertest.cc',
       'browser/ui/views/web_dialog_view_browsertest.cc',

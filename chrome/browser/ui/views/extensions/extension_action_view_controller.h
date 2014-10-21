@@ -7,7 +7,10 @@
 
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/context_menu_controller.h"
@@ -15,7 +18,7 @@
 
 class Browser;
 class ExtensionAction;
-class ExtensionActionViewDelegate;
+class ToolbarActionViewDelegate;
 
 namespace content {
 class WebContents;
@@ -42,10 +45,12 @@ class Widget;
 // implementations for page actions/browser actions are different types of
 // views.
 // All common logic for executing extension actions should go in this class;
-// ExtensionActionViewDelegate classes should only have knowledge relating to
+// ToolbarActionViewDelegate classes should only have knowledge relating to
 // the views::View wrapper.
 class ExtensionActionViewController
-    : public ExtensionActionIconFactory::Observer,
+    : public ToolbarActionViewController,
+      public content::NotificationObserver,
+      public ExtensionActionIconFactory::Observer,
       public ExtensionContextMenuModel::PopupDelegate,
       public ui::AcceleratorTarget,
       public views::ContextMenuController,
@@ -53,17 +58,32 @@ class ExtensionActionViewController
  public:
   ExtensionActionViewController(const extensions::Extension* extension,
                                 Browser* browser,
-                                ExtensionAction* extension_action,
-                                ExtensionActionViewDelegate* delegate);
+                                ExtensionAction* extension_action);
   virtual ~ExtensionActionViewController();
+
+  // ToolbarActionViewController:
+  virtual const std::string& GetId() const override;
+  virtual void SetDelegate(ToolbarActionViewDelegate* delegate) override;
+  virtual gfx::Image GetIcon(content::WebContents* web_contents) override;
+  virtual gfx::ImageSkia GetIconWithBadge() override;
+  virtual base::string16 GetAccessibleName(content::WebContents* web_contents)
+      const override;
+  virtual base::string16 GetTooltip(content::WebContents* web_contents)
+      const override;
+  virtual bool IsEnabled(content::WebContents* web_contents) const override;
+  virtual bool HasPopup(content::WebContents* web_contents) const override;
+  virtual void HidePopup() override;
+  virtual gfx::NativeView GetPopupNativeView() override;
+  virtual bool IsMenuRunning() const override;
+  virtual bool CanDrag() const override;
+  virtual bool ExecuteAction(bool by_user) override;
+  virtual void PaintExtra(gfx::Canvas* canvas,
+                          const gfx::Rect& bounds,
+                          content::WebContents* web_contents) const override;
+  virtual void RegisterCommand() override;
 
   // ExtensionContextMenuModel::PopupDelegate:
   virtual void InspectPopup() override;
-
-  // Executes the default extension action (typically showing the popup), and
-  // attributes the action to a user (thus, only use this for actions that
-  // *were* done by the user).
-  void ExecuteActionByUser();
 
   // Executes the extension action with |show_action|. If
   // |grant_tab_permissions| is true, this will grant the extension active tab
@@ -72,30 +92,15 @@ class ExtensionActionViewController
   bool ExecuteAction(ExtensionPopup::ShowAction show_action,
                      bool grant_tab_permissions);
 
-  // Hides the popup, if one is open.
-  void HidePopup();
-
-  // Returns the icon from the |icon_factory_|.
-  gfx::Image GetIcon(int tab_id);
-
-  // Returns the current tab id.
-  int GetCurrentTabId() const;
-
-  // Registers an accelerator for the extension action's command, if one
-  // exists.
-  void RegisterCommand();
-
-  // Unregisters the accelerator for the extension action's command, if one
-  // exists. If |only_if_removed| is true, then this will only unregister if the
-  // command has been removed.
-  void UnregisterCommand(bool only_if_removed);
+  void set_icon_observer(ExtensionActionIconFactory::Observer* icon_observer) {
+    icon_observer_ = icon_observer;
+  }
 
   const extensions::Extension* extension() const { return extension_; }
   Browser* browser() { return browser_; }
   ExtensionAction* extension_action() { return extension_action_; }
   const ExtensionAction* extension_action() const { return extension_action_; }
   ExtensionPopup* popup() { return popup_; }
-  bool is_menu_running() const { return menu_runner_.get() != NULL; }
 
  private:
   // ExtensionActionIconFactory::Observer:
@@ -113,6 +118,11 @@ class ExtensionActionViewController
                                       const gfx::Point& point,
                                       ui::MenuSourceType source_type) override;
 
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) override;
+
   // Shows the context menu for extension action.
   void DoShowContextMenu(ui::MenuSourceType source_type);
 
@@ -128,6 +138,11 @@ class ExtensionActionViewController
   // Populates |command| with the command associated with |extension|, if one
   // exists. Returns true if |command| was populated.
   bool GetExtensionCommand(extensions::Command* command);
+
+  // Unregisters the accelerator for the extension action's command, if one
+  // exists. If |only_if_removed| is true, then this will only unregister if the
+  // command has been removed.
+  void UnregisterCommand(bool only_if_removed);
 
   // Closes the currently-active menu, if needed. This is the case when there
   // is an active menu that wouldn't close automatically when a new one is
@@ -151,13 +166,17 @@ class ExtensionActionViewController
   ExtensionAction* extension_action_;
 
   // Our delegate.
-  ExtensionActionViewDelegate* delegate_;
+  ToolbarActionViewDelegate* delegate_;
 
   // The object that will be used to get the browser action icon for us.
   // It may load the icon asynchronously (in which case the initial icon
   // returned by the factory will be transparent), so we have to observe it for
   // updates to the icon.
   ExtensionActionIconFactory icon_factory_;
+
+  // The observer that we need to notify when the icon of the button has been
+  // updated.
+  ExtensionActionIconFactory::Observer* icon_observer_;
 
   // Responsible for running the menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
@@ -168,6 +187,8 @@ class ExtensionActionViewController
   // The extension key binding accelerator this extension action is listening
   // for (to show the popup).
   scoped_ptr<ui::Accelerator> action_keybinding_;
+
+  content::NotificationRegistrar registrar_;
 
   // If non-NULL, this is the next ExtensionActionViewController context menu
   // which wants to run once the current owner (this one) is done.

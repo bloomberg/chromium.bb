@@ -12,8 +12,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
@@ -45,6 +47,37 @@ namespace {
 
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = ToolbarView::kStandardSpacing - 2;
+
+// Returns the set of controllers for all actions.
+// TODO(devlin): We should move this to the model, once it supports component
+// actions.
+ScopedVector<ToolbarActionViewController> GetToolbarActions(
+    extensions::ExtensionToolbarModel* model,
+    Browser* browser) {
+  ScopedVector<ToolbarActionViewController> actions;
+
+  // Extension actions come first.
+  extensions::ExtensionActionManager* action_manager =
+      extensions::ExtensionActionManager::Get(browser->profile());
+  const extensions::ExtensionList& toolbar_items = model->toolbar_items();
+  for (const scoped_refptr<const Extension>& extension : toolbar_items) {
+    actions.push_back(new ExtensionActionViewController(
+        extension.get(),
+        browser,
+        action_manager->GetExtensionAction(*extension)));
+  }
+
+  // Component actions come second.
+  ScopedVector<ToolbarActionViewController> component_actions =
+      ComponentToolbarActionsFactory::GetInstance()->
+          GetComponentToolbarActions();
+  DCHECK(extensions::FeatureSwitch::extension_action_redesign()->IsEnabled() ||
+         component_actions.empty());
+  actions.insert(
+      actions.end(), component_actions.begin(), component_actions.end());
+  component_actions.weak_clear();
+  return actions.Pass();
+}
 
 }  // namespace
 
@@ -146,10 +179,14 @@ void BrowserActionsContainer::Init() {
   initialized_ = true;
 }
 
+const std::string& BrowserActionsContainer::GetIdAt(size_t index) {
+  return browser_action_views_[index]->view_controller()->GetId();
+}
+
 BrowserActionView* BrowserActionsContainer::GetViewForExtension(
     const Extension* extension) {
   for (BrowserActionView* view : browser_action_views_) {
-    if (view->extension() == extension)
+    if (view->view_controller()->GetId() == extension->id())
       return view;
   }
   return NULL;
@@ -165,18 +202,15 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   if (!model_)
     return;
 
-  extensions::ExtensionActionManager* action_manager =
-      extensions::ExtensionActionManager::Get(profile_);
-  const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
-  for (const scoped_refptr<const Extension>& extension : toolbar_items) {
+  ScopedVector<ToolbarActionViewController> actions =
+      GetToolbarActions(model_, browser_);
+  for (ToolbarActionViewController* controller : actions) {
     BrowserActionView* view =
-        new BrowserActionView(extension.get(),
-                              action_manager->GetExtensionAction(*extension),
-                              browser_,
-                              this);
+        new BrowserActionView(make_scoped_ptr(controller), browser_, this);
     browser_action_views_.push_back(view);
     AddChildView(view);
   }
+  actions.weak_clear();
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
@@ -254,11 +288,21 @@ void BrowserActionsContainer::HideActivePopup() {
     popup_owner_->view_controller()->HidePopup();
 }
 
-BrowserActionView* BrowserActionsContainer::GetMainViewForExtension(
-    const Extension* extension) {
-  return in_overflow_mode() ?
-      main_container_->GetViewForExtension(extension) :
-      GetViewForExtension(extension);
+BrowserActionView* BrowserActionsContainer::GetMainViewForAction(
+    BrowserActionView* view) {
+  if (!in_overflow_mode())
+    return view;  // This is the main view.
+
+  // The overflow container and main container each have the same views and
+  // view indices, so we can return the view of the index that |view| has in
+  // this container.
+  BrowserActionViews::const_iterator iter =
+      std::find(browser_action_views_.begin(),
+                browser_action_views_.end(),
+                view);
+  DCHECK(iter != browser_action_views_.end());
+  size_t index = iter - browser_action_views_.begin();
+  return main_container_->browser_action_views_[index];
 }
 
 void BrowserActionsContainer::AddObserver(
@@ -479,8 +523,7 @@ int BrowserActionsContainer::OnPerformDrop(
     return ui::DragDropTypes::DRAG_NONE;
 
   // Make sure we have the same view as we started with.
-  DCHECK_EQ(browser_action_views_[data.index()]->extension()->id(),
-            data.id());
+  DCHECK_EQ(GetIdAt(data.index()), data.id());
   DCHECK(model_);
 
   size_t i = drop_position_->row * icons_per_overflow_menu_row_ +
@@ -499,8 +542,7 @@ int BrowserActionsContainer::OnPerformDrop(
   // visible icons.
   bool drag_between_containers =
       !browser_action_views_[data.index()]->visible();
-  model_->MoveExtensionIcon(
-      browser_action_views_[data.index()]->extension(), i);
+  model_->MoveExtensionIcon(GetIdAt(data.index()), i);
 
   if (drag_between_containers) {
     // Let the main container update the model.
@@ -529,11 +571,13 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
                                                 browser_action_views_.end(),
                                                 sender);
   DCHECK(iter != browser_action_views_.end());
-  drag_utils::SetDragImageOnDataObject((*iter)->GetIconWithBadge(),
-                                       press_pt.OffsetFromOrigin(),
-                                       data);
+  ToolbarActionViewController* view_controller = (*iter)->view_controller();
+  drag_utils::SetDragImageOnDataObject(
+      view_controller->GetIconWithBadge(),
+      press_pt.OffsetFromOrigin(),
+      data);
   // Fill in the remaining info.
-  BrowserActionDragData drag_data((*iter)->extension()->id(),
+  BrowserActionDragData drag_data(view_controller->GetId(),
                                   iter - browser_action_views_.begin());
   drag_data.Write(profile_, data);
 }
@@ -605,8 +649,10 @@ extensions::ActiveTabPermissionGranter*
       active_tab_permission_granter();
 }
 
-ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
-  return popup_owner_ ? popup_owner_->view_controller()->popup() : NULL;
+gfx::NativeView BrowserActionsContainer::TestGetPopup() {
+  return popup_owner_ ?
+      popup_owner_->view_controller()->GetPopupNativeView() :
+      NULL;
 }
 
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
@@ -720,12 +766,14 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
     chevron_->CloseMenu();
 
   // Add the new browser action to the vector and the view hierarchy.
-  BrowserActionView* view =
-      new BrowserActionView(extension,
-                            extensions::ExtensionActionManager::Get(profile_)->
-                                GetExtensionAction(*extension),
-                            browser_,
-                            this);
+  BrowserActionView* view = new BrowserActionView(
+      make_scoped_ptr(new ExtensionActionViewController(
+          extension,
+          browser_,
+          extensions::ExtensionActionManager::Get(profile_)->
+              GetExtensionAction(*extension))),
+      browser_,
+      this);
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
 
@@ -765,7 +813,7 @@ void BrowserActionsContainer::ToolbarExtensionRemoved(
   size_t visible_actions = VisibleBrowserActionsAfterAnimation();
   for (BrowserActionViews::iterator i(browser_action_views_.begin());
        i != browser_action_views_.end(); ++i) {
-    if ((*i)->extension() == extension) {
+    if ((*i)->view_controller()->GetId() == extension->id()) {
       delete *i;
       browser_action_views_.erase(i);
 
@@ -799,9 +847,8 @@ void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
 
   BrowserActionViews::iterator iter = browser_action_views_.begin();
   while (iter != browser_action_views_.end() &&
-         (*iter)->extension() != extension) {
+         (*iter)->view_controller()->GetId() != extension->id())
     ++iter;
-  }
 
   DCHECK(iter != browser_action_views_.end());
   if (iter - browser_action_views_.begin() == index)
@@ -833,8 +880,7 @@ bool BrowserActionsContainer::ShowExtensionActionPopup(
     return false;
 
   BrowserActionView* view = GetViewForExtension(extension);
-  return view && view->view_controller()->ExecuteAction(ExtensionPopup::SHOW,
-                                                        grant_active_tab);
+  return view && view->view_controller()->ExecuteAction(grant_active_tab);
 }
 
 void BrowserActionsContainer::ToolbarVisibleCountChanged() {
@@ -960,13 +1006,21 @@ size_t BrowserActionsContainer::GetIconCount() const {
   size_t absolute_model_visible_size = model_visible_size == -1 ?
       model_->toolbar_items().size() : model_visible_size;
 
+#if defined(DEBUG)
   // Good time for some sanity checks: We should never try to display more
   // icons than we have, and we should always have a view per item in the model.
   // (The only exception is if this is in initialization.)
   if (initialized_) {
+    size_t num_extension_actions = 0u;
+    for (const BrowserActionView* view : browser_action_views_) {
+      num_extension_actions +=
+          view->view_controller()->GetType() ==
+              ToolbarActionViewController::TYPE_EXTENSION_ACTION ? 1 : 0;
+    }
     DCHECK_LE(absolute_model_visible_size, browser_action_views_.size());
     DCHECK_EQ(model_->toolbar_items().size(), browser_action_views_.size());
   }
+#endif
 
   // The overflow displays any icons not shown by the main bar.
   return in_overflow_mode() ?

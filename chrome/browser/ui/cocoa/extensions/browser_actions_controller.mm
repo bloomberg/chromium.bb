@@ -690,7 +690,7 @@ class ExtensionServiceObserverBridge
 
     if (intersectionWidth > dragThreshold && button != draggedButton &&
         ![button isAnimating] && index < [self visibleButtonCount]) {
-      toolbarModel_->MoveExtensionIcon([draggedButton extension], index);
+      toolbarModel_->MoveExtensionIcon([draggedButton extension]->id(), index);
       [self positionActionButtonsAndAnimate:YES];
       return;
     }
