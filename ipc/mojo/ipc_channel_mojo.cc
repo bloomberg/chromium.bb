@@ -53,6 +53,12 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 //------------------------------------------------------------------------------
 
 // static
+bool ChannelMojo::ShouldBeUsed() {
+  // TODO(morrita): Turn this on for a set of platforms.
+  return false;
+}
+
+// static
 scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojo::Delegate* delegate,
                                             const ChannelHandle& channel_handle,
                                             Mode mode,

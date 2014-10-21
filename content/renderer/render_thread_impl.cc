@@ -98,6 +98,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_platform_file.h"
+#include "ipc/mojo/ipc_channel_mojo.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
@@ -314,7 +315,8 @@ void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
 
 bool ShouldUseMojoChannel() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableRendererMojoChannel);
+             switches::kEnableRendererMojoChannel) ||
+         IPC::ChannelMojo::ShouldBeUsed();
 }
 
 blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {

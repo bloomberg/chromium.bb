@@ -67,6 +67,9 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
     virtual void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) = 0;
   };
 
+  // True if ChannelMojo should be used regardless of the flag.
+  static bool ShouldBeUsed();
+
   // Create ChannelMojo. A bootstrap channel is created as well.
   // |host| must not be null for server channels.
   static scoped_ptr<ChannelMojo> Create(Delegate* delegate,

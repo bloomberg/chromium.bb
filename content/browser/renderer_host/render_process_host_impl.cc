@@ -648,7 +648,8 @@ bool RenderProcessHostImpl::Init() {
 bool RenderProcessHostImpl::ShouldUseMojoChannel() const {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kEnableRendererMojoChannel);
+  return command_line.HasSwitch(switches::kEnableRendererMojoChannel) ||
+         IPC::ChannelMojo::ShouldBeUsed();
 }
 
 scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
