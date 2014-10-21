@@ -41,7 +41,7 @@ class ChromeDownloadManagerDelegate
       public DownloadTargetDeterminerDelegate {
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
-  virtual ~ChromeDownloadManagerDelegate();
+  ~ChromeDownloadManagerDelegate() override;
 
   // Should be called before the first call to ShouldCompleteDownload() to
   // disable SafeBrowsing checks for |item|.
@@ -54,36 +54,34 @@ class ChromeDownloadManagerDelegate
   content::DownloadIdCallback GetDownloadIdReceiverCallback();
 
   // content::DownloadManagerDelegate
-  virtual void Shutdown() override;
-  virtual void GetNextId(const content::DownloadIdCallback& callback) override;
-  virtual bool DetermineDownloadTarget(
+  void Shutdown() override;
+  void GetNextId(const content::DownloadIdCallback& callback) override;
+  bool DetermineDownloadTarget(
       content::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;
-  virtual bool ShouldOpenFileBasedOnExtension(
-      const base::FilePath& path) override;
-  virtual bool ShouldCompleteDownload(
-      content::DownloadItem* item,
-      const base::Closure& complete_callback) override;
-  virtual bool ShouldOpenDownload(
+  bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
+  bool ShouldCompleteDownload(content::DownloadItem* item,
+                              const base::Closure& complete_callback) override;
+  bool ShouldOpenDownload(
       content::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;
-  virtual bool GenerateFileHash() override;
-  virtual void GetSaveDir(content::BrowserContext* browser_context,
-                          base::FilePath* website_save_dir,
-                          base::FilePath* download_save_dir,
-                          bool* skip_dir_check) override;
-  virtual void ChooseSavePath(
+  bool GenerateFileHash() override;
+  void GetSaveDir(content::BrowserContext* browser_context,
+                  base::FilePath* website_save_dir,
+                  base::FilePath* download_save_dir,
+                  bool* skip_dir_check) override;
+  void ChooseSavePath(
       content::WebContents* web_contents,
       const base::FilePath& suggested_path,
       const base::FilePath::StringType& default_extension,
       bool can_save_as_complete,
       const content::SavePackagePathPickedCallback& callback) override;
-  virtual void OpenDownload(content::DownloadItem* download) override;
-  virtual void ShowDownloadInShell(content::DownloadItem* download) override;
-  virtual void CheckForFileExistence(
+  void OpenDownload(content::DownloadItem* download) override;
+  void ShowDownloadInShell(content::DownloadItem* download) override;
+  void CheckForFileExistence(
       content::DownloadItem* download,
       const content::CheckForFileExistenceCallback& callback) override;
-  virtual std::string ApplicationClientIdForFileScanning() const override;
+  std::string ApplicationClientIdForFileScanning() const override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
   // which ends up being handled by OpenDownload(), will open a download in the
@@ -101,31 +99,26 @@ class ChromeDownloadManagerDelegate
       GetDownloadProtectionService();
 
   // DownloadTargetDeterminerDelegate. Protected for testing.
-  virtual void NotifyExtensions(
-      content::DownloadItem* download,
-      const base::FilePath& suggested_virtual_path,
-      const NotifyExtensionsCallback& callback) override;
-  virtual void ReserveVirtualPath(
+  void NotifyExtensions(content::DownloadItem* download,
+                        const base::FilePath& suggested_virtual_path,
+                        const NotifyExtensionsCallback& callback) override;
+  void ReserveVirtualPath(
       content::DownloadItem* download,
       const base::FilePath& virtual_path,
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       const ReservedPathCallback& callback) override;
-  virtual void PromptUserForDownloadPath(
-      content::DownloadItem* download,
-      const base::FilePath& suggested_virtual_path,
-      const FileSelectedCallback& callback) override;
-  virtual void DetermineLocalPath(
-      content::DownloadItem* download,
-      const base::FilePath& virtual_path,
-      const LocalPathCallback& callback) override;
-  virtual void CheckDownloadUrl(
-      content::DownloadItem* download,
-      const base::FilePath& suggested_virtual_path,
-      const CheckDownloadUrlCallback& callback) override;
-  virtual void GetFileMimeType(
-      const base::FilePath& path,
-      const GetFileMimeTypeCallback& callback) override;
+  void PromptUserForDownloadPath(content::DownloadItem* download,
+                                 const base::FilePath& suggested_virtual_path,
+                                 const FileSelectedCallback& callback) override;
+  void DetermineLocalPath(content::DownloadItem* download,
+                          const base::FilePath& virtual_path,
+                          const LocalPathCallback& callback) override;
+  void CheckDownloadUrl(content::DownloadItem* download,
+                        const base::FilePath& suggested_virtual_path,
+                        const CheckDownloadUrlCallback& callback) override;
+  void GetFileMimeType(const base::FilePath& path,
+                       const GetFileMimeTypeCallback& callback) override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
@@ -133,9 +126,9 @@ class ChromeDownloadManagerDelegate
   typedef std::vector<content::DownloadIdCallback> IdCallbackVector;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Callback function after the DownloadProtectionService completes.
   void CheckClientDownloadDone(

@@ -55,7 +55,7 @@ class DownloadDirPolicyHandlerTest
             new DownloadDirPolicyHandler));
   }
 
-  virtual void PopulatePolicyHandlerParameters(
+  void PopulatePolicyHandlerParameters(
       policy::PolicyHandlerParameters* parameters) override {
     parameters->user_id_hash = kUserIDHash;
   }

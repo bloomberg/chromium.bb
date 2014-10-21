@@ -70,9 +70,9 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
       fail_create_download_(false) {
   }
 
-  virtual ~FakeHistoryAdapter() {}
+  ~FakeHistoryAdapter() override {}
 
-  virtual void QueryDownloads(
+  void QueryDownloads(
       const HistoryService::DownloadQueryCallback& callback) override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -89,7 +89,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void set_slow_create_download(bool slow) { slow_create_download_ = slow; }
 
-  virtual void CreateDownload(
+  void CreateDownload(
       const history::DownloadRow& info,
       const HistoryService::DownloadCreateCallback& callback) override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -108,13 +108,12 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
     create_download_callback_.Reset();
   }
 
-  virtual void UpdateDownload(
-      const history::DownloadRow& info) override {
+  void UpdateDownload(const history::DownloadRow& info) override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     update_download_ = info;
   }
 
-  virtual void RemoveDownloads(const IdSet& ids) override {
+  void RemoveDownloads(const IdSet& ids) override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     for (IdSet::const_iterator it = ids.begin();
          it != ids.end(); ++it) {

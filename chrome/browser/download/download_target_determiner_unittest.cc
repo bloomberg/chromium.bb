@@ -62,7 +62,7 @@ namespace {
 class NullWebContentsDelegate : public content::WebContentsDelegate {
  public:
   NullWebContentsDelegate() {}
-  virtual ~NullWebContentsDelegate() {}
+  ~NullWebContentsDelegate() override {}
 };
 
 // Google Mock action that posts a task to the current message loop that invokes

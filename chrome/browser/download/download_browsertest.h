@@ -14,12 +14,12 @@ class DownloadTestObserverNotInProgress : public content::DownloadTestObserver {
  public:
   DownloadTestObserverNotInProgress(content::DownloadManager* download_manager,
                                     size_t count);
-  virtual ~DownloadTestObserverNotInProgress();
+  ~DownloadTestObserverNotInProgress() override;
 
   void StartObserving();
 
  private:
-  virtual bool IsDownloadInFinalState(content::DownloadItem* download) override;
+  bool IsDownloadInFinalState(content::DownloadItem* download) override;
 
   bool started_observing_;
 

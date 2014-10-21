@@ -65,7 +65,7 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
 
  private:
   DownloadItemModelData();
-  virtual ~DownloadItemModelData() {}
+  ~DownloadItemModelData() override {}
 
   static const char kKey[];
 };

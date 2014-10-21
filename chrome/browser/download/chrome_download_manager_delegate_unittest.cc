@@ -41,7 +41,7 @@ namespace {
 
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  virtual ~MockWebContentsDelegate() {}
+  ~MockWebContentsDelegate() override {}
 };
 
 // Google Mock action that posts a task to the current message loop that invokes

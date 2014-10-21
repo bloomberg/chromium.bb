@@ -16,12 +16,12 @@ class TestDownloadShelf : public DownloadShelf,
                           public content::DownloadManager::Observer {
  public:
   TestDownloadShelf();
-  virtual ~TestDownloadShelf();
+  ~TestDownloadShelf() override;
 
   // DownloadShelf:
-  virtual bool IsShowing() const override;
-  virtual bool IsClosing() const override;
-  virtual Browser* browser() const override;
+  bool IsShowing() const override;
+  bool IsClosing() const override;
+  Browser* browser() const override;
 
   // Return |true| if a download was added to this shelf.
   bool did_add_download() const { return did_add_download_; }
@@ -30,14 +30,14 @@ class TestDownloadShelf : public DownloadShelf,
   void set_download_manager(content::DownloadManager* download_manager);
 
   // DownloadManager::Observer implementation.
-  virtual void ManagerGoingDown(content::DownloadManager* manager) override;
+  void ManagerGoingDown(content::DownloadManager* manager) override;
 
  protected:
-  virtual void DoAddDownload(content::DownloadItem* download) override;
-  virtual void DoShow() override;
-  virtual void DoClose(CloseReason reason) override;
-  virtual base::TimeDelta GetTransientDownloadShowDelay() override;
-  virtual content::DownloadManager* GetDownloadManager() override;
+  void DoAddDownload(content::DownloadItem* download) override;
+  void DoShow() override;
+  void DoClose(CloseReason reason) override;
+  base::TimeDelta GetTransientDownloadShowDelay() override;
+  content::DownloadManager* GetDownloadManager() override;
 
  private:
   bool is_showing_;

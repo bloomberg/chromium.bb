@@ -80,7 +80,7 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
       content::DownloadManager* manager,
       scoped_ptr<HistoryAdapter> history);
 
-  virtual ~DownloadHistory();
+  ~DownloadHistory() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -109,14 +109,14 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
   void ItemAdded(uint32 id, bool success);
 
   // AllDownloadItemNotifier::Observer
-  virtual void OnDownloadCreated(
-      content::DownloadManager* manager, content::DownloadItem* item) override;
-  virtual void OnDownloadUpdated(
-      content::DownloadManager* manager, content::DownloadItem* item) override;
-  virtual void OnDownloadOpened(
-      content::DownloadManager* manager, content::DownloadItem* item) override;
-  virtual void OnDownloadRemoved(
-      content::DownloadManager* manager, content::DownloadItem* item) override;
+  void OnDownloadCreated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
+  void OnDownloadUpdated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
+  void OnDownloadOpened(content::DownloadManager* manager,
+                        content::DownloadItem* item) override;
+  void OnDownloadRemoved(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
 
   // Schedule a record to be removed from |history_| the next time
   // RemoveDownloadsBatch() runs. Schedule RemoveDownloadsBatch() to be run soon

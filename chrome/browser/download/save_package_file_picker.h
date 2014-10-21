@@ -24,7 +24,7 @@ class SavePackageFilePicker : public ui::SelectFileDialog::Listener {
       bool can_save_as_complete,
       DownloadPrefs* download_prefs,
       const content::SavePackagePathPickedCallback& callback);
-  virtual ~SavePackageFilePicker();
+  ~SavePackageFilePicker() override;
 
   // Used to disable prompting the user for a directory/filename of the saved
   // web page.  This is available for testing.
@@ -32,10 +32,10 @@ class SavePackageFilePicker : public ui::SelectFileDialog::Listener {
 
  private:
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* unused_params) override;
-  virtual void FileSelectionCanceled(void* unused_params) override;
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* unused_params) override;
+  void FileSelectionCanceled(void* unused_params) override;
 
   bool ShouldSaveAsMHTML() const;
 

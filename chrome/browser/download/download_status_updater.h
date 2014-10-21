@@ -17,7 +17,7 @@ class DownloadStatusUpdater
   : public AllDownloadItemNotifier::Observer {
  public:
   DownloadStatusUpdater();
-  virtual ~DownloadStatusUpdater();
+  ~DownloadStatusUpdater() override;
 
   // Fills in |*download_count| with the number of currently active downloads.
   // If we know the final size of all downloads, this routine returns true
@@ -33,10 +33,10 @@ class DownloadStatusUpdater
   void AddManager(content::DownloadManager* manager);
 
   // AllDownloadItemNotifier::Observer
-  virtual void OnDownloadCreated(
-      content::DownloadManager* manager, content::DownloadItem* item) override;
-  virtual void OnDownloadUpdated(
-      content::DownloadManager* manager, content::DownloadItem* item) override;
+  void OnDownloadCreated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
+  void OnDownloadUpdated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
 
  protected:
   // Platform-specific function to update the platform UI for download progress.

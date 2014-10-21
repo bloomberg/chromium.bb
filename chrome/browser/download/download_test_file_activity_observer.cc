@@ -31,7 +31,7 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
           content::DownloadItem::kInvalidId + 1);
   }
 
-  virtual ~MockDownloadManagerDelegate() {}
+  ~MockDownloadManagerDelegate() override {}
 
   void EnableFileChooser(bool enable) {
     file_chooser_enabled_ = enable;
@@ -48,18 +48,17 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
   }
 
  protected:
-
-  virtual void PromptUserForDownloadPath(content::DownloadItem* item,
-                                         const base::FilePath& suggested_path,
-                                         const FileSelectedCallback&
-                                             callback) override {
+  void PromptUserForDownloadPath(
+      content::DownloadItem* item,
+      const base::FilePath& suggested_path,
+      const FileSelectedCallback& callback) override {
     file_chooser_displayed_ = true;
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, (file_chooser_enabled_ ? suggested_path
                                          : base::FilePath())));
   }
 
-  virtual void OpenDownload(content::DownloadItem* item) override {}
+  void OpenDownload(content::DownloadItem* item) override {}
 
  private:
   bool file_chooser_enabled_;

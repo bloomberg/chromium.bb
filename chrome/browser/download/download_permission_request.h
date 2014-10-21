@@ -18,18 +18,18 @@ class DownloadPermissionRequest : public PermissionBubbleRequest {
  public:
   explicit DownloadPermissionRequest(
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host);
-  virtual ~DownloadPermissionRequest();
+  ~DownloadPermissionRequest() override;
 
   // PermisisonBubbleDelegate:
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetMessageTextFragment() const override;
-  virtual bool HasUserGesture() const override;
-  virtual GURL GetRequestingHostname() const override;
-  virtual void PermissionGranted() override;
-  virtual void PermissionDenied() override;
-  virtual void Cancelled() override;
-  virtual void RequestFinished() override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetMessageTextFragment() const override;
+  bool HasUserGesture() const override;
+  GURL GetRequestingHostname() const override;
+  void PermissionGranted() override;
+  void PermissionDenied() override;
+  void Cancelled() override;
+  void RequestFinished() override;
 
  private:
   base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host_;

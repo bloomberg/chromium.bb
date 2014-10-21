@@ -36,13 +36,13 @@ class DownloadUIController : public AllDownloadItemNotifier::Observer {
   DownloadUIController(content::DownloadManager* manager,
                        scoped_ptr<Delegate> delegate);
 
-  virtual ~DownloadUIController();
+  ~DownloadUIController() override;
 
  private:
-  virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                 content::DownloadItem* item) override;
-  virtual void OnDownloadUpdated(content::DownloadManager* manager,
-                                 content::DownloadItem* item) override;
+  void OnDownloadCreated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
+  void OnDownloadUpdated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
 
   AllDownloadItemNotifier download_notifier_;
 

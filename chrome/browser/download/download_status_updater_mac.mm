@@ -101,9 +101,7 @@ class CrNSProgressUserData : public base::SupportsUserData::Data {
       : target_(target) {
     progress_.reset(progress);
   }
-  virtual ~CrNSProgressUserData() {
-    [progress_.get() unpublish];
-  }
+  ~CrNSProgressUserData() override { [progress_.get() unpublish]; }
 
   NSProgress* progress() const { return progress_.get(); }
   base::FilePath target() const { return target_; }

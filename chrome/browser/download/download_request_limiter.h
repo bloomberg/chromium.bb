@@ -83,7 +83,7 @@ class DownloadRequestLimiter
     TabDownloadState(DownloadRequestLimiter* host,
                      content::WebContents* web_contents,
                      content::WebContents* originating_web_contents);
-    virtual ~TabDownloadState();
+    ~TabDownloadState() override;
 
     // Status of the download.
     void set_download_status(DownloadRequestLimiter::DownloadStatus status) {
@@ -102,12 +102,12 @@ class DownloadRequestLimiter
     }
 
     // content::WebContentsObserver overrides.
-    virtual void AboutToNavigateRenderView(
+    void AboutToNavigateRenderView(
         content::RenderViewHost* render_view_host) override;
     // Invoked when a user gesture occurs (mouse click, enter or space). This
     // may result in invoking Remove on DownloadRequestLimiter.
-    virtual void DidGetUserGesture() override;
-    virtual void WebContentsDestroyed() override;
+    void DidGetUserGesture() override;
+    void WebContentsDestroyed() override;
 
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
@@ -132,9 +132,9 @@ class DownloadRequestLimiter
     bool is_showing_prompt() const;
 
     // content::NotificationObserver method.
-    virtual void Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) override;
+    void Observe(int type,
+                 const content::NotificationSource& source,
+                 const content::NotificationDetails& details) override;
 
     // Remember to either block or allow automatic downloads from this origin.
     void SetContentSetting(ContentSetting setting);

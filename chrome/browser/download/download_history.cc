@@ -75,8 +75,7 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
     item->SetUserData(kKey, this);
   }
 
-  virtual ~DownloadHistoryData() {
-  }
+  ~DownloadHistoryData() override {}
 
   PersistenceState state() const { return state_; }
   void SetState(PersistenceState s) { state_ = s; }

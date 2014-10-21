@@ -79,7 +79,7 @@ const char kSafeBrowsingUserDataKey[] = "Safe Browsing ID";
 class SafeBrowsingState : public DownloadCompletionBlocker {
  public:
   SafeBrowsingState() {}
-  virtual ~SafeBrowsingState();
+  ~SafeBrowsingState() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingState);

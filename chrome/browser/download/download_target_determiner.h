@@ -139,7 +139,7 @@ class DownloadTargetDeterminer
                            DownloadTargetDeterminerDelegate* delegate,
                            const CompletionCallback& callback);
 
-  virtual ~DownloadTargetDeterminer();
+  ~DownloadTargetDeterminer() override;
 
   // Invoke each successive handler until a handler returns QUIT_DOLOOP or
   // COMPLETE. Note that as a result, this object might be deleted. So |this|
@@ -295,7 +295,7 @@ class DownloadTargetDeterminer
   bool IsDangerousFile(PriorVisitsToReferrer visits);
 
   // content::DownloadItem::Observer
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   // state
   State next_state_;

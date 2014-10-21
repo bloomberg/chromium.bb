@@ -37,7 +37,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
     LEARN_MORE_INTERRUPTED,// Show information about interrupted downloads.
   };
 
-  virtual ~DownloadShelfContextMenu();
+  ~DownloadShelfContextMenu() override;
 
   content::DownloadItem* download_item() const { return download_item_; }
 
@@ -50,15 +50,14 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   ui::SimpleMenuModel* GetMenuModel();
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdVisible(int command_id) const override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
-  virtual base::string16 GetLabelForCommandId(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdVisible(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  bool IsItemForCommandIdDynamic(int command_id) const override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
 
  private:
   // Detaches self from |download_item_|. Called when the DownloadItem is
@@ -66,7 +65,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   void DetachFromDownloadItem();
 
   // content::DownloadItem::Observer
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   ui::SimpleMenuModel* GetInProgressMenuModel();
   ui::SimpleMenuModel* GetFinishedMenuModel();

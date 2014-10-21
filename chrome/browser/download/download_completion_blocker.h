@@ -16,7 +16,7 @@
 class DownloadCompletionBlocker : public base::SupportsUserData::Data {
  public:
   DownloadCompletionBlocker();
-  virtual ~DownloadCompletionBlocker();
+  ~DownloadCompletionBlocker() override;
 
   bool is_complete() const { return is_complete_; }
 

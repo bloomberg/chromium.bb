@@ -37,10 +37,10 @@ namespace {
 class TestDelegate : public DownloadUIController::Delegate {
  public:
   explicit TestDelegate(base::WeakPtr<content::DownloadItem*> receiver);
-  virtual ~TestDelegate() {}
+  ~TestDelegate() override {}
 
  private:
-  virtual void OnNewDownloadReady(content::DownloadItem* item) override;
+  void OnNewDownloadReady(content::DownloadItem* item) override;
 
   base::WeakPtr<content::DownloadItem*> receiver_;
 };
@@ -58,12 +58,12 @@ void TestDelegate::OnNewDownloadReady(content::DownloadItem* item) {
 class TestDownloadService : public DownloadService {
  public:
   explicit TestDownloadService(Profile* profile);
-  virtual ~TestDownloadService();
+  ~TestDownloadService() override;
 
   void set_download_history(scoped_ptr<DownloadHistory> download_history) {
     download_history_.swap(download_history);
   }
-  virtual DownloadHistory* GetDownloadHistory() override;
+  DownloadHistory* GetDownloadHistory() override;
 
  private:
   scoped_ptr<DownloadHistory> download_history_;
@@ -127,7 +127,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
     HistoryService::DownloadQueryCallback download_query_callback_;
 
    private:
-    virtual void QueryDownloads(
+    void QueryDownloads(
         const HistoryService::DownloadQueryCallback& callback) override {
       download_query_callback_ = callback;
     }

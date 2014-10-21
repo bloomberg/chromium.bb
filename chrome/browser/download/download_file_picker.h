@@ -41,17 +41,17 @@ class DownloadFilePicker : public ui::SelectFileDialog::Listener {
   DownloadFilePicker(content::DownloadItem* item,
                      const base::FilePath& suggested_path,
                      const FileSelectedCallback& callback);
-  virtual ~DownloadFilePicker();
+  ~DownloadFilePicker() override;
 
   // Runs |file_selected_callback_| with |virtual_path| and then deletes this
   // object.
   void OnFileSelected(const base::FilePath& virtual_path);
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index,
-                            void* params) override;
-  virtual void FileSelectionCanceled(void* params) override;
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
   // Initially suggested path.
   base::FilePath suggested_path_;

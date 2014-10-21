@@ -54,11 +54,11 @@ class DownloadItemObserver : public DownloadItem::Observer {
   explicit DownloadItemObserver(DownloadItem* download_item);
 
  private:
-  virtual ~DownloadItemObserver();
+  ~DownloadItemObserver() override;
 
   // DownloadItem::Observer
-  virtual void OnDownloadUpdated(DownloadItem* download) override;
-  virtual void OnDownloadDestroyed(DownloadItem* download) override;
+  void OnDownloadUpdated(DownloadItem* download) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
 
   DownloadItem* download_item_;
 

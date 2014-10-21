@@ -28,7 +28,7 @@ class ExtensionDownloadsEventRouter;
 class DownloadService : public KeyedService {
  public:
   explicit DownloadService(Profile* profile);
-  virtual ~DownloadService();
+  ~DownloadService() override;
 
   // Get the download manager delegate, creating it if it doesn't already exist.
   ChromeDownloadManagerDelegate* GetDownloadManagerDelegate();
@@ -68,7 +68,7 @@ class DownloadService : public KeyedService {
 
   // Will be called to release references on other services as part
   // of Profile shutdown.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Returns false if at least one extension has disabled the shelf, true
   // otherwise.

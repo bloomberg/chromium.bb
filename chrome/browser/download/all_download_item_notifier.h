@@ -59,22 +59,22 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
   AllDownloadItemNotifier(content::DownloadManager* manager,
                           Observer* observer);
 
-  virtual ~AllDownloadItemNotifier();
+  ~AllDownloadItemNotifier() override;
 
   // Returns NULL if the manager has gone down.
   content::DownloadManager* GetManager() const { return manager_; }
 
  private:
   // content::DownloadManager::Observer
-  virtual void ManagerGoingDown(content::DownloadManager* manager) override;
-  virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                content::DownloadItem* item) override;
+  void ManagerGoingDown(content::DownloadManager* manager) override;
+  void OnDownloadCreated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
 
   // content::DownloadItem::Observer
-  virtual void OnDownloadUpdated(content::DownloadItem* item) override;
-  virtual void OnDownloadOpened(content::DownloadItem* item) override;
-  virtual void OnDownloadRemoved(content::DownloadItem* item) override;
-  virtual void OnDownloadDestroyed(content::DownloadItem* item) override;
+  void OnDownloadUpdated(content::DownloadItem* item) override;
+  void OnDownloadOpened(content::DownloadItem* item) override;
+  void OnDownloadRemoved(content::DownloadItem* item) override;
+  void OnDownloadDestroyed(content::DownloadItem* item) override;
 
   content::DownloadManager* manager_;
   AllDownloadItemNotifier::Observer* observer_;
