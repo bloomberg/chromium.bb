@@ -144,6 +144,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // Pending seek time while player is preparing.
   base::TimeDelta pending_seek_;
 
+  // Whether a seek should be performed after preparing.
+  bool should_seek_on_prepare_;
+
   // Url for playback.
   GURL url_;
 

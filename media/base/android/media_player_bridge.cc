@@ -38,6 +38,7 @@ MediaPlayerBridge::MediaPlayerBridge(
                          frame_url),
       prepared_(false),
       pending_play_(false),
+      should_seek_on_prepare_(false),
       url_(url),
       first_party_for_cookies_(first_party_for_cookies),
       user_agent_(user_agent),
@@ -338,6 +339,7 @@ int MediaPlayerBridge::GetVideoHeight() {
 void MediaPlayerBridge::SeekTo(base::TimeDelta timestamp) {
   // Record the time to seek when OnMediaPrepared() is called.
   pending_seek_ = timestamp;
+  should_seek_on_prepare_ = true;
 
   if (j_media_player_bridge_.is_null())
     Prepare();
@@ -369,8 +371,11 @@ void MediaPlayerBridge::Release() {
     return;
 
   time_update_timer_.Stop();
-  if (prepared_)
+  if (prepared_) {
     pending_seek_ = GetCurrentTime();
+    should_seek_on_prepare_ = true;
+  }
+
   prepared_ = false;
   pending_play_ = false;
   SetVideoSurface(gfx::ScopedJavaSurface());
@@ -417,7 +422,11 @@ void MediaPlayerBridge::OnMediaPrepared() {
 
   // If media player was recovered from a saved state, consume all the pending
   // events.
-  PendingSeekInternal(pending_seek_);
+  if (should_seek_on_prepare_) {
+    PendingSeekInternal(pending_seek_);
+    pending_seek_ = base::TimeDelta::FromMilliseconds(0);
+    should_seek_on_prepare_ = false;
+  }
 
   if (pending_play_) {
     StartInternal();
