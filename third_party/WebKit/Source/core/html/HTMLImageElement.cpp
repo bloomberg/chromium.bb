@@ -364,7 +364,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
         document().mediaQueryMatcher().addViewportListener(m_listener);
 
     bool imageWasModified = false;
-    if (RuntimeEnabledFeatures::pictureEnabled()) {
+    if (RuntimeEnabledFeatures::pictureEnabled() && document().isActive()) {
         ImageCandidate candidate = findBestFitImageFromPictureParent();
         if (!candidate.isEmpty()) {
             setBestFitURLAndDPRFromImageCandidate(candidate);
@@ -625,6 +625,9 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
 
 void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior behavior)
 {
+    if (!document().isActive())
+        return;
+
     bool foundURL = false;
     if (RuntimeEnabledFeatures::pictureEnabled()) {
         ImageCandidate candidate = findBestFitImageFromPictureParent();
