@@ -55,7 +55,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   SoftwareRenderer* renderer() const { return renderer_.get(); }
 
   // RendererClient implementation.
-  virtual void SetFullRootLayerDamage() override {}
+  void SetFullRootLayerDamage() override {}
 
   scoped_ptr<SkBitmap> DrawAndCopyOutput(RenderPassList* list,
                                          float device_scale_factor,

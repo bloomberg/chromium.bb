@@ -21,22 +21,21 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   static scoped_refptr<DelegatedRendererLayer> Create(
       const scoped_refptr<DelegatedFrameProvider>& frame_provider);
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void SetLayerTreeHost(LayerTreeHost* host) override;
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
-  virtual void PushPropertiesTo(LayerImpl* impl) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void SetLayerTreeHost(LayerTreeHost* host) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
+  void PushPropertiesTo(LayerImpl* impl) override;
 
   // Called by the DelegatedFrameProvider when a new frame is available to be
   // picked up.
   void ProviderHasNewFrame();
-  virtual bool HasDelegatedContent() const override;
+  bool HasDelegatedContent() const override;
 
  protected:
   DelegatedRendererLayer(
       const scoped_refptr<DelegatedFrameProvider>& frame_provider);
-  virtual ~DelegatedRendererLayer();
+  ~DelegatedRendererLayer() override;
 
  private:
   scoped_refptr<DelegatedFrameProvider> frame_provider_;

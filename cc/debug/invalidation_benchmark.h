@@ -21,12 +21,12 @@ class CC_EXPORT InvalidationBenchmark : public MicroBenchmark {
  public:
   explicit InvalidationBenchmark(scoped_ptr<base::Value> value,
                                  const MicroBenchmark::DoneCallback& callback);
-  virtual ~InvalidationBenchmark();
+  ~InvalidationBenchmark() override;
 
   // Implements MicroBenchmark interface.
-  virtual void DidUpdateLayers(LayerTreeHost* host) override;
-  virtual void RunOnLayer(PictureLayer* layer) override;
-  virtual bool ProcessMessage(scoped_ptr<base::Value> value) override;
+  void DidUpdateLayers(LayerTreeHost* host) override;
+  void RunOnLayer(PictureLayer* layer) override;
+  bool ProcessMessage(scoped_ptr<base::Value> value) override;
 
  private:
   enum Mode { FIXED_SIZE, LAYER, VIEWPORT, RANDOM };

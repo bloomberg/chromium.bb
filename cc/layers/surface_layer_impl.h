@@ -17,26 +17,24 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   static scoped_ptr<SurfaceLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new SurfaceLayerImpl(tree_impl, id));
   }
-  virtual ~SurfaceLayerImpl();
+  ~SurfaceLayerImpl() override;
 
   void SetSurfaceId(SurfaceId surface_id);
 
   // LayerImpl overrides.
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
 
  protected:
   SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  virtual void GetDebugBorderProperties(SkColor* color,
-                                        float* width) const override;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
-  virtual const char* LayerTypeAsString() const override;
+  void GetDebugBorderProperties(SkColor* color, float* width) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
+  const char* LayerTypeAsString() const override;
 
   SurfaceId surface_id_;
 

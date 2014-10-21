@@ -16,18 +16,17 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
 
   void SetIOSurfaceProperties(uint32_t io_surface_id, const gfx::Size& size);
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
 
  protected:
-  virtual bool HasDrawableContent() const override;
+  bool HasDrawableContent() const override;
   IOSurfaceLayer();
 
  private:
-  virtual ~IOSurfaceLayer();
+  ~IOSurfaceLayer() override;
 
   uint32_t io_surface_id_;
   gfx::Size io_surface_size_;

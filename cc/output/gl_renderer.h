@@ -55,15 +55,15 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       TextureMailboxDeleter* texture_mailbox_deleter,
       int highp_threshold_min);
 
-  virtual ~GLRenderer();
+  ~GLRenderer() override;
 
-  virtual const RendererCapabilitiesImpl& Capabilities() const override;
+  const RendererCapabilitiesImpl& Capabilities() const override;
 
   // Waits for rendering to finish.
-  virtual void Finish() override;
+  void Finish() override;
 
-  virtual void DoNoOp() override;
-  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) override;
+  void DoNoOp() override;
+  void SwapBuffers(const CompositorFrameMetadata& metadata) override;
 
   virtual bool IsContextLost();
 
@@ -80,7 +80,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
              TextureMailboxDeleter* texture_mailbox_deleter,
              int highp_threshold_min);
 
-  virtual void DidChangeVisibility() override;
+  void DidChangeVisibility() override;
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
 
@@ -101,26 +101,26 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void SetBlendEnabled(bool enabled);
   bool blend_enabled() const { return blend_shadow_; }
 
-  virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
-  virtual bool BindFramebufferToTexture(DrawingFrame* frame,
-                                        const ScopedResource* resource,
-                                        const gfx::Rect& target_rect) override;
-  virtual void SetDrawViewport(const gfx::Rect& window_space_viewport) override;
-  virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
-  virtual void DiscardPixels(bool has_external_stencil_test,
-                             bool draw_rect_covers_full_surface) override;
-  virtual void ClearFramebuffer(DrawingFrame* frame,
-                                bool has_external_stencil_test) override;
-  virtual void DoDrawQuad(DrawingFrame* frame, const class DrawQuad*) override;
-  virtual void BeginDrawingFrame(DrawingFrame* frame) override;
-  virtual void FinishDrawingFrame(DrawingFrame* frame) override;
-  virtual bool FlippedFramebuffer() const override;
-  virtual void EnsureScissorTestEnabled() override;
-  virtual void EnsureScissorTestDisabled() override;
-  virtual void CopyCurrentRenderPassToBitmap(
+  void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
+  bool BindFramebufferToTexture(DrawingFrame* frame,
+                                const ScopedResource* resource,
+                                const gfx::Rect& target_rect) override;
+  void SetDrawViewport(const gfx::Rect& window_space_viewport) override;
+  void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
+  void DiscardPixels(bool has_external_stencil_test,
+                     bool draw_rect_covers_full_surface) override;
+  void ClearFramebuffer(DrawingFrame* frame,
+                        bool has_external_stencil_test) override;
+  void DoDrawQuad(DrawingFrame* frame, const class DrawQuad*) override;
+  void BeginDrawingFrame(DrawingFrame* frame) override;
+  void FinishDrawingFrame(DrawingFrame* frame) override;
+  bool FlippedFramebuffer() const override;
+  void EnsureScissorTestEnabled() override;
+  void EnsureScissorTestDisabled() override;
+  void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) override;
-  virtual void FinishDrawingQuadList() override;
+  void FinishDrawingQuadList() override;
 
   // Check if quad needs antialiasing and if so, inflate the quad and
   // fill edge array for fragment shader.  local_quad is set to
@@ -223,8 +223,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void RestoreGLState();
   void RestoreFramebuffer(DrawingFrame* frame);
 
-  virtual void DiscardBackbuffer() override;
-  virtual void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
+  void EnsureBackbuffer() override;
   void EnforceMemoryPolicy();
 
   void ScheduleOverlays(DrawingFrame* frame);

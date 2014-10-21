@@ -25,21 +25,20 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   };
 
   // Layer implementation.
-  virtual void SetIsMask(bool is_mask) override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual void ReduceMemoryUsage() override;
-  virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override;
-  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
-  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
-      override;
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
-  virtual void OnOutputSurfaceCreated() override;
+  void SetIsMask(bool is_mask) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  void ReduceMemoryUsage() override;
+  void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override;
+  void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
+  void SetTexturePriorities(const PriorityCalculator& priority_calc) override;
+  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
+  void OnOutputSurfaceCreated() override;
 
  protected:
   TiledLayer();
-  virtual ~TiledLayer();
+  ~TiledLayer() override;
 
   void UpdateTileSizeAndTilingOption();
   void UpdateBounds();
@@ -67,7 +66,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
 
   bool SkipsDraw() const { return skips_draw_; }
 
-  virtual bool HasDrawableContent() const override;
+  bool HasDrawableContent() const override;
 
   // Virtual for testing
   virtual PrioritizedResourceManager* ResourceManager();
@@ -75,8 +74,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   const PrioritizedResource* ResourceAtForTesting(int i, int j) const;
 
  private:
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   void CreateTilerIfNeeded();
   void set_tiling_option(TilingOption tiling_option) {

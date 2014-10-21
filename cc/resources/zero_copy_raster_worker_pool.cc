@@ -24,10 +24,10 @@ class RasterBufferImpl : public RasterBuffer {
       : lock_(resource_provider, resource->id()), resource_(resource) {}
 
   // Overridden from RasterBuffer:
-  virtual void Playback(const PicturePileImpl* picture_pile,
-                        const gfx::Rect& rect,
-                        float scale,
-                        RenderingStatsInstrumentation* stats) override {
+  void Playback(const PicturePileImpl* picture_pile,
+                const gfx::Rect& rect,
+                float scale,
+                RenderingStatsInstrumentation* stats) override {
     gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_.gpu_memory_buffer();
     if (!gpu_memory_buffer)
       return;

@@ -27,7 +27,7 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
                                           public Rasterizer,
                                           public RasterizerTaskClient {
  public:
-  virtual ~OneCopyRasterWorkerPool();
+  ~OneCopyRasterWorkerPool() override;
 
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
@@ -37,18 +37,18 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
       ResourcePool* resource_pool);
 
   // Overridden from RasterWorkerPool:
-  virtual Rasterizer* AsRasterizer() override;
+  Rasterizer* AsRasterizer() override;
 
   // Overridden from Rasterizer:
-  virtual void SetClient(RasterizerClient* client) override;
-  virtual void Shutdown() override;
-  virtual void ScheduleTasks(RasterTaskQueue* queue) override;
-  virtual void CheckForCompletedTasks() override;
+  void SetClient(RasterizerClient* client) override;
+  void Shutdown() override;
+  void ScheduleTasks(RasterTaskQueue* queue) override;
+  void CheckForCompletedTasks() override;
 
   // Overridden from RasterizerTaskClient:
-  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+  scoped_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource) override;
-  virtual void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override;
+  void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override;
 
  protected:
   OneCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,

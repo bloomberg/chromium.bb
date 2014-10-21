@@ -15,7 +15,7 @@ class FakeContentLayerUpdater : public ContentLayerUpdater {
   using ContentLayerUpdater::paint_rect;
 
  private:
-  virtual ~FakeContentLayerUpdater() {}
+  ~FakeContentLayerUpdater() override {}
 };
 
 FakeContentLayer::FakeContentLayer(ContentLayerClient* client)

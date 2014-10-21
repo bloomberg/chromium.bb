@@ -41,8 +41,8 @@ class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
 
  protected:
   ContentDrawQuadBase();
-  virtual ~ContentDrawQuadBase();
-  virtual void ExtendValue(base::debug::TracedValue* value) const override;
+  ~ContentDrawQuadBase() override;
+  void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

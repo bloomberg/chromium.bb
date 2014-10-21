@@ -20,19 +20,19 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   static scoped_ptr<TextureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new TextureLayerImpl(tree_impl, id));
   }
-  virtual ~TextureLayerImpl();
+  ~TextureLayerImpl() override;
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* layer_tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(
+      LayerTreeImpl* layer_tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
-  virtual void ReleaseResources() override;
+  bool WillDraw(DrawMode draw_mode,
+                ResourceProvider* resource_provider) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
+  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
+  void ReleaseResources() override;
 
   // These setter methods don't cause any implicit damage, so the texture client
   // must explicitly invalidate if they intend to cause a visible change in the
@@ -56,7 +56,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
  private:
   TextureLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-  virtual const char* LayerTypeAsString() const override;
+  const char* LayerTypeAsString() const override;
   void FreeTextureMailbox();
 
   ResourceProvider::ResourceId external_texture_resource_;

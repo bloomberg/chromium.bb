@@ -27,7 +27,7 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
                                                int id) {
     return make_scoped_ptr(new NinePatchLayerImpl(tree_impl, id));
   }
-  virtual ~NinePatchLayerImpl();
+  ~NinePatchLayerImpl() override;
 
   // The bitmap stretches out the bounds of the layer.  The following picture
   // illustrates the parameters associated with the dimensions.
@@ -57,21 +57,20 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
                  const gfx::Rect& border,
                  bool fill_center);
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
 
-  virtual base::DictionaryValue* LayerTreeAsJson() const override;
+  base::DictionaryValue* LayerTreeAsJson() const override;
 
  protected:
   NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  virtual const char* LayerTypeAsString() const override;
+  const char* LayerTypeAsString() const override;
 
   void CheckGeometryLimitations();
 

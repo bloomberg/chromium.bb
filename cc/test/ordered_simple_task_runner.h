@@ -53,15 +53,14 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
                           bool advance_now);
 
   // base::TestSimpleTaskRunner implementation:
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override;
 
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksOnCurrentThread() const override;
 
   // Set a maximum number of tasks to run at once. Useful as a timeout to
   // prevent infinite task loops.
@@ -133,7 +132,7 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
   bool NowBeforeCallback(base::TimeTicks stop_at);
   bool AdvanceNowCallback();
 
-  virtual ~OrderedSimpleTaskRunner();
+  ~OrderedSimpleTaskRunner() override;
 
   base::ThreadChecker thread_checker_;
 

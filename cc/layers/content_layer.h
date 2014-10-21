@@ -21,7 +21,7 @@ class CC_EXPORT ContentLayerPainter : public LayerPainter {
  public:
   static scoped_ptr<ContentLayerPainter> Create(ContentLayerClient* client);
 
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override;
+  void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override;
 
  private:
   explicit ContentLayerPainter(ContentLayerClient* client);
@@ -38,33 +38,32 @@ class CC_EXPORT ContentLayer : public TiledLayer {
 
   void ClearClient();
 
-  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
-  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
-      override;
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
-  virtual bool NeedMoreUpdates() override;
+  void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
+  void SetTexturePriorities(const PriorityCalculator& priority_calc) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
+  bool NeedMoreUpdates() override;
 
-  virtual void SetContentsOpaque(bool contents_opaque) override;
+  void SetContentsOpaque(bool contents_opaque) override;
 
-  virtual bool SupportsLCDText() const override;
+  bool SupportsLCDText() const override;
 
-  virtual skia::RefPtr<SkPicture> GetPicture() const override;
+  skia::RefPtr<SkPicture> GetPicture() const override;
 
-  virtual void OnOutputSurfaceCreated() override;
+  void OnOutputSurfaceCreated() override;
 
  protected:
   explicit ContentLayer(ContentLayerClient* client);
-  virtual ~ContentLayer();
+  ~ContentLayer() override;
 
-  virtual bool HasDrawableContent() const override;
+  bool HasDrawableContent() const override;
 
   // TiledLayer implementation.
-  virtual LayerUpdater* Updater() const override;
+  LayerUpdater* Updater() const override;
 
  private:
   // TiledLayer implementation.
-  virtual void CreateUpdaterIfNeeded() override;
+  void CreateUpdaterIfNeeded() override;
 
   void UpdateCanUseLCDText();
 

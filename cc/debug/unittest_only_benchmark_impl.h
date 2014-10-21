@@ -21,9 +21,9 @@ class CC_EXPORT UnittestOnlyBenchmarkImpl : public MicroBenchmarkImpl {
   UnittestOnlyBenchmarkImpl(scoped_refptr<base::MessageLoopProxy> origin_loop,
                             base::Value* settings,
                             const DoneCallback& callback);
-  virtual ~UnittestOnlyBenchmarkImpl();
+  ~UnittestOnlyBenchmarkImpl() override;
 
-  virtual void DidCompleteCommit(LayerTreeHostImpl* host) override;
+  void DidCompleteCommit(LayerTreeHostImpl* host) override;
 };
 
 }  // namespace cc

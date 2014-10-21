@@ -46,7 +46,7 @@ class DelegatedFrameResourceCollectionTest
     return resources;
   }
 
-  virtual void UnusedResourcesAreAvailable() override {
+  void UnusedResourcesAreAvailable() override {
     resources_available_ = true;
     resource_collection_->TakeUnusedResourcesForChildCompositor(
         &returned_resources_);

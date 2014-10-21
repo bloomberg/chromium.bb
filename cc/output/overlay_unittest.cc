@@ -40,7 +40,7 @@ void MailboxReleased(unsigned sync_point,
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
-  virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
 };
 
 void SingleOverlayValidator::CheckOverlaySupport(
@@ -62,7 +62,7 @@ class SingleOverlayProcessor : public OverlayProcessor {
   SingleOverlayProcessor(OutputSurface* surface,
                          ResourceProvider* resource_provider);
   // Virtual to allow testing different strategies.
-  virtual void Initialize() override;
+  void Initialize() override;
 };
 
 SingleOverlayProcessor::SingleOverlayProcessor(
@@ -103,7 +103,7 @@ class OverlayOutputSurface : public OutputSurface {
       : OutputSurface(context_provider) {}
 
   // OutputSurface implementation
-  virtual void SwapBuffers(CompositorFrame* frame) override;
+  void SwapBuffers(CompositorFrame* frame) override;
 
   void InitWithSingleOverlayValidator() {
     overlay_candidate_validator_.reset(new SingleOverlayValidator);
@@ -568,7 +568,7 @@ class OverlayInfoRendererGL : public GLRenderer {
 class FakeRendererClient : public RendererClient {
  public:
   // RendererClient methods.
-  virtual void SetFullRootLayerDamage() override {}
+  void SetFullRootLayerDamage() override {}
 };
 
 class MockOverlayScheduler {

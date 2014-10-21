@@ -55,7 +55,7 @@ class FakeSchedulerClient : public SchedulerClient {
         FakeSchedulerClient* client)
         : client_(client) {}
 
-    virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) override {
+    void OnNeedsBeginFramesChange(bool needs_begin_frames) override {
       if (needs_begin_frames) {
         client_->actions_.push_back("SetNeedsBeginFrames(true)");
       } else {
@@ -68,15 +68,13 @@ class FakeSchedulerClient : public SchedulerClient {
   class FakePowerMonitorSource : public base::PowerMonitorSource {
    public:
     FakePowerMonitorSource() {}
-    virtual ~FakePowerMonitorSource() {}
+    ~FakePowerMonitorSource() override {}
     void GeneratePowerStateEvent(bool on_battery_power) {
       on_battery_power_impl_ = on_battery_power;
       ProcessPowerEvent(POWER_STATE_EVENT);
       base::MessageLoop::current()->RunUntilIdle();
     }
-    virtual bool IsOnBatteryPowerImpl() override {
-      return on_battery_power_impl_;
-    }
+    bool IsOnBatteryPowerImpl() override { return on_battery_power_impl_; }
 
    private:
     bool on_battery_power_impl_;
@@ -134,7 +132,7 @@ class FakeSchedulerClient : public SchedulerClient {
     return scheduler_->settings().begin_frame_scheduling_enabled &&
            scheduler_->settings().throttle_frame_production;
   }
-  virtual FakeBeginFrameSource* ExternalBeginFrameSource() override {
+  FakeBeginFrameSource* ExternalBeginFrameSource() override {
     return &fake_frame_source_;
   }
 
@@ -192,19 +190,19 @@ class FakeSchedulerClient : public SchedulerClient {
     redraw_will_happen_if_update_visible_tiles_happens_ = redraw;
   }
   // SchedulerClient implementation.
-  virtual void WillBeginImplFrame(const BeginFrameArgs& args) override {
+  void WillBeginImplFrame(const BeginFrameArgs& args) override {
     actions_.push_back("WillBeginImplFrame");
     states_.push_back(scheduler_->AsValue());
   }
-  virtual void ScheduledActionSendBeginMainFrame() override {
+  void ScheduledActionSendBeginMainFrame() override {
     actions_.push_back("ScheduledActionSendBeginMainFrame");
     states_.push_back(scheduler_->AsValue());
   }
-  virtual void ScheduledActionAnimate() override {
+  void ScheduledActionAnimate() override {
     actions_.push_back("ScheduledActionAnimate");
     states_.push_back(scheduler_->AsValue());
   }
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() override {
+  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     actions_.push_back("ScheduledActionDrawAndSwapIfPossible");
     states_.push_back(scheduler_->AsValue());
     num_draws_++;
@@ -226,48 +224,46 @@ class FakeSchedulerClient : public SchedulerClient {
     }
     return result;
   }
-  virtual DrawResult ScheduledActionDrawAndSwapForced() override {
+  DrawResult ScheduledActionDrawAndSwapForced() override {
     actions_.push_back("ScheduledActionDrawAndSwapForced");
     states_.push_back(scheduler_->AsValue());
     return DRAW_SUCCESS;
   }
-  virtual void ScheduledActionCommit() override {
+  void ScheduledActionCommit() override {
     actions_.push_back("ScheduledActionCommit");
     states_.push_back(scheduler_->AsValue());
   }
-  virtual void ScheduledActionUpdateVisibleTiles() override {
+  void ScheduledActionUpdateVisibleTiles() override {
     actions_.push_back("ScheduledActionUpdateVisibleTiles");
     states_.push_back(scheduler_->AsValue());
     if (redraw_will_happen_if_update_visible_tiles_happens_)
       scheduler_->SetNeedsRedraw();
   }
-  virtual void ScheduledActionActivateSyncTree() override {
+  void ScheduledActionActivateSyncTree() override {
     actions_.push_back("ScheduledActionActivateSyncTree");
     states_.push_back(scheduler_->AsValue());
   }
-  virtual void ScheduledActionBeginOutputSurfaceCreation() override {
+  void ScheduledActionBeginOutputSurfaceCreation() override {
     actions_.push_back("ScheduledActionBeginOutputSurfaceCreation");
     states_.push_back(scheduler_->AsValue());
   }
-  virtual void ScheduledActionManageTiles() override {
+  void ScheduledActionManageTiles() override {
     actions_.push_back("ScheduledActionManageTiles");
     states_.push_back(scheduler_->AsValue());
   }
-  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) override {
+  void DidAnticipatedDrawTimeChange(base::TimeTicks) override {
     if (log_anticipated_draw_time_change_)
       actions_.push_back("DidAnticipatedDrawTimeChange");
   }
-  virtual base::TimeDelta DrawDurationEstimate() override {
+  base::TimeDelta DrawDurationEstimate() override { return base::TimeDelta(); }
+  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
     return base::TimeDelta();
   }
-  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
-    return base::TimeDelta();
-  }
-  virtual base::TimeDelta CommitToActivateDurationEstimate() override {
+  base::TimeDelta CommitToActivateDurationEstimate() override {
     return base::TimeDelta();
   }
 
-  virtual void DidBeginImplFrameDeadline() override {}
+  void DidBeginImplFrameDeadline() override {}
 
   base::Callback<bool(void)> ImplFrameDeadlinePending(bool state) {
     return base::Bind(&FakeSchedulerClient::ImplFrameDeadlinePendingCallback,
@@ -491,23 +487,22 @@ TEST(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
 
 class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
  public:
-  virtual void ScheduledActionSendBeginMainFrame() override {}
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible()
-      override {
+  void ScheduledActionSendBeginMainFrame() override {}
+  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     // Only SetNeedsRedraw the first time this is called
     if (!num_draws_)
       scheduler_->SetNeedsRedraw();
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
   }
 
-  virtual DrawResult ScheduledActionDrawAndSwapForced() override {
+  DrawResult ScheduledActionDrawAndSwapForced() override {
     NOTREACHED();
     return DRAW_SUCCESS;
   }
 
-  virtual void ScheduledActionCommit() override {}
-  virtual void ScheduledActionBeginOutputSurfaceCreation() override {}
-  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) override {}
+  void ScheduledActionCommit() override {}
+  void ScheduledActionBeginOutputSurfaceCreation() override {}
+  void DidAnticipatedDrawTimeChange(base::TimeTicks) override {}
 };
 
 // Tests for two different situations:
@@ -602,9 +597,8 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
   SchedulerClientThatSetNeedsCommitInsideDraw()
       : set_needs_commit_on_next_draw_(false) {}
 
-  virtual void ScheduledActionSendBeginMainFrame() override {}
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible()
-      override {
+  void ScheduledActionSendBeginMainFrame() override {}
+  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     // Only SetNeedsCommit the first time this is called
     if (set_needs_commit_on_next_draw_) {
       scheduler_->SetNeedsCommit();
@@ -613,14 +607,14 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
   }
 
-  virtual DrawResult ScheduledActionDrawAndSwapForced() override {
+  DrawResult ScheduledActionDrawAndSwapForced() override {
     NOTREACHED();
     return DRAW_SUCCESS;
   }
 
-  virtual void ScheduledActionCommit() override {}
-  virtual void ScheduledActionBeginOutputSurfaceCreation() override {}
-  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) override {}
+  void ScheduledActionCommit() override {}
+  void ScheduledActionBeginOutputSurfaceCreation() override {}
+  void DidAnticipatedDrawTimeChange(base::TimeTicks) override {}
 
   void SetNeedsCommitOnNextDraw() { set_needs_commit_on_next_draw_ = true; }
 
@@ -757,8 +751,7 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
 
 class SchedulerClientNeedsManageTilesInDraw : public FakeSchedulerClient {
  public:
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible()
-      override {
+  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     scheduler_->SetNeedsManageTiles();
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
   }
@@ -1079,13 +1072,11 @@ class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
             begin_main_frame_to_commit_duration),
         commit_to_activate_duration_(commit_to_activate_duration) {}
 
-  virtual base::TimeDelta DrawDurationEstimate() override {
-    return draw_duration_;
-  }
-  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
+  base::TimeDelta DrawDurationEstimate() override { return draw_duration_; }
+  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
     return begin_main_frame_to_commit_duration_;
   }
-  virtual base::TimeDelta CommitToActivateDurationEstimate() override {
+  base::TimeDelta CommitToActivateDurationEstimate() override {
     return commit_to_activate_duration_;
   }
 

@@ -132,8 +132,7 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void setWebLayerClient(blink::WebLayerClient* client);
 
   // LayerClient implementation.
-  virtual scoped_refptr<base::debug::ConvertableToTraceFormat> TakeDebugInfo()
-      override;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> TakeDebugInfo() override;
 
   virtual void setScrollParent(blink::WebLayer* parent);
   virtual void setClipParent(blink::WebLayer* parent);

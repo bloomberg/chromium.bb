@@ -18,12 +18,12 @@ namespace cc {
 class CCTestSuite : public base::TestSuite {
  public:
   CCTestSuite(int argc, char** argv);
-  virtual ~CCTestSuite();
+  ~CCTestSuite() override;
 
  protected:
   // Overridden from base::TestSuite:
-  virtual void Initialize() override;
-  virtual void Shutdown() override;
+  void Initialize() override;
+  void Shutdown() override;
 
  private:
   scoped_ptr<base::MessageLoop> message_loop_;

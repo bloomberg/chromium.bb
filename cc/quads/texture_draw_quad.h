@@ -49,13 +49,12 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   float vertex_opacity[4];
   bool flipped;
 
-  virtual void IterateResources(const ResourceIteratorCallback& callback)
-      override;
+  void IterateResources(const ResourceIteratorCallback& callback) override;
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

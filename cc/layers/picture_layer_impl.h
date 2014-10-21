@@ -99,52 +99,49 @@ class CC_EXPORT PictureLayerImpl
   static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));
   }
-  virtual ~PictureLayerImpl();
+  ~PictureLayerImpl() override;
 
   // LayerImpl overrides.
-  virtual const char* LayerTypeAsString() const override;
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
-  virtual void UpdateTiles(const Occlusion& occlusion_in_content_space,
-                           bool resourceless_software_draw) override;
-  virtual void NotifyTileStateChanged(const Tile* tile) override;
-  virtual void DidBecomeActive() override;
-  virtual void DidBeginTracing() override;
-  virtual void ReleaseResources() override;
-  virtual skia::RefPtr<SkPicture> GetPicture() override;
+  const char* LayerTypeAsString() const override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
+  void UpdateTiles(const Occlusion& occlusion_in_content_space,
+                   bool resourceless_software_draw) override;
+  void NotifyTileStateChanged(const Tile* tile) override;
+  void DidBecomeActive() override;
+  void DidBeginTracing() override;
+  void ReleaseResources() override;
+  skia::RefPtr<SkPicture> GetPicture() override;
 
   // PictureLayerTilingClient overrides.
-  virtual scoped_refptr<Tile> CreateTile(
-    PictureLayerTiling* tiling,
-    const gfx::Rect& content_rect) override;
-  virtual PicturePileImpl* GetPile() override;
-  virtual gfx::Size CalculateTileSize(
-      const gfx::Size& content_bounds) const override;
-  virtual const Region* GetInvalidation() override;
-  virtual const PictureLayerTiling* GetTwinTiling(
+  scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
+                                 const gfx::Rect& content_rect) override;
+  PicturePileImpl* GetPile() override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  const Region* GetInvalidation() override;
+  const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const override;
-  virtual PictureLayerTiling* GetRecycledTwinTiling(
+  PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) override;
-  virtual size_t GetMaxTilesForInterestArea() const override;
-  virtual float GetSkewportTargetTimeInSeconds() const override;
-  virtual int GetSkewportExtrapolationLimitInContentPixels() const override;
-  virtual WhichTree GetTree() const override;
-  virtual bool RequiresHighResToDraw() const override;
+  size_t GetMaxTilesForInterestArea() const override;
+  float GetSkewportTargetTimeInSeconds() const override;
+  int GetSkewportExtrapolationLimitInContentPixels() const override;
+  WhichTree GetTree() const override;
+  bool RequiresHighResToDraw() const override;
 
   // PushPropertiesTo active tree => pending tree.
   void SyncTiling(const PictureLayerTiling* tiling);
 
   // Mask-related functions.
-  virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
-                                     gfx::Size* resource_size) const override;
+  void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+                             gfx::Size* resource_size) const override;
 
-  virtual size_t GPUMemoryUsageInBytes() const override;
+  size_t GPUMemoryUsageInBytes() const override;
 
-  virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
+  void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
 
   // Functions used by tile manager.
   PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
@@ -185,11 +182,9 @@ class CC_EXPORT PictureLayerImpl
 
   bool ShouldAdjustRasterScaleDuringScaleAnimations() const;
 
-  virtual void GetDebugBorderProperties(
-      SkColor* color, float* width) const override;
-  virtual void GetAllTilesForTracing(
-      std::set<const Tile*>* tiles) const override;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void GetDebugBorderProperties(SkColor* color, float* width) const override;
+  void GetAllTilesForTracing(std::set<const Tile*>* tiles) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
   virtual void UpdateIdealScales();
   float MaximumTilingContentsScale() const;

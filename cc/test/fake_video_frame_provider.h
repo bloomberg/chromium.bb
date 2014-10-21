@@ -14,12 +14,11 @@ namespace cc {
 class FakeVideoFrameProvider : public VideoFrameProvider {
  public:
   FakeVideoFrameProvider();
-  virtual ~FakeVideoFrameProvider();
+  ~FakeVideoFrameProvider() override;
 
-  virtual void SetVideoFrameProviderClient(Client* client) override;
-  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
-  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>&)
-      override {}
+  void SetVideoFrameProviderClient(Client* client) override;
+  scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
+  void PutCurrentFrame(const scoped_refptr<media::VideoFrame>&) override {}
 
   Client* client() { return client_; }
 

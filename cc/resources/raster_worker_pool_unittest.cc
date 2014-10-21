@@ -58,24 +58,24 @@ class TestRasterTaskImpl : public RasterTask {
                                                            gfx::Size(1, 1))) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() override {
+  void RunOnWorkerThread() override {
     raster_buffer_->Playback(
         picture_pile_.get(), gfx::Rect(0, 0, 1, 1), 1.0, NULL);
   }
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
+  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
     raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {
+  void CompleteOnOriginThread(RasterizerTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
-  virtual void RunReplyOnOriginThread() override {
+  void RunReplyOnOriginThread() override {
     reply_.Run(PicturePileImpl::Analysis(), !HasFinishedRunning());
   }
 
  protected:
-  virtual ~TestRasterTaskImpl() {}
+  ~TestRasterTaskImpl() override {}
 
  private:
   const Reply reply_;
@@ -94,16 +94,16 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
       : TestRasterTaskImpl(resource, reply, dependencies), lock_(lock) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() override {
+  void RunOnWorkerThread() override {
     base::AutoLock lock(*lock_);
     TestRasterTaskImpl::RunOnWorkerThread();
   }
 
   // Overridden from RasterizerTask:
-  virtual void RunReplyOnOriginThread() override {}
+  void RunReplyOnOriginThread() override {}
 
  protected:
-  virtual ~BlockingTestRasterTaskImpl() {}
+  ~BlockingTestRasterTaskImpl() override {}
 
  private:
   base::Lock* lock_;
@@ -185,13 +185,13 @@ class RasterWorkerPoolTest
   }
 
   // Overriden from RasterWorkerPoolClient:
-  virtual void DidFinishRunningTasks(TaskSet task_set) override {
+  void DidFinishRunningTasks(TaskSet task_set) override {
     if (task_set == ALL) {
       raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
       base::MessageLoop::current()->Quit();
     }
   }
-  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
+  TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
     return TaskSetCollection();
   }
 

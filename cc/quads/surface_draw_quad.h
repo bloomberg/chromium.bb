@@ -30,13 +30,12 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
 
   SurfaceId surface_id;
 
-  virtual void IterateResources(const ResourceIteratorCallback& callback)
-      override;
+  void IterateResources(const ResourceIteratorCallback& callback) override;
 
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

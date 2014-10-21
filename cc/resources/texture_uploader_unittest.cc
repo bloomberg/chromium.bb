@@ -19,7 +19,7 @@ class TextureUploadTestContext : public gpu::gles2::GLES2InterfaceStub {
  public:
   TextureUploadTestContext() : result_available_(0), unpack_alignment_(4) {}
 
-  virtual void PixelStorei(GLenum pname, GLint param) override {
+  void PixelStorei(GLenum pname, GLint param) override {
     switch (pname) {
       case GL_UNPACK_ALIGNMENT:
         // Param should be a power of two <= 8.
@@ -41,9 +41,7 @@ class TextureUploadTestContext : public gpu::gles2::GLES2InterfaceStub {
     }
   }
 
-  virtual void GetQueryObjectuivEXT(GLuint,
-                                    GLenum type,
-                                    GLuint* value) override {
+  void GetQueryObjectuivEXT(GLuint, GLenum type, GLuint* value) override {
     switch (type) {
       case GL_QUERY_RESULT_AVAILABLE_EXT:
         *value = result_available_;
@@ -54,15 +52,15 @@ class TextureUploadTestContext : public gpu::gles2::GLES2InterfaceStub {
     }
   }
 
-  virtual void TexSubImage2D(GLenum target,
-                             GLint level,
-                             GLint xoffset,
-                             GLint yoffset,
-                             GLsizei width,
-                             GLsizei height,
-                             GLenum format,
-                             GLenum type,
-                             const void* pixels) override {
+  void TexSubImage2D(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLenum format,
+                     GLenum type,
+                     const void* pixels) override {
     EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     EXPECT_EQ(0, level);
     EXPECT_LE(0, width);

@@ -465,7 +465,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
-  virtual ~Layer();
+  ~Layer() override;
 
   Layer();
 
@@ -552,16 +552,15 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void RemoveChildOrDependent(Layer* child);
 
   // LayerAnimationValueProvider implementation.
-  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const override;
+  gfx::ScrollOffset ScrollOffsetForAnimation() const override;
 
   // LayerAnimationValueObserver implementation.
-  virtual void OnFilterAnimated(const FilterOperations& filters) override;
-  virtual void OnOpacityAnimated(float opacity) override;
-  virtual void OnTransformAnimated(const gfx::Transform& transform) override;
-  virtual void OnScrollOffsetAnimated(
-      const gfx::ScrollOffset& scroll_offset) override;
-  virtual void OnAnimationWaitingForDeletion() override;
-  virtual bool IsActive() const override;
+  void OnFilterAnimated(const FilterOperations& filters) override;
+  void OnOpacityAnimated(float opacity) override;
+  void OnTransformAnimated(const gfx::Transform& transform) override;
+  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
+  void OnAnimationWaitingForDeletion() override;
+  bool IsActive() const override;
 
   // If this layer has a scroll parent, it removes |this| from its list of
   // scroll children.

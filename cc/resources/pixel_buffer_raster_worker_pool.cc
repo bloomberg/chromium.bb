@@ -30,15 +30,15 @@ class RasterBufferImpl : public RasterBuffer {
     memory_ = resource_provider_->MapPixelBuffer(resource_->id(), &stride_);
   }
 
-  virtual ~RasterBufferImpl() {
+  ~RasterBufferImpl() override {
     resource_provider_->ReleasePixelBuffer(resource_->id());
   }
 
   // Overridden from RasterBuffer:
-  virtual void Playback(const PicturePileImpl* picture_pile,
-                        const gfx::Rect& rect,
-                        float scale,
-                        RenderingStatsInstrumentation* stats) override {
+  void Playback(const PicturePileImpl* picture_pile,
+                const gfx::Rect& rect,
+                float scale,
+                RenderingStatsInstrumentation* stats) override {
     if (!memory_)
       return;
 

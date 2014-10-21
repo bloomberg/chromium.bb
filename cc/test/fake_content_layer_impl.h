@@ -16,10 +16,9 @@ class FakeContentLayerImpl : public TiledLayerImpl {
       LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new FakeContentLayerImpl(tree_impl, id));
   }
-  virtual ~FakeContentLayerImpl();
+  ~FakeContentLayerImpl() override;
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   bool HaveResourceForTileAt(int i, int j);
 
@@ -28,7 +27,7 @@ class FakeContentLayerImpl : public TiledLayerImpl {
   }
   void reset_lost_output_surface_count() { lost_output_surface_count_ = 0; }
 
-  virtual void ReleaseResources() override;
+  void ReleaseResources() override;
 
  private:
   explicit FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id);

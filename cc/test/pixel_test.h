@@ -64,7 +64,7 @@ class PixelTest : public testing::Test, RendererClient {
   void EnableExternalStencilTest();
 
   // RendererClient implementation.
-  virtual void SetFullRootLayerDamage() override {}
+  void SetFullRootLayerDamage() override {}
 
  private:
   void ReadbackResult(base::Closure quit_run_loop,

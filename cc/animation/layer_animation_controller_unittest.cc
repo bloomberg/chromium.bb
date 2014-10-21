@@ -859,16 +859,15 @@ class FakeAnimationDelegate : public AnimationDelegate {
       : started_(false),
         finished_(false) {}
 
-  virtual void NotifyAnimationStarted(TimeTicks monotonic_time,
-                                      Animation::TargetProperty target_property,
-                                      int group) override {
+  void NotifyAnimationStarted(TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override {
     started_ = true;
   }
 
-  virtual void NotifyAnimationFinished(
-      TimeTicks monotonic_time,
-      Animation::TargetProperty target_property,
-      int group) override {
+  void NotifyAnimationFinished(TimeTicks monotonic_time,
+                               Animation::TargetProperty target_property,
+                               int group) override {
     finished_ = true;
   }
 

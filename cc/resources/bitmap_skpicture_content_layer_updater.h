@@ -20,10 +20,10 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
     Resource(BitmapSkPictureContentLayerUpdater* updater,
              scoped_ptr<PrioritizedResource> texture);
 
-    virtual void Update(ResourceUpdateQueue* queue,
-                        const gfx::Rect& source_rect,
-                        const gfx::Vector2d& dest_offset,
-                        bool partial_update) override;
+    void Update(ResourceUpdateQueue* queue,
+                const gfx::Rect& source_rect,
+                const gfx::Vector2d& dest_offset,
+                bool partial_update) override;
 
    private:
     SkBitmap bitmap_;
@@ -37,7 +37,7 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
       RenderingStatsInstrumentation* stats_instrumentation,
       int layer_id);
 
-  virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
+  scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) override;
   void PaintContentsRect(SkCanvas* canvas,
                          const gfx::Rect& source_rect);
@@ -47,7 +47,7 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
       scoped_ptr<LayerPainter> painter,
       RenderingStatsInstrumentation* stats_instrumentation,
       int layer_id);
-  virtual ~BitmapSkPictureContentLayerUpdater();
+  ~BitmapSkPictureContentLayerUpdater() override;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapSkPictureContentLayerUpdater);
 };

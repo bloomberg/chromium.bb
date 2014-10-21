@@ -170,7 +170,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return make_scoped_ptr(new ResourceProviderContext(shared_data));
   }
 
-  virtual GLuint insertSyncPoint() override {
+  GLuint insertSyncPoint() override {
     uint32 sync_point = shared_data_->InsertSyncPoint();
     // Commit the produceTextureCHROMIUM calls at this point, so that
     // they're associated with the sync point.
@@ -185,17 +185,17 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return sync_point;
   }
 
-  virtual void waitSyncPoint(GLuint sync_point) override {
+  void waitSyncPoint(GLuint sync_point) override {
     last_waited_sync_point_ = std::max(sync_point, last_waited_sync_point_);
   }
 
   unsigned last_waited_sync_point() const { return last_waited_sync_point_; }
 
-  virtual void texStorage2DEXT(GLenum target,
-                               GLint levels,
-                               GLuint internalformat,
-                               GLint width,
-                               GLint height) override {
+  void texStorage2DEXT(GLenum target,
+                       GLint levels,
+                       GLuint internalformat,
+                       GLint width,
+                       GLint height) override {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_EQ(1, levels);
@@ -212,15 +212,15 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     AllocateTexture(gfx::Size(width, height), format);
   }
 
-  virtual void texImage2D(GLenum target,
-                          GLint level,
-                          GLenum internalformat,
-                          GLsizei width,
-                          GLsizei height,
-                          GLint border,
-                          GLenum format,
-                          GLenum type,
-                          const void* pixels) override {
+  void texImage2D(GLenum target,
+                  GLint level,
+                  GLenum internalformat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLint border,
+                  GLenum format,
+                  GLenum type,
+                  const void* pixels) override {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
@@ -232,15 +232,15 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
       SetPixels(0, 0, width, height, pixels);
   }
 
-  virtual void texSubImage2D(GLenum target,
-                             GLint level,
-                             GLint xoffset,
-                             GLint yoffset,
-                             GLsizei width,
-                             GLsizei height,
-                             GLenum format,
-                             GLenum type,
-                             const void* pixels) override {
+  void texSubImage2D(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLenum format,
+                     GLenum type,
+                     const void* pixels) override {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
@@ -253,12 +253,11 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     SetPixels(xoffset, yoffset, width, height, pixels);
   }
 
-  virtual void genMailboxCHROMIUM(GLbyte* mailbox) override {
+  void genMailboxCHROMIUM(GLbyte* mailbox) override {
     return shared_data_->GenMailbox(mailbox);
   }
 
-  virtual void produceTextureCHROMIUM(GLenum target,
-                                      const GLbyte* mailbox) override {
+  void produceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) override {
     CheckTextureIsBound(target);
 
     // Delay moving the texture into the mailbox until the next
@@ -271,8 +270,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     pending_produce_textures_.push_back(pending.Pass());
   }
 
-  virtual void consumeTextureCHROMIUM(GLenum target,
-                                      const GLbyte* mailbox) override {
+  void consumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) override {
     CheckTextureIsBound(target);
     base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture =
@@ -3604,11 +3602,11 @@ INSTANTIATE_TEST_CASE_P(
 
 class TextureIdAllocationTrackingContext : public TestWebGraphicsContext3D {
  public:
-  virtual GLuint NextTextureId() override {
+  GLuint NextTextureId() override {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id++;
   }
-  virtual void RetireTextureId(GLuint) override {}
+  void RetireTextureId(GLuint) override {}
   GLuint PeekTextureId() {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id;

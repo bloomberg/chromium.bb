@@ -54,7 +54,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   void SetPixelRecordDistanceForTesting(int d) { pixel_record_distance_ = d; }
 
  protected:
-  virtual ~PicturePile();
+  ~PicturePile() override;
 
  private:
   friend class PicturePileImpl;

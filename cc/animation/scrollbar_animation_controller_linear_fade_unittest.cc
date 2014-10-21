@@ -22,14 +22,12 @@ class ScrollbarAnimationControllerLinearFadeTest
   ScrollbarAnimationControllerLinearFadeTest()
       : host_impl_(&proxy_, &shared_bitmap_manager_), needs_frame_count_(0) {}
 
-  virtual void PostDelayedScrollbarFade(const base::Closure& start_fade,
-                                        base::TimeDelta delay) override {
+  void PostDelayedScrollbarFade(const base::Closure& start_fade,
+                                base::TimeDelta delay) override {
     start_fade_ = start_fade;
     delay_ = delay;
   }
-  virtual void SetNeedsScrollbarAnimationFrame() override {
-    needs_frame_count_++;
-  }
+  void SetNeedsScrollbarAnimationFrame() override { needs_frame_count_++; }
 
  protected:
   virtual void SetUp() {
@@ -83,7 +81,7 @@ class ScrollbarAnimationControllerLinearFadeTest
 class VerticalScrollbarAnimationControllerLinearFadeTest
     : public ScrollbarAnimationControllerLinearFadeTest {
  protected:
-  virtual ScrollbarOrientation orientation() const override { return VERTICAL; }
+  ScrollbarOrientation orientation() const override { return VERTICAL; }
 };
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, DelayAnimationOnResize) {

@@ -238,7 +238,7 @@ class CC_EXPORT ResourceProvider {
                     ResourceProvider::ResourceId resource_id,
                     GLenum unit,
                     GLenum filter);
-    virtual ~ScopedSamplerGL();
+    ~ScopedSamplerGL() override;
 
     GLenum target() const { return target_; }
 

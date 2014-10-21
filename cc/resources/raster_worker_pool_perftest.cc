@@ -33,31 +33,31 @@ namespace {
 
 class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   // Overridden from gpu::gles2::GLES2Interface:
-  virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
-                                     GLsizei width,
-                                     GLsizei height,
-                                     GLenum internalformat) override {
+  GLuint CreateImageCHROMIUM(ClientBuffer buffer,
+                             GLsizei width,
+                             GLsizei height,
+                             GLenum internalformat) override {
     return 1u;
   }
-  virtual void GenBuffers(GLsizei n, GLuint* buffers) override {
+  void GenBuffers(GLsizei n, GLuint* buffers) override {
     for (GLsizei i = 0; i < n; ++i)
       buffers[i] = 1u;
   }
-  virtual void GenTextures(GLsizei n, GLuint* textures) override {
+  void GenTextures(GLsizei n, GLuint* textures) override {
     for (GLsizei i = 0; i < n; ++i)
       textures[i] = 1u;
   }
-  virtual void GetIntegerv(GLenum pname, GLint* params) override {
+  void GetIntegerv(GLenum pname, GLint* params) override {
     if (pname == GL_MAX_TEXTURE_SIZE)
       *params = INT_MAX;
   }
-  virtual void GenQueriesEXT(GLsizei n, GLuint* queries) override {
+  void GenQueriesEXT(GLsizei n, GLuint* queries) override {
     for (GLsizei i = 0; i < n; ++i)
       queries[i] = 1u;
   }
-  virtual void GetQueryObjectuivEXT(GLuint query,
-                                    GLenum pname,
-                                    GLuint* params) override {
+  void GetQueryObjectuivEXT(GLuint query,
+                            GLenum pname,
+                            GLuint* params) override {
     if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
       *params = 1;
   }
@@ -67,28 +67,28 @@ class PerfContextProvider : public ContextProvider {
  public:
   PerfContextProvider() : context_gl_(new PerfGLES2Interface) {}
 
-  virtual bool BindToCurrentThread() override { return true; }
-  virtual Capabilities ContextCapabilities() override {
+  bool BindToCurrentThread() override { return true; }
+  Capabilities ContextCapabilities() override {
     Capabilities capabilities;
     capabilities.gpu.image = true;
     capabilities.gpu.sync_query = true;
     return capabilities;
   }
-  virtual gpu::gles2::GLES2Interface* ContextGL() override {
-    return context_gl_.get();
+  gpu::gles2::GLES2Interface* ContextGL() override { return context_gl_.get(); }
+  gpu::ContextSupport* ContextSupport() override { return &support_; }
+  class GrContext* GrContext() override {
+    return NULL;
   }
-  virtual gpu::ContextSupport* ContextSupport() override { return &support_; }
-  virtual class GrContext* GrContext() override { return NULL; }
-  virtual bool IsContextLost() override { return false; }
-  virtual void VerifyContexts() override {}
-  virtual void DeleteCachedResources() override {}
-  virtual bool DestroyedOnMainThread() override { return false; }
-  virtual void SetLostContextCallback(const LostContextCallback& cb) override {}
-  virtual void SetMemoryPolicyChangedCallback(
+  bool IsContextLost() override { return false; }
+  void VerifyContexts() override {}
+  void DeleteCachedResources() override {}
+  bool DestroyedOnMainThread() override { return false; }
+  void SetLostContextCallback(const LostContextCallback& cb) override {}
+  void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& cb) override {}
 
  private:
-  virtual ~PerfContextProvider() {}
+  ~PerfContextProvider() override {}
 
   scoped_ptr<PerfGLES2Interface> context_gl_;
   TestContextSupport support_;
@@ -111,12 +111,12 @@ class PerfImageDecodeTaskImpl : public ImageDecodeTask {
   PerfImageDecodeTaskImpl() {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() override {}
+  void RunOnWorkerThread() override {}
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
-  virtual void RunReplyOnOriginThread() override { Reset(); }
+  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
+  void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
+  void RunReplyOnOriginThread() override { Reset(); }
 
   void Reset() {
     did_run_ = false;
@@ -124,7 +124,7 @@ class PerfImageDecodeTaskImpl : public ImageDecodeTask {
   }
 
  protected:
-  virtual ~PerfImageDecodeTaskImpl() {}
+  ~PerfImageDecodeTaskImpl() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PerfImageDecodeTaskImpl);
@@ -137,16 +137,16 @@ class PerfRasterTaskImpl : public RasterTask {
       : RasterTask(resource.get(), dependencies), resource_(resource.Pass()) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() override {}
+  void RunOnWorkerThread() override {}
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
+  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
     raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {
+  void CompleteOnOriginThread(RasterizerTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
-  virtual void RunReplyOnOriginThread() override { Reset(); }
+  void RunReplyOnOriginThread() override { Reset(); }
 
   void Reset() {
     did_run_ = false;
@@ -154,7 +154,7 @@ class PerfRasterTaskImpl : public RasterTask {
   }
 
  protected:
-  virtual ~PerfRasterTaskImpl() {}
+  ~PerfRasterTaskImpl() override {}
 
  private:
   scoped_ptr<ScopedResource> resource_;
@@ -282,10 +282,10 @@ class RasterWorkerPoolPerfTest
   }
 
   // Overriden from RasterizerClient:
-  virtual void DidFinishRunningTasks(TaskSet task_set) override {
+  void DidFinishRunningTasks(TaskSet task_set) override {
     raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
   }
-  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
+  TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
     return TaskSetCollection();
   }
 

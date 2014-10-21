@@ -14,17 +14,16 @@ namespace cc {
 class FakeTileManagerClient : public TileManagerClient {
  public:
   FakeTileManagerClient();
-  virtual ~FakeTileManagerClient();
+  ~FakeTileManagerClient() override;
 
   // TileManagerClient implementation.
-  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers()
-      const override;
-  virtual void NotifyReadyToActivate() override {}
-  virtual void NotifyTileStateChanged(const Tile* tile) override {}
-  virtual void BuildRasterQueue(RasterTilePriorityQueue* queue,
-                                TreePriority tree_priority) override {}
-  virtual void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
-                                  TreePriority tree_priority) override {}
+  const std::vector<PictureLayerImpl*>& GetPictureLayers() const override;
+  void NotifyReadyToActivate() override {}
+  void NotifyTileStateChanged(const Tile* tile) override {}
+  void BuildRasterQueue(RasterTilePriorityQueue* queue,
+                        TreePriority tree_priority) override {}
+  void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
+                          TreePriority tree_priority) override {}
 
  private:
   std::vector<PictureLayerImpl*> picture_layers_;

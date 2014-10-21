@@ -57,7 +57,7 @@ class SynchronousOutputSurfaceLayerTreeHost : public LayerTreeHost {
         client, manager, settings, impl_task_runner));
   }
 
-  virtual ~SynchronousOutputSurfaceLayerTreeHost() {}
+  ~SynchronousOutputSurfaceLayerTreeHost() override {}
 
   bool EnsureOutputSurfaceCreated() {
     base::MessageLoop::current()->PostDelayedTask(
@@ -68,8 +68,7 @@ class SynchronousOutputSurfaceLayerTreeHost : public LayerTreeHost {
     return output_surface_created_;
   }
 
-  virtual void OnCreateAndInitializeOutputSurfaceAttempted(
-      bool success) override {
+  void OnCreateAndInitializeOutputSurfaceAttempted(bool success) override {
     LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(success);
     output_surface_created_ = success;
     run_loop_.Quit();
@@ -1649,7 +1648,7 @@ class TrackingLayerPainter : public LayerPainter {
     return make_scoped_ptr(new TrackingLayerPainter());
   }
 
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {
+  void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {
     painted_rect_ = content_rect;
   }
 
@@ -1675,10 +1674,8 @@ class UpdateTrackingTiledLayer : public FakeTiledLayer {
   }
 
  private:
-  virtual LayerUpdater* Updater() const override {
-    return layer_updater_.get();
-  }
-  virtual ~UpdateTrackingTiledLayer() {}
+  LayerUpdater* Updater() const override { return layer_updater_.get(); }
+  ~UpdateTrackingTiledLayer() override {}
 
   TrackingLayerPainter* tracking_layer_painter_;
   scoped_refptr<BitmapContentLayerUpdater> layer_updater_;

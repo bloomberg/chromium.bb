@@ -32,10 +32,10 @@ class RasterBufferImpl : public RasterBuffer {
         multi_picture_draw_(multi_picture_draw) {}
 
   // Overridden from RasterBuffer:
-  virtual void Playback(const PicturePileImpl* picture_pile,
-                        const gfx::Rect& rect,
-                        float scale,
-                        RenderingStatsInstrumentation* stats) override {
+  void Playback(const PicturePileImpl* picture_pile,
+                const gfx::Rect& rect,
+                float scale,
+                RenderingStatsInstrumentation* stats) override {
     if (!lock_.sk_surface())
       return;
 

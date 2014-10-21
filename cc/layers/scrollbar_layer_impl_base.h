@@ -46,8 +46,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
 
   bool CanScrollOrientation() const;
 
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual ScrollbarLayerImplBase* ToScrollbarLayer() override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  ScrollbarLayerImplBase* ToScrollbarLayer() override;
   void PushScrollClipPropertiesTo(LayerImpl* layer);
 
   bool SetVisibleToTotalLengthRatio(float ratio);
@@ -66,7 +66,7 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
                          ScrollbarOrientation orientation,
                          bool is_left_side_vertical_scrollbar,
                          bool is_overlay);
-  virtual ~ScrollbarLayerImplBase();
+  ~ScrollbarLayerImplBase() override;
 
   gfx::Rect ScrollbarLayerRectToContentRect(const gfx::RectF& layer_rect) const;
 

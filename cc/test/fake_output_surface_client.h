@@ -30,25 +30,25 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
         did_lose_output_surface_called_(false),
         memory_policy_(0) {}
 
-  virtual void DeferredInitialize() override;
-  virtual void ReleaseGL() override;
-  virtual void CommitVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) override {}
-  virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
-  virtual void BeginFrame(const BeginFrameArgs& args) override;
-  virtual void DidSwapBuffers() override;
-  virtual void DidSwapBuffersComplete() override {}
-  virtual void ReclaimResources(const CompositorFrameAck* ack) override {}
-  virtual void DidLoseOutputSurface() override;
-  virtual void SetExternalDrawConstraints(
+  void DeferredInitialize() override;
+  void ReleaseGL() override;
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override {}
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
+  void BeginFrame(const BeginFrameArgs& args) override;
+  void DidSwapBuffers() override;
+  void DidSwapBuffersComplete() override {}
+  void ReclaimResources(const CompositorFrameAck* ack) override {}
+  void DidLoseOutputSurface() override;
+  void SetExternalDrawConstraints(
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
       const gfx::Rect& clip,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
       bool resourceless_software_draw) override {}
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
-  virtual void SetTreeActivationCallback(const base::Closure&) override {}
+  void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
+  void SetTreeActivationCallback(const base::Closure&) override {}
 
   int begin_frame_count() { return begin_frame_count_; }
   int swap_count() { return swap_count_; }

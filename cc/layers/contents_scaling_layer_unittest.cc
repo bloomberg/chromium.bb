@@ -18,7 +18,7 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
   MockContentsScalingLayer()
       : ContentsScalingLayer() {}
 
-  virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override {
+  void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override {
     last_needs_display_rect_ = dirty_rect;
     ContentsScalingLayer::SetNeedsDisplayRect(dirty_rect);
   }
@@ -28,7 +28,7 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
   }
 
  private:
-  virtual ~MockContentsScalingLayer() {}
+  ~MockContentsScalingLayer() override {}
 
   gfx::Rect last_needs_display_rect_;
 };

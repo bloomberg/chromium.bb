@@ -106,7 +106,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   PicturePileImpl();
   explicit PicturePileImpl(const PicturePileBase* other);
-  virtual ~PicturePileImpl();
+  ~PicturePileImpl() override;
 
  private:
   typedef std::map<const Picture*, Region> PictureRegionMap;

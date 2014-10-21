@@ -33,7 +33,7 @@ class TestPicturePile : public PicturePile {
   typedef PicturePile::PictureMap PictureMap;
 
  protected:
-    virtual ~TestPicturePile() {}
+  ~TestPicturePile() override {}
 };
 
 class PicturePileTestBase {

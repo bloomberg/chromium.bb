@@ -19,10 +19,10 @@ class TestOutputSurface : public OutputSurface {
  public:
   explicit TestOutputSurface(
       const scoped_refptr<ContextProvider>& context_provider);
-  virtual ~TestOutputSurface() override;
+  ~TestOutputSurface() override;
 
   // OutputSurface implementation
-  virtual void SwapBuffers(CompositorFrame* frame) override;
+  void SwapBuffers(CompositorFrame* frame) override;
 };
 
 TestOutputSurface::TestOutputSurface(

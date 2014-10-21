@@ -26,7 +26,7 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
                                                int id) {
     return make_scoped_ptr(new UIResourceLayerImpl(tree_impl, id));
   }
-  virtual ~UIResourceLayerImpl();
+  ~UIResourceLayerImpl() override;
 
   void SetUIResourceId(UIResourceId uid);
 
@@ -39,17 +39,16 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
   // opacity value.
   void SetVertexOpacity(const float vertex_opacity[4]);
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
+  bool WillDraw(DrawMode draw_mode,
+                ResourceProvider* resource_provider) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
 
-  virtual base::DictionaryValue* LayerTreeAsJson() const override;
+  base::DictionaryValue* LayerTreeAsJson() const override;
 
  protected:
   UIResourceLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -64,7 +63,7 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
   float vertex_opacity_[4];
 
  private:
-  virtual const char* LayerTypeAsString() const override;
+  const char* LayerTypeAsString() const override;
 
   DISALLOW_COPY_AND_ASSIGN(UIResourceLayerImpl);
 };

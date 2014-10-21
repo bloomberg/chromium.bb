@@ -43,13 +43,12 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
   unsigned io_surface_resource_id;
   Orientation orientation;
 
-  virtual void IterateResources(const ResourceIteratorCallback& callback)
-      override;
+  void IterateResources(const ResourceIteratorCallback& callback) override;
 
   static const IOSurfaceDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

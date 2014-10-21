@@ -20,10 +20,10 @@ class TestNotifier : public DelayedUniqueNotifier {
                const base::Closure& closure,
                const base::TimeDelta& delay)
       : DelayedUniqueNotifier(task_runner, closure, delay) {}
-  virtual ~TestNotifier() {}
+  ~TestNotifier() override {}
 
   // Overridden from DelayedUniqueNotifier:
-  virtual base::TimeTicks Now() const override { return now_; }
+  base::TimeTicks Now() const override { return now_; }
 
   void SetNow(base::TimeTicks now) { now_ = now; }
 

@@ -23,15 +23,14 @@ class CC_EXPORT VideoLayer : public Layer {
   static scoped_refptr<VideoLayer> Create(VideoFrameProvider* provider,
                                           media::VideoRotation video_rotation);
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
 
  private:
   VideoLayer(VideoFrameProvider* provider, media::VideoRotation video_rotation);
-  virtual ~VideoLayer();
+  ~VideoLayer() override;
 
   // This pointer is only for passing to VideoLayerImpl's constructor. It should
   // never be dereferenced by this class.

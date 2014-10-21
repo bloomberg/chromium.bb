@@ -32,13 +32,13 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
  public:
   static scoped_ptr<CubicBezierTimingFunction> Create(double x1, double y1,
                                                       double x2, double y2);
-  virtual ~CubicBezierTimingFunction();
+  ~CubicBezierTimingFunction() override;
 
   // TimingFunction implementation.
-  virtual float GetValue(double time) const override;
-  virtual float Velocity(double time) const override;
-  virtual void Range(float* min, float* max) const override;
-  virtual scoped_ptr<TimingFunction> Clone() const override;
+  float GetValue(double time) const override;
+  float Velocity(double time) const override;
+  void Range(float* min, float* max) const override;
+  scoped_ptr<TimingFunction> Clone() const override;
 
  protected:
   CubicBezierTimingFunction(double x1, double y1, double x2, double y2);

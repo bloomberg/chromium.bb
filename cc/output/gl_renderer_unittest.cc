@@ -362,38 +362,34 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
  public:
   ForbidSynchronousCallContext() {}
 
-  virtual void getAttachedShaders(GLuint program,
-                                  GLsizei max_count,
-                                  GLsizei* count,
-                                  GLuint* shaders) override {
+  void getAttachedShaders(GLuint program,
+                          GLsizei max_count,
+                          GLsizei* count,
+                          GLuint* shaders) override {
     ADD_FAILURE();
   }
-  virtual GLint getAttribLocation(GLuint program, const GLchar* name) override {
+  GLint getAttribLocation(GLuint program, const GLchar* name) override {
     ADD_FAILURE();
     return 0;
   }
-  virtual void getBooleanv(GLenum pname, GLboolean* value) override {
+  void getBooleanv(GLenum pname, GLboolean* value) override { ADD_FAILURE(); }
+  void getBufferParameteriv(GLenum target,
+                            GLenum pname,
+                            GLint* value) override {
     ADD_FAILURE();
   }
-  virtual void getBufferParameteriv(GLenum target,
-                                    GLenum pname,
-                                    GLint* value) override {
-    ADD_FAILURE();
-  }
-  virtual GLenum getError() override {
+  GLenum getError() override {
     ADD_FAILURE();
     return GL_NO_ERROR;
   }
-  virtual void getFloatv(GLenum pname, GLfloat* value) override {
+  void getFloatv(GLenum pname, GLfloat* value) override { ADD_FAILURE(); }
+  void getFramebufferAttachmentParameteriv(GLenum target,
+                                           GLenum attachment,
+                                           GLenum pname,
+                                           GLint* value) override {
     ADD_FAILURE();
   }
-  virtual void getFramebufferAttachmentParameteriv(GLenum target,
-                                                   GLenum attachment,
-                                                   GLenum pname,
-                                                   GLint* value) override {
-    ADD_FAILURE();
-  }
-  virtual void getIntegerv(GLenum pname, GLint* value) override {
+  void getIntegerv(GLenum pname, GLint* value) override {
     if (pname == GL_MAX_TEXTURE_SIZE) {
       // MAX_TEXTURE_SIZE is cached client side, so it's OK to query.
       *value = 1024;
@@ -404,9 +400,7 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 
   // We allow querying the shader compilation and program link status in debug
   // mode, but not release.
-  virtual void getProgramiv(GLuint program,
-                            GLenum pname,
-                            GLint* value) override {
+  void getProgramiv(GLuint program, GLenum pname, GLint* value) override {
 #ifndef NDEBUG
     *value = 1;
 #else
@@ -414,7 +408,7 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 #endif
   }
 
-  virtual void getShaderiv(GLuint shader, GLenum pname, GLint* value) override {
+  void getShaderiv(GLuint shader, GLenum pname, GLint* value) override {
 #ifndef NDEBUG
     *value = 1;
 #else
@@ -422,55 +416,41 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 #endif
   }
 
-  virtual void getRenderbufferParameteriv(GLenum target,
-                                          GLenum pname,
-                                          GLint* value) override {
+  void getRenderbufferParameteriv(GLenum target,
+                                  GLenum pname,
+                                  GLint* value) override {
     ADD_FAILURE();
   }
 
-  virtual void getShaderPrecisionFormat(GLenum shadertype,
-                                        GLenum precisiontype,
-                                        GLint* range,
-                                        GLint* precision) override {
+  void getShaderPrecisionFormat(GLenum shadertype,
+                                GLenum precisiontype,
+                                GLint* range,
+                                GLint* precision) override {
     ADD_FAILURE();
   }
-  virtual void getTexParameterfv(GLenum target,
-                                 GLenum pname,
-                                 GLfloat* value) override {
+  void getTexParameterfv(GLenum target, GLenum pname, GLfloat* value) override {
     ADD_FAILURE();
   }
-  virtual void getTexParameteriv(GLenum target,
-                                 GLenum pname,
-                                 GLint* value) override {
+  void getTexParameteriv(GLenum target, GLenum pname, GLint* value) override {
     ADD_FAILURE();
   }
-  virtual void getUniformfv(GLuint program,
-                            GLint location,
-                            GLfloat* value) override {
+  void getUniformfv(GLuint program, GLint location, GLfloat* value) override {
     ADD_FAILURE();
   }
-  virtual void getUniformiv(GLuint program,
-                            GLint location,
-                            GLint* value) override {
+  void getUniformiv(GLuint program, GLint location, GLint* value) override {
     ADD_FAILURE();
   }
-  virtual GLint getUniformLocation(GLuint program,
-                                   const GLchar* name) override {
+  GLint getUniformLocation(GLuint program, const GLchar* name) override {
     ADD_FAILURE();
     return 0;
   }
-  virtual void getVertexAttribfv(GLuint index,
-                                 GLenum pname,
-                                 GLfloat* value) override {
+  void getVertexAttribfv(GLuint index, GLenum pname, GLfloat* value) override {
     ADD_FAILURE();
   }
-  virtual void getVertexAttribiv(GLuint index,
-                                 GLenum pname,
-                                 GLint* value) override {
+  void getVertexAttribiv(GLuint index, GLenum pname, GLint* value) override {
     ADD_FAILURE();
   }
-  virtual GLsizeiptr getVertexAttribOffset(GLuint index,
-                                           GLenum pname) override {
+  GLsizeiptr getVertexAttribOffset(GLuint index, GLenum pname) override {
     ADD_FAILURE();
     return 0;
   }
@@ -505,14 +485,12 @@ class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
  public:
   LoseContextOnFirstGetContext() {}
 
-  virtual void getProgramiv(GLuint program,
-                            GLenum pname,
-                            GLint* value) override {
+  void getProgramiv(GLuint program, GLenum pname, GLint* value) override {
     context_lost_ = true;
     *value = 0;
   }
 
-  virtual void getShaderiv(GLuint shader, GLenum pname, GLint* value) override {
+  void getShaderiv(GLuint shader, GLenum pname, GLint* value) override {
     context_lost_ = true;
     *value = 0;
   }
@@ -707,17 +685,15 @@ class VisibilityChangeIsLastCallTrackingContext
       : last_call_was_set_visibility_(false) {}
 
   // TestWebGraphicsContext3D methods.
-  virtual void flush() override { last_call_was_set_visibility_ = false; }
-  virtual void deleteTexture(GLuint) override {
+  void flush() override { last_call_was_set_visibility_ = false; }
+  void deleteTexture(GLuint) override { last_call_was_set_visibility_ = false; }
+  void deleteFramebuffer(GLuint) override {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteFramebuffer(GLuint) override {
+  void deleteQueryEXT(GLuint) override {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteQueryEXT(GLuint) override {
-    last_call_was_set_visibility_ = false;
-  }
-  virtual void deleteRenderbuffer(GLuint) override {
+  void deleteRenderbuffer(GLuint) override {
     last_call_was_set_visibility_ = false;
   }
 
@@ -989,14 +965,14 @@ class ScissorTestOnClearCheckingContext : public TestWebGraphicsContext3D {
  public:
   ScissorTestOnClearCheckingContext() : scissor_enabled_(false) {}
 
-  virtual void clear(GLbitfield) override { EXPECT_FALSE(scissor_enabled_); }
+  void clear(GLbitfield) override { EXPECT_FALSE(scissor_enabled_); }
 
-  virtual void enable(GLenum cap) override {
+  void enable(GLenum cap) override {
     if (cap == GL_SCISSOR_TEST)
       scissor_enabled_ = true;
   }
 
-  virtual void disable(GLenum cap) override {
+  void disable(GLenum cap) override {
     if (cap == GL_SCISSOR_TEST)
       scissor_enabled_ = false;
   }
@@ -1078,9 +1054,9 @@ class DiscardCheckingContext : public TestWebGraphicsContext3D {
     set_have_discard_framebuffer(true);
   }
 
-  virtual void discardFramebufferEXT(GLenum target,
-                                     GLsizei numAttachments,
-                                     const GLenum* attachments) override {
+  void discardFramebufferEXT(GLenum target,
+                             GLsizei numAttachments,
+                             const GLenum* attachments) override {
     ++discarded_;
   }
 
@@ -1099,7 +1075,7 @@ class NonReshapableOutputSurface : public FakeOutputSurface {
                           false) {
     surface_size_ = gfx::Size(500, 500);
   }
-  virtual void Reshape(const gfx::Size& size, float scale_factor) override {}
+  void Reshape(const gfx::Size& size, float scale_factor) override {}
   void set_fixed_size(const gfx::Size& size) { surface_size_ = size; }
 };
 
@@ -1264,13 +1240,12 @@ class FlippedScissorAndViewportContext : public TestWebGraphicsContext3D {
  public:
   FlippedScissorAndViewportContext()
       : did_call_viewport_(false), did_call_scissor_(false) {}
-  virtual ~FlippedScissorAndViewportContext() {
+  ~FlippedScissorAndViewportContext() override {
     EXPECT_TRUE(did_call_viewport_);
     EXPECT_TRUE(did_call_scissor_);
   }
 
-  virtual void viewport(GLint x, GLint y, GLsizei width, GLsizei height)
-      override {
+  void viewport(GLint x, GLint y, GLsizei width, GLsizei height) override {
     EXPECT_EQ(10, x);
     EXPECT_EQ(390, y);
     EXPECT_EQ(100, width);
@@ -1278,8 +1253,7 @@ class FlippedScissorAndViewportContext : public TestWebGraphicsContext3D {
     did_call_viewport_ = true;
   }
 
-  virtual void scissor(GLint x, GLint y, GLsizei width, GLsizei height)
-      override {
+  void scissor(GLint x, GLint y, GLsizei width, GLsizei height) override {
     EXPECT_EQ(30, x);
     EXPECT_EQ(450, y);
     EXPECT_EQ(20, width);

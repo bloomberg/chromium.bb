@@ -17,9 +17,9 @@ namespace {
 class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
  public:
   // Overridden from Rasterizer:
-  virtual void SetClient(RasterizerClient* client) override {}
-  virtual void Shutdown() override {}
-  virtual void ScheduleTasks(RasterTaskQueue* queue) override {
+  void SetClient(RasterizerClient* client) override {}
+  void Shutdown() override {}
+  void ScheduleTasks(RasterTaskQueue* queue) override {
     for (RasterTaskQueue::Item::Vector::const_iterator it =
              queue->items.begin();
          it != queue->items.end();
@@ -33,7 +33,7 @@ class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
       completed_tasks_.push_back(task);
     }
   }
-  virtual void CheckForCompletedTasks() override {
+  void CheckForCompletedTasks() override {
     for (RasterTask::Vector::iterator it = completed_tasks_.begin();
          it != completed_tasks_.end();
          ++it) {
@@ -49,12 +49,11 @@ class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
   }
 
   // Overridden from RasterizerTaskClient:
-  virtual scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+  scoped_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource) override {
     return nullptr;
   }
-  virtual void ReleaseBufferForRaster(
-      scoped_ptr<RasterBuffer> buffer) override {}
+  void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override {}
 
  private:
   RasterTask::Vector completed_tasks_;

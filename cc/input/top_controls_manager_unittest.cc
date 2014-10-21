@@ -35,24 +35,20 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
     root_scroll_layer_ = LayerImpl::Create(active_tree_.get(), 1);
   }
 
-  virtual ~MockTopControlsManagerClient() {}
+  ~MockTopControlsManagerClient() override {}
 
-  virtual void DidChangeTopControlsPosition() override {
+  void DidChangeTopControlsPosition() override {
     redraw_needed_ = true;
     update_draw_properties_needed_ = true;
   }
 
-  virtual bool HaveRootScrollLayer() const override {
-    return true;
-  }
+  bool HaveRootScrollLayer() const override { return true; }
 
-  virtual void SetControlsTopOffset(float offset) override {
+  void SetControlsTopOffset(float offset) override {
     top_controls_top_offset_ = offset;
   }
 
-  virtual float ControlsTopOffset() const override {
-    return top_controls_top_offset_;
-  }
+  float ControlsTopOffset() const override { return top_controls_top_offset_; }
 
   LayerImpl* rootScrollLayer() {
     return root_scroll_layer_.get();

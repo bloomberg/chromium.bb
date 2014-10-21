@@ -256,7 +256,7 @@ class LoopingBeginFrameObserver : public BeginFrameObserverMixIn {
  public:
   BeginFrameSource* source_;
 
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override {
+  void AsValueInto(base::debug::TracedValue* dict) const override {
     dict->SetString("type", "LoopingBeginFrameObserver");
     dict->BeginDictionary("source");
     source_->AsValueInto(dict);
@@ -265,7 +265,7 @@ class LoopingBeginFrameObserver : public BeginFrameObserverMixIn {
 
  protected:
   // BeginFrameObserverMixIn
-  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override {
+  bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override {
     return true;
   }
 };
@@ -297,7 +297,7 @@ class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
                                  base::SingleThreadTaskRunner* task_runner)
       : BackToBackBeginFrameSource(task_runner), now_src_(now_src) {}
 
-  virtual base::TimeTicks Now() override { return now_src_->Now(); }
+  base::TimeTicks Now() override { return now_src_->Now(); }
 
   scoped_refptr<TestNowSource> now_src_;
 };

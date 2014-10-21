@@ -94,30 +94,28 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return make_scoped_ptr(new LayerImpl(tree_impl, id));
   }
 
-  virtual ~LayerImpl();
+  ~LayerImpl() override;
 
   int id() const { return layer_id_; }
 
   // LayerAnimationValueProvider implementation.
-  virtual gfx::ScrollOffset ScrollOffsetForAnimation() const override;
+  gfx::ScrollOffset ScrollOffsetForAnimation() const override;
 
   // LayerAnimationValueObserver implementation.
-  virtual void OnFilterAnimated(const FilterOperations& filters) override;
-  virtual void OnOpacityAnimated(float opacity) override;
-  virtual void OnTransformAnimated(const gfx::Transform& transform) override;
-  virtual void OnScrollOffsetAnimated(
-      const gfx::ScrollOffset& scroll_offset) override;
-  virtual void OnAnimationWaitingForDeletion() override;
-  virtual bool IsActive() const override;
+  void OnFilterAnimated(const FilterOperations& filters) override;
+  void OnOpacityAnimated(float opacity) override;
+  void OnTransformAnimated(const gfx::Transform& transform) override;
+  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
+  void OnAnimationWaitingForDeletion() override;
+  bool IsActive() const override;
 
   // AnimationDelegate implementation.
-  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                                      Animation::TargetProperty target_property,
-                                      int group) override{};
-  virtual void NotifyAnimationFinished(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property,
-      int group) override;
+  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override{};
+  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                               Animation::TargetProperty target_property,
+                               int group) override;
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }

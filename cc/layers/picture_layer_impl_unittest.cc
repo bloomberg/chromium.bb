@@ -38,7 +38,7 @@ class MockCanvas : public SkCanvas {
  public:
   explicit MockCanvas(int w, int h) : SkCanvas(w, h) {}
 
-  virtual void drawRect(const SkRect& rect, const SkPaint& paint) override {
+  void drawRect(const SkRect& rect, const SkPaint& paint) override {
     // Capture calls before SkCanvas quickReject() kicks in.
     rects_.push_back(rect);
   }
@@ -2322,7 +2322,7 @@ TEST_F(PictureLayerImplTest, PinchingTooSmall) {
 
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
-  virtual void InitializeRenderer() override {
+  void InitializeRenderer() override {
     bool delegated_rendering = false;
     host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(
         scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
@@ -3643,7 +3643,7 @@ class PictureLayerImplTestWithDelegatingRenderer : public PictureLayerImplTest {
  public:
   PictureLayerImplTestWithDelegatingRenderer() : PictureLayerImplTest() {}
 
-  virtual void InitializeRenderer() override {
+  void InitializeRenderer() override {
     host_impl_.InitializeRenderer(FakeOutputSurface::CreateDelegating3d());
   }
 };

@@ -20,14 +20,12 @@ namespace {
 
 class MockContentLayerClient : public ContentLayerClient {
  public:
-  virtual void PaintContents(
+  void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::GraphicsContextStatus gc_status) override {}
-  virtual void DidChangeLayerCanUseLCDText() override {}
-  virtual bool FillsBoundsCompletely() const override {
-    return false;
-  };
+  void DidChangeLayerCanUseLCDText() override {}
+  bool FillsBoundsCompletely() const override { return false; };
 };
 
 TEST(PictureLayerTest, NoTilesIfEmptyBounds) {

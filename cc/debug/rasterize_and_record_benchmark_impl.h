@@ -24,11 +24,11 @@ class RasterizeAndRecordBenchmarkImpl : public MicroBenchmarkImpl {
       scoped_refptr<base::MessageLoopProxy> origin_loop,
       base::Value* value,
       const MicroBenchmarkImpl::DoneCallback& callback);
-  virtual ~RasterizeAndRecordBenchmarkImpl();
+  ~RasterizeAndRecordBenchmarkImpl() override;
 
   // Implements MicroBenchmark interface.
-  virtual void DidCompleteCommit(LayerTreeHostImpl* host) override;
-  virtual void RunOnLayer(PictureLayerImpl* layer) override;
+  void DidCompleteCommit(LayerTreeHostImpl* host) override;
+  void RunOnLayer(PictureLayerImpl* layer) override;
 
  private:
   void Run(LayerImpl* layer);

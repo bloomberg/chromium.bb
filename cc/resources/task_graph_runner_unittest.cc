@@ -118,7 +118,7 @@ class TaskGraphRunnerTestBase {
         : test_(test), namespace_index_(namespace_index), id_(id) {}
 
     // Overridden from Task:
-    virtual void RunOnWorkerThread() override {
+    void RunOnWorkerThread() override {
       test_->RunTaskOnWorkerThread(namespace_index_, id_);
     }
 
@@ -127,7 +127,7 @@ class TaskGraphRunnerTestBase {
     }
 
    protected:
-    virtual ~FakeTaskImpl() {}
+    ~FakeTaskImpl() override {}
 
    private:
     TaskGraphRunnerTestBase* test_;
@@ -145,10 +145,10 @@ class TaskGraphRunnerTestBase {
         : FakeTaskImpl(test, namespace_index, id) {}
 
     // Overridden from FakeTaskImpl:
-    virtual void CompleteOnOriginThread() override {}
+    void CompleteOnOriginThread() override {}
 
    private:
-    virtual ~FakeDependentTaskImpl() {}
+    ~FakeDependentTaskImpl() override {}
 
     DISALLOW_COPY_AND_ASSIGN(FakeDependentTaskImpl);
   };
@@ -189,7 +189,7 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
 
  private:
   // Overridden from base::DelegateSimpleThread::Delegate:
-  virtual void Run() override { task_graph_runner_->Run(); }
+  void Run() override { task_graph_runner_->Run(); }
 
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
 };
@@ -299,7 +299,7 @@ class TaskGraphRunnerSingleThreadTest
 
  private:
   // Overridden from base::DelegateSimpleThread::Delegate:
-  virtual void Run() override { task_graph_runner_->Run(); }
+  void Run() override { task_graph_runner_->Run(); }
 
   scoped_ptr<base::DelegateSimpleThread> worker_;
 };

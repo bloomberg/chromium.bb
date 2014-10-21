@@ -25,11 +25,10 @@ class CC_EXPORT ScopedUIResource : public UIResourceClient {
  public:
   static scoped_ptr<ScopedUIResource> Create(LayerTreeHost* host,
                                              const UIResourceBitmap& bitmap);
-  virtual ~ScopedUIResource();
+  ~ScopedUIResource() override;
 
   // UIResourceClient implementation.
-  virtual UIResourceBitmap GetBitmap(UIResourceId uid,
-                                     bool resource_lost) override;
+  UIResourceBitmap GetBitmap(UIResourceId uid, bool resource_lost) override;
   UIResourceId id() { return id_; }
 
  protected:

@@ -18,7 +18,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
                         Proxy* proxy,
                         SharedBitmapManager* manager);
-  virtual ~FakeLayerTreeHostImpl();
+  ~FakeLayerTreeHostImpl() override;
 
   void ForcePrepareToDraw() {
     LayerTreeHostImpl::FrameData frame_data;
@@ -26,9 +26,9 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
     DidDrawAllLayers(frame_data);
   }
 
-  virtual void CreatePendingTree() override;
+  void CreatePendingTree() override;
 
-  virtual BeginFrameArgs CurrentBeginFrameArgs() const override;
+  BeginFrameArgs CurrentBeginFrameArgs() const override;
   void SetCurrentBeginFrameArgs(const BeginFrameArgs& args);
   void UpdateNumChildrenAndDrawPropertiesForActiveTree();
   static void UpdateNumChildrenAndDrawProperties(LayerTreeImpl* layerTree);

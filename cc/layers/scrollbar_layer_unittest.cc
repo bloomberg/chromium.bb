@@ -568,7 +568,7 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
 
   void SetScrollbarBounds(const gfx::Size& bounds) { bounds_ = bounds; }
 
-  virtual void BeginTest() override {
+  void BeginTest() override {
     scroll_layer_ = Layer::Create();
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
@@ -583,7 +583,7 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommitAndDrawFrame() override {
+  void DidCommitAndDrawFrame() override {
     const int kMaxTextureSize =
         layer_tree_host()->GetRendererCapabilities().max_texture_size;
 
@@ -598,7 +598,7 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
     EndTest();
   }
 
-  virtual void AfterTest() override {}
+  void AfterTest() override {}
 
  private:
   scoped_refptr<PaintedScrollbarLayer> scrollbar_layer_;
@@ -635,7 +635,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
     InitializeSingleThreaded(client, base::MessageLoopProxy::current());
   }
 
-  virtual UIResourceId CreateUIResource(UIResourceClient* content) override {
+  UIResourceId CreateUIResource(UIResourceClient* content) override {
     total_ui_resource_created_++;
     UIResourceId nid = next_id_++;
     ui_resource_bitmap_map_.insert(
@@ -644,7 +644,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   }
 
   // Deletes a UI resource.  May safely be called more than once.
-  virtual void DeleteUIResource(UIResourceId id) override {
+  void DeleteUIResource(UIResourceId id) override {
     UIResourceBitmapMap::iterator iter = ui_resource_bitmap_map_.find(id);
     if (iter != ui_resource_bitmap_map_.end()) {
       ui_resource_bitmap_map_.erase(iter);

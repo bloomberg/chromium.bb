@@ -29,13 +29,12 @@ bool isConstSharedQuadStatePointer(SharedQuadState* ptr) {
 
 class SimpleDrawQuad : public DrawQuad {
  public:
-  virtual ~SimpleDrawQuad() {}
-  virtual void IterateResources(
-      const ResourceIteratorCallback& callback) override {}
+  ~SimpleDrawQuad() override {}
+  void IterateResources(const ResourceIteratorCallback& callback) override {}
 
   void set_value(int val) { value = val; }
   int get_value() { return value; }
-  virtual void ExtendValue(base::debug::TracedValue* value) const override {}
+  void ExtendValue(base::debug::TracedValue* value) const override {}
 
  private:
   int value;

@@ -33,34 +33,32 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       OutputSurface* output_surface,
       ResourceProvider* resource_provider);
 
-  virtual ~SoftwareRenderer();
-  virtual const RendererCapabilitiesImpl& Capabilities() const override;
-  virtual void Finish() override;
-  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) override;
-  virtual void ReceiveSwapBuffersAck(
-      const CompositorFrameAck& ack) override;
-  virtual void DiscardBackbuffer() override;
-  virtual void EnsureBackbuffer() override;
+  ~SoftwareRenderer() override;
+  const RendererCapabilitiesImpl& Capabilities() const override;
+  void Finish() override;
+  void SwapBuffers(const CompositorFrameMetadata& metadata) override;
+  void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) override;
+  void DiscardBackbuffer() override;
+  void EnsureBackbuffer() override;
 
  protected:
-  virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
-  virtual bool BindFramebufferToTexture(
-      DrawingFrame* frame,
-      const ScopedResource* texture,
-      const gfx::Rect& target_rect) override;
-  virtual void SetDrawViewport(const gfx::Rect& window_space_viewport) override;
-  virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
-  virtual void DiscardPixels(bool has_external_stencil_test,
-                             bool draw_rect_covers_full_surface) override;
-  virtual void ClearFramebuffer(DrawingFrame* frame,
-                                bool has_external_stencil_test) override;
-  virtual void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) override;
-  virtual void BeginDrawingFrame(DrawingFrame* frame) override;
-  virtual void FinishDrawingFrame(DrawingFrame* frame) override;
-  virtual bool FlippedFramebuffer() const override;
-  virtual void EnsureScissorTestEnabled() override;
-  virtual void EnsureScissorTestDisabled() override;
-  virtual void CopyCurrentRenderPassToBitmap(
+  void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
+  bool BindFramebufferToTexture(DrawingFrame* frame,
+                                const ScopedResource* texture,
+                                const gfx::Rect& target_rect) override;
+  void SetDrawViewport(const gfx::Rect& window_space_viewport) override;
+  void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
+  void DiscardPixels(bool has_external_stencil_test,
+                     bool draw_rect_covers_full_surface) override;
+  void ClearFramebuffer(DrawingFrame* frame,
+                        bool has_external_stencil_test) override;
+  void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) override;
+  void BeginDrawingFrame(DrawingFrame* frame) override;
+  void FinishDrawingFrame(DrawingFrame* frame) override;
+  bool FlippedFramebuffer() const override;
+  void EnsureScissorTestEnabled() override;
+  void EnsureScissorTestDisabled() override;
+  void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) override;
 
@@ -69,7 +67,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
                    OutputSurface* output_surface,
                    ResourceProvider* resource_provider);
 
-  virtual void DidChangeVisibility() override;
+  void DidChangeVisibility() override;
 
  private:
   void ClearCanvas(SkColor color);

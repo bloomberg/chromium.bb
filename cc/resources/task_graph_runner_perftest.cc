@@ -27,12 +27,12 @@ class PerfTaskImpl : public Task {
   PerfTaskImpl() {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() override {}
+  void RunOnWorkerThread() override {}
 
   void Reset() { did_run_ = false; }
 
  private:
-  virtual ~PerfTaskImpl() {}
+  ~PerfTaskImpl() override {}
 
   DISALLOW_COPY_AND_ASSIGN(PerfTaskImpl);
 };

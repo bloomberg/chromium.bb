@@ -14,8 +14,7 @@ namespace cc {
 class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                                            public Layer {
  public:
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   static scoped_refptr<SolidColorScrollbarLayer> Create(
       ScrollbarOrientation orientation,
@@ -25,20 +24,20 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
       int scroll_layer_id);
 
   // Layer overrides.
-  virtual bool OpacityCanAnimateOnImplThread() const override;
-  virtual ScrollbarLayerInterface* ToScrollbarLayer() override;
+  bool OpacityCanAnimateOnImplThread() const override;
+  ScrollbarLayerInterface* ToScrollbarLayer() override;
 
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  void PushScrollClipPropertiesTo(LayerImpl* layer) override;
 
-  virtual void SetNeedsDisplayRect(const gfx::Rect& rect) override;
+  void SetNeedsDisplayRect(const gfx::Rect& rect) override;
 
   // ScrollbarLayerInterface
-  virtual int ScrollLayerId() const override;
-  virtual void SetScrollLayer(int layer_id) override;
-  virtual void SetClipLayer(int layer_id) override;
+  int ScrollLayerId() const override;
+  void SetScrollLayer(int layer_id) override;
+  void SetClipLayer(int layer_id) override;
 
-  virtual ScrollbarOrientation orientation() const override;
+  ScrollbarOrientation orientation() const override;
 
  protected:
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,
@@ -46,7 +45,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                            int track_start,
                            bool is_left_side_vertical_scrollbar,
                            int scroll_layer_id);
-  virtual ~SolidColorScrollbarLayer();
+  ~SolidColorScrollbarLayer() override;
 
  private:
   int scroll_layer_id_;

@@ -20,13 +20,13 @@ class LayerTreeHostMasksPixelTest : public LayerTreePixelTest {};
 class MaskContentLayerClient : public ContentLayerClient {
  public:
   explicit MaskContentLayerClient(const gfx::Size& bounds) : bounds_(bounds) {}
-  virtual ~MaskContentLayerClient() {}
+  ~MaskContentLayerClient() override {}
 
-  virtual void DidChangeLayerCanUseLCDText() override {}
+  void DidChangeLayerCanUseLCDText() override {}
 
-  virtual bool FillsBoundsCompletely() const override { return false; }
+  bool FillsBoundsCompletely() const override { return false; }
 
-  virtual void PaintContents(
+  void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& rect,
       ContentLayerClient::GraphicsContextStatus gc_status) override {

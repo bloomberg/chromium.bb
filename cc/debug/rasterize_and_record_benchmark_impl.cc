@@ -37,7 +37,7 @@ class BenchmarkRasterTask : public Task {
         best_time_(base::TimeDelta::Max()) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() override {
+  void RunOnWorkerThread() override {
     // Parameters for LapTimer.
     const int kTimeLimitMillis = 1;
     const int kWarmupRuns = 0;
@@ -76,7 +76,7 @@ class BenchmarkRasterTask : public Task {
   base::TimeDelta GetBestTime() const { return best_time_; }
 
  private:
-  virtual ~BenchmarkRasterTask() {}
+  ~BenchmarkRasterTask() override {}
 
   PicturePileImpl* picture_pile_;
   gfx::Rect content_rect_;
@@ -94,50 +94,46 @@ class FixedInvalidationPictureLayerTilingClient
       const Region invalidation)
       : base_client_(base_client), invalidation_(invalidation) {}
 
-  virtual scoped_refptr<Tile> CreateTile(
-      PictureLayerTiling* tiling,
-      const gfx::Rect& content_rect) override {
+  scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
+                                 const gfx::Rect& content_rect) override {
     return base_client_->CreateTile(tiling, content_rect);
   }
 
-  virtual PicturePileImpl* GetPile() override {
-    return base_client_->GetPile();
-  }
+  PicturePileImpl* GetPile() override { return base_client_->GetPile(); }
 
-  virtual gfx::Size CalculateTileSize(
-      const gfx::Size& content_bounds) const override {
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override {
     return base_client_->CalculateTileSize(content_bounds);
   }
 
   // This is the only function that returns something different from the base
   // client.
-  virtual const Region* GetInvalidation() override { return &invalidation_; }
+  const Region* GetInvalidation() override { return &invalidation_; }
 
-  virtual const PictureLayerTiling* GetTwinTiling(
+  const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const override {
     return base_client_->GetTwinTiling(tiling);
   }
 
-  virtual PictureLayerTiling* GetRecycledTwinTiling(
+  PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) override {
     return base_client_->GetRecycledTwinTiling(tiling);
   }
 
-  virtual size_t GetMaxTilesForInterestArea() const override {
+  size_t GetMaxTilesForInterestArea() const override {
     return base_client_->GetMaxTilesForInterestArea();
   }
 
-  virtual float GetSkewportTargetTimeInSeconds() const override {
+  float GetSkewportTargetTimeInSeconds() const override {
     return base_client_->GetSkewportTargetTimeInSeconds();
   }
 
-  virtual int GetSkewportExtrapolationLimitInContentPixels() const override {
+  int GetSkewportExtrapolationLimitInContentPixels() const override {
     return base_client_->GetSkewportExtrapolationLimitInContentPixels();
   }
 
-  virtual WhichTree GetTree() const override { return base_client_->GetTree(); }
+  WhichTree GetTree() const override { return base_client_->GetTree(); }
 
-  virtual bool RequiresHighResToDraw() const override {
+  bool RequiresHighResToDraw() const override {
     return base_client_->RequiresHighResToDraw();
   }
 

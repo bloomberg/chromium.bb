@@ -27,12 +27,12 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
    public:
     Resource(BitmapContentLayerUpdater* updater,
              scoped_ptr<PrioritizedResource> resource);
-    virtual ~Resource();
+    ~Resource() override;
 
-    virtual void Update(ResourceUpdateQueue* queue,
-                        const gfx::Rect& source_rect,
-                        const gfx::Vector2d& dest_offset,
-                        bool partial_update) override;
+    void Update(ResourceUpdateQueue* queue,
+                const gfx::Rect& source_rect,
+                const gfx::Vector2d& dest_offset,
+                bool partial_update) override;
 
    private:
     BitmapContentLayerUpdater* updater_;
@@ -45,27 +45,27 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
       RenderingStatsInstrumentation* stats_instrumenation,
       int layer_id);
 
-  virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
+  scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) override;
-  virtual void PrepareToUpdate(const gfx::Size& content_size,
-                               const gfx::Rect& paint_rect,
-                               const gfx::Size& tile_size,
-                               float contents_width_scale,
-                               float contents_height_scale) override;
+  void PrepareToUpdate(const gfx::Size& content_size,
+                       const gfx::Rect& paint_rect,
+                       const gfx::Size& tile_size,
+                       float contents_width_scale,
+                       float contents_height_scale) override;
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* resource,
                      const gfx::Rect& source_rect,
                      const gfx::Vector2d& dest_offset,
                      bool partial_update);
-  virtual void SetOpaque(bool opaque) override;
-  virtual void ReduceMemoryUsage() override;
+  void SetOpaque(bool opaque) override;
+  void ReduceMemoryUsage() override;
 
  protected:
   BitmapContentLayerUpdater(
       scoped_ptr<LayerPainter> painter,
       RenderingStatsInstrumentation* stats_instrumenation,
       int layer_id);
-  virtual ~BitmapContentLayerUpdater();
+  ~BitmapContentLayerUpdater() override;
 
   SkBitmap bitmap_backing_;
   skia::RefPtr<SkCanvas> canvas_;

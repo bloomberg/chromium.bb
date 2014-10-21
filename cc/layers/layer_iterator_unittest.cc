@@ -31,7 +31,7 @@ class TestLayer : public Layer {
   int count_representing_contributing_surface_;
   int count_representing_itself_;
 
-  virtual bool DrawsContent() const override { return draws_content_; }
+  bool DrawsContent() const override { return draws_content_; }
   void set_draws_content(bool draws_content) { draws_content_ = draws_content; }
 
  private:
@@ -39,7 +39,7 @@ class TestLayer : public Layer {
     SetBounds(gfx::Size(100, 100));
     SetPosition(gfx::Point());
   }
-  virtual ~TestLayer() {}
+  ~TestLayer() override {}
 
   bool draws_content_;
 };

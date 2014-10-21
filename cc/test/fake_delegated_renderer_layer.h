@@ -17,12 +17,11 @@ class FakeDelegatedRendererLayer : public DelegatedRendererLayer {
         new FakeDelegatedRendererLayer(frame_provider));
   }
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
  protected:
   explicit FakeDelegatedRendererLayer(DelegatedFrameProvider* frame_provider);
-  virtual ~FakeDelegatedRendererLayer();
+  ~FakeDelegatedRendererLayer() override;
 };
 
 }  // namespace cc

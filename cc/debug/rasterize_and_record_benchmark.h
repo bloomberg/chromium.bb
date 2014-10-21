@@ -27,13 +27,13 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
   explicit RasterizeAndRecordBenchmark(
       scoped_ptr<base::Value> value,
       const MicroBenchmark::DoneCallback& callback);
-  virtual ~RasterizeAndRecordBenchmark();
+  ~RasterizeAndRecordBenchmark() override;
 
   // Implements MicroBenchmark interface.
-  virtual void DidUpdateLayers(LayerTreeHost* host) override;
-  virtual void RunOnLayer(PictureLayer* layer) override;
+  void DidUpdateLayers(LayerTreeHost* host) override;
+  void RunOnLayer(PictureLayer* layer) override;
 
-  virtual scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
+  scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
       scoped_refptr<base::MessageLoopProxy> origin_loop) override;
 
  private:

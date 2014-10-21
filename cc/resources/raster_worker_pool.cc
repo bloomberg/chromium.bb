@@ -36,13 +36,11 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
     }
   }
 
-  virtual ~RasterTaskGraphRunner() { NOTREACHED(); }
+  ~RasterTaskGraphRunner() override { NOTREACHED(); }
 
  private:
   // Overridden from base::DelegateSimpleThread::Delegate:
-  virtual void Run() override {
-    TaskGraphRunner::Run();
-  }
+  void Run() override { TaskGraphRunner::Run(); }
 
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
 };
@@ -63,18 +61,18 @@ class RasterFinishedTaskImpl : public RasterizerTask {
         on_raster_finished_callback_(on_raster_finished_callback) {}
 
   // Overridden from Task:
-  virtual void RunOnWorkerThread() override {
+  void RunOnWorkerThread() override {
     TRACE_EVENT0("cc", "RasterFinishedTaskImpl::RunOnWorkerThread");
     RasterFinished();
   }
 
   // Overridden from RasterizerTask:
-  virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
-  virtual void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
-  virtual void RunReplyOnOriginThread() override {}
+  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
+  void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
+  void RunReplyOnOriginThread() override {}
 
  protected:
-  virtual ~RasterFinishedTaskImpl() {}
+  ~RasterFinishedTaskImpl() override {}
 
   void RasterFinished() {
     task_runner_->PostTask(FROM_HERE, on_raster_finished_callback_);

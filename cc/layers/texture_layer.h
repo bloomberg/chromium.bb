@@ -94,8 +94,7 @@ class CC_EXPORT TextureLayer : public Layer {
   // Resets the texture.
   void ClearTexture();
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   // Sets whether this texture should be Y-flipped at draw time. Defaults to
   // true.
@@ -134,18 +133,18 @@ class CC_EXPORT TextureLayer : public Layer {
   // TODO(danakj): Remove this when pepper doesn't need it. crbug.com/350204
   void SetTextureMailboxWithoutReleaseCallback(const TextureMailbox& mailbox);
 
-  virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override;
+  void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override;
 
-  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
+  void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
 
  protected:
   explicit TextureLayer(TextureLayerClient* client);
-  virtual ~TextureLayer();
-  virtual bool HasDrawableContent() const override;
+  ~TextureLayer() override;
+  bool HasDrawableContent() const override;
 
  private:
   void SetTextureMailboxInternal(

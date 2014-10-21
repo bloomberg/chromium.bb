@@ -20,10 +20,10 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
   int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
 
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
   scoped_ptr<base::AutoReset<bool>> IgnoreSetNeedsCommit();
 
@@ -45,7 +45,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
  private:
   FakePaintedScrollbarLayer(FakeScrollbar* fake_scrollbar,
                             int scrolling_layer_id);
-  virtual ~FakePaintedScrollbarLayer();
+  ~FakePaintedScrollbarLayer() override;
 
   int update_count_;
   size_t push_properties_count_;

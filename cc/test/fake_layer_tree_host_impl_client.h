@@ -13,35 +13,32 @@ namespace cc {
 class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
  public:
   // LayerTreeHostImplClient implementation.
-  virtual void UpdateRendererCapabilitiesOnImplThread() override {}
-  virtual void DidLoseOutputSurfaceOnImplThread() override {}
-  virtual void CommitVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) override {}
-  virtual void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override {}
-  virtual void SetMaxSwapsPendingOnImplThread(int max) override {}
-  virtual void DidSwapBuffersOnImplThread() override {}
-  virtual void DidSwapBuffersCompleteOnImplThread() override {}
-  virtual void OnCanDrawStateChanged(bool can_draw) override {}
-  virtual void NotifyReadyToActivate() override {}
-  virtual void SetNeedsRedrawOnImplThread() override {}
-  virtual void SetNeedsRedrawRectOnImplThread(
-    const gfx::Rect& damage_rect) override {}
-  virtual void SetNeedsAnimateOnImplThread() override {}
-  virtual void DidInitializeVisibleTileOnImplThread() override {}
-  virtual void SetNeedsCommitOnImplThread() override {}
-  virtual void SetNeedsManageTilesOnImplThread() override {}
-  virtual void PostAnimationEventsToMainThreadOnImplThread(
+  void UpdateRendererCapabilitiesOnImplThread() override {}
+  void DidLoseOutputSurfaceOnImplThread() override {}
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override {}
+  void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override {}
+  void SetMaxSwapsPendingOnImplThread(int max) override {}
+  void DidSwapBuffersOnImplThread() override {}
+  void DidSwapBuffersCompleteOnImplThread() override {}
+  void OnCanDrawStateChanged(bool can_draw) override {}
+  void NotifyReadyToActivate() override {}
+  void SetNeedsRedrawOnImplThread() override {}
+  void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) override {}
+  void SetNeedsAnimateOnImplThread() override {}
+  void DidInitializeVisibleTileOnImplThread() override {}
+  void SetNeedsCommitOnImplThread() override {}
+  void SetNeedsManageTilesOnImplThread() override {}
+  void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events) override {}
-  virtual bool ReduceContentsTextureMemoryOnImplThread(
-      size_t limit_bytes,
-      int priority_cutoff) override;
-  virtual bool IsInsideDraw() override;
-  virtual void RenewTreePriority() override {}
-  virtual void PostDelayedScrollbarFadeOnImplThread(
-      const base::Closure& start_fade,
-      base::TimeDelta delay) override {}
-  virtual void DidActivateSyncTree() override {}
-  virtual void DidManageTiles() override {}
+  bool ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
+                                               int priority_cutoff) override;
+  bool IsInsideDraw() override;
+  void RenewTreePriority() override {}
+  void PostDelayedScrollbarFadeOnImplThread(const base::Closure& start_fade,
+                                            base::TimeDelta delay) override {}
+  void DidActivateSyncTree() override {}
+  void DidManageTiles() override {}
 };
 
 }  // namespace cc

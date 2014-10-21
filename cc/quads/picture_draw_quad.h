@@ -20,7 +20,7 @@ namespace cc {
 class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
  public:
   PictureDrawQuad();
-  virtual ~PictureDrawQuad();
+  ~PictureDrawQuad() override;
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -50,13 +50,12 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   scoped_refptr<PicturePileImpl> picture_pile;
   ResourceFormat texture_format;
 
-  virtual void IterateResources(const ResourceIteratorCallback& callback)
-      override;
+  void IterateResources(const ResourceIteratorCallback& callback) override;
 
   static const PictureDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

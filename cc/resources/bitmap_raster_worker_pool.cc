@@ -24,10 +24,10 @@ class RasterBufferImpl : public RasterBuffer {
       : lock_(resource_provider, resource->id()) {}
 
   // Overridden from RasterBuffer:
-  virtual void Playback(const PicturePileImpl* picture_pile,
-                        const gfx::Rect& rect,
-                        float scale,
-                        RenderingStatsInstrumentation* stats) override {
+  void Playback(const PicturePileImpl* picture_pile,
+                const gfx::Rect& rect,
+                float scale,
+                RenderingStatsInstrumentation* stats) override {
     picture_pile->RasterToBitmap(lock_.sk_canvas(), rect, scale, stats);
   }
 

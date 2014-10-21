@@ -43,10 +43,10 @@ class LayerWithForcedDrawsContent : public Layer {
  public:
   LayerWithForcedDrawsContent() {}
 
-  virtual bool DrawsContent() const override;
+  bool DrawsContent() const override;
 
  private:
-  virtual ~LayerWithForcedDrawsContent() {}
+  ~LayerWithForcedDrawsContent() override {}
 };
 
 bool LayerWithForcedDrawsContent::DrawsContent() const { return true; }
@@ -54,13 +54,13 @@ bool LayerWithForcedDrawsContent::DrawsContent() const { return true; }
 class MockContentLayerClient : public ContentLayerClient {
  public:
   MockContentLayerClient() {}
-  virtual ~MockContentLayerClient() {}
-  virtual void PaintContents(
+  ~MockContentLayerClient() override {}
+  void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::GraphicsContextStatus gc_status) override {}
-  virtual void DidChangeLayerCanUseLCDText() override {}
-  virtual bool FillsBoundsCompletely() const override { return false; }
+  void DidChangeLayerCanUseLCDText() override {}
+  bool FillsBoundsCompletely() const override { return false; }
 };
 
 scoped_refptr<FakePictureLayer> CreateDrawablePictureLayer(
@@ -4031,10 +4031,10 @@ class NoScaleContentLayer : public ContentLayer {
     return make_scoped_refptr(new NoScaleContentLayer(client));
   }
 
-  virtual void CalculateContentsScale(float ideal_contents_scale,
-                                      float* contents_scale_x,
-                                      float* contents_scale_y,
-                                      gfx::Size* content_bounds) override {
+  void CalculateContentsScale(float ideal_contents_scale,
+                              float* contents_scale_x,
+                              float* contents_scale_y,
+                              gfx::Size* content_bounds) override {
     // Skip over the ContentLayer to the base Layer class.
     Layer::CalculateContentsScale(ideal_contents_scale,
                                   contents_scale_x,
@@ -4045,7 +4045,7 @@ class NoScaleContentLayer : public ContentLayer {
  protected:
   explicit NoScaleContentLayer(ContentLayerClient* client)
       : ContentLayer(client) {}
-  virtual ~NoScaleContentLayer() {}
+  ~NoScaleContentLayer() override {}
 };
 
 scoped_refptr<NoScaleContentLayer> CreateNoScaleDrawableContentLayer(
@@ -7771,7 +7771,7 @@ class AnimationScaleFactorTrackingLayerImpl : public LayerImpl {
         new AnimationScaleFactorTrackingLayerImpl(tree_impl, id));
   }
 
-  virtual ~AnimationScaleFactorTrackingLayerImpl() {}
+  ~AnimationScaleFactorTrackingLayerImpl() override {}
 
  private:
   explicit AnimationScaleFactorTrackingLayerImpl(LayerTreeImpl* tree_impl,

@@ -37,8 +37,8 @@ class ProxyTest : public LayerTreeTest {
     RunTest(threaded, delegating_renderer, impl_side_painting);
   }
 
-  virtual void BeginTest() override {}
-  virtual void AfterTest() override {}
+  void BeginTest() override {}
+  void AfterTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyTest);
@@ -46,30 +46,24 @@ class ProxyTest : public LayerTreeTest {
 
 class ProxyTestScheduledActionsBasic : public ProxyTest {
  protected:
-  virtual void BeginTest() override {
-    proxy()->SetNeedsCommit();
-  }
+  void BeginTest() override { proxy()->SetNeedsCommit(); }
 
-  virtual void ScheduledActionBeginOutputSurfaceCreation() override {
+  void ScheduledActionBeginOutputSurfaceCreation() override {
     EXPECT_EQ(0, action_phase_++);
   }
 
-  virtual void ScheduledActionSendBeginMainFrame() override {
+  void ScheduledActionSendBeginMainFrame() override {
     EXPECT_EQ(1, action_phase_++);
   }
 
-  virtual void ScheduledActionCommit() override {
-    EXPECT_EQ(2, action_phase_++);
-  }
+  void ScheduledActionCommit() override { EXPECT_EQ(2, action_phase_++); }
 
-  virtual void ScheduledActionDrawAndSwapIfPossible() override {
+  void ScheduledActionDrawAndSwapIfPossible() override {
     EXPECT_EQ(3, action_phase_++);
     EndTest();
   }
 
-  virtual void AfterTest() override {
-    EXPECT_EQ(4, action_phase_);
-  }
+  void AfterTest() override { EXPECT_EQ(4, action_phase_); }
 
   ProxyTestScheduledActionsBasic() : action_phase_(0) {
   }
@@ -109,7 +103,7 @@ class ThreadProxyTestSetNeedsCommit : public ThreadProxyTest {
   ThreadProxyTestSetNeedsCommit() {}
   virtual ~ThreadProxyTestSetNeedsCommit() {}
 
-  virtual void BeginTest() override {
+  void BeginTest() override {
     EXPECT_FALSE(ThreadProxyMainOnly().commit_requested);
     EXPECT_FALSE(ThreadProxyMainOnly().commit_request_sent_to_impl_thread);
 
@@ -119,7 +113,7 @@ class ThreadProxyTestSetNeedsCommit : public ThreadProxyTest {
     EXPECT_TRUE(ThreadProxyMainOnly().commit_request_sent_to_impl_thread);
   }
 
-  virtual void DidBeginMainFrame() override {
+  void DidBeginMainFrame() override {
     EXPECT_FALSE(ThreadProxyMainOnly().commit_requested);
     EXPECT_FALSE(ThreadProxyMainOnly().commit_request_sent_to_impl_thread);
 

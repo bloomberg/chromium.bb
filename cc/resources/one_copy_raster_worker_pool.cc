@@ -32,7 +32,7 @@ class RasterBufferImpl : public RasterBuffer {
             resource_provider_,
             raster_resource_->id())) {}
 
-  virtual ~RasterBufferImpl() {
+  ~RasterBufferImpl() override {
     // First unlock raster resource.
     lock_.reset();
 
@@ -45,10 +45,10 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
   // Overridden from RasterBuffer:
-  virtual void Playback(const PicturePileImpl* picture_pile,
-                        const gfx::Rect& rect,
-                        float scale,
-                        RenderingStatsInstrumentation* stats) override {
+  void Playback(const PicturePileImpl* picture_pile,
+                const gfx::Rect& rect,
+                float scale,
+                RenderingStatsInstrumentation* stats) override {
     gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_->gpu_memory_buffer();
     if (!gpu_memory_buffer)
       return;

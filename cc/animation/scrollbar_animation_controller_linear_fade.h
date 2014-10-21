@@ -22,9 +22,9 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
       base::TimeDelta resize_delay_before_starting,
       base::TimeDelta duration);
 
-  virtual ~ScrollbarAnimationControllerLinearFade();
+  ~ScrollbarAnimationControllerLinearFade() override;
 
-  virtual void DidScrollUpdate(bool on_resize) override;
+  void DidScrollUpdate(bool on_resize) override;
 
  protected:
   ScrollbarAnimationControllerLinearFade(
@@ -34,7 +34,7 @@ class CC_EXPORT ScrollbarAnimationControllerLinearFade
       base::TimeDelta resize_delay_before_starting,
       base::TimeDelta duration);
 
-  virtual void RunAnimationFrame(float progress) override;
+  void RunAnimationFrame(float progress) override;
 
  private:
   float OpacityAtTime(base::TimeTicks now) const;

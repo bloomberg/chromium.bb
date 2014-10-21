@@ -14,13 +14,13 @@ class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
  public:
   UnittestOnlyBenchmark(scoped_ptr<base::Value> value,
                         const DoneCallback& callback);
-  virtual ~UnittestOnlyBenchmark();
+  ~UnittestOnlyBenchmark() override;
 
-  virtual void DidUpdateLayers(LayerTreeHost* host) override;
-  virtual bool ProcessMessage(scoped_ptr<base::Value> value) override;
+  void DidUpdateLayers(LayerTreeHost* host) override;
+  bool ProcessMessage(scoped_ptr<base::Value> value) override;
 
  protected:
-  virtual scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
+  scoped_ptr<MicroBenchmarkImpl> CreateBenchmarkImpl(
       scoped_refptr<base::MessageLoopProxy> origin_loop) override;
 
  private:

@@ -17,10 +17,9 @@ namespace {
 class TestSurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   TestSurfaceFactoryClient() {}
-  virtual ~TestSurfaceFactoryClient() {}
+  ~TestSurfaceFactoryClient() override {}
 
-  virtual void ReturnResources(
-      const ReturnedResourceArray& resources) override {
+  void ReturnResources(const ReturnedResourceArray& resources) override {
     returned_resources_.insert(
         returned_resources_.end(), resources.begin(), resources.end());
   }

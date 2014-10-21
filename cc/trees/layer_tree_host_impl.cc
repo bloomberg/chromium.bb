@@ -176,12 +176,12 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
         new LayerTreeHostImplTimeSourceAdapter(layer_tree_host_impl,
                                                time_source));
   }
-  virtual ~LayerTreeHostImplTimeSourceAdapter() {
+  ~LayerTreeHostImplTimeSourceAdapter() override {
     time_source_->SetClient(NULL);
     time_source_->SetActive(false);
   }
 
-  virtual void OnTimerTick() override {
+  void OnTimerTick() override {
     // In single threaded mode we attempt to simulate changing the current
     // thread by maintaining a fake thread id. When we switch from one
     // thread to another, we construct DebugScopedSetXXXThread objects that

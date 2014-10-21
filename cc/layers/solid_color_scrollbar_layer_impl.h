@@ -20,16 +20,15 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
       int track_start,
       bool is_left_side_vertical_scrollbar,
       bool is_overlay);
-  virtual ~SolidColorScrollbarLayerImpl();
+  ~SolidColorScrollbarLayerImpl() override;
 
   // LayerImpl overrides.
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
 
  protected:
   SolidColorScrollbarLayerImpl(LayerTreeImpl* tree_impl,
@@ -41,11 +40,11 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
                                bool is_overlay);
 
   // ScrollbarLayerImplBase implementation.
-  virtual int ThumbThickness() const override;
-  virtual int ThumbLength() const override;
-  virtual float TrackLength() const override;
-  virtual int TrackStart() const override;
-  virtual bool IsThumbResizable() const override;
+  int ThumbThickness() const override;
+  int ThumbLength() const override;
+  float TrackLength() const override;
+  int TrackStart() const override;
+  bool IsThumbResizable() const override;
 
  private:
   int thumb_thickness_;

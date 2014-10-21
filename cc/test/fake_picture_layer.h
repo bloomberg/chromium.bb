@@ -17,8 +17,7 @@ class FakePictureLayer : public PictureLayer {
     return make_scoped_refptr(new FakePictureLayer(client));
   }
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   size_t update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
@@ -30,19 +29,19 @@ class FakePictureLayer : public PictureLayer {
     always_update_resources_ = always_update_resources;
   }
 
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
 
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual void OnOutputSurfaceCreated() override;
+  void OnOutputSurfaceCreated() override;
   size_t output_surface_created_count() const {
     return output_surface_created_count_;
   }
 
  private:
   explicit FakePictureLayer(ContentLayerClient* client);
-  virtual ~FakePictureLayer();
+  ~FakePictureLayer() override;
 
   size_t update_count_;
   size_t push_properties_count_;

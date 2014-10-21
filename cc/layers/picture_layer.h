@@ -24,19 +24,18 @@ class CC_EXPORT PictureLayer : public Layer {
   void ClearClient();
 
   // Layer interface.
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(
-      LayerTreeImpl* tree_impl) override;
-  virtual void SetLayerTreeHost(LayerTreeHost* host) override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker<Layer>* occlusion) override;
-  virtual void SetIsMask(bool is_mask) override;
-  virtual bool SupportsLCDText() const override;
-  virtual skia::RefPtr<SkPicture> GetPicture() const override;
-  virtual bool IsSuitableForGpuRasterization() const override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void SetLayerTreeHost(LayerTreeHost* host) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
+  void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
+  bool Update(ResourceUpdateQueue* queue,
+              const OcclusionTracker<Layer>* occlusion) override;
+  void SetIsMask(bool is_mask) override;
+  bool SupportsLCDText() const override;
+  skia::RefPtr<SkPicture> GetPicture() const override;
+  bool IsSuitableForGpuRasterization() const override;
 
-  virtual void RunMicroBenchmark(MicroBenchmark* benchmark) override;
+  void RunMicroBenchmark(MicroBenchmark* benchmark) override;
 
   ContentLayerClient* client() { return client_; }
 
@@ -44,9 +43,9 @@ class CC_EXPORT PictureLayer : public Layer {
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
-  virtual ~PictureLayer();
+  ~PictureLayer() override;
 
-  virtual bool HasDrawableContent() const override;
+  bool HasDrawableContent() const override;
   void UpdateCanUseLCDText();
 
  private:

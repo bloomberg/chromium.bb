@@ -21,23 +21,22 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new DelegatedRendererLayerImpl(tree_impl, id));
   }
-  virtual ~DelegatedRendererLayerImpl();
+  ~DelegatedRendererLayerImpl() override;
 
   // LayerImpl overrides.
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual bool HasDelegatedContent() const override;
-  virtual bool HasContributingDelegatedRenderPasses() const override;
-  virtual RenderPassId FirstContributingRenderPassId() const override;
-  virtual RenderPassId NextContributingRenderPassId(
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  bool HasDelegatedContent() const override;
+  bool HasContributingDelegatedRenderPasses() const override;
+  RenderPassId FirstContributingRenderPassId() const override;
+  RenderPassId NextContributingRenderPassId(
       RenderPassId previous) const override;
-  virtual void ReleaseResources() override;
-  virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  void ReleaseResources() override;
+  bool WillDraw(DrawMode draw_mode,
+                ResourceProvider* resource_provider) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
   void AppendContributingRenderPasses(RenderPassSink* render_pass_sink);
 
@@ -85,7 +84,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
                              const gfx::Size& frame_size) const;
 
   // LayerImpl overrides.
-  virtual const char* LayerTypeAsString() const override;
+  const char* LayerTypeAsString() const override;
 
   bool have_render_passes_to_push_;
   float inverse_device_scale_factor_;

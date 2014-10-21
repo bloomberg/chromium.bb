@@ -33,20 +33,18 @@ class FakePictureLayerImpl : public PictureLayerImpl {
         new FakePictureLayerImpl(tree_impl, id, pile, layer_bounds));
   }
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
-  virtual gfx::Size CalculateTileSize(
-      const gfx::Size& content_bounds) const override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
 
-  virtual void DidBecomeActive() override;
+  void DidBecomeActive() override;
   size_t did_become_active_call_count() {
     return did_become_active_call_count_;
   }
 
-  virtual bool HasValidTilePriorities() const override;
+  bool HasValidTilePriorities() const override;
   void set_has_valid_tile_priorities(bool has_valid_priorities) {
     has_valid_tile_priorities_ = has_valid_priorities;
     use_set_valid_tile_priorities_flag_ = true;
@@ -108,7 +106,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   size_t release_resources_count() const { return release_resources_count_; }
   void reset_release_resources_count() { release_resources_count_ = 0; }
 
-  virtual void ReleaseResources() override;
+  void ReleaseResources() override;
 
   bool only_used_low_res_last_append_quads() const {
     return only_used_low_res_last_append_quads_;

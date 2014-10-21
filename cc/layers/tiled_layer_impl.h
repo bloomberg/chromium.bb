@@ -20,20 +20,19 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   static scoped_ptr<TiledLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new TiledLayerImpl(tree_impl, id));
   }
-  virtual ~TiledLayerImpl();
+  ~TiledLayerImpl() override;
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
+  bool WillDraw(DrawMode draw_mode,
+                ResourceProvider* resource_provider) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
 
-  virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
-                                     gfx::Size* resource_size) const override;
+  void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+                             gfx::Size* resource_size) const override;
 
   void set_skips_draw(bool skips_draw) { skips_draw_ = skips_draw; }
   void SetTilingData(const LayerTilingData& tiler);
@@ -43,12 +42,12 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
                           bool contents_swizzled);
   void PushInvalidTile(int i, int j);
 
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
-  virtual void ReleaseResources() override;
+  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
+  void ReleaseResources() override;
 
   const LayerTilingData* TilingForTesting() const { return tiler_.get(); }
 
-  virtual size_t GPUMemoryUsageInBytes() const override;
+  size_t GPUMemoryUsageInBytes() const override;
 
  protected:
   TiledLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -56,12 +55,11 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   bool HasTileAt(int i, int j) const;
   bool HasResourceIdForTileAt(int i, int j) const;
 
-  virtual void GetDebugBorderProperties(SkColor* color, float* width) const
-      override;
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void GetDebugBorderProperties(SkColor* color, float* width) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
  private:
-  virtual const char* LayerTypeAsString() const override;
+  const char* LayerTypeAsString() const override;
 
   DrawableTile* TileAt(int i, int j) const;
   DrawableTile* CreateTile(int i, int j);

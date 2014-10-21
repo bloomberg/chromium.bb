@@ -156,13 +156,13 @@ class TextureIdAllocator : public IdAllocator {
   TextureIdAllocator(GLES2Interface* gl,
                      size_t texture_id_allocation_chunk_size)
       : IdAllocator(gl, texture_id_allocation_chunk_size) {}
-  virtual ~TextureIdAllocator() {
+  ~TextureIdAllocator() override {
     gl_->DeleteTextures(id_allocation_chunk_size_ - next_id_index_,
                         ids_.get() + next_id_index_);
   }
 
   // Overridden from IdAllocator:
-  virtual GLuint NextId() override {
+  GLuint NextId() override {
     if (next_id_index_ == id_allocation_chunk_size_) {
       gl_->GenTextures(id_allocation_chunk_size_, ids_.get());
       next_id_index_ = 0;
@@ -179,13 +179,13 @@ class BufferIdAllocator : public IdAllocator {
  public:
   BufferIdAllocator(GLES2Interface* gl, size_t buffer_id_allocation_chunk_size)
       : IdAllocator(gl, buffer_id_allocation_chunk_size) {}
-  virtual ~BufferIdAllocator() {
+  ~BufferIdAllocator() override {
     gl_->DeleteBuffers(id_allocation_chunk_size_ - next_id_index_,
                        ids_.get() + next_id_index_);
   }
 
   // Overridden from IdAllocator:
-  virtual GLuint NextId() override {
+  GLuint NextId() override {
     if (next_id_index_ == id_allocation_chunk_size_) {
       gl_->GenBuffers(id_allocation_chunk_size_, ids_.get());
       next_id_index_ = 0;
@@ -206,8 +206,8 @@ class QueryFence : public ResourceProvider::Fence {
       : gl_(gl), query_id_(query_id) {}
 
   // Overridden from ResourceProvider::Fence:
-  virtual void Set() override {}
-  virtual bool HasPassed() override {
+  void Set() override {}
+  bool HasPassed() override {
     unsigned available = 1;
     gl_->GetQueryObjectuivEXT(
         query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
@@ -215,7 +215,7 @@ class QueryFence : public ResourceProvider::Fence {
   }
 
  private:
-  virtual ~QueryFence() {}
+  ~QueryFence() override {}
 
   gpu::gles2::GLES2Interface* gl_;
   unsigned query_id_;

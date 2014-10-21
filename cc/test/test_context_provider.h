@@ -27,17 +27,17 @@ class TestContextProvider : public ContextProvider {
   static scoped_refptr<TestContextProvider> Create(
       scoped_ptr<TestWebGraphicsContext3D> context);
 
-  virtual bool BindToCurrentThread() override;
-  virtual Capabilities ContextCapabilities() override;
-  virtual gpu::gles2::GLES2Interface* ContextGL() override;
-  virtual gpu::ContextSupport* ContextSupport() override;
-  virtual class GrContext* GrContext() override;
-  virtual bool IsContextLost() override;
-  virtual void VerifyContexts() override;
-  virtual void DeleteCachedResources() override;
-  virtual bool DestroyedOnMainThread() override;
-  virtual void SetLostContextCallback(const LostContextCallback& cb) override;
-  virtual void SetMemoryPolicyChangedCallback(
+  bool BindToCurrentThread() override;
+  Capabilities ContextCapabilities() override;
+  gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::ContextSupport* ContextSupport() override;
+  class GrContext* GrContext() override;
+  bool IsContextLost() override;
+  void VerifyContexts() override;
+  void DeleteCachedResources() override;
+  bool DestroyedOnMainThread() override;
+  void SetLostContextCallback(const LostContextCallback& cb) override;
+  void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& cb) override;
 
   TestWebGraphicsContext3D* TestContext3d();
@@ -56,7 +56,7 @@ class TestContextProvider : public ContextProvider {
 
  protected:
   explicit TestContextProvider(scoped_ptr<TestWebGraphicsContext3D> context);
-  virtual ~TestContextProvider();
+  ~TestContextProvider() override;
 
  private:
   void OnLostContext();

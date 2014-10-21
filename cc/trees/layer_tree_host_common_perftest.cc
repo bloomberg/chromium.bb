@@ -50,7 +50,7 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
     ASSERT_TRUE(base::ReadFileToString(json_file, &json_));
   }
 
-  virtual void SetupTree() override {
+  void SetupTree() override {
     gfx::Size viewport = gfx::Size(720, 1038);
     layer_tree_host()->SetViewportSize(viewport);
     scoped_refptr<Layer> root =
@@ -61,7 +61,7 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
 
   void SetTestName(const std::string& name) { test_name_ = name; }
 
-  virtual void AfterTest() override {
+  void AfterTest() override {
     CHECK(!test_name_.empty()) << "Must SetTestName() before TearDown().";
     perf_test::PrintResult("calc_draw_props_time",
                            "",
@@ -84,7 +84,7 @@ class CalcDrawPropsMainTest : public LayerTreeHostCommonPerfTest {
     RunTest(false, false, false);
   }
 
-  virtual void BeginTest() override {
+  void BeginTest() override {
     timer_.Reset();
 
     do {
@@ -121,11 +121,9 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
     RunTestWithImplSidePainting();
   }
 
-  virtual void BeginTest() override {
-    PostSetNeedsCommitToMainThread();
-  }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     timer_.Reset();
     LayerTreeImpl* active_tree = host_impl->active_tree();
 
@@ -169,9 +167,9 @@ class LayerSorterMainTest : public CalcDrawPropsImplTest {
  public:
   void RunSortLayers() { RunTest(false, false, false); }
 
-  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeImpl* active_tree = host_impl->active_tree();
     // First build the tree and then we'll start running tests on layersorter
     // itself
@@ -221,9 +219,9 @@ class BspTreePerfTest : public LayerSorterMainTest {
     num_duplicates_ = num_duplicates;
   }
 
-  virtual void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeImpl* active_tree = host_impl->active_tree();
     // First build the tree and then we'll start running tests on layersorter
     // itself

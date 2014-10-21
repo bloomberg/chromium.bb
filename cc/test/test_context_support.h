@@ -15,23 +15,22 @@ namespace cc {
 class TestContextSupport : public gpu::ContextSupport {
  public:
   TestContextSupport();
-  virtual ~TestContextSupport();
+  ~TestContextSupport() override;
 
   // gpu::ContextSupport implementation.
-  virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) override;
-  virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) override;
-  virtual void SetSurfaceVisible(bool visible) override;
-  virtual void Swap() override;
-  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
-  virtual uint32 InsertFutureSyncPointCHROMIUM() override;
-  virtual void RetireSyncPointCHROMIUM(uint32 sync_point) override;
-  virtual void ScheduleOverlayPlane(int plane_z_order,
-                                    gfx::OverlayTransform plane_transform,
-                                    unsigned overlay_texture_id,
-                                    const gfx::Rect& display_bounds,
-                                    const gfx::RectF& uv_rect) override;
+  void SignalSyncPoint(uint32 sync_point,
+                       const base::Closure& callback) override;
+  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SetSurfaceVisible(bool visible) override;
+  void Swap() override;
+  void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
+  uint32 InsertFutureSyncPointCHROMIUM() override;
+  void RetireSyncPointCHROMIUM(uint32 sync_point) override;
+  void ScheduleOverlayPlane(int plane_z_order,
+                            gfx::OverlayTransform plane_transform,
+                            unsigned overlay_texture_id,
+                            const gfx::Rect& display_bounds,
+                            const gfx::RectF& uv_rect) override;
 
   void CallAllSyncPointCallbacks();
 

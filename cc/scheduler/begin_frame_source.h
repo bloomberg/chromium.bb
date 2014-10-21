@@ -71,11 +71,11 @@ class CC_EXPORT BeginFrameObserverMixIn : public BeginFrameObserver {
   // Traces |args| and DCHECK |args| satisfies pre-conditions then calls
   // OnBeginFrameMixInDelegate and updates the last_begin_frame_args_ value on
   // true.
-  virtual void OnBeginFrame(const BeginFrameArgs& args) override;
-  virtual const BeginFrameArgs LastUsedBeginFrameArgs() const override;
+  void OnBeginFrame(const BeginFrameArgs& args) override;
+  const BeginFrameArgs LastUsedBeginFrameArgs() const override;
 
   // Outputs last_begin_frame_args_
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
  protected:
   // Subclasses should override this method!
@@ -131,18 +131,18 @@ class CC_EXPORT BeginFrameSource {
 //    in their own AsValueInto implementation.
 class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
  public:
-  virtual ~BeginFrameSourceMixIn() {}
+  ~BeginFrameSourceMixIn() override {}
 
   // BeginFrameSource
-  virtual bool NeedsBeginFrames() const override;
-  virtual void SetNeedsBeginFrames(bool needs_begin_frames) override;
-  virtual void DidFinishFrame(size_t remaining_frames) override {}
-  virtual void AddObserver(BeginFrameObserver* obs) override;
-  virtual void RemoveObserver(BeginFrameObserver* obs) override;
+  bool NeedsBeginFrames() const override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  void DidFinishFrame(size_t remaining_frames) override {}
+  void AddObserver(BeginFrameObserver* obs) override;
+  void RemoveObserver(BeginFrameObserver* obs) override;
 
   // Tracing support - Recommend (but not required) to call this implementation
   // in any override.
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
  protected:
   BeginFrameSourceMixIn();
@@ -168,13 +168,13 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
  public:
   static scoped_ptr<BackToBackBeginFrameSource> Create(
       base::SingleThreadTaskRunner* task_runner);
-  virtual ~BackToBackBeginFrameSource();
+  ~BackToBackBeginFrameSource() override;
 
   // BeginFrameSource
-  virtual void DidFinishFrame(size_t remaining_frames) override;
+  void DidFinishFrame(size_t remaining_frames) override;
 
   // Tracing
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
  protected:
   explicit BackToBackBeginFrameSource(
@@ -187,7 +187,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceMixIn {
   bool send_begin_frame_posted_;
 
   // BeginFrameSourceMixIn
-  virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
+  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   void BeginFrame();
 };
@@ -202,21 +202,20 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceMixIn,
       base::SingleThreadTaskRunner* task_runner,
       base::TimeTicks initial_vsync_timebase,
       base::TimeDelta initial_vsync_interval);
-  virtual ~SyntheticBeginFrameSource();
+  ~SyntheticBeginFrameSource() override;
 
   // BeginFrameSource
-  virtual bool NeedsBeginFrames() const override;
+  bool NeedsBeginFrames() const override;
 
   // Tracing
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
   // VSyncParameterObserver
-  virtual void OnUpdateVSyncParameters(
-      base::TimeTicks new_vsync_timebase,
-      base::TimeDelta new_vsync_interval) override;
+  void OnUpdateVSyncParameters(base::TimeTicks new_vsync_timebase,
+                               base::TimeDelta new_vsync_interval) override;
 
   // TimeSourceClient
-  virtual void OnTimerTick() override;
+  void OnTimerTick() override;
 
  protected:
   explicit SyntheticBeginFrameSource(
@@ -226,7 +225,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceMixIn,
                                       BeginFrameArgs::BeginFrameArgsType type);
 
   // BeginFrameSourceMixIn
-  virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
+  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   scoped_refptr<DelayBasedTimeSource> time_source_;
 };
@@ -238,7 +237,7 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceMixIn,
                                               public BeginFrameObserver {
  public:
   static scoped_ptr<BeginFrameSourceMultiplexer> Create();
-  virtual ~BeginFrameSourceMultiplexer();
+  ~BeginFrameSourceMultiplexer() override;
 
   void SetMinimumInterval(base::TimeDelta new_minimum_interval);
 
@@ -251,16 +250,16 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceMixIn,
   // The mux is an BeginFrameObserver as it needs to proxy the OnBeginFrame
   // calls to preserve the monotonicity of the BeginFrameArgs when switching
   // sources.
-  virtual void OnBeginFrame(const BeginFrameArgs& args) override;
-  virtual const BeginFrameArgs LastUsedBeginFrameArgs() const override;
+  void OnBeginFrame(const BeginFrameArgs& args) override;
+  const BeginFrameArgs LastUsedBeginFrameArgs() const override;
 
   // BeginFrameSource
-  virtual bool NeedsBeginFrames() const override;
-  virtual void SetNeedsBeginFrames(bool needs_begin_frames) override;
-  virtual void DidFinishFrame(size_t remaining_frames) override;
+  bool NeedsBeginFrames() const override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  void DidFinishFrame(size_t remaining_frames) override;
 
   // Tracing
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
  protected:
   BeginFrameSourceMultiplexer();

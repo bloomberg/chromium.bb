@@ -20,11 +20,11 @@ class CC_EXPORT PictureRecordBenchmark : public MicroBenchmark {
  public:
   explicit PictureRecordBenchmark(scoped_ptr<base::Value> value,
                                   const MicroBenchmark::DoneCallback& callback);
-  virtual ~PictureRecordBenchmark();
+  ~PictureRecordBenchmark() override;
 
   // Implements MicroBenchmark interface.
-  virtual void DidUpdateLayers(LayerTreeHost* host) override;
-  virtual void RunOnLayer(PictureLayer* layer) override;
+  void DidUpdateLayers(LayerTreeHost* host) override;
+  void RunOnLayer(PictureLayer* layer) override;
 
  private:
   void Run(Layer* layer);

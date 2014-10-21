@@ -12,7 +12,7 @@ namespace cc {
 class FakeRenderingStatsInstrumentation : public RenderingStatsInstrumentation {
  public:
   FakeRenderingStatsInstrumentation() {}
-  virtual ~FakeRenderingStatsInstrumentation() {}
+  ~FakeRenderingStatsInstrumentation() override {}
 };
 
 }  // namespace cc

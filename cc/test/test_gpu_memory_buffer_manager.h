@@ -12,14 +12,14 @@ namespace cc {
 class TestGpuMemoryBufferManager : public GpuMemoryBufferManager {
  public:
   TestGpuMemoryBufferManager();
-  virtual ~TestGpuMemoryBufferManager();
+  ~TestGpuMemoryBufferManager() override;
 
   // Overridden from GpuMemoryBufferManager:
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage) override;
-  virtual gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
+  gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
 };
 

@@ -22,20 +22,20 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
       const LayerTreeSettings* settings,
       OutputSurface* output_surface,
       ResourceProvider* resource_provider);
-  virtual ~DelegatingRenderer();
+  ~DelegatingRenderer() override;
 
-  virtual const RendererCapabilitiesImpl& Capabilities() const override;
+  const RendererCapabilitiesImpl& Capabilities() const override;
 
-  virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                         float device_scale_factor,
-                         const gfx::Rect& device_viewport_rect,
-                         const gfx::Rect& device_clip_rect,
-                         bool disable_picture_quad_image_filtering) override;
+  void DrawFrame(RenderPassList* render_passes_in_draw_order,
+                 float device_scale_factor,
+                 const gfx::Rect& device_viewport_rect,
+                 const gfx::Rect& device_clip_rect,
+                 bool disable_picture_quad_image_filtering) override;
 
-  virtual void Finish() override {}
+  void Finish() override {}
 
-  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) override;
-  virtual void ReceiveSwapBuffersAck(const CompositorFrameAck&) override;
+  void SwapBuffers(const CompositorFrameMetadata& metadata) override;
+  void ReceiveSwapBuffersAck(const CompositorFrameAck&) override;
 
  private:
   DelegatingRenderer(RendererClient* client,
@@ -43,7 +43,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
                      OutputSurface* output_surface,
                      ResourceProvider* resource_provider);
 
-  virtual void DidChangeVisibility() override;
+  void DidChangeVisibility() override;
 
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;

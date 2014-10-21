@@ -21,19 +21,18 @@ namespace {
 
 class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
  public:
-  virtual void InitializeSettings(LayerTreeSettings* settings) override {
+  void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
   }
 
-  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
+  void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
     // Not enough memory available. Enforce on-demand rasterization.
     impl->SetMemoryPolicy(
         ManagedMemoryPolicy(1, gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
                             1000));
   }
 
-  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool result) override {
+  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
     // Find the PictureLayerImpl ask it to append quads to check their material.
     // The PictureLayerImpl is assumed to be the first child of the root layer
     // in the active tree.
@@ -60,11 +59,11 @@ class BlueYellowLayerClient : public ContentLayerClient {
   explicit BlueYellowLayerClient(gfx::Rect layer_rect)
       : layer_rect_(layer_rect) {}
 
-  virtual void DidChangeLayerCanUseLCDText() override { }
+  void DidChangeLayerCanUseLCDText() override {}
 
-  virtual bool FillsBoundsCompletely() const override { return false; }
+  bool FillsBoundsCompletely() const override { return false; }
 
-  virtual void PaintContents(
+  void PaintContents(
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::GraphicsContextStatus gc_status) override {
@@ -109,7 +108,7 @@ TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
 
 class LayerTreeHostOnDemandRasterPixelTestWithGpuRasterizationForced
     : public LayerTreeHostOnDemandRasterPixelTest {
-  virtual void InitializeSettings(LayerTreeSettings* settings) override {
+  void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostOnDemandRasterPixelTest::InitializeSettings(settings);
     settings->gpu_rasterization_forced = true;
   }

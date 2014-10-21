@@ -20,9 +20,9 @@ class CC_EXPORT UIResourceLayer : public Layer {
  public:
   static scoped_refptr<UIResourceLayer> Create();
 
-  virtual void PushPropertiesTo(LayerImpl* layer) override;
+  void PushPropertiesTo(LayerImpl* layer) override;
 
-  virtual void SetLayerTreeHost(LayerTreeHost* host) override;
+  void SetLayerTreeHost(LayerTreeHost* host) override;
 
   void SetBitmap(const SkBitmap& skbitmap);
 
@@ -47,9 +47,9 @@ class CC_EXPORT UIResourceLayer : public Layer {
 
  protected:
   UIResourceLayer();
-  virtual ~UIResourceLayer();
+  ~UIResourceLayer() override;
 
-  virtual bool HasDrawableContent() const override;
+  bool HasDrawableContent() const override;
 
   scoped_ptr<UIResourceHolder> ui_resource_holder_;
   SkBitmap bitmap_;
@@ -59,8 +59,7 @@ class CC_EXPORT UIResourceLayer : public Layer {
   float vertex_opacity_[4];
 
  private:
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void RecreateUIResourceHolder();
 
 

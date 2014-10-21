@@ -69,7 +69,7 @@ class DelegatedFrameProviderTest
 
   virtual void TearDown() override { resource_collection_->SetClient(nullptr); }
 
-  virtual void UnusedResourcesAreAvailable() override {
+  void UnusedResourcesAreAvailable() override {
     resources_available_ = true;
     resource_collection_->TakeUnusedResourcesForChildCompositor(&resources_);
   }

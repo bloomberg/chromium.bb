@@ -91,10 +91,10 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
                                          &frame_sources_constructor));
   }
 
-  virtual ~Scheduler();
+  ~Scheduler() override;
 
   // base::PowerObserver method.
-  virtual void OnPowerStateChange(bool on_battery_power) override;
+  void OnPowerStateChange(bool on_battery_power) override;
 
   const SchedulerSettings& settings() const { return settings_; }
 
@@ -158,14 +158,14 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   base::TimeTicks LastBeginImplFrameTime();
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
-  virtual void AsValueInto(base::debug::TracedValue* value) const override;
+  void AsValueInto(base::debug::TracedValue* value) const override;
 
   void SetContinuousPainting(bool continuous_painting) {
     state_machine_.SetContinuousPainting(continuous_painting);
   }
 
   // BeginFrameObserverMixin
-  virtual bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
+  bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
 
  protected:
   Scheduler(SchedulerClient* client,

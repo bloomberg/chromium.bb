@@ -32,20 +32,19 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                                                     int id) {
     return make_scoped_ptr(new HeadsUpDisplayLayerImpl(tree_impl, id));
   }
-  virtual ~HeadsUpDisplayLayerImpl();
+  ~HeadsUpDisplayLayerImpl() override;
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override;
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
-  virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider) override;
-  virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
-                           AppendQuadsData* append_quads_data) override;
+  bool WillDraw(DrawMode draw_mode,
+                ResourceProvider* resource_provider) override;
+  void AppendQuads(RenderPass* render_pass,
+                   const Occlusion& occlusion_in_content_space,
+                   AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,
                         ResourceProvider* resource_provider);
 
-  virtual void ReleaseResources() override;
+  void ReleaseResources() override;
 
   bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
 
@@ -70,9 +69,9 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-  virtual const char* LayerTypeAsString() const override;
+  const char* LayerTypeAsString() const override;
 
-  virtual void AsValueInto(base::debug::TracedValue* dict) const override;
+  void AsValueInto(base::debug::TracedValue* dict) const override;
 
   void UpdateHudContents();
   void DrawHudContents(SkCanvas* canvas);

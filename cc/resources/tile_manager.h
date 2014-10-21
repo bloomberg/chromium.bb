@@ -99,7 +99,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
       ResourcePool* resource_pool,
       Rasterizer* rasterizer,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
-  virtual ~TileManager();
+  ~TileManager() override;
 
   void ManageTiles(const GlobalStateThatImpactsTilePriority& state);
 
@@ -170,11 +170,11 @@ class CC_EXPORT TileManager : public RasterizerClient,
 
   // Overriden from RefCountedManager<Tile>:
   friend class Tile;
-  virtual void Release(Tile* tile) override;
+  void Release(Tile* tile) override;
 
   // Overriden from RasterizerClient:
-  virtual void DidFinishRunningTasks(TaskSet task_set) override;
-  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const override;
+  void DidFinishRunningTasks(TaskSet task_set) override;
+  TaskSetCollection TasksThatShouldBeForcedToComplete() const override;
 
   typedef std::vector<Tile*> TileVector;
   typedef std::set<Tile*> TileSet;

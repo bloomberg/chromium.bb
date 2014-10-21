@@ -16,13 +16,13 @@ class FakeTileManager : public TileManager {
  public:
   explicit FakeTileManager(TileManagerClient* client);
   FakeTileManager(TileManagerClient* client, ResourcePool* resource_pool);
-  virtual ~FakeTileManager();
+  ~FakeTileManager() override;
 
   bool HasBeenAssignedMemory(Tile* tile);
   void AssignMemoryToTiles(
       const GlobalStateThatImpactsTilePriority& state);
 
-  virtual void Release(Tile* tile) override;
+  void Release(Tile* tile) override;
 
   std::vector<Tile*> tiles_for_raster;
 };

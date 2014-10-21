@@ -123,51 +123,49 @@ class CC_EXPORT LayerTreeHostImpl
       SharedBitmapManager* shared_bitmap_manager,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int id);
-  virtual ~LayerTreeHostImpl();
+  ~LayerTreeHostImpl() override;
 
   // BeginFrameSourceMixIn implementation
-  virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
+  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   // InputHandler implementation
-  virtual void BindToClient(InputHandlerClient* client) override;
-  virtual InputHandler::ScrollStatus ScrollBegin(
+  void BindToClient(InputHandlerClient* client) override;
+  InputHandler::ScrollStatus ScrollBegin(
       const gfx::Point& viewport_point,
       InputHandler::ScrollInputType type) override;
-  virtual InputHandler::ScrollStatus ScrollAnimated(
+  InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;
-  virtual bool ScrollBy(const gfx::Point& viewport_point,
-                        const gfx::Vector2dF& scroll_delta) override;
-  virtual bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
-                                      ScrollDirection direction) override;
-  virtual void SetRootLayerScrollOffsetDelegate(
+  bool ScrollBy(const gfx::Point& viewport_point,
+                const gfx::Vector2dF& scroll_delta) override;
+  bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
+                              ScrollDirection direction) override;
+  void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) override;
-  virtual void OnRootLayerDelegatedScrollOffsetChanged() override;
-  virtual void ScrollEnd() override;
-  virtual InputHandler::ScrollStatus FlingScrollBegin() override;
-  virtual void MouseMoveAt(const gfx::Point& viewport_point) override;
-  virtual void PinchGestureBegin() override;
-  virtual void PinchGestureUpdate(float magnify_delta,
-                                  const gfx::Point& anchor) override;
-  virtual void PinchGestureEnd() override;
-  virtual void SetNeedsAnimate() override;
-  virtual bool IsCurrentlyScrollingLayerAt(
-      const gfx::Point& viewport_point,
-      InputHandler::ScrollInputType type) override;
-  virtual bool HaveTouchEventHandlersAt(
-      const gfx::Point& viewport_port) override;
-  virtual scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
+  void OnRootLayerDelegatedScrollOffsetChanged() override;
+  void ScrollEnd() override;
+  InputHandler::ScrollStatus FlingScrollBegin() override;
+  void MouseMoveAt(const gfx::Point& viewport_point) override;
+  void PinchGestureBegin() override;
+  void PinchGestureUpdate(float magnify_delta,
+                          const gfx::Point& anchor) override;
+  void PinchGestureEnd() override;
+  void SetNeedsAnimate() override;
+  bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
+                                   InputHandler::ScrollInputType type) override;
+  bool HaveTouchEventHandlersAt(const gfx::Point& viewport_port) override;
+  scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
 
   // TopControlsManagerClient implementation.
-  virtual void SetControlsTopOffset(float offset) override;
-  virtual float ControlsTopOffset() const override;
-  virtual void DidChangeTopControlsPosition() override;
-  virtual bool HaveRootScrollLayer() const override;
+  void SetControlsTopOffset(float offset) override;
+  float ControlsTopOffset() const override;
+  void DidChangeTopControlsPosition() override;
+  bool HaveRootScrollLayer() const override;
 
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
-    virtual ~FrameData();
+    ~FrameData() override;
     void AsValueInto(base::debug::TracedValue* value) const;
 
     std::vector<gfx::Rect> occluding_screen_space_rects;
@@ -180,7 +178,7 @@ class CC_EXPORT LayerTreeHostImpl
     bool has_no_damage;
 
     // RenderPassSink implementation.
-    virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) override;
+    void AppendRenderPass(scoped_ptr<RenderPass> render_pass) override;
   };
 
   virtual void BeginMainFrameAborted(bool did_handle);
@@ -232,45 +230,43 @@ class CC_EXPORT LayerTreeHostImpl
   const gfx::Rect ViewportRectForTilePriority() const;
 
   // RendererClient implementation.
-  virtual void SetFullRootLayerDamage() override;
+  void SetFullRootLayerDamage() override;
 
   // TileManagerClient implementation.
-  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers()
-      const override;
-  virtual void NotifyReadyToActivate() override;
-  virtual void NotifyTileStateChanged(const Tile* tile) override;
-  virtual void BuildRasterQueue(RasterTilePriorityQueue* queue,
-                                TreePriority tree_priority) override;
-  virtual void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
-                                  TreePriority tree_priority) override;
+  const std::vector<PictureLayerImpl*>& GetPictureLayers() const override;
+  void NotifyReadyToActivate() override;
+  void NotifyTileStateChanged(const Tile* tile) override;
+  void BuildRasterQueue(RasterTilePriorityQueue* queue,
+                        TreePriority tree_priority) override;
+  void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
+                          TreePriority tree_priority) override;
 
   // ScrollbarAnimationControllerClient implementation.
-  virtual void PostDelayedScrollbarFade(const base::Closure& start_fade,
-                                        base::TimeDelta delay) override;
-  virtual void SetNeedsScrollbarAnimationFrame() override;
+  void PostDelayedScrollbarFade(const base::Closure& start_fade,
+                                base::TimeDelta delay) override;
+  void SetNeedsScrollbarAnimationFrame() override;
 
   // OutputSurfaceClient implementation.
-  virtual void DeferredInitialize() override;
-  virtual void ReleaseGL() override;
-  virtual void CommitVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) override;
-  virtual void SetNeedsRedrawRect(const gfx::Rect& rect) override;
-  virtual void BeginFrame(const BeginFrameArgs& args) override;
+  void DeferredInitialize() override;
+  void ReleaseGL() override;
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override;
+  void SetNeedsRedrawRect(const gfx::Rect& rect) override;
+  void BeginFrame(const BeginFrameArgs& args) override;
 
-  virtual void SetExternalDrawConstraints(
+  void SetExternalDrawConstraints(
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
       const gfx::Rect& clip,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
       bool resourceless_software_draw) override;
-  virtual void DidLoseOutputSurface() override;
-  virtual void DidSwapBuffers() override;
-  virtual void DidSwapBuffersComplete() override;
-  virtual void ReclaimResources(const CompositorFrameAck* ack) override;
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
-  virtual void SetTreeActivationCallback(const base::Closure& callback)
-      override;
+  void DidLoseOutputSurface() override;
+  void DidSwapBuffers() override;
+  void DidSwapBuffersComplete() override;
+  void ReclaimResources(const CompositorFrameAck* ack) override;
+  void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
+  void SetTreeActivationCallback(const base::Closure& callback) override;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();
@@ -429,7 +425,7 @@ class CC_EXPORT LayerTreeHostImpl
     return begin_impl_frame_interval_;
   }
 
-  virtual void AsValueInto(base::debug::TracedValue* value) const override;
+  void AsValueInto(base::debug::TracedValue* value) const override;
   void AsValueWithFrameInto(FrameData* frame,
                             base::debug::TracedValue* value) const;
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;

@@ -18,28 +18,27 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
  public:
   FakePictureLayerTilingClient();
   explicit FakePictureLayerTilingClient(ResourceProvider* resource_provider);
-  virtual ~FakePictureLayerTilingClient();
+  ~FakePictureLayerTilingClient() override;
 
   // PictureLayerTilingClient implementation.
-  virtual scoped_refptr<Tile> CreateTile(
-      PictureLayerTiling* tiling, const gfx::Rect& rect) override;
-  virtual PicturePileImpl* GetPile() override;
-  virtual gfx::Size CalculateTileSize(
-      const gfx::Size& content_bounds) const override;
-  virtual size_t GetMaxTilesForInterestArea() const override;
-  virtual float GetSkewportTargetTimeInSeconds() const override;
-  virtual int GetSkewportExtrapolationLimitInContentPixels() const override;
-  virtual bool RequiresHighResToDraw() const override;
+  scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
+                                 const gfx::Rect& rect) override;
+  PicturePileImpl* GetPile() override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  size_t GetMaxTilesForInterestArea() const override;
+  float GetSkewportTargetTimeInSeconds() const override;
+  int GetSkewportExtrapolationLimitInContentPixels() const override;
+  bool RequiresHighResToDraw() const override;
 
   void SetTileSize(const gfx::Size& tile_size);
   gfx::Size TileSize() const { return tile_size_; }
 
-  virtual const Region* GetInvalidation() override;
-  virtual const PictureLayerTiling* GetTwinTiling(
+  const Region* GetInvalidation() override;
+  const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const override;
-  virtual PictureLayerTiling* GetRecycledTwinTiling(
+  PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) override;
-  virtual WhichTree GetTree() const override;
+  WhichTree GetTree() const override;
 
   void set_twin_tiling(PictureLayerTiling* tiling) { twin_tiling_ = tiling; }
   void set_recycled_twin_tiling(PictureLayerTiling* tiling) {

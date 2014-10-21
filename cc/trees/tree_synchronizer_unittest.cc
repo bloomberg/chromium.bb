@@ -30,7 +30,7 @@ class MockLayerImpl : public LayerImpl {
                                           int layer_id) {
     return make_scoped_ptr(new MockLayerImpl(tree_impl, layer_id));
   }
-  virtual ~MockLayerImpl() {
+  ~MockLayerImpl() override {
     if (layer_impl_destruction_list_)
       layer_impl_destruction_list_->push_back(id());
   }
@@ -54,12 +54,11 @@ class MockLayer : public Layer {
     return make_scoped_refptr(new MockLayer(layer_impl_destruction_list));
   }
 
-  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
-      override {
+  scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
     return MockLayerImpl::Create(tree_impl, layer_id_);
   }
 
-  virtual void PushPropertiesTo(LayerImpl* layer_impl) override {
+  void PushPropertiesTo(LayerImpl* layer_impl) override {
     Layer::PushPropertiesTo(layer_impl);
 
     MockLayerImpl* mock_layer_impl = static_cast<MockLayerImpl*>(layer_impl);
@@ -69,7 +68,7 @@ class MockLayer : public Layer {
  private:
   explicit MockLayer(std::vector<int>* layer_impl_destruction_list)
       : Layer(), layer_impl_destruction_list_(layer_impl_destruction_list) {}
-  virtual ~MockLayer() {}
+  ~MockLayer() override {}
 
   std::vector<int>* layer_impl_destruction_list_;
 };
@@ -88,10 +87,10 @@ class FakeLayerAnimationController : public LayerAnimationController {
       : LayerAnimationController(1),
         synchronized_animations_(false) {}
 
-  virtual ~FakeLayerAnimationController() {}
+  ~FakeLayerAnimationController() override {}
 
-  virtual void PushAnimationUpdatesTo(LayerAnimationController* controller_impl)
-      override {
+  void PushAnimationUpdatesTo(
+      LayerAnimationController* controller_impl) override {
     LayerAnimationController::PushAnimationUpdatesTo(controller_impl);
     synchronized_animations_ = true;
   }

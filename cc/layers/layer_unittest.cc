@@ -52,8 +52,7 @@ class MockLayerTreeHost : public LayerTreeHost {
 
 class MockLayerPainter : public LayerPainter {
  public:
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {
-  }
+  void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {}
 };
 
 class LayerTest : public testing::Test {
@@ -1211,12 +1210,12 @@ class DrawsContentChangeLayer : public Layer {
     return make_scoped_refptr(new DrawsContentChangeLayer());
   }
 
-  virtual void SetLayerTreeHost(LayerTreeHost* host) override {
+  void SetLayerTreeHost(LayerTreeHost* host) override {
     Layer::SetLayerTreeHost(host);
     SetFakeDrawsContent(!fake_draws_content_);
   }
 
-  virtual bool HasDrawableContent() const override {
+  bool HasDrawableContent() const override {
     return fake_draws_content_ && Layer::HasDrawableContent();
   }
 
@@ -1227,7 +1226,7 @@ class DrawsContentChangeLayer : public Layer {
 
  private:
   DrawsContentChangeLayer() : Layer(), fake_draws_content_(false) {}
-  virtual ~DrawsContentChangeLayer() override {}
+  ~DrawsContentChangeLayer() override {}
 
   bool fake_draws_content_;
 };

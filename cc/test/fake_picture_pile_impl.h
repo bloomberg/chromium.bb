@@ -72,7 +72,7 @@ class FakePicturePileImpl : public PicturePileImpl {
 
  protected:
   FakePicturePileImpl();
-  virtual ~FakePicturePileImpl();
+  ~FakePicturePileImpl() override;
 
   FakeContentLayerClient client_;
   SkPaint default_paint_;

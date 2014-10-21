@@ -18,7 +18,7 @@ namespace cc {
 class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
  public:
   RenderPassDrawQuad();
-  virtual ~RenderPassDrawQuad();
+  ~RenderPassDrawQuad() override;
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -65,13 +65,12 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   // Helper function to generate the normalized uv rect.
   gfx::RectF MaskUVRect() const;
 
-  virtual void IterateResources(const ResourceIteratorCallback& callback)
-      override;
+  void IterateResources(const ResourceIteratorCallback& callback) override;
 
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  virtual void ExtendValue(base::debug::TracedValue* value) const override;
+  void ExtendValue(base::debug::TracedValue* value) const override;
 };
 
 }  // namespace cc

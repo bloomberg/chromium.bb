@@ -45,27 +45,27 @@ class CC_EXPORT AnimationCurve {
 
 class CC_EXPORT ColorAnimationCurve : public AnimationCurve {
  public:
-  virtual ~ColorAnimationCurve() {}
+  ~ColorAnimationCurve() override {}
 
   virtual SkColor GetValue(double t) const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const override;
+  CurveType Type() const override;
 };
 
 class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
  public:
-  virtual ~FloatAnimationCurve() {}
+  ~FloatAnimationCurve() override {}
 
   virtual float GetValue(double t) const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const override;
+  CurveType Type() const override;
 };
 
 class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
  public:
-  virtual ~TransformAnimationCurve() {}
+  ~TransformAnimationCurve() override {}
 
   virtual gfx::Transform GetValue(double t) const = 0;
 
@@ -90,18 +90,18 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
                                   float* max_scale) const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const override;
+  CurveType Type() const override;
 };
 
 class CC_EXPORT FilterAnimationCurve : public AnimationCurve {
  public:
-  virtual ~FilterAnimationCurve() {}
+  ~FilterAnimationCurve() override {}
 
   virtual FilterOperations GetValue(double t) const = 0;
   virtual bool HasFilterThatMovesPixels() const = 0;
 
   // Partial Animation implementation.
-  virtual CurveType Type() const override;
+  CurveType Type() const override;
 };
 
 }  // namespace cc

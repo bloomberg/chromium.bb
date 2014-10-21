@@ -33,7 +33,7 @@ class TestContentLayer : public Layer {
     SetIsDrawable(true);
   }
 
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override {
+  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override {
     if (override_opaque_contents_rect_) {
       return SimpleEnclosedRegion(
           gfx::IntersectRects(opaque_contents_rect_, visible_content_rect()));
@@ -46,7 +46,7 @@ class TestContentLayer : public Layer {
   }
 
  private:
-  virtual ~TestContentLayer() {}
+  ~TestContentLayer() override {}
 
   bool override_opaque_contents_rect_;
   gfx::Rect opaque_contents_rect_;
@@ -59,7 +59,7 @@ class TestContentLayerImpl : public LayerImpl {
     SetDrawsContent(true);
   }
 
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const override {
+  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override {
     if (override_opaque_contents_rect_) {
       return SimpleEnclosedRegion(
           gfx::IntersectRects(opaque_contents_rect_, visible_content_rect()));
