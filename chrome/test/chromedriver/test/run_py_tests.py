@@ -18,6 +18,7 @@ import threading
 import time
 import unittest
 import urllib2
+import shutil
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir))
@@ -159,7 +160,7 @@ class ChromeDriverBaseTest(unittest.TestCase):
       except:
         pass
 
-  def CreateDriver(self, server_url=None, **kwargs):
+  def CreateDriver(self, server_url=None, download_dir=None, **kwargs):
     if server_url is None:
       server_url = _CHROMEDRIVER_SERVER_URL
 
@@ -177,6 +178,7 @@ class ChromeDriverBaseTest(unittest.TestCase):
                                        android_package=android_package,
                                        android_activity=android_activity,
                                        android_process=android_process,
+                                       download_dir=download_dir,
                                        **kwargs)
     self._drivers += [driver]
     return driver
@@ -230,8 +232,8 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     Returns:
       Handle to a new window. None if timeout.
     """
-    timeout = time.time() + 20
-    while time.time() < timeout:
+    deadline = time.time() + 20
+    while time.time() < deadline:
       new_handles = self._driver.GetWindowHandles()
       if len(new_handles) > len(old_handles):
         for index, old_handle in enumerate(old_handles):
@@ -767,6 +769,61 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
     self._drivers[0].Quit()
     self._drivers[0] = self.CreateDriver()
 
+class ChromeDownloadDirTest(ChromeDriverBaseTest):
+
+  def testFileDownLoad(self):
+    try:
+      self.download_dir = tempfile.mkdtemp()
+      download_name = os.path.join(self.download_dir, 'a_red_dot.png')
+      driver = self.CreateDriver(download_dir=self.download_dir)
+      driver.Load(ChromeDriverTest.GetHttpUrlForFile(
+          '/chromedriver/download.html'))
+      driver.FindElement('id', 'red-dot').Click()
+
+      deadline = time.time() + 60
+      while True:
+        time.sleep(0.1)
+        if os.path.isfile(download_name) or time.time() > deadline:
+          break
+      self.assertTrue(os.path.isfile(download_name), "Failed to download file!")
+    finally:
+      shutil.rmtree(self.download_dir)
+
+  def testDownloadDirectoryOverridesExistingPreferences(self):
+    """ test existing  prefence profile - check setting if it is correct  """
+
+    try:
+      user_data_dir = tempfile.mkdtemp()
+      tmp_download_dir = tempfile.mkdtemp()
+      sub_dir = os.path.join(user_data_dir, 'Default')
+      os.mkdir(sub_dir)
+      prefs_file_path = os.path.join(sub_dir, 'Preferences')
+
+      prefs = {
+        'test': 'this should not be changed',
+        'download': {
+          'default_directory': '/old/download/directory'
+        }
+      }
+
+      with open(prefs_file_path, 'w') as f:
+        json.dump(prefs, f)
+
+      driver = self.CreateDriver(
+          chrome_switches=['user-data-dir=' + user_data_dir],
+          download_dir = tmp_download_dir)
+
+      with open(prefs_file_path) as f:
+        prefs = json.load(f)
+
+      self.assertEqual('this should not be changed', prefs['test'],
+          "Existing preference was unexpectedly overridden")
+      download = prefs['download']
+      self.assertEqual(download['default_directory'], tmp_download_dir,
+          'Download directory preference was not updated to match capabilities')
+    finally:
+      shutil.rmtree(user_data_dir)
+      shutil.rmtree(tmp_download_dir)
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.

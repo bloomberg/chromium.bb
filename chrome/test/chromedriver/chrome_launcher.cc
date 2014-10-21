@@ -128,28 +128,33 @@ Status PrepareCommandLine(int port,
     switches.RemoveSwitch(*iter);
   }
   switches.SetFromSwitches(capabilities.switches);
-
+  base::FilePath user_data_dir_path;
   if (!switches.HasSwitch("user-data-dir")) {
     command.AppendArg("data:,");
     if (!user_data_dir->CreateUniqueTempDir())
       return Status(kUnknownError, "cannot create temp dir for user data dir");
     switches.SetSwitch("user-data-dir", user_data_dir->path().value());
-    Status status = internal::PrepareUserDataDir(
-        user_data_dir->path(), capabilities.prefs.get(),
-        capabilities.local_state.get());
-    if (status.IsError())
-      return status;
+    user_data_dir_path = user_data_dir->path();
+  } else {
+    user_data_dir_path = base::FilePath(
+        switches.GetSwitchValueNative("user-data-dir"));
   }
+
+  Status status = internal::PrepareUserDataDir(user_data_dir_path,
+                                               capabilities.prefs.get(),
+                                               capabilities.local_state.get());
+  if (status.IsError())
+    return status;
 
   if (!extension_dir->CreateUniqueTempDir()) {
     return Status(kUnknownError,
                   "cannot create temp dir for unpacking extensions");
   }
-  Status status = internal::ProcessExtensions(capabilities.extensions,
-                                              extension_dir->path(),
-                                              true,
-                                              &switches,
-                                              extension_bg_pages);
+  status = internal::ProcessExtensions(capabilities.extensions,
+                                       extension_dir->path(),
+                                       true,
+                                       &switches,
+                                       extension_bg_pages);
   if (status.IsError())
     return status;
   switches.AppendToCommandLine(&command);
@@ -772,14 +777,32 @@ Status PrepareUserDataDir(
   if (!base::CreateDirectory(default_dir))
     return Status(kUnknownError, "cannot create default profile directory");
 
+  std::string preferences;
+  base::FilePath preferences_path =
+      default_dir.Append(chrome::kPreferencesFilename);
+
+  if (base::PathExists(preferences_path))
+    base::ReadFileToString(preferences_path, &preferences);
+  else
+    preferences = kPreferences;
+
   Status status =
-      WritePrefsFile(kPreferences,
+      WritePrefsFile(preferences,
                      custom_prefs,
                      default_dir.Append(chrome::kPreferencesFilename));
   if (status.IsError())
     return status;
 
-  status = WritePrefsFile(kLocalState,
+  std::string local_state;
+  base::FilePath local_state_path =
+      user_data_dir.Append(chrome::kLocalStateFilename);
+
+  if (base::PathExists(local_state_path))
+    base::ReadFileToString(local_state_path, &local_state);
+  else
+    local_state = kLocalState;
+
+  status = WritePrefsFile(local_state,
                           custom_local_state,
                           user_data_dir.Append(chrome::kLocalStateFilename));
   if (status.IsError())

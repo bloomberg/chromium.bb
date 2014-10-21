@@ -86,8 +86,13 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
   if (!quit_) {
     base::FilePath user_data_dir = user_data_dir_.Take();
     base::FilePath extension_dir = extension_dir_.Take();
-    LOG(WARNING) << "chrome detaches, user should take care of directory:"
-                 << user_data_dir.value() << " and " << extension_dir.value();
+    LOG(WARNING) << "chrome quit unexpectedly, leaving behind temporary "
+        "directories for debugging:";
+    if (user_data_dir_.IsValid())
+      LOG(WARNING) << "chrome user data directory: " << user_data_dir.value();
+    if (extension_dir_.IsValid())
+      LOG(WARNING) << "chromedriver automation extension directory: "
+                   << extension_dir.value();
   }
   base::CloseProcessHandle(process_);
 }
