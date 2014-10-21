@@ -364,7 +364,7 @@ public:
     virtual bool isClickable() const;
     virtual bool isCollapsed() const { return false; }
     virtual bool isEnabled() const { return false; }
-    bool isExpanded() const;
+    virtual bool isExpanded() const { return false; }
     virtual bool isFocused() const { return false; }
     virtual bool isHovered() const { return false; }
     virtual bool isIndeterminate() const { return false; }

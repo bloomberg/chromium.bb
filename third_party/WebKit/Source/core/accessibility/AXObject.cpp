@@ -246,14 +246,6 @@ bool AXObject::isClickable() const
     }
 }
 
-bool AXObject::isExpanded() const
-{
-    if (equalIgnoringCase(getAttribute(aria_expandedAttr), "true"))
-        return true;
-
-    return false;
-}
-
 bool AXObject::accessibilityIsIgnored() const
 {
     AXObjectCacheImpl* cache = axObjectCache();

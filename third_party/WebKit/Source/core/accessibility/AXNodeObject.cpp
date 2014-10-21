@@ -709,6 +709,14 @@ bool AXNodeObject::isEnabled() const
     return !toElement(node)->isDisabledFormControl();
 }
 
+bool AXNodeObject::isExpanded() const
+{
+    if (equalIgnoringCase(getAttribute(aria_expandedAttr), "true"))
+        return true;
+
+    return false;
+}
+
 bool AXNodeObject::isIndeterminate() const
 {
     Node* node = this->node();

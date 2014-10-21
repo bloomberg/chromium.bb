@@ -274,6 +274,14 @@ bool WebAXObject::isEnabled() const
     return m_private->isEnabled();
 }
 
+bool WebAXObject::isExpanded() const
+{
+    if (isDetached())
+        return 0;
+
+    return m_private->isExpanded();
+}
+
 bool WebAXObject::isFocused() const
 {
     if (isDetached())
