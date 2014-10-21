@@ -583,6 +583,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
             splitTextAtStart(start, end);
         start = startPosition();
         end = endPosition();
+        if (start.isNull() || end.isNull())
+            return;
         startDummySpanAncestor = dummySpanAncestorForNode(start.deprecatedNode());
     }
 
@@ -595,6 +597,8 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
             splitTextAtEnd(start, end);
         start = startPosition();
         end = endPosition();
+        if (start.isNull() || end.isNull())
+            return;
         endDummySpanAncestor = dummySpanAncestorForNode(end.deprecatedNode());
     }
 
@@ -1265,6 +1269,8 @@ bool ApplyStyleCommand::shouldSplitTextElement(Element* element, EditingStyle* s
 
 bool ApplyStyleCommand::isValidCaretPositionInTextNode(const Position& position)
 {
+    ASSERT(position.isNotNull());
+
     Node* node = position.containerNode();
     if (position.anchorType() != Position::PositionIsOffsetInAnchor || !node->isTextNode())
         return false;
