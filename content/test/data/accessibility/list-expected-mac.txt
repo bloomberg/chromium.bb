@@ -1,0 +1,18 @@
+AXWebArea
+    AXList AXSubrole=AXContentList
+        AXGroup
+            AXListMarker AXValue='•'
+            AXStaticText AXValue='tic'
+        AXGroup
+            AXListMarker AXValue='•'
+            AXStaticText AXValue='tac'
+        AXGroup
+            AXListMarker AXValue='•'
+            AXStaticText AXValue='toe'
+    AXList AXSubrole=AXContentList
+        AXGroup
+            AXStaticText AXValue='tic'
+        AXGroup
+            AXStaticText AXValue='tac'
+        AXGroup
+            AXStaticText AXValue='toe'
