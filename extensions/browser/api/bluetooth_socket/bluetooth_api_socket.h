@@ -41,7 +41,7 @@ class BluetoothApiSocket : public ApiResource {
                      scoped_refptr<device::BluetoothSocket> socket,
                      const std::string& device_address,
                      const device::BluetoothUUID& uuid);
-  virtual ~BluetoothApiSocket();
+  ~BluetoothApiSocket() override;
 
   // Adopts a socket |socket| connected to a device with address
   // |device_address| using the service with UUID |uuid|.
@@ -89,7 +89,7 @@ class BluetoothApiSocket : public ApiResource {
   const device::BluetoothUUID& uuid() const { return uuid_; }
 
   // Overriden from extensions::ApiResource.
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   const std::string* name() const { return name_.get(); }
   void set_name(const std::string& name) { name_.reset(new std::string(name)); }

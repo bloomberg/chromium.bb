@@ -2130,9 +2130,8 @@ class ClearCacheQuotaHeuristic : public extensions::QuotaLimitHeuristic {
             "MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES"),
         callback_registered_(false),
         weak_ptr_factory_(this) {}
-  virtual ~ClearCacheQuotaHeuristic() {}
-  virtual bool Apply(Bucket* bucket,
-                     const base::TimeTicks& event_time) override;
+  ~ClearCacheQuotaHeuristic() override {}
+  bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
 
  private:
   // Callback that is triggered by the ExtensionWebRequestEventRouter on a page

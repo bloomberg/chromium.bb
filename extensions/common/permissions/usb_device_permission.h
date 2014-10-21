@@ -27,10 +27,10 @@ class UsbDevicePermission
   };
 
   explicit UsbDevicePermission(const APIPermissionInfo* info);
-  virtual ~UsbDevicePermission();
+  ~UsbDevicePermission() override;
 
   // APIPermission overrides
-  virtual PermissionMessages GetMessages() const override;
+  PermissionMessages GetMessages() const override;
 };
 
 }  // namespace extensions

@@ -13,11 +13,11 @@ namespace extensions {
 class TestExtensionsRendererClient : public ExtensionsRendererClient {
  public:
   TestExtensionsRendererClient();
-  virtual ~TestExtensionsRendererClient();
+  ~TestExtensionsRendererClient() override;
 
   // ExtensionsRendererClient implementation.
-  virtual bool IsIncognitoProcess() const override;
-  virtual int GetLowestIsolatedWorldId() const override;
+  bool IsIncognitoProcess() const override;
+  int GetLowestIsolatedWorldId() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsRendererClient);

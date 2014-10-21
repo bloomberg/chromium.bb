@@ -27,7 +27,7 @@ class UDPSocketEventDispatcher
       public base::SupportsWeakPtr<UDPSocketEventDispatcher> {
  public:
   explicit UDPSocketEventDispatcher(content::BrowserContext* context);
-  virtual ~UDPSocketEventDispatcher();
+  ~UDPSocketEventDispatcher() override;
 
   // Socket is active, start receving from it.
   void OnSocketBind(const std::string& extension_id, int socket_id);

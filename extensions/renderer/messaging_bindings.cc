@@ -101,7 +101,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
                   base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
   }
 
-  virtual ~ExtensionImpl() {}
+  ~ExtensionImpl() override {}
 
  private:
   void ClearPortDataAndNotifyDispatcher(int port_id) {

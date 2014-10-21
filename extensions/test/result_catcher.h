@@ -26,7 +26,7 @@ namespace extensions {
 class ResultCatcher : public content::NotificationObserver {
  public:
   ResultCatcher();
-  virtual ~ResultCatcher();
+  ~ResultCatcher() override;
 
   // Pumps the UI loop until a notification is received that an API test
   // succeeded or failed. Returns true if the test succeeded, false otherwise.
@@ -40,9 +40,9 @@ class ResultCatcher : public content::NotificationObserver {
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

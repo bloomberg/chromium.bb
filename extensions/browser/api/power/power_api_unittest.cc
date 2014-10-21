@@ -47,9 +47,7 @@ class PowerSaveBlockerStub : public content::PowerSaveBlocker {
       : unblock_callback_(unblock_callback) {
   }
 
-  virtual ~PowerSaveBlockerStub() {
-    unblock_callback_.Run();
-  }
+  ~PowerSaveBlockerStub() override { unblock_callback_.Run(); }
 
  private:
   base::Closure unblock_callback_;

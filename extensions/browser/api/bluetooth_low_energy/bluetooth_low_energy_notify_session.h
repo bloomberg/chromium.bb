@@ -21,13 +21,13 @@ class BluetoothLowEnergyNotifySession : public ApiResource {
       bool persistent,
       const std::string& owner_extension_id,
       scoped_ptr<device::BluetoothGattNotifySession> session);
-  virtual ~BluetoothLowEnergyNotifySession();
+  ~BluetoothLowEnergyNotifySession() override;
 
   // Returns a pointer to the underlying session object.
   device::BluetoothGattNotifySession* GetSession() const;
 
   // ApiResource override.
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   // This resource should be managed on the UI thread.
   static const content::BrowserThread::ID kThreadId =

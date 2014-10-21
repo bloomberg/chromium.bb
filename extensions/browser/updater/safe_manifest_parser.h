@@ -33,13 +33,13 @@ class SafeManifestParser : public content::UtilityProcessHostClient {
   void Start();
 
  private:
-  virtual ~SafeManifestParser();
+  ~SafeManifestParser() override;
 
   // Creates the sandboxed utility process and tells it to start parsing.
   void ParseInSandbox();
 
   // content::UtilityProcessHostClient implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnParseUpdateManifestSucceeded(const UpdateManifest::Results& results);
   void OnParseUpdateManifestFailed(const std::string& error_message);

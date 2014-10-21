@@ -33,18 +33,17 @@ class MediaGalleriesPermission
   };
 
   explicit MediaGalleriesPermission(const APIPermissionInfo* info);
-  virtual ~MediaGalleriesPermission();
+  ~MediaGalleriesPermission() override;
 
   // SetDisjunctionPermission overrides.
   // MediaGalleriesPermission does additional checks to make sure the
   // permissions do not contain unknown values.
-  virtual bool FromValue(
-      const base::Value* value,
-      std::string* error,
-      std::vector<std::string>* unhandled_permissions) override;
+  bool FromValue(const base::Value* value,
+                 std::string* error,
+                 std::vector<std::string>* unhandled_permissions) override;
 
   // APIPermission overrides.
-  virtual PermissionMessages GetMessages() const override;
+  PermissionMessages GetMessages() const override;
 
   // Permission strings.
   static const char kAllAutoDetectedPermission[];

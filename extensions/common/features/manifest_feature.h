@@ -14,15 +14,15 @@ namespace extensions {
 class ManifestFeature : public SimpleFeature {
  public:
   ManifestFeature();
-  virtual ~ManifestFeature();
+  ~ManifestFeature() override;
 
-  virtual Feature::Availability IsAvailableToContext(
+  Feature::Availability IsAvailableToContext(
       const Extension* extension,
       Feature::Context context,
       const GURL& url,
       Feature::Platform platform) const override;
 
-  virtual std::string Parse(const base::DictionaryValue* value) override;
+  std::string Parse(const base::DictionaryValue* value) override;
 };
 
 }  // namespace extensions

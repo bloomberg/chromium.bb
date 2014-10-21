@@ -16,7 +16,7 @@ class ScriptContext;
 class LoggingNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit LoggingNativeHandler(ScriptContext* context);
-  virtual ~LoggingNativeHandler();
+  ~LoggingNativeHandler() override;
 
   // Equivalent to CHECK(predicate) << message.
   //

@@ -17,7 +17,7 @@ namespace extensions {
 class SharedModuleInfo : public Extension::ManifestData {
  public:
   SharedModuleInfo();
-  virtual ~SharedModuleInfo();
+  ~SharedModuleInfo() override;
 
   bool Parse(const Extension* extension, base::string16* error);
 
@@ -58,15 +58,15 @@ class SharedModuleInfo : public Extension::ManifestData {
 class SharedModuleHandler : public ManifestHandler {
  public:
   SharedModuleHandler();
-  virtual ~SharedModuleHandler();
+  ~SharedModuleHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 };
 
 }  // namespace extensions

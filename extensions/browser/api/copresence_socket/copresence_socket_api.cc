@@ -24,7 +24,7 @@ class CopresencePeerResource : public ApiResource {
                          scoped_ptr<copresence_sockets::CopresencePeer> peer)
       : ApiResource(owner_extension_id), peer_(peer.Pass()) {}
 
-  virtual ~CopresencePeerResource() {}
+  ~CopresencePeerResource() override {}
 
   copresence_sockets::CopresencePeer* peer() { return peer_.get(); }
 
@@ -45,7 +45,7 @@ class CopresenceSocketResource : public ApiResource {
       scoped_ptr<copresence_sockets::CopresenceSocket> socket)
       : ApiResource(owner_extension_id), socket_(socket.Pass()) {}
 
-  virtual ~CopresenceSocketResource() {}
+  ~CopresenceSocketResource() override {}
 
   copresence_sockets::CopresenceSocket* socket() { return socket_.get(); }
 

@@ -27,40 +27,39 @@ class TCPSocket : public Socket {
             const std::string& owner_extension_id,
             bool is_connected = false);
 
-  virtual ~TCPSocket();
+  ~TCPSocket() override;
 
-  virtual void Connect(const std::string& address,
-                       int port,
-                       const CompletionCallback& callback) override;
-  virtual void Disconnect() override;
-  virtual int Bind(const std::string& address, int port) override;
-  virtual void Read(int count, const ReadCompletionCallback& callback) override;
-  virtual void RecvFrom(int count,
-                        const RecvFromCompletionCallback& callback) override;
-  virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
-                      int byte_count,
-                      const std::string& address,
-                      int port,
-                      const CompletionCallback& callback) override;
-  virtual bool SetKeepAlive(bool enable, int delay) override;
-  virtual bool SetNoDelay(bool no_delay) override;
-  virtual int Listen(const std::string& address,
-                     int port,
-                     int backlog,
-                     std::string* error_msg) override;
-  virtual void Accept(const AcceptCompletionCallback& callback) override;
+  void Connect(const std::string& address,
+               int port,
+               const CompletionCallback& callback) override;
+  void Disconnect() override;
+  int Bind(const std::string& address, int port) override;
+  void Read(int count, const ReadCompletionCallback& callback) override;
+  void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
+  void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
+              int byte_count,
+              const std::string& address,
+              int port,
+              const CompletionCallback& callback) override;
+  bool SetKeepAlive(bool enable, int delay) override;
+  bool SetNoDelay(bool no_delay) override;
+  int Listen(const std::string& address,
+             int port,
+             int backlog,
+             std::string* error_msg) override;
+  void Accept(const AcceptCompletionCallback& callback) override;
 
-  virtual bool IsConnected() override;
+  bool IsConnected() override;
 
-  virtual bool GetPeerAddress(net::IPEndPoint* address) override;
-  virtual bool GetLocalAddress(net::IPEndPoint* address) override;
+  bool GetPeerAddress(net::IPEndPoint* address) override;
+  bool GetLocalAddress(net::IPEndPoint* address) override;
 
   // Like Disconnect(), only Release() doesn't delete the underlying stream
   // or attempt to close it. Useful when giving away ownership with
   // ClientStream().
   virtual void Release();
 
-  virtual Socket::SocketType GetSocketType() const override;
+  Socket::SocketType GetSocketType() const override;
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,
@@ -78,9 +77,9 @@ class TCPSocket : public Socket {
   bool HasPendingRead() const;
 
  protected:
-  virtual int WriteImpl(net::IOBuffer* io_buffer,
-                        int io_buffer_size,
-                        const net::CompletionCallback& callback) override;
+  int WriteImpl(net::IOBuffer* io_buffer,
+                int io_buffer_size,
+                const net::CompletionCallback& callback) override;
 
  private:
   void RefreshConnectionStatus();
@@ -116,7 +115,7 @@ class ResumableTCPSocket : public TCPSocket {
                               bool is_connected);
 
   // Overriden from ApiResource
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
@@ -154,7 +153,7 @@ class ResumableTCPServerSocket : public TCPSocket {
   explicit ResumableTCPServerSocket(const std::string& owner_extension_id);
 
   // Overriden from ApiResource
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }

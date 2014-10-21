@@ -54,11 +54,11 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   };
 
   explicit RulesRegistryService(content::BrowserContext* context);
-  virtual ~RulesRegistryService();
+  ~RulesRegistryService() override;
 
   // Unregisters refptrs to concrete RulesRegistries at other objects that were
   // created by us so that the RulesRegistries can be released.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<RulesRegistryService>*
@@ -100,21 +100,19 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
       RulesRegistryMap;
 
   // Implementation of content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // Iterates over all registries, and calls |notification_callback| on them
   // with |extension_id| as the argument. If a registry lives on a different

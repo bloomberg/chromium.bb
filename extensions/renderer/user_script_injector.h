@@ -27,38 +27,34 @@ class UserScriptInjector : public ScriptInjector,
   UserScriptInjector(const UserScript* user_script,
                      UserScriptSet* user_script_set,
                      bool is_declarative);
-  virtual ~UserScriptInjector();
+  ~UserScriptInjector() override;
 
  private:
   // UserScriptSet::Observer implementation.
-  virtual void OnUserScriptsUpdated(
-      const std::set<std::string>& changed_extensions,
-      const std::vector<UserScript*>& scripts) override;
+  void OnUserScriptsUpdated(const std::set<std::string>& changed_extensions,
+                            const std::vector<UserScript*>& scripts) override;
 
   // ScriptInjector implementation.
-  virtual UserScript::InjectionType script_type() const override;
-  virtual bool ShouldExecuteInChildFrames() const override;
-  virtual bool ShouldExecuteInMainWorld() const override;
-  virtual bool IsUserGesture() const override;
-  virtual bool ExpectsResults() const override;
-  virtual bool ShouldInjectJs(
-      UserScript::RunLocation run_location) const override;
-  virtual bool ShouldInjectCss(
-      UserScript::RunLocation run_location) const override;
-  virtual PermissionsData::AccessType CanExecuteOnFrame(
+  UserScript::InjectionType script_type() const override;
+  bool ShouldExecuteInChildFrames() const override;
+  bool ShouldExecuteInMainWorld() const override;
+  bool IsUserGesture() const override;
+  bool ExpectsResults() const override;
+  bool ShouldInjectJs(UserScript::RunLocation run_location) const override;
+  bool ShouldInjectCss(UserScript::RunLocation run_location) const override;
+  PermissionsData::AccessType CanExecuteOnFrame(
       const Extension* extension,
       blink::WebFrame* web_frame,
       int tab_id,
       const GURL& top_url) const override;
-  virtual std::vector<blink::WebScriptSource> GetJsSources(
+  std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location) const override;
-  virtual std::vector<std::string> GetCssSources(
+  std::vector<std::string> GetCssSources(
       UserScript::RunLocation run_location) const override;
-  virtual void OnInjectionComplete(
-      scoped_ptr<base::ListValue> execution_results,
-      ScriptsRunInfo* scripts_run_info,
-      UserScript::RunLocation run_location) override;
-  virtual void OnWillNotInject(InjectFailureReason reason) override;
+  void OnInjectionComplete(scoped_ptr<base::ListValue> execution_results,
+                           ScriptsRunInfo* scripts_run_info,
+                           UserScript::RunLocation run_location) override;
+  void OnWillNotInject(InjectFailureReason reason) override;
 
   // The associated user script. Owned by the UserScriptInjector that created
   // this object.

@@ -116,10 +116,10 @@ class IncognitoProcessManager : public ProcessManager {
                           BrowserContext* original_context,
                           ProcessManager* original_manager,
                           ExtensionRegistry* extension_registry);
-  virtual ~IncognitoProcessManager() {}
-  virtual bool CreateBackgroundHost(const Extension* extension,
-                                    const GURL& url) override;
-  virtual SiteInstance* GetSiteInstanceForURL(const GURL& url) override;
+  ~IncognitoProcessManager() override {}
+  bool CreateBackgroundHost(const Extension* extension,
+                            const GURL& url) override;
+  SiteInstance* GetSiteInstanceForURL(const GURL& url) override;
 
  private:
   ProcessManager* original_manager_;
@@ -141,7 +141,7 @@ class RenderViewHostDestructionObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<RenderViewHostDestructionObserver> {
  public:
-  virtual ~RenderViewHostDestructionObserver() {}
+  ~RenderViewHostDestructionObserver() override {}
 
  private:
   explicit RenderViewHostDestructionObserver(WebContents* web_contents)
@@ -153,7 +153,7 @@ class RenderViewHostDestructionObserver
   friend class content::WebContentsUserData<RenderViewHostDestructionObserver>;
 
   // content::WebContentsObserver overrides.
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) override {
+  void RenderViewDeleted(RenderViewHost* render_view_host) override {
     process_manager_->UnregisterRenderViewHost(render_view_host);
   }
 

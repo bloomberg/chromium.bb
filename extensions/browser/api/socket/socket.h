@@ -41,7 +41,7 @@ class Socket : public ApiResource {
  public:
   enum SocketType { TYPE_TCP, TYPE_UDP, TYPE_TLS };
 
-  virtual ~Socket();
+  ~Socket() override;
 
   // The hostname of the remote host that this socket is connected to.  This
   // may be the empty string if the client does not intend to ever upgrade the

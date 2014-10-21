@@ -66,7 +66,7 @@ class Dispatcher : public content::RenderProcessObserver,
                    public UserScriptSetManager::Observer {
  public:
   explicit Dispatcher(DispatcherDelegate* delegate);
-  virtual ~Dispatcher();
+  ~Dispatcher() override;
 
   const std::set<std::string>& function_names() const {
     return function_names_;
@@ -156,10 +156,10 @@ class Dispatcher : public content::RenderProcessObserver,
                            CannotScriptWebstore);
 
   // RenderProcessObserver implementation:
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
-  virtual void WebKitInitialized() override;
-  virtual void IdleNotification() override;
-  virtual void OnRenderProcessShutdown() override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void WebKitInitialized() override;
+  void IdleNotification() override;
+  void OnRenderProcessShutdown() override;
 
   void OnActivateExtension(const std::string& extension_id);
   void OnCancelSuspend(const std::string& extension_id);
@@ -199,9 +199,8 @@ class Dispatcher : public content::RenderProcessObserver,
   void OnUsingWebRequestAPI(bool webrequest_used);
 
   // UserScriptSetManager::Observer implementation.
-  virtual void OnUserScriptsUpdated(
-      const std::set<std::string>& changed_extensions,
-      const std::vector<UserScript*>& scripts) override;
+  void OnUserScriptsUpdated(const std::set<std::string>& changed_extensions,
+                            const std::vector<UserScript*>& scripts) override;
 
   void UpdateActiveExtensions();
 

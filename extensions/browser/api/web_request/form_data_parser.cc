@@ -79,12 +79,12 @@ base::LazyInstance<Patterns>::Leaky g_patterns = LAZY_INSTANCE_INITIALIZER;
 class FormDataParserUrlEncoded : public FormDataParser {
  public:
   FormDataParserUrlEncoded();
-  virtual ~FormDataParserUrlEncoded();
+  ~FormDataParserUrlEncoded() override;
 
   // Implementation of FormDataParser.
-  virtual bool AllDataReadOK() override;
-  virtual bool GetNextNameValue(Result* result) override;
-  virtual bool SetSource(base::StringPiece source) override;
+  bool AllDataReadOK() override;
+  bool GetNextNameValue(Result* result) override;
+  bool SetSource(base::StringPiece source) override;
 
  private:
   // Returns the pattern to match a single name-value pair. This could be even
@@ -190,12 +190,12 @@ class FormDataParserUrlEncoded : public FormDataParser {
 class FormDataParserMultipart : public FormDataParser {
  public:
   explicit FormDataParserMultipart(const std::string& boundary_separator);
-  virtual ~FormDataParserMultipart();
+  ~FormDataParserMultipart() override;
 
   // Implementation of FormDataParser.
-  virtual bool AllDataReadOK() override;
-  virtual bool GetNextNameValue(Result* result) override;
-  virtual bool SetSource(base::StringPiece source) override;
+  bool AllDataReadOK() override;
+  bool GetNextNameValue(Result* result) override;
+  bool SetSource(base::StringPiece source) override;
 
  private:
   enum State {

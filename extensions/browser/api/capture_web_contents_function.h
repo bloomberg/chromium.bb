@@ -23,11 +23,11 @@ class CaptureWebContentsFunction : public AsyncExtensionFunction {
   CaptureWebContentsFunction() {}
 
  protected:
-  virtual ~CaptureWebContentsFunction() {}
+  ~CaptureWebContentsFunction() override {}
 
   // ExtensionFunction implementation.
-  virtual bool HasPermission() override;
-  virtual bool RunAsync() override;
+  bool HasPermission() override;
+  bool RunAsync() override;
 
   virtual bool IsScreenshotEnabled() = 0;
   virtual content::WebContents* GetWebContentsForID(int context_id) = 0;

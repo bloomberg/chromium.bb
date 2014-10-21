@@ -45,13 +45,13 @@ class AppWindowGeometryCache : public KeyedService,
     friend struct DefaultSingletonTraits<Factory>;
 
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
     // BrowserContextKeyedServiceFactory
-    virtual KeyedService* BuildServiceInstanceFor(
+    KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* context) const override;
-    virtual bool ServiceIsNULLWhileTesting() const override;
-    virtual content::BrowserContext* GetBrowserContextToUse(
+    bool ServiceIsNULLWhileTesting() const override;
+    content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const override;
   };
 
@@ -68,7 +68,7 @@ class AppWindowGeometryCache : public KeyedService,
   AppWindowGeometryCache(content::BrowserContext* context,
                          ExtensionPrefs* prefs);
 
-  virtual ~AppWindowGeometryCache();
+  ~AppWindowGeometryCache() override;
 
   // Returns the instance for the given browsing context.
   static AppWindowGeometryCache* Get(content::BrowserContext* context);
@@ -90,7 +90,7 @@ class AppWindowGeometryCache : public KeyedService,
                    ui::WindowShowState* state);
 
   // KeyedService
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -121,12 +121,11 @@ class AppWindowGeometryCache : public KeyedService,
   typedef std::map<std::string, WindowData> ExtensionData;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   void LoadGeometryFromStorage(const std::string& extension_id);
   void SyncToStorage();

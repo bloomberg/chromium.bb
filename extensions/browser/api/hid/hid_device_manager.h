@@ -28,7 +28,7 @@ class Extension;
 class HidDeviceManager : public BrowserContextKeyedAPI {
  public:
   explicit HidDeviceManager(content::BrowserContext* context);
-  virtual ~HidDeviceManager();
+  ~HidDeviceManager() override;
 
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<HidDeviceManager>* GetFactoryInstance();

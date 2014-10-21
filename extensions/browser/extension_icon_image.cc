@@ -55,11 +55,11 @@ class BlankImageSource : public gfx::CanvasImageSource {
   explicit BlankImageSource(const gfx::Size& size_in_dip)
       : CanvasImageSource(size_in_dip, /*is_opaque =*/ false) {
   }
-  virtual ~BlankImageSource() {}
+  ~BlankImageSource() override {}
 
  private:
   // gfx::CanvasImageSource overrides:
-  virtual void Draw(gfx::Canvas* canvas) override {
+  void Draw(gfx::Canvas* canvas) override {
     canvas->DrawColor(SkColorSetARGB(0, 0, 0, 0));
   }
 
@@ -76,13 +76,13 @@ namespace extensions {
 class IconImage::Source : public gfx::ImageSkiaSource {
  public:
   Source(IconImage* host, const gfx::Size& size_in_dip);
-  virtual ~Source();
+  ~Source() override;
 
   void ResetHost();
 
  private:
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override;
+  gfx::ImageSkiaRep GetImageForScale(float scale) override;
 
   // Used to load images, possibly asynchronously. NULLed out when the IconImage
   // is destroyed.

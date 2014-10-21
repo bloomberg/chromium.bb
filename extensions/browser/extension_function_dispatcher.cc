@@ -152,12 +152,10 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
         weak_ptr_factory_(this) {
   }
 
-  virtual ~UIThreadResponseCallbackWrapper() {
-  }
+  ~UIThreadResponseCallbackWrapper() override {}
 
   // content::WebContentsObserver overrides.
-  virtual void RenderViewDeleted(
-      RenderViewHost* render_view_host) override {
+  void RenderViewDeleted(RenderViewHost* render_view_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (render_view_host != render_view_host_)
       return;

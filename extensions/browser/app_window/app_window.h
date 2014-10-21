@@ -352,77 +352,70 @@ class AppWindow : public content::NotificationObserver,
   }
 
  protected:
-  virtual ~AppWindow();
+  ~AppWindow() override;
 
  private:
   // PlatformAppBrowserTest needs access to web_contents()
   friend class PlatformAppBrowserTest;
 
   // content::WebContentsDelegate implementation.
-  virtual void CloseContents(content::WebContents* contents) override;
-  virtual bool ShouldSuppressDialogs() override;
-  virtual content::ColorChooser* OpenColorChooser(
+  void CloseContents(content::WebContents* contents) override;
+  bool ShouldSuppressDialogs() override;
+  content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<content::ColorSuggestion>& suggestions) override;
-  virtual void RunFileChooser(content::WebContents* tab,
-                              const content::FileChooserParams& params)
-      override;
-  virtual bool IsPopupOrPanel(const content::WebContents* source)
-      const override;
-  virtual void MoveContents(content::WebContents* source,
-                            const gfx::Rect& pos) override;
-  virtual void NavigationStateChanged(
-      const content::WebContents* source,
-      content::InvalidateTypes changed_flags) override;
-  virtual void ToggleFullscreenModeForTab(content::WebContents* source,
-                                          bool enter_fullscreen) override;
-  virtual bool IsFullscreenForTabOrPending(const content::WebContents* source)
-      const override;
-  virtual void RequestMediaAccessPermission(
+  void RunFileChooser(content::WebContents* tab,
+                      const content::FileChooserParams& params) override;
+  bool IsPopupOrPanel(const content::WebContents* source) const override;
+  void MoveContents(content::WebContents* source,
+                    const gfx::Rect& pos) override;
+  void NavigationStateChanged(const content::WebContents* source,
+                              content::InvalidateTypes changed_flags) override;
+  void ToggleFullscreenModeForTab(content::WebContents* source,
+                                  bool enter_fullscreen) override;
+  bool IsFullscreenForTabOrPending(
+      const content::WebContents* source) const override;
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
-  virtual bool CheckMediaAccessPermission(
-      content::WebContents* web_contents,
-      const GURL& security_origin,
-      content::MediaStreamType type) override;
-  virtual content::WebContents* OpenURLFromTab(
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override;
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual bool PreHandleKeyboardEvent(
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  bool PreHandleKeyboardEvent(content::WebContents* source,
+                              const content::NativeWebKeyboardEvent& event,
+                              bool* is_keyboard_shortcut) override;
+  void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) override;
-  virtual void HandleKeyboardEvent(content::WebContents* source,
-                                   const content::NativeWebKeyboardEvent& event)
-      override;
-  virtual void RequestToLockMouse(content::WebContents* web_contents,
-                                  bool user_gesture,
-                                  bool last_unlocked_by_target) override;
-  virtual bool PreHandleGestureEvent(content::WebContents* source,
-                                     const blink::WebGestureEvent& event)
-      override;
+      const content::NativeWebKeyboardEvent& event) override;
+  void RequestToLockMouse(content::WebContents* web_contents,
+                          bool user_gesture,
+                          bool last_unlocked_by_target) override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
 
   // content::WebContentsObserver implementation.
-  virtual void DidFirstVisuallyNonEmptyPaint() override;
+  void DidFirstVisuallyNonEmptyPaint() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
-  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) override;
-  virtual bool IsWebContentsVisible(content::WebContents* web_contents)
-      override;
+  void SetWebContentsBlocked(content::WebContents* web_contents,
+                             bool blocked) override;
+  bool IsWebContentsVisible(content::WebContents* web_contents) override;
 
   // Saves the window geometry/position/screen bounds.
   void SaveWindowPosition();
@@ -457,7 +450,7 @@ class AppWindow : public content::NotificationObserver,
   void SendOnWindowShownIfShown();
 
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
-  virtual web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
 
   // Updates the badge to |image|. Called internally from the image loader
@@ -472,7 +465,7 @@ class AppWindow : public content::NotificationObserver,
                           const std::vector<gfx::Size>& original_bitmap_sizes);
 
   // IconImage::Observer implementation.
-  virtual void OnExtensionIconImageChanged(IconImage* image) override;
+  void OnExtensionIconImageChanged(IconImage* image) override;
 
   // The browser context with which this window is associated. AppWindow does
   // not own this object.

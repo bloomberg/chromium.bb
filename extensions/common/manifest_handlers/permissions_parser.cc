@@ -33,7 +33,7 @@ namespace errors = manifest_errors;
 
 struct ManifestPermissions : public Extension::ManifestData {
   ManifestPermissions(scoped_refptr<const PermissionSet> permissions);
-  virtual ~ManifestPermissions();
+  ~ManifestPermissions() override;
 
   scoped_refptr<const PermissionSet> permissions;
 };

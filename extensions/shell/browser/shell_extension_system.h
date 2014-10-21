@@ -36,7 +36,7 @@ class SharedUserScriptMaster;
 class ShellExtensionSystem : public ExtensionSystem {
  public:
   explicit ShellExtensionSystem(content::BrowserContext* browser_context);
-  virtual ~ShellExtensionSystem();
+  ~ShellExtensionSystem() override;
 
   // Loads an unpacked application from a directory. Returns true on success.
   bool LoadApp(const base::FilePath& app_dir);
@@ -45,39 +45,38 @@ class ShellExtensionSystem : public ExtensionSystem {
   void LaunchApp();
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   scoped_refptr<Extension> extension() { return extension_; }
 
   // ExtensionSystem implementation:
-  virtual void InitForRegularProfile(bool extensions_enabled) override;
-  virtual ExtensionService* extension_service() override;
-  virtual RuntimeData* runtime_data() override;
-  virtual ManagementPolicy* management_policy() override;
-  virtual SharedUserScriptMaster* shared_user_script_master() override;
-  virtual ProcessManager* process_manager() override;
-  virtual StateStore* state_store() override;
-  virtual StateStore* rules_store() override;
-  virtual InfoMap* info_map() override;
-  virtual LazyBackgroundTaskQueue* lazy_background_task_queue() override;
-  virtual EventRouter* event_router() override;
-  virtual WarningService* warning_service() override;
-  virtual Blacklist* blacklist() override;
-  virtual ErrorConsole* error_console() override;
-  virtual InstallVerifier* install_verifier() override;
-  virtual QuotaService* quota_service() override;
-  virtual void RegisterExtensionWithRequestContexts(
+  void InitForRegularProfile(bool extensions_enabled) override;
+  ExtensionService* extension_service() override;
+  RuntimeData* runtime_data() override;
+  ManagementPolicy* management_policy() override;
+  SharedUserScriptMaster* shared_user_script_master() override;
+  ProcessManager* process_manager() override;
+  StateStore* state_store() override;
+  StateStore* rules_store() override;
+  InfoMap* info_map() override;
+  LazyBackgroundTaskQueue* lazy_background_task_queue() override;
+  EventRouter* event_router() override;
+  WarningService* warning_service() override;
+  Blacklist* blacklist() override;
+  ErrorConsole* error_console() override;
+  InstallVerifier* install_verifier() override;
+  QuotaService* quota_service() override;
+  void RegisterExtensionWithRequestContexts(
       const Extension* extension) override;
-  virtual void UnregisterExtensionWithRequestContexts(
+  void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
       const UnloadedExtensionInfo::Reason reason) override;
-  virtual const OneShotEvent& ready() const override;
-  virtual ContentVerifier* content_verifier() override;
-  virtual scoped_ptr<ExtensionSet> GetDependentExtensions(
+  const OneShotEvent& ready() const override;
+  ContentVerifier* content_verifier() override;
+  scoped_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
-  virtual DeclarativeUserScriptMaster*
-      GetDeclarativeUserScriptMasterByExtension(
-          const ExtensionId& extension_id) override;
+  DeclarativeUserScriptMaster* GetDeclarativeUserScriptMasterByExtension(
+      const ExtensionId& extension_id) override;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.

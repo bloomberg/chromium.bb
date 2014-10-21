@@ -24,7 +24,7 @@ class ExtensionSystemProvider : public BrowserContextKeyedServiceFactory {
  public:
   ExtensionSystemProvider(const char* name,
                           BrowserContextDependencyManager* manager);
-  virtual ~ExtensionSystemProvider();
+  ~ExtensionSystemProvider() override;
 
   virtual ExtensionSystem* GetForBrowserContext(
       content::BrowserContext* context) = 0;

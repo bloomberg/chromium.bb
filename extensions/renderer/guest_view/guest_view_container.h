@@ -56,7 +56,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
 
   GuestViewContainer(content::RenderFrame* render_frame,
                      const std::string& mime_type);
-  virtual ~GuestViewContainer();
+  ~GuestViewContainer() override;
 
   static GuestViewContainer* FromID(int render_view_routing_id,
                                     int element_instance_id);
@@ -64,14 +64,14 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
   void AttachGuest(linked_ptr<AttachRequest> request);
 
   // BrowserPluginDelegate implementation.
-  virtual void SetElementInstanceID(int element_instance_id) override;
-  virtual void DidFinishLoading() override;
-  virtual void DidReceiveData(const char* data, int data_length) override;
-  virtual void Ready() override;
+  void SetElementInstanceID(int element_instance_id) override;
+  void DidFinishLoading() override;
+  void DidReceiveData(const char* data, int data_length) override;
+  void Ready() override;
 
   // RenderFrameObserver override.
-  virtual void OnDestruct() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);

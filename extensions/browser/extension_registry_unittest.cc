@@ -48,37 +48,32 @@ class TestObserver : public ExtensionRegistryObserver {
   const ExtensionList& uninstalled() { return uninstalled_; }
 
  private:
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override {
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override {
     loaded_.push_back(extension);
   }
 
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      override {
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override {
     unloaded_.push_back(extension);
   }
 
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override {
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override {
     installed_.push_back(extension);
   }
 
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override {
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override {
     uninstalled_.push_back(extension);
   }
 
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override {
-    Reset();
-  }
+  void OnShutdown(extensions::ExtensionRegistry* registry) override { Reset(); }
 
   ExtensionList loaded_;
   ExtensionList unloaded_;

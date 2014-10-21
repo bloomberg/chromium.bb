@@ -17,7 +17,7 @@ namespace extensions {
 // OAuth2 info included in the extension.
 struct OAuth2Info : public Extension::ManifestData {
   OAuth2Info();
-  virtual ~OAuth2Info();
+  ~OAuth2Info() override;
 
   std::string client_id;
   std::vector<std::string> scopes;
@@ -32,13 +32,12 @@ struct OAuth2Info : public Extension::ManifestData {
 class OAuth2ManifestHandler : public ManifestHandler {
  public:
   OAuth2ManifestHandler();
-  virtual ~OAuth2ManifestHandler();
+  ~OAuth2ManifestHandler() override;
 
-  virtual bool Parse(Extension* extension,
-                     base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2ManifestHandler);
 };

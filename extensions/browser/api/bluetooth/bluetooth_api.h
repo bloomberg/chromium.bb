@@ -40,16 +40,16 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<BluetoothAPI>* GetFactoryInstance();
 
   explicit BluetoothAPI(content::BrowserContext* context);
-  virtual ~BluetoothAPI();
+  ~BluetoothAPI() override;
 
   BluetoothEventRouter* event_router();
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const EventListenerInfo& details) override;
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   // BrowserContextKeyedAPI implementation.
@@ -72,10 +72,10 @@ class BluetoothGetAdapterStateFunction : public BluetoothExtensionFunction {
                              BLUETOOTH_GETADAPTERSTATE)
 
  protected:
-  virtual ~BluetoothGetAdapterStateFunction();
+  ~BluetoothGetAdapterStateFunction() override;
 
   // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 };
 
 class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
@@ -83,10 +83,10 @@ class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("bluetooth.getDevices", BLUETOOTH_GETDEVICES)
 
  protected:
-  virtual ~BluetoothGetDevicesFunction();
+  ~BluetoothGetDevicesFunction() override;
 
   // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 };
 
 class BluetoothGetDeviceFunction : public BluetoothExtensionFunction {
@@ -94,10 +94,10 @@ class BluetoothGetDeviceFunction : public BluetoothExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("bluetooth.getDevice", BLUETOOTH_GETDEVICE)
 
   // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  protected:
-  virtual ~BluetoothGetDeviceFunction();
+  ~BluetoothGetDeviceFunction() override;
 };
 
 class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {
@@ -106,10 +106,10 @@ class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {
                              BLUETOOTH_STARTDISCOVERY)
 
  protected:
-  virtual ~BluetoothStartDiscoveryFunction() {}
+  ~BluetoothStartDiscoveryFunction() override {}
 
   // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  private:
   void OnSuccessCallback();
@@ -121,10 +121,10 @@ class BluetoothStopDiscoveryFunction : public BluetoothExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("bluetooth.stopDiscovery", BLUETOOTH_STOPDISCOVERY)
 
  protected:
-  virtual ~BluetoothStopDiscoveryFunction() {}
+  ~BluetoothStopDiscoveryFunction() override {}
 
   // BluetoothExtensionFunction:
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  private:
   void OnSuccessCallback();

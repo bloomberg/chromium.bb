@@ -28,7 +28,7 @@ class TCPServerSocketEventDispatcher
       public base::SupportsWeakPtr<TCPServerSocketEventDispatcher> {
  public:
   explicit TCPServerSocketEventDispatcher(content::BrowserContext* context);
-  virtual ~TCPServerSocketEventDispatcher();
+  ~TCPServerSocketEventDispatcher() override;
 
   // Server socket is active, start accepting connections from it.
   void OnServerSocketListen(const std::string& extension_id, int socket_id);

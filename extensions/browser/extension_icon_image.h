@@ -69,7 +69,7 @@ class IconImage : public content::NotificationObserver {
             int resource_size_in_dip,
             const gfx::ImageSkia& default_icon,
             Observer* observer);
-  virtual ~IconImage();
+  ~IconImage() override;
 
   const gfx::ImageSkia& image_skia() const { return image_skia_; }
 
@@ -87,9 +87,9 @@ class IconImage : public content::NotificationObserver {
   void OnImageLoaded(float scale_factor, const gfx::Image& image);
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::BrowserContext* browser_context_;
   const Extension* extension_;

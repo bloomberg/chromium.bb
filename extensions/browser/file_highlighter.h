@@ -73,7 +73,7 @@ class ManifestHighlighter : public FileHighlighter {
   ManifestHighlighter(const std::string& manifest,
                       const std::string& key,
                       const std::string& specific /* optional */);
-  virtual ~ManifestHighlighter();
+  ~ManifestHighlighter() override;
 
  private:
   // Called from the constructor; determine the start and end bounds of a
@@ -97,7 +97,7 @@ class ManifestHighlighter : public FileHighlighter {
 class SourceHighlighter : public FileHighlighter {
  public:
   SourceHighlighter(const std::string& source, size_t line_number);
-  virtual ~SourceHighlighter();
+  ~SourceHighlighter() override;
 
  private:
   // Called from the constructor; determine the bounds of the line in the source

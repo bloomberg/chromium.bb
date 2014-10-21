@@ -21,10 +21,10 @@ class SystemNetworkGetNetworkInterfacesFunction
   SystemNetworkGetNetworkInterfacesFunction();
 
  protected:
-  virtual ~SystemNetworkGetNetworkInterfacesFunction();
+  ~SystemNetworkGetNetworkInterfacesFunction() override;
 
   // AsyncApiFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  private:
   void GetListOnFileThread();

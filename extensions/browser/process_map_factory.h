@@ -25,12 +25,12 @@ class ProcessMapFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ProcessMapFactory>;
 
   ProcessMapFactory();
-  virtual ~ProcessMapFactory();
+  ~ProcessMapFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
  private:

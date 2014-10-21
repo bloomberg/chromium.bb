@@ -99,7 +99,7 @@ class NativeAppWindow : public ui::BaseWindow,
   // when compositing.
   virtual bool CanHaveAlphaEnabled() const = 0;
 
-  virtual ~NativeAppWindow() {}
+  ~NativeAppWindow() override {}
 };
 
 }  // namespace extensions

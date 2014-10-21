@@ -26,10 +26,10 @@ namespace {
 class ExtensionsContentClient : public content::ContentClient {
  public:
   ExtensionsContentClient() {}
-  virtual ~ExtensionsContentClient() {}
+  ~ExtensionsContentClient() override {}
 
   // content::ContentClient overrides:
-  virtual void AddAdditionalSchemes(
+  void AddAdditionalSchemes(
       std::vector<std::string>* standard_schemes,
       std::vector<std::string>* savable_schemes) override {
     standard_schemes->push_back(extensions::kExtensionScheme);
@@ -46,12 +46,12 @@ class ExtensionsContentClient : public content::ContentClient {
 class ExtensionsTestSuite : public content::ContentTestSuiteBase {
  public:
   ExtensionsTestSuite(int argc, char** argv);
-  virtual ~ExtensionsTestSuite();
+  ~ExtensionsTestSuite() override;
 
  private:
   // base::TestSuite:
-  virtual void Initialize() override;
-  virtual void Shutdown() override;
+  void Initialize() override;
+  void Shutdown() override;
 
   scoped_ptr<extensions::TestExtensionsClient> client_;
 

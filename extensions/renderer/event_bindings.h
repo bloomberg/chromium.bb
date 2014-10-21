@@ -22,7 +22,7 @@ class EventMatcher;
 class EventBindings : public ObjectBackedNativeHandler {
  public:
   EventBindings(Dispatcher* dispatcher, ScriptContext* context);
-  virtual ~EventBindings();
+  ~EventBindings() override;
 
  private:
   // Attach an event name to an object.

@@ -22,8 +22,8 @@ class AppWindowCreateFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)
 
  protected:
-  virtual ~AppWindowCreateFunction() {}
-  virtual bool RunAsync() override;
+  ~AppWindowCreateFunction() override {}
+  bool RunAsync() override;
 
  private:
   bool GetBoundsSpec(

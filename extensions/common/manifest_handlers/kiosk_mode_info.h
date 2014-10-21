@@ -23,7 +23,7 @@ struct KioskModeInfo : public Extension::ManifestData {
   };
 
   explicit KioskModeInfo(KioskStatus kiosk_status);
-  virtual ~KioskModeInfo();
+  ~KioskModeInfo() override;
 
   KioskStatus kiosk_status;
 
@@ -38,12 +38,12 @@ struct KioskModeInfo : public Extension::ManifestData {
 class KioskModeHandler : public ManifestHandler {
  public:
   KioskModeHandler();
-  virtual ~KioskModeHandler();
+  ~KioskModeHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   std::vector<std::string> supported_keys_;
 

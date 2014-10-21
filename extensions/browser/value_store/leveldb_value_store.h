@@ -27,26 +27,25 @@ class LeveldbValueStore : public ValueStore {
   explicit LeveldbValueStore(const base::FilePath& path);
 
   // Must be deleted on the FILE thread.
-  virtual ~LeveldbValueStore();
+  ~LeveldbValueStore() override;
 
   // ValueStore implementation.
-  virtual size_t GetBytesInUse(const std::string& key) override;
-  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) override;
-  virtual size_t GetBytesInUse() override;
-  virtual ReadResult Get(const std::string& key) override;
-  virtual ReadResult Get(const std::vector<std::string>& keys) override;
-  virtual ReadResult Get() override;
-  virtual WriteResult Set(
-      WriteOptions options,
-      const std::string& key,
-      const base::Value& value) override;
-  virtual WriteResult Set(
-      WriteOptions options, const base::DictionaryValue& values) override;
-  virtual WriteResult Remove(const std::string& key) override;
-  virtual WriteResult Remove(const std::vector<std::string>& keys) override;
-  virtual WriteResult Clear() override;
-  virtual bool Restore() override;
-  virtual bool RestoreKey(const std::string& key) override;
+  size_t GetBytesInUse(const std::string& key) override;
+  size_t GetBytesInUse(const std::vector<std::string>& keys) override;
+  size_t GetBytesInUse() override;
+  ReadResult Get(const std::string& key) override;
+  ReadResult Get(const std::vector<std::string>& keys) override;
+  ReadResult Get() override;
+  WriteResult Set(WriteOptions options,
+                  const std::string& key,
+                  const base::Value& value) override;
+  WriteResult Set(WriteOptions options,
+                  const base::DictionaryValue& values) override;
+  WriteResult Remove(const std::string& key) override;
+  WriteResult Remove(const std::vector<std::string>& keys) override;
+  WriteResult Clear() override;
+  bool Restore() override;
+  bool RestoreKey(const std::string& key) override;
 
   // Write directly to the backing levelDB. Only used for testing to cause
   // corruption in the database.

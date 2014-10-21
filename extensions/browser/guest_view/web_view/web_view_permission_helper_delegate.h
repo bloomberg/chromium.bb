@@ -18,7 +18,7 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
  public:
   explicit WebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper);
-  virtual ~WebViewPermissionHelperDelegate();
+  ~WebViewPermissionHelperDelegate() override;
 
   virtual void CanDownload(
       content::RenderViewHost* render_view_host,

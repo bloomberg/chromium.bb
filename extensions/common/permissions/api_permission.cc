@@ -18,72 +18,70 @@ class SimpleAPIPermission : public APIPermission {
   explicit SimpleAPIPermission(const APIPermissionInfo* permission)
     : APIPermission(permission) { }
 
-  virtual ~SimpleAPIPermission() { }
+  ~SimpleAPIPermission() override {}
 
-  virtual bool HasMessages() const override {
+  bool HasMessages() const override {
     return info()->message_id() > PermissionMessage::kNone;
   }
 
-  virtual PermissionMessages GetMessages() const override {
+  PermissionMessages GetMessages() const override {
     DCHECK(HasMessages());
     PermissionMessages result;
     result.push_back(GetMessage_());
     return result;
   }
 
-  virtual bool Check(
-      const APIPermission::CheckParam* param) const override {
+  bool Check(const APIPermission::CheckParam* param) const override {
     return !param;
   }
 
-  virtual bool Contains(const APIPermission* rhs) const override {
+  bool Contains(const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
     return true;
   }
 
-  virtual bool Equal(const APIPermission* rhs) const override {
+  bool Equal(const APIPermission* rhs) const override {
     if (this != rhs)
       CHECK_EQ(info(), rhs->info());
     return true;
   }
 
-  virtual bool FromValue(
-      const base::Value* value,
-      std::string* /*error*/,
-      std::vector<std::string>* /*unhandled_permissions*/) override {
+  bool FromValue(const base::Value* value,
+                 std::string* /*error*/,
+                 std::vector<std::string>* /*unhandled_permissions*/) override {
     return (value == NULL);
   }
 
-  virtual scoped_ptr<base::Value> ToValue() const override {
+  scoped_ptr<base::Value> ToValue() const override {
     return scoped_ptr<base::Value>();
   }
 
-  virtual APIPermission* Clone() const override {
+  APIPermission* Clone() const override {
     return new SimpleAPIPermission(info());
   }
 
-  virtual APIPermission* Diff(const APIPermission* rhs) const override {
+  APIPermission* Diff(const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
     return NULL;
   }
 
-  virtual APIPermission* Union(const APIPermission* rhs) const override {
+  APIPermission* Union(const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
     return new SimpleAPIPermission(info());
   }
 
-  virtual APIPermission* Intersect(const APIPermission* rhs) const override {
+  APIPermission* Intersect(const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
     return new SimpleAPIPermission(info());
   }
 
-  virtual void Write(IPC::Message* m) const override { }
+  void Write(IPC::Message* m) const override {}
 
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) override {
+  bool Read(const IPC::Message* m, PickleIterator* iter) override {
     return true;
   }
 
-  virtual void Log(std::string* log) const override { }
+  void Log(std::string* log) const override {}
 };
 
 }  // namespace

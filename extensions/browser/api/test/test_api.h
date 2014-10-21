@@ -17,10 +17,10 @@ namespace extensions {
 // Prior to running, checks that we are in a testing process.
 class TestExtensionFunction : public SyncExtensionFunction {
  protected:
-  virtual ~TestExtensionFunction();
+  ~TestExtensionFunction() override;
 
   // SyncExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 
   virtual bool RunSafe() = 0;
 };
@@ -30,10 +30,10 @@ class TestNotifyPassFunction : public TestExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("test.notifyPass", UNKNOWN)
 
  protected:
-  virtual ~TestNotifyPassFunction();
+  ~TestNotifyPassFunction() override;
 
   // TestExtensionFunction:
-  virtual bool RunSafe() override;
+  bool RunSafe() override;
 };
 
 class TestNotifyFailFunction : public TestExtensionFunction {
@@ -41,10 +41,10 @@ class TestNotifyFailFunction : public TestExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("test.notifyFail", UNKNOWN)
 
  protected:
-  virtual ~TestNotifyFailFunction();
+  ~TestNotifyFailFunction() override;
 
   // TestExtensionFunction:
-  virtual bool RunSafe() override;
+  bool RunSafe() override;
 };
 
 class TestLogFunction : public TestExtensionFunction {
@@ -52,10 +52,10 @@ class TestLogFunction : public TestExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("test.log", UNKNOWN)
 
  protected:
-  virtual ~TestLogFunction();
+  ~TestLogFunction() override;
 
   // TestExtensionFunction:
-  virtual bool RunSafe() override;
+  bool RunSafe() override;
 };
 
 class TestSendMessageFunction : public AsyncExtensionFunction {
@@ -70,10 +70,10 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
   void ReplyWithError(const std::string& error);
 
  protected:
-  virtual ~TestSendMessageFunction();
+  ~TestSendMessageFunction() override;
 
   // ExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 };
 
 class TestGetConfigFunction : public TestExtensionFunction {
@@ -108,10 +108,10 @@ class TestGetConfigFunction : public TestExtensionFunction {
     DISALLOW_COPY_AND_ASSIGN(TestConfigState);
   };
 
-  virtual ~TestGetConfigFunction();
+  ~TestGetConfigFunction() override;
 
   // TestExtensionFunction:
-  virtual bool RunSafe() override;
+  bool RunSafe() override;
 };
 
 class TestWaitForRoundTripFunction : public TestExtensionFunction {
@@ -119,10 +119,10 @@ class TestWaitForRoundTripFunction : public TestExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("test.waitForRoundTrip", UNKNOWN)
 
  protected:
-  virtual ~TestWaitForRoundTripFunction();
+  ~TestWaitForRoundTripFunction() override;
 
   // TestExtensionFunction:
-  virtual bool RunSafe() override;
+  bool RunSafe() override;
 };
 
 }  // namespace extensions

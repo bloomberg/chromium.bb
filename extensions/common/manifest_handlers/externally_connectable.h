@@ -36,12 +36,12 @@ extern const char kErrorWildcardHostsNotAllowed[];
 class ExternallyConnectableHandler : public ManifestHandler {
  public:
   ExternallyConnectableHandler();
-  virtual ~ExternallyConnectableHandler();
+  ~ExternallyConnectableHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExternallyConnectableHandler);
 };
@@ -61,7 +61,7 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
       std::vector<InstallWarning>* install_warnings,
       base::string16* error);
 
-  virtual ~ExternallyConnectableInfo();
+  ~ExternallyConnectableInfo() override;
 
   // The URL patterns that are allowed to connect/sendMessage.
   const URLPatternSet matches;

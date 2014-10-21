@@ -33,7 +33,7 @@ class BluetoothSocketEventDispatcher
       public base::SupportsWeakPtr<BluetoothSocketEventDispatcher> {
  public:
   explicit BluetoothSocketEventDispatcher(content::BrowserContext* context);
-  virtual ~BluetoothSocketEventDispatcher();
+  ~BluetoothSocketEventDispatcher() override;
 
   // Socket is active, start receiving data from it.
   void OnSocketConnect(const std::string& extension_id, int socket_id);

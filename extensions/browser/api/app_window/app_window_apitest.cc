@@ -29,12 +29,12 @@ class TestAppWindowRegistryObserver : public AppWindowRegistry::Observer {
       : profile_(profile), icon_updates_(0) {
     AppWindowRegistry::Get(profile_)->AddObserver(this);
   }
-  virtual ~TestAppWindowRegistryObserver() {
+  ~TestAppWindowRegistryObserver() override {
     AppWindowRegistry::Get(profile_)->RemoveObserver(this);
   }
 
   // Overridden from AppWindowRegistry::Observer:
-  virtual void OnAppWindowIconChanged(AppWindow* app_window) override {
+  void OnAppWindowIconChanged(AppWindow* app_window) override {
     ++icon_updates_;
   }
 

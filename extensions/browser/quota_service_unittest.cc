@@ -35,9 +35,9 @@ const TimeTicks k1MinuteAfterStart = kStartTime + TimeDelta::FromMinutes(1);
 class Mapper : public QuotaLimitHeuristic::BucketMapper {
  public:
   Mapper() {}
-  virtual ~Mapper() { STLDeleteValues(&buckets_); }
-  virtual void GetBucketsForArgs(const base::ListValue* args,
-                                 BucketList* buckets) override {
+  ~Mapper() override { STLDeleteValues(&buckets_); }
+  void GetBucketsForArgs(const base::ListValue* args,
+                         BucketList* buckets) override {
     for (size_t i = 0; i < args->GetSize(); i++) {
       int id;
       ASSERT_TRUE(args->GetInteger(i, &id));
@@ -55,45 +55,45 @@ class Mapper : public QuotaLimitHeuristic::BucketMapper {
 
 class MockMapper : public QuotaLimitHeuristic::BucketMapper {
  public:
-  virtual void GetBucketsForArgs(const base::ListValue* args,
-                                 BucketList* buckets) override {}
+  void GetBucketsForArgs(const base::ListValue* args,
+                         BucketList* buckets) override {}
 };
 
 class MockFunction : public ExtensionFunction {
  public:
   explicit MockFunction(const std::string& name) { set_name(name); }
 
-  virtual void SetArgs(const base::ListValue* args) override {}
-  virtual std::string GetError() const override { return std::string(); }
-  virtual void SetError(const std::string& error) override {}
-  virtual void Destruct() const override { delete this; }
-  virtual ResponseAction Run() override { return RespondLater(); }
-  virtual void SendResponse(bool) override {}
+  void SetArgs(const base::ListValue* args) override {}
+  std::string GetError() const override { return std::string(); }
+  void SetError(const std::string& error) override {}
+  void Destruct() const override { delete this; }
+  ResponseAction Run() override { return RespondLater(); }
+  void SendResponse(bool) override {}
 
  protected:
-  virtual ~MockFunction() {}
+  ~MockFunction() override {}
 };
 
 class TimedLimitMockFunction : public MockFunction {
  public:
   explicit TimedLimitMockFunction(const std::string& name)
       : MockFunction(name) {}
-  virtual void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const
-      override {
+  void GetQuotaLimitHeuristics(
+      QuotaLimitHeuristics* heuristics) const override {
     heuristics->push_back(
         new TimedLimit(k2PerMinute, new Mapper(), kGenericName));
   }
 
  private:
-  virtual ~TimedLimitMockFunction() {}
+  ~TimedLimitMockFunction() override {}
 };
 
 class ChainedLimitsMockFunction : public MockFunction {
  public:
   explicit ChainedLimitsMockFunction(const std::string& name)
       : MockFunction(name) {}
-  virtual void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const
-      override {
+  void GetQuotaLimitHeuristics(
+      QuotaLimitHeuristics* heuristics) const override {
     // No more than 2 per minute sustained over 5 minutes.
     heuristics->push_back(new SustainedLimit(
         TimeDelta::FromMinutes(5), k2PerMinute, new Mapper(), kGenericName));
@@ -103,20 +103,20 @@ class ChainedLimitsMockFunction : public MockFunction {
   }
 
  private:
-  virtual ~ChainedLimitsMockFunction() {}
+  ~ChainedLimitsMockFunction() override {}
 };
 
 class FrozenMockFunction : public MockFunction {
  public:
   explicit FrozenMockFunction(const std::string& name) : MockFunction(name) {}
-  virtual void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const
-      override {
+  void GetQuotaLimitHeuristics(
+      QuotaLimitHeuristics* heuristics) const override {
     heuristics->push_back(
         new TimedLimit(kFrozenConfig, new Mapper(), kGenericName));
   }
 
  private:
-  virtual ~FrozenMockFunction() {}
+  ~FrozenMockFunction() override {}
 };
 }  // namespace
 

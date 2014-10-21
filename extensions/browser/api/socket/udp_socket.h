@@ -16,27 +16,26 @@ namespace extensions {
 class UDPSocket : public Socket {
  public:
   explicit UDPSocket(const std::string& owner_extension_id);
-  virtual ~UDPSocket();
+  ~UDPSocket() override;
 
-  virtual void Connect(const std::string& address,
-                       int port,
-                       const CompletionCallback& callback) override;
-  virtual void Disconnect() override;
-  virtual int Bind(const std::string& address, int port) override;
-  virtual void Read(int count, const ReadCompletionCallback& callback) override;
-  virtual void RecvFrom(int count,
-                        const RecvFromCompletionCallback& callback) override;
-  virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
-                      int byte_count,
-                      const std::string& address,
-                      int port,
-                      const CompletionCallback& callback) override;
+  void Connect(const std::string& address,
+               int port,
+               const CompletionCallback& callback) override;
+  void Disconnect() override;
+  int Bind(const std::string& address, int port) override;
+  void Read(int count, const ReadCompletionCallback& callback) override;
+  void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
+  void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
+              int byte_count,
+              const std::string& address,
+              int port,
+              const CompletionCallback& callback) override;
 
-  virtual bool IsConnected() override;
+  bool IsConnected() override;
 
-  virtual bool GetPeerAddress(net::IPEndPoint* address) override;
-  virtual bool GetLocalAddress(net::IPEndPoint* address) override;
-  virtual Socket::SocketType GetSocketType() const override;
+  bool GetPeerAddress(net::IPEndPoint* address) override;
+  bool GetLocalAddress(net::IPEndPoint* address) override;
+  Socket::SocketType GetSocketType() const override;
 
   bool IsBound();
 
@@ -49,9 +48,9 @@ class UDPSocket : public Socket {
   const std::vector<std::string>& GetJoinedGroups() const;
 
  protected:
-  virtual int WriteImpl(net::IOBuffer* io_buffer,
-                        int io_buffer_size,
-                        const net::CompletionCallback& callback) override;
+  int WriteImpl(net::IOBuffer* io_buffer,
+                int io_buffer_size,
+                const net::CompletionCallback& callback) override;
 
  private:
   // Make net::IPEndPoint can be refcounted
@@ -82,7 +81,7 @@ class ResumableUDPSocket : public UDPSocket {
   explicit ResumableUDPSocket(const std::string& owner_extension_id);
 
   // Overriden from ApiResource
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }

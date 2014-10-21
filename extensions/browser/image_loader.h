@@ -73,7 +73,7 @@ class ImageLoader : public KeyedService {
   static ImageLoader* Get(content::BrowserContext* context);
 
   ImageLoader();
-  virtual ~ImageLoader();
+  ~ImageLoader() override;
 
   // Specify image resource to load. If the loaded image is larger than
   // |max_size| it will be resized to those dimensions. IMPORTANT NOTE: this

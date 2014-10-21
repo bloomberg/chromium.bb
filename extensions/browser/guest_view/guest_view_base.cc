@@ -65,21 +65,21 @@ class GuestViewBase::EmbedderLifetimeObserver : public WebContentsObserver {
         destroyed_(false),
         guest_(guest) {}
 
-  virtual ~EmbedderLifetimeObserver() {}
+  ~EmbedderLifetimeObserver() override {}
 
   // WebContentsObserver implementation.
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     // If the embedder is destroyed then destroy the guest.
     Destroy();
   }
 
-  virtual void AboutToNavigateRenderView(
+  void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) override {
     // If the embedder navigates then destroy the guest.
     Destroy();
   }
 
-  virtual void RenderProcessGone(base::TerminationStatus status) override {
+  void RenderProcessGone(base::TerminationStatus status) override {
     // If the embedder crashes, then destroy the guest.
     Destroy();
   }

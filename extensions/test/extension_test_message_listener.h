@@ -91,7 +91,7 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   // Construct a message listener which will listen for any message.
   explicit ExtensionTestMessageListener(bool will_reply);
 
-  virtual ~ExtensionTestMessageListener();
+  ~ExtensionTestMessageListener() override;
 
   // This returns true immediately if we've already gotten the expected
   // message, or waits until it arrives.
@@ -129,9 +129,9 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
 
  private:
   // Implements the content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

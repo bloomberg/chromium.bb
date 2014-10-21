@@ -21,17 +21,17 @@ namespace extensions {
 class BluetoothManifestHandler : public ManifestHandler {
  public:
   BluetoothManifestHandler();
-  virtual ~BluetoothManifestHandler();
+  ~BluetoothManifestHandler() override;
 
   // ManifestHandler overrides.
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual ManifestPermission* CreatePermission() override;
-  virtual ManifestPermission* CreateInitialRequiredPermission(
+  bool Parse(Extension* extension, base::string16* error) override;
+  ManifestPermission* CreatePermission() override;
+  ManifestPermission* CreateInitialRequiredPermission(
       const Extension* extension) override;
 
  private:
   // ManifestHandler overrides.
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothManifestHandler);
 };

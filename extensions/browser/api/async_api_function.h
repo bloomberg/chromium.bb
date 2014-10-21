@@ -15,7 +15,7 @@ namespace extensions {
 class AsyncApiFunction : public AsyncExtensionFunction {
  protected:
   AsyncApiFunction();
-  virtual ~AsyncApiFunction();
+  ~AsyncApiFunction() override;
 
   // Like Prepare(). A useful place to put common work in an ApiFunction
   // superclass that multiple API functions want to share.
@@ -39,7 +39,7 @@ class AsyncApiFunction : public AsyncExtensionFunction {
   virtual bool Respond() = 0;
 
   // ExtensionFunction::RunAsync()
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
  protected:
   content::BrowserThread::ID work_thread_id() const { return work_thread_id_; }

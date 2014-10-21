@@ -36,10 +36,9 @@ class DefaultObserver : public SettingsObserver {
       : browser_context_(context) {}
 
   // SettingsObserver implementation.
-  virtual void OnSettingsChanged(
-      const std::string& extension_id,
-      settings_namespace::Namespace settings_namespace,
-      const std::string& change_json) override {
+  void OnSettingsChanged(const std::string& extension_id,
+                         settings_namespace::Namespace settings_namespace,
+                         const std::string& change_json) override {
     // TODO(gdk): This is a temporary hack while the refactoring for
     // string-based event payloads is removed. http://crbug.com/136045
     scoped_ptr<base::ListValue> args(new base::ListValue());

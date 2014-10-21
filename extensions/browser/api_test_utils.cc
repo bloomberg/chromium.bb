@@ -22,7 +22,7 @@ class TestFunctionDispatcherDelegate
     : public ExtensionFunctionDispatcher::Delegate {
  public:
   TestFunctionDispatcherDelegate() {}
-  virtual ~TestFunctionDispatcherDelegate() {}
+  ~TestFunctionDispatcherDelegate() override {}
 
   // NULL implementation.
  private:
@@ -60,9 +60,9 @@ class SendResponseDelegate
     return *response_.get();
   }
 
-  virtual void OnSendResponse(UIThreadExtensionFunction* function,
-                              bool success,
-                              bool bad_message) override {
+  void OnSendResponse(UIThreadExtensionFunction* function,
+                      bool success,
+                      bool bad_message) override {
     ASSERT_FALSE(bad_message);
     ASSERT_FALSE(HasResponse());
     response_.reset(new bool);

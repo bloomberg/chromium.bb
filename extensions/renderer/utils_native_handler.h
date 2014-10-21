@@ -13,7 +13,7 @@ class ScriptContext;
 class UtilsNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit UtilsNativeHandler(ScriptContext* context);
-  virtual ~UtilsNativeHandler();
+  ~UtilsNativeHandler() override;
 
  private:
   // |args| consists of two arguments: a public class name, and a reference

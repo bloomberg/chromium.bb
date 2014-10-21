@@ -17,10 +17,10 @@ namespace core_api {
 
 class TCPServerSocketAsyncApiFunction : public SocketAsyncApiFunction {
  protected:
-  virtual ~TCPServerSocketAsyncApiFunction();
+  ~TCPServerSocketAsyncApiFunction() override;
 
-  virtual scoped_ptr<SocketResourceManagerInterface>
-      CreateSocketResourceManager() override;
+  scoped_ptr<SocketResourceManagerInterface> CreateSocketResourceManager()
+      override;
 
   ResumableTCPServerSocket* GetTcpSocket(int socket_id);
 };
@@ -33,11 +33,11 @@ class SocketsTcpServerCreateFunction : public TCPServerSocketAsyncApiFunction {
   SocketsTcpServerCreateFunction();
 
  protected:
-  virtual ~SocketsTcpServerCreateFunction();
+  ~SocketsTcpServerCreateFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SocketsTcpServerUnitTest, Create);
@@ -52,11 +52,11 @@ class SocketsTcpServerUpdateFunction : public TCPServerSocketAsyncApiFunction {
   SocketsTcpServerUpdateFunction();
 
  protected:
-  virtual ~SocketsTcpServerUpdateFunction();
+  ~SocketsTcpServerUpdateFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_tcp_server::Update::Params> params_;
@@ -71,11 +71,11 @@ class SocketsTcpServerSetPausedFunction
   SocketsTcpServerSetPausedFunction();
 
  protected:
-  virtual ~SocketsTcpServerSetPausedFunction();
+  ~SocketsTcpServerSetPausedFunction() override;
 
   // AsyncApiFunction
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_tcp_server::SetPaused::Params> params_;
@@ -90,11 +90,11 @@ class SocketsTcpServerListenFunction : public TCPServerSocketAsyncApiFunction {
   SocketsTcpServerListenFunction();
 
  protected:
-  virtual ~SocketsTcpServerListenFunction();
+  ~SocketsTcpServerListenFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_tcp_server::Listen::Params> params_;
@@ -110,11 +110,11 @@ class SocketsTcpServerDisconnectFunction
   SocketsTcpServerDisconnectFunction();
 
  protected:
-  virtual ~SocketsTcpServerDisconnectFunction();
+  ~SocketsTcpServerDisconnectFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_tcp_server::Disconnect::Params> params_;
@@ -128,11 +128,11 @@ class SocketsTcpServerCloseFunction : public TCPServerSocketAsyncApiFunction {
   SocketsTcpServerCloseFunction();
 
  protected:
-  virtual ~SocketsTcpServerCloseFunction();
+  ~SocketsTcpServerCloseFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_tcp_server::Close::Params> params_;
@@ -146,11 +146,11 @@ class SocketsTcpServerGetInfoFunction : public TCPServerSocketAsyncApiFunction {
   SocketsTcpServerGetInfoFunction();
 
  protected:
-  virtual ~SocketsTcpServerGetInfoFunction();
+  ~SocketsTcpServerGetInfoFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_tcp_server::GetInfo::Params> params_;
@@ -165,11 +165,11 @@ class SocketsTcpServerGetSocketsFunction
   SocketsTcpServerGetSocketsFunction();
 
  protected:
-  virtual ~SocketsTcpServerGetSocketsFunction();
+  ~SocketsTcpServerGetSocketsFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 };
 
 }  // namespace core_api

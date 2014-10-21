@@ -73,10 +73,10 @@ class ExtensionPrefValueMap : public KeyedService {
   };
 
   ExtensionPrefValueMap();
-  virtual ~ExtensionPrefValueMap();
+  ~ExtensionPrefValueMap() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Set an extension preference |value| for |key| of extension |ext_id|.
   // Takes ownership of |value|.

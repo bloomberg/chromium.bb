@@ -82,7 +82,7 @@ class ContentHashFetcherJob
 
  private:
   friend class base::RefCountedThreadSafe<ContentHashFetcherJob>;
-  virtual ~ContentHashFetcherJob();
+  ~ContentHashFetcherJob() override;
 
   // Tries to load a verified_contents.json file at |path|. On successfully
   // reading and validing the file, the verified_contents_ member variable will
@@ -97,7 +97,7 @@ class ContentHashFetcherJob
   void DoneCheckingForVerifiedContents(bool found);
 
   // URLFetcherDelegate interface
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Callback for when we're done ensuring we have verified contents, and are
   // ready to move on to MaybeCreateHashes.

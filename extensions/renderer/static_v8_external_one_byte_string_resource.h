@@ -19,10 +19,10 @@ class StaticV8ExternalOneByteStringResource
  public:
   explicit StaticV8ExternalOneByteStringResource(
       const base::StringPiece& buffer);
-  virtual ~StaticV8ExternalOneByteStringResource();
+  ~StaticV8ExternalOneByteStringResource() override;
 
-  virtual const char* data() const override;
-  virtual size_t length() const override;
+  const char* data() const override;
+  size_t length() const override;
 
  private:
   base::StringPiece buffer_;

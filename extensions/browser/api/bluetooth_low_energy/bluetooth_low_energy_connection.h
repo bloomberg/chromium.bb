@@ -19,13 +19,13 @@ class BluetoothLowEnergyConnection : public ApiResource {
       bool persistent,
       const std::string& owner_extension_id,
       scoped_ptr<device::BluetoothGattConnection> connection);
-  virtual ~BluetoothLowEnergyConnection();
+  ~BluetoothLowEnergyConnection() override;
 
   // Returns a pointer to the underlying connection object.
   device::BluetoothGattConnection* GetConnection() const;
 
   // ApiResource override.
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   // This resource should be managed on the UI thread.
   static const content::BrowserThread::ID kThreadId =

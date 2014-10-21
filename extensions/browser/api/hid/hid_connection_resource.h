@@ -33,13 +33,13 @@ class HidConnectionResource : public ApiResource {
 
   HidConnectionResource(const std::string& owner_extension_id,
                         scoped_refptr<device::HidConnection> connection);
-  virtual ~HidConnectionResource();
+  ~HidConnectionResource() override;
 
   scoped_refptr<device::HidConnection> connection() const {
     return connection_;
   }
 
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   static const char* service_name() { return "HidConnectionResourceManager"; }
 

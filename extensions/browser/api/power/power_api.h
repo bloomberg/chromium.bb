@@ -15,10 +15,10 @@ class PowerRequestKeepAwakeFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("power.requestKeepAwake", POWER_REQUESTKEEPAWAKE)
 
  protected:
-  virtual ~PowerRequestKeepAwakeFunction() {}
+  ~PowerRequestKeepAwakeFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 // Implementation of the chrome.power.releaseKeepAwake API.
@@ -27,10 +27,10 @@ class PowerReleaseKeepAwakeFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("power.releaseKeepAwake", POWER_RELEASEKEEPAWAKE)
 
  protected:
-  virtual ~PowerReleaseKeepAwakeFunction() {}
+  ~PowerReleaseKeepAwakeFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 }  // namespace extensions

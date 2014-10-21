@@ -52,12 +52,12 @@ struct ManifestURL : public Extension::ManifestData {
 class HomepageURLHandler : public ManifestHandler {
  public:
   HomepageURLHandler();
-  virtual ~HomepageURLHandler();
+  ~HomepageURLHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(HomepageURLHandler);
 };
@@ -66,12 +66,12 @@ class HomepageURLHandler : public ManifestHandler {
 class UpdateURLHandler : public ManifestHandler {
  public:
   UpdateURLHandler();
-  virtual ~UpdateURLHandler();
+  ~UpdateURLHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateURLHandler);
 };
@@ -84,15 +84,15 @@ class UpdateURLHandler : public ManifestHandler {
 class AboutPageHandler : public ManifestHandler {
  public:
   AboutPageHandler();
-  virtual ~AboutPageHandler();
+  ~AboutPageHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AboutPageHandler);
 };

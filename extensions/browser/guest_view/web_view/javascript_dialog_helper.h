@@ -14,10 +14,10 @@ class WebViewGuest;
 class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
  public:
   explicit JavaScriptDialogHelper(WebViewGuest* guest);
-  virtual ~JavaScriptDialogHelper();
+  ~JavaScriptDialogHelper() override;
 
   // JavaScriptDialogManager implementation.
-  virtual void RunJavaScriptDialog(
+  void RunJavaScriptDialog(
       content::WebContents* web_contents,
       const GURL& origin_url,
       const std::string& accept_lang,
@@ -26,19 +26,16 @@ class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
       const base::string16& default_prompt_text,
       const DialogClosedCallback& callback,
       bool* did_suppress_message) override;
-  virtual void RunBeforeUnloadDialog(
-      content::WebContents* web_contents,
-      const base::string16& message_text,
-      bool is_reload,
-      const DialogClosedCallback& callback) override;
-  virtual bool HandleJavaScriptDialog(
-      content::WebContents* web_contents,
-      bool accept,
-      const base::string16* prompt_override) override;
-  virtual void CancelActiveAndPendingDialogs(
+  void RunBeforeUnloadDialog(content::WebContents* web_contents,
+                             const base::string16& message_text,
+                             bool is_reload,
+                             const DialogClosedCallback& callback) override;
+  bool HandleJavaScriptDialog(content::WebContents* web_contents,
+                              bool accept,
+                              const base::string16* prompt_override) override;
+  void CancelActiveAndPendingDialogs(
       content::WebContents* web_contents) override;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) override;
+  void WebContentsDestroyed(content::WebContents* web_contents) override;
 
  private:
   void OnPermissionResponse(

@@ -25,11 +25,11 @@ class SerialAsyncApiFunction : public AsyncApiFunction {
   SerialAsyncApiFunction();
 
  protected:
-  virtual ~SerialAsyncApiFunction();
+  ~SerialAsyncApiFunction() override;
 
   // AsyncApiFunction:
-  virtual bool PrePrepare() override;
-  virtual bool Respond() override;
+  bool PrePrepare() override;
+  bool Respond() override;
 
   SerialConnection* GetSerialConnection(int api_resource_id);
   void RemoveSerialConnection(int api_resource_id);
@@ -44,11 +44,11 @@ class SerialGetDevicesFunction : public SerialAsyncApiFunction {
   SerialGetDevicesFunction();
 
  protected:
-  virtual ~SerialGetDevicesFunction() {}
+  ~SerialGetDevicesFunction() override {}
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 };
 
 class SerialConnectFunction : public SerialAsyncApiFunction {
@@ -58,11 +58,11 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
   SerialConnectFunction();
 
  protected:
-  virtual ~SerialConnectFunction();
+  ~SerialConnectFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
 
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
@@ -91,11 +91,11 @@ class SerialUpdateFunction : public SerialAsyncApiFunction {
   SerialUpdateFunction();
 
  protected:
-  virtual ~SerialUpdateFunction();
+  ~SerialUpdateFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<serial::Update::Params> params_;
@@ -108,11 +108,11 @@ class SerialDisconnectFunction : public SerialAsyncApiFunction {
   SerialDisconnectFunction();
 
  protected:
-  virtual ~SerialDisconnectFunction();
+  ~SerialDisconnectFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<serial::Disconnect::Params> params_;
@@ -125,11 +125,11 @@ class SerialSetPausedFunction : public SerialAsyncApiFunction {
   SerialSetPausedFunction();
 
  protected:
-  virtual ~SerialSetPausedFunction();
+  ~SerialSetPausedFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<serial::SetPaused::Params> params_;
@@ -143,11 +143,11 @@ class SerialGetInfoFunction : public SerialAsyncApiFunction {
   SerialGetInfoFunction();
 
  protected:
-  virtual ~SerialGetInfoFunction();
+  ~SerialGetInfoFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<serial::GetInfo::Params> params_;
@@ -160,11 +160,11 @@ class SerialGetConnectionsFunction : public SerialAsyncApiFunction {
   SerialGetConnectionsFunction();
 
  protected:
-  virtual ~SerialGetConnectionsFunction();
+  ~SerialGetConnectionsFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 };
 
 class SerialSendFunction : public SerialAsyncApiFunction {
@@ -174,11 +174,11 @@ class SerialSendFunction : public SerialAsyncApiFunction {
   SerialSendFunction();
 
  protected:
-  virtual ~SerialSendFunction();
+  ~SerialSendFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
 
  private:
   void OnSendComplete(int bytes_sent, serial::SendError error);
@@ -193,11 +193,11 @@ class SerialFlushFunction : public SerialAsyncApiFunction {
   SerialFlushFunction();
 
  protected:
-  virtual ~SerialFlushFunction();
+  ~SerialFlushFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<serial::Flush::Params> params_;
@@ -211,11 +211,11 @@ class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
   SerialGetControlSignalsFunction();
 
  protected:
-  virtual ~SerialGetControlSignalsFunction();
+  ~SerialGetControlSignalsFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<serial::GetControlSignals::Params> params_;
@@ -229,11 +229,11 @@ class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
   SerialSetControlSignalsFunction();
 
  protected:
-  virtual ~SerialSetControlSignalsFunction();
+  ~SerialSetControlSignalsFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<serial::SetControlSignals::Params> params_;

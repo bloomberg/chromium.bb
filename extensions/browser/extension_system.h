@@ -55,7 +55,7 @@ class WarningService;
 class ExtensionSystem : public KeyedService {
  public:
   ExtensionSystem();
-  virtual ~ExtensionSystem();
+  ~ExtensionSystem() override;
 
   // Returns the instance for the given browser context, or NULL if none.
   static ExtensionSystem* Get(content::BrowserContext* context);

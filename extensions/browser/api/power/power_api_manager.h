@@ -51,16 +51,15 @@ class PowerApiManager : public BrowserContextKeyedAPI,
   void SetCreateBlockerFunctionForTesting(CreateBlockerFunction function);
 
   // Overridden from extensions::ExtensionRegistryObserver.
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<PowerApiManager>;
 
   explicit PowerApiManager(content::BrowserContext* context);
-  virtual ~PowerApiManager();
+  ~PowerApiManager() override;
 
   // Updates |power_save_blocker_| and |current_level_| after iterating
   // over |extension_levels_|.
@@ -70,7 +69,7 @@ class PowerApiManager : public BrowserContextKeyedAPI,
   static const char* service_name() { return "PowerApiManager"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsCreatedWithBrowserContext = false;
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   content::BrowserContext* browser_context_;
 

@@ -83,12 +83,12 @@ class ManifestHandlerTest : public testing::Test {
         : name_(name), keys_(keys), prereqs_(prereqs), watcher_(watcher) {
     }
 
-    virtual bool Parse(Extension* extension, base::string16* error) override {
+    bool Parse(Extension* extension, base::string16* error) override {
       watcher_->Record(name_);
       return true;
     }
 
-    virtual const std::vector<std::string> PrerequisiteKeys() const override {
+    const std::vector<std::string> PrerequisiteKeys() const override {
       return prereqs_;
     }
 
@@ -98,9 +98,7 @@ class ManifestHandlerTest : public testing::Test {
     std::vector<std::string> prereqs_;
     ParsingWatcher* watcher_;
 
-    virtual const std::vector<std::string> Keys() const override {
-      return keys_;
-    }
+    const std::vector<std::string> Keys() const override { return keys_; }
   };
 
   class FailingTestManifestHandler : public TestManifestHandler {
@@ -111,7 +109,7 @@ class ManifestHandlerTest : public testing::Test {
                                ParsingWatcher* watcher)
         : TestManifestHandler(name, keys, prereqs, watcher) {
     }
-    virtual bool Parse(Extension* extension, base::string16* error) override {
+    bool Parse(Extension* extension, base::string16* error) override {
       *error = base::ASCIIToUTF16(name_);
       return false;
     }
@@ -126,9 +124,7 @@ class ManifestHandlerTest : public testing::Test {
         : TestManifestHandler(name, keys, prereqs, watcher) {
     }
 
-    virtual bool AlwaysParseForType(Manifest::Type type) const override {
-      return true;
-    }
+    bool AlwaysParseForType(Manifest::Type type) const override { return true; }
   };
 
   class TestManifestValidator : public ManifestHandler {
@@ -141,25 +137,22 @@ class ManifestHandlerTest : public testing::Test {
           keys_(keys) {
     }
 
-    virtual bool Parse(Extension* extension, base::string16* error) override {
+    bool Parse(Extension* extension, base::string16* error) override {
       return true;
     }
 
-    virtual bool Validate(
-        const Extension* extension,
-        std::string* error,
-        std::vector<InstallWarning>* warnings) const override {
+    bool Validate(const Extension* extension,
+                  std::string* error,
+                  std::vector<InstallWarning>* warnings) const override {
       return return_value_;
     }
 
-    virtual bool AlwaysValidateForType(Manifest::Type type) const override {
+    bool AlwaysValidateForType(Manifest::Type type) const override {
       return always_validate_;
     }
 
    private:
-    virtual const std::vector<std::string> Keys() const override {
-      return keys_;
-    }
+    const std::vector<std::string> Keys() const override { return keys_; }
 
    protected:
     bool return_value_;

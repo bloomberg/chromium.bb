@@ -18,7 +18,7 @@ const char kViewTypeUserDataKey[] = "ViewTypeUserData";
 class ViewTypeUserData : public base::SupportsUserData::Data {
  public:
   explicit ViewTypeUserData(ViewType type) : type_(type) {}
-  virtual ~ViewTypeUserData() {}
+  ~ViewTypeUserData() override {}
   ViewType type() { return type_; }
 
  private:

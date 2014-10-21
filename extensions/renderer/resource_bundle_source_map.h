@@ -24,11 +24,11 @@ namespace extensions {
 class ResourceBundleSourceMap : public extensions::ModuleSystem::SourceMap {
  public:
   explicit ResourceBundleSourceMap(const ui::ResourceBundle* resource_bundle);
-  virtual ~ResourceBundleSourceMap();
+  ~ResourceBundleSourceMap() override;
 
-  virtual v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
-                                          const std::string& name) override;
-  virtual bool Contains(const std::string& name) override;
+  v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
+                                  const std::string& name) override;
+  bool Contains(const std::string& name) override;
 
   void RegisterSource(const std::string& name, int resource_id);
 

@@ -34,15 +34,15 @@ const size_t kNumExcessiveDelaysBeforeWarning = 10u;
 // that sets a warning in the extension service of |profile|.
 class DefaultDelegate : public ExtensionWebRequestTimeTrackerDelegate {
  public:
-  virtual ~DefaultDelegate() {}
+  ~DefaultDelegate() override {}
 
   // Implementation of ExtensionWebRequestTimeTrackerDelegate.
-  virtual void NotifyExcessiveDelays(
+  void NotifyExcessiveDelays(
       void* profile,
       size_t num_delayed_messages,
       size_t total_num_messages,
       const std::set<std::string>& extension_ids) override;
-  virtual void NotifyModerateDelays(
+  void NotifyModerateDelays(
       void* profile,
       size_t num_delayed_messages,
       size_t total_num_messages,

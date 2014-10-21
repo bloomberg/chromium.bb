@@ -49,7 +49,7 @@ class ContentRulesRegistry : public RulesRegistry {
       const content::FrameNavigateParams& params) = 0;
 
  protected:
-  virtual ~ContentRulesRegistry() {}
+  ~ContentRulesRegistry() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentRulesRegistry);

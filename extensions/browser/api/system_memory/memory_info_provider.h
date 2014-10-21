@@ -25,10 +25,10 @@ class MemoryInfoProvider : public SystemInfoProvider {
   friend class MockMemoryInfoProviderImpl;
 
   MemoryInfoProvider();
-  virtual ~MemoryInfoProvider();
+  ~MemoryInfoProvider() override;
 
   // Overriden from SystemInfoProvider.
-  virtual bool QueryInfo() override;
+  bool QueryInfo() override;
 
   // The last information filled up by QueryInfo and is accessed on multiple
   // threads, but the whole class is being guarded by SystemInfoProvider base

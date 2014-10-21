@@ -16,8 +16,8 @@ class SystemDisplayGetInfoFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("system.display.getInfo", SYSTEM_DISPLAY_GETINFO);
 
  protected:
-  virtual ~SystemDisplayGetInfoFunction() {}
-  virtual bool RunSync() override;
+  ~SystemDisplayGetInfoFunction() override {}
+  bool RunSync() override;
 };
 
 class SystemDisplaySetDisplayPropertiesFunction : public SyncExtensionFunction {
@@ -26,8 +26,8 @@ class SystemDisplaySetDisplayPropertiesFunction : public SyncExtensionFunction {
                              SYSTEM_DISPLAY_SETDISPLAYPROPERTIES);
 
  protected:
-  virtual ~SystemDisplaySetDisplayPropertiesFunction() {}
-  virtual bool RunSync() override;
+  ~SystemDisplaySetDisplayPropertiesFunction() override {}
+  bool RunSync() override;
 };
 
 }  // namespace extensions

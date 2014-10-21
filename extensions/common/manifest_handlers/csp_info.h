@@ -15,7 +15,7 @@ namespace extensions {
 // A structure to hold the Content-Security-Policy information.
 struct CSPInfo : public Extension::ManifestData {
   explicit CSPInfo(const std::string& security_policy);
-  virtual ~CSPInfo();
+  ~CSPInfo() override;
 
   // The Content-Security-Policy for an extension.  Extensions can use
   // Content-Security-Policies to mitigate cross-site scripting and other
@@ -36,13 +36,13 @@ struct CSPInfo : public Extension::ManifestData {
 class CSPHandler : public ManifestHandler {
  public:
   explicit CSPHandler(bool is_platform_app);
-  virtual ~CSPHandler();
+  ~CSPHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool AlwaysParseForType(Manifest::Type type) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   bool is_platform_app_;
 

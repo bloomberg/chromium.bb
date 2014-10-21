@@ -106,18 +106,18 @@ class DevicePermissionsManager : public KeyedService,
   friend class DevicePermissionsManagerFactory;
 
   DevicePermissionsManager(content::BrowserContext* context);
-  virtual ~DevicePermissionsManager();
+  ~DevicePermissionsManager() override;
 
   DevicePermissions* Get(const std::string& extension_id) const;
   DevicePermissions* GetOrInsert(const std::string& extension_id);
 
   // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // device::UsbDevice::Observer
-  virtual void OnDisconnect(scoped_refptr<device::UsbDevice> device) override;
+  void OnDisconnect(scoped_refptr<device::UsbDevice> device) override;
 
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
@@ -137,10 +137,10 @@ class DevicePermissionsManagerFactory
   friend struct DefaultSingletonTraits<DevicePermissionsManagerFactory>;
 
   DevicePermissionsManagerFactory();
-  virtual ~DevicePermissionsManagerFactory();
+  ~DevicePermissionsManagerFactory() override;
 
   // BrowserContextKeyedServiceFactory
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissionsManagerFactory);

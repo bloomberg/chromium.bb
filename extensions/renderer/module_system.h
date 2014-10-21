@@ -72,7 +72,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // |source_map| is a weak pointer.
   ModuleSystem(ScriptContext* context, SourceMap* source_map);
-  virtual ~ModuleSystem();
+  ~ModuleSystem() override;
 
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
@@ -143,7 +143,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
  protected:
   friend class ScriptContext;
-  virtual void Invalidate() override;
+  void Invalidate() override;
 
  private:
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
@@ -202,7 +202,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
       v8::Handle<v8::Value> value);
 
   // gin::ModuleRegistryObserver overrides.
-  virtual void OnDidAddPendingModule(
+  void OnDidAddPendingModule(
       const std::string& id,
       const std::vector<std::string>& dependencies) override;
 

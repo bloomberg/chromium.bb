@@ -30,13 +30,13 @@ class ImageLoaderFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ImageLoaderFactory>;
 
   ImageLoaderFactory();
-  virtual ~ImageLoaderFactory();
+  ~ImageLoaderFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

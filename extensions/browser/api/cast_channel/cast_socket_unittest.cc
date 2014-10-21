@@ -204,7 +204,7 @@ class TestCastSocket : public CastSocket {
     return msg.length() - MessageFramer::MessageHeader::header_size();
   }
 
-  virtual ~TestCastSocket() {}
+  ~TestCastSocket() override {}
 
   // Helpers to set mock results for various operations.
   void SetupTcp1Connect(net::IoMode mode, int result) {
@@ -284,7 +284,7 @@ class TestCastSocket : public CastSocket {
   void DisallowVerifyChallengeResult() { verify_challenge_disallow_ = true; }
 
  private:
-  virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket() override {
+  scoped_ptr<net::TCPClientSocket> CreateTcpSocket() override {
     if (tcp_unresponsive_) {
       return scoped_ptr<net::TCPClientSocket>(new MockTCPSocket(true));
     } else {
@@ -294,7 +294,7 @@ class TestCastSocket : public CastSocket {
     }
   }
 
-  virtual scoped_ptr<net::SSLClientSocket> CreateSslSocket(
+  scoped_ptr<net::SSLClientSocket> CreateSslSocket(
       scoped_ptr<net::StreamSocket> socket) override {
     net::MockConnect* connect_data = ssl_connect_data_[connect_index_].get();
     connect_data->peer_addr = ip_;
@@ -309,20 +309,18 @@ class TestCastSocket : public CastSocket {
             net::AddressList(), &capturing_net_log_, ssl_data_.get()));
   }
 
-  virtual bool ExtractPeerCert(std::string* cert) override {
+  bool ExtractPeerCert(std::string* cert) override {
     if (extract_cert_result_)
       cert->assign("dummy_test_cert");
     return extract_cert_result_;
   }
 
-  virtual bool VerifyChallengeReply() override {
+  bool VerifyChallengeReply() override {
     EXPECT_FALSE(verify_challenge_disallow_);
     return verify_challenge_result_;
   }
 
-  virtual base::Timer* GetTimer() override {
-    return mock_timer_.get();
-  }
+  base::Timer* GetTimer() override { return mock_timer_.get(); }
 
   net::CapturingNetLog capturing_net_log_;
   net::IPEndPoint ip_;

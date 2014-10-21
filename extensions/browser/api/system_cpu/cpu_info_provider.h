@@ -27,7 +27,7 @@ class CpuInfoProvider : public SystemInfoProvider {
   friend class MockCpuInfoProviderImpl;
 
   CpuInfoProvider();
-  virtual ~CpuInfoProvider();
+  ~CpuInfoProvider() override;
 
   // Platform specific implementation for querying the CPU time information
   // for each processor.
@@ -35,7 +35,7 @@ class CpuInfoProvider : public SystemInfoProvider {
       std::vector<linked_ptr<core_api::system_cpu::ProcessorInfo> >* infos);
 
   // Overriden from SystemInfoProvider.
-  virtual bool QueryInfo() override;
+  bool QueryInfo() override;
 
   // Creates a list of codenames for currently active features.
   std::vector<std::string> GetFeatures() const;

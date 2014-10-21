@@ -13,19 +13,19 @@ namespace extensions {
 class NullExtensionCache : public ExtensionCache {
  public:
   NullExtensionCache();
-  virtual ~NullExtensionCache();
+  ~NullExtensionCache() override;
 
   // ExtensionCache implementation.
-  virtual void Start(const base::Closure& callback) override;
-  virtual void Shutdown(const base::Closure& callback) override;
-  virtual void AllowCaching(const std::string& id) override;
-  virtual bool GetExtension(const std::string& id,
-                            base::FilePath* file_path,
-                            std::string* version) override;
-  virtual void PutExtension(const std::string& id,
-                            const base::FilePath& file_path,
-                            const std::string& version,
-                            const PutExtensionCallback& callback) override;
+  void Start(const base::Closure& callback) override;
+  void Shutdown(const base::Closure& callback) override;
+  void AllowCaching(const std::string& id) override;
+  bool GetExtension(const std::string& id,
+                    base::FilePath* file_path,
+                    std::string* version) override;
+  void PutExtension(const std::string& id,
+                    const base::FilePath& file_path,
+                    const std::string& version,
+                    const PutExtensionCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullExtensionCache);

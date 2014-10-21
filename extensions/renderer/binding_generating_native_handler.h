@@ -25,7 +25,7 @@ class BindingGeneratingNativeHandler : public NativeHandler {
                                  const std::string& api_name,
                                  const std::string& bind_to);
 
-  virtual v8::Handle<v8::Object> NewInstance() override;
+  v8::Handle<v8::Object> NewInstance() override;
 
  private:
   ModuleSystem* module_system_;

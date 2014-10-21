@@ -145,13 +145,12 @@ class MockUsbService : public UsbService {
   explicit MockUsbService(scoped_refptr<UsbDevice> device) : device_(device) {}
 
  protected:
-  virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
+  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
     EXPECT_EQ(unique_id, 0U);
     return device_;
   }
 
-  virtual void GetDevices(
-      std::vector<scoped_refptr<UsbDevice> >* devices) override {
+  void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override {
     STLClearObject(devices);
     devices->push_back(device_);
   }
@@ -165,7 +164,7 @@ class MockUsbService : public UsbService {
 
 class UsbApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     mock_device_handle_ = new MockUsbDeviceHandle();
     mock_device_ = new MockUsbDevice(mock_device_handle_.get());
     scoped_refptr<content::MessageLoopRunner> runner =
@@ -181,7 +180,7 @@ class UsbApiTest : public ExtensionApiTest {
     UsbService::SetInstanceForTest(new MockUsbService(mock_device_));
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     UsbService* service = NULL;

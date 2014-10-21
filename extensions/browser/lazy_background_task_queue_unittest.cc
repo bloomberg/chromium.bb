@@ -34,13 +34,13 @@ class TestProcessManager : public ProcessManager {
     // ProcessManager constructor above assumes non-incognito.
     DCHECK(!context->IsOffTheRecord());
   }
-  virtual ~TestProcessManager() {}
+  ~TestProcessManager() override {}
 
   int create_count() { return create_count_; }
 
   // ProcessManager overrides:
-  virtual bool CreateBackgroundHost(const Extension* extension,
-                                    const GURL& url) override {
+  bool CreateBackgroundHost(const Extension* extension,
+                            const GURL& url) override {
     // Don't actually try to create a web contents.
     create_count_++;
     return false;
@@ -57,11 +57,9 @@ class MockExtensionSystemWithProcessManager : public MockExtensionSystem {
  public:
   explicit MockExtensionSystemWithProcessManager(BrowserContext* context)
       : MockExtensionSystem(context), test_process_manager_(context) {}
-  virtual ~MockExtensionSystemWithProcessManager() {}
+  ~MockExtensionSystemWithProcessManager() override {}
 
-  virtual ProcessManager* process_manager() override {
-    return &test_process_manager_;
-  }
+  ProcessManager* process_manager() override { return &test_process_manager_; }
 
  private:
   TestProcessManager test_process_manager_;

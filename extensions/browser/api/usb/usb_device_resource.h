@@ -29,11 +29,11 @@ class UsbDeviceResource : public ApiResource {
 
   UsbDeviceResource(const std::string& owner_extension_id,
                     scoped_refptr<device::UsbDeviceHandle> device);
-  virtual ~UsbDeviceResource();
+  ~UsbDeviceResource() override;
 
   scoped_refptr<device::UsbDeviceHandle> device() { return device_; }
 
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
  private:
   friend class ApiResourceManager<UsbDeviceResource>;

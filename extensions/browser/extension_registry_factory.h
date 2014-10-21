@@ -26,12 +26,12 @@ class ExtensionRegistryFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ExtensionRegistryFactory>;
 
   ExtensionRegistryFactory();
-  virtual ~ExtensionRegistryFactory();
+  ~ExtensionRegistryFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionRegistryFactory);

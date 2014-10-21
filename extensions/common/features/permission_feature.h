@@ -14,15 +14,15 @@ namespace extensions {
 class PermissionFeature : public SimpleFeature {
  public:
   PermissionFeature();
-  virtual ~PermissionFeature();
+  ~PermissionFeature() override;
 
-  virtual Feature::Availability IsAvailableToContext(
+  Feature::Availability IsAvailableToContext(
       const Extension* extension,
       Feature::Context context,
       const GURL& url,
       Feature::Platform platform) const override;
 
-  virtual std::string Parse(const base::DictionaryValue* value) override;
+  std::string Parse(const base::DictionaryValue* value) override;
 };
 
 }  // namespace extensions

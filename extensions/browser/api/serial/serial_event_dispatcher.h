@@ -25,7 +25,7 @@ namespace core_api {
 class SerialEventDispatcher : public BrowserContextKeyedAPI {
  public:
   explicit SerialEventDispatcher(content::BrowserContext* context);
-  virtual ~SerialEventDispatcher();
+  ~SerialEventDispatcher() override;
 
   // Start receiving data and firing events for a connection.
   void PollConnection(const std::string& extension_id, int connection_id);

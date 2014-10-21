@@ -228,16 +228,14 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetOpener(GuestViewBase* opener);
 
   // BrowserPluginGuestDelegate implementation.
-  virtual void DidAttach(int guest_proxy_routing_id) override final;
-  virtual void ElementSizeChanged(const gfx::Size& old_size,
-                                  const gfx::Size& new_size) override final;
-  virtual void GuestSizeChanged(const gfx::Size& old_size,
-                                const gfx::Size& new_size) override final;
-  virtual void RegisterDestructionCallback(
-      const DestructionCallback& callback) override final;
-  virtual void WillAttach(
-      content::WebContents* embedder_web_contents,
-      int browser_plugin_instance_id) override final;
+  void DidAttach(int guest_proxy_routing_id) final;
+  void ElementSizeChanged(const gfx::Size& old_size,
+                          const gfx::Size& new_size) final;
+  void GuestSizeChanged(const gfx::Size& old_size,
+                        const gfx::Size& new_size) final;
+  void RegisterDestructionCallback(const DestructionCallback& callback) final;
+  void WillAttach(content::WebContents* embedder_web_contents,
+                  int browser_plugin_instance_id) final;
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
   void DispatchEventToEmbedder(Event* event);
@@ -246,7 +244,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   GuestViewBase(content::BrowserContext* browser_context,
                 int guest_instance_id);
 
-  virtual ~GuestViewBase();
+  ~GuestViewBase() override;
 
  private:
   class EmbedderLifetimeObserver;
@@ -261,22 +259,18 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   static void RegisterGuestViewTypes();
 
   // WebContentsObserver implementation.
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) override final;
-  virtual void RenderViewReady() override final;
-  virtual void WebContentsDestroyed() override final;
+  void DidStopLoading(content::RenderViewHost* render_view_host) final;
+  void RenderViewReady() final;
+  void WebContentsDestroyed() final;
 
   // WebContentsDelegate implementation.
-  virtual void ActivateContents(content::WebContents* contents) override final;
-  virtual void DeactivateContents(
-      content::WebContents* contents) override final;
-  virtual void RunFileChooser(
-      content::WebContents* web_contents,
-      const content::FileChooserParams& params) override;
-  virtual bool ShouldFocusPageAfterCrash() override final;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) override final;
+  void ActivateContents(content::WebContents* contents) final;
+  void DeactivateContents(content::WebContents* contents) final;
+  void RunFileChooser(content::WebContents* web_contents,
+                      const content::FileChooserParams& params) override;
+  bool ShouldFocusPageAfterCrash() final;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) final;
 
   content::WebContents* embedder_web_contents_;
   std::string embedder_extension_id_;

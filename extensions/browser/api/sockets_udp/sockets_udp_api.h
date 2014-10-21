@@ -19,10 +19,10 @@ class UDPSocketEventDispatcher;
 
 class UDPSocketAsyncApiFunction : public SocketAsyncApiFunction {
  protected:
-  virtual ~UDPSocketAsyncApiFunction();
+  ~UDPSocketAsyncApiFunction() override;
 
-  virtual scoped_ptr<SocketResourceManagerInterface>
-      CreateSocketResourceManager() override;
+  scoped_ptr<SocketResourceManagerInterface> CreateSocketResourceManager()
+      override;
 
   ResumableUDPSocket* GetUdpSocket(int socket_id);
 };
@@ -30,10 +30,10 @@ class UDPSocketAsyncApiFunction : public SocketAsyncApiFunction {
 class UDPSocketExtensionWithDnsLookupFunction
     : public SocketExtensionWithDnsLookupFunction {
  protected:
-  virtual ~UDPSocketExtensionWithDnsLookupFunction();
+  ~UDPSocketExtensionWithDnsLookupFunction() override;
 
-  virtual scoped_ptr<SocketResourceManagerInterface>
-      CreateSocketResourceManager() override;
+  scoped_ptr<SocketResourceManagerInterface> CreateSocketResourceManager()
+      override;
 
   ResumableUDPSocket* GetUdpSocket(int socket_id);
 };
@@ -45,11 +45,11 @@ class SocketsUdpCreateFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpCreateFunction();
 
  protected:
-  virtual ~SocketsUdpCreateFunction();
+  ~SocketsUdpCreateFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SocketsUdpUnitTest, Create);
@@ -63,11 +63,11 @@ class SocketsUdpUpdateFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpUpdateFunction();
 
  protected:
-  virtual ~SocketsUdpUpdateFunction();
+  ~SocketsUdpUpdateFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::Update::Params> params_;
@@ -80,11 +80,11 @@ class SocketsUdpSetPausedFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpSetPausedFunction();
 
  protected:
-  virtual ~SocketsUdpSetPausedFunction();
+  ~SocketsUdpSetPausedFunction() override;
 
   // AsyncApiFunction
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::SetPaused::Params> params_;
@@ -98,11 +98,11 @@ class SocketsUdpBindFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpBindFunction();
 
  protected:
-  virtual ~SocketsUdpBindFunction();
+  ~SocketsUdpBindFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::Bind::Params> params_;
@@ -116,16 +116,16 @@ class SocketsUdpSendFunction : public UDPSocketExtensionWithDnsLookupFunction {
   SocketsUdpSendFunction();
 
  protected:
-  virtual ~SocketsUdpSendFunction();
+  ~SocketsUdpSendFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
   void OnCompleted(int net_result);
   void SetSendResult(int net_result, int bytes_sent);
 
   // SocketExtensionWithDnsLookupFunction:
-  virtual void AfterDnsLookup(int lookup_result) override;
+  void AfterDnsLookup(int lookup_result) override;
 
  private:
   void StartSendTo();
@@ -142,11 +142,11 @@ class SocketsUdpCloseFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpCloseFunction();
 
  protected:
-  virtual ~SocketsUdpCloseFunction();
+  ~SocketsUdpCloseFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::Close::Params> params_;
@@ -159,11 +159,11 @@ class SocketsUdpGetInfoFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpGetInfoFunction();
 
  protected:
-  virtual ~SocketsUdpGetInfoFunction();
+  ~SocketsUdpGetInfoFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::GetInfo::Params> params_;
@@ -176,11 +176,11 @@ class SocketsUdpGetSocketsFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpGetSocketsFunction();
 
  protected:
-  virtual ~SocketsUdpGetSocketsFunction();
+  ~SocketsUdpGetSocketsFunction() override;
 
   // AsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 };
 
 class SocketsUdpJoinGroupFunction : public UDPSocketAsyncApiFunction {
@@ -190,11 +190,11 @@ class SocketsUdpJoinGroupFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpJoinGroupFunction();
 
  protected:
-  virtual ~SocketsUdpJoinGroupFunction();
+  ~SocketsUdpJoinGroupFunction() override;
 
   // AsyncApiFunction
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::JoinGroup::Params> params_;
@@ -207,11 +207,11 @@ class SocketsUdpLeaveGroupFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpLeaveGroupFunction();
 
  protected:
-  virtual ~SocketsUdpLeaveGroupFunction();
+  ~SocketsUdpLeaveGroupFunction() override;
 
   // AsyncApiFunction
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::LeaveGroup::Params> params_;
@@ -226,11 +226,11 @@ class SocketsUdpSetMulticastTimeToLiveFunction
   SocketsUdpSetMulticastTimeToLiveFunction();
 
  protected:
-  virtual ~SocketsUdpSetMulticastTimeToLiveFunction();
+  ~SocketsUdpSetMulticastTimeToLiveFunction() override;
 
   // AsyncApiFunction
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::SetMulticastTimeToLive::Params> params_;
@@ -245,11 +245,11 @@ class SocketsUdpSetMulticastLoopbackModeFunction
   SocketsUdpSetMulticastLoopbackModeFunction();
 
  protected:
-  virtual ~SocketsUdpSetMulticastLoopbackModeFunction();
+  ~SocketsUdpSetMulticastLoopbackModeFunction() override;
 
   // AsyncApiFunction
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::SetMulticastLoopbackMode::Params> params_;
@@ -263,11 +263,11 @@ class SocketsUdpGetJoinedGroupsFunction : public UDPSocketAsyncApiFunction {
   SocketsUdpGetJoinedGroupsFunction();
 
  protected:
-  virtual ~SocketsUdpGetJoinedGroupsFunction();
+  ~SocketsUdpGetJoinedGroupsFunction() override;
 
   // AsyncApiFunction
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<sockets_udp::GetJoinedGroups::Params> params_;

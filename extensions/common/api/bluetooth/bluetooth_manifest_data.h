@@ -23,7 +23,7 @@ class BluetoothManifestData : public Extension::ManifestData {
  public:
   explicit BluetoothManifestData(
       scoped_ptr<BluetoothManifestPermission> permission);
-  virtual ~BluetoothManifestData();
+  ~BluetoothManifestData() override;
 
   // Gets the BluetoothManifestData for |extension|, or NULL if none was
   // specified.

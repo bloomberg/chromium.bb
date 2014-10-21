@@ -37,15 +37,15 @@ struct IconsInfo : public Extension::ManifestData {
 class IconsHandler : public ManifestHandler {
  public:
   IconsHandler();
-  virtual ~IconsHandler();
+  ~IconsHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 };
 
 }  // namespace extensions

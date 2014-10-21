@@ -80,7 +80,7 @@ class CastSocket : public ApiResource {
              const scoped_refptr<Logger>& logger);
 
   // Ensures that the socket is closed.
-  virtual ~CastSocket();
+  ~CastSocket() override;
 
   // The IP endpoint for the destination of the channel.
   const net::IPEndPoint& ip_endpoint() const { return ip_endpoint_; }

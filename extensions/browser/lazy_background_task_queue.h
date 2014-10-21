@@ -38,7 +38,7 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver,
   typedef base::Callback<void(ExtensionHost*)> PendingTask;
 
   explicit LazyBackgroundTaskQueue(content::BrowserContext* browser_context);
-  virtual ~LazyBackgroundTaskQueue();
+  ~LazyBackgroundTaskQueue() override;
 
   // Returns the number of extensions having pending tasks.
   size_t extensions_with_pending_tasks() { return pending_tasks_.size(); }
@@ -72,15 +72,14 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver,
                    linked_ptr<PendingTasksList> > PendingTasksMap;
 
   // content::NotificationObserver interface.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ExtensionRegistryObserver interface.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Called when a lazy background page has finished loading, or has failed to
   // load (host is NULL in that case). All enqueued tasks are run in order.

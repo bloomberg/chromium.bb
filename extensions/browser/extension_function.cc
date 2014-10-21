@@ -49,9 +49,9 @@ class ArgumentListResponseValue
     // for some reason.
   }
 
-  virtual ~ArgumentListResponseValue() {}
+  ~ArgumentListResponseValue() override {}
 
-  virtual bool Apply() override { return true; }
+  bool Apply() override { return true; }
 
  private:
   std::string function_name_;
@@ -66,9 +66,9 @@ class ErrorResponseValue : public ExtensionFunction::ResponseValueObject {
     function->SetError(error);
   }
 
-  virtual ~ErrorResponseValue() {}
+  ~ErrorResponseValue() override {}
 
-  virtual bool Apply() override { return false; }
+  bool Apply() override { return false; }
 };
 
 class BadMessageResponseValue : public ExtensionFunction::ResponseValueObject {
@@ -78,9 +78,9 @@ class BadMessageResponseValue : public ExtensionFunction::ResponseValueObject {
     NOTREACHED() << function->name() << ": bad message";
   }
 
-  virtual ~BadMessageResponseValue() {}
+  ~BadMessageResponseValue() override {}
 
-  virtual bool Apply() override { return false; }
+  bool Apply() override { return false; }
 };
 
 class RespondNowAction : public ExtensionFunction::ResponseActionObject {
@@ -89,9 +89,9 @@ class RespondNowAction : public ExtensionFunction::ResponseActionObject {
   RespondNowAction(ExtensionFunction::ResponseValue result,
                    const SendResponseCallback& send_response)
       : result_(result.Pass()), send_response_(send_response) {}
-  virtual ~RespondNowAction() {}
+  ~RespondNowAction() override {}
 
-  virtual void Execute() override { send_response_.Run(result_->Apply()); }
+  void Execute() override { send_response_.Run(result_->Apply()); }
 
  private:
   ExtensionFunction::ResponseValue result_;
@@ -100,9 +100,9 @@ class RespondNowAction : public ExtensionFunction::ResponseActionObject {
 
 class RespondLaterAction : public ExtensionFunction::ResponseActionObject {
  public:
-  virtual ~RespondLaterAction() {}
+  ~RespondLaterAction() override {}
 
-  virtual void Execute() override {}
+  void Execute() override {}
 };
 
 }  // namespace
@@ -129,14 +129,13 @@ class UIThreadExtensionFunction::RenderHostTracker
 
  private:
   // content::WebContentsObserver:
-  virtual void RenderViewDeleted(
-      content::RenderViewHost* render_view_host) override {
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override {
     if (render_view_host != function_->render_view_host())
       return;
 
     function_->SetRenderViewHost(NULL);
   }
-  virtual void RenderFrameDeleted(
+  void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
     if (render_frame_host != function_->render_frame_host())
       return;
@@ -144,9 +143,8 @@ class UIThreadExtensionFunction::RenderHostTracker
     function_->SetRenderFrameHost(NULL);
   }
 
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) override {
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override {
     DCHECK(render_frame_host);
     if (render_frame_host == function_->render_frame_host())
       return function_->OnMessageReceived(message);
@@ -154,7 +152,7 @@ class UIThreadExtensionFunction::RenderHostTracker
       return false;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     return function_->OnMessageReceived(message);
   }
 

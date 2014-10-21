@@ -201,11 +201,10 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
     DictionaryPrefUpdate(service, pref_names::kExtensions),
     extension_id_(extension_id) {}
 
-  virtual ~ScopedExtensionPrefUpdate() {
-  }
+  ~ScopedExtensionPrefUpdate() override {}
 
   // DictionaryPrefUpdate overrides:
-  virtual base::DictionaryValue* Get() override {
+  base::DictionaryValue* Get() override {
     base::DictionaryValue* dict = DictionaryPrefUpdate::Get();
     base::DictionaryValue* extension = NULL;
     if (!dict->GetDictionary(extension_id_, &extension)) {

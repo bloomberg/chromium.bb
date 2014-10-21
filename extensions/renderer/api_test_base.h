@@ -30,9 +30,9 @@ class V8SchemaRegistry;
 class TestServiceProvider : public gin::Wrappable<TestServiceProvider> {
  public:
   static gin::Handle<TestServiceProvider> Create(v8::Isolate* isolate);
-  virtual ~TestServiceProvider();
+  ~TestServiceProvider() override;
 
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   template <typename Interface>

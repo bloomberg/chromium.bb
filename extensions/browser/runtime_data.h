@@ -25,7 +25,7 @@ class RuntimeData : public ExtensionRegistryObserver {
   // Observes |registry| to clean itself up when extensions change state.
   // |registry| must not be NULL.
   explicit RuntimeData(ExtensionRegistry* registry);
-  virtual ~RuntimeData();
+  ~RuntimeData() override;
 
   // Whether the persistent background page, if any, is ready. We don't load
   // other components until then. If there is no background page, or if it is
@@ -51,10 +51,9 @@ class RuntimeData : public ExtensionRegistryObserver {
   void ClearAll();
 
   // ExtensionRegistryObserver overrides. Public for testing.
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
  private:
   // Bitmasks for runtime states.

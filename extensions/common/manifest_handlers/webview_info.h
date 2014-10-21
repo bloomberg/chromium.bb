@@ -22,7 +22,7 @@ class WebviewInfo : public Extension::ManifestData {
  public:
   // Define out of line constructor/destructor to please Clang.
   WebviewInfo();
-  virtual ~WebviewInfo();
+  ~WebviewInfo() override;
 
   // Returns true if the specified resource is web accessible.
   static bool IsResourceWebviewAccessible(const Extension* extension,
@@ -39,12 +39,12 @@ class WebviewInfo : public Extension::ManifestData {
 class WebviewHandler : public ManifestHandler {
  public:
   WebviewHandler();
-  virtual ~WebviewHandler();
+  ~WebviewHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewHandler);
 };

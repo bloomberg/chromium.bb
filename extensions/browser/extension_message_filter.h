@@ -43,14 +43,13 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ExtensionMessageFilter>;
 
-  virtual ~ExtensionMessageFilter();
+  ~ExtensionMessageFilter() override;
 
   // content::BrowserMessageFilter implementation.
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) override;
-  virtual void OnDestruct() const override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
+  void OnDestruct() const override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers on the UI thread.
   void OnExtensionAddListener(const std::string& extension_id,

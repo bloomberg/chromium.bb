@@ -26,10 +26,10 @@ class SocketPermission
 
   explicit SocketPermission(const APIPermissionInfo* info);
 
-  virtual ~SocketPermission();
+  ~SocketPermission() override;
 
   // Returns the localized permission messages of this permission.
-  virtual PermissionMessages GetMessages() const override;
+  PermissionMessages GetMessages() const override;
 
  private:
   bool AddAnyHostMessage(PermissionMessages& messages) const;

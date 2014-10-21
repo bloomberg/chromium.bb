@@ -30,7 +30,7 @@ class BlobHolder : public base::SupportsUserData::Data {
   static BlobHolder* FromRenderProcessHost(
       content::RenderProcessHost* render_process_host);
 
-  virtual ~BlobHolder();
+  ~BlobHolder() override;
 
   // Causes BlobHolder to take ownership of |blob|.
   void HoldBlobReference(scoped_ptr<content::BlobHandle> blob);

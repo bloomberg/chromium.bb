@@ -42,7 +42,7 @@ class WarningService : public ExtensionRegistryObserver,
   // |browser_context| may be NULL for testing. In this case, be sure to not
   // insert any warnings.
   explicit WarningService(content::BrowserContext* browser_context);
-  virtual ~WarningService();
+  ~WarningService() override;
 
   // Clears all warnings of types contained in |types| and notifies observers
   // of the changed warnings.
@@ -72,10 +72,9 @@ class WarningService : public ExtensionRegistryObserver,
   void NotifyWarningsChanged();
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                   const Extension* extension,
-                                   UnloadedExtensionInfo::Reason reason)
-      override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Currently existing warnings.
   WarningSet warnings_;

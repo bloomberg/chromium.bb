@@ -75,7 +75,7 @@ class Extension;
 class ProcessMap : public KeyedService {
  public:
   ProcessMap();
-  virtual ~ProcessMap();
+  ~ProcessMap() override;
 
   // Returns the instance for |browser_context|. An instance is shared between
   // an incognito and a regular context.

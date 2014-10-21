@@ -17,46 +17,37 @@ class MockManifestPermission : public ManifestPermission {
       : name_(name) {
   }
 
-  virtual std::string name() const override {
-    return name_;
-  }
+  std::string name() const override { return name_; }
 
-  virtual std::string id() const override {
-    return name();
-  }
+  std::string id() const override { return name(); }
 
-  virtual bool HasMessages() const override {
-    return false;
-  }
+  bool HasMessages() const override { return false; }
 
-  virtual PermissionMessages GetMessages() const override {
+  PermissionMessages GetMessages() const override {
     return PermissionMessages();
   }
 
-  virtual bool FromValue(const base::Value* value) override { return true; }
+  bool FromValue(const base::Value* value) override { return true; }
 
-  virtual scoped_ptr<base::Value> ToValue() const override {
+  scoped_ptr<base::Value> ToValue() const override {
     return make_scoped_ptr(base::Value::CreateNullValue());
   }
 
-  virtual ManifestPermission* Diff(const ManifestPermission* rhs)
-      const override {
+  ManifestPermission* Diff(const ManifestPermission* rhs) const override {
     const MockManifestPermission* other =
         static_cast<const MockManifestPermission*>(rhs);
     EXPECT_EQ(name_, other->name_);
     return NULL;
   }
 
-  virtual ManifestPermission* Union(const ManifestPermission* rhs)
-      const override {
+  ManifestPermission* Union(const ManifestPermission* rhs) const override {
     const MockManifestPermission* other =
         static_cast<const MockManifestPermission*>(rhs);
     EXPECT_EQ(name_, other->name_);
     return new MockManifestPermission(name_);
   }
 
-  virtual ManifestPermission* Intersect(const ManifestPermission* rhs)
-      const override {
+  ManifestPermission* Intersect(const ManifestPermission* rhs) const override {
     const MockManifestPermission* other =
         static_cast<const MockManifestPermission*>(rhs);
     EXPECT_EQ(name_, other->name_);

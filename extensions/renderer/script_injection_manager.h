@@ -54,9 +54,8 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   typedef std::map<blink::WebFrame*, UserScript::RunLocation> FrameStatusMap;
 
   // UserScriptSetManager::Observer implementation.
-  virtual void OnUserScriptsUpdated(
-      const std::set<std::string>& changed_extensions,
-      const std::vector<UserScript*>& scripts) override;
+  void OnUserScriptsUpdated(const std::set<std::string>& changed_extensions,
+                            const std::vector<UserScript*>& scripts) override;
 
   // Notifies that an RVOHelper should be removed.
   void RemoveObserver(RVOHelper* helper);

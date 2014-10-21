@@ -25,15 +25,14 @@ class BaseFeatureProvider : public FeatureProvider {
   // provider create plain old Feature instances.
   BaseFeatureProvider(const base::DictionaryValue& root,
                       FeatureFactory factory);
-  virtual ~BaseFeatureProvider();
+  ~BaseFeatureProvider() override;
 
   // Gets the feature |feature_name|, if it exists.
-  virtual Feature* GetFeature(const std::string& feature_name) const override;
-  virtual Feature* GetParent(Feature* feature) const override;
-  virtual std::vector<Feature*> GetChildren(const Feature& parent) const
-      override;
+  Feature* GetFeature(const std::string& feature_name) const override;
+  Feature* GetParent(Feature* feature) const override;
+  std::vector<Feature*> GetChildren(const Feature& parent) const override;
 
-  virtual const std::vector<std::string>& GetAllFeatureNames() const override;
+  const std::vector<std::string>& GetAllFeatureNames() const override;
 
  private:
   typedef std::map<std::string, linked_ptr<Feature> > FeatureMap;

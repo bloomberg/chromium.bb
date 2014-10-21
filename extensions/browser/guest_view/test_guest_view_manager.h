@@ -16,16 +16,16 @@ namespace extensions {
 class TestGuestViewManager : public GuestViewManager {
  public:
   explicit TestGuestViewManager(content::BrowserContext* context);
-  virtual ~TestGuestViewManager();
+  ~TestGuestViewManager() override;
 
   void WaitForAllGuestsDeleted();
   content::WebContents* WaitForSingleGuestCreated();
 
  private:
   // GuestViewManager override:
-  virtual void AddGuest(int guest_instance_id,
-                        content::WebContents* guest_web_contents) override;
-  virtual void RemoveGuest(int guest_instance_id) override;
+  void AddGuest(int guest_instance_id,
+                content::WebContents* guest_web_contents) override;
+  void RemoveGuest(int guest_instance_id) override;
 
   int GetNumGuests() const;
   content::WebContents* GetLastGuestCreated();
@@ -42,9 +42,9 @@ class TestGuestViewManager : public GuestViewManager {
 class TestGuestViewManagerFactory : public GuestViewManagerFactory {
  public:
   TestGuestViewManagerFactory();
-  virtual ~TestGuestViewManagerFactory();
+  ~TestGuestViewManagerFactory() override;
 
-  virtual GuestViewManager* CreateGuestViewManager(
+  GuestViewManager* CreateGuestViewManager(
       content::BrowserContext* context) override;
 
   TestGuestViewManager* GetManager(content::BrowserContext* context);

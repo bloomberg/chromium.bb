@@ -22,9 +22,9 @@ class ExtensionPrefValueMapFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ExtensionPrefValueMapFactory>;
 
   ExtensionPrefValueMapFactory();
-  virtual ~ExtensionPrefValueMapFactory();
+  ~ExtensionPrefValueMapFactory() override;
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 };
 

@@ -18,7 +18,7 @@ class TestWarningService : public WarningService {
   explicit TestWarningService(content::BrowserContext* browser_context)
       : WarningService(browser_context) {
   }
-  virtual ~TestWarningService() {}
+  ~TestWarningService() override {}
 
   void AddWarning(const Warning& warning) {
     WarningSet warnings;

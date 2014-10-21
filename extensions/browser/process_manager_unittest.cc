@@ -27,10 +27,10 @@ namespace {
 class TestBrowserContextIncognito : public TestBrowserContext {
  public:
   TestBrowserContextIncognito() {}
-  virtual ~TestBrowserContextIncognito() {}
+  ~TestBrowserContextIncognito() override {}
 
   // TestBrowserContext implementation.
-  virtual bool IsOffTheRecord() const override { return true; }
+  bool IsOffTheRecord() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContextIncognito);
@@ -42,13 +42,13 @@ class TestProcessManagerDelegate : public ProcessManagerDelegate {
   TestProcessManagerDelegate()
       : is_background_page_allowed_(true),
         defer_creating_startup_background_hosts_(false) {}
-  virtual ~TestProcessManagerDelegate() {}
+  ~TestProcessManagerDelegate() override {}
 
   // ProcessManagerDelegate implementation.
-  virtual bool IsBackgroundPageAllowed(BrowserContext* context) const override {
+  bool IsBackgroundPageAllowed(BrowserContext* context) const override {
     return is_background_page_allowed_;
   }
-  virtual bool DeferCreatingStartupBackgroundHosts(
+  bool DeferCreatingStartupBackgroundHosts(
       BrowserContext* context) const override {
     return defer_creating_startup_background_hosts_;
   }

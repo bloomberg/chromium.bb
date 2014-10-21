@@ -42,7 +42,7 @@ class ExtensionRegistry : public KeyedService {
   };
 
   explicit ExtensionRegistry(content::BrowserContext* browser_context);
-  virtual ~ExtensionRegistry();
+  ~ExtensionRegistry() override;
 
   // Returns the instance for the given |browser_context|.
   static ExtensionRegistry* Get(content::BrowserContext* browser_context);
@@ -146,7 +146,7 @@ class ExtensionRegistry : public KeyedService {
       const ExtensionSet::ModificationCallback& callback);
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   // Extensions that are installed, enabled and not terminated.

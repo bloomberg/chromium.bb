@@ -16,8 +16,8 @@ class SystemMemoryGetInfoFunction : public AsyncExtensionFunction {
   SystemMemoryGetInfoFunction();
 
  private:
-  virtual ~SystemMemoryGetInfoFunction();
-  virtual bool RunAsync() override;
+  ~SystemMemoryGetInfoFunction() override;
+  bool RunAsync() override;
   void OnGetMemoryInfoCompleted(bool success);
 };
 

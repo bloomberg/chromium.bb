@@ -94,7 +94,7 @@ class EventRouter : public content::NotificationObserver,
   // incognito context. |extension_prefs| may be NULL in tests.
   EventRouter(content::BrowserContext* browser_context,
               ExtensionPrefs* extension_prefs);
-  virtual ~EventRouter();
+  ~EventRouter() override;
 
   // Add or remove an extension as an event listener for |event_name|.
   //
@@ -208,16 +208,15 @@ class EventRouter : public content::NotificationObserver,
       UserGestureState user_gesture,
       const extensions::EventFilteringInfo& info);
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
   // Returns true if the given listener map contains a event listeners for
   // the given event. If |extension_id| is non-empty, we also check that that
@@ -292,8 +291,8 @@ class EventRouter : public content::NotificationObserver,
                             ExtensionHost* host);
 
   // Implementation of EventListenerMap::Delegate.
-  virtual void OnListenerAdded(const EventListener* listener) override;
-  virtual void OnListenerRemoved(const EventListener* listener) override;
+  void OnListenerAdded(const EventListener* listener) override;
+  void OnListenerRemoved(const EventListener* listener) override;
 
   content::BrowserContext* browser_context_;
 

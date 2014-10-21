@@ -27,7 +27,7 @@ class TCPSocketEventDispatcher
       public base::SupportsWeakPtr<TCPSocketEventDispatcher> {
  public:
   explicit TCPSocketEventDispatcher(content::BrowserContext* context);
-  virtual ~TCPSocketEventDispatcher();
+  ~TCPSocketEventDispatcher() override;
 
   // Socket is active, start receving from it.
   void OnSocketConnect(const std::string& extension_id, int socket_id);

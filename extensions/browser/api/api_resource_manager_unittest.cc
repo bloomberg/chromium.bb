@@ -33,7 +33,7 @@ class FakeApiResource : public ApiResource {
  public:
   explicit FakeApiResource(const std::string& owner_extension_id)
       : ApiResource(owner_extension_id) {}
-  virtual ~FakeApiResource() {}
+  ~FakeApiResource() override {}
   static const BrowserThread::ID kThreadId = BrowserThread::UI;
 };
 

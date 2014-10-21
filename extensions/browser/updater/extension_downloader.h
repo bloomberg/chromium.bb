@@ -64,7 +64,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   // ExtensionDownloader.
   ExtensionDownloader(ExtensionDownloaderDelegate* delegate,
                       net::URLRequestContextGetter* request_context);
-  virtual ~ExtensionDownloader();
+  ~ExtensionDownloader() override;
 
   // Adds |extension| to the list of extensions to check for updates.
   // Returns false if the |extension| can't be updated due to invalid details.
@@ -196,7 +196,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
   void CreateManifestFetcher();
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Handles the result of a manifest fetch.
   void OnManifestFetchComplete(const GURL& url,
@@ -256,11 +256,11 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
                                            int response_code);
 
   // OAuth2TokenService::Consumer implementation.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   ManifestFetchData* CreateManifestFetchData(const GURL& update_url,
                                              int request_id);

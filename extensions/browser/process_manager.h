@@ -46,7 +46,7 @@ class ProcessManager : public content::NotificationObserver {
   typedef ExtensionHostSet::const_iterator const_iterator;
 
   static ProcessManager* Create(content::BrowserContext* context);
-  virtual ~ProcessManager();
+  ~ProcessManager() override;
 
   const ExtensionHostSet& background_hosts() const {
     return background_hosts_;
@@ -184,9 +184,9 @@ class ProcessManager : public content::NotificationObserver {
                  ExtensionRegistry* registry);
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

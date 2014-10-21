@@ -43,7 +43,7 @@ class CopresenceSocketFunction : public UIThreadExtensionFunction {
 
  protected:
   // ExtensionFunction overrides:
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 
   // Override this and do actual work here.
   virtual ExtensionFunction::ResponseAction Execute() = 0;
@@ -64,7 +64,7 @@ class CopresenceSocketFunction : public UIThreadExtensionFunction {
   void RemovePeer(int peer_id);
   void RemoveSocket(int socket_id);
 
-  virtual ~CopresenceSocketFunction();
+  ~CopresenceSocketFunction() override;
 
  private:
   void Initialize();
@@ -79,8 +79,8 @@ class CopresenceSocketCreatePeerFunction : public CopresenceSocketFunction {
                              COPRESENCESOCKET_CREATEPEER);
 
  protected:
-  virtual ~CopresenceSocketCreatePeerFunction() {}
-  virtual ExtensionFunction::ResponseAction Execute() override;
+  ~CopresenceSocketCreatePeerFunction() override {}
+  ExtensionFunction::ResponseAction Execute() override;
 
  private:
   void OnCreated(int peer_id, const std::string& locator);
@@ -92,8 +92,8 @@ class CopresenceSocketDestroyPeerFunction : public CopresenceSocketFunction {
                              COPRESENCESOCKET_DESTROYPEER);
 
  protected:
-  virtual ~CopresenceSocketDestroyPeerFunction() {}
-  virtual ExtensionFunction::ResponseAction Execute() override;
+  ~CopresenceSocketDestroyPeerFunction() override {}
+  ExtensionFunction::ResponseAction Execute() override;
 };
 
 class CopresenceSocketSendFunction : public CopresenceSocketFunction {
@@ -101,8 +101,8 @@ class CopresenceSocketSendFunction : public CopresenceSocketFunction {
   DECLARE_EXTENSION_FUNCTION("copresenceSocket.send", COPRESENCESOCKET_SEND);
 
  protected:
-  virtual ~CopresenceSocketSendFunction() {}
-  virtual ExtensionFunction::ResponseAction Execute() override;
+  ~CopresenceSocketSendFunction() override {}
+  ExtensionFunction::ResponseAction Execute() override;
 };
 
 class CopresenceSocketDisconnectFunction : public CopresenceSocketFunction {
@@ -111,8 +111,8 @@ class CopresenceSocketDisconnectFunction : public CopresenceSocketFunction {
                              COPRESENCESOCKET_DISCONNECT);
 
  protected:
-  virtual ~CopresenceSocketDisconnectFunction() {}
-  virtual ExtensionFunction::ResponseAction Execute() override;
+  ~CopresenceSocketDisconnectFunction() override {}
+  ExtensionFunction::ResponseAction Execute() override;
 };
 
 }  // namespace extensions

@@ -17,11 +17,11 @@ class RulesFunction : public AsyncExtensionFunction {
   RulesFunction();
 
  protected:
-  virtual ~RulesFunction();
+  ~RulesFunction() override;
 
   // ExtensionFunction:
-  virtual bool HasPermission() override;
-  virtual bool RunAsync() override;
+  bool HasPermission() override;
+  bool RunAsync() override;
 
   // Concrete implementation of the RulesFunction that is being called
   // on the thread on which the respective RulesRegistry lives.
@@ -36,10 +36,10 @@ class EventsEventAddRulesFunction : public RulesFunction {
   DECLARE_EXTENSION_FUNCTION("events.addRules", EVENTS_ADDRULES)
 
  protected:
-  virtual ~EventsEventAddRulesFunction() {}
+  ~EventsEventAddRulesFunction() override {}
 
   // RulesFunction:
-  virtual bool RunAsyncOnCorrectThread() override;
+  bool RunAsyncOnCorrectThread() override;
 };
 
 class EventsEventRemoveRulesFunction : public RulesFunction {
@@ -47,10 +47,10 @@ class EventsEventRemoveRulesFunction : public RulesFunction {
   DECLARE_EXTENSION_FUNCTION("events.removeRules", EVENTS_REMOVERULES)
 
  protected:
-  virtual ~EventsEventRemoveRulesFunction() {}
+  ~EventsEventRemoveRulesFunction() override {}
 
   // RulesFunction:
-  virtual bool RunAsyncOnCorrectThread() override;
+  bool RunAsyncOnCorrectThread() override;
 };
 
 class EventsEventGetRulesFunction : public RulesFunction {
@@ -58,10 +58,10 @@ class EventsEventGetRulesFunction : public RulesFunction {
   DECLARE_EXTENSION_FUNCTION("events.getRules", EVENTS_GETRULES)
 
  protected:
-  virtual ~EventsEventGetRulesFunction() {}
+  ~EventsEventGetRulesFunction() override {}
 
   // RulesFunction:
-  virtual bool RunAsyncOnCorrectThread() override;
+  bool RunAsyncOnCorrectThread() override;
 };
 
 }  // namespace extensions

@@ -45,9 +45,9 @@ class Handler : public content::WebContentsObserver {
     rvh->Send(new ExtensionMsg_ExecuteCode(rvh->GetRoutingID(), params));
   }
 
-  virtual ~Handler() {}
+  ~Handler() override {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     // Unpack by hand to check the request_id, since there may be multiple
     // requests in flight but only one is for this.
     if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
@@ -67,7 +67,7 @@ class Handler : public content::WebContentsObserver {
     return true;
   }
 
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     base::ListValue val;
     callback_.Run(kRendererDestroyed, GURL(std::string()), val);
     delete this;

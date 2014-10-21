@@ -28,26 +28,25 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
 
   SettingsStorageQuotaEnforcer(const Limits& limits, ValueStore* delegate);
 
-  virtual ~SettingsStorageQuotaEnforcer();
+  ~SettingsStorageQuotaEnforcer() override;
 
   // ValueStore implementation.
-  virtual size_t GetBytesInUse(const std::string& key) override;
-  virtual size_t GetBytesInUse(const std::vector<std::string>& keys) override;
-  virtual size_t GetBytesInUse() override;
-  virtual ReadResult Get(const std::string& key) override;
-  virtual ReadResult Get(const std::vector<std::string>& keys) override;
-  virtual ReadResult Get() override;
-  virtual WriteResult Set(
-      WriteOptions options,
-      const std::string& key,
-      const base::Value& value) override;
-  virtual WriteResult Set(
-      WriteOptions options, const base::DictionaryValue& values) override;
-  virtual WriteResult Remove(const std::string& key) override;
-  virtual WriteResult Remove(const std::vector<std::string>& keys) override;
-  virtual WriteResult Clear() override;
-  virtual bool Restore() override;
-  virtual bool RestoreKey(const std::string& key) override;
+  size_t GetBytesInUse(const std::string& key) override;
+  size_t GetBytesInUse(const std::vector<std::string>& keys) override;
+  size_t GetBytesInUse() override;
+  ReadResult Get(const std::string& key) override;
+  ReadResult Get(const std::vector<std::string>& keys) override;
+  ReadResult Get() override;
+  WriteResult Set(WriteOptions options,
+                  const std::string& key,
+                  const base::Value& value) override;
+  WriteResult Set(WriteOptions options,
+                  const base::DictionaryValue& values) override;
+  WriteResult Remove(const std::string& key) override;
+  WriteResult Remove(const std::vector<std::string>& keys) override;
+  WriteResult Clear() override;
+  bool Restore() override;
+  bool RestoreKey(const std::string& key) override;
 
   ValueStore* get_delegate_for_test() { return delegate_.get(); }
 

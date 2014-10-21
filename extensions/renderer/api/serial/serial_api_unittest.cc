@@ -18,7 +18,7 @@ namespace extensions {
 namespace {
 
 class FakeSerialDeviceEnumerator : public device::SerialDeviceEnumerator {
-  virtual mojo::Array<device::serial::DeviceInfoPtr> GetDevices() override {
+  mojo::Array<device::serial::DeviceInfoPtr> GetDevices() override {
     mojo::Array<device::serial::DeviceInfoPtr> result(3);
     result[0] = device::serial::DeviceInfo::New();
     result[0]->path = "device";
@@ -108,7 +108,7 @@ class TestIoHandlerBase : public device::TestSerialIoHandler {
   size_t num_calls() const { return calls_; }
 
  protected:
-  virtual ~TestIoHandlerBase() {}
+  ~TestIoHandlerBase() override {}
   void record_call() const { calls_++; }
 
  private:
@@ -121,7 +121,7 @@ class SetControlSignalsTestIoHandler : public TestIoHandlerBase {
  public:
   SetControlSignalsTestIoHandler() {}
 
-  virtual bool SetControlSignals(
+  bool SetControlSignals(
       const device::serial::HostControlSignals& signals) override {
     static const device::serial::HostControlSignals expected_signals[] = {
         GenerateControlSignals(OPTIONAL_VALUE_UNSET, OPTIONAL_VALUE_UNSET),
@@ -146,7 +146,7 @@ class SetControlSignalsTestIoHandler : public TestIoHandlerBase {
   }
 
  private:
-  virtual ~SetControlSignalsTestIoHandler() {}
+  ~SetControlSignalsTestIoHandler() override {}
 
   DISALLOW_COPY_AND_ASSIGN(SetControlSignalsTestIoHandler);
 };
@@ -155,8 +155,7 @@ class GetControlSignalsTestIoHandler : public TestIoHandlerBase {
  public:
   GetControlSignalsTestIoHandler() {}
 
-  virtual device::serial::DeviceControlSignalsPtr GetControlSignals()
-      const override {
+  device::serial::DeviceControlSignalsPtr GetControlSignals() const override {
     device::serial::DeviceControlSignalsPtr signals(
         device::serial::DeviceControlSignals::New());
     signals->dcd = num_calls() & 1;
@@ -168,7 +167,7 @@ class GetControlSignalsTestIoHandler : public TestIoHandlerBase {
   }
 
  private:
-  virtual ~GetControlSignalsTestIoHandler() {}
+  ~GetControlSignalsTestIoHandler() override {}
 
   DISALLOW_COPY_AND_ASSIGN(GetControlSignalsTestIoHandler);
 };
@@ -176,7 +175,7 @@ class GetControlSignalsTestIoHandler : public TestIoHandlerBase {
 class ConfigurePortTestIoHandler : public TestIoHandlerBase {
  public:
   ConfigurePortTestIoHandler() {}
-  virtual bool ConfigurePort(
+  bool ConfigurePort(
       const device::serial::ConnectionOptions& options) override {
     static const device::serial::ConnectionOptions expected_options[] = {
         GenerateConnectionOptions(9600,
@@ -251,7 +250,7 @@ class ConfigurePortTestIoHandler : public TestIoHandlerBase {
   }
 
  private:
-  virtual ~ConfigurePortTestIoHandler() {}
+  ~ConfigurePortTestIoHandler() override {}
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurePortTestIoHandler);
 };
@@ -260,13 +259,13 @@ class FlushTestIoHandler : public TestIoHandlerBase {
  public:
   FlushTestIoHandler() {}
 
-  virtual bool Flush() const override {
+  bool Flush() const override {
     record_call();
     return true;
   }
 
  private:
-  virtual ~FlushTestIoHandler() {}
+  ~FlushTestIoHandler() override {}
 
   DISALLOW_COPY_AND_ASSIGN(FlushTestIoHandler);
 };
@@ -274,14 +273,14 @@ class FlushTestIoHandler : public TestIoHandlerBase {
 class FailToConnectTestIoHandler : public TestIoHandlerBase {
  public:
   FailToConnectTestIoHandler() {}
-  virtual void Open(const std::string& port,
-                    const OpenCompleteCallback& callback) override {
+  void Open(const std::string& port,
+            const OpenCompleteCallback& callback) override {
     callback.Run(false);
     return;
   }
 
  private:
-  virtual ~FailToConnectTestIoHandler() {}
+  ~FailToConnectTestIoHandler() override {}
 
   DISALLOW_COPY_AND_ASSIGN(FailToConnectTestIoHandler);
 };
@@ -290,14 +289,14 @@ class FailToGetInfoTestIoHandler : public TestIoHandlerBase {
  public:
   explicit FailToGetInfoTestIoHandler(int times_to_succeed)
       : times_to_succeed_(times_to_succeed) {}
-  virtual device::serial::ConnectionInfoPtr GetPortInfo() const override {
+  device::serial::ConnectionInfoPtr GetPortInfo() const override {
     if (times_to_succeed_-- > 0)
       return device::TestSerialIoHandler::GetPortInfo();
     return device::serial::ConnectionInfoPtr();
   }
 
  private:
-  virtual ~FailToGetInfoTestIoHandler() {}
+  ~FailToGetInfoTestIoHandler() override {}
 
   mutable int times_to_succeed_;
 
@@ -309,10 +308,10 @@ class SendErrorTestIoHandler : public TestIoHandlerBase {
   explicit SendErrorTestIoHandler(device::serial::SendError error)
       : error_(error) {}
 
-  virtual void WriteImpl() override { QueueWriteCompleted(0, error_); }
+  void WriteImpl() override { QueueWriteCompleted(0, error_); }
 
  private:
-  virtual ~SendErrorTestIoHandler() {}
+  ~SendErrorTestIoHandler() override {}
 
   device::serial::SendError error_;
 
@@ -324,7 +323,7 @@ class FixedDataReceiveTestIoHandler : public TestIoHandlerBase {
   explicit FixedDataReceiveTestIoHandler(const std::string& data)
       : data_(data) {}
 
-  virtual void ReadImpl() override {
+  void ReadImpl() override {
     if (pending_read_buffer_len() < data_.size())
       return;
     memcpy(pending_read_buffer(), data_.c_str(), data_.size());
@@ -333,7 +332,7 @@ class FixedDataReceiveTestIoHandler : public TestIoHandlerBase {
   }
 
  private:
-  virtual ~FixedDataReceiveTestIoHandler() {}
+  ~FixedDataReceiveTestIoHandler() override {}
 
   const std::string data_;
 
@@ -345,10 +344,10 @@ class ReceiveErrorTestIoHandler : public TestIoHandlerBase {
   explicit ReceiveErrorTestIoHandler(device::serial::ReceiveError error)
       : error_(error) {}
 
-  virtual void ReadImpl() override { QueueReadCompleted(0, error_); }
+  void ReadImpl() override { QueueReadCompleted(0, error_); }
 
  private:
-  virtual ~ReceiveErrorTestIoHandler() {}
+  ~ReceiveErrorTestIoHandler() override {}
 
   device::serial::ReceiveError error_;
 
@@ -358,7 +357,7 @@ class ReceiveErrorTestIoHandler : public TestIoHandlerBase {
 class SendDataWithErrorIoHandler : public TestIoHandlerBase {
  public:
   SendDataWithErrorIoHandler() : sent_error_(false) {}
-  virtual void WriteImpl() override {
+  void WriteImpl() override {
     if (sent_error_) {
       WriteCompleted(pending_write_buffer_len(),
                      device::serial::SEND_ERROR_NONE);
@@ -371,7 +370,7 @@ class SendDataWithErrorIoHandler : public TestIoHandlerBase {
   }
 
  private:
-  virtual ~SendDataWithErrorIoHandler() {}
+  ~SendDataWithErrorIoHandler() override {}
 
   bool sent_error_;
 
@@ -381,10 +380,10 @@ class SendDataWithErrorIoHandler : public TestIoHandlerBase {
 class BlockSendsForeverSendIoHandler : public TestIoHandlerBase {
  public:
   BlockSendsForeverSendIoHandler() {}
-  virtual void WriteImpl() override {}
+  void WriteImpl() override {}
 
  private:
-  virtual ~BlockSendsForeverSendIoHandler() {}
+  ~BlockSendsForeverSendIoHandler() override {}
 
   DISALLOW_COPY_AND_ASSIGN(BlockSendsForeverSendIoHandler);
 };

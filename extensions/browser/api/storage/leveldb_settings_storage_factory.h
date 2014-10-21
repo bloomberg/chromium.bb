@@ -12,15 +12,15 @@ namespace extensions {
 // Factory for creating LeveldbValueStore instances.
 class LeveldbSettingsStorageFactory : public SettingsStorageFactory {
  public:
-  virtual ValueStore* Create(const base::FilePath& base_path,
-                             const std::string& extension_id) override;
+  ValueStore* Create(const base::FilePath& base_path,
+                     const std::string& extension_id) override;
 
-  virtual void DeleteDatabaseIfExists(const base::FilePath& base_path,
-                                      const std::string& extension_id) override;
+  void DeleteDatabaseIfExists(const base::FilePath& base_path,
+                              const std::string& extension_id) override;
 
  private:
   // SettingsStorageFactory is refcounted.
-  virtual ~LeveldbSettingsStorageFactory() {}
+  ~LeveldbSettingsStorageFactory() override {}
 };
 
 }  // namespace extensions

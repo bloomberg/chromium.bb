@@ -46,10 +46,10 @@ class SerialConnection : public ApiResource,
 
   SerialConnection(const std::string& port,
                    const std::string& owner_extension_id);
-  virtual ~SerialConnection();
+  ~SerialConnection() override;
 
   // ApiResource override.
-  virtual bool IsPersistent() const override;
+  bool IsPersistent() const override;
 
   void set_persistent(bool persistent) { persistent_ = persistent; }
   bool persistent() const { return persistent_; }

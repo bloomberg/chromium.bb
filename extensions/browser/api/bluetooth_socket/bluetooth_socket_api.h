@@ -41,10 +41,10 @@ class BluetoothSocketAsyncApiFunction : public AsyncExtensionFunction {
   BluetoothSocketAsyncApiFunction();
 
  protected:
-  virtual ~BluetoothSocketAsyncApiFunction();
+  ~BluetoothSocketAsyncApiFunction() override;
 
   // AsyncExtensionFunction:
-  virtual bool RunAsync() override;
+  bool RunAsync() override;
 
   bool PrePrepare();
   bool Respond();
@@ -72,11 +72,11 @@ class BluetoothSocketCreateFunction : public BluetoothSocketAsyncApiFunction {
   BluetoothSocketCreateFunction();
 
  protected:
-  virtual ~BluetoothSocketCreateFunction();
+  ~BluetoothSocketCreateFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<bluetooth_socket::Create::Params> params_;
@@ -89,11 +89,11 @@ class BluetoothSocketUpdateFunction : public BluetoothSocketAsyncApiFunction {
   BluetoothSocketUpdateFunction();
 
  protected:
-  virtual ~BluetoothSocketUpdateFunction();
+  ~BluetoothSocketUpdateFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<bluetooth_socket::Update::Params> params_;
@@ -108,11 +108,11 @@ class BluetoothSocketSetPausedFunction
   BluetoothSocketSetPausedFunction();
 
  protected:
-  virtual ~BluetoothSocketSetPausedFunction();
+  ~BluetoothSocketSetPausedFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<bluetooth_socket::SetPaused::Params> params_;
@@ -137,11 +137,11 @@ class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
   virtual const std::string& uuid() const = 0;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
 
  protected:
-  virtual ~BluetoothSocketListenFunction();
+  ~BluetoothSocketListenFunction() override;
 
   virtual void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
   virtual void OnCreateService(scoped_refptr<device::BluetoothSocket> socket);
@@ -159,21 +159,21 @@ class BluetoothSocketListenUsingRfcommFunction
   BluetoothSocketListenUsingRfcommFunction();
 
   // BluetoothSocketListenFunction:
-  virtual int socket_id() const override;
-  virtual const std::string& uuid() const override;
+  int socket_id() const override;
+  const std::string& uuid() const override;
 
-  virtual bool CreateParams() override;
-  virtual void CreateService(
+  bool CreateParams() override;
+  void CreateService(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID& uuid,
       scoped_ptr<std::string> name,
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) override;
-  virtual void CreateResults() override;
+  void CreateResults() override;
 
  protected:
-  virtual ~BluetoothSocketListenUsingRfcommFunction();
+  ~BluetoothSocketListenUsingRfcommFunction() override;
 
  private:
   scoped_ptr<bluetooth_socket::ListenUsingRfcomm::Params> params_;
@@ -188,21 +188,21 @@ class BluetoothSocketListenUsingL2capFunction
   BluetoothSocketListenUsingL2capFunction();
 
   // BluetoothSocketListenFunction:
-  virtual int socket_id() const override;
-  virtual const std::string& uuid() const override;
+  int socket_id() const override;
+  const std::string& uuid() const override;
 
-  virtual bool CreateParams() override;
-  virtual void CreateService(
+  bool CreateParams() override;
+  void CreateService(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID& uuid,
       scoped_ptr<std::string> name,
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) override;
-  virtual void CreateResults() override;
+  void CreateResults() override;
 
  protected:
-  virtual ~BluetoothSocketListenUsingL2capFunction();
+  ~BluetoothSocketListenUsingL2capFunction() override;
 
  private:
   scoped_ptr<bluetooth_socket::ListenUsingL2cap::Params> params_;
@@ -214,11 +214,11 @@ class BluetoothSocketAbstractConnectFunction :
   BluetoothSocketAbstractConnectFunction();
 
  protected:
-  virtual ~BluetoothSocketAbstractConnectFunction();
+  ~BluetoothSocketAbstractConnectFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
 
   // Subclasses should implement this method to connect to the service
   // registered with |uuid| on the |device|.
@@ -244,11 +244,11 @@ class BluetoothSocketConnectFunction :
   BluetoothSocketConnectFunction();
 
  protected:
-  virtual ~BluetoothSocketConnectFunction();
+  ~BluetoothSocketConnectFunction() override;
 
   // BluetoothSocketAbstractConnectFunction:
-  virtual void ConnectToService(device::BluetoothDevice* device,
-                                const device::BluetoothUUID& uuid) override;
+  void ConnectToService(device::BluetoothDevice* device,
+                        const device::BluetoothUUID& uuid) override;
 };
 
 class BluetoothSocketDisconnectFunction
@@ -260,11 +260,11 @@ class BluetoothSocketDisconnectFunction
   BluetoothSocketDisconnectFunction();
 
  protected:
-  virtual ~BluetoothSocketDisconnectFunction();
+  ~BluetoothSocketDisconnectFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
 
  private:
   virtual void OnSuccess();
@@ -279,11 +279,11 @@ class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
   BluetoothSocketCloseFunction();
 
  protected:
-  virtual ~BluetoothSocketCloseFunction();
+  ~BluetoothSocketCloseFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<bluetooth_socket::Close::Params> params_;
@@ -296,11 +296,11 @@ class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
   BluetoothSocketSendFunction();
 
  protected:
-  virtual ~BluetoothSocketSendFunction();
+  ~BluetoothSocketSendFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void AsyncWorkStart() override;
+  bool Prepare() override;
+  void AsyncWorkStart() override;
 
  private:
   void OnSuccess(int bytes_sent);
@@ -320,11 +320,11 @@ class BluetoothSocketGetInfoFunction : public BluetoothSocketAsyncApiFunction {
   BluetoothSocketGetInfoFunction();
 
  protected:
-  virtual ~BluetoothSocketGetInfoFunction();
+  ~BluetoothSocketGetInfoFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 
  private:
   scoped_ptr<bluetooth_socket::GetInfo::Params> params_;
@@ -339,11 +339,11 @@ class BluetoothSocketGetSocketsFunction
   BluetoothSocketGetSocketsFunction();
 
  protected:
-  virtual ~BluetoothSocketGetSocketsFunction();
+  ~BluetoothSocketGetSocketsFunction() override;
 
   // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() override;
-  virtual void Work() override;
+  bool Prepare() override;
+  void Work() override;
 };
 
 }  // namespace core_api

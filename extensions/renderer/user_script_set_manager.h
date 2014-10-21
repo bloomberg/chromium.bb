@@ -51,7 +51,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
 
   UserScriptSetManager(const ExtensionSet* extensions);
 
-  virtual ~UserScriptSetManager();
+  ~UserScriptSetManager() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -83,7 +83,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   typedef std::map<ExtensionId, linked_ptr<UserScriptSet> > UserScriptSetMap;
 
   // content::RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
+  bool OnControlMessageReceived(const IPC::Message& message) override;
 
   UserScriptSet* GetProgrammaticScriptsByExtension(
       const ExtensionId& extensionId);

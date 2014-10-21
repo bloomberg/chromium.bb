@@ -15,44 +15,41 @@ namespace extensions {
 class NullAppSorting : public AppSorting {
  public:
   NullAppSorting();
-  virtual ~NullAppSorting();
+  ~NullAppSorting() override;
 
   // AppSorting overrides:
-  virtual void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) override;
-  virtual void SetExtensionSyncService(
+  void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) override;
+  void SetExtensionSyncService(
       ExtensionSyncService* extension_sync_service) override;
-  virtual void Initialize(const ExtensionIdList& extension_ids) override;
-  virtual void FixNTPOrdinalCollisions() override;
-  virtual void EnsureValidOrdinals(
+  void Initialize(const ExtensionIdList& extension_ids) override;
+  void FixNTPOrdinalCollisions() override;
+  void EnsureValidOrdinals(
       const std::string& extension_id,
       const syncer::StringOrdinal& suggested_page) override;
-  virtual void OnExtensionMoved(
-      const std::string& moved_extension_id,
-      const std::string& predecessor_extension_id,
-      const std::string& successor_extension_id) override;
-  virtual syncer::StringOrdinal GetAppLaunchOrdinal(
+  void OnExtensionMoved(const std::string& moved_extension_id,
+                        const std::string& predecessor_extension_id,
+                        const std::string& successor_extension_id) override;
+  syncer::StringOrdinal GetAppLaunchOrdinal(
       const std::string& extension_id) const override;
-  virtual void SetAppLaunchOrdinal(
+  void SetAppLaunchOrdinal(
       const std::string& extension_id,
       const syncer::StringOrdinal& new_app_launch_ordinal) override;
-  virtual syncer::StringOrdinal CreateFirstAppLaunchOrdinal(
+  syncer::StringOrdinal CreateFirstAppLaunchOrdinal(
       const syncer::StringOrdinal& page_ordinal) const override;
-  virtual syncer::StringOrdinal CreateNextAppLaunchOrdinal(
+  syncer::StringOrdinal CreateNextAppLaunchOrdinal(
       const syncer::StringOrdinal& page_ordinal) const override;
-  virtual syncer::StringOrdinal CreateFirstAppPageOrdinal() const override;
-  virtual syncer::StringOrdinal GetNaturalAppPageOrdinal() const override;
-  virtual syncer::StringOrdinal GetPageOrdinal(
+  syncer::StringOrdinal CreateFirstAppPageOrdinal() const override;
+  syncer::StringOrdinal GetNaturalAppPageOrdinal() const override;
+  syncer::StringOrdinal GetPageOrdinal(
       const std::string& extension_id) const override;
-  virtual void SetPageOrdinal(
-      const std::string& extension_id,
-      const syncer::StringOrdinal& new_page_ordinal) override;
-  virtual void ClearOrdinals(const std::string& extension_id) override;
-  virtual int PageStringOrdinalAsInteger(
+  void SetPageOrdinal(const std::string& extension_id,
+                      const syncer::StringOrdinal& new_page_ordinal) override;
+  void ClearOrdinals(const std::string& extension_id) override;
+  int PageStringOrdinalAsInteger(
       const syncer::StringOrdinal& page_ordinal) const override;
-  virtual syncer::StringOrdinal PageIntegerAsStringOrdinal(
-      size_t page_index) override;
-  virtual void SetExtensionVisible(const std::string& extension_id,
-                                   bool visible) override;
+  syncer::StringOrdinal PageIntegerAsStringOrdinal(size_t page_index) override;
+  void SetExtensionVisible(const std::string& extension_id,
+                           bool visible) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullAppSorting);

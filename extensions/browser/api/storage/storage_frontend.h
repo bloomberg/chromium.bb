@@ -34,7 +34,7 @@ class StorageFrontend : public BrowserContextKeyedAPI {
       content::BrowserContext* context);
 
   // Public so tests can create and delete their own instances.
-  virtual ~StorageFrontend();
+  ~StorageFrontend() override;
 
   // Returns the value store cache for |settings_namespace|.
   ValueStoreCache* GetValueStoreCache(

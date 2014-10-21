@@ -25,7 +25,7 @@ class OptionsPageInfo : public Extension::ManifestData {
   OptionsPageInfo(const GURL& options_page,
                   bool chrome_styles,
                   bool open_in_tab);
-  virtual ~OptionsPageInfo();
+  ~OptionsPageInfo() override;
 
   // Returns the URL to the given extension's options page. This method supports
   // both the "options_ui.page" field and the legacy "options_page" field. If
@@ -69,15 +69,15 @@ class OptionsPageInfo : public Extension::ManifestData {
 class OptionsPageManifestHandler : public ManifestHandler {
  public:
   OptionsPageManifestHandler();
-  virtual ~OptionsPageManifestHandler();
+  ~OptionsPageManifestHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsPageManifestHandler);
 };

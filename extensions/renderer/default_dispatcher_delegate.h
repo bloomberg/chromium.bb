@@ -12,10 +12,10 @@ namespace extensions {
 class DefaultDispatcherDelegate : public DispatcherDelegate {
  public:
   DefaultDispatcherDelegate();
-  virtual ~DefaultDispatcherDelegate();
+  ~DefaultDispatcherDelegate() override;
 
   // DispatcherDelegate implementation.
-  virtual scoped_ptr<ScriptContext> CreateScriptContext(
+  scoped_ptr<ScriptContext> CreateScriptContext(
       const v8::Handle<v8::Context>& v8_context,
       blink::WebFrame* frame,
       const Extension* extension,

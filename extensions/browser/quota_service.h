@@ -161,9 +161,9 @@ class QuotaLimitHeuristic {
   class SingletonBucketMapper : public BucketMapper {
    public:
     SingletonBucketMapper() {}
-    virtual ~SingletonBucketMapper() {}
-    virtual void GetBucketsForArgs(const base::ListValue* args,
-                                   BucketList* buckets) override;
+    ~SingletonBucketMapper() override {}
+    void GetBucketsForArgs(const base::ListValue* args,
+                           BucketList* buckets) override;
 
    private:
     Bucket bucket_;
@@ -213,8 +213,7 @@ class QuotaService::TimedLimit : public QuotaLimitHeuristic {
  public:
   TimedLimit(const Config& config, BucketMapper* map, const std::string& name)
       : QuotaLimitHeuristic(config, map, name) {}
-  virtual bool Apply(Bucket* bucket,
-                     const base::TimeTicks& event_time) override;
+  bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
 };
 
 // A per-item heuristic to limit the number of events that can occur in a
@@ -226,8 +225,7 @@ class QuotaService::SustainedLimit : public QuotaLimitHeuristic {
                  const Config& config,
                  BucketMapper* map,
                  const std::string& name);
-  virtual bool Apply(Bucket* bucket,
-                     const base::TimeTicks& event_time) override;
+  bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
 
  private:
   // Specifies how long exhaustion of buckets is allowed to continue before

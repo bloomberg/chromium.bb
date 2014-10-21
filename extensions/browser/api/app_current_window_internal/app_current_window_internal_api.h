@@ -13,13 +13,13 @@ class AppWindow;
 
 class AppCurrentWindowInternalExtensionFunction : public SyncExtensionFunction {
  protected:
-  virtual ~AppCurrentWindowInternalExtensionFunction() {}
+  ~AppCurrentWindowInternalExtensionFunction() override {}
 
   // Invoked with the current app window.
   virtual bool RunWithWindow(AppWindow* window) = 0;
 
  private:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class AppCurrentWindowInternalFocusFunction
@@ -29,8 +29,8 @@ class AppCurrentWindowInternalFocusFunction
                              APP_CURRENTWINDOWINTERNAL_FOCUS)
 
  protected:
-  virtual ~AppCurrentWindowInternalFocusFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalFocusFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalFullscreenFunction
@@ -40,8 +40,8 @@ class AppCurrentWindowInternalFullscreenFunction
                              APP_CURRENTWINDOWINTERNAL_FULLSCREEN)
 
  protected:
-  virtual ~AppCurrentWindowInternalFullscreenFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalFullscreenFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalMaximizeFunction
@@ -51,8 +51,8 @@ class AppCurrentWindowInternalMaximizeFunction
                              APP_CURRENTWINDOWINTERNAL_MAXIMIZE)
 
  protected:
-  virtual ~AppCurrentWindowInternalMaximizeFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalMaximizeFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalMinimizeFunction
@@ -62,8 +62,8 @@ class AppCurrentWindowInternalMinimizeFunction
                              APP_CURRENTWINDOWINTERNAL_MINIMIZE)
 
  protected:
-  virtual ~AppCurrentWindowInternalMinimizeFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalMinimizeFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalRestoreFunction
@@ -73,8 +73,8 @@ class AppCurrentWindowInternalRestoreFunction
                              APP_CURRENTWINDOWINTERNAL_RESTORE)
 
  protected:
-  virtual ~AppCurrentWindowInternalRestoreFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalRestoreFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalDrawAttentionFunction
@@ -84,8 +84,8 @@ class AppCurrentWindowInternalDrawAttentionFunction
                              APP_CURRENTWINDOWINTERNAL_DRAWATTENTION)
 
  protected:
-  virtual ~AppCurrentWindowInternalDrawAttentionFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalDrawAttentionFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalClearAttentionFunction
@@ -95,8 +95,8 @@ class AppCurrentWindowInternalClearAttentionFunction
                              APP_CURRENTWINDOWINTERNAL_CLEARATTENTION)
 
  protected:
-  virtual ~AppCurrentWindowInternalClearAttentionFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalClearAttentionFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalShowFunction
@@ -106,8 +106,8 @@ class AppCurrentWindowInternalShowFunction
                              APP_CURRENTWINDOWINTERNAL_SHOW)
 
  protected:
-  virtual ~AppCurrentWindowInternalShowFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalShowFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalHideFunction
@@ -117,8 +117,8 @@ class AppCurrentWindowInternalHideFunction
                              APP_CURRENTWINDOWINTERNAL_HIDE)
 
  protected:
-  virtual ~AppCurrentWindowInternalHideFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalHideFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalSetBoundsFunction
@@ -127,8 +127,8 @@ class AppCurrentWindowInternalSetBoundsFunction
   DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setBounds",
                              APP_CURRENTWINDOWINTERNAL_SETBOUNDS)
  protected:
-  virtual ~AppCurrentWindowInternalSetBoundsFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetBoundsFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalSetSizeConstraintsFunction
@@ -137,8 +137,8 @@ class AppCurrentWindowInternalSetSizeConstraintsFunction
   DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setSizeConstraints",
                              APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS)
  protected:
-  virtual ~AppCurrentWindowInternalSetSizeConstraintsFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetSizeConstraintsFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalSetIconFunction
@@ -148,8 +148,8 @@ class AppCurrentWindowInternalSetIconFunction
                              APP_CURRENTWINDOWINTERNAL_SETICON)
 
  protected:
-  virtual ~AppCurrentWindowInternalSetIconFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetIconFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalSetBadgeIconFunction
@@ -159,8 +159,8 @@ class AppCurrentWindowInternalSetBadgeIconFunction
                              APP_CURRENTWINDOWINTERNAL_SETBADGEICON)
 
  protected:
-  virtual ~AppCurrentWindowInternalSetBadgeIconFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetBadgeIconFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalClearBadgeFunction
@@ -170,8 +170,8 @@ class AppCurrentWindowInternalClearBadgeFunction
                              APP_CURRENTWINDOWINTERNAL_CLEARBADGE)
 
  protected:
-  virtual ~AppCurrentWindowInternalClearBadgeFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalClearBadgeFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalSetShapeFunction
@@ -181,8 +181,8 @@ class AppCurrentWindowInternalSetShapeFunction
                              APP_CURRENTWINDOWINTERNAL_SETSHAPE)
 
  protected:
-  virtual ~AppCurrentWindowInternalSetShapeFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetShapeFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalSetAlwaysOnTopFunction
@@ -192,8 +192,8 @@ class AppCurrentWindowInternalSetAlwaysOnTopFunction
                              APP_CURRENTWINDOWINTERNAL_SETALWAYSONTOP)
 
  protected:
-  virtual ~AppCurrentWindowInternalSetAlwaysOnTopFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetAlwaysOnTopFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 class AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction
@@ -204,8 +204,8 @@ class AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction
       APP_CURRENTWINDOWINTERNAL_SETVISIBLEONALLWORKSPACES)
 
  protected:
-  virtual ~AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) override;
+  ~AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction() override {}
+  bool RunWithWindow(AppWindow* window) override;
 };
 
 }  // namespace extensions

@@ -16,7 +16,7 @@ namespace extensions {
 
 struct OfflineEnabledInfo : public Extension::ManifestData {
   explicit OfflineEnabledInfo(bool offline_enabled);
-  virtual ~OfflineEnabledInfo();
+  ~OfflineEnabledInfo() override;
 
   // Whether the extension or app should be enabled when offline.
   // Defaults to false, except for platform apps which are offline by default.
@@ -29,13 +29,13 @@ struct OfflineEnabledInfo : public Extension::ManifestData {
 class OfflineEnabledHandler : public ManifestHandler {
  public:
   OfflineEnabledHandler();
-  virtual ~OfflineEnabledHandler();
+  ~OfflineEnabledHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool AlwaysParseForType(Manifest::Type type) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineEnabledHandler);
 };

@@ -55,18 +55,17 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                     ContentVerifyJob::FailureReason reason);
 
   // ExtensionRegistryObserver interface
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) override;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
 
   friend class base::RefCountedThreadSafe<ContentVerifier>;
-  virtual ~ContentVerifier();
+  ~ContentVerifier() override;
 
   void OnFetchComplete(const std::string& extension_id,
                        bool success,

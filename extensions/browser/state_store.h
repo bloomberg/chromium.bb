@@ -38,7 +38,7 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
              bool deferred_load);
   // This variant is useful for testing (using a mock ValueStore).
   StateStore(content::BrowserContext* context, scoped_ptr<ValueStore> store);
-  virtual ~StateStore();
+  ~StateStore() override;
 
   // Requests that the state store to be initialized after its usual delay. Can
   // be explicitly called by an embedder when the embedder does not trigger the
@@ -71,9 +71,9 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   class DelayedTaskQueue;
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void Init();
 
@@ -85,16 +85,14 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   void RemoveKeysForExtension(const std::string& extension_id);
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      extensions::UninstallReason reason) override;
-  virtual void OnExtensionWillBeInstalled(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const Extension* extension,
+                              extensions::UninstallReason reason) override;
+  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
+                                  const Extension* extension,
+                                  bool is_update,
+                                  bool from_ephemeral,
+                                  const std::string& old_name) override;
 
   // Path to our database, on disk. Empty during testing.
   base::FilePath db_path_;

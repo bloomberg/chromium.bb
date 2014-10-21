@@ -27,7 +27,7 @@ namespace {
 
 class FailsOnException : public ModuleSystem::ExceptionHandler {
  public:
-  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) override {
+  void HandleUncaughtException(const v8::TryCatch& try_catch) override {
     FAIL() << "Uncaught exception: " << CreateExceptionString(try_catch);
   }
 };
@@ -99,16 +99,16 @@ class ModuleSystemTestEnvironment::StringSourceMap
     : public ModuleSystem::SourceMap {
  public:
   StringSourceMap() {}
-  virtual ~StringSourceMap() {}
+  ~StringSourceMap() override {}
 
-  virtual v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
-                                          const std::string& name) override {
+  v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
+                                  const std::string& name) override {
     if (source_map_.count(name) == 0)
       return v8::Undefined(isolate);
     return v8::String::NewFromUtf8(isolate, source_map_[name].c_str());
   }
 
-  virtual bool Contains(const std::string& name) override {
+  bool Contains(const std::string& name) override {
     return source_map_.count(name);
   }
 

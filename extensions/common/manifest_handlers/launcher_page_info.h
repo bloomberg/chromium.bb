@@ -23,19 +23,19 @@ struct LauncherPageInfo : public Extension::ManifestData {
 class LauncherPageHandler : public ManifestHandler {
  public:
   LauncherPageHandler();
-  virtual ~LauncherPageHandler();
+  ~LauncherPageHandler() override;
 
   // Gets the LauncherPageInfo for a given |extension|.
   static LauncherPageInfo* GetInfo(const Extension* extension);
 
   // ManifestHandler overrides:
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherPageHandler);
 };

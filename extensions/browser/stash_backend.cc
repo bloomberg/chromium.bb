@@ -10,11 +10,11 @@ namespace extensions {
 class StashServiceImpl : public mojo::InterfaceImpl<StashService> {
  public:
   explicit StashServiceImpl(base::WeakPtr<StashBackend> backend);
-  virtual ~StashServiceImpl();
+  ~StashServiceImpl() override;
 
   // mojo::InterfaceImpl<StashService> overrides.
-  virtual void AddToStash(mojo::Array<StashedObjectPtr> stash) override;
-  virtual void RetrieveStash(
+  void AddToStash(mojo::Array<StashedObjectPtr> stash) override;
+  void RetrieveStash(
       const mojo::Callback<void(mojo::Array<StashedObjectPtr> stash)>& callback)
       override;
 

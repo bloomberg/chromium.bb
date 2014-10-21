@@ -15,8 +15,8 @@ class SystemCpuGetInfoFunction : public AsyncExtensionFunction {
   SystemCpuGetInfoFunction();
 
  private:
-  virtual ~SystemCpuGetInfoFunction();
-  virtual bool RunAsync() override;
+  ~SystemCpuGetInfoFunction() override;
+  bool RunAsync() override;
   void OnGetCpuInfoCompleted(bool success);
 };
 

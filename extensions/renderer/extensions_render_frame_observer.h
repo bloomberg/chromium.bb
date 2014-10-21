@@ -17,16 +17,16 @@ class ExtensionsRenderFrameObserver
  public:
   explicit ExtensionsRenderFrameObserver(
       content::RenderFrame* render_frame);
-  virtual ~ExtensionsRenderFrameObserver();
+  ~ExtensionsRenderFrameObserver() override;
 
  private:
   // RenderFrameObserver implementation.
-  virtual void DetailedConsoleMessageAdded(const base::string16& message,
-                                           const base::string16& source,
-                                           const base::string16& stack_trace,
-                                           int32 line_number,
-                                           int32 severity_level) override;
-  virtual void DidChangeName(const base::string16& name) override;
+  void DetailedConsoleMessageAdded(const base::string16& message,
+                                   const base::string16& source,
+                                   const base::string16& stack_trace,
+                                   int32 line_number,
+                                   int32 severity_level) override;
+  void DidChangeName(const base::string16& name) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsRenderFrameObserver);
 };

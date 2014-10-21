@@ -28,7 +28,7 @@ class WebViewPermissionHelper
       : public content::WebContentsObserver {
  public:
   explicit WebViewPermissionHelper(WebViewGuest* guest);
-  virtual ~WebViewPermissionHelper();
+  ~WebViewPermissionHelper() override;
   typedef base::Callback<
       void(bool /* allow */, const std::string& /* user_input */)>
       PermissionResponseCallback;
@@ -142,10 +142,9 @@ class WebViewPermissionHelper
 
 #if defined(ENABLE_PLUGINS)
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 #endif  // defined(ENABLE_PLUGINS)
 
   // A counter to generate a unique request id for a permission request.

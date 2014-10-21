@@ -35,32 +35,30 @@ class AppViewGuest : public GuestView<AppViewGuest>,
                                int guest_instance_id);
 
   // ExtensionFunctionDispatcher::Delegate implementation.
-  virtual WindowController* GetExtensionWindowController() const override;
-  virtual content::WebContents* GetAssociatedWebContents() const override;
+  WindowController* GetExtensionWindowController() const override;
+  content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // content::WebContentsDelegate implementation.
-  virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   // GuestViewBase implementation.
-  virtual const char* GetAPINamespace() const override;
-  virtual int GetTaskPrefix() const override;
-  virtual void CreateWebContents(
-      const std::string& embedder_extension_id,
-      int embedder_render_process_id,
-      const GURL& embedder_site_url,
-      const base::DictionaryValue& create_params,
-      const WebContentsCreatedCallback& callback) override;
-  virtual void DidAttachToEmbedder() override;
-  virtual void DidInitialize() override;
+  const char* GetAPINamespace() const override;
+  int GetTaskPrefix() const override;
+  void CreateWebContents(const std::string& embedder_extension_id,
+                         int embedder_render_process_id,
+                         const GURL& embedder_site_url,
+                         const base::DictionaryValue& create_params,
+                         const WebContentsCreatedCallback& callback) override;
+  void DidAttachToEmbedder() override;
+  void DidInitialize() override;
 
  private:
   AppViewGuest(content::BrowserContext* browser_context, int guest_instance_id);
 
-  virtual ~AppViewGuest();
+  ~AppViewGuest() override;
 
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 

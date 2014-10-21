@@ -38,7 +38,7 @@ class BaseClass : public base::RefCounted<BaseClass> {
 class Foo : public BaseClass {
  public:
   explicit Foo(int parameter) : BaseClass(FOO), parameter_(parameter) {}
-  virtual bool Equals(const BaseClass* other) const override {
+  bool Equals(const BaseClass* other) const override {
     return other->type() == type() &&
            static_cast<const Foo*>(other)->parameter_ == parameter_;
   }
@@ -48,7 +48,7 @@ class Foo : public BaseClass {
 
  private:
   friend class base::RefCounted<BaseClass>;
-  virtual ~Foo() {}
+  ~Foo() override {}
 
   // Note that this class must be immutable.
   const int parameter_;

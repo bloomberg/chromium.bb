@@ -18,7 +18,7 @@ namespace extensions {
 struct WebAccessibleResourcesInfo : public Extension::ManifestData {
   // Define out of line constructor/destructor to please Clang.
   WebAccessibleResourcesInfo();
-  virtual ~WebAccessibleResourcesInfo();
+  ~WebAccessibleResourcesInfo() override;
 
   // Returns true if the specified resource is web accessible.
   static bool IsResourceWebAccessible(const Extension* extension,
@@ -35,12 +35,12 @@ struct WebAccessibleResourcesInfo : public Extension::ManifestData {
 class WebAccessibleResourcesHandler : public ManifestHandler {
  public:
   WebAccessibleResourcesHandler();
-  virtual ~WebAccessibleResourcesHandler();
+  ~WebAccessibleResourcesHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(WebAccessibleResourcesHandler);
 };

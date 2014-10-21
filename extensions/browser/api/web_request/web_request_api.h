@@ -63,13 +63,13 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
                       public EventRouter::Observer {
  public:
   explicit WebRequestAPI(content::BrowserContext* context);
-  virtual ~WebRequestAPI();
+  ~WebRequestAPI() override;
 
   // BrowserContextKeyedAPI support:
   static BrowserContextKeyedAPIFactory<WebRequestAPI>* GetFactoryInstance();
 
   // EventRouter::Observer overrides:
-  virtual void OnListenerRemoved(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebRequestAPI>;
@@ -495,10 +495,10 @@ class WebRequestInternalAddEventListenerFunction
                              WEBREQUESTINTERNAL_ADDEVENTLISTENER)
 
  protected:
-  virtual ~WebRequestInternalAddEventListenerFunction() {}
+  ~WebRequestInternalAddEventListenerFunction() override {}
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class WebRequestInternalEventHandledFunction
@@ -508,7 +508,7 @@ class WebRequestInternalEventHandledFunction
                              WEBREQUESTINTERNAL_EVENTHANDLED)
 
  protected:
-  virtual ~WebRequestInternalEventHandledFunction() {}
+  ~WebRequestInternalEventHandledFunction() override {}
 
   // Unblocks the network request and sets |error_| such that the developer
   // console will show the respective error message. Use this function to handle
@@ -522,7 +522,7 @@ class WebRequestInternalEventHandledFunction
       const std::string& error);
 
   // ExtensionFunction:
-  virtual bool RunSync() override;
+  bool RunSync() override;
 };
 
 class WebRequestHandlerBehaviorChangedFunction
@@ -532,15 +532,15 @@ class WebRequestHandlerBehaviorChangedFunction
                              WEBREQUEST_HANDLERBEHAVIORCHANGED)
 
  protected:
-  virtual ~WebRequestHandlerBehaviorChangedFunction() {}
+  ~WebRequestHandlerBehaviorChangedFunction() override {}
 
   // ExtensionFunction:
-  virtual void GetQuotaLimitHeuristics(
+  void GetQuotaLimitHeuristics(
       extensions::QuotaLimitHeuristics* heuristics) const override;
   // Handle quota exceeded gracefully: Only warn the user but still execute the
   // function.
-  virtual void OnQuotaExceeded(const std::string& error) override;
-  virtual bool RunSync() override;
+  void OnQuotaExceeded(const std::string& error) override;
+  bool RunSync() override;
 };
 
 #endif  // EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_H_

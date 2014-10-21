@@ -49,7 +49,7 @@ class BluetoothLowEnergyEventRouter
     : public device::BluetoothAdapter::Observer {
  public:
   explicit BluetoothLowEnergyEventRouter(content::BrowserContext* context);
-  virtual ~BluetoothLowEnergyEventRouter();
+  ~BluetoothLowEnergyEventRouter() override;
 
   // Possible ways that an API method can fail or succeed.
   enum Status {
@@ -234,39 +234,36 @@ class BluetoothLowEnergyEventRouter
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
 
   // device::BluetoothAdapter::Observer overrides.
-  virtual void GattServiceAdded(device::BluetoothAdapter* adapter,
-                                device::BluetoothDevice* device,
-                                device::BluetoothGattService* service) override;
-  virtual void GattServiceRemoved(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothDevice* device,
-      device::BluetoothGattService* service) override;
-  virtual void GattDiscoveryCompleteForService(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothGattService* service) override;
-  virtual void GattServiceChanged(
+  void GattServiceAdded(device::BluetoothAdapter* adapter,
+                        device::BluetoothDevice* device,
+                        device::BluetoothGattService* service) override;
+  void GattServiceRemoved(device::BluetoothAdapter* adapter,
+                          device::BluetoothDevice* device,
+                          device::BluetoothGattService* service) override;
+  void GattDiscoveryCompleteForService(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattService* service) override;
-  virtual void GattCharacteristicAdded(
+  void GattServiceChanged(device::BluetoothAdapter* adapter,
+                          device::BluetoothGattService* service) override;
+  void GattCharacteristicAdded(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic) override;
-  virtual void GattCharacteristicRemoved(
+  void GattCharacteristicRemoved(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic) override;
-  virtual void GattDescriptorAdded(
+  void GattDescriptorAdded(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattDescriptor* descriptor) override;
-  virtual void GattDescriptorRemoved(
+  void GattDescriptorRemoved(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattDescriptor* descriptor) override;
-  virtual void GattCharacteristicValueChanged(
+  void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic,
       const std::vector<uint8>& value) override;
-  virtual void GattDescriptorValueChanged(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothGattDescriptor* descriptor,
-      const std::vector<uint8>& value) override;
+  void GattDescriptorValueChanged(device::BluetoothAdapter* adapter,
+                                  device::BluetoothGattDescriptor* descriptor,
+                                  const std::vector<uint8>& value) override;
 
  private:
   // Called by BluetoothAdapterFactory.

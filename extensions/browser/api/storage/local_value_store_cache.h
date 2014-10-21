@@ -24,13 +24,13 @@ class LocalValueStoreCache : public ValueStoreCache {
  public:
   LocalValueStoreCache(const scoped_refptr<SettingsStorageFactory>& factory,
                        const base::FilePath& profile_path);
-  virtual ~LocalValueStoreCache();
+  ~LocalValueStoreCache() override;
 
   // ValueStoreCache implementation:
-  virtual void RunWithValueStoreForExtension(
+  void RunWithValueStoreForExtension(
       const StorageCallback& callback,
       scoped_refptr<const Extension> extension) override;
-  virtual void DeleteStorageSoon(const std::string& extension_id) override;
+  void DeleteStorageSoon(const std::string& extension_id) override;
 
  private:
   typedef std::map<std::string, linked_ptr<ValueStore> > StorageMap;

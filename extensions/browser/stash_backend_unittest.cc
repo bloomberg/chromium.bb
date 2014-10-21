@@ -27,9 +27,7 @@ class StashServiceTest : public testing::Test, public mojo::ErrorHandler {
     stash_service_.set_error_handler(this);
   }
 
-  virtual void OnConnectionError() override {
-    FAIL() << "Unexpected connection error";
-  }
+  void OnConnectionError() override { FAIL() << "Unexpected connection error"; }
 
   mojo::Array<StashedObjectPtr> RetrieveStash() {
     mojo::Array<StashedObjectPtr> stash;

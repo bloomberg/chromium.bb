@@ -26,7 +26,7 @@ class SocketsManifestData : public Extension::ManifestData {
  public:
   explicit SocketsManifestData(
       scoped_ptr<SocketsManifestPermission> permission);
-  virtual ~SocketsManifestData();
+  ~SocketsManifestData() override;
 
   // Gets the SocketsManifestData for |extension|, or NULL if none was
   // specified.

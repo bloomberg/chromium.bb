@@ -13,7 +13,7 @@ namespace extensions {
 
 struct IncognitoInfo : public Extension::ManifestData {
   explicit IncognitoInfo(bool split_mode);
-  virtual ~IncognitoInfo();
+  ~IncognitoInfo() override;
 
   // If true, a separate process will be used for the extension in incognito
   // mode.
@@ -27,13 +27,13 @@ struct IncognitoInfo : public Extension::ManifestData {
 class IncognitoHandler : public ManifestHandler {
  public:
   IncognitoHandler();
-  virtual ~IncognitoHandler();
+  ~IncognitoHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool AlwaysParseForType(Manifest::Type type) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoHandler);
 };
