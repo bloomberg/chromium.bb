@@ -47,7 +47,7 @@ bool DoSerializeEvents(const LogMetadata& metadata,
 
   int proto_size = metadata.ByteSize();
   DCHECK(proto_size <= kMaxSerializedProtoBytes);
-  if (!writer.WriteU16(proto_size))
+  if (!writer.WriteU16(static_cast<uint16>(proto_size)))
     return false;
   if (!metadata.SerializeToArray(writer.ptr(), writer.remaining()))
     return false;
@@ -73,7 +73,7 @@ bool DoSerializeEvents(const LogMetadata& metadata,
     DCHECK(proto_size <= kMaxSerializedProtoBytes);
 
     // Write size of the proto, then write the proto.
-    if (!writer.WriteU16(proto_size))
+    if (!writer.WriteU16(static_cast<uint16>(proto_size)))
       return false;
     if (!frame_event.SerializeToArray(writer.ptr(), writer.remaining()))
       return false;
@@ -97,7 +97,7 @@ bool DoSerializeEvents(const LogMetadata& metadata,
     DCHECK(proto_size <= kMaxSerializedProtoBytes);
 
     // Write size of the proto, then write the proto.
-    if (!writer.WriteU16(proto_size))
+    if (!writer.WriteU16(static_cast<uint16>(proto_size)))
       return false;
     if (!packet_event.SerializeToArray(writer.ptr(), writer.remaining()))
       return false;

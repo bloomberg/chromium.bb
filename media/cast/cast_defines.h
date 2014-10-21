@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <cmath>
 #include <map>
 #include <set>
 
@@ -178,9 +179,10 @@ inline void ConvertTimeTicksToNtp(const base::TimeTicks& time,
 
 inline base::TimeTicks ConvertNtpToTimeTicks(uint32 ntp_seconds,
                                              uint32 ntp_fractions) {
-  int64 ntp_time_us =
-      static_cast<int64>(ntp_seconds) * base::Time::kMicrosecondsPerSecond +
-      static_cast<int64>(ntp_fractions) / kMagicFractionalUnit;
+  // We need to ceil() here because the calculation of |fractions| in
+  // ConvertTimeToFractions() effectively does a floor().
+  int64 ntp_time_us = ntp_seconds * base::Time::kMicrosecondsPerSecond +
+      static_cast<int64>(std::ceil(ntp_fractions / kMagicFractionalUnit));
 
   base::TimeDelta elapsed_since_unix_epoch = base::TimeDelta::FromMicroseconds(
       ntp_time_us -

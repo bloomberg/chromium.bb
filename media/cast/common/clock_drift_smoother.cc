@@ -27,7 +27,7 @@ void ClockDriftSmoother::Reset(base::TimeTicks now,
                                base::TimeDelta measured_offset) {
   DCHECK(!now.is_null());
   last_update_time_ = now;
-  estimate_us_ = measured_offset.InMicroseconds();
+  estimate_us_ = static_cast<double>(measured_offset.InMicroseconds());
 }
 
 void ClockDriftSmoother::Update(base::TimeTicks now,
@@ -39,7 +39,8 @@ void ClockDriftSmoother::Update(base::TimeTicks now,
     // |now| is not monotonically non-decreasing.
     NOTREACHED();
   } else {
-    const double elapsed_us = (now - last_update_time_).InMicroseconds();
+    const double elapsed_us =
+        static_cast<double>((now - last_update_time_).InMicroseconds());
     last_update_time_ = now;
     const double weight =
         elapsed_us / (elapsed_us + time_constant_.InMicroseconds());
