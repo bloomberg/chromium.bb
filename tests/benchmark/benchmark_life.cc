@@ -8,8 +8,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "native_client/tests/benchmark/framework.h"
-#include "native_client/tests/benchmark/thread_pool.h"
+// @EXEMPTION[include]
+#include "./framework.h"
+#include "./thread_pool.h"
 
 
 using sdk_util::ThreadPool;  // For sdk_util::ThreadPool
