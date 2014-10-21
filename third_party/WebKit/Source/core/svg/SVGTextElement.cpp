@@ -19,10 +19,8 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGTextElement.h"
 
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGText.h"
 
 namespace blink {

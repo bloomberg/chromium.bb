@@ -16,7 +16,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

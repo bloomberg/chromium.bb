@@ -18,11 +18,9 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 
 #include "core/dom/ElementTraversal.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/DisplayList.h"

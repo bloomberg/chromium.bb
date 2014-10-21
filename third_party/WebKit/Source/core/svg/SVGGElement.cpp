@@ -19,12 +19,10 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGGElement.h"
 
 #include "core/SVGNames.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
 namespace blink {

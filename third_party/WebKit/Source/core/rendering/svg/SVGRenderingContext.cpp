@@ -30,7 +30,6 @@
 #include "core/paint/SVGImagePainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGImage.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGRenderSupport.h"

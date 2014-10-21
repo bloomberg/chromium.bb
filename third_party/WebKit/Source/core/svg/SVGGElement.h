@@ -21,7 +21,6 @@
 #ifndef SVGGElement_h
 #define SVGGElement_h
 
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGGraphicsElement.h"
 
 namespace blink {

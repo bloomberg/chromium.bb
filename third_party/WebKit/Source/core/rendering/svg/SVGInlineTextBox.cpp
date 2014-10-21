@@ -34,12 +34,9 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/RenderSVGResource.h"
-#include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/FloatConversion.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
