@@ -1,0 +1,9 @@
+Tests setting console last evaluation result.
+
+1+1
+2
+$_
+2
+$_
+Object {a: 1, b: 2}
+

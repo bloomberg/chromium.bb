@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var obj = { "a" : 1, "b": 2 };
+
+function test()
+{
+    var remote;
+    RuntimeAgent.evaluate("window.obj", step1);
+
+    function step1(error, result)
+    {
+        InspectorTest.assertTrue(!error, "FAIL: " + error);
+        remote = result;
+        InspectorTest.evaluateInConsole("1+1", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.evaluateInConsole("$_", step3);
+    }
+
+    function step3()
+    {
+        ConsoleAgent.setLastEvaluationResult(remote.objectId, didSetResult);
+    }
+
+    function didSetResult(error)
+    {
+        InspectorTest.assertTrue(!error, "FAIL: " + error);
+        InspectorTest.evaluateInConsole("$_", completeTest);
+    }
+
+    function completeTest()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests setting console last evaluation result.
+</p>
+</body>
+</html>

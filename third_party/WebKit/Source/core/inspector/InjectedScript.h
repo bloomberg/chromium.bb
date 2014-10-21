@@ -101,6 +101,8 @@ public:
     void inspectNode(Node*);
     void releaseObjectGroup(const String&);
 
+    void setLastEvaluationResult(const String& objectId);
+
 private:
     friend class InjectedScriptModule;
     friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);

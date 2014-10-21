@@ -321,4 +321,14 @@ void InspectorConsoleAgent::addInspectedHeapObject(ErrorString*, int inspectedHe
     m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableHeapObject(inspectedHeapObjectId)));
 }
 
+void InspectorConsoleAgent::setLastEvaluationResult(ErrorString* errorString, const String& objectId)
+{
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
+    if (injectedScript.isEmpty()) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+    injectedScript.setLastEvaluationResult(objectId);
+}
+
 } // namespace blink

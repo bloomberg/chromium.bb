@@ -337,5 +337,14 @@ ScriptValue InjectedScript::nodeAsScriptValue(Node* node)
     return InjectedScriptHost::nodeAsScriptValue(scriptState(), node);
 }
 
+void InjectedScript::setLastEvaluationResult(const String& objectId)
+{
+    ASSERT(!isEmpty());
+    ScriptFunctionCall setLastResultFunction(injectedScriptObject(), "setLastEvaluationResult");
+    setLastResultFunction.appendArgument(objectId);
+    RefPtr<JSONValue> result;
+    makeCall(setLastResultFunction, &result);
+}
+
 } // namespace blink
 
