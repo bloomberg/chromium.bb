@@ -118,7 +118,7 @@ TEST(WebCryptoHmacTest, GenerateKeyIsRandom) {
   std::vector<std::vector<uint8_t> > keys;
   for (int i = 0; i < 16; ++i) {
     std::vector<uint8_t> key_bytes;
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey key;
     blink::WebCryptoAlgorithm algorithm =
         CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 512);
     ASSERT_EQ(Status::Success(), GenerateSecretKey(algorithm, true, 0, &key));
@@ -143,7 +143,7 @@ TEST(WebCryptoHmacTest, GenerateKeyIsRandom) {
 
 // If the key length is not provided, then the block size is used.
 TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha1) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 0);
   ASSERT_EQ(Status::Success(), GenerateSecretKey(algorithm, true, 0, &key));
@@ -161,7 +161,7 @@ TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha1) {
 
 // If the key length is not provided, then the block size is used.
 TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha512) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha512, 0);
   ASSERT_EQ(Status::Success(), GenerateSecretKey(algorithm, true, 0, &key));
@@ -176,7 +176,7 @@ TEST(WebCryptoHmacTest, GenerateKeyNoLengthSha512) {
 }
 
 TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -210,7 +210,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkKeyOpsSignVerify) {
 
 // Test 'use' inconsistent with 'key_ops'.
 TEST(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -233,7 +233,7 @@ TEST(WebCryptoHmacTest, ImportKeyJwkUseInconsisteWithKeyOps) {
 
 // Test JWK composite 'sig' use
 TEST(WebCryptoHmacTest, ImportKeyJwkUseSig) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -256,7 +256,7 @@ TEST(WebCryptoHmacTest, ImportJwkInputConsistency) {
   // inconsistent with the input value, the operation must fail.
 
   // Consistency rules when JWK value is not present: Inputs should be used.
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   bool extractable = false;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256);
@@ -408,7 +408,7 @@ TEST(WebCryptoHmacTest, ImportJwkHappy) {
   // This test verifies the happy path of JWK import, including the application
   // of the imported key material.
 
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   bool extractable = false;
   blink::WebCryptoAlgorithm algorithm =
       CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256);
@@ -488,7 +488,7 @@ TEST(WebCryptoHmacTest, ExportJwkEmptyKey) {
       CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1);
 
   blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageSign;
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   // Import a zero-byte HMAC key.
   const char key_data_hex[] = "";
@@ -527,7 +527,7 @@ TEST(WebCryptoHmacTest, ExportJwkEmptyKey) {
 TEST(WebCryptoHmacTest, ImportRawKeyTooLarge) {
   CryptoData big_data(NULL, UINT_MAX);  // Invalid data of big length.
 
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   EXPECT_EQ(
       Status::ErrorDataTooLarge(),
       ImportKey(blink::WebCryptoKeyFormatRaw,

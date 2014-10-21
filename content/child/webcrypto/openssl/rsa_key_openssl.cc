@@ -284,8 +284,8 @@ Status RsaHashedAlgorithm::GenerateKey(
     return Status::OperationError();
   }
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
+  blink::WebCryptoKey private_key;
 
   // Note that extractable is unconditionally set to true. This is because per
   // the WebCrypto spec generated public keys are always public.

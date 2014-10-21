@@ -238,8 +238,7 @@ struct ImportKeyState : public BaseState {
         key_data(key_data, key_data + key_data_size),
         algorithm(algorithm),
         extractable(extractable),
-        usage_mask(usage_mask),
-        key(blink::WebCryptoKey::createNull()) {}
+        usage_mask(usage_mask) {}
 
   const blink::WebCryptoKeyFormat format;
   const std::vector<uint8_t> key_data;
@@ -324,8 +323,7 @@ struct UnwrapKeyState : public BaseState {
         unwrap_algorithm(unwrap_algorithm),
         unwrapped_key_algorithm(unwrapped_key_algorithm),
         extractable(extractable),
-        usages(usages),
-        unwrapped_key(blink::WebCryptoKey::createNull()) {}
+        usages(usages) {}
 
   const blink::WebCryptoKeyFormat format;
   const std::vector<uint8_t> wrapped_key;

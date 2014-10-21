@@ -75,7 +75,7 @@ bool operator!=(const CryptoData& a, const CryptoData& b) {
 bool SupportsAesGcm() {
   std::vector<uint8_t> key_raw(16, 0);
 
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   Status status = ImportKey(blink::WebCryptoKeyFormatRaw,
                             CryptoData(key_raw),
                             CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm),
@@ -344,7 +344,7 @@ blink::WebCryptoKey ImportSecretKeyFromRaw(
     const std::vector<uint8_t>& key_raw,
     const blink::WebCryptoAlgorithm& algorithm,
     blink::WebCryptoKeyUsageMask usage) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   bool extractable = true;
   EXPECT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatRaw,

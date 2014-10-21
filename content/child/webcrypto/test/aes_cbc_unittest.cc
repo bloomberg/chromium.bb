@@ -110,7 +110,7 @@ TEST(WebCryptoAesCbcTest, KeyTooSmall) {
   std::vector<uint8_t> key_raw(1);
   std::vector<uint8_t> iv(16);
 
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   EXPECT_EQ(Status::ErrorImportAesKeyLength(),
             ImportKey(blink::WebCryptoKeyFormatRaw,
                       CryptoData(key_raw),
@@ -134,7 +134,7 @@ TEST(WebCryptoAesCbcTest, ExportKeyUnsupportedFormat) {
 }
 
 TEST(WebCryptoAesCbcTest, ImportKeyUnsupportedFormat) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   ASSERT_EQ(Status::ErrorUnsupportedImportKeyFormat(),
             ImportKey(blink::WebCryptoKeyFormatSpki,
                       CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
@@ -254,7 +254,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
   const unsigned short kKeyLength[] = {128, 256};
   for (size_t key_length_i = 0; key_length_i < arraysize(kKeyLength);
        ++key_length_i) {
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey key;
 
     std::vector<std::vector<uint8_t> > keys;
     std::vector<uint8_t> key_bytes;
@@ -283,7 +283,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
 
 TEST(WebCryptoAesCbcTest, GenerateKeyBadLength) {
   const unsigned short kKeyLen[] = {0, 127, 257};
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateKeyLength(),
@@ -294,7 +294,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyBadLength) {
 
 // If key_ops is specified but empty, no key usages are allowed for the key.
 TEST(WebCryptoAesCbcTest, ImportKeyJwkEmptyKeyOps) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetBoolean("ext", false);
@@ -332,7 +332,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkEmptyKeyOps) {
 
 // If key_ops is missing, then any key usages can be specified.
 TEST(WebCryptoAesCbcTest, ImportKeyJwkNoKeyOps) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -358,7 +358,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkNoKeyOps) {
 }
 
 TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -404,7 +404,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
 
 // Test failure if input usage is NOT a strict subset of the JWK usage.
 TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -424,7 +424,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
 }
 
 TEST(WebCryptoAesCbcTest, ImportKeyJwkUseEnc) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -449,7 +449,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkUseEnc) {
 }
 
 TEST(WebCryptoAesCbcTest, ImportJwkInvalidJson) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   // Fail on empty JSON.
   EXPECT_EQ(Status::ErrorImportEmptyKeyData(),
             ImportKey(blink::WebCryptoKeyFormatJwk,
@@ -476,7 +476,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkInvalidJson) {
 
 // Fail on JWK alg present but incorrect (expecting A128CBC).
 TEST(WebCryptoAesCbcTest, ImportJwkIncorrectAlg) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -494,7 +494,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkIncorrectAlg) {
 
 // Fail on invalid kty.
 TEST(WebCryptoAesCbcTest, ImportJwkInvalidKty) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "foo");
@@ -510,7 +510,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkInvalidKty) {
 
 // Fail on missing kty.
 TEST(WebCryptoAesCbcTest, ImportJwkMissingKty) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -525,7 +525,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkMissingKty) {
 
 // Fail on kty wrong type.
 TEST(WebCryptoAesCbcTest, ImportJwkKtyWrongType) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetDouble("kty", 0.1);
@@ -542,7 +542,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKtyWrongType) {
 
 // Fail on invalid use.
 TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedUse) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -560,7 +560,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedUse) {
 
 // Fail on invalid use (wrong type).
 TEST(WebCryptoAesCbcTest, ImportJwkUseWrongType) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -578,7 +578,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUseWrongType) {
 
 // Fail on invalid extractable (wrong type).
 TEST(WebCryptoAesCbcTest, ImportJwkExtWrongType) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -596,7 +596,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkExtWrongType) {
 
 // Fail on invalid key_ops (wrong type).
 TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsWrongType) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -615,7 +615,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsWrongType) {
 // Fail on inconsistent key_ops - asking for "encrypt" however JWK contains
 // only "foo".
 TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsLacksUsages) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -636,7 +636,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsLacksUsages) {
 
 // Import a JWK with unrecognized values for "key_ops".
 TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedKeyOps) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
   blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
@@ -660,7 +660,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUnrecognizedKeyOps) {
 
 // Import a JWK with a value in key_ops array that is not a string.
 TEST(WebCryptoAesCbcTest, ImportJwkNonStringKeyOp) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
   blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
@@ -682,7 +682,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkNonStringKeyOp) {
 
 // Fail on missing k.
 TEST(WebCryptoAesCbcTest, ImportJwkMissingK) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -698,7 +698,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkMissingK) {
 
 // Fail on bad b64 encoding for k.
 TEST(WebCryptoAesCbcTest, ImportJwkBadB64ForK) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -714,7 +714,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkBadB64ForK) {
 
 // Fail on empty k.
 TEST(WebCryptoAesCbcTest, ImportJwkEmptyK) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -731,7 +731,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkEmptyK) {
 
 // Fail on empty k (with alg specified).
 TEST(WebCryptoAesCbcTest, ImportJwkEmptyK2) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -750,7 +750,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkEmptyK2) {
 // Fail on k actual length (120 bits) inconsistent with the embedded JWK alg
 // value (128) for an AES key.
 TEST(WebCryptoAesCbcTest, ImportJwkInconsistentKLength) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -768,7 +768,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkInconsistentKLength) {
 // Fail on k actual length (192 bits) inconsistent with the embedded JWK alg
 // value (128) for an AES key.
 TEST(WebCryptoAesCbcTest, ImportJwkInconsistentKLength2) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -810,7 +810,7 @@ TEST(WebCryptoAesCbcTest, ImportExportJwk) {
 // AES 192-bit is not allowed: http://crbug.com/381829
 TEST(WebCryptoAesCbcTest, ImportAesCbc192Raw) {
   std::vector<uint8_t> key_raw(24, 0);
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   Status status = ImportKey(blink::WebCryptoKeyFormatRaw,
                             CryptoData(key_raw),
                             CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
@@ -822,7 +822,7 @@ TEST(WebCryptoAesCbcTest, ImportAesCbc192Raw) {
 
 // AES 192-bit is not allowed: http://crbug.com/381829
 TEST(WebCryptoAesCbcTest, ImportAesCbc192Jwk) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
 
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
@@ -840,7 +840,7 @@ TEST(WebCryptoAesCbcTest, ImportAesCbc192Jwk) {
 
 // AES 192-bit is not allowed: http://crbug.com/381829
 TEST(WebCryptoAesCbcTest, GenerateAesCbc192) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   Status status = GenerateSecretKey(CreateAesCbcKeyGenAlgorithm(192),
                                     true,
                                     blink::WebCryptoKeyUsageEncrypt,
@@ -859,7 +859,7 @@ TEST(WebCryptoAesCbcTest, UnwrapAesCbc192) {
                              CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
                              blink::WebCryptoKeyUsageUnwrapKey);
 
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_key;
   ASSERT_EQ(Status::ErrorAes192BitUnsupported(),
             UnwrapKey(blink::WebCryptoKeyFormatRaw,
                       CryptoData(wrapped_key),
@@ -890,7 +890,7 @@ TEST(WebCryptoAesCbcTest, ImportKeyBadUsage_Raw) {
   for (size_t i = 0; i < arraysize(bad_usages); ++i) {
     SCOPED_TRACE(i);
 
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey key;
     ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
               ImportKey(blink::WebCryptoKeyFormatRaw,
                         CryptoData(key_bytes),
@@ -912,7 +912,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyBadUsages) {
   for (size_t i = 0; i < arraysize(bad_usages); ++i) {
     SCOPED_TRACE(i);
 
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey key;
 
     ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
               GenerateSecretKey(
@@ -928,7 +928,7 @@ TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
     return;
 
   // Generate the wrapping key.
-  blink::WebCryptoKey wrapping_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey wrapping_key;
   ASSERT_EQ(Status::Success(),
             GenerateSecretKey(CreateAesCbcKeyGenAlgorithm(128),
                               true,
@@ -940,8 +940,8 @@ TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
   const unsigned int modulus_length = 256;
   const std::vector<uint8_t> public_exponent = HexStringToBytes("010001");
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
+  blink::WebCryptoKey private_key;
   ASSERT_EQ(Status::Success(),
             GenerateKeyPair(CreateRsaHashedKeyGenAlgorithm(
                                 blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
@@ -990,7 +990,7 @@ TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
       CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                      blink::WebCryptoAlgorithmIdSha256);
 
-  blink::WebCryptoKey unwrapped_public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_public_key;
 
   ASSERT_EQ(Status::Success(),
             UnwrapKey(blink::WebCryptoKeyFormatSpki,
@@ -1002,7 +1002,7 @@ TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
                       0,
                       &unwrapped_public_key));
 
-  blink::WebCryptoKey unwrapped_private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_private_key;
 
   ASSERT_EQ(Status::Success(),
             UnwrapKey(blink::WebCryptoKeyFormatPkcs8,

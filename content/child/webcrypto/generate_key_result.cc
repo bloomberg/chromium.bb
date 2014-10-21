@@ -10,11 +10,7 @@ namespace content {
 
 namespace webcrypto {
 
-GenerateKeyResult::GenerateKeyResult()
-    : type_(TYPE_NULL),
-      secret_key_(blink::WebCryptoKey::createNull()),
-      public_key_(blink::WebCryptoKey::createNull()),
-      private_key_(blink::WebCryptoKey::createNull()) {
+GenerateKeyResult::GenerateKeyResult() : type_(TYPE_NULL) {
 }
 
 GenerateKeyResult::Type GenerateKeyResult::type() const {

@@ -25,7 +25,7 @@ blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
 
 TEST(WebCryptoAesKwTest, GenerateKeyBadLength) {
   const unsigned short kKeyLen[] = {0, 127, 257};
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateKeyLength(),
@@ -35,7 +35,7 @@ TEST(WebCryptoAesKwTest, GenerateKeyBadLength) {
 }
 
 TEST(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   base::DictionaryValue dict;
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
@@ -87,7 +87,7 @@ TEST(WebCryptoAesKwTest, ImportExportJwk) {
 }
 
 TEST(WebCryptoAesKwTest, AesKwKeyImport) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   blink::WebCryptoAlgorithm algorithm =
       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
 
@@ -180,7 +180,7 @@ TEST(WebCryptoAesKwTest, UnwrapFailures) {
   const std::vector<uint8_t> test_ciphertext =
       GetBytesFromHexString(test, "ciphertext");
 
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_key;
 
   // Using a wrapping algorithm that does not match the wrapping key algorithm
   // should fail.
@@ -237,7 +237,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapKnownAnswer) {
     EXPECT_BYTES_EQ(test_ciphertext, wrapped_key);
 
     // Unwrap the known ciphertext to get a new test_key.
-    blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey unwrapped_key;
     ASSERT_EQ(
         Status::Success(),
         UnwrapKey(blink::WebCryptoKeyFormatRaw,
@@ -282,7 +282,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapSignVerifyHmac) {
       test_kek, wrapping_algorithm, blink::WebCryptoKeyUsageUnwrapKey);
 
   // Unwrap the known ciphertext.
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey key;
   ASSERT_EQ(
       Status::Success(),
       UnwrapKey(blink::WebCryptoKeyFormatRaw,
@@ -349,7 +349,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyWrapUnwrapErrors) {
   // Unwrap with wrapped data too small must fail.
   const std::vector<uint8_t> small_data(test_ciphertext.begin(),
                                         test_ciphertext.begin() + 23);
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_key;
   EXPECT_EQ(Status::ErrorDataTooSmall(),
             UnwrapKey(blink::WebCryptoKeyFormatRaw,
                       CryptoData(small_data),
@@ -395,7 +395,7 @@ TEST(WebCryptoAesKwTest, AesKwRawSymkeyUnwrapCorruptData) {
 
   // Unwrap of a corrupted version of the known ciphertext should fail, due to
   // AES-KW's built-in integrity check.
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_key;
   EXPECT_EQ(Status::OperationError(),
             UnwrapKey(blink::WebCryptoKeyFormatRaw,
                       CryptoData(Corrupted(test_ciphertext)),
@@ -432,7 +432,7 @@ TEST(WebCryptoAesKwTest, AesKwJwkSymkeyUnwrapKnownData) {
       wrapping_key_data, wrapping_algorithm, blink::WebCryptoKeyUsageUnwrapKey);
 
   // Unwrap the known wrapped key data to produce a new key
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_key;
   ASSERT_EQ(
       Status::Success(),
       UnwrapKey(blink::WebCryptoKeyFormatJwk,
@@ -483,7 +483,7 @@ TEST(WebCryptoAesKwTest, ImportKeyBadUsage_Raw) {
   for (size_t i = 0; i < arraysize(bad_usages); ++i) {
     SCOPED_TRACE(i);
 
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey key;
     ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
               ImportKey(blink::WebCryptoKeyFormatRaw,
                         CryptoData(key_bytes),
@@ -510,7 +510,7 @@ TEST(WebCryptoAesKwTest, UnwrapHmacKeyBadUsage_JWK) {
   };
 
   // Import the wrapping key.
-  blink::WebCryptoKey wrapping_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey wrapping_key;
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatRaw,
                       CryptoData(std::vector<uint8_t>(16)),
@@ -529,7 +529,7 @@ TEST(WebCryptoAesKwTest, UnwrapHmacKeyBadUsage_JWK) {
   for (size_t i = 0; i < arraysize(bad_usages); ++i) {
     SCOPED_TRACE(i);
 
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey key;
 
     ASSERT_EQ(
         Status::ErrorCreateKeyBadUsages(),
@@ -560,7 +560,7 @@ TEST(WebCryptoAesKwTest, UnwrapRsaSsaPublicKeyBadUsage_JWK) {
   };
 
   // Import the wrapping key.
-  blink::WebCryptoKey wrapping_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey wrapping_key;
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatRaw,
                       CryptoData(std::vector<uint8_t>(16)),
@@ -584,7 +584,7 @@ TEST(WebCryptoAesKwTest, UnwrapRsaSsaPublicKeyBadUsage_JWK) {
   for (size_t i = 0; i < arraysize(bad_usages); ++i) {
     SCOPED_TRACE(i);
 
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey key;
 
     ASSERT_EQ(Status::ErrorCreateKeyBadUsages(),
               UnwrapKey(blink::WebCryptoKeyFormatJwk,

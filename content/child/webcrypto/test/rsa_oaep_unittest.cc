@@ -47,7 +47,7 @@ TEST(WebCryptoRsaOaepTest, ImportPkcs8WithRsaEncryption) {
     return;
   }
 
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key;
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
                       CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
@@ -67,7 +67,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
 
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
             ImportKeyJwkFromDict(*jwk.get(),
                                  CreateRsaHashedImportAlgorithm(
@@ -87,7 +87,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
   jwk->SetString("alg", "RSA-OAEP");
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
             ImportKeyJwkFromDict(*jwk.get(),
                                  CreateRsaHashedImportAlgorithm(
@@ -107,7 +107,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
   jwk->SetString("alg", "RSA-OAEP-512");
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::ErrorJwkAlgorithmInconsistent(),
             ImportKeyJwkFromDict(*jwk.get(),
                                  CreateRsaHashedImportAlgorithm(
@@ -128,7 +128,7 @@ TEST(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
   jwk->SetString("kty", "oct");
   jwk->SetString("alg", "RSA-OAEP");
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::ErrorJwkUnexpectedKty("RSA"),
             ImportKeyJwkFromDict(*jwk.get(),
                                  CreateRsaHashedImportAlgorithm(
@@ -160,7 +160,7 @@ TEST(WebCryptoRsaOaepTest, ExportPublicJwk) {
     jwk->SetString("alg", test_data.expected_jwk_alg);
 
     // Import the key in a known-good format
-    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey public_key;
     ASSERT_EQ(Status::Success(),
               ImportKeyJwkFromDict(
                   *jwk.get(),
@@ -210,8 +210,8 @@ TEST(WebCryptoRsaOaepTest, EncryptDecryptKnownAnswerTest) {
 
     blink::WebCryptoAlgorithm import_algorithm = CreateRsaHashedImportAlgorithm(
         blink::WebCryptoAlgorithmIdRsaOaep, digest_algorithm.id());
-    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-    blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey public_key;
+    blink::WebCryptoKey private_key;
 
     ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(public_key_der,
                                              private_key_der,
@@ -256,7 +256,7 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
 
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
             ImportKeyJwkFromDict(*jwk.get(),
                                  CreateRsaHashedImportAlgorithm(
@@ -323,7 +323,7 @@ TEST(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
 
   scoped_ptr<base::DictionaryValue> jwk(CreatePublicKeyJwkDict());
 
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
             ImportKeyJwkFromDict(*jwk.get(),
                                  CreateRsaHashedImportAlgorithm(
@@ -353,7 +353,7 @@ TEST(WebCryptoRsaOaepTest, DecryptWithLargeMessageFails) {
     return;
   }
 
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key;
   ASSERT_EQ(Status::Success(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
                       CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
@@ -387,8 +387,8 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
 
   blink::WebCryptoAlgorithm import_algorithm = CreateRsaHashedImportAlgorithm(
       blink::WebCryptoAlgorithmIdRsaOaep, blink::WebCryptoAlgorithmIdSha1);
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
+  blink::WebCryptoKey private_key;
 
   ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
       HexStringToBytes(kPublicKeySpkiDerHex),
@@ -432,7 +432,7 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapRawKey) {
   EXPECT_BYTES_EQ_HEX(key_hex, decrypted_key);
 
   // Now attempt to unwrap the key, which should also decrypt the data.
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_key;
   ASSERT_EQ(Status::Success(),
             UnwrapKey(blink::WebCryptoKeyFormatRaw,
                       CryptoData(wrapped_key),
@@ -505,8 +505,8 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
       "37f3e1972c45a477e66db95c9609bb27f862700ef93379930786cf751b";
   blink::WebCryptoAlgorithm import_algorithm = CreateRsaHashedImportAlgorithm(
       blink::WebCryptoAlgorithmIdRsaOaep, blink::WebCryptoAlgorithmIdSha1);
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key;
+  blink::WebCryptoKey private_key;
 
   ASSERT_NO_FATAL_FAILURE(ImportRsaKeyPair(
       HexStringToBytes(kPublicKey2048SpkiDerHex),
@@ -551,7 +551,7 @@ TEST(WebCryptoRsaOaepTest, WrapUnwrapJwkSymKey) {
       decrypted_jwk, "A128CBC", key_hex, blink::WebCryptoKeyUsageEncrypt));
 
   // Now attempt to unwrap the key, which should also decrypt the data.
-  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey unwrapped_key;
   ASSERT_EQ(Status::Success(),
             UnwrapKey(blink::WebCryptoKeyFormatJwk,
                       CryptoData(wrapped_key),
@@ -598,7 +598,7 @@ TEST(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
                                        test.hash);
 
     // Import the spki to create a public key
-    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey public_key;
     ASSERT_EQ(Status::Success(),
               ImportKey(blink::WebCryptoKeyFormatSpki,
                         CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
@@ -618,7 +618,7 @@ TEST(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
                                 test.usage));
 
     // Import the JWK back in to create a new key
-    blink::WebCryptoKey public_key2 = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey public_key2;
     ASSERT_EQ(Status::Success(),
               ImportKey(blink::WebCryptoKeyFormatJwk,
                         CryptoData(jwk),
