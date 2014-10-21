@@ -71,8 +71,11 @@ bool DoMakePathAbsolute(const base::FilePath& current_directory,
     return true;
 
   if (current_directory.empty()) {
-    *file_path = base::MakeAbsoluteFilePath(*file_path);
-    return !file_path->empty();
+    base::FilePath absolute_path = base::MakeAbsoluteFilePath(*file_path);
+    if (absolute_path.empty())
+      return false;
+    *file_path = absolute_path;
+    return true;
   }
 
   if (!current_directory.IsAbsolute())
