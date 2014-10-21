@@ -127,4 +127,45 @@ class NullAwViewMethods implements AwViewMethods {
     public void onWindowVisibilityChanged(int visibility) {
         // Intentional no-op.
     }
+
+    @Override
+    public void onContainerViewScrollChanged(int l, int t, int oldl, int oldt) {
+        // Intentional no-op.
+    }
+
+    @Override
+    public void onContainerViewOverScrolled(int scrollX, int scrollY, boolean clampedX,
+            boolean clampedY) {
+        // Intentional no-op.
+    }
+
+    @Override
+    public int computeHorizontalScrollRange() {
+        return 0;
+    }
+
+    @Override
+    public int computeHorizontalScrollOffset() {
+        return 0;
+    }
+
+    @Override
+    public int computeVerticalScrollRange() {
+        return 0;
+    }
+
+    @Override
+    public int computeVerticalScrollOffset() {
+        return 0;
+    }
+
+    @Override
+    public int computeVerticalScrollExtent() {
+        return 0;
+    }
+
+    @Override
+    public void computeScroll() {
+        // Intentional no-op.
+    }
 }

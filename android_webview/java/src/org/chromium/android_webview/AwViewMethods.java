@@ -112,4 +112,45 @@ interface AwViewMethods {
      * @see android.view.View#onWindowVisibilityChanged
      */
     void onWindowVisibilityChanged(int visibility);
+
+    /**
+     * @see android.view.View#onScrollChanged
+     */
+    void onContainerViewScrollChanged(int l, int t, int oldl, int oldt);
+
+    /**
+     * @see android.view.View#onOverScrolled
+     */
+    void onContainerViewOverScrolled(
+            int scrollX, int scrollY, boolean clampedX, boolean clampedY);
+
+    /**
+     * @see android.view.View#computeHorizontalScrollRange
+     */
+    int computeHorizontalScrollRange();
+
+    /**
+     * @see android.view.View#computeHorizontalScrollOffset
+     */
+    int computeHorizontalScrollOffset();
+
+    /**
+     * @see android.view.View#computeVerticalScrollRange
+     */
+    int computeVerticalScrollRange();
+
+    /**
+     * @see android.view.View#computeVerticalScrollOffset
+     */
+    int computeVerticalScrollOffset();
+
+    /**
+     * @see android.view.View#computeVerticalScrollExtent
+     */
+    int computeVerticalScrollExtent();
+
+    /**
+     * @see android.view.View#computeScroll
+     */
+    void computeScroll();
 }

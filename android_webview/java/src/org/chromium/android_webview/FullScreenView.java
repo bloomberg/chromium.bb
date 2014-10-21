@@ -140,6 +140,47 @@ public class FullScreenView extends FrameLayout {
         mAwViewMethods.onWindowVisibilityChanged(visibility);
     }
 
+    @Override
+    public void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+        mAwViewMethods.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
+    }
+
+    @Override
+    public void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        mAwViewMethods.onContainerViewScrollChanged(l, t, oldl, oldt);
+    }
+
+    @Override
+    public int computeHorizontalScrollRange() {
+        return mAwViewMethods.computeHorizontalScrollRange();
+    }
+
+    @Override
+    public int computeHorizontalScrollOffset() {
+        return mAwViewMethods.computeHorizontalScrollOffset();
+    }
+
+    @Override
+    public int computeVerticalScrollRange() {
+        return mAwViewMethods.computeVerticalScrollRange();
+    }
+
+    @Override
+    public int computeVerticalScrollOffset() {
+        return mAwViewMethods.computeVerticalScrollOffset();
+    }
+
+    @Override
+    public int computeVerticalScrollExtent() {
+        return mAwViewMethods.computeVerticalScrollExtent();
+    }
+
+    @Override
+    public void computeScroll() {
+        mAwViewMethods.computeScroll();
+    }
+
     // AwContents.InternalAccessDelegate implementation --------------------------------------
     private class InternalAccessAdapter implements AwContents.InternalAccessDelegate {
 
@@ -181,29 +222,30 @@ public class FullScreenView extends FrameLayout {
 
         @Override
         public boolean awakenScrollBars() {
-            return false;
+            return FullScreenView.this.awakenScrollBars(0);
         }
 
         @Override
         public boolean super_awakenScrollBars(int startDelay, boolean invalidate) {
-            return false;
+            return FullScreenView.super.awakenScrollBars(startDelay, invalidate);
         }
 
         @Override
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {
-            // Intentional no-op.
+            FullScreenView.this.onScrollChanged(lPix, tPix, oldlPix, oldtPix);
         }
 
         @Override
         public void overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY,
                 int scrollRangeX, int scrollRangeY, int maxOverScrollX,
                 int maxOverScrollY, boolean isTouchEvent) {
-            // Intentional no-op.
+            FullScreenView.this.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX,
+                    scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
         }
 
         @Override
         public void super_scrollTo(int scrollX, int scrollY) {
-            // Intentional no-op.
+            FullScreenView.super.scrollTo(scrollX, scrollY);
         }
 
         @Override

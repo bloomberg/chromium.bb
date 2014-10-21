@@ -1288,11 +1288,7 @@ public class AwContents {
      * @see View#onScrollChanged(int,int)
      */
     public void onContainerViewScrollChanged(int l, int t, int oldl, int oldt) {
-        // A side-effect of View.onScrollChanged is that the scroll accessibility event being sent
-        // by the base class implementation. This is completely hidden from the base classes and
-        // cannot be prevented, which is why we need the code below.
-        mScrollAccessibilityHelper.removePostedViewScrolledAccessibilityEventCallback();
-        mScrollOffsetManager.onContainerViewScrollChanged(l, t);
+        mAwViewMethods.onContainerViewScrollChanged(l, t, oldl, oldt);
     }
 
     /**
@@ -1301,17 +1297,7 @@ public class AwContents {
      */
     public void onContainerViewOverScrolled(int scrollX, int scrollY, boolean clampedX,
             boolean clampedY) {
-        int oldX = mContainerView.getScrollX();
-        int oldY = mContainerView.getScrollY();
-
-        mScrollOffsetManager.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
-
-        if (mOverScrollGlow != null) {
-            mOverScrollGlow.pullGlow(mContainerView.getScrollX(), mContainerView.getScrollY(),
-                    oldX, oldY,
-                    mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
-                    mScrollOffsetManager.computeMaximumVerticalScrollOffset());
-        }
+        mAwViewMethods.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
     }
 
     /**
@@ -1324,45 +1310,45 @@ public class AwContents {
     }
 
     /**
-     * @see View.computeScroll()
-     */
-    public void computeScroll() {
-        mScrollOffsetManager.computeScrollAndAbsorbGlow(mOverScrollGlow);
-    }
-
-    /**
      * @see View#computeHorizontalScrollRange()
      */
     public int computeHorizontalScrollRange() {
-        return mScrollOffsetManager.computeHorizontalScrollRange();
+        return mAwViewMethods.computeHorizontalScrollRange();
     }
 
     /**
      * @see View#computeHorizontalScrollOffset()
      */
     public int computeHorizontalScrollOffset() {
-        return mScrollOffsetManager.computeHorizontalScrollOffset();
+        return mAwViewMethods.computeHorizontalScrollOffset();
     }
 
     /**
      * @see View#computeVerticalScrollRange()
      */
     public int computeVerticalScrollRange() {
-        return mScrollOffsetManager.computeVerticalScrollRange();
+        return mAwViewMethods.computeVerticalScrollRange();
     }
 
     /**
      * @see View#computeVerticalScrollOffset()
      */
     public int computeVerticalScrollOffset() {
-        return mScrollOffsetManager.computeVerticalScrollOffset();
+        return mAwViewMethods.computeVerticalScrollOffset();
     }
 
     /**
      * @see View#computeVerticalScrollExtent()
      */
     public int computeVerticalScrollExtent() {
-        return mScrollOffsetManager.computeVerticalScrollExtent();
+        return mAwViewMethods.computeVerticalScrollExtent();
+    }
+
+    /**
+     * @see View.computeScroll()
+     */
+    public void computeScroll() {
+        mAwViewMethods.computeScroll();
     }
 
     /**
@@ -2475,6 +2461,61 @@ public class AwContents {
             boolean windowVisible = visibility == View.VISIBLE;
             if (mIsWindowVisible == windowVisible) return;
             setWindowVisibilityInternal(windowVisible);
+        }
+
+        @Override
+        public void onContainerViewScrollChanged(int l, int t, int oldl, int oldt) {
+            // A side-effect of View.onScrollChanged is that the scroll accessibility event being
+            // sent by the base class implementation. This is completely hidden from the base
+            // classes and cannot be prevented, which is why we need the code below.
+            mScrollAccessibilityHelper.removePostedViewScrolledAccessibilityEventCallback();
+            mScrollOffsetManager.onContainerViewScrollChanged(l, t);
+        }
+
+        @Override
+        public void onContainerViewOverScrolled(int scrollX, int scrollY, boolean clampedX,
+                boolean clampedY) {
+            int oldX = mContainerView.getScrollX();
+            int oldY = mContainerView.getScrollY();
+
+            mScrollOffsetManager.onContainerViewOverScrolled(scrollX, scrollY, clampedX, clampedY);
+
+            if (mOverScrollGlow != null) {
+                mOverScrollGlow.pullGlow(mContainerView.getScrollX(), mContainerView.getScrollY(),
+                        oldX, oldY,
+                        mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
+                        mScrollOffsetManager.computeMaximumVerticalScrollOffset());
+            }
+        }
+
+        @Override
+        public int computeHorizontalScrollRange() {
+            return mScrollOffsetManager.computeHorizontalScrollRange();
+        }
+
+        @Override
+        public int computeHorizontalScrollOffset() {
+            return mScrollOffsetManager.computeHorizontalScrollOffset();
+        }
+
+        @Override
+        public int computeVerticalScrollRange() {
+            return mScrollOffsetManager.computeVerticalScrollRange();
+        }
+
+        @Override
+        public int computeVerticalScrollOffset() {
+            return mScrollOffsetManager.computeVerticalScrollOffset();
+        }
+
+        @Override
+        public int computeVerticalScrollExtent() {
+            return mScrollOffsetManager.computeVerticalScrollExtent();
+        }
+
+        @Override
+        public void computeScroll() {
+            mScrollOffsetManager.computeScrollAndAbsorbGlow(mOverScrollGlow);
         }
     }
 
