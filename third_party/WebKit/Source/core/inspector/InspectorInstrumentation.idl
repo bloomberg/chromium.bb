@@ -317,7 +317,7 @@ interface InspectorInstrumentation {
     void didFailXHRLoading(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client);
 
     [Console, Resource]
-    void didFinishXHRLoading(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString& method, const String& url, const String& sendURL, unsigned sendLineNumber);
+    void didFinishXHRLoading(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString& method, const String& url);
 
     [Resource]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);

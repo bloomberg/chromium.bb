@@ -196,7 +196,6 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_state(UNSENT)
     , m_lengthDownloadedToFile(0)
     , m_receivedLength(0)
-    , m_lastSendLineNumber(0)
     , m_exceptionCode(0)
     , m_progressEventThrottle(this)
     , m_responseTypeCode(ResponseTypeDefault)
@@ -1451,7 +1450,7 @@ void XMLHttpRequest::notifyParserStopped()
 
 void XMLHttpRequest::endLoading()
 {
-    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, m_loaderIdentifier, m_responseText, m_method, m_url, m_lastSendURL, m_lastSendLineNumber);
+    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, m_loaderIdentifier, m_responseText, m_method, m_url);
 
     if (m_loader)
         m_loader = nullptr;

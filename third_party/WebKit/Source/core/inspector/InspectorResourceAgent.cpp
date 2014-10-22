@@ -515,7 +515,7 @@ void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest* xhr, ThreadableLo
     delayedRemoveReplayXHR(xhr);
 }
 
-void InspectorResourceAgent::didFinishXHRLoading(XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&, const String&, unsigned)
+void InspectorResourceAgent::didFinishXHRLoading(XMLHttpRequest* xhr, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const AtomicString&, const String&)
 {
     m_pendingXHRReplayData.remove(client);
 

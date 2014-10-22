@@ -147,9 +147,6 @@ public:
     // Expose HTTP validation methods for other untrusted requests.
     static AtomicString uppercaseKnownHTTPMethod(const AtomicString&);
 
-    void setLastSendLineNumber(unsigned lineNumber) { m_lastSendLineNumber = lineNumber; }
-    void setLastSendURL(const String& url) { m_lastSendURL = url; }
-
     XMLHttpRequestUpload* upload();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
@@ -285,8 +282,6 @@ private:
     // Used for onprogress tracking
     long long m_receivedLength;
 
-    unsigned m_lastSendLineNumber;
-    String m_lastSendURL;
     // An exception to throw in synchronous mode. It's set when failure
     // notification is received from m_loader and thrown at the end of send() if
     // any.
