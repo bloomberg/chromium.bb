@@ -1,9 +1,0 @@
-Tests the Timeline API instrumentation of style recalc invalidations.
-
-PASS
-
-
-Running: testLocalFrame
-
-Running: testSubframe
-

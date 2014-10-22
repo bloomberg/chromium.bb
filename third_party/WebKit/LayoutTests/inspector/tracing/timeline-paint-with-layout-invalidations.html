@@ -8,7 +8,8 @@ function display(callback)
 {
     requestAnimationFrame(function() {
         document.body.style.backgroundColor = "blue";
-        document.getElementById("testElement").style.backgroundColor = "salmon";
+        document.getElementById("testElement").style.width = "100px";
+        var forceLayout = document.body.offsetTop;
         if (window.testRunner)
             testRunner.displayAsyncThen(callback);
     });
@@ -17,7 +18,8 @@ function display(callback)
 function updateSubframeAndDisplay(callback)
 {
     requestAnimationFrame(function() {
-        frames[0].document.body.children[0].style.backgroundColor = "green";
+        frames[0].document.body.children[0].style.width = "200px";
+        var forceLayout = frames[0].document.body.offsetTop;
         if (window.testRunner)
             testRunner.displayAsyncThen(callback);
     });
@@ -35,13 +37,14 @@ function test()
             InspectorTest.invokeAsyncWithTimeline("display", function() {
                 var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
                 var invalidations = record._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(invalidations.length, 2);
+                InspectorTest.assertEquals(invalidations.length, 3);
                 InspectorTest.assertEquals(invalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
-                InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
                 InspectorTest.assertEquals(invalidations[1].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElement'");
-                InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
+                InspectorTest.assertEquals(invalidations[2].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+                InspectorTest.assertEquals(invalidations[2].nodeName, "DIV id='testElement'");
+                InspectorTest.assertGreaterOrEqual(invalidations[2].stackTrace.length, 1);
                 InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", next);
             });
         },
@@ -60,19 +63,23 @@ function test()
                 secondPaintRecord = record;
                 return true;
             }
-
             InspectorTest.timelineModel().forAllRecords(findSecondPaint);
 
             // The first paint corresponds to the local frame and should have no invalidations.
             var firstInvalidations = firstPaintRecord._event.invalidationTrackingEvents;
             InspectorTest.assertEquals(firstInvalidations, undefined);
 
-            // The second paint corresponds to the subframe and should have our style invalidations.
+            // The second paint corresponds to the subframe and should have our layout/style invalidations.
             var secondInvalidations = secondPaintRecord._event.invalidationTrackingEvents;
-            InspectorTest.assertEquals(secondInvalidations.length, 1);
+            InspectorTest.assertEquals(secondInvalidations.length, 3);
             InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
             InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
-            InspectorTest.assertEquals(secondInvalidations[0].reason, "StyleSheetChange");
+            InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+            InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV");
+            InspectorTest.assertGreaterOrEqual(secondInvalidations[1].stackTrace.length, 1);
+            InspectorTest.assertEquals(secondInvalidations[2].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+            InspectorTest.assertEquals(secondInvalidations[2].nodeName, "#document");
+            InspectorTest.assertGreaterOrEqual(secondInvalidations[2].stackTrace.length, 1);
             next();
         }
     ]);
@@ -80,7 +87,7 @@ function test()
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests the Timeline API instrumentation of style recalc invalidations.</p>
+<p>Tests the Timeline API instrumentation of paint events with layout invalidations.</p>
 <div id="testElement">PASS</div>
 <iframe src="resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
 </body>

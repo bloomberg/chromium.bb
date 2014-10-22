@@ -1,0 +1,9 @@
+Tests the Timeline API instrumentation of paint events with layout invalidations.
+
+PASS
+
+
+Running: testLocalFrame
+
+Running: testSubframe
+
