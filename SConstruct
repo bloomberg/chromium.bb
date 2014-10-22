@@ -1621,10 +1621,11 @@ def GetTranslatedNexe(env, pexe):
   # Make sure the pexe doesn't get removed by the fake builders when
   # built_elsewhere=1
   env.Precious(pexe)
+  command = '${TRANSLATECOM}'
   if env.Bit('nonstable_bitcode'):
-    env.Append(TRANSLATEFLAGS=['--allow-llvm-bitcode-input'])
+    command += ' --allow-llvm-bitcode-input'
   node = env.Command(target=nexe_name, source=[pexe_name],
-                     action=[Action('${TRANSLATECOM}', '${TRANSLATECOMSTR}')])
+                     action=[Action(command, '${TRANSLATECOMSTR}')])
   assert len(node) == 1, node
   return node[0]
 
