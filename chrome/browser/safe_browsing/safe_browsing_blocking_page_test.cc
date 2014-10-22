@@ -61,7 +61,7 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
   // Otherwise it returns false, and "client" is called asynchronously with the
   // result when it is ready.
   // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
-  virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) override {
+  bool CheckBrowseUrl(const GURL& gurl, Client* client) override {
     if (badurls[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
@@ -91,7 +91,7 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
   }
 
  private:
-  virtual ~FakeSafeBrowsingDatabaseManager() {}
+  ~FakeSafeBrowsingDatabaseManager() override {}
 
   base::hash_map<std::string, SBThreatType> badurls;
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
@@ -104,8 +104,7 @@ class FakeSafeBrowsingUIManager :  public SafeBrowsingUIManager {
       SafeBrowsingUIManager(service) { }
 
   // Overrides SafeBrowsingUIManager
-  virtual void SendSerializedMalwareDetails(
-      const std::string& serialized) override {
+  void SendSerializedMalwareDetails(const std::string& serialized) override {
     // Notify the UI thread that we got a report.
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -138,7 +137,7 @@ class FakeSafeBrowsingUIManager :  public SafeBrowsingUIManager {
   }
 
  protected:
-  virtual ~FakeSafeBrowsingUIManager() { }
+  ~FakeSafeBrowsingUIManager() override {}
 
  private:
   std::string report_;
@@ -165,14 +164,14 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   }
 
  protected:
-  virtual ~FakeSafeBrowsingService() { }
+  ~FakeSafeBrowsingService() override {}
 
-  virtual SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
+  SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
     fake_database_manager_ = new FakeSafeBrowsingDatabaseManager(this);
     return fake_database_manager_;
   }
 
-  virtual SafeBrowsingUIManager* CreateUIManager() override {
+  SafeBrowsingUIManager* CreateUIManager() override {
     fake_ui_manager_ = new FakeSafeBrowsingUIManager(this);
     return fake_ui_manager_;
   }
@@ -189,9 +188,9 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
  public:
   TestSafeBrowsingServiceFactory() :
       most_recent_service_(NULL) { }
-  virtual ~TestSafeBrowsingServiceFactory() { }
+  ~TestSafeBrowsingServiceFactory() override {}
 
-  virtual SafeBrowsingService* CreateSafeBrowsingService() override {
+  SafeBrowsingService* CreateSafeBrowsingService() override {
     most_recent_service_ =  new FakeSafeBrowsingService();
     return most_recent_service_;
   }
@@ -215,9 +214,9 @@ class FakeMalwareDetails : public MalwareDetails {
         got_dom_(false),
         waiting_(false) { }
 
-  virtual void AddDOMDetails(
+  void AddDOMDetails(
       const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params)
-          override {
+      override {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     MalwareDetails::AddDOMDetails(params);
 
@@ -239,7 +238,7 @@ class FakeMalwareDetails : public MalwareDetails {
   }
 
  private:
-  virtual ~FakeMalwareDetails() {}
+  ~FakeMalwareDetails() override {}
 
   void OnDOMDetailsDone() {
     got_dom_ = true;
@@ -257,9 +256,9 @@ class FakeMalwareDetails : public MalwareDetails {
 class TestMalwareDetailsFactory : public MalwareDetailsFactory {
  public:
   TestMalwareDetailsFactory() : details_() { }
-  virtual ~TestMalwareDetailsFactory() { }
+  ~TestMalwareDetailsFactory() override {}
 
-  virtual MalwareDetails* CreateMalwareDetails(
+  MalwareDetails* CreateMalwareDetails(
       SafeBrowsingUIManager* delegate,
       WebContents* web_contents,
       const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) override {
@@ -288,7 +287,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
     malware_details_proceed_delay_ms_ = 100;
   }
 
-  virtual ~TestSafeBrowsingBlockingPage() {
+  ~TestSafeBrowsingBlockingPage() override {
     if (!wait_for_delete_)
       return;
 
@@ -303,15 +302,11 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
   }
 
   // InterstitialPageDelegate methods:
-  virtual void CommandReceived(const std::string& command) override {
+  void CommandReceived(const std::string& command) override {
     SafeBrowsingBlockingPage::CommandReceived(command);
   }
-  virtual void OnProceed() override {
-    SafeBrowsingBlockingPage::OnProceed();
-  }
-  virtual void OnDontProceed() override {
-    SafeBrowsingBlockingPage::OnDontProceed();
-  }
+  void OnProceed() override { SafeBrowsingBlockingPage::OnProceed(); }
+  void OnDontProceed() override { SafeBrowsingBlockingPage::OnDontProceed(); }
 
  private:
   bool wait_for_delete_;
@@ -321,13 +316,13 @@ class TestSafeBrowsingBlockingPageFactory
     : public SafeBrowsingBlockingPageFactory {
  public:
   TestSafeBrowsingBlockingPageFactory() { }
-  virtual ~TestSafeBrowsingBlockingPageFactory() { }
+  ~TestSafeBrowsingBlockingPageFactory() override {}
 
-  virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
+  SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingUIManager* delegate,
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-          override {
+      override {
     return new TestSafeBrowsingBlockingPage(delegate, web_contents,
                                               unsafe_resources);
   }
@@ -363,7 +358,7 @@ class SafeBrowsingBlockingPageBrowserTest
     MalwareDetails::RegisterFactory(NULL);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(test_server()->Start());
   }
 

@@ -135,7 +135,7 @@ class SafeBrowsingService
   // Creates the safe browsing service.  Need to initialize before using.
   SafeBrowsingService();
 
-  virtual ~SafeBrowsingService();
+  ~SafeBrowsingService() override;
 
   virtual SafeBrowsingDatabaseManager* CreateDatabaseManager();
 
@@ -181,9 +181,9 @@ class SafeBrowsingService
   void Stop(bool shutdown);
 
   // content::NotificationObserver override
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Starts following the safe browsing preference on |pref_service|.
   void AddPrefService(PrefService* pref_service);

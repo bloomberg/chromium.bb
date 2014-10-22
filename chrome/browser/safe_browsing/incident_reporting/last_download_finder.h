@@ -42,7 +42,7 @@ class LastDownloadFinder : public content::NotificationObserver {
   typedef base::Callback<void(scoped_ptr<ClientIncidentReport_DownloadDetails>)>
       LastDownloadCallback;
 
-  virtual ~LastDownloadFinder();
+  ~LastDownloadFinder() override;
 
   // Initiates an asynchronous search for the most recent download. |callback|
   // will be run when the search is complete. The returned instance can be
@@ -89,9 +89,9 @@ class LastDownloadFinder : public content::NotificationObserver {
   void ReportResults();
 
   // content::NotificationObserver methods.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Caller-supplied callback to be invoked when the most recent download is
   // found.

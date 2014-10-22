@@ -51,7 +51,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   typedef base::Callback<void(const std::vector<SBFullHashResult>&,
                               const base::TimeDelta&)> FullHashCallback;
 
-  virtual ~SafeBrowsingProtocolManager();
+  ~SafeBrowsingProtocolManager() override;
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingService. Useful for tests.
@@ -70,7 +70,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   virtual void Initialize();
 
   // net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Retrieve the full hash for a set of prefixes, and invoke the callback
   // argument when the results are retrieved. The callback may be invoked

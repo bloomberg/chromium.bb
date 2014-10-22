@@ -40,20 +40,18 @@ class FakeDownloadFeedback : public DownloadFeedback {
         start_called_(false) {
   }
 
-  virtual ~FakeDownloadFeedback() {
-    deletion_callback_.Run();
-  }
+  ~FakeDownloadFeedback() override { deletion_callback_.Run(); }
 
-  virtual void Start(const base::Closure& finish_callback) override {
+  void Start(const base::Closure& finish_callback) override {
     start_called_ = true;
     finish_callback_ = finish_callback;
   }
 
-  virtual const std::string& GetPingRequestForTesting() const override {
+  const std::string& GetPingRequestForTesting() const override {
     return ping_request_;
   }
 
-  virtual const std::string& GetPingResponseForTesting() const override {
+  const std::string& GetPingResponseForTesting() const override {
     return ping_response_;
   }
 
@@ -79,9 +77,9 @@ class FakeDownloadFeedback : public DownloadFeedback {
 
 class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
  public:
-  virtual ~FakeDownloadFeedbackFactory() {}
+  ~FakeDownloadFeedbackFactory() override {}
 
-  virtual DownloadFeedback* CreateDownloadFeedback(
+  DownloadFeedback* CreateDownloadFeedback(
       net::URLRequestContextGetter* request_context_getter,
       base::TaskRunner* file_task_runner,
       const base::FilePath& file_path,

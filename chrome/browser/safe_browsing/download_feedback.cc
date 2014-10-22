@@ -38,15 +38,15 @@ class DownloadFeedbackImpl : public DownloadFeedback {
                        const base::FilePath& file_path,
                        const std::string& ping_request,
                        const std::string& ping_response);
-  virtual ~DownloadFeedbackImpl();
+  ~DownloadFeedbackImpl() override;
 
-  virtual void Start(const base::Closure& finish_callback) override;
+  void Start(const base::Closure& finish_callback) override;
 
-  virtual const std::string& GetPingRequestForTesting() const override {
+  const std::string& GetPingRequestForTesting() const override {
     return ping_request_;
   }
 
-  virtual const std::string& GetPingResponseForTesting() const override {
+  const std::string& GetPingResponseForTesting() const override {
     return ping_response_;
   }
 

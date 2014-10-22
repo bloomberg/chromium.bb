@@ -66,7 +66,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   typedef base::Callback<void(GURL, GURL, bool)>
       ClientReportMalwareRequestCallback;
 
-  virtual ~ClientSideDetectionService();
+  ~ClientSideDetectionService() override;
 
   // Creates a client-side detection service.  The service is initially
   // disabled, use SetEnabledAndRefreshState() to start it.  The caller takes
@@ -88,12 +88,12 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   }
 
   // From the net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.
   // The URL scheme of the |url()| in the request should be HTTP.  This method

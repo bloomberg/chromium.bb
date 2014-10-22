@@ -313,7 +313,7 @@ bool GetCachedFullHash(std::map<SBPrefix, SBCachedFullHashResult>* cache,
 // The default SafeBrowsingDatabaseFactory.
 class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
  public:
-  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
+  SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
       bool enable_download_protection,
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,

@@ -71,7 +71,7 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // All incident collection, data collection, and uploads in progress are
   // dropped at destruction.
-  virtual ~IncidentReportingService();
+  ~IncidentReportingService() override;
 
   // Returns a callback by which external components can add an incident to the
   // service on behalf of |profile|. The callback may outlive the service, but
@@ -233,9 +233,9 @@ class IncidentReportingService : public content::NotificationObserver {
                             scoped_ptr<ClientIncidentResponse> response);
 
   // content::NotificationObserver methods.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   base::ThreadChecker thread_checker_;
 

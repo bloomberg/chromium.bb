@@ -29,11 +29,9 @@ class FakeUploader : public TwoPhaseUploader {
                const base::FilePath& file_path,
                const ProgressCallback& progress_callback,
                const FinishCallback& finish_callback);
-  virtual ~FakeUploader() {}
+  ~FakeUploader() override {}
 
-  virtual void Start() override {
-    start_called_ = true;
-  }
+  void Start() override { start_called_ = true; }
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
@@ -67,9 +65,9 @@ FakeUploader::FakeUploader(
 class FakeUploaderFactory : public TwoPhaseUploaderFactory {
  public:
   FakeUploaderFactory() : uploader_(NULL) {}
-  virtual ~FakeUploaderFactory() {}
+  ~FakeUploaderFactory() override {}
 
-  virtual TwoPhaseUploader* CreateTwoPhaseUploader(
+  TwoPhaseUploader* CreateTwoPhaseUploader(
       net::URLRequestContextGetter* url_request_context_getter,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,

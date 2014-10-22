@@ -68,25 +68,25 @@ class IncidentReportingServiceTest : public testing::Test {
       test_instance_.Get().Set(this);
     }
 
-    virtual ~TestIncidentReportingService() { test_instance_.Get().Set(NULL); }
+    ~TestIncidentReportingService() override { test_instance_.Get().Set(NULL); }
 
     bool IsProcessingReport() const {
       return IncidentReportingService::IsProcessingReport();
     }
 
    protected:
-    virtual void OnProfileAdded(Profile* profile) override {
+    void OnProfileAdded(Profile* profile) override {
       pre_profile_add_callback_.Run(profile);
       safe_browsing::IncidentReportingService::OnProfileAdded(profile);
     }
 
-    virtual scoped_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
+    scoped_ptr<safe_browsing::LastDownloadFinder> CreateDownloadFinder(
         const safe_browsing::LastDownloadFinder::LastDownloadCallback& callback)
         override {
       return create_download_finder_callback_.Run(callback);
     }
 
-    virtual scoped_ptr<safe_browsing::IncidentReportUploader> StartReportUpload(
+    scoped_ptr<safe_browsing::IncidentReportUploader> StartReportUpload(
         const safe_browsing::IncidentReportUploader::OnResultCallback& callback,
         const scoped_refptr<net::URLRequestContextGetter>&
             request_context_getter,
@@ -315,7 +315,7 @@ class IncidentReportingServiceTest : public testing::Test {
           FROM_HERE,
           base::Bind(&FakeUploader::FinishUpload, base::Unretained(this)));
     }
-    virtual ~FakeUploader() { on_deleted_.Run(); }
+    ~FakeUploader() override { on_deleted_.Run(); }
 
    private:
     void FinishUpload() {
@@ -346,7 +346,7 @@ class IncidentReportingServiceTest : public testing::Test {
           new FakeDownloadFinder(on_deleted));
     }
 
-    virtual ~FakeDownloadFinder() { on_deleted_.Run(); }
+    ~FakeDownloadFinder() override { on_deleted_.Run(); }
 
    private:
     explicit FakeDownloadFinder(const base::Closure& on_deleted)

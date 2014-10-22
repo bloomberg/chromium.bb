@@ -34,7 +34,7 @@ class IncidentReportUploaderImpl : public IncidentReportUploader,
   // The id associated with the URLFetcher, for use by tests.
   static const int kTestUrlFetcherId;
 
-  virtual ~IncidentReportUploaderImpl();
+  ~IncidentReportUploaderImpl() override;
 
   // Uploads a report with a caller-provided URL context. |callback| will be run
   // when the upload is complete. Returns NULL if |report| cannot be serialized
@@ -54,7 +54,7 @@ class IncidentReportUploaderImpl : public IncidentReportUploader,
   static GURL GetIncidentReportUrl();
 
   // net::URLFetcherDelegate methods.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // The underlying URL fetcher. The instance is alive from construction through
   // OnURLFetchComplete.

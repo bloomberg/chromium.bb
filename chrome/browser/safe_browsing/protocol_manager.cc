@@ -73,8 +73,8 @@ static const size_t kSbMaxBackOff = 8;
 class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
  public:
   SBProtocolManagerFactoryImpl() { }
-  virtual ~SBProtocolManagerFactoryImpl() { }
-  virtual SafeBrowsingProtocolManager* CreateProtocolManager(
+  ~SBProtocolManagerFactoryImpl() override {}
+  SafeBrowsingProtocolManager* CreateProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config) override {

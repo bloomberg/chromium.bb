@@ -90,14 +90,14 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   }
 
  protected:
-  virtual ~FakeSafeBrowsingService() { }
+  ~FakeSafeBrowsingService() override {}
 
-  virtual SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
+  SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
     mock_database_manager_ = new MockSafeBrowsingDatabaseManager(this);
     return mock_database_manager_;
   }
 
-  virtual void RegisterAllDelayedAnalysis() override { }
+  void RegisterAllDelayedAnalysis() override {}
 
  private:
   MockSafeBrowsingDatabaseManager* mock_database_manager_;
@@ -131,12 +131,12 @@ class TestURLFetcherWatcher : public net::TestURLFetcherDelegateForTests {
   }
 
   // TestURLFetcherDelegateForTests impl:
-  virtual void OnRequestStart(int fetcher_id) override {
+  void OnRequestStart(int fetcher_id) override {
     fetcher_id_ = fetcher_id;
     run_loop_.Quit();
   }
-  virtual void OnChunkUpload(int fetcher_id) override {}
-  virtual void OnRequestEnd(int fetcher_id) override {}
+  void OnChunkUpload(int fetcher_id) override {}
+  void OnRequestEnd(int fetcher_id) override {}
 
   int WaitForRequest() {
     run_loop_.Run();

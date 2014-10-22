@@ -35,26 +35,26 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // The caller keeps ownership of the tab object and is responsible for
   // ensuring that it stays valid until WebContentsDestroyed is called.
   static ClientSideDetectionHost* Create(content::WebContents* tab);
-  virtual ~ClientSideDetectionHost();
+  ~ClientSideDetectionHost() override;
 
   // From content::WebContentsObserver.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // From content::WebContentsObserver.  If we navigate away we cancel all
   // pending callbacks that could show an interstitial, and check to see whether
   // we should classify the new URL.
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
-  virtual void OnSafeBrowsingHit(
+  void OnSafeBrowsingHit(
       const SafeBrowsingUIManager::UnsafeResource& resource) override;
 
   // Called when the SafeBrowsingService finds a match on the SB lists.
   // Called on the UI thread. Called even if the resource is whitelisted.
-  virtual void OnSafeBrowsingMatch(
+  void OnSafeBrowsingMatch(
       const SafeBrowsingUIManager::UnsafeResource& resource) override;
 
   virtual scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
@@ -67,7 +67,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   explicit ClientSideDetectionHost(content::WebContents* tab);
 
   // From content::WebContentsObserver.
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   // Used for testing.
   void set_safe_browsing_managers(
@@ -122,13 +122,13 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // From NotificationObserver.  Called when a notification comes in.  This
   // method is called in the UI thread.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Inherited from WebContentsObserver.  This is called once the page is
   // done loading.
-  virtual void DidStopLoading(content::RenderViewHost* rvh) override;
+  void DidStopLoading(content::RenderViewHost* rvh) override;
 
   // Returns true if the user has seen a regular SafeBrowsing
   // interstitial for the current page.  This is only true if the user has

@@ -125,50 +125,50 @@
 class SafeBrowsingStoreFile : public SafeBrowsingStore {
  public:
   SafeBrowsingStoreFile();
-  virtual ~SafeBrowsingStoreFile();
+  ~SafeBrowsingStoreFile() override;
 
-  virtual void Init(const base::FilePath& filename,
-                    const base::Closure& corruption_callback) override;
+  void Init(const base::FilePath& filename,
+            const base::Closure& corruption_callback) override;
 
   // Delete any on-disk files, including the permanent storage.
-  virtual bool Delete() override;
+  bool Delete() override;
 
   // Get all add hash prefixes and full-length hashes, respectively, from
   // the store.
-  virtual bool GetAddPrefixes(SBAddPrefixes* add_prefixes) override;
-  virtual bool GetAddFullHashes(
-      std::vector<SBAddFullHash>* add_full_hashes) override;
+  bool GetAddPrefixes(SBAddPrefixes* add_prefixes) override;
+  bool GetAddFullHashes(std::vector<SBAddFullHash>* add_full_hashes) override;
 
-  virtual bool BeginChunk() override;
+  bool BeginChunk() override;
 
-  virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) override;
-  virtual bool WriteAddHash(int32 chunk_id,
-                            const SBFullHash& full_hash) override;
-  virtual bool WriteSubPrefix(int32 chunk_id,
-                              int32 add_chunk_id, SBPrefix prefix) override;
-  virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            const SBFullHash& full_hash) override;
-  virtual bool FinishChunk() override;
+  bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) override;
+  bool WriteAddHash(int32 chunk_id, const SBFullHash& full_hash) override;
+  bool WriteSubPrefix(int32 chunk_id,
+                      int32 add_chunk_id,
+                      SBPrefix prefix) override;
+  bool WriteSubHash(int32 chunk_id,
+                    int32 add_chunk_id,
+                    const SBFullHash& full_hash) override;
+  bool FinishChunk() override;
 
-  virtual bool BeginUpdate() override;
-  virtual bool FinishUpdate(
+  bool BeginUpdate() override;
+  bool FinishUpdate(
       safe_browsing::PrefixSetBuilder* builder,
       std::vector<SBAddFullHash>* add_full_hashes_result) override;
-  virtual bool CancelUpdate() override;
+  bool CancelUpdate() override;
 
-  virtual void SetAddChunk(int32 chunk_id) override;
-  virtual bool CheckAddChunk(int32 chunk_id) override;
-  virtual void GetAddChunks(std::vector<int32>* out) override;
-  virtual void SetSubChunk(int32 chunk_id) override;
-  virtual bool CheckSubChunk(int32 chunk_id) override;
-  virtual void GetSubChunks(std::vector<int32>* out) override;
+  void SetAddChunk(int32 chunk_id) override;
+  bool CheckAddChunk(int32 chunk_id) override;
+  void GetAddChunks(std::vector<int32>* out) override;
+  void SetSubChunk(int32 chunk_id) override;
+  bool CheckSubChunk(int32 chunk_id) override;
+  void GetSubChunks(std::vector<int32>* out) override;
 
-  virtual void DeleteAddChunk(int32 chunk_id) override;
-  virtual void DeleteSubChunk(int32 chunk_id) override;
+  void DeleteAddChunk(int32 chunk_id) override;
+  void DeleteSubChunk(int32 chunk_id) override;
 
   // Verify |file_|'s checksum, calling the corruption callback if it
   // does not check out.  Empty input is considered valid.
-  virtual bool CheckValidity() override;
+  bool CheckValidity() override;
 
   // Returns the name of the temporary file used to buffer data for
   // |filename|.  Exported for unit tests.

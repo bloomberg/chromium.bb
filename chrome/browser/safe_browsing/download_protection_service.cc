@@ -166,7 +166,7 @@ class DownloadSBClient
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadSBClient>;
-  virtual ~DownloadSBClient() {}
+  ~DownloadSBClient() override {}
 
   void CheckDone(SBThreatType threat_type) {
     DownloadProtectionService::DownloadCheckResult result =
@@ -236,7 +236,7 @@ class DownloadUrlSBClient : public DownloadSBClient {
                          DOWNLOAD_URL_CHECKS_MALWARE),
         database_manager_(database_manager) { }
 
-  virtual void StartCheck() override {
+  void StartCheck() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (!database_manager_.get() ||
         database_manager_->CheckDownloadUrl(url_chain_, this)) {
@@ -246,12 +246,12 @@ class DownloadUrlSBClient : public DownloadSBClient {
     }
   }
 
-  virtual bool IsDangerous(SBThreatType threat_type) const override {
+  bool IsDangerous(SBThreatType threat_type) const override {
     return threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL;
   }
 
-  virtual void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
-                                        SBThreatType threat_type) override {
+  void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
+                                SBThreatType threat_type) override {
     CheckDone(threat_type);
     UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
                         base::TimeTicks::Now() - start_time_);
@@ -259,7 +259,7 @@ class DownloadUrlSBClient : public DownloadSBClient {
   }
 
  protected:
-  virtual ~DownloadUrlSBClient() {}
+  ~DownloadUrlSBClient() override {}
 
  private:
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
@@ -378,13 +378,13 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   // content::DownloadItem::Observer implementation.
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) override {
+  void OnDownloadDestroyed(content::DownloadItem* download) override {
     Cancel();
     DCHECK(item_ == NULL);
   }
 
   // From the net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(source, fetcher_.get());
     VLOG(2) << "Received a response for URL: "
@@ -479,7 +479,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<CheckClientDownloadRequest>;
 
-  virtual ~CheckClientDownloadRequest() {
+  ~CheckClientDownloadRequest() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(item_ == NULL);
   }

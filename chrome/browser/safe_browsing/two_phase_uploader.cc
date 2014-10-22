@@ -33,16 +33,16 @@ class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
                        const base::FilePath& file_path,
                        const ProgressCallback& progress_callback,
                        const FinishCallback& finish_callback);
-  virtual ~TwoPhaseUploaderImpl();
+  ~TwoPhaseUploaderImpl() override;
 
   // Begins the upload process.
-  virtual void Start() override;
+  void Start() override;
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
-  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current,
-                                        int64 total) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                int64 current,
+                                int64 total) override;
 
  private:
   void UploadMetadata();

@@ -25,7 +25,7 @@ class URLRequestContextGetter;
 
 class SafeBrowsingPingManager : public net::URLFetcherDelegate {
  public:
-  virtual ~SafeBrowsingPingManager();
+  ~SafeBrowsingPingManager() override;
 
   // Create an instance of the safe browsing ping manager.
   static SafeBrowsingPingManager* Create(
@@ -33,7 +33,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
       const SafeBrowsingProtocolConfig& config);
 
   // net::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // For UMA users we report to Google when a SafeBrowsing interstitial is shown
   // to the user.  |threat_type| should be one of the types known by

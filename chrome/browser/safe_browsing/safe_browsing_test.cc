@@ -112,7 +112,7 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   explicit FakeSafeBrowsingService(const std::string& url_prefix)
       : url_prefix_(url_prefix) {}
 
-  virtual SafeBrowsingProtocolConfig GetProtocolConfig() const override {
+  SafeBrowsingProtocolConfig GetProtocolConfig() const override {
     SafeBrowsingProtocolConfig config;
     config.url_prefix = url_prefix_;
     // Makes sure the auto update is not triggered. The tests will force the
@@ -126,7 +126,7 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   }
 
  private:
-  virtual ~FakeSafeBrowsingService() {}
+  ~FakeSafeBrowsingService() override {}
 
   std::string url_prefix_;
 
@@ -139,7 +139,7 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
   explicit TestSafeBrowsingServiceFactory(const std::string& url_prefix)
       : url_prefix_(url_prefix) {}
 
-  virtual SafeBrowsingService* CreateSafeBrowsingService() override {
+  SafeBrowsingService* CreateSafeBrowsingService() override {
     return new FakeSafeBrowsingService(url_prefix_);
   }
 
@@ -281,7 +281,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     SafeBrowsingService::RegisterFactory(NULL);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     // This test uses loopback. No need to use IPv6 especially it makes
     // local requests slow on Windows trybot when ipv6 local address [::1]
     // is not setup.
@@ -349,9 +349,9 @@ class SafeBrowsingServerTestHelper
   }
 
   // Callbacks for SafeBrowsingDatabaseManager::Client.
-  virtual void OnCheckBrowseUrlResult(const GURL& url,
-                                      SBThreatType threat_type,
-                                      const std::string& metadata) override {
+  void OnCheckBrowseUrlResult(const GURL& url,
+                              SBThreatType threat_type,
+                              const std::string& metadata) override {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     EXPECT_TRUE(safe_browsing_test_->is_checked_url_in_db());
     safe_browsing_test_->set_is_checked_url_safe(
@@ -453,7 +453,7 @@ class SafeBrowsingServerTestHelper
   }
 
   // Callback for URLFetcher.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
     source->GetResponseAsString(&response_data_);
     response_status_ = source->GetStatus().status();
     StopUILoop();
@@ -465,7 +465,7 @@ class SafeBrowsingServerTestHelper
 
  private:
   friend class base::RefCountedThreadSafe<SafeBrowsingServerTestHelper>;
-  virtual ~SafeBrowsingServerTestHelper() {}
+  ~SafeBrowsingServerTestHelper() override {}
 
   // Stops UI loop after desired status is updated.
   void StopUILoop() {
