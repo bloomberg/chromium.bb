@@ -127,9 +127,6 @@ class FindBarHost : public DropdownBarHost,
   // Allows implementation to tweak widget position.
   void GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect);
 
-  // Allows native implementation to prevent key events from being forwarded.
-  bool ShouldForwardKeyEventToWebpageNative(const ui::KeyEvent& key_event);
-
   // Returns the FindBarView.
   FindBarView* find_bar_view() { return static_cast<FindBarView*>(view()); }
 

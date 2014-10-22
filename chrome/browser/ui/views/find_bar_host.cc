@@ -46,11 +46,6 @@ FindBarHost::~FindBarHost() {
 
 bool FindBarHost::MaybeForwardKeyEventToWebpage(
     const ui::KeyEvent& key_event) {
-  if (!ShouldForwardKeyEventToWebpageNative(key_event)) {
-    // Native implementation says not to forward these events.
-    return false;
-  }
-
   switch (key_event.key_code()) {
     case ui::VKEY_DOWN:
     case ui::VKEY_UP:
@@ -159,6 +154,12 @@ void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
   // focus. EndFindSession will then set the focus to the page content.
   if (result.number_of_matches() > 0)
     ResetFocusTracker();
+}
+
+void FindBarHost::AudibleAlert() {
+#if defined(OS_WIN)
+  MessageBeep(MB_OK);
+#endif
 }
 
 bool FindBarHost::IsFindBarVisible() {
