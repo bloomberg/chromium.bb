@@ -78,7 +78,7 @@ VideoFrameTexture::~VideoFrameTexture() {
 }
 
 RenderingHelper::RenderedVideo::RenderedVideo()
-    : last_frame_rendered(false), is_flushing(false), frames_to_drop(0) {
+    : is_flushing(false), frames_to_drop(0) {
 }
 
 RenderingHelper::RenderedVideo::~RenderedVideo() {
@@ -307,7 +307,11 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   if (frame_duration_ != base::TimeDelta())
     WarmUpRendering(params.warm_up_iterations);
 
-  done->Signal();
+  // It's safe to use Unretained here since |rendering_thread_| will be stopped
+  // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
+  // a member of that class. (See video_decode_accelerator_unittest.cc.)
+  gl_surface_->GetVSyncProvider()->GetVSyncParameters(base::Bind(
+      &RenderingHelper::UpdateVSyncParameters, base::Unretained(this), done));
 }
 
 // The rendering for the first few frames is slow (e.g., 100ms on Peach Pit).
@@ -425,28 +429,18 @@ void RenderingHelper::QueueVideoFrame(
   RenderedVideo* video = &videos_[window_id];
   DCHECK(!video->is_flushing);
 
-  // Start the rendering task when getting the first frame.
-  if (scheduled_render_time_.is_null() &&
-      (frame_duration_ != base::TimeDelta())) {
+  video->pending_frames.push(video_frame);
+
+  if (video->frames_to_drop > 0 && video->pending_frames.size() > 1) {
+    --video->frames_to_drop;
+    video->pending_frames.pop();
+  }
+
+  // Schedules the first RenderContent() if need.
+  if (scheduled_render_time_.is_null()) {
     scheduled_render_time_ = base::TimeTicks::Now();
     message_loop_->PostTask(FROM_HERE, render_task_.callback());
   }
-
-  if (video->frames_to_drop > 0) {
-    --video->frames_to_drop;
-    return;
-  }
-
-  // Pop the last frame if it has been rendered.
-  if (video->last_frame_rendered) {
-    // When last_frame_rendered is true, we should have only one pending frame.
-    // Since we are going to have a new frame, we can release the pending one.
-    DCHECK(video->pending_frames.size() == 1);
-    video->pending_frames.pop();
-    video->last_frame_rendered = false;
-  }
-
-  video->pending_frames.push(video_frame);
 }
 
 void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
@@ -544,10 +538,15 @@ void RenderingHelper::Flush(size_t window_id) {
 void RenderingHelper::RenderContent() {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
 
-  scheduled_render_time_ += frame_duration_;
-  base::TimeDelta delay = scheduled_render_time_ - base::TimeTicks::Now();
-  message_loop_->PostDelayedTask(
-      FROM_HERE, render_task_.callback(), std::max(delay, base::TimeDelta()));
+  // Update the VSync params.
+  //
+  // It's safe to use Unretained here since |rendering_thread_| will be stopped
+  // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
+  // a member of that class. (See video_decode_accelerator_unittest.cc.)
+  gl_surface_->GetVSyncProvider()->GetVSyncParameters(
+      base::Bind(&RenderingHelper::UpdateVSyncParameters,
+                 base::Unretained(this),
+                 static_cast<base::WaitableEvent*>(NULL)));
 
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
 
@@ -555,35 +554,35 @@ void RenderingHelper::RenderContent() {
   // after this vector falls out of scope at the end of this method. We need
   // to keep references to them until after SwapBuffers() call below.
   std::vector<scoped_refptr<VideoFrameTexture> > frames_to_be_returned;
-
+  bool need_swap_buffer = false;
   if (render_as_thumbnails_) {
     // In render_as_thumbnails_ mode, we render the FBO content on the
     // screen instead of the decoded textures.
     GLSetViewPort(videos_[0].render_area);
     RenderTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
+    need_swap_buffer = true;
   } else {
-    for (size_t i = 0; i < videos_.size(); ++i) {
-      RenderedVideo* video = &videos_[i];
-      if (video->pending_frames.empty())
+    for (RenderedVideo& video : videos_) {
+      if (video.pending_frames.empty())
         continue;
-      scoped_refptr<VideoFrameTexture> frame = video->pending_frames.front();
-      GLSetViewPort(video->render_area);
+      need_swap_buffer = true;
+      scoped_refptr<VideoFrameTexture> frame = video.pending_frames.front();
+      GLSetViewPort(video.render_area);
       RenderTexture(frame->texture_target(), frame->texture_id());
 
-      if (video->last_frame_rendered)
-        ++video->frames_to_drop;
-
-      if (video->pending_frames.size() > 1 || video->is_flushing) {
-        frames_to_be_returned.push_back(video->pending_frames.front());
-        video->pending_frames.pop();
-        video->last_frame_rendered = false;
+      if (video.pending_frames.size() > 1 || video.is_flushing) {
+        frames_to_be_returned.push_back(video.pending_frames.front());
+        video.pending_frames.pop();
       } else {
-        video->last_frame_rendered = true;
+        ++video.frames_to_drop;
       }
     }
   }
 
-  gl_surface_->SwapBuffers();
+  if (need_swap_buffer)
+    gl_surface_->SwapBuffers();
+
+  ScheduleNextRenderContent();
 }
 
 // Helper function for the LayoutRenderingAreas(). The |lengths| are the
@@ -638,5 +637,50 @@ void RenderingHelper::LayoutRenderingAreas(
     size_t y = offset_y[i / cols] + (heights[i / cols] - h) / 2;
     videos_[i].render_area = gfx::Rect(x, y, w, h);
   }
+}
+
+void RenderingHelper::UpdateVSyncParameters(base::WaitableEvent* done,
+                                            const base::TimeTicks timebase,
+                                            const base::TimeDelta interval) {
+  vsync_timebase_ = timebase;
+  vsync_interval_ = interval;
+
+  if (done)
+    done->Signal();
+}
+
+void RenderingHelper::DropOneFrameForAllVideos() {
+  for (RenderedVideo& video : videos_) {
+    if (video.pending_frames.empty())
+      continue;
+
+    if (video.pending_frames.size() > 1 || video.is_flushing) {
+      video.pending_frames.pop();
+    } else {
+      ++video.frames_to_drop;
+    }
+  }
+}
+
+void RenderingHelper::ScheduleNextRenderContent() {
+  scheduled_render_time_ += frame_duration_;
+
+  // Schedules the next RenderContent() at latest VSYNC before the
+  // |scheduled_render_time_|.
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks target =
+      std::max(now + vsync_interval_, scheduled_render_time_);
+
+  int64 intervals = (target - vsync_timebase_) / vsync_interval_;
+  target = vsync_timebase_ + intervals * vsync_interval_;
+
+  // When the rendering falls behind, drops frames.
+  while (scheduled_render_time_ < target) {
+    scheduled_render_time_ += frame_duration_;
+    DropOneFrameForAllVideos();
+  }
+
+  message_loop_->PostDelayedTask(
+      FROM_HERE, render_task_.callback(), target - now);
 }
 }  // namespace content
