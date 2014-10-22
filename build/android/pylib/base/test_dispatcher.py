@@ -272,7 +272,6 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
           #                 for the above are switched or wrapped.
           android_commands.errors.DeviceUnresponsiveError) as e:
     logging.error(e)
-    exit_code = constants.WARNING_EXIT_CODE
 
   if not all((len(tc) == 0 for tc in test_collections)):
     logging.error('Only ran %d tests (all devices are likely offline).' %
