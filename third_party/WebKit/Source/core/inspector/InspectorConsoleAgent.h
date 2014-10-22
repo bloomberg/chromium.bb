@@ -87,7 +87,7 @@ public:
 
     virtual bool isWorkerAgent() = 0;
 
-    virtual void setLastEvaluationResult(ErrorString*, const String& objectId) OVERRIDE;
+    virtual void setLastEvaluationResult(ErrorString*, const String& objectId) override;
 
 protected:
     void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview);
