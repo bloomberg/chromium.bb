@@ -204,6 +204,9 @@ void BluetoothControllerPairingController::OnConnectError(
     // devices.  If the connection fails, it's not a problem as long as pairing
     // was successful.
     OnConnect();
+  } else {
+    // This can happen if the confirmation dialog times out.
+    ChangeStage(STAGE_ESTABLISHING_CONNECTION_ERROR);
   }
 }
 
