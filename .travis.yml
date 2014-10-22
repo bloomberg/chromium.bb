@@ -7,3 +7,5 @@ before_install:
 script:
   - ./autogen.sh && ./configure && make && make check
   - ./autogen.sh && ./configure --enable-ucs4 && make && make check
+notifications:
+  irc: "irc.oftc.net#liblouis"
