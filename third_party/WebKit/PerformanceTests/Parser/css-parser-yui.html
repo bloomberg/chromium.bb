@@ -2619,11 +2619,14 @@ legend {
 var element = document.getElementById("styleElement");
 var cssText = element.textContent;
 var count = 0;
-PerfTestRunner.measureRunsPerSecond({run:function() {
-    element.textContent = "";
-    element.textContent = cssText + "#some" + count + "{color:black};";
-    count++;
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of the CSS parser (using YUI's CSS).",
+    run: function() {
+        element.textContent = "";
+        element.textContent = cssText + "#some" + count + "{color:black};";
+        count++;
+    }
+});
 
 </script>
 </body>

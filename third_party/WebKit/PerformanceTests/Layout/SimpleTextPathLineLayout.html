@@ -38,7 +38,10 @@ Cibo tollit perpetua eos an, eu sale expetendis mea, nam at assum convenire nece
             style.display = "none";
         }
 
-        PerfTestRunner.measureRunsPerSecond({ run: test });
+        PerfTestRunner.measureRunsPerSecond({
+            description: "Measures performance of layout on English and Chinese characters.",
+            run: test
+        });
     </script>
 </body>
 </html>

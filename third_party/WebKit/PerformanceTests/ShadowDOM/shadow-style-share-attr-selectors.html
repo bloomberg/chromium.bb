@@ -9,6 +9,7 @@
   var listSize = 1000;
   window.onload = function() {
     PerfTestRunner.measureTime({
+      description: "Measures performance of creating and rendering elements with shadow roots from templates (contains attribute selector styles).",
       run: function() {
         var list = document.querySelector('#list');
         var tmpl = document.querySelector("#tmpl");

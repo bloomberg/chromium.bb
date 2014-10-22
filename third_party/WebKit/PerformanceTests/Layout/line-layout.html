@@ -86,7 +86,10 @@
             style.display = "none";
         }
 
-        PerfTestRunner.measureRunsPerSecond({ run: test });
+        PerfTestRunner.measureRunsPerSecond({
+            description: "Measures performance of line breaking in layout.",
+            run: test
+        });
     </script>
 </body>
 </html>

@@ -71,7 +71,11 @@ var particles = [];
 var prevTime;
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: 'Measures animation performance of javascript to manipulate DOM elements (animating on left and top).',
+        done: onCompletedRun,
+        unit: 'fps'
+    });
 
     // Create the particles
     for (var i = 0; i < maxParticles; i++)

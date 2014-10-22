@@ -71,12 +71,15 @@ var properties = {
 'webkit-transform' : 'scale3d(0.5, 0.5, 0.5)',
 'word-spacing' : '40px',
 };
-PerfTestRunner.measureRunsPerSecond({run:function() {
-    for (key in properties) {
-        var value = div.style.getPropertyValue(key);
-        div.style.removeProperty(key);
-        div.style.setProperty(key, properties[key]);
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of the CSS style getter and setter methods (elem.style.(getPropertyValue|removeProperty|setProperty)).",
+    run:function() {
+        for (key in properties) {
+            var value = div.style.getPropertyValue(key);
+            div.style.removeProperty(key);
+            div.style.setProperty(key, properties[key]);
+        }
     }
-}});
+});
 </script>
 </html>

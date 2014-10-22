@@ -60,6 +60,9 @@ function runTest()
     switcher = !switcher;
 };
 
-PerfTestRunner.measureRunsPerSecond({run: runTest });
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of flexbox containing many small elements with wrapping (column).",
+    run: runTest
+});
 </script>
 </html>

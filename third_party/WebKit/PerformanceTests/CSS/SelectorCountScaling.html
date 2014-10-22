@@ -43,11 +43,14 @@ function runFunction()
 
     // Force style recalc.
     document.body.offsetTop;
-    
+
     styleElement.parentNode.removeChild(styleElement);
 }
 
-PerfTestRunner.measureRunsPerSecond({run: runFunction});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of inserting a stylesheet of 2000 different CSS rules, each of which is duplicated 7 times to test duplicate rule optimizations.",
+    run: runFunction
+});
 
 </script>
 </body>

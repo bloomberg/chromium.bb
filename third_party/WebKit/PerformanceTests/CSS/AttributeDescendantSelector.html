@@ -43,7 +43,10 @@ var runFunction = function()
     root.removeAttribute("attr");
 }
 
-PerfTestRunner.measureRunsPerSecond({run: runFunction});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of the CSS attribute descendant selector ([a=b] [c=d]).",
+    run: runFunction
+});
 
 </script>
 </body>

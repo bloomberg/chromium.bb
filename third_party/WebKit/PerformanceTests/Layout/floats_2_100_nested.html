@@ -9,7 +9,10 @@
     <body>
         <pre id="log"></pre>
         <script>
-            PerfTestRunner.measureTime({run: createFloatsLayoutTestFunction(2, 100, 100, 250, 1)});
+            PerfTestRunner.measureTime({
+                description: "Measures performance of a float layout with 1 row containing 2x100 floats (nested).",
+                run: createFloatsLayoutTestFunction(2, 100, 100, 250, 1)
+            });
         </script>
     </body>
 </html>

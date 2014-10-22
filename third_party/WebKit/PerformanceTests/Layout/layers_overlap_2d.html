@@ -48,7 +48,10 @@
                     container.remove();
                 }
             }
-            PerfTestRunner.measureTime({run: createTestFunction(5000)});
+            PerfTestRunner.measureTime({
+                description: "Measures performance of non-overlapping 2D layers.",
+                run: createTestFunction(5000)
+            });
         </script>
     </body>
 </html>

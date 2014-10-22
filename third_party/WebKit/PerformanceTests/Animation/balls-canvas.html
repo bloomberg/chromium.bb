@@ -73,7 +73,11 @@ var particles = [];
 var prevTime;
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: 'Measures performance of canvas animation.',
+        done: onCompletedRun,
+        unit: 'fps'
+    });
 
     // Prepare the canvas.
     canvas = document.querySelector('canvas');

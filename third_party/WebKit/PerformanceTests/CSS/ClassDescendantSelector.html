@@ -43,7 +43,10 @@ var runFunction = function()
     root.className = "";
 }
 
-PerfTestRunner.measureRunsPerSecond({run: runFunction});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of the CSS class descendant selector (.a .b).",
+    run: runFunction
+});
 
 </script>
 </body>

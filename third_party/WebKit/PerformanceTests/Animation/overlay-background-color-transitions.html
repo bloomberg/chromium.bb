@@ -68,7 +68,11 @@ var testRunning = true;
 var overlays = [];
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: "Measure performance of CSS Transitions animating background-color on many overlaid elements (only one element showing).",
+        done: onCompletedRun,
+        unit: 'fps'
+    });
 
     // Create the overlays
     for (var i = 0; i < maxOverlays; i++) {

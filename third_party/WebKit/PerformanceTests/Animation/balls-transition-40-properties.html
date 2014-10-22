@@ -70,7 +70,11 @@ var testRunning = true;
 var particles = [];
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: "Measures performance of CSS Transitions, with a transition on 40 properties but only 'left' and 'top' changing.",
+        done: onCompletedRun,
+        unit: 'fps'
+    });
 
     // Create the particles
     for (var i = 0; i < maxParticles; i++) {

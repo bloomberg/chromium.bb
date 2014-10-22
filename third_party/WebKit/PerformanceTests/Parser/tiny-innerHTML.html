@@ -2,14 +2,17 @@
 <body>
 <script src="../resources/runner.js"></script>
 <script>
-PerfTestRunner.measureRunsPerSecond({run:function() {
-    var testDiv = document.createElement("div");
-    testDiv.style.display = "none";
-    document.body.appendChild(testDiv);
-    for (var x = 0; x < 100000; x++) {
-        testDiv.innerHTML = "This is a tiny HTML document";
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of creating an element and setting a tiny amount of HTML.",
+    run: function() {
+        var testDiv = document.createElement("div");
+        testDiv.style.display = "none";
+        document.body.appendChild(testDiv);
+        for (var x = 0; x < 100000; x++) {
+            testDiv.innerHTML = "This is a tiny HTML document";
+        }
+        document.body.removeChild(testDiv);
     }
-    document.body.removeChild(testDiv);
-}});
+});
 </script>
 </body>

@@ -71,7 +71,11 @@ var particles = [];
 var allParticleKeyframes = [];
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: "Measure performance of animating 'left' and 'top' by calling Element.animate() (from the Web Animations API), pausing the player, and updating the player's currentTime using requestAnimationFrame.",
+        done: onCompletedRun,
+        unit: 'fps'
+    });
 
     // Create the particles
     for (var i = 0; i < maxParticles; i++) {

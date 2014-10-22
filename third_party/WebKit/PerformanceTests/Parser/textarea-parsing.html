@@ -20,8 +20,11 @@ for (var i = 0; i < 1000; ++i) {
 htmlText += "</textarea>"
 
 var container = document.getElementById('container');
-PerfTestRunner.measureRunsPerSecond({run: function() {
-    container.innerHTML = htmlText;
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of parsing within a <textarea> tag.",
+    run: function() {
+        container.innerHTML = htmlText;
+    }
+});
 </script>
 </body>

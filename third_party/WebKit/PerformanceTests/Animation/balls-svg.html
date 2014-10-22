@@ -76,7 +76,11 @@ window.onload = function () {
     for (var i = 0; i < maxParticles; i++)
         addParticle();
 
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: 'Measures performance of SVG animation using animateTransform (animating on x and y).',
+        done: onCompletedRun,
+        unit: 'fps'
+    });
 
     startTrackingFrameRate();
 }

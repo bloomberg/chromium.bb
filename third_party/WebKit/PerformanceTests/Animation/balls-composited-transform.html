@@ -70,7 +70,11 @@ var animationDuration = 10;
 var particles = [];
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: "Measure performance of CSS Animations animating 'transform: translate'.",
+        done: onCompletedRun,
+        unit: 'fps'
+    });
 
     generateStyleElement();
 

@@ -28,8 +28,12 @@ function runTest()
     document.body.clientHeight;
 }
 
-PerfTestRunner.measureRunsPerSecond({run: runTest, done:function() {
-    document.getElementById("flexbox").style.display = 'none';
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of flexbox with wrapping (column).",
+    run: runTest,
+    done: function() {
+        document.getElementById("flexbox").style.display = 'none';
+    }
+});
 </script>
 </html>

@@ -35,7 +35,10 @@
             style.display = "none";
         }
 
-        PerfTestRunner.measureRunsPerSecond({ run: test });
+        PerfTestRunner.measureRunsPerSecond({
+            description: "Measures performance of layout on a page containing Hindi.",
+            run: test
+        });
     </script>
 </body>
 </html>

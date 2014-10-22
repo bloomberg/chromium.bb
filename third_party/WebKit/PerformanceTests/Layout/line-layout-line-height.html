@@ -29,7 +29,10 @@
             style.display = "none";
         }
 
-        PerfTestRunner.measureTime({ run: test });
+        PerfTestRunner.measureTime({
+            description: "Measures performance of line-height calculation in layout.",
+            run: test
+        });
     </script>
 </body>
 </html>

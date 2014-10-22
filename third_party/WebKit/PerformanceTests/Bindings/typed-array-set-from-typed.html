@@ -9,9 +9,11 @@ for (var i = 0; i < length; i++)
     source[i] = i;
 var target = new Float64Array(length);
 
-PerfTestRunner.measureRunsPerSecond({run: function() {
-    target.set(source);
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of setting a Float64Array to a Uint8Array using Float64Array.prototype.set.",
+    run: function() {
+        target.set(source);
+    }
+});
 </script>
 </body>
-

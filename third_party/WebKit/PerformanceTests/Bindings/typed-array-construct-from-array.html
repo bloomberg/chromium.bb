@@ -8,9 +8,11 @@ var source = new Array(length);
 for (var i = 0; i < length; i++)
     source[i] = i;
 
-PerfTestRunner.measureRunsPerSecond({run: function() {
-    var target = new Uint8Array(source);
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of creating a Uint8Array from an existing one million element Array which contains integers beyond the range of an unsigned 8-bit integer.",
+    run: function() {
+        var target = new Uint8Array(source);
+    }
+});
 </script>
 </body>
-

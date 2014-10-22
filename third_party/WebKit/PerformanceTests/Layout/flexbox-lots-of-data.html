@@ -48,10 +48,13 @@ function startTest() {
     document.body.offsetHeight;
 
     var index = 0;
-    PerfTestRunner.measureRunsPerSecond({run: function() {
-        document.body.style.width = ++index % 2 ? "99%" : "98%";
-        document.body.offsetHeight;
-    }});
+    PerfTestRunner.measureRunsPerSecond({
+        description: "Measures performance of flexbox with lots of data laid out in as a table.",
+        run: function() {
+            document.body.style.width = ++index % 2 ? "99%" : "98%";
+            document.body.offsetHeight;
+        }
+    });
 }
 </script>
 </head>

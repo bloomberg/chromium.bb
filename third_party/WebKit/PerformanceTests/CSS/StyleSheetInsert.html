@@ -20,17 +20,20 @@ function setup() {
     return testDoc;
 }
 
-PerfTestRunner.measureTime({run:function() {
-    var testDoc = setup();
-    var start = PerfTestRunner.now();
-    testDoc.body.offsetTop;
-    for (var i = 0; i < 50; i++) {
-        var styleElem = testDoc.createElement("style");
-        styleElem.innerText = ".bar {color:green}";
-        testDoc.body.insertBefore(styleElem, testDoc.body.firstChild);
+PerfTestRunner.measureTime({
+    description: "Measures performance of inserting 50 large style elements into an iframe.",
+    run:function() {
+        var testDoc = setup();
+        var start = PerfTestRunner.now();
+        testDoc.body.offsetTop;
+        for (var i = 0; i < 50; i++) {
+            var styleElem = testDoc.createElement("style");
+            styleElem.innerText = ".bar {color:green}";
+            testDoc.body.insertBefore(styleElem, testDoc.body.firstChild);
+        }
+        testDoc.body.offsetTop;
+        return PerfTestRunner.now() - start;
     }
-    testDoc.body.offsetTop;
-    return PerfTestRunner.now() - start;
-}});
+});
 </script>
 </html>

@@ -71,12 +71,15 @@ var properties = {
 'webkitTransform' : 'scale3d(0.5, 0.5, 0.5)',
 'wordSpacing' : '40px',
 };
-PerfTestRunner.measureRunsPerSecond({run:function() {
-    for (key in properties) {
-        var value = div.style[key];
-        div.style[key] = "";
-        div.style[key] = properties[key];
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of the CSS style array index getter and setter (a = elem.style[b], elem.style[c] = d).",
+    run:function() {
+        for (key in properties) {
+            var value = div.style[key];
+            div.style[key] = "";
+            div.style[key] = properties[key];
+        }
     }
-}});
+});
 </script>
 </html>

@@ -12,15 +12,15 @@
     <script>
         var RandomTextGenerator = function() {
             this.letters = [
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
-                String.fromCharCode(RandomTextGenerator.firstCharCode), 
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
+                String.fromCharCode(RandomTextGenerator.firstCharCode),
                 String.fromCharCode(RandomTextGenerator.firstCharCode)
             ]
         }
@@ -72,7 +72,10 @@
             style.display = "none";
         }
 
-        PerfTestRunner.measureRunsPerSecond({ run: test });
+        PerfTestRunner.measureRunsPerSecond({
+            description: "Measures performance of 3 layouts (using 2 different font-sizes) on a page containing random text.",
+            run: test
+        });
     </script>
 </body>
 </html>

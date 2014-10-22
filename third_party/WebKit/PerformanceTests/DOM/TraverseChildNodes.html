@@ -7,6 +7,7 @@ var spec = PerfTestRunner.loadFile("../Parser/resources/html5.html");
 var iframe;
 
 PerfTestRunner.measureTime({
+    description: "Measures performance of traversing through a large HTML document using elem.childNodes.",
     setup: function () {
         if (iframe)
             document.body.removeChild(iframe);

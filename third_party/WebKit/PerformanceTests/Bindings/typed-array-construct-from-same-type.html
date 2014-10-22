@@ -8,8 +8,11 @@ var source = new Uint8Array(length);
 for (var i = 0; i < length; i++)
     source[i] = i;
 
-PerfTestRunner.measureRunsPerSecond({run: function() {
-    var target = new Uint8Array(source);
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of creating a Uint8Array from an existing Uint8Array.",
+    run: function() {
+        var target = new Uint8Array(source);
+    }
+});
 </script>
 </body>

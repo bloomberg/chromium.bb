@@ -79,7 +79,10 @@
             style.display = "none";
         }
 
-        PerfTestRunner.measureRunsPerSecond({ run: test });
+        PerfTestRunner.measureRunsPerSecond({
+            description: "Measures performance of 3 layouts on a page containing English text.",
+            run: test
+        });
     </script>
 </body>
 </html>

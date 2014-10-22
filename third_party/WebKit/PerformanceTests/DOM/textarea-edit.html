@@ -13,10 +13,13 @@ textarea:invalid {
 <script>
 var container = document.getElementById('container');
 container.focus();
-PerfTestRunner.measureRunsPerSecond({run: function() {
-    for (var i = 0; i < 500; ++i)
-        document.execCommand('insertText', false, 'A quick brown fox jumps over the lazy dog.\n');
-    container.value = '';
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of adding text to a textarea using document.execCommand, then clearing it.",
+    run: function() {
+        for (var i = 0; i < 500; ++i)
+            document.execCommand('insertText', false, 'A quick brown fox jumps over the lazy dog.\n');
+        container.value = '';
+    }
+});
 </script>
 </body>

@@ -9,7 +9,10 @@
     <body>
         <pre id="log"></pre>
         <script>
-            PerfTestRunner.measureTime({run: createTableTestFunction(400, 100, 50)});
+            PerfTestRunner.measureTime({
+                description: "Table layout performance with collapsed borders and a cell with a colspan that can be accomodated by the width given by other rows in the table.",
+                run: createTableTestFunction(400, 100, 50)
+            });
         </script>
     </body>
 </html>

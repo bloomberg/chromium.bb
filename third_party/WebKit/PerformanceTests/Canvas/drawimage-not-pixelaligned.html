@@ -15,9 +15,12 @@ target.width = source.width;
 target.height = source.height;
 var context = target.getContext("2d")
 
-PerfTestRunner.measureRunsPerSecond({run: function() {
-    context.drawImage(source, 10.5, 10.5, 200, 200);   
-}});
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of drawing an image onto a canvas that is not pixel aligned.",
+    run: function() {
+        context.drawImage(source, 10.5, 10.5, 200, 200);
+    }
+});
 </script>
 </body>
 </html>

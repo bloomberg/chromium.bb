@@ -5,10 +5,13 @@
 var urls = PerfTestRunner.loadFile("resources/final-url-en").split("\n");
 var anchor = document.createElement("a");
 
-PerfTestRunner.measureRunsPerSecond({run:function() {
-    for (var x = 0; x < urls.length; x++) {
-        anchor.href = urls[x];
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of URL parsing by setting the href attribute on an <a> tag to many different URLs.",
+    run: function() {
+        for (var x = 0; x < urls.length; x++) {
+            anchor.href = urls[x];
+        }
     }
-}});
+});
 </script>
 </body>
