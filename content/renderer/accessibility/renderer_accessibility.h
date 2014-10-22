@@ -60,6 +60,11 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   // testing.
   virtual RendererAccessibilityType GetType() = 0;
 
+  // This can be called before deleting a RendererAccessibility instance due
+  // to the accessibility mode changing, as opposed to during frame destruction
+  // (when there'd be no point).
+  virtual void DisableAccessibility() {}
+
  protected:
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.

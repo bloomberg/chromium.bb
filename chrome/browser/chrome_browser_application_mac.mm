@@ -538,9 +538,14 @@ void SwizzleInit() {
 }
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
-  if ([attribute isEqualToString:@"AXEnhancedUserInterface"] &&
-      [value intValue] == 1) {
-    content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
+  // This is an undocument attribute that's set when VoiceOver is turned on/off.
+  if ([attribute isEqualToString:@"AXEnhancedUserInterface"]) {
+    content::BrowserAccessibilityState* accessibility_state =
+        content::BrowserAccessibilityState::GetInstance();
+    if ([value intValue] == 1)
+      accessibility_state->OnScreenReaderDetected();
+    else
+      accessibility_state->DisableAccessibility();
   }
   return [super accessibilitySetValue:value forAttribute:attribute];
 }

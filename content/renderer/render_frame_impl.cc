@@ -1360,6 +1360,11 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
     return;
   accessibility_mode_ = new_mode;
   if (renderer_accessibility_) {
+    // Note: this isn't called automatically by the destructor because
+    // there'd be no point in calling it in frame teardown, only if there's
+    // an accessibility mode change but the frame is persisting.
+    renderer_accessibility_->DisableAccessibility();
+
     delete renderer_accessibility_;
     renderer_accessibility_ = NULL;
   }

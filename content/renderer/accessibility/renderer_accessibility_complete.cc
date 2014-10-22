@@ -98,6 +98,22 @@ void RendererAccessibilityComplete::FocusedNodeChanged(const WebNode& node) {
   }
 }
 
+void RendererAccessibilityComplete::DisableAccessibility() {
+  RenderView* render_view = render_frame_->GetRenderView();
+  if (!render_view)
+    return;
+
+  WebView* web_view = render_view->GetWebView();
+  if (!web_view)
+    return;
+
+  WebSettings* settings = web_view->settings();
+  if (!settings)
+    return;
+
+  settings->setAccessibilityEnabled(false);
+}
+
 void RendererAccessibilityComplete::HandleWebAccessibilityEvent(
     const blink::WebAXObject& obj, blink::WebAXEvent event) {
   HandleAXEvent(obj, AXEventFromBlink(event));
