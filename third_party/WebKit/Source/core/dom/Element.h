@@ -211,7 +211,7 @@ public:
     PassRefPtrWillBeRawPtr<Attr> attrIfExists(const QualifiedName&);
     PassRefPtrWillBeRawPtr<Attr> ensureAttr(const QualifiedName&);
 
-    WillBeHeapVector<RefPtrWillBeMember<Attr> >* attrNodeList();
+    WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrNodeList();
 
     CSSStyleDeclaration* style();
 
@@ -247,10 +247,10 @@ public:
 
     void setBooleanAttribute(const QualifiedName& name, bool);
 
-    virtual const StylePropertySet* additionalPresentationAttributeStyle() { return 0; }
+    virtual const StylePropertySet* additionalPresentationAttributeStyle() { return nullptr; }
     void invalidateStyleAttribute();
 
-    const StylePropertySet* inlineStyle() const { return elementData() ? elementData()->m_inlineStyle.get() : 0; }
+    const StylePropertySet* inlineStyle() const { return elementData() ? elementData()->m_inlineStyle.get() : nullptr; }
 
     bool setInlineStyleProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
     bool setInlineStyleProperty(CSSPropertyID, double value, CSSPrimitiveValue::UnitType, bool important = false);
@@ -302,7 +302,7 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) override;
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool rendererIsNeeded(const RenderStyle&);
-    void recalcStyle(StyleRecalcChange, Text* nextTextSibling = 0);
+    void recalcStyle(StyleRecalcChange, Text* nextTextSibling = nullptr);
     void pseudoStateChanged(CSSSelector::PseudoType);
     void setAnimationStyleChange(bool);
     void setNeedsAnimationStyleRecalc();
@@ -351,7 +351,7 @@ public:
     KURL getNonEmptyURLAttribute(const QualifiedName&) const;
 
     virtual const AtomicString imageSourceURL() const;
-    virtual Image* imageContents() { return 0; }
+    virtual Image* imageContents() { return nullptr; }
 
     virtual void focus(bool restorePreviousSelection = true, FocusType = FocusTypeNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
@@ -621,7 +621,7 @@ private:
     ElementRareData* elementRareData() const;
     ElementRareData& ensureElementRareData();
 
-    WillBeHeapVector<RefPtrWillBeMember<Attr> >& ensureAttrNodeList();
+    WillBeHeapVector<RefPtrWillBeMember<Attr>>& ensureAttrNodeList();
     void removeAttrNodeList();
     void detachAllAttrNodesFromElement();
     void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
@@ -671,7 +671,7 @@ inline bool isDisabledFormControl(const Node* node)
 inline Element* Node::parentElement() const
 {
     ContainerNode* parent = parentNode();
-    return parent && parent->isElementNode() ? toElement(parent) : 0;
+    return parent && parent->isElementNode() ? toElement(parent) : nullptr;
 }
 
 inline bool Element::fastHasAttribute(const QualifiedName& name) const
@@ -805,7 +805,7 @@ inline void Element::invalidateStyleAttribute()
 inline const StylePropertySet* Element::presentationAttributeStyle()
 {
     if (!elementData())
-        return 0;
+        return nullptr;
     if (elementData()->m_presentationAttributeStyleIsDirty)
         updatePresentationAttributeStyle();
     // Need to call elementData() again since updatePresentationAttributeStyle()

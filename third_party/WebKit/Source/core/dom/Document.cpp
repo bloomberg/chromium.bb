@@ -368,7 +368,7 @@ static void printNavigationErrorMessage(const LocalFrame& frame, const KURL& act
 uint64_t Document::s_globalTreeVersion = 0;
 
 #ifndef NDEBUG
-typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<Document> > WeakDocumentSet;
+using WeakDocumentSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Document>>;
 static WeakDocumentSet& liveDocumentSet()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WeakDocumentSet>, set, (adoptPtrWillBeNoop(new WeakDocumentSet())));
@@ -1464,9 +1464,8 @@ void Document::didChangeVisibilityState()
     dispatchEvent(Event::create(EventTypeNames::webkitvisibilitychange));
 
     PageVisibilityState state = pageVisibilityState();
-    DocumentVisibilityObserverSet::const_iterator observerEnd = m_visibilityObservers.end();
-    for (DocumentVisibilityObserverSet::const_iterator it = m_visibilityObservers.begin(); it != observerEnd; ++it)
-        (*it)->didChangeVisibilityState(state);
+    for (DocumentVisibilityObserver* observer : m_visibilityObservers)
+        observer->didChangeVisibilityState(state);
 }
 
 void Document::registerVisibilityObserver(DocumentVisibilityObserver* observer)
@@ -2063,8 +2062,8 @@ bool Document::dirtyElementsForLayerUpdate()
     if (m_layerUpdateSVGFilterElements.isEmpty())
         return false;
 
-    for (WillBeHeapHashSet<RawPtrWillBeMember<Element> >::iterator it = m_layerUpdateSVGFilterElements.begin(), end = m_layerUpdateSVGFilterElements.end(); it != end; ++it)
-        (*it)->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGFilterLayerUpdate));
+    for (Element* element : m_layerUpdateSVGFilterElements)
+        element->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGFilterLayerUpdate));
     m_layerUpdateSVGFilterElements.clear();
     return true;
 }
@@ -2102,12 +2101,12 @@ void Document::updateUseShadowTreesIfNeeded()
     if (m_useElementsNeedingUpdate.isEmpty())
         return;
 
-    WillBeHeapVector<RawPtrWillBeMember<SVGUseElement> > elements;
+    WillBeHeapVector<RawPtrWillBeMember<SVGUseElement>> elements;
     copyToVector(m_useElementsNeedingUpdate, elements);
     m_useElementsNeedingUpdate.clear();
 
-    for (WillBeHeapVector<RawPtrWillBeMember<SVGUseElement> >::iterator it = elements.begin(), end = elements.end(); it != end; ++it)
-        (*it)->buildPendingResource();
+    for (SVGUseElement* element : elements)
+        element->buildPendingResource();
 }
 
 StyleResolver* Document::styleResolver() const
@@ -3710,23 +3709,19 @@ void Document::detachNodeIterator(NodeIterator* ni)
 
 void Document::moveNodeIteratorsToNewDocument(Node& node, Document& newDocument)
 {
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> > nodeIteratorsList = m_nodeIterators;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator nodeIteratorsEnd = nodeIteratorsList.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator it = nodeIteratorsList.begin(); it != nodeIteratorsEnd; ++it) {
-        if ((*it)->root() == node) {
-            detachNodeIterator(*it);
-            newDocument.attachNodeIterator(*it);
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator>> nodeIteratorsList = m_nodeIterators;
+    for (NodeIterator* ni : nodeIteratorsList) {
+        if (ni->root() == node) {
+            detachNodeIterator(ni);
+            newDocument.attachNodeIterator(ni);
         }
     }
 }
 
 void Document::updateRangesAfterChildrenChanged(ContainerNode* container)
 {
-    if (!m_ranges.isEmpty()) {
-        AttachedRangeSet::const_iterator end = m_ranges.end();
-        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
-            (*it)->nodeChildrenChanged(container);
-    }
+    for (Range* range : m_ranges)
+        range->nodeChildrenChanged(container);
 }
 
 void Document::updateRangesAfterNodeMovedToAnotherDocument(const Node& node)
@@ -3734,25 +3729,21 @@ void Document::updateRangesAfterNodeMovedToAnotherDocument(const Node& node)
     ASSERT(node.document() != this);
     if (m_ranges.isEmpty())
         return;
+
     AttachedRangeSet ranges = m_ranges;
-    AttachedRangeSet::const_iterator end = ranges.end();
-    for (AttachedRangeSet::const_iterator it = ranges.begin(); it != end; ++it)
-        (*it)->updateOwnerDocumentIfNeeded();
+    for (Range* range : ranges)
+        range->updateOwnerDocumentIfNeeded();
 }
 
 void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 {
     EventDispatchForbiddenScope assertNoEventDispatch;
-    if (!m_ranges.isEmpty()) {
-        AttachedRangeSet::const_iterator end = m_ranges.end();
-        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
-            (*it)->nodeChildrenWillBeRemoved(container);
-    }
+    for (Range* range : m_ranges)
+        range->nodeChildrenWillBeRemoved(container);
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator nodeIteratorsEnd = m_nodeIterators.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator it = m_nodeIterators.begin(); it != nodeIteratorsEnd; ++it) {
+    for (NodeIterator* ni : m_nodeIterators) {
         for (Node& n : NodeTraversal::childrenOf(container))
-            (*it)->nodeWillBeRemoved(n);
+            ni->nodeWillBeRemoved(n);
     }
 
     if (LocalFrame* frame = this->frame()) {
@@ -3766,15 +3757,11 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 
 void Document::nodeWillBeRemoved(Node& n)
 {
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator nodeIteratorsEnd = m_nodeIterators.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator it = m_nodeIterators.begin(); it != nodeIteratorsEnd; ++it)
-        (*it)->nodeWillBeRemoved(n);
+    for (NodeIterator* ni : m_nodeIterators)
+        ni->nodeWillBeRemoved(n);
 
-    if (!m_ranges.isEmpty()) {
-        AttachedRangeSet::const_iterator rangesEnd = m_ranges.end();
-        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != rangesEnd; ++it)
-            (*it)->nodeWillBeRemoved(n);
-    }
+    for (Range* range : m_ranges)
+        range->nodeWillBeRemoved(n);
 
     if (LocalFrame* frame = this->frame()) {
         frame->eventHandler().nodeWillBeRemoved(n);
@@ -3785,11 +3772,8 @@ void Document::nodeWillBeRemoved(Node& n)
 
 void Document::didInsertText(Node* text, unsigned offset, unsigned length)
 {
-    if (!m_ranges.isEmpty()) {
-        AttachedRangeSet::const_iterator end = m_ranges.end();
-        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
-            (*it)->didInsertText(text, offset, length);
-    }
+    for (Range* range : m_ranges)
+        range->didInsertText(text, offset, length);
 
     // Update the markers for spelling and grammar checking.
     m_markers->shiftMarkers(text, offset, length);
@@ -3797,11 +3781,8 @@ void Document::didInsertText(Node* text, unsigned offset, unsigned length)
 
 void Document::didRemoveText(Node* text, unsigned offset, unsigned length)
 {
-    if (!m_ranges.isEmpty()) {
-        AttachedRangeSet::const_iterator end = m_ranges.end();
-        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
-            (*it)->didRemoveText(text, offset, length);
-    }
+    for (Range* range : m_ranges)
+        range->didRemoveText(text, offset, length);
 
     // Update the markers for spelling and grammar checking.
     m_markers->removeMarkers(text, offset, length);
@@ -3812,9 +3793,8 @@ void Document::didMergeTextNodes(Text& oldNode, unsigned offset)
 {
     if (!m_ranges.isEmpty()) {
         NodeWithIndex oldNodeWithIndex(oldNode);
-        AttachedRangeSet::const_iterator end = m_ranges.end();
-        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
-            (*it)->didMergeTextNodes(oldNodeWithIndex, offset);
+        for (Range* range : m_ranges)
+            range->didMergeTextNodes(oldNodeWithIndex, offset);
     }
 
     if (m_frame)
@@ -3825,11 +3805,8 @@ void Document::didMergeTextNodes(Text& oldNode, unsigned offset)
 
 void Document::didSplitTextNode(Text& oldNode)
 {
-    if (!m_ranges.isEmpty()) {
-        AttachedRangeSet::const_iterator end = m_ranges.end();
-        for (AttachedRangeSet::const_iterator it = m_ranges.begin(); it != end; ++it)
-            (*it)->didSplitTextNode(oldNode);
-    }
+    for (Range* range : m_ranges)
+        range->didSplitTextNode(oldNode);
 
     if (m_frame)
         m_frame->selection().didSplitTextNode(oldNode);
@@ -3885,7 +3862,7 @@ void Document::enqueueResizeEvent()
     ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
 }
 
-void Document::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >& listeners)
+void Document::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>>& listeners)
 {
     ensureScriptedAnimationController().enqueueMediaQueryChangeListeners(listeners);
 }
@@ -3905,8 +3882,8 @@ void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
 PassRefPtrWillBeRawPtr<Event> Document::createEvent(const String& eventType, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<Event> event = nullptr;
-    for (EventFactorySet::const_iterator it = eventFactories().begin(); it != eventFactories().end(); ++it) {
-        event = (*it)->create(eventType);
+    for (const auto& factory : eventFactories()) {
+        event = factory->create(eventType);
         if (event)
             return event.release();
     }
@@ -5255,7 +5232,7 @@ PassRefPtrWillBeRawPtr<Touch> Document::createTouch(LocalDOMWindow* window, Even
     return Touch::create(frame, target, identifier, FloatPoint(screenX, screenY), FloatPoint(pageX, pageY), FloatSize(radiusX, radiusY), rotationAngle, force);
 }
 
-PassRefPtrWillBeRawPtr<TouchList> Document::createTouchList(WillBeHeapVector<RefPtrWillBeMember<Touch> >& touches) const
+PassRefPtrWillBeRawPtr<TouchList> Document::createTouchList(WillBeHeapVector<RefPtrWillBeMember<Touch>>& touches) const
 {
     return TouchList::adopt(touches);
 }
@@ -5544,7 +5521,7 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     if (!frame() || !frame()->page())
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Element> > associatedFormControls;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> associatedFormControls;
     copyToVector(m_associatedFormControls, associatedFormControls);
 
     frame()->page()->chrome().client().didAssociateFormControls(associatedFormControls);
@@ -5556,7 +5533,7 @@ float Document::devicePixelRatio() const
     return m_frame ? m_frame->devicePixelRatio() : 1.0;
 }
 
-PassOwnPtr<LifecycleNotifier<Document> > Document::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<Document>> Document::createLifecycleNotifier()
 {
     return DocumentLifecycleNotifier::create(this);
 }
@@ -5683,7 +5660,7 @@ bool Document::hasFocus() const
 
 #if ENABLE(OILPAN)
 template<unsigned type>
-bool shouldInvalidateNodeListCachesForAttr(const HeapHashSet<WeakMember<const LiveNodeListBase> > nodeLists[], const QualifiedName& attrName)
+bool shouldInvalidateNodeListCachesForAttr(const HeapHashSet<WeakMember<const LiveNodeListBase>> nodeLists[], const QualifiedName& attrName)
 {
     if (!nodeLists[type].isEmpty() && LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(static_cast<NodeListInvalidationType>(type), attrName))
         return true;
@@ -5691,7 +5668,7 @@ bool shouldInvalidateNodeListCachesForAttr(const HeapHashSet<WeakMember<const Li
 }
 
 template<>
-bool shouldInvalidateNodeListCachesForAttr<numNodeListInvalidationTypes>(const HeapHashSet<WeakMember<const LiveNodeListBase> >[], const QualifiedName&)
+bool shouldInvalidateNodeListCachesForAttr<numNodeListInvalidationTypes>(const HeapHashSet<WeakMember<const LiveNodeListBase>>[], const QualifiedName&)
 {
     return false;
 }
@@ -5735,9 +5712,8 @@ bool Document::shouldInvalidateNodeListCaches(const QualifiedName* attrName) con
 
 void Document::invalidateNodeListCaches(const QualifiedName* attrName)
 {
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase> >::const_iterator end = m_listsInvalidatedAtDocument.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase> >::const_iterator it = m_listsInvalidatedAtDocument.begin(); it != end; ++it)
-        (*it)->invalidateCacheForAttribute(attrName);
+    for (const LiveNodeListBase* list : m_listsInvalidatedAtDocument)
+        list->invalidateCacheForAttribute(attrName);
 }
 
 void Document::clearWeakMembers(Visitor* visitor)
@@ -5849,8 +5825,7 @@ void showLiveDocumentInstances()
 {
     WeakDocumentSet& set = liveDocumentSet();
     fprintf(stderr, "There are %u documents currently alive:\n", set.size());
-    for (WeakDocumentSet::const_iterator it = set.begin(); it != set.end(); ++it) {
-        fprintf(stderr, "- Document %p URL: %s\n", *it, (*it)->url().string().utf8().data());
-    }
+    for (Document* document : set)
+        fprintf(stderr, "- Document %p URL: %s\n", document, document->url().string().utf8().data());
 }
 #endif

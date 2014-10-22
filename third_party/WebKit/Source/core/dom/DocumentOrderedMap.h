@@ -79,7 +79,7 @@ private:
         WillBeHeapVector<RawPtrWillBeMember<Element> > orderedList;
     };
 
-    typedef WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<MapEntry> > Map;
+    using Map = WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<MapEntry>>;
 
     mutable Map m_map;
 };

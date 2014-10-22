@@ -101,9 +101,9 @@ public:
 private:
     void addMarker(Node*, const DocumentMarker&);
 
-    typedef WillBeHeapVector<OwnPtrWillBeMember<RenderedDocumentMarker> > MarkerList;
-    typedef WillBeHeapVector<OwnPtrWillBeMember<MarkerList>, DocumentMarker::MarkerTypeIndexesCount> MarkerLists;
-    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<const Node>, OwnPtrWillBeMember<MarkerLists> > MarkerMap;
+    using MarkerList = WillBeHeapVector<OwnPtrWillBeMember<RenderedDocumentMarker>>;
+    using MarkerLists = WillBeHeapVector<OwnPtrWillBeMember<MarkerList>, DocumentMarker::MarkerTypeIndexesCount>;
+    using MarkerMap = WillBeHeapHashMap<RawPtrWillBeWeakMember<const Node>, OwnPtrWillBeMember<MarkerLists>>;
     void mergeOverlapping(MarkerList*, DocumentMarker&);
     bool possiblyHasMarkers(DocumentMarker::MarkerTypes);
     void removeMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);

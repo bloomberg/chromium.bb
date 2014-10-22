@@ -45,10 +45,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
 
 void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine* engine, DocumentStyleSheetCollector& collector)
 {
-    DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
-    DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
-    for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
-        Node* n = *it;
+    for (Node* n : m_styleSheetCandidateNodes) {
         StyleSheetCandidate candidate(*n);
 
         ASSERT(!candidate.isXSL());

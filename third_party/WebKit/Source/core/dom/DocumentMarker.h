@@ -136,7 +136,7 @@ private:
     uint32_t m_hash;
 };
 
-typedef WillBeHeapVector<RawPtrWillBeMember<DocumentMarker> > DocumentMarkerVector;
+using DocumentMarkerVector = WillBeHeapVector<RawPtrWillBeMember<DocumentMarker>>;
 
 inline DocumentMarkerDetails* DocumentMarker::details() const
 {

@@ -126,12 +126,11 @@ typedef WillBeHeapVector<RefPtrWillBeMember<Attr> > AttrNodeList;
 
 static Attr* findAttrNodeInList(const AttrNodeList& attrNodeList, const QualifiedName& name)
 {
-    AttrNodeList::const_iterator end = attrNodeList.end();
-    for (AttrNodeList::const_iterator it = attrNodeList.begin(); it != end; ++it) {
-        if ((*it)->qualifiedName() == name)
-            return it->get();
+    for (const auto& attr : attrNodeList) {
+        if (attr->qualifiedName() == name)
+            return attr.get();
     }
-    return 0;
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
@@ -339,7 +338,7 @@ ActiveAnimations* Element::activeAnimations() const
 {
     if (hasRareData())
         return elementRareData()->activeAnimations();
-    return 0;
+    return nullptr;
 }
 
 ActiveAnimations& Element::ensureActiveAnimations()
@@ -542,7 +541,7 @@ Element* Element::offsetParentForBindings()
     Element* element = offsetParent();
     if (!element || !element->isInShadowTree())
         return element;
-    return element->containingShadowRoot()->shouldExposeToBindings() ? element : 0;
+    return element->containingShadowRoot()->shouldExposeToBindings() ? element : nullptr;
 }
 
 Element* Element::offsetParent()
@@ -550,7 +549,7 @@ Element* Element::offsetParent()
     document().updateLayoutIgnorePendingStylesheets();
     if (RenderObject* renderer = this->renderer())
         return renderer->offsetParent();
-    return 0;
+    return nullptr;
 }
 
 int Element::clientLeft()
@@ -1592,7 +1591,7 @@ void Element::removeCallbackSelectors()
 
 ElementShadow* Element::shadow() const
 {
-    return hasRareData() ? elementRareData()->shadow() : 0;
+    return hasRareData() ? elementRareData()->shadow() : nullptr;
 }
 
 ElementShadow& Element::ensureShadow()
@@ -1652,7 +1651,7 @@ CustomElementDefinition* Element::customElementDefinition() const
 {
     if (hasRareData())
         return elementRareData()->customElementDefinition();
-    return 0;
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
@@ -1675,11 +1674,11 @@ ShadowRoot* Element::shadowRoot() const
 {
     ElementShadow* elementShadow = shadow();
     if (!elementShadow)
-        return 0;
+        return nullptr;
     ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
     if (shadowRoot->type() == ShadowRoot::AuthorShadowRoot)
         return shadowRoot;
-    return 0;
+    return nullptr;
 }
 
 ShadowRoot* Element::userAgentShadowRoot() const
@@ -1691,7 +1690,7 @@ ShadowRoot* Element::userAgentShadowRoot() const
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 ShadowRoot& Element::ensureUserAgentShadowRoot()
@@ -1782,9 +1781,9 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
 }
 #endif
 
-WillBeHeapVector<RefPtrWillBeMember<Attr> >* Element::attrNodeList()
+WillBeHeapVector<RefPtrWillBeMember<Attr>>* Element::attrNodeList()
 {
-    return hasRareData() ? elementRareData()->attrNodeList() : 0;
+    return hasRareData() ? elementRareData()->attrNodeList() : nullptr;
 }
 
 WillBeHeapVector<RefPtrWillBeMember<Attr> >& Element::ensureAttrNodeList()
@@ -2208,7 +2207,7 @@ void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
         return;
 
     parent->replaceChild(fragment.release(), this, exceptionState);
-    RefPtrWillBeRawPtr<Node> node = next ? next->previousSibling() : 0;
+    RefPtrWillBeRawPtr<Node> node = next ? next->previousSibling() : nullptr;
     if (!exceptionState.hadException() && node && node->isTextNode())
         mergeWithNextTextNode(toText(node.get()), exceptionState);
 
@@ -2224,17 +2223,17 @@ Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionStat
             if (!exceptionState.hadException())
                 return newChild;
         }
-        return 0;
+        return nullptr;
     }
 
     if (equalIgnoringCase(where, "afterBegin")) {
         insertBefore(newChild, firstChild(), exceptionState);
-        return exceptionState.hadException() ? 0 : newChild;
+        return exceptionState.hadException() ? nullptr : newChild;
     }
 
     if (equalIgnoringCase(where, "beforeEnd")) {
         appendChild(newChild, exceptionState);
-        return exceptionState.hadException() ? 0 : newChild;
+        return exceptionState.hadException() ? nullptr : newChild;
     }
 
     if (equalIgnoringCase(where, "afterEnd")) {
@@ -2243,11 +2242,11 @@ Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionStat
             if (!exceptionState.hadException())
                 return newChild;
         }
-        return 0;
+        return nullptr;
     }
 
     exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
-    return 0;
+    return nullptr;
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
@@ -2257,14 +2256,14 @@ static Element* contextElementForInsertion(const String& where, Element* element
         Element* parent = element->parentElement();
         if (!parent) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The element has no parent.");
-            return 0;
+            return nullptr;
         }
         return parent;
     }
     if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
         return element;
     exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
-    return 0;
+    return nullptr;
 }
 
 Element* Element::insertAdjacentElement(const String& where, Element* newChild, ExceptionState& exceptionState)
@@ -2272,7 +2271,7 @@ Element* Element::insertAdjacentElement(const String& where, Element* newChild, 
     if (!newChild) {
         // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
         exceptionState.throwTypeError("The node provided is null.");
-        return 0;
+        return nullptr;
     }
 
     Node* returnValue = insertAdjacent(where, newChild, exceptionState);
@@ -2407,7 +2406,7 @@ RenderStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
     if (!inActiveDocument()) {
         // FIXME: Try to do better than this. Ensure that styleForElement() works for elements that are not in the
         // document tree and figure out when to destroy the computed style for such elements.
-        return 0;
+        return nullptr;
     }
 
     // FIXME: Find and use the renderer from the pseudo element instead of the actual element so that the 'length'
@@ -2534,14 +2533,14 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 
 PseudoElement* Element::pseudoElement(PseudoId pseudoId) const
 {
-    return hasRareData() ? elementRareData()->pseudoElement(pseudoId) : 0;
+    return hasRareData() ? elementRareData()->pseudoElement(pseudoId) : nullptr;
 }
 
 RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
 {
     if (PseudoElement* element = pseudoElement(pseudoId))
         return element->renderer();
-    return 0;
+    return nullptr;
 }
 
 bool Element::matches(const String& selectors, ExceptionState& exceptionState)
@@ -3041,7 +3040,7 @@ void Element::synchronizeStyleAttributeInternal() const
 CSSStyleDeclaration* Element::style()
 {
     if (!isStyledElement())
-        return 0;
+        return nullptr;
     return &ensureElementRareData().ensureInlineCSSStyleDeclaration(this);
 }
 

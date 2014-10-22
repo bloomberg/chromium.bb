@@ -34,8 +34,8 @@ namespace blink {
 
 class Document;
 
-typedef WillBeHeapSupplementable<Document> DocumentSupplementable;
-typedef WillBeHeapSupplement<Document> DocumentSupplement;
+using DocumentSupplementable = WillBeHeapSupplementable<Document>;
+using DocumentSupplement = WillBeHeapSupplement<Document>;
 
 } // namespace blink
 

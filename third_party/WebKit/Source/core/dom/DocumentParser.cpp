@@ -66,7 +66,7 @@ void DocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder>)
 
 TextResourceDecoder* DocumentParser::decoder()
 {
-    return 0;
+    return nullptr;
 }
 
 void DocumentParser::prepareToStopParsing()
@@ -80,11 +80,10 @@ void DocumentParser::stopParsing()
     m_state = StoppedState;
 
     // Clients may be removed while in the loop. Make a snapshot for iteration.
-    WillBeHeapVector<RawPtrWillBeMember<DocumentParserClient> > clientsSnapshot;
+    WillBeHeapVector<RawPtrWillBeMember<DocumentParserClient>> clientsSnapshot;
     copyToVector(m_clients, clientsSnapshot);
 
-    for (WillBeHeapVector<RawPtrWillBeMember<DocumentParserClient> >::const_iterator it = clientsSnapshot.begin(), itEnd = clientsSnapshot.end(); it != itEnd; ++it) {
-        DocumentParserClient* client = *it;
+    for (DocumentParserClient* client : clientsSnapshot) {
         if (!m_clients.contains(client))
             continue;
 

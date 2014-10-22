@@ -49,7 +49,7 @@ public:
 private:
     explicit DocumentLifecycleNotifier(Document*);
 
-    typedef HashSet<DocumentLifecycleObserver*> DocumentObserverSet;
+    using DocumentObserverSet = HashSet<DocumentLifecycleObserver*>;
     DocumentObserverSet m_documentObservers;
 };
 
@@ -61,16 +61,16 @@ inline PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create(D
 inline void DocumentLifecycleNotifier::notifyDocumentWasDetached()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDocumentObservers);
-    for (DocumentObserverSet::iterator i = m_documentObservers.begin(); i != m_documentObservers.end(); ++i)
-        (*i)->documentWasDetached();
+    for (DocumentLifecycleObserver* observer : m_documentObservers)
+        observer->documentWasDetached();
 }
 
 #if !ENABLE(OILPAN)
 inline void DocumentLifecycleNotifier::notifyDocumentWasDisposed()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDocumentObservers);
-    for (DocumentObserverSet::iterator i = m_documentObservers.begin(); i != m_documentObservers.end(); ++i)
-        (*i)->documentWasDisposed();
+    for (DocumentLifecycleObserver* observer : m_documentObservers)
+        observer->documentWasDisposed();
 }
 #endif
 

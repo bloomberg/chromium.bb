@@ -155,8 +155,8 @@ class WebGLRenderingContext;
 struct AnnotatedRegionValue;
 struct IconURL;
 
-typedef EventWithHitTestResults<PlatformMouseEvent> MouseEventWithHitTestResults;
-typedef int ExceptionCode;
+using MouseEventWithHitTestResults = EventWithHitTestResults<PlatformMouseEvent>;
+using ExceptionCode = int;
 
 enum StyleResolverUpdateMode {
     // Discards the StyleResolver and rebuilds it.
@@ -188,7 +188,7 @@ enum DocumentClass {
     XMLDocumentClass = 1 << 6,
 };
 
-typedef unsigned char DocumentClassFlags;
+using DocumentClassFlags = unsigned char;
 
 class Document;
 
@@ -498,7 +498,7 @@ public:
 
     DocumentLoader* loader() const;
 
-    void open(Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void open(Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
     PassRefPtrWillBeRawPtr<DocumentParser> implicitOpen();
 
     // close() is the DOM API document.close()
@@ -523,9 +523,9 @@ public:
 
     void cancelParsing();
 
-    void write(const SegmentedString& text, Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void write(const String& text, Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void writeln(const String& text, Document* ownerDocument = 0, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void write(const SegmentedString& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void write(const String& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void writeln(const String& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     bool wellFormed() const { return m_wellFormed; }
 
@@ -617,7 +617,7 @@ public:
     void hoveredNodeDetached(Node*);
     void activeChainNodeDetached(Node*);
 
-    void updateHoverActiveState(const HitTestRequest&, Element*, const PlatformMouseEvent* = 0);
+    void updateHoverActiveState(const HitTestRequest&, Element*, const PlatformMouseEvent* = nullptr);
 
     // Updates for :target (CSS3 selector).
     void setCSSTarget(Element*);
@@ -630,7 +630,7 @@ public:
     void unregisterNodeList(const LiveNodeListBase*);
     void registerNodeListWithIdNameCache(const LiveNodeListBase*);
     void unregisterNodeListWithIdNameCache(const LiveNodeListBase*);
-    bool shouldInvalidateNodeListCaches(const QualifiedName* attrName = 0) const;
+    bool shouldInvalidateNodeListCaches(const QualifiedName* attrName = nullptr) const;
     void invalidateNodeListCaches(const QualifiedName* attrName);
 
     void attachNodeIterator(NodeIterator*);
@@ -708,7 +708,7 @@ public:
     void processReferrerPolicy(const String& policy);
 
     // Returns the owning element in the parent document.
-    // Returns 0 if this is the top level document.
+    // Returns nullptr if this is the top level document.
     HTMLFrameOwnerElement* ownerElement() const;
 
     // Returns true if this document belongs to a frame that the parent document
@@ -773,7 +773,7 @@ public:
     // that as the style for the root element, rather than obtaining it on our own. The reason for
     // this is that style may not have been associated with the elements yet - in which case it may
     // have been calculated on the fly (without associating it with the actual element) somewhere.
-    Element* viewportDefiningElement(RenderStyle* rootStyle = 0) const;
+    Element* viewportDefiningElement(RenderStyle* rootStyle = nullptr) const;
 
     DocumentMarkerController& markers() const { return *m_markers; }
 
@@ -805,7 +805,7 @@ public:
 
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
-    HTMLScriptElement* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : 0; }
+    HTMLScriptElement* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : nullptr; }
     void pushCurrentScript(PassRefPtrWillBeRawPtr<HTMLScriptElement>);
     void popCurrentScript();
 
@@ -916,7 +916,7 @@ public:
     void enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event>);
     // Only one event for a target/event type combination will be dispatched per frame.
     void enqueueUniqueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event>);
-    void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >&);
+    void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>>&);
 
     bool hasFullscreenSupplement() const { return m_hasFullscreenSupplement; }
     void setHasFullscreenSupplement() { m_hasFullscreenSupplement = true; }
@@ -932,7 +932,7 @@ public:
     void loadPluginsSoon();
 
     PassRefPtrWillBeRawPtr<Touch> createTouch(LocalDOMWindow*, EventTarget*, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const;
-    PassRefPtrWillBeRawPtr<TouchList> createTouchList(WillBeHeapVector<RefPtrWillBeMember<Touch> >&) const;
+    PassRefPtrWillBeRawPtr<TouchList> createTouchList(WillBeHeapVector<RefPtrWillBeMember<Touch>>&) const;
 
     const DocumentTiming& timing() const { return m_documentTiming; }
 
@@ -991,9 +991,9 @@ public:
     AnimationTimeline& timeline() const { return *m_timeline; }
     CompositorPendingAnimations& compositorPendingAnimations() { return m_compositorPendingAnimations; }
 
-    void addToTopLayer(Element*, const Element* before = 0);
+    void addToTopLayer(Element*, const Element* before = nullptr);
     void removeFromTopLayer(Element*);
-    const WillBeHeapVector<RefPtrWillBeMember<Element> >& topLayerElements() const { return m_topLayerElements; }
+    const WillBeHeapVector<RefPtrWillBeMember<Element>>& topLayerElements() const { return m_topLayerElements; }
     HTMLDialogElement* activeModalDialog() const;
 
     // A non-null m_templateDocumentHost implies that |this| was created by ensureTemplateDocument().
@@ -1021,7 +1021,7 @@ public:
     void maybeHandleHttpRefresh(const String&, HttpRefreshType);
 
     void updateSecurityOrigin(PassRefPtr<SecurityOrigin>);
-    PassOwnPtr<LifecycleNotifier<Document> > createLifecycleNotifier();
+    PassOwnPtr<LifecycleNotifier<Document>> createLifecycleNotifier();
 
     void setHasViewportUnits() { m_hasViewportUnits = true; }
     bool hasViewportUnits() const { return m_hasViewportUnits; }
@@ -1149,7 +1149,7 @@ private:
     void setHoverNode(PassRefPtrWillBeRawPtr<Node>);
     Node* hoverNode() const { return m_hoverNode.get(); }
 
-    typedef HashSet<OwnPtr<EventFactoryBase> > EventFactorySet;
+    using EventFactorySet = HashSet<OwnPtr<EventFactoryBase>>;
     static EventFactorySet& eventFactories();
 
     DocumentLifecycle m_lifecycle;
@@ -1213,8 +1213,8 @@ private:
     uint64_t m_domTreeVersion;
     static uint64_t s_globalTreeVersion;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> > m_nodeIterators;
-    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<Range> > AttachedRangeSet;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator>> m_nodeIterators;
+    using AttachedRangeSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Range>>;
     AttachedRangeSet m_ranges;
 
     unsigned short m_listenerTypes;
@@ -1260,7 +1260,7 @@ private:
 
     OwnPtrWillBeMember<ScriptRunner> m_scriptRunner;
 
-    WillBeHeapVector<RefPtrWillBeMember<HTMLScriptElement> > m_currentScriptStack;
+    WillBeHeapVector<RefPtrWillBeMember<HTMLScriptElement>> m_currentScriptStack;
 
     OwnPtr<TransformSource> m_transformSource;
     RefPtrWillBeMember<Document> m_transformSourceDocument;
@@ -1276,13 +1276,13 @@ private:
 
     InheritedBool m_designMode;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase> > m_listsInvalidatedAtDocument;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<const LiveNodeListBase>> m_listsInvalidatedAtDocument;
 #if ENABLE(OILPAN)
     // Oilpan keeps track of all registered NodeLists.
     //
     // FIXME: Oilpan: improve - only need to know if a NodeList
     // is currently alive or not for the different types.
-    HeapHashSet<WeakMember<const LiveNodeListBase> > m_nodeLists[numNodeListInvalidationTypes];
+    HeapHashSet<WeakMember<const LiveNodeListBase>> m_nodeLists[numNodeListInvalidationTypes];
 #else
     unsigned m_nodeListCounts[numNodeListInvalidationTypes];
 #endif
@@ -1293,7 +1293,7 @@ private:
     bool m_hasAnnotatedRegions;
     bool m_annotatedRegionsDirty;
 
-    WillBeHeapHashMap<String, RefPtrWillBeMember<HTMLCanvasElement> > m_cssCanvasElements;
+    WillBeHeapHashMap<String, RefPtrWillBeMember<HTMLCanvasElement>> m_cssCanvasElements;
 
     OwnPtr<SelectorQueryCache> m_selectorQueryCache;
 
@@ -1316,7 +1316,7 @@ private:
 
     bool m_hasFullscreenSupplement; // For early return in Fullscreen::fromIfExists()
 
-    WillBeHeapVector<RefPtrWillBeMember<Element> > m_topLayerElements;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> m_topLayerElements;
 
     int m_loadEventDelayCount;
     Timer<Document> m_loadEventDelayTimer;
@@ -1348,7 +1348,7 @@ private:
 
     OwnPtrWillBeMember<ElementDataCache> m_elementDataCache;
 
-    typedef HashMap<AtomicString, OwnPtr<Locale> > LocaleIdentifierToLocaleMap;
+    using LocaleIdentifierToLocaleMap = HashMap<AtomicString, OwnPtr<Locale>>;
     LocaleIdentifierToLocaleMap m_localeCache;
 
     AnimationClock m_animationClock;
@@ -1362,14 +1362,14 @@ private:
     RawPtrWillBeMember<Document> m_templateDocumentHost;
 
     Timer<Document> m_didAssociateFormControlsTimer;
-    WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_associatedFormControls;
+    WillBeHeapHashSet<RefPtrWillBeMember<Element>> m_associatedFormControls;
 
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGUseElement> > m_useElementsNeedingUpdate;
-    WillBeHeapHashSet<RawPtrWillBeMember<Element> > m_layerUpdateSVGFilterElements;
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGUseElement>> m_useElementsNeedingUpdate;
+    WillBeHeapHashSet<RawPtrWillBeMember<Element>> m_layerUpdateSVGFilterElements;
 
     bool m_hasViewportUnits;
 
-    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentVisibilityObserver> > DocumentVisibilityObserverSet;
+    using DocumentVisibilityObserverSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentVisibilityObserver>>;
     DocumentVisibilityObserverSet m_visibilityObservers;
 
     int m_styleRecalcElementCounter;
