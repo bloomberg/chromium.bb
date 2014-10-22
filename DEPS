@@ -109,7 +109,7 @@ allowed_hosts = [
 
 deps = {
   'src/breakpad/src':
-   Var('chromium_git') + '/external/google-breakpad/src.git' + '@' + 'e15ba2c4d7d3b10c8c2818aa14ab66ad9a383ff6', # from svn revision 1388
+   Var('chromium_git') + '/external/google-breakpad/src.git' + '@' + '6eff9c9cbb15a431e16f98c9179858a8c1aea6cf', # from svn revision 1396
 
   'src/buildtools':
    Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
@@ -453,7 +453,7 @@ deps_os = {
      Var('chromium_git') + '/external/android_webview_glue.git' + '@' + '7d62eab4ca242beacac4471c002e998ef5c218b8',
 
     'src/third_party/android_tools':
-     Var('chromium_git') + '/android_tools.git' + '@' + '36bf7ac9a608f95f642ec64a743feea3b2e5a8d5',
+     Var('chromium_git') + '/android_tools.git' + '@' + 'ea50cccc11657404ce22cf928062ed1a3927eb39',
 
     'src/third_party/apache-mime4j':
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',

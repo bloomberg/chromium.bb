@@ -53,7 +53,7 @@ def ToolPath(tool, toolchain_info=None):
   # ToolPath looks for the tools in the completely incorrect directory.
   # This looks in the checked in android_tools.
   if ARCH == "arm":
-    toolchain_source = "arm-linux-androideabi-4.6"
+    toolchain_source = "arm-linux-androideabi-4.9"
     toolchain_prefix = "arm-linux-androideabi"
     ndk = "ndk"
   elif ARCH == "arm64":
@@ -61,15 +61,15 @@ def ToolPath(tool, toolchain_info=None):
     toolchain_prefix = "aarch64-linux-android"
     ndk = "ndk"
   elif ARCH == "x86":
-    toolchain_source = "x86-4.6"
-    toolchain_prefix = "i686-android-linux"
+    toolchain_source = "x86-4.9"
+    toolchain_prefix = "i686-linux-android"
     ndk = "ndk"
   elif ARCH == "x86_64":
     toolchain_source = "x86_64-4.9"
     toolchain_prefix = "x86_64-linux-android"
     ndk = "ndk"
   elif ARCH == "mips":
-    toolchain_source = "mipsel-linux-android-4.6"
+    toolchain_source = "mipsel-linux-android-4.9"
     toolchain_prefix = "mipsel-linux-android"
     ndk = "ndk"
   else:
@@ -97,26 +97,24 @@ def FindToolchain():
     return TOOLCHAIN_INFO
 
   ## Known toolchains, newer ones in the front.
+  gcc_version = "4.9"
   if ARCH == "arm64":
-    gcc_version = "4.9"
     known_toolchains = [
       ("aarch64-linux-android-" + gcc_version, "aarch64", "aarch64-linux-android")
     ]
   elif ARCH == "arm":
-    gcc_version = "4.6"
     known_toolchains = [
-      ("arm-linux-androideabi-" + gcc_version, "arm", "arm-linux-androideabi"),
+      ("arm-linux-androideabi-" + gcc_version, "arm", "arm-linux-androideabi")
     ]
   elif ARCH =="x86":
     known_toolchains = [
-      ("i686-android-linux-4.4.3", "x86", "i686-android-linux")
+      ("x86-" + gcc_version, "x86", "i686-linux-android")
     ]
   elif ARCH =="x86_64":
     known_toolchains = [
-      ("x86_64-linux-android-4.9", "x86_64", "x86_64-linux-android")
+      ("x86_64-" + gcc_version, "x86_64", "x86_64-linux-android")
     ]
   elif ARCH == "mips":
-    gcc_version = "4.6"
     known_toolchains = [
       ("mipsel-linux-android-" + gcc_version, "mips", "mipsel-linux-android")
     ]
