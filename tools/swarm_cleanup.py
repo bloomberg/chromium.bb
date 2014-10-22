@@ -127,6 +127,10 @@ def main():
     os.path.join(tempfile.gettempdir(), 'scoped_dir*'),
     os.path.join(tempfile.gettempdir(), 'zip_package*'),
   ]
+  if sys.platform == 'darwin':
+    globs_to_delete.append(
+        os.path.join(
+            os.path.expanduser('~'), 'Applications', 'Chromium Apps.localized'))
   if sys.platform == 'win32':
     globs_to_delete.append(
         os.path.join(
