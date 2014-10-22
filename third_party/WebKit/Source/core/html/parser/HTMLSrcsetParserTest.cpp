@@ -56,7 +56,8 @@ TEST(HTMLSrcsetParserTest, Basic)
         {2.0, -1, "src.gif", "2x.gif 2x", "2x.gif", 2.0, -1},
         {2.0, -1, "src.gif", "2x.gif 2px", "src.gif", 1.0, -1},
         {2.0, -1, "src.gif", "2x.gif 2ex", "src.gif", 1.0, -1},
-        {2.0, -1, "src.gif", "2x.gif 2e1x", "2x.gif", 20.0, -1},
+        {10.0, -1, "src.gif", "2x.gif 2e1x", "2x.gif", 20.0, -1},
+        {2.0, -1, "src.gif", "2x.gif 2e1x", "src.gif", 1.0, -1},
         {2.0, -1, "src.gif", "2x.gif +2x", "src.gif", 1.0, -1},
         {1.5, -1, "src.gif", "2x.gif 2x", "2x.gif", 2.0, -1},
         {2.5, -1, "src.gif", "2x.gif 2x", "2x.gif", 2.0, -1},
@@ -82,7 +83,12 @@ TEST(HTMLSrcsetParserTest, Basic)
         {1.0, 400, "fallback.gif", "400.gif 400pw", "fallback.gif", 1.0, -1},
         {1.0, 400, "fallback.gif", "400.gif +400w", "fallback.gif", 1.0, -1},
         {1.0, 400, "", "400.gif 400w 400h, 6000.gif 6000w", "400.gif", 1.0, 400},
-        {2.0, 400, "", "400.gif 400w, 6000.gif 6000w", "6000.gif", 15.0, 6000},
+        {4.0, 400, "", "400.gif 400w, 6000.gif 6000w", "6000.gif", 15.0, 6000},
+        {3.8, 400, "", "400.gif 400w, 6000.gif 6000w", "400.gif", 1.0, 400},
+        {0.9, 800, "src.gif", "400.gif 400w", "400.gif", 0.5, 400},
+        {0.9, 800, "src.gif", "1x.gif 1x, 400.gif 400w", "1x.gif", 1.0, -1},
+        {0.9, 800, "src.gif", "1x.gif 0.6x, 400.gif 400w", "1x.gif", 0.6, -1},
+        {2.0, 800, "src.gif", "400.gif 400w", "400.gif", 0.5, 400},
         {1.0, 400, "src.gif", "800.gif 800w", "800.gif", 2.0, 800},
         {1.0, 400, "src.gif", "0.gif 0w, 800.gif 800w", "800.gif", 2.0, 800},
         {1.0, 400, "src.gif", "0.gif 0w, 2x.gif 2x", "src.gif", 1.0, -1},
@@ -104,6 +110,7 @@ TEST(HTMLSrcsetParserTest, Basic)
         {1.0, -1, "", "data:,a   +1x", "", 1.0, -1},
         {1.0, -1, "", "data:,a 1.0x", "data:,a", 1.0, -1},
         {1.0, -1, "", "1%20and%202.gif 1x", "1%20and%202.gif", 1.0, -1},
+        {1.0, 700, "", "data:,a 0.5x, data:,b 1400w", "data:,b", 2.0, 1400},
         {0, 0, 0, 0, 0, 0} // Do not remove the terminator line.
     };
 

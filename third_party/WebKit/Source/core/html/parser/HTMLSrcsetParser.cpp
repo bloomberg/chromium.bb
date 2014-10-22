@@ -321,6 +321,39 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, Vec
         parseImageCandidatesFromSrcsetAttribute<UChar>(attribute, attribute.characters16(), attribute.length(), imageCandidates, document);
 }
 
+static int selectionLogic(Vector<ImageCandidate>& imageCandidates, float deviceScaleFactor, bool ignoreSrc)
+{
+    unsigned i = 0;
+
+    for (; i < imageCandidates.size() - 1; ++i) {
+        unsigned next = i + 1;
+        float nextDensity;
+        float currentDensity;
+        float geometricMean;
+        if (ignoreSrc) {
+            if (imageCandidates[i].srcOrigin())
+                continue;
+            if (imageCandidates[next].srcOrigin()) {
+                ++next;
+                if (next >= imageCandidates.size())
+                    break;
+                ASSERT(!imageCandidates[next].srcOrigin());
+            }
+        }
+
+        nextDensity = imageCandidates[next].density();
+        if (nextDensity < deviceScaleFactor)
+            continue;
+
+        currentDensity = imageCandidates[i].density();
+        geometricMean = sqrt(currentDensity * nextDensity);
+        if (deviceScaleFactor >= geometricMean)
+            return next;
+        break;
+    }
+    return i;
+}
+
 static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sourceSize, Vector<ImageCandidate>& imageCandidates)
 {
     const float defaultDensityValue = 1.0;
@@ -340,16 +373,9 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sour
 
     std::stable_sort(imageCandidates.begin(), imageCandidates.end(), compareByDensity);
 
-    unsigned i;
-    for (i = 0; i < imageCandidates.size() - 1; ++i) {
-        if ((imageCandidates[i].density() >= deviceScaleFactor) && (!ignoreSrc || !imageCandidates[i].srcOrigin()))
-            break;
-    }
+    unsigned i = selectionLogic(imageCandidates, deviceScaleFactor, ignoreSrc);
+    ASSERT(i < imageCandidates.size());
 
-    if (imageCandidates[i].srcOrigin() && ignoreSrc) {
-        ASSERT(i > 0);
-        --i;
-    }
     float winningDensity = imageCandidates[i].density();
 
     unsigned winner = i;
