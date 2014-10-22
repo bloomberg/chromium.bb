@@ -147,6 +147,14 @@ void MimeHandlerViewGuest::ContentsZoomChange(bool zoom_in) {
     delegate_->ChangeZoom(zoom_in);
 }
 
+bool MimeHandlerViewGuest::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  if (delegate_)
+    return delegate_->HandleContextMenu(web_contents(), params);
+
+  return false;
+}
+
 void MimeHandlerViewGuest::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {

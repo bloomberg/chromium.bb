@@ -10,6 +10,7 @@
 
 namespace content {
 class WebContents;
+struct ContextMenuParams;
 }  // namespace content
 
 namespace extensions {
@@ -47,6 +48,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
 
   // WebContentsDelegate implementation.
   void ContentsZoomChange(bool zoom_in) override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;

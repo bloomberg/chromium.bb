@@ -9,6 +9,7 @@
 
 namespace content {
 class WebContents;
+struct ContextMenuParams;
 }  // namespace content
 
 namespace extensions {
@@ -23,6 +24,10 @@ class MimeHandlerViewGuestDelegate {
 
   // Attaches helpers upon initializing the WebContents.
   virtual void AttachHelpers() {}
+
+  // Handles context menu, or returns false if unhandled.
+  virtual bool HandleContextMenu(content::WebContents* web_contents,
+                                 const content::ContextMenuParams& params);
 
   // Request to change the zoom level of the top level page containing
   // this view.
