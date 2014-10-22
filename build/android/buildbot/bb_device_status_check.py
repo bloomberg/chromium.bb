@@ -252,7 +252,7 @@ def KillAllAdb():
       try:
         if 'adb' in p.name:
           yield p
-      except (psutil.error.NoSuchProcess, psutil.error.AccessDenied):
+      except (psutil.NoSuchProcess, psutil.AccessDenied):
         pass
 
   for sig in [signal.SIGTERM, signal.SIGQUIT, signal.SIGKILL]:
@@ -261,12 +261,12 @@ def KillAllAdb():
         print 'kill %d %d (%s [%s])' % (sig, p.pid, p.name,
             ' '.join(p.cmdline))
         p.send_signal(sig)
-      except (psutil.error.NoSuchProcess, psutil.error.AccessDenied):
+      except (psutil.NoSuchProcess, psutil.AccessDenied):
         pass
   for p in GetAllAdb():
     try:
       print 'Unable to kill %d (%s [%s])' % (p.pid, p.name, ' '.join(p.cmdline))
-    except (psutil.error.NoSuchProcess, psutil.error.AccessDenied):
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
       pass
 
 
