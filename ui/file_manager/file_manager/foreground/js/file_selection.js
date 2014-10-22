@@ -159,7 +159,7 @@ FileSelection.prototype.cancelComputing_ = function() {
 function FileSelectionHandler(fileManager) {
   this.fileManager_ = fileManager;
   // TODO(dgozman): create a shared object with most of UI elements.
-  this.okButton_ = fileManager.okButton_;
+  this.okButton_ = fileManager.ui.dialogFooter.okButton;
   this.filenameInput_ = fileManager.filenameInput_;
   this.previewPanel_ = fileManager.previewPanel_;
   this.taskItems_ = fileManager.taskItems_;

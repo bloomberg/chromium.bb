@@ -289,20 +289,6 @@ function FileManager() {
   this.gearButton_ = null;
 
   /**
-   * The OK button.
-   * @type {HTMLButtonElement}
-   * @private
-   */
-  this.okButton_ = null;
-
-  /**
-   * The cancel button.
-   * @type {HTMLButtonElement}
-   * @private
-   */
-  this.cancelButton_ = null;
-
-  /**
    * The combo button to specify the task.
    * @type {HTMLButtonElement}
    * @private
@@ -364,13 +350,6 @@ function FileManager() {
    * @private
    */
   this.listContainer_ = null;
-
-  /**
-   * The file type selector.
-   * @type {HTMLSelectElement}
-   * @private
-   */
-  this.fileTypeSelector_ = null;
 
   /**
    * Open-with command in the context menu.
@@ -1246,9 +1225,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Create the root view of FileManager.
     this.ui_ = new FileManagerUI(this.dialogDom_, this.dialogType);
-    this.fileTypeSelector_ = this.ui_.fileTypeSelector;
-    this.okButton_ = this.ui_.okButton;
-    this.cancelButton_ = this.ui_.cancelButton;
 
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {
@@ -1375,9 +1351,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.listContainer_.addEventListener(
         'mousemove', this.onListMouseMove_.bind(this));
 
-    this.okButton_.addEventListener('click', this.onOk_.bind(this));
+    this.ui_.dialogFooter.okButton.addEventListener(
+        'click', this.onOk_.bind(this));
     this.onCancelBound_ = this.onCancel_.bind(this);
-    this.cancelButton_.addEventListener('click', this.onCancelBound_);
+    this.ui_.dialogFooter.cancelButton.addEventListener(
+        'click', this.onCancelBound_);
 
     this.decorateSplitter(
         this.dialogDom_.querySelector('#navigation-list-splitter'));
@@ -1654,21 +1632,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
   };
 
-  /**
-   * Index of selected item in the typeList of the dialog params.
-   *
-   * @return {number} 1-based index of selected type or 0 if no type selected.
-   * @private
-   */
-  FileManager.prototype.getSelectedFilterIndex_ = function() {
-    var index = Number(this.fileTypeSelector_.selectedIndex);
-    if (index < 0)  // Nothing selected.
-      return 0;
-    if (this.params_.includeAllFiles)  // Already 1-based.
-      return index;
-    return index + 1;  // Convert to 1-based;
-  };
-
   FileManager.prototype.setListType = function(type) {
     if (type && type == this.listType_)
       return;
@@ -1801,7 +1764,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.params_.includeAllFiles) {
       var option = this.document_.createElement('option');
       option.innerText = str('ALL_FILES_FILTER');
-      this.fileTypeSelector_.appendChild(option);
+      this.ui_.dialogFooter.fileTypeSelector.appendChild(option);
       option.value = 0;
     }
 
@@ -1836,15 +1799,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (fileType.selected)
         option.selected = true;
 
-      this.fileTypeSelector_.appendChild(option);
+      this.ui_.dialogFooter.fileTypeSelector.appendChild(option);
     }
 
-    var options = this.fileTypeSelector_.querySelectorAll('option');
+    var options = this.ui_.dialogFooter.fileTypeSelector.querySelectorAll(
+        'option');
     if (options.length >= 2) {
       // There is in fact no choice, show the selector.
-      this.fileTypeSelector_.hidden = false;
+      this.ui_.dialogFooter.fileTypeSelector.hidden = false;
 
-      this.fileTypeSelector_.addEventListener('change',
+      this.ui_.dialogFooter.fileTypeSelector.addEventListener('change',
           this.updateFileTypeFilter_.bind(this));
     }
   };
@@ -1855,7 +1819,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.updateFileTypeFilter_ = function() {
     this.fileFilter_.removeFilter('fileType');
-    var selectedIndex = this.getSelectedFilterIndex_();
+    var selectedIndex = this.ui_.dialogFooter.selectedFilterIndex;
     if (selectedIndex > 0) { // Specific filter selected.
       var regexp = new RegExp('\\.(' +
           this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
@@ -2604,7 +2568,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         tasks.executeDefault();
       return true;
     }
-    if (!this.okButton_.disabled) {
+    if (!this.ui_.dialogFooter.okButton.disabled) {
       this.onOk_();
       return true;
     }
@@ -3072,7 +3036,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.onFilenameInputKeyDown_ = function(event) {
     if ((util.getKeyModifiers(event) + event.keyCode) === '13' /* Enter */)
-      this.okButton_.click();
+      this.ui_.dialogFooter.okButton.click();
   };
 
   /**
@@ -3376,7 +3340,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         if (this.dialogType != DialogType.FULL_PAGE) {
           // If there is nothing else for ESC to do, then cancel the dialog.
           event.preventDefault();
-          this.cancelButton_.click();
+          this.ui_.dialogFooter.cancelButton.click();
         }
         break;
     }
@@ -3611,8 +3575,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.document_.querySelector('.dialog-container').appendChild(shade);
       setTimeout(function() { shade.setAttribute('fadein', 'fadein'); }, 100);
       footer.setAttribute('progress', 'progress');
-      this.cancelButton_.removeEventListener('click', this.onCancelBound_);
-      this.cancelButton_.addEventListener('click', onCancel);
+      this.ui_.dialogFooter.cancelButton.removeEventListener(
+          'click', this.onCancelBound_);
+      this.ui_.dialogFooter.cancelButton.addEventListener('click', onCancel);
       chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
           onFileTransfersUpdated);
     }.bind(this);
@@ -3620,8 +3585,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var cleanup = function() {
       shade.parentNode.removeChild(shade);
       footer.removeAttribute('progress');
-      this.cancelButton_.removeEventListener('click', onCancel);
-      this.cancelButton_.addEventListener('click', this.onCancelBound_);
+      this.ui_.dialogFooter.cancelButton.removeEventListener('click', onCancel);
+      this.ui_.dialogFooter.cancelButton.addEventListener(
+          'click', this.onCancelBound_);
       chrome.fileManagerPrivate.onFileTransfersUpdated.removeListener(
           onFileTransfersUpdated);
     }.bind(this);
@@ -3686,7 +3652,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           this.selectFilesAndClose_({
             urls: [currentDirUrl + encodeURIComponent(filename)],
             multiple: false,
-            filterIndex: this.getSelectedFilterIndex_(filename)
+            filterIndex: this.ui_.dialogFooter.selectedFilterIndex
           });
         }.bind(this);
 
@@ -3728,7 +3694,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var singleSelection = {
         urls: [url],
         multiple: false,
-        filterIndex: this.getSelectedFilterIndex_()
+        filterIndex: this.ui_.dialogFooter.selectedFilterIndex
       };
       this.selectFilesAndClose_(singleSelection);
       return;
@@ -3778,7 +3744,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var singleSelection = {
       urls: [files[0]],
       multiple: false,
-      filterIndex: this.getSelectedFilterIndex_()
+      filterIndex: this.ui_.dialogFooter.selectedFilterIndex
     };
     this.selectFilesAndClose_(singleSelection);
   };

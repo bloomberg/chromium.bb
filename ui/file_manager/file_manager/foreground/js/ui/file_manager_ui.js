@@ -105,22 +105,10 @@ function FileManagerUI(element, dialogType) {
   this.toggleViewButton = null;
 
   /**
-   * File type selector in the footer.
-   * @type {HTMLSelectElement}
+   * Dialog footer.
+   * @type {DialogFooter}
    */
-  this.fileTypeSelector = null;
-
-  /**
-   * OK button in the footer.
-   * @type {HTMLButtonElement}
-   */
-  this.okButton = null;
-
-  /**
-   * Cancel button in the footer.
-   * @type {HTMLButtonElement}
-   */
-  this.cancelButton = null;
+  this.dialogFooter = null;
 
   Object.seal(this);
 
@@ -143,44 +131,10 @@ function FileManagerUI(element, dialogType) {
  */
 FileManagerUI.prototype.initDialogType_ = function() {
   // Obtain elements.
-  var hasFooterPanel =
-      this.dialogType_ == DialogType.SELECT_SAVEAS_FILE;
-
-  // If the footer panel exists, the buttons are placed there. Otherwise,
-  // the buttons are on the preview panel.
-  var parentPanelOfButtons = this.element_.ownerDocument.querySelector(
-      !hasFooterPanel ? '.preview-panel' : '.dialog-footer');
-  parentPanelOfButtons.classList.add('button-panel');
-  this.fileTypeSelector = /** @type {!HTMLSelectElement} */
-      (parentPanelOfButtons.querySelector('.file-type'));
-  this.okButton = /** @type {!HTMLButtonElement} */
-      (parentPanelOfButtons.querySelector('.ok'));
-  this.cancelButton = /** @type {!HTMLButtonElement} */
-      (parentPanelOfButtons.querySelector('.cancel'));
+  this.dialogFooter = DialogFooter.findDialogFooter(
+      this.dialogType_, /** @type {!Document} */(this.element_.ownerDocument));
 
   // Set attributes.
-  var okLabel = str('OPEN_LABEL');
-
-  switch (this.dialogType_) {
-    case DialogType.SELECT_UPLOAD_FOLDER:
-      okLabel = str('UPLOAD_LABEL');
-      break;
-
-    case DialogType.SELECT_SAVEAS_FILE:
-      okLabel = str('SAVE_LABEL');
-      break;
-
-    case DialogType.SELECT_FOLDER:
-    case DialogType.SELECT_OPEN_FILE:
-    case DialogType.SELECT_OPEN_MULTI_FILE:
-    case DialogType.FULL_PAGE:
-      break;
-
-    default:
-      throw new Error('Unknown dialog type: ' + this.dialogType_);
-  }
-
-  this.okButton.textContent = okLabel;
   this.element_.setAttribute('type', this.dialogType_);
 };
 
