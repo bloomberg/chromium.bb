@@ -1556,26 +1556,25 @@ class DependencyGraphNode(object):
 
     return list(flat_list)
 
-  def FindCycles(self, path=None):
+  def FindCycles(self):
     """
     Returns a list of cycles in the graph, where each cycle is its own list.
     """
-    if path is None:
-      path = [self]
-
     results = []
-    for node in self.dependents:
-      if node in path:
-        cycle = [node]
-        for part in path:
-          cycle.append(part)
-          if part == node:
-            break
-        results.append(tuple(cycle))
-      else:
-        results.extend(node.FindCycles([node] + path))
+    visited = set()
 
-    return list(set(results))
+    def Visit(node, path):
+      for child in node.dependents:
+        if child in path:
+          results.append([child] + path[:path.index(child) + 1])
+        elif not child in visited:
+          visited.add(child)
+          Visit(child, [child] + path)
+
+    visited.add(self)
+    Visit(self, [self])
+
+    return results
 
   def DirectDependencies(self, dependencies=None):
     """Returns a list of just direct dependencies."""
@@ -1792,12 +1791,22 @@ def BuildDependencyList(targets):
   flat_list = root_node.FlattenToList()
 
   # If there's anything left unvisited, there must be a circular dependency
-  # (cycle).  If you need to figure out what's wrong, look for elements of
-  # targets that are not in flat_list.
+  # (cycle).
   if len(flat_list) != len(targets):
+    if not root_node.dependents:
+      # If all targets have dependencies, add the first target as a dependent
+      # of root_node so that the cycle can be discovered from root_node.
+      target = targets.keys()[0]
+      target_node = dependency_nodes[target]
+      target_node.dependencies.append(root_node)
+      root_node.dependents.append(target_node)
+
+    cycles = []
+    for cycle in root_node.FindCycles():
+      paths = [node.ref for node in cycle]
+      cycles.append('Cycle: %s' % ' -> '.join(paths))
     raise DependencyGraphNode.CircularException(
-        'Some targets not reachable, cycle in dependency graph detected: ' +
-        ' '.join(set(flat_list) ^ set(targets)))
+        'Cycles in dependency graph detected:\n' + '\n'.join(cycles))
 
   return [dependency_nodes, flat_list]
 
@@ -1847,20 +1856,18 @@ def VerifyNoGYPFileCircularDependencies(targets):
   # If there's anything left unvisited, there must be a circular dependency
   # (cycle).
   if len(flat_list) != len(dependency_nodes):
-    bad_files = []
-    for file in dependency_nodes.iterkeys():
-      if not file in flat_list:
-        bad_files.append(file)
-    common_path_prefix = os.path.commonprefix(dependency_nodes)
+    if not root_node.dependents:
+      # If all files have dependencies, add the first file as a dependent
+      # of root_node so that the cycle can be discovered from root_node.
+      file_node = dependency_nodes.values()[0]
+      file_node.dependencies.append(root_node)
+      root_node.dependents.append(file_node)
     cycles = []
     for cycle in root_node.FindCycles():
-      simplified_paths = []
-      for node in cycle:
-        assert(node.ref.startswith(common_path_prefix))
-        simplified_paths.append(node.ref[len(common_path_prefix):])
-      cycles.append('Cycle: %s' % ' -> '.join(simplified_paths))
-    raise DependencyGraphNode.CircularException, \
-        'Cycles in .gyp file dependency graph detected:\n' + '\n'.join(cycles)
+      paths = [node.ref for node in cycle]
+      cycles.append('Cycle: %s' % ' -> '.join(paths))
+    raise DependencyGraphNode.CircularException(
+        'Cycles in .gyp file dependency graph detected:\n' + '\n'.join(cycles))
 
 
 def DoDependentSettings(key, flat_list, targets, dependency_nodes):
