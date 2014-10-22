@@ -177,11 +177,6 @@ void SyncPointManager::WaitSyncPoint(uint32 sync_point) {
 base::LazyInstance<SyncPointManager> g_sync_point_manager =
     LAZY_INSTANCE_INITIALIZER;
 
-bool WaitSyncPoint(uint32 sync_point) {
-  g_sync_point_manager.Get().WaitSyncPoint(sync_point);
-  return true;
-}
-
 }  // anonyous namespace
 
 InProcessCommandBuffer::Service::Service() {}
@@ -422,7 +417,9 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     decoder_->SetResizeCallback(base::Bind(
         &InProcessCommandBuffer::OnResizeView, gpu_thread_weak_ptr_));
   }
-  decoder_->SetWaitSyncPointCallback(base::Bind(&WaitSyncPoint));
+  decoder_->SetWaitSyncPointCallback(
+      base::Bind(&InProcessCommandBuffer::WaitSyncPointOnGpuThread,
+                 base::Unretained(this)));
 
   return true;
 }
@@ -658,7 +655,7 @@ void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
       make_current_success = MakeCurrent();
     }
     if (make_current_success)
-      mailbox_manager->PushTextureUpdates();
+      mailbox_manager->PushTextureUpdates(sync_point);
   }
   g_sync_point_manager.Get().RetireSyncPoint(sync_point);
 }
@@ -670,6 +667,14 @@ void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
                        base::Unretained(this),
                        sync_point,
                        WrapCallback(callback)));
+}
+
+bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
+  g_sync_point_manager.Get().WaitSyncPoint(sync_point);
+  gles2::MailboxManager* mailbox_manager =
+      decoder_->GetContextGroup()->mailbox_manager();
+  mailbox_manager->PullTextureUpdates(sync_point);
+  return true;
 }
 
 void InProcessCommandBuffer::SignalSyncPointOnGpuThread(

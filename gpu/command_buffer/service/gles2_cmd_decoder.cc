@@ -9746,11 +9746,11 @@ error::Error GLES2DecoderImpl::HandleWaitSyncPointCHROMIUM(
     const void* cmd_data) {
   const gles2::cmds::WaitSyncPointCHROMIUM& c =
       *static_cast<const gles2::cmds::WaitSyncPointCHROMIUM*>(cmd_data);
-  group_->mailbox_manager()->PullTextureUpdates();
+  uint32 sync_point = c.sync_point;
   if (wait_sync_point_callback_.is_null())
     return error::kNoError;
 
-  return wait_sync_point_callback_.Run(c.sync_point) ?
+  return wait_sync_point_callback_.Run(sync_point) ?
       error::kNoError : error::kDeferCommandUntilLater;
 }
 

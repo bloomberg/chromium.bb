@@ -27,10 +27,6 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
   virtual void RemoveClient(gfx::GLImage* client) = 0;
   virtual bool IsClient(gfx::GLImage* client) = 0;
   virtual void BindToTexture(GLenum target) = 0;
-  virtual void WillRead(gfx::GLImage* client) = 0;
-  virtual void WillWrite(gfx::GLImage* client) = 0;
-  virtual void DidRead(gfx::GLImage* client) = 0;
-  virtual void DidWrite(gfx::GLImage* client) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<NativeImageBuffer>;

@@ -7,7 +7,12 @@
 #include "base/bind.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
+
+#if !defined(OS_MACOSX)
+#include "ui/gl/gl_fence_egl.h"
+#endif
 
 namespace gpu {
 namespace gles2 {
@@ -136,7 +141,8 @@ void MailboxSynchronizer::TextureDeleted(Texture* texture) {
   }
 }
 
-void MailboxSynchronizer::PushTextureUpdates(MailboxManager* manager) {
+void MailboxSynchronizer::PushTextureUpdates(MailboxManager* manager,
+                                             uint32 sync_point) {
   base::AutoLock lock(lock_);
   for (MailboxManager::MailboxToTextureMap::const_iterator texture_it =
            manager->mailbox_to_textures_.begin();
@@ -179,6 +185,33 @@ void MailboxSynchronizer::PushTextureUpdates(MailboxManager* manager) {
       textures_.insert(std::make_pair(texture, TextureVersion(group)));
     }
   }
+
+  CreateFenceLocked(sync_point);
+}
+
+void MailboxSynchronizer::CreateFenceLocked(uint32 sync_point) {
+  lock_.AssertAcquired();
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationMockGL)
+    return;
+
+#if !defined(OS_MACOSX)
+  if (sync_point) {
+    while (!sync_points_.empty() &&
+           sync_points_.front()->second->HasCompleted()) {
+      sync_point_to_fence_.erase(sync_points_.front());
+      sync_points_.pop();
+    }
+    // Need to use EGL fences since we are likely not in a single share group.
+    linked_ptr<gfx::GLFence> fence(make_linked_ptr(new gfx::GLFenceEGL(true)));
+    if (fence.get()) {
+      std::pair<SyncPointToFenceMap::iterator, bool> result =
+          sync_point_to_fence_.insert(std::make_pair(sync_point, fence));
+      DCHECK(result.second);
+      sync_points_.push(result.first);
+    }
+    DCHECK(sync_points_.size() == sync_point_to_fence_.size());
+  }
+#endif
 }
 
 void MailboxSynchronizer::UpdateTextureLocked(Texture* texture,
@@ -208,8 +241,20 @@ void MailboxSynchronizer::UpdateTextureLocked(Texture* texture,
                                         gl_image ? image_buffer : NULL);
 }
 
-void MailboxSynchronizer::PullTextureUpdates(MailboxManager* manager) {
+void MailboxSynchronizer::AcquireFenceLocked(uint32 sync_point) {
+  lock_.AssertAcquired();
+  SyncPointToFenceMap::iterator fence_it =
+      sync_point_to_fence_.find(sync_point);
+  if (fence_it != sync_point_to_fence_.end()) {
+    fence_it->second->ServerWait();
+  }
+}
+
+void MailboxSynchronizer::PullTextureUpdates(MailboxManager* manager,
+                                             uint32 sync_point) {
   base::AutoLock lock(lock_);
+  AcquireFenceLocked(sync_point);
+
   for (MailboxManager::MailboxToTextureMap::const_iterator texture_it =
            manager->mailbox_to_textures_.begin();
        texture_it != manager->mailbox_to_textures_.end();

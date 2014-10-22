@@ -8,12 +8,17 @@
 #include "gpu/command_buffer/common/mailbox.h"
 
 #include <map>
+#include <queue>
 #include <set>
 
 #include "base/memory/linked_ptr.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/service/texture_definition.h"
 #include "gpu/gpu_export.h"
+
+namespace gfx {
+class GLFence;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -34,8 +39,8 @@ class MailboxSynchronizer {
   // Create a texture from a globally visible mailbox.
   Texture* CreateTextureFromMailbox(unsigned target, const Mailbox& mailbox);
 
-  void PushTextureUpdates(MailboxManager* manager);
-  void PullTextureUpdates(MailboxManager* manager);
+  void PushTextureUpdates(MailboxManager* manager, uint32 sync_point);
+  void PullTextureUpdates(MailboxManager* manager, uint32 sync_point);
 
   void TextureDeleted(Texture* texture);
 
@@ -85,6 +90,12 @@ class MailboxSynchronizer {
       const TargetName& target_name,
       TextureGroup* group);
   void UpdateTextureLocked(Texture* texture, TextureVersion& texture_version);
+  void CreateFenceLocked(uint32 sync_point);
+  void AcquireFenceLocked(uint32 sync_point);
+
+  typedef std::map<uint32, linked_ptr<gfx::GLFence> > SyncPointToFenceMap;
+  SyncPointToFenceMap sync_point_to_fence_;
+  std::queue<SyncPointToFenceMap::iterator> sync_points_;
 
   DISALLOW_COPY_AND_ASSIGN(MailboxSynchronizer);
 };

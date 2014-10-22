@@ -181,6 +181,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void RetireSyncPointOnGpuThread(uint32 sync_point);
   void SignalSyncPointOnGpuThread(uint32 sync_point,
                                   const base::Closure& callback);
+  bool WaitSyncPointOnGpuThread(uint32 sync_point);
   void SignalQueryOnGpuThread(unsigned query_id, const base::Closure& callback);
   void DestroyTransferBufferOnGpuThread(int32 id);
 

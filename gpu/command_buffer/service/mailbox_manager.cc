@@ -84,14 +84,14 @@ void MailboxManager::TextureDeleted(Texture* texture) {
     sync_->TextureDeleted(texture);
 }
 
-void MailboxManager::PushTextureUpdates() {
+void MailboxManager::PushTextureUpdates(uint32 sync_point) {
   if (sync_)
-    sync_->PushTextureUpdates(this);
+    sync_->PushTextureUpdates(this, sync_point);
 }
 
-void MailboxManager::PullTextureUpdates() {
+void MailboxManager::PullTextureUpdates(uint32 sync_point) {
   if (sync_)
-    sync_->PullTextureUpdates(this);
+    sync_->PullTextureUpdates(this, sync_point);
 }
 
 MailboxManager::TargetName::TargetName(unsigned target, const Mailbox& mailbox)

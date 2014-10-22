@@ -41,8 +41,8 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
 
   // Used with the MailboxSynchronizer to push/pull texture state to/from
   // other manager instances.
-  void PushTextureUpdates();
-  void PullTextureUpdates();
+  void PushTextureUpdates(uint32 sync_point);
+  void PullTextureUpdates(uint32 sync_point);
 
   // Destroy any mailbox that reference the given texture.
   void TextureDeleted(Texture* texture);

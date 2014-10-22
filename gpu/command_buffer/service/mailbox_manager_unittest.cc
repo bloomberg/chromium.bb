@@ -300,8 +300,8 @@ TEST_F(MailboxManagerSyncTest, ProduceSyncDestroy) {
   EXPECT_EQ(texture, manager_->ConsumeTexture(GL_TEXTURE_2D, name));
 
   // Synchronize
-  manager_->PushTextureUpdates();
-  manager2_->PullTextureUpdates();
+  manager_->PushTextureUpdates(0);
+  manager2_->PullTextureUpdates(0);
 
   DestroyTexture(texture);
   EXPECT_EQ(NULL, manager_->ConsumeTexture(GL_TEXTURE_2D, name));
@@ -321,8 +321,8 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   EXPECT_EQ(texture, manager_->ConsumeTexture(GL_TEXTURE_2D, name));
 
   // Synchronize
-  manager_->PushTextureUpdates();
-  manager2_->PullTextureUpdates();
+  manager_->PushTextureUpdates(0);
+  manager2_->PullTextureUpdates(0);
 
   EXPECT_CALL(*gl_, GenTextures(1, _))
       .WillOnce(SetArgPointee<1>(kNewTextureId));
@@ -349,10 +349,10 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
   // Synchronize again
-  manager_->PushTextureUpdates();
+  manager_->PushTextureUpdates(0);
   SetupUpdateTexParamExpectations(
       kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-  manager2_->PullTextureUpdates();
+  manager2_->PullTextureUpdates(0);
   GLsizei width, height;
   new_texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height);
   EXPECT_EQ(16, width);
@@ -382,7 +382,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
 
   // The last change to the texture should be visible without a sync point (i.e.
   // push).
-  manager2_->PullTextureUpdates();
+  manager2_->PullTextureUpdates(0);
   new_texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height);
   EXPECT_EQ(64, width);
   EXPECT_EQ(64, height);
@@ -410,8 +410,8 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeBidirectional) {
   manager2_->ProduceTexture(GL_TEXTURE_2D, name2, texture2);
 
   // Make visible.
-  manager_->PushTextureUpdates();
-  manager2_->PushTextureUpdates();
+  manager_->PushTextureUpdates(0);
+  manager2_->PushTextureUpdates(0);
 
   // Create textures in the other manager instances for texture1 and texture2,
   // respectively to create a real sharing scenario. Otherwise, there would
@@ -438,7 +438,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeBidirectional) {
             SetParameter(texture1, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
 
   // Make sure this does not clobber it with the previous version we pushed.
-  manager_->PullTextureUpdates();
+  manager_->PullTextureUpdates(0);
 
   // Make a change to texture2
   DCHECK_EQ(static_cast<GLuint>(GL_LINEAR), texture2->mag_filter());
@@ -448,16 +448,16 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeBidirectional) {
   Mock::VerifyAndClearExpectations(gl_.get());
 
   // Synchronize in both directions
-  manager_->PushTextureUpdates();
-  manager2_->PushTextureUpdates();
+  manager_->PushTextureUpdates(0);
+  manager2_->PushTextureUpdates(0);
   // manager1 should see the change to texture2 mag_filter being applied.
   SetupUpdateTexParamExpectations(
       new_texture2->service_id(), GL_LINEAR, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-  manager_->PullTextureUpdates();
+  manager_->PullTextureUpdates(0);
   // manager2 should see the change to texture1 min_filter being applied.
   SetupUpdateTexParamExpectations(
       new_texture1->service_id(), GL_NEAREST, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-  manager2_->PullTextureUpdates();
+  manager2_->PullTextureUpdates(0);
 
   DestroyTexture(texture1);
   DestroyTexture(texture2);
