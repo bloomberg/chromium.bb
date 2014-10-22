@@ -53,6 +53,7 @@ class AndroidDeviceManager
   };
 
   typedef base::Callback<void(const DeviceInfo&)> DeviceInfoCallback;
+  class Device;
 
   class AndroidWebSocket {
    public:
@@ -66,9 +67,28 @@ class AndroidDeviceManager
       virtual ~Delegate() {}
     };
 
-    virtual ~AndroidWebSocket() {}
+    ~AndroidWebSocket();
 
-    virtual void SendFrame(const std::string& message) = 0;
+    void SendFrame(const std::string& message);
+
+   private:
+    friend class Device;
+    class WebSocketImpl;
+
+    AndroidWebSocket(
+        scoped_refptr<Device> device,
+        const std::string& socket_name,
+        const std::string& url,
+        AndroidWebSocket::Delegate* delegate);
+    void Connected(int result, scoped_ptr<net::StreamSocket> socket);
+    void OnFrameRead(const std::string& message);
+    void OnSocketClosed();
+
+    scoped_refptr<Device> device_;
+    WebSocketImpl* socket_impl_;
+    Delegate* delegate_;
+    base::WeakPtrFactory<AndroidWebSocket> weak_factory_;
+    DISALLOW_COPY_AND_ASSIGN(AndroidWebSocket);
   };
 
   class DeviceProvider;
@@ -76,10 +96,6 @@ class AndroidDeviceManager
   class Device : public base::RefCountedThreadSafe<Device>,
                  public base::NonThreadSafe {
    public:
-    typedef AndroidDeviceManager::DeviceInfoCallback DeviceInfoCallback;
-    typedef AndroidDeviceManager::CommandCallback CommandCallback;
-    typedef AndroidDeviceManager::SocketCallback SocketCallback;
-
     void QueryDeviceInfo(const DeviceInfoCallback& callback);
 
     void OpenSocket(const std::string& socket_name,
@@ -92,7 +108,6 @@ class AndroidDeviceManager
     void HttpUpgrade(const std::string& socket_name,
                      const std::string& url,
                      const SocketCallback& callback);
-
     AndroidWebSocket* CreateWebSocket(
         const std::string& socket_name,
         const std::string& url,
@@ -101,12 +116,14 @@ class AndroidDeviceManager
     std::string serial() { return serial_; }
 
    private:
+    friend class base::RefCountedThreadSafe<Device>;
     friend class AndroidDeviceManager;
+    friend class AndroidWebSocket;
+
     Device(scoped_refptr<base::MessageLoopProxy> device_message_loop,
            scoped_refptr<DeviceProvider> provider,
            const std::string& serial);
 
-    friend class base::RefCountedThreadSafe<Device>;
     virtual ~Device();
 
     scoped_refptr<base::MessageLoopProxy> device_message_loop_;
