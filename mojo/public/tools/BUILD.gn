@@ -1,0 +1,16 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/mojo.gni")
+
+if (use_prebuilt_mojo_shell) {
+  copy("copy_mojo_shell") {
+    filename = "mojo_shell"
+    if (is_win) {
+      filename += ".exe"
+    }
+    sources = [ "prebuilt/$filename" ]
+    outputs = [ "$root_out_dir/$filename" ]
+  }
+}

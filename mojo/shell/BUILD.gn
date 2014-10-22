@@ -2,9 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//build/config/ui.gni")
+import("//mojo/public/mojo.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
+if (!use_prebuilt_mojo_shell) {
+
+# GYP version: mojo/mojo.gyp:mojo_shell
 executable("mojo_shell") {
   deps = [
     ":lib",
@@ -21,6 +25,8 @@ executable("mojo_shell") {
     "desktop/mojo_main.cc"
   ]
 }
+
+}  # !use_prebuilt_mojo_shell
 
 # GYP version: mojo/mojo.gyp:mojo_shell_lib
 source_set("lib") {

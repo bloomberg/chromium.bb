@@ -19,6 +19,9 @@
     'mojo_services.gypi',
     'mojo_variables.gypi',
   ],
+  'variables': {
+    'use_prebuilt_mojo_shell%': 0,
+  },
   'targets': [
     {
       # GN version: //mojo
@@ -213,27 +216,6 @@
       ],
     },
     {
-      # GN version: //mojo/shell
-      'target_name': 'mojo_shell',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        'mojo_base.gyp:mojo_common_lib',
-        'mojo_base.gyp:mojo_environment_chromium',
-        'mojo_shell_lib',
-      ],
-      'sources': [
-        'shell/desktop/mojo_main.cc',
-      ],
-      'conditions': [
-        ['component=="shared_library"', {
-          'dependencies': [
-            '../ui/gfx/gfx.gyp:gfx',
-          ],
-        }],
-      ],
-    },
-    {
       # GN version: //mojo/shell:mojo_shell_tests
       'target_name': 'mojo_shell_tests',
       'type': '<(gtest_target_type)',
@@ -418,6 +400,45 @@
     },
   ],
   'conditions': [
+    ['<(use_prebuilt_mojo_shell)==1', {
+      'targets': [
+        {
+          # GN version: //mojo/public/tools:mojo_shell
+          'target_name': 'mojo_shell',
+          'type': 'none',
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              'public/tools/prebuilt/mojo_shell',
+            ],
+          }],
+        },
+      ]
+    }, {  # use_prebuilt_mojo_shell != 1
+      'targets': [
+        {
+          # GN version: //mojo/shell
+          'target_name': 'mojo_shell',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'mojo_base.gyp:mojo_common_lib',
+            'mojo_base.gyp:mojo_environment_chromium',
+            'mojo_shell_lib',
+          ],
+          'sources': [
+            'shell/desktop/mojo_main.cc',
+          ],
+          'conditions': [
+            ['component=="shared_library"', {
+              'dependencies': [
+                '../ui/gfx/gfx.gyp:gfx',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],
     ['OS=="android"', {
       'targets': [
         {

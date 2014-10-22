@@ -210,6 +210,7 @@ v8.log
 /mojo/mojo_wm_flow_embedder_bindings.xml
 /mojo/mojom_test.xml
 /mojo/sample_service.xml
+/mojo/public/tools/prebuilt/
 /native_client
 /net/Debug
 /net/net_derived_sources.xml
