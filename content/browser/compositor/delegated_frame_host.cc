@@ -349,6 +349,10 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     // the DelegatedRendererLayer.
     EvictDelegatedFrame();
 
+    surface_factory_.reset();
+    if (!surface_returned_resources_.empty())
+      SendReturnedDelegatedResources(last_output_surface_id_);
+
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
     if (resource_collection_.get()) {
