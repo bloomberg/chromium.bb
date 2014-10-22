@@ -95,6 +95,7 @@ public:
     HTMLFormControlElement* defaultButton() const;
 
     bool checkValidity();
+    bool reportValidity();
     virtual bool matchesValidityPseudoClasses() const override final;
     virtual bool isValidElement() override final;
 
@@ -146,12 +147,12 @@ private:
     void collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >&);
 
     // Returns true if the submission should proceed.
-    bool validateInteractively(Event*);
+    bool validateInteractively();
 
     // Validates each of the controls, and stores controls of which 'invalid'
     // event was not canceled to the specified vector. Returns true if there
     // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >*, CheckValidityEventBehavior);
+    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> >*, CheckValidityEventBehavior);
 
     Element* elementFromPastNamesMap(const AtomicString&);
     void addToPastNamesMap(Element*, const AtomicString& pastName);

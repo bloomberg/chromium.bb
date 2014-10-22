@@ -39,6 +39,7 @@
     [ImplementedAs=submitFromJavaScript] void submit();
     [CustomElementCallbacks] void reset();
     boolean checkValidity();
+    boolean reportValidity();
 
     [RuntimeEnabled=RequestAutocomplete] void requestAutocomplete();
 };

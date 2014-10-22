@@ -60,6 +60,7 @@ public:
     // Note that the object elements are always barred from constraint validation.
     virtual String validationMessage() const override { return String(); }
     bool checkValidity() { return true; }
+    bool reportValidity() { return true; }
     virtual void setCustomValidity(const String&) override { }
 
 #if !ENABLE(OILPAN)

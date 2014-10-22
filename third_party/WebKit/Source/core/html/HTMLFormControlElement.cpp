@@ -502,7 +502,7 @@ ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
     return &page->validationMessageClient();
 }
 
-bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
+bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> >* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
     if (!willValidate() || isValidElement())
         return true;
@@ -514,6 +514,37 @@ bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<F
     bool needsDefaultAction = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
     if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);
+    return false;
+}
+
+void HTMLFormControlElement::showValidationMessage()
+{
+    scrollIntoViewIfNeeded(false);
+    RefPtrWillBeRawPtr<HTMLFormControlElement> protector(this);
+    focus();
+    updateVisibleValidationMessage();
+}
+
+bool HTMLFormControlElement::reportValidity()
+{
+    WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> > unhandledInvalidControls;
+    bool isValid = checkValidity(&unhandledInvalidControls, CheckValidityDispatchInvalidEvent);
+    if (isValid || unhandledInvalidControls.isEmpty())
+        return isValid;
+    ASSERT(unhandledInvalidControls.size() == 1);
+    ASSERT(unhandledInvalidControls[0].get() == this);
+    // Update layout now before calling isFocusable(), which has
+    // !renderer()->needsLayout() assertion.
+    document().updateLayoutIgnorePendingStylesheets();
+    if (isFocusable()) {
+        showValidationMessage();
+        return false;
+    }
+    if (document().frame()) {
+        String message("An invalid form control with name='%name' is not focusable.");
+        message.replace("%name", name());
+        document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, message));
+    }
     return false;
 }
 
