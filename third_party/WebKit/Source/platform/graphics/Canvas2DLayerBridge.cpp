@@ -319,8 +319,6 @@ void Canvas2DLayerBridge::freeReleasedMailbox()
     }
     // Invalidate texture state in case the compositor altered it since the copy-on-write.
     if (mailboxInfo->m_image) {
-        if (isHidden() || releasedMailboxHasExpired())
-            mailboxInfo->m_image->getTexture()->resetFlag(static_cast<GrTextureFlags>(GrTexture::kReturnToCache_FlagBit));
         mailboxInfo->m_image->getTexture()->textureParamsModified();
         mailboxInfo->m_image.clear();
     }
