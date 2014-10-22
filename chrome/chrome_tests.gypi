@@ -895,6 +895,7 @@
       'browser/ui/toolbar/test_toolbar_model.h',
       'browser/ui/views/ash/tab_scrubber_browsertest.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+      'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
       'browser/ui/views/constrained_window_views_browsertest.cc',
       'browser/ui/views/find_bar_controller_interactive_uitest.cc',
       'browser/ui/views/find_bar_host_interactive_uitest.cc',

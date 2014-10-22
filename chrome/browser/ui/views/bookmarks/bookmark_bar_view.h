@@ -29,6 +29,7 @@
 #include "ui/views/drag_controller.h"
 
 class BookmarkBarViewObserver;
+class BookmarkBarViewTestHelper;
 class BookmarkContextMenu;
 class BookmarkModel;
 class Browser;
@@ -264,12 +265,8 @@ class BookmarkBarView : public DetachableToolbarView,
   struct DropInfo;
   struct DropLocation;
 
+  friend class BookmarkBarViewTestHelper;
   friend class BookmarkBarViewEventTestBase;
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewTest, SwitchProfile);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewTest,
-                           ManagedShowAppsShortcutInBookmarksBar);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewInstantExtendedTest,
-                           AppsShortcutVisibility);
 
   // Used to identify what the user is dropping onto.
   enum DropButtonType {
@@ -324,13 +321,15 @@ class BookmarkBarView : public DetachableToolbarView,
   // and icon.
   void ConfigureButton(const BookmarkNode* node, views::LabelButton* button);
 
-  // Implementation for BookmarkNodeAddedImpl.
-  void BookmarkNodeAddedImpl(BookmarkModel* model,
+  // Implementation for BookmarkNodeAddedImpl. Returns true if LayoutAndPaint()
+  // is required.
+  bool BookmarkNodeAddedImpl(BookmarkModel* model,
                              const BookmarkNode* parent,
                              int index);
 
-  // Implementation for BookmarkNodeRemoved.
-  void BookmarkNodeRemovedImpl(BookmarkModel* model,
+  // Implementation for BookmarkNodeRemoved. Returns true if LayoutAndPaint() is
+  // required.
+  bool BookmarkNodeRemovedImpl(BookmarkModel* model,
                                const BookmarkNode* parent,
                                int index);
 
@@ -374,13 +373,21 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Updates the visibility of |other_bookmarked_button_| and
   // |managed_bookmarks_button_|. Also shows or hides the separator if required.
-  void UpdateButtonsVisibility();
+  // Returns true if something changed and a LayoutAndPaint() is needed.
+  bool UpdateOtherAndManagedButtonsVisibility();
 
   // Updates the visibility of |bookmarks_separator_view_|.
   void UpdateBookmarksSeparatorVisibility();
 
   // Updates the visibility of the apps shortcut based on the pref value.
   void OnAppsPageShortcutVisibilityPrefChanged();
+
+  void OnShowManagedBookmarksPrefChanged();
+
+  void LayoutAndPaint() {
+    Layout();
+    SchedulePaint();
+  }
 
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;

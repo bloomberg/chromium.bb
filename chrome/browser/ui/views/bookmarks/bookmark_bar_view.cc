@@ -816,9 +816,6 @@ void BookmarkBarView::Layout() {
   if (other_bookmarked_button_->visible())
     max_x -= other_bookmarked_pref.width() + kButtonPadding;
 
-  // Next, layout out the buttons. Any buttons that are placed beyond the
-  // visible region are made invisible.
-
   // Start with the apps page shortcut button.
   if (apps_page_shortcut_->visible()) {
     apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
@@ -835,18 +832,18 @@ void BookmarkBarView::Layout() {
     x += managed_bookmarks_pref.width() + kButtonPadding;
   }
 
-  // Then go through the bookmark buttons.
-  if (GetBookmarkButtonCount() == 0 && model_ && model_->loaded()) {
+  const bool show_instructions =
+      model_ && model_->loaded() &&
+      model_->bookmark_bar_node()->child_count() == 0;
+  instructions_->SetVisible(show_instructions);
+  if (show_instructions) {
     gfx::Size pref = instructions_->GetPreferredSize();
     instructions_->SetBounds(
         x + kInstructionsPadding, y,
         std::min(static_cast<int>(pref.width()),
                  max_x - x),
         height);
-    instructions_->SetVisible(true);
   } else {
-    instructions_->SetVisible(false);
-
     for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
       views::View* child = child_at(i);
       gfx::Size pref = child->GetPreferredSize();
@@ -1167,12 +1164,10 @@ void BookmarkBarView::BookmarkModelLoaded(BookmarkModel* model,
       client_->managed_node()->GetTitle());
   managed_bookmarks_button_->SetText(client_->managed_node()->GetTitle());
   UpdateColors();
-  UpdateButtonsVisibility();
+  UpdateOtherAndManagedButtonsVisibility();
   other_bookmarked_button_->SetEnabled(true);
   managed_bookmarks_button_->SetEnabled(true);
-
-  Layout();
-  SchedulePaint();
+  LayoutAndPaint();
 }
 
 void BookmarkBarView::BookmarkModelBeingDeleted(BookmarkModel* model) {
@@ -1191,16 +1186,21 @@ void BookmarkBarView::BookmarkNodeMoved(BookmarkModel* model,
       throbbing_view_ == DetermineViewToThrobFromRemove(old_parent, old_index);
   if (was_throbbing)
     throbbing_view_->StopThrobbing();
-  BookmarkNodeRemovedImpl(model, old_parent, old_index);
-  BookmarkNodeAddedImpl(model, new_parent, new_index);
+  bool needs_layout_and_paint =
+      BookmarkNodeRemovedImpl(model, old_parent, old_index);
+  if (BookmarkNodeAddedImpl(model, new_parent, new_index))
+    needs_layout_and_paint = true;
   if (was_throbbing)
     StartThrobbing(new_parent->GetChild(new_index), false);
+  if (needs_layout_and_paint)
+    LayoutAndPaint();
 }
 
 void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
                                         const BookmarkNode* parent,
                                         int index) {
-  BookmarkNodeAddedImpl(model, parent, index);
+  if (BookmarkNodeAddedImpl(model, parent, index))
+    LayoutAndPaint();
 }
 
 void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
@@ -1211,23 +1211,22 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
   // Close the menu if the menu is showing for the deleted node.
   if (bookmark_menu_ && bookmark_menu_->node() == node)
     bookmark_menu_->Cancel();
-  BookmarkNodeRemovedImpl(model, parent, old_index);
+  if (BookmarkNodeRemovedImpl(model, parent, old_index))
+    LayoutAndPaint();
 }
 
 void BookmarkBarView::BookmarkAllUserNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
-  UpdateButtonsVisibility();
+  UpdateOtherAndManagedButtonsVisibility();
 
   StopThrobbing(true);
 
   // Remove the existing buttons.
-  while (GetBookmarkButtonCount()) {
+  while (GetBookmarkButtonCount())
     delete GetBookmarkButton(0);
-  }
 
-  Layout();
-  SchedulePaint();
+  LayoutAndPaint();
 }
 
 void BookmarkBarView::BookmarkNodeChanged(BookmarkModel* model,
@@ -1241,19 +1240,14 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
     return;  // We only care about reordering of the bookmark bar node.
 
   // Remove the existing buttons.
-  while (GetBookmarkButtonCount()) {
-    views::View* button = child_at(0);
-    RemoveChildView(button);
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, button);
-  }
+  while (GetBookmarkButtonCount())
+    delete child_at(0);
 
   // Create the new buttons.
   for (int i = 0, child_count = node->child_count(); i < child_count; ++i)
     AddChildViewAt(CreateBookmarkButton(node->GetChild(i)), i);
-  UpdateColors();
 
-  Layout();
-  SchedulePaint();
+  LayoutAndPaint();
 }
 
 void BookmarkBarView::BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -1477,7 +1471,7 @@ void BookmarkBarView::Init() {
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
-      base::Bind(&BookmarkBarView::UpdateButtonsVisibility,
+      base::Bind(&BookmarkBarView::OnShowManagedBookmarksPrefChanged,
                  base::Unretained(this)));
   apps_page_shortcut_->SetVisible(
       chrome::ShouldShowAppsShortcutInBookmarkBar(
@@ -1585,13 +1579,12 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
         this, node->url(), node->GetTitle(), browser_->profile());
     ConfigureButton(node, button);
     return button;
-  } else {
-    views::MenuButton* button = new BookmarkFolderButton(
-        this, node->GetTitle(), this, false);
-    button->SetImage(views::Button::STATE_NORMAL, GetFolderIcon());
-    ConfigureButton(node, button);
-    return button;
   }
+  views::MenuButton* button =
+      new BookmarkFolderButton(this, node->GetTitle(), this, false);
+  button->SetImage(views::Button::STATE_NORMAL, GetFolderIcon());
+  ConfigureButton(node, button);
+  return button;
 }
 
 views::LabelButton* BookmarkBarView::CreateAppsPageShortcutButton() {
@@ -1633,13 +1626,13 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->SetMaxSize(gfx::Size(kMaxButtonWidth, 0));
 }
 
-void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
+bool BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int index) {
-  UpdateButtonsVisibility();
+  const bool needs_layout_and_paint = UpdateOtherAndManagedButtonsVisibility();
   if (parent != model->bookmark_bar_node()) {
-    // We only care about nodes on the bookmark bar.
-    return;
+    // Only children of the bookmark_bar_node get buttons.
+    return needs_layout_and_paint;
   }
   DCHECK(index >= 0 && index <= GetBookmarkButtonCount());
   const BookmarkNode* node = parent->GetChild(index);
@@ -1648,30 +1641,24 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
   if (!throbbing_view_ && sync_service && sync_service->FirstSetupInProgress())
     StartThrobbing(node, true);
   AddChildViewAt(CreateBookmarkButton(node), index);
-  UpdateColors();
-  Layout();
-  SchedulePaint();
+  return true;
 }
 
-void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
+bool BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
                                               const BookmarkNode* parent,
                                               int index) {
-  UpdateButtonsVisibility();
+  const bool needs_layout = UpdateOtherAndManagedButtonsVisibility();
 
   StopThrobbing(true);
   // No need to start throbbing again as the bookmark bubble can't be up at
   // the same time as the user reorders.
 
   if (parent != model->bookmark_bar_node()) {
-    // We only care about nodes on the bookmark bar.
-    return;
+    // Only children of the bookmark_bar_node get buttons.
+    return needs_layout;
   }
-  DCHECK(index >= 0 && index < GetBookmarkButtonCount());
-  views::View* button = child_at(index);
-  RemoveChildView(button);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, button);
-  Layout();
-  SchedulePaint();
+  delete child_at(index);
+  return true;
 }
 
 void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
@@ -1695,8 +1682,7 @@ void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
   ConfigureButton(node, button);
   gfx::Size new_pref = button->GetPreferredSize();
   if (old_pref.width() != new_pref.width()) {
-    Layout();
-    SchedulePaint();
+    LayoutAndPaint();
   } else if (button->visible()) {
     button->SchedulePaint();
   }
@@ -1934,7 +1920,7 @@ void BookmarkBarView::UpdateColors() {
     apps_page_shortcut_->SetTextColor(views::Button::STATE_NORMAL, color);
 }
 
-void BookmarkBarView::UpdateButtonsVisibility() {
+bool BookmarkBarView::UpdateOtherAndManagedButtonsVisibility() {
   bool has_other_children = !model_->other_node()->empty();
   bool update_other = has_other_children != other_bookmarked_button_->visible();
   if (update_other) {
@@ -1949,10 +1935,7 @@ void BookmarkBarView::UpdateButtonsVisibility() {
   if (update_managed)
     managed_bookmarks_button_->SetVisible(show_managed);
 
-  if (update_other || update_managed) {
-    Layout();
-    SchedulePaint();
-  }
+  return update_other || update_managed;
 }
 
 void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {
@@ -1972,5 +1955,10 @@ void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {
     return;
   apps_page_shortcut_->SetVisible(visible);
   UpdateBookmarksSeparatorVisibility();
-  Layout();
+  LayoutAndPaint();
+}
+
+void BookmarkBarView::OnShowManagedBookmarksPrefChanged() {
+  if (UpdateOtherAndManagedButtonsVisibility())
+    LayoutAndPaint();
 }
