@@ -49,9 +49,9 @@ class LeakyBucket : public RateLimiter {
         last_update_(base::TimeTicks::HighResNow()) {
   }
 
-  virtual ~LeakyBucket() { }
+  ~LeakyBucket() override {}
 
-  virtual bool DropNextPacket() override {
+  bool DropNextPacket() override {
     base::TimeTicks now = base::TimeTicks::HighResNow();
     double interval = (now - last_update_).InSecondsF();
     last_update_ = now;
@@ -78,7 +78,7 @@ class FakeSocket : public net::Socket {
       : rate_limiter_(NULL),
         latency_ms_(0) {
   }
-  virtual ~FakeSocket() { }
+  ~FakeSocket() override {}
 
   void AppendInputPacket(const std::vector<char>& data) {
     if (rate_limiter_ && rate_limiter_->DropNextPacket())
@@ -107,8 +107,9 @@ class FakeSocket : public net::Socket {
   void set_latency(int latency_ms) { latency_ms_ = latency_ms; };
 
   // net::Socket interface.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override {
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override {
     CHECK(read_callback_.is_null());
     CHECK(buf);
 
@@ -127,8 +128,9 @@ class FakeSocket : public net::Socket {
     }
   }
 
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) override {
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override {
     DCHECK(buf);
     if (peer_socket_) {
       base::MessageLoop::current()->PostDelayedTask(
@@ -142,11 +144,11 @@ class FakeSocket : public net::Socket {
     return buf_len;
   }
 
-  virtual int SetReceiveBufferSize(int32 size) override {
+  int SetReceiveBufferSize(int32 size) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-  virtual int SetSendBufferSize(int32 size) override {
+  int SetSendBufferSize(int32 size) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }

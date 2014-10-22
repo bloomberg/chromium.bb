@@ -30,7 +30,7 @@ class TransportChannelSocketAdapter : public net::Socket,
  public:
   // TransportChannel object is always owned by the corresponding session.
   explicit TransportChannelSocketAdapter(cricket::TransportChannel* channel);
-  virtual ~TransportChannelSocketAdapter();
+  ~TransportChannelSocketAdapter() override;
 
   // Sets callback that should be called when the adapter is being
   // destroyed. The callback is not allowed to touch the adapter, but
@@ -43,13 +43,15 @@ class TransportChannelSocketAdapter : public net::Socket,
   void Close(int error_code);
 
   // Socket implementation.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override;
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override;
 
-  virtual int SetReceiveBufferSize(int32 size) override;
-  virtual int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32 size) override;
+  int SetSendBufferSize(int32 size) override;
 
  private:
   void OnNewPacket(cricket::TransportChannel* channel,

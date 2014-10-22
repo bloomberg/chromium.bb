@@ -42,7 +42,7 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
 
   explicit JingleThreadWrapper(
      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~JingleThreadWrapper();
+  ~JingleThreadWrapper() override;
 
   // Sets whether the thread can be used to send messages
   // synchronously to another thread using Send() method. Set to false
@@ -52,47 +52,44 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   void set_send_allowed(bool allowed) { send_allowed_ = allowed; }
 
   // MessageLoop::DestructionObserver implementation.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   // rtc::MessageQueue overrides.
-  virtual void Post(rtc::MessageHandler *phandler,
-                    uint32 id,
-                    rtc::MessageData *pdata,
-                    bool time_sensitive) override;
-  virtual void PostDelayed(int delay_ms,
-                           rtc::MessageHandler* handler,
-                           uint32 id,
-                           rtc::MessageData* data) override;
-  virtual void Clear(rtc::MessageHandler* handler,
-                     uint32 id,
-                     rtc::MessageList* removed) override;
-  virtual void Send(rtc::MessageHandler *handler,
-                    uint32 id,
-                    rtc::MessageData *data) override;
+  void Post(rtc::MessageHandler* phandler,
+            uint32 id,
+            rtc::MessageData* pdata,
+            bool time_sensitive) override;
+  void PostDelayed(int delay_ms,
+                   rtc::MessageHandler* handler,
+                   uint32 id,
+                   rtc::MessageData* data) override;
+  void Clear(rtc::MessageHandler* handler,
+             uint32 id,
+             rtc::MessageList* removed) override;
+  void Send(rtc::MessageHandler* handler,
+            uint32 id,
+            rtc::MessageData* data) override;
 
   // Following methods are not supported.They are overriden just to
   // ensure that they are not called (each of them contain NOTREACHED
   // in the body). Some of this methods can be implemented if it
   // becomes neccessary to use libjingle code that calls them.
-  virtual void Quit() override;
-  virtual bool IsQuitting() override;
-  virtual void Restart() override;
-  virtual bool Get(rtc::Message* message,
-                   int delay_ms,
-                   bool process_io) override;
-  virtual bool Peek(rtc::Message* message,
-                    int delay_ms) override;
-  virtual void PostAt(uint32 timestamp,
-                      rtc::MessageHandler* handler,
-                      uint32 id,
-                      rtc::MessageData* data) override;
-  virtual void Dispatch(rtc::Message* message) override;
-  virtual void ReceiveSends() override;
-  virtual int GetDelay() override;
+  void Quit() override;
+  bool IsQuitting() override;
+  void Restart() override;
+  bool Get(rtc::Message* message, int delay_ms, bool process_io) override;
+  bool Peek(rtc::Message* message, int delay_ms) override;
+  void PostAt(uint32 timestamp,
+              rtc::MessageHandler* handler,
+              uint32 id,
+              rtc::MessageData* data) override;
+  void Dispatch(rtc::Message* message) override;
+  void ReceiveSends() override;
+  int GetDelay() override;
 
   // rtc::Thread overrides.
-  virtual void Stop() override;
-  virtual void Run() override;
+  void Stop() override;
+  void Run() override;
 
  private:
   typedef std::map<int, rtc::Message> MessagesQueue;

@@ -22,37 +22,38 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
                        const std::string& token_service,
                        const std::string& auth_mechanism);
 
-  virtual ~GaiaTokenPreXmppAuth();
+  ~GaiaTokenPreXmppAuth() override;
 
   // buzz::PreXmppAuth (-buzz::SaslHandler) implementation.  We stub
   // all the methods out as we don't actually do any authentication at
   // this point.
-  virtual void StartPreXmppAuth(const buzz::Jid& jid,
-                                const rtc::SocketAddress& server,
-                                const rtc::CryptString& pass,
-                                const std::string& auth_mechanism,
-                                const std::string& auth_token) override;
+  void StartPreXmppAuth(const buzz::Jid& jid,
+                        const rtc::SocketAddress& server,
+                        const rtc::CryptString& pass,
+                        const std::string& auth_mechanism,
+                        const std::string& auth_token) override;
 
-  virtual bool IsAuthDone() const override;
+  bool IsAuthDone() const override;
 
-  virtual bool IsAuthorized() const override;
+  bool IsAuthorized() const override;
 
-  virtual bool HadError() const override;
+  bool HadError() const override;
 
-  virtual int GetError() const override;
+  int GetError() const override;
 
-  virtual buzz::CaptchaChallenge GetCaptchaChallenge() const override;
+  buzz::CaptchaChallenge GetCaptchaChallenge() const override;
 
-  virtual std::string GetAuthToken() const override;
+  std::string GetAuthToken() const override;
 
-  virtual std::string GetAuthMechanism() const override;
+  std::string GetAuthMechanism() const override;
 
   // buzz::SaslHandler implementation.
 
-  virtual std::string ChooseBestSaslMechanism(
-      const std::vector<std::string>& mechanisms, bool encrypted) override;
+  std::string ChooseBestSaslMechanism(
+      const std::vector<std::string>& mechanisms,
+      bool encrypted) override;
 
-  virtual buzz::SaslMechanism* CreateSaslMechanism(
+  buzz::SaslMechanism* CreateSaslMechanism(
       const std::string& mechanism) override;
 
  private:

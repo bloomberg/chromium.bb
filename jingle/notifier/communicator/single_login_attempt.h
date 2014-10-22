@@ -57,14 +57,13 @@ class SingleLoginAttempt : public XmppConnection::Delegate {
   // Does not take ownership of |delegate|, which must not be NULL.
   SingleLoginAttempt(const LoginSettings& login_settings, Delegate* delegate);
 
-  virtual ~SingleLoginAttempt();
+  ~SingleLoginAttempt() override;
 
   // XmppConnection::Delegate implementation.
-  virtual void OnConnect(
-      base::WeakPtr<buzz::XmppTaskParentInterface> parent) override;
-  virtual void OnError(buzz::XmppEngine::Error error,
-                       int error_subcode,
-                       const buzz::XmlElement* stream_error) override;
+  void OnConnect(base::WeakPtr<buzz::XmppTaskParentInterface> parent) override;
+  void OnError(buzz::XmppEngine::Error error,
+               int error_subcode,
+               const buzz::XmlElement* stream_error) override;
 
  private:
   void TryConnect(const ConnectionSettings& new_settings);

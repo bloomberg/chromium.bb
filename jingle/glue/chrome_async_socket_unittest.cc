@@ -36,14 +36,14 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
  public:
   AsyncSocketDataProvider() : has_pending_read_(false) {}
 
-  virtual ~AsyncSocketDataProvider() {
+  ~AsyncSocketDataProvider() override {
     EXPECT_TRUE(writes_.empty());
     EXPECT_TRUE(reads_.empty());
   }
 
   // If there's no read, sets the "has pending read" flag.  Otherwise,
   // pops the next read.
-  virtual net::MockRead GetNextRead() override {
+  net::MockRead GetNextRead() override {
     if (reads_.empty()) {
       DCHECK(!has_pending_read_);
       has_pending_read_ = true;
@@ -57,7 +57,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
 
   // Simply pops the next write and, if applicable, compares it to
   // |data|.
-  virtual net::MockWriteResult OnWrite(const std::string& data) override {
+  net::MockWriteResult OnWrite(const std::string& data) override {
     DCHECK(!writes_.empty());
     net::MockWrite mock_write = writes_.front();
     writes_.pop_front();
@@ -74,7 +74,7 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
 
   // We ignore resets so we can pre-load the socket data provider with
   // read/write events.
-  virtual void Reset() override {}
+  void Reset() override {}
 
   // If there is a pending read, completes it with the given read.
   // Otherwise, queues up the given read.
@@ -114,13 +114,13 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   }
 
   // ResolvingClientSocketFactory implementation.
-  virtual scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
+  scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
       const net::HostPortPair& host_and_port) override {
     return mock_client_socket_factory_->CreateTransportClientSocket(
         address_list_, NULL, net::NetLog::Source());
   }
 
-  virtual scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+  scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
       scoped_ptr<net::ClientSocketHandle> transport_socket,
       const net::HostPortPair& host_and_port) override {
     net::SSLClientSocketContext context;

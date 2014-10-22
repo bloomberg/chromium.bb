@@ -25,9 +25,9 @@ class GaiaCookieMechanism : public buzz::SaslCookieMechanism {
       : buzz::SaslCookieMechanism(
           mechanism, username, cookie, token_service) {}
 
-  virtual ~GaiaCookieMechanism() {}
+  ~GaiaCookieMechanism() override {}
 
-  virtual buzz::XmlElement* StartSaslAuth() override {
+  buzz::XmlElement* StartSaslAuth() override {
     buzz::XmlElement* auth = buzz::SaslCookieMechanism::StartSaslAuth();
     // These attributes are necessary for working with non-gmail gaia
     // accounts.

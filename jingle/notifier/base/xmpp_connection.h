@@ -77,7 +77,7 @@ class XmppConnection
   // Invalidates any weak pointers passed to the delegate by
   // OnConnect(), but does not trigger a call to the delegate's
   // OnError() function.
-  virtual ~XmppConnection();
+  ~XmppConnection() override;
 
  private:
   void OnStateChange(buzz::XmppEngine::State state);

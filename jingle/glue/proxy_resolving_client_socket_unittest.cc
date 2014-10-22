@@ -25,7 +25,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
             "PROXY bad:99; PROXY maybe:80; DIRECT"));
     Init();
   }
-  virtual ~MyTestURLRequestContext() {}
+  ~MyTestURLRequestContext() override {}
 };
 
 }  // namespace

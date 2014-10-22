@@ -28,7 +28,7 @@ class WeakXmppClient : public buzz::XmppClient, public base::NonThreadSafe {
  public:
   explicit WeakXmppClient(rtc::TaskParent* parent);
 
-  virtual ~WeakXmppClient();
+  ~WeakXmppClient() override;
 
   // Returns a weak pointer that is invalidated when the XmppClient
   // becomes invalid to use.
@@ -40,7 +40,7 @@ class WeakXmppClient : public buzz::XmppClient, public base::NonThreadSafe {
   void Invalidate();
 
  protected:
-  virtual void Stop() override;
+  void Stop() override;
 
  private:
   // We use our own WeakPtrFactory instead of inheriting from

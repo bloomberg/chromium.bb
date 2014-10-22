@@ -41,34 +41,32 @@ class XmppPushClient :
       public SendPingTaskDelegate {
  public:
   explicit XmppPushClient(const NotifierOptions& notifier_options);
-  virtual ~XmppPushClient();
+  ~XmppPushClient() override;
 
   // PushClient implementation.
-  virtual void AddObserver(PushClientObserver* observer) override;
-  virtual void RemoveObserver(PushClientObserver* observer) override;
-  virtual void UpdateSubscriptions(
-      const SubscriptionList& subscriptions) override;
-  virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) override;
-  virtual void SendNotification(const Notification& notification) override;
-  virtual void SendPing() override;
+  void AddObserver(PushClientObserver* observer) override;
+  void RemoveObserver(PushClientObserver* observer) override;
+  void UpdateSubscriptions(const SubscriptionList& subscriptions) override;
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override;
+  void SendNotification(const Notification& notification) override;
+  void SendPing() override;
 
   // Login::Delegate implementation.
-  virtual void OnConnect(
+  void OnConnect(
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task) override;
-  virtual void OnTransientDisconnection() override;
-  virtual void OnCredentialsRejected() override;
+  void OnTransientDisconnection() override;
+  void OnCredentialsRejected() override;
 
   // PushNotificationsListenTaskDelegate implementation.
-  virtual void OnNotificationReceived(
-      const Notification& notification) override;
+  void OnNotificationReceived(const Notification& notification) override;
 
   // PushNotificationsSubscribeTaskDelegate implementation.
-  virtual void OnSubscribed() override;
-  virtual void OnSubscriptionError() override;
+  void OnSubscribed() override;
+  void OnSubscriptionError() override;
 
   // SendPingTaskDelegate implementation.
-  virtual void OnPingResponseReceived() override;
+  void OnPingResponseReceived() override;
 
  private:
   base::ThreadChecker thread_checker_;

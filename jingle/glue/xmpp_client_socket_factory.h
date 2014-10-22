@@ -32,13 +32,13 @@ class XmppClientSocketFactory : public ResolvingClientSocketFactory {
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       bool use_fake_ssl_client_socket);
 
-  virtual ~XmppClientSocketFactory();
+  ~XmppClientSocketFactory() override;
 
   // ResolvingClientSocketFactory implementation.
-  virtual scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
+  scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
       const net::HostPortPair& host_and_port) override;
 
-  virtual scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+  scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
       scoped_ptr<net::ClientSocketHandle> transport_socket,
       const net::HostPortPair& host_and_port) override;
 

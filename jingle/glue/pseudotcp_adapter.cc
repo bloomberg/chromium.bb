@@ -38,14 +38,15 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 
   // cricket::IPseudoTcpNotify interface.
   // These notifications are triggered from NotifyPacket.
-  virtual void OnTcpOpen(cricket::PseudoTcp* tcp) override;
-  virtual void OnTcpReadable(cricket::PseudoTcp* tcp) override;
-  virtual void OnTcpWriteable(cricket::PseudoTcp* tcp) override;
+  void OnTcpOpen(cricket::PseudoTcp* tcp) override;
+  void OnTcpReadable(cricket::PseudoTcp* tcp) override;
+  void OnTcpWriteable(cricket::PseudoTcp* tcp) override;
   // This is triggered by NotifyClock or NotifyPacket.
-  virtual void OnTcpClosed(cricket::PseudoTcp* tcp, uint32 error) override;
+  void OnTcpClosed(cricket::PseudoTcp* tcp, uint32 error) override;
   // This is triggered by NotifyClock, NotifyPacket, Recv and Send.
-  virtual WriteResult TcpWritePacket(cricket::PseudoTcp* tcp,
-                                     const char* buffer, size_t len) override;
+  WriteResult TcpWritePacket(cricket::PseudoTcp* tcp,
+                             const char* buffer,
+                             size_t len) override;
 
   void SetAckDelay(int delay_ms);
   void SetNoDelay(bool no_delay);
@@ -57,7 +58,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 
  private:
   friend class base::RefCounted<Core>;
-  virtual ~Core();
+  ~Core() override;
 
   // These are invoked by the underlying Socket, and may trigger callbacks.
   // They hold a reference to |this| while running, to protect from deletion.

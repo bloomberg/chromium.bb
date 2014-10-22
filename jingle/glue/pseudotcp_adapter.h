@@ -27,31 +27,33 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
   // Creates an adapter for the supplied Socket.  |socket| should already
   // be ready for use, and ownership of it will be assumed by the adapter.
   PseudoTcpAdapter(net::Socket* socket);
-  virtual ~PseudoTcpAdapter();
+  ~PseudoTcpAdapter() override;
 
   // net::Socket implementation.
-  virtual int Read(net::IOBuffer* buffer, int buffer_size,
-                   const net::CompletionCallback& callback) override;
-  virtual int Write(net::IOBuffer* buffer, int buffer_size,
-                    const net::CompletionCallback& callback) override;
-  virtual int SetReceiveBufferSize(int32 size) override;
-  virtual int SetSendBufferSize(int32 size) override;
+  int Read(net::IOBuffer* buffer,
+           int buffer_size,
+           const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buffer,
+            int buffer_size,
+            const net::CompletionCallback& callback) override;
+  int SetReceiveBufferSize(int32 size) override;
+  int SetSendBufferSize(int32 size) override;
 
   // net::StreamSocket implementation.
-  virtual int Connect(const net::CompletionCallback& callback) override;
-  virtual void Disconnect() override;
-  virtual bool IsConnected() const override;
-  virtual bool IsConnectedAndIdle() const override;
-  virtual int GetPeerAddress(net::IPEndPoint* address) const override;
-  virtual int GetLocalAddress(net::IPEndPoint* address) const override;
-  virtual const net::BoundNetLog& NetLog() const override;
-  virtual void SetSubresourceSpeculation() override;
-  virtual void SetOmniboxSpeculation() override;
-  virtual bool WasEverUsed() const override;
-  virtual bool UsingTCPFastOpen() const override;
-  virtual bool WasNpnNegotiated() const override;
-  virtual net::NextProto GetNegotiatedProtocol() const override;
-  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) override;
+  int Connect(const net::CompletionCallback& callback) override;
+  void Disconnect() override;
+  bool IsConnected() const override;
+  bool IsConnectedAndIdle() const override;
+  int GetPeerAddress(net::IPEndPoint* address) const override;
+  int GetLocalAddress(net::IPEndPoint* address) const override;
+  const net::BoundNetLog& NetLog() const override;
+  void SetSubresourceSpeculation() override;
+  void SetOmniboxSpeculation() override;
+  bool WasEverUsed() const override;
+  bool UsingTCPFastOpen() const override;
+  bool WasNpnNegotiated() const override;
+  net::NextProto GetNegotiatedProtocol() const override;
+  bool GetSSLInfo(net::SSLInfo* ssl_info) override;
 
   // Set the delay for sending ACK.
   void SetAckDelay(int delay_ms);

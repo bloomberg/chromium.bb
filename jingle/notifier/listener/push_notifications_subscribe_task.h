@@ -29,12 +29,12 @@ class PushNotificationsSubscribeTask : public buzz::XmppTask {
   PushNotificationsSubscribeTask(buzz::XmppTaskParentInterface* parent,
                                  const SubscriptionList& subscriptions,
                                  Delegate* delegate);
-  virtual ~PushNotificationsSubscribeTask();
+  ~PushNotificationsSubscribeTask() override;
 
   // Overridden from XmppTask.
-  virtual int ProcessStart() override;
-  virtual int ProcessResponse() override;
-  virtual bool HandleStanza(const buzz::XmlElement* stanza) override;
+  int ProcessStart() override;
+  int ProcessResponse() override;
+  bool HandleStanza(const buzz::XmlElement* stanza) override;
 
  private:
   // Assembles an Xmpp stanza which can be sent to subscribe to notifications.

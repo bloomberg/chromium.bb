@@ -24,10 +24,10 @@ class PushNotificationsSendUpdateTask : public buzz::XmppTask {
  public:
   PushNotificationsSendUpdateTask(
       buzz::XmppTaskParentInterface* parent, const Notification& notification);
-  virtual ~PushNotificationsSendUpdateTask();
+  ~PushNotificationsSendUpdateTask() override;
 
   // Overridden from buzz::XmppTask.
-  virtual int ProcessStart() override;
+  int ProcessStart() override;
 
  private:
   // Allocates and constructs an buzz::XmlElement containing the update stanza.

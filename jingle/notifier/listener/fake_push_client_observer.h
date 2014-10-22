@@ -14,14 +14,12 @@ namespace notifier {
 class FakePushClientObserver : public PushClientObserver {
  public:
   FakePushClientObserver();
-  virtual ~FakePushClientObserver();
+  ~FakePushClientObserver() override;
 
   // PushClientObserver implementation.
-  virtual void OnNotificationsEnabled() override;
-  virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) override;
-  virtual void OnIncomingNotification(
-      const Notification& notification) override;
+  void OnNotificationsEnabled() override;
+  void OnNotificationsDisabled(NotificationsDisabledReason reason) override;
+  void OnIncomingNotification(const Notification& notification) override;
 
   NotificationsDisabledReason last_notifications_disabled_reason() const;
   const Notification& last_incoming_notification() const;

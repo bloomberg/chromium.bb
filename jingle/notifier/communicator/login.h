@@ -72,7 +72,7 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
         const ServerList& servers,
         bool try_ssltcp_first,
         const std::string& auth_mechanism);
-  virtual ~Login();
+  ~Login() override;
 
   // Starts connecting (or forces a reconnection if we're backed off).
   void StartConnection();
@@ -83,21 +83,21 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   void UpdateXmppSettings(const buzz::XmppClientSettings& user_settings);
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // net::NetworkChangeNotifier::DNSObserver implementation.
-  virtual void OnDNSChanged() override;
+  void OnDNSChanged() override;
 
   // SingleLoginAttempt::Delegate implementation.
-  virtual void OnConnect(
+  void OnConnect(
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task) override;
-  virtual void OnRedirect(const ServerInformation& redirect_server) override;
-  virtual void OnCredentialsRejected() override;
-  virtual void OnSettingsExhausted() override;
+  void OnRedirect(const ServerInformation& redirect_server) override;
+  void OnCredentialsRejected() override;
+  void OnSettingsExhausted() override;
 
  private:
   // Called by the various network notifications.

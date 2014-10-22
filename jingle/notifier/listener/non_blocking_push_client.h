@@ -39,17 +39,16 @@ class NonBlockingPushClient : public PushClient {
       const scoped_refptr<base::SingleThreadTaskRunner>& delegate_task_runner,
       const CreateBlockingPushClientCallback&
           create_blocking_push_client_callback);
-  virtual ~NonBlockingPushClient();
+  ~NonBlockingPushClient() override;
 
   // PushClient implementation.
-  virtual void AddObserver(PushClientObserver* observer) override;
-  virtual void RemoveObserver(PushClientObserver* observer) override;
-  virtual void UpdateSubscriptions(
-      const SubscriptionList& subscriptions) override;
-  virtual void UpdateCredentials(
-      const std::string& email, const std::string& token) override;
-  virtual void SendNotification(const Notification& notification) override;
-  virtual void SendPing() override;
+  void AddObserver(PushClientObserver* observer) override;
+  void RemoveObserver(PushClientObserver* observer) override;
+  void UpdateSubscriptions(const SubscriptionList& subscriptions) override;
+  void UpdateCredentials(const std::string& email,
+                         const std::string& token) override;
+  void SendNotification(const Notification& notification) override;
+  void SendPing() override;
 
  private:
   class Core;
