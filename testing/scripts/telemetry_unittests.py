@@ -18,7 +18,6 @@ def main_run(args):
 
   with common.temporary_file() as tempfile_path:
     rc = common.run_command([
-        sys.executable,
         os.path.join(args.paths['build'], 'scripts', 'tools', 'runit.py'),
         '--show-path',
         os.path.join(args.paths['build'], 'scripts', 'slave', 'runtest.py'),
