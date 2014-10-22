@@ -23,36 +23,19 @@
 #include "config.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 
-#include "core/paint/SVGInlineTextBoxPainter.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace blink {
 
 void SVGInlineFlowBox::paintSelectionBackground(PaintInfo& paintInfo)
 {
-    ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
-
-    PaintInfo childPaintInfo(paintInfo);
-    for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
-        if (child->isSVGInlineTextBox())
-            SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
-        else if (child->isSVGInlineFlowBox())
-            toSVGInlineFlowBox(child)->paintSelectionBackground(childPaintInfo);
-    }
+    SVGInlineFlowBoxPainter(*this).paintSelectionBackground(paintInfo);
 }
 
 void SVGInlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
-    ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
-
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    SVGRenderingContext renderingContext(&renderer(), paintInfo);
-    if (renderingContext.isRenderingPrepared()) {
-        for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
-            child->paint(paintInfo, paintOffset, 0, 0);
-    }
+    SVGInlineFlowBoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
 FloatRect SVGInlineFlowBox::calculateBoundaries() const

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
 
+#include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
@@ -28,7 +29,7 @@ void SVGRootInlineBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& pai
             if (child->isSVGInlineTextBox())
                 SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
             else if (child->isSVGInlineFlowBox())
-                toSVGInlineFlowBox(child)->paintSelectionBackground(childPaintInfo);
+                SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child)).paintSelectionBackground(childPaintInfo);
         }
     }
 

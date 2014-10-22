@@ -1563,6 +1563,8 @@
             'paint/SVGForeignObjectPainter.h',
             'paint/SVGImagePainter.cpp',
             'paint/SVGImagePainter.h',
+            'paint/SVGInlineFlowBoxPainter.cpp',
+            'paint/SVGInlineFlowBoxPainter.h',
             'paint/SVGInlineTextBoxPainter.cpp',
             'paint/SVGInlineTextBoxPainter.h',
             'paint/SVGMarkerPainter.cpp',
