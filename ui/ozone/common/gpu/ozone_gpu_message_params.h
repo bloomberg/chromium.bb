@@ -28,7 +28,6 @@ struct DisplaySnapshot_Params {
   ~DisplaySnapshot_Params();
 
   int64_t display_id;
-  bool has_proper_display_id;
   gfx::Point origin;
   gfx::Size physical_size;
   DisplayConnectionType type;

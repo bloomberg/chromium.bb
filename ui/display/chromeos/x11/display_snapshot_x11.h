@@ -18,7 +18,6 @@ namespace ui {
 class DISPLAY_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
  public:
   DisplaySnapshotX11(int64_t display_id,
-                     bool has_proper_display_id,
                      const gfx::Point& origin,
                      const gfx::Size& physical_size,
                      DisplayConnectionType type,

@@ -359,7 +359,6 @@ class DisplayConfiguratorTest : public testing::Test {
     o->set_type(DISPLAY_CONNECTION_TYPE_INTERNAL);
     o->set_is_aspect_preserving_scaling(true);
     o->set_display_id(123);
-    o->set_has_proper_display_id(true);
 
     o = &outputs_[1];
     o->set_current_mode(&big_mode_);
@@ -369,7 +368,6 @@ class DisplayConfiguratorTest : public testing::Test {
     o->set_type(DISPLAY_CONNECTION_TYPE_HDMI);
     o->set_is_aspect_preserving_scaling(true);
     o->set_display_id(456);
-    o->set_has_proper_display_id(true);
 
     UpdateOutputs(2, false);
   }
@@ -1004,18 +1002,7 @@ TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
   EXPECT_EQ(2, observer_.num_failures());
 }
 
-TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForDisplaysWithoutId) {
-  outputs_[0].set_has_proper_display_id(false);
-  UpdateOutputs(2, false);
-  configurator_.Init(false);
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.ForceInitialConfigure(0);
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
-            configurator_.display_state());
-}
-
-TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForDisplaysWithId) {
-  outputs_[0].set_has_proper_display_id(true);
+TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForMirroredDisplays) {
   UpdateOutputs(2, false);
   configurator_.Init(false);
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);

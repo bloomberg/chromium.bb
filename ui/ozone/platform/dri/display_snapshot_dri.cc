@@ -67,7 +67,6 @@ DisplaySnapshotDri::DisplaySnapshotDri(DriWrapper* drm,
                                        drmModeCrtc* crtc,
                                        uint32_t index)
     : DisplaySnapshot(index,
-                      false,
                       gfx::Point(crtc->x, crtc->y),
                       gfx::Size(connector->mmWidth, connector->mmHeight),
                       GetDisplayType(connector),
@@ -91,7 +90,9 @@ DisplaySnapshotDri::DisplaySnapshotDri(DriWrapper* drm,
         static_cast<uint8_t*>(edid_blob->data),
         static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 
-    has_proper_display_id_ = GetDisplayIdFromEDID(edid, index, &display_id_);
+    if (!GetDisplayIdFromEDID(edid, index, &display_id_))
+      display_id_ = index;
+
     ParseOutputDeviceData(edid, NULL, &display_name_);
     ParseOutputOverscanFlag(edid, &overscan_flag_);
   } else {

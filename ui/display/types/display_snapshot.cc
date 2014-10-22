@@ -7,7 +7,6 @@
 namespace ui {
 
 DisplaySnapshot::DisplaySnapshot(int64_t display_id,
-                                 bool has_proper_display_id,
                                  const gfx::Point& origin,
                                  const gfx::Size& physical_size,
                                  DisplayConnectionType type,
@@ -18,7 +17,6 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  const DisplayMode* current_mode,
                                  const DisplayMode* native_mode)
     : display_id_(display_id),
-      has_proper_display_id_(has_proper_display_id),
       origin_(origin),
       physical_size_(physical_size),
       type_(type),

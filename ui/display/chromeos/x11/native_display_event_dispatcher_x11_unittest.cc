@@ -24,7 +24,6 @@ DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
 
   DisplaySnapshotX11* snapshot = new DisplaySnapshotX11(
       0,
-      false,
       gfx::Point(0, 0),
       gfx::Size(0, 0),
       DISPLAY_CONNECTION_TYPE_UNKNOWN,

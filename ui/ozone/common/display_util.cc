@@ -22,7 +22,6 @@ DisplaySnapshot_Params GetDisplaySnapshotParams(
     const DisplaySnapshot& display) {
   DisplaySnapshot_Params params;
   params.display_id = display.display_id();
-  params.has_proper_display_id = display.has_proper_display_id();
   params.origin = display.origin();
   params.physical_size = display.physical_size();
   params.type = display.type();

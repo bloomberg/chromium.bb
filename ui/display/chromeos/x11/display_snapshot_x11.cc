@@ -11,7 +11,6 @@ namespace ui {
 
 DisplaySnapshotX11::DisplaySnapshotX11(
     int64_t display_id,
-    bool has_proper_display_id,
     const gfx::Point& origin,
     const gfx::Size& physical_size,
     DisplayConnectionType type,
@@ -25,7 +24,6 @@ DisplaySnapshotX11::DisplaySnapshotX11(
     RRCrtc crtc,
     int index)
     : DisplaySnapshot(display_id,
-                      has_proper_display_id,
                       origin,
                       physical_size,
                       type,

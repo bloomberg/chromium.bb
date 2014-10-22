@@ -20,7 +20,6 @@ bool SameModes(const DisplayMode_Params& lhs, const DisplayMode_Params& rhs) {
 
 DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
     : DisplaySnapshot(params.display_id,
-                      params.has_proper_display_id,
                       params.origin,
                       params.physical_size,
                       params.type,

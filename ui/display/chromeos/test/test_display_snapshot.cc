@@ -7,7 +7,6 @@
 namespace ui {
 TestDisplaySnapshot::TestDisplaySnapshot()
     : DisplaySnapshot(0,
-                      false,
                       gfx::Point(0, 0),
                       gfx::Size(0, 0),
                       DISPLAY_CONNECTION_TYPE_UNKNOWN,
@@ -20,7 +19,6 @@ TestDisplaySnapshot::TestDisplaySnapshot()
 
 TestDisplaySnapshot::TestDisplaySnapshot(
     int64_t display_id,
-    bool has_proper_display_id,
     const gfx::Point& origin,
     const gfx::Size& physical_size,
     DisplayConnectionType type,
@@ -29,7 +27,6 @@ TestDisplaySnapshot::TestDisplaySnapshot(
     const DisplayMode* current_mode,
     const DisplayMode* native_mode)
     : DisplaySnapshot(display_id,
-                      has_proper_display_id,
                       origin,
                       physical_size,
                       type,

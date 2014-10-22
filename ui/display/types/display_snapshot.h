@@ -20,7 +20,6 @@ namespace ui {
 class DISPLAY_TYPES_EXPORT DisplaySnapshot {
  public:
   DisplaySnapshot(int64_t display_id,
-                  bool has_proper_display_id,
                   const gfx::Point& origin,
                   const gfx::Size& physical_size,
                   DisplayConnectionType type,
@@ -42,7 +41,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   std::string display_name() const { return display_name_; }
 
   int64_t display_id() const { return display_id_; }
-  bool has_proper_display_id() const { return has_proper_display_id_; }
 
   const DisplayMode* current_mode() const { return current_mode_; }
   const DisplayMode* native_mode() const { return native_mode_; }
@@ -59,7 +57,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
  protected:
   // Display id for this output.
   int64_t display_id_;
-  bool has_proper_display_id_;
 
   // Display's origin on the framebuffer.
   gfx::Point origin_;

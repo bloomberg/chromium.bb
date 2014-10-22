@@ -579,15 +579,14 @@ void DisplayConfigurator::UpdateCachedDisplays() {
   // Set |selected_mode| fields.
   for (size_t i = 0; i < cached_displays_.size(); ++i) {
     DisplayState* display_state = &cached_displays_[i];
-    if (display_state->display->has_proper_display_id()) {
-      gfx::Size size;
-      if (state_controller_ &&
-          state_controller_->GetResolutionForDisplayId(
-              display_state->display->display_id(), &size)) {
-        display_state->selected_mode =
-            FindDisplayModeMatchingSize(*display_state->display, size);
-      }
+    gfx::Size size;
+    if (state_controller_ &&
+        state_controller_->GetResolutionForDisplayId(
+            display_state->display->display_id(), &size)) {
+      display_state->selected_mode =
+          FindDisplayModeMatchingSize(*display_state->display, size);
     }
+
     // Fall back to native mode.
     if (!display_state->selected_mode)
       display_state->selected_mode = display_state->display->native_mode();
@@ -960,12 +959,9 @@ MultipleDisplayState DisplayConfigurator::ChooseDisplayState(
         // With either both displays on or both displays off, use one of the
         // dual modes.
         std::vector<int64_t> display_ids;
-        for (size_t i = 0; i < cached_displays_.size(); ++i) {
-          // If display id isn't available, switch to extended mode.
-          if (!cached_displays_[i].display->has_proper_display_id())
-            return MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+        for (size_t i = 0; i < cached_displays_.size(); ++i)
           display_ids.push_back(cached_displays_[i].display->display_id());
-        }
+
         return state_controller_->GetStateForDisplayIds(display_ids);
       }
     }
