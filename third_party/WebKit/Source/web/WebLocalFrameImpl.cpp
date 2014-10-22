@@ -1160,6 +1160,22 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange)
         frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
+void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
+{
+    VisibleSelection currentSelection = frame()->selection().selection();
+
+    VisiblePosition basePosition = currentSelection.isBaseFirst() ?
+        currentSelection.visibleStart() : currentSelection.visibleEnd();
+    VisiblePosition extentPosition = visiblePositionForWindowPoint(point);
+
+    // Prevent the selection from collapsing.
+    if (comparePositions(basePosition, extentPosition) == 0)
+        return;
+
+    VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
+    frame()->selection().setSelection(newSelection, CharacterGranularity);
+}
+
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
 {
     VisiblePosition basePosition = visiblePositionForWindowPoint(base);

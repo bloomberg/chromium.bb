@@ -74,6 +74,14 @@ public:
     // Associates an isolated world with human-readable name which is useful for
     // extension debugging.
     virtual void setIsolatedWorldHumanReadableName(int worldID, const WebString&) = 0;
+
+
+    // Selection --------------------------------------------------------------
+
+    // Moves the selection extent point. This function does not allow the
+    // selection to collapse. If the new extent is set to the same position as
+    // the current base, this function will do nothing.
+    virtual void moveRangeSelectionExtent(const WebPoint&) = 0;
 };
 
 } // namespace blink

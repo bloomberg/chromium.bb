@@ -4100,6 +4100,65 @@ TEST_F(WebFrameTest, SelectRangeCanMoveSelectionEnd)
     // EXPECT_EQ("Editable 1. Editable 2. ]", selectionAsString(frame));
 }
 
+TEST_F(WebFrameTest, MoveRangeSelectionExtent)
+{
+    WebLocalFrameImpl* frame;
+    WebRect startWebRect;
+    WebRect endWebRect;
+
+    registerMockedHttpURLLoad("move_range_selection_extent.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    initializeTextSelectionWebView(m_baseURL + "move_range_selection_extent.html", &webViewHelper);
+    frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
+    webViewHelper.webView()->selectionBounds(startWebRect, endWebRect);
+
+    frame->moveRangeSelectionExtent(WebPoint(640, 480));
+    EXPECT_EQ("This text is initially selected. 16-char footer.", selectionAsString(frame));
+
+    frame->moveRangeSelectionExtent(WebPoint(0, 0));
+    EXPECT_EQ("16-char header. ", selectionAsString(frame));
+
+    // Reset with swapped base and extent.
+    frame->selectRange(topLeft(endWebRect), bottomRightMinusOne(startWebRect));
+    EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
+
+    frame->moveRangeSelectionExtent(WebPoint(640, 480));
+    EXPECT_EQ(" 16-char footer.", selectionAsString(frame));
+
+    frame->moveRangeSelectionExtent(WebPoint(0, 0));
+    EXPECT_EQ("16-char header. This text is initially selected.", selectionAsString(frame));
+
+    frame->executeCommand(WebString::fromUTF8("Unselect"));
+    EXPECT_EQ("", selectionAsString(frame));
+}
+
+TEST_F(WebFrameTest, MoveRangeSelectionExtentCannotCollapse)
+{
+    WebLocalFrameImpl* frame;
+    WebRect startWebRect;
+    WebRect endWebRect;
+
+    registerMockedHttpURLLoad("move_range_selection_extent.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    initializeTextSelectionWebView(m_baseURL + "move_range_selection_extent.html", &webViewHelper);
+    frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
+    webViewHelper.webView()->selectionBounds(startWebRect, endWebRect);
+
+    frame->moveRangeSelectionExtent(bottomRightMinusOne(startWebRect));
+    EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
+
+    // Reset with swapped base and extent.
+    frame->selectRange(topLeft(endWebRect), bottomRightMinusOne(startWebRect));
+    EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
+
+    frame->moveRangeSelectionExtent(bottomRightMinusOne(endWebRect));
+    EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
+}
+
 static int computeOffset(RenderObject* renderer, int x, int y)
 {
     return VisiblePosition(renderer->positionForPoint(LayoutPoint(x, y))).deepEquivalent().computeOffsetInContainerNode();
