@@ -35,7 +35,7 @@ class PluginInstallerObserver {
 class WeakPluginInstallerObserver : public PluginInstallerObserver {
  public:
   explicit WeakPluginInstallerObserver(PluginInstaller* installer);
-  virtual ~WeakPluginInstallerObserver();
+  ~WeakPluginInstallerObserver() override;
 
  private:
   friend class PluginInstaller;

@@ -68,12 +68,12 @@ class TestPluginInstallerObserver : public PluginInstallerObserver {
   const std::string& download_error() const { return download_error_; }
 
  private:
-  virtual void DownloadStarted() override { download_started_ = true; }
-  virtual void DownloadFinished() override { download_finished_ = true; }
-  virtual void DownloadError(const std::string& message) override {
+  void DownloadStarted() override { download_started_ = true; }
+  void DownloadFinished() override { download_finished_ = true; }
+  void DownloadError(const std::string& message) override {
     download_error_ = message;
   }
-  virtual void DownloadCancelled() override { download_cancelled_ = true; }
+  void DownloadCancelled() override { download_cancelled_ = true; }
 
   bool download_started_;
   bool download_finished_;

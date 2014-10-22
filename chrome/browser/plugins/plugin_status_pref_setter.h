@@ -28,7 +28,7 @@ struct WebPluginInfo;
 class PluginStatusPrefSetter : public content::NotificationObserver {
  public:
   PluginStatusPrefSetter();
-  virtual ~PluginStatusPrefSetter();
+  ~PluginStatusPrefSetter() override;
 
   // Binds the preferences in the profile's PrefService, notifying |observer| if
   // any value changes.
@@ -46,9 +46,9 @@ class PluginStatusPrefSetter : public content::NotificationObserver {
   }
 
   // content::NotificationObserver methods:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   void StartUpdate();

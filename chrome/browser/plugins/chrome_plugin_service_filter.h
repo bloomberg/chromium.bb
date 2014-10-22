@@ -71,19 +71,17 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   bool IsPluginRestricted(const base::FilePath& plugin_path);
 
   // PluginServiceFilter implementation:
-  virtual bool IsPluginAvailable(
-      int render_process_id,
-      int render_frame_id,
-      const void* context,
-      const GURL& url,
-      const GURL& policy_url,
-      content::WebPluginInfo* plugin) override;
+  bool IsPluginAvailable(int render_process_id,
+                         int render_frame_id,
+                         const void* context,
+                         const GURL& url,
+                         const GURL& policy_url,
+                         content::WebPluginInfo* plugin) override;
 
   // CanLoadPlugin always grants permission to the browser
   // (render_process_id == 0)
-  virtual bool CanLoadPlugin(
-      int render_process_id,
-      const base::FilePath& path) override;
+  bool CanLoadPlugin(int render_process_id,
+                     const base::FilePath& path) override;
 
  private:
   friend struct DefaultSingletonTraits<ChromePluginServiceFilter>;
@@ -106,12 +104,12 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   };
 
   ChromePluginServiceFilter();
-  virtual ~ChromePluginServiceFilter();
+  ~ChromePluginServiceFilter() override;
 
   // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   ProcessDetails* GetOrRegisterProcess(int render_process_id);
   const ProcessDetails* GetProcess(int render_process_id) const;

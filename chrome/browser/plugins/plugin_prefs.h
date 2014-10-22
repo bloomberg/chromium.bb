@@ -75,7 +75,7 @@ class PluginPrefs : public RefcountedKeyedService {
   void set_profile(Profile* profile) { profile_ = profile; }
 
   // RefCountedProfileKeyedBase method override.
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
  private:
   friend class base::RefCountedThreadSafe<PluginPrefs>;
@@ -100,7 +100,7 @@ class PluginPrefs : public RefcountedKeyedService {
     std::map<base::FilePath, bool> state_;
   };
 
-  virtual ~PluginPrefs();
+  ~PluginPrefs() override;
 
   // Called to update one of the policy_xyz patterns below when a
   // preference changes.

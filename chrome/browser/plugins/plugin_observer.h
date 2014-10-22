@@ -34,17 +34,15 @@ class InfoBarDelegate;
 class PluginObserver : public content::WebContentsObserver,
                        public content::WebContentsUserData<PluginObserver> {
  public:
-  virtual ~PluginObserver();
+  ~PluginObserver() override;
 
   // content::WebContentsObserver implementation.
-  virtual void RenderFrameCreated(
-      content::RenderFrameHost* render_frame_host) override;
-  virtual void PluginCrashed(const base::FilePath& plugin_path,
-                             base::ProcessId plugin_pid) override;
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void PluginCrashed(const base::FilePath& plugin_path,
+                     base::ProcessId plugin_pid) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit PluginObserver(content::WebContents* web_contents);

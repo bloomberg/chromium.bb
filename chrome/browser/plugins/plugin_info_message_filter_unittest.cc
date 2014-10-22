@@ -34,17 +34,17 @@ void PluginsLoaded(const base::Closure& callback,
 class FakePluginServiceFilter : public content::PluginServiceFilter {
  public:
   FakePluginServiceFilter() {}
-  virtual ~FakePluginServiceFilter() {}
+  ~FakePluginServiceFilter() override {}
 
-  virtual bool IsPluginAvailable(int render_process_id,
-                                 int render_view_id,
-                                 const void* context,
-                                 const GURL& url,
-                                 const GURL& policy_url,
-                                 content::WebPluginInfo* plugin) override;
+  bool IsPluginAvailable(int render_process_id,
+                         int render_view_id,
+                         const void* context,
+                         const GURL& url,
+                         const GURL& policy_url,
+                         content::WebPluginInfo* plugin) override;
 
-  virtual bool CanLoadPlugin(int render_process_id,
-                             const base::FilePath& path) override;
+  bool CanLoadPlugin(int render_process_id,
+                     const base::FilePath& path) override;
 
   void set_plugin_enabled(const base::FilePath& plugin_path, bool enabled) {
     plugin_state_[plugin_path] = enabled;

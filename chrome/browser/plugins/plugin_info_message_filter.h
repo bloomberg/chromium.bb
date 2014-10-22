@@ -78,15 +78,15 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   PluginInfoMessageFilter(int render_process_id, Profile* profile);
 
   // content::BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnDestruct() const override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() const override;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<PluginInfoMessageFilter>;
 
-  virtual ~PluginInfoMessageFilter();
+  ~PluginInfoMessageFilter() override;
 
   void OnGetPluginInfo(int render_frame_id,
                        const GURL& url,

@@ -21,10 +21,10 @@ class PluginsResourceService : public WebResourceService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  virtual ~PluginsResourceService();
+  ~PluginsResourceService() override;
 
   // WebResourceService override to process the parsed information.
-  virtual void Unpack(const base::DictionaryValue& parsed_json) override;
+  void Unpack(const base::DictionaryValue& parsed_json) override;
 
   DISALLOW_COPY_AND_ASSIGN(PluginsResourceService);
 };
