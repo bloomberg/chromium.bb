@@ -4,9 +4,13 @@
 
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 
+#include <drm.h>
+#include <fcntl.h>
 #include <gbm.h>
+#include <xf86drm.h>
 
 #include "base/logging.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
 
 namespace ui {
 
@@ -60,22 +64,37 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   return buffer;
 }
 
-GbmPixmap::GbmPixmap(scoped_refptr<GbmBuffer> buffer) : buffer_(buffer) {
+GbmPixmap::GbmPixmap(scoped_refptr<GbmBuffer> buffer)
+    : buffer_(buffer), dma_buf_(-1) {
+}
+
+bool GbmPixmap::Initialize(DriWrapper* dri) {
+  if (drmPrimeHandleToFD(dri->get_fd(),
+                         buffer_->GetHandle(),
+                         DRM_CLOEXEC,
+                         &dma_buf_)) {
+    LOG(ERROR) << "Failed to export buffer to dma_buf";
+    return false;
+  }
+
+  return true;
 }
 
 GbmPixmap::~GbmPixmap() {
+  if (dma_buf_ > 0)
+    close(dma_buf_);
 }
 
 void* GbmPixmap::GetEGLClientBuffer() {
-  return buffer_->bo();
+  return NULL;
 }
 
 int GbmPixmap::GetDmaBufFd() {
-  return -1;
+  return dma_buf_;
 }
 
 int GbmPixmap::GetDmaBufPitch() {
-  return -1;
+  return gbm_bo_get_stride(buffer_->bo());
 }
 
 }  // namespace ui

@@ -176,7 +176,11 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   if (!buffer.get())
     return NULL;
 
-  return scoped_refptr<GbmPixmap>(new GbmPixmap(buffer));
+  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(buffer));
+  if (!pixmap->Initialize(drm_))
+    return NULL;
+
+  return pixmap;
 }
 
 OverlayCandidatesOzone* GbmSurfaceFactory::GetOverlayCandidates(
