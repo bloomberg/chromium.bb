@@ -14,21 +14,21 @@ class SerialIoHandlerPosix : public SerialIoHandler,
                              public base::MessageLoopForIO::Watcher {
  protected:
   // SerialIoHandler impl.
-  virtual void ReadImpl() override;
-  virtual void WriteImpl() override;
-  virtual void CancelReadImpl() override;
-  virtual void CancelWriteImpl() override;
-  virtual bool Flush() const override;
-  virtual serial::DeviceControlSignalsPtr GetControlSignals() const override;
-  virtual bool SetControlSignals(
+  void ReadImpl() override;
+  void WriteImpl() override;
+  void CancelReadImpl() override;
+  void CancelWriteImpl() override;
+  bool Flush() const override;
+  serial::DeviceControlSignalsPtr GetControlSignals() const override;
+  bool SetControlSignals(
       const serial::HostControlSignals& control_signals) override;
-  virtual bool ConfigurePort(const serial::ConnectionOptions& options) override;
-  virtual serial::ConnectionInfoPtr GetPortInfo() const override;
-  virtual void RequestAccess(
+  bool ConfigurePort(const serial::ConnectionOptions& options) override;
+  serial::ConnectionInfoPtr GetPortInfo() const override;
+  void RequestAccess(
       const std::string& port,
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       scoped_refptr<base::MessageLoopProxy> ui_message_loop) override;
-  virtual bool PostOpen() override;
+  bool PostOpen() override;
 
  private:
   friend class SerialIoHandler;
@@ -36,11 +36,11 @@ class SerialIoHandlerPosix : public SerialIoHandler,
   SerialIoHandlerPosix(
       scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
       scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop);
-  virtual ~SerialIoHandlerPosix();
+  ~SerialIoHandlerPosix() override;
 
   // base::MessageLoopForIO::Watcher implementation.
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
 
   void EnsureWatchingReads();
   void EnsureWatchingWrites();

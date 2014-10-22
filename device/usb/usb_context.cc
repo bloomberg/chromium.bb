@@ -20,10 +20,10 @@ namespace device {
 class UsbContext::UsbEventHandler : public base::PlatformThread::Delegate {
  public:
   explicit UsbEventHandler(libusb_context* context);
-  virtual ~UsbEventHandler();
+  ~UsbEventHandler() override;
 
   // base::PlatformThread::Delegate
-  virtual void ThreadMain() override;
+  void ThreadMain() override;
 
  private:
   base::subtle::Atomic32 running_;

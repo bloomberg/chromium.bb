@@ -24,7 +24,7 @@ class BluetoothRfcommChannelMac : public BluetoothChannelMac {
   // NOTE: The |channel| is expected to already be retained.
   BluetoothRfcommChannelMac(BluetoothSocketMac* socket,
                             IOBluetoothRFCOMMChannel* channel);
-  virtual ~BluetoothRfcommChannelMac();
+  ~BluetoothRfcommChannelMac() override;
 
   // Opens a new RFCOMM channel with Channel ID |channel_id| to the target
   // |device|. Returns the opened channel and sets |status| to kIOReturnSuccess
@@ -37,12 +37,10 @@ class BluetoothRfcommChannelMac : public BluetoothChannelMac {
       IOReturn* status);
 
   // BluetoothChannelMac:
-  virtual void SetSocket(BluetoothSocketMac* socket) override;
-  virtual IOBluetoothDevice* GetDevice() override;
-  virtual uint16_t GetOutgoingMTU() override;
-  virtual IOReturn WriteAsync(void* data,
-                              uint16_t length,
-                              void* refcon) override;
+  void SetSocket(BluetoothSocketMac* socket) override;
+  IOBluetoothDevice* GetDevice() override;
+  uint16_t GetOutgoingMTU() override;
+  IOReturn WriteAsync(void* data, uint16_t length, void* refcon) override;
 
   void OnChannelOpenComplete(IOBluetoothRFCOMMChannel* channel,
                              IOReturn status);

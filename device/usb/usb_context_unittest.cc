@@ -20,7 +20,7 @@ class UsbContextTest : public testing::Test {
         : UsbContext(context) {}
 
    private:
-    virtual ~UsbContextForTest() {}
+    ~UsbContextForTest() override {}
     DISALLOW_COPY_AND_ASSIGN(UsbContextForTest);
   };
 };

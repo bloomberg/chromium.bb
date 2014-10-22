@@ -64,14 +64,14 @@ static const struct UsbTestGadgetConfiguration kConfigurations[] = {
 
 class UsbTestGadgetImpl : public UsbTestGadget {
  public:
-  virtual ~UsbTestGadgetImpl();
+  ~UsbTestGadgetImpl() override;
 
-  virtual bool Unclaim() override;
-  virtual bool Disconnect() override;
-  virtual bool Reconnect() override;
-  virtual bool SetType(Type type) override;
-  virtual UsbDevice* GetDevice() const override;
-  virtual std::string GetSerialNumber() const override;
+  bool Unclaim() override;
+  bool Disconnect() override;
+  bool Reconnect() override;
+  bool SetType(Type type) override;
+  UsbDevice* GetDevice() const override;
+  std::string GetSerialNumber() const override;
 
  protected:
   UsbTestGadgetImpl();
@@ -93,13 +93,13 @@ class UsbTestGadgetImpl : public UsbTestGadget {
   class Delegate : public net::URLFetcherDelegate {
    public:
     Delegate() {}
-    virtual ~Delegate() {}
+    ~Delegate() override {}
 
     void WaitForCompletion() {
       run_loop_.Run();
     }
 
-    virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+    void OnURLFetchComplete(const net::URLFetcher* source) override {
       run_loop_.Quit();
     }
 

@@ -71,7 +71,7 @@ class NfcNdefTagTechnology : public NfcTagTechnology {
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Closure ErrorCallback;
 
-  virtual ~NfcNdefTagTechnology();
+  ~NfcNdefTagTechnology() override;
 
   // Interface for observing changes from NFC tags related to NDEF records.
   class Observer {
@@ -93,7 +93,7 @@ class NfcNdefTagTechnology : public NfcTagTechnology {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // NfcTagTechnology override.
-  virtual bool IsSupportedByTag() const override;
+  bool IsSupportedByTag() const override;
 
   // Returns all NDEF records that were received from the tag in the form of an
   // NDEF message. If the returned NDEF message contains no records, this only

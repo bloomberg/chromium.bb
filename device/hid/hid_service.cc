@@ -30,11 +30,11 @@ class HidService::Destroyer : public base::MessageLoop::DestructionObserver {
  public:
   explicit Destroyer(HidService* hid_service)
       : hid_service_(hid_service) {}
-  virtual ~Destroyer() {}
+  ~Destroyer() override {}
 
  private:
   // base::MessageLoop::DestructionObserver implementation.
-  virtual void WillDestroyCurrentMessageLoop() override {
+  void WillDestroyCurrentMessageLoop() override {
     base::MessageLoop::current()->RemoveDestructionObserver(this);
     delete hid_service_;
     delete this;

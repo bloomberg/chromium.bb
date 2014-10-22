@@ -63,13 +63,13 @@ class DataReceiver::PendingReceive::Buffer : public ReadOnlyBuffer {
          PendingReceive* receive,
          const char* buffer,
          uint32_t buffer_size);
-  virtual ~Buffer();
+  ~Buffer() override;
 
   // ReadOnlyBuffer overrides.
-  virtual const char* GetData() override;
-  virtual uint32_t GetSize() override;
-  virtual void Done(uint32_t bytes_consumed) override;
-  virtual void DoneWithError(uint32_t bytes_consumed, int32_t error) override;
+  const char* GetData() override;
+  uint32_t GetSize() override;
+  void Done(uint32_t bytes_consumed) override;
+  void DoneWithError(uint32_t bytes_consumed, int32_t error) override;
 
  private:
   // The DataReceiver whose data pipe we are providing a view.

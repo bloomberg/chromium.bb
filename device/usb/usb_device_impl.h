@@ -36,12 +36,12 @@ class UsbDeviceImpl : public UsbDevice {
       int interface_id,
       const base::Callback<void(bool success)>& callback) override;
 #endif  // OS_CHROMEOS
-  virtual scoped_refptr<UsbDeviceHandle> Open() override;
-  virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
-  virtual const UsbConfigDescriptor& GetConfiguration() override;
-  virtual bool GetManufacturer(base::string16* manufacturer) override;
-  virtual bool GetProduct(base::string16* product) override;
-  virtual bool GetSerialNumber(base::string16* serial_number) override;
+  scoped_refptr<UsbDeviceHandle> Open() override;
+  bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
+  const UsbConfigDescriptor& GetConfiguration() override;
+  bool GetManufacturer(base::string16* manufacturer) override;
+  bool GetProduct(base::string16* product) override;
+  bool GetSerialNumber(base::string16* serial_number) override;
 
  protected:
   friend class UsbServiceImpl;
@@ -54,7 +54,7 @@ class UsbDeviceImpl : public UsbDevice {
                 uint16 product_id,
                 uint32 unique_id);
 
-  virtual ~UsbDeviceImpl();
+  ~UsbDeviceImpl() override;
 
   // Called only by UsbService.
   void OnDisconnect();

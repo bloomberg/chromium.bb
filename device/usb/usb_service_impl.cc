@@ -34,16 +34,15 @@ class UsbServiceImpl : public UsbService,
   explicit UsbServiceImpl(
       PlatformUsbContext context,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~UsbServiceImpl();
+  ~UsbServiceImpl() override;
 
  private:
   // device::UsbService implementation
-  virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override;
-  virtual void GetDevices(
-      std::vector<scoped_refptr<UsbDevice> >* devices) override;
+  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override;
+  void GetDevices(std::vector<scoped_refptr<UsbDevice>>* devices) override;
 
   // base::MessageLoop::DestructionObserver implementation.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   // Enumerate USB devices from OS and update devices_ map.
   void RefreshDevices();

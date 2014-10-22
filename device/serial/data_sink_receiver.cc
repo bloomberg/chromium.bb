@@ -44,15 +44,15 @@ class DataSinkReceiver::Buffer : public ReadOnlyBuffer {
   Buffer(scoped_refptr<DataSinkReceiver> receiver,
          const char* buffer,
          uint32_t buffer_size);
-  virtual ~Buffer();
+  ~Buffer() override;
 
   void Cancel(int32_t error);
 
   // ReadOnlyBuffer overrides.
-  virtual const char* GetData() override;
-  virtual uint32_t GetSize() override;
-  virtual void Done(uint32_t bytes_read) override;
-  virtual void DoneWithError(uint32_t bytes_read, int32_t error) override;
+  const char* GetData() override;
+  uint32_t GetSize() override;
+  void Done(uint32_t bytes_read) override;
+  void DoneWithError(uint32_t bytes_read, int32_t error) override;
 
  private:
   // The DataSinkReceiver whose data pipe we are providing a view.

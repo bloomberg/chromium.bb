@@ -24,7 +24,7 @@ namespace device {
 namespace {
 
 class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
-  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() override {
+  mojo::Array<serial::DeviceInfoPtr> GetDevices() override {
     mojo::Array<serial::DeviceInfoPtr> devices(1);
     devices[0] = serial::DeviceInfo::New();
     devices[0]->path = "device";
@@ -168,7 +168,7 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
     EventReceived(EVENT_RECEIVE_ERROR);
   }
 
-  virtual void OnConnectionError() override {
+  void OnConnectionError() override {
     EventReceived(EVENT_ERROR);
     FAIL() << "Connection error";
   }

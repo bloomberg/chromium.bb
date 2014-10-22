@@ -33,7 +33,7 @@ class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
              uint32_t buffer_size,
              int32_t fatal_error_value);
 
-  virtual ~DataSender();
+  ~DataSender() override;
 
   // Starts an asynchronous send of |data|. If the send completes successfully,
   // |callback| will be called. Otherwise, |error_callback| will be called with
@@ -53,14 +53,14 @@ class DataSender : public serial::DataSinkClient, public mojo::ErrorHandler {
   class PendingSend;
 
   // serial::DataSinkClient overrides.
-  virtual void ReportBytesSent(uint32_t bytes_sent) override;
-  virtual void ReportBytesSentAndError(
+  void ReportBytesSent(uint32_t bytes_sent) override;
+  void ReportBytesSentAndError(
       uint32_t bytes_sent,
       int32_t error,
       const mojo::Callback<void(uint32_t)>& callback) override;
 
   // mojo::ErrorHandler override.
-  virtual void OnConnectionError() override;
+  void OnConnectionError() override;
 
   // Copies data from |pending_sends_| into the data pipe and starts |waiter_|
   // waiting if the pipe is full. When a PendingSend in |pending_sends_| has

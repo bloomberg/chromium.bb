@@ -20,18 +20,17 @@ class TestSerialIoHandler : public SerialIoHandler {
   static scoped_refptr<SerialIoHandler> Create();
 
   // SerialIoHandler overrides.
-  virtual void Open(const std::string& port,
-                    const OpenCompleteCallback& callback) override;
-  virtual bool ConfigurePort(const serial::ConnectionOptions& options) override;
-  virtual void ReadImpl() override;
-  virtual void CancelReadImpl() override;
-  virtual void WriteImpl() override;
-  virtual void CancelWriteImpl() override;
-  virtual serial::DeviceControlSignalsPtr GetControlSignals() const override;
-  virtual serial::ConnectionInfoPtr GetPortInfo() const override;
-  virtual bool Flush() const override;
-  virtual bool SetControlSignals(
-      const serial::HostControlSignals& signals) override;
+  void Open(const std::string& port,
+            const OpenCompleteCallback& callback) override;
+  bool ConfigurePort(const serial::ConnectionOptions& options) override;
+  void ReadImpl() override;
+  void CancelReadImpl() override;
+  void WriteImpl() override;
+  void CancelWriteImpl() override;
+  serial::DeviceControlSignalsPtr GetControlSignals() const override;
+  serial::ConnectionInfoPtr GetPortInfo() const override;
+  bool Flush() const override;
+  bool SetControlSignals(const serial::HostControlSignals& signals) override;
 
   serial::ConnectionInfo* connection_info() { return &info_; }
   serial::DeviceControlSignals* device_control_signals() {
@@ -47,7 +46,7 @@ class TestSerialIoHandler : public SerialIoHandler {
   }
 
  protected:
-  virtual ~TestSerialIoHandler();
+  ~TestSerialIoHandler() override;
 
  private:
   bool opened_;

@@ -31,21 +31,20 @@ namespace device {
 class BluetoothSocketNet : public BluetoothSocket {
  public:
   // BluetoothSocket:
-  virtual void Close() override;
-  virtual void Disconnect(const base::Closure& callback) override;
-  virtual void Receive(int buffer_size,
-                       const ReceiveCompletionCallback& success_callback,
-                       const ReceiveErrorCompletionCallback& error_callback)
-      override;
-  virtual void Send(scoped_refptr<net::IOBuffer> buffer,
-                    int buffer_size,
-                    const SendCompletionCallback& success_callback,
-                    const ErrorCompletionCallback& error_callback) override;
+  void Close() override;
+  void Disconnect(const base::Closure& callback) override;
+  void Receive(int buffer_size,
+               const ReceiveCompletionCallback& success_callback,
+               const ReceiveErrorCompletionCallback& error_callback) override;
+  void Send(scoped_refptr<net::IOBuffer> buffer,
+            int buffer_size,
+            const SendCompletionCallback& success_callback,
+            const ErrorCompletionCallback& error_callback) override;
 
  protected:
   BluetoothSocketNet(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
                      scoped_refptr<BluetoothSocketThread> socket_thread);
-  virtual ~BluetoothSocketNet();
+  ~BluetoothSocketNet() override;
 
   // Resets locally held data after a socket is closed. Default implementation
   // does nothing, subclasses may override.
