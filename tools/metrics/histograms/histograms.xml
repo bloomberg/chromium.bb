@@ -20820,6 +20820,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Networks.RememberedShared">
+  <owner>stevenjb@chromium.org</owner>
+  <summary>
+    Number of shared remembered (preferred) networks on Chrome OS. Updated any
+    time the network list changes.
+  </summary>
+</histogram>
+
+<histogram name="Networks.RememberedUnshared">
+  <owner>stevenjb@chromium.org</owner>
+  <summary>
+    Number of private remembered (preferred) networks on Chrome OS. Updated any
+    time the network list changes.
+  </summary>
+</histogram>
+
+<histogram name="Networks.Visible">
+  <owner>stevenjb@chromium.org</owner>
+  <summary>
+    Number of visible (in-range) networks on Chrome OS. Updated any time the
+    network list changes.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ActionAndroid" enum="NewTabPageActionAndroid">
   <owner>newt@chromium.org</owner>
   <summary>
