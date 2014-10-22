@@ -46,6 +46,9 @@ void _sanitizer_options_link_helper() { }
 //   strip_path_prefix=Release/../../ - prefixes up to and including this
 //     substring will be stripped from source file paths in symbolized reports
 //     (if symbolize=true, which is set when running with LeakSanitizer).
+//   fast_unwind_on_fatal=1 - use the fast (frame-pointer-based) stack unwinder
+//     to print error reports. V8 doesn't generate debug info for the JIT code,
+//     so the slow unwinder may not work properly.
 #if defined(OS_LINUX)
 #if defined(GOOGLE_CHROME_BUILD)
 // Default AddressSanitizer options for the official build. These do not affect
@@ -54,18 +57,18 @@ void _sanitizer_options_link_helper() { }
 const char kAsanDefaultOptions[] =
     "legacy_pthread_cond=1 malloc_context_size=5 strict_memcmp=0 "
     "symbolize=false check_printf=1 use_sigaltstack=1 detect_leaks=0 "
-    "strip_path_prefix=Release/../../ ";
+    "strip_path_prefix=Release/../../ fast_unwind_on_fatal=1";
 #else
 // Default AddressSanitizer options for buildbots and non-official builds.
 const char *kAsanDefaultOptions =
     "strict_memcmp=0 symbolize=false check_printf=1 use_sigaltstack=1 "
-    "detect_leaks=0 strip_path_prefix=Release/../../ ";
+    "detect_leaks=0 strip_path_prefix=Release/../../ fast_unwind_on_fatal=1";
 #endif  // GOOGLE_CHROME_BUILD
 
 #elif defined(OS_MACOSX)
 const char *kAsanDefaultOptions =
     "strict_memcmp=0 replace_intrin=0 check_printf=1 use_sigaltstack=1 "
-    "strip_path_prefix=Release/../../ ";
+    "strip_path_prefix=Release/../../ fast_unwind_on_fatal=1";
 static const char kNaClDefaultOptions[] = "handle_segv=0";
 static const char kNaClFlag[] = "--type=nacl-loader";
 #endif  // OS_LINUX
