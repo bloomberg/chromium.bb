@@ -347,11 +347,11 @@ void WorkerThread::cleanup()
     m_thread->removeTaskObserver(m_microtaskRunner.get());
     m_microtaskRunner = nullptr;
 
-    m_terminationEvent->signal();
-
     // Notify the proxy that the WorkerGlobalScope has been disposed of.
     // This can free this thread object, hence it must not be touched afterwards.
     workerReportingProxy().workerThreadTerminated();
+
+    m_terminationEvent->signal();
 
     // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
     PlatformThreadData::current().destroy();
