@@ -78,6 +78,9 @@ const char kEnableCarrierSwitching[] = "enable-carrier-switching";
 // Enables the next generation version of ChromeVox.
 const char kEnableChromeVoxNext[] = "enable-chromevox-next";
 
+// Enables cloud backup feature.
+const char kEnableCloudBackup[] = "enable-cloud-backup";
+
 // Enables consumer management, which allows user to enroll, remotely lock and
 // locate the device.
 const char kEnableConsumerManagement[] = "enable-consumer-management";
