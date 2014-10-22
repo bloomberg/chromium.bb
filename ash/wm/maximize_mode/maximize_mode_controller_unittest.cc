@@ -7,6 +7,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 #include "ash/accelerometer/accelerometer_controller.h"
+#include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -14,6 +15,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
+#include "base/command_line.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "ui/accelerometer/accelerometer_types.h"
 #include "ui/events/event_handler.h"
@@ -612,6 +614,35 @@ TEST_F(MaximizeModeControllerTest, UpdateUserRotationWhileRotationLocked) {
   TriggerAccelerometerUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
                              gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
+}
+
+class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
+ public:
+  MaximizeModeControllerSwitchesTest() {}
+  virtual ~MaximizeModeControllerSwitchesTest(){}
+
+  virtual void SetUp() override {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableTouchViewTesting);
+    MaximizeModeControllerTest::SetUp();
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MaximizeModeControllerSwitchesTest);
+};
+
+// Tests that when the command line switch for testing maximize mode is on, that
+// accelerometer updates which would normally cause it to exit do not, and that
+// screen rotations still occur.
+TEST_F(MaximizeModeControllerSwitchesTest, IgnoreHingeAngles) {
+  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
+
+  // Would normally trigger an exit from maximize mode.
+  OpenLidToAngle(90.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+
+  TriggerAccelerometerUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f),
+                             gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetInternalDisplayRotation());
 }
 
 }  // namespace ash

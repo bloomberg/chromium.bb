@@ -185,6 +185,9 @@ class ASH_EXPORT MaximizeModeController
   // called, and for which these changes should be ignored.
   bool ignore_display_configuration_updates_;
 
+  // True when the hinge angle has been detected past 180 degrees.
+  bool lid_open_past_180_;
+
   // True when Shutdown has been called. When shutting down the non maximize
   // mode state should be restored, however user preferences should not be
   // altered.
