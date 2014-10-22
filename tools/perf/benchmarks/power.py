@@ -14,3 +14,12 @@ class PowerAndroidAcceptance(benchmark.Benchmark):
 
   test = power.Power
   page_set = page_sets.AndroidAcceptancePageSet
+
+
+@benchmark.Enabled('android')
+class PowerTypical10Mobile(benchmark.Benchmark):
+
+  """Android typical 10 mobile power test."""
+
+  test = power.Power
+  page_set = page_sets.Typical10MobilePageSet
