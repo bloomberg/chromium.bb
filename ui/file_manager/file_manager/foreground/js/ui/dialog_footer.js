@@ -8,9 +8,10 @@
  * Footer shown when the Files.app is opened as a file/folder selecting dialog.
  * @param {DialogType} dialogType Dialog type.
  * @param {!Element} container Container of the dialog footer.
+ * @param {!Element} filenameInput Filename input element.
  * @constructor
  */
-function DialogFooter(dialogType, container) {
+function DialogFooter(dialogType, container, filenameInput) {
   /**
    * Dialog type.
    * @type {DialogType}
@@ -43,6 +44,12 @@ function DialogFooter(dialogType, container) {
   this.fileTypeSelector = /** @type {!HTMLSelectElement} */
       (container.querySelector('.file-type'));
 
+  /**
+   * @const
+   * @type {!Element}
+   */
+  this.filenameInput = filenameInput;
+
   // Initialize the element styles.
   container.classList.add('button-panel');
   this.okButton.textContent = DialogFooter.getOKButtonLabel_(dialogType);
@@ -69,9 +76,9 @@ DialogFooter.findDialogFooter = function(dialogType, document) {
   var hasFooterPanel = dialogType == DialogType.SELECT_SAVEAS_FILE;
   return new DialogFooter(
       dialogType,
-      /** @type {!Element} */
-      (document.querySelector(
-          hasFooterPanel ? '.dialog-footer' : '.preview-panel')));
+      queryRequiredElement(
+          document, hasFooterPanel ? '.dialog-footer' : '.preview-panel'),
+      queryRequiredElement(document, '#filename-input-box input'));
 };
 
 /**
@@ -96,5 +103,63 @@ DialogFooter.getOKButtonLabel_ = function(dialogType) {
 
     default:
       throw new Error('Unknown dialog type: ' + dialogType);
+  }
+};
+
+/**
+ * Fills the file type list or hides it.
+ * @param {!Array.<{extensions: Array.<string>, description: string}>} fileTypes
+ *     List of file type.
+ * @param {boolean} includeAllFiles Whether the filter includes the 'all files'
+ *     item or not.
+ */
+DialogFooter.prototype.initFileTypeFilter = function(
+    fileTypes, includeAllFiles) {
+  if (includeAllFiles) {
+    var option = document.createElement('option');
+    option.innerText = str('ALL_FILES_FILTER');
+    option.value = 0;
+    this.fileTypeSelector.appendChild(option);
+  }
+
+  for (var i = 0; i < fileTypes.length; i++) {
+    var fileType = fileTypes[i];
+    var option = document.createElement('option');
+    var description = fileType.description;
+    if (!description) {
+      // See if all the extensions in the group have the same description.
+      for (var j = 0; j !== fileType.extensions.length; j++) {
+        var currentDescription = FileType.typeToString(
+            FileType.getTypeForName('.' + fileType.extensions[j]));
+        if (!description)  {
+          // Set the first time.
+          description = currentDescription;
+        } else if (description != currentDescription) {
+          // No single description, fall through to the extension list.
+          description = null;
+          break;
+        }
+      }
+
+      if (!description) {
+        // Convert ['jpg', 'png'] to '*.jpg, *.png'.
+        description = fileType.extensions.map(function(s) {
+          return '*.' + s;
+        }).join(', ');
+      }
+    }
+    option.innerText = description;
+    option.value = i + 1;
+
+    if (fileType.selected)
+      option.selected = true;
+
+    this.fileTypeSelector.appendChild(option);
+  }
+
+  var options = this.fileTypeSelector.querySelectorAll('option');
+  if (options.length >= 2) {
+    // There is in fact no choice, show the selector.
+    this.fileTypeSelector.hidden = false;
   }
 };

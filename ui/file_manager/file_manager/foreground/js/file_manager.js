@@ -111,14 +111,14 @@ function FileManager() {
 
   /**
    * List of acceptable file types for open dialog.
-   * @type {Array.<Object>}
+   * @type {!Array.<Object>}
    * @private
    */
   this.fileTypes_ = [];
 
   /**
    * Startup parameters for this application.
-   * @type {Object}
+   * @type {?{includeAllFiles:boolean, action:string}}
    * @private
    */
   this.params_ = null;
@@ -301,13 +301,6 @@ function FileManager() {
    * @private
    */
   this.renameInput_ = null;
-
-  /**
-   * The input element to specify file name.
-   * @type {HTMLInputElement}
-   * @private
-   */
-  this.filenameInput_ = null;
 
   /**
    * The file table.
@@ -562,27 +555,51 @@ function FileManager() {
 
 FileManager.prototype = {
   __proto__: cr.EventTarget.prototype,
+  /**
+   * @return {DirectoryModel}
+   */
   get directoryModel() {
     return this.directoryModel_;
   },
+  /**
+   * @return {DirectoryTree}
+   */
   get directoryTree() {
     return this.directoryTree_;
   },
+  /**
+   * @return {HTMLDocument}
+   */
   get document() {
     return this.document_;
   },
+  /**
+   * @return {FileTransferController}
+   */
   get fileTransferController() {
     return this.fileTransferController_;
   },
+  /**
+   * @return {FileOperationManager}
+   */
   get fileOperationManager() {
     return this.fileOperationManager_;
   },
+  /**
+   * @return {BackgroundWindow}
+   */
   get backgroundPage() {
     return this.backgroundPage_;
   },
+  /**
+   * @return {VolumeManagerWrapper}
+   */
   get volumeManager() {
     return this.volumeManager_;
   },
+  /**
+   * @return {FileManagerUI}
+   */
   get ui() {
     return this.ui_;
   }
@@ -1277,9 +1294,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;
 
-    var filenameInput = queryRequiredElement(dom, '#filename-input-box input');
-    this.filenameInput_ = /** @type {HTMLInputElement} */ (filenameInput);
-
     var taskItems = queryRequiredElement(dom, '#tasks');
     this.taskItems_ = /** @type {HTMLButtonElement} */ (taskItems);
 
@@ -1335,11 +1349,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'blur', this.onRenameInputBlur_.bind(this));
 
     // TODO(hirono): Rename the handler after creating the DialogFooter class.
-    this.filenameInput_.addEventListener(
+    this.ui_.dialogFooter.filenameInput.addEventListener(
         'input', this.onFilenameInputInput_.bind(this));
-    this.filenameInput_.addEventListener(
+    this.ui_.dialogFooter.filenameInput.addEventListener(
         'keydown', this.onFilenameInputKeyDown_.bind(this));
-    this.filenameInput_.addEventListener(
+    this.ui_.dialogFooter.filenameInput.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
     this.listContainer_ = /** @type {!HTMLDivElement} */
@@ -1393,7 +1407,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
-    this.initFileTypeFilter_();
+    this.ui_.dialogFooter.initFileTypeFilter(
+        this.fileTypes_, this.params_.includeAllFiles);
+    this.ui_.dialogFooter.fileTypeSelector.addEventListener(
+        'change', this.updateFileTypeFilter_.bind(this));
 
     util.addIsFocusedMethod();
 
@@ -1604,7 +1621,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.refocus = function() {
     var targetElement;
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE)
-      targetElement = this.filenameInput_;
+      targetElement = this.ui_.dialogFooter.filenameInput;
     else
       targetElement = this.currentList_;
 
@@ -1757,63 +1774,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Fills the file type list or hides it.
-   * @private
-   */
-  FileManager.prototype.initFileTypeFilter_ = function() {
-    if (this.params_.includeAllFiles) {
-      var option = this.document_.createElement('option');
-      option.innerText = str('ALL_FILES_FILTER');
-      this.ui_.dialogFooter.fileTypeSelector.appendChild(option);
-      option.value = 0;
-    }
-
-    for (var i = 0; i !== this.fileTypes_.length; i++) {
-      var fileType = this.fileTypes_[i];
-      var option = this.document_.createElement('option');
-      var description = fileType.description;
-      if (!description) {
-        // See if all the extensions in the group have the same description.
-        for (var j = 0; j !== fileType.extensions.length; j++) {
-          var currentDescription = FileType.typeToString(
-              FileType.getTypeForName('.' + fileType.extensions[j]));
-          if (!description)  // Set the first time.
-            description = currentDescription;
-          else if (description != currentDescription) {
-            // No single description, fall through to the extension list.
-            description = null;
-            break;
-          }
-        }
-
-        if (!description)
-          // Convert ['jpg', 'png'] to '*.jpg, *.png'.
-          description = fileType.extensions.map(function(s) {
-            return '*.' + s;
-          }).join(', ');
-      }
-      option.innerText = description;
-
-      option.value = i + 1;
-
-      if (fileType.selected)
-        option.selected = true;
-
-      this.ui_.dialogFooter.fileTypeSelector.appendChild(option);
-    }
-
-    var options = this.ui_.dialogFooter.fileTypeSelector.querySelectorAll(
-        'option');
-    if (options.length >= 2) {
-      // There is in fact no choice, show the selector.
-      this.ui_.dialogFooter.fileTypeSelector.hidden = false;
-
-      this.ui_.dialogFooter.fileTypeSelector.addEventListener('change',
-          this.updateFileTypeFilter_.bind(this));
-    }
-  };
-
-  /**
    * Filters file according to the selected file type.
    * @private
    */
@@ -1830,12 +1790,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       // In save dialog, update the destination name extension.
       if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
-        var current = this.filenameInput_.value;
+        var current = this.ui_.dialogFooter.filenameInput.value;
         var newExt = this.fileTypes_[selectedIndex - 1].extensions[0];
         if (newExt && !regexp.test(current)) {
           var i = current.lastIndexOf('.');
           if (i >= 0) {
-            this.filenameInput_.value = current.substr(0, i) + '.' + newExt;
+            this.ui_.dialogFooter.filenameInput.value =
+                current.substr(0, i) + '.' + newExt;
             this.selectTargetNameInFilenameInput_();
           }
         }
@@ -2145,7 +2106,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.directoryModel_.addEventListener('scan-completed', listener);
       }
     } else if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
-      this.filenameInput_.value = opt_suggestedName || '';
+      this.ui_.dialogFooter.filenameInput.value = opt_suggestedName || '';
       this.selectTargetNameInFilenameInput_();
     }
   };
@@ -2510,7 +2471,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.selectTargetNameInFilenameInput_ = function() {
-    var input = this.filenameInput_;
+    var input = this.ui_.dialogFooter.filenameInput;
     input.focus();
     var selectionEnd = input.value.lastIndexOf('.');
     if (selectionEnd == -1) {
@@ -3044,7 +3005,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onFilenameInputFocus_ = function(event) {
-    var input = this.filenameInput_;
+    var input = this.ui_.dialogFooter.filenameInput;
 
     // On focus we want to select everything but the extension, but
     // Chrome will select-all after the focus event completes.  We
@@ -3629,7 +3590,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       // Save-as doesn't require a valid selection from the list, since
       // we're going to take the filename from the text input.
-      var filename = this.filenameInput_.value;
+      var filename = this.ui_.dialogFooter.filenameInput.value;
       if (!filename)
         throw new Error('Missing filename!');
 
