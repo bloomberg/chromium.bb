@@ -32,6 +32,7 @@
 #include "bindings/core/v8/V8InspectorFrontendHost.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8MouseEvent.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/dom/Document.h"
@@ -146,17 +147,26 @@ void V8InspectorFrontendHost::showContextMenuAtPointMethodCustom(const v8::Funct
     if (!populateContextMenuItems(v8::Local<v8::Array>::Cast(array), menu, info.GetIsolate()))
         return;
 
-    v8::Isolate* isolate = info.GetIsolate();
-    v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
-    if (windowWrapper.IsEmpty())
-        return;
-    LocalDOMWindow* window = V8Window::toImpl(windowWrapper);
-    if (!window->document() || !window->document()->page())
+    Document* document = nullptr;
+    if (info.Length() >= 4) {
+        v8::Local<v8::Object> documentWrapper = v8::Local<v8::Object>::Cast(info[3]);
+        if (!V8HTMLDocument::wrapperTypeInfo.equals(toWrapperTypeInfo(documentWrapper)))
+            return;
+        document = V8HTMLDocument::toImpl(documentWrapper);
+    } else {
+        v8::Isolate* isolate = info.GetIsolate();
+        v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
+        if (windowWrapper.IsEmpty())
+            return;
+        LocalDOMWindow* window = V8Window::toImpl(windowWrapper);
+        document = window ? window->document() : nullptr;
+    }
+    if (!document || !document->page())
         return;
 
     InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toImpl(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
-    frontendHost->showContextMenu(window->document()->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
+    frontendHost->showContextMenu(document->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
 }
 
 static void histogramEnumeration(const char* name, const v8::FunctionCallbackInfo<v8::Value>& info, int boundaryValue)
