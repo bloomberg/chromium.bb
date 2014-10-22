@@ -56,8 +56,6 @@
       "mojo_public_environment_unittests",
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
-      "mojo_application_manager_unittests",
-      "mojo_shell_tests",
       "mojo_system_unittests",
       {
         "test": "net_unittests",
@@ -144,8 +142,6 @@
       "mojo_public_environment_unittests",
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
-      "mojo_application_manager_unittests",
-      "mojo_shell_tests",
       "mojo_system_unittests",
       {
         "test": "net_unittests",
@@ -232,8 +228,6 @@
       "mojo_public_environment_unittests",
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
-      "mojo_application_manager_unittests",
-      "mojo_shell_tests",
       "mojo_system_unittests",
       {
         "test": "net_unittests",
@@ -321,8 +315,6 @@
       "mojo_public_environment_unittests",
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
-      "mojo_application_manager_unittests",
-      "mojo_shell_tests",
       "mojo_system_unittests",
       {
         "test": "net_unittests",
