@@ -207,7 +207,14 @@ fd_bo_from_handle(struct fd_device *dev, uint32_t handle, uint32_t size)
 	struct fd_bo *bo = NULL;
 
 	pthread_mutex_lock(&table_lock);
+
+	bo = lookup_bo(dev->handle_table, handle);
+	if (bo)
+		goto out_unlock;
+
 	bo = bo_from_handle(dev, size, handle);
+
+out_unlock:
 	pthread_mutex_unlock(&table_lock);
 
 	return bo;
