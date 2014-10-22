@@ -68,13 +68,6 @@ do_perftests() {
   "out/$1/mojo_public_system_perftests" || exit 1
 }
 
-do_pytests() {
-  echo "Running python tests in out/$1 ..."
-  python mojo/tools/run_mojo_python_tests.py || exit 1
-  python mojo/tools/run_mojo_python_bindings_tests.py "--build-dir=out/$1" || \
-      exit 1
-}
-
 do_gn() {
   local gn_args="$(make_gn_args $1)"
   echo "Running gn with --args=\"${gn_args}\" ..."
@@ -163,10 +156,6 @@ for arg in "$@"; do
     perftest)
       should_do_Debug && do_perftests Debug
       should_do_Release && do_perftests Release
-      ;;
-    pytest)
-      should_do_Debug && do_pytests Debug
-      should_do_Release && do_pytests Release
       ;;
     gn)
       should_do_Debug && do_gn Debug
