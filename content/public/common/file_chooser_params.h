@@ -46,6 +46,9 @@ struct CONTENT_EXPORT FileChooserParams {
   // input element. It is used to restrict selectable files to such types.
   std::vector<base::string16> accept_types;
 
+  // Whether the caller needs native file path or not.
+  bool need_local_path;
+
 #if defined(OS_ANDROID)
   // See http://www.w3.org/TR/html-media-capture for more information.
   // If true, the data should be obtained using the device's camera/mic/etc.

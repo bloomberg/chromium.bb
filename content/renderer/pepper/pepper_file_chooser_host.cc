@@ -141,13 +141,14 @@ int32_t PepperFileChooserHost::OnShow(
   } else {
     params.multiSelect = open_multiple;
   }
-  std::vector<blink::WebString> mine_types(accept_mime_types.size());
+  std::vector<blink::WebString> mime_types(accept_mime_types.size());
   for (size_t i = 0; i < accept_mime_types.size(); i++) {
-    mine_types[i] = blink::WebString::fromUTF8(accept_mime_types[i].data(),
+    mime_types[i] = blink::WebString::fromUTF8(accept_mime_types[i].data(),
                                                accept_mime_types[i].size());
   }
-  params.acceptTypes = mine_types;
+  params.acceptTypes = mime_types;
   params.directory = false;
+  params.needLocalPath = true;
 
   handler_ = new CompletionHandler(AsWeakPtr());
   RenderViewImpl* render_view = static_cast<RenderViewImpl*>(

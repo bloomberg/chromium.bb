@@ -1807,6 +1807,7 @@ bool RenderViewImpl::runFileChooser(
   ipc_params.accept_types.reserve(params.acceptTypes.size());
   for (size_t i = 0; i < params.acceptTypes.size(); ++i)
     ipc_params.accept_types.push_back(params.acceptTypes[i]);
+  ipc_params.need_local_path = params.needLocalPath;
 #if defined(OS_ANDROID)
   ipc_params.capture = params.useMediaCapture;
 #endif
@@ -3022,6 +3023,12 @@ void RenderViewImpl::OnFileChooserResponse(
     selected_file.path = files[i].file_path.AsUTF16Unsafe();
     selected_file.displayName =
         base::FilePath(files[i].display_name).AsUTF16Unsafe();
+    if (files[i].file_system_url.is_valid()) {
+      selected_file.fileSystemURL = files[i].file_system_url;
+      selected_file.length = files[i].length;
+      selected_file.modificationTime = files[i].modification_time.ToDoubleT();
+      selected_file.isDirectory = files[i].is_directory;
+    }
     selected_files[i] = selected_file;
   }
 

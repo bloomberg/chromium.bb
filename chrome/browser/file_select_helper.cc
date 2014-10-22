@@ -413,6 +413,7 @@ void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
 void FileSelectHelper::RunFileChooserOnFileThread(
     const FileChooserParams& params) {
   select_file_types_ = GetFileTypesFromAcceptType(params.accept_types);
+  select_file_types_->support_drive = !params.need_local_path;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
