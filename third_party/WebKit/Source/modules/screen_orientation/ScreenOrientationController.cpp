@@ -155,13 +155,17 @@ void ScreenOrientationController::setOrientation(ScreenOrientation* orientation)
 
 void ScreenOrientationController::lock(WebScreenOrientationLockType orientation, WebLockOrientationCallback* callback)
 {
-    ASSERT(m_client);
+    // When detached, the client is no longer valid.
+    if (!m_client)
+        return;
     m_client->lockOrientation(orientation, callback);
 }
 
 void ScreenOrientationController::unlock()
 {
-    ASSERT(m_client);
+    // When detached, the client is no longer valid.
+    if (!m_client)
+        return;
     m_client->unlockOrientation();
 }
 
@@ -190,6 +194,11 @@ void ScreenOrientationController::unregisterWithDispatcher()
 bool ScreenOrientationController::hasLastData()
 {
     return true;
+}
+
+void ScreenOrientationController::willDetachFrameHost()
+{
+    m_client = nullptr;
 }
 
 void ScreenOrientationController::notifyDispatcher()
