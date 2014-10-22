@@ -204,12 +204,6 @@ crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
-crbug.com/425552 compositing/overflow/clear-scroll-parent.html [ NeedsRebaseline ]
-crbug.com/425552 compositing/overflow/content-gains-scrollbars.html [ NeedsRebaseline ]
-crbug.com/425552 compositing/overflow/overflow-scrollbar-layers.html [ NeedsRebaseline ]
-crbug.com/425552 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clear-scroll-parent.html [ NeedsRebaseline ]
-crbug.com/425552 virtual/prefer_compositing_to_lcd_text/compositing/overflow/content-gains-scrollbars.html [ NeedsRebaseline ]
-crbug.com/425552 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scrollbar-layers.html [ NeedsRebaseline ]
 
 # Flaky:
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [ Failure Pass ]

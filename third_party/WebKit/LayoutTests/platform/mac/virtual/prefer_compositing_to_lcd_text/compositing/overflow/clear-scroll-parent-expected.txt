@@ -47,12 +47,7 @@
           "bounds": [200, 200],
           "contentsOpaque": true,
           "drawsContent": true,
-          "backgroundColor": "#008000",
-          "children": [
-            {
-
-            }
-          ]
+          "backgroundColor": "#008000"
         },
         {
           "position": [12, 12],
@@ -65,12 +60,7 @@
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#FF0000",
-              "children": [
-                {
-
-                }
-              ]
+              "backgroundColor": "#FF0000"
             }
           ]
         },
@@ -83,12 +73,7 @@
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#0000FF",
-              "children": [
-                {
-
-                }
-              ]
+              "backgroundColor": "#0000FF"
             },
             {
               "position": [22, 212],

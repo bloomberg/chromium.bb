@@ -126,13 +126,7 @@
               "bounds": [100, 100],
               "children": [
                 {
-                  "bounds": [10, 10],
-                  "drawsContent": true,
-                  "children": [
-                    {
-
-                    }
-                  ]
+                  "bounds": [10, 10]
                 }
               ]
             },
