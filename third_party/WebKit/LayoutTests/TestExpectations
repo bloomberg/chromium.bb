@@ -945,7 +945,6 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 # Old multicol tests that currently have no baseline in the virtual test suite
 # for the new multicol implementation.
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-break-with-balancing.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-count-with-rules.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules-stacking.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules.html [ Skip ]
@@ -1006,7 +1005,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/table-margin-collapse
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/table-vertical-align.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/unsplittable-inline-block.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/column-break-with-balancing.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/column-count-with-rules.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/column-rules.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/float-avoidance.html [ Skip ]
@@ -1018,7 +1016,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/rules-wit
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/unsplittable-inline-block.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/border-padding-pagination.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/break-properties.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/column-break-with-balancing.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/column-count-with-rules.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/column-rules.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/float-avoidance.html [ Skip ]
