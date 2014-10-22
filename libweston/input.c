@@ -37,6 +37,7 @@
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "compositor.h"
+#include "protocol/relative-pointer-unstable-v1-server-protocol.h"
 
 static void
 empty_region(pixman_region32_t *region)
@@ -56,6 +57,7 @@ weston_pointer_client_create(struct wl_client *client)
 
 	pointer_client->client = client;
 	wl_list_init(&pointer_client->pointer_resources);
+	wl_list_init(&pointer_client->relative_pointer_resources);
 
 	return pointer_client;
 }
@@ -69,7 +71,8 @@ weston_pointer_client_destroy(struct weston_pointer_client *pointer_client)
 static bool
 weston_pointer_client_is_empty(struct weston_pointer_client *pointer_client)
 {
-	return wl_list_empty(&pointer_client->pointer_resources);
+	return (wl_list_empty(&pointer_client->pointer_resources) &&
+		wl_list_empty(&pointer_client->relative_pointer_resources));
 }
 
 static struct weston_pointer_client *
@@ -137,6 +140,49 @@ unbind_pointer_client_resource(struct wl_resource *resource)
 static void unbind_resource(struct wl_resource *resource)
 {
 	wl_list_remove(wl_resource_get_link(resource));
+}
+
+WL_EXPORT void
+weston_pointer_motion_to_abs(struct weston_pointer *pointer,
+			     struct weston_pointer_motion_event *event,
+			     wl_fixed_t *x, wl_fixed_t *y)
+{
+	if (event->mask & WESTON_POINTER_MOTION_ABS) {
+		*x = wl_fixed_from_double(event->x);
+		*y = wl_fixed_from_double(event->y);
+	} else if (event->mask & WESTON_POINTER_MOTION_REL) {
+		*x = pointer->x + wl_fixed_from_double(event->dx);
+		*y = pointer->y + wl_fixed_from_double(event->dy);
+	} else {
+		assert(!"invalid motion event");
+		*x = *y = 0;
+	}
+}
+
+static bool
+weston_pointer_motion_to_rel(struct weston_pointer *pointer,
+			     struct weston_pointer_motion_event *event,
+			     double *dx, double *dy,
+			     double *dx_unaccel, double *dy_unaccel)
+{
+	if (event->mask & WESTON_POINTER_MOTION_REL &&
+	    event->mask & WESTON_POINTER_MOTION_REL_UNACCEL) {
+		*dx = event->dx;
+		*dy = event->dy;
+		*dx_unaccel = event->dx_unaccel;
+		*dy_unaccel = event->dy_unaccel;
+		return true;
+	} else if (event->mask & WESTON_POINTER_MOTION_REL) {
+		*dx_unaccel = *dx = event->dx;
+		*dy_unaccel = *dy = event->dy;
+		return true;
+	} else if (event->mask & WESTON_POINTER_MOTION_REL_UNACCEL) {
+		*dx_unaccel = *dx = event->dx_unaccel;
+		*dy_unaccel = *dy = event->dy_unaccel;
+		return true;
+	} else {
+		return false;
+	}
 }
 
 WL_EXPORT void
@@ -255,6 +301,45 @@ default_grab_pointer_focus(struct weston_pointer_grab *grab)
 }
 
 static void
+weston_pointer_send_relative_motion(struct weston_pointer *pointer,
+				    uint32_t time,
+				    struct weston_pointer_motion_event *event)
+{
+	uint64_t time_usec;
+	double dx, dy, dx_unaccel, dy_unaccel;
+	wl_fixed_t dxf, dyf, dxf_unaccel, dyf_unaccel;
+	struct wl_list *resource_list;
+	struct wl_resource *resource;
+
+	if (!pointer->focus_client)
+		return;
+
+	if (!weston_pointer_motion_to_rel(pointer, event,
+					  &dx, &dy,
+					  &dx_unaccel, &dy_unaccel))
+		return;
+
+	resource_list = &pointer->focus_client->relative_pointer_resources;
+	time_usec = event->time_usec;
+	if (time_usec == 0)
+		time_usec = time * 1000ULL;
+
+	dxf = wl_fixed_from_double(dx);
+	dyf = wl_fixed_from_double(dy);
+	dxf_unaccel = wl_fixed_from_double(dx_unaccel);
+	dyf_unaccel = wl_fixed_from_double(dy_unaccel);
+
+	wl_resource_for_each(resource, resource_list) {
+		zwp_relative_pointer_v1_send_relative_motion(
+			resource,
+			(uint32_t) (time_usec >> 32),
+			(uint32_t) time_usec,
+			dxf, dyf,
+			dxf_unaccel, dyf_unaccel);
+	}
+}
+
+static void
 default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 			    struct weston_pointer_motion_event *event)
 {
@@ -281,6 +366,8 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 					       pointer->sx, pointer->sy);
 		}
 	}
+
+	weston_pointer_send_relative_motion(pointer, time, event);
 }
 
 static void
@@ -1156,23 +1243,6 @@ weston_pointer_move_to(struct weston_pointer *pointer,
 
 	pointer->grab->interface->focus(pointer->grab);
 	wl_signal_emit(&pointer->motion_signal, pointer);
-}
-
-WL_EXPORT void
-weston_pointer_motion_to_abs(struct weston_pointer *pointer,
-			     struct weston_pointer_motion_event *event,
-			     wl_fixed_t *x, wl_fixed_t *y)
-{
-	if (event->mask & WESTON_POINTER_MOTION_ABS) {
-		*x = wl_fixed_from_double(event->x);
-		*y = wl_fixed_from_double(event->y);
-	} else if (event->mask & WESTON_POINTER_MOTION_REL) {
-		*x = pointer->x + wl_fixed_from_double(event->dx);
-		*y = pointer->y + wl_fixed_from_double(event->dy);
-	} else {
-		assert(!"invalid motion event");
-		*x = *y = 0;
-	}
 }
 
 WL_EXPORT void
@@ -2292,6 +2362,76 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 		wl_seat_send_name(resource, seat->seat_name);
 }
 
+static void
+relative_pointer_destroy(struct wl_client *client,
+			 struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static const struct zwp_relative_pointer_v1_interface relative_pointer_interface = {
+	relative_pointer_destroy
+};
+
+static void
+relative_pointer_manager_destroy(struct wl_client *client,
+				 struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+relative_pointer_manager_get_relative_pointer(struct wl_client *client,
+					      struct wl_resource *resource,
+					      uint32_t id,
+					      struct wl_resource *pointer_resource)
+{
+	struct weston_pointer *pointer =
+		wl_resource_get_user_data(pointer_resource);
+	struct weston_pointer_client *pointer_client;
+	struct wl_resource *cr;
+
+	cr = wl_resource_create(client, &zwp_relative_pointer_v1_interface,
+				wl_resource_get_version(resource), id);
+	if (cr == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	pointer_client = weston_pointer_ensure_pointer_client(pointer, client);
+	if (!pointer_client) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_list_insert(&pointer_client->relative_pointer_resources,
+		       wl_resource_get_link(cr));
+	wl_resource_set_implementation(cr, &relative_pointer_interface,
+				       pointer,
+				       unbind_pointer_client_resource);
+}
+
+static const struct zwp_relative_pointer_manager_v1_interface relative_pointer_manager = {
+	relative_pointer_manager_destroy,
+	relative_pointer_manager_get_relative_pointer,
+};
+
+static void
+bind_relative_pointer_manager(struct wl_client *client, void *data,
+			      uint32_t version, uint32_t id)
+{
+	struct weston_compositor *compositor = data;
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client,
+				      &zwp_relative_pointer_manager_v1_interface,
+				      1, id);
+
+	wl_resource_set_implementation(resource, &relative_pointer_manager,
+				       compositor,
+				       NULL);
+}
+
 #ifdef ENABLE_XKBCOMMON
 WL_EXPORT int
 weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
@@ -2798,4 +2938,15 @@ weston_seat_set_keyboard_focus(struct weston_seat *seat,
 
 	inc_activate_serial(compositor);
 	wl_signal_emit(&compositor->activate_signal, surface);
+}
+
+int
+weston_input_init(struct weston_compositor *compositor)
+{
+	if (!wl_global_create(compositor->wl_display,
+			      &zwp_relative_pointer_manager_v1_interface, 1,
+			      compositor, bind_relative_pointer_manager))
+		return -1;
+
+	return 0;
 }

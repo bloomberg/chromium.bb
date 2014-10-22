@@ -355,6 +355,7 @@ struct weston_pointer_client {
 	struct wl_list link;
 	struct wl_client *client;
 	struct wl_list pointer_resources;
+	struct wl_list relative_pointer_resources;
 };
 
 struct weston_pointer {
@@ -1693,6 +1694,9 @@ weston_output_mode_switch_to_native(struct weston_output *output);
 
 int
 noop_renderer_init(struct weston_compositor *ec);
+
+int
+weston_input_init(struct weston_compositor *compositor);
 
 int
 backend_init(struct weston_compositor *c,
