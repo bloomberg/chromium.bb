@@ -44,7 +44,10 @@ import known_issues
 
 class InputApi(object):
   def __init__(self):
+    self.os_path = os.path
+    self.os_walk = os.walk
     self.re = re
+    self.ReadFile = _ReadFile
 
 def GetIncompatibleDirectories():
   """Gets a list of third-party directories which use licenses incompatible
@@ -99,7 +102,7 @@ class ScanResult(object):
 # Needs to be a top-level function for multiprocessing
 def _FindCopyrightViolations(files_to_scan_as_string):
   return copyright_scanner.FindCopyrightViolations(
-    REPOSITORY_ROOT, files_to_scan_as_string)
+    InputApi(), REPOSITORY_ROOT, files_to_scan_as_string)
 
 def _ShardList(l, shard_len):
   return [l[i:i + shard_len] for i in range(0, len(l), shard_len)]
@@ -157,7 +160,7 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('skia/tools/clusterfuzz-data')
 
   files_to_scan = copyright_scanner.FindFiles(
-    REPOSITORY_ROOT, ['.'], excluded_dirs_list)
+    InputApi(), REPOSITORY_ROOT, ['.'], excluded_dirs_list)
   sharded_files_to_scan = _ShardList(files_to_scan, 2000)
   pool = multiprocessing.Pool()
   offending_files_chunks = pool.map_async(
@@ -193,7 +196,19 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
     return ScanResult.Ok
 
 
-def _ReadFile(path):
+def _ReadFile(full_path, mode='rU'):
+  """Reads a file from disk. This emulates presubmit InputApi.ReadFile func.
+  Args:
+    full_path: The path of the file to read.
+  Returns:
+    The contents of the file as a string.
+  """
+
+  with open(full_path, mode) as f:
+    return f.read()
+
+
+def _ReadLocalFile(path, mode='rb'):
   """Reads a file from disk.
   Args:
     path: The path of the file to read, relative to the root of the repository.
@@ -201,8 +216,7 @@ def _ReadFile(path):
     The contents of the file as a string.
   """
 
-  with open(os.path.join(REPOSITORY_ROOT, path), 'rb') as f:
-    return f.read()
+  return _ReadFile(os.path.join(REPOSITORY_ROOT, path), mode)
 
 
 def _FindThirdPartyDirs():
@@ -262,8 +276,8 @@ def _Scan():
         all_licenses_valid = False
 
   # Second, check for non-standard license text.
-  files_data = _ReadFile(os.path.join('android_webview', 'tools',
-                                      'third_party_files_whitelist.txt'))
+  files_data = _ReadLocalFile(os.path.join('android_webview', 'tools',
+                                           'third_party_files_whitelist.txt'))
   whitelisted_files = []
   for line in files_data.splitlines():
     match = re.match(r'([^#\s]+)', line)
@@ -284,7 +298,7 @@ def GenerateNoticeFile():
   third_party_dirs = _FindThirdPartyDirs()
 
   # Don't forget Chromium's LICENSE file
-  content = [_ReadFile('LICENSE')]
+  content = [_ReadLocalFile('LICENSE')]
 
   # We provide attribution for all third-party directories.
   # TODO(steveblock): Limit this to only code used by the WebView binary.
@@ -293,7 +307,7 @@ def GenerateNoticeFile():
                                  require_license_file=False)
     license_file = metadata['License File']
     if license_file and license_file != licenses.NOT_SHIPPED:
-      content.append(_ReadFile(license_file))
+      content.append(_ReadLocalFile(license_file))
 
   return '\n'.join(content)
 
@@ -344,7 +358,8 @@ def main():
     return _ProcessIncompatibleResult(GetIncompatibleDirectories())
   elif args[0] == 'display_copyrights':
     files = sys.stdin.read().splitlines()
-    for f, c in zip(files, copyright_scanner.FindCopyrights('.', files)):
+    for f, c in \
+        zip(files, copyright_scanner.FindCopyrights(InputApi(), '.', files)):
       print f, '\t', ' / '.join(sorted(c))
     return ScanResult.Ok
   parser.print_help()

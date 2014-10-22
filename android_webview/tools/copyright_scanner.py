@@ -6,14 +6,13 @@
 """
 
 import itertools
-import os
-import re
 
 
-def FindFiles(root_dir, start_paths_list, excluded_dirs_list):
+def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
   """Similar to UNIX utility find(1), searches for files in the directories.
   Automatically leaves out only source code files.
   Args:
+    input_api: InputAPI, as in presubmit scripts.
     root_dir: The root directory, to which all other paths are relative.
     start_paths_list: The list of paths to start search from. Each path can
       be a file or a directory.
@@ -28,7 +27,7 @@ def FindFiles(root_dir, start_paths_list, excluded_dirs_list):
         return True
     return False
 
-  files_whitelist_re = re.compile(
+  files_whitelist_re = input_api.re.compile(
     r'\.(asm|c(c|pp|xx)?|h(h|pp|xx)?|p(l|m)|xs|sh|php|py(|x)'
     '|rb|idl|java|el|sc(i|e)|cs|pas|inc|js|pac|html|dtd|xsl|mod|mm?'
     '|tex|mli?)$')
@@ -36,66 +35,75 @@ def FindFiles(root_dir, start_paths_list, excluded_dirs_list):
 
   base_path_len = len(root_dir)
   for path in start_paths_list:
-    full_path = os.path.join(root_dir, path)
-    if os.path.isfile(full_path):
+    full_path = input_api.os_path.join(root_dir, path)
+    if input_api.os_path.isfile(full_path):
       if files_whitelist_re.search(path):
         files.append(path)
     else:
-      for dirpath, dirnames, filenames in os.walk(full_path):
+      for dirpath, dirnames, filenames in input_api.os_walk(full_path):
         # Remove excluded subdirs for faster scanning.
         for item in dirnames[:]:
-          if IsBlacklistedDir(os.path.join(dirpath, item)[base_path_len + 1:]):
+          if IsBlacklistedDir(
+              input_api.os_path.join(dirpath, item)[base_path_len + 1:]):
             dirnames.remove(item)
         for filename in filenames:
-          filepath = os.path.join(dirpath, filename)[base_path_len + 1:]
+          filepath = \
+              input_api.os_path.join(dirpath, filename)[base_path_len + 1:]
           if files_whitelist_re.search(filepath) and \
               not IsBlacklistedDir(filepath):
             files.append(filepath)
   return files
 
 
-python_multiline_string_double_re = re.compile(
-  r'"""[^"]*(?:"""|$)', flags=re.MULTILINE)
-python_multiline_string_single_re = re.compile(
-  r"'''[^']*(?:'''|$)", flags=re.MULTILINE)
-automatically_generated_re = re.compile(
-  r'(All changes made in this file will be lost'
-  '|DO NOT (EDIT|delete this file)'
-  '|Generated (at|automatically|data)'
-  '|Automatically generated'
-  '|\Wgenerated\s+(?:\w+\s+)*file\W)', flags=re.IGNORECASE)
+class _GeneratedFilesDetector(object):
+  GENERATED_FILE = 'GENERATED FILE'
+  NO_COPYRIGHT = '*No copyright*'
 
-def _IsGeneratedFile(header):
-  header = header.upper()
-  if '"""' in header:
-    header = python_multiline_string_double_re.sub('', header)
-  if "'''" in header:
-    header = python_multiline_string_single_re.sub('', header)
-  # First do simple strings lookup to save time.
-  if 'ALL CHANGES MADE IN THIS FILE WILL BE LOST' in header:
-    return True
-  if 'DO NOT EDIT' in header or 'DO NOT DELETE' in header or \
-      'GENERATED' in header:
-    return automatically_generated_re.search(header)
-  return False
+  def __init__(self, input_api):
+    self.python_multiline_string_double_re = \
+      input_api.re.compile(r'"""[^"]*(?:"""|$)', flags=input_api.re.MULTILINE)
+    self.python_multiline_string_single_re = \
+      input_api.re.compile(r"'''[^']*(?:'''|$)", flags=input_api.re.MULTILINE)
+    self.automatically_generated_re = input_api.re.compile(
+      r'(All changes made in this file will be lost'
+      '|DO NOT (EDIT|delete this file)'
+      '|Generated (at|automatically|data)'
+      '|Automatically generated'
+      '|\Wgenerated\s+(?:\w+\s+)*file\W)', flags=input_api.re.IGNORECASE)
 
+  def IsGeneratedFile(self, header):
+    header = header.upper()
+    if '"""' in header:
+      header = self.python_multiline_string_double_re.sub('', header)
+    if "'''" in header:
+      header = self.python_multiline_string_single_re.sub('', header)
+    # First do simple strings lookup to save time.
+    if 'ALL CHANGES MADE IN THIS FILE WILL BE LOST' in header:
+      return True
+    if 'DO NOT EDIT' in header or 'DO NOT DELETE' in header or \
+        'GENERATED' in header:
+      return self.automatically_generated_re.search(header)
+    return False
 
-GENERATED_FILE = 'GENERATED FILE'
-NO_COPYRIGHT = '*No copyright*'
 
 class _CopyrightsScanner(object):
-  _c_comment_re = re.compile(r'''"[^"\\]*(?:\\.[^"\\]*)*"''')
-  _copyright_indicator = r'(?:copyright|copr\.|\xc2\xa9|\(c\))'
-  _full_copyright_indicator_re = \
-    re.compile(r'(?:\W|^)' + _copyright_indicator + r'(?::\s*|\s+)(\w.*)$', \
-                 re.IGNORECASE)
-  _copyright_disindicator_re = \
-    re.compile(r'\s*\b(?:info(?:rmation)?|notice|and|or)\b', re.IGNORECASE)
+  @staticmethod
+  def StaticInit(input_api):
+    _CopyrightsScanner._c_comment_re = \
+      input_api.re.compile(r'''"[^"\\]*(?:\\.[^"\\]*)*"''')
+    _CopyrightsScanner._copyright_indicator = \
+      r'(?:copyright|copr\.|\xc2\xa9|\(c\))'
+    _CopyrightsScanner._full_copyright_indicator_re = input_api.re.compile(
+      r'(?:\W|^)' + _CopyrightsScanner._copyright_indicator + \
+      r'(?::\s*|\s+)(\w.*)$', input_api.re.IGNORECASE)
+    _CopyrightsScanner._copyright_disindicator_re = input_api.re.compile(
+      r'\s*\b(?:info(?:rmation)?|notice|and|or)\b', input_api.re.IGNORECASE)
 
-  def __init__(self):
+  def __init__(self, input_api):
     self.max_line_numbers_proximity = 3
     self.last_a_item_line_number = -200
     self.last_b_item_line_number = -100
+    self.re = input_api.re
 
   def _CloseLineNumbers(self, a, b):
     return 0 <= a - b <= self.max_line_numbers_proximity
@@ -131,17 +139,20 @@ class _CopyrightsScanner(object):
         not _CopyrightsScanner._copyright_disindicator_re.match(m.group(1)):
       copyr = m.group(0)
       # Prettify the authorship string.
-      copyr = re.sub(r'([,.])?\s*$/', '', copyr)
-      copyr = re.sub(self._copyright_indicator, '', copyr, flags=re.IGNORECASE)
-      copyr = re.sub(r'^\s+', '', copyr)
-      copyr = re.sub(r'\s{2,}', ' ', copyr)
-      copyr = re.sub(r'\\@', '@', copyr)
+      copyr = self.re.sub(r'([,.])?\s*$/', '', copyr)
+      copyr = self.re.sub(
+        _CopyrightsScanner._copyright_indicator, '', copyr, \
+        flags=self.re.IGNORECASE)
+      copyr = self.re.sub(r'^\s+', '', copyr)
+      copyr = self.re.sub(r'\s{2,}', ' ', copyr)
+      copyr = self.re.sub(r'\\@', '@', copyr)
     return copyr
 
 
-def FindCopyrights(root_dir, files_to_scan):
+def FindCopyrights(input_api, root_dir, files_to_scan):
   """Determines code autorship, and finds generated files.
   Args:
+    input_api: InputAPI, as in presubmit scripts.
     root_dir: The root directory, to which all other paths are relative.
     files_to_scan: The list of file names to scan.
   Returns:
@@ -150,47 +161,52 @@ def FindCopyrights(root_dir, files_to_scan):
     entry -- 'GENERATED_FILE' string. If the file has no copyright info,
     the corresponding list contains 'NO_COPYRIGHT' string.
   """
+  generated_files_detector = _GeneratedFilesDetector(input_api)
+  _CopyrightsScanner.StaticInit(input_api)
   copyrights = []
   for file_name in files_to_scan:
     linenum = 0
-    header = ''
+    header = []
     file_copyrights = []
-    scanner = _CopyrightsScanner()
-    with open(os.path.join(root_dir, file_name), 'r') as f:
-      for l in f.readlines():
-        linenum += 1
-        if linenum <= 25:
-          header += l
-        c = scanner.MatchLine(linenum, l)
-        if c:
-          file_copyrights.append(c)
-      if _IsGeneratedFile(header):
-        copyrights.append([GENERATED_FILE])
-      elif file_copyrights:
-        copyrights.append(file_copyrights)
-      else:
-        copyrights.append([NO_COPYRIGHT])
+    scanner = _CopyrightsScanner(input_api)
+    contents = input_api.ReadFile(
+      input_api.os_path.join(root_dir, file_name), 'r')
+    for l in contents.split('\n'):
+      linenum += 1
+      if linenum <= 25:
+        header.append(l)
+      c = scanner.MatchLine(linenum, l)
+      if c:
+        file_copyrights.append(c)
+    if generated_files_detector.IsGeneratedFile('\n'.join(header)):
+      copyrights.append([_GeneratedFilesDetector.GENERATED_FILE])
+    elif file_copyrights:
+      copyrights.append(file_copyrights)
+    else:
+      copyrights.append([_GeneratedFilesDetector.NO_COPYRIGHT])
   return copyrights
 
 
-def FindCopyrightViolations(root_dir, files_to_scan):
+def FindCopyrightViolations(input_api, root_dir, files_to_scan):
   """Looks for files that are not belong exlusively to the Chromium Authors.
   Args:
+    input_api: InputAPI, as in presubmit scripts.
     root_dir: The root directory, to which all other paths are relative.
     files_to_scan: The list of file names to scan.
   Returns:
     The list of file names that contain non-Chromium copyrights.
   """
-  copyrights = FindCopyrights(root_dir, files_to_scan)
+  copyrights = FindCopyrights(input_api, root_dir, files_to_scan)
   offending_files = []
-  allowed_copyrights_re = re.compile(
+  allowed_copyrights_re = input_api.re.compile(
     r'^(?:20[0-9][0-9](?:-20[0-9][0-9])? The Chromium Authors\. '
     'All rights reserved.*)$')
   for f, cs in itertools.izip(files_to_scan, copyrights):
-    if cs[0] == GENERATED_FILE or cs[0] == NO_COPYRIGHT:
+    if cs[0] == _GeneratedFilesDetector.GENERATED_FILE or \
+       cs[0] == _GeneratedFilesDetector.NO_COPYRIGHT:
       continue
     for c in cs:
       if not allowed_copyrights_re.match(c):
-        offending_files.append(os.path.normpath(f))
+        offending_files.append(input_api.os_path.normpath(f))
         break
   return offending_files

@@ -9,6 +9,8 @@
 # so additions to this file should be rare. See
 # http://www.chromium.org/developers/adding-3rd-party-libraries.
 
+# Contains test strings that look like copyrights.
+android_webview/tools/copyright_scanner_unittest.py
 # Copyright IBM; MIT license. This third-party code is taken from ICU, the
 # license for which we already pick up from third_party/icu/.
 base/i18n/icu_string_conversions.cc
