@@ -45,6 +45,8 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(Node*, const StyleChangeReasonForTracing&);
 };
 
+String descendantInvalidationSetToIdString(const DescendantInvalidationSet&);
+
 class InspectorStyleInvalidatorInvalidateEvent {
 public:
     static const char ElementHasPendingInvalidationList[];

@@ -67,6 +67,11 @@ void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const 
 
 }
 
+String descendantInvalidationSetToIdString(const DescendantInvalidationSet& set)
+{
+    return toHexString(&set);
+}
+
 const char InspectorStyleInvalidatorInvalidateEvent::ElementHasPendingInvalidationList[] = "Element has pending invalidation list";
 const char InspectorStyleInvalidatorInvalidateEvent::InvalidateCustomPseudo[] = "Invalidate custom pseudo element.";
 const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedAttribute[] = "Invalidation set matched attribute.";

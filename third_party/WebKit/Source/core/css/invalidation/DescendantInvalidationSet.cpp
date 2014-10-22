@@ -221,6 +221,8 @@ void DescendantInvalidationSet::toTracedValue(TracedValue* value) const
 {
     value->beginDictionary();
 
+    value->setString("id", descendantInvalidationSetToIdString(*this));
+
     if (m_allDescendantsMightBeInvalid)
         value->setBoolean("allDescendantsMightBeInvalid", true);
     if (m_customPseudoInvalid)
