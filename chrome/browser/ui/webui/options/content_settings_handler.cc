@@ -388,6 +388,8 @@ void ContentSettingsHandler::GetLocalizedValues(
     // Multiple automatic downloads
     { "multipleAutomaticDownloadsTabLabel",
       IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL },
+    { "multiple-automatic-downloads_header",
+      IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL },
     { "multipleAutomaticDownloadsAllow",
       IDS_AUTOMATIC_DOWNLOADS_ALLOW_RADIO },
     { "multipleAutomaticDownloadsAsk",
