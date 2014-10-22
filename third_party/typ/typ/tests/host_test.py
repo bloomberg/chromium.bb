@@ -130,6 +130,12 @@ class TestHost(unittest.TestCase):
         self.assertEqual(h.basename('foo.txt'), 'foo.txt')
         self.assertEqual(h.basename('foo/bar.txt'), 'bar.txt')
 
+    def test_mktempfile(self, delete=False):
+        h = self.host()
+        f= h.mktempfile()
+        f.close()
+        self.assertNotEqual(f.name, None)
+
     def test_splitext(self):
         h = self.host()
         self.assertEqual(h.splitext('foo'), ('foo', ''))

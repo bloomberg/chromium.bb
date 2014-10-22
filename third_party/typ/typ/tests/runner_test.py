@@ -18,7 +18,7 @@ from textwrap import dedent as d
 
 
 from typ import Host, Runner, TestCase, TestSet, TestInput
-from typ import WinMultiprocessing, main
+from typ import WinMultiprocessing
 
 
 def _setup_process(child, context):  # pylint: disable=W0613
@@ -33,8 +33,11 @@ class RunnerTests(TestCase):
     def test_context(self):
         r = Runner()
         r.args.tests = ['typ.tests.runner_test.ContextTests']
-        ret, _, _ = r.run(context={'foo': 'bar'}, setup_fn=_setup_process,
-                          teardown_fn=_teardown_process)
+        r.context = {'foo': 'bar'}
+        r.setup_fn = _setup_process
+        r.teardown_fn = _teardown_process
+        r.win_multiprocessing = WinMultiprocessing.importable
+        ret, _, _ = r.run()
         self.assertEqual(ret, 0)
 
     def test_bad_default(self):
@@ -57,6 +60,7 @@ class TestSetTests(TestCase):
         test_set = TestSet()
         test_set.parallel_tests = [TestInput('nonexistent test')]
         r = Runner()
+        r.args.jobs = 1
         ret, _, _ = r.run(test_set)
         self.assertEqual(ret, 1)
 
@@ -75,6 +79,7 @@ class TestSetTests(TestCase):
             test_set = TestSet()
             test_set.parallel_tests = [TestInput('load_test.BaseTest.test_x')]
             r = Runner()
+            r.args.jobs = 1
             ret, _, _ = r.run(test_set)
             self.assertEqual(ret, 1)
         finally:
@@ -87,7 +92,7 @@ class TestWinMultiprocessing(TestCase):
     def make_host(self):
         return Host()
 
-    def call(self, argv, platform=None, importable=None, **kwargs):
+    def call(self, argv, platform=None, win_multiprocessing=None, **kwargs):
         h = self.make_host()
         orig_wd = h.getcwd()
         tmpdir = None
@@ -98,8 +103,8 @@ class TestWinMultiprocessing(TestCase):
             if platform is not None:
                 h.platform = platform
             r = Runner(h)
-            if importable is not None:
-                r._main_is_importable = lambda: importable
+            if win_multiprocessing is not None:
+                r.win_multiprocessing = win_multiprocessing
             ret = r.main(argv, **kwargs)
         finally:
             out, err = h.restore_output()
@@ -112,63 +117,18 @@ class TestWinMultiprocessing(TestCase):
     def test_bad_value(self):
         self.assertRaises(ValueError, self.call, [], win_multiprocessing='foo')
 
-    def test_force(self):
-        h = self.make_host()
-        tmpdir = None
-        orig_wd = h.getcwd()
-        out = err = None
-        out_str = err_str = ''
-        try:
-            tmpdir = h.mkdtemp()
-            h.chdir(tmpdir)
-            out = tempfile.NamedTemporaryFile(delete=False)
-            err = tempfile.NamedTemporaryFile(delete=False)
-            ret = main([], stdout=out, stderr=err,
-                       win_multiprocessing=WinMultiprocessing.force)
-        finally:
-            h.chdir(orig_wd)
-            if tmpdir:
-                h.rmtree(tmpdir)
-            if out:
-                out.close()
-                out = open(out.name)
-                out_str = out.read()
-                out.close()
-                h.remove(out.name)
-            if err:
-                err.close()
-                err = open(err.name)
-                err_str = err.read()
-                err.close()
-                h.remove(err.name)
-
-        self.assertEqual(ret, 1)
-        self.assertEqual(out_str, 'No tests to run.\n')
-        self.assertEqual(err_str, '')
-
     def test_ignore(self):
         h = self.make_host()
         if h.platform == 'win32':  # pragma: win32
             self.assertRaises(ValueError, self.call, [],
                               win_multiprocessing=WinMultiprocessing.ignore)
         else:
-            result = self.call([], platform=None, importable=False,
+            result = self.call([],
                                win_multiprocessing=WinMultiprocessing.ignore)
             ret, out, err = result
             self.assertEqual(ret, 1)
             self.assertEqual(out, 'No tests to run.\n')
             self.assertEqual(err, '')
-
-    def test_multiple_jobs(self):
-        self.assertRaises(ValueError, self.call, ['-j', '2'],
-                          platform='win32', importable=False)
-
-    def test_normal(self):
-        # This tests that typ itself is importable ...
-        ret, out, err = self.call([])
-        self.assertEqual(ret, 1)
-        self.assertEqual(out, 'No tests to run.\n')
-        self.assertEqual(err, '')
 
     def test_real_unimportable_main(self):
         h = self.make_host()
@@ -182,11 +142,19 @@ class TestWinMultiprocessing(TestCase):
             out = tempfile.NamedTemporaryFile(delete=False)
             err = tempfile.NamedTemporaryFile(delete=False)
             path_above_typ = h.realpath(h.dirname(__file__), '..', '..')
-            env = {'PYTHONPATH': path_above_typ}
+            env = h.env.copy()
+            if 'PYTHONPATH' in env:  # pragma: untested
+                env['PYTHONPATH'] = '%s%s%s' % (env['PYTHONPATH'],
+                                                h.pathsep,
+                                                path_above_typ)
+            else:  # pragma: untested.
+                env['PYTHONPATH'] = path_above_typ
+
             h.write_text_file('test', d("""
                 import sys
                 import typ
-                sys.exit(typ.main())
+                importable = typ.WinMultiprocessing.importable
+                sys.exit(typ.main(win_multiprocessing=importable))
                 """))
             h.stdout = out
             h.stderr = err
@@ -211,28 +179,19 @@ class TestWinMultiprocessing(TestCase):
 
         self.assertEqual(ret, 1)
         self.assertEqual(out_str, '')
-        self.assertIn('ValueError: The __main__ module is not importable',
+        self.assertIn('ValueError: The __main__ module ',
                       err_str)
 
-    def test_run_serially(self):
-        ret, out, err = self.call([], importable=False,
-                                  win_multiprocessing=WinMultiprocessing.spawn)
-        self.assertEqual(ret, 1)
-        self.assertEqual(out, 'No tests to run.\n')
-        self.assertEqual(err, '')
-
     def test_single_job(self):
-        ret, out, err = self.call(['-j', '1'], platform='win32',
-                                  importable=False)
+        ret, out, err = self.call(['-j', '1'], platform='win32')
         self.assertEqual(ret, 1)
-        self.assertEqual(out, 'No tests to run.\n')
+        self.assertIn('No tests to run.', out)
         self.assertEqual(err, '')
 
     def test_spawn(self):
-        ret, out, err = self.call([], importable=False,
-                                  win_multiprocessing=WinMultiprocessing.spawn)
+        ret, out, err = self.call([])
         self.assertEqual(ret, 1)
-        self.assertEqual(out, 'No tests to run.\n')
+        self.assertIn('No tests to run.', out)
         self.assertEqual(err, '')
 
 

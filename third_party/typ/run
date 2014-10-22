@@ -13,6 +13,9 @@ from tools import cov
 is_python3 = bool(sys.version_info.major == 3)
 has_python34 = False
 verbose = False
+repo_dir = os.path.abspath(os.path.dirname(__file__))
+path_to_cov = os.path.join(repo_dir, 'tools', 'cov.py')
+path_to_runner = os.path.join(repo_dir, 'typ', 'runner.py')
 
 
 def call(*args, **kwargs):
@@ -97,14 +100,12 @@ def run_clean(args):
 
 
 def run_coverage(args):
-    repo_dir = os.path.abspath(os.path.dirname(__file__))
-    path_to_cov = os.path.join(repo_dir, 'tools', 'cov.py')
     if not args.path:
         args.path = [repo_dir]
     if not args.source:
         args.source = [os.path.join(repo_dir, 'typ')]
     argv = cov.argv_from_args(args)
-    cov_args = ['-m', 'typ', '-j', '1']
+    cov_args = [path_to_runner, '-j', '1']
     call(['python', path_to_cov] + argv + cov_args)
     if has_python34:
         call(['python3', path_to_cov] + argv + cov_args)
@@ -138,20 +139,18 @@ def run_lint(args):
 
 
 def run_tests(args):
-    # Tests that we can run the command line directly if typ is in sys.path.
-    call(['python', os.path.join('typ', 'runner.py'),
-          'typ.tests.main_test.TestMain.test_basic'])
+    # Test that we can run the module directly if typ is in sys.path.
+    call(['python', '-m', 'typ', 'typ.tests.main_test.TestMain.test_basic'])
 
     # Test that we can run the command line directly if typ is not in sys.path.
-    repo_dir = os.path.abspath(os.path.dirname(__file__))
     home_dir = os.environ['HOME']
-    call(['python', os.path.join(repo_dir, 'typ', 'runner.py'),
-          'typ.tests.main_test.TestMain.test_basic'], cwd=home_dir)
+    call(['python', path_to_runner, 'typ.tests.main_test.TestMain.test_basic'],
+         cwd=home_dir)
 
     # Now run all the tests under Python2 and Python3.
-    call(['python', '-m', 'typ'])
+    call(['python', path_to_runner])
     if has_python34:
-        call(['python3', '-m', 'typ'])
+        call(['python3', path_to_runner])
 
 
 if __name__ == '__main__':

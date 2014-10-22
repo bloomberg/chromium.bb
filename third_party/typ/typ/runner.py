@@ -29,6 +29,8 @@ from collections import OrderedDict
 # that typ/runner.py works when invoked via subprocess on windows in
 # _spawn_main().
 path_to_file = os.path.realpath(__file__)
+if path_to_file.endswith('.pyc'):  # pragma: no cover
+    path_to_file = path_to_file[:-1]
 dir_above_typ = os.path.dirname(os.path.dirname(path_to_file))
 if dir_above_typ not in sys.path:  # pragma: no cover
     sys.path.append(dir_above_typ)
@@ -49,17 +51,12 @@ ResultSet = json_results.ResultSet
 ResultType = json_results.ResultType
 
 
-def main(argv=None, host=None, stdout=None, stderr=None,
-         win_multiprocessing=None, **defaults):
+def main(argv=None, host=None, win_multiprocessing=None, **defaults):
     host = host or Host()
-    if stdout:
-        host.stdout = stdout
-    if stderr:
-        host.stderr = stderr
     runner = Runner(host=host)
-
-    return runner.main(argv, win_multiprocessing=win_multiprocessing,
-                       **defaults)
+    if win_multiprocessing is not None:
+        runner.win_multiprocessing = win_multiprocessing
+    return runner.main(argv, **defaults)
 
 
 class TestInput(object):
@@ -74,8 +71,7 @@ class TestInput(object):
 class TestSet(object):
 
     def __init__(self, parallel_tests=None, isolated_tests=None,
-                 tests_to_skip=None, context=None, setup_fn=None,
-                 teardown_fn=None):
+                 tests_to_skip=None):
 
         def promote(tests):
             tests = tests or []
@@ -85,18 +81,14 @@ class TestSet(object):
         self.parallel_tests = promote(parallel_tests)
         self.isolated_tests = promote(isolated_tests)
         self.tests_to_skip = promote(tests_to_skip)
-        self.context = context
-        self.setup_fn = setup_fn
-        self.teardown_fn = teardown_fn
 
 
 class WinMultiprocessing(object):
-    force = 'force'
     ignore = 'ignore'
-    run_serially = 'run_serially'
+    importable = 'importable'
     spawn = 'spawn'
 
-    values = [force, ignore, run_serially, spawn]
+    values = [ignore, importable, spawn]
 
 
 class _AddTestsError(Exception):
@@ -106,29 +98,32 @@ class _AddTestsError(Exception):
 class Runner(object):
 
     def __init__(self, host=None):
+        self.args = None
+        self.classifier = None
+        self.cov = None
+        self.context = None
+        self.coverage_source = None
         self.host = host or Host()
         self.loader = unittest.loader.TestLoader()
         self.printer = None
+        self.setup_fn = None
         self.stats = None
-        self.cov = None
-        self.coverage_source = None
+        self.teardown_fn = None
         self.top_level_dir = None
-        self.args = None
+        self.win_multiprocessing = WinMultiprocessing.spawn
 
         # initialize self.args to the defaults.
         parser = ArgumentParser(self.host)
         self.parse_args(parser, [])
 
-    def main(self, argv=None, win_multiprocessing=None, **defaults):
+    def main(self, argv=None, **defaults):
         parser = ArgumentParser(self.host)
         self.parse_args(parser, argv, **defaults)
         if parser.exit_status is not None:
             return parser.exit_status
 
         try:
-            ret = self._handle_win_multiprocessing('main', win_multiprocessing)
-            if ret is None:
-                ret, _, _ = self.run(win_multiprocessing=win_multiprocessing)
+            ret, _, _ = self.run()
             return ret
         except KeyboardInterrupt:
             self.print_("interrupted, exiting", stream=self.host.stderr)
@@ -145,65 +140,10 @@ class Runner(object):
         if parser.exit_status is not None:
             return
 
-    def _handle_win_multiprocessing(self, entry_point, win_multiprocessing,
-                                    allow_spawn=True):
-        wmp = win_multiprocessing
-        force, ignore, run_serially, spawn = WinMultiprocessing.values
-
-        if (wmp is not None and wmp not in WinMultiprocessing.values):
-            raise ValueError('illegal value %s for win_multiprocessing' %
-                             wmp)
-
-        # First, check if __main__ is importable; if it is, we're fine.
-        if (self._main_is_importable() and wmp != force):
-            return None
-
-        if wmp is None and self.args.jobs == 1:
-            return None
-
-        if wmp is None:
-            raise ValueError(
-                'The __main__ module is not importable; The caller '
-                'must pass a valid WinMultiprocessing value (one of %s) '
-                'to %s to tell typ how to handle Windows.' %
-                (WinMultiprocessing.values, entry_point))
-
-        h = self.host
-
-        if (h.platform != 'win32' and wmp != force):
-            return
-
-        if wmp == ignore:  # pragma: win32
-            raise ValueError('Cannot use WinMultiprocessing.ignore for '
-                             'win_multiprocessing when actually running '
-                             'on Windows.')
-
-        if wmp == run_serially:  # pragma: win32
-            self.args.jobs = 1
-            return None
-
-        assert allow_spawn, ('Cannot use WinMultiprocessing.spawn '
-                             'in %s' % entry_point)
-        assert wmp in (force, spawn)
-        argv = ArgumentParser(h).argv_from_args(self.args)
-        return h.call_inline([h.python_interpreter, path_to_file] + argv)
-
-    def _main_is_importable(self):
-        path = self.host.realpath(sys.modules['__main__'].__file__)
-        if not path or not path.endswith('.py'):  # pragma: no cover
-            return False
-
-        for d in sys.path:
-            if path.startswith(self.host.realpath(d)):
-                return True
-        return False  # pragma: no cover
-
     def print_(self, msg='', end='\n', stream=None):
         self.host.print_(msg, end, stream=stream)
 
-    def run(self, test_set=None, classifier=None,
-            context=None, setup_fn=None, teardown_fn=None,
-            win_multiprocessing=None):
+    def run(self, test_set=None):
 
         ret = 0
         h = self.host
@@ -212,8 +152,9 @@ class Runner(object):
             self.print_(VERSION)
             return ret, None, None
 
-        self._handle_win_multiprocessing('Runner.run', win_multiprocessing,
-                                         allow_spawn=False)
+        should_spawn = self._check_win_multiprocessing()
+        if should_spawn:
+            return self._spawn(test_set)
 
         ret = self._set_up_runner()
         if ret:  # pragma: no cover
@@ -228,8 +169,7 @@ class Runner(object):
         result_set = ResultSet()
 
         if not test_set:
-            ret, test_set = self.find_tests(self.args, classifier, context,
-                                            setup_fn, teardown_fn)
+            ret, test_set = self.find_tests(self.args)
         find_end = h.time()
 
         if not ret:
@@ -243,8 +183,8 @@ class Runner(object):
         trace = self._trace_from_results(result_set)
         if full_results:
             self._summarize(full_results)
-            self.write_results(full_results)
-            upload_ret = self.upload_results(full_results)
+            self._write(self.args.write_full_results_to, full_results)
+            upload_ret = self._upload(full_results)
             if not ret:
                 ret = upload_ret
             reporting_end = h.time()
@@ -252,11 +192,91 @@ class Runner(object):
             self._add_trace_event(trace, 'discovery', find_start, find_end)
             self._add_trace_event(trace, 'testing', find_end, test_end)
             self._add_trace_event(trace, 'reporting', test_end, reporting_end)
-            self.write_trace(trace)
+            self._write(self.args.write_trace_to, trace)
             self.report_coverage()
         else:
             upload_ret = 0
 
+        return ret, full_results, trace
+
+    def _check_win_multiprocessing(self):
+        wmp = self.win_multiprocessing
+
+        ignore, importable, spawn = WinMultiprocessing.values
+
+        if wmp not in WinMultiprocessing.values:
+            raise ValueError('illegal value %s for win_multiprocessing' %
+                             wmp)
+
+        h = self.host
+        if wmp == ignore and h.platform == 'win32':  # pragma: win32
+            raise ValueError('Cannot use WinMultiprocessing.ignore for '
+                             'win_multiprocessing when actually running '
+                             'on Windows.')
+
+        if wmp == ignore or self.args.jobs == 1:
+            return False
+
+        if wmp == importable:
+            if self._main_is_importable():
+                return False
+            raise ValueError('The __main__ module (%s) '  # pragma: no cover
+                             'may not be importable' %
+                             sys.modules['__main__'].__file__)
+
+        assert wmp == spawn
+        return True
+
+    def _main_is_importable(self):  # pragma: untested
+        path = sys.modules['__main__'].__file__
+        if not path:
+            return False
+        if path.endswith('.pyc'):
+            path = path[:-1]
+        if not path.endswith('.py'):
+            return False
+        if path.endswith('__main__.py'):
+            # main modules are not directly importable.
+            return False
+
+        path = self.host.realpath(path)
+        for d in sys.path:
+            if path.startswith(self.host.realpath(d)):
+                return True
+        return False  # pragma: no cover
+
+    def _spawn(self, test_set):
+        # TODO: Handle picklable hooks, rather than requiring them to be None.
+        assert self.classifier is None
+        assert self.context is None
+        assert self.setup_fn is None
+        assert self.teardown_fn is None
+        assert test_set is None
+        h = self.host
+
+        if self.args.write_trace_to:  # pragma: untested
+            should_delete_trace = False
+        else:
+            should_delete_trace = True
+            fp = h.mktempfile(delete=False)
+            fp.close()
+            self.args.write_trace_to = fp.name
+
+        if self.args.write_full_results_to:  # pragma: untested
+            should_delete_results = False
+        else:
+            should_delete_results = True
+            fp = h.mktempfile(delete=False)
+            fp.close()
+            self.args.write_full_results_to = fp.name
+
+        argv = ArgumentParser(h).argv_from_args(self.args)
+        ret = h.call_inline([h.python_interpreter, path_to_file] + argv)
+
+        trace = self._read_and_delete(self.args.write_trace_to,
+                                      should_delete_trace)
+        full_results = self._read_and_delete(self.args.write_full_results_to,
+                                             should_delete_results)
         return ret, full_results, trace
 
     def _set_up_runner(self):
@@ -303,11 +323,8 @@ class Runner(object):
             self.cov.erase()
         return 0
 
-    def find_tests(self, args, classifier=None,
-                   context=None, setup_fn=None, teardown_fn=None):
-        test_set = self._make_test_set(context=context,
-                                       setup_fn=setup_fn,
-                                       teardown_fn=teardown_fn)
+    def find_tests(self, args):
+        test_set = TestSet()
 
         orig_skip = unittest.skip
         orig_skip_if = unittest.skipIf
@@ -317,7 +334,7 @@ class Runner(object):
 
         try:
             names = self._name_list_from_args(args)
-            classifier = classifier or _default_classifier(args)
+            classifier = self.classifier or _default_classifier(args)
 
             for name in names:
                 try:
@@ -396,7 +413,7 @@ class Runner(object):
 
         self._run_one_set(self.stats, result_set, test_set)
 
-        failed_tests = json_results.failed_test_names(result_set)
+        failed_tests = sorted(json_results.failed_test_names(result_set))
         retry_limit = self.args.retry_limit
 
         while retry_limit and failed_tests:
@@ -414,11 +431,7 @@ class Runner(object):
 
             stats = Stats(self.args.status_format, h.time, 1)
             stats.total = len(failed_tests)
-            tests_to_retry = self._make_test_set(
-                isolated_tests=[TestInput(name) for name in failed_tests],
-                context=test_set.context,
-                setup_fn=test_set.setup_fn,
-                teardown_fn=test_set.teardown_fn)
+            tests_to_retry = TestSet(isolated_tests=list(failed_tests))
             retry_set = ResultSet()
             self._run_one_set(stats, retry_set, tests_to_retry)
             result_set.results.extend(retry_set.results)
@@ -435,26 +448,14 @@ class Runner(object):
         return (json_results.exit_code_from_full_results(full_results),
                 full_results)
 
-    def _make_test_set(self, parallel_tests=None, isolated_tests=None,
-                       tests_to_skip=None, context=None, setup_fn=None,
-                       teardown_fn=None):
-        parallel_tests = parallel_tests or []
-        isolated_tests = isolated_tests or []
-        tests_to_skip = tests_to_skip or []
-        return TestSet(_sort_inputs(parallel_tests),
-                       _sort_inputs(isolated_tests),
-                       _sort_inputs(tests_to_skip),
-                       context, setup_fn, teardown_fn)
-
     def _run_one_set(self, stats, result_set, test_set):
         stats.total = (len(test_set.parallel_tests) +
                        len(test_set.isolated_tests) +
                        len(test_set.tests_to_skip))
         self._skip_tests(stats, result_set, test_set.tests_to_skip)
-        self._run_list(stats, result_set, test_set,
-                       test_set.parallel_tests, self.args.jobs)
-        self._run_list(stats, result_set, test_set,
-                       test_set.isolated_tests, 1)
+        self._run_list(stats, result_set, test_set.parallel_tests,
+                       self.args.jobs)
+        self._run_list(stats, result_set, test_set.isolated_tests, 1)
 
     def _skip_tests(self, stats, result_set, tests_to_skip):
         for test_input in tests_to_skip:
@@ -470,7 +471,7 @@ class Runner(object):
             stats.finished += 1
             self._print_test_finished(stats, result)
 
-    def _run_list(self, stats, result_set, test_set, test_inputs, jobs):
+    def _run_list(self, stats, result_set, test_inputs, jobs):
         h = self.host
         running_jobs = set()
 
@@ -478,7 +479,7 @@ class Runner(object):
         if not jobs:
             return
 
-        child = _Child(self, self.loader, test_set)
+        child = _Child(self)
         pool = make_pool(h, jobs, _run_one_test, child,
                          _setup_process, _teardown_process)
         try:
@@ -572,19 +573,22 @@ class Runner(object):
                      '' if num_failures == 1 else 's'), elide=False)
         self.print_()
 
-    def write_trace(self, trace):
-        if self.args.write_trace_to:
-            self.host.write_text_file(
-                self.args.write_trace_to,
-                json.dumps(trace, indent=2) + '\n')
+    def _read_and_delete(self, path, delete):
+        h = self.host
+        obj = None
+        if h.exists(path):
+            contents = h.read_text_file(path)
+            if contents:
+                obj = json.loads(contents)
+            if delete:
+                h.remove(path)
+        return obj
 
-    def write_results(self, full_results):
-        if self.args.write_full_results_to:
-            self.host.write_text_file(
-                self.args.write_full_results_to,
-                json.dumps(full_results, indent=2) + '\n')
+    def _write(self, path, obj):
+        if path:
+            self.host.write_text_file(path, json.dumps(obj, indent=2) + '\n')
 
-    def upload_results(self, full_results):
+    def _upload(self, full_results):
         h = self.host
         if not self.args.test_results_server:
             return 0
@@ -697,7 +701,7 @@ def _test_adder(test_set, classifier):
 
 class _Child(object):
 
-    def __init__(self, parent, loader, test_set):
+    def __init__(self, parent):
         self.host = None
         self.worker_num = None
         self.all = parent.args.all
@@ -705,11 +709,11 @@ class _Child(object):
         self.coverage = parent.args.coverage and parent.args.jobs > 1
         self.coverage_source = parent.coverage_source
         self.dry_run = parent.args.dry_run
-        self.loader = loader
+        self.loader = parent.loader
         self.passthrough = parent.args.passthrough
-        self.context = test_set.context
-        self.setup_fn = test_set.setup_fn
-        self.teardown_fn = test_set.teardown_fn
+        self.context = parent.context
+        self.setup_fn = parent.setup_fn
+        self.teardown_fn = parent.teardown_fn
         self.context_after_setup = None
         self.top_level_dir = parent.top_level_dir
         self.loaded_suites = {}
@@ -897,4 +901,5 @@ def _sort_inputs(inps):
 
 
 if __name__ == '__main__':  # pragma: no cover
-    sys.exit(main(win_multiprocessing='spawn'))
+    sys.modules['__main__'].__file__ = path_to_file
+    sys.exit(main(win_multiprocessing=WinMultiprocessing.importable))

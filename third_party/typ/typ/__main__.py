@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import sys  # pragma: no cover
 
-from typ import main
+from typ import main  # pragma: no cover
 
 
-if __name__ == '__main__':
-    sys.exit(main(win_multiprocessing='spawn'))
+if __name__ == '__main__':  # pragma: no cover
+    sys.exit(main())

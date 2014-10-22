@@ -166,6 +166,13 @@ class FakeHost(object):
         if path not in self.dirs:
             self.dirs.add(path)
 
+    def mktempfile(self, delete=True):
+        curno = self.current_tmpno
+        self.current_tmpno += 1
+        f = io.StringIO()
+        f.name = '__im_tmp/tmpfile_%u' % curno
+        return f
+
     def mkdtemp(self, suffix='', prefix='tmp', dir=None, **_kwargs):
         if dir is None:
             dir = self.sep + '__im_tmp'
