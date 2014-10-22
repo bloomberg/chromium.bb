@@ -74,27 +74,7 @@ bool SVGMaskElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGMaskElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name))
-        SVGElement::parseAttribute(name, value);
-    else if (name == SVGNames::maskUnitsAttr)
-        m_maskUnits->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::maskContentUnitsAttr)
-        m_maskContentUnits->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::xAttr)
-        m_x->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::yAttr)
-        m_y->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::widthAttr)
-        m_width->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::heightAttr)
-        m_height->setBaseValueAsString(value, parseError);
-    else if (SVGTests::parseAttribute(name, value)) {
-    } else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)

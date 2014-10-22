@@ -36,49 +36,23 @@ inline SVGStopElement::SVGStopElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGStopElement)
 
-bool SVGStopElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty())
-        supportedAttributes.add(SVGNames::offsetAttr);
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGStopElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::offsetAttr)
-        m_offset->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    if (!isSupportedAttribute(attrName)) {
-        SVGElement::svgAttributeChanged(attrName);
-        return;
-    }
-
-    SVGElement::InvalidationGuard invalidationGuard(this);
-
-    if (!renderer())
-        return;
-
     if (attrName == SVGNames::offsetAttr) {
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer());
+        SVGElement::InvalidationGuard invalidationGuard(this);
+
+        if (renderer())
+            RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer());
+
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGElement::svgAttributeChanged(attrName);
 }
 
 RenderObject* SVGStopElement::createRenderer(RenderStyle*)

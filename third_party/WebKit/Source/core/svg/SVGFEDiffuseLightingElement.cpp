@@ -59,25 +59,7 @@ bool SVGFEDiffuseLightingElement::isSupportedAttribute(const QualifiedName& attr
 
 void SVGFEDiffuseLightingElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name) || name == SVGNames::lighting_colorAttr) {
-        SVGFilterPrimitiveStandardAttributes::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::inAttr)
-        m_in1->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::diffuseConstantAttr)
-        m_diffuseConstant->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::surfaceScaleAttr)
-        m_surfaceScale->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::kernelUnitLengthAttr)
-        m_kernelUnitLength->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)

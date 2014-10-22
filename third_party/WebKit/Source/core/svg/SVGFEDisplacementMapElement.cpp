@@ -71,27 +71,7 @@ bool SVGFEDisplacementMapElement::isSupportedAttribute(const QualifiedName& attr
 
 void SVGFEDisplacementMapElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGFilterPrimitiveStandardAttributes::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::inAttr)
-        m_in1->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::in2Attr)
-        m_in2->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::scaleAttr)
-        m_scale->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::xChannelSelectorAttr)
-        m_xChannelSelector->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::yChannelSelectorAttr)
-        m_yChannelSelector->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 bool SVGFEDisplacementMapElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)

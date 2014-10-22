@@ -43,6 +43,34 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeTyp
     return entries;
 }
 
+class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
+public:
+    static PassRefPtr<SVGAnimatedOrder> create(SVGElement* contextElement)
+    {
+        return adoptRef(new SVGAnimatedOrder(contextElement));
+    }
+
+    void setBaseValueAsString(const String&, SVGParsingError&) override;
+
+protected:
+    SVGAnimatedOrder(SVGElement* contextElement)
+        : SVGAnimatedIntegerOptionalInteger(contextElement, SVGNames::orderAttr, 0, 0)
+    {
+    }
+};
+
+void SVGAnimatedOrder::setBaseValueAsString(const String& value, SVGParsingError& parseError)
+{
+    SVGAnimatedIntegerOptionalInteger::setBaseValueAsString(value, parseError);
+
+    ASSERT(contextElement());
+    if (parseError == NoError && (firstInteger()->baseValue()->value() < 1 || secondInteger()->baseValue()->value() < 1)) {
+        contextElement()->document().accessSVGExtensions().reportWarning(
+            "feConvolveMatrix: problem parsing order=\"" + value
+            + "\". Filtered element will not be displayed.");
+    }
+}
+
 inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feConvolveMatrixTag, document)
     , m_bias(SVGAnimatedNumber::create(this, SVGNames::biasAttr, SVGNumber::create()))
@@ -51,7 +79,7 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     , m_edgeMode(SVGAnimatedEnumeration<EdgeModeType>::create(this, SVGNames::edgeModeAttr, EDGEMODE_DUPLICATE))
     , m_kernelMatrix(SVGAnimatedNumberList::create(this, SVGNames::kernelMatrixAttr, SVGNumberList::create()))
     , m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::kernelUnitLengthAttr))
-    , m_order(SVGAnimatedIntegerOptionalInteger::create(this, SVGNames::orderAttr))
+    , m_order(SVGAnimatedOrder::create(this))
     , m_preserveAlpha(SVGAnimatedBoolean::create(this, SVGNames::preserveAlphaAttr, SVGBoolean::create()))
     , m_targetX(SVGAnimatedInteger::create(this, SVGNames::targetXAttr, SVGInteger::create()))
     , m_targetY(SVGAnimatedInteger::create(this, SVGNames::targetYAttr, SVGInteger::create()))
@@ -90,42 +118,7 @@ bool SVGFEConvolveMatrixElement::isSupportedAttribute(const QualifiedName& attrN
 
 void SVGFEConvolveMatrixElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGFilterPrimitiveStandardAttributes::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::inAttr)
-        m_in1->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::divisorAttr)
-        m_divisor->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::biasAttr)
-        m_bias->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::kernelUnitLengthAttr)
-        m_kernelUnitLength->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::kernelMatrixAttr)
-        m_kernelMatrix->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::preserveAlphaAttr)
-        m_preserveAlpha->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::edgeModeAttr)
-        m_edgeMode->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::targetXAttr)
-        m_targetX->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::targetYAttr)
-        m_targetY->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::orderAttr) {
-        m_order->setBaseValueAsString(value, parseError);
-        if (parseError == NoError && (orderX()->baseValue()->value() < 1 || orderY()->baseValue()->value() < 1)) {
-            document().accessSVGExtensions().reportWarning(
-                "feConvolveMatrix: problem parsing order=\"" + value
-                + "\". Filtered element will not be displayed.");
-        }
-    } else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)

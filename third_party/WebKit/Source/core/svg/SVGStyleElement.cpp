@@ -95,28 +95,16 @@ void SVGStyleElement::setTitle(const AtomicString& title)
     setAttribute(SVGNames::titleAttr, title);
 }
 
-bool SVGStyleElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty())
-        supportedAttributes.add(SVGNames::titleAttr);
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-        return;
-    }
-
     if (name == SVGNames::titleAttr) {
         if (m_sheet)
             m_sheet->setTitle(value);
+
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGElement::parseAttribute(name, value);
 }
 
 void SVGStyleElement::finishParsingChildren()
