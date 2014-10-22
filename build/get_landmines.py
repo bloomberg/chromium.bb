@@ -59,7 +59,6 @@ def print_landmines():
   if platform() == 'android':
     print 'Clobber: To delete stale generated .java files.'
     print 'Delete stale generated .java files again. crbug.com/349592'
-    print 'Clobber to delete incompatible object binary format with NDK r10c'
 
 
 def main():
