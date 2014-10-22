@@ -98,10 +98,14 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 
   std::string process_type =
       command_line->GetSwitchValueNative(switches::kProcessType);
-  // Renderer process comamndline
+
+  // Renderer process command-line
   if (process_type == switches::kRendererProcess) {
     // Any browser command-line switches that should be propagated to
     // the renderer go here.
+#if defined(OS_ANDROID)
+    command_line->AppendSwitch(switches::kForceUseOverlayEmbeddedVideo);
+#endif  // defined(OS_ANDROID)
   }
 }
 
