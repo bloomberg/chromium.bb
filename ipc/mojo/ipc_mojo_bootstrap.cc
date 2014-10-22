@@ -84,6 +84,9 @@ void MojoServerBootstrap::SendClientPipeIfReady() {
 }
 
 void MojoServerBootstrap::OnClientLaunched(base::ProcessHandle process) {
+  if (HasFailed())
+    return;
+
   DCHECK_EQ(state(), STATE_INITIALIZED);
   DCHECK_NE(process, base::kNullProcessHandle);
   client_process_ = process;
@@ -200,6 +203,10 @@ void MojoBootstrap::OnChannelError() {
 void MojoBootstrap::Fail() {
   set_state(STATE_ERROR);
   delegate()->OnBootstrapError();
+}
+
+bool MojoBootstrap::HasFailed() const {
+  return state() == STATE_ERROR;
 }
 
 bool MojoBootstrap::Send(Message* message) {

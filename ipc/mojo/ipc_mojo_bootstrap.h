@@ -60,6 +60,7 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
   Delegate* delegate() const { return delegate_; }
   bool Send(Message* message);
   void Fail();
+  bool HasFailed() const;
 
   State state() const { return state_; }
   void set_state(State state) { state_ = state; }
