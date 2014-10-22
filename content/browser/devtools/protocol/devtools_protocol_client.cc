@@ -7,10 +7,8 @@
 namespace content {
 
 DevToolsProtocolClient::DevToolsProtocolClient(
-    const EventCallback& event_callback,
-    const ResponseCallback& response_callback)
-    : event_callback_(event_callback),
-      response_callback_(response_callback) {
+    const RawMessageCallback& raw_message_callback)
+    : raw_message_callback_(raw_message_callback) {
 }
 
 DevToolsProtocolClient::~DevToolsProtocolClient() {
@@ -18,12 +16,18 @@ DevToolsProtocolClient::~DevToolsProtocolClient() {
 
 void DevToolsProtocolClient::SendNotification(const std::string& method,
                                               base::DictionaryValue* params) {
-  event_callback_.Run(method, params);
+  scoped_refptr<DevToolsProtocol::Notification> notification =
+      new DevToolsProtocol::Notification(method, params);
+  SendRawMessage(notification->Serialize());
 }
 
 void DevToolsProtocolClient::SendAsyncResponse(
     scoped_refptr<DevToolsProtocol::Response> response) {
-  response_callback_.Run(response);
+  SendRawMessage(response->Serialize());
+}
+
+void DevToolsProtocolClient::SendRawMessage(const std::string& message) {
+  raw_message_callback_.Run(message);
 }
 
 void DevToolsProtocolClient::SendInvalidParamsResponse(

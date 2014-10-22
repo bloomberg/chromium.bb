@@ -120,8 +120,7 @@ tmpl_client = string.Template("""\
 namespace ${domain} {
 class Client : public DevToolsProtocolClient {
  public:
-  Client(const EventCallback& event_callback,
-         const ResponseCallback& response_callback);
+  Client(const RawMessageCallback& raw_message_callback);
   virtual ~Client();
 
 ${methods}\
@@ -246,9 +245,7 @@ tmpl_register = string.Template("""\
 tmpl_init_client = string.Template("""\
   ${domain}_handler_->SetClient(make_scoped_ptr(
       new devtools::${domain}::Client(
-          base::Bind(&DevToolsProtocolHandlerImpl::SendNotification,
-                     base::Unretained(this)),
-          base::Bind(&DevToolsProtocolHandlerImpl::SendAsyncResponse,
+          base::Bind(&DevToolsProtocolHandlerImpl::SendRawMessage,
                      base::Unretained(this)))));
 """)
 
@@ -358,9 +355,8 @@ void ${declared_name}::set_${param}(
 tmpl_client_impl = string.Template("""\
 namespace ${domain} {
 
-Client::Client(const EventCallback& event_callback,
-               const ResponseCallback& response_callback)
-    : DevToolsProtocolClient(event_callback, response_callback) {
+Client::Client(const RawMessageCallback& raw_message_callback)
+    : DevToolsProtocolClient(raw_message_callback) {
 }
 
 Client::~Client() {

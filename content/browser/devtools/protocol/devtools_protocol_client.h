@@ -11,11 +11,8 @@ namespace content {
 
 class DevToolsProtocolClient {
  public:
-  typedef base::Callback<void(const std::string& event,
-                              base::DictionaryValue* params)> EventCallback;
-
-  typedef base::Callback<void(scoped_refptr<DevToolsProtocol::Response>)>
-      ResponseCallback;
+  typedef base::Callback<void(const std::string& message)>
+      RawMessageCallback;
 
   enum ResponseStatus {
     RESPONSE_STATUS_FALLTHROUGH,
@@ -53,9 +50,12 @@ class DevToolsProtocolClient {
       scoped_refptr<DevToolsProtocol::Command> command,
       const std::string& message);
 
+  // Sends message to client, the caller is presumed to properly
+  // format the message. Do not use unless you must.
+  void SendRawMessage(const std::string& message);
+
  protected:
-  DevToolsProtocolClient(const EventCallback& event_callback,
-                         const ResponseCallback& response_callback);
+  DevToolsProtocolClient(const RawMessageCallback& raw_message_callback);
 
   virtual ~DevToolsProtocolClient();
 
@@ -65,8 +65,7 @@ class DevToolsProtocolClient {
   void SendAsyncResponse(scoped_refptr<DevToolsProtocol::Response> response);
 
  private:
-  EventCallback event_callback_;
-  ResponseCallback response_callback_;
+  RawMessageCallback raw_message_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsProtocolClient);
 };
