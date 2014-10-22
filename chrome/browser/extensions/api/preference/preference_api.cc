@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/translate/core/common/translate_pref_names.h"
@@ -75,7 +74,9 @@ PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"hyperlinkAuditingEnabled", prefs::kEnableHyperlinkAuditing,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
-    {"networkPredictionEnabled", prefs::kNetworkPredictionOptions,
+    {"networkPredictionEnabled", prefs::kNetworkPredictionEnabled,
+     APIPermission::kPrivacy, APIPermission::kPrivacy},
+    {"networkPredictionOptions", prefs::kNetworkPredictionOptions,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"passwordSavingEnabled",
      password_manager::prefs::kPasswordManagerSavingEnabled,
@@ -156,31 +157,6 @@ class InvertBooleanTransformer : public PrefTransformerInterface {
   }
 };
 
-class NetworkPredictionTransformer : public PrefTransformerInterface {
- public:
-  virtual base::Value* ExtensionToBrowserPref(const base::Value* extension_pref,
-                                              std::string* error,
-                                              bool* bad_message) override {
-    bool bool_value = false;
-    DCHECK(extension_pref->GetAsBoolean(&bool_value));
-    if (bool_value) {
-      return new base::FundamentalValue(
-          chrome_browser_net::NETWORK_PREDICTION_DEFAULT);
-    } else {
-      return new base::FundamentalValue(
-          chrome_browser_net::NETWORK_PREDICTION_NEVER);
-    }
-  }
-
-  virtual base::Value* BrowserToExtensionPref(
-      const base::Value* browser_pref) override {
-    int int_value = chrome_browser_net::NETWORK_PREDICTION_NEVER;
-    DCHECK(browser_pref->GetAsInteger(&int_value));
-    return new base::FundamentalValue(
-        int_value != chrome_browser_net::NETWORK_PREDICTION_NEVER);
-  }
-};
-
 class PrefMapping {
  public:
   static PrefMapping* GetInstance() {
@@ -246,8 +222,6 @@ class PrefMapping {
     RegisterPrefTransformer(prefs::kProxy, new ProxyPrefTransformer());
     RegisterPrefTransformer(prefs::kBlockThirdPartyCookies,
                             new InvertBooleanTransformer());
-    RegisterPrefTransformer(prefs::kNetworkPredictionOptions,
-                            new NetworkPredictionTransformer());
   }
 
   ~PrefMapping() {
@@ -671,6 +645,7 @@ bool SetPreferenceFunction::RunSync() {
   CHECK(pref);
 
   // Validate new value.
+  EXTENSION_FUNCTION_VALIDATE(value->GetType() == pref->GetType());
   PrefTransformerInterface* transformer =
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
   std::string error;
@@ -682,7 +657,6 @@ bool SetPreferenceFunction::RunSync() {
     bad_message_ = bad_message;
     return false;
   }
-  EXTENSION_FUNCTION_VALIDATE(browser_pref_value->GetType() == pref->GetType());
 
   // Validate also that the stored value can be converted back by the
   // transformer.
