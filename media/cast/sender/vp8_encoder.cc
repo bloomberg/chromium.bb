@@ -13,7 +13,15 @@
 namespace media {
 namespace cast {
 
-static const uint32 kMinIntra = 300;
+namespace {
+
+// After a pause in the video stream, what is the maximum duration amount to
+// pass to the encoder for the next frame (in terms of 1/max_fps sized periods)?
+// This essentially controls the encoded size of the first frame that follows a
+// pause in the video stream.
+const int kRestartFramePeriods = 3;
+
+}  // namespace
 
 Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
     : cast_config_(video_config),
@@ -22,10 +30,8 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
           kNumberOfVp8VideoBuffers),
       raw_image_(nullptr),
       key_frame_requested_(true),
-      first_frame_received_(false),
       last_encoded_frame_id_(kStartFrameId),
       last_acked_frame_id_(kStartFrameId),
-      frame_id_to_reference_(kStartFrameId - 1),
       undroppable_frames_(0) {
   config_.g_timebase.den = 0;  // Not initialized.
 
@@ -75,8 +81,9 @@ void Vp8Encoder::Initialize() {
   config_.g_threads = cast_config_.number_of_encode_threads;
   config_.g_w = cast_config_.width;
   config_.g_h = cast_config_.height;
+  // Set the timebase to match that of base::TimeDelta.
   config_.g_timebase.num = 1;
-  config_.g_timebase.den = kVideoFrequency;
+  config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
   if (use_multiple_video_buffers_) {
     // We must enable error resilience when we use multiple buffers, due to
     // codec requirements.
@@ -92,27 +99,38 @@ void Vp8Encoder::Initialize() {
   config_.rc_target_bitrate = cast_config_.start_bitrate / 1000;  // In kbit/s.
   config_.rc_min_quantizer = cast_config_.min_qp;
   config_.rc_max_quantizer = cast_config_.max_qp;
+  // TODO(miu): Revisit these now that the encoder is being successfully
+  // micro-managed.
   config_.rc_undershoot_pct = 100;
   config_.rc_overshoot_pct = 15;
+  // TODO(miu): Document why these rc_buf_*_sz values were chosen and/or
+  // research for better values.  Should they be computed from the target
+  // playout delay?
   config_.rc_buf_initial_sz = 500;
   config_.rc_buf_optimal_sz = 600;
-  config_.rc_buf_sz = 1000;  // TODO(miu): Adjust relative to playout delay?
+  config_.rc_buf_sz = 1000;
 
   config_.kf_mode = VPX_KF_DISABLED;
 
-  // set the maximum target size of any key-frame.
-  uint32 rc_max_intra_target = MaxIntraTarget(config_.rc_buf_optimal_sz);
   vpx_codec_flags_t flags = 0;
   if (vpx_codec_enc_init(&encoder_, vpx_codec_vp8_cx(), &config_, flags)) {
     NOTREACHED() << "vpx_codec_enc_init() failed.";
     config_.g_timebase.den = 0;  // Do not call vpx_codec_destroy() in dtor.
     return;
   }
+
+  // Raise the threshold for considering macroblocks as static.  The default is
+  // zero, so this setting makes the encoder less sensitive to motion.  This
+  // lowers the probability of needing to utilize more CPU to search for motion
+  // vectors.
   vpx_codec_control(&encoder_, VP8E_SET_STATIC_THRESHOLD, 1);
-  vpx_codec_control(&encoder_, VP8E_SET_NOISE_SENSITIVITY, 0);
+
+  // Improve quality by enabling sets of codec features that utilize more CPU.
+  // The default is zero, with increasingly more CPU to be used as the value is
+  // more negative.
+  // TODO(miu): Document why this value was chosen and expected behaviors.
+  // Should this be dynamic w.r.t. hardware performance?
   vpx_codec_control(&encoder_, VP8E_SET_CPUUSED, -6);
-  vpx_codec_control(
-      &encoder_, VP8E_SET_MAX_INTRA_BITRATE_PCT, rc_max_intra_target);
 }
 
 void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
@@ -153,28 +171,33 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     GetCodecUpdateFlags(buffer_to_update, &flags);
   }
 
-  // Note: The duration does not reflect the real time between frames. This is
-  // done to keep the encoder happy.
-  //
-  // TODO(miu): This is a semi-hack.  We should consider using
-  // |video_frame->timestamp()| instead.
-  uint32 duration = kVideoFrequency / cast_config_.max_frame_rate;
+  // The frame duration given to the VP8 codec affects a number of important
+  // behaviors, including: per-frame bandwidth, CPU time spent encoding,
+  // temporal quality trade-offs, and key/golden/alt-ref frame generation
+  // intervals.  Use the actual amount of time between the current and previous
+  // frames as a prediction for the next frame's duration, but bound the
+  // prediction to account for the fact that the frame rate can be highly
+  // variable, including long pauses in the video stream.
+  const base::TimeDelta minimum_frame_duration =
+      base::TimeDelta::FromSecondsD(1.0 / cast_config_.max_frame_rate);
+  const base::TimeDelta maximum_frame_duration =
+      base::TimeDelta::FromSecondsD(static_cast<double>(kRestartFramePeriods) /
+                                        cast_config_.max_frame_rate);
+  const base::TimeDelta last_frame_duration =
+      video_frame->timestamp() - last_frame_timestamp_;
+  const base::TimeDelta predicted_frame_duration =
+      std::max(minimum_frame_duration,
+               std::min(maximum_frame_duration, last_frame_duration));
+  last_frame_timestamp_ = video_frame->timestamp();
 
-  // Note: Timestamp here is used for bitrate calculation. The absolute value
-  // is not important.
-  if (!first_frame_received_) {
-    first_frame_received_ = true;
-    first_frame_timestamp_ = video_frame->timestamp();
-  }
-
-  vpx_codec_pts_t timestamp =
-      (video_frame->timestamp() - first_frame_timestamp_).InMicroseconds() *
-      kVideoFrequency / base::Time::kMicrosecondsPerSecond;
-
+  // Encode the frame.  The presentation time stamp argument here is fixed to
+  // zero to force the encoder to base its single-frame bandwidth calculations
+  // entirely on |predicted_frame_duration| and the target bitrate setting being
+  // micro-managed via calls to UpdateRates().
   CHECK_EQ(vpx_codec_encode(&encoder_,
                             raw_image_,
-                            timestamp,
-                            duration,
+                            0,
+                            predicted_frame_duration.InMicroseconds(),
                             flags,
                             VPX_DL_REALTIME),
            VPX_CODEC_OK)
@@ -198,7 +221,8 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
       // flag never seems to be set.
       encoded_frame->referenced_frame_id = latest_frame_id_to_reference;
     }
-    encoded_frame->rtp_timestamp = timestamp;
+    encoded_frame->rtp_timestamp =
+        TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
     encoded_frame->reference_time = reference_time;
     encoded_frame->data.assign(
         static_cast<const uint8*>(pkt->data.frame.buf),
@@ -208,7 +232,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   DCHECK(!encoded_frame->data.empty())
       << "BUG: Encoder must provide data since lagged encoding is disabled.";
 
-  DVLOG(1) << "VP8 encoded frame_id " << encoded_frame->frame_id
+  DVLOG(2) << "VP8 encoded frame_id " << encoded_frame->frame_id
            << ", sized:" << encoded_frame->data.size();
 
   if (encoded_frame->dependency == EncodedFrame::KEY) {
@@ -384,6 +408,8 @@ void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
   if (vpx_codec_enc_config_set(&encoder_, &config_)) {
     NOTREACHED() << "Invalid return value";
   }
+
+  VLOG(1) << "VP8 new rc_target_bitrate: " << new_bitrate_kbit << " kbps";
 }
 
 void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
@@ -391,7 +417,7 @@ void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
   if (!use_multiple_video_buffers_)
     return;
 
-  VLOG(1) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
+  VLOG(2) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
     if (frame_id == buffer_state_[i].frame_id) {
       buffer_state_[i].state = kBufferAcked;
@@ -406,23 +432,6 @@ void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
 void Vp8Encoder::GenerateKeyFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   key_frame_requested_ = true;
-}
-
-// Calculate the max size of the key frame relative to a normal delta frame.
-uint32 Vp8Encoder::MaxIntraTarget(uint32 optimal_buffer_size_ms) const {
-  // Set max to the optimal buffer level (normalized by target BR),
-  // and scaled by a scale_parameter.
-  // Max target size = scalePar * optimalBufferSize * targetBR[Kbps].
-  // This values is presented in percentage of perFrameBw:
-  // perFrameBw = targetBR[Kbps] * 1000 / frameRate.
-  // The target in % is as follows:
-
-  float scale_parameter = 0.5;
-  uint32 target_pct = optimal_buffer_size_ms * scale_parameter *
-                      cast_config_.max_frame_rate / 10;
-
-  // Don't go below 3 times the per frame bandwidth.
-  return std::max(target_pct, kMinIntra);
 }
 
 }  // namespace cast

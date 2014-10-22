@@ -61,9 +61,6 @@ class Vp8Encoder : public SoftwareVideoEncoder {
     return config_.g_timebase.den != 0;
   }
 
-  // Calculate the max target in % for a keyframe.
-  uint32 MaxIntraTarget(uint32 optimal_buffer_size) const;
-
   // Calculate which next Vp8 buffers to update with the next frame.
   Vp8Buffers GetNextBufferToUpdate();
 
@@ -86,13 +83,24 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // Wrapper for access to YUV data planes in a media::VideoFrame.
   vpx_image_t* raw_image_;
 
+  // Set to true to request the next frame emitted by Vp8Encoder be a key frame.
   bool key_frame_requested_;
-  bool first_frame_received_;
-  base::TimeDelta first_frame_timestamp_;
+
+  // The |VideoFrame::timestamp()| of the last encoded frame.  This is used to
+  // predict the duration of the next frame.
+  base::TimeDelta last_frame_timestamp_;
+
+  // The last encoded frame's ID.
   uint32 last_encoded_frame_id_;
+
+  // Used to track which buffers are old enough to be re-used.
   uint32 last_acked_frame_id_;
-  uint32 frame_id_to_reference_;
-  uint32 undroppable_frames_;
+
+  // Used by GetNextBufferToUpdate() to track how many consecutive times the
+  // newest buffer had to be overwritten.
+  int undroppable_frames_;
+
+  // Tracks the lifecycle and dependency state of each of the three buffers.
   BufferState buffer_state_[kNumberOfVp8VideoBuffers];
 
   // This is bound to the thread where Initialize() is called.
