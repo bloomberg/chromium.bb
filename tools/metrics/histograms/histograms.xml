@@ -9635,6 +9635,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>kmadhusu@chromium.org</owner>
   <summary>
     Counts number of Google searches from various access points in the browser.
+    WARNING: Do not use this histogram as it currently fails to classify a large
+    percentage of Omnibox searches correctly - http://crbug.com/421631.
   </summary>
 </histogram>
 
