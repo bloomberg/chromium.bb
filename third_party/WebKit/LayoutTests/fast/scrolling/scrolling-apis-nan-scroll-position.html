@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<style>
+
+body {
+  height: 30000px;
+  width: 30000px;
+}
+
+.spacer {
+  height: 1000px;
+  width: 1000px;
+}
+
+#scroller {
+  height: 100px;
+  width: 100px;
+  overflow: scroll;
+}
+</style>
+
+<div id=scroller>
+    <div class=spacer></div>
+</div>
+
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Verifies that nan scroll position works correctly.");
+
+function scroll()
+{
+    window.scrollTo(1, 1);
+    shouldBe('window.scrollY', "1");
+    shouldBe('window.scrollX', "1");
+
+    window.scrollTo(window.NaN, window.NaN);
+    shouldBe('window.scrollY', "1");
+    shouldBe('window.scrollX', "1");
+
+    window.scrollBy(window.NaN, window.NaN);
+    shouldBe('window.scrollY', "1");
+    shouldBe('window.scrollX', "1");
+
+    scroller.scrollTop = 1;
+    shouldBe("scroller.scrollTop", "1");
+    scroller.scrollTop = window.NaN;
+    shouldBe("scroller.scrollTop", "1");
+
+    scroller.scrollLeft = 1;
+    shouldBe("scroller.scrollLeft", "1");
+    scroller.scrollLeft = window.NaN;
+    shouldBe("scroller.scrollLeft", "1");
+}
+
+onload = function() {
+    if (window.eventSender)
+      scroll();
+}
+
+</script>

@@ -247,6 +247,9 @@ void HTMLBodyElement::setScrollLeft(double scrollLeft)
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
 
+    if (std::isnan(scrollLeft))
+        return;
+
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
         RenderBox* render = renderBox();
         if (!render)
@@ -293,6 +296,9 @@ void HTMLBodyElement::setScrollTop(double scrollTop)
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
+
+    if (std::isnan(scrollTop))
+        return;
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
         RenderBox* render = renderBox();

@@ -1380,6 +1380,9 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     if (!view)
         return;
 
+    if (std::isnan(x) || std::isnan(y))
+        return;
+
     DoubleSize scaledOffset(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
     view->scrollBy(scaledOffset, scrollBehavior);
 }
@@ -1401,6 +1404,9 @@ void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior)
 
     RefPtrWillBeRawPtr<FrameView> view = m_frame->view();
     if (!view)
+        return;
+
+    if (std::isnan(x) || std::isnan(y))
         return;
 
     DoublePoint layoutPos(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
