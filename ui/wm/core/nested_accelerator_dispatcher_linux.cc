@@ -85,8 +85,8 @@ class NestedAcceleratorDispatcherLinux : public NestedAcceleratorDispatcher,
     }
     ui::PlatformEventDispatcher* prev = *restore_dispatcher_;
 
-    return prev ? prev->DispatchEvent(event)
-                : ui::POST_DISPATCH_PERFORM_DEFAULT;
+    uint32_t perform_default = ui::POST_DISPATCH_PERFORM_DEFAULT;
+    return prev ? prev->DispatchEvent(event) : perform_default;
   }
 
   scoped_ptr<ui::ScopedEventDispatcher> restore_dispatcher_;
