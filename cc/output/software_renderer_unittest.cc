@@ -42,8 +42,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false);
+                                                  1);
     renderer_ = SoftwareRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider());
   }

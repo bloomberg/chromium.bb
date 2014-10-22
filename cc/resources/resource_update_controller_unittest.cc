@@ -130,8 +130,7 @@ class ResourceUpdateControllerTest : public Test {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false);
+                                                  1);
   }
 
   void AppendFullUploadsOfIndexedTextureToUpdateQueue(int count,

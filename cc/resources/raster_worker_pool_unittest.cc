@@ -164,7 +164,8 @@ class RasterWorkerPoolTest
         raster_worker_pool_ =
             GpuRasterWorkerPool::Create(base::MessageLoopProxy::current().get(),
                                         context_provider_.get(),
-                                        resource_provider_.get());
+                                        resource_provider_.get(),
+                                        false);
         break;
       case RASTER_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
@@ -279,8 +280,7 @@ class RasterWorkerPoolTest
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
   }
 
   void CreateSoftwareOutputSurfaceAndResourceProvider() {
@@ -293,8 +293,7 @@ class RasterWorkerPoolTest
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
   }
 
   void OnTaskCompleted(scoped_ptr<ScopedResource> resource,

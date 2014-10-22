@@ -124,8 +124,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
                                main_thread_task_runner_.get(),
                                0,
                                false,
-                               1,
-                               false);
+                               1);
 
   texture_mailbox_deleter_ = make_scoped_ptr(
       new TextureMailboxDeleter(base::MessageLoopProxy::current()));
@@ -173,8 +172,7 @@ void PixelTest::SetUpSoftwareRenderer() {
                                main_thread_task_runner_.get(),
                                0,
                                false,
-                               1,
-                               false);
+                               1);
   renderer_ = SoftwareRenderer::Create(
       this, &settings_, output_surface_.get(), resource_provider_.get());
 }

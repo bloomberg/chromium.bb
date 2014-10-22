@@ -28,8 +28,7 @@ TEST(ScopedResourceTest, NewScopedResource) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::Create(resource_provider.get());
 
@@ -55,8 +54,7 @@ TEST(ScopedResourceTest, CreateScopedResource) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::Create(resource_provider.get());
   texture->Allocate(
@@ -85,8 +83,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::Create(resource_provider.get());

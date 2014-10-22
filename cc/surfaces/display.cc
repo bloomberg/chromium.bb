@@ -58,7 +58,6 @@ void Display::InitializeRenderer() {
   int highp_threshold_min = 0;
   bool use_rgba_4444_texture_format = false;
   size_t id_allocation_chunk_size = 1;
-  bool use_distance_field_text = false;
   scoped_ptr<ResourceProvider> resource_provider =
       ResourceProvider::Create(output_surface_.get(),
                                bitmap_manager_,
@@ -66,8 +65,7 @@ void Display::InitializeRenderer() {
                                blocking_main_thread_task_runner_.get(),
                                highp_threshold_min,
                                use_rgba_4444_texture_format,
-                               id_allocation_chunk_size,
-                               use_distance_field_text);
+                               id_allocation_chunk_size);
   if (!resource_provider)
     return;
 

@@ -483,6 +483,9 @@ void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
   was_screen_space_transform_animating_ =
       draw_properties().screen_space_transform_is_animating;
 
+  if (draw_transform_is_animating())
+    pile_->set_likely_to_be_used_for_transform_animation();
+
   should_update_tile_priorities_ = true;
 
   UpdateTilePriorities(occlusion_in_content_space);
@@ -1239,19 +1242,7 @@ void PictureLayerImpl::SanityCheckTilingState() const {
 }
 
 bool PictureLayerImpl::ShouldAdjustRasterScaleDuringScaleAnimations() const {
-  if (!layer_tree_impl()->use_gpu_rasterization())
-    return false;
-
-  // Re-rastering text at different scales using GPU rasterization causes
-  // texture uploads for glyphs at each scale (see crbug.com/366225). To
-  // workaround this performance issue, we don't re-rasterize layers with
-  // text during scale animations.
-  // TODO(ajuma): Remove this workaround once text can be efficiently
-  // re-rastered at different scales (e.g. by using distance-field fonts).
-  if (pile_->has_text())
-    return false;
-
-  return true;
+  return layer_tree_impl()->use_gpu_rasterization();
 }
 
 float PictureLayerImpl::MaximumTilingContentsScale() const {

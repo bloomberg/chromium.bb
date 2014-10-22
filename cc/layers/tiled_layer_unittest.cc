@@ -128,8 +128,7 @@ class TiledLayerTest : public testing::Test {
                                                   nullptr,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false);
+                                                  1);
     host_impl_ = make_scoped_ptr(
         new FakeLayerTreeHostImpl(proxy_, shared_bitmap_manager_.get()));
   }

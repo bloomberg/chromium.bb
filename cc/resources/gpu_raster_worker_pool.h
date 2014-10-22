@@ -23,7 +23,8 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
       ContextProvider* context_provider,
-      ResourceProvider* resource_provider);
+      ResourceProvider* resource_provider,
+      bool use_distance_field_text);
 
   // Overridden from RasterWorkerPool:
   Rasterizer* AsRasterizer() override;
@@ -42,7 +43,8 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
  private:
   GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
                       ContextProvider* context_provider,
-                      ResourceProvider* resource_provider);
+                      ResourceProvider* resource_provider,
+                      bool use_distance_field_text);
 
   void OnRasterFinished(TaskSet task_set);
   void ScheduleRunTasksOnOriginThread();
@@ -58,6 +60,7 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
   SkMultiPictureDraw multi_picture_draw_;
 
   bool run_tasks_on_origin_thread_pending_;
+  bool use_distance_field_text_;
 
   TaskSetCollection raster_pending_;
 

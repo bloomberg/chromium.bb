@@ -83,7 +83,7 @@ class RendererTest : public ::testing::Test {
     output_surface_.reset(new TestOutputSurface(context_provider_));
     output_surface_->BindToClient(&output_surface_client_);
     resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), NULL, NULL, NULL, 0, false, 1, false);
+        output_surface_.get(), NULL, NULL, NULL, 0, false, 1);
     renderer_ = CreateRenderer<T>(&renderer_client_,
                                   &tree_settings_,
                                   output_surface_.get(),

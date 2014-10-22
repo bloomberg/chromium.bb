@@ -58,6 +58,13 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
+  bool likely_to_be_used_for_transform_animation() const {
+    return likely_to_be_used_for_transform_animation_;
+  }
+  void set_likely_to_be_used_for_transform_animation() {
+    likely_to_be_used_for_transform_animation_ = true;
+  }
+
   struct CC_EXPORT Analysis {
     Analysis();
     ~Analysis();
@@ -123,6 +130,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       float contents_scale,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       bool is_analysis) const;
+
+  bool likely_to_be_used_for_transform_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);
 };

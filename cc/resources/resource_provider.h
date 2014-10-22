@@ -83,8 +83,7 @@ class CC_EXPORT ResourceProvider {
       BlockingTaskRunner* blocking_main_thread_task_runner,
       int highp_threshold_min,
       bool use_rgba_4444_texture_format,
-      size_t id_allocation_chunk_size,
-      bool use_distance_field_text);
+      size_t id_allocation_chunk_size);
   virtual ~ResourceProvider();
 
   void InitializeSoftware();
@@ -328,12 +327,11 @@ class CC_EXPORT ResourceProvider {
                       ResourceProvider::ResourceId resource_id);
     ~ScopedWriteLockGr();
 
-    SkSurface* sk_surface() { return sk_surface_; }
+    SkSurface* GetSkSurface(bool use_distance_field_text);
 
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::ResourceId resource_id_;
-    SkSurface* sk_surface_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
   };
@@ -488,8 +486,7 @@ class CC_EXPORT ResourceProvider {
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format,
-                   size_t id_allocation_chunk_size,
-                   bool use_distance_field_text);
+                   size_t id_allocation_chunk_size);
 
   void CleanUpGLIfNeeded();
 
@@ -500,7 +497,7 @@ class CC_EXPORT ResourceProvider {
   void UnlockForWrite(ResourceId id);
   const Resource* LockForWriteToGpuMemoryBuffer(ResourceId id);
   void UnlockForWriteToGpuMemoryBuffer(ResourceId id);
-  const Resource* LockForWriteToSkSurface(ResourceId id);
+  void LockForWriteToSkSurface(ResourceId id);
   void UnlockForWriteToSkSurface(ResourceId id);
 
   static void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
@@ -561,8 +558,6 @@ class CC_EXPORT ResourceProvider {
   scoped_ptr<IdAllocator> buffer_id_allocator_;
 
   bool use_sync_query_;
-
-  bool use_distance_field_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

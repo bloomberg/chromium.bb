@@ -2028,8 +2028,11 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              GL_TEXTURE_2D,
                              resource_provider_->best_texture_format());
 
-    raster_worker_pool_ = GpuRasterWorkerPool::Create(
-        task_runner, context_provider, resource_provider_.get());
+    raster_worker_pool_ =
+        GpuRasterWorkerPool::Create(task_runner,
+                                    context_provider,
+                                    resource_provider_.get(),
+                                    settings_.use_distance_field_text);
   } else if (UseZeroCopyRasterizer()) {
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(),
@@ -2135,8 +2138,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                proxy_->blocking_main_thread_task_runner(),
                                settings_.highp_threshold_min,
                                settings_.use_rgba_4444_textures,
-                               settings_.texture_id_allocation_chunk_size,
-                               settings_.use_distance_field_text);
+                               settings_.texture_id_allocation_chunk_size);
 
   if (output_surface_->capabilities().deferred_gl_initialization)
     EnforceZeroBudget(true);

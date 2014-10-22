@@ -209,8 +209,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
                                  NULL,
                                  0,
                                  false,
-                                 1,
-                                 false);
+                                 1);
 
     FakePictureLayerTilingClient client(resource_provider.get());
     client.SetTileSize(gfx::Size(256, 256));

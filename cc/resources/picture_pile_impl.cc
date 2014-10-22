@@ -28,11 +28,13 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromOther(
   return make_scoped_refptr(new PicturePileImpl(other));
 }
 
-PicturePileImpl::PicturePileImpl() {
+PicturePileImpl::PicturePileImpl()
+    : likely_to_be_used_for_transform_animation_(false) {
 }
 
 PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
-    : PicturePileBase(other) {
+    : PicturePileBase(other),
+      likely_to_be_used_for_transform_animation_(false) {
 }
 
 PicturePileImpl::~PicturePileImpl() {

@@ -1262,15 +1262,8 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
   CHECK(output_surface->BindToClient(&output_surface_client));
   TestSharedBitmapManager shared_bitmap_manager;
-  scoped_ptr<ResourceProvider> resource_provider =
-      ResourceProvider::Create(output_surface.get(),
-                               &shared_bitmap_manager,
-                               NULL,
-                               NULL,
-                               0,
-                               false,
-                               1,
-                               false);
+  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
+      output_surface.get(), &shared_bitmap_manager, NULL, NULL, 0, false, 1);
 
   FakePictureLayerTilingClient client(resource_provider.get());
   scoped_ptr<TestablePictureLayerTiling> tiling;

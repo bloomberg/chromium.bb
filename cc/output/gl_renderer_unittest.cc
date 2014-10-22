@@ -159,8 +159,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
     renderer_ = make_scoped_ptr(new FakeRendererGL(&renderer_client_,
                                                    &settings_,
                                                    output_surface_.get(),
@@ -196,8 +195,7 @@ class GLRendererShaderTest : public GLRendererTest {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
     renderer_.reset(new FakeRendererGL(&renderer_client_,
                                        &settings_,
                                        output_surface_.get(),
@@ -470,8 +468,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -511,8 +508,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -551,8 +547,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -604,8 +599,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -650,8 +644,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -736,8 +729,7 @@ TEST_F(GLRendererTest, VisibilityChangeIsLastCall) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -808,8 +800,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -900,8 +891,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   settings.should_clear_root_render_pass = false;
@@ -999,8 +989,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -1098,8 +1087,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   settings.partial_swap_enabled = true;
@@ -1288,8 +1276,7 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
                                NULL,
                                0,
                                false,
-                               1,
-                               false));
+                               1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -1668,8 +1655,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
 
     renderer_.reset(new FakeRendererGL(&renderer_client_,
                                        &settings_,

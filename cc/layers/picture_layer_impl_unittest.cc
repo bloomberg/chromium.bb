@@ -2602,8 +2602,9 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
   static_cast<FakePicturePileImpl*>(pending_layer_->pile())->set_has_text(true);
   static_cast<FakePicturePileImpl*>(active_layer_->pile())->set_has_text(true);
 
-  // Since we're GPU-rasterizing but have text, starting an animation should
-  // cause tiling resolution to get set to the maximum animation scale.
+  // When we're GPU-rasterizing, even if we have text, starting an animation
+  // should cause tiling resolution to get set to the content scale, since we
+  // render animating text at content scale using distance fields.
   animating_transform = true;
   contents_scale = 2.f;
   maximum_animation_scale = 3.f;
@@ -2613,10 +2614,10 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
                                page_scale,
                                maximum_animation_scale,
                                animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
 
-  // Further changes to scale during the animation should not cause a new
-  // high-res tiling to get created.
+  // Further changes to scale during the animation should still cause a new
+  // high-res tiling to get created at content scale.
   contents_scale = 4.f;
   maximum_animation_scale = 5.f;
 
@@ -2625,7 +2626,7 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
                                page_scale,
                                maximum_animation_scale,
                                animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;

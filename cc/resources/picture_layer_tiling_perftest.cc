@@ -40,8 +40,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
   }
 
   virtual void SetUp() override {

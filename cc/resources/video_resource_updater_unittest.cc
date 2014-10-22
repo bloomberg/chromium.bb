@@ -35,8 +35,7 @@ class VideoResourceUpdaterTest : public testing::Test {
                                  NULL,
                                  0,
                                  false,
-                                 1,
-                                 false);
+                                 1);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {

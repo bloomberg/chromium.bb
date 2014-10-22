@@ -1127,8 +1127,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false);
+                                                  1);
 
     aggregator_.reset(
         new SurfaceAggregator(&manager_, resource_provider_.get()));

@@ -262,7 +262,8 @@ class RasterWorkerPoolPerfTest
         raster_worker_pool_ =
             GpuRasterWorkerPool::Create(task_runner_.get(),
                                         context_provider_.get(),
-                                        resource_provider_.get());
+                                        resource_provider_.get(),
+                                        false);
         break;
       case RASTER_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
@@ -406,8 +407,7 @@ class RasterWorkerPoolPerfTest
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
   }
 
   void CreateSoftwareOutputSurfaceAndResourceProvider() {
@@ -420,8 +420,7 @@ class RasterWorkerPoolPerfTest
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false).Pass();
+                                                  1).Pass();
   }
 
   std::string TestModifierString() const {
@@ -491,7 +490,7 @@ class RasterWorkerPoolCommonPerfTest : public RasterWorkerPoolPerfTestBase,
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ =
         ResourceProvider::Create(
-            output_surface_.get(), NULL, NULL, NULL, 0, false, 1, false).Pass();
+            output_surface_.get(), NULL, NULL, NULL, 0, false, 1).Pass();
   }
 
   void RunBuildRasterTaskQueueTest(const std::string& test_name,

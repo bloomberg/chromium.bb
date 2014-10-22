@@ -411,8 +411,7 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
-    size_t id_allocation_chunk_size,
-    bool use_distance_field_text) {
+    size_t id_allocation_chunk_size) {
   scoped_ptr<ResourceProvider> resource_provider(
       new ResourceProvider(output_surface,
                            shared_bitmap_manager,
@@ -420,8 +419,7 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
                            blocking_main_thread_task_runner,
                            highp_threshold_min,
                            use_rgba_4444_texture_format,
-                           id_allocation_chunk_size,
-                           use_distance_field_text));
+                           id_allocation_chunk_size));
 
   if (resource_provider->ContextGL())
     resource_provider->InitializeGL();
@@ -995,38 +993,12 @@ void ResourceProvider::UnlockForWriteToGpuMemoryBuffer(ResourceId id) {
   resource->read_lock_fences_enabled = true;
 }
 
-const ResourceProvider::Resource* ResourceProvider::LockForWriteToSkSurface(
-    ResourceId id) {
+void ResourceProvider::LockForWriteToSkSurface(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK_EQ(GLTexture, resource->type);
   DCHECK(CanLockForWrite(id));
 
   resource->locked_for_write = true;
-  if (!resource->sk_surface) {
-    class GrContext* gr_context = GrContext();
-    // TODO(alokp): Implement TestContextProvider::GrContext().
-    if (!gr_context)
-      return resource;
-
-    LazyAllocate(resource);
-
-    GrBackendTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-    desc.fWidth = resource->size.width();
-    desc.fHeight = resource->size.height();
-    desc.fConfig = ToGrPixelConfig(resource->format);
-    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-    desc.fTextureHandle = resource->gl_id;
-    skia::RefPtr<GrTexture> gr_texture =
-        skia::AdoptRef(gr_context->wrapBackendTexture(desc));
-    SkSurface::TextRenderMode text_render_mode =
-        use_distance_field_text_ ? SkSurface::kDistanceField_TextRenderMode
-                                 : SkSurface::kStandard_TextRenderMode;
-    resource->sk_surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
-        gr_texture->asRenderTarget(), text_render_mode));
-  }
-
-  return resource;
 }
 
 void ResourceProvider::UnlockForWriteToSkSurface(ResourceId id) {
@@ -1141,14 +1113,47 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
 ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
     ResourceProvider* resource_provider,
     ResourceProvider::ResourceId resource_id)
-    : resource_provider_(resource_provider),
-      resource_id_(resource_id),
-      sk_surface_(resource_provider->LockForWriteToSkSurface(resource_id)
-                      ->sk_surface.get()) {
+    : resource_provider_(resource_provider), resource_id_(resource_id) {
+  resource_provider->LockForWriteToSkSurface(resource_id);
 }
 
 ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
   resource_provider_->UnlockForWriteToSkSurface(resource_id_);
+}
+
+SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
+    bool use_distance_field_text) {
+  Resource* resource = resource_provider_->GetResource(resource_id_);
+  DCHECK(resource->locked_for_write);
+
+  // If the surface doesn't exist, or doesn't have the correct dff setting,
+  // recreate the surface within the resource.
+  if (!resource->sk_surface ||
+      use_distance_field_text !=
+          resource->sk_surface->props().isUseDistanceFieldFonts()) {
+    class GrContext* gr_context = resource_provider_->GrContext();
+    // TODO(alokp): Implement TestContextProvider::GrContext().
+    if (!gr_context)
+      return nullptr;
+
+    resource_provider_->LazyAllocate(resource);
+
+    GrBackendTextureDesc desc;
+    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+    desc.fWidth = resource->size.width();
+    desc.fHeight = resource->size.height();
+    desc.fConfig = ToGrPixelConfig(resource->format);
+    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+    desc.fTextureHandle = resource->gl_id;
+    skia::RefPtr<GrTexture> gr_texture =
+        skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+    SkSurface::TextRenderMode text_render_mode =
+        use_distance_field_text ? SkSurface::kDistanceField_TextRenderMode
+                                : SkSurface::kStandard_TextRenderMode;
+    resource->sk_surface = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
+        gr_texture->asRenderTarget(), text_render_mode));
+  }
+  return resource->sk_surface.get();
 }
 
 ResourceProvider::ResourceProvider(
@@ -1158,8 +1163,7 @@ ResourceProvider::ResourceProvider(
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
-    size_t id_allocation_chunk_size,
-    bool use_distance_field_text)
+    size_t id_allocation_chunk_size)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
@@ -1177,8 +1181,7 @@ ResourceProvider::ResourceProvider(
       best_texture_format_(RGBA_8888),
       use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
       id_allocation_chunk_size_(id_allocation_chunk_size),
-      use_sync_query_(false),
-      use_distance_field_text_(use_distance_field_text) {
+      use_sync_query_(false) {
   DCHECK(output_surface_->HasClient());
   DCHECK(id_allocation_chunk_size_);
 }

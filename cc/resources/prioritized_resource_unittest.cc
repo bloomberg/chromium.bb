@@ -34,8 +34,7 @@ class PrioritizedResourceTest : public testing::Test {
                                                   NULL,
                                                   0,
                                                   false,
-                                                  1,
-                                                  false);
+                                                  1);
   }
 
   virtual ~PrioritizedResourceTest() {

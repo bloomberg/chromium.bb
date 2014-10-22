@@ -26,17 +26,25 @@ class RasterBufferImpl : public RasterBuffer {
  public:
   RasterBufferImpl(ResourceProvider* resource_provider,
                    const Resource* resource,
-                   SkMultiPictureDraw* multi_picture_draw)
+                   SkMultiPictureDraw* multi_picture_draw,
+                   bool use_distance_field_text)
       : lock_(resource_provider, resource->id()),
         resource_(resource),
-        multi_picture_draw_(multi_picture_draw) {}
+        multi_picture_draw_(multi_picture_draw),
+        use_distance_field_text_(use_distance_field_text) {}
 
   // Overridden from RasterBuffer:
   void Playback(const PicturePileImpl* picture_pile,
                 const gfx::Rect& rect,
                 float scale,
                 RenderingStatsInstrumentation* stats) override {
-    if (!lock_.sk_surface())
+    // Turn on distance fields for layers that have ever animated.
+    bool use_distance_field_text =
+        use_distance_field_text_ ||
+        picture_pile->likely_to_be_used_for_transform_animation();
+    SkSurface* sk_surface = lock_.GetSkSurface(use_distance_field_text);
+
+    if (!sk_surface)
       return;
 
     SkPictureRecorder recorder;
@@ -50,13 +58,14 @@ class RasterBufferImpl : public RasterBuffer {
 
     // Add the canvas and recorded picture to |multi_picture_draw_|.
     skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
-    multi_picture_draw_->add(lock_.sk_surface()->getCanvas(), picture.get());
+    multi_picture_draw_->add(sk_surface->getCanvas(), picture.get());
   }
 
  private:
   ResourceProvider::ScopedWriteLockGr lock_;
   const Resource* resource_;
   SkMultiPictureDraw* multi_picture_draw_;
+  bool use_distance_field_text_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };
@@ -67,20 +76,26 @@ class RasterBufferImpl : public RasterBuffer {
 scoped_ptr<RasterWorkerPool> GpuRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     ContextProvider* context_provider,
-    ResourceProvider* resource_provider) {
-  return make_scoped_ptr<RasterWorkerPool>(new GpuRasterWorkerPool(
-      task_runner, context_provider, resource_provider));
+    ResourceProvider* resource_provider,
+    bool use_distance_field_text) {
+  return make_scoped_ptr<RasterWorkerPool>(
+      new GpuRasterWorkerPool(task_runner,
+                              context_provider,
+                              resource_provider,
+                              use_distance_field_text));
 }
 
 GpuRasterWorkerPool::GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
                                          ContextProvider* context_provider,
-                                         ResourceProvider* resource_provider)
+                                         ResourceProvider* resource_provider,
+                                         bool use_distance_field_text)
     : task_runner_(task_runner),
       task_graph_runner_(new TaskGraphRunner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
       context_provider_(context_provider),
       resource_provider_(resource_provider),
       run_tasks_on_origin_thread_pending_(false),
+      use_distance_field_text_(use_distance_field_text),
       raster_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   DCHECK(context_provider_);
@@ -190,7 +205,10 @@ void GpuRasterWorkerPool::CheckForCompletedTasks() {
 scoped_ptr<RasterBuffer> GpuRasterWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
   return make_scoped_ptr<RasterBuffer>(
-      new RasterBufferImpl(resource_provider_, resource, &multi_picture_draw_));
+      new RasterBufferImpl(resource_provider_,
+                           resource,
+                           &multi_picture_draw_,
+                           use_distance_field_text_));
 }
 
 void GpuRasterWorkerPool::ReleaseBufferForRaster(
