@@ -3881,6 +3881,9 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     if (isNewNavigation && !isNavigationWithinPage)
         m_pageScaleConstraintsSet.setNeedsReset(true);
 
+    // Give the pinch viewport's scroll layer its initial size.
+    page()->frameHost().pinchViewport().mainFrameDidChangeSize();
+
     // Make sure link highlight from previous page is cleared.
     m_linkHighlights.clear();
     endActiveFlingAnimation();

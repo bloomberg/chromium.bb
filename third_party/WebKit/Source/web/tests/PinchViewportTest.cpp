@@ -584,6 +584,39 @@ TEST_F(PinchViewportTest, TestFrameViewSizedToMinimumScale)
         webViewImpl()->mainFrameImpl()->frameView()->frameRect().size());
 }
 
+// Test that attaching a new frame view resets the size of the inner viewport scroll
+// layer. crbug.com/423189.
+TEST_F(PinchViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(320, 240));
+
+    // Load a wider page first, the navigation should resize the scroll layer to
+    // the smaller size on the second navigation.
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+    webViewImpl()->layout();
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    pinchViewport.setScale(2);
+    pinchViewport.move(FloatPoint(50, 60));
+
+    // Move and scale the viewport to make sure it gets reset in the navigation.
+    EXPECT_POINT_EQ(FloatPoint(50, 60), pinchViewport.location());
+    EXPECT_EQ(2, pinchViewport.scale());
+
+    // Navigate again, this time the FrameView should be smaller.
+    registerMockedHttpURLLoad("viewport-device-width.html");
+    navigateTo(m_baseURL + "viewport-device-width.html");
+
+    // Ensure the scroll layer matches the frame view's size.
+    EXPECT_SIZE_EQ(FloatSize(320, 240), pinchViewport.scrollLayer()->size());
+
+    // Ensure the location and scale were reset.
+    EXPECT_POINT_EQ(FloatPoint(), pinchViewport.location());
+    EXPECT_EQ(1, pinchViewport.scale());
+}
+
 // The main FrameView's size should be set such that its the size of the pinch viewport
 // at minimum scale. Test that the FrameView is appropriately sized in the presence
 // of a viewport <meta> tag.
