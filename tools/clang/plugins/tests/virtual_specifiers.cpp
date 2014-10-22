@@ -61,3 +61,33 @@ class OverrideAndFinal : public Base {
   ~OverrideAndFinal() OVERRIDE FINAL {}
   void F() OVERRIDE FINAL {}
 };
+
+// Finally, some simple sanity tests that overrides in the testing namespace
+// don't trigger warnings, except for testing::Test.
+namespace testing {
+
+class Test {
+ public:
+  virtual ~Test();
+  virtual void SetUp();
+};
+
+class NotTest {
+ public:
+  virtual ~NotTest();
+  virtual void SetUp();
+};
+
+}  // namespace
+
+class MyTest : public testing::Test {
+ public:
+  virtual ~MyTest();
+  virtual void SetUp() override;
+};
+
+class MyNotTest : public testing::NotTest {
+ public:
+  virtual ~MyNotTest();
+  virtual void SetUp() override;
+};

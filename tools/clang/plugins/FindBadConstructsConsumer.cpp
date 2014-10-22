@@ -66,6 +66,10 @@ const Type* UnwrapType(const Type* type) {
   return type;
 }
 
+bool IsGtestTestFixture(const CXXRecordDecl* decl) {
+  return decl->getQualifiedNameAsString() == "testing::Test";
+}
+
 FixItHint FixItRemovalForVirtual(const SourceManager& manager,
                                  const CXXMethodDecl* method) {
   // Unfortunately, there doesn't seem to be a good way to determine the
@@ -294,7 +298,12 @@ bool FindBadConstructsConsumer::IsMethodInBannedOrTestingNamespace(
        ++i) {
     const CXXMethodDecl* overridden = *i;
     if (IsMethodInBannedOrTestingNamespace(overridden) ||
-        InTestingNamespace(overridden)) {
+        // Provide an exception for ::testing::Test. gtest itself uses some
+        // magic to try to make sure SetUp()/TearDown() aren't capitalized
+        // incorrectly, but having the plugin enforce override is also nice.
+        (InTestingNamespace(overridden) &&
+         (!options_.strict_virtual_specifiers ||
+          !IsGtestTestFixture(overridden->getParent())))) {
       return true;
     }
   }
