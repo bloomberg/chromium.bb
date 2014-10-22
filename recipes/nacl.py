@@ -16,18 +16,17 @@ class NaCl(recipe_util.Recipe):
   def fetch_spec(props):
     url = ('https://chromium.googlesource.com/native_client/'
            'src/native_client.git')
-    solution = { 'name'   :'native_client',
-                 'url'    : url,
-                 'deps_file': '.DEPS.git',
-                 'managed'   : False,
-                 'custom_deps': {},
-                 'safesync_url': '',
+    solution = {
+        'name'        : 'native_client',
+        'url'         : url,
+        'deps_file'   : '.DEPS.git',
+        'managed'     : False,
+        'custom_deps' : {},
+        'safesync_url': '',
     }
     spec = {
       'solutions': [solution],
-      'svn_url': 'svn://svn.chromium.org/native_client',
-      'svn_branch': 'trunk/src/native_client',
-      'svn_ref': 'master',
+      'auto': True
     }
     if props.get('submodule_git_svn_spec'):
       spec['submodule_git_svn_spec'] = props['submodule_git_svn_spec']

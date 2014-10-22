@@ -17,9 +17,7 @@ class Blink(recipe_util.Recipe):
   def fetch_spec(props):
     submodule_spec = {
       'third_party/WebKit': {
-        'svn_url': 'svn://svn.chromium.org/blink/trunk',
-        'svn_branch': 'trunk',
-        'svn_ref': 'master',
+        'auto': True,
       }
     }
     return {

@@ -139,20 +139,18 @@ class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
 
   def __init__(self, options, spec, root):
     super(GclientGitSvnCheckout, self).__init__(options, spec, root)
-    assert 'svn_url' in self.spec
-    assert 'svn_branch' in self.spec
-    assert 'svn_ref' in self.spec
 
   def init(self):
     # Ensure we are authenticated with subversion for all submodules.
     git_svn_dirs = json.loads(self.spec.get('submodule_git_svn_spec', '{}'))
     git_svn_dirs.update({self.root: self.spec})
     for _, svn_spec in git_svn_dirs.iteritems():
-      try:
-        self.run_svn('ls', '--non-interactive', svn_spec['svn_url'])
-      except subprocess.CalledProcessError:
-        print 'Please run `svn ls %s`' % svn_spec['svn_url']
-        return 1
+      if svn_spec.get('svn_url'):
+        try:
+          self.run_svn('ls', '--non-interactive', svn_spec['svn_url'])
+        except subprocess.CalledProcessError:
+          print 'Please run `svn ls %s`' % svn_spec['svn_url']
+          return 1
 
     super(GclientGitSvnCheckout, self).init()
 
@@ -164,12 +162,17 @@ class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
       wd = os.path.join(self.base, real_path)
       if self.options.dry_run:
         print 'cd %s' % wd
-      prefix = svn_spec.get('svn_prefix', 'origin/')
-      self.run_git('svn', 'init', '--prefix=' + prefix, '-T',
-                   svn_spec['svn_branch'], svn_spec['svn_url'], cwd=wd)
-      self.run_git('config', '--replace', 'svn-remote.svn.fetch',
-                   svn_spec['svn_branch'] + ':refs/remotes/' + prefix +
-                   svn_spec['svn_ref'], cwd=wd)
+      if svn_spec.get('auto'):
+        self.run_git('auto-svn', cwd=wd)
+        continue
+      self.run_git('svn', 'init', svn_spec['svn_url'], cwd=wd)
+      self.run_git('config', '--unset-all', 'svn-remote.svn.fetch', cwd=wd)
+      for svn_branch, git_ref in svn_spec.get('git_svn_fetch', {}).items():
+        self.run_git('config', '--add', 'svn-remote.svn.fetch',
+                     '%s:%s' % (svn_branch, git_ref), cwd=wd)
+      for svn_branch, git_ref in svn_spec.get('git_svn_branches', {}).items():
+        self.run_git('config', '--add', 'svn-remote.svn.branches',
+                     '%s:%s' % (svn_branch, git_ref), cwd=wd)
       self.run_git('svn', 'fetch', cwd=wd)
 
 

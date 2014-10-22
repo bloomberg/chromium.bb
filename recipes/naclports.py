@@ -15,12 +15,13 @@ class Naclports(recipe_util.Recipe):
   @staticmethod
   def fetch_spec(props):
     url = 'https://chromium.googlesource.com/external/naclports.git'
-    solution = { 'name'   :'src',
-                 'url'    : url,
-                 'deps_file': 'DEPS',
-                 'managed'   : False,
-                 'custom_deps': {},
-                 'safesync_url': '',
+    solution = {
+        'name'        : 'src',
+        'url'         : url,
+        'deps_file'   : 'DEPS',
+        'managed'     : False,
+        'custom_deps' : {},
+        'safesync_url': '',
     }
     spec = {
       'solutions': [solution],

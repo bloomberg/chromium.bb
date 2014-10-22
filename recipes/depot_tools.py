@@ -15,25 +15,16 @@ class DepotTools(recipe_util.Recipe):
   @staticmethod
   def fetch_spec(props):
     url = 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
-    solution = { 'name'   :'src',
-                 'url'    : url,
-                 'deps_file': '.DEPS.git',
-                 'managed'   : False,
-                 'custom_deps': {},
-                 'safesync_url': '',
+    solution = {
+        'name'        : 'depot_tools',
+        'url'         : url,
+        'deps_file'   : 'DEPS',
+        'managed'     : False,
     }
     spec = {
       'solutions': [solution],
-      'svn_url': 'svn://svn.chromium.org/chrome',
-      'svn_branch': 'trunk/tools/depot_tools',
-      'svn_ref': 'master',
+      'auto': True,
     }
-    if props.get('submodule_git_svn_spec'):
-      spec['submodule_git_svn_spec'] = props['submodule_git_svn_spec']
-    if props.get('target_os'):
-      spec['target_os'] = props['target_os'].split(',')
-    if props.get('target_os_only'):
-      spec['target_os_only'] = props['target_os_only']
     checkout_type = 'gclient_git_svn'
     if props.get('nosvn'):
       checkout_type = 'gclient_git'
@@ -45,7 +36,7 @@ class DepotTools(recipe_util.Recipe):
 
   @staticmethod
   def expected_root(_props):
-    return 'src'
+    return 'depot_tools'
 
 
 def main(argv=None):

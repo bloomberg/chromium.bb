@@ -31,11 +31,9 @@ class Chromium(recipe_util.Recipe):
       spec['target_os'] = props['target_os'].split(',')
     if props.get('target_os_only'):
       spec['target_os_only'] = props['target_os_only']
-    checkout_type = 'gclient_git'
-    spec_type = '%s_spec' % checkout_type
     return {
-      'type': checkout_type,
-      spec_type: spec,
+      'type': 'gclient_git',
+      'gclient_git_spec': spec,
     }
 
   @staticmethod
