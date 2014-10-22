@@ -81,7 +81,7 @@ class ChannelReflectorListener : public Listener {
     VLOG(1) << "Client listener up";
   }
 
-  virtual ~ChannelReflectorListener() {
+  ~ChannelReflectorListener() override {
     VLOG(1) << "Client listener down";
     latency_tracker_.ShowResults();
   }
@@ -91,7 +91,7 @@ class ChannelReflectorListener : public Listener {
     channel_ = channel;
   }
 
-  virtual bool OnMessageReceived(const Message& message) override {
+  bool OnMessageReceived(const Message& message) override {
     CHECK(channel_);
 
     PickleIterator iter(message);
@@ -142,7 +142,7 @@ class PerformanceChannelListener : public Listener {
     VLOG(1) << "Server listener up";
   }
 
-  virtual ~PerformanceChannelListener() {
+  ~PerformanceChannelListener() override {
     VLOG(1) << "Server listener down";
   }
 
@@ -160,7 +160,7 @@ class PerformanceChannelListener : public Listener {
     payload_ = std::string(msg_size_, 'a');
   }
 
-  virtual bool OnMessageReceived(const Message& message) override {
+  bool OnMessageReceived(const Message& message) override {
     CHECK(sender_);
 
     PickleIterator iter(message);

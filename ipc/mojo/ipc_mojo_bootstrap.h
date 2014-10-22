@@ -41,7 +41,7 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
                                           Delegate* delegate);
 
   MojoBootstrap();
-  virtual ~MojoBootstrap();
+  ~MojoBootstrap() override;
 
   // Start the handshake over the underlying platform channel.
   bool Connect();
@@ -69,8 +69,8 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
   void Init(scoped_ptr<Channel> channel, Delegate* delegate);
 
   // Listener implementations
-  virtual void OnBadMessageReceived(const Message& message) override;
-  virtual void OnChannelError() override;
+  void OnBadMessageReceived(const Message& message) override;
+  void OnChannelError() override;
 
   scoped_ptr<Channel> channel_;
   Delegate* delegate_;

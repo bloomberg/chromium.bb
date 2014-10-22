@@ -146,9 +146,9 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
 class ChannelListenerWithOnConnectedSend : public IPC::TestChannelListener {
  public:
   ChannelListenerWithOnConnectedSend() {}
-  virtual ~ChannelListenerWithOnConnectedSend() {}
+  ~ChannelListenerWithOnConnectedSend() override {}
 
-  virtual void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32 peer_pid) override {
     SendNextMessage();
   }
 };
