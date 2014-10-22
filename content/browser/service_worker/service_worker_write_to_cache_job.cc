@@ -307,7 +307,7 @@ void ServiceWorkerWriteToCacheJob::OnCertificateRequested(
       net::URLRequestStatus::FAILED, net::ERR_FAILED));
 }
 
-void ServiceWorkerWriteToCacheJob:: OnSSLCertificateError(
+void ServiceWorkerWriteToCacheJob::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,
     bool fatal) {
@@ -317,7 +317,7 @@ void ServiceWorkerWriteToCacheJob:: OnSSLCertificateError(
   // TODO(michaeln): Pass this thru to our jobs client,
   // see NotifySSLCertificateError.
   AsyncNotifyDoneHelper(net::URLRequestStatus(
-      net::URLRequestStatus::FAILED, net::ERR_FAILED));
+      net::URLRequestStatus::FAILED, net::ERR_INSECURE_RESPONSE));
 }
 
 void ServiceWorkerWriteToCacheJob::OnBeforeNetworkStart(
@@ -341,6 +341,13 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
         net::URLRequestStatus::FAILED, net::ERR_FAILED));
     // TODO(michaeln): Instead of error'ing immediately, send the net
     // response to our consumer, just don't cache it?
+    return;
+  }
+  // OnSSLCertificateError is not called when the HTTPS connection is reused.
+  // So we check cert_status here.
+  if (net::IsCertStatusError(request->ssl_info().cert_status)) {
+    AsyncNotifyDoneHelper(net::URLRequestStatus(
+        net::URLRequestStatus::FAILED, net::ERR_INSECURE_RESPONSE));
     return;
   }
   // To prevent most user-uploaded content from being used as a serviceworker.
