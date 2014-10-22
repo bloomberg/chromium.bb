@@ -207,9 +207,21 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   // textFieldDidChange posts a task, so we need to wait until it's been
   // processed.
   base::MessageLoop::current()->RunUntilIdle();
-
   EXPECT_EQ(edited_password, first_password_element.value());
   EXPECT_EQ(edited_password, second_password_element.value());
+
+  // Verify that password mirroring works correctly even when the password
+  // is deleted.
+  base::string16 empty_password;
+  first_password_element.setValue(empty_password);
+  // Cast to WebAutofillClient where textFieldDidChange() is public.
+  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
+      first_password_element);
+  // textFieldDidChange posts a task, so we need to wait until it's been
+  // processed.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(empty_password, first_password_element.value());
+  EXPECT_EQ(empty_password, second_password_element.value());
 }
 
 TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
