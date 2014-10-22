@@ -225,7 +225,7 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
 
 /**
  * Decorates the element.
- * @param {HTMLElement} self Table to decorate.
+ * @param {!Element} self Table to decorate.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager To retrieve volume info.
  * @param {boolean} fullPage True if it's full page File Manager,
@@ -590,7 +590,8 @@ FileTable.prototype.renderType_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.renderDate_ = function(entry, columnId, table) {
-  var div = this.ownerDocument.createElement('div');
+  var div = /** @type {!HTMLDivElement} */
+      (this.ownerDocument.createElement('div'));
   div.className = 'date';
 
   this.updateDate_(div, entry);

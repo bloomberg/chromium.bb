@@ -49,14 +49,14 @@ function ProgressCenterItemElement(document) {
  * @private
  */
 ProgressCenterItemElement.safelySetAnimation_ = function(callback) {
-  var requestId = requestAnimationFrame(function() {
+  var requestId = window.requestAnimationFrame(function() {
     // The transition start properties currently set are rendered at this frame.
     // And the transition end properties set by the callback is rendered at the
     // next frame.
-    requestId = requestAnimationFrame(callback);
+    requestId = window.requestAnimationFrame(callback);
   });
   return function() {
-    cancelAnimationFrame(requestId);
+    window.cancelAnimationFrame(requestId);
   };
 };
 
@@ -168,13 +168,13 @@ ProgressCenterItemElement.prototype.onTransitionEnd_ = function(event) {
 /**
  * Progress center panel.
  *
- * @param {HTMLElement} element DOM Element of the process center panel.
+ * @param {!Element} element DOM Element of the process center panel.
  * @constructor
  */
 function ProgressCenterPanel(element) {
   /**
    * Root element of the progress center.
-   * @type {Element}
+   * @type {!Element}
    * @private
    */
   this.element_ = element;

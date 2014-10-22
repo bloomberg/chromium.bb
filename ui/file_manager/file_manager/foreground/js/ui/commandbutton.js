@@ -60,7 +60,8 @@ CommandButton.prototype.setCommand = function(command) {
                                       /** @type {EventListener} */ (this));
   }
 
-  if (typeof command == 'string' && command[0] == '#') {
+  if (typeof command == 'string') {
+    assert(command[0] == '#');
     command = /** @type {!cr.ui.Command} */
         (this.ownerDocument.getElementById(command.slice(1)));
     cr.ui.decorate(command, cr.ui.Command);

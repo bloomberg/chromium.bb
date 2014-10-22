@@ -274,7 +274,8 @@ DirectoryModel.prototype.setSelectedEntries_ = function(value) {
  */
 DirectoryModel.prototype.getLeadEntry_ = function() {
   var index = this.fileListSelection_.leadIndex;
-  return index >= 0 && this.getFileList().item(index);
+  return index >= 0 ?
+      /** @type {Entry} */ (this.getFileList().item(index)) : null;
 };
 
 /**

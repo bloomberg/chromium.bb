@@ -30,7 +30,7 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
   while (this.entries_[index]) {
     var currentEntry = this.entries_[index];
     var currentElement = this.items[index];
-    var label = util.getEntryLabel(tree.volumeManager_, currentEntry);
+    var label = util.getEntryLabel(tree.volumeManager_, currentEntry) || '';
 
     if (index >= this.items.length) {
       var item = new DirectoryItem(label, currentEntry, this, tree);
@@ -532,7 +532,7 @@ VolumeItem.prototype.updateSubDirectories = function(recursive) {
 
     for (var i = 0; i < entries.length; i++) {
       var item = new DirectoryItem(
-          util.getEntryLabel(this.parentTree_.volumeManager_, entries[i]),
+          util.getEntryLabel(this.parentTree_.volumeManager_, entries[i]) || '',
           entries[i], this, this.parentTree_);
       this.add(item);
       item.updateSubDirectories(false);

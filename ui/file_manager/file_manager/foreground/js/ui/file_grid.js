@@ -32,7 +32,7 @@ FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
 
 /**
  * Decorates an HTML element to be a FileGrid.
- * @param {HTMLElement} self The grid to decorate.
+ * @param {!Element} self The grid to decorate.
  * @param {MetadataCache} metadataCache Metadata cache to find entries
  *                                      metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
@@ -227,6 +227,7 @@ Object.defineProperty(FileGrid.Item.prototype, 'label', {
  */
 FileGrid.Item.decorate = function(li, entry, grid) {
   li.__proto__ = FileGrid.Item.prototype;
+  li = /** @type {!FileGrid.Item} */ (li);
   // TODO(mtomasz): Pass the metadata cache and the volume manager directly
   // instead of accessing private members of grid.
   FileGrid.decorateThumbnail(

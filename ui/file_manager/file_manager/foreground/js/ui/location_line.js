@@ -8,8 +8,8 @@
  * TODO(hirono): Remove metadataCache and volumeManager dependencies from the UI
  * class.
  * @extends {cr.EventTarget}
- * @param {HTMLElement} breadcrumbs Container element for breadcrumbs.
- * @param {HTMLElement} volumeIcon Volume icon.
+ * @param {!Element} breadcrumbs Container element for breadcrumbs.
+ * @param {!Element} volumeIcon Volume icon.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor

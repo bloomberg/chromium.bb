@@ -232,29 +232,8 @@ function FileManager() {
   // Menus.
 
   /**
-   * Context menu for files.
-   * @type {HTMLMenuElement}
-   * @private
-   */
-  this.fileContextMenu_ = null;
-
-  /**
-   * Context menu for volumes or shortcuts displayed on left pane.
-   * @type {HTMLMenuElement}
-   * @private
-   */
-  this.rootsContextMenu_ = null;
-
-  /**
-   * Context menu for directory tree items.
-   * @type {HTMLMenuElement}
-   * @private
-   */
-  this.directoryTreeContextMenu_ = null;
-
-  /**
    * Context menu for texts.
-   * @type {HTMLMenuElement}
+   * @type {cr.ui.Menu}
    * @private
    */
   this.textContextMenu_ = null;
@@ -304,7 +283,7 @@ function FileManager() {
 
   /**
    * The button to open gear menu.
-   * @type {HTMLButtonElement}
+   * @type {cr.ui.MenuButton}
    * @private
    */
   this.gearButton_ = null;
@@ -997,37 +976,53 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initContextMenus_ = function() {
-    this.fileContextMenu_ = this.dialogDom_.querySelector('#file-context-menu');
-    cr.ui.Menu.decorate(this.fileContextMenu_);
+    assert(this.grid_);
+    assert(this.table_);
+    assert(this.document_);
+    assert(this.dialogDom_);
 
-    cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
-    cr.ui.contextMenuHandler.setContextMenu(this.table_.querySelector('.list'),
-        this.fileContextMenu_);
+    // Set up the context menu for the file list.
+    var fileContextMenu = queryRequiredElement(
+        this.dialogDom_, '#file-context-menu');
+    cr.ui.Menu.decorate(fileContextMenu);
+    fileContextMenu = /** @type {!cr.ui.Menu} */ (fileContextMenu);
+
+    cr.ui.contextMenuHandler.setContextMenu(this.grid_, fileContextMenu);
     cr.ui.contextMenuHandler.setContextMenu(
-        this.document_.querySelector('.drive-welcome.page'),
-        this.fileContextMenu_);
+        queryRequiredElement(this.table_, '.list'), fileContextMenu);
+    cr.ui.contextMenuHandler.setContextMenu(
+        queryRequiredElement(this.document_, '.drive-welcome.page'),
+        fileContextMenu);
 
-    this.rootsContextMenu_ =
-        this.dialogDom_.querySelector('#roots-context-menu');
-    cr.ui.Menu.decorate(this.rootsContextMenu_);
-    this.directoryTree_.contextMenuForRootItems = this.rootsContextMenu_;
+    // Set up the context menu for the volume/shortcut items in directory tree.
+    var rootsContextMenu = queryRequiredElement(
+        this.dialogDom_, '#roots-context-menu');
+    cr.ui.Menu.decorate(rootsContextMenu);
+    rootsContextMenu = /** @type {!cr.ui.Menu} */ (rootsContextMenu);
 
-    this.directoryTreeContextMenu_ =
-        this.dialogDom_.querySelector('#directory-tree-context-menu');
-    cr.ui.Menu.decorate(this.directoryTreeContextMenu_);
-    this.directoryTree_.contextMenuForSubitems = this.directoryTreeContextMenu_;
+    this.directoryTree_.contextMenuForRootItems = rootsContextMenu;
 
-    this.textContextMenu_ =
-        this.dialogDom_.querySelector('#text-context-menu');
-    cr.ui.Menu.decorate(this.textContextMenu_);
+    // Set up the context menu for the folder items in directory tree.
+    var directoryTreeContextMenu = queryRequiredElement(
+        this.dialogDom_, '#directory-tree-context-menu');
+    cr.ui.Menu.decorate(directoryTreeContextMenu);
+    directoryTreeContextMenu =
+        /** @type {!cr.ui.Menu} */ (directoryTreeContextMenu);
 
-    this.gearButton_ = this.dialogDom_.querySelector('#gear-button');
-    this.gearButton_.addEventListener('menushow',
-        this.onShowGearMenu_.bind(this));
+    this.directoryTree_.contextMenuForSubitems = directoryTreeContextMenu;
 
+    // Set up the context menu for the text editing.
+    var textContextMenu = queryRequiredElement(
+        this.dialogDom_, '#text-context-menu');
+    cr.ui.Menu.decorate(textContextMenu);
+    this.textContextMenu_ = /** @type {!cr.ui.Menu} */ (textContextMenu);
+
+    var gearButton = queryRequiredElement(this.dialogDom_, '#gear-button');
+    gearButton.addEventListener('menushow', this.onShowGearMenu_.bind(this));
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
         'menuitem, hr';
-    cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
+    cr.ui.decorate(gearButton, cr.ui.MenuButton);
+    this.gearButton_ = /** @type {!cr.ui.MenuButton} */ (gearButton);
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -1068,6 +1063,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initCommands_ = function() {
+    assert(this.textContextMenu_);
+    assert(this.renameInput_);
+
     this.commandHandler = new CommandHandler(this);
 
     // TODO(hirono): Move the following block to the UI part.
@@ -1303,22 +1301,28 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;
 
-    this.filenameInput_ = dom.querySelector('#filename-input-box input');
-    this.taskItems_ = dom.querySelector('#tasks');
+    var filenameInput = queryRequiredElement(dom, '#filename-input-box input');
+    this.filenameInput_ = /** @type {HTMLInputElement} */ (filenameInput);
 
-    this.table_ = dom.querySelector('.detail-table');
-    this.grid_ = dom.querySelector('.thumbnail-grid');
-    this.spinner_ = dom.querySelector('#list-container > .spinner-layer');
+    var taskItems = queryRequiredElement(dom, '#tasks');
+    this.taskItems_ = /** @type {HTMLButtonElement} */ (taskItems);
+
+    var spinner = queryRequiredElement(dom, '#list-container > .spinner-layer');
+    this.spinner_ = /** @type {HTMLDivElement} */ (spinner);
     this.showSpinner_(true);
 
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
+    var table = queryRequiredElement(dom, '.detail-table');
+    var grid = queryRequiredElement(dom, '.thumbnail-grid');
     FileTable.decorate(
-        this.table_, this.metadataCache_, this.volumeManager_, fullPage);
-    FileGrid.decorate(this.grid_, this.metadataCache_, this.volumeManager_);
+        table, this.metadataCache_, this.volumeManager_, fullPage);
+    FileGrid.decorate(grid, this.metadataCache_, this.volumeManager_);
+    this.table_ = /** @type {!FileTable} */ (table);
+    this.grid_ = /** @type {!FileGrid} */ (grid);
 
     this.ui_.locationLine = new LocationLine(
-        dom.querySelector('#location-breadcrumbs'),
-        dom.querySelector('#location-volume-icon'),
+        queryRequiredElement(dom, '#location-breadcrumbs'),
+        queryRequiredElement(dom, '#location-volume-icon'),
         this.metadataCache_,
         this.volumeManager_);
     this.ui_.locationLine.addEventListener(
@@ -1338,7 +1342,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
-        dom.querySelector('#progress-center'));
+        queryRequiredElement(dom, '#progress-center'));
     this.backgroundPage_.background.progressCenter.addPanel(
         this.progressCenterPanel_);
 

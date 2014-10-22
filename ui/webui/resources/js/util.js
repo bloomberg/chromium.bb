@@ -261,6 +261,21 @@ function getRequiredElement(id) {
                           'Missing required element: ' + id);
 }
 
+/**
+ * Query an element that's known to exist by a selector. We use this instead of
+ * just calling querySelector and not checking the result because this lets us
+ * satisfy the JSCompiler type system.
+ * @param {(!Document|!DocumentFragment|!Element)} context The context object
+ *     for querySelector.
+ * @param {string} selectors CSS selectors to query the element.
+ * @return {!HTMLElement} the Element.
+ */
+function queryRequiredElement(context, selectors) {
+  var element = context.querySelector(selectors);
+  return assertInstanceof(element, HTMLElement,
+                          'Missing required element: ' + selectors);
+}
+
 // Handle click on a link. If the link points to a chrome: or file: url, then
 // call into the browser to do the navigation.
 document.addEventListener('click', function(e) {
