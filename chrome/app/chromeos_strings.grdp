@@ -5073,6 +5073,15 @@ Battery full
   <message name="IDS_LOGIN_CONNECTING_INDICATOR_TEXT" desc="A message to show telling the user that the device is attempting to re-connect to the network.">
     Connecting and verifying<ph name="ANIMATED_ELLIPSIS">$1<ex>...</ex></ph>
   </message>
+  <message name="IDS_DEVICE_DISABLED_HEADING" desc="Heading of the message shown to the user when the device has been disabled by its owner.">
+    Locked
+  </message>
+  <message name="IDS_DEVICE_DISABLED_DEFAULT_MESSAGE" desc="Messsage shown to the user when the device has been disabled by its owner.">
+    Please return this device to its owner.
+  </message>
+  <message name="IDS_DEVICE_DISABLED_EXPLANATION" desc="Explanation shown to the user when the device has been disabled by its owner.">
+    This device was locked by its owner. Only an approved administrator can unlock it. Take this device to Tech Support for assistance.
+  </message>
 
   <!-- Idle warning dialog -->
   <message name="IDS_IDLE_WARNING_TITLE" desc="Title of the warning dialog shown when the user becomes idle and is about to get logged out.">

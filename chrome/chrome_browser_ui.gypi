@@ -964,6 +964,8 @@
       'browser/ui/webui/chromeos/login/core_oobe_handler.h',
       'browser/ui/webui/chromeos/login/demo_mode_detector.cc',
       'browser/ui/webui/chromeos/login/demo_mode_detector.h',
+      'browser/ui/webui/chromeos/login/device_disabled_screen_handler.cc',
+      'browser/ui/webui/chromeos/login/device_disabled_screen_handler.h',
       'browser/ui/webui/chromeos/login/enrollment_screen_handler.cc',
       'browser/ui/webui/chromeos/login/enrollment_screen_handler.h',
       'browser/ui/webui/chromeos/login/error_screen_handler.cc',

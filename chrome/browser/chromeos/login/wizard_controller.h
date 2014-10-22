@@ -158,6 +158,7 @@ class WizardController : public ScreenObserver, public ScreenManager {
   static const char kHIDDetectionScreenName[];
   static const char kControllerPairingScreenName[];
   static const char kHostPairingScreenName[];
+  static const char kDeviceDisabledScreenName[];
 
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
@@ -179,6 +180,7 @@ class WizardController : public ScreenObserver, public ScreenManager {
   void ShowHIDDetectionScreen();
   void ShowControllerPairingScreen();
   void ShowHostPairingScreen();
+  void ShowDeviceDisabledScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);

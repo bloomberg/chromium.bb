@@ -24,6 +24,7 @@ namespace chromeos {
 class AppLaunchSplashScreenActor;
 class BaseScreenHandler;
 class ControllerPairingScreenActor;
+class DeviceDisabledScreenActor;
 class ErrorScreenHandler;
 class HostPairingScreenActor;
 class KioskAppMenuHandler;
@@ -85,6 +86,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenHIDDetection[];
   static const char kScreenControllerPairing[];
   static const char kScreenHostPairing[];
+  static const char kScreenDeviceDisabled[];
 
   OobeUI(content::WebUI* web_ui, const GURL& url);
   virtual ~OobeUI();
@@ -115,6 +117,7 @@ class OobeUI : public OobeDisplay,
   virtual ControllerPairingScreenActor* GetControllerPairingScreenActor()
       override;
   virtual HostPairingScreenActor* GetHostPairingScreenActor() override;
+  DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() override;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -197,6 +200,7 @@ class OobeUI : public OobeDisplay,
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_;
   ControllerPairingScreenActor* controller_pairing_screen_actor_;
   HostPairingScreenActor* host_pairing_screen_actor_;
+  DeviceDisabledScreenActor* device_disabled_screen_actor_;
 
   // Reference to ErrorScreenHandler that handles error screen
   // requests and forward calls from native code to JS side.

@@ -94,6 +94,7 @@ cr.define('cr.ui.Oobe', function() {
       login.FatalErrorScreen.register();
       login.ControllerPairingScreen.register();
       login.HostPairingScreen.register();
+      login.DeviceDisabledScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));

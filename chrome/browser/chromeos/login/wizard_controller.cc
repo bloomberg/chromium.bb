@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
+#include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
@@ -166,6 +167,7 @@ const char WizardController::kHIDDetectionScreenName[] = "hid-detection";
 const char WizardController::kControllerPairingScreenName[] =
     "controller-pairing";
 const char WizardController::kHostPairingScreenName[] = "host-pairing";
+const char WizardController::kDeviceDisabledScreenName[] = "device-disabled";
 
 // static
 const int WizardController::kMinAudibleOutputVolumePercent = 10;
@@ -347,7 +349,11 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new HostPairingScreen(this,
                                  oobe_display_->GetHostPairingScreenActor(),
                                  remora_controller_.get());
+  } else if (screen_name == kDeviceDisabledScreenName) {
+    return new chromeos::DeviceDisabledScreen(
+        this, oobe_display_->GetDeviceDisabledScreenActor());
   }
+
   return NULL;
 }
 
@@ -515,6 +521,12 @@ void WizardController::ShowHostPairingScreen() {
   VLOG(1) << "Showing host pairing screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetScreen(kHostPairingScreenName));
+}
+
+void WizardController::ShowDeviceDisabledScreen() {
+  VLOG(1) << "Showing device disabled screen.";
+  SetStatusAreaVisible(true);
+  SetCurrentScreen(GetScreen(kDeviceDisabledScreenName));
 }
 
 void WizardController::SkipToLoginForTesting(
@@ -894,6 +906,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowControllerPairingScreen();
   } else if (screen_name == kHostPairingScreenName) {
     ShowHostPairingScreen();
+  } else if (screen_name == kDeviceDisabledScreenName) {
+    ShowDeviceDisabledScreen();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();

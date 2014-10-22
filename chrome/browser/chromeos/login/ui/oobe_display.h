@@ -16,6 +16,7 @@ class AppLaunchSplashScreenActor;
 class AutoEnrollmentCheckScreenActor;
 class CoreOobeActor;
 class ControllerPairingScreenActor;
+class DeviceDisabledScreenActor;
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
@@ -60,6 +61,7 @@ class OobeDisplay {
     SCREEN_FATAL_ERROR,
     SCREEN_OOBE_CONTROLLER_PAIRING,
     SCREEN_OOBE_HOST_PAIRING,
+    SCREEN_DEVICE_DISABLED,
     SCREEN_UNKNOWN
   };
 
@@ -87,6 +89,7 @@ class OobeDisplay {
   virtual AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() = 0;
   virtual ControllerPairingScreenActor* GetControllerPairingScreenActor() = 0;
   virtual HostPairingScreenActor* GetHostPairingScreenActor() = 0;
+  virtual DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() = 0;
 
   // Returns if JS side is fully loaded and ready to accept messages.
   // If |false| is returned, then |display_is_ready_callback| is stored
