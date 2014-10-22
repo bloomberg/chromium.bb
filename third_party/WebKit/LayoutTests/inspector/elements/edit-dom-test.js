@@ -1,6 +1,9 @@
 function initialize_EditDOMTests()
 {
 
+// Preload codemirror which is used for "Edit as HTML".
+InspectorTest.preloadPanel("sources");
+
 InspectorTest.doAddAttribute = function(testName, dataNodeId, attributeText, next)
 {
     InspectorTest.domActionTestForNodeId(testName, dataNodeId, testBody, next);
