@@ -94,7 +94,6 @@
 #define IDC_ENCODING_AUTO_DETECT        35500
 #define IDC_ENCODING_UTF8               35501
 #define IDC_ENCODING_UTF16LE            35502
-#define IDC_ENCODING_ISO88591           35503
 #define IDC_ENCODING_WINDOWS1252        35504
 #define IDC_ENCODING_GBK                35505
 #define IDC_ENCODING_GB18030            35506

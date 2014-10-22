@@ -18,7 +18,6 @@
 const int EncodingMenuController::kValidEncodingIds[] = {
     IDC_ENCODING_UTF8,
     IDC_ENCODING_UTF16LE,
-    IDC_ENCODING_ISO88591,
     IDC_ENCODING_WINDOWS1252,
     IDC_ENCODING_GBK,
     IDC_ENCODING_GB18030,

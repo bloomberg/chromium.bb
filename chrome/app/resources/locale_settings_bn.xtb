@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="IDS_ACCEPT_LANGUAGES">bn-IN,bn,en-US,en</translation>
-<translation id="IDS_DEFAULT_ENCODING">ISO-8859-1</translation>
+<translation id="IDS_DEFAULT_ENCODING">windows-1252</translation>
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">en-US</translation>
 <translation id="IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS">350</translation>
@@ -47,7 +47,7 @@
 <translation id="IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES">12</translation>
 <translation id="IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS">70</translation>
 <translation id="IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES">4</translation>
-<translation id="IDS_STATIC_ENCODING_LIST">ISO-8859-1,windows-1252</translation>
+<translation id="IDS_STATIC_ENCODING_LIST">windows-1252</translation>
 <translation id="IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS">150</translation>
 <translation id="IDS_BOOKMARK_MANAGER_DIALOG_HEIGHT_LINES">40</translation>
 <translation id="IDS_DOWNLOAD_BIG_PROGRESS_SIZE">52</translation>

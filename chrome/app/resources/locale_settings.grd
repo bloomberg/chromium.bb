@@ -241,7 +241,7 @@
 
       <!-- The default value for |WebPreference::default_encoding|. -->
       <message name="IDS_DEFAULT_ENCODING" use_name_for_id="true">
-        ISO-8859-1
+        windows-1252
       </message>
 
       <!-- The default value for |WebPreference::uses_universal_detector|. -->
@@ -317,7 +317,7 @@
 
       <!-- Locale-dependent static encodings string -->
       <message name="IDS_STATIC_ENCODING_LIST" use_name_for_id="true">
-        ISO-8859-1,windows-1252
+        windows-1252
       </message>
 
       <!-- The URL for the the Welcome to Chrome page shown on first run. -->

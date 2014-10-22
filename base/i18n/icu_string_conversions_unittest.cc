@@ -343,7 +343,8 @@ static const struct {
   {"foo-\xe4.html", "iso-8859-1", true, "foo-\xc3\xa4.html"},
   {"foo-\xe4.html", "iso-8859-7", true, "foo-\xce\xb4.html"},
   {"foo-\xe4.html", "foo-bar", false, ""},
-  {"foo-\xff.html", "ascii", false, ""},
+  // HTML Encoding spec treats US-ASCII as synonymous with windows-1252
+  {"foo-\xff.html", "ascii", true, "foo-\xc3\xbf.html"},
   {"foo.html", "ascii", true, "foo.html"},
   {"foo-a\xcc\x88.html", "utf-8", true, "foo-\xc3\xa4.html"},
   {"\x95\x32\x82\x36\xD2\xBB", "gb18030", true, "\xF0\xA0\x80\x80\xE4\xB8\x80"},

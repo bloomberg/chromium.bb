@@ -560,13 +560,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
-#if 0
-  // Disabled until the following Blink CL is relanded and rolled:
-  // https://codereview.chromium.org/649413002
   EXPECT_TRUE(base::TextContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved1.htm"),
       full_file_name));
-#endif
   EXPECT_TRUE(base::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
       dir.AppendASCII("1.png")));
@@ -660,13 +656,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
-#if 0
-  // Disabled until the following Blink CL is relanded and rolled:
-  // https://codereview.chromium.org/649413002
   EXPECT_TRUE(base::TextContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved2.htm"),
       full_file_name));
-#endif
   EXPECT_TRUE(base::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
       dir.AppendASCII("1.png")));

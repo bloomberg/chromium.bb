@@ -200,5 +200,5 @@ class EncodingMenuModelTest : public BrowserWithTestWindowTest,
 TEST_F(EncodingMenuModelTest, IsCommandIdCheckedWithNoTabs) {
   EncodingMenuModel model(browser());
   ASSERT_EQ(NULL, browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_FALSE(model.IsCommandIdChecked(IDC_ENCODING_ISO88591));
+  EXPECT_FALSE(model.IsCommandIdChecked(IDC_ENCODING_WINDOWS1252));
 }

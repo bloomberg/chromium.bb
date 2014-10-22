@@ -36,7 +36,6 @@ typedef struct {
 const CanonicalEncodingData kCanonicalEncodingNames[] = {
   { IDC_ENCODING_UTF8, "UTF-8", IDS_ENCODING_UNICODE },
   { IDC_ENCODING_UTF16LE, "UTF-16LE", IDS_ENCODING_UNICODE },
-  { IDC_ENCODING_ISO88591, "ISO-8859-1", IDS_ENCODING_WESTERN },
   { IDC_ENCODING_WINDOWS1252, "windows-1252", IDS_ENCODING_WESTERN },
   { IDC_ENCODING_GBK, "GBK", IDS_ENCODING_SIMP_CHINESE },
   { IDC_ENCODING_GB18030, "gb18030", IDS_ENCODING_SIMP_CHINESE },
@@ -191,7 +190,6 @@ CanonicalEncodingMap* CanonicalEncodingMapSingleton() {
 
 const int kDefaultEncodingMenus[] = {
   IDC_ENCODING_UTF16LE,
-  IDC_ENCODING_ISO88591,
   IDC_ENCODING_WINDOWS1252,
   IDC_ENCODING_GBK,
   IDC_ENCODING_GB18030,
@@ -255,7 +253,9 @@ base::string16 GetEncodingDisplayName(const std::string& encoding_name,
   base::string16 category_name = l10n_util::GetStringUTF16(category_string_id);
   if (category_string_id != IDS_ENCODING_KOREAN &&
       category_string_id != IDS_ENCODING_THAI &&
-      category_string_id != IDS_ENCODING_TURKISH) {
+      category_string_id != IDS_ENCODING_TURKISH &&
+      category_string_id != IDS_ENCODING_VIETNAMESE &&
+      category_string_id != IDS_ENCODING_ROMANIAN) {
     const CanonicalNameDisplayNameMapType* map =
         CanonicalEncodingMapSingleton()->GetCanonicalNameDisplayNameMapData();
     DCHECK(map);
@@ -379,29 +379,15 @@ std::string CharacterEncoding::GetCanonicalEncodingNameByAliasName(
   if (found_id != map->end())
     return alias_name;
 
-  UErrorCode error_code = U_ZERO_ERROR;
-
-  const char* canonical_name = ucnv_getCanonicalName(
-      alias_name.c_str(), "MIME", &error_code);
-  // If failed,  then try IANA next.
-  if (U_FAILURE(error_code) || !canonical_name) {
-    error_code = U_ZERO_ERROR;
-    canonical_name = ucnv_getCanonicalName(
-      alias_name.c_str(), "IANA", &error_code);
+  const char* standards[3] = { "HTML", "MIME", "IANA" };
+  for (size_t i = 0; i < arraysize(standards); ++i) {
+    UErrorCode error_code = U_ZERO_ERROR;
+    const char* canonical_name = ucnv_getCanonicalName(
+        alias_name.c_str(), standards[i], &error_code);
+    if (U_SUCCESS(error_code) && canonical_name)
+      return canonical_name;
   }
-
-  if (canonical_name) {
-    // TODO(jnd) use a map to handle all customized {alias, canonical}
-    // encoding mappings if we have more than one pair.
-    // We don't want to add an unnecessary charset to the encoding menu, so we
-    // alias 'US-ASCII' to 'ISO-8859-1' in our UI without touching WebKit.
-    // http://crbug.com/15801.
-    if (alias_name == "US-ASCII")
-      return GetCanonicalEncodingNameByCommandId(IDC_ENCODING_ISO88591);
-    return canonical_name;
-  } else {
-    return std::string();
-  }
+  return std::string();
 }
 
 // Static
