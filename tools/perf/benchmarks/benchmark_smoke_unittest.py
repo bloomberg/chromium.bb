@@ -84,7 +84,8 @@ def load_tests(_, _2, _3):
       continue
 
     # TODO(tonyg): Smoke doesn't work with session_restore yet.
-    if benchmark.Name().startswith('session_restore'):
+    if (benchmark.Name().startswith('session_restore') or
+        benchmark.Name().startswith('skpicture_printer')):
       continue
 
     if hasattr(benchmark, 'generated_profile_archive'):
