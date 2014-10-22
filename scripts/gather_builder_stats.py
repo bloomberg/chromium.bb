@@ -1519,7 +1519,7 @@ def main(argv):
   if options.end_date:
     end_date = options.end_date
   else:
-    end_date = datetime.datetime.today()
+    end_date = datetime.datetime.now().date()
 
   # Determine the start date to use, which is required.
   if options.start_date:
