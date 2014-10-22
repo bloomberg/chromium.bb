@@ -389,29 +389,23 @@ void AudioInputRendererHost::DoCreateStream(
         entry->writer.get(),
         user_input_monitor_);
   } else {
-    // TODO(henrika): replace CreateLowLatency() with Create() as soon
-    // as satish has ensured that Speech Input also uses the default low-
-    // latency path. See crbug.com/112472 for details.
-    entry->controller =
-        media::AudioInputController::CreateLowLatency(audio_manager_,
-                                                      this,
-                                                      audio_params,
-                                                      device_id,
-                                                      entry->writer.get(),
-                                                      user_input_monitor_);
+    DCHECK_EQ(config.params.format(),
+              media::AudioParameters::AUDIO_PCM_LOW_LATENCY);
+    entry->controller = media::AudioInputController::CreateLowLatency(
+        audio_manager_,
+        this,
+        audio_params,
+        device_id,
+        entry->writer.get(),
+        user_input_monitor_,
+        config.automatic_gain_control);
+    oss << ", AGC=" << config.automatic_gain_control;
   }
 
   if (!entry->controller.get()) {
     SendErrorMessage(stream_id, STREAM_CREATE_ERROR);
     MaybeUnregisterKeyboardMicStream(config);
     return;
-  }
-
-  // Set the initial AGC state for the audio input stream. Note that, the AGC
-  // is only supported in AUDIO_PCM_LOW_LATENCY mode.
-  if (config.params.format() == media::AudioParameters::AUDIO_PCM_LOW_LATENCY) {
-    entry->controller->SetAutomaticGainControl(config.automatic_gain_control);
-    oss << ", AGC=" << config.automatic_gain_control;
   }
 
 #if defined(OS_CHROMEOS)

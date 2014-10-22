@@ -188,7 +188,8 @@ class MEDIA_EXPORT AudioInputController
       const std::string& device_id,
       // External synchronous writer for audio controller.
       SyncWriter* sync_writer,
-      UserInputMonitor* user_input_monitor);
+      UserInputMonitor* user_input_monitor,
+      const bool agc_is_enabled);
 
   // Factory method for creating an AudioInputController with an existing
   // |stream| for low-latency mode, taking ownership of |stream|. The stream
@@ -220,10 +221,6 @@ class MEDIA_EXPORT AudioInputController
   // Sets the capture volume of the input stream. The value 0.0 corresponds
   // to muted and 1.0 to maximum volume.
   virtual void SetVolume(double volume);
-
-  // Sets the Automatic Gain Control (AGC) state of the input stream.
-  // Changing the AGC state is not supported while recording is active.
-  virtual void SetAutomaticGainControl(bool enabled);
 
   // AudioInputCallback implementation. Threading details depends on the
   // device-specific implementation.
@@ -267,8 +264,9 @@ class MEDIA_EXPORT AudioInputController
 
   AudioInputController(EventHandler* handler,
                        SyncWriter* sync_writer,
-                       UserInputMonitor* user_input_monitor);
-  ~AudioInputController() override;
+                       UserInputMonitor* user_input_monitor,
+                       const bool agc_is_enabled);
+  virtual ~AudioInputController();
 
   // Methods called on the audio thread (owned by the AudioManager).
   void DoCreate(AudioManager* audio_manager,
@@ -282,7 +280,6 @@ class MEDIA_EXPORT AudioInputController
   void DoClose();
   void DoReportError();
   void DoSetVolume(double volume);
-  void DoSetAutomaticGainControl(bool enabled);
   void DoOnData(scoped_ptr<AudioBus> data);
   void DoLogAudioLevels(float level_dbfs, int microphone_volume_percent);
 
@@ -350,6 +347,8 @@ class MEDIA_EXPORT AudioInputController
   double max_volume_;
 
   UserInputMonitor* user_input_monitor_;
+
+  const bool agc_is_enabled_;
 
 #if defined(AUDIO_POWER_MONITORING)
   // Enabled in DoCrete() but not in DoCreateForStream().

@@ -14,7 +14,10 @@ TestAudioInputController::TestAudioInputController(
     EventHandler* event_handler,
     SyncWriter* sync_writer,
     UserInputMonitor* user_input_monitor)
-    : AudioInputController(event_handler, sync_writer, user_input_monitor),
+    : AudioInputController(event_handler,
+                           sync_writer,
+                           user_input_monitor,
+                           false),
       audio_parameters_(audio_parameters),
       factory_(factory),
       event_handler_(event_handler) {

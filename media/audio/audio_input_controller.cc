@@ -117,7 +117,8 @@ AudioInputController::Factory* AudioInputController::factory_ = NULL;
 
 AudioInputController::AudioInputController(EventHandler* handler,
                                            SyncWriter* sync_writer,
-                                           UserInputMonitor* user_input_monitor)
+                                           UserInputMonitor* user_input_monitor,
+                                           const bool agc_is_enabled)
     : creator_task_runner_(base::MessageLoopProxy::current()),
       handler_(handler),
       stream_(NULL),
@@ -126,6 +127,7 @@ AudioInputController::AudioInputController(EventHandler* handler,
       sync_writer_(sync_writer),
       max_volume_(0.0),
       user_input_monitor_(user_input_monitor),
+      agc_is_enabled_(agc_is_enabled),
 #if defined(AUDIO_POWER_MONITORING)
       power_measurement_is_enabled_(false),
       log_silence_state_(false),
@@ -156,7 +158,7 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
         audio_manager, event_handler, params, user_input_monitor);
   }
   scoped_refptr<AudioInputController> controller(
-      new AudioInputController(event_handler, NULL, user_input_monitor));
+      new AudioInputController(event_handler, NULL, user_input_monitor, false));
 
   controller->task_runner_ = audio_manager->GetTaskRunner();
 
@@ -182,7 +184,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
     const AudioParameters& params,
     const std::string& device_id,
     SyncWriter* sync_writer,
-    UserInputMonitor* user_input_monitor) {
+    UserInputMonitor* user_input_monitor,
+    const bool agc_is_enabled) {
   DCHECK(audio_manager);
   DCHECK(sync_writer);
 
@@ -191,8 +194,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
-  scoped_refptr<AudioInputController> controller(
-      new AudioInputController(event_handler, sync_writer, user_input_monitor));
+  scoped_refptr<AudioInputController> controller(new AudioInputController(
+      event_handler, sync_writer, user_input_monitor, agc_is_enabled));
   controller->task_runner_ = audio_manager->GetTaskRunner();
 
   // Create and open a new audio input stream from the existing
@@ -222,8 +225,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
-  scoped_refptr<AudioInputController> controller(
-      new AudioInputController(event_handler, sync_writer, user_input_monitor));
+  scoped_refptr<AudioInputController> controller(new AudioInputController(
+      event_handler, sync_writer, user_input_monitor, false));
   controller->task_runner_ = task_runner;
 
   // TODO(miu): See TODO at top of file.  Until that's resolved, we need to
@@ -260,11 +263,6 @@ void AudioInputController::SetVolume(double volume) {
       &AudioInputController::DoSetVolume, this, volume));
 }
 
-void AudioInputController::SetAutomaticGainControl(bool enabled) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &AudioInputController::DoSetAutomaticGainControl, this, enabled));
-}
-
 void AudioInputController::DoCreate(AudioManager* audio_manager,
                                     const AudioParameters& params,
                                     const std::string& device_id) {
@@ -274,7 +272,9 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
     handler_->OnLog(this, "AIC::DoCreate");
 
 #if defined(AUDIO_POWER_MONITORING)
-  power_measurement_is_enabled_ = true;
+  // Disable power monitoring for streams that run without AGC enabled to
+  // avoid adding logs and UMA for non-WebRTC clients.
+  power_measurement_is_enabled_ = agc_is_enabled_;
   last_audio_level_log_time_ = base::TimeTicks::Now();
   silence_state_ = SILENCE_STATE_NO_MEASUREMENT;
 #endif
@@ -326,6 +326,10 @@ void AudioInputController::DoCreateForStream(
   }
 
   DCHECK(!no_data_timer_.get());
+
+  // Set AGC state using mode in |agc_is_enabled_| which can only be enabled in
+  // CreateLowLatency().
+  stream_->SetAutomaticGainControl(agc_is_enabled_);
 
   // Create the data timer which will call FirstCheckForNoData(). The timer
   // is started in DoRecord() and restarted in each DoCheckForNoData()
@@ -447,17 +451,6 @@ void AudioInputController::DoSetVolume(double volume) {
 
   // Set the stream volume and scale to a range matched to the platform.
   stream_->SetVolume(max_volume_ * volume);
-}
-
-void AudioInputController::DoSetAutomaticGainControl(bool enabled) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(state_, RECORDING);
-
-  // Ensure that the AGC state only can be modified before streaming starts.
-  if (state_ != CREATED)
-    return;
-
-  stream_->SetAutomaticGainControl(enabled);
 }
 
 void AudioInputController::FirstCheckForNoData() {
