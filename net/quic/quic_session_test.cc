@@ -730,7 +730,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
   QuicStreamId stream_id = 5;
   // Write until the header stream is flow control blocked.
   SpdyHeaderBlock headers;
-  while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2010) {
+  while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2000) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     headers["header"] = base::Uint64ToString(base::RandUint64()) +

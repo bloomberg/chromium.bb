@@ -33,7 +33,7 @@ namespace tools {
 namespace test {
 namespace {
 
-const char kServerHostname[] = "www.example.com";
+const char kServerHostname[] = "www.example.org";
 const uint16 kPort = 80;
 
 class ToolsQuicClientSessionTest
