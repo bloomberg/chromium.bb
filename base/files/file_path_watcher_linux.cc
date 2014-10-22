@@ -105,25 +105,25 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
                          bool is_dir);
 
  protected:
-  virtual ~FilePathWatcherImpl() {}
+  ~FilePathWatcherImpl() override {}
 
  private:
   // Start watching |path| for changes and notify |delegate| on each change.
   // Returns true if watch for |path| has been added successfully.
-  virtual bool Watch(const FilePath& path,
-                     bool recursive,
-                     const FilePathWatcher::Callback& callback) override;
+  bool Watch(const FilePath& path,
+             bool recursive,
+             const FilePathWatcher::Callback& callback) override;
 
   // Cancel the watch. This unregisters the instance with InotifyReader.
-  virtual void Cancel() override;
+  void Cancel() override;
 
   // Cleans up and stops observing the message_loop() thread.
-  virtual void CancelOnMessageLoopThread() override;
+  void CancelOnMessageLoopThread() override;
 
   // Deletion of the FilePathWatcher will call Cancel() to dispose of this
   // object in the right thread. This also observes destruction of the required
   // cleanup thread, in case it quits before Cancel() is called.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   // Inotify watches are installed for all directory components of |target_|. A
   // WatchEntry instance holds the watch descriptor for a component and the
