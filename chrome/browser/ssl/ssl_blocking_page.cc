@@ -232,9 +232,7 @@ void LaunchDateAndTimeSettings() {
   command.AppendArg(
       "'com.android.settings/.Settings$DateTimeSettingsActivity'");
 #elif defined(OS_IOS)
-  // Apparently, iOS really does not have a way to launch the date and time
-  // settings. Weird. TODO(palmer): Do something more graceful than ignoring
-  // the user's click! crbug.com/394993
+  // iOS does not have a way to launch the date and time settings.
   return;
 #elif defined(OS_LINUX)
   struct ClockCommand {
