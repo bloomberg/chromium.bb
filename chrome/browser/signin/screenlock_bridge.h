@@ -64,6 +64,10 @@ class ScreenlockBridge {
     // shown with the icon.
     void SetTooltip(const base::string16& tooltip, bool autoshow);
 
+    // Sets the accessiblity label of the icon. If this attribute is not
+    // provided, then the tooltip will be used.
+    void SetAriaLabel(const base::string16& aria_label);
+
     // If hardlock on click is set, clicking the icon in the screenlock will
     // go to state where password is required for unlock.
     void SetHardlockOnClick();
@@ -73,6 +77,8 @@ class ScreenlockBridge {
 
     base::string16 tooltip_;
     bool autoshow_tooltip_;
+
+    base::string16 aria_label_;
 
     bool hardlock_on_click_;
 

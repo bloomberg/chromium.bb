@@ -292,6 +292,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Sets the ARIA label for the icon.
+     * @param {!string} ariaLabel
+     */
+    setAriaLabel: function(ariaLabel) {
+      this.iconElement.setAttribute('aria-label', ariaLabel);
+    },
+
+    /**
      * Shows the icon.
      */
     show: function() {
@@ -352,9 +360,6 @@ cr.define('login', function() {
       }
 
       this.hideTooltip_(true);
-
-      if (this.tooltip_)
-        this.iconElement.setAttribute('aria-lablel', this.tooltip_);
     },
 
     /**
@@ -496,7 +501,6 @@ cr.define('login', function() {
         return;
       $('bubble').hideForElement(this);
       this.tooltipAutoshown_ = false;
-      this.iconElement.removeAttribute('aria-label');
     },
 
     /**
@@ -2246,6 +2250,7 @@ cr.define('login', function() {
      * @param {string} username Username of pod to add button
      * @param {!{id: !string,
      *           hardlockOnClick: boolean,
+     *           ariaLabel: string | undefined,
      *           tooltip: ({text: string, autoshow: boolean} | undefined)}} icon
      *     The icon parameters.
      */
@@ -2268,6 +2273,12 @@ cr.define('login', function() {
       } else {
         pod.customIconElement.setInteractive(null);
       }
+
+      var ariaLabel = icon.ariaLabel || (icon.tooltip && icon.tooltip.text);
+      if (ariaLabel)
+        pod.customIconElement.setAriaLabel(ariaLabel);
+      else
+        console.warn('No ARIA label for user pod custom icon.');
 
       pod.customIconElement.show();
 

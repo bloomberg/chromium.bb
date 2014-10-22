@@ -134,6 +134,12 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
 
   UpdateTooltipOptions(is_trial_run_, &icon_options);
 
+  // For states without tooltips, we still need to set an accessibility label.
+  if (state_ == EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING) {
+    icon_options.SetAriaLabel(
+        l10n_util::GetStringUTF16(IDS_SMART_LOCK_SPINNER_ACCESSIBILITY_LABEL));
+  }
+
   screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(user_email_,
                                                             icon_options);
 }

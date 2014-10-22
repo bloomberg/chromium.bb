@@ -74,6 +74,9 @@ ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
     result->Set("tooltip", tooltip_options);
   }
 
+  if (!aria_label_.empty())
+    result->SetString("ariaLabel", aria_label_);
+
   if (hardlock_on_click_)
     result->SetBoolean("hardlockOnClick", true);
 
@@ -90,6 +93,11 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetTooltip(
     bool autoshow) {
   tooltip_ = tooltip;
   autoshow_tooltip_ = autoshow;
+}
+
+void ScreenlockBridge::UserPodCustomIconOptions::SetAriaLabel(
+    const base::string16& aria_label) {
+  aria_label_ = aria_label;
 }
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetHardlockOnClick() {
