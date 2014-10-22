@@ -339,6 +339,8 @@ QuicConnectionLogger::QuicConnectionLogger(QuicSession* session,
       num_incorrect_connection_ids_(0),
       num_undecryptable_packets_(0),
       num_duplicate_packets_(0),
+      num_blocked_frames_received_(0),
+      num_blocked_frames_sent_(0),
       connection_description_(GetConnectionDescriptionString()) {
 }
 
@@ -355,6 +357,10 @@ QuicConnectionLogger::~QuicConnectionLogger() {
                        num_undecryptable_packets_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.DuplicatePacketsReceived",
                        num_duplicate_packets_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.BlockedFrames.Received",
+                       num_blocked_frames_received_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.BlockedFrames.Sent",
+                       num_blocked_frames_sent_);
 
   if (num_frames_received_ > 0) {
     int duplicate_stream_frame_per_thousand =
@@ -442,6 +448,7 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
                      frame.window_update_frame));
       break;
     case BLOCKED_FRAME:
+      ++num_blocked_frames_sent_;
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_SENT,
           base::Bind(&NetLogQuicBlockedFrameCallback,
@@ -636,6 +643,7 @@ void QuicConnectionLogger::OnWindowUpdateFrame(
 }
 
 void QuicConnectionLogger::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  ++num_blocked_frames_received_;
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_RECEIVED,
       base::Bind(&NetLogQuicBlockedFrameCallback, &frame));

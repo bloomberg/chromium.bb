@@ -151,6 +151,10 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   int num_undecryptable_packets_;
   // Count of the number of duplicate packets received.
   int num_duplicate_packets_;
+  // Count of the number of BLOCKED frames received.
+  int num_blocked_frames_received_;
+  // Count of the number of BLOCKED frames sent.
+  int num_blocked_frames_sent_;
   // Vector of inital packets status' indexed by packet sequence numbers, where
   // false means never received.  Zero is not a valid packet sequence number, so
   // that offset is never used, and we'll track 150 packets.

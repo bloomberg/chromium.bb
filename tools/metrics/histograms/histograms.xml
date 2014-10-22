@@ -17268,6 +17268,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.BlockedFrames.Received">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of BLOCKED frames recevied by a QuicSession when the session is
+    closed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.BlockedFrames.Sent">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of BLOCKED frames sent by a QuicSession when the session is
+    closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ClosedDuringInitializeSession">
   <owner>rch@chromium.org</owner>
   <summary>
