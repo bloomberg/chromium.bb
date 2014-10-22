@@ -5,9 +5,13 @@
 <script src="../tracing-test.js"></script>
 <script>
 
+// Save references to the worker objects to make sure they are not GC'ed.
+var worker1;
+var worker2;
+
 function startWorkerAndRunTest()
 {
-    var worker1 = new Worker("resources/worker.js");
+    worker1 = new Worker("resources/worker.js");
     worker1.postMessage("");
 
     if (window.testRunner) {
@@ -24,7 +28,7 @@ function startWorkerAndRunTest()
 
 function startSecondWorker(onActionComplete)
 {
-    var worker2 = new Worker("resources/worker.js");
+    worker2 = new Worker("resources/worker.js");
     worker2.postMessage("");
     worker2.onmessage = function(event)
     {
