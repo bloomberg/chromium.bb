@@ -89,6 +89,10 @@ void AudioNode::uninitialize()
     m_isInitialized = false;
 }
 
+void AudioNode::clearInternalStateWhenDisabled()
+{
+}
+
 void AudioNode::dispose()
 {
     ASSERT(isMainThread());
@@ -475,6 +479,7 @@ void AudioNode::disableOutputsIfNecessary()
         // longer any active connections.
         if (nodeType() != NodeTypeConvolver && nodeType() != NodeTypeDelay) {
             m_isDisabled = true;
+            clearInternalStateWhenDisabled();
             for (unsigned i = 0; i < m_outputs.size(); ++i)
                 output(i)->disable();
         }

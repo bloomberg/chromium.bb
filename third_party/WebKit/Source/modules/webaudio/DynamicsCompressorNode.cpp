@@ -108,6 +108,11 @@ void DynamicsCompressorNode::uninitialize()
     AudioNode::uninitialize();
 }
 
+void DynamicsCompressorNode::clearInternalStateWhenDisabled()
+{
+    m_reduction->setValue(0);
+}
+
 double DynamicsCompressorNode::tailTime() const
 {
     return m_dynamicsCompressor->tailTime();

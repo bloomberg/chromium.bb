@@ -120,6 +120,14 @@ public:
     virtual void initialize();
     virtual void uninitialize();
 
+    // Clear internal state when the node is disabled. When a node is disabled,
+    // it is no longer pulled so any internal state is never updated. But some
+    // nodes (DynamicsCompressorNode) have internal state that is still
+    // accessible by the user. Update the internal state as if the node were
+    // still connected but processing all zeroes. This gives a consistent view
+    // to the user.
+    virtual void clearInternalStateWhenDisabled();
+
     bool isInitialized() const { return m_isInitialized; }
 
     unsigned numberOfInputs() const { return m_inputs.size(); }

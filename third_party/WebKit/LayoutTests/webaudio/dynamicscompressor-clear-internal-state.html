@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Validate Reduction Value of DynamicsComporessor after Disabling</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Validate Reduction Value of DynamicsComporessor after Disabling");
+
+      var context;
+      var buffer;
+      var source;
+      var compressor;
+      var renderedData;
+
+      var sampleRate = 44100;
+      var testDurationSamples = 44100;
+
+      function checkResult (event) {
+
+          renderedData = event.renderedBuffer.getChannelData(0);
+
+          // Check that the reduction value is 0.0.
+          if (compressor.reduction.value !== 0.0) {
+              testFailed("Expected reduction of 0.0, but the value is " + compressor.reduction.value);
+          }
+          else {
+              testPassed("Reduction is 0.0");
+          }
+
+          finishJSTest();
+      }
+
+      function runTest() {
+          window.jsTestIsAsync = true;
+
+          // Create the offline context for the test.
+          context = new OfflineAudioContext(1, testDurationSamples, sampleRate);
+          context.oncomplete = checkResult;
+
+          // Create the constant sample buffer of 0.5 sec.
+          buffer = createConstantBuffer(context, testDurationSamples / 2, 1);
+
+          // Create compressor and use default parameters for the compression.
+          compressor = context.createDynamicsCompressor();
+
+          // Create the source and connect it to the destination
+          source = context.createBufferSource();
+          source.buffer = buffer;
+          source.connect(compressor);
+          compressor.connect(context.destination);
+          source.start(0.0);
+
+          // Render it!
+          context.startRendering();
+      }
+
+      runTest();
+      succesfullyParsed = true;
+    </script>
+  </body>
+</html>

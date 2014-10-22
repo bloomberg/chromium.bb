@@ -48,6 +48,7 @@ public:
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
     virtual void uninitialize() override;
+    virtual void clearInternalStateWhenDisabled() override;
 
     // Static compression curve parameters.
     AudioParam* threshold() { return m_threshold.get(); }
