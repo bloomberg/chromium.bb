@@ -565,6 +565,8 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     mapSize += kPageAllocationGranularityOffsetMask;
     mapSize &= kPageAllocationGranularityBaseMask;
 
+    root->totalSizeOfCommittedPages += size + kSystemPageSize;
+
     // TODO: we may want to let the operating system place these allocations
     // where it pleases. On 32-bit, this might limit address space
     // fragmentation and on 64-bit, this might have useful savings for TLB
@@ -617,6 +619,9 @@ static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
     // Add on the size of the trailing guard page and preceeding partition
     // page.
     unmapSize += kPartitionPageSize + kSystemPageSize;
+
+    PartitionRootBase* root = partitionPageToRoot(page);
+    root->totalSizeOfCommittedPages -= page->bucket->slotSize + kSystemPageSize;
 
     ASSERT(!(unmapSize & kPageAllocationGranularityOffsetMask));
 
