@@ -184,6 +184,44 @@ TEST(DataURLTest, Parse) {
       "",
       "" },
 
+    // BiDi control characters should be unescaped and preserved as is, and
+    // should not be replaced with % versions. In the below case, \xE2\x80\x8F
+    // is the RTL mark and the parsed text should preserve it as is.
+    {
+      "data:text/plain;charset=utf-8,\xE2\x80\x8Ftest",
+      true,
+      "text/plain",
+      "utf-8",
+      "\xE2\x80\x8Ftest"},
+
+    // Same as above but with Arabic text after RTL mark.
+    {
+      "data:text/plain;charset=utf-8,"
+          "\xE2\x80\x8F\xD8\xA7\xD8\xAE\xD8\xAA\xD8\xA8\xD8\xA7\xD8\xB1",
+      true,
+      "text/plain",
+      "utf-8",
+      "\xE2\x80\x8F\xD8\xA7\xD8\xAE\xD8\xAA\xD8\xA8\xD8\xA7\xD8\xB1"},
+
+    // RTL mark encoded as %E2%80%8F should be unescaped too. Note that when
+    // wrapped in a GURL, this URL and the next effectively become the same as
+    // the previous two URLs.
+    {
+      "data:text/plain;charset=utf-8,%E2%80%8Ftest",
+      true,
+      "text/plain",
+      "utf-8",
+      "\xE2\x80\x8Ftest"},
+
+    // Same as above but with Arabic text after RTL mark.
+    {
+      "data:text/plain;charset=utf-8,"
+          "%E2%80%8F\xD8\xA7\xD8\xAE\xD8\xAA\xD8\xA8\xD8\xA7\xD8\xB1",
+      true,
+      "text/plain",
+      "utf-8",
+      "\xE2\x80\x8F\xD8\xA7\xD8\xAE\xD8\xAA\xD8\xA8\xD8\xA7\xD8\xB1"}
+
     // TODO(darin): add more interesting tests
   };
 

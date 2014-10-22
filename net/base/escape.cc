@@ -120,6 +120,44 @@ bool UnescapeUnsignedCharAtIndex(const STR& escaped_text,
   return false;
 }
 
+// Returns true if there is an Arabic Language Mark at |index|. |first_byte|
+// is the byte at |index|.
+template<typename STR>
+bool HasArabicLanguageMarkAtIndex(const STR& escaped_text,
+                                  unsigned char first_byte,
+                                  size_t index) {
+  if (first_byte != 0xD8)
+    return false;
+  unsigned char second_byte;
+  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 3, &second_byte))
+    return false;
+  return second_byte == 0x9c;
+}
+
+// Returns true if there is a BiDi control char at |index|. |first_byte| is the
+// byte at |index|.
+template<typename STR>
+bool HasThreeByteBidiControlCharAtIndex(const STR& escaped_text,
+                                        unsigned char first_byte,
+                                        size_t index) {
+  if (first_byte != 0xE2)
+    return false;
+  unsigned char second_byte;
+  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 3, &second_byte))
+    return false;
+  if (second_byte != 0x80 && second_byte != 0x81)
+    return false;
+  unsigned char third_byte;
+  if (!UnescapeUnsignedCharAtIndex(escaped_text, index + 6, &third_byte))
+    return false;
+  if (second_byte == 0x80) {
+    return third_byte == 0x8E ||
+           third_byte == 0x8F ||
+           (third_byte >= 0xAA && third_byte <= 0xAE);
+  }
+  return third_byte >= 0xA6 && third_byte <= 0xA9;
+}
+
 // Unescapes |escaped_text| according to |rules|, returning the resulting
 // string.  Fills in an |adjustments| parameter, if non-NULL, so it reflects
 // the alterations done to the string that are not one-character-to-one-
@@ -172,27 +210,21 @@ STR UnescapeURLWithAdjustmentsImpl(
       // U+2067 RIGHT-TO-LEFT ISOLATE      (%E2%81%A7)
       // U+2068 FIRST STRONG ISOLATE       (%E2%81%A8)
       // U+2069 POP DIRECTIONAL ISOLATE    (%E2%81%A9)
-
-      unsigned char second_byte;
-      // Check for ALM.
-      if ((first_byte == 0xD8) &&
-          UnescapeUnsignedCharAtIndex(escaped_text, i + 3, &second_byte) &&
-          (second_byte == 0x9c)) {
-        result.append(escaped_text, i, 6);
-        i += 5;
-        continue;
-      }
-
-      // Check for other BiDi control characters.
-      if ((first_byte == 0xE2) &&
-          UnescapeUnsignedCharAtIndex(escaped_text, i + 3, &second_byte) &&
-          ((second_byte == 0x80) || (second_byte == 0x81))) {
-        unsigned char third_byte;
-        if (UnescapeUnsignedCharAtIndex(escaped_text, i + 6, &third_byte) &&
-            ((second_byte == 0x80) ?
-             ((third_byte == 0x8E) || (third_byte == 0x8F) ||
-              ((third_byte >= 0xAA) && (third_byte <= 0xAE))) :
-             ((third_byte >= 0xA6) && (third_byte <= 0xA9)))) {
+      //
+      // However, some schemes such as data: and file: need to parse the exact
+      // binary data when loading the URL. For that reason, CONTROL_CHARS allows
+      // unescaping BiDi control characters.
+      // DO NOT use CONTROL_CHARS if the parsed URL is going to be displayed
+      // in the UI.
+      if (!(rules & UnescapeRule::CONTROL_CHARS)) {
+        if (HasArabicLanguageMarkAtIndex(escaped_text, first_byte, i)) {
+          // Keep Arabic Language Mark escaped.
+          result.append(escaped_text, i, 6);
+          i += 5;
+          continue;
+        }
+        if (HasThreeByteBidiControlCharAtIndex(escaped_text, first_byte, i)) {
+          // Keep BiDi control char escaped.
           result.append(escaped_text, i, 9);
           i += 8;
           continue;

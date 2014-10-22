@@ -88,7 +88,10 @@ class UnescapeRule {
 
     // Unescapes control characters such as %01. This INCLUDES NULLs. This is
     // used for rare cases such as data: URL decoding where the result is binary
-    // data. You should not use this for normal URLs!
+    // data. This flag also unescapes BiDi control characters.
+    //
+    // DO NOT use CONTROL_CHARS if the URL is going to be displayed in the UI
+    // for security reasons.
     CONTROL_CHARS = 8,
 
     // URL queries use "+" for space. This flag controls that replacement.
