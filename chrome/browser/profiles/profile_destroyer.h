@@ -31,11 +31,10 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   friend class base::RefCounted<ProfileDestroyer>;
 
   ProfileDestroyer(Profile* const profile, HostSet* hosts);
-  virtual ~ProfileDestroyer();
+  ~ProfileDestroyer() override;
 
   // content::RenderProcessHostObserver override.
-  virtual void RenderProcessHostDestroyed(
-      content::RenderProcessHost* host) override;
+  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // Called by the timer to cancel the pending destruction and do it now.
   void DestroyProfile();

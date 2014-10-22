@@ -24,7 +24,7 @@ class GAIAInfoUpdateService : public KeyedService,
                               public SigninManagerBase::Observer {
  public:
   explicit GAIAInfoUpdateService(Profile* profile);
-  virtual ~GAIAInfoUpdateService();
+  ~GAIAInfoUpdateService() override;
 
   // Updates the GAIA info for the profile associated with this instance.
   virtual void Update();
@@ -33,17 +33,17 @@ class GAIAInfoUpdateService : public KeyedService,
   static bool ShouldUseGAIAProfileInfo(Profile* profile);
 
   // ProfileDownloaderDelegate:
-  virtual bool NeedsProfilePicture() const override;
-  virtual int GetDesiredImageSideLength() const override;
-  virtual Profile* GetBrowserProfile() override;
-  virtual std::string GetCachedPictureURL() const override;
-  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
-  virtual void OnProfileDownloadFailure(
+  bool NeedsProfilePicture() const override;
+  int GetDesiredImageSideLength() const override;
+  Profile* GetBrowserProfile() override;
+  std::string GetCachedPictureURL() const override;
+  void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
+  void OnProfileDownloadFailure(
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) override;
 
   // Overridden from KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GAIAInfoUpdateServiceTest, ScheduleUpdate);
@@ -52,11 +52,11 @@ class GAIAInfoUpdateService : public KeyedService,
   void ScheduleNextUpdate();
 
   // Overridden from SigninManagerBase::Observer:
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   Profile* profile_;
   scoped_ptr<ProfileDownloader> profile_image_downloader_;

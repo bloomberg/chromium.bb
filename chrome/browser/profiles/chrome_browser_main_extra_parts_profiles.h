@@ -18,7 +18,7 @@ void AddProfilesExtraParts(ChromeBrowserMainParts* main_parts);
 class ChromeBrowserMainExtraPartsProfiles : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsProfiles();
-  virtual ~ChromeBrowserMainExtraPartsProfiles();
+  ~ChromeBrowserMainExtraPartsProfiles() override;
 
   // Instantiates all chrome KeyedService factories, which is
   // especially important for services that should be created at profile
@@ -26,7 +26,7 @@ class ChromeBrowserMainExtraPartsProfiles : public ChromeBrowserMainExtraParts {
   static void EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   // Overridden from ChromeBrowserMainExtraParts:
-  virtual void PreProfileInit() override;
+  void PreProfileInit() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsProfiles);

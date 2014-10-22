@@ -87,7 +87,7 @@ class AvatarMenu :
   AvatarMenu(ProfileInfoInterface* profile_cache,
              AvatarMenuObserver* observer,
              Browser* browser);
-  virtual ~AvatarMenu();
+  ~AvatarMenu() override;
 
   // True if avatar menu should be displayed.
   static bool ShouldShowAvatarMenu();
@@ -147,14 +147,14 @@ class AvatarMenu :
   bool ShouldShowEditProfileLink() const;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
 #if defined(ENABLE_MANAGED_USERS)
   // SupervisedUserServiceObserver:
-  virtual void OnCustodianInfoChanged() override;
+  void OnCustodianInfoChanged() override;
 #endif
 
   // The model that provides the list of menu items.

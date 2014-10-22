@@ -21,7 +21,7 @@ class StartupTaskRunnerService : public base::NonThreadSafe,
                                  public KeyedService {
  public:
   explicit StartupTaskRunnerService(Profile* profile);
-  virtual ~StartupTaskRunnerService();
+  ~StartupTaskRunnerService() override;
 
   // Returns sequenced task runner where all bookmarks I/O operations are
   // performed.

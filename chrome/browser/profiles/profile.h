@@ -153,7 +153,7 @@ class Profile : public content::BrowserContext {
   static const char kNoHostedDomainFound[];
 
   Profile();
-  virtual ~Profile();
+  ~Profile() override;
 
   // Profile prefs are registered as soon as the prefs are loaded for the first
   // time.

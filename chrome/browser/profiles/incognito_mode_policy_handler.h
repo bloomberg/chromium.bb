@@ -22,13 +22,13 @@ class PolicyMap;
 class IncognitoModePolicyHandler : public ConfigurationPolicyHandler {
  public:
   IncognitoModePolicyHandler();
-  virtual ~IncognitoModePolicyHandler();
+  ~IncognitoModePolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IncognitoModePolicyHandler);

@@ -18,17 +18,17 @@ class ProfileInfoInterface;
 class ProfileListDesktop : public ProfileList {
  public:
   explicit ProfileListDesktop(ProfileInfoInterface* profile_cache);
-  virtual ~ProfileListDesktop();
+  ~ProfileListDesktop() override;
 
   // ProfileList overrides:
-  virtual size_t GetNumberOfItems() const override;
-  virtual const AvatarMenu::Item& GetItemAt(size_t index) const override;
-  virtual void RebuildMenu() override;
+  size_t GetNumberOfItems() const override;
+  const AvatarMenu::Item& GetItemAt(size_t index) const override;
+  void RebuildMenu() override;
   // Returns the menu index of the profile at |index| in the ProfileInfoCache.
   // The profile index must exist, and it may not be marked as omitted from the
   // menu.
-  virtual size_t MenuIndexFromProfileIndex(size_t index) override;
-  virtual void ActiveProfilePathChanged(base::FilePath& path) override;
+  size_t MenuIndexFromProfileIndex(size_t index) override;
+  void ActiveProfilePathChanged(base::FilePath& path) override;
 
  private:
   void ClearMenu();

@@ -28,10 +28,10 @@ class StartupTaskRunnerServiceFactory
   friend struct DefaultSingletonTraits<StartupTaskRunnerServiceFactory>;
 
   StartupTaskRunnerServiceFactory();
-  virtual ~StartupTaskRunnerServiceFactory();
+  ~StartupTaskRunnerServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(StartupTaskRunnerServiceFactory);

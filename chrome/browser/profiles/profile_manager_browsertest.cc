@@ -69,7 +69,7 @@ class ProfileRemovalObserver : public ProfileInfoCacheObserver {
         this);
   }
 
-  virtual ~ProfileRemovalObserver() {
+  ~ProfileRemovalObserver() override {
     g_browser_process->profile_manager()->GetProfileInfoCache().RemoveObserver(
         this);
   }
@@ -77,8 +77,7 @@ class ProfileRemovalObserver : public ProfileInfoCacheObserver {
   std::string last_used_profile_name() { return last_used_profile_name_; }
 
   // ProfileInfoCacheObserver overrides:
-  virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) override {
+  void OnProfileWillBeRemoved(const base::FilePath& profile_path) override {
     last_used_profile_name_ = g_browser_process->local_state()->GetString(
         prefs::kProfileLastUsed);
   }
@@ -96,7 +95,7 @@ class PasswordStoreConsumerVerifier :
  public:
   PasswordStoreConsumerVerifier() : called_(false) {}
 
-  virtual void OnGetPasswordStoreResults(
+  void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override {
     EXPECT_FALSE(called_);
     called_ = true;
@@ -123,7 +122,7 @@ class PasswordStoreConsumerVerifier :
 // platforms.
 class ProfileManagerBrowserTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);

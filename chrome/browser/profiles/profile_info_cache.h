@@ -37,7 +37,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
                          public base::SupportsWeakPtr<ProfileInfoCache> {
  public:
   ProfileInfoCache(PrefService* prefs, const base::FilePath& user_data_dir);
-  virtual ~ProfileInfoCache();
+  ~ProfileInfoCache() override;
 
   // If the |supervised_user_id| is non-empty, the profile will be marked to be
   // omitted from the avatar-menu list on desktop versions. This is used while a
@@ -52,46 +52,37 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void DeleteProfileFromCache(const base::FilePath& profile_path);
 
   // ProfileInfoInterface:
-  virtual size_t GetNumberOfProfiles() const override;
+  size_t GetNumberOfProfiles() const override;
   // Don't cache this value and reuse, because resorting the menu could cause
   // the item being referred to to change out from under you.
-  virtual size_t GetIndexOfProfileWithPath(
+  size_t GetIndexOfProfileWithPath(
       const base::FilePath& profile_path) const override;
-  virtual base::string16 GetNameOfProfileAtIndex(size_t index) const override;
-  virtual base::string16 GetShortcutNameOfProfileAtIndex(size_t index)
-      const override;
-  virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
-  virtual base::Time GetProfileActiveTimeAtIndex(size_t index) const override;
-  virtual base::string16 GetUserNameOfProfileAtIndex(
-      size_t index) const override;
-  virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
-      size_t index) const override;
-  virtual std::string GetLocalAuthCredentialsOfProfileAtIndex(
+  base::string16 GetNameOfProfileAtIndex(size_t index) const override;
+  base::string16 GetShortcutNameOfProfileAtIndex(size_t index) const override;
+  base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
+  base::Time GetProfileActiveTimeAtIndex(size_t index) const override;
+  base::string16 GetUserNameOfProfileAtIndex(size_t index) const override;
+  const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) const override;
+  std::string GetLocalAuthCredentialsOfProfileAtIndex(
       size_t index) const override;
   // Note that a return value of false could mean an error in collection or
   // that there are currently no background apps running. However, the action
   // which results is the same in both cases (thus far).
-  virtual bool GetBackgroundStatusOfProfileAtIndex(
-      size_t index) const override;
-  virtual base::string16 GetGAIANameOfProfileAtIndex(
-      size_t index) const override;
-  virtual base::string16 GetGAIAGivenNameOfProfileAtIndex(
-      size_t index) const override;
+  bool GetBackgroundStatusOfProfileAtIndex(size_t index) const override;
+  base::string16 GetGAIANameOfProfileAtIndex(size_t index) const override;
+  base::string16 GetGAIAGivenNameOfProfileAtIndex(size_t index) const override;
   // Returns the GAIA picture for the given profile. This may return NULL
   // if the profile does not have a GAIA picture or if the picture must be
   // loaded from disk.
-  virtual const gfx::Image* GetGAIAPictureOfProfileAtIndex(
-      size_t index) const override;
-  virtual bool IsUsingGAIAPictureOfProfileAtIndex(
-      size_t index) const override;
-  virtual bool ProfileIsSupervisedAtIndex(size_t index) const override;
-  virtual bool IsOmittedProfileAtIndex(size_t index) const override;
-  virtual bool ProfileIsSigninRequiredAtIndex(size_t index) const override;
-  virtual std::string GetSupervisedUserIdOfProfileAtIndex(size_t index) const
-      override;
-  virtual bool ProfileIsEphemeralAtIndex(size_t index) const override;
-  virtual bool ProfileIsUsingDefaultNameAtIndex(size_t index) const override;
-  virtual bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const override;
+  const gfx::Image* GetGAIAPictureOfProfileAtIndex(size_t index) const override;
+  bool IsUsingGAIAPictureOfProfileAtIndex(size_t index) const override;
+  bool ProfileIsSupervisedAtIndex(size_t index) const override;
+  bool IsOmittedProfileAtIndex(size_t index) const override;
+  bool ProfileIsSigninRequiredAtIndex(size_t index) const override;
+  std::string GetSupervisedUserIdOfProfileAtIndex(size_t index) const override;
+  bool ProfileIsEphemeralAtIndex(size_t index) const override;
+  bool ProfileIsUsingDefaultNameAtIndex(size_t index) const override;
+  bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const override;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 

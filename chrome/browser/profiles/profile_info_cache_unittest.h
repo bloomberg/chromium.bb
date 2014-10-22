@@ -24,19 +24,16 @@ class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
  public:
   explicit ProfileNameVerifierObserver(
       TestingProfileManager* testing_profile_manager);
-  virtual ~ProfileNameVerifierObserver();
+  ~ProfileNameVerifierObserver() override;
 
   // ProfileInfoCacheObserver overrides:
-  virtual void OnProfileAdded(const base::FilePath& profile_path) override;
-  virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) override;
-  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const base::string16& profile_name) override;
-  virtual void OnProfileNameChanged(
-      const base::FilePath& profile_path,
-      const base::string16& old_profile_name) override;
-  virtual void OnProfileAvatarChanged(
-      const base::FilePath& profile_path) override;
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+                           const base::string16& profile_name) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
   ProfileInfoCache* GetCache();

@@ -273,7 +273,7 @@ class ProfileIOData {
         scoped_ptr<net::HttpTransactionFactory> http_factory);
 
    private:
-    virtual ~MediaRequestContext();
+    ~MediaRequestContext() override;
 
     scoped_ptr<net::HttpTransactionFactory> http_factory_;
   };
@@ -290,7 +290,7 @@ class ProfileIOData {
     void SetJobFactory(scoped_ptr<net::URLRequestJobFactory> job_factory);
 
    private:
-    virtual ~AppRequestContext();
+    ~AppRequestContext() override;
 
     scoped_refptr<net::CookieStore> cookie_store_;
     scoped_ptr<net::HttpTransactionFactory> http_factory_;
@@ -486,19 +486,19 @@ class ProfileIOData {
   class ResourceContext : public content::ResourceContext {
    public:
     explicit ResourceContext(ProfileIOData* io_data);
-    virtual ~ResourceContext();
+    ~ResourceContext() override;
 
     // ResourceContext implementation:
-    virtual net::HostResolver* GetHostResolver() override;
-    virtual net::URLRequestContext* GetRequestContext() override;
-    virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() override;
-    virtual void CreateKeygenHandler(
+    net::HostResolver* GetHostResolver() override;
+    net::URLRequestContext* GetRequestContext() override;
+    scoped_ptr<net::ClientCertStore> CreateClientCertStore() override;
+    void CreateKeygenHandler(
         uint32 key_size_in_bits,
         const std::string& challenge_string,
         const GURL& url,
         const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback)
         override;
-    virtual SaltCallback GetMediaDeviceIDSalt() override;
+    SaltCallback GetMediaDeviceIDSalt() override;
 
    private:
     friend class ProfileIOData;

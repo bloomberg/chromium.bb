@@ -57,10 +57,10 @@ class AvatarImageSource : public gfx::CanvasImageSource {
                     int width,
                     AvatarPosition position,
                     AvatarBorder border);
-  virtual ~AvatarImageSource();
+  ~AvatarImageSource() override;
 
   // CanvasImageSource override:
-  virtual void Draw(gfx::Canvas* canvas) override;
+  void Draw(gfx::Canvas* canvas) override;
 
  private:
   gfx::ImageSkia avatar_;

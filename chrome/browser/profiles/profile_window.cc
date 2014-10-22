@@ -57,12 +57,11 @@ class BrowserAddedForProfileObserver : public chrome::BrowserListObserver {
     DCHECK(!callback_.is_null());
     BrowserList::AddObserver(this);
   }
-  virtual ~BrowserAddedForProfileObserver() {
-  }
+  ~BrowserAddedForProfileObserver() override {}
 
  private:
   // Overridden from BrowserListObserver:
-  virtual void OnBrowserAdded(Browser* browser) override {
+  void OnBrowserAdded(Browser* browser) override {
     if (browser->profile() == profile_) {
       BrowserList::RemoveObserver(this);
       callback_.Run(profile_, Profile::CREATE_STATUS_INITIALIZED);

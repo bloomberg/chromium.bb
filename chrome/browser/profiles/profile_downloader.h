@@ -41,7 +41,7 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   };
 
   explicit ProfileDownloader(ProfileDownloaderDelegate* delegate);
-  virtual ~ProfileDownloader();
+  ~ProfileDownloader() override;
 
   // Starts downloading profile information if the necessary authorization token
   // is ready. If not, subscribes to token service and starts fetching if the
@@ -86,28 +86,28 @@ class ProfileDownloader : public gaia::GaiaOAuthClient::Delegate,
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, DefaultURL);
 
   // gaia::GaiaOAuthClient::Delegate implementation.
-  virtual void OnGetUserInfoResponse(
+  void OnGetUserInfoResponse(
       scoped_ptr<base::DictionaryValue> user_info) override;
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
   // Overriden from net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Overriden from ImageDecoder::Delegate:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) override;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
+  void OnImageDecoded(const ImageDecoder* decoder,
+                      const SkBitmap& decoded_image) override;
+  void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
   // Overriden from OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // Overriden from OAuth2TokenService::Consumer:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // Parses the entry response and gets the name, profile image URL and locale.
   // |data| should be the JSON formatted data return by the response.

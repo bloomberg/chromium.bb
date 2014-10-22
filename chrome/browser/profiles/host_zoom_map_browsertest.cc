@@ -131,7 +131,7 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
   }
 
   // BrowserTestBase:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     embedded_test_server()->RegisterRequestHandler(base::Bind(
         &HostZoomMapBrowserTest::HandleRequest, base::Unretained(this)));
@@ -150,7 +150,7 @@ class HostZoomMapBrowserTestWithPrefs : public HostZoomMapBrowserTest {
 
  private:
   // InProcessBrowserTest:
-  virtual bool SetUpUserDataDirectory() override {
+  bool SetUpUserDataDirectory() override {
     std::replace(prefs_data_.begin(), prefs_data_.end(), '\'', '\"');
     // It seems the hash functions on different platforms can return different
     // values for the same input, so make sure we test with the hash appropriate

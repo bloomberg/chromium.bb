@@ -34,7 +34,7 @@ class ProfileManager : public base::NonThreadSafe,
   typedef base::Callback<void(Profile*, Profile::CreateStatus)> CreateCallback;
 
   explicit ProfileManager(const base::FilePath& user_data_dir);
-  virtual ~ProfileManager();
+  ~ProfileManager() override;
 
 #if defined(ENABLE_SESSION_SERVICE)
   // Invokes SessionServiceFactory::ShutdownForProfile() for all profiles.
@@ -188,14 +188,14 @@ class ProfileManager : public base::NonThreadSafe,
   bool IsLoggedIn() const { return logged_in_; }
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Profile::Delegate implementation:
-  virtual void OnProfileCreated(Profile* profile,
-                                bool success,
-                                bool is_new_profile) override;
+  void OnProfileCreated(Profile* profile,
+                        bool success,
+                        bool is_new_profile) override;
 
  protected:
   // Does final initial actions.
@@ -287,12 +287,12 @@ class ProfileManager : public base::NonThreadSafe,
   class BrowserListObserver : public chrome::BrowserListObserver {
    public:
     explicit BrowserListObserver(ProfileManager* manager);
-    virtual ~BrowserListObserver();
+    ~BrowserListObserver() override;
 
     // chrome::BrowserListObserver implementation.
-    virtual void OnBrowserAdded(Browser* browser) override;
-    virtual void OnBrowserRemoved(Browser* browser) override;
-    virtual void OnBrowserSetLastActive(Browser* browser) override;
+    void OnBrowserAdded(Browser* browser) override;
+    void OnBrowserRemoved(Browser* browser) override;
+    void OnBrowserSetLastActive(Browser* browser) override;
 
    private:
     ProfileManager* profile_manager_;
@@ -359,8 +359,8 @@ class ProfileManagerWithoutInit : public ProfileManager {
   explicit ProfileManagerWithoutInit(const base::FilePath& user_data_dir);
 
  protected:
-  virtual void DoFinalInitForServices(Profile*, bool) override {}
-  virtual void DoFinalInitLogging(Profile*) override {}
+  void DoFinalInitForServices(Profile*, bool) override {}
+  void DoFinalInitLogging(Profile*) override {}
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_

@@ -14,12 +14,12 @@ class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
   ProfileAvatarDownloader(size_t icon_index,
                           const base::FilePath& profile_path,
                           ProfileInfoCache* cache);
-  virtual ~ProfileAvatarDownloader();
+  ~ProfileAvatarDownloader() override;
 
   void Start();
 
   // BitmapFetcherDelegate:
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
+  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
  private:
   // Downloads the avatar image from a url.

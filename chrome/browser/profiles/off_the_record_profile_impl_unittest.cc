@@ -37,12 +37,10 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
     zoom_level_prefs_->InitPrefsAndCopyToHostZoomMap(GetPath(), host_zoom_map);
   }
 
-  virtual ~TestingProfileWithHostZoomMap() {}
+  ~TestingProfileWithHostZoomMap() override {}
 
   // Profile overrides:
-  virtual PrefService* GetOffTheRecordPrefs() override {
-    return GetPrefs();
-  }
+  PrefService* GetOffTheRecordPrefs() override { return GetPrefs(); }
 
  private:
   void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
@@ -104,7 +102,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
   }
 
   // BrowserWithTestWindowTest overrides:
-  virtual TestingProfile* CreateProfile() override {
+  TestingProfile* CreateProfile() override {
     return new TestingProfileWithHostZoomMap;
   }
 
