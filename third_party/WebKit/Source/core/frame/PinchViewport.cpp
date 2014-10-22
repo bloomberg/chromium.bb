@@ -327,8 +327,10 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
 {
     TRACE_EVENT0("blink", "PinchViewport::registerLayersWithTreeView");
     ASSERT(layerTreeView);
-    ASSERT(frameHost().page().mainFrame());
-    ASSERT(frameHost().page().mainFrame()->isLocalFrame());
+
+    if (!mainFrame())
+        return;
+
     ASSERT(frameHost().page().deprecatedLocalMainFrame()->contentRenderer());
 
     RenderLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
@@ -365,6 +367,9 @@ IntPoint PinchViewport::minimumScrollPosition() const
 
 IntPoint PinchViewport::maximumScrollPosition() const
 {
+    if (!mainFrame())
+        return IntPoint();
+
     // FIXME: We probably shouldn't be storing the bounds in a float. crbug.com/422331.
     FloatSize frameViewSize(contentsSize());
 
