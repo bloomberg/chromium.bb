@@ -85,6 +85,7 @@ public class VideoCaptureAndroid extends VideoCapture {
 
     static String getName(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = VideoCapture.getCameraInfo(id);
+        if (cameraInfo == null) return null;
         return "camera " + id + ", facing " + (cameraInfo.facing ==
                 android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
     }

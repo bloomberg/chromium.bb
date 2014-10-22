@@ -108,11 +108,6 @@ class VideoCaptureFactory {
     }
 
     @CalledByNative
-    static String getDeviceId(int id) {
-        return Integer.toString(id);
-    }
-
-    @CalledByNative
     static VideoCapture.CaptureFormat[] getDeviceSupportedFormats(int id) {
         return ChromiumCameraInfo.isSpecialCamera(id) ?
                 VideoCaptureTango.getDeviceSupportedFormats(

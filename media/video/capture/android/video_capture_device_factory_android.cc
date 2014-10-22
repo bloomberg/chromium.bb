@@ -65,11 +65,14 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceNames(
     return;
 
   for (int camera_id = num_cameras - 1; camera_id >= 0; --camera_id) {
+    base::android::ScopedJavaLocalRef<jstring> device_name =
+        Java_VideoCaptureFactory_getDeviceName(env, camera_id);
+    if (device_name.obj() == NULL)
+      continue;
+
     VideoCaptureDevice::Name name(
-        base::android::ConvertJavaStringToUTF8(
-            Java_VideoCaptureFactory_getDeviceName(env, camera_id)),
-        base::android::ConvertJavaStringToUTF8(
-            Java_VideoCaptureFactory_getDeviceId(env, camera_id)));
+        base::android::ConvertJavaStringToUTF8(device_name),
+        base::IntToString(camera_id));
     device_names->push_back(name);
 
     DVLOG(1) << "VideoCaptureDeviceFactoryAndroid::GetDeviceNames: camera "
