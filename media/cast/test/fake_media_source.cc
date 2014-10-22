@@ -41,6 +41,16 @@ void AVFreeFrame(AVFrame* frame) {
   av_frame_free(&frame);
 }
 
+base::TimeDelta PtsToTimeDelta(int64 pts, const AVRational& time_base) {
+  return pts * base::TimeDelta::FromSeconds(1) * time_base.num / time_base.den;
+}
+
+int64 TimeDeltaToPts(base::TimeDelta delta, const AVRational& time_base) {
+  return static_cast<int64>(
+      delta.InSecondsF() * time_base.den / time_base.num +
+      0.5 /* rounding */);
+}
+
 }  // namespace
 
 namespace media {
@@ -77,11 +87,6 @@ FakeMediaSource::~FakeMediaSource() {
 void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
                                     int override_fps) {
   DCHECK(!video_file.empty());
-
-  if (override_fps) {
-    video_config_.max_frame_rate = override_fps;
-    video_frame_rate_numerator_ = override_fps;
-  }
 
   LOG(INFO) << "Source: " << video_file.value();
   if (!file_data_.Initialize(video_file)) {
@@ -162,18 +167,16 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
         LOG(WARNING) << "Found multiple video streams.";
       }
       video_stream_index_ = static_cast<int>(i);
-      if (!override_fps) {
-        video_frame_rate_numerator_ = av_stream->r_frame_rate.num;
-        video_frame_rate_denominator_ = av_stream->r_frame_rate.den;
-        // Max frame rate is rounded up.
-        video_config_.max_frame_rate =
-            video_frame_rate_denominator_ +
-            video_frame_rate_numerator_ - 1;
-        video_config_.max_frame_rate /= video_frame_rate_denominator_;
-      } else {
+      if (override_fps > 0) {
         // If video is played at a manual speed audio needs to match.
         playback_rate_ = 1.0 * override_fps *
-            av_stream->r_frame_rate.den /  av_stream->r_frame_rate.num;
+            av_stream->r_frame_rate.den / av_stream->r_frame_rate.num;
+        video_frame_rate_numerator_ = override_fps;
+        video_frame_rate_denominator_ = 1;
+      } else {
+        playback_rate_ = 1.0;
+        video_frame_rate_numerator_ = av_stream->r_frame_rate.num;
+        video_frame_rate_denominator_ = av_stream->r_frame_rate.den;
       }
       LOG(INFO) << "Source file has video.";
     } else {
@@ -190,10 +193,13 @@ void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
   video_frame_input_ = video_frame_input;
 
   LOG(INFO) << "Max Frame rate: " << video_config_.max_frame_rate;
-  LOG(INFO) << "Real Frame rate: "
+  LOG(INFO) << "Source Frame rate: "
             << video_frame_rate_numerator_ << "/"
             << video_frame_rate_denominator_ << " fps.";
   LOG(INFO) << "Audio playback rate: " << playback_rate_;
+
+  if (start_time_.is_null())
+    start_time_ = clock_->NowTicks();
 
   if (!is_transcoding_audio() && !is_transcoding_video()) {
     // Send fake patterns.
@@ -235,9 +241,7 @@ void FakeMediaSource::SendNextFakeFrame() {
   PopulateVideoFrame(video_frame.get(), synthetic_count_);
   ++synthetic_count_;
 
-  base::TimeTicks now = clock_->NowTicks();
-  if (start_time_.is_null())
-    start_time_ = now;
+  const base::TimeTicks now = clock_->NowTicks();
 
   base::TimeDelta video_time = VideoFrameTime(++video_frame_count_);
   video_frame->set_timestamp(video_time);
@@ -263,7 +267,7 @@ void FakeMediaSource::SendNextFakeFrame() {
     audio_time = AudioFrameTime(++audio_frame_count_);
   }
 
-  // This is the time since the stream started.
+  // This is the time since FakeMediaSource was started.
   const base::TimeDelta elapsed_time = now - start_time_;
 
   // Handle the case when frame generation cannot keep up.
@@ -313,11 +317,10 @@ bool FakeMediaSource::SendNextTranscodedVideo(base::TimeDelta elapsed_time) {
                    decoded_frame->rows(VideoFrame::kVPlane),
                    video_frame.get());
 
-  base::TimeDelta video_time;
   // Use the timestamp from the file if we're transcoding.
-  video_time = ScaleTimestamp(decoded_frame->timestamp());
+  video_frame->set_timestamp(ScaleTimestamp(decoded_frame->timestamp()));
   video_frame_input_->InsertRawVideoFrame(
-      video_frame, start_time_ + video_time);
+      video_frame, start_time_ + video_frame->timestamp());
 
   // Make sure queue is not empty.
   Decode(false);
@@ -347,11 +350,6 @@ bool FakeMediaSource::SendNextTranscodedAudio(base::TimeDelta elapsed_time) {
 }
 
 void FakeMediaSource::SendNextFrame() {
-  if (start_time_.is_null())
-    start_time_ = clock_->NowTicks();
-  if (start_time_.is_null())
-    start_time_ = clock_->NowTicks();
-
   // Send as much as possible. Audio is sent according to
   // system time.
   while (SendNextTranscodedAudio(clock_->NowTicks() - start_time_));
@@ -364,9 +362,6 @@ void FakeMediaSource::SendNextFrame() {
     // the end of the stream.
     LOG(INFO) << "Rewind.";
     Rewind();
-    start_time_ = base::TimeTicks();
-    audio_sent_ts_.reset();
-    video_first_pts_set_ = false;
   }
 
   // Send next send.
@@ -384,8 +379,7 @@ base::TimeDelta FakeMediaSource::VideoFrameTime(int frame_number) {
 }
 
 base::TimeDelta FakeMediaSource::ScaleTimestamp(base::TimeDelta timestamp) {
-  return base::TimeDelta::FromMicroseconds(
-      timestamp.InMicroseconds() / playback_rate_);
+  return base::TimeDelta::FromSecondsD(timestamp.InSecondsF() / playback_rate_);
 }
 
 base::TimeDelta FakeMediaSource::AudioFrameTime(int frame_number) {
@@ -400,7 +394,7 @@ void FakeMediaSource::Rewind() {
 ScopedAVPacket FakeMediaSource::DemuxOnePacket(bool* audio) {
   ScopedAVPacket packet(new AVPacket());
   if (av_read_frame(av_format_context_, packet.get()) < 0) {
-    LOG(ERROR) << "Failed to read one AVPacket.";
+    VLOG(1) << "Failed to read one AVPacket.";
     packet.reset();
     return packet.Pass();
   }
@@ -463,8 +457,7 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
             av_audio_context()->sample_rate,
             frames_read,
             &avframe->data[0],
-            // Note: Not all files have correct values for pkt_pts.
-            base::TimeDelta::FromMilliseconds(avframe->pkt_pts));
+            PtsToTimeDelta(avframe->pkt_pts, av_audio_stream()->time_base));
     audio_algo_.EnqueueBuffer(buffer);
     av_frame_unref(avframe);
   } while (packet_temp.size > 0);
@@ -509,9 +502,6 @@ void FakeMediaSource::DecodeVideo(ScopedAVPacket packet) {
   // Video.
   int got_picture;
   AVFrame* avframe = av_frame_alloc();
-  // Tell the decoder to reorder for us.
-  avframe->reordered_opaque =
-      av_video_context()->reordered_opaque = packet->pts;
   CHECK(avcodec_decode_video2(
       av_video_context(), avframe, &got_picture, packet.get()) >= 0)
       << "Video decode error.";
@@ -520,12 +510,23 @@ void FakeMediaSource::DecodeVideo(ScopedAVPacket packet) {
     return;
   }
   gfx::Size size(av_video_context()->width, av_video_context()->height);
-  if (!video_first_pts_set_ ||
-      avframe->reordered_opaque < video_first_pts_) {
+
+  if (!video_first_pts_set_) {
+    video_first_pts_ = avframe->pkt_pts;
     video_first_pts_set_ = true;
-    video_first_pts_ = avframe->reordered_opaque;
   }
-  int64 pts = avframe->reordered_opaque - video_first_pts_;
+  const AVRational& time_base = av_video_stream()->time_base;
+  base::TimeDelta timestamp =
+      PtsToTimeDelta(avframe->pkt_pts - video_first_pts_, time_base);
+  if (timestamp < last_video_frame_timestamp_) {
+    // Stream has rewound.  Rebase |video_first_pts_|.
+    const AVRational& frame_rate = av_video_stream()->r_frame_rate;
+    timestamp = last_video_frame_timestamp_ +
+        (base::TimeDelta::FromSeconds(1) * frame_rate.den / frame_rate.num);
+    const int64 adjustment_pts = TimeDeltaToPts(timestamp, time_base);
+    video_first_pts_ = avframe->pkt_pts - adjustment_pts;
+  }
+
   video_frame_queue_.push(
       VideoFrame::WrapExternalYuvData(
           media::VideoFrame::YV12,
@@ -538,8 +539,9 @@ void FakeMediaSource::DecodeVideo(ScopedAVPacket packet) {
           avframe->data[0],
           avframe->data[1],
           avframe->data[2],
-          base::TimeDelta::FromMilliseconds(pts),
+          timestamp,
           base::Bind(&AVFreeFrame, avframe)));
+  last_video_frame_timestamp_ = timestamp;
 }
 
 void FakeMediaSource::Decode(bool decode_audio) {
@@ -553,7 +555,7 @@ void FakeMediaSource::Decode(bool decode_audio) {
     bool audio_packet = false;
     ScopedAVPacket packet = DemuxOnePacket(&audio_packet);
     if (!packet) {
-      LOG(INFO) << "End of stream.";
+      VLOG(1) << "End of stream.";
       return;
     }
 

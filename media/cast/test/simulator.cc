@@ -14,6 +14,14 @@
 // --target-delay-ms=
 //   Target playout delay to configure (integer number of milliseconds).
 //   Optional; default is 400.
+// --max-frame-rate=
+//   The maximum frame rate allowed at any time during the Cast session.
+//   Optional; default is 30.
+// --source-frame-rate=
+//   Overrides the playback rate; the source video will play faster/slower.
+// --run-time=
+//   In seconds, how long the Cast session runs for.
+//   Optional; default is 180.
 //
 // Output:
 // - Raw event log of the simulation session tagged with the unique test ID,
@@ -75,16 +83,19 @@ const char kOutputPath[] = "output";
 const char kSimulationId[] = "sim-id";
 const char kLibDir[] = "lib-dir";
 const char kTargetDelay[] = "target-delay-ms";
+const char kMaxFrameRate[] = "max-frame-rate";
+const char kSourceFrameRate[] = "source-frame-rate";
+const char kRunTime[] = "run-time";
 
-base::TimeDelta GetTargetPlayoutDelay() {
-  const std::string delay_str =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kTargetDelay);
-  if (delay_str.empty())
-    return base::TimeDelta::FromMilliseconds(400);
-  int delay_ms;
-  CHECK(base::StringToInt(delay_str, &delay_ms));
-  CHECK_GT(delay_ms, 0);
-  return base::TimeDelta::FromMilliseconds(delay_ms);
+int GetIntegerSwitchValue(const char* switch_name, int default_value) {
+  const std::string as_str =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
+  if (as_str.empty())
+    return default_value;
+  int as_int;
+  CHECK(base::StringToInt(as_str, &as_int));
+  CHECK_GT(as_int, 0);
+  return as_int;
 }
 
 void UpdateCastTransportStatus(CastTransportStatus status) {
@@ -234,7 +245,9 @@ void RunSimulation(const base::FilePath& source_path,
 
   // Audio sender config.
   AudioSenderConfig audio_sender_config = GetDefaultAudioSenderConfig();
-  audio_sender_config.max_playout_delay = GetTargetPlayoutDelay();
+  audio_sender_config.min_playout_delay =
+      audio_sender_config.max_playout_delay = base::TimeDelta::FromMilliseconds(
+          GetIntegerSwitchValue(kTargetDelay, 400));
 
   // Audio receiver config.
   FrameReceiverConfig audio_receiver_config =
@@ -247,7 +260,10 @@ void RunSimulation(const base::FilePath& source_path,
   video_sender_config.max_bitrate = 2500000;
   video_sender_config.min_bitrate = 2000000;
   video_sender_config.start_bitrate = 2000000;
-  video_sender_config.max_playout_delay = GetTargetPlayoutDelay();
+  video_sender_config.min_playout_delay =
+      video_sender_config.max_playout_delay =
+          audio_sender_config.max_playout_delay;
+  video_sender_config.max_frame_rate = GetIntegerSwitchValue(kMaxFrameRate, 30);
 
   // Video receiver config.
   FrameReceiverConfig video_receiver_config =
@@ -329,14 +345,17 @@ void RunSimulation(const base::FilePath& source_path,
   // Start sending.
   if (!source_path.empty()) {
     // 0 means using the FPS from the file.
-    media_source.SetSourceFile(source_path, 0);
+    media_source.SetSourceFile(source_path,
+                               GetIntegerSwitchValue(kSourceFrameRate, 0));
   }
   media_source.Start(cast_sender->audio_frame_input(),
                      cast_sender->video_frame_input());
 
   // Run for 3 minutes.
   base::TimeDelta elapsed_time;
-  while (elapsed_time.InMinutes() < 3) {
+  const base::TimeDelta desired_run_time =
+      base::TimeDelta::FromSeconds(GetIntegerSwitchValue(kRunTime, 180));
+  while (elapsed_time < desired_run_time) {
     // Each step is 100us.
     base::TimeDelta step = base::TimeDelta::FromMicroseconds(100);
     task_runner->Sleep(step);
@@ -388,10 +407,15 @@ void RunSimulation(const base::FilePath& source_path,
     }
   }
 
-  double avg_encoded_bitrate =
-      !encoded_video_frames ? 0 :
-      8.0 * encoded_size * video_sender_config.max_frame_rate /
-      encoded_video_frames / 1000;
+  // Subtract fraction of dropped frames from |elapsed_time| before estimating
+  // the average encoded bitrate.
+  const base::TimeDelta elapsed_time_undropped =
+      total_video_frames <= 0 ? base::TimeDelta() :
+      (elapsed_time * (total_video_frames - dropped_video_frames) /
+           total_video_frames);
+  const double avg_encoded_bitrate =
+      elapsed_time_undropped <= base::TimeDelta() ? 0 :
+      8.0 * encoded_size / elapsed_time_undropped.InSecondsF() / 1000;
   double avg_target_bitrate =
       !encoded_video_frames ? 0 : target_bitrate / encoded_video_frames / 1000;
 

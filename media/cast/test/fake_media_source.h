@@ -97,8 +97,8 @@ class FakeMediaSource {
   AVCodecContext* av_audio_context();
   AVCodecContext* av_video_context();
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  VideoSenderConfig video_config_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const VideoSenderConfig video_config_;
   scoped_refptr<AudioFrameInput> audio_frame_input_;
   scoped_refptr<VideoFrameInput> video_frame_input_;
   uint8 synthetic_count_;
@@ -137,6 +137,7 @@ class FakeMediaSource {
   std::queue<scoped_refptr<VideoFrame> > video_frame_queue_;
   int64 video_first_pts_;
   bool video_first_pts_set_;
+  base::TimeDelta last_video_frame_timestamp_;
 
   std::queue<AudioBus*> audio_bus_queue_;
 
