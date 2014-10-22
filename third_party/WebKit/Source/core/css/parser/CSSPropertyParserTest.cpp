@@ -42,6 +42,10 @@ TEST(CSSPropertyParserTest, GridTrackLimits)
         {CSSPropertyGridTemplateRows, "repeat(400000, 2em minmax(10px, max-content) 0.5fr)", 999999},
         {CSSPropertyGridTemplateColumns, "repeat(600000, (first) 3vh 10% 2fr (nav) 10px auto 1fr 6em (last))", 999999},
         {CSSPropertyGridTemplateRows, "repeat(600000, (first) 3vh 10% 2fr (nav) 10px auto 1fr 6em (last))", 999999},
+        {CSSPropertyGridTemplateColumns, "repeat(100000000000000000000, 10% 1fr)", 1000000},
+        {CSSPropertyGridTemplateRows, "repeat(100000000000000000000, 10% 1fr)", 1000000},
+        {CSSPropertyGridTemplateColumns, "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)", 999999},
+        {CSSPropertyGridTemplateRows, "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)", 999999},
     };
 
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(testCases); ++i) {

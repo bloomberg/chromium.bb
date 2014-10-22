@@ -3579,8 +3579,8 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
     if (!arguments || arguments->size() < 3 || !validUnit(arguments->valueAt(0), FPositiveInteger) || !isComma(arguments->valueAt(1)))
         return false;
 
-    size_t repetitions = arguments->valueAt(0)->fValue;
-    ASSERT_WITH_SECURITY_IMPLICATION(repetitions > 0);
+    ASSERT(arguments->valueAt(0)->fValue > 0);
+    size_t repetitions = clampTo<size_t>(arguments->valueAt(0)->fValue, 0, kGridMaxTracks);
 
     RefPtrWillBeRawPtr<CSSValueList> repeatedValues = CSSValueList::createSpaceSeparated();
     arguments->next(); // Skip the repetition count.
