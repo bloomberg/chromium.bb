@@ -58,7 +58,7 @@ function onload()
         bar: { get: function() { return this.bar; }, set: function(x) { this.bar = x; } }
     });
     var negZero = 1 / Number.NEGATIVE_INFINITY;
-
+    var textNode = document.getElementById("x").nextSibling;
     var arrayLikeFunction = function() {};
     arrayLikeFunction.splice = function() {};
 
@@ -67,7 +67,7 @@ function onload()
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
         NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
         objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype, arrayLikeFunction,
-        new Number(42), new String("abc"), new  Uint16Array([1, 2, 3])
+        new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode
     ];
 
     runTest();
@@ -91,7 +91,7 @@ function test()
 
         function onRemoteObjectsLoaded()
         {
-            InspectorTest.expandConsoleMessages(finish);
+            InspectorTest.expandConsoleMessages(finish, undefined, function(section) { return section.titleElement.textContent !== "#text"; });
         }
 
         function finish()

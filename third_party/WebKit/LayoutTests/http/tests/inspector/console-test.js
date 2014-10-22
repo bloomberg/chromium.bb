@@ -186,7 +186,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
         InspectorTest.addResult(result[i]);
 }
 
-InspectorTest.expandConsoleMessages = function(callback, deepFilter)
+InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilter)
 {
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
 
@@ -204,6 +204,8 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter)
                 if (node.treeElementForTest)
                     node.treeElementForTest.expand();
                 if (!node._section)
+                    continue;
+                if (sectionFilter && !sectionFilter(node._section))
                     continue;
                 node._section.expanded = true;
 
