@@ -32,7 +32,7 @@ def main(argv):
 
     with common.temporary_file() as tempfile_path:
       rc = common.run_command(
-          [sys.executable, os.path.join(common.SCRIPT_DIR, filename)] +
+          [os.path.join(common.SCRIPT_DIR, filename)] +
           passthrough_args +
           [
               'compile_targets',
