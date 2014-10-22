@@ -335,6 +335,17 @@ void StartNSSInitOnIOThread(const std::string& username,
 }
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(USE_NSS)
+void InitializeAndPassKeygenHandler(
+    scoped_ptr<net::KeygenHandler> keygen_handler,
+    const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback,
+    scoped_ptr<ChromeNSSCryptoModuleDelegate> delegate) {
+  if (delegate)
+    keygen_handler->set_crypto_module_delegate(delegate.Pass());
+  callback.Run(keygen_handler.Pass());
+}
+#endif  // defined(USE_NSS)
+
 void InvalidateContextGettersOnIO(
     scoped_ptr<ProfileIOData::ChromeURLRequestContextGetterVector> getters) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -936,20 +947,16 @@ void ProfileIOData::ResourceContext::CreateKeygenHandler(
   scoped_ptr<net::KeygenHandler> keygen_handler(
       new net::KeygenHandler(key_size_in_bits, challenge_string, url));
 
-  scoped_ptr<ChromeNSSCryptoModuleDelegate> delegate(
-      new ChromeNSSCryptoModuleDelegate(chrome::kCryptoModulePasswordKeygen,
-                                        net::HostPortPair::FromURL(url)));
-  ChromeNSSCryptoModuleDelegate* delegate_ptr = delegate.get();
-  keygen_handler->set_crypto_module_delegate(delegate.Pass());
+  base::Callback<void(scoped_ptr<ChromeNSSCryptoModuleDelegate>)>
+      got_delegate_callback = base::Bind(&InitializeAndPassKeygenHandler,
+                                         base::Passed(&keygen_handler),
+                                         callback);
 
-  base::Closure bound_callback =
-      base::Bind(callback, base::Passed(&keygen_handler));
-  if (delegate_ptr->InitializeSlot(this, bound_callback)) {
-    // Initialization complete, run the callback synchronously.
-    bound_callback.Run();
-    return;
-  }
-  // Otherwise, the InitializeSlot will run the callback asynchronously.
+  ChromeNSSCryptoModuleDelegate::CreateForResourceContext(
+      chrome::kCryptoModulePasswordKeygen,
+      net::HostPortPair::FromURL(url),
+      this,
+      got_delegate_callback);
 #else
   callback.Run(make_scoped_ptr(
       new net::KeygenHandler(key_size_in_bits, challenge_string, url)));

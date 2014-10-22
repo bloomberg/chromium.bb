@@ -25,20 +25,22 @@ class ChromeNSSCryptoModuleDelegate
  public:
   // Create a ChromeNSSCryptoModuleDelegate. |reason| is used to select what
   // string to show the user, |server| is displayed to indicate which connection
-  // is causing the dialog to appear.
+  // is causing the dialog to appear. |slot| can be NULL.
   ChromeNSSCryptoModuleDelegate(chrome::CryptoModulePasswordReason reason,
-                                const net::HostPortPair& server);
+                                const net::HostPortPair& server,
+                                crypto::ScopedPK11Slot slot);
 
   virtual ~ChromeNSSCryptoModuleDelegate();
 
-  // Must be called on IO thread. Returns true if the delegate is ready for use.
-  // Otherwise, if |initialization_complete_callback| is non-null, the
-  // initialization will proceed asynchronously and the callback will be run
-  // once the delegate is ready to use. In that case, the caller must ensure the
-  // delegate remains alive until the callback is run.
-  bool InitializeSlot(content::ResourceContext* context,
-                      const base::Closure& initialization_complete_callback)
-      WARN_UNUSED_RESULT;
+  // Must be called on IO thread. Creates a delegate and returns it
+  // synchronously or asynchronously to |callback|. If the delegate could not be
+  // created, |callback| is called with NULL.
+  static void CreateForResourceContext(
+      chrome::CryptoModulePasswordReason reason,
+      const net::HostPortPair& server,
+      content::ResourceContext* context,
+      const base::Callback<void(scoped_ptr<ChromeNSSCryptoModuleDelegate>)>&
+          callback);
 
   // crypto::NSSCryptoModuleDelegate implementation.
   virtual crypto::ScopedPK11Slot RequestSlot() override;
@@ -52,8 +54,6 @@ class ChromeNSSCryptoModuleDelegate
   void ShowDialog(const std::string& slot_name, bool retry);
 
   void GotPassword(const std::string& password);
-
-  void DidGetSlot(const base::Closure& callback, crypto::ScopedPK11Slot slot);
 
   // Parameters displayed in the dialog.
   const chrome::CryptoModulePasswordReason reason_;

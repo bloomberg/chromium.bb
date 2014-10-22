@@ -11,31 +11,53 @@
 
 using content::BrowserThread;
 
+namespace {
+
+void CreateWithSlot(chrome::CryptoModulePasswordReason reason,
+                    const net::HostPortPair& server,
+                    const base::Callback<void(
+                        scoped_ptr<ChromeNSSCryptoModuleDelegate>)>& callback,
+                    crypto::ScopedPK11Slot slot) {
+  if (!slot) {
+    callback.Run(scoped_ptr<ChromeNSSCryptoModuleDelegate>());
+    return;
+  }
+  callback.Run(scoped_ptr<ChromeNSSCryptoModuleDelegate>(
+      new ChromeNSSCryptoModuleDelegate(reason, server, slot.Pass())));
+}
+
+}  // namespace
+
 ChromeNSSCryptoModuleDelegate::ChromeNSSCryptoModuleDelegate(
     chrome::CryptoModulePasswordReason reason,
-    const net::HostPortPair& server)
+    const net::HostPortPair& server,
+    crypto::ScopedPK11Slot slot)
     : reason_(reason),
       server_(server),
       event_(false, false),
-      cancelled_(false) {}
+      cancelled_(false),
+      slot_(slot.Pass()) {
+}
 
 ChromeNSSCryptoModuleDelegate::~ChromeNSSCryptoModuleDelegate() {}
 
-bool ChromeNSSCryptoModuleDelegate::InitializeSlot(
+// static
+void ChromeNSSCryptoModuleDelegate::CreateForResourceContext(
+    chrome::CryptoModulePasswordReason reason,
+    const net::HostPortPair& server,
     content::ResourceContext* context,
-    const base::Closure& initialization_complete_callback) {
+    const base::Callback<void(scoped_ptr<ChromeNSSCryptoModuleDelegate>)>&
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!slot_);
-  base::Callback<void(crypto::ScopedPK11Slot)> get_slot_callback;
-  if (!initialization_complete_callback.is_null())
-    get_slot_callback = base::Bind(&ChromeNSSCryptoModuleDelegate::DidGetSlot,
-                                   // Caller is responsible for keeping |this|
-                                   // alive until the callback is run.
-                                   base::Unretained(this),
-                                   initialization_complete_callback);
+  DCHECK(!callback.is_null());
 
-  slot_ = GetPrivateNSSKeySlotForResourceContext(context, get_slot_callback);
-  return slot_.get() != NULL;
+  base::Callback<void(crypto::ScopedPK11Slot)> get_slot_callback =
+      base::Bind(&CreateWithSlot, reason, server, callback);
+
+  crypto::ScopedPK11Slot slot =
+      GetPrivateNSSKeySlotForResourceContext(context, get_slot_callback);
+  if (slot)
+    get_slot_callback.Run(slot.Pass());
 }
 
 // TODO(mattm): allow choosing which slot to generate and store the key.
@@ -88,19 +110,13 @@ void ChromeNSSCryptoModuleDelegate::GotPassword(const std::string& password) {
   event_.Signal();
 }
 
-void ChromeNSSCryptoModuleDelegate::DidGetSlot(const base::Closure& callback,
-                                               crypto::ScopedPK11Slot slot) {
-  DCHECK(!slot_);
-  slot_ = slot.Pass();
-  callback.Run();
-}
-
 crypto::CryptoModuleBlockingPasswordDelegate*
 CreateCryptoModuleBlockingPasswordDelegate(
     chrome::CryptoModulePasswordReason reason,
     const net::HostPortPair& server) {
-  // Returns a ChromeNSSCryptoModuleDelegate without calling InitializeSlot.
-  // Since it is only being used as a CreateCryptoModuleBlockingDialogDelegate,
-  // initializing the slot handle is unnecessary.
-  return new ChromeNSSCryptoModuleDelegate(reason, server);
+  // Returns a ChromeNSSCryptoModuleDelegate without Pk11Slot. Since it is only
+  // being used as a CryptoModuleBlockingDialogDelegate, using a slot handle is
+  // unnecessary.
+  return new ChromeNSSCryptoModuleDelegate(
+      reason, server, crypto::ScopedPK11Slot());
 }
