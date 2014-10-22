@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/liblouis/liblouis.svg?branch=master)](https://travis-ci.org/liblouis/liblouis)
+
 # Introduction
 
 Liblouis is an open-source braille translator and back-translator
