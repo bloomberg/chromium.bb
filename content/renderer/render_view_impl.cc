@@ -3335,8 +3335,13 @@ void RenderViewImpl::DidFlushPaint() {
   WebFrame* main_frame = webview()->mainFrame();
   for (WebFrame* frame = main_frame; frame;
        frame = frame->traverseNext(false)) {
-    if (frame->isWebLocalFrame())
+    // TODO(nasko): This is a hack for the case in which the top-level
+    // frame is being rendered in another process. It will not
+    // behave correctly for out of process iframes.
+    if (frame->isWebLocalFrame()) {
       main_frame = frame;
+      break;
+    }
   }
 
   // If we have a provisional frame we are between the start and commit stages
