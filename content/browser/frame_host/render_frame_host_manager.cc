@@ -690,7 +690,9 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
 
   // For security, we should transition between processes when one is a Web UI
   // page and one isn't.
-  if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
+  if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+          render_frame_host_->GetProcess()->GetID()) ||
+      WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
           browser_context, current_effective_url)) {
     // If so, force a swap if destination is not an acceptable URL for Web UI.
     // Here, data URLs are never allowed.
@@ -747,7 +749,8 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
   SiteInstance* new_instance = current_instance;
 
   // We do not currently swap processes for navigations in webview tag guests.
-  bool is_guest_scheme = current_instance->GetSiteURL().SchemeIs(kGuestScheme);
+  if (current_instance->GetSiteURL().SchemeIs(kGuestScheme))
+    return current_instance;
 
   // Determine if we need a new BrowsingInstance for this entry.  If true, this
   // implies that it will get a new SiteInstance (and likely process), and that
@@ -765,14 +768,13 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
       render_frame_host_->GetSiteInstance()->GetSiteURL();
   bool current_is_view_source_mode = current_entry ?
       current_entry->IsViewSourceMode() : dest_is_view_source_mode;
-  bool force_swap = !is_guest_scheme &&
-      ShouldSwapBrowsingInstancesForNavigation(
-          current_effective_url,
-          current_is_view_source_mode,
-          dest_instance,
-          SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
-          dest_is_view_source_mode);
-  if (!is_guest_scheme && (ShouldTransitionCrossSite() || force_swap)) {
+  bool force_swap = ShouldSwapBrowsingInstancesForNavigation(
+      current_effective_url,
+      current_is_view_source_mode,
+      dest_instance,
+      SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
+      dest_is_view_source_mode);
+  if (ShouldTransitionCrossSite() || force_swap) {
     new_instance = GetSiteInstanceForURL(
         dest_url,
         dest_instance,

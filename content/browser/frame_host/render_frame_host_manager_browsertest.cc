@@ -1473,4 +1473,27 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
       new_web_contents->GetRenderViewHost()->GetEnabledBindings());
 }
 
+// crbug.com/424526
+// The test loads a WebUI page in rocess-per-tab mode, then navigates to a blank
+// page and then to a regular page. The bug reproduces if blank page is visited
+// in between WebUI and regular page.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ForceSwapAfterWebUIBindings) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kProcessPerTab);
+  ASSERT_TRUE(test_server()->Start());
+
+  const GURL web_ui_url(std::string(kChromeUIScheme) + "://" +
+                        std::string(kChromeUIGpuHost));
+  NavigateToURL(shell(), web_ui_url);
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+      shell()->web_contents()->GetRenderProcessHost()->GetID()));
+
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  GURL regular_page_url(test_server()->GetURL("files/title2.html"));
+  NavigateToURL(shell(), regular_page_url);
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+      shell()->web_contents()->GetRenderProcessHost()->GetID()));
+}
+
 }  // namespace content
