@@ -260,6 +260,7 @@ enum WindowManagerName {
   WM_BLACKBOX,
   WM_COMPIZ,
   WM_ENLIGHTENMENT,
+  WM_FLUXBOX,
   WM_I3,
   WM_ICE_WM,
   WM_ION3,

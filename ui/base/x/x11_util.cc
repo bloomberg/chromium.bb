@@ -1253,6 +1253,8 @@ WindowManagerName GuessWindowManager() {
       return WM_COMPIZ;
     if (name == "e16" || name == "Enlightenment")
       return WM_ENLIGHTENMENT;
+    if (name == "Fluxbox")
+      return WM_FLUXBOX;
     if (name == "i3")
       return WM_I3;
     if (StartsWithASCII(name, "IceWM", true))
