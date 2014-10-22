@@ -42,8 +42,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/media_switches.h"
 #include "net/base/net_util.h"
@@ -54,13 +52,14 @@
 #include "ash/shell.h"
 #endif  // defined(OS_CHROMEOS)
 
-
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/permissions/permissions_data.h"
 #endif
 
 using content::BrowserThread;
@@ -92,6 +91,7 @@ const content::MediaStreamDevice* FindDeviceWithId(
   return NULL;
 }
 
+#if defined(ENABLE_EXTENSIONS)
 // This is a short-term solution to grant camera and/or microphone access to
 // extensions:
 // 1. Virtual keyboard extension.
@@ -132,6 +132,7 @@ bool IsOriginForCasting(const GURL& origin) {
       // Google Cast Stable
       origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/";
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 // Helper to get title of the calling application shown in the screen capture
 // notification.
@@ -140,13 +141,15 @@ base::string16 GetApplicationTitle(content::WebContents* web_contents,
   // Use extension name as title for extensions and host/origin for drive-by
   // web.
   std::string title;
+#if defined(ENABLE_EXTENSIONS)
   if (extension) {
     title = extension->name();
-  } else {
-    GURL url = web_contents->GetURL();
-    title = url.SchemeIsSecure() ? net::GetHostAndOptionalPort(url)
-                                 : url.GetOrigin().spec();
+    return base::UTF8ToUTF16(title);
   }
+#endif
+  GURL url = web_contents->GetURL();
+  title = url.SchemeIsSecure() ? net::GetHostAndOptionalPort(url)
+                               : url.GetOrigin().spec();
   return base::UTF8ToUTF16(title);
 }
 
@@ -154,7 +157,7 @@ base::string16 GetApplicationTitle(content::WebContents* web_contents,
 // Registers to display notification if |display_notification| is true.
 // Returns an instance of MediaStreamUI to be passed to content layer.
 scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
-    content::MediaStreamDevices& devices,
+    content::MediaStreamDevices* devices,
     content::DesktopMediaID media_id,
     bool capture_audio,
     bool display_notification,
@@ -164,11 +167,11 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   scoped_ptr<content::MediaStreamUI> ui;
 
   // Add selected desktop source to the list.
-  devices.push_back(content::MediaStreamDevice(
+  devices->push_back(content::MediaStreamDevice(
       content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
   if (capture_audio) {
     // Use the special loopback device ID for system audio capture.
-    devices.push_back(content::MediaStreamDevice(
+    devices->push_back(content::MediaStreamDevice(
         content::MEDIA_LOOPBACK_AUDIO_CAPTURE,
         media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
   }
@@ -212,10 +215,10 @@ gfx::NativeWindow FindParentWindowForWebContents(
 }
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
 const extensions::Extension* GetExtensionForOrigin(
     Profile* profile,
     const GURL& security_origin) {
-#if defined(ENABLE_EXTENSIONS)
   if (!security_origin.SchemeIs(extensions::kExtensionScheme))
     return NULL;
 
@@ -225,10 +228,8 @@ const extensions::Extension* GetExtensionForOrigin(
       extensions_service->extensions()->GetByID(security_origin.host());
   DCHECK(extension);
   return extension;
-#else
-  return NULL;
-#endif
 }
+#endif
 
 }  // namespace
 
@@ -336,12 +337,18 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
              request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
     ProcessTabCaptureAccessRequest(
         web_contents, request, callback, extension);
-  } else if (extension && (extension->is_platform_app() ||
-                           IsMediaRequestWhitelistedForExtension(extension))) {
-    // For extensions access is approved based on extension permissions.
-    ProcessMediaAccessRequestFromPlatformAppOrExtension(
-        web_contents, request, callback, extension);
   } else {
+#if defined(ENABLE_EXTENSIONS)
+    bool is_whitelisted =
+        extension && (extension->is_platform_app() ||
+                      IsMediaRequestWhitelistedForExtension(extension));
+    if (is_whitelisted) {
+      // For extensions access is approved based on extension permissions.
+      ProcessMediaAccessRequestFromPlatformAppOrExtension(
+          web_contents, request, callback, extension);
+      return;
+    }
+#endif
     ProcessRegularMediaAccessRequest(web_contents, request, callback);
   }
 }
@@ -355,6 +362,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
          type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
+#if defined(ENABLE_EXTENSIONS)
   const extensions::Extension* extension =
       GetExtensionForOrigin(profile, security_origin);
 
@@ -365,6 +373,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
             ? extensions::APIPermission::kAudioCapture
             : extensions::APIPermission::kVideoCapture);
   }
+#endif
 
   if (CheckAllowAllMediaStreamContentForOrigin(profile, security_origin))
     return true;
@@ -521,7 +530,7 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
        loopback_audio_supported);
 
   ui = GetDevicesForDesktopCapture(
-      devices, media_id, capture_audio, true,
+      &devices, media_id, capture_audio, true,
       GetApplicationTitle(web_contents, extension),
       base::UTF8ToUTF16(original_extension_name));
 
@@ -544,14 +553,20 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   loopback_audio_supported = true;
 #endif
 
-  const bool component_extension =
+  bool component_extension = false;
+#if defined(ENABLE_EXTENSIONS)
+  component_extension =
       extension && extension->location() == extensions::Manifest::COMPONENT;
+#endif
 
-  const bool screen_capture_enabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUserMediaScreenCapturing) ||
+  bool screen_capture_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUserMediaScreenCapturing);
+#if defined(ENABLE_EXTENSIONS)
+  screen_capture_enabled |=
       IsOriginForCasting(request.security_origin) ||
       IsBuiltInExtension(request.security_origin);
+#endif
 
   const bool origin_is_secure =
       request.security_origin.SchemeIsSecure() ||
@@ -589,8 +604,12 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     // For component extensions, bypass message box.
     bool user_approved = false;
     if (!component_extension) {
-      base::string16 application_name = base::UTF8ToUTF16(
-          extension ? extension->name() : request.security_origin.spec());
+      base::string16 application_name =
+          base::UTF8ToUTF16(request.security_origin.spec());
+#if defined(ENABLE_EXTENSIONS)
+      if (extension)
+        application_name = base::UTF8ToUTF16(extension->name());
+#endif
       base::string16 confirmation_text = l10n_util::GetStringFUTF16(
           request.audio_type == content::MEDIA_NO_SERVICE ?
               IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT :
@@ -624,7 +643,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       // display the notification for stream capture.
       bool display_notification = !component_extension;
 
-      ui = GetDevicesForDesktopCapture(devices, screen_id, capture_audio,
+      ui = GetDevicesForDesktopCapture(&devices, screen_id, capture_audio,
                                        display_notification, application_title,
                                        application_title);
       DCHECK(!devices.empty());
@@ -690,6 +709,7 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void MediaCaptureDevicesDispatcher::
     ProcessMediaAccessRequestFromPlatformAppOrExtension(
         content::WebContents* web_contents,
@@ -773,6 +793,7 @@ void MediaCaptureDevicesDispatcher::
 
   callback.Run(devices, result, ui.Pass());
 }
+#endif
 
 void MediaCaptureDevicesDispatcher::ProcessRegularMediaAccessRequest(
     content::WebContents* web_contents,

@@ -24,9 +24,6 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
-#include "chrome/browser/sync/glue/extension_data_type_controller.h"
-#include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #include "chrome/browser/sync/glue/history_delete_directives_data_type_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
@@ -81,6 +78,9 @@
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/api/synced_notifications_private/synced_notifications_shim.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
+#include "chrome/browser/sync/glue/extension_data_type_controller.h"
+#include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -104,9 +104,11 @@ using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChromeReportUnrecoverableError;
+#if defined(ENABLE_EXTENSIONS)
 using browser_sync::ExtensionBackedDataTypeController;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
+#endif
 using browser_sync::HistoryDeleteDirectivesDataTypeController;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::SearchEngineDataTypeController;
@@ -303,6 +305,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types,
     ProfileSyncService* pss) {
+#if defined(ENABLE_EXTENSIONS)
   // App sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APPS)) {
@@ -316,6 +319,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
     pss->RegisterDataTypeController(
         new ExtensionDataTypeController(syncer::EXTENSIONS, this, profile_));
   }
+#endif
 
   // Preference sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -352,6 +356,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
         new SearchEngineDataTypeController(this, profile_));
   }
 
+#if defined(ENABLE_EXTENSIONS)
   // Extension setting sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
@@ -365,6 +370,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
     pss->RegisterDataTypeController(new ExtensionSettingDataTypeController(
         syncer::APP_SETTINGS, this, profile_));
   }
+#endif
 
 #if defined(ENABLE_APP_LIST)
   if (app_list::switches::IsAppListSyncEnabled()) {
