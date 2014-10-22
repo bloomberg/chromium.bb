@@ -2055,7 +2055,6 @@ internal_notest_paladin = internal_paladin.derive(non_testable_builder)
 internal_notest_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
 internal_notest_paladin.add_config('daisy_freon-paladin',
