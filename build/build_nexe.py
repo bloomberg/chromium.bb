@@ -158,6 +158,7 @@ class Builder(object):
     toolname = build_type[0]
     self.outtype = build_type[1]
     self.osname = pynacl.platform.GetOS()
+    self.deferred_log = []
 
     # pnacl toolchain can be selected in three different ways
     # 1. by specifying --arch=pnacl directly to generate
@@ -396,6 +397,13 @@ class Builder(object):
   def Log(self, msg):
     if self.verbose:
       sys.stderr.write(str(msg) + '\n')
+    else:
+      self.deferred_log.append(str(msg) + '\n')
+
+  def EmitDeferredLog(self):
+    for line in self.deferred_log:
+      sys.stderr.write(line)
+    self.deferred_log = []
 
   def Run(self, cmd_line, get_output=False, possibly_batch=True, **kwargs):
     """Helper which runs a command line.
@@ -1122,6 +1130,9 @@ def Main(argv):
   except Error as e:
     sys.stderr.write('%s\n' % e)
     return 1
+  except:
+    build.EmitDeferredLog()
+    raise
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv))
