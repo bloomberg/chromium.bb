@@ -329,6 +329,39 @@ TEST_F(WindowSelectorTest, BasicGesture) {
   EXPECT_EQ(window2.get(), GetFocusedWindow());
 }
 
+// Tests that we do not crash and overview mode remains engaged if the desktop
+// is tapped while a finger is already down over a window.
+TEST_F(WindowSelectorTest, NoCrashWithDesktopTap) {
+  scoped_ptr<aura::Window> window(CreateWindow(gfx::Rect(200, 300, 250, 450)));
+
+  // We need a widget for the close button to work, a bare window will crash.
+  scoped_ptr<views::Widget> widget(new views::Widget);
+  views::Widget::InitParams params;
+  params.bounds = gfx::Rect(0, 0, 400, 400);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = window->parent();
+  widget->Init(params);
+  widget->Show();
+
+  ToggleOverview();
+
+  gfx::Rect bounds =
+      gfx::ToEnclosingRect(GetTransformedBoundsInRootWindow(window.get()));
+  ui::test::EventGenerator event_generator(window->GetRootWindow(),
+                                           bounds.CenterPoint());
+
+  // Press down on the window.
+  const int kTouchId = 19;
+  event_generator.PressTouchId(kTouchId);
+
+  // Tap on the desktop, which should not cause a crash. Overview mode should
+  // remain engaged because the transparent widget over the window has capture.
+  event_generator.GestureTapAt(gfx::Point(0, 0));
+  EXPECT_TRUE(IsSelecting());
+
+  event_generator.ReleaseTouchId(kTouchId);
+}
+
 // Tests that a window does not receive located events when in overview mode.
 TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
   gfx::Rect window_bounds(20, 10, 200, 300);
@@ -365,7 +398,7 @@ TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
 TEST_F(WindowSelectorTest, CloseButton) {
   scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(200, 300, 250, 450)));
 
-  // We need a widget for the close button the work, a bare window will crash.
+  // We need a widget for the close button to work, a bare window will crash.
   scoped_ptr<views::Widget> widget(new views::Widget);
   views::Widget::InitParams params;
   params.bounds = gfx::Rect(0, 0, 400, 400);

@@ -13,6 +13,7 @@
 namespace ash {
 
 namespace {
+const char kTransparentButtonName[] = "TransparentButton";
 
 // Transparent button that handles events which activate windows in overview
 // mode.
@@ -22,6 +23,28 @@ class TransparentButton : public views::CustomButton {
       : CustomButton(listener) {
   }
   virtual ~TransparentButton() {}
+
+  // views::CustomButton:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    // TODO(tdanderson): Re-evaluate whether we want to set capture once
+    //                   the a fix has landed to avoid crashing when a window
+    //                   having an active gesture sequence is destroyed as a
+    //                   result of a gesture in a separate window.
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN)
+      GetWidget()->SetCapture(this);
+
+    if (event->type() == ui::ET_GESTURE_TAP ||
+        event->type() == ui::ET_GESTURE_END) {
+      GetWidget()->ReleaseCapture();
+    }
+
+    CustomButton::OnGestureEvent(event);
+    event->StopPropagation();
+  }
+
+  virtual const char* GetClassName() const override {
+    return kTransparentButtonName;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransparentButton);
