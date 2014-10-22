@@ -274,10 +274,6 @@ class BuildBot(object):
                 return True
         return False
 
-    # FIXME: This method needs to die, but is used by a unit test at the moment.
-    def _builder_statuses_with_names_matching_regexps(self, builder_statuses, name_regexps):
-        return [builder for builder in builder_statuses if self._matches_regexps(builder["name"], name_regexps)]
-
     # FIXME: These _fetch methods should move to a networking class.
     def _fetch_build_dictionary(self, builder, build_number):
         # Note: filter=1 will remove None and {} and '', which cuts noise but can
