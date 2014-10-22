@@ -826,7 +826,7 @@ v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)
     return boundFunction->IsFunction() ? v8::Handle<v8::Function>::Cast(boundFunction) : function;
 }
 
-void addHiddenValueToArray(v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex, v8::Isolate* isolate)
+void addHiddenValueToArray(v8::Isolate* isolate, v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex)
 {
     v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
     if (arrayValue->IsNull() || arrayValue->IsUndefined()) {
@@ -838,7 +838,7 @@ void addHiddenValueToArray(v8::Handle<v8::Object> object, v8::Local<v8::Value> v
     array->Set(v8::Integer::New(isolate, array->Length()), value);
 }
 
-void removeHiddenValueFromArray(v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex, v8::Isolate* isolate)
+void removeHiddenValueFromArray(v8::Isolate* isolate, v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex)
 {
     v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
     if (!arrayValue->IsArray())
@@ -853,19 +853,19 @@ void removeHiddenValueFromArray(v8::Handle<v8::Object> object, v8::Local<v8::Val
     }
 }
 
-void moveEventListenerToNewWrapper(v8::Handle<v8::Object> object, EventListener* oldValue, v8::Local<v8::Value> newValue, int arrayIndex, v8::Isolate* isolate)
+void moveEventListenerToNewWrapper(v8::Isolate* isolate, v8::Handle<v8::Object> object, EventListener* oldValue, v8::Local<v8::Value> newValue, int arrayIndex)
 {
     if (oldValue) {
         V8AbstractEventListener* oldListener = V8AbstractEventListener::cast(oldValue);
         if (oldListener) {
             v8::Local<v8::Object> oldListenerObject = oldListener->getExistingListenerObject();
             if (!oldListenerObject.IsEmpty())
-                removeHiddenValueFromArray(object, oldListenerObject, arrayIndex, isolate);
+                removeHiddenValueFromArray(isolate, object, oldListenerObject, arrayIndex);
         }
     }
     // Non-callable input is treated as null and ignored
     if (newValue->IsFunction())
-        addHiddenValueToArray(object, newValue, arrayIndex, isolate);
+        addHiddenValueToArray(isolate, object, newValue, arrayIndex);
 }
 
 v8::Isolate* toIsolate(ExecutionContext* context)
@@ -975,7 +975,7 @@ void GetDevToolsFunctionInfo(v8::Handle<v8::Function> function, v8::Isolate* iso
     }
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Isolate* isolate)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate* isolate, ExecutionContext* context, v8::Handle<v8::Function> function)
 {
     int scriptId = 0;
     String resourceName;

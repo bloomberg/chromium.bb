@@ -118,7 +118,7 @@ private:
     SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
     explicit SerializedScriptValue(const String& wireData);
 
-    static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(ArrayBufferArray&, ExceptionState&, v8::Isolate*);
+    static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(v8::Isolate*, ArrayBufferArray&, ExceptionState&);
 
     String m_data;
     OwnPtr<ArrayBufferContentsArray> m_arrayBufferContentsArray;

@@ -2905,7 +2905,7 @@ static void neuterArrayBufferInAllWorlds(DOMArrayBuffer* object)
     }
 }
 
-PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValue::transferArrayBuffers(ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
+PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValue::transferArrayBuffers(v8::Isolate* isolate, ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState)
 {
     ASSERT(arrayBuffers.size());
 
@@ -2961,7 +2961,7 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
         m_data = writer.takeWireString();
         ASSERT(m_data.impl()->hasOneRef());
         if (arrayBuffers && arrayBuffers->size())
-            m_arrayBufferContentsArray = transferArrayBuffers(*arrayBuffers, exceptionState, isolate);
+            m_arrayBufferContentsArray = transferArrayBuffers(isolate, *arrayBuffers, exceptionState);
         return;
     case Serializer::JSException:
         ASSERT_NOT_REACHED();

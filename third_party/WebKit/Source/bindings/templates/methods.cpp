@@ -272,7 +272,7 @@ else
 {# Length check needed to skip action on legacy calls without enough arguments.
    http://crbug.com/353484 #}
 if (info.Length() >= {{argument_index}} + 1 && listener && !impl->toNode())
-    {{hidden_dependency_action}}(info.Holder(), info[{{argument_index}}], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
+    {{hidden_dependency_action}}(info.GetIsolate(), info.Holder(), info[{{argument_index}}], {{v8_class}}::eventListenerCacheIndex);
 {% endif %}
 {% endmacro %}
 
