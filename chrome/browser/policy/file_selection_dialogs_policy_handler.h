@@ -15,11 +15,11 @@ namespace policy {
 class FileSelectionDialogsPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   FileSelectionDialogsPolicyHandler();
-  virtual ~FileSelectionDialogsPolicyHandler();
+  ~FileSelectionDialogsPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileSelectionDialogsPolicyHandler);

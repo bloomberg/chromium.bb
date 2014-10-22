@@ -36,7 +36,7 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   // chrome/test/data/policy/policy_|test_name|.json.
   explicit LocalPolicyTestServer(const std::string& test_name);
 
-  virtual ~LocalPolicyTestServer();
+  ~LocalPolicyTestServer() override;
 
   // Sets the policy signing key and verification signature used by the server.
   // This must be called before starting the server, and only works when the
@@ -80,10 +80,9 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   GURL GetServiceURL() const;
 
   // net::LocalTestServer:
-  virtual bool SetPythonPath() const override;
-  virtual bool GetTestServerPath(
-      base::FilePath* testserver_path) const override;
-  virtual bool GenerateAdditionalArguments(
+  bool SetPythonPath() const override;
+  bool GetTestServerPath(base::FilePath* testserver_path) const override;
+  bool GenerateAdditionalArguments(
       base::DictionaryValue* arguments) const override;
 
  private:

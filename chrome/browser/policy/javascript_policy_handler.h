@@ -18,13 +18,13 @@ class PolicyMap;
 class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
  public:
   JavascriptPolicyHandler();
-  virtual ~JavascriptPolicyHandler();
+  ~JavascriptPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(JavascriptPolicyHandler);

@@ -862,7 +862,7 @@ class CloudPolicyInvalidatorUserTypedTest
 
  private:
   // CloudPolicyInvalidatorTest:
-  virtual em::DeviceRegisterRequest::Type GetPolicyType() const override;
+  em::DeviceRegisterRequest::Type GetPolicyType() const override;
 
   // Get histogram samples for the given histogram.
   scoped_ptr<base::HistogramSamples> GetHistogramSamples(

@@ -24,7 +24,7 @@ class SchemaRegistryService : public KeyedService {
   SchemaRegistryService(scoped_ptr<SchemaRegistry> registry,
                         const Schema& chrome_schema,
                         CombinedSchemaRegistry* global_registry);
-  virtual ~SchemaRegistryService();
+  ~SchemaRegistryService() override;
 
   SchemaRegistry* registry() const { return registry_.get(); }
 

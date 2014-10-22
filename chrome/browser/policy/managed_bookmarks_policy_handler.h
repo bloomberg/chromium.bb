@@ -17,11 +17,11 @@ namespace policy {
 class ManagedBookmarksPolicyHandler : public SchemaValidatingPolicyHandler {
  public:
   explicit ManagedBookmarksPolicyHandler(Schema chrome_schema);
-  virtual ~ManagedBookmarksPolicyHandler();
+  ~ManagedBookmarksPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   void FilterBookmarks(base::ListValue* bookmarks);

@@ -67,7 +67,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   friend struct DefaultSingletonTraits<ProfilePolicyConnectorFactory>;
 
   ProfilePolicyConnectorFactory();
-  virtual ~ProfilePolicyConnectorFactory();
+  ~ProfilePolicyConnectorFactory() override;
 
   ProfilePolicyConnector* GetForProfileInternal(Profile* profile);
 
@@ -76,14 +76,11 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
       bool force_immediate_load);
 
   // BrowserContextKeyedBaseFactory:
-  virtual void BrowserContextShutdown(
-      content::BrowserContext* context) override;
-  virtual void BrowserContextDestroyed(
-      content::BrowserContext* context) override;
-  virtual void SetEmptyTestingFactory(
-      content::BrowserContext* context) override;
-  virtual bool HasTestingFactory(content::BrowserContext* context) override;
-  virtual void CreateServiceNow(content::BrowserContext* context) override;
+  void BrowserContextShutdown(content::BrowserContext* context) override;
+  void BrowserContextDestroyed(content::BrowserContext* context) override;
+  void SetEmptyTestingFactory(content::BrowserContext* context) override;
+  bool HasTestingFactory(content::BrowserContext* context) override;
+  void CreateServiceNow(content::BrowserContext* context) override;
 
   typedef std::map<Profile*, ProfilePolicyConnector*> ConnectorMap;
   ConnectorMap connectors_;

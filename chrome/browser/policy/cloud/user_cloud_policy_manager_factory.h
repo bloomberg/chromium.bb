@@ -88,7 +88,7 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   friend struct DefaultSingletonTraits<UserCloudPolicyManagerFactory>;
 
   UserCloudPolicyManagerFactory();
-  virtual ~UserCloudPolicyManagerFactory();
+  ~UserCloudPolicyManagerFactory() override;
 
   // See comments for the static versions above.
   UserCloudPolicyManager* GetManagerForBrowserContext(
@@ -106,16 +106,12 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
       content::BrowserContext* off_the_record_context);
 
   // BrowserContextKeyedBaseFactory:
-  virtual void BrowserContextShutdown(
-      content::BrowserContext* context) override;
-  virtual void BrowserContextDestroyed(
-      content::BrowserContext* context) override;
-  virtual void SetEmptyTestingFactory(
-      content::BrowserContext* context) override;
-  virtual bool HasTestingFactory(content::BrowserContext* context) override;
-  virtual void CreateServiceNow(content::BrowserContext* context) override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-
+  void BrowserContextShutdown(content::BrowserContext* context) override;
+  void BrowserContextDestroyed(content::BrowserContext* context) override;
+  void SetEmptyTestingFactory(content::BrowserContext* context) override;
+  bool HasTestingFactory(content::BrowserContext* context) override;
+  void CreateServiceNow(content::BrowserContext* context) override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   typedef std::map<content::BrowserContext*, ManagerWrapper*> ManagerWrapperMap;
 

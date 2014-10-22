@@ -51,8 +51,7 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
         update_called_(0),
         set_blacklist_called_(false) {}
 
-  virtual ~TestingURLBlacklistManager() {
-  }
+  ~TestingURLBlacklistManager() override {}
 
   // Make this method public for testing.
   using URLBlacklistManager::ScheduleUpdate;
@@ -66,12 +65,12 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
   }
 
   // URLBlacklistManager overrides:
-  virtual void SetBlacklist(scoped_ptr<URLBlacklist> blacklist) override {
+  void SetBlacklist(scoped_ptr<URLBlacklist> blacklist) override {
     set_blacklist_called_ = true;
     URLBlacklistManager::SetBlacklist(blacklist.Pass());
   }
 
-  virtual void Update() override {
+  void Update() override {
     update_called_++;
     URLBlacklistManager::Update();
   }

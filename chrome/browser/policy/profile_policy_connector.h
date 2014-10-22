@@ -27,7 +27,7 @@ class SchemaRegistry;
 class ProfilePolicyConnector : public KeyedService {
  public:
   ProfilePolicyConnector();
-  virtual ~ProfilePolicyConnector();
+  ~ProfilePolicyConnector() override;
 
   // If |force_immediate_load| then disk caches will be loaded synchronously.
   void Init(bool force_immediate_load,
@@ -40,7 +40,7 @@ class ProfilePolicyConnector : public KeyedService {
   void InitForTesting(scoped_ptr<PolicyService> service);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // This is never NULL.
   PolicyService* policy_service() const { return policy_service_.get(); }

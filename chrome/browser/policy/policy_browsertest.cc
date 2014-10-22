@@ -510,15 +510,14 @@ class WebContentsLoadedOrDestroyedWatcher
  public:
   explicit WebContentsLoadedOrDestroyedWatcher(
       content::WebContents* web_contents);
-  virtual ~WebContentsLoadedOrDestroyedWatcher();
+  ~WebContentsLoadedOrDestroyedWatcher() override;
 
   // Waits until the WebContents's load is done or until it is destroyed.
   void Wait();
 
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed() override;
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) override;
+  void WebContentsDestroyed() override;
+  void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -604,14 +603,14 @@ class PolicyTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
@@ -2800,7 +2799,7 @@ class RestoreOnStartupPolicyTest
   }
 #endif
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     // Set early policies now, before the browser is created.
     (this->*(GetParam()))();
@@ -2816,7 +2815,7 @@ class RestoreOnStartupPolicyTest
                            command_line->argv().begin()));
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -2964,7 +2963,7 @@ class PolicyStatisticsCollectorTest : public PolicyTest {
   PolicyStatisticsCollectorTest() {}
   virtual ~PolicyStatisticsCollectorTest() {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
     policies.Set(key::kShowHomeButton,
@@ -3254,7 +3253,7 @@ INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
 // started.
 class PolicyVariationsServiceTest : public PolicyTest {
  public:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
     policies.Set(key::kVariationsRestrictParameter,

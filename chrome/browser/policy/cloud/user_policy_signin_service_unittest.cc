@@ -376,7 +376,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
 class UserPolicySigninServiceSignedInTest : public UserPolicySigninServiceTest {
  public:
-  virtual void AddProfile() override {
+  void AddProfile() override {
     // UserCloudPolicyManager should not be initialized.
     ASSERT_FALSE(manager_->core()->service());
 

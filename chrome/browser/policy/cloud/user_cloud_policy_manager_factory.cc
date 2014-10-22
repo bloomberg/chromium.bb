@@ -40,11 +40,9 @@ class UserCloudPolicyManagerFactory::ManagerWrapper : public KeyedService {
       : manager_(manager) {
     DCHECK(manager);
   }
-  virtual ~ManagerWrapper() {}
+  ~ManagerWrapper() override {}
 
-  virtual void Shutdown() override {
-    manager_->Shutdown();
-  }
+  void Shutdown() override { manager_->Shutdown(); }
 
   UserCloudPolicyManager* manager() { return manager_; }
 

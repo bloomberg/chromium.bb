@@ -39,21 +39,21 @@ class UserPolicySigninServiceFactory
 
  protected:
   // BrowserContextKeyedServiceFactory implementation.
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
   // Overridden to cause this object to be created when the profile is created.
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   // Register the preferences related to cloud-based user policy.
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
   friend struct DefaultSingletonTraits<UserPolicySigninServiceFactory>;
 
   UserPolicySigninServiceFactory();
-  virtual ~UserPolicySigninServiceFactory();
+  ~UserPolicySigninServiceFactory() override;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninServiceFactory);
 };

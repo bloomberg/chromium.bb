@@ -27,14 +27,14 @@ class PolicyHeaderServiceFactory : public BrowserContextKeyedServiceFactory {
 
  protected:
   // BrowserContextKeyedServiceFactory implementation.
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
  private:
   friend struct DefaultSingletonTraits<PolicyHeaderServiceFactory>;
 
   PolicyHeaderServiceFactory();
-  virtual ~PolicyHeaderServiceFactory();
+  ~PolicyHeaderServiceFactory() override;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyHeaderServiceFactory);
 };

@@ -69,7 +69,7 @@ class UserPolicySigninServiceBase : public KeyedService,
       UserCloudPolicyManager* policy_manager,
       SigninManager* signin_manager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context);
-  virtual ~UserPolicySigninServiceBase();
+  ~UserPolicySigninServiceBase() override;
 
   // Initiates a policy fetch as part of user signin, using a |dm_token| and
   // |client_id| fetched via RegisterForPolicy(). |callback| is invoked
@@ -83,24 +83,24 @@ class UserPolicySigninServiceBase : public KeyedService,
       const PolicyFetchCallback& callback);
 
   // SigninManagerBase::Observer implementation:
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // CloudPolicyService::Observer implementation:
-  virtual void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnInitializationCompleted(CloudPolicyService* service) override;
 
   // CloudPolicyClient::Observer implementation:
-  virtual void OnPolicyFetched(CloudPolicyClient* client) override;
-  virtual void OnRegistrationStateChanged(CloudPolicyClient* client) override;
-  virtual void OnClientError(CloudPolicyClient* client) override;
+  void OnPolicyFetched(CloudPolicyClient* client) override;
+  void OnRegistrationStateChanged(CloudPolicyClient* client) override;
+  void OnClientError(CloudPolicyClient* client) override;
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   void SetSystemRequestContext(
       scoped_refptr<net::URLRequestContextGetter> request_context);

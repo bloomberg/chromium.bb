@@ -40,7 +40,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
       SigninManager* signin_manager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context,
       ProfileOAuth2TokenService* oauth2_token_service);
-  virtual ~UserPolicySigninService();
+  ~UserPolicySigninService() override;
 
   // Registers a CloudPolicyClient for fetching policy for a user. The
   // |oauth2_login_token| and |username| are explicitly passed because
@@ -52,22 +52,22 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
                          const PolicyRegistrationCallback& callback);
 
   // OAuth2TokenService::Observer implementation:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // CloudPolicyService::Observer implementation:
-  virtual void OnInitializationCompleted(CloudPolicyService* service) override;
+  void OnInitializationCompleted(CloudPolicyService* service) override;
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  protected:
   // UserPolicySigninServiceBase implementation:
-  virtual void InitializeUserCloudPolicyManager(
+  void InitializeUserCloudPolicyManager(
       const std::string& username,
       scoped_ptr<CloudPolicyClient> client) override;
 
-  virtual void PrepareForUserCloudPolicyManagerShutdown() override;
-  virtual void ShutdownUserCloudPolicyManager() override;
+  void PrepareForUserCloudPolicyManagerShutdown() override;
+  void ShutdownUserCloudPolicyManager() override;
 
  private:
   // Fetches an OAuth token to allow the cloud policy service to register with

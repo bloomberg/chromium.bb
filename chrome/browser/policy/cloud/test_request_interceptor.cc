@@ -160,10 +160,10 @@ class TestRequestInterceptor::Delegate : public net::URLRequestInterceptor {
  public:
   Delegate(const std::string& hostname,
            scoped_refptr<base::SequencedTaskRunner> io_task_runner);
-  virtual ~Delegate();
+  ~Delegate() override;
 
   // net::URLRequestInterceptor implementation:
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
