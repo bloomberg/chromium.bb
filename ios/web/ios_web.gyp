@@ -20,6 +20,7 @@
         'public/favicon_status.cc',
         'public/favicon_status.h',
         'public/navigation_item.h',
+        'public/referrer.h',
         'public/security_style.h',
         'public/ssl_status.cc',
         'public/ssl_status.h',
