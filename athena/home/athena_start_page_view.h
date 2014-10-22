@@ -8,11 +8,13 @@
 #include "athena/athena_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/view.h"
 
 namespace app_list {
+class AppListModelObserver;
 class AppListViewDelegate;
 class SearchBoxView;
 class SearchResultListView;
@@ -22,7 +24,8 @@ namespace athena {
 
 class ATHENA_EXPORT AthenaStartPageView
     : public views::View,
-      public app_list::SearchBoxViewDelegate {
+      public app_list::SearchBoxViewDelegate,
+      public app_list::AppListItemListObserver {
  public:
   class Observer {
    public:
@@ -51,6 +54,8 @@ class ATHENA_EXPORT AthenaStartPageView
 
   static const char kViewClassName[];
 
+  static size_t GetMaxIconNumForTest();
+
   // A struct which bundles the layout data of subviews.
   struct LayoutData {
     gfx::Rect search_box;
@@ -69,6 +74,8 @@ class ATHENA_EXPORT AthenaStartPageView
   // Returns the bounds for |VISIBLE_CENTERED|.
   LayoutData CreateCenteredBounds(int width);
 
+  void UpdateAppIcons();
+
   // Schedules the animation for the layout the search box and the search
   // results.
   void LayoutSearchResults(bool should_show_search_results);
@@ -83,6 +90,15 @@ class ATHENA_EXPORT AthenaStartPageView
 
   // app_list::SearchBoxViewDelegate:
   virtual void QueryChanged(app_list::SearchBoxView* sender) override;
+
+  // app_list::AppListItemListObserver:
+  virtual void OnListItemAdded(size_t index,
+                               app_list::AppListItem* item) override;
+  virtual void OnListItemRemoved(size_t index,
+                                 app_list::AppListItem* item) override;
+  virtual void OnListItemMoved(size_t from_index,
+                               size_t to_index,
+                               app_list::AppListItem* item) override;
 
   // Not owned.
   app_list::AppListViewDelegate* delegate_;

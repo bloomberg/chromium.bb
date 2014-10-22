@@ -7,22 +7,44 @@
 
 #include "athena/home/public/app_model_builder.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace athena {
 
-class ATHENA_EXPORT ExtensionAppModelBuilder : public AppModelBuilder {
+class ATHENA_EXPORT ExtensionAppModelBuilder
+    : public AppModelBuilder,
+      public extensions::ExtensionRegistryObserver {
  public:
   explicit ExtensionAppModelBuilder(content::BrowserContext* browser_context);
   virtual ~ExtensionAppModelBuilder();
 
-  virtual void PopulateApps(app_list::AppListModel* model) override;
+  virtual void RegisterAppListModel(app_list::AppListModel* model) override;
 
  private:
+  void AddItem(scoped_refptr<const extensions::Extension> extension);
+
+  // extensions::ExtensionRegistryObserver:
+  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
+                                    const extensions::Extension* extension,
+                                    bool is_update) override;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UninstallReason reason) override;
+
   content::BrowserContext* browser_context_;
+
+  // Unowned pointer to the app list model.
+  app_list::AppListModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppModelBuilder);
 };

@@ -84,8 +84,12 @@ class AppIconButton : public views::ImageButton,
                       public views::ButtonListener {
  public:
   explicit AppIconButton(app_list::AppListItem* item)
-      : ImageButton(this),
-        item_(item) {
+      : ImageButton(this), item_(nullptr) {
+    SetItem(item);
+  }
+
+  void SetItem(app_list::AppListItem* item) {
+    item_ = item;
     // TODO(mukai): icon should be resized.
     SetImage(STATE_NORMAL, &item->icon());
   }
@@ -209,11 +213,9 @@ AthenaStartPageView::AthenaStartPageView(
   app_icon_container_->layer()->SetFillsBoundsOpaquely(false);
   app_icon_container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kIconMargin));
-  app_list::AppListItemList* top_level =
-      view_delegate->GetModel()->top_level_item_list();
-  for (size_t i = 0; i < std::min(top_level->item_count(), kMaxIconNum); ++i)
-    app_icon_container_->AddChildView(new AppIconButton(top_level->item_at(i)));
   app_icon_container_->SetSize(GetIconContainerSize());
+  UpdateAppIcons();
+  view_delegate->GetModel()->top_level_item_list()->AddObserver(this);
 
   control_icon_container_ = new views::View();
   control_icon_container_->SetPaintToLayer(true);
@@ -235,7 +237,9 @@ AthenaStartPageView::AthenaStartPageView(
   AddChildView(search_box_container_);
 }
 
-AthenaStartPageView::~AthenaStartPageView() {}
+AthenaStartPageView::~AthenaStartPageView() {
+  delegate_->GetModel()->top_level_item_list()->RemoveObserver(this);
+}
 
 void AthenaStartPageView::RequestFocusOnSearchBox() {
   search_box_view_->search_box()->RequestFocus();
@@ -322,6 +326,28 @@ AthenaStartPageView::LayoutData AthenaStartPageView::CreateCenteredBounds(
   state.logo_opacity = 1.0f;
   state.background_opacity = 1.0f;
   return state;
+}
+
+void AthenaStartPageView::UpdateAppIcons() {
+  app_list::AppListItemList* top_level =
+      delegate_->GetModel()->top_level_item_list();
+  size_t max_items = std::min(top_level->item_count(), kMaxIconNum);
+  for (size_t i = 0; i < max_items; ++i) {
+    if (i < static_cast<size_t>(app_icon_container_->child_count())) {
+      AppIconButton* button =
+          static_cast<AppIconButton*>(app_icon_container_->child_at(i));
+      button->SetItem(top_level->item_at(i));
+    } else {
+      app_icon_container_->AddChildView(
+          new AppIconButton(top_level->item_at(i)));
+    }
+  }
+
+  while (max_items < static_cast<size_t>(app_icon_container_->child_count())) {
+    scoped_ptr<views::View> remover(
+        app_icon_container_->child_at(app_icon_container_->child_count() - 1));
+    app_icon_container_->RemoveChildView(remover.get());
+  }
 }
 
 void AthenaStartPageView::LayoutSearchResults(bool should_show_search_results) {
@@ -443,6 +469,27 @@ void AthenaStartPageView::QueryChanged(app_list::SearchBoxView* sender) {
     search_results_view_->SetSelectedIndex(0);
 
   LayoutSearchResults(!query.empty());
+}
+
+void AthenaStartPageView::OnListItemAdded(size_t index,
+                                          app_list::AppListItem* item) {
+  UpdateAppIcons();
+}
+
+void AthenaStartPageView::OnListItemRemoved(size_t index,
+                                            app_list::AppListItem* item) {
+  UpdateAppIcons();
+}
+
+void AthenaStartPageView::OnListItemMoved(size_t from_index,
+                                          size_t to_index,
+                                          app_list::AppListItem* item) {
+  UpdateAppIcons();
+}
+
+// static
+size_t AthenaStartPageView::GetMaxIconNumForTest() {
+  return kMaxIconNum;
 }
 
 }  // namespace athena

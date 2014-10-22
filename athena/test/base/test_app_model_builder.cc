@@ -96,7 +96,7 @@ TestAppModelBuilder::TestAppModelBuilder() {
 TestAppModelBuilder::~TestAppModelBuilder() {
 }
 
-void TestAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
+void TestAppModelBuilder::RegisterAppListModel(app_list::AppListModel* model) {
   for (int i = 0; i < static_cast<int>(DummyItem::LAST_TYPE); ++i) {
     model->AddItem(scoped_ptr<app_list::AppListItem>(
         new DummyItem(static_cast<DummyItem::Type>(i))));

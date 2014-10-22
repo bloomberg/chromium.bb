@@ -20,8 +20,9 @@ class ATHENA_EXPORT AppModelBuilder {
  public:
   virtual ~AppModelBuilder() {}
 
-  // Fills |model| with the currently available app_list::AppListItems.
-  virtual void PopulateApps(app_list::AppListModel* model) = 0;
+  // Registers |model| to the builder so that the builder can fill the currently
+  // available app_list::AppListItems.
+  virtual void RegisterAppListModel(app_list::AppListModel* model) = 0;
 };
 
 }  // namespace athena

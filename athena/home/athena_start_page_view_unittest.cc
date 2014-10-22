@@ -19,13 +19,6 @@
 
 namespace athena {
 
-namespace {
-
-// The number of dummy applications in this tetst.
-const size_t kNumApps = 10;
-
-}
-
 class AthenaTestViewDelegate : public app_list::test::AppListTestViewDelegate {
  public:
   AthenaTestViewDelegate() {}
@@ -48,11 +41,8 @@ class AthenaStartPageViewTest : public test::AthenaTestBase {
   // testing::Test:
   virtual void SetUp() override {
     test::AthenaTestBase::SetUp();
-    app_list::test::AppListTestModel* model = view_delegate_.GetTestModel();
-    for (size_t i = 0; i < kNumApps; ++i) {
-      model->AddItem(new app_list::test::AppListTestModel::AppListTestItem(
-          base::StringPrintf("id-%" PRIuS, i), model));
-    }
+    for (size_t i = 0; i < GetMaxIconNum(); ++i)
+      AddTestItem(i);
 
     view_.reset(new AthenaStartPageView(&view_delegate_));
     SetSize(gfx::Size(1280, 800));
@@ -67,6 +57,24 @@ class AthenaStartPageViewTest : public test::AthenaTestBase {
     view_->SetSize(new_size);
     view_->Layout();
   }
+
+  void AddTestItem(size_t index) {
+    app_list::test::AppListTestModel* model = view_delegate_.GetTestModel();
+    model->AddItem(new app_list::test::AppListTestModel::AppListTestItem(
+        GetAppIdFor(index), model));
+  }
+
+  static size_t GetMaxIconNum() {
+    return AthenaStartPageView::GetMaxIconNumForTest();
+  }
+
+  static std::string GetAppIdFor(size_t index) {
+    return base::StringPrintf("id-%" PRIuS, index);
+  }
+
+  app_list::AppListModel* GetModel() { return view_delegate_.GetTestModel(); }
+
+  views::View* GetIconsContainer() { return view_->app_icon_container_; }
 
   gfx::Rect GetIconsBounds() const {
     return view_->app_icon_container_->layer()->GetTargetBounds();
@@ -242,6 +250,30 @@ TEST_F(AthenaStartPageViewTest, SearchFromBottom) {
   EXPECT_TRUE(IsLogoVisible());
   EXPECT_TRUE(GetVisibleQuery().empty());
   EXPECT_EQ(1.0f, layout_state());
+}
+
+TEST_F(AthenaStartPageViewTest, AppAddRemove) {
+  gfx::Rect icons_bounds = GetIconsBounds();
+  EXPECT_EQ(GetMaxIconNum(),
+            static_cast<size_t>(GetIconsContainer()->child_count()));
+
+  GetModel()->DeleteItem(GetAppIdFor(1));
+
+  // The removed icon disappear, however its bound should not change.
+  EXPECT_EQ(GetMaxIconNum() - 1,
+            static_cast<size_t>(GetIconsContainer()->child_count()));
+  EXPECT_EQ(icons_bounds.size().ToString(), GetIconsBounds().size().ToString());
+
+  AddTestItem(GetMaxIconNum() + 1);
+  EXPECT_EQ(GetMaxIconNum(),
+            static_cast<size_t>(GetIconsContainer()->child_count()));
+  EXPECT_EQ(icons_bounds.size().ToString(), GetIconsBounds().size().ToString());
+
+  // Adding more doesn't cause any effects.
+  AddTestItem(GetMaxIconNum() + 2);
+  EXPECT_EQ(GetMaxIconNum(),
+            static_cast<size_t>(GetIconsContainer()->child_count()));
+  EXPECT_EQ(icons_bounds.size().ToString(), GetIconsBounds().size().ToString());
 }
 
 }  // namespace athena

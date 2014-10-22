@@ -34,7 +34,7 @@ AppListViewDelegate::AppListViewDelegate(
     SearchControllerFactory* search_factory)
     : model_(new app_list::AppListModel),
       speech_ui_(new app_list::SpeechUIModel) {
-  model_builder->PopulateApps(model_.get());
+  model_builder->RegisterAppListModel(model_.get());
   model_->search_box()->SetHintText(
       l10n_util::GetStringUTF16(IDS_ATHENA_SEARCH_BOX_HINT));
   if (search_factory) {
