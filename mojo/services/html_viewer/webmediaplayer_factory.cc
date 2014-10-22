@@ -9,7 +9,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/null_audio_sink.h"
+#include "media/audio/audio_output_stream_sink.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
@@ -87,9 +87,9 @@ WebMediaPlayerFactory::GetAudioHardwareConfig() {
 
 scoped_refptr<media::AudioRendererSink>
 WebMediaPlayerFactory::CreateAudioRendererSink() {
-  // TODO(acolwell): Replace this with an AudioRendererSink implementation
-  // that actually talks to the audio device or an audio mojo service.
-  return new media::NullAudioSink(GetMediaThreadTaskRunner());
+  // TODO(dalecurtis): Replace this with an interface to an actual mojo service;
+  // the AudioOutputStreamSink will not work in sandboxed processes.
+  return new media::AudioOutputStreamSink();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

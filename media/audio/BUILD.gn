@@ -65,6 +65,8 @@ source_set("audio") {
     "audio_output_proxy.h",
     "audio_output_resampler.cc",
     "audio_output_resampler.h",
+    "audio_output_stream_sink.cc",
+    "audio_output_stream_sink.h",
     "audio_power_monitor.cc",
     "audio_power_monitor.h",
     "audio_source_diverter.h",

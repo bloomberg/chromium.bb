@@ -121,6 +121,8 @@
         'audio/audio_output_proxy.h',
         'audio/audio_output_resampler.cc',
         'audio/audio_output_resampler.h',
+        'audio/audio_output_stream_sink.cc',
+        'audio/audio_output_stream_sink.h',
         'audio/audio_power_monitor.cc',
         'audio/audio_power_monitor.h',
         'audio/audio_source_diverter.h',
