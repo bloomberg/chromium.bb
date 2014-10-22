@@ -12,8 +12,6 @@ SelectedFileInfo::SelectedFileInfo(const base::FilePath& in_file_path,
                                    const base::FilePath& in_local_path)
     : file_path(in_file_path),
       local_path(in_local_path) {
-  if (local_path.empty())
-    local_path = file_path;
   display_name = in_file_path.BaseName().value();
 }
 

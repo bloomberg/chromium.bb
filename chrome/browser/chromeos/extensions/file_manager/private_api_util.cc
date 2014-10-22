@@ -119,7 +119,10 @@ void GetSelectedFileInfoInternal(Profile* profile,
       // MTP, or provided file system), we should resolve the path.
       switch (params->local_path_option) {
         case NO_LOCAL_PATH_RESOLUTION:
-          break;  // No special handling needed.
+          // Pass empty local path.
+          params->selected_files.push_back(
+              ui::SelectedFileInfo(file_path, base::FilePath()));
+          break;
         case NEED_LOCAL_PATH_FOR_OPENING:
           GetFileNativeLocalPathForOpening(
               profile,
@@ -137,9 +140,10 @@ void GetSelectedFileInfoInternal(Profile* profile,
                          base::Passed(&params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
       }
+    } else {
+      params->selected_files.push_back(
+          ui::SelectedFileInfo(file_path, file_path));
     }
-    params->selected_files.push_back(
-        ui::SelectedFileInfo(file_path, base::FilePath()));
   }
   params->callback.Run(params->selected_files);
 }

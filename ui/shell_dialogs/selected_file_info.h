@@ -20,10 +20,9 @@ struct SHELL_DIALOGS_EXPORT SelectedFileInfo {
 
   // The actual local path to the selected file. This can be a snapshot file
   // with a human unreadable name like /blah/.d41d8cd98f00b204e9800998ecf8427e.
-  // |real_path| can differ from |file_path| for drive files (e.g.
+  // |local_path| can differ from |file_path| for drive files (e.g.
   // /drive_cache/temporary/d41d8cd98f00b204e9800998ecf8427e vs.
   // /special/drive/foo.txt).
-  // If not set, defaults to |file_path|.
   base::FilePath local_path;
 
   // This field is optional. The display name contains only the base name
@@ -41,4 +40,3 @@ struct SHELL_DIALOGS_EXPORT SelectedFileInfo {
 }  // namespace ui
 
 #endif  // UI_SHELL_DIALOGS_SELECTED_FILE_INFO_H_
-
