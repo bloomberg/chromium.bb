@@ -72,6 +72,7 @@ HRTFDatabaseLoader::~HRTFDatabaseLoader()
 {
     ASSERT(isMainThread());
 
+    MutexLocker locker(m_lock);
     waitForLoaderThreadCompletion();
     m_hrtfDatabase.clear();
 }
@@ -79,6 +80,7 @@ HRTFDatabaseLoader::~HRTFDatabaseLoader()
 void HRTFDatabaseLoader::load()
 {
     ASSERT(!isMainThread());
+    MutexLocker locker(m_lock);
     if (!m_hrtfDatabase) {
         // Load the default HRTF database.
         m_hrtfDatabase = HRTFDatabase::create(m_databaseSampleRate);
@@ -89,8 +91,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
 {
     ASSERT(isMainThread());
 
-    MutexLocker locker(m_threadLock);
-
+    MutexLocker locker(m_lock);
     if (!m_hrtfDatabase && !m_databaseLoaderThread) {
         // Start the asynchronous database loading process.
         m_databaseLoaderThread = adoptPtr(Platform::current()->createThread("HRTF database loader"));
@@ -98,14 +99,14 @@ void HRTFDatabaseLoader::loadAsynchronously()
     }
 }
 
-bool HRTFDatabaseLoader::isLoaded() const
+bool HRTFDatabaseLoader::isLoaded()
 {
+    MutexLocker locker(m_lock);
     return m_hrtfDatabase;
 }
 
 void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
 {
-    MutexLocker locker(m_threadLock);
     m_databaseLoaderThread.clear();
 }
 
