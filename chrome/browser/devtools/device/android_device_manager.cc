@@ -326,7 +326,7 @@ AndroidDeviceManager::DeviceProvider::~DeviceProvider() {
 
 void AndroidDeviceManager::Device::QueryDeviceInfo(
     const DeviceInfoCallback& callback) {
-  device_message_loop_->PostTask(
+  message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&DeviceProvider::QueryDeviceInfo,
                  provider_,
@@ -338,7 +338,7 @@ void AndroidDeviceManager::Device::QueryDeviceInfo(
 
 void AndroidDeviceManager::Device::OpenSocket(const std::string& socket_name,
                                               const SocketCallback& callback) {
-  device_message_loop_->PostTask(
+  message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&DeviceProvider::OpenSocket,
                  provider_,
@@ -351,7 +351,7 @@ void AndroidDeviceManager::Device::SendJsonRequest(
     const std::string& socket_name,
     const std::string& request,
     const CommandCallback& callback) {
-  device_message_loop_->PostTask(
+  message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&DeviceProvider::SendJsonRequest,
                  provider_,
@@ -366,7 +366,7 @@ void AndroidDeviceManager::Device::SendJsonRequest(
 void AndroidDeviceManager::Device::HttpUpgrade(const std::string& socket_name,
                                                const std::string& url,
                                                const SocketCallback& callback) {
-  device_message_loop_->PostTask(
+  message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&DeviceProvider::HttpUpgrade,
                  provider_,
@@ -382,17 +382,21 @@ AndroidDeviceManager::Device::Device(
     scoped_refptr<base::MessageLoopProxy> device_message_loop,
     scoped_refptr<DeviceProvider> provider,
     const std::string& serial)
-    : device_message_loop_(device_message_loop),
+    : message_loop_proxy_(device_message_loop),
       provider_(provider),
       serial_(serial),
       weak_factory_(this) {
 }
 
 AndroidDeviceManager::Device::~Device() {
+  std::set<AndroidWebSocket*> sockets_copy(sockets_);
+  for (AndroidWebSocket* socket : sockets_copy)
+    socket->OnSocketClosed();
+
   provider_->AddRef();
   DeviceProvider* raw_ptr = provider_.get();
   provider_ = NULL;
-  device_message_loop_->PostTask(
+  message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&ReleaseDeviceAndProvider,
                  base::Unretained(raw_ptr),

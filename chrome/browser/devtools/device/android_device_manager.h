@@ -83,8 +83,9 @@ class AndroidDeviceManager
     void Connected(int result, scoped_ptr<net::StreamSocket> socket);
     void OnFrameRead(const std::string& message);
     void OnSocketClosed();
+    void Terminate();
 
-    scoped_refptr<Device> device_;
+    Device* device_;
     WebSocketImpl* socket_impl_;
     Delegate* delegate_;
     base::WeakPtrFactory<AndroidWebSocket> weak_factory_;
@@ -126,9 +127,10 @@ class AndroidDeviceManager
 
     virtual ~Device();
 
-    scoped_refptr<base::MessageLoopProxy> device_message_loop_;
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
     scoped_refptr<DeviceProvider> provider_;
     std::string serial_;
+    std::set<AndroidWebSocket*> sockets_;
     base::WeakPtrFactory<Device> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Device);

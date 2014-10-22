@@ -226,16 +226,12 @@ class DevToolsAndroidBridge
 
   scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
       scoped_refptr<RemoteBrowser> browser);
-
-  typedef std::pair<scoped_refptr<AndroidDeviceManager::Device>,
-                    scoped_refptr<RemoteDevice>> CompleteDevice;
-  typedef std::vector<CompleteDevice> CompleteDevices;
-  typedef base::Callback<void(const CompleteDevices&)> DeviceListCallback;
-
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<DevToolsAndroidBridge>;
+
+  friend class PortForwardingController;
 
   class AgentHostDelegate;
   class DiscoveryRequest;
@@ -247,8 +243,12 @@ class DevToolsAndroidBridge
   void StopDeviceListPolling();
   bool NeedsDeviceListPolling();
 
-  void RequestDeviceList(const DeviceListCallback& callback);
+  typedef std::pair<scoped_refptr<AndroidDeviceManager::Device>,
+                    scoped_refptr<RemoteDevice>> CompleteDevice;
+  typedef std::vector<CompleteDevice> CompleteDevices;
+  typedef base::Callback<void(const CompleteDevices&)> DeviceListCallback;
 
+  void RequestDeviceList(const DeviceListCallback& callback);
   void ReceivedDeviceList(const CompleteDevices& complete_devices);
 
   void StartDeviceCountPolling();
@@ -270,10 +270,8 @@ class DevToolsAndroidBridge
                            base::DictionaryValue* params,
                            const base::Closure callback);
 
-  AndroidDeviceManager::AndroidWebSocket* CreateWebSocket(
-      const BrowserId& browser_id,
-      const std::string& url,
-      AndroidDeviceManager::AndroidWebSocket::Delegate* delegate);
+  scoped_refptr<AndroidDeviceManager::Device> FindDevice(
+      const std::string& serial);
 
   void PageCreatedOnUIThread(scoped_refptr<RemoteBrowser> browser,
                              const RemotePageCallback& callback,

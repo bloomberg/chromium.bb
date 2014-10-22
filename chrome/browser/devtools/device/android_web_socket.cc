@@ -132,12 +132,14 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
     const std::string& socket_name,
     const std::string& url,
     Delegate* delegate)
-    : device_(device),
+    : device_(device.get()),
       socket_impl_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(delegate_);
+  DCHECK(device_);
+  device_->sockets_.insert(this);
   device_->HttpUpgrade(
       socket_name, url,
       base::Bind(&AndroidWebSocket::Connected, weak_factory_.GetWeakPtr()));
@@ -145,15 +147,15 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
 
 AndroidDeviceManager::AndroidWebSocket::~AndroidWebSocket() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (socket_impl_)
-    device_->device_message_loop_->DeleteSoon(FROM_HERE, socket_impl_);
+  Terminate();
 }
 
 void AndroidDeviceManager::AndroidWebSocket::SendFrame(
     const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(socket_impl_);
-  device_->device_message_loop_->PostTask(
+  DCHECK(device_);
+  device_->message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&WebSocketImpl::SendFrame,
                  base::Unretained(socket_impl_), message));
@@ -170,7 +172,7 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
   socket_impl_ = new WebSocketImpl(base::MessageLoopProxy::current(),
                                    weak_factory_.GetWeakPtr(),
                                    socket.Pass());
-  device_->device_message_loop_->PostTask(
+  device_->message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&WebSocketImpl::StartListening,
                  base::Unretained(socket_impl_)));
@@ -185,13 +187,27 @@ void AndroidDeviceManager::AndroidWebSocket::OnFrameRead(
 
 void AndroidDeviceManager::AndroidWebSocket::OnSocketClosed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Terminate();
   delegate_->OnSocketClosed();
+}
+
+void AndroidDeviceManager::AndroidWebSocket::Terminate() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (socket_impl_) {
+    DCHECK(device_);
+    device_->message_loop_proxy_->DeleteSoon(FROM_HERE, socket_impl_);
+    socket_impl_ = nullptr;
+  }
+  if (device_) {
+    device_->sockets_.erase(this);
+    device_ = nullptr;
+  }
 }
 
 AndroidDeviceManager::AndroidWebSocket*
 AndroidDeviceManager::Device::CreateWebSocket(
-    const std::string& socket,
+    const std::string& socket_name,
     const std::string& url,
     AndroidWebSocket::Delegate* delegate) {
-  return new AndroidWebSocket(this, socket, url, delegate);
+  return new AndroidWebSocket(this, socket_name, url, delegate);
 }
