@@ -142,12 +142,15 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 # Subpixel font scaling requires DirectWrite on windows (which isn't supported
 # on XP) and antialiasing on mac (which isn't enabled tests).
 [ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
+[ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
 [ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
+[ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
 [ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
+[ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
 [ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
 
 # We don't have full plane2 support on XP.
