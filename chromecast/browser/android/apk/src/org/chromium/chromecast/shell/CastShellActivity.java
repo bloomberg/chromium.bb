@@ -31,11 +31,12 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class CastShellActivity extends Activity {
     private static final String TAG = "CastShellActivity";
+    private static final boolean DEBUG = false;
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
     private static final int DEFAULT_HEIGHT_PIXELS = 720;
     public static final String ACTION_EXTRA_RESOLUTION_HEIGHT =
-        "org.chromium.chromecast.shell.intent.extra.RESOLUTION_HEIGHT";
+            "org.chromium.chromecast.shell.intent.extra.RESOLUTION_HEIGHT";
 
     private CastWindowManager mCastWindowManager;
     private AudioManager mAudioManager;
@@ -57,6 +58,7 @@ public class CastShellActivity extends Activity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        if (DEBUG) Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         exitIfUrlMissing();
 
@@ -115,7 +117,7 @@ public class CastShellActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        if (DEBUG) Log.d(TAG, "onDestroy");
 
         unregisterBroadcastReceiver();
 
@@ -123,10 +125,13 @@ public class CastShellActivity extends Activity {
             mCastWindowManager.stopCastWindow(mNativeCastWindow, false /* gracefully */);
             mNativeCastWindow = 0;
         }
+
+        super.onDestroy();
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
+        if (DEBUG) Log.d(TAG, "onNewIntent");
         // Only handle direct intents (e.g. "fling") if this activity is also managing
         // the browser process.
         if (!shouldLaunchBrowser()) return;
@@ -141,7 +146,23 @@ public class CastShellActivity extends Activity {
     }
 
     @Override
+    protected void onStart() {
+        if (DEBUG) Log.d(TAG, "onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        if (DEBUG) Log.d(TAG, "onStop");
+        // As soon as the cast app is no longer in the foreground, we ought to immediately tear
+        // everything down.
+        finishGracefully();
+        super.onStop();
+    }
+
+    @Override
     protected void onResume() {
+        if (DEBUG) Log.d(TAG, "onResume");
         super.onResume();
 
         // Inform ContentView that this activity is being shown.
@@ -158,9 +179,7 @@ public class CastShellActivity extends Activity {
 
     @Override
     protected void onPause() {
-        // As soon as the cast app is no longer in the foreground, we ought to immediately tear
-        // everything down. Apps should not continue running and playing sound in the background.
-        super.onPause();
+        if (DEBUG) Log.d(TAG, "onPause");
 
         // Release the audio focus. Note that releasing audio focus does not stop audio playback,
         // it just notifies the framework that this activity has stopped playing audio.
@@ -171,7 +190,7 @@ public class CastShellActivity extends Activity {
         ContentViewCore view = getActiveContentViewCore();
         if (view != null) view.onHide();
 
-        finishGracefully();
+        super.onPause();
     }
 
     protected void finishGracefully() {
@@ -229,7 +248,7 @@ public class CastShellActivity extends Activity {
         }
         // Log an exception so that the exit cause is obvious when reading the logs.
         Log.e(TAG, "Activity will not start",
-            new IllegalArgumentException("Intent did not contain a valid url"));
+                new IllegalArgumentException("Intent did not contain a valid url"));
         System.exit(-1);
     }
 
