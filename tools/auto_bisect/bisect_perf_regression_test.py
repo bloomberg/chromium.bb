@@ -12,7 +12,8 @@ SRC = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir)
 sys.path.append(os.path.join(SRC, 'third_party', 'pymock'))
 
 import bisect_perf_regression
-import bisect_results
+import bisect_printer
+import bisect_utils
 import mock
 import source_control
 
@@ -26,15 +27,13 @@ DEFAULT_OPTIONS = {
     'metric': 'fake/metric',
     'good_revision': 280000,
     'bad_revision': 280005,
-  }
+}
 
 
 def _GetBisectPerformanceMetricsInstance(options_dict):
   """Returns an instance of the BisectPerformanceMetrics class."""
-  bisect_options = bisect_perf_regression.BisectOptions.FromDict(options_dict)
-  bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
-      bisect_options)
-  return bisect_instance
+  opts = bisect_perf_regression.BisectOptions.FromDict(options_dict)
+  return bisect_perf_regression.BisectPerformanceMetrics(opts)
 
 
 def _GetExtendedOptions(d, f):
@@ -61,13 +60,14 @@ def _GenericDryRun(options, print_results=False):
   try:
     shutil.rmtree = lambda path, onerror: None
     bisect_instance = _GetBisectPerformanceMetricsInstance(options)
-    results = bisect_instance.Run(bisect_instance.opts.command,
-                                  bisect_instance.opts.bad_revision,
-                                  bisect_instance.opts.good_revision,
-                                  bisect_instance.opts.metric)
+    results = bisect_instance.Run(
+        bisect_instance.opts.command, bisect_instance.opts.bad_revision,
+        bisect_instance.opts.good_revision, bisect_instance.opts.metric)
 
     if print_results:
-      bisect_instance.FormatAndPrintResults(results)
+      printer = bisect_printer.BisectPrinter(bisect_instance.opts,
+                                             bisect_instance.depot_registry)
+      printer.FormatAndPrintResults(results)
 
     return results
   finally:
@@ -84,74 +84,6 @@ class BisectPerfRegressionTest(unittest.TestCase):
 
   def tearDown(self):
     os.chdir(self.cwd)
-
-  def _AssertConfidence(self, score, bad_values, good_values):
-    """Checks whether the given sets of values have a given confidence score.
-
-    The score represents our confidence that the two sets of values wouldn't
-    be as different as they are just by chance; that is, that some real change
-    occurred between the two sets of values.
-
-    Args:
-      score: Expected confidence score.
-      bad_values: First list of numbers.
-      good_values: Second list of numbers.
-    """
-    # ConfidenceScore takes a list of lists but these lists are flattened
-    # inside the function.
-    confidence = bisect_results.ConfidenceScore(
-        [[v] for v in bad_values],
-        [[v] for v in good_values])
-    self.assertEqual(score, confidence)
-
-  def testConfidenceScore_ZeroConfidence(self):
-    # The good and bad sets contain the same values, so the confidence that
-    # they're different should be zero.
-    self._AssertConfidence(0.0, [4, 5, 7, 6, 8, 7], [8, 7, 6, 7, 5, 4])
-
-  def testConfidenceScore_MediumConfidence(self):
-    self._AssertConfidence(80.0, [0, 1, 1, 1, 2, 2], [1, 1, 1, 3, 3, 4])
-
-  def testConfidenceScore_HighConfidence(self):
-    self._AssertConfidence(95.0, [0, 1, 1, 1, 2, 2], [1, 2, 2, 3, 3, 4])
-
-  def testConfidenceScore_VeryHighConfidence(self):
-    # Confidence is high if the two sets of values have no internal variance.
-    self._AssertConfidence(99.9, [1, 1, 1, 1], [1.2, 1.2, 1.2, 1.2])
-    self._AssertConfidence(99.9, [1, 1, 1, 1], [1.01, 1.01, 1.01, 1.01])
-
-  def testConfidenceScore_UnbalancedSampleSize(self):
-    # The second set of numbers only contains one number, so confidence is 0.
-    self._AssertConfidence(0.0, [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2], [1.4])
-
-  def testConfidenceScore_EmptySample(self):
-    # Confidence is zero if either or both samples are empty.
-    self._AssertConfidence(0.0, [], [])
-    self._AssertConfidence(0.0, [], [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2, 1.3])
-    self._AssertConfidence(0.0, [1.1, 1.2, 1.1, 1.2, 1.0, 1.3, 1.2, 1.3], [])
-
-  def testConfidenceScore_FunctionalTestResults(self):
-    self._AssertConfidence(80.0, [1, 1, 0, 1, 1, 1, 0, 1], [0, 0, 1, 0, 1, 0])
-    self._AssertConfidence(99.9, [1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0])
-
-  def testConfidenceScore_RealWorldCases(self):
-    """This method contains a set of data from actual bisect results.
-
-    The confidence scores asserted below were all copied from the actual
-    results, so the purpose of this test method is mainly to show what the
-    results for real cases are, and compare when we change the confidence
-    score function in the future.
-    """
-    self._AssertConfidence(80, [133, 130, 132, 132, 130, 129], [129, 129, 125])
-    self._AssertConfidence(99.5, [668, 667], [498, 498, 499])
-    self._AssertConfidence(80, [67, 68], [65, 65, 67])
-    self._AssertConfidence(0, [514], [514])
-    self._AssertConfidence(90, [616, 613, 607, 615], [617, 619, 619, 617])
-    self._AssertConfidence(0, [3.5, 5.8, 4.7, 3.5, 3.6], [2.8])
-    self._AssertConfidence(90, [3, 3, 3], [2, 2, 2, 3])
-    self._AssertConfidence(0, [1999004, 1999627], [223355])
-    self._AssertConfidence(90, [1040, 934, 961], [876, 875, 789])
-    self._AssertConfidence(90, [309, 305, 304], [302, 302, 299, 303, 298])
 
   def testParseDEPSStringManually(self):
     """Tests DEPS parsing."""
@@ -249,7 +181,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
         bisect_options)
     bisect_instance.opts.target_platform = target_platform
     git_revision = source_control.ResolveToRevision(
-        revision, 'chromium', bisect_perf_regression.DEPOT_DEPS_NAME, 100)
+        revision, 'chromium', bisect_utils.DEPOT_DEPS_NAME, 100)
     depot = 'chromium'
     command = bisect_instance.GetCompatibleCommand(
         original_command, git_revision, depot)
@@ -320,7 +252,6 @@ class BisectPerfRegressionTest(unittest.TestCase):
     results = _GenericDryRun(_GetExtendedOptions(1, -100))
     self.assertIsNone(results.error)
 
-
   def testGetCommitPosition(self):
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
     self.assertEqual(291765, source_control.GetCommitPosition(cp_git_rev))
@@ -366,18 +297,18 @@ class DepotDirectoryRegistryTest(unittest.TestCase):
   def setUp(self):
     self.old_chdir = os.chdir
     os.chdir = self.mockChdir
-    self.old_depot_names = bisect_perf_regression.DEPOT_NAMES
-    bisect_perf_regression.DEPOT_NAMES = ['mock_depot']
-    self.old_depot_deps_name = bisect_perf_regression.DEPOT_DEPS_NAME
-    bisect_perf_regression.DEPOT_DEPS_NAME = {'mock_depot': {'src': 'src/foo'}}
+    self.old_depot_names = bisect_utils.DEPOT_NAMES
+    bisect_utils.DEPOT_NAMES = ['mock_depot']
+    self.old_depot_deps_name = bisect_utils.DEPOT_DEPS_NAME
+    bisect_utils.DEPOT_DEPS_NAME = {'mock_depot': {'src': 'src/foo'}}
 
     self.registry = bisect_perf_regression.DepotDirectoryRegistry('/mock/src')
     self.cur_dir = None
 
   def tearDown(self):
     os.chdir = self.old_chdir
-    bisect_perf_regression.DEPOT_NAMES = self.old_depot_names
-    bisect_perf_regression.DEPOT_DEPS_NAME = self.old_depot_deps_name
+    bisect_utils.DEPOT_NAMES = self.old_depot_names
+    bisect_utils.DEPOT_DEPS_NAME = self.old_depot_deps_name
 
   def mockChdir(self, new_dir):
     self.cur_dir = new_dir
