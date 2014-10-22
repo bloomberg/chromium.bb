@@ -21,6 +21,13 @@ import re
 import sys
 
 
+# Files that should be 0-length when mapped.
+KEY_TOUCHED = 'isolate_dependency_touched'
+# Files that should be tracked by the build tool.
+KEY_TRACKED = 'isolate_dependency_tracked'
+# Files that should not be tracked by the build tool.
+KEY_UNTRACKED = 'isolate_dependency_untracked'
+
 # Valid variable name.
 VALID_VARIABLE = '[A-Za-z_][A-Za-z_0-9]*'
 
@@ -82,7 +89,9 @@ def pretty_print(variables, stdout):
   Similar to pprint.print() but with NIH syndrome.
   """
   # Order the dictionary keys by these keys in priority.
-  ORDER = ('variables', 'condition', 'command', 'files', 'read_only')
+  ORDER = (
+      'variables', 'condition', 'command', 'files', 'read_only',
+      KEY_TRACKED, KEY_UNTRACKED)
 
   def sorting_key(x):
     """Gives priority to 'most important' keys before the others."""
@@ -229,6 +238,9 @@ def match_configs(expr, config_variables, all_configs):
 def verify_variables(variables):
   """Verifies the |variables| dictionary is in the expected format."""
   VALID_VARIABLES = [
+    KEY_TOUCHED,
+    KEY_TRACKED,
+    KEY_UNTRACKED,
     'command',
     'files',
     'read_only',
@@ -335,7 +347,11 @@ class ConfigSettings(object):
       # Otherwise, the path must be absolute.
       assert os.path.isabs(isolate_dir), isolate_dir
 
-    self.files = sorted(values.get('files', []))
+    self.files = sorted(
+        values.get('files', []) +
+        values.get(KEY_TOUCHED, []) +
+        values.get(KEY_TRACKED, []) +
+        values.get(KEY_UNTRACKED, []))
     self.command = values.get('command', [])[:]
     self.isolate_dir = isolate_dir
     self.read_only = values.get('read_only')
