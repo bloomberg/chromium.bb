@@ -93,6 +93,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   std::bitset<MAX_FINGERS> altered_slots_;
 
   struct InProgressEvents {
+    InProgressEvents();
+
     float x_;
     float y_;
     int id_;  // Device reported "unique" touch point id; -1 means not active
