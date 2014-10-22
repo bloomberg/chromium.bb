@@ -45,9 +45,6 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   explicit V4L2VideoEncodeAccelerator(scoped_ptr<V4L2Device> device);
   virtual ~V4L2VideoEncodeAccelerator();
 
-  static std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfilesStatic();
-
   // media::VideoEncodeAccelerator implementation.
   virtual std::vector<media::VideoEncodeAccelerator::SupportedProfile>
       GetSupportedProfiles() override;
