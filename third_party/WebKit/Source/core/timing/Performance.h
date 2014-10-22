@@ -53,7 +53,7 @@ class ResourceResponse;
 class ResourceTimingInfo;
 class UserTiming;
 
-typedef WillBeHeapVector<RefPtrWillBeMember<PerformanceEntry> > PerformanceEntryVector;
+using PerformanceEntryVector = WillBeHeapVector<RefPtrWillBeMember<PerformanceEntry>>;
 
 class Performance final : public RefCountedWillBeGarbageCollectedFinalized<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();

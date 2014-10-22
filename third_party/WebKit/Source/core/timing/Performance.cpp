@@ -65,7 +65,7 @@ const AtomicString& Performance::interfaceName() const
 ExecutionContext* Performance::executionContext() const
 {
     if (!frame())
-        return 0;
+        return nullptr;
     return frame()->document();
 }
 
@@ -109,9 +109,10 @@ PerformanceEntryVector Performance::getEntriesByType(const String& entryType)
 {
     PerformanceEntryVector entries;
 
-    if (equalIgnoringCase(entryType, "resource"))
-        for (PerformanceEntryVector::const_iterator resource = m_resourceTimingBuffer.begin(); resource != m_resourceTimingBuffer.end(); ++resource)
-            entries.append(*resource);
+    if (equalIgnoringCase(entryType, "resource")) {
+        for (const auto& resource : m_resourceTimingBuffer)
+            entries.append(resource);
+    }
 
     if (m_userTiming) {
         if (equalIgnoringCase(entryType, "mark"))
@@ -128,10 +129,12 @@ PerformanceEntryVector Performance::getEntriesByName(const String& name, const S
 {
     PerformanceEntryVector entries;
 
-    if (entryType.isNull() || equalIgnoringCase(entryType, "resource"))
-        for (PerformanceEntryVector::const_iterator resource = m_resourceTimingBuffer.begin(); resource != m_resourceTimingBuffer.end(); ++resource)
-            if ((*resource)->name() == name)
-                entries.append(*resource);
+    if (entryType.isNull() || equalIgnoringCase(entryType, "resource")) {
+        for (const auto& resource : m_resourceTimingBuffer) {
+            if (resource->name() == name)
+                entries.append(resource);
+        }
+    }
 
     if (m_userTiming) {
         if (entryType.isNull() || equalIgnoringCase(entryType, "mark"))
@@ -174,8 +177,8 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
     const String& securityOrigin = requestingDocument->securityOrigin()->toString();
     Vector<String> timingAllowOrigins;
     timingAllowOriginString.string().split(' ', timingAllowOrigins);
-    for (size_t i = 0; i < timingAllowOrigins.size(); ++i) {
-        if (timingAllowOrigins[i] == securityOrigin)
+    for (const String& allowOrigin : timingAllowOrigins) {
+        if (allowOrigin == securityOrigin)
             return true;
     }
 
@@ -187,8 +190,8 @@ static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, 
     if (!passesTimingAllowCheck(finalResponse, initiatorDocument, emptyAtom))
         return false;
 
-    for (size_t i = 0; i < redirectChain.size(); i++) {
-        if (!passesTimingAllowCheck(redirectChain[i], initiatorDocument, emptyAtom))
+    for (const ResourceResponse& response : redirectChain) {
+        if (!passesTimingAllowCheck(response, initiatorDocument, emptyAtom))
             return false;
     }
 

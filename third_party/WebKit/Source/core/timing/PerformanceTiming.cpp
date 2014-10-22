@@ -309,7 +309,7 @@ unsigned long long PerformanceTiming::loadEventEnd() const
 DocumentLoader* PerformanceTiming::documentLoader() const
 {
     if (!m_frame)
-        return 0;
+        return nullptr;
 
     return m_frame->loader().documentLoader();
 }
@@ -317,11 +317,11 @@ DocumentLoader* PerformanceTiming::documentLoader() const
 const DocumentTiming* PerformanceTiming::documentTiming() const
 {
     if (!m_frame)
-        return 0;
+        return nullptr;
 
     Document* document = m_frame->document();
     if (!document)
-        return 0;
+        return nullptr;
 
     return &document->timing();
 }
@@ -330,7 +330,7 @@ DocumentLoadTiming* PerformanceTiming::documentLoadTiming() const
 {
     DocumentLoader* loader = documentLoader();
     if (!loader)
-        return 0;
+        return nullptr;
 
     return loader->timing();
 }
@@ -339,7 +339,7 @@ ResourceLoadTiming* PerformanceTiming::resourceLoadTiming() const
 {
     DocumentLoader* loader = documentLoader();
     if (!loader)
-        return 0;
+        return nullptr;
 
     return loader->response().resourceLoadTiming();
 }

@@ -42,7 +42,7 @@ class Performance;
 class PerformanceEntry;
 
 typedef unsigned long long (PerformanceTiming::*NavigationTimingFunction)() const;
-typedef WillBeHeapHashMap<String, PerformanceEntryVector> PerformanceEntryMap;
+using PerformanceEntryMap = WillBeHeapHashMap<String, PerformanceEntryVector>;
 
 class UserTiming : public RefCountedWillBeGarbageCollected<UserTiming> {
 public:
