@@ -153,13 +153,13 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
   // in the constructor.  It will be destoryed at the time its owning
   // PrerenderManager is destroyed.
   explicit PrerenderLocalPredictor(PrerenderManager* prerender_manager);
-  virtual ~PrerenderLocalPredictor();
+  ~PrerenderLocalPredictor() override;
 
   void Shutdown();
 
   // history::HistoryServiceObserver:
-  virtual void OnAddVisit(HistoryService* history_service,
-                          const history::BriefVisitInfo& info) override;
+  void OnAddVisit(HistoryService* history_service,
+                  const history::BriefVisitInfo& info) override;
 
   void OnGetInitialVisitHistory(
       scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history);
@@ -169,7 +169,7 @@ class PrerenderLocalPredictor : public history::HistoryServiceObserver,
   void OnTabHelperURLSeen(const GURL& url, content::WebContents* web_contents);
 
   // net::URLFetcherDelegate implementation:
-  void virtual OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   struct PrerenderProperties;

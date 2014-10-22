@@ -50,22 +50,22 @@ class DummyPrerenderContents : public PrerenderContents {
                          Origin origin,
                          FinalStatus expected_final_status);
 
-  virtual ~DummyPrerenderContents();
+  ~DummyPrerenderContents() override;
 
-  virtual void StartPrerendering(
+  void StartPrerendering(
       int creator_child_id,
       const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace,
       net::URLRequestContextGetter* request_context) override;
 
-  virtual bool GetChildId(int* child_id) const override {
+  bool GetChildId(int* child_id) const override {
     // Having a default child_id of -1 forces pending prerenders not to fail
     // on session storage and cross domain checking.
     *child_id = -1;
     return true;
   }
 
-  virtual bool GetRouteId(int* route_id) const override {
+  bool GetRouteId(int* route_id) const override {
     *route_id = route_id_;
     return true;
   }
@@ -107,19 +107,18 @@ class UnitTestPrerenderManager : public PrerenderManager {
     OnCookieStoreLoaded();
   }
 
-  virtual ~UnitTestPrerenderManager() {
-  }
+  ~UnitTestPrerenderManager() override {}
 
   // From KeyedService, via PrererenderManager:
-  virtual void Shutdown() override {
+  void Shutdown() override {
     if (next_prerender_contents())
       next_prerender_contents_->Destroy(FINAL_STATUS_MANAGER_SHUTDOWN);
     PrerenderManager::Shutdown();
   }
 
   // From PrerenderManager:
-  virtual void MoveEntryToPendingDelete(PrerenderContents* entry,
-                                        FinalStatus final_status) override {
+  void MoveEntryToPendingDelete(PrerenderContents* entry,
+                                FinalStatus final_status) override {
     if (entry == next_prerender_contents_.get())
       return;
     PrerenderManager::MoveEntryToPendingDelete(entry, final_status);
@@ -203,16 +202,12 @@ class UnitTestPrerenderManager : public PrerenderManager {
   }
 
   // from PrerenderManager
-  virtual Time GetCurrentTime() const override {
-    return time_;
-  }
+  Time GetCurrentTime() const override { return time_; }
 
-  virtual TimeTicks GetCurrentTimeTicks() const override {
-    return time_ticks_;
-  }
+  TimeTicks GetCurrentTimeTicks() const override { return time_ticks_; }
 
-  virtual PrerenderContents* GetPrerenderContentsForRoute(
-      int child_id, int route_id) const override {
+  PrerenderContents* GetPrerenderContentsForRoute(int child_id,
+                                                  int route_id) const override {
     // Overridden for the PrerenderLinkManager's pending prerender logic.
     PrerenderContentsMap::const_iterator iter = prerender_contents_map_.find(
         std::make_pair(child_id, route_id));
@@ -234,9 +229,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
   }
 
  protected:
-  virtual net::URLRequestContextGetter* GetURLRequestContext() override {
-    return NULL;
-  }
+  net::URLRequestContextGetter* GetURLRequestContext() override { return NULL; }
 
  private:
   void SetNextPrerenderContents(DummyPrerenderContents* prerender_contents) {
@@ -246,12 +239,10 @@ class UnitTestPrerenderManager : public PrerenderManager {
       used_prerender_contents_.push_back(prerender_contents);
   }
 
-
-  virtual PrerenderContents* CreatePrerenderContents(
-      const GURL& url,
-      const Referrer& referrer,
-      Origin origin,
-      uint8 experiment_id) override {
+  PrerenderContents* CreatePrerenderContents(const GURL& url,
+                                             const Referrer& referrer,
+                                             Origin origin,
+                                             uint8 experiment_id) override {
     CHECK(next_prerender_contents_.get());
     EXPECT_EQ(url, next_prerender_contents_->prerender_url());
     EXPECT_EQ(origin, next_prerender_contents_->origin());

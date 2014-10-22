@@ -39,7 +39,7 @@ class PrerenderLinkManager : public KeyedService,
                              public PrerenderHandle::Observer {
  public:
   explicit PrerenderLinkManager(PrerenderManager* manager);
-  virtual ~PrerenderLinkManager();
+  ~PrerenderLinkManager() override;
 
   // A <link rel=prerender ...> element has been inserted into the document.
   // The |prerender_id| must be unique per |child_id|, and is assigned by the
@@ -144,16 +144,14 @@ class PrerenderLinkManager : public KeyedService,
   void CancelPendingPrerendersForLauncher(PrerenderContents* launcher);
 
   // From KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // From PrerenderHandle::Observer:
-  virtual void OnPrerenderStart(PrerenderHandle* prerender_handle) override;
-  virtual void OnPrerenderStopLoading(PrerenderHandle* prerender_handle)
-      override;
-  virtual void OnPrerenderDomContentLoaded(PrerenderHandle* prerender_handle)
-      override;
-  virtual void OnPrerenderStop(PrerenderHandle* prerender_handle) override;
-  virtual void OnPrerenderCreatedMatchCompleteReplacement(
+  void OnPrerenderStart(PrerenderHandle* prerender_handle) override;
+  void OnPrerenderStopLoading(PrerenderHandle* prerender_handle) override;
+  void OnPrerenderDomContentLoaded(PrerenderHandle* prerender_handle) override;
+  void OnPrerenderStop(PrerenderHandle* prerender_handle) override;
+  void OnPrerenderCreatedMatchCompleteReplacement(
       PrerenderHandle* handle) override;
 
   bool has_shutdown_;

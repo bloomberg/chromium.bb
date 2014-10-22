@@ -48,20 +48,19 @@ class PrerenderTabHelper
       content::WebContents* web_contents,
       password_manager::PasswordManager* password_manager);
 
-  virtual ~PrerenderTabHelper();
+  ~PrerenderTabHelper() override;
 
   // content::WebContentsObserver implementation.
-  virtual void DidGetRedirectForResourceRequest(
+  void DidGetRedirectForResourceRequest(
       content::RenderViewHost* render_view_host,
       const content::ResourceRedirectDetails& details) override;
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) override;
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStopLoading(content::RenderViewHost* render_view_host) override;
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       ui::PageTransition transition_type) override;

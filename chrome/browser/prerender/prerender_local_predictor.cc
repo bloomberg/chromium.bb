@@ -175,22 +175,22 @@ class GetURLForURLIDTask : public history::HistoryDBTask {
         start_time_(base::Time::Now()) {
   }
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     DoURLLookup(db, &request_->source_url_);
     for (int i = 0; i < static_cast<int>(request_->candidate_urls_.size()); i++)
       DoURLLookup(db, &request_->candidate_urls_[i]);
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {
+  void DoneRunOnMainThread() override {
     callback_.Run();
     TIMING_HISTOGRAM("Prerender.LocalPredictorURLLookupTime",
                      base::Time::Now() - start_time_);
   }
 
  private:
-  virtual ~GetURLForURLIDTask() {}
+  ~GetURLForURLIDTask() override {}
 
   void DoURLLookup(history::HistoryDatabase* db,
                    PrerenderLocalPredictor::LocalPredictorURLInfo* request) {
@@ -216,18 +216,18 @@ class GetVisitHistoryTask : public history::HistoryDBTask {
         visit_history_(new vector<history::BriefVisitInfo>) {
   }
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     db->GetBriefVisitInfoOfMostRecentVisits(max_visits_, visit_history_.get());
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {
+  void DoneRunOnMainThread() override {
     local_predictor_->OnGetInitialVisitHistory(visit_history_.Pass());
   }
 
  private:
-  virtual ~GetVisitHistoryTask() {}
+  ~GetVisitHistoryTask() override {}
 
   PrerenderLocalPredictor* local_predictor_;
   int max_visits_;

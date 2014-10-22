@@ -46,18 +46,18 @@ class TestPrerenderContents : public PrerenderContents {
     PrerenderResourceThrottle::OverridePrerenderContentsForTesting(this);
   }
 
-  virtual ~TestPrerenderContents() {
+  ~TestPrerenderContents() override {
     if (final_status() == FINAL_STATUS_MAX)
       SetFinalStatus(FINAL_STATUS_USED);
     PrerenderResourceThrottle::OverridePrerenderContentsForTesting(NULL);
   }
 
-  virtual bool GetChildId(int* child_id) const override {
+  bool GetChildId(int* child_id) const override {
     *child_id = child_id_;
     return true;
   }
 
-  virtual bool GetRouteId(int* route_id) const override {
+  bool GetRouteId(int* route_id) const override {
     *route_id = route_id_;
     return true;
   }
@@ -89,9 +89,8 @@ class TestPrerenderManager : public PrerenderManager {
 
   // We never allocate our PrerenderContents in PrerenderManager, so we don't
   // ever want the default pending delete behaviour.
-  virtual void MoveEntryToPendingDelete(PrerenderContents* entry,
-                                        FinalStatus final_status) override {
-  }
+  void MoveEntryToPendingDelete(PrerenderContents* entry,
+                                FinalStatus final_status) override {}
 };
 
 class DeferredRedirectDelegate : public net::URLRequest::Delegate,
@@ -119,9 +118,9 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
   bool resume_called() const { return resume_called_; }
 
   // net::URLRequest::Delegate implementation:
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override {
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override {
     // Defer the redirect either way.
     *defer_redirect = true;
 
@@ -129,22 +128,20 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
     throttle_->WillRedirectRequest(redirect_info.new_url, &was_deferred_);
     run_loop_->Quit();
   }
-  virtual void OnResponseStarted(net::URLRequest* request) override { }
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override {
-  }
+  void OnResponseStarted(net::URLRequest* request) override {}
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
 
   // content::ResourceController implementation:
-  virtual void Cancel() override {
+  void Cancel() override {
     EXPECT_FALSE(cancel_called_);
     EXPECT_FALSE(resume_called_);
 
     cancel_called_ = true;
     run_loop_->Quit();
   }
-  virtual void CancelAndIgnore() override { Cancel(); }
-  virtual void CancelWithError(int error_code) override { Cancel(); }
-  virtual void Resume() override {
+  void CancelAndIgnore() override { Cancel(); }
+  void CancelWithError(int error_code) override { Cancel(); }
+  void Resume() override {
     EXPECT_TRUE(was_deferred_);
     EXPECT_FALSE(cancel_called_);
     EXPECT_FALSE(resume_called_);

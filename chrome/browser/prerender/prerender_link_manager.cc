@@ -105,7 +105,7 @@ class PrerenderLinkManager::PendingPrerenderManager
   explicit PendingPrerenderManager(PrerenderLinkManager* link_manager)
       : link_manager_(link_manager) {}
 
-  virtual ~PendingPrerenderManager() {
+  ~PendingPrerenderManager() override {
     DCHECK(observed_launchers_.empty());
     for (std::set<PrerenderContents*>::iterator i = observed_launchers_.begin();
          i != observed_launchers_.end(); ++i) {
@@ -121,9 +121,9 @@ class PrerenderLinkManager::PendingPrerenderManager
     launcher->AddObserver(this);
   }
 
-  virtual void OnPrerenderStart(PrerenderContents* launcher) override {}
+  void OnPrerenderStart(PrerenderContents* launcher) override {}
 
-  virtual void OnPrerenderStop(PrerenderContents* launcher) override {
+  void OnPrerenderStop(PrerenderContents* launcher) override {
     observed_launchers_.erase(launcher);
     if (launcher->final_status() == FINAL_STATUS_USED) {
       link_manager_->StartPendingPrerendersForLauncher(launcher);

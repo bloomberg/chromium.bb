@@ -31,14 +31,13 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
   PrerenderMessageFilter(int render_process_id, Profile* profile);
 
  private:
-  virtual ~PrerenderMessageFilter();
+  ~PrerenderMessageFilter() override;
 
   // Overridden from content::BrowserMessageFilter.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
+  void OnChannelClosing() override;
 
   void OnAddPrerender(int prerender_id,
                       const PrerenderAttributes& attributes,

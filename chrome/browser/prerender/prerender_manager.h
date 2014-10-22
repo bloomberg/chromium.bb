@@ -109,10 +109,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Owned by a Profile object for the lifetime of the profile.
   PrerenderManager(Profile* profile, PrerenderTracker* prerender_tracker);
 
-  virtual ~PrerenderManager();
+  ~PrerenderManager() override;
 
   // From KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Entry points for adding prerenders.
 
@@ -279,13 +279,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                             int cookie_send_type) const;
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // MediaCaptureDevicesDispatcher::Observer
-  virtual void OnCreatingAudioStream(int render_process_id,
-                                     int render_frame_id) override;
+  void OnCreatingAudioStream(int render_process_id,
+                             int render_frame_id) override;
 
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
@@ -368,8 +368,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool MayReuseProcessHost(content::RenderProcessHost* process_host);
 
   // content::RenderProcessHostObserver implementation.
-  virtual void RenderProcessHostDestroyed(
-      content::RenderProcessHost* host) override;
+  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // To be called once the cookie store for this profile has been loaded.
   void OnCookieStoreLoaded();
@@ -467,7 +466,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                 PrerenderData* prerender_data,
                 const GURL& url,
                 bool should_replace_current_entry);
-    virtual ~PendingSwap();
+    ~PendingSwap() override;
 
     void set_swap_successful(bool swap_successful) {
       swap_successful_ = swap_successful;
@@ -476,23 +475,23 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     void BeginSwap();
 
     // content::WebContentsObserver implementation.
-    virtual void AboutToNavigateRenderView(
+    void AboutToNavigateRenderView(
         content::RenderViewHost* render_view_host) override;
-    virtual void DidStartProvisionalLoadForFrame(
+    void DidStartProvisionalLoadForFrame(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,
         bool is_error_page,
         bool is_iframe_srcdoc) override;
-    virtual void DidCommitProvisionalLoadForFrame(
+    void DidCommitProvisionalLoadForFrame(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,
         ui::PageTransition transition_type) override;
-    virtual void DidFailProvisionalLoad(
+    void DidFailProvisionalLoad(
         content::RenderFrameHost* render_frame_host,
         const GURL& validated_url,
         int error_code,
         const base::string16& error_description) override;
-    virtual void WebContentsDestroyed() override;
+    void WebContentsDestroyed() override;
 
    private:
     void RecordEvent(PrerenderEvent event) const;

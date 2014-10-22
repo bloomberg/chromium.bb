@@ -24,11 +24,11 @@ class PrerenderLinkManagerFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<PrerenderLinkManagerFactory>;
 
   PrerenderLinkManagerFactory();
-  virtual ~PrerenderLinkManagerFactory() { }
+  ~PrerenderLinkManagerFactory() override {}
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 
