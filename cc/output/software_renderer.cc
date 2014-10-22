@@ -239,14 +239,16 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
   current_canvas_->setMatrix(sk_device_matrix);
 
   current_paint_.reset();
-  if (!IsScaleAndIntegerTranslate(sk_device_matrix)) {
+  if (settings_->force_antialiasing ||
+      !IsScaleAndIntegerTranslate(sk_device_matrix)) {
     // TODO(danakj): Until we can enable AA only on exterior edges of the
     // layer, disable AA if any interior edges are present. crbug.com/248175
     bool all_four_edges_are_exterior = quad->IsTopEdge() &&
                                        quad->IsLeftEdge() &&
                                        quad->IsBottomEdge() &&
                                        quad->IsRightEdge();
-    if (settings_->allow_antialiasing && all_four_edges_are_exterior)
+    if (settings_->allow_antialiasing &&
+        (settings_->force_antialiasing || all_four_edges_are_exterior))
       current_paint_.setAntiAlias(true);
     current_paint_.setFilterLevel(SkPaint::kLow_FilterLevel);
   }

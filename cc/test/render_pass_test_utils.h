@@ -53,7 +53,8 @@ void AddRenderPassQuad(TestRenderPass* toPass,
                        TestRenderPass* contributing_pass,
                        ResourceProvider::ResourceId mask_resource_id,
                        const FilterOperations& filters,
-                       gfx::Transform transform);
+                       gfx::Transform transform,
+                       SkXfermode::Mode blend_mode);
 
 }  // namespace cc
 

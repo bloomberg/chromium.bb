@@ -13,9 +13,10 @@
 
 #define SHADER0(Src) #Src
 #define VERTEX_SHADER(Src) SetVertexTexCoordPrecision(SHADER0(Src))
-#define FRAGMENT_SHADER(Src)              \
-  SetFragmentTexCoordPrecision(precision, \
-                               SetFragmentSamplerType(sampler, SHADER0(Src)))
+#define FRAGMENT_SHADER(Src)    \
+  SetFragmentTexCoordPrecision( \
+      precision,                \
+      SetFragmentSamplerType(sampler, SetBlendModeFunctions(SHADER0(Src))))
 
 using gpu::gles2::GLES2Interface;
 
@@ -666,6 +667,308 @@ std::string VertexShaderVideoTransform::GetShaderString() const {
   // clang-format on
 }
 
+#define BLEND_MODE_UNIFORMS "s_backdropTexture", "backdropRect"
+#define UNUSED_BLEND_MODE_UNIFORMS (is_default_blend_mode() ? 2 : 0)
+#define BLEND_MODE_SET_LOCATIONS(X, POS)                   \
+  if (!is_default_blend_mode()) {                          \
+    DCHECK_LT(static_cast<size_t>(POS) + 1, arraysize(X)); \
+    backdrop_location_ = locations[POS];                   \
+    backdrop_rect_location_ = locations[POS + 1];          \
+  }
+
+FragmentTexBlendMode::FragmentTexBlendMode()
+    : backdrop_location_(-1),
+      backdrop_rect_location_(-1),
+      blend_mode_(BlendModeNormal) {
+}
+
+std::string FragmentTexBlendMode::SetBlendModeFunctions(
+    std::string shader_string) const {
+  if (shader_string.find("ApplyBlendMode") == std::string::npos)
+    return shader_string;
+
+  if (is_default_blend_mode()) {
+    return "#define ApplyBlendMode(X) (X)\n" + shader_string;
+  }
+
+  // clang-format off
+  static const std::string kFunctionApplyBlendMode = SHADER0(
+      // clang-format on
+      uniform SamplerType s_backdropTexture;
+      uniform TexCoordPrecision vec4 backdropRect;
+
+      vec4 GetBackdropColor() {
+        TexCoordPrecision vec2 bgTexCoord = gl_FragCoord.xy - backdropRect.xy;
+        bgTexCoord.x /= backdropRect.z;
+        bgTexCoord.y /= backdropRect.w;
+        return TextureLookup(s_backdropTexture, bgTexCoord);
+      }
+
+      vec4 ApplyBlendMode(vec4 src) {
+        vec4 dst = GetBackdropColor();
+        return Blend(src, dst);
+      }
+      // clang-format off
+  );
+  // clang-format on
+
+  return "precision mediump float;" + GetHelperFunctions() +
+         GetBlendFunction() + kFunctionApplyBlendMode + shader_string;
+}
+
+std::string FragmentTexBlendMode::GetHelperFunctions() const {
+  // clang-format off
+  static const std::string kFunctionHardLight = SHADER0(
+      // clang-format on
+      vec3 hardLight(vec4 src, vec4 dst) {
+        vec3 result;
+        result.r =
+            (2.0 * src.r <= src.a)
+                ? (2.0 * src.r * dst.r)
+                : (src.a * dst.a - 2.0 * (dst.a - dst.r) * (src.a - src.r));
+        result.g =
+            (2.0 * src.g <= src.a)
+                ? (2.0 * src.g * dst.g)
+                : (src.a * dst.a - 2.0 * (dst.a - dst.g) * (src.a - src.g));
+        result.b =
+            (2.0 * src.b <= src.a)
+                ? (2.0 * src.b * dst.b)
+                : (src.a * dst.a - 2.0 * (dst.a - dst.b) * (src.a - src.b));
+        result.rgb += src.rgb * (1.0 - dst.a) + dst.rgb * (1.0 - src.a);
+        return result;
+      }
+      // clang-format off
+  );
+
+  static const std::string kFunctionColorDodgeComponent = SHADER0(
+      // clang-format on
+      float getColorDodgeComponent(
+          float srcc, float srca, float dstc, float dsta) {
+        if (0.0 == dstc)
+          return srcc * (1.0 - dsta);
+        float d = srca - srcc;
+        if (0.0 == d)
+          return srca * dsta + srcc * (1.0 - dsta) + dstc * (1.0 - srca);
+        d = min(dsta, dstc * srca / d);
+        return d * srca + srcc * (1.0 - dsta) + dstc * (1.0 - srca);
+      }
+      // clang-format off
+  );
+
+  static const std::string kFunctionColorBurnComponent = SHADER0(
+      // clang-format on
+      float getColorBurnComponent(
+          float srcc, float srca, float dstc, float dsta) {
+        if (dsta == dstc)
+          return srca * dsta + srcc * (1.0 - dsta) + dstc * (1.0 - srca);
+        if (0.0 == srcc)
+          return dstc * (1.0 - srca);
+        float d = max(0.0, dsta - (dsta - dstc) * srca / srcc);
+        return srca * d + srcc * (1.0 - dsta) + dstc * (1.0 - srca);
+      }
+      // clang-format off
+  );
+
+  static const std::string kFunctionSoftLightComponentPosDstAlpha = SHADER0(
+      // clang-format on
+      float getSoftLightComponent(
+          float srcc, float srca, float dstc, float dsta) {
+        if (2.0 * srcc <= srca) {
+          return (dstc * dstc * (srca - 2.0 * srcc)) / dsta +
+                 (1.0 - dsta) * srcc + dstc * (-srca + 2.0 * srcc + 1.0);
+        } else if (4.0 * dstc <= dsta) {
+          float DSqd = dstc * dstc;
+          float DCub = DSqd * dstc;
+          float DaSqd = dsta * dsta;
+          float DaCub = DaSqd * dsta;
+          return (-DaCub * srcc +
+                  DaSqd * (srcc - dstc * (3.0 * srca - 6.0 * srcc - 1.0)) +
+                  12.0 * dsta * DSqd * (srca - 2.0 * srcc) -
+                  16.0 * DCub * (srca - 2.0 * srcc)) /
+                 DaSqd;
+        } else {
+          return -sqrt(dsta * dstc) * (srca - 2.0 * srcc) - dsta * srcc +
+                 dstc * (srca - 2.0 * srcc + 1.0) + srcc;
+        }
+      }
+      // clang-format off
+  );
+
+  static const std::string kFunctionLum = SHADER0(
+      // clang-format on
+      float luminance(vec3 color) { return dot(vec3(0.3, 0.59, 0.11), color); }
+
+      vec3 set_luminance(vec3 hueSat, float alpha, vec3 lumColor) {
+        float diff = luminance(lumColor - hueSat);
+        vec3 outColor = hueSat + diff;
+        float outLum = luminance(outColor);
+        float minComp = min(min(outColor.r, outColor.g), outColor.b);
+        float maxComp = max(max(outColor.r, outColor.g), outColor.b);
+        if (minComp < 0.0) {
+          outColor = outLum +
+                     ((outColor - vec3(outLum, outLum, outLum)) * outLum) /
+                         (outLum - minComp);
+        }
+        if (maxComp > alpha) {
+          outColor =
+              outLum +
+              ((outColor - vec3(outLum, outLum, outLum)) * (alpha - outLum)) /
+                  (maxComp - outLum);
+        }
+        return outColor;
+      }
+      // clang-format off
+  );
+
+  static const std::string kFunctionSat = SHADER0(
+      // clang-format on
+      float saturation(vec3 color) {
+        return max(max(color.r, color.g), color.b) -
+               min(min(color.r, color.g), color.b);
+      }
+
+      vec3 set_saturation_helper(
+          float minComp, float midComp, float maxComp, float sat) {
+        if (minComp < maxComp) {
+          vec3 result;
+          result.r = 0.0;
+          result.g = sat * (midComp - minComp) / (maxComp - minComp);
+          result.b = sat;
+          return result;
+        } else {
+          return vec3(0, 0, 0);
+        }
+      }
+
+      vec3 set_saturation(vec3 hueLumColor, vec3 satColor) {
+        float sat = saturation(satColor);
+        if (hueLumColor.r <= hueLumColor.g) {
+          if (hueLumColor.g <= hueLumColor.b) {
+            hueLumColor.rgb = set_saturation_helper(
+                hueLumColor.r, hueLumColor.g, hueLumColor.b, sat);
+          } else if (hueLumColor.r <= hueLumColor.b) {
+            hueLumColor.rbg = set_saturation_helper(
+                hueLumColor.r, hueLumColor.b, hueLumColor.g, sat);
+          } else {
+            hueLumColor.brg = set_saturation_helper(
+                hueLumColor.b, hueLumColor.r, hueLumColor.g, sat);
+          }
+        } else if (hueLumColor.r <= hueLumColor.b) {
+          hueLumColor.grb = set_saturation_helper(
+              hueLumColor.g, hueLumColor.r, hueLumColor.b, sat);
+        } else if (hueLumColor.g <= hueLumColor.b) {
+          hueLumColor.gbr = set_saturation_helper(
+              hueLumColor.g, hueLumColor.b, hueLumColor.r, sat);
+        } else {
+          hueLumColor.bgr = set_saturation_helper(
+              hueLumColor.b, hueLumColor.g, hueLumColor.r, sat);
+        }
+        return hueLumColor;
+      }
+      // clang-format off
+  );
+  // clang-format on
+
+  switch (blend_mode_) {
+    case BlendModeOverlay:
+    case BlendModeHardLight:
+      return kFunctionHardLight;
+    case BlendModeColorDodge:
+      return kFunctionColorDodgeComponent;
+    case BlendModeColorBurn:
+      return kFunctionColorBurnComponent;
+    case BlendModeSoftLight:
+      return kFunctionSoftLightComponentPosDstAlpha;
+    case BlendModeHue:
+    case BlendModeSaturation:
+      return kFunctionLum + kFunctionSat;
+    case BlendModeColor:
+    case BlendModeLuminosity:
+      return kFunctionLum;
+    default:
+      return std::string();
+  }
+}
+
+std::string FragmentTexBlendMode::GetBlendFunction() const {
+  return "vec4 Blend(vec4 src, vec4 dst) {"
+         "    vec4 result;"
+         "    result.a = src.a + (1.0 - src.a) * dst.a;" +
+         GetBlendFunctionBodyForRGB() +
+         "    return result;"
+         "}";
+}
+
+std::string FragmentTexBlendMode::GetBlendFunctionBodyForRGB() const {
+  switch (blend_mode_) {
+    case BlendModeLighten:
+      return "result.rgb = max((1.0 - src.a) * dst.rgb + src.rgb,"
+             "                 (1.0 - dst.a) * src.rgb + dst.rgb);";
+    case BlendModeOverlay:
+      return "result.rgb = hardLight(dst, src);";
+    case BlendModeDarken:
+      return "result.rgb = min((1.0 - src.a) * dst.rgb + src.rgb,"
+             "                 (1.0 - dst.a) * src.rgb + dst.rgb);";
+    case BlendModeColorDodge:
+      return "result.r = getColorDodgeComponent(src.r, src.a, dst.r, dst.a);"
+             "result.g = getColorDodgeComponent(src.g, src.a, dst.g, dst.a);"
+             "result.b = getColorDodgeComponent(src.b, src.a, dst.b, dst.a);";
+    case BlendModeColorBurn:
+      return "result.r = getColorBurnComponent(src.r, src.a, dst.r, dst.a);"
+             "result.g = getColorBurnComponent(src.g, src.a, dst.g, dst.a);"
+             "result.b = getColorBurnComponent(src.b, src.a, dst.b, dst.a);";
+    case BlendModeHardLight:
+      return "result.rgb = hardLight(src, dst);";
+    case BlendModeSoftLight:
+      return "if (0.0 == dst.a) {"
+             "  result.rgb = src.rgb;"
+             "} else {"
+             "  result.r = getSoftLightComponent(src.r, src.a, dst.r, dst.a);"
+             "  result.g = getSoftLightComponent(src.g, src.a, dst.g, dst.a);"
+             "  result.b = getSoftLightComponent(src.b, src.a, dst.b, dst.a);"
+             "}";
+    case BlendModeDifference:
+      return "result.rgb = src.rgb + dst.rgb -"
+             "    2.0 * min(src.rgb * dst.a, dst.rgb * src.a);";
+    case BlendModeExclusion:
+      return "result.rgb = dst.rgb + src.rgb - 2.0 * dst.rgb * src.rgb;";
+    case BlendModeMultiply:
+      return "result.rgb = (1.0 - src.a) * dst.rgb +"
+             "    (1.0 - dst.a) * src.rgb + src.rgb * dst.rgb;";
+    case BlendModeHue:
+      return "vec4 dstSrcAlpha = dst * src.a;"
+             "result.rgb ="
+             "    set_luminance(set_saturation(src.rgb * dst.a,"
+             "                                 dstSrcAlpha.rgb),"
+             "                  dstSrcAlpha.a,"
+             "                  dstSrcAlpha.rgb);"
+             "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
+    case BlendModeSaturation:
+      return "vec4 dstSrcAlpha = dst * src.a;"
+             "result.rgb = set_luminance(set_saturation(dstSrcAlpha.rgb,"
+             "                                          src.rgb * dst.a),"
+             "                           dstSrcAlpha.a,"
+             "                           dstSrcAlpha.rgb);"
+             "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
+    case BlendModeColor:
+      return "vec4 srcDstAlpha = src * dst.a;"
+             "result.rgb = set_luminance(srcDstAlpha.rgb,"
+             "                           srcDstAlpha.a,"
+             "                           dst.rgb * src.a);"
+             "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
+    case BlendModeLuminosity:
+      return "vec4 srcDstAlpha = src * dst.a;"
+             "result.rgb = set_luminance(dst.rgb * src.a,"
+             "                           srcDstAlpha.a,"
+             "                           srcDstAlpha.rgb);"
+             "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
+    default:
+      NOTREACHED();
+      // simple alpha compositing
+      return "result.rgb = src.rgb * src.a + dst.rgb * dst.a * (1 - src.a)";
+  }
+}
+
 FragmentTexAlphaBinding::FragmentTexAlphaBinding()
     : sampler_location_(-1), alpha_location_(-1) {
 }
@@ -674,18 +977,19 @@ void FragmentTexAlphaBinding::Init(GLES2Interface* context,
                                    unsigned program,
                                    int* base_uniform_index) {
   static const char* uniforms[] = {
-      "s_texture", "alpha",
+      "s_texture", "alpha", BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
+  BLEND_MODE_SET_LOCATIONS(locations, 2);
 }
 
 FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
@@ -699,13 +1003,13 @@ void FragmentTexColorMatrixAlphaBinding::Init(GLES2Interface* context,
                                               unsigned program,
                                               int* base_uniform_index) {
   static const char* uniforms[] = {
-      "s_texture", "alpha", "colorMatrix", "colorOffset",
+      "s_texture", "alpha", "colorMatrix", "colorOffset", BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
@@ -713,6 +1017,7 @@ void FragmentTexColorMatrixAlphaBinding::Init(GLES2Interface* context,
   alpha_location_ = locations[1];
   color_matrix_location_ = locations[2];
   color_offset_location_ = locations[3];
+  BLEND_MODE_SET_LOCATIONS(locations, 4);
 }
 
 FragmentTexOpaqueBinding::FragmentTexOpaqueBinding() : sampler_location_(-1) {
@@ -747,7 +1052,7 @@ std::string FragmentShaderRGBATexAlpha::GetShaderString(
       uniform float alpha;
       void main() {
         vec4 texColor = TextureLookup(s_texture, v_texCoord);
-        gl_FragColor = texColor * alpha;
+        gl_FragColor = ApplyBlendMode(texColor * alpha);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
@@ -773,7 +1078,7 @@ std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderString(
         texColor = colorMatrix * texColor + colorOffset;
         texColor.rgb *= texColor.a;
         texColor = clamp(texColor, 0.0, 1.0);
-        gl_FragColor = texColor * alpha;
+        gl_FragColor = ApplyBlendMode(texColor * alpha);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
@@ -966,18 +1271,19 @@ void FragmentShaderRGBATexAlphaAA::Init(GLES2Interface* context,
                                         unsigned program,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
-      "s_texture", "alpha",
+      "s_texture", "alpha", BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
+  BLEND_MODE_SET_LOCATIONS(locations, 2);
 }
 
 std::string FragmentShaderRGBATexAlphaAA::GetShaderString(
@@ -997,7 +1303,7 @@ std::string FragmentShaderRGBATexAlphaAA::GetShaderString(
         vec4 d4 = min(edge_dist[0], edge_dist[1]);
         vec2 d2 = min(d4.xz, d4.yw);
         float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-        gl_FragColor = texColor * alpha * aa;
+        gl_FragColor = ApplyBlendMode(texColor * alpha * aa);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
@@ -1097,13 +1403,18 @@ void FragmentShaderRGBATexAlphaMask::Init(GLES2Interface* context,
                                           unsigned program,
                                           int* base_uniform_index) {
   static const char* uniforms[] = {
-      "s_texture", "s_mask", "alpha", "maskTexCoordScale", "maskTexCoordOffset",
+      "s_texture",
+      "s_mask",
+      "alpha",
+      "maskTexCoordScale",
+      "maskTexCoordOffset",
+      BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
@@ -1112,6 +1423,7 @@ void FragmentShaderRGBATexAlphaMask::Init(GLES2Interface* context,
   alpha_location_ = locations[2];
   mask_tex_coord_scale_location_ = locations[3];
   mask_tex_coord_offset_location_ = locations[4];
+  BLEND_MODE_SET_LOCATIONS(locations, 5);
 }
 
 std::string FragmentShaderRGBATexAlphaMask::GetShaderString(
@@ -1133,7 +1445,7 @@ std::string FragmentShaderRGBATexAlphaMask::GetShaderString(
             vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                  maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
         vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-        gl_FragColor = texColor * alpha * maskColor.w;
+        gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
@@ -1152,13 +1464,18 @@ void FragmentShaderRGBATexAlphaMaskAA::Init(GLES2Interface* context,
                                             unsigned program,
                                             int* base_uniform_index) {
   static const char* uniforms[] = {
-      "s_texture", "s_mask", "alpha", "maskTexCoordScale", "maskTexCoordOffset",
+      "s_texture",
+      "s_mask",
+      "alpha",
+      "maskTexCoordScale",
+      "maskTexCoordOffset",
+      BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
@@ -1167,6 +1484,7 @@ void FragmentShaderRGBATexAlphaMaskAA::Init(GLES2Interface* context,
   alpha_location_ = locations[2];
   mask_tex_coord_scale_location_ = locations[3];
   mask_tex_coord_offset_location_ = locations[4];
+  BLEND_MODE_SET_LOCATIONS(locations, 5);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
@@ -1193,7 +1511,7 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
         vec4 d4 = min(edge_dist[0], edge_dist[1]);
         vec2 d2 = min(d4.xz, d4.yw);
         float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-        gl_FragColor = texColor * alpha * maskColor.w * aa;
+        gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w * aa);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
@@ -1222,12 +1540,13 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
       "maskTexCoordOffset",
       "colorMatrix",
       "colorOffset",
+      BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
@@ -1238,6 +1557,7 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
   mask_tex_coord_offset_location_ = locations[4];
   color_matrix_location_ = locations[5];
   color_offset_location_ = locations[6];
+  BLEND_MODE_SET_LOCATIONS(locations, 7);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
@@ -1271,7 +1591,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
         vec4 d4 = min(edge_dist[0], edge_dist[1]);
         vec2 d2 = min(d4.xz, d4.yw);
         float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-        gl_FragColor = texColor * alpha * maskColor.w * aa;
+        gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w * aa);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
@@ -1290,13 +1610,13 @@ void FragmentShaderRGBATexAlphaColorMatrixAA::Init(GLES2Interface* context,
                                                    unsigned program,
                                                    int* base_uniform_index) {
   static const char* uniforms[] = {
-      "s_texture", "alpha", "colorMatrix", "colorOffset",
+      "s_texture", "alpha", "colorMatrix", "colorOffset", BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
@@ -1304,6 +1624,7 @@ void FragmentShaderRGBATexAlphaColorMatrixAA::Init(GLES2Interface* context,
   alpha_location_ = locations[1];
   color_matrix_location_ = locations[2];
   color_offset_location_ = locations[3];
+  BLEND_MODE_SET_LOCATIONS(locations, 4);
 }
 
 std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString(
@@ -1330,7 +1651,7 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString(
         vec4 d4 = min(edge_dist[0], edge_dist[1]);
         vec2 d2 = min(d4.xz, d4.yw);
         float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-        gl_FragColor = texColor * alpha * aa;
+        gl_FragColor = ApplyBlendMode(texColor * alpha * aa);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
@@ -1356,12 +1677,13 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(GLES2Interface* context,
       "maskTexCoordOffset",
       "colorMatrix",
       "colorOffset",
+      BLEND_MODE_UNIFORMS,
   };
   int locations[arraysize(uniforms)];
 
   GetProgramUniformLocations(context,
                              program,
-                             arraysize(uniforms),
+                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
                              uniforms,
                              locations,
                              base_uniform_index);
@@ -1372,6 +1694,7 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(GLES2Interface* context,
   mask_tex_coord_offset_location_ = locations[4];
   color_matrix_location_ = locations[5];
   color_offset_location_ = locations[6];
+  BLEND_MODE_SET_LOCATIONS(locations, 7);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString(
@@ -1400,7 +1723,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString(
             vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                  maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
         vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-        gl_FragColor = texColor * alpha * maskColor.w;
+        gl_FragColor = ApplyBlendMode(texColor * alpha * maskColor.w);
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)

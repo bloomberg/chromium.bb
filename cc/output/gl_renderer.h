@@ -153,7 +153,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
-      const gfx::Transform& contents_device_transform);
+      const gfx::Transform& contents_device_transform,
+      bool use_aa);
   scoped_ptr<ScopedResource> GetBackdropTexture(const gfx::Rect& bounding_rect);
 
   static bool ShouldApplyBackgroundFilters(DrawingFrame* frame,
@@ -166,7 +167,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform_inverse,
-      ScopedResource* background_texture,
       skia::RefPtr<SkImage> backdrop_bitmap,
       const gfx::Rect& backdrop_bounding_rect);
 
@@ -328,22 +328,28 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   const TileCheckerboardProgram* GetTileCheckerboardProgram();
 
-  const RenderPassProgram* GetRenderPassProgram(
-      TexCoordPrecision precision);
-  const RenderPassProgramAA* GetRenderPassProgramAA(
-      TexCoordPrecision precision);
+  const RenderPassProgram* GetRenderPassProgram(TexCoordPrecision precision,
+                                                BlendMode blend_mode);
+  const RenderPassProgramAA* GetRenderPassProgramAA(TexCoordPrecision precision,
+                                                    BlendMode blend_mode);
   const RenderPassMaskProgram* GetRenderPassMaskProgram(
-      TexCoordPrecision precision);
+      TexCoordPrecision precision,
+      BlendMode blend_mode);
   const RenderPassMaskProgramAA* GetRenderPassMaskProgramAA(
-      TexCoordPrecision precision);
+      TexCoordPrecision precision,
+      BlendMode blend_mode);
   const RenderPassColorMatrixProgram* GetRenderPassColorMatrixProgram(
-      TexCoordPrecision precision);
+      TexCoordPrecision precision,
+      BlendMode blend_mode);
   const RenderPassColorMatrixProgramAA* GetRenderPassColorMatrixProgramAA(
-      TexCoordPrecision precision);
+      TexCoordPrecision precision,
+      BlendMode blend_mode);
   const RenderPassMaskColorMatrixProgram* GetRenderPassMaskColorMatrixProgram(
-      TexCoordPrecision precision);
+      TexCoordPrecision precision,
+      BlendMode blend_mode);
   const RenderPassMaskColorMatrixProgramAA*
-      GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision);
+  GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
+                                        BlendMode blend_mode);
 
   const TextureProgram* GetTextureProgram(
       TexCoordPrecision precision);
@@ -388,18 +394,21 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       nonpremultiplied_texture_background_program_[NumTexCoordPrecisions];
   TextureProgram texture_io_surface_program_[NumTexCoordPrecisions];
 
-  RenderPassProgram render_pass_program_[NumTexCoordPrecisions];
-  RenderPassProgramAA render_pass_program_aa_[NumTexCoordPrecisions];
-  RenderPassMaskProgram render_pass_mask_program_[NumTexCoordPrecisions];
-  RenderPassMaskProgramAA render_pass_mask_program_aa_[NumTexCoordPrecisions];
+  RenderPassProgram render_pass_program_[NumTexCoordPrecisions][NumBlendModes];
+  RenderPassProgramAA
+      render_pass_program_aa_[NumTexCoordPrecisions][NumBlendModes];
+  RenderPassMaskProgram
+      render_pass_mask_program_[NumTexCoordPrecisions][NumBlendModes];
+  RenderPassMaskProgramAA
+      render_pass_mask_program_aa_[NumTexCoordPrecisions][NumBlendModes];
   RenderPassColorMatrixProgram
-      render_pass_color_matrix_program_[NumTexCoordPrecisions];
-  RenderPassColorMatrixProgramAA
-      render_pass_color_matrix_program_aa_[NumTexCoordPrecisions];
-  RenderPassMaskColorMatrixProgram
-      render_pass_mask_color_matrix_program_[NumTexCoordPrecisions];
-  RenderPassMaskColorMatrixProgramAA
-      render_pass_mask_color_matrix_program_aa_[NumTexCoordPrecisions];
+      render_pass_color_matrix_program_[NumTexCoordPrecisions][NumBlendModes];
+  RenderPassColorMatrixProgramAA render_pass_color_matrix_program_aa_
+      [NumTexCoordPrecisions][NumBlendModes];
+  RenderPassMaskColorMatrixProgram render_pass_mask_color_matrix_program_
+      [NumTexCoordPrecisions][NumBlendModes];
+  RenderPassMaskColorMatrixProgramAA render_pass_mask_color_matrix_program_aa_
+      [NumTexCoordPrecisions][NumBlendModes];
 
   VideoYUVProgram video_yuv_program_[NumTexCoordPrecisions];
   VideoYUVAProgram video_yuva_program_[NumTexCoordPrecisions];

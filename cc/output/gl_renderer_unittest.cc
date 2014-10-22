@@ -55,6 +55,44 @@ class GLRendererTest : public testing::Test {
     EXPECT_TRUE((program_binding)->initialized()); \
   } while (false)
 
+static inline SkXfermode::Mode BlendModeToSkXfermode(BlendMode blend_mode) {
+  switch (blend_mode) {
+    case BlendModeNormal:
+      return SkXfermode::kSrcOver_Mode;
+    case BlendModeOverlay:
+      return SkXfermode::kOverlay_Mode;
+    case BlendModeDarken:
+      return SkXfermode::kDarken_Mode;
+    case BlendModeLighten:
+      return SkXfermode::kLighten_Mode;
+    case BlendModeColorDodge:
+      return SkXfermode::kColorDodge_Mode;
+    case BlendModeColorBurn:
+      return SkXfermode::kColorBurn_Mode;
+    case BlendModeHardLight:
+      return SkXfermode::kHardLight_Mode;
+    case BlendModeSoftLight:
+      return SkXfermode::kSoftLight_Mode;
+    case BlendModeDifference:
+      return SkXfermode::kDifference_Mode;
+    case BlendModeExclusion:
+      return SkXfermode::kExclusion_Mode;
+    case BlendModeMultiply:
+      return SkXfermode::kMultiply_Mode;
+    case BlendModeHue:
+      return SkXfermode::kHue_Mode;
+    case BlendModeSaturation:
+      return SkXfermode::kSaturation_Mode;
+    case BlendModeColor:
+      return SkXfermode::kColor_Mode;
+    case BlendModeLuminosity:
+      return SkXfermode::kLuminosity_Mode;
+    case NumBlendModes:
+      NOTREACHED();
+  }
+  return SkXfermode::kSrcOver_Mode;
+}
+
 // Explicitly named to be a friend in GLRenderer for shader access.
 class GLRendererShaderPixelTest : public GLRendererPixelTest {
  public:
@@ -70,18 +108,25 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   }
 
   void TestShadersWithTexCoordPrecision(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassProgramAA(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgramAA(precision));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetRenderPassColorMatrixProgram(precision));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetRenderPassMaskColorMatrixProgramAA(precision));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetRenderPassColorMatrixProgramAA(precision));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetRenderPassMaskColorMatrixProgram(precision));
+    for (int i = 0; i < NumBlendModes; ++i) {
+      BlendMode blend_mode = static_cast<BlendMode>(i);
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetRenderPassProgram(precision, blend_mode));
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetRenderPassProgramAA(precision, blend_mode));
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetRenderPassMaskProgram(precision, blend_mode));
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetRenderPassMaskProgramAA(precision, blend_mode));
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetRenderPassColorMatrixProgram(precision, blend_mode));
+      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgramAA(
+          precision, blend_mode));
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetRenderPassColorMatrixProgramAA(precision, blend_mode));
+      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgram(
+          precision, blend_mode));
+    }
     EXPECT_PROGRAM_VALID(renderer()->GetTextureProgram(precision));
     EXPECT_PROGRAM_VALID(
         renderer()->GetNonPremultipliedTextureProgram(precision));
@@ -202,59 +247,82 @@ class GLRendererShaderTest : public GLRendererTest {
                                        resource_provider_.get()));
   }
 
-  void TestRenderPassProgram(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_[precision]);
-    EXPECT_EQ(renderer_->render_pass_program_[precision].program(),
-              renderer_->program_shadow_);
-  }
-
-  void TestRenderPassColorMatrixProgram(TexCoordPrecision precision) {
+  void TestRenderPassProgram(TexCoordPrecision precision,
+                             BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_color_matrix_program_[precision]);
-    EXPECT_EQ(renderer_->render_pass_color_matrix_program_[precision].program(),
+        &renderer_->render_pass_program_[precision][blend_mode]);
+    EXPECT_EQ(renderer_->render_pass_program_[precision][blend_mode].program(),
               renderer_->program_shadow_);
   }
 
-  void TestRenderPassMaskProgram(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_[precision]);
-    EXPECT_EQ(renderer_->render_pass_mask_program_[precision].program(),
-              renderer_->program_shadow_);
-  }
-
-  void TestRenderPassMaskColorMatrixProgram(TexCoordPrecision precision) {
+  void TestRenderPassColorMatrixProgram(TexCoordPrecision precision,
+                                        BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_mask_color_matrix_program_[precision]);
+        &renderer_->render_pass_color_matrix_program_[precision][blend_mode]);
     EXPECT_EQ(
-        renderer_->render_pass_mask_color_matrix_program_[precision].program(),
+        renderer_->render_pass_color_matrix_program_[precision][blend_mode]
+            .program(),
         renderer_->program_shadow_);
   }
 
-  void TestRenderPassProgramAA(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_aa_[precision]);
-    EXPECT_EQ(renderer_->render_pass_program_aa_[precision].program(),
-              renderer_->program_shadow_);
-  }
-
-  void TestRenderPassColorMatrixProgramAA(TexCoordPrecision precision) {
+  void TestRenderPassMaskProgram(TexCoordPrecision precision,
+                                 BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_color_matrix_program_aa_[precision]);
+        &renderer_->render_pass_mask_program_[precision][blend_mode]);
     EXPECT_EQ(
-        renderer_->render_pass_color_matrix_program_aa_[precision].program(),
+        renderer_->render_pass_mask_program_[precision][blend_mode].program(),
         renderer_->program_shadow_);
   }
 
-  void TestRenderPassMaskProgramAA(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_aa_[precision]);
-    EXPECT_EQ(renderer_->render_pass_mask_program_aa_[precision].program(),
-              renderer_->program_shadow_);
+  void TestRenderPassMaskColorMatrixProgram(TexCoordPrecision precision,
+                                            BlendMode blend_mode) {
+    EXPECT_PROGRAM_VALID(
+        &renderer_
+             ->render_pass_mask_color_matrix_program_[precision][blend_mode]);
+    EXPECT_EQ(
+        renderer_->render_pass_mask_color_matrix_program_[precision][blend_mode]
+            .program(),
+        renderer_->program_shadow_);
   }
 
-  void TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision) {
+  void TestRenderPassProgramAA(TexCoordPrecision precision,
+                               BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_mask_color_matrix_program_aa_[precision]);
-    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_aa_[precision]
+        &renderer_->render_pass_program_aa_[precision][blend_mode]);
+    EXPECT_EQ(
+        renderer_->render_pass_program_aa_[precision][blend_mode].program(),
+        renderer_->program_shadow_);
+  }
+
+  void TestRenderPassColorMatrixProgramAA(TexCoordPrecision precision,
+                                          BlendMode blend_mode) {
+    EXPECT_PROGRAM_VALID(
+        &renderer_
+             ->render_pass_color_matrix_program_aa_[precision][blend_mode]);
+    EXPECT_EQ(
+        renderer_->render_pass_color_matrix_program_aa_[precision][blend_mode]
+            .program(),
+        renderer_->program_shadow_);
+  }
+
+  void TestRenderPassMaskProgramAA(TexCoordPrecision precision,
+                                   BlendMode blend_mode) {
+    EXPECT_PROGRAM_VALID(
+        &renderer_->render_pass_mask_program_aa_[precision][blend_mode]);
+    EXPECT_EQ(renderer_->render_pass_mask_program_aa_[precision][blend_mode]
                   .program(),
               renderer_->program_shadow_);
+  }
+
+  void TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
+                                              BlendMode blend_mode) {
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_aa_
+                              [precision][blend_mode]);
+    EXPECT_EQ(
+        renderer_
+            ->render_pass_mask_color_matrix_program_aa_[precision][blend_mode]
+            .program(),
+        renderer_->program_shadow_);
   }
 
   void TestSolidColorProgramAA() {
@@ -1348,191 +1416,224 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   gfx::Transform transform_causing_aa;
   transform_causing_aa.Rotate(20.0);
 
-  // RenderPassProgram
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             gfx::Transform());
+  for (int i = 0; i < NumBlendModes; ++i) {
+    BlendMode blend_mode = static_cast<BlendMode>(i);
+    SkXfermode::Mode xfer_mode = BlendModeToSkXfermode(blend_mode);
+    // RenderPassProgram
+    render_passes_in_draw_order_.clear();
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               gfx::Transform());
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            gfx::Transform());
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              gfx::Transform());
 
-  AddRenderPassQuad(
-      root_pass, child_pass, 0, FilterOperations(), gfx::Transform());
+    AddRenderPassQuad(root_pass,
+                      child_pass,
+                      0,
+                      FilterOperations(),
+                      gfx::Transform(),
+                      xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassProgram(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassProgram(TexCoordPrecisionMedium, blend_mode);
 
-  // RenderPassColorMatrixProgram
-  render_passes_in_draw_order_.clear();
+    // RenderPassColorMatrixProgram
+    render_passes_in_draw_order_.clear();
 
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             transform_causing_aa);
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               transform_causing_aa);
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            gfx::Transform());
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              gfx::Transform());
 
-  AddRenderPassQuad(root_pass, child_pass, 0, filters, gfx::Transform());
+    AddRenderPassQuad(
+        root_pass, child_pass, 0, filters, gfx::Transform(), xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassColorMatrixProgram(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassColorMatrixProgram(TexCoordPrecisionMedium, blend_mode);
 
-  // RenderPassMaskProgram
-  render_passes_in_draw_order_.clear();
+    // RenderPassMaskProgram
+    render_passes_in_draw_order_.clear();
 
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             gfx::Transform());
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               gfx::Transform());
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            gfx::Transform());
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              gfx::Transform());
 
-  AddRenderPassQuad(
-      root_pass, child_pass, mask, FilterOperations(), gfx::Transform());
+    AddRenderPassQuad(root_pass,
+                      child_pass,
+                      mask,
+                      FilterOperations(),
+                      gfx::Transform(),
+                      xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassMaskProgram(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassMaskProgram(TexCoordPrecisionMedium, blend_mode);
 
-  // RenderPassMaskColorMatrixProgram
-  render_passes_in_draw_order_.clear();
+    // RenderPassMaskColorMatrixProgram
+    render_passes_in_draw_order_.clear();
 
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             gfx::Transform());
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               gfx::Transform());
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            gfx::Transform());
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              gfx::Transform());
 
-  AddRenderPassQuad(root_pass, child_pass, mask, filters, gfx::Transform());
+    AddRenderPassQuad(
+        root_pass, child_pass, mask, filters, gfx::Transform(), xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassMaskColorMatrixProgram(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassMaskColorMatrixProgram(TexCoordPrecisionMedium, blend_mode);
 
-  // RenderPassProgramAA
-  render_passes_in_draw_order_.clear();
+    // RenderPassProgramAA
+    render_passes_in_draw_order_.clear();
 
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             transform_causing_aa);
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               transform_causing_aa);
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            gfx::Transform());
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              gfx::Transform());
 
-  AddRenderPassQuad(
-      root_pass, child_pass, 0, FilterOperations(), transform_causing_aa);
+    AddRenderPassQuad(root_pass,
+                      child_pass,
+                      0,
+                      FilterOperations(),
+                      transform_causing_aa,
+                      xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassProgramAA(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassProgramAA(TexCoordPrecisionMedium, blend_mode);
 
-  // RenderPassColorMatrixProgramAA
-  render_passes_in_draw_order_.clear();
+    // RenderPassColorMatrixProgramAA
+    render_passes_in_draw_order_.clear();
 
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             transform_causing_aa);
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               transform_causing_aa);
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            gfx::Transform());
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              gfx::Transform());
 
-  AddRenderPassQuad(root_pass, child_pass, 0, filters, transform_causing_aa);
+    AddRenderPassQuad(
+        root_pass, child_pass, 0, filters, transform_causing_aa, xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassColorMatrixProgramAA(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassColorMatrixProgramAA(TexCoordPrecisionMedium, blend_mode);
 
-  // RenderPassMaskProgramAA
-  render_passes_in_draw_order_.clear();
+    // RenderPassMaskProgramAA
+    render_passes_in_draw_order_.clear();
 
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             transform_causing_aa);
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               transform_causing_aa);
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            gfx::Transform());
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              gfx::Transform());
 
-  AddRenderPassQuad(
-      root_pass, child_pass, mask, FilterOperations(), transform_causing_aa);
+    AddRenderPassQuad(root_pass,
+                      child_pass,
+                      mask,
+                      FilterOperations(),
+                      transform_causing_aa,
+                      xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassMaskProgramAA(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassMaskProgramAA(TexCoordPrecisionMedium, blend_mode);
 
-  // RenderPassMaskColorMatrixProgramAA
-  render_passes_in_draw_order_.clear();
+    // RenderPassMaskColorMatrixProgramAA
+    render_passes_in_draw_order_.clear();
 
-  child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                             child_pass_id,
-                             child_rect,
-                             transform_causing_aa);
+    child_pass = AddRenderPass(&render_passes_in_draw_order_,
+                               child_pass_id,
+                               child_rect,
+                               transform_causing_aa);
 
-  root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                            root_pass_id,
-                            viewport_rect,
-                            transform_causing_aa);
+    root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                              root_pass_id,
+                              viewport_rect,
+                              transform_causing_aa);
 
-  AddRenderPassQuad(root_pass, child_pass, mask, filters, transform_causing_aa);
+    AddRenderPassQuad(
+        root_pass, child_pass, mask, filters, transform_causing_aa, xfer_mode);
 
-  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecisionMedium);
+    renderer_->DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    renderer_->DrawFrame(&render_passes_in_draw_order_,
+                         1.f,
+                         viewport_rect,
+                         viewport_rect,
+                         false);
+    TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecisionMedium, blend_mode);
+  }
 }
 
 // At this time, the AA code path cannot be taken if the surface's rect would
@@ -1567,8 +1668,12 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
                             viewport_rect,
                             gfx::Transform());
 
-  AddRenderPassQuad(
-      root_pass, child_pass, 0, FilterOperations(), transform_preventing_aa);
+  AddRenderPassQuad(root_pass,
+                    child_pass,
+                    0,
+                    FilterOperations(),
+                    transform_preventing_aa,
+                    SkXfermode::kSrcOver_Mode);
 
   renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
   renderer_->DrawFrame(&render_passes_in_draw_order_,
@@ -1579,7 +1684,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
 
   // If use_aa incorrectly ignores clipping, it will use the
   // RenderPassProgramAA shader instead of the RenderPassProgram.
-  TestRenderPassProgram(TexCoordPrecisionMedium);
+  TestRenderPassProgram(TexCoordPrecisionMedium, BlendModeNormal);
 }
 
 TEST_F(GLRendererShaderTest, DrawSolidColorShader) {

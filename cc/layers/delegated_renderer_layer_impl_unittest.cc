@@ -1416,7 +1416,12 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
                                         pass1_id,
                                         gfx::Rect(layer_size),
                                         gfx::Transform());
-  AddRenderPassQuad(pass1, pass2, 0, FilterOperations(), transform);
+  AddRenderPassQuad(pass1,
+                    pass2,
+                    0,
+                    FilterOperations(),
+                    transform,
+                    SkXfermode::kSrcOver_Mode);
   delegated_renderer_layer_impl->SetFrameDataForRenderPasses(
       1.f, &delegated_render_passes);
 

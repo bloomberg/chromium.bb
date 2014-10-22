@@ -111,7 +111,8 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                        TestRenderPass* contributing_pass,
                        ResourceProvider::ResourceId mask_resource_id,
                        const FilterOperations& filters,
-                       gfx::Transform transform) {
+                       gfx::Transform transform,
+                       SkXfermode::Mode blend_mode) {
   gfx::Rect output_rect = contributing_pass->output_rect;
   SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform,
@@ -120,7 +121,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                        output_rect,
                        false,
                        1,
-                       SkXfermode::kSrcOver_Mode,
+                       blend_mode,
                        0);
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();

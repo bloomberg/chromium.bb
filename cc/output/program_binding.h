@@ -58,12 +58,15 @@ class ProgramBinding : public ProgramBindingBase {
 
   void Initialize(ContextProvider* context_provider,
                   TexCoordPrecision precision,
-                  SamplerType sampler) {
+                  SamplerType sampler,
+                  BlendMode blend_mode = BlendModeNormal) {
     DCHECK(context_provider);
     DCHECK(!initialized_);
 
     if (context_provider->IsContextLost())
       return;
+
+    fragment_shader_.set_blend_mode(blend_mode);
 
     if (!ProgramBindingBase::Init(
             context_provider->ContextGL(),
