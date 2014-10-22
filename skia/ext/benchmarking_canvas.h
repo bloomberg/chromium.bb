@@ -17,7 +17,7 @@ class TimingCanvas;
 class SK_API BenchmarkingCanvas : public SkNWayCanvas {
 public:
   BenchmarkingCanvas(int width, int height);
-  virtual ~BenchmarkingCanvas();
+  ~BenchmarkingCanvas() override;
 
   // Returns the number of draw commands executed on this canvas.
   size_t CommandCount() const;

@@ -48,23 +48,25 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
                                               int width, int height,
                                               bool is_opaque);
 
-  virtual ~BitmapPlatformDevice();
+  ~BitmapPlatformDevice() override;
 
   // PlatformDevice overrides
-  virtual CGContextRef GetBitmapContext() override;
-  virtual void DrawToNativeContext(CGContextRef context, int x, int y,
-                                   const CGRect* src_rect) override;
+  CGContextRef GetBitmapContext() override;
+  void DrawToNativeContext(CGContextRef context,
+                           int x,
+                           int y,
+                           const CGRect* src_rect) override;
 
   // SkBaseDevice overrides
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&) override;
+  void setMatrixClip(const SkMatrix& transform,
+                     const SkRegion& region,
+                     const SkClipStack&) override;
 
  protected:
   BitmapPlatformDevice(CGContextRef context,
                        const SkBitmap& bitmap);
 
-  virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
-                                       Usage usage) override;
+  SkBaseDevice* onCreateDevice(const SkImageInfo& info, Usage usage) override;
 
  private:
   void ReleaseBitmapContext();

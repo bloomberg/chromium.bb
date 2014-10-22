@@ -15,7 +15,7 @@ namespace skia {
 class SK_API LazyPixelRef : public SkPixelRef {
  public:
   explicit LazyPixelRef(const SkImageInfo& info);
-  virtual ~LazyPixelRef();
+  ~LazyPixelRef() override;
 
   struct PrepareParams {
     // Clipping rect for this pixel ref.

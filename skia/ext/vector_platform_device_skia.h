@@ -23,24 +23,24 @@ class VectorPlatformDeviceSkia : public SkPDFDevice, public PlatformDevice {
   SK_API VectorPlatformDeviceSkia(const SkISize& pageSize,
                                   const SkISize& contentSize,
                                   const SkMatrix& initialTransform);
-  virtual ~VectorPlatformDeviceSkia();
+  ~VectorPlatformDeviceSkia() override;
 
   // PlatformDevice methods.
-  virtual bool SupportsPlatformPaint() override;
+  bool SupportsPlatformPaint() override;
 
-  virtual PlatformSurface BeginPlatformPaint() override;
-  virtual void EndPlatformPaint() override;
+  PlatformSurface BeginPlatformPaint() override;
+  void EndPlatformPaint() override;
 #if defined(OS_WIN)
   virtual void DrawToNativeContext(HDC dc,
                                    int x,
                                    int y,
                                    const RECT* src_rect) override;
 #elif defined(OS_MACOSX)
-  virtual void DrawToNativeContext(CGContext* context,
-                                   int x,
-                                   int y,
-                                   const CGRect* src_rect) override;
-  virtual CGContextRef GetBitmapContext() override;
+  void DrawToNativeContext(CGContext* context,
+                           int x,
+                           int y,
+                           const CGRect* src_rect) override;
+  CGContextRef GetBitmapContext() override;
 #elif defined(OS_POSIX)
   virtual void DrawToNativeContext(PlatformSurface surface,
                                    int x,
