@@ -257,6 +257,7 @@ int WebsiteSettingsUI::GetIdentityIconID(
   int resource_id = IDR_PAGEINFO_INFO;
   switch (status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
@@ -297,6 +298,7 @@ int WebsiteSettingsUI::GetConnectionIconID(
   int resource_id = IDR_PAGEINFO_INFO;
   switch (status) {
     case WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN:
+    case WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE:
       break;
     case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED:
       resource_id = IDR_PAGEINFO_GOOD;
@@ -336,26 +338,4 @@ const gfx::Image& WebsiteSettingsUI::GetFirstVisitIcon(
     const base::string16& first_visit) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(GetFirstVisitIconID(first_visit));
-}
-
-// static
-int WebsiteSettingsUI::GetConnectionSummaryMessageID(
-    WebsiteSettings::SiteConnectionStatus status) {
-  switch (status) {
-    case WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN:
-      return IDS_PAGE_INFO_UNENCRYPTED_CONNECTION_SUMMARY_TEXT;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED:
-      return IDS_PAGE_INFO_ENCRYPTED_CONNECTION_SUMMARY_TEXT;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT:
-      return IDS_PAGE_INFO_MIXED_CONTENT_CONNECTION_SUMMARY_TEXT;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED:
-      return IDS_PAGE_INFO_UNENCRYPTED_CONNECTION_SUMMARY_TEXT;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR:
-      return IDS_PAGE_INFO_UNENCRYPTED_CONNECTION_SUMMARY_TEXT;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE:
-      return IDS_PAGE_INFO_INTERNAL_PAGE;
-    default:
-      NOTREACHED();
-      return 0;
-  }
 }

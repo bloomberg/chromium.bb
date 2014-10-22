@@ -411,6 +411,41 @@ You are signing in with a managed account and giving its administrator control o
         Add to homescreen
       </message>
 
+      <!-- WebsiteSettingsPopup (PageInfo dialog) -->
+      <message name="IDS_PAGE_INFO_COPY_URL_BUTTON" desc="Text in the button that copies the URL to the clipboard.">
+        Copy URL
+      </message>
+      <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
+        Site Settings
+      </message>
+      <message name="IDS_PAGE_INFO_DONE_BUTTON" desc="Text in the button that closes the Page Info dialog.">
+        Done
+      </message>
+      <message name="IDS_PAGE_INFO_PERMISSION_ALLOW" desc="The label used in the permissions dropdowns in the Page Info dialog on mobile for the option that grants a permission.">
+        Allow
+      </message>
+      <message name="IDS_PAGE_INFO_PERMISSION_BLOCK" desc="The label used in the permissions dropdowns in the Page Info dialog on mobile for the option that denies a permission.">
+        Block
+      </message>
+      <message name="IDS_PAGE_INFO_CONNECTION_HTTPS" desc="Message to display in the page info bubble when the connection is private (HTTPS).">
+        Your connection to this site is private.
+      </message>
+      <message name="IDS_PAGE_INFO_CONNECTION_HTTP" desc="Message to display in the page info bubble when the connection is not private (HTTP).">
+        Your connection to this site is not private.
+      </message>
+      <message name="IDS_PAGE_INFO_CONNECTION_MIXED" desc="Message to display in the page info bubble when the main connection is private, but there is content on the page that is not private.">
+        Your connection to this site is private, but someone on the network might be able to change the look of the page.
+      </message>
+      <message name="IDS_PAGE_INFO_CONNECTION_BROKEN_LEADING_TEXT" desc="Message to display highlighted red in the page info bubble when the connection is insecure because the HTTPS certificate is invalid.">
+        Your connection to this site is not private.
+      </message>
+      <message name="IDS_PAGE_INFO_CONNECTION_BROKEN_FOLLOWING_TEXT" desc="Message to display after a 'Your connection to this site is not private' message' in the page info bubble when the connection is insecure because the HTTPS certificate is invalid.">
+        Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
+      </message>
+      <message name="IDS_PAGE_INFO_CONNECTION_INTERNAL_PAGE" desc="Message to display in the page info bubble when the page is an internal Chrome page (e.g. the bookmarks page, or about:blank).">
+        You are viewing a secure Google Chrome page.
+      </message>
+
       <!-- Network prediction internal values -->
       <message name="IDS_NEVER_PREFETCH_BANDWIDTH_ENTRY" desc="Option to always disable the prefetching of web pages. [CHAR-LIMIT=16]">
         Never
@@ -421,6 +456,7 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ALWAYS_PREFETCH_BANDWIDTH_ENTRY" desc="Option to always prefetch web pages regardless of connection. [CHAR-LIMIT=16]">
         Always
       </message>
+
     </messages>
   </release>
 </grit>

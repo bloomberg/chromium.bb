@@ -9431,17 +9431,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- Page Info Bubble -->
-      <message name="IDS_PAGE_INFO_ENCRYPTED_CONNECTION_SUMMARY_TEXT" desc="Message to display in the page info bubble when the connection is private.">
-        Your connection to this site is private.
-      </message>
-      <message name="IDS_PAGE_INFO_UNENCRYPTED_CONNECTION_SUMMARY_TEXT" desc="Message to display in the page info bubble when the connection is not private.">
-        Your connection to this site is not private.
-      </message>
-      <message name="IDS_PAGE_INFO_MIXED_CONTENT_CONNECTION_SUMMARY_TEXT" desc="Message to display in the page info bubble when the connection is private, but someone on the network might be able to change the look of the page (there is content on the page that is not private).">
-        Your connection to this site is private (HTTPS), but someone on the network might be able to change the look of the page.
-      </message>
-
       <!-- Critical Notification Bubble -->
       <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE" desc="The headline for the critical notification">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will restart in <ph name="SECONDS">$2<ex>10</ex></ph> seconds.

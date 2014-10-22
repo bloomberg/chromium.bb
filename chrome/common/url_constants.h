@@ -89,6 +89,7 @@ extern const char kChromeUIVersionURL[];
 extern const char kChromeUIVoiceSearchURL[];
 
 #if defined(OS_ANDROID)
+extern const char kChromeUINativeScheme[];
 extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativeBookmarksURL[];
 extern const char kChromeUINativeRecentTabsURL[];

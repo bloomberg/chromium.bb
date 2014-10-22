@@ -10,12 +10,13 @@
     <dimen name="certificate_viewer_padding_thin">16dp</dimen>
 
     <!-- Website Settings Popup Dimensions -->
-    <dimen name="website_settings_margin_top">16dp</dimen>
-    <dimen name="website_settings_margin_sides">16dp</dimen>
-    <dimen name="website_settings_margin_bottom">18dp</dimen>
-    <dimen name="website_settings_margin_below_url">10dp</dimen>
-    <dimen name="website_settings_url_title_size">16dp</dimen>
-    <dimen name="website_settings_url_description_size">12dp</dimen>
+    <dimen name="website_settings_popup_padding_sides">16dp</dimen>
+    <dimen name="website_settings_popup_button_text_size">14dp</dimen>
+    <dimen name="website_settings_popup_button_height">36dp</dimen>
+    <dimen name="website_settings_popup_button_padding_sides">8dp</dimen>
+    <dimen name="website_settings_popup_button_margin_sides">4dp</dimen>
+    <dimen name="website_settings_popup_permission_icon_size">24dp</dimen>
+    <dimen name="website_settings_popup_permission_spinner_text_size">16dp</dimen>
 
     <!-- Accessibility tab switcher -->
     <dimen name="accessibility_tab_height">65dp</dimen>

@@ -529,6 +529,26 @@ group("strings") {
 
 if (is_android) {
 
+# GYP: //chrome/chrome.gyp:content_setting_java
+java_cpp_enum("content_setting_javagen") {
+  sources = [
+    "../components/content_settings/core/common/content_settings.h"
+  ]
+  outputs = [
+    "org/chromium/chrome/browser/ContentSetting.java",
+  ]
+}
+
+# GYP: //chrome/chrome.gyp:content_settings_type_java
+java_cpp_enum("content_settings_type_javagen") {
+  sources = [
+    "../components/content_settings/core/common/content_settings_types.h"
+  ]
+  outputs = [
+    "org/chromium/chrome/browser/ContentSettingsType.java",
+  ]
+}
+
 # GYP: //chrome/chrome.gyp:page_info_connection_type_java
 java_cpp_enum("page_info_connection_type_javagen") {
   sources = [

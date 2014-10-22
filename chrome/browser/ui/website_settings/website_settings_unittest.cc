@@ -118,6 +118,8 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*mock_ui, SetFirstVisit(base::string16()));
   }
 
+  void SetURL(std::string url) { url_ = GURL(url); }
+
   const GURL& url() const { return url_; }
   MockCertStore* cert_store() { return &cert_store_; }
   int cert_id() { return cert_id_; }
@@ -390,4 +392,24 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   ASSERT_EQ(1u, infobar_service()->infobar_count());
 
   infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+}
+
+TEST_F(WebsiteSettingsTest, AboutBlankPage) {
+  SetURL("about:blank");
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(base::string16(), website_settings()->organization_name());
+}
+
+TEST_F(WebsiteSettingsTest, InternalPage) {
+  SetURL("chrome://bookmarks");
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_INTERNAL_PAGE,
+            website_settings()->site_identity_status());
+  EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }

@@ -154,10 +154,6 @@ class WebsiteSettingsUI {
   // Returns the icon to show along with the first visit information.
   static const gfx::Image& GetFirstVisitIcon(const base::string16& first_visit);
 
-  // Returns the ID of a short message for the given connection |status|.
-  static int GetConnectionSummaryMessageID(
-      WebsiteSettings::SiteConnectionStatus status);
-
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
 

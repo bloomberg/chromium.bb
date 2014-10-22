@@ -11,12 +11,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
 #include "jni/WebsiteSettingsPopup_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -65,51 +67,25 @@ void WebsiteSettingsPopupAndroid::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
+void WebsiteSettingsPopupAndroid::OnPermissionSettingChanged(JNIEnv* env,
+                                                             jobject obj,
+                                                             jint type,
+                                                             jint setting) {
+  ContentSettingsType content_setting_type =
+      static_cast<ContentSettingsType>(type);
+  ContentSetting content_setting = static_cast<ContentSetting>(setting);
+  presenter_->OnSitePermissionChanged(content_setting_type, content_setting);
+}
+
 void WebsiteSettingsPopupAndroid::SetIdentityInfo(
     const IdentityInfo& identity_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  enum PageInfoConnectionType connection_type = CONNECTION_UNKNOWN;
-  switch (identity_info.connection_status) {
-    case WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN:
-      connection_type = CONNECTION_UNKNOWN;
-      break;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED:
-      connection_type = CONNECTION_ENCRYPTED;
-      break;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT:
-      connection_type = CONNECTION_MIXED_CONTENT;
-      break;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED:
-      connection_type = CONNECTION_UNENCRYPTED;
-      break;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR:
-      connection_type = CONNECTION_ENCRYPTED_ERROR;
-      break;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE:
-      connection_type = CONNECTION_INTERNAL_PAGE;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  Java_WebsiteSettingsPopup_setURLTitle(
+  Java_WebsiteSettingsPopup_updatePageDetails(
       env,
       popup_jobject_.obj(),
-      ConvertUTF8ToJavaString(env, url_.scheme()).obj(),
-      ConvertUTF8ToJavaString(env, url_.host()).obj(),
-      ConvertUTF8ToJavaString(env, url_.path()).obj(),
-      static_cast<jint>(connection_type));
-
-  Java_WebsiteSettingsPopup_setConnectionMessage(
-      env,
-      popup_jobject_.obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          l10n_util::GetStringUTF16(
-              WebsiteSettingsUI::GetConnectionSummaryMessageID(
-                  identity_info.connection_status))).obj());
+      identity_info.connection_status ==
+          WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE);
 
   Java_WebsiteSettingsPopup_showDialog(env, popup_jobject_.obj());
 }
@@ -121,7 +97,43 @@ void WebsiteSettingsPopupAndroid::SetCookieInfo(
 
 void WebsiteSettingsPopupAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list) {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  // On Android, we only want to display a subset of the available options in a
+  // particular order, but only if their value is different from the default.
+  std::vector<ContentSettingsType> permissions_to_display;
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_IMAGES);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
+
+  std::map<ContentSettingsType, ContentSetting>
+      user_specified_settings_to_display;
+
+  for (const auto& permission : permission_info_list) {
+    if (std::find(permissions_to_display.begin(),
+                  permissions_to_display.end(),
+                  permission.type) != permissions_to_display.end() &&
+        permission.setting != CONTENT_SETTING_DEFAULT) {
+      user_specified_settings_to_display[permission.type] = permission.setting;
+    }
+  }
+
+  for (const auto& permission : permissions_to_display) {
+    if (ContainsKey(user_specified_settings_to_display, permission)) {
+      base::string16 setting_title =
+          WebsiteSettingsUI::PermissionTypeToUIString(permission);
+
+      Java_WebsiteSettingsPopup_addPermissionSection(
+          env,
+          popup_jobject_.obj(),
+          ConvertUTF16ToJavaString(env, setting_title).obj(),
+          static_cast<jint>(permission),
+          static_cast<jint>(user_specified_settings_to_display[permission]));
+    }
+  }
 }
 
 void WebsiteSettingsPopupAndroid::SetSelectedTab(

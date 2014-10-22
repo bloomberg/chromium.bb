@@ -9,6 +9,8 @@
 
 // A particular type of content to care about.  We give the user various types
 // of controls over each of these.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
 enum ContentSettingsType {
   // "DEFAULT" is only used as an argument to the Content Settings Window
   // opener; there it means "whatever was last shown".

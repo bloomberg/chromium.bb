@@ -587,6 +587,8 @@
             'chrome_strings_grd',
             'chrome_version_java',
             'profile_account_management_metrics_java',
+            'content_setting_java',
+            'content_settings_type_java',
             'page_info_connection_type_java',
             'profile_sync_service_model_type_selection_java',
             'resource_id_java',
@@ -630,6 +632,24 @@
           'includes': [
             '../build/java_strings_grd.gypi',
           ],
+        },
+        {
+          # GN: //chrome:content_setting_javagen
+          'target_name': 'content_setting_java',
+          'type': 'none',
+          'variables': {
+            'source_file': '../components/content_settings/core/common/content_settings.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //chrome:content_settings_type_javagen
+          'target_name': 'content_settings_type_java',
+          'type': 'none',
+          'variables': {
+            'source_file': '../components/content_settings/core/common/content_settings_types.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           # GN: //chrome:page_info_connection_type_javagen

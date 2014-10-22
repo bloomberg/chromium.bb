@@ -12,6 +12,8 @@
 
 // Different settings that can be assigned for a particular content type.  We
 // give the user the ability to set these on a global and per-origin basis.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
 enum ContentSetting {
   CONTENT_SETTING_DEFAULT = 0,
   CONTENT_SETTING_ALLOW,

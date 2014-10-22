@@ -35,6 +35,10 @@ class WebsiteSettingsPopupAndroid : public WebsiteSettingsUI {
                               content::WebContents* web_contents);
   virtual ~WebsiteSettingsPopupAndroid();
   void Destroy(JNIEnv* env, jobject obj);
+  void OnPermissionSettingChanged(JNIEnv* env,
+                                  jobject obj,
+                                  jint type,
+                                  jint setting);
 
   // WebsiteSettingsUI implementations.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
