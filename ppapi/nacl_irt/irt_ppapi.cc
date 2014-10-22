@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <unistd.h>
+
 #include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
