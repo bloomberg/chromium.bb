@@ -547,16 +547,6 @@ hooks = [
     ],
   },
   {
-    # Downloads an ARM sysroot image to src/arm-sysroot. This image updates
-    # at about the same rate that the chrome build deps change.
-    # This script is a no-op except for linux users who have
-    # target_arch=arm in their GYP_DEFINES.
-    'name': 'sysroot',
-    'pattern': '.',
-    'action': ['python', 'src/build/linux/install-arm-sysroot.py',
-               '--linux-only'],
-  },
-  {
     # Downloads the Debian Wheezy sysroot to chrome/installer/linux if needed.
     # This sysroot updates at about the same rate that the chrome build deps
     # change. This script is a no-op except for linux users who are doing
@@ -578,6 +568,16 @@ hooks = [
         'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
         '--linux-only',
         '--arch=i386'],
+  },
+  {
+    # Same as above, but for ARM Linux.
+    'name': 'sysroot',
+    'pattern': '.',
+    'action': [
+        'python',
+        'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
+        '--linux-only',
+        '--arch=arm'],
   },
   {
     # Update the Windows toolchain if necessary.

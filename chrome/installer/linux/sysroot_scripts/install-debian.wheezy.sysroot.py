@@ -26,15 +26,20 @@ import sys
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-URL_PREFIX = 'https://commondatastorage.googleapis.com'
+URL_PREFIX = 'http://storage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
-REVISION = 264817
+REVISION_AMD64 = 264817
+REVISION_I386 = 264817
+REVISION_ARM = 285950
 TARBALL_AMD64 = 'debian_wheezy_amd64_sysroot.tgz'
 TARBALL_I386 = 'debian_wheezy_i386_sysroot.tgz'
+TARBALL_ARM = 'debian_wheezy_arm_sysroot.tgz'
 TARBALL_AMD64_SHA1SUM = '74b7231e12aaf45c5c5489d9aebb56bd6abb3653'
 TARBALL_I386_SHA1SUM = 'fe3d284926839683b00641bc66c9023f872ea4b4'
+TARBALL_ARM_SHA1SUM = 'fc2f54db168887c5190c4c6686c869bedf668b4e'
 SYSROOT_DIR_AMD64 = 'debian_wheezy_amd64-sysroot'
 SYSROOT_DIR_I386 = 'debian_wheezy_i386-sysroot'
+SYSROOT_DIR_ARM = 'debian_wheezy_arm-sysroot'
 
 
 def get_sha1(filename):
@@ -50,7 +55,7 @@ def get_sha1(filename):
 
 
 def main(args):
-  if options.arch not in ['amd64', 'i386']:
+  if options.arch not in ['amd64', 'i386', 'arm']:
     print 'Unknown architecture: %s' % options.arch
     return 1
 
@@ -60,27 +65,33 @@ def main(args):
     if not sys.platform.startswith('linux'):
       return 0
 
-    # Only install the sysroot for an Official Chrome Linux build.
-    defined = ['branding=Chrome', 'buildtype=Official']
-    undefined = ['chromeos=1']
     gyp_defines = os.environ.get('GYP_DEFINES', '')
-    for option in defined:
-      if option not in gyp_defines:
-        return 0
-    for option in undefined:
-      if option in gyp_defines:
-        return 0
+
+    # Only install the sysroot for an Official Chrome Linux build, except
+    # for ARM where we always use a sysroot.
+    if options.arch != 'arm':
+      defined = ['branding=Chrome', 'buildtype=Official']
+      undefined = ['chromeos=1']
+      for option in defined:
+        if option not in gyp_defines:
+          return 0
+      for option in undefined:
+        if option in gyp_defines:
+          return 0
 
     # Check for optional target_arch and only install for that architecture.
     # If target_arch is not specified, then only install for the host
     # architecture.
-    host_arch = ''
+    target_arch = ''
     if 'target_arch=x64' in gyp_defines:
-      host_arch = 'amd64'
+      target_arch = 'amd64'
     elif 'target_arch=ia32' in gyp_defines:
-      host_arch = 'i386'
+      target_arch = 'i386'
+    elif 'target_arch=arm' in gyp_defines:
+      target_arch = 'arm'
     else:
-      # Figure out host arch using build/detect_host_arch.py.
+      # Figure out host arch using build/detect_host_arch.py and
+      # set target_arch to host arch
       SRC_DIR = os.path.abspath(
           os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
       sys.path.append(os.path.join(SRC_DIR, 'build'))
@@ -88,10 +99,13 @@ def main(args):
 
       detected_host_arch = detect_host_arch.HostArch()
       if detected_host_arch == 'x64':
-        host_arch = 'amd64'
+        target_arch = 'amd64'
       elif detected_host_arch == 'ia32':
-        host_arch = 'i386'
-    if host_arch != options.arch:
+        target_arch = 'i386'
+      elif detected_host_arch == 'arm':
+        target_arch = 'arm'
+
+    if target_arch != options.arch:
       return 0
 
   # The sysroot directory should match the one specified in build/common.gypi.
@@ -102,11 +116,22 @@ def main(args):
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_AMD64)
     tarball_filename = TARBALL_AMD64
     tarball_sha1sum = TARBALL_AMD64_SHA1SUM
-  else:
+    revision = REVISION_AMD64
+  elif options.arch == 'arm':
+    sysroot = os.path.join(linux_dir, SYSROOT_DIR_ARM)
+    tarball_filename = TARBALL_ARM
+    tarball_sha1sum = TARBALL_ARM_SHA1SUM
+    revision = REVISION_ARM
+  elif options.arch == 'i386':
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_I386)
     tarball_filename = TARBALL_I386
     tarball_sha1sum = TARBALL_I386_SHA1SUM
-  url = '%s/%s/%s/%s' % (URL_PREFIX, URL_PATH, REVISION, tarball_filename)
+    revision = REVISION_I386
+  else:
+    assert(false)
+
+
+  url = '%s/%s/%s/%s' % (URL_PREFIX, URL_PATH, revision, tarball_filename)
 
   stamp = os.path.join(sysroot, '.stamp')
   if os.path.exists(stamp):
@@ -121,7 +146,10 @@ def main(args):
     shutil.rmtree(sysroot)
   os.mkdir(sysroot)
   tarball = os.path.join(sysroot, tarball_filename)
-  subprocess.check_call(['curl', '-L', url, '-o', tarball])
+  print 'Downloading %s' % url
+  sys.stdout.flush()
+  sys.stderr.flush()
+  subprocess.check_call(['curl', '--fail', '-L', url, '-o', tarball])
   sha1sum = get_sha1(tarball)
   if sha1sum != tarball_sha1sum:
     print 'Tarball sha1sum is wrong.'
@@ -137,10 +165,9 @@ def main(args):
 
 if __name__ == '__main__':
   parser = optparse.OptionParser('usage: %prog [OPTIONS]')
-  parser.add_option('', '--linux-only', dest='linux_only', action='store_true',
+  parser.add_option('--linux-only', action='store_true',
                     default=False, help='Only install sysroot for official '
                                         'Linux builds')
-  parser.add_option('', '--arch', dest='arch',
-                    help='Sysroot architecture, i386 or amd64')
+  parser.add_option('--arch', help='Sysroot architecture: i386, amd64 or arm')
   options, args = parser.parse_args()
-  sys.exit(main(options))
+  sys.exit(main(args))
