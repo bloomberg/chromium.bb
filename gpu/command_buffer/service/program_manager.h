@@ -215,6 +215,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // is not declared in vertex shader.
   bool DetectVaryingsMismatch(std::string* conflicting_name) const;
 
+  // Return true if any built-in invariant matching rules are broken as in
+  // GLSL ES spec 1.00.17, section 4.6.4, Invariance and Linkage.
+  bool DetectBuiltInInvariantConflicts() const;
+
   // Return true if an uniform and an attribute share the same name.
   bool DetectGlobalNameConflicts(std::string* conflicting_name) const;
 

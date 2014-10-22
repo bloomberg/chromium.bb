@@ -81,8 +81,8 @@ bool GetUniformNameSansElement(
   return true;
 }
 
-bool IsBuiltInVarying(const std::string& name) {
-  // Built-in variables.
+bool IsBuiltInFragmentVarying(const std::string& name) {
+  // Built-in variables for fragment shaders.
   const char* kBuiltInVaryings[] = {
       "gl_FragCoord",
       "gl_FrontFacing",
@@ -93,6 +93,14 @@ bool IsBuiltInVarying(const std::string& name) {
       return true;
   }
   return false;
+}
+
+bool IsBuiltInInvariant(
+    const VaryingMap& varyings, const std::string& name) {
+  VaryingMap::const_iterator hit = varyings.find(name);
+  if (hit == varyings.end())
+    return false;
+  return hit->second.isInvariant;
 }
 
 }  // anonymous namespace.
@@ -524,6 +532,11 @@ bool Program::Link(ShaderManager* manager,
                            "or statically used varyings in fragment shader are "
                            "not declared in vertex shader: " + conflicting_name;
     set_log_info(ProcessLogInfo(info_log).c_str());
+    return false;
+  }
+  if (DetectBuiltInInvariantConflicts()) {
+    set_log_info("Invariant settings for certain built-in varyings "
+                 "have to match");
     return false;
   }
   if (DetectGlobalNameConflicts(&conflicting_name)) {
@@ -1071,7 +1084,7 @@ bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
   for (VaryingMap::const_iterator iter = fragment_varyings->begin();
        iter != fragment_varyings->end(); ++iter) {
     const std::string& name = iter->first;
-    if (IsBuiltInVarying(name))
+    if (IsBuiltInFragmentVarying(name))
       continue;
 
     VaryingMap::const_iterator hit = vertex_varyings->find(name);
@@ -1090,6 +1103,28 @@ bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
 
   }
   return false;
+}
+
+bool Program::DetectBuiltInInvariantConflicts() const {
+  DCHECK(attached_shaders_[0].get() &&
+         attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
+         attached_shaders_[1].get() &&
+         attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
+  const VaryingMap& vertex_varyings = attached_shaders_[0]->varying_map();
+  const VaryingMap& fragment_varyings = attached_shaders_[1]->varying_map();
+
+  bool gl_position_invariant = IsBuiltInInvariant(
+      vertex_varyings, "gl_Position");
+  bool gl_point_size_invariant = IsBuiltInInvariant(
+      vertex_varyings, "gl_PointSize");
+
+  bool gl_frag_coord_invariant = IsBuiltInInvariant(
+      fragment_varyings, "gl_FragCoord");
+  bool gl_point_coord_invariant = IsBuiltInInvariant(
+      fragment_varyings, "gl_PointCoord");
+
+  return ((gl_frag_coord_invariant && !gl_position_invariant) ||
+          (gl_point_coord_invariant && !gl_point_size_invariant));
 }
 
 bool Program::DetectGlobalNameConflicts(std::string* conflicting_name) const {
@@ -1130,7 +1165,7 @@ bool Program::CheckVaryingsPacking(
        iter != fragment_varyings->end(); ++iter) {
     if (!iter->second.staticUse && option == kCountOnlyStaticallyUsed)
       continue;
-    if (!IsBuiltInVarying(iter->first)) {
+    if (!IsBuiltInFragmentVarying(iter->first)) {
       VaryingMap::const_iterator vertex_iter =
           vertex_varyings->find(iter->first);
       if (vertex_iter == vertex_varyings->end() ||

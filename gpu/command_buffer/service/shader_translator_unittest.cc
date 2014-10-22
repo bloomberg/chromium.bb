@@ -69,10 +69,11 @@ TEST_F(ShaderTranslatorTest, ValidVertexShader) {
   EXPECT_TRUE(info_log.empty());
   // Translated shader must be valid and non-empty.
   ASSERT_FALSE(translated_source.empty());
-  // There should be no attributes, uniforms, varyings.
+  // There should be no attributes, uniforms, and only one built-in
+  // varying: gl_Position.
   EXPECT_TRUE(attrib_map.empty());
   EXPECT_TRUE(uniform_map.empty());
-  EXPECT_TRUE(varying_map.empty());
+  EXPECT_EQ(1u, varying_map.size());
   // There should be no name mapping.
   EXPECT_TRUE(name_map.empty());
 }
