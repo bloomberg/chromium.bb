@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 
 #include "base/lazy_instance.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -117,10 +116,6 @@ void InputMethodAPI::Shutdown() {
 
 void InputMethodAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("InputMethodAPI::OnListenerAdded"));
-
   DCHECK(!input_method_event_router_.get());
   input_method_event_router_.reset(
       new chromeos::ExtensionInputMethodEventRouter(context_));

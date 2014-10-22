@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -397,10 +396,6 @@ BookmarksAPI::GetFactoryInstance() {
 }
 
 void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("BookmarksAPI::OnListenerAdded"));
-
   bookmark_event_router_.reset(
       new BookmarkEventRouter(Profile::FromBrowserContext(browser_context_)));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);

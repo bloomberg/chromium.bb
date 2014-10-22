@@ -9,7 +9,6 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -645,10 +644,6 @@ SessionsAPI::GetFactoryInstance() {
 }
 
 void SessionsAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("SessionsAPI::OnListenerAdded"));
-
   sessions_event_router_.reset(
       new SessionsEventRouter(Profile::FromBrowserContext(browser_context_)));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);

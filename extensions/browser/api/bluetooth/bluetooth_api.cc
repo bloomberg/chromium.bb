@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/profiler/scoped_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -86,10 +85,6 @@ void BluetoothAPI::Shutdown() {
 }
 
 void BluetoothAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("BluetoothAPI::OnListenerAdded"));
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (event_router()->IsBluetoothSupported())
     event_router()->OnListenerAdded();

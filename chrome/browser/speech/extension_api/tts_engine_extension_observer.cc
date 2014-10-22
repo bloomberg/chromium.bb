@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/profiler/scoped_profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -115,11 +114,6 @@ bool TtsEngineExtensionObserver::IsLoadedTtsEngine(
 
 void TtsEngineExtensionObserver::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "TtsEngineExtensionObserver::OnListenerAdded"));
-
   if (!IsLoadedTtsEngine(details.extension_id))
     return;
 

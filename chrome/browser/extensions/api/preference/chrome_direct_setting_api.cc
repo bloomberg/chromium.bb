@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -94,11 +93,6 @@ ChromeDirectSettingAPI::GetFactoryInstance() {
 
 // EventRouter::Observer implementation.
 void ChromeDirectSettingAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "ChromeDirectSettingAPI::OnListenerAdded"));
-
   EventRouter::Get(profile_)->UnregisterObserver(this);
   registrar_.Init(profile_->GetPrefs());
   preference_whitelist.Get().RegisterPropertyListeners(

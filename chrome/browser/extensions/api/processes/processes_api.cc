@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -519,10 +518,6 @@ ProcessesEventRouter* ProcessesAPI::processes_event_router() {
 }
 
 void ProcessesAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("ProcessesAPI::OnListenerAdded"));
-
   // We lazily tell the TaskManager to start updating when listeners to the
   // processes.onUpdated or processes.onUpdatedWithMemory events arrive.
   processes_event_router()->ListenerAdded();

@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/storage_monitor/removable_storage_observer.h"
@@ -238,10 +237,6 @@ void SystemInfoAPI::Shutdown() {
 }
 
 void SystemInfoAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("SystemInfoAPI::OnListenerAdded"));
-
   if (IsSystemStorageEvent(details.event_name)) {
     StorageMonitor::GetInstance()->EnsureInitialized(
         base::Bind(&AddEventListener, details.event_name));

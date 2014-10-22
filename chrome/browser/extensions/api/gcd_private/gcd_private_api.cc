@@ -8,7 +8,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
@@ -275,10 +274,6 @@ GcdPrivateAPIImpl::~GcdPrivateAPIImpl() {
 }
 
 void GcdPrivateAPIImpl::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("GcdPrivateAPIImpl::OnListenerAdded"));
-
   if (details.event_name == gcd_private::OnDeviceStateChanged::kEventName ||
       details.event_name == gcd_private::OnDeviceRemoved::kEventName) {
     num_device_listeners_++;

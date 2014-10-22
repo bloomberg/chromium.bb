@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/profiler/scoped_profile.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/idle/idle_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
@@ -148,10 +147,6 @@ void IdleManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
 }
 
 void IdleManager::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("IdleManager::OnListenerAdded"));
-
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ++GetMonitor(details.extension_id)->listeners;

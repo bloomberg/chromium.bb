@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -272,11 +271,6 @@ BookmarkManagerPrivateAPI::GetFactoryInstance() {
 
 void BookmarkManagerPrivateAPI::OnListenerAdded(
     const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "BookmarkManagerPrivateAPI::OnListenerAdded"));
-
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
   event_router_.reset(new BookmarkManagerPrivateEventRouter(
       browser_context_,

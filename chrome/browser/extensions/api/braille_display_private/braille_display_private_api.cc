@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
 
 #include "base/lazy_instance.h"
-#include "base/profiler/scoped_profile.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -104,11 +103,6 @@ void BrailleDisplayPrivateAPI::SetEventDelegateForTest(
 
 void BrailleDisplayPrivateAPI::OnListenerAdded(
     const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "BrailleDisplayPrivateAPI::OnListenerAdded"));
-
   BrailleController* braille_controller = BrailleController::GetInstance();
   if (!scoped_observer_.IsObserving(braille_controller))
     scoped_observer_.Add(braille_controller);

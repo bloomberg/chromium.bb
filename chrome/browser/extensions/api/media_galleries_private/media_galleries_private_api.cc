@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_manager.h"
@@ -116,11 +115,6 @@ MediaGalleriesPrivateAPI* MediaGalleriesPrivateAPI::Get(
 
 void MediaGalleriesPrivateAPI::OnListenerAdded(
     const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "MediaGalleriesPrivateAPI::OnListenerAdded"));
-
   // Make sure MediaGalleriesPreferences is initialized. After that,
   // try to initialize the event router for the listener.
   // This method is called synchronously with the message handler for the

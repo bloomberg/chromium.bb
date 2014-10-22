@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/profiler/scoped_profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/mdns.h"
 
@@ -70,10 +69,6 @@ DnsSdRegistry* MDnsAPI::dns_sd_registry() {
 }
 
 void MDnsAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("MDnsAPI::OnListenerAdded"));
-
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateMDnsListeners(details);
 }

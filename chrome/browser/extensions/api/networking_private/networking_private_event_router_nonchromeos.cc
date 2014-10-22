@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_event_router.h"
 
-#include "base/profiler/scoped_profile.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
@@ -88,11 +87,6 @@ void NetworkingPrivateEventRouterImpl::Shutdown() {
 
 void NetworkingPrivateEventRouterImpl::OnListenerAdded(
     const EventListenerInfo& details) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/417106 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "NetworkingPrivateEventRouterImpl::OnListenerAdded"));
-
   // Start listening to events from the network state handler.
   StartOrStopListeningForNetworkChanges();
 }
