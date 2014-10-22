@@ -40,7 +40,7 @@
     "socket" : true,
     "low_energy" : true,
     "uuids": [
-      "0000AB34-0000-1000-8000-00805F9B34FB",  // Unlock UUID
+      "704EE561-3782-405A-A14B-2D47A2DDCDDF",  // Unlock UUID
       "29422880-D56D-11E3-9C1A-0800200C9A66"   // Setup UUID
     ]
   },
