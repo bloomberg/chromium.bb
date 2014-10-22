@@ -8,6 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/strings/string16.h"
+#include "base/time/time.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 
@@ -15,14 +18,34 @@ namespace base {
 class Time;
 }
 
-namespace content {
-class PageState;
-struct Referrer;
-}
-
 namespace sessions {
 
 class SerializedNavigationEntry;
+
+namespace test_data {
+
+extern const int kIndex;
+extern const int kUniqueID;
+extern const GURL kReferrerURL;
+extern const int kReferrerPolicy;
+extern const GURL kVirtualURL;
+extern const base::string16 kTitle;
+extern const std::string kEncodedPageState;
+extern const ui::PageTransition kTransitionType;
+extern const bool kHasPostData;
+extern const int64 kPostID;
+extern const GURL kOriginalRequestURL;
+extern const bool kIsOverridingUserAgent;
+extern const base::Time kTimestamp;
+extern const base::string16 kSearchTerms;
+extern const GURL kFaviconURL;
+extern const int kHttpStatusCode;
+extern const GURL kRedirectURL0;
+extern const GURL kRedirectURL1;
+extern const GURL kOtherURL;
+extern const int kPageID;
+
+}  // namespace test_data
 
 // Set of test functions to manipulate a SerializedNavigationEntry.
 class SerializedNavigationEntryTestHelper {
@@ -32,14 +55,26 @@ class SerializedNavigationEntryTestHelper {
   static void ExpectNavigationEquals(const SerializedNavigationEntry& expected,
                                      const SerializedNavigationEntry& actual);
 
-  // Create a SerializedNavigationEntry with the given URL and title and some
+  // Creates a SerializedNavigationEntry with the given URL and title and some
   // common values for the other fields.
   static SerializedNavigationEntry CreateNavigation(
       const std::string& virtual_url,
       const std::string& title);
 
-  static void SetPageState(const content::PageState& page_state,
-                           SerializedNavigationEntry* navigation);
+  // Creates a SerializedNavigationEntry using the |test_data| constants above.
+  static SerializedNavigationEntry CreateNavigationForTest();
+
+  static void SetReferrerPolicy(int policy,
+                                SerializedNavigationEntry* navigation);
+
+  static void SetVirtualURL(const GURL& virtual_url,
+                            SerializedNavigationEntry* navigation);
+
+  static void SetEncodedPageState(const std::string& encoded_page_state,
+                                  SerializedNavigationEntry* navigation);
+
+  static void SetTransitionType(ui::PageTransition transition_type,
+                                SerializedNavigationEntry* navigation);
 
   static void SetHasPostData(bool has_post_data,
                              SerializedNavigationEntry* navigation);

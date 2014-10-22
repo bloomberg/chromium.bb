@@ -771,7 +771,8 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://google.com", "title");
-  SerializedNavigationEntryTestHelper::SetPageState(page_state, &nav1);
+  SerializedNavigationEntryTestHelper::SetEncodedPageState(
+      page_state.ToEncodedData(), &nav1);
   SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
 
   // Create a TabNavigation containing page_state and representing a normal
@@ -779,7 +780,8 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   SerializedNavigationEntry nav2 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://google.com/nopost", "title");
-  SerializedNavigationEntryTestHelper::SetPageState(page_state, &nav2);
+  SerializedNavigationEntryTestHelper::SetEncodedPageState(
+      page_state.ToEncodedData(), &nav2);
   nav2.set_index(1);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
@@ -810,7 +812,8 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://google.com", "title");
-  SerializedNavigationEntryTestHelper::SetPageState(page_state, &nav1);
+  SerializedNavigationEntryTestHelper::SetEncodedPageState(
+      page_state.ToEncodedData(), &nav1);
   SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);

@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -54,6 +55,7 @@
 using base::Time;
 using content::NavigationEntry;
 using content::WebContents;
+using sessions::ContentSerializedNavigationBuilder;
 using sessions::SerializedNavigationEntry;
 
 // Identifier for commands written to file.
@@ -682,7 +684,7 @@ void SessionService::Observe(int type,
         return;
       content::Details<content::EntryChangedDetails> changed(details);
       const SerializedNavigationEntry navigation =
-          SerializedNavigationEntry::FromNavigationEntry(
+          ContentSerializedNavigationBuilder::FromNavigationEntry(
               changed->index, *changed->changed_entry);
       UpdateTabNavigation(session_tab_helper->window_id(),
                           session_tab_helper->session_id(),
@@ -705,7 +707,7 @@ void SessionService::Observe(int type,
           session_tab_helper->session_id(),
           current_entry_index);
       const SerializedNavigationEntry navigation =
-          SerializedNavigationEntry::FromNavigationEntry(
+          ContentSerializedNavigationBuilder::FromNavigationEntry(
               current_entry_index,
               *web_contents->GetController().GetEntryAtIndex(
                   current_entry_index));
@@ -1365,7 +1367,7 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
     DCHECK(entry);
     if (ShouldTrackEntry(entry->GetVirtualURL())) {
       const SerializedNavigationEntry navigation =
-          SerializedNavigationEntry::FromNavigationEntry(i, *entry);
+          ContentSerializedNavigationBuilder::FromNavigationEntry(i, *entry);
       commands->push_back(
           CreateUpdateTabNavigationCommand(
               kCommandUpdateTabNavigation, session_id.id(), navigation));

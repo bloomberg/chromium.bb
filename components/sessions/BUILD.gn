@@ -8,6 +8,13 @@ if (is_android) {
 
 component("sessions") {
   sources = [
+    # TODO(rohitrao): Split this target into three separate core, content,
+    # and web targets.
+    "content/content_serialized_navigation_builder.cc",
+    "content/content_serialized_navigation_builder.h",
+    "content/content_serialized_navigation_driver.cc",
+    "content/content_serialized_navigation_driver.h",
+    "core/serialized_navigation_driver.h",
     "serialized_navigation_entry.cc",
     "serialized_navigation_entry.h",
     "session_id.cc",
@@ -18,6 +25,7 @@ component("sessions") {
 
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//content/public/browser",
     "//skia",
     "//ui/base",

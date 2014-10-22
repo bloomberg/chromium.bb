@@ -15,6 +15,7 @@
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -413,7 +414,8 @@ void TabRestoreServiceHelper::PopulateTab(
     NavigationEntry* entry = (i == pending_index) ?
         controller->GetPendingEntry() : controller->GetEntryAtIndex(i);
     tab->navigations[i] =
-        sessions::SerializedNavigationEntry::FromNavigationEntry(i, *entry);
+        sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
+            i, *entry);
   }
   tab->timestamp = TimeNow();
   tab->current_navigation_index = controller->GetCurrentEntryIndex();

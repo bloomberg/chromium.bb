@@ -20,11 +20,6 @@
 class Pickle;
 class PickleIterator;
 
-namespace content {
-class BrowserContext;
-class NavigationEntry;
-}
-
 namespace sync_pb {
 class TabNavigation;
 }
@@ -54,12 +49,6 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   SerializedNavigationEntry();
   ~SerializedNavigationEntry();
 
-  // Construct a SerializedNavigationEntry for a particular index from the given
-  // NavigationEntry.
-  static SerializedNavigationEntry FromNavigationEntry(
-      int index,
-      const content::NavigationEntry& entry);
-
   // Construct a SerializedNavigationEntry for a particular index from a sync
   // protocol buffer.  Note that the sync protocol buffer doesn't contain all
   // SerializedNavigationEntry fields.  Also, the timestamp of the returned
@@ -73,13 +62,6 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   // |max_size| is the max number of bytes to write.
   void WriteToPickle(int max_size, Pickle* pickle) const;
   bool ReadFromPickle(PickleIterator* iterator);
-
-  // Convert this SerializedNavigationEntry into a NavigationEntry with the
-  // given page ID and context.  The NavigationEntry will have a transition type
-  // of PAGE_TRANSITION_RELOAD and a new unique ID.
-  scoped_ptr<content::NavigationEntry> ToNavigationEntry(
-      int page_id,
-      content::BrowserContext* browser_context) const;
 
   // Convert this navigation into its sync protocol buffer equivalent.  Note
   // that the protocol buffer doesn't contain all SerializedNavigationEntry
@@ -123,26 +105,10 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   }
   const std::vector<GURL>& redirect_chain() const { return redirect_chain_; }
 
-  // Converts a set of SerializedNavigationEntrys into a list of
-  // NavigationEntrys with sequential page IDs and the given context. The caller
-  // owns the returned NavigationEntrys.
-  static std::vector<content::NavigationEntry*> ToNavigationEntries(
-      const std::vector<SerializedNavigationEntry>& navigations,
-      content::BrowserContext* browser_context);
-
  private:
+  friend class ContentSerializedNavigationBuilder;
+  friend class ContentSerializedNavigationDriver;
   friend class SerializedNavigationEntryTestHelper;
-
-  // Returns the default referrer policy.
-  int GetDefaultReferrerPolicy() const;
-
-  // Returns a sanitized version of |encoded_page_state_| suitable for writing
-  // to disk.
-  std::string GetSanitizedPageStateForPickle() const;
-
-  // Sanitizes the data in this class to be more robust against faulty data
-  // written by older versions.
-  void Sanitize();
 
   // Index in the NavigationController.
   int index_;

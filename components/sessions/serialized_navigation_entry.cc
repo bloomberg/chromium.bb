@@ -6,16 +6,10 @@
 
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/common/page_state.h"
-#include "content/public/common/referrer.h"
+#include "components/sessions/core/serialized_navigation_driver.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-
-using content::NavigationEntry;
 
 namespace sessions {
 
@@ -31,41 +25,11 @@ SerializedNavigationEntry::SerializedNavigationEntry()
       http_status_code_(0),
       is_restored_(false),
       blocked_state_(STATE_INVALID) {
-  referrer_policy_ = GetDefaultReferrerPolicy();
+  referrer_policy_ =
+      SerializedNavigationDriver::Get()->GetDefaultReferrerPolicy();
 }
 
 SerializedNavigationEntry::~SerializedNavigationEntry() {}
-
-// static
-SerializedNavigationEntry SerializedNavigationEntry::FromNavigationEntry(
-    int index,
-    const NavigationEntry& entry) {
-  SerializedNavigationEntry navigation;
-  navigation.index_ = index;
-  navigation.unique_id_ = entry.GetUniqueID();
-  navigation.referrer_url_ = entry.GetReferrer().url;
-  navigation.referrer_policy_ = entry.GetReferrer().policy;
-  navigation.virtual_url_ = entry.GetVirtualURL();
-  navigation.title_ = entry.GetTitle();
-  navigation.encoded_page_state_ = entry.GetPageState().ToEncodedData();
-  navigation.transition_type_ = entry.GetTransitionType();
-  navigation.has_post_data_ = entry.GetHasPostData();
-  navigation.post_id_ = entry.GetPostID();
-  navigation.original_request_url_ = entry.GetOriginalRequestURL();
-  navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
-  navigation.timestamp_ = entry.GetTimestamp();
-  navigation.is_restored_ = entry.IsRestored();
-  // If you want to navigate a named frame in Chrome, you will first need to
-  // add support for persisting it. It is currently only used for layout tests.
-  CHECK(entry.GetFrameToNavigate().empty());
-  entry.GetExtraData(kSearchTermsKey, &navigation.search_terms_);
-  if (entry.GetFavicon().valid)
-    navigation.favicon_url_ = entry.GetFavicon().url;
-  navigation.http_status_code_ = entry.GetHttpStatusCode();
-  navigation.redirect_chain_ = entry.GetRedirectChain();
-
-  return navigation;
-}
 
 SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
     int index,
@@ -151,7 +115,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
 
   navigation.http_status_code_ = sync_data.http_status_code();
 
-  navigation.Sanitize();
+  SerializedNavigationDriver::Get()->Sanitize(&navigation);
 
   navigation.is_restored_ = true;
 
@@ -238,7 +202,8 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
 
   WriteString16ToPickle(pickle, &bytes_written, max_size, title_);
 
-  const std::string encoded_page_state = GetSanitizedPageStateForPickle();
+  const std::string encoded_page_state =
+      SerializedNavigationDriver::Get()->GetSanitizedPageStateForPickle(this);
   WriteStringToPickle(pickle, &bytes_written, max_size, encoded_page_state);
 
   pickle->WriteInt(transition_type_);
@@ -295,7 +260,8 @@ bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
     // The "referrer policy" property was added even later, so we fall back to
     // the default policy if the property is not present.
     if (!iterator->ReadInt(&referrer_policy_))
-      referrer_policy_ = GetDefaultReferrerPolicy();
+      referrer_policy_ =
+          SerializedNavigationDriver::Get()->GetDefaultReferrerPolicy();
 
     // If the original URL can't be found, leave it empty.
     std::string original_request_url_spec;
@@ -322,48 +288,11 @@ bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
       http_status_code_ = 0;
   }
 
-  Sanitize();
+  SerializedNavigationDriver::Get()->Sanitize(this);
 
   is_restored_ = true;
 
   return true;
-}
-
-scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
-    int page_id,
-    content::BrowserContext* browser_context) const {
-  scoped_ptr<NavigationEntry> entry(
-      content::NavigationController::CreateNavigationEntry(
-          virtual_url_,
-          content::Referrer(
-              referrer_url_,
-              static_cast<blink::WebReferrerPolicy>(referrer_policy_)),
-          // Use a transition type of reload so that we don't incorrectly
-          // increase the typed count.
-          ui::PAGE_TRANSITION_RELOAD,
-          false,
-          // The extra headers are not sync'ed across sessions.
-          std::string(),
-          browser_context));
-
-  entry->SetTitle(title_);
-  entry->SetPageState(
-      content::PageState::CreateFromEncodedData(encoded_page_state_));
-  entry->SetPageID(page_id);
-  entry->SetHasPostData(has_post_data_);
-  entry->SetPostID(post_id_);
-  entry->SetOriginalRequestURL(original_request_url_);
-  entry->SetIsOverridingUserAgent(is_overriding_user_agent_);
-  entry->SetTimestamp(timestamp_);
-  entry->SetExtraData(kSearchTermsKey, search_terms_);
-  entry->SetHttpStatusCode(http_status_code_);
-  entry->SetRedirectChain(redirect_chain_);
-
-  // These fields should have default values.
-  DCHECK_EQ(STATE_INVALID, blocked_state_);
-  DCHECK_EQ(0u, content_pack_categories_.size());
-
-  return entry.Pass();
 }
 
 // TODO(zea): perhaps sync state (scroll position, form entries, etc.) as well?
@@ -491,60 +420,6 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   sync_data.set_is_restored(is_restored_);
 
   return sync_data;
-}
-
-// static
-std::vector<NavigationEntry*> SerializedNavigationEntry::ToNavigationEntries(
-    const std::vector<SerializedNavigationEntry>& navigations,
-    content::BrowserContext* browser_context) {
-  int page_id = 0;
-  std::vector<NavigationEntry*> entries;
-  for (std::vector<SerializedNavigationEntry>::const_iterator
-       it = navigations.begin(); it != navigations.end(); ++it) {
-    entries.push_back(
-        it->ToNavigationEntry(page_id, browser_context).release());
-    ++page_id;
-  }
-  return entries;
-}
-
-// TODO(rohitrao): Move this content-specific code into a
-// SerializedNavigationEntryHelper class.
-int SerializedNavigationEntry::GetDefaultReferrerPolicy() const {
-  return blink::WebReferrerPolicyDefault;
-}
-
-// TODO(rohitrao): Move this content-specific code into a
-// SerializedNavigationEntryHelper class.
-std::string SerializedNavigationEntry::GetSanitizedPageStateForPickle() const {
-  content::PageState page_state =
-      content::PageState::CreateFromEncodedData(encoded_page_state_);
-  if (has_post_data_)
-    page_state = page_state.RemovePasswordData();
-
-  return page_state.ToEncodedData();
-}
-
-// TODO(rohitrao): Move this content-specific code into a
-// SerializedNavigationEntryHelper class.
-void SerializedNavigationEntry::Sanitize() {
-  content::Referrer old_referrer(
-      referrer_url_,
-      static_cast<blink::WebReferrerPolicy>(referrer_policy_));
-  content::Referrer new_referrer =
-      content::Referrer::SanitizeForRequest(virtual_url_, old_referrer);
-
-  // No need to compare the policy, as it doesn't change during
-  // sanitization. If there has been a change, the referrer needs to be
-  // stripped from the page state as well.
-  if (referrer_url_ != new_referrer.url) {
-    referrer_url_ = GURL();
-    referrer_policy_ = GetDefaultReferrerPolicy();
-    encoded_page_state_ =
-        content::PageState::CreateFromEncodedData(encoded_page_state_)
-            .RemoveReferrer()
-            .ToEncodedData();
-  }
 }
 
 }  // namespace sessions

@@ -10,6 +10,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -24,6 +25,14 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+
+        # TODO(rohitrao): Split this target into three separate core, content,
+        # and web targets.
+        'sessions/content/content_serialized_navigation_builder.cc',
+        'sessions/content/content_serialized_navigation_builder.h',
+        'sessions/content/content_serialized_navigation_driver.cc',
+        'sessions/content/content_serialized_navigation_driver.h',
+        'sessions/core/serialized_navigation_driver.h',
         'sessions/serialized_navigation_entry.cc',
         'sessions/serialized_navigation_entry.h',
         'sessions/session_id.cc',

@@ -204,6 +204,8 @@
             'search_engines/template_url_unittest.cc',
             'search_provider_logos/logo_cache_unittest.cc',
             'search_provider_logos/logo_tracker_unittest.cc',
+            'sessions/content/content_serialized_navigation_builder_unittest.cc',
+            'sessions/content/content_serialized_navigation_driver_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'signin/core/browser/account_tracker_service_unittest.cc',
             'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',

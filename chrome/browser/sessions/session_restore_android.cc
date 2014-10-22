@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -13,7 +14,9 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 // The android implementation does not do anything "foreign session" specific.
@@ -28,9 +31,12 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
   Profile* profile = Profile::FromBrowserContext(context);
   TabModel* tab_model = TabModelList::GetTabModelForWebContents(web_contents);
   DCHECK(tab_model);
-  std::vector<content::NavigationEntry*> entries =
-      sessions::SerializedNavigationEntry::ToNavigationEntries(
+  ScopedVector<content::NavigationEntry> scoped_entries =
+      sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
           session_tab.navigations, profile);
+  // NavigationController::Restore() expects to take ownership of the entries.
+  std::vector<content::NavigationEntry*> entries;
+  scoped_entries.release(&entries);
   content::WebContents* new_web_contents = content::WebContents::Create(
       content::WebContents::CreateParams(context));
   int selected_index = session_tab.normalized_navigation_index();

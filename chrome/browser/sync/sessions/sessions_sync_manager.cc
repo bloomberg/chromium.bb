@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/sessions/sessions_util.h"
 #include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -24,6 +25,7 @@
 #include "sync/api/time.h"
 
 using content::NavigationEntry;
+using sessions::ContentSerializedNavigationBuilder;
 using sessions::SerializedNavigationEntry;
 using sync_driver::DeviceInfo;
 using sync_driver::LocalDeviceInfoProvider;
@@ -975,7 +977,7 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
       session_tab->current_navigation_index = session_tab->navigations.size();
 
     session_tab->navigations.push_back(
-        SerializedNavigationEntry::FromNavigationEntry(i, *entry));
+        ContentSerializedNavigationBuilder::FromNavigationEntry(i, *entry));
     if (is_supervised) {
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_ALLOWED);
@@ -995,7 +997,7 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
     int offset = session_tab->navigations.size();
     for (size_t i = 0; i < blocked_navigations.size(); ++i) {
       session_tab->navigations.push_back(
-          SerializedNavigationEntry::FromNavigationEntry(
+          ContentSerializedNavigationBuilder::FromNavigationEntry(
               i + offset, *blocked_navigations[i]));
       session_tab->navigations.back().set_blocked_state(
           SerializedNavigationEntry::STATE_BLOCKED);

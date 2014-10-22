@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_tabrestore.h"
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -21,6 +23,7 @@
 using content::WebContents;
 using content::NavigationController;
 using content::NavigationEntry;
+using sessions::ContentSerializedNavigationBuilder;
 using sessions::SerializedNavigationEntry;
 
 namespace chrome {
@@ -69,9 +72,12 @@ WebContents* CreateRestoredTab(
   extensions::TabHelper::CreateForWebContents(web_contents);
   extensions::TabHelper::FromWebContents(web_contents)->
       SetExtensionAppById(extension_app_id);
-  std::vector<NavigationEntry*> entries =
-      SerializedNavigationEntry::ToNavigationEntries(
+  ScopedVector<NavigationEntry> scoped_entries =
+      ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, browser->profile());
+  // NavigationController::Restore() expects to take ownership of the entries.
+  std::vector<NavigationEntry*> entries;
+  scoped_entries.release(&entries);
   web_contents->SetUserAgentOverride(user_agent_override);
   web_contents->GetController().Restore(
       selected_navigation, GetRestoreType(browser, from_last_session),
