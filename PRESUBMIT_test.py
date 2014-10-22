@@ -413,66 +413,6 @@ class InvalidOSMacroNamesTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
-class InvalidOverideAndFinalTest(unittest.TestCase):
-  def testValidOverrideConstructs(self):
-    mock_input_api = MockInputApi()
-    lines = ['foo1() override;',
-             'foo2() final;',
-             '#DEFINE OVERRIDE_METHOD_OVERLOAD',
-             '#DEFINE FINAL_METHOD',
-             '#DEFINE OVERRIDE_OVERRIDE_SOMETHING',
-             '#DEFINE SOMETHING_OVERRIDE_SOMETHING',
-             '#DEFINE SOMETHING_SOMETHING_OVERRIDE',
-             '#DEFINE FINAL_OVERRIDE_FINAL',
-             '#DEFINE SOMETHING_OVERRIDE_FINAL',
-             '#DEFINE OVERRIDE_OVERRIDE_OVERRIDE',
-             '#endif  // FINAL_METHOD',
-             '#endif  // OVERRIDE_METHOD_OVERLOAD']
-    mock_file_h = MockFile('something.h', lines)
-    mock_input_api.files = [mock_file_h]
-    errors = PRESUBMIT._CheckForOverrideAndFinalRules(mock_input_api,
-                                                      MockOutputApi())
-    self.assertEqual(0, len(errors))
-
-  def testInvalidOverrideConstructsInHeaders(self):
-    mock_input_api = MockInputApi()
-    lines_cpp = ['foo2() FINAL;']
-    lines_h = ['foo1() OVERRIDE;']
-    mock_file_cpp = MockFile('something.cpp', lines_cpp)
-    mock_file_h = MockFile('something.h', lines_h)
-    mock_input_api.files = [mock_file_cpp, mock_file_h]
-    errors = PRESUBMIT._CheckForOverrideAndFinalRules(mock_input_api,
-                                                      MockOutputApi())
-    self.assertEqual(1, len(errors))
-
-  def testInvalidOverrideConstructsInCpp(self):
-    mock_input_api = MockInputApi()
-    lines_cpp = ['foo2() FINAL;']
-    mock_file_cpp = MockFile('something.cpp', lines_cpp)
-    mock_input_api.files = [mock_file_cpp]
-    errors = PRESUBMIT._CheckForOverrideAndFinalRules(mock_input_api,
-                                                      MockOutputApi())
-    self.assertEqual(1, len(errors))
-
-  def testInvalidOverrideConstructsInCc(self):
-    mock_input_api = MockInputApi()
-    lines_cc = ['foo3() override FINAL;']
-    mock_file_cc = MockFile('something.cc', lines_cc)
-    mock_input_api.files = [mock_file_cc]
-    errors = PRESUBMIT._CheckForOverrideAndFinalRules(mock_input_api,
-                                                      MockOutputApi())
-    self.assertEqual(1, len(errors))
-
-  def testInvalidOverrideConstructsInMm(self):
-    mock_input_api = MockInputApi()
-    lines_mm = ['foo4() OVERRIDE final;']
-    mock_file_mm = MockFile('something.mm', lines_mm)
-    mock_input_api.files = [mock_file_mm]
-    errors = PRESUBMIT._CheckForOverrideAndFinalRules(mock_input_api,
-                                                      MockOutputApi())
-    self.assertEqual(1, len(errors))
-
-
 class InvalidIfDefinedMacroNamesTest(unittest.TestCase):
   def testInvalidIfDefinedMacroNames(self):
     lines = ['#if defined(TARGET_IPHONE_SIMULATOR)',

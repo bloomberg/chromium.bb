@@ -1282,22 +1282,6 @@ def _CheckNoDeprecatedJS(input_api, output_api):
   return results
 
 
-def _CheckForOverrideAndFinalRules(input_api, output_api):
-  """Checks for final and override used as per C++11"""
-  problems = []
-  for f in input_api.AffectedFiles():
-    if (f.LocalPath().endswith(('.cc', '.cpp', '.h', '.mm'))):
-      for line_num, line in f.ChangedContents():
-        if (input_api.re.search(r'\b(FINAL|OVERRIDE)\b', line)):
-          problems.append('    %s:%d' % (f.LocalPath(), line_num))
-
-  if not problems:
-    return []
-  return [output_api.PresubmitError('Use C++11\'s |final| and |override| '
-                                    'rather than FINAL and OVERRIDE.',
-                                    problems)]
-
-
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -1340,7 +1324,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedJS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
-  results.extend(_CheckForOverrideAndFinalRules(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
