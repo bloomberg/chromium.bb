@@ -910,8 +910,6 @@ const base::TimeTicks& RenderProcessHostImpl::GetInitTimeForNavigationMetrics()
 void RenderProcessHostImpl::AddRoute(
     int32 routing_id,
     IPC::Listener* listener) {
-  CHECK(widget_helper_->IsRoutingIDProbablyValid(routing_id))
-      << "Found Invalid Routing ID: " << routing_id;
   CHECK(!listeners_.Lookup(routing_id))
       << "Found Routing ID Conflict: " << routing_id;
   listeners_.AddWithID(listener, routing_id);

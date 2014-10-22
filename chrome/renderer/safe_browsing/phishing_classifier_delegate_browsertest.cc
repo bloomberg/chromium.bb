@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/routing_id_mangling_disabler.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -264,7 +263,6 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   StrictMock<MockPhishingClassifier>* classifier_;  // Owned by |delegate_|.
   PhishingClassifierDelegate* delegate_;  // Owned by the RenderView.
   scoped_refptr<content::MessageLoopRunner> runner_;
-  content::RoutingIDManglingDisabler mangling_disabler_;
 };
 
 IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, Navigation) {

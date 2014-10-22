@@ -22,7 +22,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/routing_id_mangling_disabler.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
@@ -36,11 +35,6 @@ class SitePerProcessAccessibilityBrowserTest
     : public SitePerProcessBrowserTest {
  public:
   SitePerProcessAccessibilityBrowserTest() {}
-
-  // TODO(morrita): This is fishy. This test shouldn't rely on the
-  // abasence of routing_id mangling. Something seems wrong.
-  // See http://crbug.com/422136 for more updates.
-  content::RoutingIDManglingDisabler mangling_disabler_;
 };
 
 // TODO(nasko): try enabling this test on more platforms once
