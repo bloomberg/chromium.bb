@@ -39,7 +39,7 @@ class SafeAudioVideoChecker : public content::UtilityProcessHostClient {
     FINISHED_STATE
   };
 
-  virtual ~SafeAudioVideoChecker();
+  ~SafeAudioVideoChecker() override;
 
   // Starts validation once the utility process has been started.
   virtual void OnProcessStarted();
@@ -48,8 +48,8 @@ class SafeAudioVideoChecker : public content::UtilityProcessHostClient {
   void OnCheckingFinished(bool valid);
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   State state_;
 

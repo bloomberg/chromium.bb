@@ -75,17 +75,16 @@ class TestMediaFileSystemContext : public MediaFileSystemContext {
   };
 
   explicit TestMediaFileSystemContext(MediaFileSystemRegistry* registry);
-  virtual ~TestMediaFileSystemContext() {}
+  ~TestMediaFileSystemContext() override {}
 
   // MediaFileSystemContext implementation.
-  virtual bool RegisterFileSystem(const std::string& device_id,
-                                  const std::string& fs_name,
-                                  const base::FilePath& path) override;
+  bool RegisterFileSystem(const std::string& device_id,
+                          const std::string& fs_name,
+                          const base::FilePath& path) override;
 
-  virtual void RevokeFileSystem(const std::string& fs_name) override;
+  void RevokeFileSystem(const std::string& fs_name) override;
 
-  virtual base::FilePath GetRegisteredPath(
-      const std::string& fs_name) const override;
+  base::FilePath GetRegisteredPath(const std::string& fs_name) const override;
 
   MediaFileSystemRegistry* registry() { return registry_; }
 
@@ -192,14 +191,14 @@ class MockProfileSharedRenderProcessHostFactory
     : public content::RenderProcessHostFactory {
  public:
   MockProfileSharedRenderProcessHostFactory() {}
-  virtual ~MockProfileSharedRenderProcessHostFactory();
+  ~MockProfileSharedRenderProcessHostFactory() override;
 
   // RPH created with this factory are owned by it.  If the RPH is destroyed
   // for testing purposes, it must be removed from the factory first.
   content::MockRenderProcessHost* ReleaseRPH(
       content::BrowserContext* browser_context);
 
-  virtual content::RenderProcessHost* CreateRenderProcessHost(
+  content::RenderProcessHost* CreateRenderProcessHost(
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) const override;
 

@@ -57,7 +57,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     testing::Test::TearDown();
   }
 
-  virtual void Initialize() override {
+  void Initialize() override {
     file_thread_.Start();
 
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
@@ -110,7 +110,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     Verify();
   }
 
-  virtual void Verify() override {
+  void Verify() override {
     struct TestData {
       std::string* id;
       std::vector<MediaGalleryPermission>* expectation;

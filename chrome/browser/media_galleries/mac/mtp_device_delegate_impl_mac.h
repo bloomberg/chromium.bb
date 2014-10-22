@@ -32,31 +32,29 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
   // MTPDeviceAsyncDelegate implementation. These functions are called on the
   // IO thread by the async filesystem file util. They forward to
   // similarly-named methods on the UI thread.
-  virtual void GetFileInfo(
-      const base::FilePath& file_path,
-      const GetFileInfoSuccessCallback& success_callback,
-      const ErrorCallback& error_callback) override;
+  void GetFileInfo(const base::FilePath& file_path,
+                   const GetFileInfoSuccessCallback& success_callback,
+                   const ErrorCallback& error_callback) override;
 
   // Note: passed absolute paths, but expects relative paths in reply.
-  virtual void ReadDirectory(
-      const base::FilePath& root,
-      const ReadDirectorySuccessCallback& success_callback,
-      const ErrorCallback& error_callback) override;
+  void ReadDirectory(const base::FilePath& root,
+                     const ReadDirectorySuccessCallback& success_callback,
+                     const ErrorCallback& error_callback) override;
 
   // Note: passed absolute paths.
-  virtual void CreateSnapshotFile(
+  void CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,
       const CreateSnapshotFileSuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
-  virtual bool IsStreaming() override;
-  virtual void ReadBytes(const base::FilePath& device_file_path,
-                         const scoped_refptr<net::IOBuffer>& buf,
-                         int64 offset,
-                         int buf_len,
-                         const ReadBytesSuccessCallback& success_callback,
-                         const ErrorCallback& error_callback) override;
-  virtual void CancelPendingTasksAndDeleteDelegate() override;
+  bool IsStreaming() override;
+  void ReadBytes(const base::FilePath& device_file_path,
+                 const scoped_refptr<net::IOBuffer>& buf,
+                 int64 offset,
+                 int buf_len,
+                 const ReadBytesSuccessCallback& success_callback,
+                 const ErrorCallback& error_callback) override;
+  void CancelPendingTasksAndDeleteDelegate() override;
 
   // Forward delegates for ImageCaptureDeviceListener. These are
   // invoked in callbacks of the ImageCapture library on the UI thread.
@@ -74,7 +72,7 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
  private:
   class DeviceListener;
 
-  virtual ~MTPDeviceDelegateImplMac();
+  ~MTPDeviceDelegateImplMac() override;
 
   // Delegate for GetFileInfo, called on the UI thread.
   void GetFileInfoImpl(const base::FilePath& file_path,

@@ -45,7 +45,7 @@ class GalleryWatchManager
   static const char kCouldNotWatchGalleryError[];
 
   GalleryWatchManager();
-  virtual ~GalleryWatchManager();
+  ~GalleryWatchManager() override;
 
   // Add or remove observer of change events - this is the only way to
   // get the result of the file watches. There can only be one observer per
@@ -123,14 +123,14 @@ class GalleryWatchManager
   void OnFilePathChanged(const base::FilePath& path, bool error);
 
   // MediaGalleriesPreferences::GalleryChangeObserver implementation.
-  virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
-                                   const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id) override;
-  virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId pref_id) override;
+  void OnPermissionRemoved(MediaGalleriesPreferences* pref,
+                           const std::string& extension_id,
+                           MediaGalleryPrefId pref_id) override;
+  void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                        MediaGalleryPrefId pref_id) override;
 
   // storage_monitor::RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageDetached(
+  void OnRemovableStorageDetached(
       const storage_monitor::StorageInfo& info) override;
 
   // True if the we are already observing the storage monitor.

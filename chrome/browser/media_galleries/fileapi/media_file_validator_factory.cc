@@ -14,14 +14,14 @@ namespace {
 
 class InvalidFileValidator : public storage::CopyOrMoveFileValidator {
  public:
-  virtual ~InvalidFileValidator() {}
-  virtual void StartPreWriteValidation(
+  ~InvalidFileValidator() override {}
+  void StartPreWriteValidation(
       const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
       override {
     result_callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 
-  virtual void StartPostWriteValidation(
+  void StartPostWriteValidation(
       const base::FilePath& dest_platform_path,
       const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
       override {

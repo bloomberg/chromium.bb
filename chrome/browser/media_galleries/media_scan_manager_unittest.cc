@@ -56,13 +56,9 @@ class MockMediaFolderFinder : MediaFolderFinder {
         destruction_callback_(destruction_callback),
         callback_(callback) {
   }
-  virtual ~MockMediaFolderFinder() {
-    destruction_callback_.Run();
-  }
+  ~MockMediaFolderFinder() override { destruction_callback_.Run(); }
 
-  virtual void StartScan() override {
-    started_callback_.Run(callback_);
-  }
+  void StartScan() override { started_callback_.Run(callback_); }
 
  private:
   FindFoldersStartedCallback started_callback_;
@@ -83,7 +79,7 @@ class TestMediaScanManager : public MediaScanManager {
   explicit TestMediaScanManager(const MediaFolderFinderFactory& factory) {
     SetMediaFolderFinderFactory(factory);
   }
-  virtual ~TestMediaScanManager() {}
+  ~TestMediaScanManager() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMediaScanManager);
@@ -231,10 +227,9 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   }
 
   // MediaScanManagerObserver implementation.
-  virtual void OnScanFinished(
-      const std::string& extension_id,
-      int gallery_count,
-      const MediaGalleryScanResult& file_counts) override {
+  void OnScanFinished(const std::string& extension_id,
+                      int gallery_count,
+                      const MediaGalleryScanResult& file_counts) override {
     EXPECT_EQ(extension_->id(), extension_id);
     EXPECT_EQ(expected_gallery_count_, gallery_count);
     EXPECT_EQ(expected_file_counts_.audio_count, file_counts.audio_count);

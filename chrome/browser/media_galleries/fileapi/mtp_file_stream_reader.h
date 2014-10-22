@@ -30,13 +30,13 @@ class MTPFileStreamReader
                       const base::Time& expected_modification_time,
                       bool do_media_header_validation);
 
-  virtual ~MTPFileStreamReader();
+  ~MTPFileStreamReader() override;
 
   // FileStreamReader overrides.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override;
-  virtual int64 GetLength(
-      const net::Int64CompletionCallback& callback) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
+  int64 GetLength(const net::Int64CompletionCallback& callback) override;
 
  private:
   void FinishValidateMediaHeader(

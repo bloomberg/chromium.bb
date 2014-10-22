@@ -50,7 +50,7 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
   };
 
   // Private because content::UtilityProcessHostClient is ref-counted.
-  virtual ~SafePicasaAlbumTableReader();
+  ~SafePicasaAlbumTableReader() override;
 
   // Launches the utility process.  Must run on the IO thread.
   void StartWorkOnIOThread();
@@ -69,8 +69,8 @@ class SafePicasaAlbumTableReader : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   AlbumTableFiles album_table_files_;
 

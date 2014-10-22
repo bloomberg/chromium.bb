@@ -13,17 +13,17 @@ class MockMediaGalleriesDialog : public MediaGalleriesDialog {
   typedef base::Callback<void(int update_count)> DialogDestroyedCallback;
 
   explicit MockMediaGalleriesDialog(const DialogDestroyedCallback& callback);
-  virtual ~MockMediaGalleriesDialog();
+  ~MockMediaGalleriesDialog() override;
 
   // MediaGalleriesDialog implementation.
-  virtual void UpdateGalleries() override;
+  void UpdateGalleries() override;
 
   // Number up times UpdateResults has been called.
   int update_count() const;
 
  private:
   // MediaGalleriesDialog implementation.
-  virtual void AcceptDialogForTesting() override;
+  void AcceptDialogForTesting() override;
 
   int update_count_;
 

@@ -34,11 +34,10 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
       : IPhotoDataProvider(xml_library_path),
         callback_(callback) {
   }
-  virtual ~TestIPhotoDataProvider() {}
+  ~TestIPhotoDataProvider() override {}
 
  private:
-  virtual void OnLibraryChanged(const base::FilePath& path,
-                                bool error) override {
+  void OnLibraryChanged(const base::FilePath& path, bool error) override {
     IPhotoDataProvider::OnLibraryChanged(path, error);
     callback_.Run();
   }
@@ -158,7 +157,7 @@ class IPhotoDataProviderBasicTest : public IPhotoDataProviderTest {
   IPhotoDataProviderBasicTest() {}
   virtual ~IPhotoDataProviderBasicTest() {}
 
-  virtual std::string GetLibraryString() override {
+  std::string GetLibraryString() override {
     return "<plist><dict>\n"
       "<key>List of Albums</key>\n"
       "<array>"
@@ -268,7 +267,7 @@ class IPhotoDataProviderBasicTest : public IPhotoDataProviderTest {
       "</dict></plist>\n";
   }
 
-  virtual void StartTest(bool parse_success) override {
+  void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     std::vector<std::string> names = data_provider()->GetAlbumNames();
@@ -346,7 +345,7 @@ class IPhotoDataProviderRefreshTest : public IPhotoDataProviderTest {
 
   std::string another_album;
 
-  virtual std::string GetLibraryString() override {
+  std::string GetLibraryString() override {
     return "<plist><dict>\n"
       "<key>List of Albums</key>\n"
       "<array>"
@@ -381,7 +380,7 @@ class IPhotoDataProviderRefreshTest : public IPhotoDataProviderTest {
       "</dict></plist>\n";
   }
 
-  virtual void StartTest(bool parse_success) override {
+  void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     EXPECT_EQ(FilePath("/vol/path1.jpg"),
@@ -443,7 +442,7 @@ class IPhotoDataProviderInvalidTest : public IPhotoDataProviderTest {
   IPhotoDataProviderInvalidTest() {}
   virtual ~IPhotoDataProviderInvalidTest() {}
 
-  virtual void StartTest(bool parse_success) override {
+  void StartTest(bool parse_success) override {
     EXPECT_TRUE(parse_success);
 
     SetLibraryChangeCallback(

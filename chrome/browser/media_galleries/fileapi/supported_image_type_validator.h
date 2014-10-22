@@ -19,12 +19,11 @@ class MediaFileValidatorFactory;
 // image files supported by Chrome.
 class SupportedImageTypeValidator : public AVScanningFileValidator {
  public:
-  virtual ~SupportedImageTypeValidator();
+  ~SupportedImageTypeValidator() override;
 
   static bool SupportsFileType(const base::FilePath& path);
 
-  virtual void StartPreWriteValidation(
-      const ResultCallback& result_callback) override;
+  void StartPreWriteValidation(const ResultCallback& result_callback) override;
 
  private:
   friend class MediaFileValidatorFactory;

@@ -34,7 +34,7 @@ class ExtensionRegistry;
 class MediaScanManager : public extensions::ExtensionRegistryObserver {
  public:
   MediaScanManager();
-  virtual ~MediaScanManager();
+  ~MediaScanManager() override;
 
   // There can only be ever one observer registered per profile. Does not take
   // ownership of |observer|. An observer must be registered before scanning.
@@ -76,7 +76,7 @@ class MediaScanManager : public extensions::ExtensionRegistryObserver {
   typedef std::map<Profile*, ScanObservers> ScanObserverMap;
 
   // extensions::ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;

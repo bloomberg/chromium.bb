@@ -71,13 +71,13 @@ class TestITunesDataProvider : public ITunesDataProvider {
     EXPECT_TRUE(fake_auto_add_dir_.CreateUniqueTempDir());
   }
 
-  virtual ~TestITunesDataProvider() {}
+  ~TestITunesDataProvider() override {}
 
-  virtual void RefreshData(const ReadyCallback& ready_callback) override {
+  void RefreshData(const ReadyCallback& ready_callback) override {
     ready_callback.Run(true /* success */);
   }
 
-  virtual const base::FilePath& auto_add_path() const override {
+  const base::FilePath& auto_add_path() const override {
     return fake_auto_add_dir_.path();
   }
 
@@ -101,12 +101,10 @@ class TestITunesFileUtil : public ITunesFileUtil {
       : ITunesFileUtil(media_path_filter),
         data_provider_(data_provider) {
   }
-  virtual ~TestITunesFileUtil() {}
+  ~TestITunesFileUtil() override {}
 
  private:
-  virtual ITunesDataProvider* GetDataProvider() override {
-    return data_provider_;
-  }
+  ITunesDataProvider* GetDataProvider() override { return data_provider_; }
 
   ITunesDataProvider* data_provider_;
 };
@@ -120,7 +118,7 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
             MediaFileSystemBackend::MediaTaskRunner().get()),
         test_file_util_(itunes_file_util) {}
 
-  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+  storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) override {
     if (type != storage::kFileSystemTypeItunes)
       return NULL;

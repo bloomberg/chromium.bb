@@ -15,13 +15,12 @@ class FilePath;
 // This class supports AV scanning on post write validation.
 class AVScanningFileValidator : public storage::CopyOrMoveFileValidator {
  public:
-  virtual ~AVScanningFileValidator();
+  ~AVScanningFileValidator() override;
 
   // Runs AV checks on the resulting file (Windows-only).
   // Subclasses will not typically override this method.
-  virtual void StartPostWriteValidation(
-      const base::FilePath& dest_platform_path,
-      const ResultCallback& result_callback) override;
+  void StartPostWriteValidation(const base::FilePath& dest_platform_path,
+                                const ResultCallback& result_callback) override;
 
  protected:
   AVScanningFileValidator();

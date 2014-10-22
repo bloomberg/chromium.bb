@@ -27,14 +27,14 @@ class MediaGalleriesPreferencesFactory
   friend struct DefaultSingletonTraits<MediaGalleriesPreferencesFactory>;
 
   MediaGalleriesPreferencesFactory();
-  virtual ~MediaGalleriesPreferencesFactory();
+  ~MediaGalleriesPreferencesFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferencesFactory);

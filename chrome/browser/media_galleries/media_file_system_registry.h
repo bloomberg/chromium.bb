@@ -73,7 +73,7 @@ class MediaFileSystemRegistry
       public MediaGalleriesPreferences::GalleryChangeObserver {
  public:
   MediaFileSystemRegistry();
-  virtual ~MediaFileSystemRegistry();
+  ~MediaFileSystemRegistry() override;
 
   // Passes to |callback| the list of media filesystem IDs and paths for a
   // given RVH.
@@ -99,7 +99,7 @@ class MediaFileSystemRegistry
   GalleryWatchManager* gallery_watch_manager();
 
   // RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageDetached(
+  void OnRemovableStorageDetached(
       const storage_monitor::StorageInfo& info) override;
 
  private:
@@ -115,11 +115,11 @@ class MediaFileSystemRegistry
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
 
-  virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
-                                   const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id) override;
-  virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId pref_id) override;
+  void OnPermissionRemoved(MediaGalleriesPreferences* pref,
+                           const std::string& extension_id,
+                           MediaGalleryPrefId pref_id) override;
+  void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                        MediaGalleryPrefId pref_id) override;
 
   // Look up or create the extension gallery host.
   ExtensionGalleriesHost* GetExtensionGalleryHost(

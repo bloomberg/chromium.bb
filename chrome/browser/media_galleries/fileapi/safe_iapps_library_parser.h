@@ -59,7 +59,7 @@ class SafeIAppsLibraryParser : public content::UtilityProcessHostClient {
   };
 
   // content::UtilityProcessHostClient is ref-counted.
-  virtual ~SafeIAppsLibraryParser();
+  ~SafeIAppsLibraryParser() override;
 
   // Posts a task to start the XML parsing in the utility process.
   void Start();
@@ -91,8 +91,8 @@ class SafeIAppsLibraryParser : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   base::FilePath library_file_path_;
 

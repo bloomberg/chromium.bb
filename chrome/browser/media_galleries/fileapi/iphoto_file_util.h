@@ -32,38 +32,37 @@ extern const char kIPhotoAlbumsDir[];
 class IPhotoFileUtil : public NativeMediaFileUtil {
  public:
   explicit IPhotoFileUtil(MediaPathFilter* media_path_filter);
-  virtual ~IPhotoFileUtil();
+  ~IPhotoFileUtil() override;
 
  protected:
   // NativeMediaFileUtil overrides.
-  virtual void GetFileInfoOnTaskRunnerThread(
+  void GetFileInfoOnTaskRunnerThread(
       scoped_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const GetFileInfoCallback& callback) override;
-  virtual void ReadDirectoryOnTaskRunnerThread(
+  void ReadDirectoryOnTaskRunnerThread(
       scoped_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const ReadDirectoryCallback& callback) override;
-  virtual void CreateSnapshotFileOnTaskRunnerThread(
+  void CreateSnapshotFileOnTaskRunnerThread(
       scoped_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) override;
-  virtual base::File::Error GetFileInfoSync(
+  base::File::Error GetFileInfoSync(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url,
       base::File::Info* file_info,
       base::FilePath* platform_path) override;
-  virtual base::File::Error ReadDirectorySync(
+  base::File::Error ReadDirectorySync(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url,
       EntryList* file_list) override;
-  virtual base::File::Error DeleteDirectorySync(
+  base::File::Error DeleteDirectorySync(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url) override;
-  virtual base::File::Error DeleteFileSync(
-      storage::FileSystemOperationContext* context,
-      const storage::FileSystemURL& url) override;
-  virtual base::File::Error GetLocalFilePath(
+  base::File::Error DeleteFileSync(storage::FileSystemOperationContext* context,
+                                   const storage::FileSystemURL& url) override;
+  base::File::Error GetLocalFilePath(
       storage::FileSystemOperationContext* context,
       const storage::FileSystemURL& url,
       base::FilePath* local_file_path) override;

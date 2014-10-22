@@ -103,7 +103,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
         file_watch_request_returned_(false)  {
   }
 
-  virtual ~TestPicasaDataProvider() {}
+  ~TestPicasaDataProvider() override {}
 
   // |ready_callback| called with true if and when the file watch is started
   // successfully. If the file watch fails, it's called with false.
@@ -137,7 +137,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
     invalidate_callback_ = callback;
   }
 
-  virtual void InvalidateData() override {
+  void InvalidateData() override {
     PicasaDataProvider::InvalidateData();
 
     if (!invalidate_callback_.is_null()) {
@@ -153,7 +153,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
   }
 
  private:
-  virtual void OnTempDirWatchStarted(
+  void OnTempDirWatchStarted(
       scoped_ptr<base::FilePathWatcher> temp_dir_watcher) override {
     PicasaDataProvider::OnTempDirWatchStarted(temp_dir_watcher.Pass());
 
@@ -279,10 +279,10 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
 
 class PicasaDataProviderNoDatabaseGetListTest : public PicasaDataProviderTest {
  protected:
-  virtual PicasaDataProvider::DataType RequestedDataType() const override {
+  PicasaDataProvider::DataType RequestedDataType() const override {
     return PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA;
   }
-  virtual void VerifyRefreshResults(bool parse_success) override {
+  void VerifyRefreshResults(bool parse_success) override {
     EXPECT_FALSE(parse_success);
     TestDone();
   }
@@ -296,10 +296,10 @@ IN_PROC_BROWSER_TEST_F(PicasaDataProviderNoDatabaseGetListTest,
 class PicasaDataProviderNoDatabaseGetAlbumsImagesTest
     : public PicasaDataProviderTest {
  protected:
-  virtual PicasaDataProvider::DataType RequestedDataType() const override {
+  PicasaDataProvider::DataType RequestedDataType() const override {
     return PicasaDataProvider::ALBUMS_IMAGES_DATA;
   }
-  virtual void VerifyRefreshResults(bool parse_success) override {
+  void VerifyRefreshResults(bool parse_success) override {
     EXPECT_FALSE(parse_success);
     TestDone();
   }
@@ -312,16 +312,16 @@ IN_PROC_BROWSER_TEST_F(PicasaDataProviderNoDatabaseGetAlbumsImagesTest,
 
 class PicasaDataProviderGetListTest : public PicasaDataProviderTest {
  protected:
-  virtual void InitializeTestData() override {
+  void InitializeTestData() override {
     WriteTestAlbumTable(GetColumnFileDestination(), test_folder_1_path(),
                         test_folder_2_path());
   }
 
-  virtual PicasaDataProvider::DataType RequestedDataType() const override {
+  PicasaDataProvider::DataType RequestedDataType() const override {
     return PicasaDataProvider::LIST_OF_ALBUMS_AND_FOLDERS_DATA;
   }
 
-  virtual void VerifyRefreshResults(bool parse_success) override {
+  void VerifyRefreshResults(bool parse_success) override {
     ASSERT_TRUE(parse_success);
     VerifyTestAlbumTable(
         data_provider(), test_folder_1_path(), test_folder_2_path());
@@ -335,17 +335,17 @@ IN_PROC_BROWSER_TEST_F(PicasaDataProviderGetListTest, GetListTest) {
 
 class PicasaDataProviderGetAlbumsImagesTest : public PicasaDataProviderTest {
  protected:
-  virtual void InitializeTestData() override {
+  void InitializeTestData() override {
     WriteTestAlbumTable(GetColumnFileDestination(), test_folder_1_path(),
                         test_folder_2_path());
     WriteTestAlbumsImagesIndex(test_folder_1_path(), test_folder_2_path());
   }
 
-  virtual PicasaDataProvider::DataType RequestedDataType() const override {
+  PicasaDataProvider::DataType RequestedDataType() const override {
     return PicasaDataProvider::ALBUMS_IMAGES_DATA;
   }
 
-  virtual void VerifyRefreshResults(bool parse_success) override {
+  void VerifyRefreshResults(bool parse_success) override {
     ASSERT_TRUE(parse_success);
     VerifyTestAlbumTable(
         data_provider(), test_folder_1_path(), test_folder_2_path());
@@ -366,13 +366,13 @@ class PicasaDataProviderMultipleMixedCallbacksTest
   PicasaDataProviderMultipleMixedCallbacksTest()
       : list_callbacks_called_(0), albums_images_callbacks_called_(0) {}
 
-  virtual void InitializeTestData() override {
+  void InitializeTestData() override {
     WriteTestAlbumTable(GetColumnFileDestination(), test_folder_1_path(),
                         test_folder_2_path());
     WriteTestAlbumsImagesIndex(test_folder_1_path(), test_folder_2_path());
   }
 
-  virtual PicasaDataProvider::DataType RequestedDataType() const override {
+  PicasaDataProvider::DataType RequestedDataType() const override {
     return PicasaDataProvider::ALBUMS_IMAGES_DATA;
   }
 
@@ -404,7 +404,7 @@ class PicasaDataProviderMultipleMixedCallbacksTest
       TestDone();
   }
 
-  virtual void StartTestOnMediaTaskRunner() override {
+  void StartTestOnMediaTaskRunner() override {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
     data_provider()->RefreshData(
@@ -466,12 +466,12 @@ class PicasaDataProviderFileWatcherInvalidateTest
     data_provider()->MoveTempFilesToDatabase();
   }
 
-  virtual base::FilePath GetColumnFileDestination() const override {
+  base::FilePath GetColumnFileDestination() const override {
     return GetTempDirPath();
   }
 
  private:
-  virtual void StartTestOnMediaTaskRunner() override {
+  void StartTestOnMediaTaskRunner() override {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
     // Refresh before moving album table to database dir, guaranteeing failure.
@@ -492,10 +492,10 @@ class PicasaDataProviderInvalidateInflightTableReaderTest
     : public PicasaDataProviderGetListTest {
  protected:
   // Don't write the database files until later.
-  virtual void InitializeTestData() override {}
+  void InitializeTestData() override {}
 
  private:
-  virtual void StartTestOnMediaTaskRunner() override {
+  void StartTestOnMediaTaskRunner() override {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
     // Refresh before the database files have been written.
@@ -541,7 +541,7 @@ class PicasaDataProviderInvalidateInflightAlbumsIndexerTest
   }
 
  private:
-  virtual void StartTestOnMediaTaskRunner() override {
+  void StartTestOnMediaTaskRunner() override {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
 
     data_provider()->RefreshData(

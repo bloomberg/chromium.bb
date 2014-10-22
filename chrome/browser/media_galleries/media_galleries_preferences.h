@@ -179,7 +179,7 @@ class MediaGalleriesPreferences
   };
 
   explicit MediaGalleriesPreferences(Profile* profile);
-  virtual ~MediaGalleriesPreferences();
+  ~MediaGalleriesPreferences() override;
 
   // Ensures that the preferences is initialized. The provided callback, if
   // non-null, will be called when initialization is complete. If initialization
@@ -200,7 +200,7 @@ class MediaGalleriesPreferences
   void RemoveGalleryChangeObserver(GalleryChangeObserver* observer);
 
   // RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageAttached(
+  void OnRemovableStorageAttached(
       const storage_monitor::StorageInfo& info) override;
 
   // Lookup a media gallery and fill in information about it and return true if
@@ -277,7 +277,7 @@ class MediaGalleriesPreferences
   void SetLastScanCompletionTime(const base::Time& time);
 
   // KeyedService implementation:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

@@ -73,44 +73,44 @@ class TestIPhotoDataProvider : public IPhotoDataProvider {
     EXPECT_TRUE(fake_auto_add_dir_.CreateUniqueTempDir());
   }
 
-  virtual ~TestIPhotoDataProvider() {}
+  ~TestIPhotoDataProvider() override {}
 
-  virtual void RefreshData(const ReadyCallback& ready_callback) override {
+  void RefreshData(const ReadyCallback& ready_callback) override {
     ready_callback.Run(true /* success */);
   }
 
-  virtual std::vector<std::string> GetAlbumNames() const override {
+  std::vector<std::string> GetAlbumNames() const override {
     std::vector<std::string> names;
     names.push_back("Album1");
     names.push_back("has_originals");
     return names;
   }
 
-  virtual std::map<std::string, base::FilePath> GetAlbumContents(
+  std::map<std::string, base::FilePath> GetAlbumContents(
       const std::string& album) const override {
     std::map<std::string, base::FilePath> contents;
     contents["a.jpg"] = library_path().AppendASCII("a.jpg");
     return contents;
   }
 
-  virtual base::FilePath GetPhotoLocationInAlbum(
+  base::FilePath GetPhotoLocationInAlbum(
       const std::string& album,
       const std::string& filename) const override {
     return library_path().AppendASCII("a.jpg");
   }
 
-  virtual bool HasOriginals(const std::string& album) const override {
+  bool HasOriginals(const std::string& album) const override {
     return (album == "has_originals");
   }
 
-  virtual std::map<std::string, base::FilePath> GetOriginals(
+  std::map<std::string, base::FilePath> GetOriginals(
       const std::string& album) const override {
     std::map<std::string, base::FilePath> contents;
     contents["a.jpg"] = library_path().AppendASCII("orig.jpg");
     return contents;
   }
 
-  virtual base::FilePath GetOriginalPhotoLocation(
+  base::FilePath GetOriginalPhotoLocation(
       const std::string& album,
       const std::string& filename) const override {
     return library_path().AppendASCII("orig.jpg");
@@ -127,12 +127,10 @@ class TestIPhotoFileUtil : public IPhotoFileUtil {
       : IPhotoFileUtil(media_path_filter),
         data_provider_(data_provider) {
   }
-  virtual ~TestIPhotoFileUtil() {}
+  ~TestIPhotoFileUtil() override {}
 
  private:
-  virtual IPhotoDataProvider* GetDataProvider() override {
-    return data_provider_;
-  }
+  IPhotoDataProvider* GetDataProvider() override { return data_provider_; }
 
   IPhotoDataProvider* data_provider_;
 };
@@ -146,7 +144,7 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
             MediaFileSystemBackend::MediaTaskRunner().get()),
         test_file_util_(iphoto_file_util) {}
 
-  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+  storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) override {
     if (type != storage::kFileSystemTypeIphoto)
       return NULL;

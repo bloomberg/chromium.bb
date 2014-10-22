@@ -47,7 +47,7 @@ class SafePicasaAlbumsIndexer : public content::UtilityProcessHostClient {
   };
 
   // Private because content::UtilityProcessHostClient is ref-counted.
-  virtual ~SafePicasaAlbumsIndexer();
+  ~SafePicasaAlbumsIndexer() override;
 
   // Processes a batch of folders. Reposts itself until done, then starts IPC.
   void ProcessFoldersBatch();
@@ -62,8 +62,8 @@ class SafePicasaAlbumsIndexer : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   AlbumUIDSet album_uids_;
 

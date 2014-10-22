@@ -190,11 +190,10 @@ class TestPicasaFileUtil : public PicasaFileUtil {
       : PicasaFileUtil(media_path_filter),
         data_provider_(data_provider) {
   }
-  virtual ~TestPicasaFileUtil() {}
+  ~TestPicasaFileUtil() override {}
+
  private:
-  virtual PicasaDataProvider* GetDataProvider() override {
-    return data_provider_;
-  }
+  PicasaDataProvider* GetDataProvider() override { return data_provider_; }
 
   PicasaDataProvider* data_provider_;
 };
@@ -207,7 +206,7 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
                                MediaFileSystemBackend::MediaTaskRunner().get()),
         test_file_util_(picasa_file_util) {}
 
-  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+  storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) override {
     if (type != storage::kFileSystemTypePicasa)
       return NULL;

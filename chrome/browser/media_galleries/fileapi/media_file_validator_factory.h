@@ -23,10 +23,10 @@ class MediaFileValidatorFactory
     : public storage::CopyOrMoveFileValidatorFactory {
  public:
   MediaFileValidatorFactory();
-  virtual ~MediaFileValidatorFactory();
+  ~MediaFileValidatorFactory() override;
 
   // CopyOrMoveFileValidatorFactory implementation.
-  virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+  storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const storage::FileSystemURL& src,
       const base::FilePath& platform_path) override;
 

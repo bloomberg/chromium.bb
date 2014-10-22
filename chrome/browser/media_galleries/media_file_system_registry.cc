@@ -86,8 +86,8 @@ class RPHReferenceManager {
 
    private:
     // content::WebContentsObserver
-    virtual void WebContentsDestroyed() override;
-    virtual void NavigationEntryCommitted(
+    void WebContentsDestroyed() override;
+    void NavigationEntryCommitted(
         const content::LoadCommittedDetails& load_details) override;
 
     RPHReferenceManager* manager_;
@@ -96,7 +96,7 @@ class RPHReferenceManager {
   class RPHObserver : public content::RenderProcessHostObserver {
    public:
     RPHObserver(RPHReferenceManager* manager, RenderProcessHost* host);
-    virtual ~RPHObserver();
+    ~RPHObserver() override;
 
     void AddWebContentsObserver(WebContents* web_contents);
     void RemoveWebContentsObserver(WebContents* web_contents);
@@ -105,7 +105,7 @@ class RPHReferenceManager {
     }
 
    private:
-    virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;
+    void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
     RPHReferenceManager* manager_;
     RenderProcessHost* host_;
@@ -635,11 +635,11 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     : public MediaFileSystemContext {
  public:
   MediaFileSystemContextImpl() {}
-  virtual ~MediaFileSystemContextImpl() {}
+  ~MediaFileSystemContextImpl() override {}
 
-  virtual bool RegisterFileSystem(const std::string& device_id,
-                                  const std::string& fs_name,
-                                  const base::FilePath& path) override {
+  bool RegisterFileSystem(const std::string& device_id,
+                          const std::string& fs_name,
+                          const base::FilePath& path) override {
     if (StorageInfo::IsMassStorageDevice(device_id)) {
       return RegisterFileSystemForMassStorage(device_id, fs_name, path);
     } else {
@@ -647,7 +647,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     }
   }
 
-  virtual void RevokeFileSystem(const std::string& fs_name) override {
+  void RevokeFileSystem(const std::string& fs_name) override {
     ImportedMediaGalleryRegistry* imported_registry =
         ImportedMediaGalleryRegistry::GetInstance();
     if (imported_registry->RevokeImportedFilesystemOnUIThread(fs_name))
@@ -661,8 +661,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
         fs_name));
   }
 
-  virtual base::FilePath GetRegisteredPath(
-      const std::string& fs_name) const override {
+  base::FilePath GetRegisteredPath(const std::string& fs_name) const override {
     base::FilePath result;
     if (!ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(fs_name,
                                                                      &result)) {

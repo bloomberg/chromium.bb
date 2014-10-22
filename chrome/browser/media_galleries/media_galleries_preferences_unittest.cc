@@ -55,40 +55,40 @@ class MockGalleryChangeObserver
   explicit MockGalleryChangeObserver(MediaGalleriesPreferences* pref)
       : pref_(pref),
         notifications_(0) {}
-  virtual ~MockGalleryChangeObserver() {}
+  ~MockGalleryChangeObserver() override {}
 
   int notifications() const { return notifications_;}
 
  private:
   // MediaGalleriesPreferences::GalleryChangeObserver implementation.
-  virtual void OnPermissionAdded(MediaGalleriesPreferences* pref,
-                                 const std::string& extension_id,
-                                 MediaGalleryPrefId pref_id) override {
+  void OnPermissionAdded(MediaGalleriesPreferences* pref,
+                         const std::string& extension_id,
+                         MediaGalleryPrefId pref_id) override {
     EXPECT_EQ(pref_, pref);
     ++notifications_;
   }
 
-  virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
-                                   const std::string& extension_id,
-                                   MediaGalleryPrefId pref_id) override {
+  void OnPermissionRemoved(MediaGalleriesPreferences* pref,
+                           const std::string& extension_id,
+                           MediaGalleryPrefId pref_id) override {
     EXPECT_EQ(pref_, pref);
     ++notifications_;
   }
 
-  virtual void OnGalleryAdded(MediaGalleriesPreferences* pref,
-                              MediaGalleryPrefId pref_id) override {
+  void OnGalleryAdded(MediaGalleriesPreferences* pref,
+                      MediaGalleryPrefId pref_id) override {
     EXPECT_EQ(pref_, pref);
     ++notifications_;
   }
 
-  virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
-                                MediaGalleryPrefId pref_id) override {
+  void OnGalleryRemoved(MediaGalleriesPreferences* pref,
+                        MediaGalleryPrefId pref_id) override {
     EXPECT_EQ(pref_, pref);
     ++notifications_;
   }
 
-  virtual void OnGalleryInfoUpdated(MediaGalleriesPreferences* pref,
-                                    MediaGalleryPrefId pref_id) override {
+  void OnGalleryInfoUpdated(MediaGalleriesPreferences* pref,
+                            MediaGalleryPrefId pref_id) override {
     EXPECT_EQ(pref_, pref);
     ++notifications_;
   }

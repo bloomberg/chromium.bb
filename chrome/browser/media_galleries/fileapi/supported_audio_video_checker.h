@@ -21,12 +21,11 @@ class SafeAudioVideoChecker;
 // this class does not make the file safe to use in the browser process.
 class SupportedAudioVideoChecker : public AVScanningFileValidator {
  public:
-  virtual ~SupportedAudioVideoChecker();
+  ~SupportedAudioVideoChecker() override;
 
   static bool SupportsFileType(const base::FilePath& path);
 
-  virtual void StartPreWriteValidation(
-      const ResultCallback& result_callback) override;
+  void StartPreWriteValidation(const ResultCallback& result_callback) override;
 
  private:
   friend class MediaFileValidatorFactory;

@@ -148,14 +148,14 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
 
  private:
   // GalleryWatchManagerObserver implementation.
-  virtual void OnGalleryChanged(const std::string& extension_id,
-                                MediaGalleryPrefId gallery_id) override {
+  void OnGalleryChanged(const std::string& extension_id,
+                        MediaGalleryPrefId gallery_id) override {
     EXPECT_TRUE(expect_gallery_changed_);
     pending_loop_->Quit();
   }
 
-  virtual void OnGalleryWatchDropped(const std::string& extension_id,
-                                     MediaGalleryPrefId gallery_id) override {
+  void OnGalleryWatchDropped(const std::string& extension_id,
+                             MediaGalleryPrefId gallery_id) override {
     EXPECT_TRUE(expect_gallery_watch_dropped_);
     pending_loop_->Quit();
   }

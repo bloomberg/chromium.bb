@@ -32,7 +32,7 @@ class ITunesDataProvider : public iapps::IAppsDataProvider {
   typedef std::map<TrackName, base::FilePath> Album;
 
   explicit ITunesDataProvider(const base::FilePath& library_path);
-  virtual ~ITunesDataProvider();
+  ~ITunesDataProvider() override;
 
   // Get the platform path for the auto-add directory.
   virtual const base::FilePath& auto_add_path() const;
@@ -65,8 +65,8 @@ class ITunesDataProvider : public iapps::IAppsDataProvider {
   typedef std::map<ArtistName, Artist> Library;
 
   // Parse the library xml file.
-  virtual void DoParseLibrary(const base::FilePath& library_path,
-                              const ReadyCallback& ready_callback) override;
+  void DoParseLibrary(const base::FilePath& library_path,
+                      const ReadyCallback& ready_callback) override;
 
   // Called when the utility process finishes parsing the library XML file.
   void OnLibraryParsed(const ReadyCallback& ready_callback,
