@@ -186,7 +186,7 @@ def RunChromeSyncShellTests(options):
   test = I('ChromeSyncShell',
            'ChromeSyncShell.apk',
            'org.chromium.chrome.browser.sync',
-           'ChromeSyncShellTest.apk',
+           'ChromeSyncShellTest',
            'chrome:chrome/test/data/android/device_files')
   RunInstrumentationSuite(options, test)
 
