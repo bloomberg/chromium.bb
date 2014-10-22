@@ -97,7 +97,7 @@ void LayerTreeHostOnDemandRasterPixelTest::RunOnDemandRasterPixelTest() {
   layer->SetBounds(layer_rect.size());
   layer->SetPosition(layer_rect.origin());
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                layer,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }

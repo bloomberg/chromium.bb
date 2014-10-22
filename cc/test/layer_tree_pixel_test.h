@@ -59,10 +59,8 @@ class LayerTreePixelTest : public LayerTreeTest {
                                                  const SkBitmap& bitmap);
 
   enum PixelTestType {
-    GL_WITH_DEFAULT,
-    GL_WITH_BITMAP,
-    SOFTWARE_WITH_DEFAULT,
-    SOFTWARE_WITH_BITMAP
+    PIXEL_TEST_GL,
+    PIXEL_TEST_SOFTWARE,
   };
 
   void RunPixelTest(PixelTestType type,

@@ -67,7 +67,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   mask->SetIsMask(true);
   green->SetMaskLayer(mask.get());
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
                base::FilePath(FILE_PATH_LITERAL("mask_of_layer.png")));
 }
@@ -98,7 +98,7 @@ TEST_F(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   green->SetMaskLayer(mask.get());
   background->AddChild(green);
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
                base::FilePath(FILE_PATH_LITERAL("image_mask_of_layer.png")));
 }
@@ -126,7 +126,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   mask->SetIsMask(true);
   green->SetMaskLayer(mask.get());
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
                base::FilePath(FILE_PATH_LITERAL("mask_of_clipped_layer.png")));
 }
@@ -156,7 +156,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplica) {
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
                base::FilePath(FILE_PATH_LITERAL("mask_with_replica.png")));
 }
@@ -194,7 +194,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
                base::FilePath(FILE_PATH_LITERAL(
                    "mask_with_replica_of_clipped_layer.png")));
@@ -230,7 +230,7 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplica) {
   replica->SetMaskLayer(mask.get());
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
                base::FilePath(FILE_PATH_LITERAL("mask_of_replica.png")));
 }
@@ -272,10 +272,10 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
   replica->SetMaskLayer(mask.get());
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "mask_of_replica_of_clipped_layer.png")));
+               base::FilePath(
+                   FILE_PATH_LITERAL("mask_of_replica_of_clipped_layer.png")));
 }
 
 }  // namespace

@@ -22,28 +22,51 @@ namespace {
 class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
  protected:
   LayerTreeHostReadbackPixelTest()
-      : insert_copy_request_after_frame_count_(0) {}
+      : readback_type_(READBACK_INVALID),
+        insert_copy_request_after_frame_count_(0) {}
+
+  enum ReadbackType {
+    READBACK_INVALID,
+    READBACK_DEFAULT,
+    READBACK_BITMAP,
+  };
+
+  void RunReadbackTest(PixelTestType test_type,
+                       ReadbackType readback_type,
+                       scoped_refptr<Layer> content_root,
+                       base::FilePath file_name) {
+    readback_type_ = readback_type;
+    RunPixelTest(test_type, content_root, file_name);
+  }
+
+  void RunReadbackTestWithReadbackTarget(PixelTestType type,
+                                         ReadbackType readback_type,
+                                         scoped_refptr<Layer> content_root,
+                                         Layer* target,
+                                         base::FilePath file_name) {
+    readback_type_ = readback_type;
+    RunPixelTestWithReadbackTarget(type, content_root, target, file_name);
+  }
 
   scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest() override {
     scoped_ptr<CopyOutputRequest> request;
 
-    switch (test_type_) {
-      case GL_WITH_BITMAP:
-      case SOFTWARE_WITH_BITMAP:
-        request = CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
-                       base::Unretained(this)));
-        break;
-      case SOFTWARE_WITH_DEFAULT:
+    if (readback_type_ == READBACK_BITMAP) {
+      request = CopyOutputRequest::CreateBitmapRequest(
+          base::Bind(&LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
+                     base::Unretained(this)));
+    } else {
+      DCHECK_EQ(readback_type_, READBACK_DEFAULT);
+      if (test_type_ == PIXEL_TEST_SOFTWARE) {
         request = CopyOutputRequest::CreateRequest(
             base::Bind(&LayerTreeHostReadbackPixelTest::ReadbackResultAsBitmap,
                        base::Unretained(this)));
-        break;
-      case GL_WITH_DEFAULT:
+      } else {
+        DCHECK_EQ(test_type_, PIXEL_TEST_GL);
         request = CopyOutputRequest::CreateRequest(
             base::Bind(&LayerTreeHostReadbackPixelTest::ReadbackResultAsTexture,
                        base::Unretained(this)));
-        break;
+      }
     }
 
     if (!copy_subrect_.IsEmpty())
@@ -93,421 +116,438 @@ class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
     ReadbackResultAsBitmap(CopyOutputResult::CreateBitmapResult(bitmap.Pass()));
   }
 
+  ReadbackType readback_type_;
   gfx::Rect copy_subrect_;
   int insert_copy_request_after_frame_count_;
 };
 
-void IgnoreReadbackResult(scoped_ptr<CopyOutputResult> result) {}
+void IgnoreReadbackResult(scoped_ptr<CopyOutputResult> result) {
+}
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayer_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTest(SOFTWARE_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green.png")));
+  RunReadbackTest(PIXEL_TEST_SOFTWARE,
+                  READBACK_DEFAULT,
+                  background,
+                  base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayer_Software_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTest(SOFTWARE_WITH_BITMAP,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green.png")));
+  RunReadbackTest(PIXEL_TEST_SOFTWARE,
+                  READBACK_BITMAP,
+                  background,
+                  base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayer_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTest(GL_WITH_BITMAP,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green.png")));
+  RunReadbackTest(PIXEL_TEST_GL,
+                  READBACK_BITMAP,
+                  background,
+                  base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayer_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTest(GL_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green.png")));
+  RunReadbackTest(PIXEL_TEST_GL,
+                  READBACK_DEFAULT,
+                  background,
+                  base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
-TEST_F(LayerTreeHostReadbackPixelTest,
-       ReadbackRootLayerWithChild_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayerWithChild_Software) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTest(SOFTWARE_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayerWithChild_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTest(GL_WITH_BITMAP,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackRootLayerWithChild_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTest(GL_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayer_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayer_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_BITMAP,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayer_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
-TEST_F(LayerTreeHostReadbackPixelTest,
-       ReadbackSmallNonRootLayer_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayer_Software) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayer_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_BITMAP,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayer_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
        ReadbackSmallNonRootLayerWithChild_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
        ReadbackSmallNonRootLayerWithChild_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_BITMAP,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayerWithChild_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
        ReadbackSubtreeSurroundsTargetLayer_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> target = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorRED);
+  scoped_refptr<SolidColorLayer> target =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorRED);
   background->AddChild(target);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(-100, -100, 300, 300), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(-100, -100, 300, 300), SK_ColorGREEN);
   target->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
   target->AddChild(blue);
 
   copy_subrect_ = gfx::Rect(0, 0, 100, 100);
-  RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
-                                 background,
-                                 target.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
        ReadbackSubtreeSurroundsLayer_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> target = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorRED);
+  scoped_refptr<SolidColorLayer> target =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorRED);
   background->AddChild(target);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(-100, -100, 300, 300), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(-100, -100, 300, 300), SK_ColorGREEN);
   target->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
   target->AddChild(blue);
 
   copy_subrect_ = gfx::Rect(0, 0, 100, 100);
-  RunPixelTestWithReadbackTarget(GL_WITH_BITMAP,
-                                 background,
-                                 target.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-TEST_F(LayerTreeHostReadbackPixelTest,
-       ReadbackSubtreeSurroundsTargetLayer_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
+TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSubtreeSurroundsTargetLayer_GL) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> target = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 100, 100), SK_ColorRED);
+  scoped_refptr<SolidColorLayer> target =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 100, 100), SK_ColorRED);
   background->AddChild(target);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(-100, -100, 300, 300), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(-100, -100, 300, 300), SK_ColorGREEN);
   target->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 50, 50), SK_ColorBLUE);
   target->AddChild(blue);
 
   copy_subrect_ = gfx::Rect(0, 0, 100, 100);
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 target.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
        ReadbackSubtreeExtendsBeyondTargetLayer_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> target = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 150, 150), SK_ColorRED);
+  scoped_refptr<SolidColorLayer> target =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 150, 150), SK_ColorRED);
   background->AddChild(target);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 200, 200), SK_ColorGREEN);
   target->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
   target->AddChild(blue);
 
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
-  RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
-                                 background,
-                                 target.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
        ReadbackSubtreeExtendsBeyondTargetLayer_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> target = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 150, 150), SK_ColorRED);
+  scoped_refptr<SolidColorLayer> target =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 150, 150), SK_ColorRED);
   background->AddChild(target);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 200, 200), SK_ColorGREEN);
   target->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
   target->AddChild(blue);
 
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
-  RunPixelTestWithReadbackTarget(GL_WITH_BITMAP,
-                                 background,
-                                 target.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
        ReadbackSubtreeExtendsBeyondTargetLayer_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> target = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 150, 150), SK_ColorRED);
+  scoped_refptr<SolidColorLayer> target =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 150, 150), SK_ColorRED);
   background->AddChild(target);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(50, 50, 200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 200, 200), SK_ColorGREEN);
   target->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
   target->AddChild(blue);
 
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 target.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      target.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree_Software) {
@@ -523,8 +563,9 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree_Software) {
       CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   hidden_target->AddChild(blue);
 
-  RunPixelTestWithReadbackTarget(
-      SOFTWARE_WITH_DEFAULT,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
       background,
       hidden_target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
@@ -543,8 +584,9 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree_GL_Bitmap) {
       CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   hidden_target->AddChild(blue);
 
-  RunPixelTestWithReadbackTarget(
-      GL_WITH_BITMAP,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
       background,
       hidden_target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
@@ -563,8 +605,9 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree_GL) {
       CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   hidden_target->AddChild(blue);
 
-  RunPixelTestWithReadbackTarget(
-      GL_WITH_DEFAULT,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
       background,
       hidden_target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
@@ -586,9 +629,10 @@ TEST_F(LayerTreeHostReadbackPixelTest,
 
   hidden_target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
       base::Bind(&IgnoreReadbackResult)));
-  RunPixelTest(SOFTWARE_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("black.png")));
+  RunReadbackTest(PIXEL_TEST_SOFTWARE,
+                  READBACK_DEFAULT,
+                  background,
+                  base::FilePath(FILE_PATH_LITERAL("black.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
@@ -607,9 +651,10 @@ TEST_F(LayerTreeHostReadbackPixelTest,
 
   hidden_target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
       base::Bind(&IgnoreReadbackResult)));
-  RunPixelTest(GL_WITH_BITMAP,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("black.png")));
+  RunReadbackTest(PIXEL_TEST_GL,
+                  READBACK_BITMAP,
+                  background,
+                  base::FilePath(FILE_PATH_LITERAL("black.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest,
@@ -628,138 +673,145 @@ TEST_F(LayerTreeHostReadbackPixelTest,
 
   hidden_target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
       base::Bind(&IgnoreReadbackResult)));
-  RunPixelTest(GL_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("black.png")));
+  RunReadbackTest(PIXEL_TEST_GL,
+                  READBACK_DEFAULT,
+                  background,
+                  base::FilePath(FILE_PATH_LITERAL("black.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSubrect_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
   // Grab the middle of the root layer.
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
 
-  RunPixelTest(SOFTWARE_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_small_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSubrect_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
   // Grab the middle of the root layer.
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
 
-  RunPixelTest(GL_WITH_BITMAP,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_small_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackSubrect_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(100, 100, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
   // Grab the middle of the root layer.
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
 
-  RunPixelTest(GL_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_small_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerSubrect_Software) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(25, 25, 150, 150), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 150, 150), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(75, 75, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(75, 75, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
   // Grab the middle of the green layer.
   copy_subrect_ = gfx::Rect(25, 25, 100, 100);
 
-  RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerSubrect_GL_Bitmap) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(25, 25, 150, 150), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 150, 150), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(75, 75, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(75, 75, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
   // Grab the middle of the green layer.
   copy_subrect_ = gfx::Rect(25, 25, 100, 100);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_BITMAP,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerSubrect_GL) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(25, 25, 150, 150), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 150, 150), SK_ColorGREEN);
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(75, 75, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(75, 75, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
   // Grab the middle of the green layer.
   copy_subrect_ = gfx::Rect(25, 25, 100, 100);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackWhenNoDamage_Software) {
@@ -779,8 +831,9 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackWhenNoDamage_Software) {
   target->AddChild(blue);
 
   insert_copy_request_after_frame_count_ = 1;
-  RunPixelTestWithReadbackTarget(
-      SOFTWARE_WITH_DEFAULT,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
       background,
       target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
@@ -803,8 +856,9 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackWhenNoDamage_GL_Bitmap) {
   target->AddChild(blue);
 
   insert_copy_request_after_frame_count_ = 1;
-  RunPixelTestWithReadbackTarget(
-      GL_WITH_BITMAP,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
       background,
       target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
@@ -827,8 +881,9 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackWhenNoDamage_GL) {
   target->AddChild(blue);
 
   insert_copy_request_after_frame_count_ = 1;
-  RunPixelTestWithReadbackTarget(
-      GL_WITH_DEFAULT,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
       background,
       target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
@@ -853,8 +908,9 @@ TEST_F(LayerTreeHostReadbackPixelTest,
   target->AddChild(blue);
 
   insert_copy_request_after_frame_count_ = 1;
-  RunPixelTestWithReadbackTarget(
-      SOFTWARE_WITH_DEFAULT,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
       background,
       target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
@@ -879,8 +935,9 @@ TEST_F(LayerTreeHostReadbackPixelTest,
   target->AddChild(blue);
 
   insert_copy_request_after_frame_count_ = 1;
-  RunPixelTestWithReadbackTarget(
-      GL_WITH_BITMAP,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_BITMAP,
       background,
       target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
@@ -904,8 +961,9 @@ TEST_F(LayerTreeHostReadbackPixelTest, ReadbackOutsideViewportWhenNoDamage_GL) {
   target->AddChild(blue);
 
   insert_copy_request_after_frame_count_ = 1;
-  RunPixelTestWithReadbackTarget(
-      GL_WITH_DEFAULT,
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
       background,
       target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
@@ -941,8 +999,7 @@ class LayerTreeHostReadbackDeviceScalePixelTest
   SolidColorContentLayerClient blue_client_;
 };
 
-TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
-       ReadbackSubrect_Software) {
+TEST_F(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackSubrect_Software) {
   scoped_refptr<FakePictureLayer> background =
       FakePictureLayer::Create(&white_client_);
   background->SetBounds(gfx::Size(100, 100));
@@ -964,14 +1021,14 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the middle of the root layer.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-  RunPixelTest(SOFTWARE_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_small_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
-       ReadbackSubrect_GL) {
+TEST_F(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackSubrect_GL) {
   scoped_refptr<FakePictureLayer> background =
       FakePictureLayer::Create(&white_client_);
   background->SetBounds(gfx::Size(100, 100));
@@ -993,10 +1050,11 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the middle of the root layer.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-  RunPixelTest(GL_WITH_DEFAULT,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "green_small_with_blue_corner.png")));
+  RunReadbackTest(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
@@ -1023,11 +1081,12 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the green layer's content with blue in the bottom right.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-  RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_SOFTWARE,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
@@ -1054,33 +1113,35 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   // Grab the green layer's content with blue in the bottom right.
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_small_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
 TEST_F(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerOutsideViewport) {
-  scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorGREEN);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   // Only the top left quarter of the layer is inside the viewport, so the
   // blue layer is entirely outside.
   green->SetPosition(gfx::Point(100, 100));
   background->AddChild(green);
 
-  scoped_refptr<SolidColorLayer> blue = CreateSolidColorLayer(
-      gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
+  scoped_refptr<SolidColorLayer> blue =
+      CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
-                                 background,
-                                 green.get(),
-                                 base::FilePath(FILE_PATH_LITERAL(
-                                     "green_with_blue_corner.png")));
+  RunReadbackTestWithReadbackTarget(
+      PIXEL_TEST_GL,
+      READBACK_DEFAULT,
+      background,
+      green.get(),
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
 }  // namespace

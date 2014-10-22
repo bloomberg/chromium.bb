@@ -49,7 +49,7 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(GL_WITH_BITMAP,
+  RunPixelTest(PIXEL_TEST_GL,
                background,
                base::FilePath(FILE_PATH_LITERAL("background_filter_blur.png")));
 }
@@ -90,10 +90,10 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(GL_WITH_BITMAP,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "background_filter_blur_outsets.png")));
+  RunPixelTest(
+      PIXEL_TEST_GL,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("background_filter_blur_outsets.png")));
 }
 
 TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
@@ -151,10 +151,10 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(GL_WITH_BITMAP,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "background_filter_blur_off_axis.png")));
+  RunPixelTest(
+      PIXEL_TEST_GL,
+      background,
+      base::FilePath(FILE_PATH_LITERAL("background_filter_blur_off_axis.png")));
 }
 
 class LayerTreeHostFiltersScaledPixelTest
@@ -207,28 +207,20 @@ class LayerTreeHostFiltersScaledPixelTest
   float device_scale_factor_;
 };
 
-TEST_F(LayerTreeHostFiltersScaledPixelTest, StandardDpi_GLBitmap) {
-  RunPixelTestType(100, 1.f, GL_WITH_BITMAP);
-}
-
-TEST_F(LayerTreeHostFiltersScaledPixelTest, StandardDpi_GLDefault) {
-  RunPixelTestType(100, 1.f, GL_WITH_DEFAULT);
+TEST_F(LayerTreeHostFiltersScaledPixelTest, StandardDpi_GL) {
+  RunPixelTestType(100, 1.f, PIXEL_TEST_GL);
 }
 
 TEST_F(LayerTreeHostFiltersScaledPixelTest, StandardDpi_Software) {
-  RunPixelTestType(100, 1.f, SOFTWARE_WITH_BITMAP);
+  RunPixelTestType(100, 1.f, PIXEL_TEST_SOFTWARE);
 }
 
-TEST_F(LayerTreeHostFiltersScaledPixelTest, HiDpi_GLBitmap) {
-  RunPixelTestType(50, 2.f, GL_WITH_BITMAP);
-}
-
-TEST_F(LayerTreeHostFiltersScaledPixelTest, HiDpi_GLDefault) {
-  RunPixelTestType(50, 2.f, GL_WITH_DEFAULT);
+TEST_F(LayerTreeHostFiltersScaledPixelTest, HiDpi_GL) {
+  RunPixelTestType(50, 2.f, PIXEL_TEST_GL);
 }
 
 TEST_F(LayerTreeHostFiltersScaledPixelTest, HiDpi_Software) {
-  RunPixelTestType(50, 2.f, SOFTWARE_WITH_BITMAP);
+  RunPixelTestType(50, 2.f, PIXEL_TEST_SOFTWARE);
 }
 
 class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
@@ -278,11 +270,11 @@ class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
 };
 
 TEST_F(ImageFilterClippedPixelTest, ImageFilterClipped_GL) {
-  RunPixelTestType(GL_WITH_BITMAP);
+  RunPixelTestType(PIXEL_TEST_GL);
 }
 
 TEST_F(ImageFilterClippedPixelTest, ImageFilterClipped_Software) {
-  RunPixelTestType(SOFTWARE_WITH_BITMAP);
+  RunPixelTestType(PIXEL_TEST_SOFTWARE);
 }
 
 }  // namespace
