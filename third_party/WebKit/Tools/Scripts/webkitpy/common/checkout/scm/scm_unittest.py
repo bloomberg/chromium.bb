@@ -94,7 +94,7 @@ class SCMTestBase(unittest.TestCase):
         return self.executive.run_command(*args, **kwargs)
 
     def _run_silent(self, args, **kwargs):
-        self.executive.run_and_throw_if_fail(args, quiet=True, **kwargs)
+        self.executive.run_command(args, **kwargs)
 
     def _write_text_file(self, path, contents):
         self.fs.write_text_file(path, contents)

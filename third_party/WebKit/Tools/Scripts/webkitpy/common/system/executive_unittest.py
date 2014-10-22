@@ -158,13 +158,6 @@ class ExecutiveTest(unittest.TestCase):
         output = executive.run_command(command_line('cat'), input=encoded_tor, decode_output=False)
         self.assertEqual(output, encoded_tor)
 
-        # FIXME: We should only have one run* method to test
-        output = executive.run_and_throw_if_fail(command_line('echo', unicode_tor_input), quiet=True)
-        self.assertEqual(output, unicode_tor_output)
-
-        output = executive.run_and_throw_if_fail(command_line('echo', unicode_tor_input), quiet=True, decode_output=False)
-        self.assertEqual(output, encoded_tor)
-
     def test_kill_process(self):
         executive = Executive()
         process = subprocess.Popen(never_ending_command(), stdout=subprocess.PIPE)

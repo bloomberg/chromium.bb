@@ -115,35 +115,6 @@ class Executive(object):
             # so no re-encoding is necessary before writing here.
             teed_output.write(output_line)
 
-    # FIXME: Remove this deprecated method and move callers to run_command.
-    # FIXME: This method is a hack to allow running command which both
-    # capture their output and print out to stdin.  Useful for things
-    # like "build-webkit" where we want to display to the user that we're building
-    # but still have the output to stuff into a log file.
-    def run_and_throw_if_fail(self, args, quiet=False, decode_output=True, **kwargs):
-        # Cache the child's output locally so it can be used for error reports.
-        child_out_file = StringIO.StringIO()
-        tee_stdout = sys.stdout
-        if quiet:
-            dev_null = open(os.devnull, "w")  # FIXME: Does this need an encoding?
-            tee_stdout = dev_null
-        child_stdout = Tee(child_out_file, tee_stdout)
-        exit_code = self._run_command_with_teed_output(args, child_stdout, **kwargs)
-        if quiet:
-            dev_null.close()
-
-        child_output = child_out_file.getvalue()
-        child_out_file.close()
-
-        if decode_output:
-            child_output = child_output.decode(self._child_process_encoding())
-
-        if exit_code:
-            raise ScriptError(script_args=args,
-                              exit_code=exit_code,
-                              output=child_output)
-        return child_output
-
     def cpu_count(self):
         return multiprocessing.cpu_count()
 
@@ -368,7 +339,6 @@ class Executive(object):
             escaped_args.append(arg)
         return " ".join(escaped_args)
 
-    # FIXME: run_and_throw_if_fail should be merged into this method.
     def run_command(self,
                     args,
                     cwd=None,

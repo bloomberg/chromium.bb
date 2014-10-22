@@ -98,11 +98,11 @@ class FlakyTests(AbstractDeclarativeCommand):
         commit_message = self.COMMIT_MESSAGE % ','.join(reviewer_emails)
         git_cmd = ['git', 'commit', '-m', commit_message,
             tool.filesystem.join(tool.scm().checkout_root, flaky_tests_path)]
-        tool.executive.run_and_throw_if_fail(git_cmd)
+        tool.executive.run_command(git_cmd)
 
         git_cmd = ['git', 'cl', 'upload', '--send-mail', '-f',
             '--cc', ','.join(self.ALWAYS_CC)]
-        tool.executive.run_and_throw_if_fail(git_cmd)
+        tool.executive.run_command(git_cmd)
 
     def execute(self, options, args, tool):
         factory = self.expectations_factory()
