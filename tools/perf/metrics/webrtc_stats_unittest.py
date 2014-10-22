@@ -14,9 +14,10 @@ SAMPLE_JSON = '''
       {
          "googFrameHeightInput":"480",
          "googFrameWidthInput":"640",
+         "googFrameRateSent": "23",
          "packetsLost":"-1",
          "googRtt":"-1",
-         "packetsSent":"0",
+         "packetsSent":"1",
          "bytesSent":"0"
       },
       {
@@ -31,6 +32,7 @@ SAMPLE_JSON = '''
       {
          "googFrameHeightInput":"480",
          "googFrameWidthInput":"640",
+         "googFrameRateSent": "21",
          "packetsLost":"-1",
          "googRtt":"-1",
          "packetsSent":"8",
@@ -48,6 +50,7 @@ SAMPLE_JSON = '''
 [
    [
       {
+         "googFrameRateReceived": "23",
          "googDecodeMs":"0",
          "packetsReceived":"8",
          "googRenderDelayMs":"10",
@@ -56,6 +59,7 @@ SAMPLE_JSON = '''
    ],
    [
       {
+         "googFrameRateReceived": "23",
          "googDecodeMs":"14",
          "packetsReceived":"1234",
          "googRenderDelayMs":"102",
@@ -108,27 +112,29 @@ class WebRtcStatsUnittest(unittest.TestCase):
     self.assertTrue(results.received_values,
                     'Expected values for googDecodeMs and others, got none.')
 
-    # TODO(phoglund): this is actually a bug; make the metric clever enough to
-    # distinguish packetsSent on audio from packetsSent on video, etc.
+    # This also ensures we're clever enough to tell video packetsSent from audio
+    # packetsSent.
     self.assertEqual(results.received_values[0].values,
-                     [0.0, 4.0, 8.0, 16.0])
+                     [4.0, 16.0])
     self.assertEqual(results.received_values[1].values,
-                     [8.0, 1234.0])
+                     [1.0, 8.0])
 
   def testExtractsInterestingMetricsOnly(self):
     results = self._RunMetricOnJson(SAMPLE_JSON)
 
-    self.assertEqual(len(results.received_values), 4)
+    self.assertEqual(len(results.received_values), 5)
     self.assertEqual(results.received_values[0].name,
-                     'peer_connection_0_packets_sent',
+                     'peer_connection_0_audio_packets_sent',
                      'The result should be a ListOfScalarValues instance with '
                      'a name <peer connection id>_<statistic>.')
     self.assertEqual(results.received_values[1].name,
-                     'peer_connection_1_packets_received')
+                     'peer_connection_0_video_packets_sent')
     self.assertEqual(results.received_values[2].name,
-                     'peer_connection_1_goog_decode_ms')
+                     'peer_connection_1_video_goog_max_decode_ms')
     self.assertEqual(results.received_values[3].name,
-                     'peer_connection_1_goog_max_decode_ms')
+                     'peer_connection_1_video_packets_received')
+    self.assertEqual(results.received_values[4].name,
+                     'peer_connection_1_video_goog_decode_ms')
 
   def testReturnsIfJsonIsEmpty(self):
     results = self._RunMetricOnJson('[]')
