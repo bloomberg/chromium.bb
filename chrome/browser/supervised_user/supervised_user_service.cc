@@ -662,43 +662,6 @@ void SupervisedUserService::AddAccessRequest(const GURL& url,
                            0);
 }
 
-SupervisedUserService::ManualBehavior
-SupervisedUserService::GetManualBehaviorForHost(
-    const std::string& hostname) {
-  const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualHosts);
-  bool allow = false;
-  if (!dict->GetBooleanWithoutPathExpansion(hostname, &allow))
-    return MANUAL_NONE;
-
-  return allow ? MANUAL_ALLOW : MANUAL_BLOCK;
-}
-
-SupervisedUserService::ManualBehavior
-SupervisedUserService::GetManualBehaviorForURL(
-    const GURL& url) {
-  const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
-  GURL normalized_url = SupervisedUserURLFilter::Normalize(url);
-  bool allow = false;
-  if (!dict->GetBooleanWithoutPathExpansion(normalized_url.spec(), &allow))
-    return MANUAL_NONE;
-
-  return allow ? MANUAL_ALLOW : MANUAL_BLOCK;
-}
-
-void SupervisedUserService::GetManualExceptionsForHost(
-    const std::string& host,
-    std::vector<GURL>* urls) {
-  const base::DictionaryValue* dict =
-      profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    GURL url(it.key());
-    if (url.host() == host)
-      urls->push_back(url);
-  }
-}
-
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
   StartSetupSync();
 

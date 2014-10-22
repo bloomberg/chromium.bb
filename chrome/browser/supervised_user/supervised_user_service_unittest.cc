@@ -127,61 +127,6 @@ class SupervisedUserServiceTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(SupervisedUserServiceTest, GetManualExceptionsForHost) {
-  GURL kExampleFooURL("http://www.example.com/foo");
-  GURL kExampleBarURL("http://www.example.com/bar");
-  GURL kExampleFooNoWWWURL("http://example.com/foo");
-  GURL kBlurpURL("http://blurp.net/bla");
-  GURL kMooseURL("http://moose.org/baz");
-  {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kSupervisedUserManualURLs);
-    base::DictionaryValue* dict = update.Get();
-    dict->SetBooleanWithoutPathExpansion(kExampleFooURL.spec(), true);
-    dict->SetBooleanWithoutPathExpansion(kExampleBarURL.spec(), false);
-    dict->SetBooleanWithoutPathExpansion(kExampleFooNoWWWURL.spec(), true);
-    dict->SetBooleanWithoutPathExpansion(kBlurpURL.spec(), true);
-  }
-
-  EXPECT_EQ(SupervisedUserService::MANUAL_ALLOW,
-            supervised_user_service_->GetManualBehaviorForURL(kExampleFooURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_BLOCK,
-            supervised_user_service_->GetManualBehaviorForURL(kExampleBarURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_ALLOW,
-            supervised_user_service_->GetManualBehaviorForURL(
-                kExampleFooNoWWWURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_ALLOW,
-            supervised_user_service_->GetManualBehaviorForURL(kBlurpURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_NONE,
-            supervised_user_service_->GetManualBehaviorForURL(kMooseURL));
-  std::vector<GURL> exceptions;
-  supervised_user_service_->GetManualExceptionsForHost("www.example.com",
-                                                       &exceptions);
-  ASSERT_EQ(2u, exceptions.size());
-  EXPECT_EQ(kExampleBarURL, exceptions[0]);
-  EXPECT_EQ(kExampleFooURL, exceptions[1]);
-
-  {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kSupervisedUserManualURLs);
-    base::DictionaryValue* dict = update.Get();
-    for (const GURL& url : exceptions)
-      dict->RemoveWithoutPathExpansion(url.spec(), NULL);
-  }
-
-  EXPECT_EQ(SupervisedUserService::MANUAL_NONE,
-            supervised_user_service_->GetManualBehaviorForURL(kExampleFooURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_NONE,
-            supervised_user_service_->GetManualBehaviorForURL(kExampleBarURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_ALLOW,
-            supervised_user_service_->GetManualBehaviorForURL(
-                kExampleFooNoWWWURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_ALLOW,
-            supervised_user_service_->GetManualBehaviorForURL(kBlurpURL));
-  EXPECT_EQ(SupervisedUserService::MANUAL_NONE,
-            supervised_user_service_->GetManualBehaviorForURL(kMooseURL));
-}
-
 TEST_F(SupervisedUserServiceTest, ChangesIncludedSessionOnChangedSettings) {
   supervised_user_service_->Init();
   EXPECT_TRUE(supervised_user_service_->IncludesSyncSessionsType());

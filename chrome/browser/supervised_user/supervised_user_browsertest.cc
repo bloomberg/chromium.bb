@@ -228,6 +228,9 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
                        HistoryVisitRecorded) {
   GURL allowed_url("http://www.example.com/files/simple.html");
 
+  scoped_refptr<SupervisedUserURLFilter> filter =
+      supervised_user_service_->GetURLFilterForUIThread();
+
   // Set the host as allowed.
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetBooleanWithoutPathExpansion(allowed_url.host(), true);
@@ -236,9 +239,10 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
           browser()->profile());
   supervised_user_settings_service->SetLocalSettingForTesting(
       supervised_users::kContentPackManualBehaviorHosts, dict.Pass());
-  EXPECT_EQ(
-      SupervisedUserService::MANUAL_ALLOW,
-      supervised_user_service_->GetManualBehaviorForHost(allowed_url.host()));
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter->GetFilteringBehaviorForURL(allowed_url));
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter->GetFilteringBehaviorForURL(allowed_url.GetWithEmptyPath()));
 
   ui_test_utils::NavigateToURL(browser(), allowed_url);
 
@@ -258,13 +262,10 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
   // Check that we went back to the first URL and that the manual behaviors
   // have not changed.
   EXPECT_EQ(allowed_url.spec(), tab->GetURL().spec());
-  EXPECT_EQ(SupervisedUserService::MANUAL_ALLOW,
-            supervised_user_service_->GetManualBehaviorForHost(
-                "www.example.com"));
-  EXPECT_EQ(
-      SupervisedUserService::MANUAL_NONE,
-      supervised_user_service_->GetManualBehaviorForHost(
-          "www.new-example.com"));
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter->GetFilteringBehaviorForURL(allowed_url.GetWithEmptyPath()));
+  EXPECT_EQ(SupervisedUserURLFilter::BLOCK,
+            filter->GetFilteringBehaviorForURL(blocked_url.GetWithEmptyPath()));
 
   // Query the history entry.
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
@@ -302,9 +303,11 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, Unblock) {
           browser()->profile());
   supervised_user_settings_service->SetLocalSettingForTesting(
       supervised_users::kContentPackManualBehaviorHosts, dict.Pass());
-  EXPECT_EQ(
-      SupervisedUserService::MANUAL_ALLOW,
-      supervised_user_service_->GetManualBehaviorForHost(test_url.host()));
+
+  scoped_refptr<SupervisedUserURLFilter> filter =
+      supervised_user_service_->GetURLFilterForUIThread();
+  EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
+            filter->GetFilteringBehaviorForURL(test_url.GetWithEmptyPath()));
 
   observer.Wait();
   EXPECT_EQ(test_url, web_contents->GetURL());

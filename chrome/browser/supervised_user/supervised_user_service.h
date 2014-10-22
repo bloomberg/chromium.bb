@@ -71,12 +71,6 @@ class SupervisedUserService : public KeyedService,
   typedef base::Callback<void(const GoogleServiceAuthError&)> AuthErrorCallback;
   typedef base::Callback<void(bool)> SuccessCallback;
 
-  enum ManualBehavior {
-    MANUAL_NONE = 0,
-    MANUAL_ALLOW,
-    MANUAL_BLOCK
-  };
-
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -130,20 +124,6 @@ class SupervisedUserService : public KeyedService,
   // Returns the name of the custodian, or the email address if the name is
   // empty.
   std::string GetCustodianName() const;
-
-  // These methods allow querying and modifying the manual filtering behavior.
-  // The manual behavior is set by the user and overrides all other settings
-  // (whitelists or the default behavior).
-
-  // Returns the manual behavior for the given host.
-  ManualBehavior GetManualBehaviorForHost(const std::string& hostname);
-
-  // Returns the manual behavior for the given URL.
-  ManualBehavior GetManualBehaviorForURL(const GURL& url);
-
-  // Returns all URLS on the given host that have exceptions.
-  void GetManualExceptionsForHost(const std::string& host,
-                                  std::vector<GURL>* urls);
 
   // Initializes this object. This method does nothing if the profile is not
   // supervised.
