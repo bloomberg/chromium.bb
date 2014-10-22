@@ -46,6 +46,14 @@
 
 #include <stdint.h>
 
+// FIXME: We temporarily disable parallel marking because the current
+// implementation is slower than a single-thread marking. The reason
+// of the slowness is that the parallel marking pollutes CPU caches
+// because marking threads write mark bits on on-heap objects which
+// will be touched by the mutator thread later. We need to make
+// the implementation more cache-aware (e.g., bitmap marking).
+#define ENABLE_PARALLEL_MARKING 0
+
 namespace blink {
 
 const size_t blinkPageSizeLog2 = 17;
@@ -94,7 +102,11 @@ const uint8_t finalizedZapValue = 24;
 // the mark bit when tracing.
 const uint8_t orphanedZapValue = 240;
 
+#if ENABLE_PARALLEL_MARKING
 const int maxNumberOfMarkingThreads = 4;
+#else
+const int maxNumberOfMarkingThreads = 0;
+#endif
 
 const int numberOfPagesToConsiderForCoalescing = 100;
 

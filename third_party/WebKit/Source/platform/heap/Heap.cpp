@@ -1932,7 +1932,9 @@ public:
             // call Heap::contains when outside a GC and we call mark
             // when doing weakness for ephemerons. Hence we only check
             // when called within.
+#if ENABLE_PARALLEL_MARKING
             MutexLocker locker(markingMutex());
+#endif
             ASSERT(!ThreadState::isAnyThreadInGC() || Heap::containedInHeapOrOrphanedPage(header));
         }
 #endif
@@ -2284,7 +2286,9 @@ void Heap::pushTraceCallback(CallbackStack* stack, void* object, TraceCallback c
 {
 #if ENABLE(ASSERT)
     {
+#if ENABLE_PARALLEL_MARKING
         MutexLocker locker(markingMutex());
+#endif
         ASSERT(Heap::containedInHeapOrOrphanedPage(object));
     }
 #endif
@@ -2325,7 +2329,9 @@ bool Heap::popAndInvokeTraceCallback(CallbackStack* stack, Visitor* visitor)
 
 void Heap::pushPostMarkingCallback(void* object, TraceCallback callback)
 {
+#if ENABLE_PARALLEL_MARKING
     MutexLocker locker(markingMutex());
+#endif
     ASSERT(!Heap::orphanedPagePool()->contains(object));
     CallbackStack::Item* slot = s_postMarkingCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
@@ -2342,7 +2348,9 @@ bool Heap::popAndInvokePostMarkingCallback(Visitor* visitor)
 
 void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback)
 {
+#if ENABLE_PARALLEL_MARKING
     MutexLocker locker(markingMutex());
+#endif
     ASSERT(!Heap::orphanedPagePool()->contains(cell));
     CallbackStack::Item* slot = s_weakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(cell, callback);
@@ -2350,7 +2358,9 @@ void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback
 
 void Heap::pushWeakObjectPointerCallback(void* closure, void* object, WeakPointerCallback callback)
 {
+#if ENABLE_PARALLEL_MARKING
     MutexLocker locker(markingMutex());
+#endif
     ASSERT(Heap::contains(object));
     BaseHeapPage* heapPageForObject = pageHeaderFromObject(object);
     ASSERT(!heapPageForObject->orphaned());
@@ -2376,7 +2386,9 @@ bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
 void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
 {
     {
+#if ENABLE_PARALLEL_MARKING
         MutexLocker locker(markingMutex());
+#endif
         // Check that the ephemeron table being pushed onto the stack is not on an
         // orphaned page.
         ASSERT(!Heap::orphanedPagePool()->contains(table));
@@ -2392,7 +2404,9 @@ void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, E
 #if ENABLE(ASSERT)
 bool Heap::weakTableRegistered(const void* table)
 {
+#if ENABLE_PARALLEL_MARKING
     MutexLocker locker(markingMutex());
+#endif
     ASSERT(s_ephemeronStack);
     return s_ephemeronStack->hasCallbackForObject(table);
 }
@@ -2443,7 +2457,11 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     ThreadState::visitPersistentRoots(s_markingVisitor);
 
     // 2. trace objects reachable from the persistent roots including ephemerons.
+#if ENABLE_PARALLEL_MARKING
     processMarkingStackInParallel();
+#else
+    processMarkingStack<GlobalMarking>();
+#endif
 
     // 3. trace objects reachable from the stack. We do this independent of the
     // given stackState since other threads might have a different stack state.
@@ -2452,8 +2470,13 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     // 4. trace objects reachable from the stack "roots" including ephemerons.
     // Only do the processing if we found a pointer to an object on one of the
     // thread stacks.
-    if (lastGCWasConservative())
+    if (lastGCWasConservative()) {
+#if ENABLE_PARALLEL_MARKING
         processMarkingStackInParallel();
+#else
+        processMarkingStack<GlobalMarking>();
+#endif
+    }
 
     postMarkingProcessing();
     globalWeakProcessing();
