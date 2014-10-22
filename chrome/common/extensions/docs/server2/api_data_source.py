@@ -53,7 +53,7 @@ class APIDataSource(DataSource):
 
     # Parsing samples on the preview server takes forever, so disable it.
     if IsPreviewServer():
-      samples_futures = Future(value=[])
+      samples_future = Future(value=[])
     else:
       samples_future = (self._platform_bundle.GetSamplesModel(platform)
           .FilterSamples(api_name))
