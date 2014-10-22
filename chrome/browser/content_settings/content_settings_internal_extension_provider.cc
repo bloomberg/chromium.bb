@@ -10,7 +10,6 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_host.h"
@@ -155,7 +154,7 @@ void InternalExtensionProvider::Observe(int type,
 }
 
 void InternalExtensionProvider::ShutdownOnUIThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   RemoveAllObservers();
   registrar_.reset();
 }

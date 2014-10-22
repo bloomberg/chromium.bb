@@ -16,9 +16,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace content_settings {
 
@@ -94,7 +91,7 @@ void OverrideProvider::ShutdownOnUIThread() {
 
 void OverrideProvider::SetOverrideSetting(ContentSettingsType content_type,
                                           bool enabled) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs_);
 
   // Disallow incognito to change the state.
@@ -120,7 +117,6 @@ bool OverrideProvider::IsEnabled(ContentSettingsType content_type) const {
 }
 
 void OverrideProvider::ReadOverrideSettings() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const base::DictionaryValue* blocked_settings_dictionary =
       prefs_->GetDictionary(prefs::kOverrideContentSettings);
 

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
@@ -67,6 +68,8 @@ class OverrideProvider : public ProviderInterface {
   // Used around accesses to the |override_content_settings_| object to
   // guarantee thread safety.
   mutable base::Lock lock_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OverrideProvider);
 };

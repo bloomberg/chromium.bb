@@ -837,6 +837,7 @@ content::ResourceContext* TestingProfile::GetResourceContext() {
 }
 
 HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!host_content_settings_map_.get()) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
 #if defined(ENABLE_EXTENSIONS)

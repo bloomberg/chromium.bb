@@ -42,4 +42,8 @@ void ObservableProvider::RemoveAllObservers() {
   observer_list_.Clear();
 }
 
+bool ObservableProvider::CalledOnValidThread() {
+  return thread_checker_.CalledOnValidThread();
+}
+
 }  // namespace content_settings

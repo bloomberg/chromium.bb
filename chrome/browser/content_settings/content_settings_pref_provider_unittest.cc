@@ -28,12 +28,10 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using ::testing::_;
-using content::BrowserThread;
 
 namespace content_settings {
 
@@ -92,18 +90,7 @@ class DeadlockCheckerObserver {
   DISALLOW_COPY_AND_ASSIGN(DeadlockCheckerObserver);
 };
 
-class PrefProviderTest : public testing::Test {
- public:
-  PrefProviderTest() : ui_thread_(
-      BrowserThread::UI, &message_loop_) {
-  }
-
- protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-};
-
-TEST_F(PrefProviderTest, Observer) {
+TEST(PrefProviderTest, Observer) {
   TestingProfile profile;
   PrefProvider pref_content_settings_provider(profile.GetPrefs(), false);
 
@@ -130,7 +117,7 @@ TEST_F(PrefProviderTest, Observer) {
 
 // Test for regression in which the PrefProvider modified the user pref store
 // of the OTR unintentionally: http://crbug.com/74466.
-TEST_F(PrefProviderTest, Incognito) {
+TEST(PrefProviderTest, Incognito) {
   PersistentPrefStore* user_prefs = new TestingPrefStore();
   OverlayUserPrefStore* otr_user_prefs =
       new OverlayUserPrefStore(user_prefs);
@@ -197,7 +184,7 @@ TEST_F(PrefProviderTest, Incognito) {
   pref_content_settings_provider_incognito.ShutdownOnUIThread();
 }
 
-TEST_F(PrefProviderTest, GetContentSettingsValue) {
+TEST(PrefProviderTest, GetContentSettingsValue) {
   TestingProfile testing_profile;
   PrefProvider provider(testing_profile.GetPrefs(), false);
 
@@ -259,7 +246,7 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
   provider.ShutdownOnUIThread();
 }
 
-TEST_F(PrefProviderTest, Patterns) {
+TEST(PrefProviderTest, Patterns) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
                                               false);
@@ -348,7 +335,7 @@ TEST_F(PrefProviderTest, Patterns) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
-TEST_F(PrefProviderTest, ResourceIdentifier) {
+TEST(PrefProviderTest, ResourceIdentifier) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
                                               false);
@@ -384,7 +371,7 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
-TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
+TEST(PrefProviderTest, AutoSubmitCertificateContentSetting) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   GURL primary_url("https://www.example.com");
@@ -418,7 +405,7 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
 }
 
 // http://crosbug.com/17760
-TEST_F(PrefProviderTest, Deadlock) {
+TEST(PrefProviderTest, Deadlock) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
@@ -441,7 +428,7 @@ TEST_F(PrefProviderTest, Deadlock) {
   provider.ShutdownOnUIThread();
 }
 
-TEST_F(PrefProviderTest, LastUsage) {
+TEST(PrefProviderTest, LastUsage) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
                                               false);

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -19,16 +20,12 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -124,7 +121,7 @@ bool PrefProvider::SetWebsiteSetting(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     base::Value* in_value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
   // Default settings are set using a wildcard pattern for both
   // |primary_pattern| and |secondary_pattern|. Don't store default settings in
@@ -178,7 +175,7 @@ bool PrefProvider::SetWebsiteSetting(
 
 void PrefProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -489,7 +486,7 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
 }
 
 void PrefProvider::OnContentSettingsPatternPairsChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   if (updating_preferences_)
     return;
@@ -559,7 +556,7 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
 }
 
 void PrefProvider::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
   RemoveAllObservers();
   pref_change_registrar_.RemoveAll();

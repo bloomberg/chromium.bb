@@ -355,6 +355,7 @@ net::SSLConfigService* OffTheRecordProfileImpl::GetSSLConfigService() {
 }
 
 HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Retrieve the host content settings map of the parent profile in order to
   // ensure the preferences have been migrated.
   profile_->GetHostContentSettingsMap();

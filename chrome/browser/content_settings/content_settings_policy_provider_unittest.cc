@@ -19,33 +19,16 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using ::testing::_;
-using content::BrowserThread;
 
 namespace content_settings {
 
 typedef std::vector<Rule> Rules;
 
-class PolicyProviderTest : public testing::Test {
- public:
-  PolicyProviderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
-
- protected:
-  // TODO(markusheintz): Check if it's possible to derive the provider class
-  // from NonThreadSafe and to use native thread identifiers instead of
-  // BrowserThread IDs. Then we could get rid of the message_loop and ui_thread
-  // fields.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-};
-
-TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
+TEST(PolicyProviderTest, DefaultGeolocationContentSetting) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
@@ -79,7 +62,7 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
   provider.ShutdownOnUIThread();
 }
 
-TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
+TEST(PolicyProviderTest, ManagedDefaultContentSettings) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
@@ -106,7 +89,7 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
 // When a default-content-setting is set to a managed setting a
 // CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
 // if the managed setting is removed.
-TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
+TEST(PolicyProviderTest, ObserveManagedSettingsChange) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
@@ -133,7 +116,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
   provider.ShutdownOnUIThread();
 }
 
-TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
+TEST(PolicyProviderTest, GettingManagedContentSettings) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
@@ -205,7 +188,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   provider.ShutdownOnUIThread();
 }
 
-TEST_F(PolicyProviderTest, ResourceIdentifier) {
+TEST(PolicyProviderTest, ResourceIdentifier) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
@@ -242,7 +225,7 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   provider.ShutdownOnUIThread();
 }
 
-TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
+TEST(PolicyProviderTest, AutoSelectCertificateList) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 

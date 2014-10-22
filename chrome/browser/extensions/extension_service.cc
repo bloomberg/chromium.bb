@@ -1896,6 +1896,7 @@ const Extension* ExtensionService::GetPendingExtensionUpdate(
 
 void ExtensionService::RegisterContentSettings(
     HostContentSettingsMap* host_content_settings_map) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::INTERNAL_EXTENSION_PROVIDER,
       scoped_ptr<content_settings::ObservableProvider>(

@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_checker.h"
 #include "base/tuple.h"
 #include "chrome/browser/content_settings/content_settings_override_provider.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -61,6 +62,8 @@ class HostContentSettingsMap
     NUM_PROVIDER_TYPES,
   };
 
+  // This should be called on the UI thread, otherwise |thread_checker_| handles
+  // CalledOnValidThread() wrongly.
   HostContentSettingsMap(PrefService* prefs, bool incognito);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -352,6 +355,8 @@ class HostContentSettingsMap
   // time and by RegisterExtensionService, both of which should happen
   // before any other uses of it.
   ProviderMap content_settings_providers_;
+
+  base::ThreadChecker thread_checker_;
 
   ObserverList<content_settings::Observer> observers_;
 

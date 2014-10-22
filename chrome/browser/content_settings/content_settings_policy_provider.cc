@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
@@ -15,9 +16,6 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -443,7 +441,7 @@ void PolicyProvider::ClearAllContentSettingsRules(
 }
 
 void PolicyProvider::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   RemoveAllObservers();
   if (!prefs_)
     return;
@@ -452,7 +450,7 @@ void PolicyProvider::ShutdownOnUIThread() {
 }
 
 void PolicyProvider::OnPreferenceChanged(const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   if (name == prefs::kManagedDefaultCookiesSetting) {
     UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES);

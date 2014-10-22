@@ -20,10 +20,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -185,7 +182,7 @@ bool DefaultProvider::SetWebsiteSetting(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     base::Value* in_value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 
   // Ignore non default settings
@@ -264,7 +261,7 @@ void DefaultProvider::ClearAllContentSettingsRules(
 }
 
 void DefaultProvider::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
   RemoveAllObservers();
   pref_change_registrar_.RemoveAll();
@@ -272,7 +269,7 @@ void DefaultProvider::ShutdownOnUIThread() {
 }
 
 void DefaultProvider::OnPreferenceChanged(const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   if (updating_preferences_)
     return;
 

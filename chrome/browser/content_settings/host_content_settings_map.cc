@@ -17,7 +17,6 @@
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
@@ -26,7 +25,6 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
@@ -34,8 +32,6 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -327,7 +323,7 @@ ContentSetting HostContentSettingsMap::GetContentSettingAndMaybeUpdateLastUsage(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ContentSetting setting = GetContentSetting(
       primary_url, secondary_url, content_type, resource_identifier);
@@ -576,7 +572,7 @@ HostContentSettingsMap::~HostContentSettingsMap() {
 }
 
 void HostContentSettingsMap::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs_);
   prefs_ = NULL;
   for (ProviderIterator it = content_settings_providers_.begin();

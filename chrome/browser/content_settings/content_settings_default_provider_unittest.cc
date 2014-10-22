@@ -11,26 +11,21 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using ::testing::_;
-using content::BrowserThread;
 
 class DefaultProviderTest : public testing::Test {
  public:
   DefaultProviderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        provider_(profile_.GetPrefs(), false) {
+      : provider_(profile_.GetPrefs(), false) {
   }
   virtual ~DefaultProviderTest() {
     provider_.ShutdownOnUIThread();
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
   content_settings::DefaultProvider provider_;
 };
