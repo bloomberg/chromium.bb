@@ -15,6 +15,8 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "ui/gfx/image/image_skia.h"
 
+class Profile;
+
 namespace content {
 class PageNavigator;
 }
@@ -41,6 +43,7 @@ class PageNavigator;
   IBOutlet NSTextField* userCountField_;
   IBOutlet NSButton* storeLinkButton_;
 
+  Profile* profile_; // weak
   content::PageNavigator* navigator_;  // weak
   ExtensionInstallPrompt::Delegate* delegate_;  // weak
   scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
@@ -62,9 +65,10 @@ class PageNavigator;
 @property(nonatomic, readonly) NSTextField* userCountField;
 @property(nonatomic, readonly) NSButton* storeLinkButton;
 
-- (id)initWithNavigator:(content::PageNavigator*)navigator
-               delegate:(ExtensionInstallPrompt::Delegate*)delegate
-                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt;
+- (id)initWithProfile:(Profile*)profile
+            navigator:(content::PageNavigator*)navigator
+             delegate:(ExtensionInstallPrompt::Delegate*)delegate
+               prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt;
 - (IBAction)storeLinkClicked:(id)sender; // Callback for "View details" link.
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;

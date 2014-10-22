@@ -163,7 +163,10 @@ ScrollbarTest::ScrollbarTest()
 bool ScrollbarTest::IsScrollbarVisible() {
   ExtensionInstallPrompt::ShowParams show_params(web_contents());
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      show_params.navigator, delegate(), prompt());
+      show_params.profile,
+      show_params.parent_web_contents,
+      delegate(),
+      prompt());
 
   // Create the modal view around the install dialog view.
   views::Widget* modal =
@@ -223,7 +226,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // The user confirms the install.
     MockExtensionInstallPromptDelegate delegate;
     scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(web_contents(), &delegate, prompt()));
+        new ExtensionInstallDialogView(
+            profile(), web_contents(), &delegate, prompt()));
     views::DialogDelegateView* delegate_view = dialog.get();
 
     delegate_view->Accept();
@@ -238,7 +242,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // The user cancels the install.
     MockExtensionInstallPromptDelegate delegate;
     scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(web_contents(), &delegate, prompt()));
+        new ExtensionInstallDialogView(
+            profile(), web_contents(), &delegate, prompt()));
     views::DialogDelegateView* delegate_view = dialog.get();
 
     delegate_view->Cancel();
@@ -254,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // proceed or cancel.
     MockExtensionInstallPromptDelegate delegate;
     scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(web_contents(), &delegate, prompt()));
+        new ExtensionInstallDialogView(
+            profile(), web_contents(), &delegate, prompt()));
     dialog.reset();
 
     EXPECT_EQ(1, delegate.abort_count());

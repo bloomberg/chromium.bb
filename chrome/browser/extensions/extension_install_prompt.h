@@ -30,7 +30,6 @@ class MessageLoop;
 }  // namespace base
 
 namespace content {
-class PageNavigator;
 class WebContents;
 }
 
@@ -282,18 +281,18 @@ class ExtensionInstallPrompt
 
   // Parameters to show a prompt dialog. Two sets of the
   // parameters are supported: either use a parent WebContents or use a
-  // parent NativeWindow + a PageNavigator.
+  // parent NativeWindow + a Profile.
   struct ShowParams {
     explicit ShowParams(content::WebContents* contents);
-    ShowParams(gfx::NativeWindow window, content::PageNavigator* navigator);
+    ShowParams(Profile* profile, gfx::NativeWindow window);
+
+    Profile* profile;
 
     // Parent web contents of the install UI dialog. This can be NULL.
     content::WebContents* parent_web_contents;
 
-    // NativeWindow parent and navigator. If initialized using a parent web
-    // contents, these are derived from it.
+    // NativeWindow parent.
     gfx::NativeWindow parent_window;
-    content::PageNavigator* navigator;
   };
 
   typedef base::Callback<void(const ExtensionInstallPrompt::ShowParams&,
@@ -318,10 +317,10 @@ class ExtensionInstallPrompt
   // Creates a prompt with a parent web content.
   explicit ExtensionInstallPrompt(content::WebContents* contents);
 
-  // Creates a prompt with a profile, a native window and a page navigator.
-  ExtensionInstallPrompt(Profile* profile,
-                         gfx::NativeWindow native_window,
-                         content::PageNavigator* navigator);
+  // Creates a prompt with a profile and a native window. The most recently
+  // active browser window (or a new browser window if there are no browser
+  // windows) is used if a new tab needs to be opened.
+  ExtensionInstallPrompt(Profile* profile, gfx::NativeWindow native_window);
 
   virtual ~ExtensionInstallPrompt();
 

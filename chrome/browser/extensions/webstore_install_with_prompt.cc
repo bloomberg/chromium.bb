@@ -6,8 +6,6 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -62,8 +60,7 @@ scoped_ptr<ExtensionInstallPrompt>
 WebstoreInstallWithPrompt::CreateInstallUI() {
   // Create an ExtensionInstallPrompt. If the parent window is NULL, the dialog
   // will be placed in the middle of the screen.
-  return make_scoped_ptr(
-      new ExtensionInstallPrompt(profile(), parent_window_, this));
+  return make_scoped_ptr(new ExtensionInstallPrompt(profile(), parent_window_));
 }
 
 bool WebstoreInstallWithPrompt::ShouldShowPostInstallUI() const {
@@ -92,13 +89,6 @@ bool WebstoreInstallWithPrompt::CheckRequestorPermitted(
   // Assume the requestor is trusted.
   *error = std::string();
   return true;
-}
-
-content::WebContents* WebstoreInstallWithPrompt::OpenURL(
-    const content::OpenURLParams& params) {
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile(),
-                                                 chrome::GetActiveDesktop());
-  return displayer.browser()->OpenURL(params);
 }
 
 }  // namespace extensions

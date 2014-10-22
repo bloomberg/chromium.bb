@@ -72,7 +72,7 @@ SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
   scoped_ptr<extensions::ExtensionInstallUI> ui(
       extensions::CreateExtensionInstallUI(profile));
   install_ui_.reset(new ExtensionInstallPrompt(
-      profile, ui->GetDefaultInstallDialogParent(), NULL));
+      profile, ui->GetDefaultInstallDialogParent()));
 }
 
 SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {

@@ -12,7 +12,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/page_navigator.h"
@@ -186,9 +189,10 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 @synthesize userCountField = userCountField_;
 @synthesize storeLinkButton = storeLinkButton_;
 
-- (id)initWithNavigator:(content::PageNavigator*)navigator
-               delegate:(ExtensionInstallPrompt::Delegate*)delegate
-                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt {
+- (id)initWithProfile:(Profile*)profile
+            navigator:(content::PageNavigator*)navigator
+             delegate:(ExtensionInstallPrompt::Delegate*)delegate
+               prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt {
   // We use a different XIB in the case of bundle installs, installs with
   // webstore data, or no permission warnings. These are laid out nicely for
   // the data they display.
@@ -207,6 +211,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 
   if ((self = [super initWithNibName:nibName
                               bundle:base::mac::FrameworkBundle()])) {
+    profile_ = profile;
     navigator_ = navigator;
     delegate_ = delegate;
     prompt_ = prompt;
@@ -218,9 +223,15 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 - (IBAction)storeLinkClicked:(id)sender {
   GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
                  prompt_->extension()->id());
-  navigator_->OpenURL(OpenURLParams(
-      store_url, Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-      false));
+  OpenURLParams params(store_url, Referrer(), NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, false);
+  if (navigator_) {
+    navigator_->OpenURL(params);
+  } else {
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+        profile_, chrome::GetActiveDesktop());
+    displayer.browser()->OpenURL(params);
+  }
 
   delegate_->InstallUIAbort(/*user_initiated=*/true);
 }

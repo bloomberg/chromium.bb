@@ -366,8 +366,7 @@ void ExternalInstallError::OnFetchComplete() {
   // to pass ones which may be invalidated.
   install_ui_.reset(
       new ExtensionInstallPrompt(Profile::FromBrowserContext(browser_context_),
-                                 NULL,    // NULL native window.
-                                 NULL));  // NULL navigator.
+                                 NULL));  // NULL native window.
 
   install_ui_->ConfirmExternalInstall(
       this,

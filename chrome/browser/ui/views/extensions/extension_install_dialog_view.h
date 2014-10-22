@@ -15,6 +15,7 @@
 
 typedef std::vector<base::string16> PermissionDetails;
 class ExpandableContainerView;
+class Profile;
 
 namespace content {
 class PageNavigator;
@@ -53,6 +54,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::ButtonListener {
  public:
   ExtensionInstallDialogView(
+      Profile* profile,
       content::PageNavigator* navigator,
       ExtensionInstallPrompt::Delegate* delegate,
       scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
@@ -126,6 +128,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // "Show permissions" links were shown and/or clicked.
   void UpdateLinkActionHistogram(int action_type) const;
 
+  Profile* profile_;
   content::PageNavigator* navigator_;
   ExtensionInstallPrompt::Delegate* delegate_;
   scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;

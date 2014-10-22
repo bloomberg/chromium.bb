@@ -614,17 +614,16 @@ bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeFilesButton() const {
 }
 
 ExtensionInstallPrompt::ShowParams::ShowParams(content::WebContents* contents)
-    : parent_web_contents(contents),
-      parent_window(NativeWindowForWebContents(contents)),
-      navigator(contents) {
+    : profile(ProfileForWebContents(contents)),
+      parent_web_contents(contents),
+      parent_window(NativeWindowForWebContents(contents)) {
 }
 
-ExtensionInstallPrompt::ShowParams::ShowParams(
-    gfx::NativeWindow window,
-    content::PageNavigator* navigator)
-    : parent_web_contents(NULL),
-      parent_window(window),
-      navigator(navigator) {
+ExtensionInstallPrompt::ShowParams::ShowParams(Profile* profile,
+                                               gfx::NativeWindow window)
+    : profile(profile),
+      parent_web_contents(NULL),
+      parent_window(window) {
 }
 
 // static
@@ -669,16 +668,14 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
       delegate_(NULL) {
 }
 
-ExtensionInstallPrompt::ExtensionInstallPrompt(
-    Profile* profile,
-    gfx::NativeWindow native_window,
-    content::PageNavigator* navigator)
+ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
+                                               gfx::NativeWindow native_window)
     : profile_(profile),
       ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
       bundle_(NULL),
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
-      show_params_(native_window, navigator),
+      show_params_(profile, native_window),
       delegate_(NULL) {
 }
 

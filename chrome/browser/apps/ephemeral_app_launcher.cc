@@ -187,8 +187,7 @@ scoped_ptr<ExtensionInstallPrompt> EphemeralAppLauncher::CreateInstallUI() {
   if (web_contents())
     return make_scoped_ptr(new ExtensionInstallPrompt(web_contents()));
 
-  return make_scoped_ptr(
-      new ExtensionInstallPrompt(profile(), parent_window_, NULL));
+  return make_scoped_ptr(new ExtensionInstallPrompt(profile(), parent_window_));
 }
 
 scoped_ptr<WebstoreInstaller::Approval> EphemeralAppLauncher::CreateApproval()

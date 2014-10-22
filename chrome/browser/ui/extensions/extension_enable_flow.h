@@ -14,13 +14,11 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/page_navigator.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionEnableFlowDelegate;
 
 namespace content {
-class PageNavigator;
 class WebContents;
 }
 
@@ -36,7 +34,6 @@ class ExtensionRegistry;
 // shown to user. The extension is enabled when user acknowledges it or the
 // flow is aborted when user declines it.
 class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
-                            public content::PageNavigator,
                             public content::NotificationObserver,
                             public extensions::ExtensionRegistryObserver {
  public:
@@ -94,9 +91,6 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   // ExtensionInstallPrompt::Delegate overrides:
   void InstallUIProceed() override;
   void InstallUIAbort(bool user_initiated) override;
-
-  // content::PageNavigator overrides:
-  content::WebContents* OpenURL(const content::OpenURLParams& params) override;
 
   Profile* const profile_;
   const std::string extension_id_;

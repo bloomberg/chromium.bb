@@ -7,7 +7,9 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 @interface WindowedInstallController
@@ -19,9 +21,10 @@
 
 @property(readonly, nonatomic) ExtensionInstallViewController* viewController;
 
-- (id)initWithNavigator:(content::PageNavigator*)navigator
-               delegate:(WindowedInstallDialogController*)delegate
-                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt;
+- (id)initWithProfile:(Profile*)profile
+            navigator:(content::PageNavigator*)navigator
+             delegate:(WindowedInstallDialogController*)delegate
+               prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt;
 
 @end
 
@@ -31,9 +34,10 @@ WindowedInstallDialogController::WindowedInstallDialogController(
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
     : delegate_(delegate) {
   install_controller_.reset([[WindowedInstallController alloc]
-      initWithNavigator:show_params.navigator
-               delegate:this
-                 prompt:prompt]);
+      initWithProfile:show_params.profile
+            navigator:show_params.parent_web_contents
+             delegate:this
+               prompt:prompt]);
   [[install_controller_ window] makeKeyAndOrderFront:nil];
 }
 
@@ -70,9 +74,10 @@ void WindowedInstallDialogController::InstallUIAbort(bool user_initiated) {
 
 @implementation WindowedInstallController
 
-- (id)initWithNavigator:(content::PageNavigator*)navigator
-               delegate:(WindowedInstallDialogController*)delegate
-                 prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt {
+- (id)initWithProfile:(Profile*)profile
+            navigator:(content::PageNavigator*)navigator
+             delegate:(WindowedInstallDialogController*)delegate
+               prompt:(scoped_refptr<ExtensionInstallPrompt::Prompt>)prompt {
   base::scoped_nsobject<NSWindow> controlledPanel(
       [[NSPanel alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                  styleMask:NSTitledWindowMask
@@ -81,9 +86,10 @@ void WindowedInstallDialogController::InstallUIAbort(bool user_initiated) {
   if ((self = [super initWithWindow:controlledPanel])) {
     dialogController_ = delegate;
     installViewController_.reset([[ExtensionInstallViewController alloc]
-        initWithNavigator:navigator
-                 delegate:delegate
-                   prompt:prompt]);
+        initWithProfile:profile
+              navigator:navigator
+               delegate:delegate
+                 prompt:prompt]);
     NSWindow* window = [self window];
 
     // Ensure the window does not display behind the app launcher window, and is

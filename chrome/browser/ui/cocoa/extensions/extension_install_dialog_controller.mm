@@ -43,9 +43,10 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
     : delegate_(delegate) {
   view_controller_.reset([[ExtensionInstallViewController alloc]
-      initWithNavigator:show_params.navigator
-               delegate:this
-                 prompt:prompt]);
+      initWithProfile:show_params.profile
+            navigator:show_params.parent_web_contents
+             delegate:this
+               prompt:prompt]);
 
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
