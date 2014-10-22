@@ -1033,7 +1033,9 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
+        c->clearShadow();
         c->fillPath(path);
+        applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
         FloatRect dirtyRect;
@@ -1083,7 +1085,9 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
+        c->clearShadow();
         c->strokePath(path);
+        applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
         FloatRect bounds = path.boundingRect();
@@ -1313,7 +1317,9 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
+        c->clearShadow();
         c->fillRect(rect);
+        applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
         FloatRect dirtyRect;
@@ -1352,7 +1358,9 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
+        c->clearShadow();
         c->strokeRect(rect);
+        applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
         FloatRect boundingRect = rect;
@@ -2212,7 +2220,9 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
+        c->clearShadow();
         c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
+        applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
         FloatRect dirtyRect;

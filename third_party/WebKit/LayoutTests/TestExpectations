@@ -531,6 +531,9 @@ crbug.com/369615 virtual/gpu/fast/canvas/canvas-overflow-hidden-animation.html [
 # Flaky on several platforms.
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 
+crbug.com/417409 fast/canvas/canvas-composite-shadow.html [ NeedsRebaseline ]
+crbug.com/417409 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ NeedsRebaseline ]
+
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
 crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure Pass ]
