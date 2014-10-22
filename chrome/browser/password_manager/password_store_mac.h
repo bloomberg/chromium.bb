@@ -37,42 +37,40 @@ class PasswordStoreMac : public password_manager::PasswordStore {
       password_manager::LoginDatabase* login_db);
 
   // Initializes |thread_|.
-  virtual bool Init(
-      const syncer::SyncableService::StartSyncFlare& flare,
-      const std::string& sync_username) override;
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare,
+            const std::string& sync_username) override;
 
   // Stops |thread_|.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  protected:
-  virtual ~PasswordStoreMac();
+  ~PasswordStoreMac() override;
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetBackgroundTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetBackgroundTaskRunner()
+      override;
 
  private:
-  virtual void ReportMetricsImpl(const std::string& sync_username) override;
-  virtual password_manager::PasswordStoreChangeList AddLoginImpl(
+  void ReportMetricsImpl(const std::string& sync_username) override;
+  password_manager::PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual password_manager::PasswordStoreChangeList UpdateLoginImpl(
+  password_manager::PasswordStoreChangeList UpdateLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual password_manager::PasswordStoreChangeList RemoveLoginImpl(
+  password_manager::PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
-  virtual password_manager::PasswordStoreChangeList
-      RemoveLoginsCreatedBetweenImpl(base::Time delete_begin,
-                                     base::Time delete_end) override;
-  virtual password_manager::PasswordStoreChangeList
-      RemoveLoginsSyncedBetweenImpl(base::Time delete_begin,
-                                    base::Time delete_end) override;
-  virtual void GetLoginsImpl(
-      const autofill::PasswordForm& form,
-      AuthorizationPromptPolicy prompt_policy,
-      const ConsumerCallbackRunner& callback_runner) override;
-  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
-  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
-  virtual bool FillAutofillableLogins(
+  password_manager::PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
+      base::Time delete_begin,
+      base::Time delete_end) override;
+  password_manager::PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
+      base::Time delete_begin,
+      base::Time delete_end) override;
+  void GetLoginsImpl(const autofill::PasswordForm& form,
+                     AuthorizationPromptPolicy prompt_policy,
+                     const ConsumerCallbackRunner& callback_runner) override;
+  void GetAutofillableLoginsImpl(GetLoginsRequest* request) override;
+  void GetBlacklistLoginsImpl(GetLoginsRequest* request) override;
+  bool FillAutofillableLogins(
       std::vector<autofill::PasswordForm*>* forms) override;
-  virtual bool FillBlacklistLogins(
+  bool FillBlacklistLogins(
       std::vector<autofill::PasswordForm*>* forms) override;
 
   // Adds the given form to the Keychain if it's something we want to store

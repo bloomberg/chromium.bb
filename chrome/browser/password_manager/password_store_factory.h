@@ -32,12 +32,12 @@ class PasswordStoreService : public KeyedService {
   // Init() was already called successfully on it.
   explicit PasswordStoreService(
       scoped_refptr<password_manager::PasswordStore> password_store);
-  virtual ~PasswordStoreService();
+  ~PasswordStoreService() override;
 
   scoped_refptr<password_manager::PasswordStore> GetPasswordStore();
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   scoped_refptr<password_manager::PasswordStore> password_store_;
@@ -58,20 +58,20 @@ class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<PasswordStoreFactory>;
 
   PasswordStoreFactory();
-  virtual ~PasswordStoreFactory();
+  ~PasswordStoreFactory() override;
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
   LocalProfileId GetLocalProfileId(PrefService* prefs) const;
 #endif
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreFactory);
 };

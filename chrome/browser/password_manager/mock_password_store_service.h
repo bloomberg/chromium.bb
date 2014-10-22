@@ -23,7 +23,7 @@ class MockPasswordStoreService : public PasswordStoreService {
   explicit MockPasswordStoreService(
       scoped_refptr<password_manager::PasswordStore> password_store);
 
-  virtual ~MockPasswordStoreService();
+  ~MockPasswordStoreService() override;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreService);
 };

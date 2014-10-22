@@ -42,21 +42,21 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix);
 
-  virtual ~SavePasswordInfoBarDelegate();
+  ~SavePasswordInfoBarDelegate() override;
 
   // InfoBarDelegate
-  virtual bool ShouldExpire(const NavigationDetails& details) const override;
+  bool ShouldExpire(const NavigationDetails& details) const override;
 
   // ConfirmInfoBarDelegate
-  virtual int GetIconID() const override;
-  virtual Type GetInfoBarType() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
-  virtual void InfoBarDismissed() override;
+  int GetIconID() const override;
+  Type GetInfoBarType() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
+  void InfoBarDismissed() override;
 
-  virtual InfoBarAutomationType GetInfoBarAutomationType() const override;
+  InfoBarAutomationType GetInfoBarAutomationType() const override;
 
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.

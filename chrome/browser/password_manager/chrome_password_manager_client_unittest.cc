@@ -40,11 +40,10 @@ class TestChromePasswordManagerClient : public ChromePasswordManagerClient {
   explicit TestChromePasswordManagerClient(content::WebContents* web_contents)
       : ChromePasswordManagerClient(web_contents, NULL),
         is_sync_account_credential_(false) {}
-  virtual ~TestChromePasswordManagerClient() {}
+  ~TestChromePasswordManagerClient() override {}
 
-  virtual bool IsSyncAccountCredential(
-      const std::string& username,
-      const std::string& origin) const override {
+  bool IsSyncAccountCredential(const std::string& username,
+                               const std::string& origin) const override {
     return is_sync_account_credential_;
   }
 

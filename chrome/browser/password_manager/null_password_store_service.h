@@ -20,7 +20,7 @@ class NullPasswordStoreService : public PasswordStoreService {
  private:
   NullPasswordStoreService();
 
-  virtual ~NullPasswordStoreService();
+  ~NullPasswordStoreService() override;
 
   DISALLOW_COPY_AND_ASSIGN(NullPasswordStoreService);
 };

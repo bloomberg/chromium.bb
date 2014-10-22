@@ -77,7 +77,7 @@ class TestPasswordStoreMac : public PasswordStoreMac {
   using PasswordStoreMac::GetBackgroundTaskRunner;
 
  private:
-  virtual ~TestPasswordStoreMac() {}
+  ~TestPasswordStoreMac() override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestPasswordStoreMac);
 };
