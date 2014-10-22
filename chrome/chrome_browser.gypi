@@ -2759,7 +2759,6 @@
       'android/java/src/org/chromium/chrome/browser/signin/OAuth2TokenService.java',
       'android/java/src/org/chromium/chrome/browser/signin/SigninManager.java',
       'android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java',
-      'android/java/src/org/chromium/chrome/browser/tabmodel/TabModelBase.java',
       'android/java/src/org/chromium/chrome/browser/tabmodel/TabModelJniBridge.java',
       'android/java/src/org/chromium/chrome/browser/Tab.java',
       'android/java/src/org/chromium/chrome/browser/TtsPlatformImpl.java',

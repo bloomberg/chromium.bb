@@ -70,7 +70,6 @@
 #include "chrome/browser/ui/android/navigation_popup.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_view_util.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_base.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
@@ -181,7 +180,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid },
   { "StartupMetricUtils", RegisterStartupMetricUtils },
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
-  { "TabModelBase", RegisterTabModelBase},
   { "TabModelJniBridge", TabModelJniBridge::Register},
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
   { "ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid },

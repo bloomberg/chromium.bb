@@ -48,13 +48,10 @@ public abstract class TabModelBase extends TabModelJniBridge {
      */
     private int mIndex = INVALID_TAB_INDEX;
 
-    /** Native TabModelBase pointer which will be set by nativeInit(). */
-    private long mNativeTabModelImpl = 0;
-
     public TabModelBase(boolean incognito, TabModelOrderController orderController,
             TabModelDelegate modelDelegate) {
         super(incognito);
-        mNativeTabModelImpl = nativeInit(incognito);
+        initializeNative();
         mOrderController = orderController;
         mModelDelegate = modelDelegate;
         mObservers = new ObserverList<TabModelObserver>();
@@ -71,7 +68,6 @@ public abstract class TabModelBase extends TabModelJniBridge {
         mObservers.clear();
 
         super.destroy();
-        mNativeTabModelImpl = 0;
     }
 
     @Override
@@ -620,6 +616,4 @@ public abstract class TabModelBase extends TabModelJniBridge {
     protected boolean isSessionRestoreInProgress() {
         return mModelDelegate.isSessionRestoreInProgress();
     }
-
-    private native long nativeInit(boolean isIncognito);
 }

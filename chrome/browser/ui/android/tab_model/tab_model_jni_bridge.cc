@@ -43,9 +43,6 @@ TabModelJniBridge::TabModelJniBridge(JNIEnv* env,
     : TabModel(FindProfile(is_incognito)),
       java_object_(env, env->NewWeakGlobalRef(jobj)) {
   TabModelList::AddTabModel(this);
-  Java_TabModelJniBridge_setNativePtr(env,
-                                      jobj,
-                                      reinterpret_cast<intptr_t>(this));
 }
 
 void TabModelJniBridge::Destroy(JNIEnv* env, jobject obj) {
@@ -155,10 +152,13 @@ void TabModelJniBridge::BroadcastSessionRestoreComplete(JNIEnv* env,
 
 TabModelJniBridge::~TabModelJniBridge() {
   TabModelList::RemoveTabModel(this);
-  JNIEnv* env = AttachCurrentThread();
-  Java_TabModelJniBridge_clearNativePtr(env, java_object_.get(env).obj());
 }
 
 bool TabModelJniBridge::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+static jlong Init(JNIEnv* env, jobject obj, jboolean is_incognito) {
+  TabModel* tab_model = new TabModelJniBridge(env, obj, is_incognito);
+  return reinterpret_cast<intptr_t>(tab_model);
 }

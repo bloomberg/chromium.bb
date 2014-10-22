@@ -53,8 +53,6 @@
       'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h',
       'browser/ui/android/tab_model/tab_model.cc',
       'browser/ui/android/tab_model/tab_model.h',
-      'browser/ui/android/tab_model/tab_model_base.cc',
-      'browser/ui/android/tab_model/tab_model_base.h',
       'browser/ui/android/tab_model/tab_model_jni_bridge.cc',
       'browser/ui/android/tab_model/tab_model_jni_bridge.h',
       'browser/ui/android/tab_model/tab_model_list.cc',

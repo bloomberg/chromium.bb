@@ -14,28 +14,27 @@ import org.chromium.chrome.browser.profiles.Profile;
 public abstract class TabModelJniBridge implements TabModel {
     private final boolean mIsIncognito;
 
-    /** Native TabModelJniBridge pointer, which will be set by {@link #setNativePtr(long)}. */
+    /** Native TabModelJniBridge pointer, which will be set by {@link #initializeNative()}. */
     private long mNativeTabModelJniBridge;
 
     public TabModelJniBridge(boolean isIncognito) {
         mIsIncognito = isIncognito;
     }
 
-    @CalledByNative
-    private void clearNativePtr() {
-        assert mNativeTabModelJniBridge != 0;
-        mNativeTabModelJniBridge = 0;
+    /** Initializes the native-side counterpart to this class. */
+    protected void initializeNative() {
+        assert mNativeTabModelJniBridge == 0;
+        mNativeTabModelJniBridge = nativeInit(mIsIncognito);
     }
 
-    @CalledByNative
-    private void setNativePtr(long nativePointer) {
-        assert mNativeTabModelJniBridge == 0;
-        mNativeTabModelJniBridge = nativePointer;
+    /** @return Whether the native-side pointer has been initialized. */
+    public boolean isNativeInitialized() {
+        return mNativeTabModelJniBridge != 0;
     }
 
     @Override
     public void destroy() {
-        if (mNativeTabModelJniBridge != 0) {
+        if (isNativeInitialized()) {
             // This will invalidate all other native references to this object in child classes.
             nativeDestroy(mNativeTabModelJniBridge);
             mNativeTabModelJniBridge = 0;
@@ -54,7 +53,7 @@ public abstract class TabModelJniBridge implements TabModel {
 
     /** Broadcast a native-side notification that all tabs are now loaded from storage. */
     public void broadcastSessionRestoreComplete() {
-        assert mNativeTabModelJniBridge != 0;
+        assert isNativeInitialized();
         nativeBroadcastSessionRestoreComplete(mNativeTabModelJniBridge);
     }
 
@@ -63,7 +62,7 @@ public abstract class TabModelJniBridge implements TabModel {
      * @param tab Tab being added to the model.
      */
     protected void tabAddedToModel(Tab tab) {
-        if (mNativeTabModelJniBridge != 0) nativeTabAddedToModel(mNativeTabModelJniBridge, tab);
+        if (isNativeInitialized()) nativeTabAddedToModel(mNativeTabModelJniBridge, tab);
     }
 
     /**
@@ -116,6 +115,7 @@ public abstract class TabModelJniBridge implements TabModel {
     @CalledByNative
     protected abstract boolean isSessionRestoreInProgress();
 
+    private native long nativeInit(boolean isIncognito);
     private native Profile nativeGetProfileAndroid(long nativeTabModelJniBridge);
     private native void nativeBroadcastSessionRestoreComplete(long nativeTabModelJniBridge);
     private native void nativeDestroy(long nativeTabModelJniBridge);
