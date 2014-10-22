@@ -93,15 +93,18 @@ public:
         ResponseTypeStream,
     };
 
+    // ActiveDOMObject
     virtual void contextDestroyed() override;
+    virtual ExecutionContext* executionContext() const override;
+    virtual bool hasPendingActivity() const override;
     virtual void suspend() override;
     virtual void resume() override;
     virtual void stop() override;
-    virtual bool hasPendingActivity() const override;
 
+    // XMLHttpRequestEventTarget
     virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
 
+    // JavaScript attributes and methods
     const KURL& url() const { return m_url; }
     String statusText() const;
     int status() const;
@@ -128,24 +131,21 @@ public:
     ScriptString responseJSONSource();
     Document* responseXML(ExceptionState&);
     Blob* responseBlob();
+    DOMArrayBuffer* responseArrayBuffer();
     Stream* responseLegacyStream();
     ReadableStream* responseStream();
     unsigned long timeout() const { return m_timeoutMilliseconds; }
     void setTimeout(unsigned long timeout, ExceptionState&);
+    ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
+    String responseType();
+    void setResponseType(const String&, ExceptionState&);
+    String responseURL();
 
+    // For Inspector.
     void sendForInspectorXHRReplay(PassRefPtr<FormData>, ExceptionState&);
 
     // Expose HTTP validation methods for other untrusted requests.
     static AtomicString uppercaseKnownHTTPMethod(const AtomicString&);
-
-    void setResponseType(const String&, ExceptionState&);
-    String responseType();
-    ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
-
-    String responseURL();
-
-    // response attribute has custom getter.
-    DOMArrayBuffer* responseArrayBuffer();
 
     void setLastSendLineNumber(unsigned lineNumber) { m_lastSendLineNumber = lineNumber; }
     void setLastSendURL(const String& url) { m_lastSendURL = url; }
@@ -222,6 +222,10 @@ private:
     // Clears variables used only while the resource is being loaded.
     void clearVariablesForLoading();
     // Returns false iff reentry happened and a new load is started.
+    //
+    // This method may invoke V8 GC with m_loader unset. If you touch the
+    // XMLHttpRequest instance after internalAbort() call, you must hold a
+    // refcount on it to prevent it from destroyed.
     bool internalAbort();
     // Clears variables holding response header and body data.
     void clearResponse();
