@@ -41,7 +41,7 @@ class MediaStreamCaptureIndicator
       const content::MediaStreamDevices& devices);
 
   // Overrides from StatusIconMenuModel::Delegate implementation.
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
   // Returns true if the |web_contents| is capturing user media (e.g., webcam or
   // microphone input).
@@ -63,7 +63,7 @@ class MediaStreamCaptureIndicator
   friend class WebContentsDeviceUsage;
 
   friend class base::RefCountedThreadSafe<MediaStreamCaptureIndicator>;
-  virtual ~MediaStreamCaptureIndicator();
+  ~MediaStreamCaptureIndicator() override;
 
   // Following functions/variables are executed/accessed only on UI thread.
 

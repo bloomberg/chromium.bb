@@ -132,17 +132,16 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void DisableDeviceEnumerationForTesting();
 
   // Overridden from content::MediaObserver:
-  virtual void OnAudioCaptureDevicesChanged() override;
-  virtual void OnVideoCaptureDevicesChanged() override;
-  virtual void OnMediaRequestStateChanged(
-      int render_process_id,
-      int render_frame_id,
-      int page_request_id,
-      const GURL& security_origin,
-      content::MediaStreamType stream_type,
-      content::MediaRequestState state) override;
-  virtual void OnCreatingAudioStream(int render_process_id,
-                                     int render_frame_id) override;
+  void OnAudioCaptureDevicesChanged() override;
+  void OnVideoCaptureDevicesChanged() override;
+  void OnMediaRequestStateChanged(int render_process_id,
+                                  int render_frame_id,
+                                  int page_request_id,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType stream_type,
+                                  content::MediaRequestState state) override;
+  void OnCreatingAudioStream(int render_process_id,
+                             int render_frame_id) override;
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
 
@@ -171,12 +170,12 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   typedef std::map<content::WebContents*, RequestsQueue> RequestsQueues;
 
   MediaCaptureDevicesDispatcher();
-  virtual ~MediaCaptureDevicesDispatcher();
+  ~MediaCaptureDevicesDispatcher() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Helpers for ProcessMediaAccessRequest().
   void ProcessDesktopCaptureAccessRequest(

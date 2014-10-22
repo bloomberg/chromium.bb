@@ -13,14 +13,14 @@ class PermissionRequestID;
 class MidiPermissionContext : public PermissionContextBase {
  public:
   explicit MidiPermissionContext(Profile* profile);
-  virtual ~MidiPermissionContext();
+  ~MidiPermissionContext() override;
 
  private:
 
   // PermissionContextBase:
-  virtual void UpdateTabContext(const PermissionRequestID& id,
-                                const GURL& requesting_frame,
-                                bool allowed) override;
+  void UpdateTabContext(const PermissionRequestID& id,
+                        const GURL& requesting_frame,
+                        bool allowed) override;
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionContext);
 };

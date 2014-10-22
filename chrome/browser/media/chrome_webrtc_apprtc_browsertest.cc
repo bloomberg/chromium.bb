@@ -48,7 +48,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
         firefox_(base::kNullProcessHandle) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
     // The video playback will not work without a GPU, so force its use here.

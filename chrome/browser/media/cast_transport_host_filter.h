@@ -25,7 +25,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
  public:
   CastTransportHostFilter();
  private:
-  virtual ~CastTransportHostFilter();
+  ~CastTransportHostFilter() override;
 
   void NotifyStatusChange(
       int32 channel_id,
@@ -40,7 +40,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
                        const media::cast::RtcpCastMessage& cast_message);
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Forwarding functions.
   void OnInitializeAudio(

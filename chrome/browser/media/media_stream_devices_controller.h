@@ -50,7 +50,7 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
                                const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
 
-  virtual ~MediaStreamDevicesController();
+  ~MediaStreamDevicesController() override;
 
   // TODO(tommi): Clean up all the policy code and integrate with
   // HostContentSettingsMap instead.  This will make creating the UI simpler
@@ -73,15 +73,15 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
             content::MediaStreamRequestResult result);
 
   // PermissionBubbleRequest:
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetMessageTextFragment() const override;
-  virtual bool HasUserGesture() const override;
-  virtual GURL GetRequestingHostname() const override;
-  virtual void PermissionGranted() override;
-  virtual void PermissionDenied() override;
-  virtual void Cancelled() override;
-  virtual void RequestFinished() override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetMessageTextFragment() const override;
+  bool HasUserGesture() const override;
+  GURL GetRequestingHostname() const override;
+  void PermissionGranted() override;
+  void PermissionDenied() override;
+  void Cancelled() override;
+  void RequestFinished() override;
 
  private:
   // Returns true if the origin of the request has been granted the media

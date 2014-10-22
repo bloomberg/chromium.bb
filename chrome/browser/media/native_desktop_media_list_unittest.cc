@@ -32,14 +32,12 @@ class MockObserver : public DesktopMediaListObserver {
 class FakeScreenCapturer : public webrtc::ScreenCapturer {
  public:
   FakeScreenCapturer() {}
-  virtual ~FakeScreenCapturer() {}
+  ~FakeScreenCapturer() override {}
 
   // webrtc::ScreenCapturer implementation.
-  virtual void Start(Callback* callback) override {
-    callback_ = callback;
-  }
+  void Start(Callback* callback) override { callback_ = callback; }
 
-  virtual void Capture(const webrtc::DesktopRegion& region) override {
+  void Capture(const webrtc::DesktopRegion& region) override {
     DCHECK(callback_);
     webrtc::DesktopFrame* frame =
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10));
@@ -47,19 +45,19 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
     callback_->OnCaptureCompleted(frame);
   }
 
-  virtual void SetMouseShapeObserver(
+  void SetMouseShapeObserver(
       MouseShapeObserver* mouse_shape_observer) override {
     NOTIMPLEMENTED();
   }
 
-  virtual bool GetScreenList(ScreenList* screens) override {
+  bool GetScreenList(ScreenList* screens) override {
     webrtc::ScreenCapturer::Screen screen;
     screen.id = 0;
     screens->push_back(screen);
     return true;
   }
 
-  virtual bool SelectScreen(webrtc::ScreenId id) override {
+  bool SelectScreen(webrtc::ScreenId id) override {
     EXPECT_EQ(0, id);
     return true;
   }
@@ -75,7 +73,7 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   FakeWindowCapturer()
       : callback_(NULL) {
   }
-  virtual ~FakeWindowCapturer() {}
+  ~FakeWindowCapturer() override {}
 
   void SetWindowList(const WindowList& list) {
     base::AutoLock lock(window_list_lock_);
@@ -90,11 +88,9 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   }
 
   // webrtc::WindowCapturer implementation.
-  virtual void Start(Callback* callback) override {
-    callback_ = callback;
-  }
+  void Start(Callback* callback) override { callback_ = callback; }
 
-  virtual void Capture(const webrtc::DesktopRegion& region) override {
+  void Capture(const webrtc::DesktopRegion& region) override {
     DCHECK(callback_);
 
     base::AutoLock lock(frame_values_lock_);
@@ -108,20 +104,18 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
     callback_->OnCaptureCompleted(frame);
   }
 
-  virtual bool GetWindowList(WindowList* windows) override {
+  bool GetWindowList(WindowList* windows) override {
     base::AutoLock lock(window_list_lock_);
     *windows = window_list_;
     return true;
   }
 
-  virtual bool SelectWindow(WindowId id) override {
+  bool SelectWindow(WindowId id) override {
     selected_window_id_ = id;
     return true;
   }
 
-  virtual bool BringSelectedWindowToFront() override {
-    return true;
-  }
+  bool BringSelectedWindowToFront() override { return true; }
 
  private:
   Callback* callback_;

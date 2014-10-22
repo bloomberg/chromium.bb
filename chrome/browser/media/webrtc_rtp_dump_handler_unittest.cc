@@ -28,17 +28,17 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
         max_size_reached_callback_(max_size_reached_callback),
         end_dump_success_(end_dump_success) {}
 
-  virtual void WriteRtpPacket(const uint8* packet_header,
-                              size_t header_length,
-                              size_t packet_length,
-                              bool incoming) override {
+  void WriteRtpPacket(const uint8* packet_header,
+                      size_t header_length,
+                      size_t packet_length,
+                      bool incoming) override {
     current_dump_size_ += header_length;
     if (current_dump_size_ > max_dump_size_)
       max_size_reached_callback_.Run();
   }
 
-  virtual void EndDump(RtpDumpType type,
-                       const EndDumpCallback& finished_callback) override {
+  void EndDump(RtpDumpType type,
+               const EndDumpCallback& finished_callback) override {
     bool incoming_sucess = end_dump_success_;
     bool outgoing_success = end_dump_success_;
 

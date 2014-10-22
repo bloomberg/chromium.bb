@@ -48,12 +48,13 @@ struct WebRtcLogUploadDoneData {
 class WebRtcLogUploader : public net::URLFetcherDelegate {
  public:
   WebRtcLogUploader();
-  virtual ~WebRtcLogUploader();
+  ~WebRtcLogUploader() override;
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
-  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                int64 current,
+                                int64 total) override;
 
   // Returns true is number of logs limit is not reached yet. Increases log
   // count if true is returned. Must be called before UploadLog().
