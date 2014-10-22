@@ -27,14 +27,14 @@ namespace {
 
 class MockNetworkChangeNotifierWIFI : public NetworkChangeNotifier {
  public:
-  ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  ConnectionType GetCurrentConnectionType() const override {
     return NetworkChangeNotifier::CONNECTION_WIFI;
   }
 };
 
 class MockNetworkChangeNotifier4G : public NetworkChangeNotifier {
  public:
-  ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  ConnectionType GetCurrentConnectionType() const override {
     return NetworkChangeNotifier::CONNECTION_4G;
   }
 };
@@ -46,7 +46,7 @@ namespace predictors {
 class ResourcePrefetchCommonTest : public testing::Test {
  public:
   ResourcePrefetchCommonTest();
-  virtual void SetUp() OVERRIDE;
+  void SetUp() override;
 
   void CreateTestFieldTrial(const std::string& name,
                             const std::string& group_name) {
