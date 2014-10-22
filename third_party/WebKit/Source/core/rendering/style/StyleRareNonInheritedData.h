@@ -202,6 +202,7 @@ public:
 
     // Whether the transform (if it exists) is stored in the element's inline style.
     unsigned m_hasInlineTransform : 1;
+    unsigned m_resize : 2; // EResize
 
 private:
     StyleRareNonInheritedData();

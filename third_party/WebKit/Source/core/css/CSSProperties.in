@@ -237,8 +237,7 @@ perspective-origin animatable, converter=convertPerspectiveOrigin
 pointer-events inherited
 position
 quotes inherited, converter=convertQuotes
-// FIXME: This shouldn't be inherited, as per css-ui
-resize inherited, custom_value
+resize custom_value
 right animatable, initial=initialOffset, converter=convertLengthOrAuto
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
 shape-image-threshold animatable, type_name=float

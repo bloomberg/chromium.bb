@@ -90,6 +90,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_scrollBehavior(RenderStyle::initialScrollBehavior())
     , m_requiresAcceleratedCompositingForExternalReasons(false)
     , m_hasInlineTransform(false)
+    , m_resize(RenderStyle::initialResize())
 {
     m_maskBoxImage.setMaskDefaults();
 }
@@ -169,6 +170,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_scrollBehavior(o.m_scrollBehavior)
     , m_requiresAcceleratedCompositingForExternalReasons(o.m_requiresAcceleratedCompositingForExternalReasons)
     , m_hasInlineTransform(o.m_hasInlineTransform)
+    , m_resize(o.m_resize)
 {
 }
 
@@ -251,7 +253,8 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_justifySelfOverflowAlignment == o.m_justifySelfOverflowAlignment
         && m_scrollBehavior == o.m_scrollBehavior
         && m_requiresAcceleratedCompositingForExternalReasons == o.m_requiresAcceleratedCompositingForExternalReasons
-        && m_hasInlineTransform == o.m_hasInlineTransform;
+        && m_hasInlineTransform == o.m_hasInlineTransform
+        && m_resize == o.m_resize;
 }
 
 bool StyleRareNonInheritedData::contentDataEquivalent(const StyleRareNonInheritedData& o) const
