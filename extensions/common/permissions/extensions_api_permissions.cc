@@ -51,6 +51,7 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kFullscreen, "app.window.fullscreen"},
       {APIPermission::kHid, "hid", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_HID, PermissionMessage::kHid},
+      {APIPermission::kImeWindowEnabled, "app.window.ime"},
       {APIPermission::kOverrideEscFullscreen,
        "app.window.fullscreen.overrideEsc"},
       {APIPermission::kPower, "power"},
@@ -92,7 +93,6 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kWebView, "webview",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWindowShape, "app.window.shape"},
-      {APIPermission::kImeWindowEnabled, "app.window.ime"},
   };
 
   std::vector<APIPermissionInfo*> permissions;

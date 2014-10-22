@@ -52,6 +52,14 @@
         "F16F23C83C5F6DAD9B65A120448B34056DD80691",
         "0F585FB1D0FDFBEBCE1FEB5E9DFFB6DA476B8C9B"
       ]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // http://crbug.com/425539
+        "F94EE6AB36D6C6588670B2B01EB65212D9C64E33"
+      ]
     }
   ],
   "app.window.shape": {

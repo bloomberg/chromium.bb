@@ -6,6 +6,7 @@
   "default_locale": "en",
   "permissions": [
     "app.window.ime",
+    "app.window.alpha",
     "input",
     "metricsPrivate",
     "accessibilityFeatures.read"
