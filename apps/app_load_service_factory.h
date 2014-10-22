@@ -24,14 +24,14 @@ class AppLoadServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<AppLoadServiceFactory>;
 
   AppLoadServiceFactory();
-  virtual ~AppLoadServiceFactory();
+  ~AppLoadServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

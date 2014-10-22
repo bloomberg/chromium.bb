@@ -27,12 +27,12 @@ class AppRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<AppRestoreServiceFactory>;
 
   AppRestoreServiceFactory();
-  virtual ~AppRestoreServiceFactory();
+  ~AppRestoreServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 };
 
 }  // namespace apps

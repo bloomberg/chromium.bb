@@ -23,10 +23,10 @@ class SavedFilesServiceFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   SavedFilesServiceFactory();
-  virtual ~SavedFilesServiceFactory();
+  ~SavedFilesServiceFactory() override;
   friend struct DefaultSingletonTraits<SavedFilesServiceFactory>;
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

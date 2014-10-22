@@ -60,7 +60,7 @@ class SavedFilesService : public KeyedService,
                           public content::NotificationObserver {
  public:
   explicit SavedFilesService(Profile* profile);
-  virtual ~SavedFilesService();
+  ~SavedFilesService() override;
 
   static SavedFilesService* Get(Profile* profile);
 
@@ -109,9 +109,9 @@ class SavedFilesService : public KeyedService,
   class SavedFiles;
 
   // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Returns the SavedFiles for |extension_id| or NULL if one does not exist.
   SavedFiles* Get(const std::string& extension_id) const;

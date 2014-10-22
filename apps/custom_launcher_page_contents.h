@@ -34,7 +34,7 @@ class CustomLauncherPageContents
  public:
   CustomLauncherPageContents(scoped_ptr<extensions::AppDelegate> app_delegate,
                              const std::string& extension_id);
-  virtual ~CustomLauncherPageContents();
+  ~CustomLauncherPageContents() override;
 
   // Called to initialize and load the WebContents.
   void Initialize(content::BrowserContext* context, const GURL& url);
@@ -42,48 +42,43 @@ class CustomLauncherPageContents
   content::WebContents* web_contents() const { return web_contents_.get(); }
 
   // content::WebContentsDelegate overrides:
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual bool IsPopupOrPanel(
-      const content::WebContents* source) const override;
-  virtual bool ShouldSuppressDialogs() override;
-  virtual bool PreHandleGestureEvent(
-      content::WebContents* source,
-      const blink::WebGestureEvent& event) override;
-  virtual content::ColorChooser* OpenColorChooser(
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  bool IsPopupOrPanel(const content::WebContents* source) const override;
+  bool ShouldSuppressDialogs() override;
+  bool PreHandleGestureEvent(content::WebContents* source,
+                             const blink::WebGestureEvent& event) override;
+  content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<content::ColorSuggestion>& suggestions) override;
-  virtual void RunFileChooser(
-      content::WebContents* tab,
-      const content::FileChooserParams& params) override;
-  virtual void RequestToLockMouse(content::WebContents* web_contents,
-                                  bool user_gesture,
-                                  bool last_unlocked_by_target) override;
-  virtual void RequestMediaAccessPermission(
+  void RunFileChooser(content::WebContents* tab,
+                      const content::FileChooserParams& params) override;
+  void RequestToLockMouse(content::WebContents* web_contents,
+                          bool user_gesture,
+                          bool last_unlocked_by_target) override;
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
-  virtual bool CheckMediaAccessPermission(
-      content::WebContents* web_contents,
-      const GURL& security_origin,
-      content::MediaStreamType type) override;
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override;
 
  private:
   // content::WebContentsObserver overrides:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate overrides:
-  virtual extensions::WindowController* GetExtensionWindowController()
-      const override;
-  virtual content::WebContents* GetAssociatedWebContents() const override;
+  extensions::WindowController* GetExtensionWindowController() const override;
+  content::WebContents* GetAssociatedWebContents() const override;
 
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
