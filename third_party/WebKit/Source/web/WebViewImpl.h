@@ -528,8 +528,6 @@ private:
     float clampPageScaleFactorToLimits(float) const;
     IntSize contentsSize() const;
 
-    void resetSavedScrollAndScaleState();
-
     void updateMainFrameScrollPosition(const IntPoint& scrollPosition, bool programmaticScroll);
 
     void performResize();
