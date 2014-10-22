@@ -1361,8 +1361,6 @@ crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html
 
 crbug.com/417174 compositing/scaling/tiled-layer-recursion.html [ Pass ImageOnlyFailure ]
 
-crbug.com/425008 fast/css/first-letter-range-insert.html [ NeedsRebaseline ]
-
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Pass Failure ]
 
 crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failure ]
