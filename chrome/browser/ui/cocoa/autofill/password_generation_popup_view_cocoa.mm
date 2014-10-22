@@ -164,11 +164,12 @@ NSColor* HelpLinkColor() {
       autofill::kPopupBorderThickness;
 
   width = std::max(width, (CGFloat)controller_->GetMinimumWidth());
+  CGFloat contentWidth = width - (2 * controller_->kHorizontalPadding);
 
   CGFloat height =
       autofill::kPopupBorderThickness +
       controller_->kHelpVerticalPadding +
-      [self helpSizeForPopupWidth:width].height +
+      [self helpSizeForPopupWidth:contentWidth].height +
       controller_->kHelpVerticalPadding +
       autofill::kPopupBorderThickness;
 
