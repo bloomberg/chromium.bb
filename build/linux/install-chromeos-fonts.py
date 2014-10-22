@@ -12,15 +12,11 @@ import shutil
 import subprocess
 import sys
 
-URL_PREFIX = 'https://commondatastorage.googleapis.com'
-URL_DIR = 'chromeos-localmirror/distfiles'
-URL_FILE = 'notofonts-20121206.tar.gz'
+# Taken from the media-fonts/notofonts ebuild in chromiumos-overlay.
+VERSION = '20140815'
+URL = ('https://commondatastorage.googleapis.com/chromeos-localmirror/'
+       'distfiles/notofonts-%s.tar.bz2') % (VERSION)
 FONTS_DIR = '/usr/local/share/fonts'
-
-# The URL matches the URL in the ebuild script in chromiumos. See:
-#  /path/to/chromiumos/src/
-#  third_party/chromiumos-overlay/media-fonts/notofonts/
-#  notofonts-20121206.ebuild
 
 def main(args):
   if not sys.platform.startswith('linux'):
@@ -37,12 +33,10 @@ def main(args):
 
   dest_dir = os.path.join(FONTS_DIR, 'chromeos')
 
-  url = "%s/%s/%s" % (URL_PREFIX, URL_DIR, URL_FILE)
-
   stamp = os.path.join(dest_dir, ".stamp02")
   if os.path.exists(stamp):
     with open(stamp) as s:
-      if s.read() == url:
+      if s.read() == URL:
         print "Chrome OS fonts already up-to-date in %s." % dest_dir
         return 0
 
@@ -52,8 +46,8 @@ def main(args):
   os.chmod(dest_dir, 0755)
 
   print "Installing Chrome OS fonts to %s." % dest_dir
-  tarball = os.path.join(dest_dir, URL_FILE)
-  subprocess.check_call(['curl', '-L', url, '-o', tarball])
+  tarball = os.path.join(dest_dir, os.path.basename(URL))
+  subprocess.check_call(['curl', '-L', URL, '-o', tarball])
   subprocess.check_call(['tar', '--no-same-owner', '--no-same-permissions',
                          '-xf', tarball, '-C', dest_dir])
   os.remove(tarball)
@@ -65,7 +59,7 @@ def main(args):
     s.write("Script: %s\n" % __file__)
 
   with open(stamp, 'w') as s:
-    s.write(url)
+    s.write(URL)
 
   for base, dirs, files in os.walk(dest_dir):
     for dir in dirs:
