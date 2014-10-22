@@ -709,7 +709,7 @@ std::string FragmentTexBlendMode::SetBlendModeFunctions(
         return Blend(src, dst);
       }
       // clang-format off
-  );
+  );  // NOLINT(whitespace/parens)
   // clang-format on
 
   return "precision mediump float;" + GetHelperFunctions() +
@@ -738,7 +738,7 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
         return result;
       }
       // clang-format off
-  );
+  );  // NOLINT(whitespace/parens)
 
   static const std::string kFunctionColorDodgeComponent = SHADER0(
       // clang-format on
@@ -753,7 +753,7 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
         return d * srca + srcc * (1.0 - dsta) + dstc * (1.0 - srca);
       }
       // clang-format off
-  );
+  );  // NOLINT(whitespace/parens)
 
   static const std::string kFunctionColorBurnComponent = SHADER0(
       // clang-format on
@@ -767,7 +767,7 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
         return srca * d + srcc * (1.0 - dsta) + dstc * (1.0 - srca);
       }
       // clang-format off
-  );
+  );  // NOLINT(whitespace/parens)
 
   static const std::string kFunctionSoftLightComponentPosDstAlpha = SHADER0(
       // clang-format on
@@ -792,7 +792,7 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
         }
       }
       // clang-format off
-  );
+  );  // NOLINT(whitespace/parens)
 
   static const std::string kFunctionLum = SHADER0(
       // clang-format on
@@ -818,7 +818,7 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
         return outColor;
       }
       // clang-format off
-  );
+  );  // NOLINT(whitespace/parens)
 
   static const std::string kFunctionSat = SHADER0(
       // clang-format on
@@ -866,7 +866,7 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
         return hueLumColor;
       }
       // clang-format off
-  );
+  );  // NOLINT(whitespace/parens)
   // clang-format on
 
   switch (blend_mode_) {
