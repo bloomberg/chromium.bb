@@ -105,6 +105,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeSwitchesCapabilityTest.*',
         'ChromeExtensionsCapabilityTest.*',
         'MobileEmulationCapabilityTest.*',
+        'ChromeDownloadDirTest.*',
         # https://crbug.com/274650
         'ChromeDriverTest.testCloseWindow',
         # https://code.google.com/p/chromedriver/issues/detail?id=270
@@ -771,59 +772,64 @@ class ChromeDriverAndroidTest(ChromeDriverBaseTest):
 
 class ChromeDownloadDirTest(ChromeDriverBaseTest):
 
-  def testFileDownLoad(self):
-    try:
-      self.download_dir = tempfile.mkdtemp()
-      download_name = os.path.join(self.download_dir, 'a_red_dot.png')
-      driver = self.CreateDriver(download_dir=self.download_dir)
-      driver.Load(ChromeDriverTest.GetHttpUrlForFile(
-          '/chromedriver/download.html'))
-      driver.FindElement('id', 'red-dot').Click()
+  def __init__(self, *args, **kwargs):
+    super(ChromeDownloadDirTest, self).__init__(*args, **kwargs)
+    self._temp_dirs = []
 
-      deadline = time.time() + 60
-      while True:
-        time.sleep(0.1)
-        if os.path.isfile(download_name) or time.time() > deadline:
-          break
-      self.assertTrue(os.path.isfile(download_name), "Failed to download file!")
-    finally:
-      shutil.rmtree(self.download_dir)
+  def CreateTempDir(self):
+    temp_dir = tempfile.mkdtemp()
+    self._temp_dirs.append(temp_dir)
+    return temp_dir
+
+  def tearDown(self):
+    # Call the superclass tearDown() method before deleting temp dirs, so that
+    # Chrome has a chance to exit before its user data dir is blown away from
+    # underneath it.
+    super(ChromeDownloadDirTest, self).tearDown()
+    for temp_dir in self._temp_dirs:
+      shutil.rmtree(temp_dir)
+
+  def testFileDownload(self):
+    download_dir = self.CreateTempDir()
+    download_name = os.path.join(download_dir, 'a_red_dot.png')
+    driver = self.CreateDriver(download_dir=download_dir)
+    driver.Load(ChromeDriverTest.GetHttpUrlForFile(
+        '/chromedriver/download.html'))
+    driver.FindElement('id', 'red-dot').Click()
+    deadline = time.time() + 60
+    while True:
+      time.sleep(0.1)
+      if os.path.isfile(download_name) or time.time() > deadline:
+        break
+    self.assertTrue(os.path.isfile(download_name), "Failed to download file!")
 
   def testDownloadDirectoryOverridesExistingPreferences(self):
-    """ test existing  prefence profile - check setting if it is correct  """
+    user_data_dir = self.CreateTempDir()
+    download_dir = self.CreateTempDir()
+    sub_dir = os.path.join(user_data_dir, 'Default')
+    os.mkdir(sub_dir)
+    prefs_file_path = os.path.join(sub_dir, 'Preferences')
 
-    try:
-      user_data_dir = tempfile.mkdtemp()
-      tmp_download_dir = tempfile.mkdtemp()
-      sub_dir = os.path.join(user_data_dir, 'Default')
-      os.mkdir(sub_dir)
-      prefs_file_path = os.path.join(sub_dir, 'Preferences')
-
-      prefs = {
-        'test': 'this should not be changed',
-        'download': {
-          'default_directory': '/old/download/directory'
-        }
+    prefs = {
+      'test': 'this should not be changed',
+      'download': {
+        'default_directory': '/old/download/directory'
       }
+    }
 
-      with open(prefs_file_path, 'w') as f:
-        json.dump(prefs, f)
+    with open(prefs_file_path, 'w') as f:
+      json.dump(prefs, f)
 
-      driver = self.CreateDriver(
-          chrome_switches=['user-data-dir=' + user_data_dir],
-          download_dir = tmp_download_dir)
+    driver = self.CreateDriver(
+        chrome_switches=['user-data-dir=' + user_data_dir],
+        download_dir=download_dir)
 
-      with open(prefs_file_path) as f:
-        prefs = json.load(f)
+    with open(prefs_file_path) as f:
+      prefs = json.load(f)
 
-      self.assertEqual('this should not be changed', prefs['test'],
-          "Existing preference was unexpectedly overridden")
-      download = prefs['download']
-      self.assertEqual(download['default_directory'], tmp_download_dir,
-          'Download directory preference was not updated to match capabilities')
-    finally:
-      shutil.rmtree(user_data_dir)
-      shutil.rmtree(tmp_download_dir)
+    self.assertEqual('this should not be changed', prefs['test'])
+    download = prefs['download']
+    self.assertEqual(download['default_directory'], download_dir)
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.
