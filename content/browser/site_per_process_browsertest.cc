@@ -195,7 +195,6 @@ void SitePerProcessBrowserTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   SetupCrossSiteRedirector(embedded_test_server());
-  embedded_test_server()->ServeFilesFromDirectory(GetTestFilePath("files", ""));
 }
 
 // It fails on ChromeOS and Android, so disabled while investigating.

@@ -57,7 +57,6 @@ IN_PROC_BROWSER_TEST_F(CrossSiteRedirectorBrowserTest,
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   SetupCrossSiteRedirector(embedded_test_server());
-  embedded_test_server()->ServeFilesFromDirectory(GetTestFilePath("files", ""));
 
   // Navigate to http://localhost:<port>/cross-site/foo.com/title2.html and
   // ensure that the redirector forwards the navigation to
