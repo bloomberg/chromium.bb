@@ -16,9 +16,8 @@
 #include "base/threading/thread.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
-// TODO(xhwang): Remove when we remove prefixed EME implementation.
-#include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
+#include "media/base/renderer.h"
 #include "media/base/text_track.h"
 #include "media/blink/buffered_data_source.h"
 #include "media/blink/buffered_data_source_host_impl.h"
@@ -44,6 +43,7 @@ class WebLayerImpl;
 }
 
 namespace media {
+
 class AudioHardwareConfig;
 class ChunkDemuxer;
 class EncryptedMediaPlayerSupport;
@@ -63,10 +63,14 @@ class MEDIA_EXPORT WebMediaPlayerImpl
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
-  // |delegate| may be null.
+  // |delegate| may be null. |renderer| may also be null, in which case an
+  // internal renderer will be created.
+  // TODO(xhwang): Drop the internal renderer path and always pass in a renderer
+  // here.
   WebMediaPlayerImpl(blink::WebLocalFrame* frame,
                      blink::WebMediaPlayerClient* client,
                      base::WeakPtr<WebMediaPlayerDelegate> delegate,
+                     scoped_ptr<Renderer> renderer,
                      const WebMediaPlayerParams& params);
   virtual ~WebMediaPlayerImpl();
 
@@ -304,6 +308,8 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   scoped_ptr<EncryptedMediaPlayerSupport> encrypted_media_support_;
 
   const AudioHardwareConfig& audio_hardware_config_;
+
+  scoped_ptr<Renderer> renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

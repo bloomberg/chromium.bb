@@ -43,9 +43,9 @@ source_set("renderer_impl_lib") {
 }
 
 # mojo media::Renderer application.
-# GYP version: media/media.gyp:media_mojo_renderer_app
+# GYP version: media/media.gyp:mojo_media_renderer_app
 shared_library("renderer_app") {
-  output_name = "media_mojo_renderer_app"
+  output_name = "mojo_media_renderer_app"
 
   deps = [
     "//base",
@@ -66,7 +66,7 @@ shared_library("renderer_app") {
   ]
 }
 
-test("media_mojo_lib_unittests") {
+test("mojo_media_lib_unittests") {
   sources = [
     "media_type_converters_unittest.cc",
   ]
@@ -84,11 +84,11 @@ test("media_mojo_lib_unittests") {
   ]
 }
 
-# GYP version: media/media.gyp:media_mojo_renderer_apptest
+# GYP version: media/media.gyp:mojo_media_renderer_apptest
 # Not a 'test' because this is loaded via mojo_shell as an app.
 shared_library("renderer_apptest") {
   testonly = true
-  output_name = "media_mojo_renderer_apptest"
+  output_name = "mojo_media_renderer_apptest"
 
   deps = [
     "//base",
@@ -121,7 +121,7 @@ group("services") {
 group("tests") {
   testonly = true
   deps = [
-    ":media_mojo_lib_unittests",
+    ":mojo_media_lib_unittests",
     ":renderer_apptest",
   ]
 }

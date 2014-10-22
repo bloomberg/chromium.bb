@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_PARAMETERS_H_
 #define MEDIA_AUDIO_AUDIO_PARAMETERS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "media/base/channel_layout.h"
@@ -71,6 +73,10 @@ class MEDIA_EXPORT AudioParameters {
   // Checks that all values are in the expected range. All limits are specified
   // in media::Limits.
   bool IsValid() const;
+
+  // Returns a human-readable string describing |*this|.  For debugging & test
+  // output only.
+  std::string AsHumanReadableString() const;
 
   // Returns size of audio buffer in bytes.
   int GetBytesPerBuffer() const;

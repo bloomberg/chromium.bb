@@ -155,13 +155,18 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
-  DVLOG(2) << __FUNCTION__;
-
   // In practice the Render() method is called with a high enough frequency
   // that returning only the front timestamp is good enough and also prevents
   // returning values that go backwards in time.
-  base::AutoLock auto_lock(lock_);
-  return audio_clock_->front_timestamp();
+  base::TimeDelta current_media_time;
+  {
+    base::AutoLock auto_lock(lock_);
+    current_media_time = audio_clock_->front_timestamp();
+  }
+
+  DVLOG(3) << __FUNCTION__ << ": " << current_media_time.InMilliseconds()
+           << " ms";
+  return current_media_time;
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTimeForSyncingVideo() {
@@ -254,6 +259,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                    const BufferingStateCB& buffering_state_cb,
                                    const base::Closure& ended_cb,
                                    const PipelineStatusCB& error_cb) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::AUDIO);
@@ -318,6 +324,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 }
 
 void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
+  DVLOG(1) << __FUNCTION__ << ": " << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -329,6 +336,8 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   }
 
   if (!audio_parameters_.IsValid()) {
+    DVLOG(1) << __FUNCTION__ << ": Invalid audio parameters: "
+             << audio_parameters_.AsHumanReadableString();
     ChangeState_Locked(kUninitialized);
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;

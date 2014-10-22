@@ -137,6 +137,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
+    scoped_ptr<Renderer> renderer,
     const WebMediaPlayerParams& params)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
@@ -168,7 +169,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       text_track_index_(0),
       encrypted_media_support_(
           params.CreateEncryptedMediaPlayerSupport(client)),
-      audio_hardware_config_(params.audio_hardware_config()) {
+      audio_hardware_config_(params.audio_hardware_config()),
+      renderer_(renderer.Pass()) {
   DCHECK(encrypted_media_support_);
 
   // Threaded compositing isn't enabled universally yet.
@@ -177,6 +179,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
+
+  // TODO(xhwang): When we use an external Renderer, many methods won't work,
+  // e.g. GetCurrentFrameFromCompositor(). Fix this in a future CL.
+  if (renderer_)
+    return;
 
   // |gpu_factories_| requires that its entry points be called on its
   // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
@@ -907,9 +914,13 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   // ... and we're ready to go!
   seeking_ = true;
+
+  if (!renderer_)
+    renderer_ = CreateRenderer();
+
   pipeline_.Start(
       demuxer_.get(),
-      CreateRenderer(),
+      renderer_.Pass(),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),

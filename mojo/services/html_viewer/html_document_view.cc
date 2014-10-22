@@ -177,7 +177,8 @@ blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client) {
-  return web_media_player_factory_->CreateMediaPlayer(frame, url, client);
+  return web_media_player_factory_->CreateMediaPlayer(
+      frame, url, client, shell_);
 }
 
 blink::WebMediaPlayer* HTMLDocumentView::createMediaPlayer(

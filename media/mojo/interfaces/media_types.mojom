@@ -107,7 +107,7 @@ struct MediaDecoderBuffer {
 
   // This is backed by an std::vector and results in a few copies.
   // Into the vector, onto and off the MessagePipe, back into a vector.
-  array<uint8> side_data;
+  array<uint8>? side_data;
   uint32 side_data_size;
 
   // These fields indicate the amount of data to discard after decoding.
@@ -117,11 +117,11 @@ struct MediaDecoderBuffer {
   // Indicates this buffer is part of a splice around |splice_timestamp_usec|.
   int64 splice_timestamp_usec;
 
-  // The payload.
+  // The payload. Invalid handle indicates an end-of-stream (EOS) buffer.
   // TODO(tim): This currently results in allocating a new, largeish DataPipe
   // for each buffer. Remove this once framed data pipes exist, but using this
   // for now for prototyping audio.
-  handle<data_pipe_consumer> data;
+  handle<data_pipe_consumer>? data;
 };
 
 }  // module mojo

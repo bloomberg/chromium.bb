@@ -30,18 +30,23 @@ class AudioRendererSink;
 
 namespace mojo {
 
+class Shell;
+
 // Helper class used to create blink::WebMediaPlayer objects.
 // This class stores the "global state" shared across all WebMediaPlayer
 // instances.
 class WebMediaPlayerFactory {
  public:
   explicit WebMediaPlayerFactory(const scoped_refptr<
-      base::SingleThreadTaskRunner>& compositor_task_runner);
+      base::SingleThreadTaskRunner>& compositor_task_runner,
+      bool enable_mojo_media_renderer);
   ~WebMediaPlayerFactory();
 
-  blink::WebMediaPlayer* CreateMediaPlayer(blink::WebLocalFrame* frame,
-                                           const blink::WebURL& url,
-                                           blink::WebMediaPlayerClient* client);
+  blink::WebMediaPlayer* CreateMediaPlayer(
+      blink::WebLocalFrame* frame,
+      const blink::WebURL& url,
+      blink::WebMediaPlayerClient* client,
+      Shell* shell);
 
  private:
   const media::AudioHardwareConfig& GetAudioHardwareConfig();
@@ -49,6 +54,7 @@ class WebMediaPlayerFactory {
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  const bool enable_mojo_media_renderer_;
   base::Thread media_thread_;
   media::FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<media::AudioManager> audio_manager_;

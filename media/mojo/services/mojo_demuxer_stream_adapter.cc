@@ -17,13 +17,16 @@ MojoDemuxerStreamAdapter::MojoDemuxerStreamAdapter(
     : demuxer_stream_(demuxer_stream.Pass()),
       stream_ready_cb_(stream_ready_cb),
       weak_factory_(this) {
+  DVLOG(1) << __FUNCTION__;
   demuxer_stream_.set_client(this);
 }
 
 MojoDemuxerStreamAdapter::~MojoDemuxerStreamAdapter() {
+  DVLOG(1) << __FUNCTION__;
 }
 
 void MojoDemuxerStreamAdapter::Read(const DemuxerStream::ReadCB& read_cb) {
+  DVLOG(3) << __FUNCTION__;
   // We shouldn't be holding on to a previous callback if a new Read() came in.
   DCHECK(read_cb_.is_null());
   read_cb_ = read_cb;
@@ -60,6 +63,7 @@ VideoRotation MojoDemuxerStreamAdapter::video_rotation() {
 
 void MojoDemuxerStreamAdapter::OnStreamReady(
     mojo::ScopedDataPipeConsumerHandle pipe) {
+  DVLOG(1) << __FUNCTION__;
   // TODO(tim): We don't support pipe streaming yet.
   DCHECK(!pipe.is_valid());
   DCHECK(!config_queue_.empty());
@@ -79,6 +83,7 @@ void MojoDemuxerStreamAdapter::OnAudioDecoderConfigChanged(
 void MojoDemuxerStreamAdapter::OnBufferReady(
     mojo::DemuxerStream::Status status,
     mojo::MediaDecoderBufferPtr buffer) {
+  DVLOG(3) << __FUNCTION__;
   DCHECK(!read_cb_.is_null());
   DCHECK(!config_queue_.empty());
 

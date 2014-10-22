@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 #include "mojo/public/cpp/application/connect.h"
@@ -20,6 +22,7 @@ MojoRendererImpl::MojoRendererImpl(
     mojo::ServiceProvider* audio_renderer_provider)
     : task_runner_(task_runner),
       weak_factory_(this) {
+  DVLOG(1) << __FUNCTION__;
   // For now we only support audio and there must be a provider.
   DCHECK(audio_renderer_provider);
   mojo::ConnectToService(audio_renderer_provider, &remote_audio_renderer_);
@@ -27,6 +30,7 @@ MojoRendererImpl::MojoRendererImpl(
 }
 
 MojoRendererImpl::~MojoRendererImpl() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   // Connection to |remote_audio_renderer_| will error-out here.
 }
@@ -38,10 +42,12 @@ void MojoRendererImpl::Initialize(
     const base::Closure& ended_cb,
     const PipelineStatusCB& error_cb,
     const BufferingStateCB& buffering_state_cb) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
 
   demuxer_stream_provider_ = demuxer_stream_provider;
+  // |init_cb| can be called on other thread.
   init_cb_ = init_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
@@ -53,67 +59,121 @@ void MojoRendererImpl::Initialize(
       new MojoDemuxerStreamImpl(
           demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO)),
       &demuxer_stream);
-  remote_audio_renderer_->Initialize(demuxer_stream.Pass(), init_cb);
+  remote_audio_renderer_->Initialize(
+      demuxer_stream.Pass(),
+      BindToCurrentLoop(base::Bind(&MojoRendererImpl::OnInitialized,
+                                   weak_factory_.GetWeakPtr())));
 }
 
 void MojoRendererImpl::Flush(const base::Closure& flush_cb) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   remote_audio_renderer_->Flush(flush_cb);
 }
 
 void MojoRendererImpl::StartPlayingFrom(base::TimeDelta time) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  {
+    base::AutoLock auto_lock(lock_);
+    time_ = time;
+  }
+
   remote_audio_renderer_->StartPlayingFrom(time.InMicroseconds());
 }
 
 void MojoRendererImpl::SetPlaybackRate(float playback_rate) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   remote_audio_renderer_->SetPlaybackRate(playback_rate);
 }
 
 void MojoRendererImpl::SetVolume(float volume) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   remote_audio_renderer_->SetVolume(volume);
 }
 
 base::TimeDelta MojoRendererImpl::GetMediaTime() {
-  NOTIMPLEMENTED();
-  return base::TimeDelta();
+  base::AutoLock auto_lock(lock_);
+  DVLOG(3) << __FUNCTION__ << ": " << time_.InMilliseconds() << " ms";
+  return time_;
 }
 
 bool MojoRendererImpl::HasAudio() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_audio_renderer_.get());  // We always bind the renderer.
   return true;
 }
 
 bool MojoRendererImpl::HasVideo() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   return false;
 }
 
 void MojoRendererImpl::SetCdm(MediaKeys* cdm) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   NOTIMPLEMENTED();
 }
 
 void MojoRendererImpl::OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
+  DVLOG(3) << __FUNCTION__ << ": " << time_usec << ", " << max_time_usec;
+
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&MojoRendererImpl::OnTimeUpdate,
+                                      weak_factory_.GetWeakPtr(),
+                                      time_usec,
+                                      max_time_usec));
+    return;
+  }
+
+  base::AutoLock auto_lock(lock_);
+  time_ = base::TimeDelta::FromMicroseconds(time_usec);
+  max_time_ = base::TimeDelta::FromMicroseconds(max_time_usec);
 }
 
 void MojoRendererImpl::OnBufferingStateChange(mojo::BufferingState state) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DVLOG(2) << __FUNCTION__;
+
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&MojoRendererImpl::OnBufferingStateChange,
+                                      weak_factory_.GetWeakPtr(),
+                                      state));
+    return;
+  }
+
   buffering_state_cb_.Run(static_cast<media::BufferingState>(state));
 }
 
 void MojoRendererImpl::OnEnded() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  ended_cb_.Run();
+  DVLOG(1) << __FUNCTION__;
+
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&MojoRendererImpl::OnEnded, weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  base::ResetAndReturn(&ended_cb_).Run();
 }
 
 void MojoRendererImpl::OnError() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
+
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&MojoRendererImpl::OnError, weak_factory_.GetWeakPtr()));
+    return;
+  }
+
   // TODO(tim): Should we plumb error code from remote renderer?
   // http://crbug.com/410451.
   if (init_cb_.is_null())  // We have initialized already.
@@ -123,7 +183,10 @@ void MojoRendererImpl::OnError() {
 }
 
 void MojoRendererImpl::OnInitialized() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_.is_null());
+
   base::ResetAndReturn(&init_cb_).Run();
 }
 

@@ -1070,7 +1070,7 @@
       ],
     },
     {
-      'target_name': 'media_mojo_renderer_app',
+      'target_name': 'mojo_media_renderer_app',
       'type': 'loadable_module',
       'includes': [
         '../mojo/mojo_variables.gypi',
@@ -1107,7 +1107,7 @@
       ],
     },
     {
-      'target_name': 'media_mojo_renderer_apptest',
+      'target_name': 'mojo_media_renderer_apptest',
       'type': 'loadable_module',
       'includes': [
         '../mojo/mojo_variables.gypi',
@@ -1116,8 +1116,8 @@
         'media',
         'media_mojo_bindings',
         'media_mojo_lib',
-        'media_mojo_renderer_app',
         'media_test_support',
+        'mojo_media_renderer_app',
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
@@ -1134,8 +1134,8 @@
       'dependencies': [
         'media_mojo_lib',
         'media_mojo_lib_unittests',
-        'media_mojo_renderer_app',
-        'media_mojo_renderer_apptest',
+        'mojo_media_renderer_apptest',
+        'mojo_media_renderer_app',
       ]
     },
     {

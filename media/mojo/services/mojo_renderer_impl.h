@@ -78,7 +78,15 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
   PipelineStatusCB error_cb_;
   BufferingStateCB buffering_state_cb_;
 
+  // Lock used to serialize access for the following data members.
+  mutable base::Lock lock_;
+
+  base::TimeDelta time_;
+  // TODO(xhwang): It seems we don't need |max_time_| now. Drop it!
+  base::TimeDelta max_time_;
+
   base::WeakPtrFactory<MojoRendererImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MojoRendererImpl);
 };
 

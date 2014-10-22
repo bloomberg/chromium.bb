@@ -97,6 +97,7 @@
 #include "content/renderer/websharedworker_proxy.h"
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
+#include "media/base/renderer.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
@@ -1692,10 +1693,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_message_loop_proxy(),
       base::Bind(&EncryptedMediaPlayerSupportImpl::Create),
       initial_cdm);
-  return new media::WebMediaPlayerImpl(frame,
-                                       client,
-                                       weak_factory_.GetWeakPtr(),
-                                       params);
+  return new media::WebMediaPlayerImpl(
+      frame, client, weak_factory_.GetWeakPtr(), nullptr, params);
 #endif  // defined(OS_ANDROID)
 }
 

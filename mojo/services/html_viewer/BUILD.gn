@@ -52,6 +52,7 @@ shared_library("html_viewer") {
     "//media/audio",
     "//media/base",
     "//media/blink",
+    "//media/mojo",
     "//mojo/application",
     "//mojo/cc",
     "//mojo/common",

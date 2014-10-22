@@ -217,7 +217,9 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderSelected(
     scoped_ptr<Decoder> selected_decoder,
     scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
-  FUNCTION_DVLOG(2);
+  FUNCTION_DVLOG(2) << ": "
+                    << (selected_decoder ? selected_decoder->GetDisplayName()
+                                         : "No decoder selected.");
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
   DCHECK(!init_cb_.is_null());
@@ -290,7 +292,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
                                              bool end_of_stream,
                                              typename Decoder::Status status) {
-  FUNCTION_DVLOG(2) << status;
+  FUNCTION_DVLOG(2) << ": " << status;
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
       << state_;

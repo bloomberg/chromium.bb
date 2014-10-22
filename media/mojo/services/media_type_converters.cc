@@ -129,6 +129,11 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
     scoped_refptr<media::DecoderBuffer> >::Convert(
         const scoped_refptr<media::DecoderBuffer>& input) {
   MediaDecoderBufferPtr mojo_buffer(MediaDecoderBuffer::New());
+  DCHECK(!mojo_buffer->data.is_valid());
+
+  if (input->end_of_stream())
+    return mojo_buffer.Pass();
+
   mojo_buffer->timestamp_usec = input->timestamp().InMicroseconds();
   mojo_buffer->duration_usec = input->duration().InMicroseconds();
   mojo_buffer->data_size = input->data_size();
@@ -169,6 +174,9 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
 scoped_refptr<media::DecoderBuffer>  TypeConverter<
     scoped_refptr<media::DecoderBuffer>, MediaDecoderBufferPtr>::Convert(
         const MediaDecoderBufferPtr& input) {
+  if (!input->data.is_valid())
+    return media::DecoderBuffer::CreateEOSBuffer();
+
   uint32_t num_bytes  = 0;
   // TODO(tim): We're assuming that because we always write to the pipe above
   // before sending the MediaDecoderBuffer that the pipe is readable when
@@ -233,16 +241,17 @@ media::AudioDecoderConfig
 TypeConverter<media::AudioDecoderConfig, AudioDecoderConfigPtr>::Convert(
     const AudioDecoderConfigPtr& input) {
   media::AudioDecoderConfig config;
-  config.Initialize(static_cast<media::AudioCodec>(input->codec),
-                    static_cast<media::SampleFormat>(input->sample_format),
-                    static_cast<media::ChannelLayout>(input->channel_layout),
-                    input->samples_per_second,
-                    &input->extra_data.front(),
-                    input->extra_data.size(),
-                    false,
-                    false,
-                    base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
-                    input->codec_delay);
+  config.Initialize(
+      static_cast<media::AudioCodec>(input->codec),
+      static_cast<media::SampleFormat>(input->sample_format),
+      static_cast<media::ChannelLayout>(input->channel_layout),
+      input->samples_per_second,
+      input->extra_data.size() ? &input->extra_data.front() : NULL,
+      input->extra_data.size(),
+      false,
+      false,
+      base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
+      input->codec_delay);
   return config;
 }
 

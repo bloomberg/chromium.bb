@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
+#include "media/audio/fake_audio_log_factory.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/buffering_state.h"
@@ -22,8 +24,10 @@ class ApplicationConnection;
 
 namespace media {
 
+class AudioManager;
 class AudioRenderer;
 class MojoDemuxerStreamAdapter;
+class TimeSource;
 
 // A mojo::MediaRenderer implementation that uses media::AudioRenderer to
 // decode and render audio to a sink obtained from the ApplicationConnection.
@@ -45,6 +49,14 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   void SetVolume(float volume) override;
 
  private:
+  enum State {
+    STATE_UNINITIALIZED,
+    STATE_INITIALIZING,
+    STATE_FLUSHING,
+    STATE_PLAYING,
+    STATE_ERROR
+  };
+
   // Called when the MojoDemuxerStreamAdapter is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.
   void OnStreamReady();
@@ -55,8 +67,8 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   // Callback executed by filters to update statistics.
   void OnUpdateStatistics(const PipelineStatistics& stats);
 
-  // Callback executed by audio renderer to update clock time.
-  void OnAudioTimeUpdate(base::TimeDelta time, base::TimeDelta max_time);
+  void UpdateMediaTime();
+  void SchedulePeriodicMediaTimeUpdates();
 
   // Callback executed by audio renderer when buffering state changes.
   // TODO(tim): Need old and new.
@@ -68,19 +80,35 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   // Callback executed when a runtime error happens.
   void OnError(PipelineStatus error);
 
+  bool WaitingForEnoughData() const;
+  void StartPlayback();
+  void PausePlayback();
+
+  State state_;
+
   scoped_ptr<MojoDemuxerStreamAdapter> stream_;
   scoped_ptr<AudioRenderer> audio_renderer_;
 
+  TimeSource* time_source_;
+  bool time_ticking_;
+
+  BufferingState buffering_state_;
+
   mojo::Callback<void()> init_cb_;
 
-  // TODO(tim): Figure out how to set up hardware config.
-  // NOTE: AudioRendererImpl stores a const& to the config we pass in (hmm..).
-  // Hence stack-allocating one and passing it to Initialize results in
-  // undefined badness (e.g, hangs trying to acquire config_lock_);
-  media::AudioHardwareConfig hardware_config_;
+  bool ended_;
+
+  base::RepeatingTimer<MojoRendererService> time_update_timer_;
+
+  // TODO(xhwang): Currently we are using a default |audio_hardware_config_|.
+  // Do we need different configs on different platforms?
+  media::FakeAudioLogFactory fake_audio_log_factory_;
+  scoped_ptr<media::AudioManager> audio_manager_;
+  media::AudioHardwareConfig audio_hardware_config_;
 
   base::WeakPtrFactory<MojoRendererService> weak_factory_;
   base::WeakPtr<MojoRendererService> weak_this_;
+
   DISALLOW_COPY_AND_ASSIGN(MojoRendererService);
 };
 

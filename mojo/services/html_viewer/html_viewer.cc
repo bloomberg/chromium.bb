@@ -26,6 +26,13 @@
 
 namespace mojo {
 
+// Switches for html_viewer to be used with "--args-for". For example:
+// --args-for='mojo://html_viewer --enable-mojo-media-renderer'
+
+// Enable mojo::MediaRenderer in media pipeline instead of using the internal
+// media::Renderer implementation.
+const char kEnableMojoMediaRenderer[] = "--enable-mojo-media-renderer";
+
 class HTMLViewer;
 
 class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
@@ -72,18 +79,26 @@ class HTMLViewer : public ApplicationDelegate,
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
 #if !defined(COMPONENT_BUILD)
-  base::i18n::InitializeICU();
+    base::i18n::InitializeICU();
 
-  ui::RegisterPathProvider();
+    ui::RegisterPathProvider();
 
-  base::FilePath ui_test_pak_path;
-  CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+    base::FilePath ui_test_pak_path;
+    CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 #endif
+
+    bool enable_mojo_media_renderer = false;
+    for (const auto& arg : app->args()) {
+      if (arg == kEnableMojoMediaRenderer) {
+        enable_mojo_media_renderer = true;
+        break;
+      }
+    }
 
     compositor_thread_.Start();
     web_media_player_factory_.reset(new WebMediaPlayerFactory(
-        compositor_thread_.message_loop_proxy()));
+        compositor_thread_.message_loop_proxy(), enable_mojo_media_renderer));
   }
 
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
