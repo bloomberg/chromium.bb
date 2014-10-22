@@ -729,23 +729,26 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   QuicStreamId stream_id = 5;
   // Write until the header stream is flow control blocked.
+  SpdyHeaderBlock headers;
   while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2010) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-    SpdyHeaderBlock headers;
     headers["header"] = base::Uint64ToString(base::RandUint64()) +
         base::Uint64ToString(base::RandUint64()) +
         base::Uint64ToString(base::RandUint64());
     headers_stream->WriteHeaders(stream_id, headers, true, nullptr);
     stream_id += 2;
   }
+  // Write one more to ensure that the headers stream has buffered data. The
+  // random headers may have exactly filled the flow control window.
+  headers_stream->WriteHeaders(stream_id, headers, true, nullptr);
+  EXPECT_TRUE(headers_stream->HasBufferedData());
+
   EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
   EXPECT_FALSE(session_.HasDataToWrite());
-  // TODO(rtenneti): crbug.com/423586 headers_stream->HasBufferedData is flaky.
-  // EXPECT_TRUE(headers_stream->HasBufferedData());
 
   // Now complete the crypto handshake, resulting in an increased flow control
   // send window.
