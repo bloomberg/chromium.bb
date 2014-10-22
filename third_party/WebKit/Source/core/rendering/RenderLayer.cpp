@@ -2048,7 +2048,7 @@ RenderLayer* RenderLayer::hitTestChildLayerColumns(RenderLayer* childLayer, Rend
     for (i = 0; i < colCount; i++) {
         LayoutRect colRect = columnBlock->columnRectAt(colInfo, i);
         LayoutUnit blockDelta =  (isHorizontal ? colRect.height() : colRect.width());
-        if (columnBlock->style()->isFlippedBlocksWritingMode())
+        if (columnBlock->style()->slowIsFlippedBlocksWritingMode())
             currLogicalTopOffset += blockDelta;
         else
             currLogicalTopOffset -= blockDelta;
@@ -2059,7 +2059,7 @@ RenderLayer* RenderLayer::hitTestChildLayerColumns(RenderLayer* childLayer, Rend
         columnBlock->flipForWritingMode(colRect);
         LayoutUnit currLogicalLeftOffset = (isHorizontal ? colRect.x() : colRect.y()) - logicalLeft;
         LayoutUnit blockDelta =  (isHorizontal ? colRect.height() : colRect.width());
-        if (columnBlock->style()->isFlippedBlocksWritingMode())
+        if (columnBlock->style()->slowIsFlippedBlocksWritingMode())
             currLogicalTopOffset -= blockDelta;
         else
             currLogicalTopOffset += blockDelta;
@@ -2248,19 +2248,22 @@ LayoutRect RenderLayer::logicalBoundingBox() const
     return result;
 }
 
-LayoutRect RenderLayer::flippedLogicalBoundingBox() const
+static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox, RenderObject* renderer)
 {
-    LayoutRect result = logicalBoundingBox();
-    if (m_renderer->isBox())
-        renderBox()->flipForWritingMode(result);
+    if (!UNLIKELY(renderer->document().containsAnyRareWritingMode()))
+        return boundingBox;
+
+    LayoutRect result = boundingBox;
+    if (renderer->isBox())
+        toRenderBox(renderer)->flipForWritingMode(result);
     else
-        m_renderer->containingBlock()->flipForWritingMode(result);
+        renderer->containingBlock()->flipForWritingMode(result);
     return result;
 }
 
 LayoutRect RenderLayer::physicalBoundingBox(const RenderLayer* ancestorLayer, const LayoutPoint* offsetFromRoot) const
 {
-    LayoutRect result = flippedLogicalBoundingBox();
+    LayoutRect result = flippedLogicalBoundingBox(logicalBoundingBox(), renderer());
     if (offsetFromRoot)
         result.moveBy(*offsetFromRoot);
     else
@@ -2273,9 +2276,14 @@ LayoutRect RenderLayer::fragmentsBoundingBox(const RenderLayer* ancestorLayer) c
     if (!enclosingPaginationLayer())
         return physicalBoundingBox(ancestorLayer);
 
-    LayoutRect result = flippedLogicalBoundingBox();
+    LayoutRect result = flippedLogicalBoundingBox(logicalBoundingBox(), renderer());
     convertFromFlowThreadToVisualBoundingBoxInAncestor(this, ancestorLayer, result);
     return result;
+}
+
+LayoutRect RenderLayer::boundingBoxForCompositingOverlapTest() const
+{
+    return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : flippedLogicalBoundingBox(logicalBoundingBox(), renderer());
 }
 
 static void expandRectForReflectionAndStackingChildren(const RenderLayer* ancestorLayer, RenderLayer::CalculateBoundsOptions options, LayoutRect& result)

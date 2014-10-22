@@ -936,7 +936,7 @@ public:
     WritingMode writingMode() const { return static_cast<WritingMode>(inherited_flags.m_writingMode); }
     bool isHorizontalWritingMode() const { return blink::isHorizontalWritingMode(writingMode()); }
     bool isFlippedLinesWritingMode() const { return blink::isFlippedLinesWritingMode(writingMode()); }
-    bool isFlippedBlocksWritingMode() const { return blink::isFlippedBlocksWritingMode(writingMode()); }
+    bool slowIsFlippedBlocksWritingMode() const { return blink::isFlippedBlocksWritingMode(writingMode()); }
 
     EImageRendering imageRendering() const { return static_cast<EImageRendering>(rareInheritedData->m_imageRendering); }
 

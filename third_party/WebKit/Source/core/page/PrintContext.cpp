@@ -113,7 +113,7 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
     int blockDirectionStart;
     int blockDirectionEnd;
     if (isHorizontal) {
-        if (view->style()->isFlippedBlocksWritingMode()) {
+        if (view->style()->slowIsFlippedBlocksWritingMode()) {
             blockDirectionStart = docRect.maxY();
             blockDirectionEnd = docRect.y();
         } else {
@@ -123,7 +123,7 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
         inlineDirectionStart = view->style()->isLeftToRightDirection() ? docRect.x() : docRect.maxX();
         inlineDirectionEnd = view->style()->isLeftToRightDirection() ? docRect.maxX() : docRect.x();
     } else {
-        if (view->style()->isFlippedBlocksWritingMode()) {
+        if (view->style()->slowIsFlippedBlocksWritingMode()) {
             blockDirectionStart = docRect.maxX();
             blockDirectionEnd = docRect.x();
         } else {

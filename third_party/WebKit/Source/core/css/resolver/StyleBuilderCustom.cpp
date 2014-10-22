@@ -897,8 +897,12 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(StyleResolverSt
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolverState& state, CSSValue* value)
 {
-    if (value->isPrimitiveValue())
-        state.setWritingMode(*toCSSPrimitiveValue(value));
+    if (value->isPrimitiveValue()) {
+        WritingMode writingMode = *toCSSPrimitiveValue(value);
+        state.setWritingMode(writingMode);
+        if (writingMode != TopToBottomWritingMode)
+            state.document().setContainsAnyRareWritingMode(true);
+    }
 
     // FIXME: It is not ok to modify document state while applying style.
     if (state.element() && state.element() == state.document().documentElement())

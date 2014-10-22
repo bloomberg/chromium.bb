@@ -1704,7 +1704,7 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
     }
 
     if (paintInvalidationContainer == this) {
-        if (paintInvalidationContainer->style()->isFlippedBlocksWritingMode())
+        if (paintInvalidationContainer->style()->slowIsFlippedBlocksWritingMode())
             flipForWritingMode(rect);
         return;
     }
@@ -2859,7 +2859,7 @@ static void computeLogicalLeftPositionedOffset(LayoutUnit& logicalLeftPos, const
 {
     // Deal with differing writing modes here.  Our offset needs to be in the containing block's coordinate space. If the containing block is flipped
     // along this axis, then we need to flip the coordinate.  This can only happen if the containing block is both a flipped mode and perpendicular to us.
-    if (containerBlock->isHorizontalWritingMode() != child->isHorizontalWritingMode() && containerBlock->style()->isFlippedBlocksWritingMode()) {
+    if (containerBlock->isHorizontalWritingMode() != child->isHorizontalWritingMode() && containerBlock->style()->slowIsFlippedBlocksWritingMode()) {
         logicalLeftPos = containerLogicalWidth - logicalWidthValue - logicalLeftPos;
         logicalLeftPos += (child->isHorizontalWritingMode() ? containerBlock->borderRight() : containerBlock->borderBottom());
     } else {
@@ -3170,12 +3170,12 @@ static void computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, const R
 {
     // Deal with differing writing modes here.  Our offset needs to be in the containing block's coordinate space. If the containing block is flipped
     // along this axis, then we need to flip the coordinate.  This can only happen if the containing block is both a flipped mode and perpendicular to us.
-    if ((child->style()->isFlippedBlocksWritingMode() && child->isHorizontalWritingMode() != containerBlock->isHorizontalWritingMode())
-        || (child->style()->isFlippedBlocksWritingMode() != containerBlock->style()->isFlippedBlocksWritingMode() && child->isHorizontalWritingMode() == containerBlock->isHorizontalWritingMode()))
+    if ((child->style()->slowIsFlippedBlocksWritingMode() && child->isHorizontalWritingMode() != containerBlock->isHorizontalWritingMode())
+        || (child->style()->slowIsFlippedBlocksWritingMode() != containerBlock->style()->slowIsFlippedBlocksWritingMode() && child->isHorizontalWritingMode() == containerBlock->isHorizontalWritingMode()))
         logicalTopPos = containerLogicalHeight - logicalHeightValue - logicalTopPos;
 
     // Our offset is from the logical bottom edge in a flipped environment, e.g., right for vertical-rl and bottom for horizontal-bt.
-    if (containerBlock->style()->isFlippedBlocksWritingMode() && child->isHorizontalWritingMode() == containerBlock->isHorizontalWritingMode()) {
+    if (containerBlock->style()->slowIsFlippedBlocksWritingMode() && child->isHorizontalWritingMode() == containerBlock->isHorizontalWritingMode()) {
         if (child->isHorizontalWritingMode())
             logicalTopPos += containerBlock->borderBottom();
         else
@@ -4280,7 +4280,9 @@ LayoutUnit RenderBox::offsetTop() const
 
 LayoutPoint RenderBox::flipForWritingModeForChild(const RenderBox* child, const LayoutPoint& point) const
 {
-    if (!style()->isFlippedBlocksWritingMode())
+    if (!UNLIKELY(document().containsAnyRareWritingMode()))
+        return point;
+    if (!style()->slowIsFlippedBlocksWritingMode())
         return point;
 
     // The child is going to add in its x() and y(), so we have to make sure it ends up in
@@ -4290,61 +4292,13 @@ LayoutPoint RenderBox::flipForWritingModeForChild(const RenderBox* child, const 
     return LayoutPoint(point.x() + width() - child->width() - (2 * child->x()), point.y());
 }
 
-void RenderBox::flipForWritingMode(LayoutRect& rect) const
-{
-    if (!style()->isFlippedBlocksWritingMode())
-        return;
-
-    if (isHorizontalWritingMode())
-        rect.setY(height() - rect.maxY());
-    else
-        rect.setX(width() - rect.maxX());
-}
-
-LayoutUnit RenderBox::flipForWritingMode(LayoutUnit position) const
-{
-    if (!style()->isFlippedBlocksWritingMode())
-        return position;
-    return logicalHeight() - position;
-}
-
-LayoutPoint RenderBox::flipForWritingMode(const LayoutPoint& position) const
-{
-    if (!style()->isFlippedBlocksWritingMode())
-        return position;
-    return isHorizontalWritingMode() ? LayoutPoint(position.x(), height() - position.y()) : LayoutPoint(width() - position.x(), position.y());
-}
-
 LayoutPoint RenderBox::flipForWritingModeIncludingColumns(const LayoutPoint& point) const
 {
-    if (!hasColumns() || !style()->isFlippedBlocksWritingMode())
+    if (!UNLIKELY(document().containsAnyRareWritingMode()))
+        return point;
+    if (!hasColumns() || !style()->slowIsFlippedBlocksWritingMode())
         return flipForWritingMode(point);
     return toRenderBlock(this)->flipForWritingModeIncludingColumns(point);
-}
-
-LayoutSize RenderBox::flipForWritingMode(const LayoutSize& offset) const
-{
-    if (!style()->isFlippedBlocksWritingMode())
-        return offset;
-    return isHorizontalWritingMode() ? LayoutSize(offset.width(), height() - offset.height()) : LayoutSize(width() - offset.width(), offset.height());
-}
-
-FloatPoint RenderBox::flipForWritingMode(const FloatPoint& position) const
-{
-    if (!style()->isFlippedBlocksWritingMode())
-        return position;
-    return isHorizontalWritingMode() ? FloatPoint(position.x(), height() - position.y()) : FloatPoint(width() - position.x(), position.y());
-}
-
-void RenderBox::flipForWritingMode(FloatRect& rect) const
-{
-    if (!style()->isFlippedBlocksWritingMode())
-        return;
-
-    if (isHorizontalWritingMode())
-        rect.setY(height() - rect.maxY());
-    else
-        rect.setX(width() - rect.maxX());
 }
 
 LayoutPoint RenderBox::topLeftLocation() const

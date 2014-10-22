@@ -533,13 +533,50 @@ public:
     virtual LayoutUnit offsetTop() const override;
 
     LayoutPoint flipForWritingModeForChild(const RenderBox* child, const LayoutPoint&) const;
-    LayoutUnit flipForWritingMode(LayoutUnit position) const; // The offset is in the block direction (y for horizontal writing modes, x for vertical writing modes).
-    LayoutPoint flipForWritingMode(const LayoutPoint&) const;
+    LayoutUnit flipForWritingMode(LayoutUnit position) const
+    {
+        // The offset is in the block direction (y for horizontal writing modes, x for vertical writing modes).
+        if (!UNLIKELY(hasFlippedBlocksWritingMode()))
+            return position;
+        return logicalHeight() - position;
+    }
+    LayoutPoint flipForWritingMode(const LayoutPoint& position) const
+    {
+        if (!UNLIKELY(hasFlippedBlocksWritingMode()))
+            return position;
+        return isHorizontalWritingMode() ? LayoutPoint(position.x(), height() - position.y()) : LayoutPoint(width() - position.x(), position.y());
+    }
     LayoutPoint flipForWritingModeIncludingColumns(const LayoutPoint&) const;
-    LayoutSize flipForWritingMode(const LayoutSize&) const;
-    void flipForWritingMode(LayoutRect&) const;
-    FloatPoint flipForWritingMode(const FloatPoint&) const;
-    void flipForWritingMode(FloatRect&) const;
+    LayoutSize flipForWritingMode(const LayoutSize& offset) const
+    {
+        if (!UNLIKELY(hasFlippedBlocksWritingMode()))
+            return offset;
+        return isHorizontalWritingMode() ? LayoutSize(offset.width(), height() - offset.height()) : LayoutSize(width() - offset.width(), offset.height());
+    }
+    void flipForWritingMode(LayoutRect& rect) const
+    {
+        if (!UNLIKELY(hasFlippedBlocksWritingMode()))
+            return;
+        if (isHorizontalWritingMode())
+            rect.setY(height() - rect.maxY());
+        else
+            rect.setX(width() - rect.maxX());
+    }
+    FloatPoint flipForWritingMode(const FloatPoint& position) const
+    {
+        if (!UNLIKELY(hasFlippedBlocksWritingMode()))
+            return position;
+        return isHorizontalWritingMode() ? FloatPoint(position.x(), height() - position.y()) : FloatPoint(width() - position.x(), position.y());
+    }
+    void flipForWritingMode(FloatRect& rect) const
+    {
+        if (!UNLIKELY(hasFlippedBlocksWritingMode()))
+            return;
+        if (isHorizontalWritingMode())
+            rect.setY(height() - rect.maxY());
+        else
+            rect.setX(width() - rect.maxX());
+    }
     // These represent your location relative to your container as a physical offset.
     // In layout related methods you almost always want the logical location (e.g. x() and y()).
     LayoutPoint topLeftLocation() const;

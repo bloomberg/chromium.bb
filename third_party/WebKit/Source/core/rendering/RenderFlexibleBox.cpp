@@ -763,7 +763,7 @@ bool RenderFlexibleBox::updateAutoMarginsInCrossAxis(RenderBox& child, LayoutUni
         // so that flipForRightToLeftColumn will do the right thing.
         shouldAdjustTopOrLeft = false;
     }
-    if (!isColumnFlow() && child.style()->isFlippedBlocksWritingMode()) {
+    if (!isColumnFlow() && child.style()->slowIsFlippedBlocksWritingMode()) {
         // If we are a flipped writing mode, we need to adjust the opposite side. This is only needed
         // for row flows because this only affects the block-direction axis.
         shouldAdjustTopOrLeft = false;

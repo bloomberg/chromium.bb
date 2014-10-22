@@ -2878,7 +2878,7 @@ bool FrameView::isFlippedDocument() const
     if (!renderView)
         return false;
 
-    return renderView->style()->isFlippedBlocksWritingMode();
+    return renderView->hasFlippedBlocksWritingMode();
 }
 
 bool FrameView::scrollbarsDisabled() const

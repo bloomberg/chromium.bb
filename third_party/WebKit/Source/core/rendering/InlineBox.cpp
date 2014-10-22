@@ -203,7 +203,7 @@ bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     // own stacking context.  (See Appendix E.2, section 6.4 on inline block/table elements in the CSS2.1
     // specification.)
     LayoutPoint childPoint = accumulatedOffset;
-    if (parent()->renderer().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
+    if (parent()->renderer().hasFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = renderer().containingBlock()->flipForWritingModeForChild(&toRenderBox(renderer()), childPoint);
 
     return renderer().hitTest(request, result, locationInContainer, childPoint);
@@ -308,8 +308,9 @@ void InlineBox::clearKnownToHaveNoOverflow()
 
 FloatPoint InlineBox::locationIncludingFlipping()
 {
-    if (!renderer().style()->isFlippedBlocksWritingMode())
+    if (!UNLIKELY(renderer().hasFlippedBlocksWritingMode()))
         return FloatPoint(x(), y());
+
     RenderBlockFlow& block = root().block();
     if (block.style()->isHorizontalWritingMode())
         return FloatPoint(x(), block.height() - height() - y());
@@ -319,28 +320,28 @@ FloatPoint InlineBox::locationIncludingFlipping()
 
 void InlineBox::flipForWritingMode(FloatRect& rect)
 {
-    if (!renderer().style()->isFlippedBlocksWritingMode())
+    if (!UNLIKELY(renderer().hasFlippedBlocksWritingMode()))
         return;
     root().block().flipForWritingMode(rect);
 }
 
 FloatPoint InlineBox::flipForWritingMode(const FloatPoint& point)
 {
-    if (!renderer().style()->isFlippedBlocksWritingMode())
+    if (!UNLIKELY(renderer().hasFlippedBlocksWritingMode()))
         return point;
     return root().block().flipForWritingMode(point);
 }
 
 void InlineBox::flipForWritingMode(LayoutRect& rect)
 {
-    if (!renderer().style()->isFlippedBlocksWritingMode())
+    if (!UNLIKELY(renderer().hasFlippedBlocksWritingMode()))
         return;
     root().block().flipForWritingMode(rect);
 }
 
 LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point)
 {
-    if (!renderer().style()->isFlippedBlocksWritingMode())
+    if (!UNLIKELY(renderer().hasFlippedBlocksWritingMode()))
         return point;
     return root().block().flipForWritingMode(point);
 }

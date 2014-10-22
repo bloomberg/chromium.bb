@@ -782,6 +782,9 @@ public:
     void setDirectionSetOnDocumentElement(bool b) { m_directionSetOnDocumentElement = b; }
     void setWritingModeSetOnDocumentElement(bool b) { m_writingModeSetOnDocumentElement = b; }
 
+    bool containsAnyRareWritingMode() const { return m_containsAnyRareWritingMode; }
+    void setContainsAnyRareWritingMode(bool b) { m_containsAnyRareWritingMode = b; }
+
     bool execCommand(const String& command, bool userInterface = false, const String& value = String());
     bool queryCommandEnabled(const String& command);
     bool queryCommandIndeterm(const String& command);
@@ -1331,6 +1334,7 @@ private:
 
     bool m_directionSetOnDocumentElement;
     bool m_writingModeSetOnDocumentElement;
+    bool m_containsAnyRareWritingMode;
     DocumentTiming m_documentTiming;
     RefPtrWillBeMember<MediaQueryMatcher> m_mediaQueryMatcher;
     bool m_writeRecursionIsTooDeep;

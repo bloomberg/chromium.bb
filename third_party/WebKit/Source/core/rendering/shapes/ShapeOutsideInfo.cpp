@@ -317,7 +317,7 @@ LayoutRect ShapeOutsideInfo::computedShapePhysicalBoundingBox() const
     LayoutRect physicalBoundingBox = computedShape().shapeMarginLogicalBoundingBox();
     physicalBoundingBox.setX(physicalBoundingBox.x() + logicalLeftOffset());
 
-    if (m_renderer.style()->isFlippedBlocksWritingMode())
+    if (m_renderer.style()->slowIsFlippedBlocksWritingMode())
         physicalBoundingBox.setY(m_renderer.logicalHeight() - physicalBoundingBox.maxY());
     else
         physicalBoundingBox.setY(physicalBoundingBox.y() + logicalTopOffset());
@@ -333,7 +333,7 @@ LayoutRect ShapeOutsideInfo::computedShapePhysicalBoundingBox() const
 FloatPoint ShapeOutsideInfo::shapeToRendererPoint(FloatPoint point) const
 {
     FloatPoint result = FloatPoint(point.x() + logicalLeftOffset(), point.y() + logicalTopOffset());
-    if (m_renderer.style()->isFlippedBlocksWritingMode())
+    if (m_renderer.style()->slowIsFlippedBlocksWritingMode())
         result.setY(m_renderer.logicalHeight() - result.y());
     if (!m_renderer.style()->isHorizontalWritingMode())
         result = result.transposedPoint();
