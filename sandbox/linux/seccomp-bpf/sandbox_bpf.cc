@@ -150,7 +150,7 @@ SandboxBPF::~SandboxBPF() {
 }
 
 bool SandboxBPF::IsValidSyscallNumber(int sysnum) {
-  return SyscallIterator::IsValid(sysnum);
+  return SyscallSet::IsValid(sysnum);
 }
 
 bool SandboxBPF::RunFunctionInPolicy(

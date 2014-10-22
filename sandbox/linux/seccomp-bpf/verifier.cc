@@ -318,8 +318,7 @@ bool Verifier::VerifyBPF(bpf_dsl::PolicyCompiler* compiler,
                          const bpf_dsl::SandboxBPFDSLPolicy& policy,
                          const char** err) {
   *err = NULL;
-  for (SyscallIterator iter(false); !iter.Done();) {
-    uint32_t sysnum = iter.Next();
+  for (uint32_t sysnum : SyscallSet::All()) {
     // We ideally want to iterate over the full system call range and values
     // just above and just below this range. This gives us the full result set
     // of the "evaluators".
@@ -340,7 +339,7 @@ bool Verifier::VerifyBPF(bpf_dsl::PolicyCompiler* compiler,
     }
 #endif
 #endif
-    ErrorCode code = iter.IsValid(sysnum)
+    ErrorCode code = SyscallSet::IsValid(sysnum)
                          ? policy.EvaluateSyscall(sysnum)->Compile(compiler)
                          : policy.InvalidSyscall()->Compile(compiler);
     if (!VerifyErrorCode(compiler, program, &data, code, code, err)) {

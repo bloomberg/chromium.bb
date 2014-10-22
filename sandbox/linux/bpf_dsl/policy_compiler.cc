@@ -76,9 +76,8 @@ intptr_t BPFFailure(const struct arch_seccomp_data&, void* aux) {
 }
 
 bool HasUnsafeTraps(const SandboxBPFDSLPolicy* policy) {
-  for (SyscallIterator iter(false); !iter.Done();) {
-    uint32_t sysnum = iter.Next();
-    if (SyscallIterator::IsValid(sysnum) &&
+  for (uint32_t sysnum : SyscallSet::All()) {
+    if (SyscallSet::IsValid(sysnum) &&
         policy->EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
       return true;
     }
@@ -89,8 +88,8 @@ bool HasUnsafeTraps(const SandboxBPFDSLPolicy* policy) {
 }  // namespace
 
 struct PolicyCompiler::Range {
-  Range(uint32_t f, uint32_t t, const ErrorCode& e) : from(f), to(t), err(e) {}
-  uint32_t from, to;
+  Range(uint32_t f, const ErrorCode& e) : from(f), err(e) {}
+  uint32_t from;
   ErrorCode err;
 };
 
@@ -252,22 +251,22 @@ void PolicyCompiler::FindRanges(Ranges* ranges) {
   // negative) all return the same ErrorCode.
   const ErrorCode invalid_err = policy_->InvalidSyscall()->Compile(this);
   uint32_t old_sysnum = 0;
-  ErrorCode old_err = SyscallIterator::IsValid(old_sysnum)
+  ErrorCode old_err = SyscallSet::IsValid(old_sysnum)
                           ? policy_->EvaluateSyscall(old_sysnum)->Compile(this)
                           : invalid_err;
 
-  for (SyscallIterator iter(false); !iter.Done();) {
-    uint32_t sysnum = iter.Next();
+  for (uint32_t sysnum : SyscallSet::All()) {
     ErrorCode err =
-        SyscallIterator::IsValid(sysnum)
+        SyscallSet::IsValid(sysnum)
             ? policy_->EvaluateSyscall(static_cast<int>(sysnum))->Compile(this)
             : invalid_err;
-    if (!err.Equals(old_err) || iter.Done()) {
-      ranges->push_back(Range(old_sysnum, sysnum - 1, old_err));
+    if (!err.Equals(old_err)) {
+      ranges->push_back(Range(old_sysnum, old_err));
       old_sysnum = sysnum;
       old_err = err;
     }
   }
+  ranges->push_back(Range(old_sysnum, old_err));
 }
 
 Instruction* PolicyCompiler::AssembleJumpTable(Ranges::const_iterator start,

@@ -4,6 +4,7 @@
 
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
@@ -38,14 +39,16 @@ const SyscallRange kValidSyscallRanges[] = {
 #endif
 };
 
+// NextSyscall returns the next system call in the specified system
+// call set after |cur|, or 0 if no such system call exists.
 uint32_t NextSyscall(uint32_t cur, bool invalid_only) {
   for (const SyscallRange& range : kValidSyscallRanges) {
     if (range.first > 0 && cur < range.first - 1) {
       return range.first - 1;
     }
     if (cur <= range.last) {
-      if (invalid_only && cur < range.last) {
-        return range.last;
+      if (invalid_only) {
+        return range.last + 1;
       }
       return cur + 1;
     }
@@ -62,33 +65,66 @@ uint32_t NextSyscall(uint32_t cur, bool invalid_only) {
   if (cur < 0x80000000u)
     return 0x80000000u;
 
-  return 0xFFFFFFFFu;
+  if (cur < 0xFFFFFFFFu)
+    return 0xFFFFFFFFu;
+  return 0;
 }
 
 }  // namespace
 
-uint32_t SyscallIterator::Next() {
-  if (done_) {
-    return num_;
-  }
-
-  uint32_t val;
-  do {
-    val = num_;
-    num_ = NextSyscall(num_, invalid_only_);
-  } while (invalid_only_ && IsValid(val));
-
-  done_ |= val == 0xFFFFFFFFu;
-  return val;
+SyscallSet::Iterator SyscallSet::begin() const {
+  return Iterator(set_, false);
 }
 
-bool SyscallIterator::IsValid(uint32_t num) {
+SyscallSet::Iterator SyscallSet::end() const {
+  return Iterator(set_, true);
+}
+
+bool SyscallSet::IsValid(uint32_t num) {
   for (const SyscallRange& range : kValidSyscallRanges) {
     if (num >= range.first && num <= range.last) {
       return true;
     }
   }
   return false;
+}
+
+bool operator==(const SyscallSet& lhs, const SyscallSet& rhs) {
+  return (lhs.set_ == rhs.set_);
+}
+
+SyscallSet::Iterator::Iterator(Set set, bool done)
+    : set_(set), done_(done), num_(0) {
+  if (set_ == Set::INVALID_ONLY && !done_ && IsValid(num_)) {
+    ++*this;
+  }
+}
+
+uint32_t SyscallSet::Iterator::operator*() const {
+  DCHECK(!done_);
+  return num_;
+}
+
+SyscallSet::Iterator& SyscallSet::Iterator::operator++() {
+  DCHECK(!done_);
+
+  num_ = NextSyscall(num_, set_ == Set::INVALID_ONLY);
+  if (num_ == 0) {
+    done_ = true;
+  }
+
+  return *this;
+}
+
+bool operator==(const SyscallSet::Iterator& lhs,
+                const SyscallSet::Iterator& rhs) {
+  DCHECK(lhs.set_ == rhs.set_);
+  return (lhs.done_ == rhs.done_) && (lhs.num_ == rhs.num_);
+}
+
+bool operator!=(const SyscallSet::Iterator& lhs,
+                const SyscallSet::Iterator& rhs) {
+  return !(lhs == rhs);
 }
 
 }  // namespace sandbox

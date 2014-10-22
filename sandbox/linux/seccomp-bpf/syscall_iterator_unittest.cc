@@ -13,18 +13,19 @@ namespace sandbox {
 
 namespace {
 
-const bool kFalseTrue[] = {false, true};
+const SyscallSet kSyscallSets[] = {
+    SyscallSet::All(),
+    SyscallSet::InvalidOnly(),
+};
 
 SANDBOX_TEST(SyscallIterator, Monotonous) {
-  for (bool invalid_only : kFalseTrue) {
+  for (const SyscallSet& set : kSyscallSets) {
     uint32_t prev = 0;
     bool have_prev = false;
-    for (SyscallIterator iter(invalid_only); !iter.Done();) {
-      uint32_t sysnum = iter.Next();
-
+    for (uint32_t sysnum : set) {
       if (have_prev) {
         SANDBOX_ASSERT(sysnum > prev);
-      } else if (!invalid_only) {
+      } else if (set == SyscallSet::All()) {
         // The iterator should start at 0.
         SANDBOX_ASSERT(sysnum == 0);
       }
@@ -44,8 +45,7 @@ SANDBOX_TEST(SyscallIterator, Monotonous) {
 void AssertRange(uint32_t min, uint32_t max) {
   SANDBOX_ASSERT(min < max);
   uint32_t prev = min - 1;
-  for (SyscallIterator iter(false); !iter.Done();) {
-    uint32_t sysnum = iter.Next();
+  for (uint32_t sysnum : SyscallSet::All()) {
     if (sysnum >= min && sysnum <= max) {
       SANDBOX_ASSERT(prev == sysnum - 1);
       prev = sysnum;
@@ -80,17 +80,22 @@ SANDBOX_TEST(SyscallIterator, InvalidSyscalls) {
     0xFFFFFFFFu,
   };
 
-  for (bool invalid_only : kFalseTrue) {
+  for (const SyscallSet& set : kSyscallSets) {
     size_t i = 0;
-    for (SyscallIterator iter(invalid_only); !iter.Done();) {
-      uint32_t sysnum = iter.Next();
-      if (!SyscallIterator::IsValid(sysnum)) {
+    for (uint32_t sysnum : set) {
+      if (!SyscallSet::IsValid(sysnum)) {
         SANDBOX_ASSERT(i < arraysize(kExpected));
         SANDBOX_ASSERT(kExpected[i] == sysnum);
         ++i;
       }
     }
     SANDBOX_ASSERT(i == arraysize(kExpected));
+  }
+}
+
+SANDBOX_TEST(SyscallIterator, InvalidOnlyIsOnlyInvalid) {
+  for (uint32_t sysnum : SyscallSet::InvalidOnly()) {
+    SANDBOX_ASSERT(!SyscallSet::IsValid(sysnum));
   }
 }
 
