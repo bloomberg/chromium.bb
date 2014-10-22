@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_TEST_UTIL_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/context_menu_matcher.h"
+#endif
 
 class Browser;
 
@@ -50,7 +53,9 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
                                 ui::MenuModel** found_model,
                                 int* found_index);
 
+#if defined(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher& extension_items() { return extension_items_; }
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);

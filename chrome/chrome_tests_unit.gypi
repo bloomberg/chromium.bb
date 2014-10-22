@@ -2082,6 +2082,7 @@
             'browser/extensions/webstore_inline_installer_unittest.cc',
             'browser/extensions/webstore_installer_unittest.cc',
             'browser/metrics/extensions_metrics_provider_unittest.cc',
+            'browser/renderer_context_menu/context_menu_content_type_unittest.cc',
             'browser/search/hotword_service_unittest.cc',
             'browser/signin/easy_unlock_screenlock_state_handler_unittest.cc',
             'common/extensions/features/chrome_channel_feature_filter_unittest.cc',

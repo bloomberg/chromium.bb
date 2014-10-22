@@ -12,8 +12,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/menu_manager.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
@@ -21,6 +19,11 @@
 #include "content/public/common/context_menu_params.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/context_menu_matcher.h"
+#include "chrome/browser/extensions/menu_manager.h"
+#endif
 
 class PrintPreviewContextMenuObserver;
 class Profile;
@@ -60,7 +63,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
  protected:
   Profile* GetProfile();
+
+#if defined(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher extension_items_;
+#endif
 
  private:
   friend class RenderViewContextMenuTest;
@@ -68,12 +74,14 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
   static bool IsDevToolsURL(const GURL& url);
   static bool IsInternalResourcesURL(const GURL& url);
+#if defined(ENABLE_EXTENSIONS)
   static bool ExtensionContextAndPatternMatch(
       const content::ContextMenuParams& params,
       const extensions::MenuItem::ContextList& contexts,
       const extensions::URLPatternSet& target_url_patterns);
   static bool MenuItemMatchesParams(const content::ContextMenuParams& params,
                                     const extensions::MenuItem* item);
+#endif
 
   // RenderViewContextMenuBase:
   void InitMenu() override;
@@ -105,8 +113,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendRotationItems();
   void AppendEditableItems();
   void AppendSearchProvider();
+#if defined(ENABLE_EXTENSIONS)
   void AppendAllExtensionItems();
   void AppendCurrentExtensionItems();
+#endif
   void AppendPrintPreviewItems();
   void AppendSearchWebForImageItems();
   void AppendSpellingSuggestionsSubMenu();

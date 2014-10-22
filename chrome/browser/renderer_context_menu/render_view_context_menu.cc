@@ -341,6 +341,7 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 
 // Menu construction functions -------------------------------------------------
 
+#if defined(ENABLE_EXTENSIONS)
 // static
 bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
     const content::ContextMenuParams& params,
@@ -474,6 +475,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
                                           false);  // is_action_menu
   }
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 void RenderViewContextMenu::InitMenu() {
   RenderViewContextMenuBase::InitMenu();
