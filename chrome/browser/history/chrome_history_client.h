@@ -27,7 +27,7 @@ class ChromeHistoryClient : public history::HistoryClient,
   explicit ChromeHistoryClient(BookmarkModel* bookmark_model,
                                Profile* profile,
                                history::TopSites* top_sites);
-  virtual ~ChromeHistoryClient();
+  ~ChromeHistoryClient() override;
 
   // TODO(sdefresne): once NOTIFICATION_HISTORY_URL* notifications are no
   // longer used, remove this reference to the HistoryService from the
@@ -35,19 +35,18 @@ class ChromeHistoryClient : public history::HistoryClient,
   void SetHistoryService(HistoryService* history_service);
 
   // history::HistoryClient:
-  virtual void BlockUntilBookmarksLoaded() override;
-  virtual bool IsBookmarked(const GURL& url) override;
-  virtual void GetBookmarks(
-      std::vector<history::URLAndTitle>* bookmarks) override;
-  virtual void NotifyProfileError(sql::InitStatus init_status) override;
-  virtual bool ShouldReportDatabaseError() override;
+  void BlockUntilBookmarksLoaded() override;
+  bool IsBookmarked(const GURL& url) override;
+  void GetBookmarks(std::vector<history::URLAndTitle>* bookmarks) override;
+  void NotifyProfileError(sql::InitStatus init_status) override;
+  bool ShouldReportDatabaseError() override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // TopSitesObserver:
-  virtual void TopSitesLoaded(history::TopSites* top_sites) override;
-  virtual void TopSitesChanged(history::TopSites* top_sites) override;
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
 
  private:
   // The BookmarkModel, this should outlive ChromeHistoryClient.

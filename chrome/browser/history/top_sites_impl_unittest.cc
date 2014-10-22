@@ -34,8 +34,8 @@ class TestTopSitesObserver : public history::TopSitesObserver {
   explicit TestTopSitesObserver(Profile* profile, history::TopSites* top_sites);
   virtual ~TestTopSitesObserver();
   // TopSitesObserver:
-  virtual void TopSitesLoaded(history::TopSites* top_sites) override;
-  virtual void TopSitesChanged(history::TopSites* top_sites) override;
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites) override;
 
  private:
   Profile* profile_;
@@ -76,17 +76,14 @@ class WaitForHistoryTask : public HistoryDBTask {
  public:
   WaitForHistoryTask() {}
 
-  virtual bool RunOnDBThread(HistoryBackend* backend,
-                             HistoryDatabase* db) override {
+  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {
-    base::MessageLoop::current()->Quit();
-  }
+  void DoneRunOnMainThread() override { base::MessageLoop::current()->Quit(); }
 
  private:
-  virtual ~WaitForHistoryTask() {}
+  ~WaitForHistoryTask() override {}
 
   DISALLOW_COPY_AND_ASSIGN(WaitForHistoryTask);
 };

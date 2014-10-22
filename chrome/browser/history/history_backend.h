@@ -517,7 +517,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   }
 
  protected:
-  virtual ~HistoryBackend();
+  ~HistoryBackend() override;
 
   // Notify HistoryBackendObserver that |transition| to |row| occurred at
   // |visit_time| following |redirects| (empty if there is no redirects).
@@ -795,13 +795,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // to be invoked again if there are more tasks that need to run.
   void ProcessDBTaskImpl();
 
-  virtual void BroadcastNotifications(
-      int type,
-      scoped_ptr<HistoryDetails> details) override;
-  virtual void NotifySyncURLsModified(URLRows* rows) override;
-  virtual void NotifySyncURLsDeleted(bool all_history,
-                                     bool expired,
-                                     URLRows* rows) override;
+  void BroadcastNotifications(int type,
+                              scoped_ptr<HistoryDetails> details) override;
+  void NotifySyncURLsModified(URLRows* rows) override;
+  void NotifySyncURLsDeleted(bool all_history,
+                             bool expired,
+                             URLRows* rows) override;
 
   // Deleting all history ------------------------------------------------------
 

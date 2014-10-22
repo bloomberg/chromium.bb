@@ -97,7 +97,7 @@ class HistoryService : public content::NotificationObserver,
   // The empty constructor is provided only for testing.
   HistoryService();
 
-  virtual ~HistoryService();
+  ~HistoryService() override;
 
   // Initializes the history service, returning true on success. On false, do
   // not call any other functions. The given directory will be used for storing
@@ -151,7 +151,7 @@ class HistoryService : public content::NotificationObserver,
   }
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Navigation ----------------------------------------------------------------
 
@@ -502,15 +502,14 @@ class HistoryService : public content::NotificationObserver,
   base::WeakPtr<HistoryService> AsWeakPtr();
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
@@ -556,13 +555,12 @@ class HistoryService : public content::NotificationObserver,
   void Cleanup();
 
   // Implementation of content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Implementation of visitedlink::VisitedLinkDelegate.
-  virtual void RebuildTable(
-      const scoped_refptr<URLEnumerator>& enumerator) override;
+  void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.

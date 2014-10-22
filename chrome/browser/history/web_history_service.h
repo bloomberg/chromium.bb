@@ -51,7 +51,7 @@ class WebHistoryService : public KeyedService {
   typedef base::Callback<void(bool success)> ExpireWebHistoryCallback;
 
   explicit WebHistoryService(Profile* profile);
-  virtual ~WebHistoryService();
+  ~WebHistoryService() override;
 
   // Searches synced history for visits matching |text_query|. The timeframe to
   // search, along with other options, is specified in |options|. If

@@ -51,7 +51,7 @@ class InMemoryHistoryBackend : public HistoryServiceObserver,
                                public content::NotificationObserver {
  public:
   InMemoryHistoryBackend();
-  virtual ~InMemoryHistoryBackend();
+  ~InMemoryHistoryBackend() override;
 
   // Initializes the backend from the history database pointed to by the
   // full path in |history_filename|.
@@ -74,16 +74,16 @@ class InMemoryHistoryBackend : public HistoryServiceObserver,
   }
 
   // HistoryServiceObserver:
-  virtual void OnURLVisited(HistoryService* history_service,
-                            ui::PageTransition transition,
-                            const URLRow& row,
-                            const RedirectList& redirects,
-                            base::Time visit_time) override;
+  void OnURLVisited(HistoryService* history_service,
+                    ui::PageTransition transition,
+                    const URLRow& row,
+                    const RedirectList& redirects,
+                    base::Time visit_time) override;
 
   // Notification callback.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);

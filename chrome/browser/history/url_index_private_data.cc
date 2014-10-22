@@ -84,12 +84,12 @@ class UpdateRecentVisitsFromHistoryDBTask : public HistoryDBTask {
       URLIndexPrivateData* private_data,
       URLID url_id);
 
-  virtual bool RunOnDBThread(HistoryBackend* backend,
-                             history::HistoryDatabase* db) override;
-  virtual void DoneRunOnMainThread() override;
+  bool RunOnDBThread(HistoryBackend* backend,
+                     history::HistoryDatabase* db) override;
+  void DoneRunOnMainThread() override;
 
  private:
-  virtual ~UpdateRecentVisitsFromHistoryDBTask();
+  ~UpdateRecentVisitsFromHistoryDBTask() override;
 
   // The URLIndexPrivateData that gets updated after the historyDB
   // task returns.

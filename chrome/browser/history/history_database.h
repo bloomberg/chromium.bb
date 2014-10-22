@@ -65,7 +65,7 @@ class HistoryDatabase : public DownloadDatabase,
   // database cleanup.
   HistoryDatabase();
 
-  virtual ~HistoryDatabase();
+  ~HistoryDatabase() override;
 
   // Call before Init() to set the error callback to be used for the
   // underlying database connection.
@@ -162,7 +162,7 @@ class HistoryDatabase : public DownloadDatabase,
   friend class InMemoryURLIndexTest;
 
   // Overridden from URLDatabase:
-  virtual sql::Connection& GetDB() override;
+  sql::Connection& GetDB() override;
 
   // Migration -----------------------------------------------------------------
 

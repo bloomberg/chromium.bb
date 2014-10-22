@@ -19,7 +19,7 @@ struct HistoryAddPageArgs;
 class HistoryTabHelper : public content::WebContentsObserver,
                          public content::WebContentsUserData<HistoryTabHelper> {
  public:
-  virtual ~HistoryTabHelper();
+  ~HistoryTabHelper() override;
 
   // Updates history with the specified navigation. This is called by
   // OnMsgNavigate to update history state.
@@ -43,16 +43,14 @@ class HistoryTabHelper : public content::WebContentsObserver,
   friend class content::WebContentsUserData<HistoryTabHelper>;
 
   // content::WebContentsObserver implementation.
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void DidNavigateAnyFrame(
-      content::RenderFrameHost* render_frame_host,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-  virtual void TitleWasSet(content::NavigationEntry* entry,
-                           bool explicit_set) override;
-  virtual void WebContentsDestroyed() override;
+  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
+                           const content::LoadCommittedDetails& details,
+                           const content::FrameNavigateParams& params) override;
+  void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
+  void WebContentsDestroyed() override;
 
   // Helper function to return the history service.  May return NULL.
   HistoryService* GetHistoryService();

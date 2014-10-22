@@ -124,12 +124,12 @@ class DeleteDirectiveHandler::DeleteDirectiveTask : public HistoryDBTask {
        post_processing_action_(post_processing_action) {}
 
   // Implements HistoryDBTask.
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override;
-  virtual void DoneRunOnMainThread() override;
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override;
+  void DoneRunOnMainThread() override;
 
  private:
-  virtual ~DeleteDirectiveTask() {}
+  ~DeleteDirectiveTask() override {}
 
   // Process a list of global Id directives. Delete all visits to a URL in
   // time ranges of directives if the timestamp of one visit matches with one

@@ -41,14 +41,13 @@ class TestHistoryBackend : public HistoryBackend {
   TestHistoryBackend() : HistoryBackend(base::FilePath(), NULL, NULL) {}
 
   // HistoryBackend test implementation.
-  virtual bool IsExpiredVisitTime(const base::Time& time) override {
+  bool IsExpiredVisitTime(const base::Time& time) override {
     return time.ToInternalValue() == EXPIRED_VISIT;
   }
 
-  virtual bool GetMostRecentVisitsForURL(
-      URLID id,
-      int max_visits,
-      VisitVector* visits) override {
+  bool GetMostRecentVisitsForURL(URLID id,
+                                 int max_visits,
+                                 VisitVector* visits) override {
     if (local_db_visits_[id].empty())
       return false;
 
@@ -74,7 +73,7 @@ class TestHistoryBackend : public HistoryBackend {
   }
 
  private:
-  virtual ~TestHistoryBackend() {}
+  ~TestHistoryBackend() override {}
 
   // Mock of visit table in local db.
   std::map<URLID, VisitVector> local_db_visits_;

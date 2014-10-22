@@ -61,9 +61,7 @@ class VisitDatabaseTest : public PlatformTest,
   }
 
   // Provided for URL/VisitDatabase.
-  virtual sql::Connection& GetDB() override {
-    return db_;
-  }
+  sql::Connection& GetDB() override { return db_; }
 
   base::ScopedTempDir temp_dir_;
   sql::Connection db_;

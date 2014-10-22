@@ -114,19 +114,17 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   explicit HistoryBackendTestDelegate(HistoryBackendTestBase* test)
       : test_(test) {}
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) override {}
-  virtual void SetInMemoryBackend(
-      scoped_ptr<InMemoryHistoryBackend> backend) override;
-  virtual void NotifyAddVisit(const BriefVisitInfo& info) override {}
-  virtual void NotifyFaviconChanged(const std::set<GURL>& urls) override;
-  virtual void NotifyURLVisited(ui::PageTransition transition,
-                                const URLRow& row,
-                                const RedirectList& redirects,
-                                base::Time visit_time) override;
-  virtual void BroadcastNotifications(
-      int type,
-      scoped_ptr<HistoryDetails> details) override;
-  virtual void DBLoaded() override;
+  void NotifyProfileError(sql::InitStatus init_status) override {}
+  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) override;
+  void NotifyAddVisit(const BriefVisitInfo& info) override {}
+  void NotifyFaviconChanged(const std::set<GURL>& urls) override;
+  void NotifyURLVisited(ui::PageTransition transition,
+                        const URLRow& row,
+                        const RedirectList& redirects,
+                        base::Time visit_time) override;
+  void BroadcastNotifications(int type,
+                              scoped_ptr<HistoryDetails> details) override;
+  void DBLoaded() override;
 
  private:
   // Not owned by us.

@@ -19,7 +19,7 @@ namespace history {
 // Details for NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED.
 struct URLsModifiedDetails : public HistoryDetails {
   URLsModifiedDetails();
-  virtual ~URLsModifiedDetails();
+  ~URLsModifiedDetails() override;
 
   // Lists the information for each of the URLs affected. The rows will have the
   // IDs that are currently in effect in the main history database.
@@ -29,7 +29,7 @@ struct URLsModifiedDetails : public HistoryDetails {
 // Details for NOTIFICATION_HISTORY_URLS_DELETED.
 struct URLsDeletedDetails : public HistoryDetails {
   URLsDeletedDetails();
-  virtual ~URLsDeletedDetails();
+  ~URLsDeletedDetails() override;
 
   // Set when all history was deleted. False means just a subset was deleted.
   bool all_history;
@@ -54,7 +54,7 @@ struct KeywordSearchUpdatedDetails : public HistoryDetails {
   KeywordSearchUpdatedDetails(const URLRow& url_row,
                               KeywordID keyword_id,
                               const base::string16& term);
-  virtual ~KeywordSearchUpdatedDetails();
+  ~KeywordSearchUpdatedDetails() override;
 
   // The affected URLRow. The ID will be set to the value that is currently in
   // effect in the main history database.
@@ -66,7 +66,7 @@ struct KeywordSearchUpdatedDetails : public HistoryDetails {
 // Details for HISTORY_KEYWORD_SEARCH_TERM_DELETED.
 struct KeywordSearchDeletedDetails : public HistoryDetails {
   explicit KeywordSearchDeletedDetails(URLID url_row_id);
-  virtual ~KeywordSearchDeletedDetails();
+  ~KeywordSearchDeletedDetails() override;
 
   // The ID of the corresponding URLRow in the main history database.
   URLID url_row_id;

@@ -106,7 +106,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
                    const base::FilePath& history_dir,
                    const std::string& languages,
                    HistoryClient* client);
-  virtual ~InMemoryURLIndex();
+  ~InMemoryURLIndex() override;
 
   // Opens and prepares the index of historical URL visits. If the index private
   // data cannot be restored from its cache file then it is rebuilt from the
@@ -163,12 +163,12 @@ class InMemoryURLIndex : public HistoryServiceObserver,
         const std::string& languages,
         const std::set<std::string>& scheme_whitelist);
 
-    virtual bool RunOnDBThread(HistoryBackend* backend,
-                               history::HistoryDatabase* db) override;
-    virtual void DoneRunOnMainThread() override;
+    bool RunOnDBThread(HistoryBackend* backend,
+                       history::HistoryDatabase* db) override;
+    void DoneRunOnMainThread() override;
 
    private:
-    virtual ~RebuildPrivateDataFromHistoryDBTask();
+    ~RebuildPrivateDataFromHistoryDBTask() override;
 
     InMemoryURLIndex* index_;  // Call back to this index at completion.
     std::string languages_;  // Languages for word-breaking.
@@ -235,16 +235,16 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   void OnCacheSaveDone(bool succeeded);
 
   // Handles notifications of history changes.
-  virtual void Observe(int notification_type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int notification_type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // HistoryServiceObserver:
-  virtual void OnURLVisited(HistoryService* history_service,
-                            ui::PageTransition transition,
-                            const URLRow& row,
-                            const RedirectList& redirects,
-                            base::Time visit_time) override;
+  void OnURLVisited(HistoryService* history_service,
+                    ui::PageTransition transition,
+                    const URLRow& row,
+                    const RedirectList& redirects,
+                    base::Time visit_time) override;
 
   // Notification handlers.
   void OnURLsModified(const URLsModifiedDetails* details);

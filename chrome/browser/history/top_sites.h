@@ -178,7 +178,7 @@ class TopSites
  protected:
   void NotifyTopSitesLoaded();
   void NotifyTopSitesChanged();
-  virtual ~TopSites();
+  ~TopSites() override;
 
  private:
   ObserverList<TopSitesObserver> observer_list_;

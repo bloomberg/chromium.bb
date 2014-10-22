@@ -65,7 +65,7 @@ class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
 
  private:
   // SaveCacheObserver implementation.
-  virtual void OnCacheSaveFinished(bool succeeded) override;
+  void OnCacheSaveFinished(bool succeeded) override;
 
   base::Closure task_;
   bool succeeded_;
@@ -433,7 +433,7 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
 
 class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
  protected:
-  virtual base::FilePath::StringType TestDBName() const override;
+  base::FilePath::StringType TestDBName() const override;
 };
 
 base::FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {

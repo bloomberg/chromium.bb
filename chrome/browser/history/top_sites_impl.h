@@ -53,44 +53,38 @@ class TopSitesImpl : public TopSites {
   // Initializes TopSitesImpl.
   void Init(const base::FilePath& db_name);
 
-  virtual bool SetPageThumbnail(const GURL& url,
-                                const gfx::Image& thumbnail,
-                                const ThumbnailScore& score) override;
-  virtual bool SetPageThumbnailToJPEGBytes(
-      const GURL& url,
-      const base::RefCountedMemory* memory,
-      const ThumbnailScore& score) override;
-  virtual void GetMostVisitedURLs(
-      const GetMostVisitedURLsCallback& callback,
-      bool include_forced_urls) override;
-  virtual bool GetPageThumbnail(
-      const GURL& url,
-      bool prefix_match,
-      scoped_refptr<base::RefCountedMemory>* bytes) override;
-  virtual bool GetPageThumbnailScore(const GURL& url,
-                                     ThumbnailScore* score) override;
-  virtual bool GetTemporaryPageThumbnailScore(const GURL& url,
-                                              ThumbnailScore* score) override;
-  virtual void SyncWithHistory() override;
-  virtual bool HasBlacklistedItems() const override;
-  virtual void AddBlacklistedURL(const GURL& url) override;
-  virtual void RemoveBlacklistedURL(const GURL& url) override;
-  virtual bool IsBlacklisted(const GURL& url) override;
-  virtual void ClearBlacklistedURLs() override;
-  virtual void Shutdown() override;
-  virtual base::CancelableTaskTracker::TaskId StartQueryForMostVisited()
-      override;
-  virtual bool IsKnownURL(const GURL& url) override;
-  virtual const std::string& GetCanonicalURLString(
-      const GURL& url) const override;
-  virtual bool IsNonForcedFull() override;
-  virtual bool IsForcedFull() override;
-  virtual MostVisitedURLList GetPrepopulatePages() override;
-  virtual bool loaded() const override;
-  virtual bool AddForcedURL(const GURL& url, const base::Time& time) override;
+  bool SetPageThumbnail(const GURL& url,
+                        const gfx::Image& thumbnail,
+                        const ThumbnailScore& score) override;
+  bool SetPageThumbnailToJPEGBytes(const GURL& url,
+                                   const base::RefCountedMemory* memory,
+                                   const ThumbnailScore& score) override;
+  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
+                          bool include_forced_urls) override;
+  bool GetPageThumbnail(const GURL& url,
+                        bool prefix_match,
+                        scoped_refptr<base::RefCountedMemory>* bytes) override;
+  bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score) override;
+  bool GetTemporaryPageThumbnailScore(const GURL& url,
+                                      ThumbnailScore* score) override;
+  void SyncWithHistory() override;
+  bool HasBlacklistedItems() const override;
+  void AddBlacklistedURL(const GURL& url) override;
+  void RemoveBlacklistedURL(const GURL& url) override;
+  bool IsBlacklisted(const GURL& url) override;
+  void ClearBlacklistedURLs() override;
+  void Shutdown() override;
+  base::CancelableTaskTracker::TaskId StartQueryForMostVisited() override;
+  bool IsKnownURL(const GURL& url) override;
+  const std::string& GetCanonicalURLString(const GURL& url) const override;
+  bool IsNonForcedFull() override;
+  bool IsForcedFull() override;
+  MostVisitedURLList GetPrepopulatePages() override;
+  bool loaded() const override;
+  bool AddForcedURL(const GURL& url, const base::Time& time) override;
 
  protected:
-  virtual ~TopSitesImpl();
+  ~TopSitesImpl() override;
 
  private:
   friend class TopSitesImplTest;
@@ -180,9 +174,9 @@ class TopSitesImpl : public TopSites {
   base::TimeDelta GetUpdateDelay();
 
   // Implementation of content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Updates URLs in |cache_| and the db (in the background).
   // The non-forced URLs in |new_top_sites| replace those in |cache_|.

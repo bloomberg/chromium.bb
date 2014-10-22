@@ -49,8 +49,7 @@ class RequestImpl : public WebHistoryService::Request,
                     private OAuth2TokenService::Consumer,
                     private net::URLFetcherDelegate {
  public:
-  virtual ~RequestImpl() {
-  }
+  ~RequestImpl() override {}
 
   // Returns the response code received from the server, which will only be
   // valid if the request succeeded.
@@ -59,7 +58,7 @@ class RequestImpl : public WebHistoryService::Request,
   // Returns the contents of the response body received from the server.
   const std::string& response_body() { return response_body_; }
 
-  virtual bool is_pending() override { return is_pending_; }
+  bool is_pending() override { return is_pending_; }
 
  private:
   friend class history::WebHistoryService;
@@ -93,7 +92,7 @@ class RequestImpl : public WebHistoryService::Request,
   }
 
   // content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
     DCHECK_EQ(source, url_fetcher_.get());
     response_code_ = url_fetcher_->GetResponseCode();
 
@@ -128,10 +127,9 @@ class RequestImpl : public WebHistoryService::Request,
   }
 
   // OAuth2TokenService::Consumer interface.
-  virtual void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const std::string& access_token,
-      const base::Time& expiration_time) override {
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override {
     token_request_.reset();
     DCHECK(!access_token.empty());
     access_token_ = access_token;
@@ -143,9 +141,8 @@ class RequestImpl : public WebHistoryService::Request,
     url_fetcher_->Start();
   }
 
-  virtual void OnGetTokenFailure(
-      const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) override {
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override {
     token_request_.reset();
     is_pending_ = false;
 
