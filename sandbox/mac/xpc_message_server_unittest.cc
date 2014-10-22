@@ -43,7 +43,7 @@ class BlockDemuxer : public MessageDemuxer {
         pipe_(NULL) {
   }
 
-  virtual ~BlockDemuxer() {
+  ~BlockDemuxer() override {
     if (pipe_)
       xpc_release(pipe_);
     if (demux_block_)
@@ -68,7 +68,7 @@ class BlockDemuxer : public MessageDemuxer {
     return true;
   }
 
-  virtual void DemuxMessage(IPCMessage request) override {
+  void DemuxMessage(IPCMessage request) override {
     demux_block_(request);
   }
 

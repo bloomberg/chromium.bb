@@ -25,7 +25,7 @@ struct BootstrapSandboxPolicy;
 class LaunchdInterceptionServer : public MessageDemuxer {
  public:
   explicit LaunchdInterceptionServer(const BootstrapSandbox* sandbox);
-  virtual ~LaunchdInterceptionServer();
+  ~LaunchdInterceptionServer() override;
 
   // Initializes the class and starts running the message server. If the
   // |server_receive_right| is non-NULL, this class will take ownership of
@@ -33,7 +33,7 @@ class LaunchdInterceptionServer : public MessageDemuxer {
   bool Initialize(mach_port_t server_receive_right);
 
   // MessageDemuxer:
-  virtual void DemuxMessage(IPCMessage request) override;
+  void DemuxMessage(IPCMessage request) override;
 
   mach_port_t server_port() const { return message_server_->GetServerPort(); }
 
