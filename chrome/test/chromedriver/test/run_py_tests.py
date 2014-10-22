@@ -912,24 +912,59 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
   @staticmethod
   def GlobalSetUp():
     def respondWithUserAgentString(request):
-      return request.GetHeader('User-Agent')
+      return """
+        <html>
+        <body>%s</body>
+        </html>""" % request.GetHeader('User-Agent')
+
+    def respondWithUserAgentStringUseDeviceWidth(request):
+      return """
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1.0">
+        </head>
+        <body>%s</body>
+        </html>""" % request.GetHeader('User-Agent')
 
     MobileEmulationCapabilityTest._http_server = webserver.WebServer(
         chrome_paths.GetTestData())
     MobileEmulationCapabilityTest._http_server.SetCallbackForPath(
         '/userAgent', respondWithUserAgentString)
+    MobileEmulationCapabilityTest._http_server.SetCallbackForPath(
+        '/userAgentUseDeviceWidth', respondWithUserAgentStringUseDeviceWidth)
 
   @staticmethod
   def GlobalTearDown():
     MobileEmulationCapabilityTest._http_server.Shutdown()
 
-  def testDeviceMetrics(self):
+  def testDeviceMetricsWithStandardWidth(self):
     driver = self.CreateDriver(
         mobile_emulation = {
-            'deviceMetrics': {'width': 360, 'height': 640, 'pixelRatio': 3}})
+            'deviceMetrics': {'width': 360, 'height': 640, 'pixelRatio': 3},
+            'userAgent': 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Bui'
+                         'ld/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chr'
+                         'ome/18.0.1025.166 Mobile Safari/535.19'
+            })
+    driver.SetWindowSize(600, 400)
+    driver.Load(self._http_server.GetUrl() + '/userAgent')
+    self.assertTrue(driver.capabilities['mobileEmulationEnabled'])
+    self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
+    self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
+
+  def testDeviceMetricsWithDeviceWidth(self):
+    driver = self.CreateDriver(
+        mobile_emulation = {
+            'deviceMetrics': {'width': 360, 'height': 640, 'pixelRatio': 3},
+            'userAgent': 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Bui'
+                         'ld/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chr'
+                         'ome/18.0.1025.166 Mobile Safari/535.19'
+            })
+    driver.Load(self._http_server.GetUrl() + '/userAgentUseDeviceWidth')
     self.assertTrue(driver.capabilities['mobileEmulationEnabled'])
     self.assertEqual(360, driver.ExecuteScript('return window.innerWidth'))
+    self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
     self.assertEqual(640, driver.ExecuteScript('return window.innerHeight'))
+    self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
 
   def testUserAgent(self):
     driver = self.CreateDriver(
@@ -941,9 +976,11 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
   def testDeviceName(self):
     driver = self.CreateDriver(
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
-    driver.Load(self._http_server.GetUrl() + '/userAgent')
+    driver.Load(self._http_server.GetUrl() + '/userAgentUseDeviceWidth')
     self.assertEqual(360, driver.ExecuteScript('return window.innerWidth'))
+    self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
     self.assertEqual(640, driver.ExecuteScript('return window.innerHeight'))
+    self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
     body_tag = driver.FindElement('tag name', 'body')
     self.assertEqual(
         'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleW'
