@@ -18,7 +18,7 @@ class GroupTargetGenerator : public TargetGenerator {
   virtual ~GroupTargetGenerator();
 
  protected:
-  virtual void DoRun() OVERRIDE;
+  virtual void DoRun() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GroupTargetGenerator);

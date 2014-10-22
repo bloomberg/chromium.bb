@@ -58,9 +58,9 @@ class Target : public Item {
   static const char* GetStringForOutputType(OutputType type);
 
   // Item overrides.
-  virtual Target* AsTarget() OVERRIDE;
-  virtual const Target* AsTarget() const OVERRIDE;
-  virtual bool OnResolved(Err* err) OVERRIDE;
+  virtual Target* AsTarget() override;
+  virtual const Target* AsTarget() const override;
+  virtual bool OnResolved(Err* err) override;
 
   OutputType output_type() const { return output_type_; }
   void set_output_type(OutputType t) { output_type_ = t; }

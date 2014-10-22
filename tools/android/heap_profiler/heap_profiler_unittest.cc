@@ -14,9 +14,9 @@ namespace {
 
 class HeapProfilerTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE { heap_profiler_init(&stats_); }
+  virtual void SetUp() override { heap_profiler_init(&stats_); }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     CheckAllocVsStacktaceConsistency();
     heap_profiler_cleanup();
   }

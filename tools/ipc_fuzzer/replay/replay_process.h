@@ -37,8 +37,8 @@ class ReplayProcess : public IPC::Listener {
   void Run();
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
  private:
   void SendNextMessage();

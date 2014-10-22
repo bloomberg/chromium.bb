@@ -64,8 +64,8 @@ class Toolchain : public Item {
   virtual ~Toolchain();
 
   // Item overrides.
-  virtual Toolchain* AsToolchain() OVERRIDE;
-  virtual const Toolchain* AsToolchain() const OVERRIDE;
+  virtual Toolchain* AsToolchain() override;
+  virtual const Toolchain* AsToolchain() const override;
 
   // Returns TYPE_NONE on failure.
   static ToolType ToolNameToType(const base::StringPiece& str);

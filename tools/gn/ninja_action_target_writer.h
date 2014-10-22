@@ -19,7 +19,7 @@ class NinjaActionTargetWriter : public NinjaTargetWriter {
   NinjaActionTargetWriter(const Target* target, std::ostream& out);
   virtual ~NinjaActionTargetWriter();
 
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NinjaActionTargetWriter,

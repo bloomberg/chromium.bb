@@ -20,7 +20,7 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   NinjaBinaryTargetWriter(const Target* target, std::ostream& out);
   virtual ~NinjaBinaryTargetWriter();
 
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   typedef std::set<OutputFile> OutputFileSet;

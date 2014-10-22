@@ -14,7 +14,7 @@ class NinjaGroupTargetWriter : public NinjaTargetWriter {
   NinjaGroupTargetWriter(const Target* target, std::ostream& out);
   virtual ~NinjaGroupTargetWriter();
 
-  virtual void Run() OVERRIDE;
+  virtual void Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NinjaGroupTargetWriter);

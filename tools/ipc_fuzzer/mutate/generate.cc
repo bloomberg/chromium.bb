@@ -104,65 +104,65 @@ class GeneratorImpl : public Generator {
   GeneratorImpl() {}
   virtual ~GeneratorImpl() {}
 
-  virtual void GenerateBool(bool* value) OVERRIDE {
+  virtual void GenerateBool(bool* value) override {
     *value = RandInRange(2);
   }
 
-  virtual void GenerateInt(int* value) OVERRIDE {
+  virtual void GenerateInt(int* value) override {
     GenerateIntegralType<int>(value);
   }
 
-  virtual void GenerateLong(long* value) OVERRIDE {
+  virtual void GenerateLong(long* value) override {
     GenerateIntegralType<long>(value);
   }
 
-  virtual void GenerateSize(size_t* value) OVERRIDE {
+  virtual void GenerateSize(size_t* value) override {
     GenerateIntegralType<size_t>(value);
   }
 
-  virtual void GenerateUChar(unsigned char* value) OVERRIDE {
+  virtual void GenerateUChar(unsigned char* value) override {
     GenerateIntegralType<unsigned char>(value);
   }
 
-  virtual void GenerateUInt16(uint16* value) OVERRIDE {
+  virtual void GenerateUInt16(uint16* value) override {
     GenerateIntegralType<uint16>(value);
   }
 
-  virtual void GenerateUInt32(uint32* value) OVERRIDE {
+  virtual void GenerateUInt32(uint32* value) override {
     GenerateIntegralType<uint32>(value);
   }
 
-  virtual void GenerateInt64(int64* value) OVERRIDE {
+  virtual void GenerateInt64(int64* value) override {
     GenerateIntegralType<int64>(value);
   }
 
-  virtual void GenerateUInt64(uint64* value) OVERRIDE {
+  virtual void GenerateUInt64(uint64* value) override {
     GenerateIntegralType<uint64>(value);
   }
 
-  virtual void GenerateFloat(float* value) OVERRIDE {
+  virtual void GenerateFloat(float* value) override {
     GenerateFloatingType<float>(value);
   }
 
-  virtual void GenerateDouble(double* value) OVERRIDE {
+  virtual void GenerateDouble(double* value) override {
     GenerateFloatingType<double>(value);
   }
 
-  virtual void GenerateString(std::string* value) OVERRIDE {
+  virtual void GenerateString(std::string* value) override {
     GenerateStringType<std::string>(value);
   }
 
-  virtual void GenerateString16(base::string16* value) OVERRIDE {
+  virtual void GenerateString16(base::string16* value) override {
     GenerateStringType<base::string16>(value);
   }
 
-  virtual void GenerateData(char* data, int length) OVERRIDE {
+  virtual void GenerateData(char* data, int length) override {
     for (int i = 0; i < length; ++i) {
       GenerateIntegralType<char>(&data[i]);
     }
   }
 
-  virtual void GenerateBytes(void* data, int data_len) OVERRIDE {
+  virtual void GenerateBytes(void* data, int data_len) override {
     GenerateData(static_cast<char*>(data), data_len);
   }
 };

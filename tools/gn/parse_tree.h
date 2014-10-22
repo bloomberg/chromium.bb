@@ -139,13 +139,13 @@ class AccessorNode : public ParseNode {
   AccessorNode();
   virtual ~AccessorNode();
 
-  virtual const AccessorNode* AsAccessor() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const AccessorNode* AsAccessor() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   // Base is the thing on the left of the [] or dot, currently always required
   // to be an identifier token.
@@ -182,13 +182,13 @@ class BinaryOpNode : public ParseNode {
   BinaryOpNode();
   virtual ~BinaryOpNode();
 
-  virtual const BinaryOpNode* AsBinaryOp() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const BinaryOpNode* AsBinaryOp() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   const Token& op() const { return op_; }
   void set_op(const Token& t) { op_ = t; }
@@ -219,13 +219,13 @@ class BlockNode : public ParseNode {
   explicit BlockNode(bool has_scope);
   virtual ~BlockNode();
 
-  virtual const BlockNode* AsBlock() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const BlockNode* AsBlock() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   void set_begin_token(const Token& t) { begin_token_ = t; }
   void set_end(scoped_ptr<EndNode> e) { end_ = e.Pass(); }
@@ -260,13 +260,13 @@ class ConditionNode : public ParseNode {
   ConditionNode();
   virtual ~ConditionNode();
 
-  virtual const ConditionNode* AsConditionNode() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const ConditionNode* AsConditionNode() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   void set_if_token(const Token& token) { if_token_ = token; }
 
@@ -305,13 +305,13 @@ class FunctionCallNode : public ParseNode {
   FunctionCallNode();
   virtual ~FunctionCallNode();
 
-  virtual const FunctionCallNode* AsFunctionCall() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const FunctionCallNode* AsFunctionCall() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   const Token& function() const { return function_; }
   void set_function(Token t) { function_ = t; }
@@ -338,13 +338,13 @@ class IdentifierNode : public ParseNode {
   IdentifierNode(const Token& token);
   virtual ~IdentifierNode();
 
-  virtual const IdentifierNode* AsIdentifier() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const IdentifierNode* AsIdentifier() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   const Token& value() const { return value_; }
   void set_value(const Token& t) { value_ = t; }
@@ -362,13 +362,13 @@ class ListNode : public ParseNode {
   ListNode();
   virtual ~ListNode();
 
-  virtual const ListNode* AsList() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const ListNode* AsList() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   void set_begin_token(const Token& t) { begin_token_ = t; }
   void set_end(scoped_ptr<EndNode> e) { end_ = e.Pass(); }
@@ -399,13 +399,13 @@ class LiteralNode : public ParseNode {
   LiteralNode(const Token& token);
   virtual ~LiteralNode();
 
-  virtual const LiteralNode* AsLiteral() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const LiteralNode* AsLiteral() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   const Token& value() const { return value_; }
   void set_value(const Token& t) { value_ = t; }
@@ -423,13 +423,13 @@ class UnaryOpNode : public ParseNode {
   UnaryOpNode();
   virtual ~UnaryOpNode();
 
-  virtual const UnaryOpNode* AsUnaryOp() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const UnaryOpNode* AsUnaryOp() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   const Token& op() const { return op_; }
   void set_op(const Token& t) { op_ = t; }
@@ -458,13 +458,13 @@ class BlockCommentNode : public ParseNode {
   BlockCommentNode();
   virtual ~BlockCommentNode();
 
-  virtual const BlockCommentNode* AsBlockComment() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const BlockCommentNode* AsBlockComment() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   const Token& comment() const { return comment_; }
   void set_comment(const Token& t) { comment_ = t; }
@@ -486,13 +486,13 @@ class EndNode : public ParseNode {
   EndNode(const Token& token);
   virtual ~EndNode();
 
-  virtual const EndNode* AsEnd() const OVERRIDE;
-  virtual Value Execute(Scope* scope, Err* err) const OVERRIDE;
-  virtual LocationRange GetRange() const OVERRIDE;
+  virtual const EndNode* AsEnd() const override;
+  virtual Value Execute(Scope* scope, Err* err) const override;
+  virtual LocationRange GetRange() const override;
   virtual Err MakeErrorDescribing(
       const std::string& msg,
-      const std::string& help = std::string()) const OVERRIDE;
-  virtual void Print(std::ostream& out, int indent) const OVERRIDE;
+      const std::string& help = std::string()) const override;
+  virtual void Print(std::ostream& out, int indent) const override;
 
   const Token& value() const { return value_; }
   void set_value(const Token& t) { value_ = t; }

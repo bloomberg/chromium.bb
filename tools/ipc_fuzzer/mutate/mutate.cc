@@ -94,64 +94,64 @@ class DefaultFuzzer : public Fuzzer {
 
   virtual ~DefaultFuzzer() {}
 
-  virtual void FuzzBool(bool* value) OVERRIDE {
+  virtual void FuzzBool(bool* value) override {
     if (RandEvent(frequency_))
       (*value) = !(*value);
   }
 
-  virtual void FuzzInt(int* value) OVERRIDE {
+  virtual void FuzzInt(int* value) override {
     FuzzIntegralType<int>(value, frequency_);
   }
 
-  virtual void FuzzLong(long* value) OVERRIDE {
+  virtual void FuzzLong(long* value) override {
     FuzzIntegralType<long>(value, frequency_);
   }
 
-  virtual void FuzzSize(size_t* value) OVERRIDE {
+  virtual void FuzzSize(size_t* value) override {
     FuzzIntegralType<size_t>(value, frequency_);
   }
 
-  virtual void FuzzUChar(unsigned char* value) OVERRIDE {
+  virtual void FuzzUChar(unsigned char* value) override {
     FuzzIntegralType<unsigned char>(value, frequency_);
   }
 
-  virtual void FuzzUInt16(uint16* value) OVERRIDE {
+  virtual void FuzzUInt16(uint16* value) override {
     FuzzIntegralType<uint16>(value, frequency_);
   }
 
-  virtual void FuzzUInt32(uint32* value) OVERRIDE {
+  virtual void FuzzUInt32(uint32* value) override {
     FuzzIntegralType<uint32>(value, frequency_);
   }
 
-  virtual void FuzzInt64(int64* value) OVERRIDE {
+  virtual void FuzzInt64(int64* value) override {
     FuzzIntegralType<int64>(value, frequency_);
   }
 
-  virtual void FuzzUInt64(uint64* value) OVERRIDE {
+  virtual void FuzzUInt64(uint64* value) override {
     FuzzIntegralType<uint64>(value, frequency_);
   }
 
-  virtual void FuzzFloat(float* value) OVERRIDE {
+  virtual void FuzzFloat(float* value) override {
     if (RandEvent(frequency_))
       *value = RandDouble();
   }
 
-  virtual void FuzzDouble(double* value) OVERRIDE {
+  virtual void FuzzDouble(double* value) override {
     if (RandEvent(frequency_))
       *value = RandDouble();
   }
 
-  virtual void FuzzString(std::string* value) OVERRIDE {
+  virtual void FuzzString(std::string* value) override {
     FuzzStringType<std::string>(value, frequency_, "BORKED", std::string());
   }
 
-  virtual void FuzzString16(base::string16* value) OVERRIDE {
+  virtual void FuzzString16(base::string16* value) override {
     FuzzStringType<base::string16>(value, frequency_,
                                    base::WideToUTF16(L"BORKED"),
                                    base::WideToUTF16(L""));
   }
 
-  virtual void FuzzData(char* data, int length) OVERRIDE {
+  virtual void FuzzData(char* data, int length) override {
     if (RandEvent(frequency_)) {
       for (int i = 0; i < length; ++i) {
         FuzzIntegralType<char>(&data[i], frequency_);
@@ -159,7 +159,7 @@ class DefaultFuzzer : public Fuzzer {
     }
   }
 
-  virtual void FuzzBytes(void* data, int data_len) OVERRIDE {
+  virtual void FuzzBytes(void* data, int data_len) override {
     FuzzData(static_cast<char*>(data), data_len);
   }
 
@@ -175,21 +175,21 @@ class NoOpFuzzer : public Fuzzer {
   NoOpFuzzer() {}
   virtual ~NoOpFuzzer() {}
 
-  virtual void FuzzBool(bool* value) OVERRIDE {}
-  virtual void FuzzInt(int* value) OVERRIDE {}
-  virtual void FuzzLong(long* value) OVERRIDE {}
-  virtual void FuzzSize(size_t* value) OVERRIDE {}
-  virtual void FuzzUChar(unsigned char* value) OVERRIDE {}
-  virtual void FuzzUInt16(uint16* value) OVERRIDE {}
-  virtual void FuzzUInt32(uint32* value) OVERRIDE {}
-  virtual void FuzzInt64(int64* value) OVERRIDE {}
-  virtual void FuzzUInt64(uint64* value) OVERRIDE {}
-  virtual void FuzzFloat(float* value) OVERRIDE {}
-  virtual void FuzzDouble(double* value) OVERRIDE {}
-  virtual void FuzzString(std::string* value) OVERRIDE {}
-  virtual void FuzzString16(base::string16* value) OVERRIDE {}
-  virtual void FuzzData(char* data, int length) OVERRIDE {}
-  virtual void FuzzBytes(void* data, int data_len) OVERRIDE {}
+  virtual void FuzzBool(bool* value) override {}
+  virtual void FuzzInt(int* value) override {}
+  virtual void FuzzLong(long* value) override {}
+  virtual void FuzzSize(size_t* value) override {}
+  virtual void FuzzUChar(unsigned char* value) override {}
+  virtual void FuzzUInt16(uint16* value) override {}
+  virtual void FuzzUInt32(uint32* value) override {}
+  virtual void FuzzInt64(int64* value) override {}
+  virtual void FuzzUInt64(uint64* value) override {}
+  virtual void FuzzFloat(float* value) override {}
+  virtual void FuzzDouble(double* value) override {}
+  virtual void FuzzString(std::string* value) override {}
+  virtual void FuzzString16(base::string16* value) override {}
+  virtual void FuzzData(char* data, int length) override {}
+  virtual void FuzzBytes(void* data, int data_len) override {}
 };
 
 class FuzzerFactory {

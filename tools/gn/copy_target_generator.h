@@ -18,7 +18,7 @@ class CopyTargetGenerator : public TargetGenerator {
   virtual ~CopyTargetGenerator();
 
  protected:
-  virtual void DoRun() OVERRIDE;
+  virtual void DoRun() override;
 
  private:
   void FillDestDir();

@@ -114,7 +114,7 @@ class Setup : public CommonSetup {
 
   Scheduler& scheduler() { return scheduler_; }
 
-  virtual Scheduler* GetScheduler() OVERRIDE;
+  virtual Scheduler* GetScheduler() override;
 
   // Returns the file used to store the build arguments. Note that the path
   // might not exist.
@@ -209,7 +209,7 @@ class DependentSetup : public CommonSetup {
   void RunPreMessageLoop();
   bool RunPostMessageLoop();
 
-  virtual Scheduler* GetScheduler() OVERRIDE;
+  virtual Scheduler* GetScheduler() override;
 
  private:
   Scheduler* scheduler_;

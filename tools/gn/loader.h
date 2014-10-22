@@ -84,11 +84,11 @@ class LoaderImpl : public Loader {
   // Loader implementation.
   virtual void Load(const SourceFile& file,
                     const LocationRange& origin,
-                    const Label& toolchain_name) OVERRIDE;
-  virtual void ToolchainLoaded(const Toolchain* toolchain) OVERRIDE;
-  virtual Label GetDefaultToolchain() const OVERRIDE;
+                    const Label& toolchain_name) override;
+  virtual void ToolchainLoaded(const Toolchain* toolchain) override;
+  virtual Label GetDefaultToolchain() const override;
   virtual const Settings* GetToolchainSettings(
-      const Label& label) const OVERRIDE;
+      const Label& label) const override;
 
   // Sets the message loop corresponding to the main thread. By default this
   // class will use the thread active during construction, but there is not

@@ -20,7 +20,7 @@ class BinaryTargetGenerator : public TargetGenerator {
   virtual ~BinaryTargetGenerator();
 
  protected:
-  virtual void DoRun() OVERRIDE;
+  virtual void DoRun() override;
 
  private:
   bool FillCheckIncludes();

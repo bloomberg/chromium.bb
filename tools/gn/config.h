@@ -15,8 +15,8 @@ class Config : public Item {
   Config(const Settings* settings, const Label& label);
   virtual ~Config();
 
-  virtual Config* AsConfig() OVERRIDE;
-  virtual const Config* AsConfig() const OVERRIDE;
+  virtual Config* AsConfig() override;
+  virtual const Config* AsConfig() const override;
 
   ConfigValues& config_values() { return config_values_; }
   const ConfigValues& config_values() const { return config_values_; }

@@ -68,7 +68,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
   }
 
   // Daemon::ServerDelegate:
-  virtual void Init() OVERRIDE {
+  virtual void Init() override {
     DCHECK(!g_notifier);
     g_notifier = new forwarder2::PipeNotifier();
     signal(SIGTERM, KillHandler);
@@ -77,7 +77,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
     controller_thread_->Start();
   }
 
-  virtual void OnClientConnected(scoped_ptr<Socket> client_socket) OVERRIDE {
+  virtual void OnClientConnected(scoped_ptr<Socket> client_socket) override {
     if (initialized_) {
       client_socket->WriteString("OK");
       return;
@@ -119,7 +119,7 @@ class ClientDelegate : public Daemon::ClientDelegate {
   bool has_failed() const { return has_failed_; }
 
   // Daemon::ClientDelegate:
-  virtual void OnDaemonReady(Socket* daemon_socket) OVERRIDE {
+  virtual void OnDaemonReady(Socket* daemon_socket) override {
     char buf[kBufSize];
     const int bytes_read = daemon_socket->Read(
         buf, sizeof(buf) - 1 /* leave space for null terminator */);

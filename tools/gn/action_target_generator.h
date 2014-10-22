@@ -19,7 +19,7 @@ class ActionTargetGenerator : public TargetGenerator {
   virtual ~ActionTargetGenerator();
 
  protected:
-  virtual void DoRun() OVERRIDE;
+  virtual void DoRun() override;
 
  private:
   bool FillScript();
