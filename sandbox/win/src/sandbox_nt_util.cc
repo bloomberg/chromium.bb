@@ -361,6 +361,9 @@ UNICODE_STRING* AnsiToUnicode(const char* string) {
 }
 
 UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32* flags) {
+  // PEImage's dtor won't be run during SEH unwinding, but that's OK.
+#pragma warning(push)
+#pragma warning(disable: 4509)
   UNICODE_STRING* out_name = NULL;
   __try {
     do {
@@ -389,6 +392,7 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32* flags) {
   }
 
   return out_name;
+#pragma warning(pop)
 }
 
 UNICODE_STRING* GetBackingFilePath(PVOID address) {
