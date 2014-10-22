@@ -52,8 +52,7 @@ class SupervisedUserSiteList {
     std::vector<std::string> hostname_hashes;
   };
 
-  SupervisedUserSiteList(const std::string& extension_id,
-                         const base::FilePath& path);
+  explicit SupervisedUserSiteList(const base::FilePath& path);
   ~SupervisedUserSiteList();
 
   // Creates a copy of the site list.
@@ -70,10 +69,7 @@ class SupervisedUserSiteList {
 
  private:
   bool LazyLoad();
-  void CopyThumbnailUrl(const base::DictionaryValue* source,
-                        base::DictionaryValue* dest);
 
-  std::string extension_id_;
   base::FilePath path_;
   scoped_ptr<base::DictionaryValue> categories_;
   scoped_ptr<base::ListValue> sites_;

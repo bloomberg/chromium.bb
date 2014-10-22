@@ -519,8 +519,7 @@ SupervisedUserService::GetActiveSiteLists() {
     extensions::ExtensionResource site_list =
         extensions::SupervisedUserInfo::GetContentPackSiteList(extension.get());
     if (!site_list.empty()) {
-      site_lists.push_back(new SupervisedUserSiteList(extension->id(),
-                                                      site_list.GetFilePath()));
+      site_lists.push_back(new SupervisedUserSiteList(site_list.GetFilePath()));
     }
   }
 

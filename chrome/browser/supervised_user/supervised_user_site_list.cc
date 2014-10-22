@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "extensions/common/extension.h"
+#include "url/gurl.h"
 
 const int kSitelistFormatVersion = 1;
 
@@ -17,8 +17,6 @@ const char kHostnameHashesKey[] = "hostname_hashes";
 const char kNameKey[] = "name";
 const char kSitesKey[] = "sites";
 const char kSitelistFormatVersionKey[] = "version";
-const char kThumbnailKey[] = "thumbnail";
-const char kThumbnailUrlKey[] = "thumbnail_url";
 const char kUrlKey[] = "url";
 const char kWhitelistKey[] = "whitelist";
 
@@ -30,7 +28,7 @@ struct CategoryInfo {
 };
 
 // These are placeholders for now.
-CategoryInfo g_categories[] = {
+const CategoryInfo g_categories[] = {
   {"com.google.chrome.animals", "Animals and Plants"},
   {"com.google.chrome.arts", "Arts"},
   {"com.google.chrome.business", "Business"},
@@ -127,17 +125,15 @@ SupervisedUserSiteList::Site::Site(const base::string16& name,
 SupervisedUserSiteList::Site::~Site() {}
 
 SupervisedUserSiteList::SupervisedUserSiteList(
-    const std::string& extension_id,
     const base::FilePath& path)
-    : extension_id_(extension_id),
-      path_(path) {
+    : path_(path) {
 }
 
 SupervisedUserSiteList::~SupervisedUserSiteList() {
 }
 
 SupervisedUserSiteList* SupervisedUserSiteList::Clone() const {
-  return new SupervisedUserSiteList(extension_id_, path_);
+  return new SupervisedUserSiteList(path_);
 }
 
 // static
@@ -222,27 +218,4 @@ bool SupervisedUserSiteList::LazyLoad() {
     categories_.reset(categories->DeepCopy());
 
   return true;
-}
-
-void SupervisedUserSiteList::CopyThumbnailUrl(
-    const base::DictionaryValue* source,
-    base::DictionaryValue* dest) {
-  if (!source->HasKey(kThumbnailKey))
-    return;
-
-  std::string thumbnail;
-  if (!source->GetString(kThumbnailKey, &thumbnail)) {
-    LOG(ERROR) << "Invalid thumbnail";
-    return;
-  }
-
-  GURL base_url =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id_);
-  GURL thumbnail_url = base_url.Resolve(thumbnail);
-  if (!thumbnail_url.is_valid()) {
-    LOG(ERROR) << "Invalid thumbnail";
-    return;
-  }
-
-  dest->SetString(kThumbnailUrlKey, thumbnail_url.spec());
 }
