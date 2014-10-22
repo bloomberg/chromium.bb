@@ -273,24 +273,20 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
     ASSERT(m_resource == resource);
     if (m_streamingSuppressed)
         return;
-    if (!m_firstDataChunkReceived) {
-        m_firstDataChunkReceived = true;
-        const char* histogramName = startedStreamingHistogramName(m_scriptType);
-        // Check the size of the first data chunk. The expectation is that if
-        // the first chunk is small, there won't be a second one. In those
-        // cases, it doesn't make sense to stream at all.
+    if (!m_haveEnoughDataForStreaming) {
+        // Even if the first data chunk is small, the script can still be big
+        // enough - wait until the next data chunk comes before deciding whether
+        // to start the streaming.
         if (resource->resourceBuffer()->size() < kSmallScriptThreshold) {
-            suppressStreaming();
-            blink::Platform::current()->histogramEnumeration(histogramName, 0, 2);
             return;
         }
+        m_haveEnoughDataForStreaming = true;
+        const char* histogramName = startedStreamingHistogramName(m_scriptType);
         if (ScriptStreamerThread::shared()->isRunningTask()) {
             // At the moment we only have one thread for running the tasks. A
             // new task shouldn't be queued before the running task completes,
             // because the running task can block and wait for data from the
-            // network. At the moment we are only streaming parser blocking
-            // scripts, but this code can still be hit when multiple frames are
-            // loading simultaneously.
+            // network.
             suppressStreaming();
             blink::Platform::current()->histogramEnumeration(histogramName, 0, 2);
             return;
@@ -311,11 +307,15 @@ void ScriptStreamer::notifyFinished(Resource* resource)
 {
     ASSERT(isMainThread());
     ASSERT(m_resource == resource);
-    // A special case: empty scripts. We didn't receive any data before this
-    // notification. In that case, there won't be a "parsing complete"
-    // notification either, and we should not wait for it.
-    if (!m_firstDataChunkReceived)
+    // A special case: empty and small scripts. We didn't receive enough data to
+    // start the streaming before this notification. In that case, there won't
+    // be a "parsing complete" notification either, and we should not wait for
+    // it.
+    if (!m_haveEnoughDataForStreaming) {
+        const char* histogramName = startedStreamingHistogramName(m_scriptType);
+        blink::Platform::current()->histogramEnumeration(histogramName, 0, 2);
         suppressStreaming();
+    }
     m_stream->didFinishLoading();
     m_loadingFinished = true;
     notifyFinishedToClient();
@@ -329,7 +329,7 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::Str
     , m_client(0)
     , m_loadingFinished(false)
     , m_parsingFinished(false)
-    , m_firstDataChunkReceived(false)
+    , m_haveEnoughDataForStreaming(false)
     , m_streamingSuppressed(false)
     , m_scriptType(scriptType)
 {
