@@ -24,10 +24,10 @@ namespace notifier {
 class ChromeNotifierService : public KeyedService {
  public:
   explicit ChromeNotifierService(Profile* profile);
-  virtual ~ChromeNotifierService();
+  ~ChromeNotifierService() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Returns the SyncableService for syncer::SYNCED_NOTIFICATIONS and
   // syncer::SYNCED_NOTIFICATION_APP_INFO

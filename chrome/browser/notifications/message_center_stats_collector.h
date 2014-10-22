@@ -39,7 +39,7 @@ class MessageCenterStatsCollector
 
   explicit MessageCenterStatsCollector(
       message_center::MessageCenter* message_center);
-  virtual ~MessageCenterStatsCollector();
+  ~MessageCenterStatsCollector() override;
 
  private:
   // Represents the aggregate stats for each notification.
@@ -63,21 +63,19 @@ class MessageCenterStatsCollector
   };
 
   // MessageCenterObserver
-  virtual void OnNotificationAdded(const std::string& notification_id) override;
-  virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) override;
-  virtual void OnNotificationUpdated(
-      const std::string& notification_id) override;
-  virtual void OnNotificationClicked(
-      const std::string& notification_id) override;
-  virtual void OnNotificationButtonClicked(const std::string& notification_id,
-                                           int button_index) override;
-  virtual void OnNotificationDisplayed(
+  void OnNotificationAdded(const std::string& notification_id) override;
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool by_user) override;
+  void OnNotificationUpdated(const std::string& notification_id) override;
+  void OnNotificationClicked(const std::string& notification_id) override;
+  void OnNotificationButtonClicked(const std::string& notification_id,
+                                   int button_index) override;
+  void OnNotificationDisplayed(
       const std::string& notification_id,
       const message_center::DisplaySource source) override;
-  virtual void OnCenterVisibilityChanged(
+  void OnCenterVisibilityChanged(
       message_center::Visibility visibility) override;
-  virtual void OnQuietModeChanged(bool in_quiet_mode) override;
+  void OnQuietModeChanged(bool in_quiet_mode) override;
 
   // Weak, global.
   message_center::MessageCenter* message_center_;

@@ -53,28 +53,26 @@ class MessageCenterSettingsController
  public:
   explicit MessageCenterSettingsController(
       ProfileInfoCache* profile_info_cache);
-  virtual ~MessageCenterSettingsController();
+  ~MessageCenterSettingsController() override;
 
   // Overridden from message_center::NotifierSettingsProvider.
-  virtual void AddObserver(
+  void AddObserver(message_center::NotifierSettingsObserver* observer) override;
+  void RemoveObserver(
       message_center::NotifierSettingsObserver* observer) override;
-  virtual void RemoveObserver(
-      message_center::NotifierSettingsObserver* observer) override;
-  virtual size_t GetNotifierGroupCount() const override;
-  virtual const message_center::NotifierGroup& GetNotifierGroupAt(
+  size_t GetNotifierGroupCount() const override;
+  const message_center::NotifierGroup& GetNotifierGroupAt(
       size_t index) const override;
-  virtual bool IsNotifierGroupActiveAt(size_t index) const override;
-  virtual void SwitchToNotifierGroup(size_t index) override;
-  virtual const message_center::NotifierGroup& GetActiveNotifierGroup() const
-      override;
-  virtual void GetNotifierList(
+  bool IsNotifierGroupActiveAt(size_t index) const override;
+  void SwitchToNotifierGroup(size_t index) override;
+  const message_center::NotifierGroup& GetActiveNotifierGroup() const override;
+  void GetNotifierList(
       std::vector<message_center::Notifier*>* notifiers) override;
-  virtual void SetNotifierEnabled(const message_center::Notifier& notifier,
-                                  bool enabled) override;
-  virtual void OnNotifierSettingsClosing() override;
-  virtual bool NotifierHasAdvancedSettings(
+  void SetNotifierEnabled(const message_center::Notifier& notifier,
+                          bool enabled) override;
+  void OnNotifierSettingsClosing() override;
+  bool NotifierHasAdvancedSettings(
       const message_center::NotifierId& notifier_id) const override;
-  virtual void OnNotifierAdvancedSettingsRequested(
+  void OnNotifierAdvancedSettingsRequested(
       const message_center::NotifierId& notifier_id,
       const std::string* notification_id) override;
 
@@ -85,14 +83,13 @@ class MessageCenterSettingsController
 #endif
 
   // Overridden from extensions::AppIconLoader::Delegate.
-  virtual void SetAppImage(const std::string& id,
-                           const gfx::ImageSkia& image) override;
+  void SetAppImage(const std::string& id, const gfx::ImageSkia& image) override;
 
  private:
   // Overridden from content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void OnFaviconLoaded(const GURL& url,
                        const favicon_base::FaviconImageResult& favicon_result);

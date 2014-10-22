@@ -25,12 +25,12 @@ class ExtensionWelcomeNotificationFactory
   friend struct DefaultSingletonTraits<ExtensionWelcomeNotificationFactory>;
 
   ExtensionWelcomeNotificationFactory();
-  virtual ~ExtensionWelcomeNotificationFactory();
+  ~ExtensionWelcomeNotificationFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

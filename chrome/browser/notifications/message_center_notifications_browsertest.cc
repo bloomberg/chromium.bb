@@ -29,16 +29,16 @@ class TestAddObserver : public message_center::MessageCenterObserver {
     message_center_->AddObserver(this);
   }
 
-  virtual ~TestAddObserver() { message_center_->RemoveObserver(this); }
+  ~TestAddObserver() override { message_center_->RemoveObserver(this); }
 
-  virtual void OnNotificationAdded(const std::string& id) override {
+  void OnNotificationAdded(const std::string& id) override {
     std::string log = logs_[id];
     if (log != "")
       log += "_";
     logs_[id] = log + "add-" + id;
   }
 
-  virtual void OnNotificationUpdated(const std::string& id) override {
+  void OnNotificationUpdated(const std::string& id) override {
     std::string log = logs_[id];
     if (log != "")
       log += "_";
@@ -72,23 +72,23 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
    public:
     explicit TestDelegate(const std::string& id) : id_(id) {}
 
-    virtual void Display() override { log_ += "Display_"; }
-    virtual void Error() override { log_ += "Error_"; }
-    virtual void Close(bool by_user) override {
+    void Display() override { log_ += "Display_"; }
+    void Error() override { log_ += "Error_"; }
+    void Close(bool by_user) override {
       log_ += "Close_";
       log_ += ( by_user ? "by_user_" : "programmatically_");
     }
-    virtual void Click() override { log_ += "Click_"; }
-    virtual void ButtonClick(int button_index) override {
+    void Click() override { log_ += "Click_"; }
+    void ButtonClick(int button_index) override {
       log_ += "ButtonClick_";
       log_ += base::IntToString(button_index) + "_";
     }
-    virtual std::string id() const override { return id_; }
+    std::string id() const override { return id_; }
 
     const std::string& log() { return log_; }
 
    private:
-    virtual ~TestDelegate() {}
+    ~TestDelegate() override {}
     std::string id_;
     std::string log_;
 

@@ -80,7 +80,7 @@ class DesktopNotificationService : public PermissionContextBase
                                          Profile* profile);
 
   explicit DesktopNotificationService(Profile* profile);
-  virtual ~DesktopNotificationService();
+  ~DesktopNotificationService() override;
 
   // Requests Web Notification permission for |requesting_frame|. The |callback|
   // will be invoked after the user has made a decision.
@@ -133,16 +133,15 @@ class DesktopNotificationService : public PermissionContextBase
 
 #if defined(ENABLE_EXTENSIONS)
   // extensions::ExtensionRegistryObserver:
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 #endif
 
   // PermissionContextBase:
-  virtual void UpdateContentSetting(const GURL& requesting_origin,
-                                    const GURL& embedder_origin,
-                                    bool allowed) override;
+  void UpdateContentSetting(const GURL& requesting_origin,
+                            const GURL& embedder_origin,
+                            bool allowed) override;
 
   // The profile which owns this object.
   Profile* profile_;

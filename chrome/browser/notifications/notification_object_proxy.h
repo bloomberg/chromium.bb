@@ -28,16 +28,16 @@ class NotificationObjectProxy
       scoped_ptr<content::DesktopNotificationDelegate> delegate);
 
   // NotificationDelegate implementation.
-  virtual void Display() override;
-  virtual void Error() override;
-  virtual void Close(bool by_user) override;
-  virtual void Click() override;
-  virtual std::string id() const override;
+  void Display() override;
+  void Error() override;
+  void Close(bool by_user) override;
+  void Click() override;
+  std::string id() const override;
 
  protected:
   friend class base::RefCountedThreadSafe<NotificationObjectProxy>;
 
-  virtual ~NotificationObjectProxy();
+  ~NotificationObjectProxy() override;
 
  private:
   scoped_ptr<content::DesktopNotificationDelegate> delegate_;

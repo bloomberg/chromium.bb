@@ -45,33 +45,30 @@ class MessageCenterNotificationManager
       message_center::MessageCenter* message_center,
       PrefService* local_state,
       scoped_ptr<message_center::NotifierSettingsProvider> settings_provider);
-  virtual ~MessageCenterNotificationManager();
+  ~MessageCenterNotificationManager() override;
 
   // Registers preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // NotificationUIManager
-  virtual void Add(const Notification& notification,
-                   Profile* profile) override;
-  virtual bool Update(const Notification& notification,
-                      Profile* profile) override;
-  virtual const Notification* FindById(const std::string& delegate_id,
-                                       ProfileID profile_id) const override;
-  virtual bool CancelById(const std::string& delegate_id,
-                          ProfileID profile_id) override;
-  virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
+  void Add(const Notification& notification, Profile* profile) override;
+  bool Update(const Notification& notification, Profile* profile) override;
+  const Notification* FindById(const std::string& delegate_id,
+                               ProfileID profile_id) const override;
+  bool CancelById(const std::string& delegate_id,
+                  ProfileID profile_id) override;
+  std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
       Profile* profile,
       const GURL& source) override;
-  virtual bool CancelAllBySourceOrigin(const GURL& source_origin) override;
-  virtual bool CancelAllByProfile(ProfileID profile_id) override;
-  virtual void CancelAll() override;
+  bool CancelAllBySourceOrigin(const GURL& source_origin) override;
+  bool CancelAllByProfile(ProfileID profile_id) override;
+  void CancelAll() override;
 
   // MessageCenterObserver
-  virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) override;
-  virtual void OnCenterVisibilityChanged(message_center::Visibility) override;
-  virtual void OnNotificationUpdated(const std::string& notification_id)
-      override;
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool by_user) override;
+  void OnCenterVisibilityChanged(message_center::Visibility) override;
+  void OnNotificationUpdated(const std::string& notification_id) override;
 
   void EnsureMessageCenterClosed();
 

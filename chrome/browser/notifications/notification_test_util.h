@@ -22,14 +22,14 @@ class MockNotificationDelegate : public NotificationDelegate {
   explicit MockNotificationDelegate(const std::string& id);
 
   // NotificationDelegate interface.
-  virtual void Display() override {}
-  virtual void Error() override {}
-  virtual void Close(bool by_user) override {}
-  virtual void Click() override {}
-  virtual std::string id() const override;
+  void Display() override {}
+  void Error() override {}
+  void Close(bool by_user) override {}
+  void Click() override {}
+  std::string id() const override;
 
  private:
-  virtual ~MockNotificationDelegate();
+  ~MockNotificationDelegate() override;
 
   std::string id_;
 
@@ -79,39 +79,38 @@ class LoggingNotificationDelegate : public NotificationDelegate {
 class StubNotificationUIManager : public NotificationUIManager {
  public:
   explicit StubNotificationUIManager(const GURL& welcome_origin);
-  virtual ~StubNotificationUIManager();
+  ~StubNotificationUIManager() override;
 
   // Adds a notification to be displayed. Virtual for unit test override.
-  virtual void Add(const Notification& notification, Profile* profile) override;
-  virtual bool Update(const Notification& notification,
-                      Profile* profile) override;
+  void Add(const Notification& notification, Profile* profile) override;
+  bool Update(const Notification& notification, Profile* profile) override;
 
   // Returns NULL if no notifications match the supplied ID, either currently
   // displayed or in the queue.
-  virtual const Notification* FindById(const std::string& delegate_id,
-                                       ProfileID profile_id) const override;
+  const Notification* FindById(const std::string& delegate_id,
+                               ProfileID profile_id) const override;
 
   // Removes any notifications matching the supplied ID, either currently
   // displayed or in the queue.  Returns true if anything was removed.
-  virtual bool CancelById(const std::string& delegate_id,
-                          ProfileID profile_id) override;
+  bool CancelById(const std::string& delegate_id,
+                  ProfileID profile_id) override;
 
   // Adds the delegate_id for each outstanding notification to the set
   // |delegate_ids| (must not be NULL).
-  virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
+  std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
       Profile* profile,
       const GURL& source) override;
 
   // Removes notifications matching the |source_origin| (which could be an
   // extension ID). Returns true if anything was removed.
-  virtual bool CancelAllBySourceOrigin(const GURL& source_origin) override;
+  bool CancelAllBySourceOrigin(const GURL& source_origin) override;
 
   // Removes notifications matching |profile|. Returns true if any were removed.
-  virtual bool CancelAllByProfile(ProfileID profile_id) override;
+  bool CancelAllByProfile(ProfileID profile_id) override;
 
   // Cancels all pending notifications and closes anything currently showing.
   // Used when the app is terminating.
-  virtual void CancelAll() override;
+  void CancelAll() override;
 
   // Test hook to get the notification so we can check it
   const Notification& notification() const { return notification_; }

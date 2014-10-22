@@ -38,14 +38,14 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   }
 
   // message_center::FakeMessageCenter Overrides
-  virtual message_center::Notification* FindVisibleNotificationById(
+  message_center::Notification* FindVisibleNotificationById(
       const std::string& id) override {
     if (last_notification.get() && last_notification->id() == id)
       return last_notification.get();
     return NULL;
   }
 
-  virtual void AddNotification(
+  void AddNotification(
       scoped_ptr<message_center::Notification> notification) override {
     EXPECT_FALSE(last_notification.get());
     last_notification.swap(notification);
@@ -54,8 +54,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
       notifications_with_shown_as_popup_++;
   }
 
-  virtual void RemoveNotification(const std::string& id,
-                                  bool by_user) override {
+  void RemoveNotification(const std::string& id, bool by_user) override {
     EXPECT_TRUE(last_notification.get());
     last_notification.reset();
     remove_notification_calls_++;
@@ -85,17 +84,14 @@ public:
   }
 
   // ExtensionWelcomeNotification::Delegate
-  virtual message_center::MessageCenter* GetMessageCenter() override {
+  message_center::MessageCenter* GetMessageCenter() override {
     return message_center_.get();
   }
 
-  virtual base::Time GetCurrentTime() override {
-    return start_time_ + elapsed_time_;
-  }
+  base::Time GetCurrentTime() override { return start_time_ + elapsed_time_; }
 
-  virtual void PostTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task) override {
+  void PostTask(const tracked_objects::Location& from_here,
+                const base::Closure& task) override {
     EXPECT_TRUE(pending_task_.is_null());
     pending_task_ = task;
   }
@@ -209,16 +205,16 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     explicit TestNotificationDelegate(const std::string& id) : id_(id) {}
 
     // Overridden from NotificationDelegate:
-    virtual void Display() override {}
-    virtual void Error() override {}
-    virtual void Close(bool by_user) override {}
-    virtual void Click() override {}
-    virtual void ButtonClick(int index) override {}
+    void Display() override {}
+    void Error() override {}
+    void Close(bool by_user) override {}
+    void Click() override {}
+    void ButtonClick(int index) override {}
 
-    virtual std::string id() const override { return id_; }
+    std::string id() const override { return id_; }
 
    private:
-    virtual ~TestNotificationDelegate() {}
+    ~TestNotificationDelegate() override {}
 
     const std::string id_;
 

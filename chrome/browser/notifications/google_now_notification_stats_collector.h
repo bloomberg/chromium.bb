@@ -18,14 +18,14 @@ class GoogleNowNotificationStatsCollector
  public:
   explicit GoogleNowNotificationStatsCollector(
       message_center::MessageCenter* message_center);
-  virtual ~GoogleNowNotificationStatsCollector();
+  ~GoogleNowNotificationStatsCollector() override;
 
  private:
   // MessageCenterObserver
-  virtual void OnNotificationDisplayed(
+  void OnNotificationDisplayed(
       const std::string& notification_id,
       const message_center::DisplaySource source) override;
-  virtual void OnCenterVisibilityChanged(
+  void OnCenterVisibilityChanged(
       message_center::Visibility visibility) override;
 
   // Counts the number of Google Now Notifications in the message center.

@@ -23,7 +23,7 @@ class NotificationDelegate : public message_center::NotificationDelegate {
   virtual std::string id() const = 0;
 
  protected:
-  virtual ~NotificationDelegate() {}
+  ~NotificationDelegate() override {}
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_DELEGATE_H_

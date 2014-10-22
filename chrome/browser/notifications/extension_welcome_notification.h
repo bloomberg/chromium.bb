@@ -64,7 +64,7 @@ class ExtensionWelcomeNotification : public KeyedService,
   // The extension Id associated with the Google Now extension.
   static const char kChromeNowExtensionID[];
 
-  virtual ~ExtensionWelcomeNotification();
+  ~ExtensionWelcomeNotification() override;
 
   // To workaround the lack of delegating constructors prior to C++11, we use
   // static Create methods.
@@ -76,7 +76,7 @@ class ExtensionWelcomeNotification : public KeyedService,
                                               Delegate* const delegate);
 
   // PrefServiceSyncableObserver
-  virtual void OnIsSyncingChanged() override;
+  void OnIsSyncingChanged() override;
 
   // Adds in the welcome notification if required for components built
   // into Chrome that show notifications like Chrome Now.

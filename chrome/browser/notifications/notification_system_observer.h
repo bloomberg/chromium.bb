@@ -15,13 +15,13 @@ class NotificationUIManager;
 class NotificationSystemObserver : public content::NotificationObserver {
  public:
   explicit NotificationSystemObserver(NotificationUIManager* ui_manager);
-  virtual ~NotificationSystemObserver();
+  ~NotificationSystemObserver() override;
 
  protected:
   // content::NotificationObserver override.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   // Registrar for the other kind of notifications (event signaling).

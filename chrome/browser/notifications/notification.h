@@ -48,7 +48,7 @@ class Notification : public message_center::Notification {
   Notification(const std::string& id, const Notification& notification);
 
   Notification(const Notification& notification);
-  virtual ~Notification();
+  ~Notification() override;
   Notification& operator=(const Notification& notification);
 
   // The origin URL of the script which requested the notification.
