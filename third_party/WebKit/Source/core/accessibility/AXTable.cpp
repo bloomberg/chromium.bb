@@ -511,7 +511,7 @@ AXTableCell* AXTable::cellForColumnAndRow(unsigned column, unsigned row)
         for (unsigned colIndexCounter = std::min(static_cast<unsigned>(children.size()), column + 1); colIndexCounter > 0; --colIndexCounter) {
             unsigned colIndex = colIndexCounter - 1;
             AXObject* child = children[colIndex].get();
-            ASSERT(child->isTableCell());
+
             if (!child->isTableCell())
                 continue;
 
