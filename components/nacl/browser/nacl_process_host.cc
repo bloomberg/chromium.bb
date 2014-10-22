@@ -831,16 +831,12 @@ bool NaClProcessHost::StartNaClExecution() {
       return false;
     }
 
-    // Currently, everything uses the IRT except for the PNaCl Translators.
-    bool uses_irt = process_type_ != kPNaClTranslatorProcessType;
-    if (uses_irt) {
-      const base::File& irt_file = nacl_browser->IrtFile();
-      CHECK(irt_file.IsValid());
-      // Send over the IRT file handle.  We don't close our own copy!
-      if (!ShareHandleToSelLdr(data.handle, irt_file.GetPlatformFile(), false,
-                               &params.handles)) {
-        return false;
-      }
+    const base::File& irt_file = nacl_browser->IrtFile();
+    CHECK(irt_file.IsValid());
+    // Send over the IRT file handle.  We don't close our own copy!
+    if (!ShareHandleToSelLdr(data.handle, irt_file.GetPlatformFile(), false,
+                             &params.handles)) {
+      return false;
     }
 
 #if defined(OS_MACOSX)

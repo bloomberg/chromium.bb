@@ -386,26 +386,20 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #endif
 
   DCHECK(params.process_type != nacl::kUnknownNaClProcessType);
-  bool uses_irt = params.process_type != nacl::kPNaClTranslatorProcessType;
-  if (uses_irt) {
-    CHECK(handles.size() >= 1);
-    NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
-    handles.pop_back();
+  CHECK(handles.size() >= 1);
+  NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
+  handles.pop_back();
 
 #if defined(OS_WIN)
-    args->irt_fd = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
-                                   _O_RDONLY | _O_BINARY);
-    if (args->irt_fd < 0) {
-      LOG(ERROR) << "_open_osfhandle() failed";
-      return;
-    }
-#else
-    args->irt_fd = irt_handle;
-#endif
-  } else {
-    // Otherwise, the IRT handle is not even sent.
-    args->irt_fd = -1;
+  args->irt_fd = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
+                                 _O_RDONLY | _O_BINARY);
+  if (args->irt_fd < 0) {
+    LOG(ERROR) << "_open_osfhandle() failed";
+    return;
   }
+#else
+  args->irt_fd = irt_handle;
+#endif
 
   if (params.validation_cache_enabled) {
     // SHA256 block size.
@@ -439,6 +433,11 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     args->enable_dyncode_syscalls = 1;
     args->pnacl_mode = 0;
     args->initial_nexe_max_code_bytes = 0;
+  } else if (params.process_type == nacl::kPNaClTranslatorProcessType) {
+    // Transitioning the PNaCl translators to use the IRT again:
+    // https://code.google.com/p/nativeclient/issues/detail?id=3914.
+    // Once done, this can be removed.
+    args->irt_load_optional = 1;
   }
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
