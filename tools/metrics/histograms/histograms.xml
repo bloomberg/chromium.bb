@@ -17944,6 +17944,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SpdyConnectionLatency" units="milliseconds">
+  <obsolete>
+    Replaced by Net.SpdyConnectionLatency_2 on 2014-10-21.
+  </obsolete>
+  <owner>rch@chromium.org</owner>
+  <summary>Time from when the Connect() starts until it completes.</summary>
+</histogram>
+
+<histogram name="Net.SpdyConnectionLatency_2" units="milliseconds">
   <owner>rch@chromium.org</owner>
   <summary>Time from when the Connect() starts until it completes.</summary>
 </histogram>
@@ -18255,6 +18263,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SSL_Connection_Latency" units="milliseconds">
+  <obsolete>
+    Replaced by Net.SSL_Connection_Latency_2 on 2014-10-21.
+  </obsolete>
+  <owner>agl@chromium.org</owner>
+  <summary>Time from when the Connect() starts until it completes.</summary>
+</histogram>
+
+<histogram name="Net.SSL_Connection_Latency_2" units="milliseconds">
   <owner>agl@chromium.org</owner>
   <summary>Time from when the Connect() starts until it completes.</summary>
 </histogram>
@@ -18273,6 +18289,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SSL_Connection_Latency_Google" units="milliseconds">
+  <obsolete>
+    Replaced by Net.SSL_Connection_Latency_Google2 on 2014-10-21.
+  </obsolete>
+  <owner>agl@chromium.org</owner>
+  <summary>
+    Time from when the Connect() starts until it completes for google.com and
+    any subdomain of it.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSL_Connection_Latency_Google2" units="milliseconds">
   <owner>agl@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes for google.com and
@@ -57481,6 +57508,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="FalseStart_enabled"/>
   <suffix name="FalseStart_disabled"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
+  <affected-histogram name="Net.SSL_Connection_Latency_2"/>
   <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
 </histogram_suffixes>
@@ -57489,7 +57517,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Resume_Handshake" label="Session Resumption"/>
   <suffix name="Full_Handshake" label="Full"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
+  <affected-histogram name="Net.SSL_Connection_Latency_2"/>
   <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
+  <affected-histogram name="Net.SSL_Connection_Latency_Google2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="StartupTimeBombAlarm" separator=".">
