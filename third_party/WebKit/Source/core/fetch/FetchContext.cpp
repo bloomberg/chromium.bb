@@ -85,7 +85,7 @@ void FetchContext::dispatchDidFinishLoading(DocumentLoader*, unsigned long, doub
 {
 }
 
-void FetchContext::dispatchDidFail(DocumentLoader*, unsigned long, const ResourceError&)
+void FetchContext::dispatchDidFail(DocumentLoader*, unsigned long, const ResourceError&, bool)
 {
 }
 

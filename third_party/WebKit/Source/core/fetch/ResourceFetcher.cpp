@@ -1313,7 +1313,8 @@ void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, Resourc
 void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error)
 {
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
-    context().dispatchDidFail(m_documentLoader, resource->identifier(), error);
+    bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
+    context().dispatchDidFail(m_documentLoader, resource->identifier(), error, isInternalRequest);
 }
 
 void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
@@ -1329,7 +1330,8 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
     if (response.wasFetchedViaServiceWorker()) {
         if (!canRequest(resource->type(), resource->resourceRequest(), response.url(), resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
             resource->loader()->cancel();
-            context().dispatchDidFail(m_documentLoader, resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, response.url().string(), "Unsafe attempt to load URL " + response.url().elidedString() + " fetched by a ServiceWorker."));
+            bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
+            context().dispatchDidFail(m_documentLoader, resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, response.url().string(), "Unsafe attempt to load URL " + response.url().elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
             return;
         }
     }
