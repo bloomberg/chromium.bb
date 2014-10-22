@@ -5,7 +5,7 @@
 #ifndef TOOLS_GN_ACTION_TARGET_GENERATOR_H_
 #define TOOLS_GN_ACTION_TARGET_GENERATOR_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "tools/gn/target_generator.h"
 
 // Populates a Target with the values from an action[_foreach] rule.
@@ -19,7 +19,7 @@ class ActionTargetGenerator : public TargetGenerator {
   virtual ~ActionTargetGenerator();
 
  protected:
-  virtual void DoRun() override;
+  void DoRun() override;
 
  private:
   bool FillScript();

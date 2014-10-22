@@ -17,18 +17,14 @@ class MockLoader : public Loader {
   }
 
   // Loader implementation:
-  virtual void Load(const SourceFile& file,
-                    const LocationRange& origin,
-                    const Label& toolchain_name) override {
+  void Load(const SourceFile& file,
+            const LocationRange& origin,
+            const Label& toolchain_name) override {
     files_.push_back(file);
   }
-  virtual void ToolchainLoaded(const Toolchain* toolchain) override {
-  }
-  virtual Label GetDefaultToolchain() const override {
-    return Label();
-  }
-  virtual const Settings* GetToolchainSettings(
-      const Label& label) const override {
+  void ToolchainLoaded(const Toolchain* toolchain) override {}
+  Label GetDefaultToolchain() const override { return Label(); }
+  const Settings* GetToolchainSettings(const Label& label) const override {
     return NULL;
   }
 
@@ -52,7 +48,7 @@ class MockLoader : public Loader {
   }
 
  private:
-  virtual ~MockLoader() {}
+  ~MockLoader() override {}
 
   std::vector<SourceFile> files_;
 };

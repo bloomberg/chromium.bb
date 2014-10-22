@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "tools/gn/ninja_target_writer.h"
 
 class OutputFile;
@@ -17,9 +17,9 @@ class OutputFile;
 class NinjaActionTargetWriter : public NinjaTargetWriter {
  public:
   NinjaActionTargetWriter(const Target* target, std::ostream& out);
-  virtual ~NinjaActionTargetWriter();
+  ~NinjaActionTargetWriter() override;
 
-  virtual void Run() override;
+  void Run() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NinjaActionTargetWriter,

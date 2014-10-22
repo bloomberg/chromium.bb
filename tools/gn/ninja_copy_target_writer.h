@@ -5,7 +5,7 @@
 #ifndef TOOLS_GN_NINJA_COPY_TARGET_WRITER_H_
 #define TOOLS_GN_NINJA_COPY_TARGET_WRITER_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "tools/gn/ninja_target_writer.h"
 
 class Tool;
@@ -14,9 +14,9 @@ class Tool;
 class NinjaCopyTargetWriter : public NinjaTargetWriter {
  public:
   NinjaCopyTargetWriter(const Target* target, std::ostream& out);
-  virtual ~NinjaCopyTargetWriter();
+  ~NinjaCopyTargetWriter() override;
 
-  virtual void Run() override;
+  void Run() override;
 
  private:
   // Writes the rules top copy the file(s), putting the computed output file

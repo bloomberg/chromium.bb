@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -52,15 +51,15 @@ class Target : public Item {
   typedef std::vector<std::string> StringVector;
 
   Target(const Settings* settings, const Label& label);
-  virtual ~Target();
+  ~Target() override;
 
   // Returns a string naming the output type.
   static const char* GetStringForOutputType(OutputType type);
 
   // Item overrides.
-  virtual Target* AsTarget() override;
-  virtual const Target* AsTarget() const override;
-  virtual bool OnResolved(Err* err) override;
+  Target* AsTarget() override;
+  const Target* AsTarget() const override;
+  bool OnResolved(Err* err) override;
 
   OutputType output_type() const { return output_type_; }
   void set_output_type(OutputType t) { output_type_ = t; }

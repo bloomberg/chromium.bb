@@ -19,7 +19,7 @@ class TestingNinjaTargetWriter : public NinjaTargetWriter {
       : NinjaTargetWriter(target, out) {
   }
 
-  virtual void Run() override {}
+  void Run() override {}
 
   // Make this public so the test can call it.
   OutputFile WriteInputDepsStampAndGetDep(

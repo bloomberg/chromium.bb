@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "tools/gn/build_settings.h"
@@ -90,7 +89,7 @@ class CommonSetup {
 class Setup : public CommonSetup {
  public:
   Setup();
-  virtual ~Setup();
+  ~Setup() override;
 
   // Configures the build for the current command line. On success returns
   // true. On failure, prints the error and returns false.
@@ -114,7 +113,7 @@ class Setup : public CommonSetup {
 
   Scheduler& scheduler() { return scheduler_; }
 
-  virtual Scheduler* GetScheduler() override;
+  Scheduler* GetScheduler() override;
 
   // Returns the file used to store the build arguments. Note that the path
   // might not exist.
@@ -202,14 +201,14 @@ class DependentSetup : public CommonSetup {
   // default copy constructor.
   DependentSetup(Setup* derive_from);
   DependentSetup(DependentSetup* derive_from);
-  virtual ~DependentSetup();
+  ~DependentSetup() override;
 
   // These are the two parts of Run() in the regular setup, not including the
   // call to actually run the message loop.
   void RunPreMessageLoop();
   bool RunPostMessageLoop();
 
-  virtual Scheduler* GetScheduler() override;
+  Scheduler* GetScheduler() override;
 
  private:
   Scheduler* scheduler_;

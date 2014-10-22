@@ -5,7 +5,7 @@
 #ifndef TOOLS_GN_NINJA_BINARY_TARGET_WRITER_H_
 #define TOOLS_GN_NINJA_BINARY_TARGET_WRITER_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/ninja_target_writer.h"
 #include "tools/gn/toolchain.h"
@@ -18,9 +18,9 @@ struct EscapeOptions;
 class NinjaBinaryTargetWriter : public NinjaTargetWriter {
  public:
   NinjaBinaryTargetWriter(const Target* target, std::ostream& out);
-  virtual ~NinjaBinaryTargetWriter();
+  ~NinjaBinaryTargetWriter() override;
 
-  virtual void Run() override;
+  void Run() override;
 
  private:
   typedef std::set<OutputFile> OutputFileSet;

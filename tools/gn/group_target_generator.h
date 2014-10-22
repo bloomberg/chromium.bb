@@ -5,7 +5,7 @@
 #ifndef TOOLS_GN_GROUP_TARGET_GENERATOR_H_
 #define TOOLS_GN_GROUP_TARGET_GENERATOR_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "tools/gn/target_generator.h"
 
 // Populates a Target with the values for a group rule.
@@ -18,7 +18,7 @@ class GroupTargetGenerator : public TargetGenerator {
   virtual ~GroupTargetGenerator();
 
  protected:
-  virtual void DoRun() override;
+  void DoRun() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GroupTargetGenerator);

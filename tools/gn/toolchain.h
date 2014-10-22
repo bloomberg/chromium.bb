@@ -5,7 +5,6 @@
 #ifndef TOOLS_GN_TOOLCHAIN_H_
 #define TOOLS_GN_TOOLCHAIN_H_
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
@@ -61,11 +60,11 @@ class Toolchain : public Item {
   static const char* kToolCopy;
 
   Toolchain(const Settings* settings, const Label& label);
-  virtual ~Toolchain();
+  ~Toolchain() override;
 
   // Item overrides.
-  virtual Toolchain* AsToolchain() override;
-  virtual const Toolchain* AsToolchain() const override;
+  Toolchain* AsToolchain() override;
+  const Toolchain* AsToolchain() const override;
 
   // Returns TYPE_NONE on failure.
   static ToolType ToolNameToType(const base::StringPiece& str);

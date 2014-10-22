@@ -5,7 +5,7 @@
 #ifndef TOOLS_GN_CONFIG_H_
 #define TOOLS_GN_CONFIG_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/item.h"
 
@@ -13,10 +13,10 @@
 class Config : public Item {
  public:
   Config(const Settings* settings, const Label& label);
-  virtual ~Config();
+  ~Config() override;
 
-  virtual Config* AsConfig() override;
-  virtual const Config* AsConfig() const override;
+  Config* AsConfig() override;
+  const Config* AsConfig() const override;
 
   ConfigValues& config_values() { return config_values_; }
   const ConfigValues& config_values() const { return config_values_; }
