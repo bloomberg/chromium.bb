@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 
+#include "core/paint/SVGMarkerPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/PointerEventsHitRules.h"
@@ -252,7 +253,7 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
                 break;
             case PT_MARKERS:
                 if (!m_markerPositions.isEmpty())
-                    drawMarkers(childPaintInfo);
+                    paintMarkers(childPaintInfo);
                 break;
             default:
                 ASSERT_NOT_REACHED();
@@ -400,7 +401,7 @@ bool RenderSVGShape::hasSmoothStroke() const
         && svgStyle.capStyle() == SVGRenderStyle::initialCapStyle();
 }
 
-void RenderSVGShape::drawMarkers(PaintInfo& paintInfo)
+void RenderSVGShape::paintMarkers(PaintInfo& paintInfo)
 {
     ASSERT(!m_markerPositions.isEmpty());
 
@@ -418,7 +419,7 @@ void RenderSVGShape::drawMarkers(PaintInfo& paintInfo)
     unsigned size = m_markerPositions.size();
     for (unsigned i = 0; i < size; ++i) {
         if (RenderSVGResourceMarker* marker = markerForType(m_markerPositions[i].type, markerStart, markerMid, markerEnd))
-            marker->draw(paintInfo, marker->markerTransformation(m_markerPositions[i].origin, m_markerPositions[i].angle, strokeWidth));
+            SVGMarkerPainter(*marker).paint(paintInfo, m_markerPositions[i], strokeWidth);
     }
 }
 

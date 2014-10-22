@@ -106,7 +106,7 @@ private:
     FloatRect markerRect(float strokeWidth) const;
     void processMarkerPositions();
 
-    void drawMarkers(PaintInfo&);
+    void paintMarkers(PaintInfo&);
 
 private:
     FloatRect m_paintInvalidationBoundingBox;
