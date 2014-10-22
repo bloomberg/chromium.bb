@@ -4491,6 +4491,65 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
 }
 
+TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 4000);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupTrees(pending_pile, active_pile);
+
+  Region invalidation;
+  gfx::Rect viewport = gfx::Rect(0, 0, 100, 100);
+  gfx::Transform transform;
+
+  host_impl_.SetRequiresHighResToDraw();
+
+  // Update tiles.
+  pending_layer_->draw_properties().visible_content_rect = viewport;
+  pending_layer_->draw_properties().screen_space_transform = transform;
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+
+  // Ensure we can't activate.
+  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+
+  // Now in the same frame, move the viewport (this can happen during
+  // animation).
+  viewport = gfx::Rect(0, 2000, 100, 100);
+
+  // Update tiles.
+  pending_layer_->draw_properties().visible_content_rect = viewport;
+  pending_layer_->draw_properties().screen_space_transform = transform;
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+
+  // Make sure all viewport tiles (viewport from the tiling) are ready to draw.
+  std::vector<Tile*> tiles;
+  for (PictureLayerTiling::CoverageIterator iter(
+           pending_layer_->HighResTiling(),
+           1.f,
+           pending_layer_->HighResTiling()->GetCurrentVisibleRectForTesting());
+       iter;
+       ++iter) {
+    if (*iter)
+      tiles.push_back(*iter);
+  }
+
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
+
+  // Ensure we can activate.
+  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+}
+
 class TileSizeSettings : public ImplSidePaintingSettings {
  public:
   TileSizeSettings() {
