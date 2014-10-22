@@ -261,7 +261,8 @@ InspectorTest.HeapEdge.Type = {
     "property": "property",
     "internal": "internal",
     "hidden": "hidden",
-    "shortcut": "shortcut"
+    "shortcut": "shortcut",
+    "weak": "weak"
 };
 
 InspectorTest.HeapSnapshotBuilder = function()
