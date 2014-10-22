@@ -400,6 +400,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
     # Not shipped, downloaded on trybots sometimes.
     'tools/telemetry/third_party/gsutil': [
+        'BSD MIT/X11 (BSD like)',
         'UNKNOWN',
     ],
     'tools/telemetry/third_party/pyserial': [
