@@ -47,7 +47,6 @@ base::Value* NetLogQuicPacketCallback(const IPEndPoint* self_address,
 
 base::Value* NetLogQuicPacketSentCallback(
     const SerializedPacket& serialized_packet,
-    QuicPacketSequenceNumber original_sequence_number,
     EncryptionLevel level,
     TransmissionType transmission_type,
     size_t packet_size,
@@ -58,10 +57,20 @@ base::Value* NetLogQuicPacketSentCallback(
   dict->SetInteger("transmission_type", transmission_type);
   dict->SetString("packet_sequence_number",
                   base::Uint64ToString(serialized_packet.sequence_number));
-  dict->SetString("original_sequence_number",
-                  base::Uint64ToString(original_sequence_number));
   dict->SetInteger("size", packet_size);
   dict->SetInteger("sent_time_us", sent_time.ToDebuggingValue());
+  return dict;
+}
+
+base::Value* NetLogQuicPacketRetransmittedCallback(
+    QuicPacketSequenceNumber old_sequence_number,
+    QuicPacketSequenceNumber new_sequence_number,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("old_packet_sequence_number",
+                  base::Uint64ToString(old_sequence_number));
+  dict->SetString("new_packet_sequence_number",
+                  base::Uint64ToString(new_sequence_number));
   return dict;
 }
 
@@ -480,11 +489,18 @@ void QuicConnectionLogger::OnPacketSent(
     TransmissionType transmission_type,
     const QuicEncryptedPacket& packet,
     QuicTime sent_time) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
-      base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
-                 original_sequence_number, level, transmission_type,
-                 packet.length(), sent_time));
+  if (original_sequence_number == 0) {
+    net_log_.AddEvent(
+        NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
+        base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
+                   level, transmission_type, packet.length(), sent_time));
+  }  else {
+    net_log_.AddEvent(
+        NetLog::TYPE_QUIC_SESSION_PACKET_RETRANSMITTED,
+        base::Bind(&NetLogQuicPacketRetransmittedCallback,
+                   original_sequence_number,
+                   serialized_packet.sequence_number));
+  }
 }
 
 void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
