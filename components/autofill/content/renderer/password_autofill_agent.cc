@@ -196,20 +196,35 @@ bool IsElementAutocompletable(const blink::WebInputElement& element) {
 }
 
 // Returns true if the password specified in |form| is a default value.
-bool PasswordValueIsDefault(const PasswordForm& form,
+bool PasswordValueIsDefault(const base::string16& password_element,
+                            const base::string16& password_value,
                             blink::WebFormElement form_element) {
   blink::WebVector<blink::WebNode> temp_elements;
-  form_element.getNamedElements(form.password_element, temp_elements);
+  form_element.getNamedElements(password_element, temp_elements);
 
   // We are loose in our definition here and will return true if any of the
   // appropriately named elements match the element to be saved. Currently
   // we ignore filling passwords where naming is ambigious anyway.
   for (size_t i = 0; i < temp_elements.size(); ++i) {
     if (temp_elements[i].to<blink::WebElement>().getAttribute("value") ==
-        form.password_value)
+        password_value)
       return true;
   }
   return false;
+}
+
+// Return true if either password_value or new_password_value is not empty and
+// not default.
+bool FormContainsNonDefaultPasswordValue(const PasswordForm& password_form,
+                                         blink::WebFormElement form_element) {
+  return (!password_form.password_value.empty() &&
+          !PasswordValueIsDefault(password_form.password_element,
+                                  password_form.password_value,
+                                  form_element)) ||
+      (!password_form.new_password_value.empty() &&
+       !PasswordValueIsDefault(password_form.new_password_element,
+                               password_form.new_password_value,
+                               form_element));
 }
 
 // Log a message including the name, method and action of |form|.
@@ -972,8 +987,8 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
           scoped_ptr<PasswordForm> password_form(
               CreatePasswordForm(form_element));
           if (password_form.get() && !password_form->username_value.empty() &&
-              !password_form->password_value.empty() &&
-              !PasswordValueIsDefault(*password_form, form_element)) {
+              FormContainsNonDefaultPasswordValue(
+                  *password_form, form_element)) {
             password_forms_found = true;
             if (logger) {
               logger->LogPasswordForm(
