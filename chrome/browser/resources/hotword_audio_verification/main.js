@@ -14,39 +14,49 @@ document.addEventListener('DOMContentLoaded', function() {
     var closeButton = closeButtons[i];
     closeButton.addEventListener('click', function(e) {
       appWindow.close();
-      e.stopPropagation();
+      e.preventDefault();
     });
   }
 
   $('ah-cancel-button').addEventListener('click', function(e) {
     appWindow.close();
-    e.stopPropagation();
+    e.preventDefault();
+  });
+
+  $('done-button').addEventListener('click', function(e) {
+    appWindow.close();
+    e.preventDefault();
+  });
+
+  $('ho-cancel-button').addEventListener('click', function(e) {
+    appWindow.close();
+    e.preventDefault();
   });
 
   $('hw-cancel-button').addEventListener('click', function(e) {
     appWindow.close();
-    e.stopPropagation();
+    e.preventDefault();
   });
 
   $('st-cancel-button').addEventListener('click', function(e) {
     appWindow.close();
-    e.stopPropagation();
+    e.preventDefault();
   });
 
   $('ah-agree-button').addEventListener('click', function(e) {
     // TODO(kcarattini): Set the Audio History setting.
     appWindow.close();
-    e.stopPropagation();
+    e.preventDefault();
   });
 
   $('hw-agree-button').addEventListener('click', function(e) {
     flow.advanceStep();
-    e.stopPropagation();
+    e.preventDefault();
   });
 
   // TODO(kcarattini): Remove this once speech training is implemented. The
   // way to get to the next page will be to complete the speech training.
-  $('training').addEventListener('click', function(e) {
+  $('st-training').addEventListener('click', function(e) {
     if (chrome.hotwordPrivate.setAudioLoggingEnabled)
       chrome.hotwordPrivate.setAudioLoggingEnabled(true, function() {});
 
@@ -54,12 +64,19 @@ document.addEventListener('DOMContentLoaded', function() {
       chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled(true,
           flow.advanceStep.bind(flow));
     }
-    e.stopPropagation();
+    e.preventDefault();
   });
 
-  $('try-now-button').addEventListener('click', function(e) {
-    // TODO(kcarattini): Figure out what happens when you click this button.
-    appWindow.close();
-    e.stopPropagation();
+  // TODO(kcarattini): Remove this once speech training is implemented. The
+  // way to get to the next page will be to complete the speech training.
+  $('ho-training').addEventListener('click', function(e) {
+    if (chrome.hotwordPrivate.setAudioLoggingEnabled)
+      chrome.hotwordPrivate.setAudioLoggingEnabled(true, function() {});
+
+    if (chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled) {
+      chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled(true,
+          flow.advanceStep.bind(flow));
+    }
+    e.preventDefault();
   });
 });
