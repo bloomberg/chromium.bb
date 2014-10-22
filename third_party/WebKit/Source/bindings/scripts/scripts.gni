@@ -55,6 +55,8 @@ template("compute_interfaces_info_individual") {
     ]
 
     args = [
+      "--cache-directory",
+      rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--idl-files-list", rebase_path(file_list, root_build_dir),
       "--interfaces-info-file",
       rebase_path(invoker.output_file, root_build_dir),
@@ -62,7 +64,9 @@ template("compute_interfaces_info_individual") {
       "--",
     ] + rebase_path(invoker.sources_generated, root_build_dir)
 
-    deps = invoker.deps
+    deps = [
+      "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
+    ] + invoker.deps
   }
 }
 

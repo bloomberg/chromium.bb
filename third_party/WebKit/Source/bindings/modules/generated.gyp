@@ -190,10 +190,12 @@
   {
     'target_name': 'interfaces_info_individual_modules',
     'dependencies': [
+      '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
       'modules_core_global_constructors_idls',
       'modules_global_constructors_idls',
     ],
     'variables': {
+      'cache_directory': '<(bindings_modules_output_dir)/../scripts',
       'static_idl_files': '<(modules_static_idl_files)',
       'generated_idl_files': '<(modules_generated_idl_files)',
       'output_file':

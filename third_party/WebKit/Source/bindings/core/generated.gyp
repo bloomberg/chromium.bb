@@ -61,10 +61,12 @@
   {
     'target_name': 'interfaces_info_individual_core',
     'dependencies': [
+      '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
       '../../core/core_generated.gyp:generated_testing_idls',
       'core_global_constructors_idls',
     ],
     'variables': {
+      'cache_directory': '<(bindings_core_output_dir)/../scripts',
       'static_idl_files': '<(core_static_idl_files)',
       'generated_idl_files': '<(core_generated_idl_files)',
       'output_file':

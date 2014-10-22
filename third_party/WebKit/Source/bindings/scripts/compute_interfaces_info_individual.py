@@ -47,7 +47,8 @@ import os
 import posixpath
 import sys
 
-from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, idl_filename_to_component, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, is_dictionary_from_idl, get_partial_interface_name_from_idl, get_implements_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
+from idl_reader import IdlReader
+from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, idl_filename_to_component, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
@@ -60,9 +61,15 @@ partial_interface_files = defaultdict(lambda: {
 })
 
 
+class IdlBadFilenameError(Exception):
+    """Raised if an IDL filename disagrees with the interface name in the file."""
+    pass
+
+
 def parse_options():
     usage = 'Usage: %prog [options] [generated1.idl]...'
     parser = optparse.OptionParser(usage=usage)
+    parser.add_option('--cache-directory', help='cache directory')
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
@@ -111,52 +118,85 @@ def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_p
         paths_dict['include_paths'].append(this_include_path)
 
 
-def compute_info_individual(idl_filename):
-    full_path = os.path.realpath(idl_filename)
-    idl_file_contents = get_file_contents(full_path)
+def get_implements_from_definitions(definitions, definition_name):
+    left_interfaces = []
+    right_interfaces = []
+    for implement in definitions.implements:
+        if definition_name == implement.left_interface:
+            right_interfaces.append(implement.right_interface)
+        elif definition_name == implement.right_interface:
+            left_interfaces.append(implement.left_interface)
+        else:
+            raise IdlBadFilenameError(
+                'implements statement found in unrelated IDL file.\n'
+                'Statement is:\n'
+                '    %s implements %s;\n'
+                'but filename is unrelated "%s.idl"' %
+                (implement.left_interface, implement.right_interface, definition_name))
+    return left_interfaces, right_interfaces
 
-    extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
+
+def get_put_forward_interfaces_from_definition(definition):
+    return sorted(set(attribute.idl_type.base_type
+                      for attribute in definition.attributes
+                      if 'PutForwards' in attribute.extended_attributes))
+
+
+def compute_info_individual(idl_filename, reader):
+    definitions = reader.read_idl_file(idl_filename)
+    if len(definitions.interfaces) > 0:
+        definition = next(definitions.interfaces.itervalues())
+        interface_info = {
+            'is_callback_interface': definition.is_callback,
+            'is_dictionary': False,
+            # Interfaces that are referenced (used as types) and that we introspect
+            # during code generation (beyond interface-level data ([ImplementedAs],
+            # is_callback_interface, ancestors, and inherited extended attributes):
+            # deep dependencies.
+            # These cause rebuilds of referrers, due to the dependency, so these
+            # should be minimized; currently only targets of [PutForwards].
+            'referenced_interfaces': get_put_forward_interfaces_from_definition(definition),
+        }
+    elif len(definitions.dictionaries) > 0:
+        definition = next(definitions.dictionaries.itervalues())
+        interface_info = {
+            'is_callback_interface': False,
+            'is_dictionary': True,
+            'referenced_interfaces': None,
+        }
+    else:
+        raise Exception('IDL file must contain one interface or dictionary')
+
+    extended_attributes = definition.extended_attributes
     implemented_as = extended_attributes.get('ImplementedAs')
-    relative_dir = relative_dir_posix(idl_filename)
+    full_path = os.path.realpath(idl_filename)
     this_include_path = None if 'NoImplHeader' in extended_attributes else include_path(idl_filename, implemented_as)
-
-    # Handle partial interfaces
-    partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
-    if partial_interface_name:
-        add_paths_to_partials_dict(partial_interface_name, full_path, this_include_path)
+    if definition.is_partial:
+        # We don't create interface_info for partial interfaces, but
+        # adds paths to another dict.
+        add_paths_to_partials_dict(definition.name, full_path, this_include_path)
         return
-
-    # If not a partial interface, the basename is the interface name
-    interface_name = idl_filename_to_interface_name(idl_filename)
 
     # 'implements' statements can be included in either the file for the
     # implement*ing* interface (lhs of 'implements') or implement*ed* interface
     # (rhs of 'implements'). Store both for now, then merge to implement*ing*
     # interface later.
-    left_interfaces, right_interfaces = get_implements_from_idl(idl_file_contents, interface_name)
+    left_interfaces, right_interfaces = get_implements_from_definitions(definitions, definition.name)
 
-    interfaces_info[interface_name] = {
+    interface_info.update({
         'extended_attributes': extended_attributes,
         'full_path': full_path,
         'implemented_as': implemented_as,
-        'implemented_by_interfaces': left_interfaces,  # private, merged to next
+        'implemented_by_interfaces': left_interfaces,
         'implements_interfaces': right_interfaces,
         'include_path': this_include_path,
-        'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
-        'is_dictionary': is_dictionary_from_idl(idl_file_contents),
         # FIXME: temporary private field, while removing old treatement of
         # 'implements': http://crbug.com/360435
         'is_legacy_treat_as_partial_interface': 'LegacyTreatAsPartialInterface' in extended_attributes,
-        'parent': get_parent_interface(idl_file_contents),
-        # Interfaces that are referenced (used as types) and that we introspect
-        # during code generation (beyond interface-level data ([ImplementedAs],
-        # is_callback_interface, ancestors, and inherited extended attributes):
-        # deep dependencies.
-        # These cause rebuilds of referrers, due to the dependency, so these
-        # should be minimized; currently only targets of [PutForwards].
-        'referenced_interfaces': get_put_forward_interfaces_from_idl(idl_file_contents),
-        'relative_dir': relative_dir,
-    }
+        'parent': definition.parent,
+        'relative_dir': relative_dir_posix(idl_filename),
+    })
+    interfaces_info[definition.name] = interface_info
 
 
 def info_individual():
@@ -184,8 +224,9 @@ def main():
     # Compute information for individual files
     # Information is stored in global variables interfaces_info and
     # partial_interface_files.
+    reader = IdlReader(interfaces_info=None, outputdir=options.cache_directory)
     for idl_filename in idl_files:
-        compute_info_individual(idl_filename)
+        compute_info_individual(idl_filename, reader)
 
     write_pickle_file(options.interfaces_info_file,
                       info_individual(),

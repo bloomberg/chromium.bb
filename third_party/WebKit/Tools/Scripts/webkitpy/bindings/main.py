@@ -45,6 +45,7 @@ from bindings.scripts.compute_interfaces_info_individual import compute_info_ind
 import bindings.scripts.compute_interfaces_info_overall
 from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
+from bindings.scripts.idl_reader import IdlReader
 from bindings.scripts.utilities import idl_filename_to_component
 
 
@@ -67,6 +68,11 @@ DEPENDENCY_IDL_FILES = frozenset([
     'TestPartialInterface.idl',
     'TestPartialInterface2.idl',
     'TestPartialInterface3.idl',
+])
+
+# core/inspector/InspectorInstrumentation.idl is not a valid Blink IDL.
+NON_BLINK_IDL_FILES = frozenset([
+    'InspectorInstrumentation.idl',
 ])
 
 COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
@@ -93,7 +99,7 @@ def TemporaryDirectory():
         shutil.rmtree(name)
 
 
-def generate_interface_dependencies():
+def generate_interface_dependencies(output_directory):
     def idl_paths_recursive(directory):
         # This is slow, especially on Windows, due to os.walk making
         # excess stat() calls. Faster versions may appear in Python 3.5 or
@@ -134,9 +140,12 @@ def generate_interface_dependencies():
     # In order to allow test IDL files to override the production IDL files if
     # they have the same interface name, process the test IDL files after the
     # non-test IDL files.
+    reader = IdlReader(outputdir=output_directory)
     for idl_path_list in (non_test_idl_paths, test_idl_paths):
         for idl_path in idl_path_list:
-            compute_info_individual(idl_path)
+            if os.path.basename(idl_path) in NON_BLINK_IDL_FILES:
+                continue
+            compute_info_individual(idl_path, reader)
     info_individuals = [info_individual()]
     # TestDictionary.{h,cpp} are placed under Source/bindings/tests/idls/core.
     # However, IdlCompiler generates TestDictionary.{h,cpp} by using relative_dir.
@@ -235,7 +244,7 @@ def bindings_tests(output_directory, verbose):
         return True
 
     try:
-        generate_interface_dependencies()
+        generate_interface_dependencies(output_directory)
         for component in COMPONENT_DIRECTORY:
             output_dir = os.path.join(output_directory, component)
             if not os.path.exists(output_dir):

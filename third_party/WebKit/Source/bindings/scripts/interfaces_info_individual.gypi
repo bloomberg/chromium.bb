@@ -52,6 +52,8 @@
     'action': [
       'python',
       '<(bindings_scripts_dir)/compute_interfaces_info_individual.py',
+      '--cache-directory',
+      '<(cache_directory)',
       '--idl-files-list',
       '<(static_idl_files_list)',
       '--interfaces-info-file',

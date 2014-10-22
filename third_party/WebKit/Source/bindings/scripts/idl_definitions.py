@@ -57,6 +57,8 @@ IdlDefinitions
 
 TypedObject :: mixin for typedef resolution
 
+IdlArgument is 'picklable', as it is stored in interfaces_info.
+
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
@@ -105,6 +107,7 @@ class IdlDefinitions(object):
         self.callback_functions = {}
         self.dictionaries = {}
         self.enumerations = {}
+        self.implements = []
         self.interfaces = {}
         self.idl_name = idl_name
 
@@ -136,8 +139,7 @@ class IdlDefinitions(object):
                 callback_function = IdlCallbackFunction(idl_name, child)
                 self.callback_functions[callback_function.name] = callback_function
             elif child_class == 'Implements':
-                # Implements is handled at the interface merging step
-                pass
+                self.implements.append(IdlImplement(child))
             elif child_class == 'Dictionary':
                 dictionary = IdlDictionary(idl_name, child)
                 self.dictionaries[dictionary.name] = dictionary
@@ -590,6 +592,14 @@ class IdlArgument(TypedObject):
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
+    def __getstate__(self):
+        # FIXME: Return a picklable object which has enough information to
+        # unpickle.
+        return {}
+
+    def __setstate__(self, state):
+        pass
+
 
 def arguments_node_to_arguments(idl_name, node):
     # [Constructor] and [CustomConstructor] without arguments (the bare form)
@@ -631,6 +641,16 @@ class IdlStringifier(object):
         if self.attribute or self.operation:
             (self.attribute or self.operation).extended_attributes.update(
                 self.extended_attributes)
+
+
+################################################################################
+# Implement statements
+################################################################################
+
+class IdlImplement(object):
+    def __init__(self, node):
+        self.left_interface = node.GetName()
+        self.right_interface = node.GetProperty('REFERENCE')
 
 
 ################################################################################
