@@ -10,6 +10,13 @@
 
 import("//build/config/ui.gni")
 
+declare_args() {
+  # A list of extra dependencies to add to the root target. This allows a
+  # checkout to add additional targets without explicitly changing any checked-
+  # in files.
+  root_extra_deps = []
+}
+
 # In GN, a "group" is a dummy target that just lists other targets.
 group("root") {
   # This should not be linked into production and depends on test targets.
@@ -124,7 +131,7 @@ group("root") {
     "//ui/web_dialogs",
     "//url",
     "//v8:v8",
-  ]
+  ] + root_extra_deps
 
   if (!is_win) {
     deps += [ "//breakpad:symupload" ]
