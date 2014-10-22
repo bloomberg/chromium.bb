@@ -6897,7 +6897,7 @@
       'example_value': 'tls1',
       'id': 280,
       'caption': '''Minimum SSL version to fallback to''',
-      'desc': '''When an SSL/TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of SSL/TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly then this setting doesn't apply and SSLVersionMin controls.
+      'desc': '''When an SSL/TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of SSL/TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
 
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a default minimum version, which was SSLv3 in Chrome 38 but is TLS 1.0 in Chrome 39.
 
