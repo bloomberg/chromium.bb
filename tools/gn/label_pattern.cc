@@ -161,7 +161,7 @@ LabelPattern LabelPattern::GetPattern(const SourceDir& current_dir,
     // The non-wildcard stuff better not have a wildcard.
     if (path.find('*') != base::StringPiece::npos) {
       *err = Err(value, "Label patterns only support wildcard suffixes.",
-          "The pattern contained a '*' that wasn't at tne end.");
+          "The pattern contained a '*' that wasn't at the end.");
       return LabelPattern();
     }
 
