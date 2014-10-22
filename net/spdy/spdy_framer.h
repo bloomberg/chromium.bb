@@ -336,7 +336,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_AUTO_RESET,
     SPDY_READING_COMMON_HEADER,
     SPDY_CONTROL_FRAME_PAYLOAD,
-    SPDY_READ_PADDING_LENGTH,
+    SPDY_READ_DATA_FRAME_PADDING_LENGTH,
     SPDY_CONSUME_PADDING,
     SPDY_IGNORE_REMAINING_PAYLOAD,
     SPDY_FORWARD_STREAM_FRAME,
@@ -601,6 +601,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                            UnclosedStreamDataCompressorsOneByteAtATime);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
                            UncompressLargerThanFrameBufferInitialSize);
+  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
+                           CreatePushPromiseThenContinuationUncompressed);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ReadLargeSettingsFrame);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
                            ReadLargeSettingsFrameInSmallChunks);
@@ -634,7 +636,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessControlFrameHeaderBlock(const char* data,
                                         size_t len,
                                         bool is_hpack_header_block);
-  size_t ProcessFramePaddingLength(const char* data, size_t len);
+  size_t ProcessDataFramePaddingLength(const char* data, size_t len);
   size_t ProcessFramePadding(const char* data, size_t len);
   size_t ProcessDataFramePayload(const char* data, size_t len);
   size_t ProcessGoAwayFramePayload(const char* data, size_t len);
@@ -672,7 +674,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void WritePayloadWithContinuation(SpdyFrameBuilder* builder,
                                     const std::string& hpack_encoding,
                                     SpdyStreamId stream_id,
-                                    SpdyFrameType type);
+                                    SpdyFrameType type,
+                                    int padding_payload_len);
 
  private:
   // Deliver the given control frame's uncompressed headers block to the

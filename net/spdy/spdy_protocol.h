@@ -845,9 +845,11 @@ class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
 class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdyHeadersIR(SpdyStreamId stream_id)
-    : SpdyFrameWithNameValueBlockIR(stream_id),
-      has_priority_(false),
-      priority_(0) {}
+      : SpdyFrameWithNameValueBlockIR(stream_id),
+        has_priority_(false),
+        priority_(0),
+        padded_(false),
+        padding_payload_len_(0) {}
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
@@ -856,10 +858,24 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
   uint32 priority() const { return priority_; }
   void set_priority(SpdyPriority priority) { priority_ = priority; }
 
+  bool padded() const { return padded_; }
+  int padding_payload_len() const { return padding_payload_len_; }
+  void set_padding_len(int padding_len) {
+    DCHECK_GT(padding_len, 0);
+    DCHECK_LE(padding_len, kPaddingSizePerFrame);
+    padded_ = true;
+    // The pad field takes one octet on the wire.
+    padding_payload_len_ = padding_len - 1;
+  }
+
  private:
   bool has_priority_;
   // 31-bit priority.
   uint32 priority_;
+
+  bool padded_;
+  int padding_payload_len_;
+
   DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
 };
 
@@ -901,14 +917,30 @@ class NET_EXPORT_PRIVATE SpdyPushPromiseIR
  public:
   SpdyPushPromiseIR(SpdyStreamId stream_id, SpdyStreamId promised_stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id),
-        promised_stream_id_(promised_stream_id) {}
+        promised_stream_id_(promised_stream_id),
+        padded_(false),
+        padding_payload_len_(0) {}
   SpdyStreamId promised_stream_id() const { return promised_stream_id_; }
   void set_promised_stream_id(SpdyStreamId id) { promised_stream_id_ = id; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
+  bool padded() const { return padded_; }
+  int padding_payload_len() const { return padding_payload_len_; }
+  void set_padding_len(int padding_len) {
+    DCHECK_GT(padding_len, 0);
+    DCHECK_LE(padding_len, kPaddingSizePerFrame);
+    padded_ = true;
+    // The pad field takes one octet on the wire.
+    padding_payload_len_ = padding_len - 1;
+  }
+
  private:
   SpdyStreamId promised_stream_id_;
+
+  bool padded_;
+  int padding_payload_len_;
+
   DISALLOW_COPY_AND_ASSIGN(SpdyPushPromiseIR);
 };
 

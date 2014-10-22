@@ -2805,6 +2805,35 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     }
   }
+
+  {
+    const char kDescription[] =
+        "HEADERS frame with a 0-length header name, FIN, max stream ID, padded";
+
+    const unsigned char kV4FrameData[] = {
+        0x00, 0x00, 0x15, 0x01,  // Headers
+        0x0d, 0x7f, 0xff, 0xff,  // FIN | END_HEADERS | PADDED, Stream
+                                 // 0x7fffffff
+        0xff, 0x05, 0x00, 0x00,  // Pad length field
+        0x03, 0x66, 0x6f, 0x6f,  // .foo
+        0x00, 0x03, 0x66, 0x6f,  // @.fo
+        0x6f, 0x03, 0x62, 0x61,  // o.ba
+        0x72,                    // r
+        // Padding payload
+        0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+    SpdyHeadersIR headers_ir(0x7fffffff);
+    headers_ir.set_fin(true);
+    headers_ir.SetHeader("", "foo");
+    headers_ir.SetHeader("foo", "bar");
+    headers_ir.set_padding_len(6);
+    scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers_ir));
+    if (IsSpdy2() || IsSpdy3()) {
+      // Padding is not supported.
+    } else {
+      CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
+    }
+  }
 }
 
 // TODO(phajdan.jr): Clean up after we no longer need
@@ -2982,27 +3011,98 @@ TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
     return;
   }
 
-  SpdyFramer framer(spdy_version_);
-  framer.set_enable_compression(false);
-  const char kDescription[] = "PUSH_PROMISE frame";
+  {
+    // Test framing PUSH_PROMISE without padding.
+    SpdyFramer framer(spdy_version_);
+    framer.set_enable_compression(false);
+    const char kDescription[] = "PUSH_PROMISE frame without padding";
 
-  const unsigned char kFrameData[] = {
-    0x00, 0x00, 0x16, 0x05, 0x04,  // PUSH_PROMISE: END_HEADERS
-    0x00, 0x00, 0x00, 0x2a,  // Stream 42
-    0x00, 0x00, 0x00, 0x39,  // Promised stream 57
-    0x00, 0x03, 0x62, 0x61,  // @.ba
-    0x72, 0x03, 0x66, 0x6f,  // r.fo
-    0x6f, 0x00, 0x03, 0x66,  // o@.f
-    0x6f, 0x6f, 0x03, 0x62,  // oo.b
-    0x61, 0x72,              // ar
-  };
+    const unsigned char kFrameData[] = {
+        0x00, 0x00, 0x16, 0x05,  // PUSH_PROMISE
+        0x04, 0x00, 0x00, 0x00,  // END_HEADERS
+        0x2a, 0x00, 0x00, 0x00,  // Stream 42
+        0x39, 0x00, 0x03, 0x62,  // Promised stream 57, @.b
+        0x61, 0x72, 0x03, 0x66,  // ar.f
+        0x6f, 0x6f, 0x00, 0x03,  // oo@.
+        0x66, 0x6f, 0x6f, 0x03,  // foo.
+        0x62, 0x61, 0x72,        // bar
+    };
 
-  SpdyPushPromiseIR push_promise(42, 57);
-  push_promise.SetHeader("bar", "foo");
-  push_promise.SetHeader("foo", "bar");
-  scoped_ptr<SpdySerializedFrame> frame(
-    framer.SerializePushPromise(push_promise));
-  CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+    SpdyPushPromiseIR push_promise(42, 57);
+    push_promise.SetHeader("bar", "foo");
+    push_promise.SetHeader("foo", "bar");
+    scoped_ptr<SpdySerializedFrame> frame(
+        framer.SerializePushPromise(push_promise));
+    CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+  }
+
+  {
+    // Test framing PUSH_PROMISE with one byte of padding.
+    SpdyFramer framer(spdy_version_);
+    framer.set_enable_compression(false);
+    const char kDescription[] = "PUSH_PROMISE frame with one byte of padding";
+
+    const unsigned char kFrameData[] = {
+        0x00, 0x00, 0x17, 0x05,  // PUSH_PROMISE
+        0x0c, 0x00, 0x00, 0x00,  // END_HEADERS | PADDED
+        0x2a, 0x00, 0x00, 0x00,  // Stream 42, Pad length field
+        0x00, 0x39, 0x00, 0x03,  // Promised stream 57
+        0x62, 0x61, 0x72, 0x03,  // bar.
+        0x66, 0x6f, 0x6f, 0x00,  // foo@
+        0x03, 0x66, 0x6f, 0x6f,  // .foo
+        0x03, 0x62, 0x61, 0x72,  // .bar
+    };
+
+    SpdyPushPromiseIR push_promise(42, 57);
+    push_promise.set_padding_len(1);
+    push_promise.SetHeader("bar", "foo");
+    push_promise.SetHeader("foo", "bar");
+    scoped_ptr<SpdySerializedFrame> frame(
+        framer.SerializePushPromise(push_promise));
+    CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+  }
+
+  {
+    // Test framing PUSH_PROMISE with 177 bytes of padding.
+    SpdyFramer framer(spdy_version_);
+    framer.set_enable_compression(false);
+    const char kDescription[] = "PUSH_PROMISE frame with 177 bytes of padding";
+
+    const unsigned char kFrameData[] = {
+        0x00, 0x00, 0xc7, 0x05,  // PUSH_PROMISE
+        0x0c, 0x00, 0x00, 0x00,  // END_HEADERS | PADDED
+        0x2a, 0xb0, 0x00, 0x00,  // Stream 42, Pad length field
+        0x00, 0x39, 0x00, 0x03,  // Promised stream 57
+        0x62, 0x61, 0x72, 0x03,  // bar.
+        0x66, 0x6f, 0x6f, 0x00,  // foo@
+        0x03, 0x66, 0x6f, 0x6f,  // .foo
+        0x03, 0x62, 0x61, 0x72,  // .bar
+        // Padding of 176 0x00(s).
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+
+    SpdyPushPromiseIR push_promise(42, 57);
+    push_promise.set_padding_len(177);
+    push_promise.SetHeader("bar", "foo");
+    push_promise.SetHeader("foo", "bar");
+    scoped_ptr<SpdySerializedFrame> frame(
+        framer.SerializePushPromise(push_promise));
+    CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+  }
 }
 
 TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
@@ -3030,6 +3130,107 @@ TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
   scoped_ptr<SpdySerializedFrame> frame(
     framer.SerializeContinuation(continuation));
   CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+}
+
+TEST_P(SpdyFramerTest, CreatePushPromiseThenContinuationUncompressed) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+
+  {
+    // Test framing in a case such that a PUSH_PROMISE frame, with one byte of
+    // padding, cannot hold all the data payload, which is overflowed to the
+    // consecutive CONTINUATION frame.
+    SpdyFramer framer(spdy_version_);
+    framer.set_enable_compression(false);
+    const char kDescription[] =
+        "PUSH_PROMISE and CONTINUATION frames with one byte of padding";
+
+    const unsigned char kPartialPushPromiseFrameData[] = {
+        0x00, 0x03, 0xf6, 0x05,  // PUSH_PROMISE
+        0x08, 0x00, 0x00, 0x00,  // PADDED
+        0x2a, 0x00, 0x00, 0x00,  // Stream 42
+        0x00, 0x39, 0x00, 0x03,  // Promised stream 57
+        0x78, 0x78, 0x78, 0x7f,  // xxx.
+        0x80, 0x07, 0x78, 0x78,  // ..xx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78,              // xx
+    };
+
+    const unsigned char kContinuationFrameData[] = {
+        0x00, 0x00, 0x16, 0x09,  // CONTINUATION
+        0x04, 0x00, 0x00, 0x00,  // END_HEADERS
+        0x2a, 0x78, 0x78, 0x78,  // Stream 42, xxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78, 0x78, 0x78,  // xxxx
+        0x78, 0x78,
+    };
+
+    SpdyPushPromiseIR push_promise(42, 57);
+    push_promise.set_padding_len(1);
+    string big_value(framer.GetHeaderFragmentMaxSize(), 'x');
+    push_promise.SetHeader("xxx", big_value);
+    scoped_ptr<SpdySerializedFrame> frame(
+        framer.SerializePushPromise(push_promise));
+
+    // The entire frame should look like below:
+    // Name                     Length in Byte
+    // ------------------------------------------- Begin of PUSH_PROMISE frame
+    // PUSH_PROMISE header      9
+    // Pad length field         1
+    // Promised stream          4
+    // Length field of key      2
+    // Content of key           3
+    // Length field of value    3
+    // Part of big_value        16361
+    // ------------------------------------------- Begin of CONTINUATION frame
+    // CONTINUATION header      9
+    // Remaining of big_value   22
+    // ------------------------------------------- End
+
+    // Length of everything listed above except big_value.
+    int len_non_data_payload = 31;
+    EXPECT_EQ(framer.GetHeaderFragmentMaxSize() + len_non_data_payload,
+              frame->size());
+
+    // Partially compare the PUSH_PROMISE frame against the template.
+    const unsigned char* frame_data =
+        reinterpret_cast<const unsigned char*>(frame->data());
+    CompareCharArraysWithHexError(kDescription,
+                                  frame_data,
+                                  arraysize(kPartialPushPromiseFrameData),
+                                  kPartialPushPromiseFrameData,
+                                  arraysize(kPartialPushPromiseFrameData));
+
+    // Compare the CONTINUATION frame against the template.
+    frame_data += framer.GetHeaderFragmentMaxSize();
+    CompareCharArraysWithHexError(kDescription,
+                                  frame_data,
+                                  arraysize(kContinuationFrameData),
+                                  kContinuationFrameData,
+                                  arraysize(kContinuationFrameData));
+  }
 }
 
 TEST_P(SpdyFramerTest, CreateAltSvc) {
@@ -3263,6 +3464,7 @@ TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {
   SpdyFramer framer(spdy_version_);
   framer.set_enable_compression(false);
   SpdyHeadersIR headers(1);
+  headers.set_padding_len(256);
 
   // Exact payload length will change with HPACK, but this should be long
   // enough to cause an overflow.
@@ -3291,6 +3493,7 @@ TEST_P(SpdyFramerTest, TooLargePushPromiseFrameUsesContinuation) {
   SpdyFramer framer(spdy_version_);
   framer.set_enable_compression(false);
   SpdyPushPromiseIR push_promise(1, 2);
+  push_promise.set_padding_len(256);
 
   // Exact payload length will change with HPACK, but this should be long
   // enough to cause an overflow.
@@ -3729,7 +3932,7 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   CHECK_EQ(framer.GetDataFrameMinimumSize(),
            framer.ProcessInput(frame->data(),
                                framer.GetDataFrameMinimumSize()));
-  CHECK_EQ(framer.state(), SpdyFramer::SPDY_READ_PADDING_LENGTH);
+  CHECK_EQ(framer.state(), SpdyFramer::SPDY_READ_DATA_FRAME_PADDING_LENGTH);
   CHECK_EQ(framer.error_code(), SpdyFramer::SPDY_NO_ERROR);
   bytes_consumed += framer.GetDataFrameMinimumSize();
 
@@ -3966,31 +4169,31 @@ TEST_P(SpdyFramerTest, ReadPushPromiseWithContinuation) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x00, 0x17, 0x05, 0x08,  // PUSH_PROMISE: PADDED
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
-    0x00, 0x00, 0x00, 0x2A,  // Promised stream 42
-    0x02,                    // Padding of 2.
-    0x00, 0x06, 0x63, 0x6f,
-    0x6f, 0x6b, 0x69, 0x65,
-    0x07, 0x66, 0x6f, 0x6f,
-    0x3d, 0x62, 0x61, 0x72,
-    0x00, 0x00,
+    0x00, 0x00, 0x17, 0x05,  // PUSH_PROMISE
+    0x08, 0x00, 0x00, 0x00,  // PADDED
+    0x01, 0x02, 0x00, 0x00,  // Stream 1, Pad length field
+    0x00, 0x2A, 0x00, 0x06,  // Promised stream 42
+    0x63, 0x6f, 0x6f, 0x6b,
+    0x69, 0x65, 0x07, 0x66,
+    0x6f, 0x6f, 0x3d, 0x62,
+    0x61, 0x72, 0x00, 0x00,
 
-    0x00, 0x00, 0x14, 0x09, 0x00,  // CONTINUATION
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
-    0x00, 0x06, 0x63, 0x6f,
-    0x6f, 0x6b, 0x69, 0x65,
-    0x08, 0x62, 0x61, 0x7a,
-    0x3d, 0x62, 0x69, 0x6e,
-    0x67, 0x00, 0x06, 0x63,
-
-    0x00, 0x00, 0x12, 0x09, 0x04,  // CONTINUATION: END_HEADERS
-    0x00, 0x00, 0x00, 0x01,  // Stream 1
+    0x00, 0x00, 0x14, 0x09,  // CONTINUATION
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x06, 0x63,  // Stream 1
     0x6f, 0x6f, 0x6b, 0x69,
-    0x65, 0x00, 0x00, 0x04,
-    0x6e, 0x61, 0x6d, 0x65,
-    0x05, 0x76, 0x61, 0x6c,
-    0x75, 0x65,
+    0x65, 0x08, 0x62, 0x61,
+    0x7a, 0x3d, 0x62, 0x69,
+    0x6e, 0x67, 0x00, 0x06,
+    0x63,
+
+    0x00, 0x00, 0x12, 0x09,  // CONTINUATION
+    0x04, 0x00, 0x00, 0x00,  // END_HEADERS
+    0x01, 0x6f, 0x6f, 0x6b,  // Stream 1
+    0x69, 0x65, 0x00, 0x00,
+    0x04, 0x6e, 0x61, 0x6d,
+    0x65, 0x05, 0x76, 0x61,
+    0x6c, 0x75, 0x65,
   };
 
   SpdyFramer framer(spdy_version_);
