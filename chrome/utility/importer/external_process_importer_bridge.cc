@@ -5,6 +5,7 @@
 #include "chrome/utility/importer/external_process_importer_bridge.h"
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,7 +27,16 @@ const int kNumBookmarksToSend = 100;
 const int kNumHistoryRowsToSend = 100;
 const int kNumFaviconsToSend = 100;
 const int kNumAutofillFormDataToSend = 100;
+
+// http://crbug.com/404012. Let's see where the empty fields come from.
+void CheckForEmptyUsernameAndPassword(const autofill::PasswordForm& form) {
+  if (form.username_value.empty() &&
+      form.password_value.empty() &&
+      !form.blacklisted_by_user) {
+    base::debug::DumpWithoutCrashing();
+  }
 }
+} // namespace
 
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
     const base::DictionaryValue& localized_strings,
@@ -138,6 +148,7 @@ void ExternalProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
 
 void ExternalProcessImporterBridge::SetPasswordForm(
     const autofill::PasswordForm& form) {
+  CheckForEmptyUsernameAndPassword(form);
   Send(new ProfileImportProcessHostMsg_NotifyPasswordFormReady(form));
 }
 
