@@ -157,21 +157,26 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   }
 
   EXPECT_EQ(tile_count, all_tiles.size());
-  EXPECT_EQ(17u, tile_count);
+  EXPECT_EQ(16u, tile_count);
 
   // Sanity check, all tiles should be visible.
   std::set<Tile*> smoothness_tiles;
   queue.Reset();
   host_impl_.BuildRasterQueue(&queue, SMOOTHNESS_TAKES_PRIORITY);
+  bool had_low_res = false;
   while (!queue.IsEmpty()) {
     Tile* tile = queue.Top();
     EXPECT_TRUE(tile);
     EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);
     EXPECT_EQ(TilePriority::NOW, tile->priority(PENDING_TREE).priority_bin);
-    smoothness_tiles.insert(tile);
+    if (tile->priority(ACTIVE_TREE).resolution == LOW_RESOLUTION)
+      had_low_res = true;
+    else
+      smoothness_tiles.insert(tile);
     queue.Pop();
   }
   EXPECT_EQ(all_tiles, smoothness_tiles);
+  EXPECT_TRUE(had_low_res);
 
   Region invalidation(gfx::Rect(0, 0, 500, 500));
 
@@ -198,10 +203,13 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
 
   // Populate all tiles directly from the tilings.
   all_tiles.clear();
+  std::set<Tile*> high_res_tiles;
   std::vector<Tile*> pending_high_res_tiles =
       pending_layer_->HighResTiling()->AllTilesForTesting();
-  for (size_t i = 0; i < pending_high_res_tiles.size(); ++i)
+  for (size_t i = 0; i < pending_high_res_tiles.size(); ++i) {
     all_tiles.insert(pending_high_res_tiles[i]);
+    high_res_tiles.insert(pending_high_res_tiles[i]);
+  }
 
   std::vector<Tile*> pending_low_res_tiles =
       pending_layer_->LowResTiling()->AllTilesForTesting();
@@ -210,8 +218,10 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
 
   std::vector<Tile*> active_high_res_tiles =
       active_layer_->HighResTiling()->AllTilesForTesting();
-  for (size_t i = 0; i < active_high_res_tiles.size(); ++i)
+  for (size_t i = 0; i < active_high_res_tiles.size(); ++i) {
     all_tiles.insert(active_high_res_tiles[i]);
+    high_res_tiles.insert(active_high_res_tiles[i]);
+  }
 
   std::vector<Tile*> active_low_res_tiles =
       active_layer_->LowResTiling()->AllTilesForTesting();
@@ -275,6 +285,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   // Here we expect to get increasing PENDING_TREE priority_bin.
   queue.Reset();
   host_impl_.BuildRasterQueue(&queue, NEW_CONTENT_TAKES_PRIORITY);
+  tile_count = 0;
   while (!queue.IsEmpty()) {
     Tile* tile = queue.Top();
     EXPECT_TRUE(tile);
@@ -300,14 +311,15 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
 
     last_tile = tile;
     new_content_tiles.insert(tile);
+    ++tile_count;
     queue.Pop();
   }
 
   EXPECT_EQ(tile_count, new_content_tiles.size());
-  EXPECT_EQ(all_tiles, new_content_tiles);
+  EXPECT_EQ(high_res_tiles, new_content_tiles);
   // Since we don't guarantee increasing distance due to spiral iterator, we
   // should check that we're _mostly_ right.
-  EXPECT_GT(increasing_distance_tiles, 3 * tile_count / 4);
+  EXPECT_GE(increasing_distance_tiles, 3 * tile_count / 4);
 }
 
 TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
@@ -332,7 +344,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   }
 
   EXPECT_EQ(tile_count, all_tiles.size());
-  EXPECT_EQ(17u, tile_count);
+  EXPECT_EQ(16u, tile_count);
 
   tile_manager()->InitializeTilesWithResourcesForTesting(
       std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
@@ -507,7 +519,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
     raster_queue.Pop();
   }
   EXPECT_EQ(tile_count, all_tiles.size());
-  EXPECT_EQ(34u, tile_count);
+  EXPECT_EQ(32u, tile_count);
 
   pending_layer_->ResetAllTilesPriorities();
 
@@ -609,7 +621,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
   }
 
   EXPECT_EQ(tile_count, all_tiles.size());
-  EXPECT_EQ(17u, tile_count);
+  EXPECT_EQ(16u, tile_count);
 
   queue.Reset();
   for (int i = 1; i < 10; ++i) {
@@ -633,7 +645,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
     queue.Pop();
   }
   EXPECT_EQ(tile_count, all_tiles.size());
-  EXPECT_EQ(17u, tile_count);
+  EXPECT_EQ(16u, tile_count);
 }
 
 TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
@@ -655,7 +667,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
     raster_queue.Pop();
   }
   EXPECT_EQ(tile_count, all_tiles.size());
-  EXPECT_EQ(17u, tile_count);
+  EXPECT_EQ(16u, tile_count);
 
   std::vector<Tile*> tiles(all_tiles.begin(), all_tiles.end());
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
@@ -682,7 +694,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
     queue.Pop();
   }
   EXPECT_EQ(tile_count, all_tiles.size());
-  EXPECT_EQ(17u, tile_count);
+  EXPECT_EQ(16u, tile_count);
 }
 
 }  // namespace

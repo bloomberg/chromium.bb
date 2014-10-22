@@ -1441,7 +1441,7 @@ PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
           PictureLayerTiling::TilingRasterTileIterator(tiling);
     }
 
-    if (tiling->resolution() == LOW_RESOLUTION) {
+    if (prioritize_low_res && tiling->resolution() == LOW_RESOLUTION) {
       iterators_[LOW_RES] =
           PictureLayerTiling::TilingRasterTileIterator(tiling);
     }
