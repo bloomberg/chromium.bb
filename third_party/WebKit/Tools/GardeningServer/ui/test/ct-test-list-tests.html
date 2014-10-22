@@ -71,6 +71,52 @@ describe('ct-test-list', function() {
       setTimeout(done);
     });
   });
+
+  describe('many tests failed', function() {
+    var manyTests = [];
+    before(function() {
+      for (var i = 0; i < 12; i++) {
+        manyTests.push(new CTStepFailure("base_unittests", "SomeTest{1}.SubTest".assign(i), {}));
+      }
+    });
+    it('should clamp tests to 10 when there are 12 or more', function(done) {
+      list = createTestList(manyTests);
+      setTimeout(function() {
+        var links = list.shadowRoot.querySelectorAll('a');
+        assert.lengthOf(links, 10);
+        done();
+      });
+    });
+    it('should show all tests when clicked', function(done) {
+      list = createTestList(manyTests);
+      setTimeout(function() {
+        var buttons = list.shadowRoot.querySelectorAll('#outerExpand');
+        assert.lengthOf(buttons, 1);
+        buttons[0].dispatchEvent(new CustomEvent('click'));
+        setTimeout(function() {
+          var links = list.shadowRoot.querySelectorAll('a');
+          assert.lengthOf(links, 12);
+          var buttons = list.shadowRoot.querySelectorAll('#outerExpand');
+          assert.lengthOf(buttons, 0);
+          done();
+        });
+      });
+    });
+    it('should show all tests when no steps have >10 tests each', function(done) {
+      var sixTestsEach = [];
+      for (var step of ["step1", "step2"]) {
+        for (var i = 0; i < 6; i++) {
+          sixTestsEach.push(new CTStepFailure(step, "SomeTest{1}.SubTest".assign(i), {}));
+        }
+      }
+      list = createTestList(sixTestsEach);
+      setTimeout(function() {
+        var links = list.shadowRoot.querySelectorAll('a');
+        assert.lengthOf(links, 12);
+        done();
+      });
+    });
+  });
 });
 
 })();

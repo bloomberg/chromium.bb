@@ -36,7 +36,7 @@ found in the LICENSE file.
         <div><span style="font-weight: bold">Step:</span> {{ groups.step }}</div>
       </template>
 
-      <template repeat="{{ group in groups.tests }}">
+      <template repeat="{{ group in groups.tests | maybeTruncate(groups.expanded) }}">
         <!-- Case 1: single test failure -->
         <template if="{{ group.name && (group.tests.length == 1 || group.expanded) }}">
           <template repeat="{{ test in group.tests }}">
@@ -49,14 +49,22 @@ found in the LICENSE file.
         <template if="{{ group.name && group.tests.length > 1 && !group.expanded }}">
           <div class="test-failures">
             {{ group.name }} ({{ group.tests.length }} Tests)
-            <paper-icon-button id="expand" icon="unfold-more" step="{{ groups.step }}" group="{{ group.name }}" on-click="{{ _expand }}"></paper-icon-button>
+            <paper-icon-button id="expand" icon="unfold-more" step="{{ groups.step }}" group="{{ group.name }}" on-click="{{ _innerExpand }}"></paper-icon-button>
           </div>
         </template>
+      </template>
+      <template if="{{ !groups.expanded }}">
+        <div class="test-failures">
+          {{ groups.tests.length - kMaxTestsPerStep }} more
+          <paper-icon-button id="outerExpand" icon="unfold-more" step="{{ groups.step }}" on-click="{{ _outerExpand }}"></paper-icon-button>
+        </div>
       </template>
     </template>
   </template>
   <script>
     Polymer('ct-test-list', {
+      kMaxTestsPerStep: 10,
+
       testsChanged: function() {
         var groups = {};
         if (this.tests) {
@@ -78,12 +86,13 @@ found in the LICENSE file.
             tests.push({'name': name, 'tests': testList, 'expanded': false});
           }.bind(this));
           tests.sortBy('name');
-          this.testGroups_.push({'step': step, 'tests': tests});
+          // The + 1 is to make sure at least 2 tests are hidden by the message.
+          this.testGroups_.push({'step': step, 'tests': tests, 'expanded': tests.length <= (this.kMaxTestsPerStep + 1)});
         }.bind(this));
         this.testGroups_.sortBy('step');
       },
 
-      _expand: function(evt) {
+      _innerExpand: function(evt) {
         step = evt.target.attributes['step'].value;
         name = evt.target.attributes['group'].value;
         this.testGroups_.forEach(function(testGroup) {
@@ -97,8 +106,25 @@ found in the LICENSE file.
         });
       },
 
+      _outerExpand: function(evt) {
+        var step = evt.target.attributes['step'].value;
+        this.testGroups_.forEach(function(testGroup) {
+          if (testGroup.step == step) {
+            testGroup.expanded = true;
+          }
+        });
+      },
+
       flakinessDashboardURL: function(test) {
         return test.flakinessDashboardURL();
+      },
+
+      // FIXME: Remove maybeTruncate. Persist the expanded list as described in
+      // http://crbug.com/417159.
+      maybeTruncate: function(input, expanded) {
+        if (expanded)
+          return input;
+        return input.slice(0, this.kMaxTestsPerStep);
       },
     });
   </script>
