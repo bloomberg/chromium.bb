@@ -143,7 +143,13 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestMaximize) {
   ASSERT_TRUE(RunAppWindowAPITest("testMaximize")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestMinimize) {
+// Flakes on linux. crbug.com/424399
+#if defined(OS_LINUX)
+#define MAYBE_TestMinimize DISABLED_TestMinimize
+#else
+#define MAYBE_TestMinimize TestMinimize
+#endif
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestMinimize) {
   ASSERT_TRUE(RunAppWindowAPITest("testMinimize")) << message_;
 }
 
