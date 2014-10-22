@@ -54,7 +54,12 @@ bool ResetNodesForNewProcess(RenderViewHost* render_view_host,
 
 bool CreateProxyForSiteInstance(const scoped_refptr<SiteInstance>& instance,
                                 FrameTreeNode* node) {
-  node->render_manager()->CreateRenderFrameProxy(instance.get());
+  // If a new frame is created in the current SiteInstance, other frames in
+  // that SiteInstance don't need a proxy for the new frame.
+  SiteInstance* current_instance =
+      node->render_manager()->current_frame_host()->GetSiteInstance();
+  if (current_instance != instance.get())
+    node->render_manager()->CreateRenderFrameProxy(instance.get());
   return true;
 }
 
