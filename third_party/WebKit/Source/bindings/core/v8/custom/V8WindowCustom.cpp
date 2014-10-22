@@ -54,6 +54,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
@@ -245,6 +246,9 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     LocalDOMWindow* window = V8Window::toImpl(info.Holder());
     LocalDOMWindow* source = callingDOMWindow(info.GetIsolate());
 
+    ASSERT(window);
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), window->document(), UseCounter::WindowPostMessage);
+
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "Window", info.Holder(), info.GetIsolate());
 
     // If called directly by WebCore we don't have a calling context.
@@ -266,6 +270,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     if (info.Length() > 2) {
         int transferablesArgIndex = 2;
         if (isLegacyTargetOriginDesignation(info[2])) {
+            UseCounter::countIfNotPrivateScript(info.GetIsolate(), window->document(), UseCounter::WindowPostMessageWithLegacyTargetOriginArgument);
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
