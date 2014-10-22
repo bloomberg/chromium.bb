@@ -1322,7 +1322,7 @@ class BisectPerformanceMetrics(object):
     # When build archive doesn't exists, post a build request to tryserver
     # and wait for the build to be produced.
     if not downloaded_file:
-      downloaded_file = self.PostBuildRequestAndWait(
+      downloaded_file = self._RequestBuildAndWait(
           revision, fetch_build=fetch_build_func, patch=patch)
       if not downloaded_file:
         return False
@@ -1362,13 +1362,12 @@ class BisectPerformanceMetrics(object):
         os.remove(downloaded_file)
     return False
 
-  def PostBuildRequestAndWait(self, git_revision, fetch_build, patch=None):
-    """POSTs the build request job to the try server instance.
+  def _RequestBuildAndWait(self, git_revision, fetch_build, patch=None):
+    """Triggers a try job for a build job.
 
-    A try job build request is posted to tryserver.chromium.perf master,
-    and waits for the binaries to be produced and archived on cloud storage.
-    Once the build is ready and stored onto cloud, build archive is downloaded
-    into the output folder.
+    This function prepares and starts a try job on the tryserver.chromium.perf
+    master, and waits for the binaries to be produced and archived in cloud
+    storage. Once the build is ready it's downloaded.
 
     Args:
       git_revision: A Git hash revision.
@@ -1379,21 +1378,6 @@ class BisectPerformanceMetrics(object):
       Downloaded archive file path when requested build exists and download is
       successful, otherwise None.
     """
-    def GetBuilderNameAndBuildTime(target_platform, target_arch='ia32'):
-      """Gets builder bot name and build time in seconds based on platform."""
-      # Bot names should match the one listed in tryserver.chromium's
-      # master.cfg which produces builds for bisect.
-      if bisect_utils.IsWindowsHost():
-        if bisect_utils.Is64BitWindows() and target_arch == 'x64':
-          return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
-        return ('win_perf_bisect_builder', MAX_WIN_BUILD_TIME)
-      if bisect_utils.IsLinuxHost():
-        if target_platform == 'android':
-          return ('android_perf_bisect_builder', MAX_LINUX_BUILD_TIME)
-        return ('linux_perf_bisect_builder', MAX_LINUX_BUILD_TIME)
-      if bisect_utils.IsMacHost():
-        return ('mac_perf_bisect_builder', MAX_MAC_BUILD_TIME)
-      raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
     if not fetch_build:
       return False
 
@@ -1406,8 +1390,8 @@ class BisectPerformanceMetrics(object):
     source_control.CheckoutFileAtRevision(
       bisect_utils.FILE_DEPS, git_revision, cwd=self.src_cwd)
 
-    bot_name, build_timeout = GetBuilderNameAndBuildTime(
-       self.opts.target_platform, self.opts.target_arch)
+    bot_name = self._GetBuilderName(self.opts.target_platform)
+    build_timeout = self._GetBuilderBuildTime()
     target_file = None
     try:
       # Execute try job request to build revision with patch.
@@ -1422,6 +1406,30 @@ class BisectPerformanceMetrics(object):
              'Error: %s' % (git_revision, e))
 
     return target_file
+
+  @staticmethod
+  def _GetBuilderName(target_platform):
+    """Gets builder bot name and build time in seconds based on platform."""
+    if bisect_utils.IsWindowsHost():
+      return 'win_perf_bisect_builder'
+    if bisect_utils.IsLinuxHost():
+      if target_platform == 'android':
+        return 'android_perf_bisect_builder'
+      return 'linux_perf_bisect_builder'
+    if bisect_utils.IsMacHost():
+      return 'mac_perf_bisect_builder'
+    raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
+
+  @staticmethod
+  def _GetBuilderBuildTime():
+    """Returns the time to wait for a build after requesting one."""
+    if bisect_utils.IsWindowsHost():
+      return MAX_WIN_BUILD_TIME
+    if bisect_utils.IsLinuxHost():
+      return MAX_LINUX_BUILD_TIME
+    if bisect_utils.IsMacHost():
+      return MAX_MAC_BUILD_TIME
+    raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
 
   def IsDownloadable(self, depot):
     """Checks if build can be downloaded based on target platform and depot."""
