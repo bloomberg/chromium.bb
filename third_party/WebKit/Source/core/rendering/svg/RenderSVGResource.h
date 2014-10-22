@@ -26,16 +26,6 @@
 
 namespace blink {
 
-enum RenderSVGResourceType {
-    MaskerResourceType,
-    MarkerResourceType,
-    PatternResourceType,
-    LinearGradientResourceType,
-    RadialGradientResourceType,
-    FilterResourceType,
-    ClipperResourceType
-};
-
 enum RenderSVGResourceMode {
     ApplyToFillMode,
     ApplyToStrokeMode,
@@ -90,16 +80,11 @@ public:
 
     virtual SVGPaintServer preparePaintServer(const RenderObject&);
 
-    virtual RenderSVGResourceType resourceType() const = 0;
-
     // Helper utilities used in to access the underlying resources for DRT.
     static SVGPaintDescription requestPaintDescription(const RenderObject&, const RenderStyle*, RenderSVGResourceMode);
 
     static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
 };
-
-#define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
-    DEFINE_TYPE_CASTS(thisType, RenderSVGResource, resource, resource->resourceType() == typeName, resource.resourceType() == typeName)
 
 }
 

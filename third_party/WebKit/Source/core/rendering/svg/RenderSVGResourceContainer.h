@@ -26,6 +26,16 @@
 
 namespace blink {
 
+enum RenderSVGResourceType {
+    MaskerResourceType,
+    MarkerResourceType,
+    PatternResourceType,
+    LinearGradientResourceType,
+    RadialGradientResourceType,
+    FilterResourceType,
+    ClipperResourceType
+};
+
 class RenderLayer;
 
 class RenderSVGResourceContainer : public RenderSVGHiddenContainer,
@@ -40,6 +50,8 @@ public:
     virtual void layout() override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceContainer || RenderSVGHiddenContainer::isOfType(type); }
+
+    virtual RenderSVGResourceType resourceType() const = 0;
 
     void idChanged();
     void addClientRenderLayer(Node*);
@@ -108,6 +120,9 @@ Renderer* getRenderSVGResourceById(TreeScope& treeScope, const AtomicString& id)
 }
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGResourceContainer, isSVGResourceContainer());
+
+#define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
+    DEFINE_TYPE_CASTS(thisType, RenderSVGResourceContainer, resource, resource->resourceType() == typeName, resource.resourceType() == typeName)
 
 }
 

@@ -259,11 +259,11 @@ static void writeSVGPaintingResource(TextStream& ts, const SVGPaintDescription& 
     SVGElement* element = container->element();
     ASSERT(element);
 
-    if (resource->resourceType() == PatternResourceType)
+    if (container->resourceType() == PatternResourceType)
         ts << "[type=PATTERN]";
-    else if (resource->resourceType() == LinearGradientResourceType)
+    else if (container->resourceType() == LinearGradientResourceType)
         ts << "[type=LINEAR-GRADIENT]";
-    else if (resource->resourceType() == RadialGradientResourceType)
+    else if (container->resourceType() == RadialGradientResourceType)
         ts << "[type=RADIAL-GRADIENT]";
 
     ts << " [id=\"" << element->getIdAttribute() << "\"]";
