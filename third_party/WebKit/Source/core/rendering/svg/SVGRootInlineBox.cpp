@@ -24,38 +24,17 @@
 #include "config.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
 
-#include "core/paint/SVGInlineTextBoxPainter.h"
+#include "core/paint/SVGRootInlineBoxPainter.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace blink {
 
 void SVGRootInlineBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
-    ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
-
-    bool isPrinting = renderer().document().printing();
-    bool hasSelection = !isPrinting && selectionState() != RenderObject::SelectionNone;
-
-    PaintInfo childPaintInfo(paintInfo);
-    if (hasSelection) {
-        for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
-            if (child->isSVGInlineTextBox())
-                SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
-            else if (child->isSVGInlineFlowBox())
-                toSVGInlineFlowBox(child)->paintSelectionBackground(childPaintInfo);
-        }
-    }
-
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    SVGRenderingContext renderingContext(&renderer(), paintInfo);
-    if (renderingContext.isRenderingPrepared()) {
-        for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
-            child->paint(paintInfo, paintOffset, 0, 0);
-    }
+    SVGRootInlineBoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
 void SVGRootInlineBox::markDirty()
