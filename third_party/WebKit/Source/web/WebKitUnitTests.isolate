@@ -35,9 +35,7 @@
         'files' : [
           '<(PRODUCT_DIR)/content_shell.pak',
         ],
-        'isolate_dependency_tracked': [
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
           'tests/data/',
           # Required by some image decoder tests.
           '../platform/image-decoders/testing/',

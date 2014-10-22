@@ -32,9 +32,7 @@
   'conditions': [
     ['OS=="android"', {
       'variables': {
-        'isolate_dependency_tracked': [
-        ],
-        'isolate_dependency_untracked': [
+        'files': [
         ],
       },
     }],
