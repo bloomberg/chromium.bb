@@ -27,8 +27,12 @@ config("media_config") {
 }
 
 config("media_dependent_config") {
+  defines = []
   if (!media_use_libvpx) {
-    defines = [ "MEDIA_DISABLE_LIBVPX" ]
+    defines += [ "MEDIA_DISABLE_LIBVPX" ]
+  }
+  if (proprietary_codecs) {
+    defines += [ "USE_PROPRIETARY_CODECS" ]
   }
   if (is_win) {
     ldflags = [
@@ -375,6 +379,8 @@ component("media") {
 
   if (proprietary_codecs) {
     sources += [
+      "filters/h264_to_annex_b_bitstream_converter.cc",
+      "filters/h264_to_annex_b_bitstream_converter.h",
       "formats/mp2t/es_adapter_video.cc",
       "formats/mp2t/es_adapter_video.h",
       "formats/mp2t/es_parser.cc",
