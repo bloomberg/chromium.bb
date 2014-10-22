@@ -54,5 +54,5 @@ resources-test
 sanity-test
 signal-test
 socket-test
-wayland-scanner
+/wayland-scanner
 protocol/*.[ch]
