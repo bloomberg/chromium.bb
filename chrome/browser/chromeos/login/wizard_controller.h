@@ -241,6 +241,12 @@ class WizardController : public ScreenObserver, public ScreenManager {
                                      const std::string& password) override;
   virtual void SetUsageStatisticsReporting(bool val) override;
   virtual bool GetUsageStatisticsReporting() const override;
+  virtual void SetHostConfiguration() override;
+  virtual void ConfigureHost(bool accepted_eula,
+                             const std::string& lang,
+                             const std::string& timezone,
+                             bool send_reports,
+                             const std::string& keyboard_layout) override;
   virtual ErrorScreen* GetErrorScreen() override;
   virtual void ShowErrorScreen() override;
   virtual void HideErrorScreen(BaseScreen* parent_screen) override;

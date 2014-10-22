@@ -25,6 +25,12 @@ class MockScreenObserver : public ScreenObserver {
                void(const std::string&, const std::string&));
   MOCK_METHOD1(SetUsageStatisticsReporting, void(bool));
   MOCK_CONST_METHOD0(GetUsageStatisticsReporting, bool());
+  MOCK_METHOD0(SetHostConfiguration, void());
+  MOCK_METHOD5(ConfigureHost, void(bool accepted_eula,
+                                   const std::string& lang,
+                                   const std::string& timezone,
+                                   bool send_reports,
+                                   const std::string& keyboard_layout));
   MOCK_METHOD0(GetErrorScreen, ErrorScreen*());
   MOCK_METHOD0(ShowErrorScreen, void());
   MOCK_METHOD1(HideErrorScreen, void(BaseScreen*));

@@ -47,6 +47,16 @@ class NetworkScreenActor {
 
   // Sets whether continue control is enabled.
   virtual void EnableContinue(bool enabled) = 0;
+
+  // Getters for locale, keyboard layout, timezone.
+  virtual std::string GetApplicationLocale() const = 0;
+  virtual std::string GetInputMethod() const = 0;
+  virtual std::string GetTimezone() const = 0;
+
+  // Setters for locale, keyboard layout and timezone.
+  virtual void SetApplicationLocale(const std::string& locale) = 0;
+  virtual void SetInputMethod(const std::string& input_method) = 0;
+  virtual void SetTimezone(const std::string& timezone) = 0;
 };
 
 }  // namespace chromeos

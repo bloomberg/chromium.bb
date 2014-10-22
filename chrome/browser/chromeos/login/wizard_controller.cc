@@ -1274,4 +1274,33 @@ void WizardController::OnSharkConnected(
   ShowHostPairingScreen();
 }
 
+void WizardController::SetHostConfiguration() {
+  if (shark_controller_) {
+    NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
+    shark_controller_->SetHostConfiguration(
+        true,  // Eula must be accepted before we get this far.
+        network_actor->GetApplicationLocale(),
+        network_actor->GetTimezone(),
+        GetUsageStatisticsReporting(),
+        network_actor->GetInputMethod());
+  }
+}
+
+void WizardController::ConfigureHost(bool accepted_eula,
+                                     const std::string& lang,
+                                     const std::string& timezone,
+                                     bool send_reports,
+                                     const std::string& keyboard_layout) {
+  VLOG(1) << "ConfigureHost locale=" << lang
+          << ", timezone=" << timezone
+          << ", keyboard_layout=" << keyboard_layout;
+  if (accepted_eula) // Always true.
+    StartupUtils::MarkEulaAccepted();
+  SetUsageStatisticsReporting(send_reports);
+  NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
+  network_actor->SetApplicationLocale(lang);
+  network_actor->SetTimezone(timezone);
+  network_actor->SetInputMethod(keyboard_layout);
+}
+
 }  // namespace chromeos

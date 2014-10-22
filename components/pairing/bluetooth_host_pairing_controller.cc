@@ -243,8 +243,6 @@ void BluetoothHostPairingController::OnAccept(
                  ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothHostPairingController::OnReceiveError,
                  ptr_factory_.GetWeakPtr()));
-
-  ChangeStage(STAGE_UPDATING);
 }
 
 void BluetoothHostPairingController::OnSetDiscoverable(bool change_stage) {

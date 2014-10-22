@@ -133,9 +133,6 @@ void EnrollmentScreen::ConfigureHost(bool accepted_eula,
 }
 
 void EnrollmentScreen::EnrollHost(const std::string& auth_token) {
-  // TODO(achuith, zork): Move this to ConfigureHost (crbug.com/419512).
-  StartupUtils::MarkEulaAccepted();
-
   actor_->Show();
   actor_->ShowEnrollmentSpinnerScreen();
   OnOAuthTokenAvailable(auth_token);

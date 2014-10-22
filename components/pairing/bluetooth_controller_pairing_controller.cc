@@ -163,6 +163,7 @@ void BluetoothControllerPairingController::OnConnectToService(
                  ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothControllerPairingController::OnReceiveError,
                  ptr_factory_.GetWeakPtr()));
+  ChangeStage(STAGE_PAIRING_DONE);
 }
 
 void BluetoothControllerPairingController::OnSendComplete(int bytes_sent) {}
@@ -314,6 +315,9 @@ void BluetoothControllerPairingController::SetHostConfiguration(
     const std::string& timezone,
     bool send_reports,
     const std::string& keyboard_layout) {
+  VLOG(1) << "SetHostConfiguration lang=" << lang
+          << ", timezone=" << timezone
+          << ", keyboard_layout=" << keyboard_layout;
 
   pairing_api::ConfigureHost host_config;
   host_config.set_api_version(kPairingAPIVersion);

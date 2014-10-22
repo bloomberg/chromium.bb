@@ -98,6 +98,10 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
                          shark_controller_->GetConfirmationCode());
       break;
     }
+    case ControllerPairingController::STAGE_PAIRING_DONE: {
+      get_screen_observer()->SetHostConfiguration();
+      break;
+    }
     case ControllerPairingController::STAGE_HOST_UPDATE_IN_PROGRESS: {
       desired_page = kPageHostUpdate;
       break;

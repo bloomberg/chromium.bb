@@ -34,8 +34,12 @@ class MockNetworkScreenActor : public NetworkScreenActor {
   MOCK_METHOD2(ShowConnectingStatus,
                void(bool connecting, const base::string16& network_id));
   MOCK_METHOD1(EnableContinue, void(bool enabled));
-  MOCK_CONST_METHOD0(IsContinueEnabled, bool());
-  MOCK_CONST_METHOD0(IsConnecting, bool());
+  MOCK_CONST_METHOD0(GetApplicationLocale, std::string());
+  MOCK_CONST_METHOD0(GetInputMethod, std::string());
+  MOCK_CONST_METHOD0(GetTimezone, std::string());
+  MOCK_METHOD1(SetApplicationLocale, void(const std::string& locale));
+  MOCK_METHOD1(SetInputMethod, void(const std::string& input_method));
+  MOCK_METHOD1(SetTimezone, void(const std::string& timezone));
 
   private:
    Delegate* delegate_;

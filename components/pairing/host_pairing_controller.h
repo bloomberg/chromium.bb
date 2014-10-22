@@ -18,7 +18,6 @@ class HostPairingController {
     STAGE_INITIALIZATION_ERROR,
     STAGE_WAITING_FOR_CONTROLLER,
     STAGE_WAITING_FOR_CODE_CONFIRMATION,
-    STAGE_UPDATING,
     STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE,
     STAGE_WAITING_FOR_CREDENTIALS,
     STAGE_ENROLLING,
@@ -84,7 +83,6 @@ class HostPairingController {
   virtual std::string GetEnrollmentDomain() = 0;
 
   // Notify that the update status has changed.
-  // Can be called on stage |STAGE_UPDATING|.
   virtual void OnUpdateStatusChanged(UpdateStatus update_status) = 0;
 
   // Notify that enrollment status has changed.

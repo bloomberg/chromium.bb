@@ -139,10 +139,6 @@ void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
       break;
     }
     case STAGE_WAITING_FOR_CODE_CONFIRMATION: {
-      ChangeStageLater(STAGE_UPDATING);
-      break;
-    }
-    case STAGE_UPDATING: {
       ChangeStageLater(STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE);
       break;
     }

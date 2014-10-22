@@ -107,7 +107,7 @@ void NetworkScreenHandler::Show() {
   if (selected_language_code_.empty()) {
     const StartupCustomizationDocument* startup_manifest =
         StartupCustomizationDocument::GetInstance();
-    HandleOnLanguageChanged(startup_manifest->initial_locale_default());
+    SetApplicationLocale(startup_manifest->initial_locale_default());
   }
 
   PrefService* prefs = g_browser_process->local_state();
@@ -209,11 +209,11 @@ void NetworkScreenHandler::Initialize() {
 void NetworkScreenHandler::RegisterMessages() {
   AddCallback(kJsApiNetworkOnExit, &NetworkScreenHandler::HandleOnExit);
   AddCallback(kJsApiNetworkOnLanguageChanged,
-              &NetworkScreenHandler::HandleOnLanguageChanged);
+              &NetworkScreenHandler::SetApplicationLocale);
   AddCallback(kJsApiNetworkOnInputMethodChanged,
-              &NetworkScreenHandler::HandleOnInputMethodChanged);
+              &NetworkScreenHandler::SetInputMethod);
   AddCallback(kJsApiNetworkOnTimezoneChanged,
-              &NetworkScreenHandler::HandleOnTimezoneChanged);
+              &NetworkScreenHandler::SetTimezone);
 }
 
 
@@ -270,11 +270,24 @@ void NetworkScreenHandler::OnLanguageChangedCallback(
   AccessibilityManager::Get()->OnLocaleChanged();
 }
 
-void NetworkScreenHandler::HandleOnLanguageChanged(const std::string& locale) {
+std::string NetworkScreenHandler::GetApplicationLocale() const {
+  return locale_;
+}
+
+std::string NetworkScreenHandler::GetInputMethod() const {
+  return input_method_;
+}
+
+std::string NetworkScreenHandler::GetTimezone() const {
+  return timezone_;
+}
+
+void NetworkScreenHandler::SetApplicationLocale(const std::string& locale) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   if (app_locale == locale)
     return;
 
+  locale_ = locale;
   base::WeakPtr<NetworkScreenHandler> weak_self =
       weak_ptr_factory_.GetWeakPtr();
   scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> callback_data(
@@ -289,19 +302,21 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const std::string& locale) {
                               callback.Pass());
 }
 
-void NetworkScreenHandler::HandleOnInputMethodChanged(const std::string& id) {
+void NetworkScreenHandler::SetInputMethod(const std::string& input_method) {
+  input_method_ = input_method;
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()
-      ->ChangeInputMethod(id, false /* show_message */);
+      ->ChangeInputMethod(input_method, false /* show_message */);
 }
 
-void NetworkScreenHandler::HandleOnTimezoneChanged(
+void NetworkScreenHandler::SetTimezone(
     const std::string& timezone_id) {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   if (current_timezone_id == timezone_id)
     return;
 
+  timezone_ = timezone_id;
   CrosSettings::Get()->SetString(kSystemTimezone, timezone_id);
 }
 

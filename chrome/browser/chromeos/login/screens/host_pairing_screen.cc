@@ -72,11 +72,6 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
                          remora_controller_->GetConfirmationCode());
       break;
     }
-    case HostPairingController::STAGE_UPDATING: {
-      remora_controller_->RemoveObserver(this);
-      get_screen_observer()->OnExit(WizardController::HOST_PAIRING_FINISHED);
-      break;
-    }
     default:
       break;
   }
@@ -92,8 +87,14 @@ void HostPairingScreen::ConfigureHost(bool accepted_eula,
                                       const std::string& timezone,
                                       bool send_reports,
                                       const std::string& keyboard_layout) {
-  // TODO(zork): Get configuration from UI and send to Host.
-  // (http://crbug.com/405744)
+  VLOG(1) << "ConfigureHostMessage language=" << lang
+          << ", timezone=" << timezone
+          << ", keyboard_layout=" << keyboard_layout;
+
+  remora_controller_->RemoveObserver(this);
+  get_screen_observer()->ConfigureHost(accepted_eula, lang, timezone,
+                                       send_reports, keyboard_layout);
+  get_screen_observer()->OnExit(WizardController::HOST_PAIRING_FINISHED);
 }
 
 void HostPairingScreen::EnrollHost(const std::string& auth_token) {
