@@ -511,7 +511,14 @@ cr.define('options.network', function() {
           };
         }
         addendum.push(entry);
+      } else if (this.data_.key == 'VPN') {
+        addendum.push({
+          label: loadTimeData.getString('joinOtherNetwork'),
+          command: createAddConnectionCallback_('VPN'),
+          data: {}
+        });
       }
+
       var list = this.data.rememberedNetworks;
       if (list && list.length > 0) {
         var callback = function(list) {
@@ -531,23 +538,28 @@ cr.define('options.network', function() {
       list = this.data.networkList;
       var empty = !list || list.length == 0;
       if (list) {
+        var connectedVpnServicePath = '';
         for (var i = 0; i < list.length; i++) {
           var data = list[i];
           this.createNetworkOptionsCallback_(networkGroup, data);
-          if (data.ConnectionState == 'Connected') {
-            if (data.Type == 'VPN') {
-              var disconnectCallback = function() {
-                sendChromeMetricsAction('Options_NetworkDisconnectVPN');
-                // TODO(stevenjb): chrome.networkingPrivate.startDisconnect
-                chrome.send('startDisconnect', [data.servicePath]);
-              };
-              // Add separator
-              addendum.push({});
-              addendum.push({label: loadTimeData.getString('disconnectNetwork'),
-                             command: disconnectCallback,
-                             data: data});
-            }
+          // For VPN only, append a 'Disconnect' item to the dropdown menu.
+          if (!connectedVpnServicePath && data.Type == 'VPN' &&
+              (data.ConnectionState == 'Connected' ||
+               data.ConnectionState == 'Connecting')) {
+            connectedVpnServicePath = data.servicePath;
           }
+        }
+        if (connectedVpnServicePath) {
+          var disconnectCallback = function() {
+            sendChromeMetricsAction('Options_NetworkDisconnectVPN');
+            // TODO(stevenjb): chrome.networkingPrivate.startDisconnect
+            chrome.send('startDisconnect', [connectedVpnServicePath]);
+          };
+          // Add separator
+          addendum.push({});
+          addendum.push({label: loadTimeData.getString('disconnectNetwork'),
+                         command: disconnectCallback,
+                         data: data});
         }
       }
       if (this.data_.key == 'WiFi' || this.data_.key == 'WiMAX' ||
