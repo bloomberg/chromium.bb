@@ -428,6 +428,7 @@ cr.define('options', function() {
       this.setAttribute('inlineeditable', '');
       this.addEventListener('hasElementFocusChange',
                             this.handleListFocusChange_);
+      this.removeAttribute('tabindex');
     },
 
     /**
