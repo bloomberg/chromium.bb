@@ -1884,6 +1884,14 @@ public class ContentViewCore
         return mHasSelection;
     }
 
+     /**
+     * @return Whether the page has an active, touch-controlled insertion handle.
+     */
+    @VisibleForTesting
+    protected boolean hasInsertion() {
+        return mHasInsertion;
+    }
+
     private void hidePastePopup() {
         if (mPastePopupMenu == null) return;
         mPastePopupMenu.hide();

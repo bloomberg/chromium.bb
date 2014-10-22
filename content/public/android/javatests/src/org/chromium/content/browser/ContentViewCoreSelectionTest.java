@@ -32,6 +32,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
             "<br/><input id=\"input_text\" type=\"text\" value=\"Sample Text\" />" +
             "<br/><textarea id=\"empty_textarea\" rows=\"2\" cols=\"20\"></textarea>" +
             "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">Sample Text</textarea>" +
+            "<br/><input id=\"readonly_text\" type=\"text\" readonly value=\"Sample Text\"/>" +
+            "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />" +
             "</form></body></html>");
 
     private ContentViewCore mContentViewCore;
@@ -171,6 +173,30 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertWaitForPastePopupStatus(true);
         DOMUtils.longPressNode(this, mContentViewCore, "plain_text_2");
         assertWaitForPastePopupStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupNotShownOnLongPressingReadOnlyInput() throws Throwable {
+        copyStringToClipboard();
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        assertTrue(mContentViewCore.hasInsertion());
+        DOMUtils.longPressNode(this, mContentViewCore, "readonly_text");
+        assertWaitForPastePopupStatus(false);
+        assertFalse(mContentViewCore.hasInsertion());
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupNotShownOnLongPressingDisabledInput() throws Throwable {
+        copyStringToClipboard();
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        assertTrue(mContentViewCore.hasInsertion());
+        DOMUtils.longPressNode(this, mContentViewCore, "disabled_text");
+        assertWaitForPastePopupStatus(false);
+        assertFalse(mContentViewCore.hasInsertion());
     }
 
     private void assertWaitForSelectActionBarVisible(

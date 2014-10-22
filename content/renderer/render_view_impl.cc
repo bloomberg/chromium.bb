@@ -2526,8 +2526,11 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
 
   if (node.isElementNode()) {
     const WebElement& element = node.toConst<WebElement>();
-    if (element.isTextFormControlElement())
-      return true;
+    if (element.isTextFormControlElement()) {
+      if (!(element.hasAttribute("readonly") ||
+            element.hasAttribute("disabled")))
+        return true;
+    }
 
     // Also return true if it has an ARIA role of 'textbox'.
     for (unsigned i = 0; i < element.attributeCount(); ++i) {
