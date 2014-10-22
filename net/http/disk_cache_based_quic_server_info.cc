@@ -78,6 +78,7 @@ DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
 void DiskCacheBasedQuicServerInfo::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(GET_BACKEND, state_);
+  load_start_time_ = base::TimeTicks::Now();
   DoLoop(OK);
 }
 
@@ -312,6 +313,8 @@ int DiskCacheBasedQuicServerInfo::DoWaitForDataReadyDone() {
   }
   entry_ = NULL;
   Parse(data_);
+  UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheLoadTime",
+                      base::TimeTicks::Now() - load_start_time_);
   return OK;
 }
 
