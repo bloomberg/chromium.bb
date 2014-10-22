@@ -18,7 +18,7 @@
 #include "components/sessions/session_id.h"
 #include "url/gurl.h"
 
-class Profile;
+class BaseSessionServiceDelegate;
 class SessionBackend;
 class SessionCommand;
 
@@ -41,14 +41,10 @@ class BaseSessionService {
 
   // Creates a new BaseSessionService. After creation you need to invoke
   // Init.
-  // |type| gives the type of session service, |profile| the profile and
-  // |path| the path to save files to. If |profile| is non-NULL, |path| is
-  // ignored and instead the path comes from the profile.
+  // |type| gives the type of session service, |path| the path to save files to.
   BaseSessionService(SessionType type,
-                     Profile* profile,
-                     const base::FilePath& path);
-
-  Profile* profile() const { return profile_; }
+                     const base::FilePath& path,
+                     scoped_ptr<BaseSessionServiceDelegate> delegate);
 
   // Deletes the last session.
   void DeleteLastSession();
@@ -165,9 +161,6 @@ class BaseSessionService {
  private:
   friend class BetterSessionRestoreCrashTest;
 
-  // The profile. This may be null during testing.
-  Profile* profile_;
-
   // The backend.
   scoped_refptr<SessionBackend> backend_;
 
@@ -180,6 +173,8 @@ class BaseSessionService {
 
   // The number of commands sent to the backend before doing a reset.
   int commands_since_reset_;
+
+  scoped_ptr<BaseSessionServiceDelegate> delegate_;
 
   // A token to make sure that all tasks will be serialized.
   base::SequencedWorkerPool::SequenceToken sequence_token_;

@@ -24,6 +24,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/base_session_service_delegate_impl.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_data_deleter.h"
@@ -202,7 +203,12 @@ ui::WindowShowState PersistedShowStateToShowState(int state) {
 // SessionService -------------------------------------------------------------
 
 SessionService::SessionService(Profile* profile)
-    : BaseSessionService(SESSION_RESTORE, profile, base::FilePath()),
+    : BaseSessionService(
+        SESSION_RESTORE,
+        profile->GetPath(),
+        scoped_ptr<BaseSessionServiceDelegate>(
+            new BaseSessionServiceDelegateImpl(true))),
+      profile_(profile),
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),
@@ -210,11 +216,18 @@ SessionService::SessionService(Profile* profile)
       save_delay_in_hrs_(base::TimeDelta::FromHours(8)),
       force_browser_not_alive_with_no_windows_(false),
       weak_factory_(this) {
+  // We should never be created when incognito.
+  DCHECK(!profile->IsOffTheRecord());
   Init();
 }
 
 SessionService::SessionService(const base::FilePath& save_path)
-    : BaseSessionService(SESSION_RESTORE, NULL, save_path),
+    : BaseSessionService(
+        SESSION_RESTORE,
+        save_path,
+        scoped_ptr<BaseSessionServiceDelegate>(
+            new BaseSessionServiceDelegateImpl(false))),
+      profile_(NULL),
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),

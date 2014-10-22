@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/base_session_service.h"
+#include "chrome/browser/sessions/base_session_service_delegate_impl.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -212,6 +213,9 @@ class PersistentTabRestoreService::Delegate
                        std::vector<TabRestoreService::Entry*>* entries);
 
  private:
+  // The associated profile.
+  Profile* profile_;
+
   TabRestoreServiceHelper* tab_restore_service_helper_;
 
   // The number of entries to write.
@@ -235,12 +239,18 @@ class PersistentTabRestoreService::Delegate
 };
 
 PersistentTabRestoreService::Delegate::Delegate(Profile* profile)
-    : BaseSessionService(BaseSessionService::TAB_RESTORE, profile,
-                         base::FilePath()),
+    : BaseSessionService(
+        BaseSessionService::TAB_RESTORE,
+        profile->GetPath(),
+        scoped_ptr<BaseSessionServiceDelegate>(
+          new BaseSessionServiceDelegateImpl(true))),
+      profile_(profile),
       tab_restore_service_helper_(NULL),
       entries_to_write_(0),
       entries_written_(0),
       load_state_(NOT_LOADED) {
+  // We should never be created when incognito.
+  DCHECK(!profile->IsOffTheRecord());
 }
 
 PersistentTabRestoreService::Delegate::~Delegate() {}
@@ -335,9 +345,9 @@ void PersistentTabRestoreService::Delegate::LoadTabsFromLastSession() {
   load_state_ = LOADING;
 
   SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile());
-  Profile::ExitType exit_type = profile()->GetLastSessionExitType();
-  if (!profile()->restored_last_session() && session_service &&
+      SessionServiceFactory::GetForProfile(profile_);
+  Profile::ExitType exit_type = profile_->GetLastSessionExitType();
+  if (!profile_->restored_last_session() && session_service &&
       (exit_type == Profile::EXIT_CRASHED ||
        exit_type == Profile::EXIT_SESSION_ENDED)) {
     // The previous session crashed and wasn't restored, or was a forced

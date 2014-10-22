@@ -5,22 +5,11 @@
 #include "chrome/browser/sessions/base_session_service.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/pickle.h"
-#include "base/stl_util.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/base_session_service_delegate.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/common/referrer.h"
-
-using content::BrowserThread;
-using content::NavigationEntry;
 
 // BaseSessionService ---------------------------------------------------------
 
@@ -72,20 +61,16 @@ static const int kSaveDelayMS = 2500;
 // static
 const int BaseSessionService::max_persist_navigation_count = 6;
 
-BaseSessionService::BaseSessionService(SessionType type,
-                                       Profile* profile,
-                                       const base::FilePath& path)
-    : profile_(profile),
-      pending_reset_(false),
+BaseSessionService::BaseSessionService(
+    SessionType type,
+    const base::FilePath& path,
+    scoped_ptr<BaseSessionServiceDelegate> delegate)
+    : pending_reset_(false),
       commands_since_reset_(0),
-      sequence_token_(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
+      delegate_(delegate.Pass()),
+      sequence_token_(delegate_->GetBlockingPool()->GetSequenceToken()),
       weak_factory_(this) {
-  if (profile) {
-    // We should never be created when incognito.
-    DCHECK(!profile->IsOffTheRecord());
-  }
-  backend_ = new SessionBackend(type, profile_ ? profile_->GetPath() : path);
+  backend_ = new SessionBackend(type, path);
   DCHECK(backend_.get());
 }
 
@@ -106,9 +91,8 @@ void BaseSessionService::ScheduleCommand(SessionCommand* command) {
 }
 
 void BaseSessionService::StartSaveTimer() {
-  // Don't start a timer when testing (profile == NULL or
-  // MessageLoop::current() is NULL).
-  if (base::MessageLoop::current() && profile() &&
+  // Don't start a timer when testing.
+  if (delegate_->ShouldUseDelayedSave() && base::MessageLoop::current() &&
       !weak_factory_.HasWeakPtrs()) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -265,11 +249,7 @@ bool BaseSessionService::RestoreSetWindowAppNameCommand(
 }
 
 bool BaseSessionService::ShouldTrackEntry(const GURL& url) {
-  // Blacklist chrome://quit and chrome://restart to avoid quit or restart
-  // loops.
-  return url.is_valid() && !(url.SchemeIs(content::kChromeUIScheme) &&
-                             (url.host() == chrome::kChromeUIQuitHost ||
-                              url.host() == chrome::kChromeUIRestartHost));
+  return url.is_valid() && delegate_->ShouldTrackEntry(url);
 }
 
 base::CancelableTaskTracker::TaskId
@@ -297,8 +277,7 @@ BaseSessionService::ScheduleGetLastSessionCommands(
 void BaseSessionService::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool* pool = delegate_->GetBlockingPool();
   if (!pool->IsShutdownInProgress()) {
     pool->PostSequencedWorkerTask(sequence_token_, from_here, task);
   } else {

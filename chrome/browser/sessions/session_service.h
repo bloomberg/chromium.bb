@@ -74,6 +74,9 @@ class SessionService : public BaseSessionService,
 
   ~SessionService() override;
 
+  // This may be NULL during testing.
+  Profile* profile() const { return profile_; }
+
   // Returns true if a new window opening should really be treated like the
   // start of a session (with potential session restore, startup URLs, etc.).
   // In particular, this is true if there are no tabbed browsers running
@@ -438,6 +441,9 @@ class SessionService : public BaseSessionService,
   // types.
   static WindowType WindowTypeForBrowserType(Browser::Type type);
   static Browser::Type BrowserTypeForWindowType(WindowType type);
+
+  // The profile. This may be null during testing.
+  Profile* profile_;
 
   content::NotificationRegistrar registrar_;
 
