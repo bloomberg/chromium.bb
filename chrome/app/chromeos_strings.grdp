@@ -1436,8 +1436,8 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT" desc="Error text to show when the password typed by the user could not be verified.">
     Sorry, your password could not be verified. Please try again.
   </message>
-  <message name="IDS_LOGIN_FATAL_ERROR_NO_EMAIL" desc="Message to show when the authentication could not be completed because the user's e-mail address could not be retrieved.">
-    Oops, couldn't sign you in. Sign-in failed because your e-mail address could not be retrieved.
+  <message name="IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS" desc="Message to show when the authentication could not be completed because the user's account details could not be retrieved.">
+    Oops, couldn't sign you in. Sign-in failed because your account details could not be retrieved.
   </message>
   <message name="IDS_LOGIN_FATAL_ERROR_NO_PASSWORD" desc="Message to show when the authentication could not be completed because the user's password could not be retrieved.">
     Something went wrong with signing in.

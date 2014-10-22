@@ -141,18 +141,6 @@ cr.define('cr.login', function() {
     successCallback_: null,
 
     /**
-     * Invoked when GAIA indicates login success and SAML was used. At this
-     * point, GAIA cookies are present but the identity of the authenticated
-     * user is not known. The embedder of GaiaAuthHost should extract the GAIA
-     * cookies from the cookie jar, query GAIA for the authenticated user's
-     * e-mail address and invoke GaiaAuthHost.setAuthenticatedUserEmail with the
-     * result. The argument is an opaque token that should be passed back to
-     * GaiaAuthHost.setAuthenticatedUserEmail.
-     * @type {function(number)}
-     */
-    retrieveAuthenticatedUserEmailCallback_: null,
-
-    /**
      * Invoked when the auth flow needs a user to confirm his/her passwords.
      * This could happen when there are more than one passwords scraped during
      * SAML flow. The embedder of GaiaAuthHost should show an UI to collect a
@@ -175,7 +163,21 @@ cr.define('cr.login', function() {
     /**
      * Invoked when the authentication flow had to be aborted because content
      * served over an unencrypted connection was detected.
+     */
     insecureContentBlockedCallback_: null,
+
+    /**
+     * Invoked to display an error message to the user when a GAIA error occurs
+     * during authentication.
+     * @type {function()}
+     */
+    missingGaiaInfoCallback_: null,
+
+    /**
+     * Invoked to record that the credentials passing API was used.
+     * @type {function()}
+     */
+    samlApiUsedCallback_: null,
 
     /**
      * The iframe container.
@@ -183,14 +185,6 @@ cr.define('cr.login', function() {
      */
     get frame() {
       return this.frame_;
-    },
-
-    /**
-     * Sets retrieveAuthenticatedUserEmailCallback_.
-     * @type {function()}
-     */
-    set retrieveAuthenticatedUserEmailCallback(callback) {
-      this.retrieveAuthenticatedUserEmailCallback_ = callback;
     },
 
     /**
@@ -215,6 +209,22 @@ cr.define('cr.login', function() {
      */
     set insecureContentBlockedCallback(callback) {
       this.insecureContentBlockedCallback_ = callback;
+    },
+
+    /**
+     * Sets missingGaiaInfoCallback_.
+     * @type {function()}
+     */
+    set missingGaiaInfoCallback(callback) {
+      this.missingGaiaInfoCallback_ = callback;
+    },
+
+    /**
+     * Sets samlApiUsedCallback_.
+     * @type {function()}
+     */
+    set samlApiUsedCallback(callback) {
+      this.samlApiUsedCallback_ = callback;
     },
 
     /**
@@ -286,21 +296,6 @@ cr.define('cr.login', function() {
     },
 
     /**
-     * Sends the authenticated user's e-mail address to the auth extension.
-     * @param {number} attemptToken The opaque token provided to the
-     *     retrieveAuthenticatedUserEmailCallback_.
-     * @param {string} email The authenticated user's e-mail address.
-     */
-    setAuthenticatedUserEmail: function(attemptToken, email) {
-      var msg = {
-        method: 'setAuthenticatedUserEmail',
-        attemptToken: attemptToken,
-        email: email
-      };
-      this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
-    },
-
-    /**
      * Invoked to process authentication success.
      * @param {Object} credentials Credential object to pass to success
      *     callback.
@@ -346,22 +341,12 @@ cr.define('cr.login', function() {
         }
         this.onAuthSuccess_({email: msg.email,
                              password: msg.password,
+                             gaiaId: msg.gaiaId,
                              useOffline: msg.method == 'offlineLogin',
                              usingSAML: msg.usingSAML || false,
                              chooseWhatToSync: msg.chooseWhatToSync,
                              skipForNow: msg.skipForNow || false,
                              sessionIndex: msg.sessionIndex || ''});
-        return;
-      }
-
-      if (msg.method == 'retrieveAuthenticatedUserEmail') {
-        if (this.retrieveAuthenticatedUserEmailCallback_) {
-          this.retrieveAuthenticatedUserEmailCallback_(msg.attemptToken,
-                                                       msg.apiUsed);
-        } else {
-          console.error(
-              'GaiaAuthHost: Invalid retrieveAuthenticatedUserEmailCallback_.');
-        }
         return;
       }
 
@@ -399,6 +384,24 @@ cr.define('cr.login', function() {
 
       if (msg.method == 'switchToFullTab') {
         chrome.send('switchToFullTab', [msg.url]);
+        return;
+      }
+
+      if (msg.method == 'missingGaiaInfo') {
+        if (this.missingGaiaInfoCallback_) {
+          this.missingGaiaInfoCallback_();
+        } else {
+          console.error('GaiaAuthHost: Invalid missingGaiaInfoCallback_.');
+        }
+        return;
+      }
+
+      if (msg.method == 'samlApiUsed') {
+        if (this.samlApiUsedCallback_) {
+          this.samlApiUsedCallback_();
+        } else {
+          console.error('GaiaAuthHost: Invalid samlApiUsedCallback_.');
+        }
         return;
       }
 

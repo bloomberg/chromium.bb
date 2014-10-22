@@ -10,6 +10,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/http/http_status_code.h"
@@ -198,6 +199,9 @@ class AccountTrackerServiceTest : public testing::Test {
 
     pref_service_.registry()->RegisterListPref(
         AccountTrackerService::kAccountInfoPref);
+    pref_service_.registry()->RegisterIntegerPref(
+        prefs::kAccountIdMigrationState,
+        AccountTrackerService::MIGRATION_NOT_STARTED);
 
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(fake_oauth2_token_service_.get(),
@@ -504,4 +508,22 @@ TEST_F(AccountTrackerServiceTest, Persistence) {
     EXPECT_EQ(AccountIdToEmail("beta"), infos[0].email);
     tracker.Shutdown();
   }
+}
+
+TEST_F(AccountTrackerServiceTest, SeedAccountInfo) {
+  std::vector<AccountTrackerService::AccountInfo> infos =
+      account_tracker()->GetAccounts();
+  EXPECT_EQ(0u, infos.size());
+
+  const std::string gaia_id = AccountIdToGaiaId("alpha");
+  const std::string email = AccountIdToEmail("alpha");
+  const std::string account_id =
+      account_tracker()->PickAccountIdForAccount(gaia_id, email);
+  account_tracker()->SeedAccountInfo(gaia_id, email);
+
+  infos = account_tracker()->GetAccounts();
+  EXPECT_EQ(1u, infos.size());
+  EXPECT_EQ(account_id, infos[0].account_id);
+  EXPECT_EQ(gaia_id, infos[0].gaia);
+  EXPECT_EQ(email, infos[0].email);
 }

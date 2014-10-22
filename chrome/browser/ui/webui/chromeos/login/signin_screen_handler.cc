@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -47,7 +46,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
@@ -73,7 +71,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -777,8 +774,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleUpdateOfflineLogin);
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
   AddCallback("hardlockPod", &SigninScreenHandler::HandleHardlockPod);
-  AddCallback("retrieveAuthenticatedUserEmail",
-              &SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail);
   AddCallback("getPublicSessionKeyboardLayouts",
               &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
   AddCallback("cancelConsumerManagementEnrollment",
@@ -1383,17 +1378,6 @@ void SigninScreenHandler::HandleHardlockPod(const std::string& user_id) {
   if (!service)
     return;
   service->SetHardlockState(EasyUnlockScreenlockStateHandler::USER_HARDLOCK);
-}
-
-void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
-    double attempt_token) {
-  // TODO(antrim) : move GaiaSigninScreen dependency to GaiaSigninScreen.
-  email_retriever_.reset(new AuthenticatedUserEmailRetriever(
-      base::Bind(&SigninScreenHandler::CallJS<double, std::string>,
-                 base::Unretained(this),
-                 "login.GaiaSigninScreen.setAuthenticatedUserEmail",
-                 attempt_token),
-      Profile::FromWebUI(web_ui())->GetRequestContext()));
 }
 
 void SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts(

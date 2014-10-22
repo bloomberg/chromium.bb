@@ -49,7 +49,6 @@
       <include name="IDR_GAIA_AUTH_OFFLINE_JS" file="gaia_auth/offline.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_OFFLINE_CSS" file="gaia_auth/offline.css" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_SUCCESS" file="gaia_auth/success.html" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_GAIA_AUTH_SUCCESS_JS" file="gaia_auth/success.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_UTIL_JS" file="gaia_auth/util.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_BACKGROUND_JS" file="gaia_auth/background.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_SAML_INJECTED_JS" file="gaia_auth/saml_injected.js" type="BINDATA" />

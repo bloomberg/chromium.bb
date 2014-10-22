@@ -13,11 +13,13 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -166,53 +168,67 @@ const std::string& OAuth2LoginManager::GetPrimaryAccountId() {
 void OAuth2LoginManager::StoreOAuth2Token() {
   const std::string& primary_account_id = GetPrimaryAccountId();
   if (primary_account_id.empty()) {
-    GetAccountIdOfRefreshToken(refresh_token_);
+    GetAccountInfoOfRefreshToken(refresh_token_);
     return;
   }
 
-  OnGetUserEmailResponse(primary_account_id);
+  UpdateCredentials(primary_account_id);
 }
 
-void OAuth2LoginManager::GetAccountIdOfRefreshToken(
+void OAuth2LoginManager::GetAccountInfoOfRefreshToken(
     const std::string& refresh_token) {
   gaia::OAuthClientInfo client_info;
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   client_info.client_id = gaia_urls->oauth2_chrome_client_id();
   client_info.client_secret = gaia_urls->oauth2_chrome_client_secret();
 
-  account_id_fetcher_.reset(new gaia::GaiaOAuthClient(
+  account_info_fetcher_.reset(new gaia::GaiaOAuthClient(
       auth_request_context_.get()));
-  account_id_fetcher_->RefreshToken(client_info, refresh_token,
+  account_info_fetcher_->RefreshToken(client_info, refresh_token,
       std::vector<std::string>(1, kServiceScopeGetUserInfo), kMaxRetries,
       this);
 }
 
-void OAuth2LoginManager::OnRefreshTokenResponse(
-    const std::string& access_token,
-    int expires_in_seconds) {
-  account_id_fetcher_->GetUserEmail(access_token, kMaxRetries, this);
-}
-
-void OAuth2LoginManager::OnGetUserEmailResponse(
-    const std::string& user_email)  {
+void OAuth2LoginManager::UpdateCredentials(const std::string& account_id) {
+  DCHECK(!account_id.empty());
   DCHECK(!refresh_token_.empty());
-  account_id_fetcher_.reset();
-  std::string canonicalized = gaia::CanonicalizeEmail(user_email);
-  GetTokenService()->UpdateCredentials(canonicalized, refresh_token_);
+  // |account_id| is assumed to be already canonicalized if it's an email.
+  GetTokenService()->UpdateCredentials(account_id, refresh_token_);
 
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnNewRefreshTokenAvaiable(user_profile_));
 }
 
+void OAuth2LoginManager::OnRefreshTokenResponse(
+    const std::string& access_token,
+    int expires_in_seconds) {
+  account_info_fetcher_->GetUserInfo(access_token, kMaxRetries, this);
+}
+
+void OAuth2LoginManager::OnGetUserInfoResponse(
+    scoped_ptr<base::DictionaryValue> user_info) {
+  account_info_fetcher_.reset();
+
+  std::string gaia_id;
+  std::string email;
+  user_info->GetString("id", &gaia_id);
+  user_info->GetString("email", &email);
+
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(user_profile_);
+  account_tracker->SeedAccountInfo(gaia_id, email);
+  UpdateCredentials(account_tracker->PickAccountIdForAccount(gaia_id, email));
+}
+
 void OAuth2LoginManager::OnOAuthError() {
-  account_id_fetcher_.reset();
-  LOG(ERROR) << "Account id fetch failed!";
+  account_info_fetcher_.reset();
+  LOG(ERROR) << "Account info fetch failed!";
   SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::OnNetworkError(int response_code) {
-  account_id_fetcher_.reset();
-  LOG(ERROR) << "Account id fetch failed! response_code=" << response_code;
+  account_info_fetcher_.reset();
+  LOG(ERROR) << "Account info fetch failed! response_code=" << response_code;
   SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 

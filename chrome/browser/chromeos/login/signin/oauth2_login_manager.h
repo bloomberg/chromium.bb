@@ -149,8 +149,9 @@ class OAuth2LoginManager : public KeyedService,
 
   // gaia::GaiaOAuthClient::Delegate overrides.
   void OnRefreshTokenResponse(const std::string& access_token,
-                              int expires_in_seconds) override;
-  void OnGetUserEmailResponse(const std::string& user_email) override;
+                                      int expires_in_seconds) override;
+  void OnGetUserInfoResponse(
+      scoped_ptr<base::DictionaryValue> user_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -180,12 +181,15 @@ class OAuth2LoginManager : public KeyedService,
 
   // Records |refresh_token_| to token service. The associated account id is
   // assumed to be the primary account id of the user profile. If the primary
-  // account id is not present, GetAccountIdOfRefreshToken will be called to
-  // retrieve the associated account id.
+  // account id is not present, GetAccountInfoOfRefreshToken will be called to
+  // retrieve the associated account info.
   void StoreOAuth2Token();
 
-  // Get the account id corresponding to the specified refresh token.
-  void GetAccountIdOfRefreshToken(const std::string& refresh_token);
+  // Get the account info corresponding to the specified refresh token.
+  void GetAccountInfoOfRefreshToken(const std::string& refresh_token);
+
+  // Update the token service and inform listeners of a new refresh token.
+  void UpdateCredentials(const std::string& account_id);
 
   // Attempts to fetch OAuth2 tokens by using pre-authenticated cookie jar from
   // provided |auth_profile|.
@@ -230,7 +234,7 @@ class OAuth2LoginManager : public KeyedService,
 
   scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<OAuth2LoginVerifier> login_verifier_;
-  scoped_ptr<gaia::GaiaOAuthClient> account_id_fetcher_;
+  scoped_ptr<gaia::GaiaOAuthClient> account_info_fetcher_;
 
   // OAuth2 refresh token.
   std::string refresh_token_;

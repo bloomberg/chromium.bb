@@ -24,7 +24,6 @@ class PolicyOAuth2TokenFetcher;
 
 namespace chromeos {
 
-class AuthenticatedUserEmailRetriever;
 class ErrorScreensHistogramHelper;
 
 // WebUIMessageHandler implementation which handles events occurring on the
@@ -75,7 +74,6 @@ class EnrollmentScreenHandler
 
  private:
   // Handlers for WebUI messages.
-  void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
   void HandleClose(const std::string& reason);
   void HandleCompleteLogin(const std::string& user);
   void HandleRetry();
@@ -139,9 +137,6 @@ class EnrollmentScreenHandler
 
   // The callbacks to invoke after browsing data has been cleared.
   std::vector<base::Closure> auth_reset_callbacks_;
-
-  // Helper that retrieves the authenticated user's e-mail address.
-  scoped_ptr<AuthenticatedUserEmailRetriever> email_retriever_;
 
   // Latest enrollment frame error.
   net::Error frame_error_;

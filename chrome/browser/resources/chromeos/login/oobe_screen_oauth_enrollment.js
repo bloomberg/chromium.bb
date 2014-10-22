@@ -16,7 +16,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'showStep',
       'showError',
       'showWorking',
-      'setAuthenticatedUserEmail',
       'doReload',
     ],
 
@@ -206,24 +205,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.showStep(STEP_WORKING);
     },
 
-    /**
-     * Invoked when the authenticated user's e-mail address has been retrieved.
-     * This completes SAML authentication.
-     * @param {number} attemptToken An opaque token used to correlate this
-     *     method invocation with the corresponding request to retrieve the
-     *     user's e-mail address.
-     * @param {string} email The authenticated user's e-mail address.
-     */
-    setAuthenticatedUserEmail: function(attemptToken, email) {
-      if (this.attemptToken_ != attemptToken)
-        return;
-
-      if (!email)
-        this.showError(loadTimeData.getString('fatalEnrollmentError'), false);
-      else
-        chrome.send('oauthEnrollCompleteLogin', [email]);
-    },
-
     doReload: function() {
       $('oauth-enroll-signin-frame').contentWindow.location.href =
           this.signInUrl_;
@@ -289,18 +270,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       var msg = m.data;
 
       if (msg.method == 'completeLogin') {
-        // A user has successfully authenticated via regular GAIA.
+        // A user has successfully authenticated via regular GAIA or SAML.
         chrome.send('oauthEnrollCompleteLogin', [msg.email]);
-      }
-
-      if (msg.method == 'retrieveAuthenticatedUserEmail') {
-        // A user has successfully authenticated via SAML. However, the user's
-        // identity is not known. Instead of reporting success immediately,
-        // retrieve the user's e-mail address first.
-        this.attemptToken_ = msg.attemptToken;
-        this.showWorking(null);
-        chrome.send('oauthEnrollRetrieveAuthenticatedUserEmail',
-                    [msg.attemptToken]);
       }
 
       if (msg.method == 'authPageLoaded' && this.currentStep_ == STEP_SIGNIN) {
@@ -316,6 +287,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       if (msg.method == 'insecureContentBlocked') {
         this.showError(
             loadTimeData.getStringF('insecureURLEnrollmentError', msg.url),
+            false);
+      }
+
+      if (msg.method == 'missingGaiaInfo') {
+        this.showError(
+            loadTimeData.getString('fatalEnrollmentError'),
             false);
       }
     }
