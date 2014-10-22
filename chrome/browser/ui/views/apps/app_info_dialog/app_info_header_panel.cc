@@ -173,6 +173,7 @@ void AppInfoHeaderPanel::ShowAppInWebStore() {
       extensions::ManifestURL::GetDetailsURL(app_),
       extension_urls::kWebstoreSourceField,
       extension_urls::kLaunchSourceAppListInfoDialog));
+  Close();
 }
 
 bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
@@ -182,6 +183,7 @@ bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
 void AppInfoHeaderPanel::ShowAppHomePage() {
   DCHECK(CanShowAppHomePage());
   OpenLink(extensions::ManifestURL::GetHomepageURL(app_));
+  Close();
 }
 
 bool AppInfoHeaderPanel::CanShowAppHomePage() const {
@@ -190,34 +192,40 @@ bool AppInfoHeaderPanel::CanShowAppHomePage() const {
 
 void AppInfoHeaderPanel::DisplayLicenses() {
   DCHECK(CanDisplayLicenses());
-  OpenLink(GetLicenseUrl());
+  for (const auto& license_url : GetLicenseUrls())
+    OpenLink(license_url);
+  Close();
 }
 
 bool AppInfoHeaderPanel::CanDisplayLicenses() const {
-  return !GetLicenseUrl().is_empty();
+  return !GetLicenseUrls().empty();
 }
 
-const GURL& AppInfoHeaderPanel::GetLicenseUrl() const {
-  // Find the first shared module for this app, and return its URL.
-  // TODO(sashab): Support multiple shared modules with licenses once shared
-  // module usage becomes more common.
+const std::vector<GURL> AppInfoHeaderPanel::GetLicenseUrls() const {
   if (!extensions::SharedModuleInfo::ImportsModules(app_))
-    return GURL::EmptyGURL();
+    return std::vector<GURL>();
 
+  std::vector<GURL> license_urls;
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(service);
   const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
       extensions::SharedModuleInfo::GetImports(app_);
-  const extensions::Extension* imported_module =
-      service->GetExtensionById(imports[0].extension_id, true);
-  DCHECK(imported_module);
-  return extensions::ManifestURL::GetAboutPage(imported_module);
+
+  for (const auto& shared_module : imports) {
+    const extensions::Extension* imported_module =
+        service->GetExtensionById(shared_module.extension_id, true);
+    DCHECK(imported_module);
+
+    GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);
+    if (about_page != GURL::EmptyGURL())
+      license_urls.push_back(about_page);
+  }
+  return license_urls;
 }
 
 void AppInfoHeaderPanel::OpenLink(const GURL& url) {
   DCHECK(!url.is_empty());
   chrome::NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
-  Close();
 }

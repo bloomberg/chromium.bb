@@ -58,9 +58,9 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   // CanDisplayLicenses() returns true.
   void DisplayLicenses();
   bool CanDisplayLicenses() const;
-  const GURL& GetLicenseUrl() const;
+  const std::vector<GURL> GetLicenseUrls() const;
 
-  // Opens the given URL in a new browser tab, and closes the dialog.
+  // Opens the given URL in a new browser tab.
   void OpenLink(const GURL& url);
 
   // UI elements on the dialog. Elements are NULL if they are not displayed.
