@@ -802,6 +802,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     run_scm = command not in ('runhooks', 'recurse', None)
     parsed_url = self.LateOverride(self.url)
     file_list = [] if not options.nohooks else None
+    revision_override = revision_overrides.pop(self.name, None)
     if run_scm and parsed_url:
       if isinstance(parsed_url, self.FileImpl):
         # Special support for single-file checkout.
@@ -817,7 +818,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       else:
         # Create a shallow copy to mutate revision.
         options = copy.copy(options)
-        options.revision = revision_overrides.pop(self.name, None)
+        options.revision = revision_override
         self.maybeGetParentRevision(
             command, options, parsed_url, self.parent)
         self._used_revision = options.revision
