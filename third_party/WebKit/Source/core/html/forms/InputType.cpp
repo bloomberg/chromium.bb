@@ -760,7 +760,7 @@ void InputType::applyStep(const Decimal& current, int count, AnyStepHandling any
         if (count < 0)
             newValue = base + ((current - base) / step).floor() * step;
         else if (count > 0)
-            newValue = base + ((current - base) / step).ceiling() * step;
+            newValue = base + ((current - base) / step).ceil() * step;
         else
             newValue = current;
 

@@ -133,7 +133,7 @@ public:
     bool isZero() const { return m_data.isZero(); }
 
     Decimal abs() const;
-    Decimal ceiling() const;
+    Decimal ceil() const;
     Decimal floor() const;
     Decimal remainder(const Decimal&) const;
     Decimal round() const;

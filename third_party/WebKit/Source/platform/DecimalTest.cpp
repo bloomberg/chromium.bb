@@ -217,50 +217,50 @@ TEST_F(DecimalTest, AddSpecialValues)
     EXPECT_EQ(NaN, MinusInfinity - NaN);
 }
 
-TEST_F(DecimalTest, Ceiling)
+TEST_F(DecimalTest, Ceil)
 {
-    EXPECT_EQ(Decimal(1), Decimal(1).ceiling());
-    EXPECT_EQ(Decimal(1), encode(1, -10, Positive).ceiling());
-    EXPECT_EQ(Decimal(2), encode(11, -1, Positive).ceiling());
-    EXPECT_EQ(Decimal(2), encode(13, -1, Positive).ceiling());
-    EXPECT_EQ(Decimal(2), encode(15, -1, Positive).ceiling());
-    EXPECT_EQ(Decimal(2), encode(19, -1, Positive).ceiling());
-    EXPECT_EQ(Decimal(2), encode(151, -2, Positive).ceiling());
-    EXPECT_EQ(Decimal(2), encode(101, -2, Positive).ceiling());
-    EXPECT_EQ(Decimal(1), encode(199, -3, Positive).ceiling());
-    EXPECT_EQ(Decimal(2), encode(199, -2, Positive).ceiling());
-    EXPECT_EQ(Decimal(3), encode(209, -2, Positive).ceiling());
+    EXPECT_EQ(Decimal(1), Decimal(1).ceil());
+    EXPECT_EQ(Decimal(1), encode(1, -10, Positive).ceil());
+    EXPECT_EQ(Decimal(2), encode(11, -1, Positive).ceil());
+    EXPECT_EQ(Decimal(2), encode(13, -1, Positive).ceil());
+    EXPECT_EQ(Decimal(2), encode(15, -1, Positive).ceil());
+    EXPECT_EQ(Decimal(2), encode(19, -1, Positive).ceil());
+    EXPECT_EQ(Decimal(2), encode(151, -2, Positive).ceil());
+    EXPECT_EQ(Decimal(2), encode(101, -2, Positive).ceil());
+    EXPECT_EQ(Decimal(1), encode(199, -3, Positive).ceil());
+    EXPECT_EQ(Decimal(2), encode(199, -2, Positive).ceil());
+    EXPECT_EQ(Decimal(3), encode(209, -2, Positive).ceil());
 
-    EXPECT_EQ(Decimal(-1), Decimal(-1).ceiling());
-    EXPECT_EQ(Decimal(0), encode(1, -10, Negative).ceiling());
-    EXPECT_EQ(Decimal(-1), encode(11, -1, Negative).ceiling());
-    EXPECT_EQ(Decimal(-1), encode(13, -1, Negative).ceiling());
-    EXPECT_EQ(Decimal(-1), encode(15, -1, Negative).ceiling());
-    EXPECT_EQ(Decimal(-1), encode(19, -1, Negative).ceiling());
-    EXPECT_EQ(Decimal(-1), encode(151, -2, Negative).ceiling());
-    EXPECT_EQ(Decimal(-1), encode(101, -2, Negative).ceiling());
-    EXPECT_EQ(Decimal(0), encode(199, -3, Negative).ceiling());
-    EXPECT_EQ(Decimal(-1), encode(199, -2, Negative).ceiling());
-    EXPECT_EQ(Decimal(-2), encode(209, -2, Negative).ceiling());
+    EXPECT_EQ(Decimal(-1), Decimal(-1).ceil());
+    EXPECT_EQ(Decimal(0), encode(1, -10, Negative).ceil());
+    EXPECT_EQ(Decimal(-1), encode(11, -1, Negative).ceil());
+    EXPECT_EQ(Decimal(-1), encode(13, -1, Negative).ceil());
+    EXPECT_EQ(Decimal(-1), encode(15, -1, Negative).ceil());
+    EXPECT_EQ(Decimal(-1), encode(19, -1, Negative).ceil());
+    EXPECT_EQ(Decimal(-1), encode(151, -2, Negative).ceil());
+    EXPECT_EQ(Decimal(-1), encode(101, -2, Negative).ceil());
+    EXPECT_EQ(Decimal(0), encode(199, -3, Negative).ceil());
+    EXPECT_EQ(Decimal(-1), encode(199, -2, Negative).ceil());
+    EXPECT_EQ(Decimal(-2), encode(209, -2, Negative).ceil());
 }
 
 TEST_F(DecimalTest, CeilingBigExponent)
 {
-    EXPECT_EQ(encode(1, 1000, Positive), encode(1, 1000, Positive).ceiling());
-    EXPECT_EQ(encode(1, 1000, Negative), encode(1, 1000, Negative).ceiling());
+    EXPECT_EQ(encode(1, 1000, Positive), encode(1, 1000, Positive).ceil());
+    EXPECT_EQ(encode(1, 1000, Negative), encode(1, 1000, Negative).ceil());
 }
 
 TEST_F(DecimalTest, CeilingSmallExponent)
 {
-    EXPECT_EQ(encode(1, 0, Positive), encode(1, -1000, Positive).ceiling());
-    EXPECT_EQ(encode(0, 0, Negative), encode(1, -1000, Negative).ceiling());
+    EXPECT_EQ(encode(1, 0, Positive), encode(1, -1000, Positive).ceil());
+    EXPECT_EQ(encode(0, 0, Negative), encode(1, -1000, Negative).ceil());
 }
 
 TEST_F(DecimalTest, CeilingSpecialValues)
 {
-    EXPECT_EQ(Decimal::infinity(Positive), Decimal::infinity(Positive).ceiling());
-    EXPECT_EQ(Decimal::infinity(Negative), Decimal::infinity(Negative).ceiling());
-    EXPECT_EQ(Decimal::nan(), Decimal::nan().ceiling());
+    EXPECT_EQ(Decimal::infinity(Positive), Decimal::infinity(Positive).ceil());
+    EXPECT_EQ(Decimal::infinity(Negative), Decimal::infinity(Negative).ceil());
+    EXPECT_EQ(Decimal::nan(), Decimal::nan().ceil());
 }
 
 TEST_F(DecimalTest, Compare)
