@@ -35,7 +35,7 @@ DisplayManager* GetDisplayManager() {
 // sqrt of (display_area / touchscreen_area)
 double TouchTransformerController::GetTouchResolutionScale(
     const DisplayInfo& touch_display) const {
-  if (touch_display.touch_device_id() == 0)
+  if (touch_display.touch_device_id() == 0u)
     return 1.0;
 
   double min_x, max_x;
@@ -77,8 +77,7 @@ gfx::Transform
 TouchTransformerController::GetExtendedModeTouchTransformer(
     const DisplayInfo& touch_display, const gfx::Size& fb_size) const {
   gfx::Transform ctm;
-  if (touch_display.touch_device_id() == 0 ||
-      fb_size.width() == 0.0 ||
+  if (touch_display.touch_device_id() == 0u || fb_size.width() == 0.0 ||
       fb_size.height() == 0.0)
     return ctm;
   float width = touch_display.bounds_in_native().width();
@@ -92,7 +91,7 @@ bool TouchTransformerController::ShouldComputeMirrorModeTouchTransformer(
   if (force_compute_mirror_mode_touch_transformer_)
     return true;
 
-  if (touch_display.touch_device_id() == 0)
+  if (touch_display.touch_device_id() == 0u)
     return false;
 
   if (touch_display.size_in_pixel() == touch_display.GetNativeModeSize() ||

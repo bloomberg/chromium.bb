@@ -15,7 +15,7 @@ namespace ash {
 
 namespace {
 DisplayInfo CreateDisplayInfo(int64 id,
-                              int touch_device_id,
+                              unsigned int touch_device_id,
                               const gfx::Rect& bounds) {
   DisplayInfo info(id, std::string(), false);
   info.SetBounds(bounds);
@@ -31,7 +31,7 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModeLetterboxing) {
   // mirror mode it is configured as 1920x1200. This is in letterboxing
   // mode.
   DisplayInfo internal_display_info =
-      CreateDisplayInfo(1, 10, gfx::Rect(0, 0, 1920, 1200));
+      CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1920, 1200));
   std::vector<DisplayMode> internal_modes;
   internal_modes.push_back(
       DisplayMode(gfx::Size(2560, 1700), 60, false, true));
@@ -40,7 +40,7 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModeLetterboxing) {
   internal_display_info.set_display_modes(internal_modes);
 
   DisplayInfo external_display_info =
-      CreateDisplayInfo(2, 11, gfx::Rect(0, 0, 1920, 1200));
+      CreateDisplayInfo(2, 11u, gfx::Rect(0, 0, 1920, 1200));
 
   TouchTransformerController* tt_controller =
       Shell::GetInstance()->touch_transformer_controller();
@@ -154,8 +154,9 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerExtendedMode) {
   // where 2428 = 768 + 60 (hidden gap) + 1600
   // and the sceond monitor is translated to Point (0, 828) in the
   // framebuffer.
-  DisplayInfo display1 = CreateDisplayInfo(1, 5, gfx::Rect(0, 0, 1366, 768));
-  DisplayInfo display2 = CreateDisplayInfo(2, 6, gfx::Rect(0, 828, 2560, 1600));
+  DisplayInfo display1 = CreateDisplayInfo(1, 5u, gfx::Rect(0, 0, 1366, 768));
+  DisplayInfo display2 =
+      CreateDisplayInfo(2, 6u, gfx::Rect(0, 828, 2560, 1600));
   gfx::Size fb_size(2560, 2428);
 
   TouchTransformerController* tt_controller =
@@ -205,7 +206,7 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerExtendedMode) {
 }
 
 TEST_F(TouchTransformerControllerTest, TouchRadiusScale) {
-  DisplayInfo display = CreateDisplayInfo(1, 5, gfx::Rect(0, 0, 2560, 1600));
+  DisplayInfo display = CreateDisplayInfo(1, 5u, gfx::Rect(0, 0, 2560, 1600));
   std::vector<unsigned int> devices;
   devices.push_back(5);
   ui::SetUpTouchDevicesForTest(devices);

@@ -23,6 +23,7 @@ class EVENTS_BASE_EXPORT HotplugEventHandlerX11 {
 
  private:
   void HandleTouchscreenDevices(const XIDeviceList& device_list);
+  void HandleKeyboardDevices(const XIDeviceList& device_list);
 
   DeviceHotplugEventObserver* delegate_;  // Not owned.
 

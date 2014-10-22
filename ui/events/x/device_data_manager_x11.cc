@@ -8,11 +8,14 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/sys_info.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
+#include "ui/events/keyboard_device.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
@@ -105,6 +108,14 @@ const int kTouchDataTypeStart = ui::DeviceDataManagerX11::DT_TOUCH_MAJOR;
 const int kTouchDataTypeEnd = ui::DeviceDataManagerX11::DT_TOUCH_RAW_TIMESTAMP;
 
 namespace ui {
+
+namespace {
+
+bool KeyboardDeviceHasId(const ui::KeyboardDevice keyboard, unsigned int id) {
+  return keyboard.id == id;
+}
+
+}  // namespace
 
 bool DeviceDataManagerX11::IsCMTDataType(const int type) {
   return (type >= kCMTDataTypeStart) && (type <= kCMTDataTypeEnd);
@@ -661,7 +672,8 @@ void DeviceDataManagerX11::InitializeValuatorsForTest(int deviceid,
   }
 }
 
-bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {
+bool DeviceDataManagerX11::TouchEventNeedsCalibrate(
+    unsigned int touch_device_id) const {
 #if defined(OS_CHROMEOS) && defined(USE_XI2_MT)
   int64 touch_display_id = GetDisplayForTouchDevice(touch_device_id);
   if (base::SysInfo::IsRunningOnChromeOS() &&
@@ -681,10 +693,31 @@ void DeviceDataManagerX11::SetDisabledKeyboardAllowedKeys(
 
 void DeviceDataManagerX11::DisableDevice(unsigned int deviceid) {
   blocked_devices_.set(deviceid, true);
+  // TODO(rsadam@): Support blocking touchscreen devices.
+  std::vector<KeyboardDevice> keyboards = keyboard_devices();
+  std::vector<KeyboardDevice>::iterator it =
+      std::find_if(keyboards.begin(),
+                   keyboards.end(),
+                   std::bind2nd(std::ptr_fun(&KeyboardDeviceHasId), deviceid));
+  if (it != std::end(keyboards)) {
+    blocked_keyboards_.insert(
+        std::pair<unsigned int, KeyboardDevice>(deviceid, *it));
+    keyboards.erase(it);
+    DeviceDataManager::OnKeyboardDevicesUpdated(keyboards);
+  }
 }
 
 void DeviceDataManagerX11::EnableDevice(unsigned int deviceid) {
   blocked_devices_.set(deviceid, false);
+  std::map<unsigned int, KeyboardDevice>::iterator it =
+      blocked_keyboards_.find(deviceid);
+  if (it != blocked_keyboards_.end()) {
+    std::vector<KeyboardDevice> devices = keyboard_devices();
+    // Add device to current list of active devices.
+    devices.push_back((*it).second);
+    blocked_keyboards_.erase(it);
+    DeviceDataManager::OnKeyboardDevicesUpdated(devices);
+  }
 }
 
 bool DeviceDataManagerX11::IsEventBlocked(
@@ -705,6 +738,32 @@ bool DeviceDataManagerX11::IsEventBlocked(
   }
 
   return blocked_devices_.test(xievent->sourceid);
+}
+
+void DeviceDataManagerX11::OnKeyboardDevicesUpdated(
+    const std::vector<KeyboardDevice>& devices) {
+  std::vector<KeyboardDevice> keyboards(devices);
+  for (std::map<unsigned int, KeyboardDevice>::iterator blocked_iter =
+           blocked_keyboards_.begin();
+       blocked_iter != blocked_keyboards_.end();) {
+    // Check if the blocked device still exists in list of devices.
+    std::vector<KeyboardDevice>::iterator it =
+        std::find_if(keyboards.begin(),
+                     keyboards.end(),
+                     std::bind2nd(std::ptr_fun(&KeyboardDeviceHasId),
+                                  (*blocked_iter).first));
+    // If the device no longer exists, unblock it, else filter it out from our
+    // active list.
+    if (it == keyboards.end()) {
+      blocked_devices_.set((*blocked_iter).first, false);
+      blocked_keyboards_.erase(blocked_iter++);
+    } else {
+      keyboards.erase(it);
+      ++blocked_iter;
+    }
+  }
+  // Notify base class of updated list.
+  DeviceDataManager::OnKeyboardDevicesUpdated(keyboards);
 }
 
 }  // namespace ui

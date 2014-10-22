@@ -5,19 +5,29 @@
 #ifndef UI_EVENTS_DEVICE_HOTPLUG_EVENT_OBSERVER_H_
 #define UI_EVENTS_DEVICE_HOTPLUG_EVENT_OBSERVER_H_
 
+#include <vector>
+
 #include "ui/events/events_base_export.h"
-#include "ui/events/touchscreen_device.h"
 
 namespace ui {
+
+struct KeyboardDevice;
+struct TouchscreenDevice;
 
 // Listener for specific input device hotplug events.
 class EVENTS_BASE_EXPORT DeviceHotplugEventObserver {
  public:
   virtual ~DeviceHotplugEventObserver() {}
 
-  // On a hotplug event this is called with the list of available devices.
+  // On a hotplug event this is called with the list of available touchscreen
+  // devices. The set of touchscreen devices may not necessarily have changed.
   virtual void OnTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) = 0;
+
+  // On a hotplug event this is called with the list of available keyboard
+  // devices. The set of keyboard devices may not necessarily have changed.
+  virtual void OnKeyboardDevicesUpdated(
+      const std::vector<KeyboardDevice>& devices) = 0;
 };
 
 }  // namespace ui

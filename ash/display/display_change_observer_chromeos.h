@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H
-#define ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H
+#ifndef ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_
+#define ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_
+
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
@@ -46,7 +48,8 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
 
   // Overriden from ui::InputDeviceEventObserver:
-  virtual void OnInputDeviceConfigurationChanged() override;
+  virtual void OnTouchscreenDeviceConfigurationChanged() override;
+  virtual void OnKeyboardDeviceConfigurationChanged() override;
 
   // Overriden from ShellObserver:
   virtual void OnAppTerminating() override;
@@ -60,4 +63,4 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
 
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_AURA_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H
+#endif  // ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_

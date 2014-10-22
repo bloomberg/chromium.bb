@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "ui/events/input_device.h"
 
 namespace ash {
 
@@ -15,7 +16,7 @@ void AssociateTouchscreens(std::vector<DisplayInfo>* displays,
   std::set<int> no_match_touchscreen;
   int internal_touchscreen = -1;
   for (size_t i = 0; i < devices.size(); ++i) {
-    if (devices[i].is_internal) {
+    if (devices[i].type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
       internal_touchscreen = i;
       break;
     }

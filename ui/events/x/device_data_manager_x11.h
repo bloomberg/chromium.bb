@@ -15,6 +15,7 @@
 #include <X11/extensions/XInput2.h>
 
 #include <bitset>
+#include <functional>
 #include <map>
 #include <set>
 #include <vector>
@@ -51,37 +52,37 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   enum DataType {
     // Define the valuators used the CrOS CMT driver. Used by mice and CrOS
     // touchpads.
-    DT_CMT_SCROLL_X = 0,  // Scroll amount on the X (horizontal) direction.
-    DT_CMT_SCROLL_Y,      // Scroll amount on the Y (vertical) direction.
-    DT_CMT_ORDINAL_X,     // Original (unaccelerated) value on the X direction.
-                          // Can be used both for scrolls and flings.
-    DT_CMT_ORDINAL_Y,     // Original (unaccelerated) value on the Y direction.
-                          // Can be used both for scrolls and flings.
-    DT_CMT_START_TIME,    // Gesture start time.
-    DT_CMT_END_TIME,      // Gesture end time.
-    DT_CMT_FLING_X,       // Fling amount on the X (horizontal) direction.
-    DT_CMT_FLING_Y,       // Fling amount on the Y (vertical) direction.
-    DT_CMT_FLING_STATE,   // The state of fling gesture (whether the user just
-                          // start flinging or that he/she taps down).
-    DT_CMT_METRICS_TYPE,  // Metrics type of the metrics gesture, which are
-                          // used to wrap interesting patterns that we would
-                          // like to track via the UMA system.
-    DT_CMT_METRICS_DATA1, // Complementary data 1 of the metrics gesture.
-    DT_CMT_METRICS_DATA2, // Complementary data 2 of the metrics gesture.
-    DT_CMT_FINGER_COUNT,  // Finger counts in the current gesture. A same type
-                          // of gesture can have very different meanings based
-                          // on that (e.g. 2f scroll v.s. 3f swipe).
+    DT_CMT_SCROLL_X = 0,   // Scroll amount on the X (horizontal) direction.
+    DT_CMT_SCROLL_Y,       // Scroll amount on the Y (vertical) direction.
+    DT_CMT_ORDINAL_X,      // Original (unaccelerated) value on the X direction.
+                           // Can be used both for scrolls and flings.
+    DT_CMT_ORDINAL_Y,      // Original (unaccelerated) value on the Y direction.
+                           // Can be used both for scrolls and flings.
+    DT_CMT_START_TIME,     // Gesture start time.
+    DT_CMT_END_TIME,       // Gesture end time.
+    DT_CMT_FLING_X,        // Fling amount on the X (horizontal) direction.
+    DT_CMT_FLING_Y,        // Fling amount on the Y (vertical) direction.
+    DT_CMT_FLING_STATE,    // The state of fling gesture (whether the user just
+                           // start flinging or that he/she taps down).
+    DT_CMT_METRICS_TYPE,   // Metrics type of the metrics gesture, which are
+                           // used to wrap interesting patterns that we would
+                           // like to track via the UMA system.
+    DT_CMT_METRICS_DATA1,  // Complementary data 1 of the metrics gesture.
+    DT_CMT_METRICS_DATA2,  // Complementary data 2 of the metrics gesture.
+    DT_CMT_FINGER_COUNT,   // Finger counts in the current gesture. A same type
+                           // of gesture can have very different meanings based
+                           // on that (e.g. 2f scroll v.s. 3f swipe).
 
     // End of CMT data types.
     // Beginning of touch data types.
 
     // Define the valuators following the Multi-touch Protocol. Used by
     // touchscreen devices.
-    DT_TOUCH_MAJOR,       // Length of the touch area.
-    DT_TOUCH_MINOR,       // Width of the touch area.
-    DT_TOUCH_ORIENTATION, // Angle between the X-axis and the major axis of the
-                          // touch area.
-    DT_TOUCH_PRESSURE,    // Pressure of the touch contact.
+    DT_TOUCH_MAJOR,        // Length of the touch area.
+    DT_TOUCH_MINOR,        // Width of the touch area.
+    DT_TOUCH_ORIENTATION,  // Angle between the X-axis and the major axis of the
+                           // touch area.
+    DT_TOUCH_PRESSURE,     // Pressure of the touch contact.
 
     DT_TOUCH_POSITION_X,  // Touch X position.
     DT_TOUCH_POSITION_Y,  // Touch Y position.
@@ -90,14 +91,14 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
     // track individual touch. 'Tracking ID' is an unsigned 32-bit value and
     // is increased for each new touch. It will wrap back to 0 when reaching
     // the numerical limit.
-    DT_TOUCH_TRACKING_ID, // ID of the touch point.
+    DT_TOUCH_TRACKING_ID,  // ID of the touch point.
 
     // Kernel timestamp from touch screen (if available).
     DT_TOUCH_RAW_TIMESTAMP,
 
     // End of touch data types.
 
-    DT_LAST_ENTRY         // This must come last.
+    DT_LAST_ENTRY  // This must come last.
   };
 
   // Data struct to store extracted data from an input event.
@@ -225,7 +226,7 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
                               DataType type,
                               double value);
 
-  bool TouchEventNeedsCalibrate(int touch_device_id) const;
+  bool TouchEventNeedsCalibrate(unsigned int touch_device_id) const;
 
   // Sets the keys which are still allowed on a disabled keyboard device.
   void SetDisabledKeyboardAllowedKeys(
@@ -237,6 +238,11 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
   // Returns true if |native_event| should be blocked.
   bool IsEventBlocked(const base::NativeEvent& native_event);
+
+ protected:
+  // DeviceHotplugEventObserver:
+  virtual void OnKeyboardDevicesUpdated(
+      const std::vector<KeyboardDevice>& devices) override;
 
  private:
   DeviceDataManagerX11();
@@ -299,6 +305,10 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // doesn't think X/device doesn't know about the valuators. We currently
   // use this only on touchscreen devices.
   std::vector<double> last_seen_valuator_[kMaxDeviceNum][kMaxSlotNum];
+
+  // Map that stores meta-data for blocked keyboards. This is needed to restore
+  // devices when they are re-enabled.
+  std::map<unsigned int, ui::KeyboardDevice> blocked_keyboards_;
 
   // X11 atoms cache.
   X11AtomCache atom_cache_;

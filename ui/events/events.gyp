@@ -54,6 +54,10 @@
         'gestures/fling_curve.h',
         'gestures/gesture_configuration.cc',
         'gestures/gesture_configuration.h',
+        'input_device.cc',
+        'input_device.h',
+        'keyboard_device.cc',
+        'keyboard_device.h',
         'keycodes/keyboard_code_conversion.cc',
         'keycodes/keyboard_code_conversion.h',
         'keycodes/keyboard_code_conversion_android.cc',
@@ -329,6 +333,7 @@
         'keycodes/dom4/keycode_converter_unittest.cc',
         'latency_info_unittest.cc',
         'platform/platform_event_source_unittest.cc',
+        'x/device_data_manager_x11_unittest.cc',
         'x/events_x_unittest.cc',
       ],
       'conditions': [

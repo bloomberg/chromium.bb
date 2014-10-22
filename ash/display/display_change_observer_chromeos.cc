@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -287,9 +289,12 @@ float DisplayChangeObserver::FindDeviceScaleFactor(float dpi) {
   return 1.0f;
 }
 
-void DisplayChangeObserver::OnInputDeviceConfigurationChanged() {
+void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
   OnDisplayModeChanged(
       Shell::GetInstance()->display_configurator()->cached_displays());
+}
+
+void DisplayChangeObserver::OnKeyboardDeviceConfigurationChanged() {
 }
 
 }  // namespace ash

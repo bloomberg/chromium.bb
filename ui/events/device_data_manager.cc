@@ -13,6 +13,14 @@
 
 namespace ui {
 
+namespace {
+
+bool InputDeviceEquals(const ui::InputDevice& a, const ui::InputDevice& b) {
+  return a.id == b.id;
+}
+
+}  // namespace
+
 // static
 DeviceDataManager* DeviceDataManager::instance_ = NULL;
 
@@ -64,13 +72,14 @@ void DeviceDataManager::ClearTouchTransformerRecord() {
   }
 }
 
-bool DeviceDataManager::IsTouchDeviceIdValid(int touch_device_id) const {
+bool DeviceDataManager::IsTouchDeviceIdValid(
+    unsigned int touch_device_id) const {
   return (touch_device_id > 0 && touch_device_id < kMaxDeviceNum);
 }
 
 void DeviceDataManager::UpdateTouchInfoForDisplay(
     int64_t display_id,
-    int touch_device_id,
+    unsigned int touch_device_id,
     const gfx::Transform& touch_transformer) {
   if (IsTouchDeviceIdValid(touch_device_id)) {
     touch_device_to_display_map_[touch_device_id] = display_id;
@@ -78,19 +87,19 @@ void DeviceDataManager::UpdateTouchInfoForDisplay(
   }
 }
 
-void DeviceDataManager::UpdateTouchRadiusScale(int touch_device_id,
+void DeviceDataManager::UpdateTouchRadiusScale(unsigned int touch_device_id,
                                                double scale) {
   if (IsTouchDeviceIdValid(touch_device_id))
     touch_radius_scale_map_[touch_device_id] = scale;
 }
 
-void DeviceDataManager::ApplyTouchRadiusScale(int touch_device_id,
+void DeviceDataManager::ApplyTouchRadiusScale(unsigned int touch_device_id,
                                               double* radius) {
   if (IsTouchDeviceIdValid(touch_device_id))
     *radius = (*radius) * touch_radius_scale_map_[touch_device_id];
 }
 
-void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
+void DeviceDataManager::ApplyTouchTransformer(unsigned int touch_device_id,
                                               float* x,
                                               float* y) {
   if (IsTouchDeviceIdValid(touch_device_id)) {
@@ -103,7 +112,8 @@ void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
   }
 }
 
-int64_t DeviceDataManager::GetDisplayForTouchDevice(int touch_device_id) const {
+int64_t DeviceDataManager::GetDisplayForTouchDevice(
+    unsigned int touch_device_id) const {
   if (IsTouchDeviceIdValid(touch_device_id))
     return touch_device_to_display_map_[touch_device_id];
   return gfx::Display::kInvalidDisplayID;
@@ -111,11 +121,32 @@ int64_t DeviceDataManager::GetDisplayForTouchDevice(int touch_device_id) const {
 
 void DeviceDataManager::OnTouchscreenDevicesUpdated(
     const std::vector<TouchscreenDevice>& devices) {
+  if (devices.size() == touchscreen_devices_.size() &&
+      std::equal(devices.begin(),
+                 devices.end(),
+                 touchscreen_devices_.begin(),
+                 InputDeviceEquals)) {
+    return;
+  }
   touchscreen_devices_ = devices;
-
   FOR_EACH_OBSERVER(InputDeviceEventObserver,
                     observers_,
-                    OnInputDeviceConfigurationChanged());
+                    OnTouchscreenDeviceConfigurationChanged());
+}
+
+void DeviceDataManager::OnKeyboardDevicesUpdated(
+    const std::vector<KeyboardDevice>& devices) {
+  if (devices.size() == keyboard_devices_.size() &&
+      std::equal(devices.begin(),
+                 devices.end(),
+                 keyboard_devices_.begin(),
+                 InputDeviceEquals)) {
+    return;
+  }
+  keyboard_devices_ = devices;
+  FOR_EACH_OBSERVER(InputDeviceEventObserver,
+                    observers_,
+                    OnKeyboardDeviceConfigurationChanged());
 }
 
 void DeviceDataManager::AddObserver(InputDeviceEventObserver* observer) {

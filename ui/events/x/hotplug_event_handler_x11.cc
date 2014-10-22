@@ -7,6 +7,7 @@
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 
+#include <algorithm>
 #include <cmath>
 #include <set>
 #include <string>
@@ -19,12 +20,44 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "ui/events/device_hotplug_event_observer.h"
+#include "ui/events/input_device.h"
+#include "ui/events/keyboard_device.h"
 #include "ui/events/touchscreen_device.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
 namespace {
+
+// The name of the xinput device corresponding to the AT internal keyboard.
+const char kATKeyboardName[] = "AT Translated Set 2 keyboard";
+
+// The prefix of xinput devices corresponding to CrOS EC internal keyboards.
+const char kCrosEcKeyboardPrefix[] = "cros-ec";
+
+// Returns true if |name| is the name of a known keyboard device. Note, this may
+// return false negatives.
+bool IsKnownKeyboard(const std::string& name) {
+  std::string lower = base::StringToLowerASCII(name);
+  return lower.find("keyboard") != std::string::npos;
+}
+
+// Returns true if |name| is the name of a known internal keyboard device. Note,
+// this may return false negatives.
+bool IsInternalKeyboard(const std::string& name) {
+  // TODO(rsadam@): Come up with a more generic way of identifying internal
+  // keyboards. See crbug.com/420728.
+  if (name == kATKeyboardName)
+    return true;
+  return name.compare(
+             0u, strlen(kCrosEcKeyboardPrefix), kCrosEcKeyboardPrefix) == 0;
+}
+
+// Returns true if |name| is the name of a known XTEST device. Note, this may
+// return false negatives.
+bool IsTestKeyboard(const std::string& name) {
+  return name.find("XTEST") != std::string::npos;
+}
 
 // We consider the touchscreen to be internal if it is an I2c device.
 // With the device id, we can query X to get the device's dev input
@@ -116,6 +149,32 @@ void HotplugEventHandlerX11::OnHotplugEvent() {
   const XIDeviceList& device_list =
       DeviceListCacheX::GetInstance()->GetXI2DeviceList(gfx::GetXDisplay());
   HandleTouchscreenDevices(device_list);
+  HandleKeyboardDevices(device_list);
+}
+
+void HotplugEventHandlerX11::HandleKeyboardDevices(
+    const XIDeviceList& x11_devices) {
+  std::vector<KeyboardDevice> devices;
+
+  for (int i = 0; i < x11_devices.count; i++) {
+    if (!x11_devices[i].enabled || x11_devices[i].use != XISlaveKeyboard)
+      continue;  // Assume all keyboards are keyboard slaves
+    std::string device_name(x11_devices[i].name);
+    base::TrimWhitespaceASCII(device_name, base::TRIM_TRAILING, &device_name);
+    if (IsTestKeyboard(device_name))
+      continue;  // Skip test devices.
+    InputDeviceType type;
+    if (IsInternalKeyboard(device_name)) {
+      type = InputDeviceType::INPUT_DEVICE_INTERNAL;
+    } else if (IsKnownKeyboard(device_name)) {
+      type = InputDeviceType::INPUT_DEVICE_EXTERNAL;
+    } else {
+      type = InputDeviceType::INPUT_DEVICE_UNKNOWN;
+    }
+    devices.push_back(
+        KeyboardDevice(x11_devices[i].deviceid, type, device_name));
+  }
+  delegate_->OnKeyboardDevicesUpdated(devices);
 }
 
 void HotplugEventHandlerX11::HandleTouchscreenDevices(
@@ -169,10 +228,13 @@ void HotplugEventHandlerX11::HandleTouchscreenDevices(
     // Touchscreens should have absolute X and Y axes, and be direct touch
     // devices.
     if (width > 0.0 && height > 0.0 && is_direct_touch) {
-      bool is_internal =
-          IsTouchscreenInternal(display, x11_devices[i].deviceid);
+      InputDeviceType type =
+          IsTouchscreenInternal(display, x11_devices[i].deviceid)
+              ? InputDeviceType::INPUT_DEVICE_INTERNAL
+              : InputDeviceType::INPUT_DEVICE_EXTERNAL;
+      std::string name(x11_devices[i].name);
       devices.push_back(TouchscreenDevice(
-          x11_devices[i].deviceid, gfx::Size(width, height), is_internal));
+          x11_devices[i].deviceid, type, name, gfx::Size(width, height)));
     }
   }
 

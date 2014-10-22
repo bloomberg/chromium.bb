@@ -12,7 +12,8 @@ class InputDeviceEventObserver {
  public:
   virtual ~InputDeviceEventObserver() {}
 
-  virtual void OnInputDeviceConfigurationChanged() = 0;
+  virtual void OnKeyboardDeviceConfigurationChanged() = 0;
+  virtual void OnTouchscreenDeviceConfigurationChanged() = 0;
 };
 
 }  // namespace ui

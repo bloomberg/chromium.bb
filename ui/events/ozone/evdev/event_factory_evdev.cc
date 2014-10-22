@@ -295,9 +295,11 @@ void EventFactoryEvdev::NotifyHotplugEventObserver(
   std::vector<TouchscreenDevice> touchscreens;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
-      touchscreens.push_back(TouchscreenDevice(it->second->id(),
-                                               it->second->GetTouchscreenSize(),
-                                               false /* is_internal */));
+      touchscreens.push_back(
+          TouchscreenDevice(it->second->id(),
+                            InputDeviceType::INPUT_DEVICE_EXTERNAL,
+                            std::string(), /* Device name */
+                            it->second->GetTouchscreenSize()));
     }
   }
 

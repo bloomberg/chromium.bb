@@ -5,25 +5,23 @@
 #ifndef UI_EVENTS_TOUCHSCREEN_DEVICE_H_
 #define UI_EVENTS_TOUCHSCREEN_DEVICE_H_
 
+#include <string>
+
 #include "ui/events/events_base_export.h"
+#include "ui/events/input_device.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
 // Represents a Touchscreen device state.
-struct EVENTS_BASE_EXPORT TouchscreenDevice {
-  static const int kInvalidId;
-
-  TouchscreenDevice(int id, const gfx::Size& size, bool is_internal);
-
-  // ID of the touch screen. This ID must uniquely identify the touch screen.
-  int id;
+struct EVENTS_BASE_EXPORT TouchscreenDevice : public InputDevice {
+  TouchscreenDevice(int id,
+                    InputDeviceType type,
+                    const std::string& name,
+                    const gfx::Size& size);
 
   // Size of the touch screen area.
   gfx::Size size;
-
-  // True if this is an internal touchscreen.
-  bool is_internal;
 };
 
 }  // namespace ui
