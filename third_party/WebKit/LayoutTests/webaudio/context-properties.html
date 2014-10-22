@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="resources/compatibility.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Tests audio context for offline attributes and methods.");
+
+      function runTest() {
+          // Create an online and offline context for testing.
+          onlineContext = new AudioContext();
+          offlineContext = new OfflineAudioContext(1, 1000, 44100);
+
+          // The online context cannot have oncomplete and startRendering
+          shouldBeUndefined("onlineContext.oncomplete");
+          shouldBeUndefined("onlineContext.startRendering");
+
+          // The offline context must have oncomplete and startRendering
+          shouldBeDefined("offlineContext.oncomplete");
+          shouldBeDefined("offlineContext.startRendering");
+          
+      }
+
+      runTest();
+      successfullyParsed = true;
+    </script>
+
+  </body>
+</html>

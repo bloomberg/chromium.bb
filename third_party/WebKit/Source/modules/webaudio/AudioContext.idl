@@ -73,9 +73,4 @@
     // Channel splitting and merging
     [RaisesException] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);
     [RaisesException] ChannelMergerNode createChannelMerger(optional unsigned long numberOfInputs);
-
-    // Offline rendering
-    // void prepareOfflineBufferRendering(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
-    attribute EventHandler oncomplete;
-    void startRendering();
 };
