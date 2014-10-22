@@ -4,6 +4,6 @@ android.webkit.WebView focusable focused scrollable
         android.widget.EditText clickable editable_text focusable name='Title1' input_type=1
         android.widget.EditText clickable editable_text focusable name='AriaLabel2' input_type=1
         android.widget.EditText clickable editable_text focusable name='LabelledBy3' input_type=1
-        android.widget.EditText editable_text focusable input_type=1
+        android.widget.EditText clickable editable_text focusable name='Placeholder4' input_type=1
         android.widget.EditText clickable editable_text focusable name='Title5' input_type=1
         android.widget.EditText clickable editable_text focusable name='LabelledBy6' input_type=1

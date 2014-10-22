@@ -307,6 +307,8 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   // Blink, making the platform-specific mapping to accessible text simpler.
   base::string16 description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
   base::string16 help = GetString16Attribute(ui::AX_ATTR_HELP);
+  base::string16 placeholder;
+  GetHtmlAttribute("placeholder", &placeholder);
   int title_elem_id = GetIntAttribute(
       ui::AX_ATTR_TITLE_UI_ELEMENT);
   base::string16 text;
@@ -318,6 +320,8 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     text = help;
   else if (!name().empty())
     text = base::UTF8ToUTF16(name());
+  else if (GetRole() == ui::AX_ROLE_TEXT_FIELD && !placeholder.empty())
+    text = placeholder;
   else if (!value().empty())
     text = base::UTF8ToUTF16(value());
 
