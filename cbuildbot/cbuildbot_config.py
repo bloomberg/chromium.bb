@@ -1831,7 +1831,6 @@ internal_paladin.add_config('beltino-paladin',
 internal_paladin.add_config('auron-paladin',
   boards=['auron'],
   paladin_builder_name='auron paladin',
-  important=False,
 )
 
 internal_paladin.add_config('bobcat-paladin',
@@ -2751,7 +2750,6 @@ _AddGroupConfig('nyan', 'nyan', (
 _AddGroupConfig('auron', 'auron', (
     'auron_yuna',
     'auron_paine'),
-    important=False,
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
