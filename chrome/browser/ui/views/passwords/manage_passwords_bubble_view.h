@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 class ManagePasswordsIconView;
@@ -23,7 +25,8 @@ class WebContents;
 // 3. BlacklistedView: Informs the user that the current page is blacklisted.
 //
 class ManagePasswordsBubbleView : public ManagePasswordsBubble,
-                                  public views::BubbleDelegateView {
+                                  public views::BubbleDelegateView,
+                                  public content::NotificationObserver {
  public:
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
@@ -90,8 +93,13 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   virtual void Init() override;
   virtual void WindowClosing() override;
 
-  // views::WidgetDelegate
+  // views::WidgetDelegate:
   virtual views::View* GetInitiallyFocusedView() override;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) override;
 
   void set_initially_focused_view(views::View* view) {
     DCHECK(!initially_focused_view_);
@@ -115,6 +123,9 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // A helper to intercept mouse click events on the web contents.
   class WebContentMouseHandler;
   scoped_ptr<WebContentMouseHandler> mouse_handler_;
+
+  // Used to register for fullscreen change notifications.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

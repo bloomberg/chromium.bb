@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
@@ -30,6 +33,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/wm/core/window_animations.h"
 
 
 // Helpers --------------------------------------------------------------------
@@ -775,6 +779,13 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
   if (anchor_view)
     anchor_view->SetActive(true);
   mouse_handler_.reset(new WebContentMouseHandler(this));
+
+  // Add observers to close the bubble if the fullscreen state changes.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+      content::Source<FullscreenController>(browser->fullscreen_controller()));
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
@@ -855,4 +866,14 @@ void ManagePasswordsBubbleView::WindowClosing() {
 
 views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
   return initially_focused_view_;
+}
+
+void ManagePasswordsBubbleView::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  aura::Window* window = GetWidget()->GetNativeView();
+  wm::SetWindowVisibilityAnimationTransition(window, wm::ANIMATE_NONE);
+  CloseBubble();
 }
