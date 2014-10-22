@@ -72,17 +72,6 @@ float TuxelToPixelSize(float val, float num_tuxels, float num_pixels) {
 
 namespace ui {
 
-TouchEventConverterEvdev::InProgressEvents::InProgressEvents()
-    : x_(0),
-      y_(0),
-      id_(-1),
-      finger_(-1),
-      type_(ET_UNKNOWN),
-      radius_x_(0),
-      radius_y_(0),
-      pressure_(0) {
-}
-
 TouchEventConverterEvdev::TouchEventConverterEvdev(
     int fd,
     base::FilePath path,
@@ -140,19 +129,6 @@ void TouchEventConverterEvdev::Init(const EventDeviceInfo& info) {
                                 cal.bezel_right,
                                 cal.bezel_top,
                                 cal.bezel_bottom);
-
-  for (int i = 0;
-       i < std::min<int>(info.GetAbsMaximum(ABS_MT_SLOT) + 1, MAX_FINGERS);
-       ++i) {
-    events_[i].finger_ = info.GetSlotValue(ABS_MT_TRACKING_ID, i);
-    events_[i].type_ =
-        events_[i].finger_ < 0 ? ET_TOUCH_RELEASED : ET_TOUCH_PRESSED;
-    events_[i].x_ = info.GetSlotValue(ABS_MT_POSITION_X, i);
-    events_[i].y_ = info.GetSlotValue(ABS_MT_POSITION_Y, i);
-    events_[i].radius_x_ = info.GetSlotValue(ABS_MT_TOUCH_MAJOR, i);
-    events_[i].radius_y_ = info.GetSlotValue(ABS_MT_TOUCH_MINOR, i);
-    events_[i].pressure_ = info.GetSlotValue(ABS_MT_PRESSURE, i);
-  }
 }
 
 bool TouchEventConverterEvdev::Reinitialize() {
