@@ -29,7 +29,6 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
 
   scoped_ptr<CreditCardField> credit_card_field(new CreditCardField);
   size_t saved_cursor = scanner->SaveCursor();
-  bool form_has_valid_card_number_fields = true;
 
   // Credit card fields can appear in many different orders.
   // We loop until no more credit card related fields are found, see |break| at
@@ -105,18 +104,13 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
             credit_card_field->numbers_.back()->credit_card_number_offset() +
             credit_card_field->numbers_.back()->max_length;
 
-        // In some cases, HTML form may have credit card number split across
-        // multiple input fields and either one or cumulatively having
-        // |max_length| more than |kMaxValidCardNumberSize|, mark these input
-        // form fields as invalid and skip autofilling them.
-        if (last_number_field_size == 0U ||
-            last_number_field_size >= kMaxValidCardNumberSize) {
-          // Mark that the credit card number splits are invalid. But keep
-          // scanning HTML form so that cursor moves beyond related fields.
-          form_has_valid_card_number_fields = false;
-        }
-
-        start_index = last_number_field_size;
+        // Distinguish between
+        //   (a) one card split across multiple fields
+        //   (b) multiple fields for multiple cards
+        // Treat this field as a part of the same card as the last field, except
+        // when doing so would cause overflow.
+        if (last_number_field_size < kMaxValidCardNumberSize)
+          start_index = last_number_field_size;
       }
 
       current_number_field->set_credit_card_number_offset(start_index);
@@ -190,11 +184,6 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     break;
   }
 
-  // Cases where heuristic misinterprets input field as credit card number
-  // field, refuse to autofill credit card number fields.
-  if (!form_has_valid_card_number_fields)
-    credit_card_field->numbers_.clear();
-
   // Some pages have a billing address field after the cardholder name field.
   // For that case, allow only just the cardholder name field.  The remaining
   // CC fields will be picked up in a following CreditCardField.
@@ -209,8 +198,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
   // the number and name were parsed in a separate part of the form.  So if
   // the cvc and date were found independently they are returned.
   if ((!credit_card_field->numbers_.empty() ||
-       credit_card_field->verification_ ||
-       !form_has_valid_card_number_fields) &&
+       credit_card_field->verification_) &&
       (credit_card_field->expiration_date_ ||
        (credit_card_field->expiration_month_ &&
         credit_card_field->expiration_year_))) {

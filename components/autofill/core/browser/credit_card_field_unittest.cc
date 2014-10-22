@@ -448,7 +448,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNumberWithSplit) {
             field_type_map_[ASCIIToUTF16("year6")]);
 }
 
-TEST_F(CreditCardFieldTest, ParseCreditCardNumberWithInvalidSplit) {
+TEST_F(CreditCardFieldTest, ParseMultipleCreditCardNumbers) {
   FormFieldData field;
   field.form_control_type = "text";
 
@@ -460,8 +460,8 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNumberWithInvalidSplit) {
   field.name = ASCIIToUTF16("card_number");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("number2")));
 
-  field.label = ASCIIToUTF16("Not Card Number");
-  field.name = ASCIIToUTF16("not_card_number");
+  field.label = ASCIIToUTF16("Confirm Card Number");
+  field.name = ASCIIToUTF16("confirm_card_number");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("number3")));
 
   field.label = ASCIIToUTF16("Exp Month");
@@ -479,10 +479,12 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNumberWithInvalidSplit) {
   ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("name1")) !=
               field_type_map_.end());
   EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number2")) ==
+  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number2")) !=
               field_type_map_.end());
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number3")) ==
+  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
+  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number3")) !=
               field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number3")]);
   ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("month4")) !=
               field_type_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month4")]);
