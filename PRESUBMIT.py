@@ -1239,7 +1239,7 @@ def _CheckNoDeprecatedCSS(input_api, output_api):
       documentation is ignored by the hooks as it
       needs to be consumed by WebKit. """
   results = []
-  file_inclusion_pattern = (r".+\.css$")
+  file_inclusion_pattern = (r".+\.css$",)
   black_list = (_EXCLUDED_PATHS +
                 _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST +
@@ -1251,10 +1251,34 @@ def _CheckNoDeprecatedCSS(input_api, output_api):
   for fpath in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in fpath.ChangedContents():
       for (deprecated_value, value) in _DEPRECATED_CSS:
-        if input_api.re.search(deprecated_value, line):
+        if deprecated_value in line:
           results.append(output_api.PresubmitError(
               "%s:%d: Use of deprecated CSS %s, use %s instead" %
               (fpath.LocalPath(), line_num, deprecated_value, value)))
+  return results
+
+
+_DEPRECATED_JS = [
+  ( "__lookupGetter__", "Object.getOwnPropertyDescriptor" ),
+  ( "__defineGetter__", "Object.defineProperty" ),
+  ( "__defineSetter__", "Object.defineProperty" ),
+]
+
+def _CheckNoDeprecatedJS(input_api, output_api):
+  """Make sure that we don't use deprecated JS in Chrome code."""
+  results = []
+  file_inclusion_pattern = (r".+\.js$",)  # TODO(dbeam): .html?
+  black_list = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
+                input_api.DEFAULT_BLACK_LIST)
+  file_filter = lambda f: input_api.FilterSourceFile(
+      f, white_list=file_inclusion_pattern, black_list=black_list)
+  for fpath in input_api.AffectedFiles(file_filter=file_filter):
+    for lnum, line in fpath.ChangedContents():
+      for (deprecated, replacement) in _DEPRECATED_JS:
+        if deprecated in line:
+          results.append(output_api.PresubmitError(
+              "%s:%d: Use of deprecated JS %s, use %s instead" %
+              (fpath.LocalPath(), lnum, deprecated, replacement)))
   return results
 
 
@@ -1313,6 +1337,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckCygwinShell(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
+  results.extend(_CheckNoDeprecatedJS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
   results.extend(_CheckForOverrideAndFinalRules(input_api, output_api))
