@@ -27,15 +27,15 @@ class EasyUnlockServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<EasyUnlockServiceFactory>;
 
   EasyUnlockServiceFactory();
-  virtual ~EasyUnlockServiceFactory();
+  ~EasyUnlockServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceFactory);
 };

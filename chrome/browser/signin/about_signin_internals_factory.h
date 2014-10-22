@@ -23,17 +23,17 @@ class AboutSigninInternalsFactory : public BrowserContextKeyedServiceFactory {
   static AboutSigninInternalsFactory* GetInstance();
 
   // Implementation of BrowserContextKeyedServiceFactory.
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
   friend struct DefaultSingletonTraits<AboutSigninInternalsFactory>;
 
   AboutSigninInternalsFactory();
-  virtual ~AboutSigninInternalsFactory();
+  ~AboutSigninInternalsFactory() override;
 
   // BrowserContextKeyedServiceFactory
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 };
 

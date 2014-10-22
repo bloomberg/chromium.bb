@@ -61,7 +61,7 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   EasyUnlockScreenlockStateHandler(const std::string& user_email,
                                    HardlockState initial_hardlock_state,
                                    ScreenlockBridge* screenlock_bridge);
-  virtual ~EasyUnlockScreenlockStateHandler();
+  ~EasyUnlockScreenlockStateHandler() override;
 
   // Returns true if handler is not in INACTIVE state.
   bool IsActive() const;
@@ -81,9 +81,9 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
 
  private:
   // ScreenlockBridge::Observer:
-  virtual void OnScreenDidLock() override;
-  virtual void OnScreenDidUnlock() override;
-  virtual void OnFocusedUserChanged(const std::string& user_id) override;
+  void OnScreenDidLock() override;
+  void OnScreenDidUnlock() override;
+  void OnFocusedUserChanged(const std::string& user_id) override;
 
   // Forces refresh of the Easy Unlock screenlock UI.
   void RefreshScreenlockState();

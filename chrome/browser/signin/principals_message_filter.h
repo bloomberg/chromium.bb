@@ -17,13 +17,12 @@ class PrincipalsMessageFilter : public content::BrowserMessageFilter {
   explicit PrincipalsMessageFilter(int render_process_id);
 
   // content::BrowserMessageFilter implementation.
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~PrincipalsMessageFilter();
+  ~PrincipalsMessageFilter() override;
 
   void OnMsgShowBrowserAccountManagementUI();
   void OnMsgGetManagedAccounts(const GURL& url,

@@ -27,10 +27,10 @@ class ChromeSigninClientFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ChromeSigninClientFactory>;
 
   ChromeSigninClientFactory();
-  virtual ~ChromeSigninClientFactory();
+  ~ChromeSigninClientFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 };
 

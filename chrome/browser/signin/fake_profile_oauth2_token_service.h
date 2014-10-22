@@ -56,21 +56,20 @@ class FakeProfileOAuth2TokenService
   };
 
   FakeProfileOAuth2TokenService();
-  virtual ~FakeProfileOAuth2TokenService();
+  ~FakeProfileOAuth2TokenService() override;
 
   // Overriden to make sure it works on Android.
-  virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) const override;
+  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
 
   // Overriden to make sure it works on iOS.
-  virtual void LoadCredentials(const std::string& primary_account_id) override;
+  void LoadCredentials(const std::string& primary_account_id) override;
 
-  virtual std::vector<std::string> GetAccounts() override;
+  std::vector<std::string> GetAccounts() override;
 
   // Overriden to make sure it works on Android.  Simply calls
   // IssueRefreshToken().
-  virtual void UpdateCredentials(const std::string& account_id,
-                                 const std::string& refresh_token) override;
+  void UpdateCredentials(const std::string& account_id,
+                         const std::string& refresh_token) override;
 
   // Sets the current refresh token. If |token| is non-empty, this will invoke
   // OnRefreshTokenAvailable() on all Observers, otherwise this will invoke
@@ -116,24 +115,24 @@ class FakeProfileOAuth2TokenService
 
  protected:
   // OAuth2TokenService overrides.
-  virtual void FetchOAuth2Token(RequestImpl* request,
-                                const std::string& account_id,
-                                net::URLRequestContextGetter* getter,
-                                const std::string& client_id,
-                                const std::string& client_secret,
-                                const ScopeSet& scopes) override;
+  void FetchOAuth2Token(RequestImpl* request,
+                        const std::string& account_id,
+                        net::URLRequestContextGetter* getter,
+                        const std::string& client_id,
+                        const std::string& client_secret,
+                        const ScopeSet& scopes) override;
 
-  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,
       OAuth2AccessTokenConsumer* consumer) override;
 
-  virtual void InvalidateOAuth2Token(const std::string& account_id,
-                                     const std::string& client_id,
-                                     const ScopeSet& scopes,
-                                     const std::string& access_token) override;
+  void InvalidateOAuth2Token(const std::string& account_id,
+                             const std::string& client_id,
+                             const ScopeSet& scopes,
+                             const std::string& access_token) override;
 
-  virtual net::URLRequestContextGetter* GetRequestContext() override;
+  net::URLRequestContextGetter* GetRequestContext() override;
 
  private:
   // Helper function to complete pending requests - if |all_scopes| is true,

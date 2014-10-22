@@ -28,12 +28,12 @@ class AccountReconcilorFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<AccountReconcilorFactory>;
 
   AccountReconcilorFactory();
-  virtual ~AccountReconcilorFactory();
+  ~AccountReconcilorFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 };
 

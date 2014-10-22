@@ -25,7 +25,7 @@ class Profile;
 class FakeSigninManagerBase : public SigninManagerBase {
  public:
   explicit FakeSigninManagerBase(Profile* profile);
-  virtual ~FakeSigninManagerBase();
+  ~FakeSigninManagerBase() override;
 
   // Helper function to be used with
   // KeyedService::SetTestingFactory(). In order to match
@@ -42,7 +42,7 @@ class FakeSigninManagerBase : public SigninManagerBase {
 class FakeSigninManager : public SigninManager {
  public:
   explicit FakeSigninManager(Profile* profile);
-  virtual ~FakeSigninManager();
+  ~FakeSigninManager() override;
 
   void set_auth_in_progress(const std::string& username) {
     possibly_invalid_username_ = username;
@@ -54,16 +54,15 @@ class FakeSigninManager : public SigninManager {
 
   void FailSignin(const GoogleServiceAuthError& error);
 
-  virtual void StartSignInWithRefreshToken(
+  void StartSignInWithRefreshToken(
       const std::string& refresh_token,
       const std::string& username,
       const std::string& password,
       const OAuthTokenFetchedCallback& oauth_fetched_callback) override;
 
-  virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric)
-      override;
+  void SignOut(signin_metrics::ProfileSignout signout_source_metric) override;
 
-  virtual void CompletePendingSignin() override;
+  void CompletePendingSignin() override;
 };
 
 #endif  // !defined (OS_CHROMEOS)

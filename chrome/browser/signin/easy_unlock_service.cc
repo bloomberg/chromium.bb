@@ -104,7 +104,7 @@ class EasyUnlockService::BluetoothDetector
         weak_ptr_factory_(this) {
   }
 
-  virtual ~BluetoothDetector() {
+  ~BluetoothDetector() override {
     if (adapter_.get())
       adapter_->RemoveObserver(this);
   }
@@ -121,8 +121,8 @@ class EasyUnlockService::BluetoothDetector
   bool IsPresent() const { return adapter_.get() && adapter_->IsPresent(); }
 
   // device::BluetoothAdapter::Observer:
-  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                     bool present) override {
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override {
     service_->OnBluetoothAdapterPresentChanged();
   }
 

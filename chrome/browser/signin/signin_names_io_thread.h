@@ -30,7 +30,7 @@ class SigninNamesOnIOThread : public SigninManagerBase::Observer,
 
   // Objects should only be created on UI thread.
   SigninNamesOnIOThread();
-  virtual ~SigninNamesOnIOThread();
+  ~SigninNamesOnIOThread() override;
 
   // Gets the set of email addresses of connected profiles.  This method should
   // only be called on the IO thread.
@@ -42,15 +42,15 @@ class SigninNamesOnIOThread : public SigninManagerBase::Observer,
 
  private:
   // SigninManagerBase::Observer:
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // SigninManagerFactory::Observer:
-  virtual void SigninManagerCreated(SigninManagerBase* manager) override;
-  virtual void SigninManagerShutdown(SigninManagerBase* manager) override;
+  void SigninManagerCreated(SigninManagerBase* manager) override;
+  void SigninManagerShutdown(SigninManagerBase* manager) override;
 
   // Checks whether the current thread is the IO thread.
   void CheckOnIOThread() const;

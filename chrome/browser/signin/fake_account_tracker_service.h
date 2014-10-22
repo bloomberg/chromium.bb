@@ -22,9 +22,9 @@ class FakeAccountTrackerService : public AccountTrackerService {
 
  private:
   FakeAccountTrackerService();
-  virtual ~FakeAccountTrackerService();
+  ~FakeAccountTrackerService() override;
 
-  virtual void StartFetchingUserInfo(const std::string& account_id) override;
+  void StartFetchingUserInfo(const std::string& account_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccountTrackerService);
 };

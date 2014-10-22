@@ -54,14 +54,14 @@ class EasyUnlockToggleFlow::ToggleApiCall : public OAuth2ApiCallFlow {
   ToggleApiCall(EasyUnlockToggleFlow* flow,
                 const std::string& phone_public_key,
                 bool toggle_enable);
-  virtual ~ToggleApiCall();
+  ~ToggleApiCall() override;
 
   // OAuth2ApiCallFlow
-  virtual GURL CreateApiCallUrl() override;
-  virtual std::string CreateApiCallBody() override;
-  virtual std::string CreateApiCallBodyContentType() override;
-  virtual void ProcessApiCallSuccess(const net::URLFetcher* source) override;
-  virtual void ProcessApiCallFailure(const net::URLFetcher* source) override;
+  GURL CreateApiCallUrl() override;
+  std::string CreateApiCallBody() override;
+  std::string CreateApiCallBodyContentType() override;
+  void ProcessApiCallSuccess(const net::URLFetcher* source) override;
+  void ProcessApiCallFailure(const net::URLFetcher* source) override;
 
  private:
   EasyUnlockToggleFlow* flow_;

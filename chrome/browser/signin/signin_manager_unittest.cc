@@ -61,7 +61,7 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
                                 num_signouts_(0) {
   }
 
-  virtual ~TestSigninManagerObserver() {}
+  ~TestSigninManagerObserver() override {}
 
   int num_failed_signins_;
   int num_successful_signins_;
@@ -69,20 +69,18 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
 
  private:
   // SigninManagerBase::Observer:
-  virtual void GoogleSigninFailed(
-      const GoogleServiceAuthError& error) override {
+  void GoogleSigninFailed(const GoogleServiceAuthError& error) override {
     num_failed_signins_++;
   }
 
-  virtual void GoogleSigninSucceeded(
-      const std::string& account_id,
-      const std::string& username,
-      const std::string& password) override {
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override {
     num_successful_signins_++;
   }
 
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override {
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override {
     num_signouts_++;
   }
 };

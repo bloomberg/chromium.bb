@@ -43,14 +43,14 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
         show_icon_count_(0u),
         auth_type_(OFFLINE_PASSWORD) {
   }
-  virtual ~TestLockHandler() {}
+  ~TestLockHandler() override {}
 
   // ScreenlockBridge::LockHandler implementation:
-  virtual void ShowBannerMessage(const base::string16& message) override {
+  void ShowBannerMessage(const base::string16& message) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
-  virtual void ShowUserPodCustomIcon(
+  void ShowUserPodCustomIcon(
       const std::string& user_email,
       const ScreenlockBridge::UserPodCustomIconOptions& icon) override {
     ASSERT_EQ(user_email_, user_email);
@@ -59,18 +59,18 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
     ValidateCustomIcon();
   }
 
-  virtual void HideUserPodCustomIcon(const std::string& user_email) override {
+  void HideUserPodCustomIcon(const std::string& user_email) override {
     ASSERT_EQ(user_email_, user_email);
     last_custom_icon_.reset();
   }
 
-  virtual void EnableInput() override {
+  void EnableInput() override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
-  virtual void SetAuthType(const std::string& user_email,
-                           AuthType auth_type,
-                           const base::string16& auth_value) override {
+  void SetAuthType(const std::string& user_email,
+                   AuthType auth_type,
+                   const base::string16& auth_value) override {
     ASSERT_EQ(user_email_, user_email);
     // Generally, this is allowed, but EasyUnlockScreenlockStateHandler should
     // avoid resetting the same auth type.
@@ -80,18 +80,18 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
     auth_value_ = auth_value;
   }
 
-  virtual AuthType GetAuthType(const std::string& user_email) const override {
+  AuthType GetAuthType(const std::string& user_email) const override {
     EXPECT_EQ(user_email_, user_email);
     return auth_type_;
   }
 
-  virtual void Unlock(const std::string& user_email) override {
+  void Unlock(const std::string& user_email) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
-  virtual void AttemptEasySignin(const std::string& user_email,
-                                 const std::string& secret,
-                                 const std::string& key_label) override {
+  void AttemptEasySignin(const std::string& user_email,
+                         const std::string& secret,
+                         const std::string& key_label) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 
