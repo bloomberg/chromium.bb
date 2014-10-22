@@ -11,13 +11,13 @@ for more details on the presubmit API built into gcl.
 def GetPreferredTryMasters(project, change):
   masters = {
     'tryserver.chromium.linux': {
-      'linux_chromium_rel_swarming': set(['defaulttests']),
+      'linux_chromium_rel': set(['defaulttests']),
     },
     'tryserver.chromium.mac': {
-      'mac_chromium_rel_swarming': set(['defaulttests']),
+      'mac_chromium_rel': set(['defaulttests']),
     },
     'tryserver.chromium.win': {
-      'win_chromium_rel_swarming': set(['defaulttests']),
+      'win_chromium_rel': set(['defaulttests']),
     }
   }
   # Changes that touch NSS files will likely need a corresponding OpenSSL edit.
