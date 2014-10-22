@@ -151,8 +151,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                                        jobject obj,
                                        jboolean enabled);
 
-  void PostMessageToFrame(JNIEnv* env, jobject obj, jstring frame_id,
-      jstring message, jstring source_origin, jstring target_origin);
   long GetNativeImeAdapter(JNIEnv* env, jobject obj);
   void SetFocus(JNIEnv* env, jobject obj, jboolean focused);
 

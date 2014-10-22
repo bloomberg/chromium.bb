@@ -163,4 +163,16 @@ public interface WebContents {
      */
     public void evaluateJavaScript(String script, JavaScriptCallback callback);
 
+    /**
+     * Post a message to a frame.
+     * TODO(sgurun) also add support for transferring a message channel port.
+     *
+     * @param frameName The name of the frame. If the name is null the message is posted
+     *                  to the main frame.
+     * @param message   The message
+     * @param sourceOrigin  The source origin
+     * @param targetOrigin  The target origin
+     */
+    public void postMessageToFrame(String frameName, String message,
+            String sourceOrigin, String targetOrigin);
 }

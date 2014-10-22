@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * The tests for content postMessage API.
@@ -71,10 +72,9 @@ public class PostMessageTest extends ContentViewTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToMainFrame() throws Throwable {
-        ContentViewCore contentViewCore = getContentViewCore();
-        loadDataSync(contentViewCore.getWebContents().getNavigationController(), URL1, "text/html",
-                false);
-        contentViewCore.postMessageToFrame(null, MESSAGE, SOURCE_ORIGIN, "*");
+        WebContents webContents = getContentViewCore().getWebContents();
+        loadDataSync(webContents.getNavigationController(), URL1, "text/html", false);
+        webContents.postMessageToFrame(null, MESSAGE, SOURCE_ORIGIN, "*");
         mMessageObject.waitForMessage();
         assertEquals(MESSAGE, mMessageObject.getData());
         assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());

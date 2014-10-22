@@ -227,6 +227,13 @@ import org.chromium.content_public.browser.WebContents;
         callback.handleJavaScriptResult(jsonResult);
     }
 
+    @Override
+    public void postMessageToFrame(String frameName, String message,
+            String sourceOrigin, String targetOrigin) {
+        nativePostMessageToFrame(mNativeWebContentsAndroid, frameName, message, sourceOrigin,
+                targetOrigin);
+    }
+
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native void nativeStop(long nativeWebContentsAndroid);
@@ -258,4 +265,6 @@ import org.chromium.content_public.browser.WebContents;
             String cssSelector);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
             String script, JavaScriptCallback callback);
+    private native void nativePostMessageToFrame(long nativeWebContentsAndroid, String frameId,
+            String message, String sourceOrigin, String targetOrigin);
 }

@@ -1170,23 +1170,6 @@ public class ContentViewCore
     }
 
     /**
-     * Post a message to a frame.
-     * TODO(sgurun) also add support for transferring a message channel port.
-     *
-     * @param frameName The name of the frame. If the name is null the message is posted
-     *                  to the main frame.
-     * @param message   The message
-     * @param sourceOrigin  The source origin
-     * @param targetOrigin  The target origin
-     */
-    public void postMessageToFrame(String frameName, String message,
-            String sourceOrigin, String targetOrigin) {
-        if (mNativeContentViewCore == 0) return;
-        nativePostMessageToFrame(mNativeContentViewCore, frameName, message, sourceOrigin,
-                targetOrigin);
-    }
-
-    /**
      * To be called when the ContentView is shown.
      */
     public void onShow() {
@@ -2907,9 +2890,6 @@ public class ContentViewCore
     private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl,
             long nativeSelectPopupSourceFrame, int[] indices);
 
-
-    private native void nativePostMessageToFrame(long nativeContentViewCoreImpl, String frameId,
-            String message, String sourceOrigin, String targetOrigin);
 
     private native long nativeGetNativeImeAdapter(long nativeContentViewCoreImpl);
 
