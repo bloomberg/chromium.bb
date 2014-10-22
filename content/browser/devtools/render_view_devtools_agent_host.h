@@ -11,6 +11,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
+#include "content/browser/devtools/protocol/dom_handler.h"
+#include "content/browser/devtools/protocol/input_handler.h"
+#include "content/browser/devtools/protocol/network_handler.h"
+#include "content/browser/devtools/protocol/page_handler.h"
+#include "content/browser/devtools/protocol/power_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -23,21 +28,13 @@ class CompositorFrameMetadata;
 namespace content {
 
 class DevToolsProtocolHandlerImpl;
+class DevToolsTracingHandler;
 class RenderViewHost;
 class RenderViewHostImpl;
 
 #if defined(OS_ANDROID)
 class PowerSaveBlockerImpl;
 #endif
-
-namespace devtools {
-namespace dom { class DOMHandler; }
-namespace input { class InputHandler; }
-namespace network { class NetworkHandler; }
-namespace page { class PageHandler; }
-namespace power { class PowerHandler; }
-namespace tracing { class TracingHandler; }
-}
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public IPCDevToolsAgentHost,
@@ -121,8 +118,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   scoped_ptr<devtools::network::NetworkHandler> network_handler_;
   scoped_ptr<devtools::page::PageHandler> page_handler_;
   scoped_ptr<devtools::power::PowerHandler> power_handler_;
-  scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   scoped_ptr<DevToolsProtocolHandlerImpl> handler_impl_;
+  scoped_ptr<DevToolsTracingHandler> tracing_handler_;
 #if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
 #endif

@@ -447,6 +447,8 @@
       'browser/devtools/devtools_protocol.h',
       'browser/devtools/devtools_system_info_handler.cc',
       'browser/devtools/devtools_system_info_handler.h',
+      'browser/devtools/devtools_tracing_handler.h',
+      'browser/devtools/devtools_tracing_handler.cc',
       'browser/devtools/forwarding_agent_host.cc',
       'browser/devtools/forwarding_agent_host.h',
       'browser/devtools/ipc_devtools_agent_host.cc',
