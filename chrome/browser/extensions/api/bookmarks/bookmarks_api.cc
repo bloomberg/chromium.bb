@@ -98,14 +98,7 @@ bool BookmarksFunction::RunAsync() {
     return true;
   }
 
-  bool success = RunOnReady();
-  if (success) {
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-        content::Source<const Extension>(extension()),
-        content::Details<const BookmarksFunction>(this));
-  }
-  SendResponse(success);
+  RunAndSendResponse();
   return true;
 }
 
@@ -229,8 +222,19 @@ void BookmarksFunction::BookmarkModelChanged() {
 void BookmarksFunction::BookmarkModelLoaded(BookmarkModel* model,
                                             bool ids_reassigned) {
   model->RemoveObserver(this);
-  RunOnReady();
+  RunAndSendResponse();
   Release();  // Balanced in RunOnReady().
+}
+
+void BookmarksFunction::RunAndSendResponse() {
+  bool success = RunOnReady();
+  if (success) {
+    content::NotificationService::current()->Notify(
+      extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
+      content::Source<const Extension>(extension()),
+      content::Details<const BookmarksFunction>(this));
+  }
+  SendResponse(success);
 }
 
 BookmarkEventRouter::BookmarkEventRouter(Profile* profile)

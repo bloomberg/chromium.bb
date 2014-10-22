@@ -162,6 +162,8 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   // BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
+
+  void RunAndSendResponse();
 };
 
 class BookmarksGetFunction : public BookmarksFunction {
