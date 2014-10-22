@@ -140,8 +140,10 @@ int GetCurrentDuckingFlag(int render_frame_id) {
   return media::AudioParameters::NO_EFFECTS;
 }
 
-// Helper method to get platform specific optimal buffer size.
-int GetOptimalBufferSize(int sample_rate, int hardware_buffer_size) {
+}  // namespace
+
+int WebRtcAudioRenderer::GetOptimalBufferSize(int sample_rate,
+                                              int hardware_buffer_size) {
   // Use native hardware buffer size as default. On Windows, we strive to open
   // up using this native hardware buffer size to achieve best
   // possible performance and to ensure that no FIFO is needed on the browser
@@ -172,8 +174,6 @@ int GetOptimalBufferSize(int sample_rate, int hardware_buffer_size) {
   DVLOG(1) << "Using sink output buffer size: " << frames_per_buffer;
   return frames_per_buffer;
 }
-
-}  // namespace
 
 WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
