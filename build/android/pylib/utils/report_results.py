@@ -39,24 +39,28 @@ def _LogToFlakinessDashboard(results, test_type, test_package,
   logging.info('Upload results for test type "%s", test package "%s" to %s' %
                (test_type, test_package, flakiness_server))
 
-  # TODO(frankf): Enable uploading for gtests.
-  if test_type != 'Instrumentation':
-    logging.warning('Invalid test type.')
-    return
-
   try:
-    if flakiness_server == constants.UPSTREAM_FLAKINESS_SERVER:
-      assert test_package in ['ContentShellTest',
+    if test_type == 'Instrumentation':
+      if flakiness_server == constants.UPSTREAM_FLAKINESS_SERVER:
+        assert test_package in ['ContentShellTest',
                                 'ChromeShellTest',
-                              'AndroidWebViewTest']
-      dashboard_test_type = ('%s_instrumentation_tests' %
-                             test_package.lower().rstrip('test'))
-    # Downstream server.
+                                'AndroidWebViewTest']
+        dashboard_test_type = ('%s_instrumentation_tests' %
+                               test_package.lower().rstrip('test'))
+      # Downstream server.
+      else:
+        dashboard_test_type = 'Chromium_Android_Instrumentation'
+
+    elif test_type == 'Unit test':
+      dashboard_test_type = test_package
+
     else:
-      dashboard_test_type = 'Chromium_Android_Instrumentation'
+      logging.warning('Invalid test type')
+      return
 
     flakiness_dashboard_results_uploader.Upload(
         results, flakiness_server, dashboard_test_type)
+
   except Exception as e:
     logging.error(e)
 

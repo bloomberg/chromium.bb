@@ -516,7 +516,7 @@ class JSONResultsGeneratorBase(object):
       this_test = this_test[segment]
 
     if not len(this_test):
-      self._PopulateResutlsAndTimesJSON(this_test)
+      self._PopulateResultsAndTimesJSON(this_test)
 
     if self.RESULTS in this_test:
       self._InsertItemRunLengthEncoded(result, this_test[self.RESULTS])
@@ -558,7 +558,7 @@ class JSONResultsGeneratorBase(object):
 
     results[self.TESTS] = test_results_trie
 
-  def _PopulateResutlsAndTimesJSON(self, results_and_times):
+  def _PopulateResultsAndTimesJSON(self, results_and_times):
     results_and_times[self.RESULTS] = []
     results_and_times[self.TIMES] = []
     return results_and_times
