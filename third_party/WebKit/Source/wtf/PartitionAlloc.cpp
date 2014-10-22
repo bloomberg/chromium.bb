@@ -334,11 +334,8 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
     root->totalSizeOfSuperPages += kSuperPageSize;
     char* requestedAddress = root->nextSuperPage;
     char* superPage = reinterpret_cast<char*>(allocPages(requestedAddress, kSuperPageSize, kSuperPageSize));
-    if (UNLIKELY(!superPage)) {
-        if (flags & PartitionAllocReturnNull)
-            return 0;
-        partitionOutOfMemory();
-    }
+    if (UNLIKELY(!superPage))
+        return 0;
     root->nextSuperPage = superPage + kSuperPageSize;
     char* ret = superPage + kPartitionPageSize;
     root->nextPartitionPage = ret + totalSize;
@@ -579,11 +576,8 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     // TODO: these pages will be zero-filled. Consider internalizing an
     // allocZeroed() API so we can avoid a memset() entirely in this case.
     char* ptr = reinterpret_cast<char*>(allocPages(0, mapSize, kSuperPageSize));
-    if (!ptr) {
-        if (flags & PartitionAllocReturnNull)
-            return 0;
-        partitionOutOfMemory();
-    }
+    if (UNLIKELY(!ptr))
+        return 0;
     char* ret = ptr + kPartitionPageSize;
     // TODO: due to all the guard paging, this arrangement creates 4 mappings.
     // We could get it down to three by using read-only for the metadata page,
@@ -639,6 +633,8 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     // The slow path is called when the freelist is empty.
     ASSERT(!bucket->activePagesHead->freelistHead);
 
+    PartitionPage* newPage = nullptr;
+
     // For the partitionAllocGeneric API, we have a bunch of buckets marked
     // as special cases. We bounce them through to the slow path so that we
     // can still have a blazing fast hot path due to lack of corner-case
@@ -652,13 +648,16 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
                 return 0;
             RELEASE_ASSERT(false);
         }
-        return partitionDirectMap(root, flags, size);
+        void* ptr = partitionDirectMap(root, flags, size);
+        if (ptr)
+            return ptr;
+        goto partitionAllocSlowPathFailed;
     }
 
     // First, look for a usable page in the existing active pages list.
     // Change active page, accepting the current page as a candidate.
     if (LIKELY(partitionSetNewActivePage(bucket->activePagesHead))) {
-        PartitionPage* newPage = bucket->activePagesHead;
+        newPage = bucket->activePagesHead;
         if (LIKELY(newPage->freelistHead != 0)) {
             PartitionFreelistEntry* ret = newPage->freelistHead;
             newPage->freelistHead = partitionFreelistMask(ret->next);
@@ -670,7 +669,7 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     }
 
     // Second, look in our list of freed but reserved pages.
-    PartitionPage* newPage = bucket->freePagesHead;
+    newPage = bucket->freePagesHead;
     if (LIKELY(newPage != 0)) {
         ASSERT(newPage != &PartitionRootGeneric::gSeedPage);
         ASSERT(!newPage->freelistHead);
@@ -684,10 +683,8 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
         // Third. If we get here, we need a brand new page.
         uint16_t numPartitionPages = partitionBucketPartitionPages(bucket);
         void* rawNewPage = partitionAllocPartitionPages(root, flags, numPartitionPages);
-        if (UNLIKELY(!rawNewPage)) {
-            ASSERT(returnNull);
-            return 0;
-        }
+        if (UNLIKELY(!rawNewPage))
+            goto partitionAllocSlowPathFailed;
         // Skip the alignment check because it depends on page->bucket, which is not yet set.
         newPage = partitionPointerToPageNoAlignmentCheck(rawNewPage);
     }
@@ -695,6 +692,12 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     partitionPageReset(newPage, bucket);
     bucket->activePagesHead = newPage;
     return partitionPageAllocAndFillFreelist(newPage);
+
+partitionAllocSlowPathFailed:
+    if (returnNull)
+        return nullptr;
+    partitionOutOfMemory();
+    return nullptr;
 }
 
 static ALWAYS_INLINE void partitionFreePage(PartitionRootBase* root, PartitionPage* page)
