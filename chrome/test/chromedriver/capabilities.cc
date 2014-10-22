@@ -210,7 +210,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   } else if (proxy_type == "autodetect") {
     capabilities->switches.SetSwitch("proxy-auto-detect");
   } else if (proxy_type == "manual") {
-    const char* proxy_servers_options[][2] = {
+    const char* const proxy_servers_options[][2] = {
         {"ftpProxy", "ftp"}, {"httpProxy", "http"}, {"sslProxy", "https"}};
     const base::Value* option_value = NULL;
     std::string proxy_servers;
@@ -354,8 +354,8 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
      Status status = parser_map[it.key()].Run(it.value(), capabilities);
      if (status.IsError())
        return Status(kUnknownError, "cannot parse " + it.key(), status);
-   }
-   return Status(kOk);
+  }
+  return Status(kOk);
 }
 
 Status ParseChromeOptions(

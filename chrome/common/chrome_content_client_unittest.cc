@@ -65,7 +65,7 @@ TEST(ChromeContentClientTest, Basic) {
 #if !defined(OS_ANDROID)
   CheckUserAgentStringOrdering(false);
 #else
-  const char* kArguments[] = {"chrome"};
+  const char* const kArguments[] = {"chrome"};
   CommandLine::Reset();
   CommandLine::Init(1, kArguments);
   CommandLine* command_line = CommandLine::ForCurrentProcess();

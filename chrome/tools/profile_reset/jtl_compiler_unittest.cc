@@ -120,7 +120,7 @@ TEST(JtlCompiler, InvalidOperationName) {
 }
 
 TEST(JtlCompiler, InvalidArgumentsCount) {
-  const char* kSourceCodes[] = {
+  const char* const kSourceCodes[] = {
       "any().\nstore_bool(\"name\", true, \"superfluous argument\");\n",
       "any().\nstore_bool(\"name\");"};  // missing argument
 

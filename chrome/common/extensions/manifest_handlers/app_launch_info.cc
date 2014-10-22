@@ -306,7 +306,7 @@ bool AppLaunchManifestHandler::AlwaysParseForType(Manifest::Type type) const {
 }
 
 const std::vector<std::string> AppLaunchManifestHandler::Keys() const {
-  static const char* keys[] = {
+  static const char* const keys[] = {
     keys::kLaunchLocalPath,
     keys::kLaunchWebURL,
     keys::kLaunchContainer,

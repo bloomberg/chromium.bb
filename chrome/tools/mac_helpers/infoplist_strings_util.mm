@@ -145,8 +145,8 @@ NSString* EscapeForStringsFileValue(NSString* str) {
 }
 
 // The valid types for the -t arg
-const char* kAppType_Main = "main";  // Main app
-const char* kAppType_Helper = "helper";  // Helper app
+const char kAppType_Main[] = "main";  // Main app
+const char kAppType_Helper[] = "helper";  // Helper app
 
 }  // namespace
 

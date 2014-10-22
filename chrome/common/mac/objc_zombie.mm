@@ -175,7 +175,7 @@ BOOL GetZombieRecord(id object, ZombieRecord* record) {
 // easy to use DCHECK to dump only in debug builds.
 BOOL DumpDeallocTrace(const void* const* array, int size) {
   // Async-signal safe version of fputs, consistent with StackTrace::Print().
-  const char* message = "Backtrace from -dealloc:\n";
+  const char message[] = "Backtrace from -dealloc:\n";
   ignore_result(HANDLE_EINTR(write(STDERR_FILENO, message, strlen(message))));
   base::debug::StackTrace(array, size).Print();
 

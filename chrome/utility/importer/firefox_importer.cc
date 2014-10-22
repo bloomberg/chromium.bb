@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
-#include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
@@ -638,9 +637,9 @@ void FirefoxImporter::LoadRootNodeID(sql::Connection* db,
                                       int* toolbar_folder_id,
                                       int* menu_folder_id,
                                       int* unsorted_folder_id) {
-  static const char* kToolbarFolderName = "toolbar";
-  static const char* kMenuFolderName = "menu";
-  static const char* kUnsortedFolderName = "unfiled";
+  static const char kToolbarFolderName[] = "toolbar";
+  static const char kMenuFolderName[] = "menu";
+  static const char kUnsortedFolderName[] = "unfiled";
 
   const char query[] = "SELECT root_name, folder_id FROM moz_bookmarks_roots";
   sql::Statement s(db->GetUniqueStatement(query));
@@ -659,7 +658,7 @@ void FirefoxImporter::LoadRootNodeID(sql::Connection* db,
 
 void FirefoxImporter::LoadLivemarkIDs(sql::Connection* db,
                                        std::set<int>* livemark) {
-  static const char* kFeedAnnotation = "livemark/feedURI";
+  static const char kFeedAnnotation[] = "livemark/feedURI";
   livemark->clear();
 
   const char query[] =

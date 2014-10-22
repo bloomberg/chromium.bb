@@ -243,7 +243,7 @@ bool NSSDecryptor::ReadAndParseSignons(const base::FilePath& sqlite_file,
   if (!db.Open(sqlite_file))
     return false;
 
-  const char* query = "SELECT hostname FROM moz_disabledHosts";
+  const char query[] = "SELECT hostname FROM moz_disabledHosts";
   sql::Statement s(db.GetUniqueStatement(query));
   if (!s.is_valid())
     return false;
@@ -262,9 +262,9 @@ bool NSSDecryptor::ReadAndParseSignons(const base::FilePath& sqlite_file,
     forms->push_back(form);
   }
 
-  const char* query2 = "SELECT hostname, httpRealm, formSubmitURL, "
-                       "usernameField, passwordField, encryptedUsername, "
-                       "encryptedPassword FROM moz_logins";
+  const char query2[] = "SELECT hostname, httpRealm, formSubmitURL, "
+                        "usernameField, passwordField, encryptedUsername, "
+                        "encryptedPassword FROM moz_logins";
 
   sql::Statement s2(db.GetUniqueStatement(query2));
   if (!s2.is_valid())

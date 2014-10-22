@@ -66,7 +66,7 @@ class PluginUMAReporter {
   ~PluginUMAReporter();
 
   static bool CompareCStrings(const char* first, const char* second);
-  bool CStringArrayContainsCString(const char** array,
+  bool CStringArrayContainsCString(const char* const* array,
                                    size_t array_size,
                                    const char* str);
   // Extracts file extension from url.

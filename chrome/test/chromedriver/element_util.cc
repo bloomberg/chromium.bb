@@ -357,7 +357,7 @@ Status GetElementClickableLocation(
   std::string target_element_id = element_id;
   if (tag_name == "area") {
     // Scroll the image into view instead of the area.
-    const char* kGetImageElementForArea =
+    const char kGetImageElementForArea[] =
         "function (element) {"
         "  var map = element.parentElement;"
         "  if (map.tagName.toLowerCase() != 'map')"
@@ -614,7 +614,7 @@ Status ScrollElementRegionIntoView(
       center, clickable_element_id, &region_offset);
   if (status.IsError())
     return status;
-  const char* kFindSubFrameScript =
+  const char kFindSubFrameScript[] =
       "function(xpath) {"
       "  return document.evaluate(xpath, document, null,"
       "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"

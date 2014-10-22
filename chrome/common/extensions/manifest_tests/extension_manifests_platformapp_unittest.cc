@@ -102,7 +102,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
 TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   // Put APIs here that should be restricted to platform apps, but that haven't
   // yet graduated from experimental.
-  const char* kPlatformAppExperimentalApis[] = {
+  const char* const kPlatformAppExperimentalApis[] = {
     "dns",
     "serial",
   };

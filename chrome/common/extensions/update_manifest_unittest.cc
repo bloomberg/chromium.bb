@@ -7,7 +7,7 @@
 #include "libxml/globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const char* kValidXml =
+static const char kValidXml[] =
 "<?xml version='1.0' encoding='UTF-8'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app appid='12345'>"
@@ -16,7 +16,7 @@ static const char* kValidXml =
 " </app>"
 "</gupdate>";
 
-const char *valid_xml_with_hash =
+static const char valid_xml_with_hash[] =
 "<?xml version='1.0' encoding='UTF-8'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app appid='12345'>"
@@ -26,7 +26,7 @@ const char *valid_xml_with_hash =
 " </app>"
 "</gupdate>";
 
-static const char*  kMissingAppId =
+static const char kMissingAppId[] =
 "<?xml version='1.0'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app>"
@@ -35,7 +35,7 @@ static const char*  kMissingAppId =
 " </app>"
 "</gupdate>";
 
-static const char*  kInvalidCodebase =
+static const char kInvalidCodebase[] =
 "<?xml version='1.0'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app appid='12345' status='ok'>"
@@ -44,7 +44,7 @@ static const char*  kInvalidCodebase =
 " </app>"
 "</gupdate>";
 
-static const char*  kMissingVersion =
+static const char kMissingVersion[] =
 "<?xml version='1.0'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app appid='12345' status='ok'>"
@@ -52,7 +52,7 @@ static const char*  kMissingVersion =
 " </app>"
 "</gupdate>";
 
-static const char*  kInvalidVersion =
+static const char kInvalidVersion[] =
 "<?xml version='1.0'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app appid='12345' status='ok'>"
@@ -61,7 +61,7 @@ static const char*  kInvalidVersion =
 " </app>"
 "</gupdate>";
 
-static const char* kUsesNamespacePrefix =
+static const char kUsesNamespacePrefix[] =
 "<?xml version='1.0' encoding='UTF-8'?>"
 "<g:gupdate xmlns:g='http://www.google.com/update2/response' protocol='2.0'>"
 " <g:app appid='12345'>"
@@ -72,7 +72,7 @@ static const char* kUsesNamespacePrefix =
 
 // Includes unrelated <app> tags from other xml namespaces - this should
 // not cause problems.
-static const char* kSimilarTagnames =
+static const char kSimilarTagnames[] =
 "<?xml version='1.0' encoding='UTF-8'?>"
 "<gupdate xmlns='http://www.google.com/update2/response'"
 "         xmlns:a='http://a' protocol='2.0'>"
@@ -85,7 +85,7 @@ static const char* kSimilarTagnames =
 "</gupdate>";
 
 // Includes a <daystart> tag.
-static const char* kWithDaystart =
+static const char kWithDaystart[] =
 "<?xml version='1.0' encoding='UTF-8'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <daystart elapsed_seconds='456' />"
@@ -96,7 +96,7 @@ static const char* kWithDaystart =
 "</gupdate>";
 
 // Indicates no updates available - this should not be a parse error.
-static const char* kNoUpdate =
+static const char kNoUpdate[] =
 "<?xml version='1.0' encoding='UTF-8'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app appid='12345'>"
@@ -105,7 +105,7 @@ static const char* kNoUpdate =
 "</gupdate>";
 
 // Includes two <app> tags, one with an error.
-static const char* kTwoAppsOneError =
+static const char kTwoAppsOneError[] =
 "<?xml version='1.0' encoding='UTF-8'?>"
 "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
 " <app appid='aaaaaaaa' status='error-unknownApplication'>"

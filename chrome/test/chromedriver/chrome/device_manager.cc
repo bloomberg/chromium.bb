@@ -17,8 +17,8 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 
 // TODO(craigdh): Remove once Chromedriver no longer supports pre-m33 Chrome.
-const char* kChromeCmdLineFileBeforeM33 = "/data/local/chrome-command-line";
-const char* kChromeCmdLineFile = "/data/local/tmp/chrome-command-line";
+const char kChromeCmdLineFileBeforeM33[] = "/data/local/chrome-command-line";
+const char kChromeCmdLineFile[] = "/data/local/tmp/chrome-command-line";
 
 Device::Device(
     const std::string& device_serial, Adb* adb,
@@ -114,16 +114,16 @@ Status Device::SetUp(const std::string& package,
 
     active_package_ = package;
   }
-  this->ForwardDevtoolsPort(package, process, device_socket, port);
+  this->ForwardDevtoolsPort(package, process, port, &device_socket);
 
   return status;
 }
 
 Status Device::ForwardDevtoolsPort(const std::string& package,
                                    const std::string& process,
-                                   std::string& device_socket,
-                                   int port) {
-  if (device_socket.empty()) {
+                                   int port,
+                                   std::string* device_socket) {
+  if (device_socket->empty()) {
     // Assume this is a WebView app.
     int pid;
     Status status = adb_->GetPidByName(serial_,
@@ -135,10 +135,10 @@ Status Device::ForwardDevtoolsPort(const std::string& package,
             "process name must be specified if not equal to package name");
       return status;
     }
-    device_socket = base::StringPrintf("webview_devtools_remote_%d", pid);
+    *device_socket = base::StringPrintf("webview_devtools_remote_%d", pid);
   }
 
-  return adb_->ForwardPort(serial_, port, device_socket);
+  return adb_->ForwardPort(serial_, port, *device_socket);
 }
 
 Status Device::TearDown() {

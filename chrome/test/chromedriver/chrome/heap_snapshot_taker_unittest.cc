@@ -14,7 +14,7 @@
 
 namespace {
 
-const char* chunks[] = {"{\"a\": 1,", "\"b\": 2}"};
+const char* const chunks[] = {"{\"a\": 1,", "\"b\": 2}"};
 
 scoped_ptr<base::Value> GetSnapshotAsValue() {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());

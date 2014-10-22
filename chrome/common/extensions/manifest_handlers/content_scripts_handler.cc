@@ -387,7 +387,7 @@ ContentScriptsHandler::~ContentScriptsHandler() {
 }
 
 const std::vector<std::string> ContentScriptsHandler::Keys() const {
-  static const char* keys[] = {
+  static const char* const keys[] = {
     keys::kContentScripts
   };
   return std::vector<std::string>(keys, keys + arraysize(keys));

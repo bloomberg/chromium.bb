@@ -37,7 +37,7 @@
 
 namespace {
 
-const char* kLocalHostAddress = "127.0.0.1";
+const char kLocalHostAddress[] = "127.0.0.1";
 const int kBufferSize = 100 * 1024 * 1024;  // 100 MB
 
 typedef base::Callback<
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
   scoped_ptr<PortServer> port_server;
   if (cmd_line->HasSwitch("h") || cmd_line->HasSwitch("help")) {
     std::string options;
-    const char* kOptionAndDescriptions[] = {
+    const char* const kOptionAndDescriptions[] = {
         "port=PORT", "port to listen on",
         "adb-port=PORT", "adb server port",
         "log-path=FILE", "write server log to file instead of stderr, "

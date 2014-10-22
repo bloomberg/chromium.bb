@@ -37,8 +37,8 @@ class PrincipalsExtensionWrapper : public v8::Extension {
   DISALLOW_COPY_AND_ASSIGN(PrincipalsExtensionWrapper);
 };
 
-const char* kPrincipalsExtensionName = "v8/Principals";
-const char* kPrincipalsExtensionCode =
+const char kPrincipalsExtensionName[] = "v8/Principals";
+const char kPrincipalsExtensionCode[] =
     "var chrome;"
     "if (!chrome)"
     "  chrome = {};"

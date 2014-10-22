@@ -265,7 +265,7 @@ static bool IsBoringSwitch(const std::string& flag) {
          flag == "--flag-switches-begin" ||
          flag == "--flag-switches-end";
 #elif defined(OS_CHROMEOS)
-  static const char* kIgnoreSwitches[] = {
+  static const char* const kIgnoreSwitches[] = {
     ::switches::kEnableImplSidePainting,
     ::switches::kEnableLogging,
     ::switches::kFlagSwitchesBegin,

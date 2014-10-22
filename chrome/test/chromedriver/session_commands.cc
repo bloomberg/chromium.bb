@@ -145,7 +145,7 @@ Status InitSessionHelper(
                         bound_params.port_server,
                         bound_params.port_manager,
                         capabilities,
-                        devtools_event_listeners,
+                        &devtools_event_listeners,
                         &session->chrome);
   if (status.IsError())
     return status;

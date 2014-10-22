@@ -53,7 +53,7 @@ bool CheckAccessToAppDetails(WebFrame* frame, v8::Isolate* isolate) {
   return true;
 }
 
-const char* kInvalidCallbackIdError = "Invalid callbackId";
+const char kInvalidCallbackIdError[] = "Invalid callbackId";
 
 }  // namespace
 

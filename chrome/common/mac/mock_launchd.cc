@@ -51,7 +51,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
 
   chrome::VersionInfo version_info;
 
-  const char* info_plist_format =
+  const char info_plist_format[] =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
           "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"

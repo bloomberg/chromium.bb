@@ -21,7 +21,7 @@
 
 namespace {
 
-const char* kTerminateEventSuffix = "_service_terminate_evt";
+const char kTerminateEventSuffix[] = "_service_terminate_evt";
 
 base::string16 GetServiceProcessReadyEventName() {
   return base::UTF8ToWide(

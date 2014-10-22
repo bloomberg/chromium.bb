@@ -7,10 +7,10 @@
 #include "base/json/json_reader.h"
 #include "base/values.h"
 
-const char* WebResourceUnpacker::kInvalidDataTypeError =
+const char WebResourceUnpacker::kInvalidDataTypeError[] =
     "Data from web resource server is missing or not valid JSON.";
 
-const char* WebResourceUnpacker::kUnexpectedJSONFormatError =
+const char WebResourceUnpacker::kUnexpectedJSONFormatError[] =
     "Data from web resource server does not have expected format.";
 
 WebResourceUnpacker::WebResourceUnpacker(const std::string &resource_data)

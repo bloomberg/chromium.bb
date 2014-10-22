@@ -26,7 +26,7 @@ enum InstallStage {
 // IMPORTANT: Keep this list in sync with both the definition in
 // chrome/common/extensions/api/webstore.json and
 // chrome/common/extensions/webstore_install_result.h!
-extern const char* kInstallResultCodes[];
+extern const char* const kInstallResultCodes[];
 
 extern const char kInstallStageDownloading[];
 extern const char kInstallStageInstalling[];

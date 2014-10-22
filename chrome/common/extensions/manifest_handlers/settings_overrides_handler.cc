@@ -27,7 +27,7 @@ using extensions::api::manifest_types::ChromeSettingsOverrides;
 namespace extensions {
 namespace {
 
-const char* kWwwPrefix = "www.";
+const char kWwwPrefix[] = "www.";
 
 scoped_ptr<GURL> CreateManifestURL(const std::string& url) {
   scoped_ptr<GURL> manifest_url(new GURL(url));

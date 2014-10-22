@@ -120,7 +120,7 @@ bool SafariImporter::OpenDatabase(sql::Connection* db) {
 
 void SafariImporter::ImportFaviconURLs(sql::Connection* db,
                                        FaviconMap* favicon_map) {
-  const char* query = "SELECT iconID, url FROM PageURL;";
+  const char query[] = "SELECT iconID, url FROM PageURL;";
   sql::Statement s(db->GetUniqueStatement(query));
 
   while (s.Step() && !cancelled()) {
@@ -134,10 +134,10 @@ void SafariImporter::LoadFaviconData(
     sql::Connection* db,
     const FaviconMap& favicon_map,
     std::vector<ImportedFaviconUsage>* favicons) {
-  const char* query = "SELECT i.url, d.data "
-                      "FROM IconInfo i JOIN IconData d "
-                      "ON i.iconID = d.iconID "
-                      "WHERE i.iconID = ?;";
+  const char query[] = "SELECT i.url, d.data "
+                       "FROM IconInfo i JOIN IconData d "
+                       "ON i.iconID = d.iconID "
+                       "WHERE i.iconID = ?;";
   sql::Statement s(db->GetUniqueStatement(query));
 
   for (FaviconMap::const_iterator i = favicon_map.begin();

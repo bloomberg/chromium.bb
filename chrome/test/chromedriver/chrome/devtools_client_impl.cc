@@ -19,7 +19,7 @@
 
 namespace {
 
-const char* kInspectorContextError =
+const char kInspectorContextError[] =
     "Execution context with given id not found.";
 
 Status ParseInspectorError(const std::string& error_json) {

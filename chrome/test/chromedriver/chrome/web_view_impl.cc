@@ -510,7 +510,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(const std::string& frame,
   if (status.IsError())
     return status;
 
-  const char* kDocUnloadError = "document unloaded while waiting for result";
+  const char kDocUnloadError[] = "document unloaded while waiting for result";
   std::string kQueryResult = base::StringPrintf(
       "function() {"
       "  var info = document.$chrome_asyncScriptInfo;"

@@ -375,7 +375,6 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     {L"2012", true},
     {L"100,000,000", true},
     {L"3.141592653", true},
-
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -1197,7 +1196,7 @@ TEST_F(SpellCheckTest, EnglishWords) {
     {"movies", true},
   };
 
-  static const char* kLocales[] = { "en-GB", "en-US", "en-CA", "en-AU" };
+  static const char* const kLocales[] = { "en-GB", "en-US", "en-CA", "en-AU" };
 
   for (size_t j = 0; j < arraysize(kLocales); ++j) {
     ReinitializeSpellCheck(kLocales[j]);

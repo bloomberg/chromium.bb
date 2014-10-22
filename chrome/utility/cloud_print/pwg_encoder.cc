@@ -24,7 +24,7 @@ const uint32 kGreenCoefficient = 7154;
 const uint32 kBlueCoefficient = 721;
 const uint32 kColorCoefficientDenominator = 10000;
 
-const char* kPwgKeyword = "RaS2";
+const char kPwgKeyword[] = "RaS2";
 
 const uint32 kHeaderSize = 1796;
 const uint32 kHeaderCupsDuplex = 272;

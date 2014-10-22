@@ -55,11 +55,11 @@
 
 namespace {
 
-const char* kCommonSwitches[] = {
+const char* const kCommonSwitches[] = {
     "ignore-certificate-errors", "metrics-recording-only"};
 
 #if defined(OS_LINUX)
-const char* kEnableCrashReport = "enable-crash-reporter-for-testing";
+const char kEnableCrashReport[] = "enable-crash-reporter-for-testing";
 #endif
 
 Status UnpackAutomationExtension(const base::FilePath& temp_dir,
@@ -202,7 +202,7 @@ Status CreateBrowserwideDevToolsClientAndConnect(
     const NetAddress& address,
     const PerfLoggingPrefs& perf_logging_prefs,
     const SyncWebSocketFactory& socket_factory,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    const ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<DevToolsClient>* browser_client) {
   scoped_ptr<DevToolsClient> client(new DevToolsClientImpl(
       socket_factory, base::StringPrintf("ws://%s/devtools/browser/",
@@ -236,7 +236,7 @@ Status LaunchRemoteChromeSession(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    ScopedVector<DevToolsEventListener>* devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
   Status status(kOk);
   scoped_ptr<DevToolsHttpClient> devtools_http_client;
@@ -252,7 +252,7 @@ Status LaunchRemoteChromeSession(
   scoped_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       capabilities.debugger_address, capabilities.perf_logging_prefs,
-      socket_factory, devtools_event_listeners, &devtools_websocket_client);
+      socket_factory, *devtools_event_listeners, &devtools_websocket_client);
   if (status.IsError()) {
     LOG(WARNING) << "Browser-wide DevTools client failed to connect: "
                  << status.message();
@@ -260,7 +260,7 @@ Status LaunchRemoteChromeSession(
 
   chrome->reset(new ChromeRemoteImpl(devtools_http_client.Pass(),
                                      devtools_websocket_client.Pass(),
-                                     devtools_event_listeners));
+                                     *devtools_event_listeners));
   return Status(kOk);
 }
 
@@ -270,7 +270,7 @@ Status LaunchDesktopChrome(
     scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    ScopedVector<DevToolsEventListener>* devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
   CommandLine command(CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
@@ -378,7 +378,7 @@ Status LaunchDesktopChrome(
   scoped_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       NetAddress(port), capabilities.perf_logging_prefs, socket_factory,
-      devtools_event_listeners, &devtools_websocket_client);
+      *devtools_event_listeners, &devtools_websocket_client);
   if (status.IsError()) {
     LOG(WARNING) << "Browser-wide DevTools client failed to connect: "
                  << status.message();
@@ -387,7 +387,7 @@ Status LaunchDesktopChrome(
   scoped_ptr<ChromeDesktopImpl> chrome_desktop(
       new ChromeDesktopImpl(devtools_http_client.Pass(),
                             devtools_websocket_client.Pass(),
-                            devtools_event_listeners,
+                            *devtools_event_listeners,
                             port_reservation.Pass(),
                             process,
                             command,
@@ -415,7 +415,7 @@ Status LaunchAndroidChrome(
     scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    ScopedVector<DevToolsEventListener>* devtools_event_listeners,
     DeviceManager* device_manager,
     scoped_ptr<Chrome>* chrome) {
   Status status(kOk);
@@ -459,7 +459,7 @@ Status LaunchAndroidChrome(
   scoped_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       NetAddress(port), capabilities.perf_logging_prefs, socket_factory,
-      devtools_event_listeners, &devtools_websocket_client);
+      *devtools_event_listeners, &devtools_websocket_client);
   if (status.IsError()) {
     LOG(WARNING) << "Browser-wide DevTools client failed to connect: "
                  << status.message();
@@ -467,7 +467,7 @@ Status LaunchAndroidChrome(
 
   chrome->reset(new ChromeAndroidImpl(devtools_http_client.Pass(),
                                       devtools_websocket_client.Pass(),
-                                      devtools_event_listeners,
+                                      *devtools_event_listeners,
                                       port_reservation.Pass(),
                                       device.Pass()));
   return Status(kOk);
@@ -482,7 +482,7 @@ Status LaunchChrome(
     PortServer* port_server,
     PortManager* port_manager,
     const Capabilities& capabilities,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    ScopedVector<DevToolsEventListener>* devtools_event_listeners,
     scoped_ptr<Chrome>* chrome) {
   if (capabilities.IsRemoteBrowser()) {
     return LaunchRemoteChromeSession(

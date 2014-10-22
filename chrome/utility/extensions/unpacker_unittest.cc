@@ -132,7 +132,7 @@ TEST_F(UnpackerTest, NoL10n) {
 }
 
 TEST_F(UnpackerTest, UnzipDirectoryError) {
-  const char* kExpected = "Could not create directory for unzipping: ";
+  const char kExpected[] = "Could not create directory for unzipping: ";
   SetupUnpacker("good_package.crx");
   base::FilePath path =
       temp_dir_.path().AppendASCII(kTempExtensionName);
@@ -146,14 +146,14 @@ TEST_F(UnpackerTest, UnzipDirectoryError) {
 }
 
 TEST_F(UnpackerTest, UnzipError) {
-  const char* kExpected = "Could not unzip extension";
+  const char kExpected[] = "Could not unzip extension";
   SetupUnpacker("bad_zip.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(kExpected), unpacker_->error_message());
 }
 
 TEST_F(UnpackerTest, BadPathError) {
-  const char* kExpected = "Illegal path (absolute or relative with '..'): ";
+  const char kExpected[] = "Illegal path (absolute or relative with '..'): ";
   SetupUnpacker("bad_path.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(StartsWith(unpacker_->error_message(),
@@ -165,7 +165,7 @@ TEST_F(UnpackerTest, BadPathError) {
 
 
 TEST_F(UnpackerTest, ImageDecodingError) {
-  const char* kExpected = "Could not decode image: ";
+  const char kExpected[] = "Could not decode image: ";
   SetupUnpacker("bad_image.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(StartsWith(unpacker_->error_message(),

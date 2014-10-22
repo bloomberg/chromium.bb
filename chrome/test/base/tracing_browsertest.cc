@@ -22,8 +22,8 @@ using tracing::BeginTracingWithWatch;
 using tracing::WaitForWatchEvent;
 using tracing::EndTracing;
 
-const char* g_category = "test_tracing";
-const char* g_event = "TheEvent";
+const char g_category[] = "test_tracing";
+const char g_event[] = "TheEvent";
 
 class TracingBrowserTest : public InProcessBrowserTest {
  protected:

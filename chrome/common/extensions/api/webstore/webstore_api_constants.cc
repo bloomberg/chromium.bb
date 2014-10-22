@@ -14,7 +14,7 @@ namespace webstore {
 // IMPORTANT: Keep this list in sync with both the definition in
 // chrome/common/extensions/api/webstore.json and
 // chrome/common/extensions/webstore_install_result.h!
-const char* kInstallResultCodes[] = {
+const char* const kInstallResultCodes[] = {
   "success",
   "otherError",
   "aborted",

@@ -40,8 +40,8 @@ class Device {
 
   Status ForwardDevtoolsPort(const std::string& package,
                              const std::string& process,
-                             std::string& device_socket,
-                             int port);
+                             int port,
+                             std::string* device_socket);
 
   const std::string serial_;
   std::string active_package_;

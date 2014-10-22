@@ -32,7 +32,7 @@ Log::Level g_log_level = Log::kWarning;
 int64 g_start_time = 0;
 
 // Array indices are the Log::Level enum values.
-const char* kLevelToName[] = {
+const char* const kLevelToName[] = {
   "ALL",  // kAll
   "DEBUG",  // kDebug
   "INFO",  // kInfo

@@ -43,7 +43,7 @@ Status HeapSnapshotTaker::TakeSnapshot(scoped_ptr<base::Value>* snapshot) {
 
 Status HeapSnapshotTaker::TakeSnapshotInternal() {
   base::DictionaryValue params;
-  const char* kMethods[] = {
+  const char* const kMethods[] = {
       "Debugger.enable",
       "HeapProfiler.collectGarbage",
       "HeapProfiler.takeHeapSnapshot"

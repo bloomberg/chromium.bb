@@ -50,7 +50,7 @@ namespace {
 //
 // TODO(yzshen): We should be able to remove the histogram recording code once
 // we get the answer.
-const char* kRejectedHttpRequestHeaders[] = {
+const char* const kRejectedHttpRequestHeaders[] = {
     "authorization",     //
     "cache-control",     //
     "content-encoding",  //

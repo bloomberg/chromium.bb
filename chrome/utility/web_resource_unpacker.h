@@ -23,8 +23,8 @@ class DictionaryValue;
 
 class WebResourceUnpacker {
  public:
-  static const char* kInvalidDataTypeError;
-  static const char* kUnexpectedJSONFormatError;
+  static const char kInvalidDataTypeError[];
+  static const char kUnexpectedJSONFormatError[];
 
   explicit WebResourceUnpacker(const std::string &resource_data);
   ~WebResourceUnpacker();
