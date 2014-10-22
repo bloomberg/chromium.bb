@@ -79,10 +79,6 @@ ServiceWorkerStorage::GetAllRegistrationInfosCallback MakeGetAllCallback(
   return base::Bind(&GetAllCallback, was_called, all);
 }
 
-void OnIOComplete(int* rv_out, int rv) {
-  *rv_out = rv;
-}
-
 void OnCompareComplete(
     ServiceWorkerStatusCode* status_out, bool* are_equal_out,
     ServiceWorkerStatusCode status, bool are_equal) {
@@ -104,16 +100,18 @@ void WriteResponse(
   info->headers = new net::HttpResponseHeaders(headers);
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
       new HttpResponseInfoIOBuffer(info.release());
-
-  int rv = -1234;
-  writer->WriteInfo(info_buffer.get(), base::Bind(&OnIOComplete, &rv));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_LT(0, rv);
-
-  rv = -1234;
-  writer->WriteData(body, length, base::Bind(&OnIOComplete, &rv));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(length, rv);
+  {
+    TestCompletionCallback cb;
+    writer->WriteInfo(info_buffer.get(), cb.callback());
+    int rv = cb.WaitForResult();
+    EXPECT_LT(0, rv);
+  }
+  {
+    TestCompletionCallback cb;
+    writer->WriteData(body, length, cb.callback());
+    int rv = cb.WaitForResult();
+    EXPECT_EQ(length, rv);
+  }
 }
 
 void WriteStringResponse(
@@ -760,13 +758,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
 
-// Android has flaky IO error: http://crbug.com/387045
-#if defined(OS_ANDROID)
-#define MAYBE_CleanupOnRestart DISABLED_CleanupOnRestart
-#else
-#define MAYBE_CleanupOnRestart CleanupOnRestart
-#endif
-TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
+TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->SetWaitingVersion(NULL);
@@ -847,6 +839,11 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
             storage()->database_->GetUncommittedResourceIds(&verify_ids));
   ASSERT_EQ(1u, verify_ids.size());
   EXPECT_EQ(kNewResourceId, *verify_ids.begin());
+
+  // Purging resources needs interactions with SimpleCache's worker thread,
+  // so single RunUntilIdle() call may not be sufficient.
+  while (storage()->is_purge_pending_)
+    base::RunLoop().RunUntilIdle();
 
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
