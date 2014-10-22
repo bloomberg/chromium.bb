@@ -193,8 +193,8 @@ public final class OAuth2TokenService {
             if (semaphore.tryAcquire(timeout, unit)) {
                 return result.get();
             } else {
-                Log.d(TAG, "Failed to retrieve auth token within timeout (" +
-                        timeout + " + " + unit.name() + ")");
+                Log.d(TAG, "Failed to retrieve auth token within timeout ("
+                        + timeout + " + " + unit.name() + ")");
                 return null;
             }
         } catch (InterruptedException e) {
@@ -295,8 +295,8 @@ public final class OAuth2TokenService {
     @CalledByNative
     private static void saveStoredAccounts(Context context, String[] accounts) {
         Set<String> set = new HashSet<String>(Arrays.asList(accounts));
-        PreferenceManager.getDefaultSharedPreferences(context).edit().
-                putStringSet(STORED_ACCOUNTS_KEY, set).apply();
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putStringSet(STORED_ACCOUNTS_KEY, set).apply();
     }
 
     private static native Object nativeGetForProfile(Profile profile);

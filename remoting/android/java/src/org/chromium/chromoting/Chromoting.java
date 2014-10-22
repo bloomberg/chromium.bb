@@ -45,8 +45,8 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     private static final String ACCOUNT_TYPE = "com.google";
 
     /** Scopes at which the authentication token we request will be valid. */
-    private static final String TOKEN_SCOPE = "oauth2:https://www.googleapis.com/auth/chromoting " +
-            "https://www.googleapis.com/auth/googletalk";
+    private static final String TOKEN_SCOPE = "oauth2:https://www.googleapis.com/auth/chromoting "
+            + "https://www.googleapis.com/auth/googletalk";
 
     /** Web page to be displayed in the Help screen when launched from this activity. */
     private static final String HELP_URL =
@@ -355,8 +355,8 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
         mAccount = mAccounts[itemPosition];
 
-        getPreferences(MODE_PRIVATE).edit().putString("account_name", mAccount.name).
-                    putString("account_type", mAccount.type).apply();
+        getPreferences(MODE_PRIVATE).edit().putString("account_name", mAccount.name)
+                .putString("account_type", mAccount.type).apply();
 
         // The current host list is no longer valid for the new account, so clear the list.
         mHosts = new HostInfo[0];

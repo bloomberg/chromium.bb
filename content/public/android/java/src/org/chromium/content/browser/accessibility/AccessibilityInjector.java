@@ -74,20 +74,20 @@ public class AccessibilityInjector extends WebContentsObserver {
             "https://ssl.gstatic.com/accessibility/javascript/android/chromeandroidvox.js";
 
     private static final String ACCESSIBILITY_SCREEN_READER_JAVASCRIPT_TEMPLATE =
-            "(function() {" +
-            "    var chooser = document.createElement('script');" +
-            "    chooser.type = 'text/javascript';" +
-            "    chooser.src = '%1s';" +
-            "    document.getElementsByTagName('head')[0].appendChild(chooser);" +
-            "  })();";
+            "(function() {"
+            + "    var chooser = document.createElement('script');"
+            + "    chooser.type = 'text/javascript';"
+            + "    chooser.src = '%1s';"
+            + "    document.getElementsByTagName('head')[0].appendChild(chooser);"
+            + "  })();";
 
     // JavaScript call to turn ChromeVox on or off.
     private static final String TOGGLE_CHROME_VOX_JAVASCRIPT =
-            "(function() {" +
-            "    if (typeof cvox !== 'undefined') {" +
-            "        cvox.ChromeVox.host.activateOrDeactivateChromeVox(%1s);" +
-            "    }" +
-            "  })();";
+            "(function() {"
+            + "    if (typeof cvox !== 'undefined') {"
+            + "        cvox.ChromeVox.host.activateOrDeactivateChromeVox(%1s);"
+            + "    }"
+            + "  })();";
 
     /**
      * Returns an instance of the {@link AccessibilityInjector} based on the SDK version.
@@ -135,8 +135,8 @@ public class AccessibilityInjector extends WebContentsObserver {
         }
 
         String js = getScreenReaderInjectingJs();
-        if (mContentViewCore.isDeviceAccessibilityScriptInjectionEnabled() &&
-                js != null && mContentViewCore.isAlive()) {
+        if (mContentViewCore.isDeviceAccessibilityScriptInjectionEnabled()
+                && js != null && mContentViewCore.isAlive()) {
             addOrRemoveAccessibilityApisIfNecessary();
             mContentViewCore.getWebContents().evaluateJavaScript(js, null);
             mInjectedScriptEnabled = true;
@@ -167,9 +167,9 @@ public class AccessibilityInjector extends WebContentsObserver {
      * Checks whether or not touch to explore is enabled on the system.
      */
     public boolean accessibilityIsAvailable() {
-        if (!getAccessibilityManager().isEnabled() ||
-                mContentViewCore.getContentSettings() == null ||
-                !mContentViewCore.getContentSettings().getJavaScriptEnabled()) {
+        if (!getAccessibilityManager().isEnabled()
+                || mContentViewCore.getContentSettings() == null
+                || !mContentViewCore.getContentSettings().getJavaScriptEnabled()) {
             return false;
         }
 
@@ -336,8 +336,8 @@ public class AccessibilityInjector extends WebContentsObserver {
 
     private AccessibilityManager getAccessibilityManager() {
         if (mAccessibilityManager == null) {
-            mAccessibilityManager = (AccessibilityManager) mContentViewCore.getContext().
-                    getSystemService(Context.ACCESSIBILITY_SERVICE);
+            mAccessibilityManager = (AccessibilityManager) mContentViewCore.getContext()
+                    .getSystemService(Context.ACCESSIBILITY_SERVICE);
         }
 
         return mAccessibilityManager;

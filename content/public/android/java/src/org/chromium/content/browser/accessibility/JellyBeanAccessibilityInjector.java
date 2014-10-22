@@ -128,8 +128,8 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
             if (arguments != null) {
                 if (action == AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY ||
                         action == AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY) {
-                    final int granularity = arguments.getInt(AccessibilityNodeInfo.
-                            ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT);
+                    final int granularity = arguments.getInt(
+                            AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT);
                     mAccessibilityJSONObject.accumulate("granularity", granularity);
                 } else if (action == AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT ||
                         action == AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT) {

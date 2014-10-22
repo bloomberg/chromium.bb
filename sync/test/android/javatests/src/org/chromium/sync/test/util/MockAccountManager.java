@@ -248,8 +248,8 @@ public class MockAccountManager implements AccountManagerDelegate {
                         }
                     }));
         } else {
-            Log.d(TAG, "getAuthTokenFuture: Account " + ah.getAccount() +
-                    " is asking for permission for " + authTokenType);
+            Log.d(TAG, "getAuthTokenFuture: Account " + ah.getAccount()
+                    + " is asking for permission for " + authTokenType);
             final Intent intent = newGrantCredentialsPermissionIntent(
                     activity != null, account, authTokenType);
             return runTask(mExecutor,
@@ -277,12 +277,12 @@ public class MockAccountManager implements AccountManagerDelegate {
     private String internalGenerateAndStoreAuthToken(AccountHolder ah, String authTokenType) {
         synchronized (mAccounts) {
             // Some tests register auth tokens with value null, and those should be preserved.
-            if (!ah.hasAuthTokenRegistered(authTokenType) &&
-                    ah.getAuthToken(authTokenType) == null) {
+            if (!ah.hasAuthTokenRegistered(authTokenType)
+                    && ah.getAuthToken(authTokenType) == null) {
                 // No authtoken registered. Need to create one.
                 String authToken = UUID.randomUUID().toString();
-                Log.d(TAG, "Created new auth token for " + ah.getAccount() +
-                        ": autTokenType = " + authTokenType + ", authToken = " + authToken);
+                Log.d(TAG, "Created new auth token for " + ah.getAccount()
+                        + ": autTokenType = " + authTokenType + ", authToken = " + authToken);
                 ah = ah.withAuthToken(authTokenType, authToken);
                 mAccounts.add(ah);
             }
@@ -334,8 +334,8 @@ public class MockAccountManager implements AccountManagerDelegate {
     private AccountAuthTokenPreparation getPreparedPermission(Account account,
             String authTokenType) {
         for (AccountAuthTokenPreparation accountPrep : mAccountPermissionPreparations) {
-            if (accountPrep.getAccount().equals(account) &&
-                    accountPrep.getAuthTokenType().equals(authTokenType)) {
+            if (accountPrep.getAccount().equals(account)
+                    && accountPrep.getAuthTokenType().equals(authTokenType)) {
                 return accountPrep;
             }
         }
@@ -366,9 +366,9 @@ public class MockAccountManager implements AccountManagerDelegate {
         }
         if (ai.applicationInfo != mContext.getApplicationInfo() && !ai.exported) {
             throw new IllegalStateException(
-                    "Unable to start " + ai.name + ". " +
-                    "The accounts you added to MockAccountManager may not be " +
-                    "configured correctly.");
+                    "Unable to start " + ai.name + ". "
+                    + "The accounts you added to MockAccountManager may not be "
+                    + "configured correctly.");
         }
 
         Intent intent = new Intent();
@@ -535,11 +535,11 @@ public class MockAccountManager implements AccountManagerDelegate {
                         waitForActivity(mContext, intent);
                     }
                     if (mAccountAuthTokenPreparation == null) {
-                        throw new IllegalStateException("No account preparation ready for " +
-                                mAccount + ", authTokenType = " + mAuthTokenType +
-                                ". Add a call to either prepareGrantAppPermission(...) or " +
-                                "prepareRevokeAppPermission(...) in your test before asking for " +
-                                "an auth token");
+                        throw new IllegalStateException("No account preparation ready for "
+                                + mAccount + ", authTokenType = " + mAuthTokenType
+                                + ". Add a call to either prepareGrantAppPermission(...) or "
+                                + "prepareRevokeAppPermission(...) in your test before asking for "
+                                + "an auth token");
                     } else {
                         // We have shown the Allow/Deny activity, and it has gone away. We can now
                         // apply the pre-stored permission.
@@ -584,8 +584,8 @@ public class MockAccountManager implements AccountManagerDelegate {
                 }
             }
         };
-        if (!MockGrantCredentialsPermissionActivity.class.getCanonicalName().
-                equals(intent.getComponent().getClassName())) {
+        if (!MockGrantCredentialsPermissionActivity.class.getCanonicalName()
+                .equals(intent.getComponent().getClassName())) {
             throw new IllegalArgumentException("Can only wait for "
                     + "MockGrantCredentialsPermissionActivity");
         }
@@ -649,11 +649,11 @@ public class MockAccountManager implements AccountManagerDelegate {
 
         @Override
         public String toString() {
-            return "AccountAuthTokenPreparation{" +
-                    "mAccount=" + mAccount +
-                    ", mAuthTokenType='" + mAuthTokenType + '\'' +
-                    ", mAllowed=" + mAllowed +
-                    '}';
+            return "AccountAuthTokenPreparation{"
+                    + "mAccount=" + mAccount
+                    + ", mAuthTokenType='" + mAuthTokenType + '\''
+                    + ", mAllowed=" + mAllowed
+                    + '}';
         }
     }
 }

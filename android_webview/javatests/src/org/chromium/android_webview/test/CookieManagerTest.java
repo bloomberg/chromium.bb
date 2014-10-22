@@ -116,10 +116,10 @@ public class CookieManagerTest extends AwTestBase {
         JSUtils.executeJavaScriptAndWaitForResult(
                 this, mAwContents,
                 mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                "var expirationDate = new Date();" +
-                "expirationDate.setDate(expirationDate.getDate() + 5);" +
-                "document.cookie='" + name + "=" + value +
-                        "; expires=' + expirationDate.toUTCString();");
+                "var expirationDate = new Date();"
+                + "expirationDate.setDate(expirationDate.getDate() + 5);"
+                + "document.cookie='" + name + "=" + value
+                + "; expires=' + expirationDate.toUTCString();");
     }
 
     @MediumTest
@@ -425,8 +425,8 @@ public class CookieManagerTest extends AwTestBase {
      * @return  the url which gets the response
      */
     private String makeScriptLinkUrl(TestWebServer webServer, String path, String url) {
-        String responseStr = "<html><head><title>Content!</title></head>" +
-                    "<body><script src=" + url + "></script></body></html>";
+        String responseStr = "<html><head><title>Content!</title></head>"
+                + "<body><script src=" + url + "></script></body></html>";
         return webServer.setResponse(path, responseStr, null);
     }
 
@@ -436,8 +436,8 @@ public class CookieManagerTest extends AwTestBase {
         TestWebServer webServer = TestWebServer.start();
         try {
             // This test again uses 127.0.0.1/localhost trick to simulate a third party.
-            ThirdPartyCookiesTestHelper thirdParty
-                    = new ThirdPartyCookiesTestHelper(webServer);
+            ThirdPartyCookiesTestHelper thirdParty =
+                    new ThirdPartyCookiesTestHelper(webServer);
 
             mCookieManager.setAcceptCookie(true);
             assertTrue(mCookieManager.acceptCookie());
@@ -597,8 +597,8 @@ public class CookieManagerTest extends AwTestBase {
      * @return  the url which gets the response
      */
     private String makeIframeUrl(TestWebServer webServer, String path, String url) {
-        String responseStr = "<html><head><title>Content!</title></head>" +
-                    "<body><iframe src=" + url + "></iframe></body></html>";
+        String responseStr = "<html><head><title>Content!</title></head>"
+                + "<body><iframe src=" + url + "></iframe></body></html>";
         return webServer.setResponse(path, responseStr, null);
     }
 
@@ -612,8 +612,8 @@ public class CookieManagerTest extends AwTestBase {
      */
     private String makeCookieScriptUrl(TestWebServer webServer, String path, String key,
             String value) {
-        String response = "<html><head></head><body>" +
-                "<script>document.cookie = \"" + key + "=" + value + "\";</script></body></html>";
+        String response = "<html><head></head><body>"
+                + "<script>document.cookie = \"" + key + "=" + value + "\";</script></body></html>";
         return webServer.setResponse(path, response, null);
     }
 

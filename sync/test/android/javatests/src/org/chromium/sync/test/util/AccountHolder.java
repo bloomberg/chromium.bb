@@ -34,8 +34,8 @@ public class AccountHolder {
         mAccount = account;
         mPassword = password;
         mAuthTokens = authTokens == null ? new HashMap<String, String>() : authTokens;
-        mHasBeenAccepted = hasBeenAccepted == null ?
-                new HashMap<String, Boolean>() : hasBeenAccepted;
+        mHasBeenAccepted = hasBeenAccepted == null
+                ? new HashMap<String, Boolean>() : hasBeenAccepted;
     }
 
     public Account getAccount() {
@@ -55,8 +55,8 @@ public class AccountHolder {
     }
 
     public boolean hasBeenAccepted(String authTokenType) {
-        return mAlwaysAccept ||
-                mHasBeenAccepted.containsKey(authTokenType) && mHasBeenAccepted.get(authTokenType);
+        return mAlwaysAccept || mHasBeenAccepted.containsKey(authTokenType)
+                && mHasBeenAccepted.get(authTokenType);
     }
 
     /**
@@ -117,8 +117,8 @@ public class AccountHolder {
     }
 
     private Builder copy() {
-        return create().account(mAccount).password(mPassword).authTokens(mAuthTokens).
-                hasBeenAcceptedMap(mHasBeenAccepted).alwaysAccept(mAlwaysAccept);
+        return create().account(mAccount).password(mPassword).authTokens(mAuthTokens)
+                .hasBeenAcceptedMap(mHasBeenAccepted).alwaysAccept(mAlwaysAccept);
     }
 
     public static class Builder {

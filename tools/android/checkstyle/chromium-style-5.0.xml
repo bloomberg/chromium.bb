@@ -175,6 +175,16 @@
      <property name="option" value="eol"/>
      <property name="tokens" value="ASSIGN"/>
     </module>
+    <module name="SeparatorWrap">
+      <property name="severity" value="warning"/>
+      <property name="tokens" value="DOT"/>
+      <property name="option" value="nl"/>
+    </module>
+    <module name="SeparatorWrap">
+      <property name="severity" value="warning"/>
+      <property name="tokens" value="COMMA"/>
+      <property name="option" value="EOL"/>
+    </module>
   </module>
   <module name="FileTabCharacter">
     <property name="severity" value="error"/>

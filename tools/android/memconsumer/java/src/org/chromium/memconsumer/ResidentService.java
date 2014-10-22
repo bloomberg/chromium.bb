@@ -40,12 +40,12 @@ public class ResidentService extends Service {
             PendingIntent pendingIntent =
                     PendingIntent.getActivity(this, 0, notificationIntent, 0);
             Notification notification =
-                    new Notification.Builder(getApplicationContext()).
-                            setContentTitle("MC running (" + memory + "Mb)").
-                            setSmallIcon(R.drawable.notification_icon).
-                            setDeleteIntent(pendingIntent).
-                            setContentIntent(pendingIntent).
-                            build();
+                    new Notification.Builder(getApplicationContext())
+                            .setContentTitle("MC running (" + memory + "Mb)")
+                            .setSmallIcon(R.drawable.notification_icon)
+                            .setDeleteIntent(pendingIntent)
+                            .setContentIntent(pendingIntent)
+                            .build();
             startForeground(RESIDENT_NOTIFICATION_ID, notification);
             mIsInForeground = true;
         }

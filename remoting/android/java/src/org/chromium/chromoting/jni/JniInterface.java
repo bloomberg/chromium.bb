@@ -318,15 +318,15 @@ public class JniInterface {
     private static void commitPairingCredentials(String host, String id, String secret) {
         // Empty |id| indicates that pairing needs to be removed.
         if (id.isEmpty()) {
-            sContext.getPreferences(Activity.MODE_PRIVATE).edit().
-                    remove(host + "_id").
-                    remove(host + "_secret").
-                    apply();
+            sContext.getPreferences(Activity.MODE_PRIVATE).edit()
+                    .remove(host + "_id")
+                    .remove(host + "_secret")
+                    .apply();
         } else {
-            sContext.getPreferences(Activity.MODE_PRIVATE).edit().
-                    putString(host + "_id", id).
-                    putString(host + "_secret", secret).
-                    apply();
+            sContext.getPreferences(Activity.MODE_PRIVATE).edit()
+                    .putString(host + "_id", id)
+                    .putString(host + "_secret", secret)
+                    .apply();
         }
     }
 

@@ -279,8 +279,8 @@ public class SyncStatusHelper {
         if (account == null) return false;
         boolean returnValue;
         synchronized (mCachedSettings) {
-            returnValue = mCachedMasterSyncAutomatically &&
-                mCachedSettings.getSyncAutomatically(account);
+            returnValue = mCachedMasterSyncAutomatically
+                    && mCachedSettings.getSyncAutomatically(account);
         }
 
         notifyObserversIfAccountSettingsChanged();
@@ -374,11 +374,11 @@ public class SyncStatusHelper {
         // Disable the syncability of Chrome for all other accounts. Don't use
         // our cache as we're touching many accounts that aren't signed in, so this saves
         // extra calls to Android sync configuration.
-        Account[] googleAccounts = AccountManagerHelper.get(mApplicationContext).
-                getGoogleAccounts();
+        Account[] googleAccounts = AccountManagerHelper.get(mApplicationContext)
+                .getGoogleAccounts();
         for (Account accountToSetNotSyncable : googleAccounts) {
-            if (!accountToSetNotSyncable.equals(account) &&
-                    mSyncContentResolverDelegate.getIsSyncable(
+            if (!accountToSetNotSyncable.equals(account)
+                    && mSyncContentResolverDelegate.getIsSyncable(
                             accountToSetNotSyncable, mContractAuthority) > 0) {
                 mSyncContentResolverDelegate.setIsSyncable(accountToSetNotSyncable,
                         mContractAuthority, 0);

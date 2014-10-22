@@ -35,8 +35,8 @@ public class DistilledPagePrefsTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                DomDistillerService domDistillerService = DomDistillerServiceFactory.
-                        getForProfile(Profile.getLastUsedProfile());
+                DomDistillerService domDistillerService = DomDistillerServiceFactory
+                        .getForProfile(Profile.getLastUsedProfile());
                 mDistilledPagePrefs = domDistillerService.getDistilledPagePrefs();
             }
         });

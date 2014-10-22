@@ -78,9 +78,9 @@ public abstract class HttpUrlRequestFactory {
         HttpUrlRequestFactory factory = null;
         try {
             Class<? extends HttpUrlRequestFactory> factoryClass =
-                    HttpUrlRequestFactory.class.getClassLoader().
-                            loadClass(CHROMIUM_URL_REQUEST_FACTORY).
-                            asSubclass(HttpUrlRequestFactory.class);
+                    HttpUrlRequestFactory.class.getClassLoader()
+                            .loadClass(CHROMIUM_URL_REQUEST_FACTORY)
+                            .asSubclass(HttpUrlRequestFactory.class);
             Constructor<? extends HttpUrlRequestFactory> constructor =
                     factoryClass.getConstructor(
                             Context.class, HttpUrlRequestFactoryConfig.class);
@@ -93,8 +93,7 @@ public abstract class HttpUrlRequestFactory {
             // Leave as null
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "Cannot instantiate: " +
-                    CHROMIUM_URL_REQUEST_FACTORY,
+                    "Cannot instantiate: " + CHROMIUM_URL_REQUEST_FACTORY,
                     e);
         }
         return factory;

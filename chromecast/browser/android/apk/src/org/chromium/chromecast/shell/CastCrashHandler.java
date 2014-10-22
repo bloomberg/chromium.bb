@@ -21,8 +21,8 @@ public final class CastCrashHandler {
     @CalledByNative
     public static void uploadCurrentProcessDumpSync(String crashDumpPath, String logFilePath,
             boolean isDebugBuild) {
-        new CastCrashUploader(crashDumpPath, isDebugBuild).
-                uploadCurrentProcessDumpSync(logFilePath);
+        new CastCrashUploader(crashDumpPath, isDebugBuild)
+                .uploadCurrentProcessDumpSync(logFilePath);
     }
 
     @CalledByNative

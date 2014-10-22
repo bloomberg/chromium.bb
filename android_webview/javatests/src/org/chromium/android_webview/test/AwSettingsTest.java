@@ -288,8 +288,8 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
-            return "<html><body onload=\"document.title = " +
-                    "getComputedStyle(document.body).getPropertyValue('font-family');\">"
+            return "<html><body onload=\"document.title = "
+                    + "getComputedStyle(document.body).getPropertyValue('font-family');\">"
                     + "</body></html>";
         }
     }
@@ -328,8 +328,8 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
-            return "<html><body onload=\"document.title = " +
-                    "getComputedStyle(document.body).getPropertyValue('font-size');\">"
+            return "<html><body onload=\"document.title = "
+                    + "getComputedStyle(document.body).getPropertyValue('font-size');\">"
                     + "</body></html>";
         }
     }
@@ -368,10 +368,10 @@ public class AwSettingsTest extends AwTestBase {
         @Override
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             loadDataSync(mGenerator.getPageSource());
-            assertEquals(value == ENABLED ?
-                         ImagePageGenerator.IMAGE_LOADED_STRING :
-                         ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
-                         getTitleOnUiThread());
+            assertEquals(value == ENABLED
+                    ? ImagePageGenerator.IMAGE_LOADED_STRING
+                    : ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                    getTitleOnUiThread());
         }
     }
 
@@ -415,10 +415,10 @@ public class AwSettingsTest extends AwTestBase {
                     mAwContents,
                     mContentViewClient.getOnPageFinishedHelper(),
                     httpImageUrl);
-            assertEquals(value == ENABLED ?
-                         ImagePageGenerator.IMAGE_LOADED_STRING :
-                         ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
-                         getTitleOnUiThread());
+            assertEquals(value == ENABLED
+                    ? ImagePageGenerator.IMAGE_LOADED_STRING
+                    : ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
+                    getTitleOnUiThread());
         }
 
         private TestWebServer mWebServer;
@@ -888,11 +888,11 @@ public class AwSettingsTest extends AwTestBase {
             try {
                 TestFileUtil.createNewHtmlFile(fileName,
                         TARGET,
-                        "<img src=\"" +
+                        "<img src=\""
                         // Adding a query avoids hitting a cached image, and also verifies
                         // that content URL query parameters are ignored when accessing
                         // a content provider.
-                        AwSettingsTest.this.createContentUrl(TARGET + "?id=" + mIndex) + "\">");
+                        + AwSettingsTest.this.createContentUrl(TARGET + "?id=" + mIndex) + "\">");
                 mIndex += 2;
                 loadUrlSync("file://" + fileName);
                 if (value == ENABLED) {
@@ -954,20 +954,20 @@ public class AwSettingsTest extends AwTestBase {
             int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
             int layoutWidth = (int) (displayWidth * 2.5f); // Use 2.5 as autosizing layout tests do.
             StringBuilder sb = new StringBuilder();
-            sb.append("<html>" +
-                    "<head>" +
-                    "<meta name=\"viewport\" content=\"width=" + layoutWidth + "\">" +
-                    "<style>" +
-                    "body { width: " + layoutWidth + "px; margin: 0; overflow-y: hidden; }" +
-                    "</style>" +
-                    "<script>" +
-                    "function setTitleToActualFontSize() {" +
+            sb.append("<html>"
+                    + "<head>"
+                    + "<meta name=\"viewport\" content=\"width=" + layoutWidth + "\">"
+                    + "<style>"
+                    + "body { width: " + layoutWidth + "px; margin: 0; overflow-y: hidden; }"
+                    + "</style>"
+                    + "<script>"
+                    + "function setTitleToActualFontSize() {"
                     // parseFloat is used to trim out the "px" suffix.
-                    "  document.title = parseFloat(getComputedStyle(" +
-                    "    document.getElementById('par')).getPropertyValue('font-size'));" +
-                    "}</script></head>" +
-                    "<body>" +
-                    "<p id=\"par\" style=\"font-size:");
+                    + "  document.title = parseFloat(getComputedStyle("
+                    + "    document.getElementById('par')).getPropertyValue('font-size'));"
+                    + "}</script></head>"
+                    + "<body>"
+                    + "<p id=\"par\" style=\"font-size:");
             sb.append(PARAGRAPH_FONT_SIZE);
             sb.append("px;\">");
             // Make the paragraph wide enough for being processed by the font autosizer.
@@ -1065,11 +1065,11 @@ public class AwSettingsTest extends AwTestBase {
             // Ensure that actual vs. initial font size ratio is similar to actual vs. initial
             // text zoom values ratio.
             final float ratiosDelta = Math.abs(
-                    (actualFontSize / mInitialActualFontSize) -
-                    (value / (float) INITIAL_TEXT_ZOOM));
+                    (actualFontSize / mInitialActualFontSize)
+                    - (value / (float) INITIAL_TEXT_ZOOM));
             assertTrue(
-                    "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
-                    value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
+                    "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - ("
+                    + value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
                     ratiosDelta <= 0.2f);
         }
     }
@@ -1116,11 +1116,11 @@ public class AwSettingsTest extends AwTestBase {
             // Ensure that actual vs. initial font size ratio is similar to actual vs. initial
             // text zoom values ratio.
             final float ratiosDelta = Math.abs(
-                    (actualFontSize / mInitialActualFontSize) -
-                    (value / (float) INITIAL_TEXT_ZOOM));
+                    (actualFontSize / mInitialActualFontSize)
+                    - (value / (float) INITIAL_TEXT_ZOOM));
             assertTrue(
-                    "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
-                    value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
+                    "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - ("
+                    + value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
                     ratiosDelta <= 0.2f);
         }
     }
@@ -1171,16 +1171,16 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
-            return "<html><head>" +
-                    "<script>" +
-                    "    function tryOpenWindow() {" +
-                    "        var newWindow = window.open(" +
-                    "           'data:text/html;charset=utf-8," +
-                    "           <html><head><title>" + POPUP_ENABLED + "</title></head></html>');" +
-                    "        if (!newWindow) document.title = '" + POPUP_BLOCKED + "';" +
-                    "    }" +
-                    "</script></head>" +
-                    "<body onload='tryOpenWindow()'></body></html>";
+            return "<html><head>"
+                    + "<script>"
+                    + "    function tryOpenWindow() {"
+                    + "        var newWindow = window.open("
+                    + "           'data:text/html;charset=utf-8,"
+                    + "           <html><head><title>" + POPUP_ENABLED + "</title></head></html>');"
+                    + "        if (!newWindow) document.title = '" + POPUP_BLOCKED + "';"
+                    + "    }"
+                    + "</script></head>"
+                    + "<body onload='tryOpenWindow()'></body></html>";
         }
     }
 
@@ -1282,10 +1282,10 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
-            return "<html><head>" +
-                    "<meta name='viewport' content='width=" + VIEWPORT_TAG_LAYOUT_WIDTH + "' />" +
-                    "</head>" +
-                    "<body onload='document.title=document.body.clientWidth'></body></html>";
+            return "<html><head>"
+                    + "<meta name='viewport' content='width=" + VIEWPORT_TAG_LAYOUT_WIDTH + "' />"
+                    + "</head>"
+                    + "<body onload='document.title=document.body.clientWidth'></body></html>";
         }
     }
 
@@ -1330,8 +1330,8 @@ public class AwSettingsTest extends AwTestBase {
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             loadDataSync(getData());
             if (mExpectScaleChange) {
-                mContentViewClient.getOnScaleChangedHelper().
-                        waitForCallback(mOnScaleChangedCallCount);
+                mContentViewClient.getOnScaleChangedHelper()
+                        .waitForCallback(mOnScaleChangedCallCount);
                 mExpectScaleChange = false;
             }
             float currentScale = AwSettingsTest.this.getScaleOnUiThread(mAwContents);
@@ -1344,10 +1344,10 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
-            return "<html><head>" +
-                    (mWithViewPortTag ? "<meta name='viewport' content='width=3000' />" : "") +
-                    "</head>" +
-                    "<body></body></html>";
+            return "<html><head>"
+                    + (mWithViewPortTag ? "<meta name='viewport' content='width=3000' />" : "")
+                    + "</head>"
+                    + "<body></body></html>";
         }
 
         private final boolean mWithViewPortTag;
@@ -1398,18 +1398,18 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
-            return "<html><head>" +
-                    (mWithViewPortTag ? "<meta name='viewport' content='height=3000' />" : "") +
-                    "  <script type='text/javascript'> " +
-                    "    window.addEventListener('load', function(event) { " +
-                    "       document.title = document.getElementById('testDiv').clientHeight; " +
-                    "    }); " +
-                    "  </script> " +
-                    "</head>" +
-                    "<body> " +
-                    "  <div style='height:50px;'>test</div> " +
-                    "  <div id='testDiv' style='height:100%;'></div> " +
-                    "</body></html>";
+            return "<html><head>"
+                    + (mWithViewPortTag ? "<meta name='viewport' content='height=3000' />" : "")
+                    + "  <script type='text/javascript'> "
+                    + "    window.addEventListener('load', function(event) { "
+                    + "       document.title = document.getElementById('testDiv').clientHeight; "
+                    + "    }); "
+                    + "  </script> "
+                    + "</head>"
+                    + "<body> "
+                    + "  <div style='height:50px;'>test</div> "
+                    + "  <div id='testDiv' style='height:100%;'></div> "
+                    + "</body></html>";
         }
 
         private final boolean mWithViewPortTag;
@@ -1461,18 +1461,18 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         private String getData() {
-            return "<html><head>" +
-                    "<meta name='viewport' content='width=3000' />" +
-                    "  <script type='text/javascript'> " +
-                    "    window.addEventListener('load', function(event) { " +
-                    "       document.title = document.documentElement.clientWidth; " +
-                    "    }); " +
-                    "  </script> " +
-                    "</head>" +
-                    "<body> " +
-                    "  <div style='height:50px;'>test</div> " +
-                    "  <div id='testDiv' style='height:100%;'></div> " +
-                    "</body></html>";
+            return "<html><head>"
+                    + "<meta name='viewport' content='width=3000' />"
+                    + "  <script type='text/javascript'> "
+                    + "    window.addEventListener('load', function(event) { "
+                    + "       document.title = document.documentElement.clientWidth; "
+                    + "    }); "
+                    + "  </script> "
+                    + "</head>"
+                    + "<body> "
+                    + "  <div style='height:50px;'>test</div> "
+                    + "  <div id='testDiv' style='height:100%;'></div> "
+                    + "</body></html>";
         }
     }
 
@@ -1626,15 +1626,15 @@ public class AwSettingsTest extends AwTestBase {
         final String actualUserAgentString = settings.getUserAgentString();
         assertEquals(actualUserAgentString, AwSettings.getDefaultUserAgent());
         final String patternString =
-                "Mozilla/5\\.0 \\(Linux;( U;)? Android ([^;]+);( (\\w+)-(\\w+);)?" +
-                "\\s?(.*)\\sBuild/(.+)\\) AppleWebKit/(\\d+)\\.(\\d+) \\(KHTML, like Gecko\\) " +
-                "Version/\\d+\\.\\d Chrome/\\d+\\.\\d+\\.\\d+\\.\\d+" +
-                "( Mobile)? Safari/(\\d+)\\.(\\d+)";
+                "Mozilla/5\\.0 \\(Linux;( U;)? Android ([^;]+);( (\\w+)-(\\w+);)?"
+                + "\\s?(.*)\\sBuild/(.+)\\) AppleWebKit/(\\d+)\\.(\\d+) \\(KHTML, like Gecko\\) "
+                + "Version/\\d+\\.\\d Chrome/\\d+\\.\\d+\\.\\d+\\.\\d+"
+                + "( Mobile)? Safari/(\\d+)\\.(\\d+)";
         final Pattern userAgentExpr = Pattern.compile(patternString);
         Matcher patternMatcher = userAgentExpr.matcher(actualUserAgentString);
-        assertTrue(String.format("User agent string did not match expected pattern. %nExpected " +
-                        "pattern:%n%s%nActual:%n%s", patternString, actualUserAgentString),
-                        patternMatcher.find());
+        assertTrue(String.format("User agent string did not match expected pattern. %nExpected "
+                        + "pattern:%n%s%nActual:%n%s", patternString, actualUserAgentString),
+                    patternMatcher.find());
         // No country-language code token.
         assertEquals(null, patternMatcher.group(3));
         if ("REL".equals(Build.VERSION.CODENAME)) {
@@ -1692,9 +1692,9 @@ public class AwSettingsTest extends AwTestBase {
         // We are using different page titles to make sure that we are really
         // going back and forward between them.
         final String pageTemplate =
-                "<html><head><title>%s</title></head>" +
-                "<body onload='document.title+=navigator.userAgent'></body>" +
-                "</html>";
+                "<html><head><title>%s</title></head>"
+                + "<body onload='document.title+=navigator.userAgent'></body>"
+                + "</html>";
         final String page1Title = "Page1";
         final String page2Title = "Page2";
         final String page1 = String.format(pageTemplate, page1Title);
@@ -1892,10 +1892,10 @@ public class AwSettingsTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
         final String target = "content_from_data";
-        final String page = "<html><body>" +
-                "<img src=\"" +
-                createContentUrl(target) + "\">" +
-                "</body></html>";
+        final String page = "<html><body>"
+                + "<img src=\""
+                + createContentUrl(target) + "\">"
+                + "</body></html>";
         resetResourceRequestCountInContentProvider(target);
         loadDataSync(
                 awContents,
@@ -2013,9 +2013,9 @@ public class AwSettingsTest extends AwTestBase {
                     CommonResources.getImagePngHeaders(true));
 
             // Set up file html that loads http iframe.
-            String pageHtml = "<img src='" + imageUrl + "' " +
-                      "onload=\"document.title='img_onload_fired';\" " +
-                      "onerror=\"document.title='img_onerror_fired';\" />";
+            String pageHtml = "<img src='" + imageUrl + "' "
+                      + "onload=\"document.title='img_onload_fired';\" "
+                      + "onerror=\"document.title='img_onerror_fired';\" />";
             Context context = getInstrumentation().getTargetContext();
             fileName = context.getCacheDir() + "/block_network_loads_test.html";
             TestFileUtil.deleteFile(fileName);  // Remove leftover file if any.
@@ -2079,9 +2079,9 @@ public class AwSettingsTest extends AwTestBase {
             // to know whether Url is accessed.
             final String audioUrl = webServer.setResponse(httpPath, "1", null);
 
-            String pageHtml = "<html><body><audio controls src='" + audioUrl + "' " +
-                    "oncanplay=\"AudioEvent.onCanPlay();\" " +
-                    "onerror=\"AudioEvent.onError();\" /> </body></html>";
+            String pageHtml = "<html><body><audio controls src='" + audioUrl + "' "
+                    + "oncanplay=\"AudioEvent.onCanPlay();\" "
+                    + "onerror=\"AudioEvent.onError();\" /> </body></html>";
             // Actual test. Blocking should trigger onerror handler.
             awSettings.setBlockNetworkLoads(true);
             runTestOnUiThread(new Runnable() {
@@ -2503,8 +2503,8 @@ public class AwSettingsTest extends AwTestBase {
         final AwContents awContents = testContainer.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
 
-        final String pageTemplate = "<html><head>%s</head>" +
-                "<body onload='document.title=document.body.clientWidth'></body></html>";
+        final String pageTemplate = "<html><head>%s</head>"
+                + "<body onload='document.title=document.body.clientWidth'></body></html>";
         final String pageNoViewport = String.format(pageTemplate, "");
         final String pageViewportDeviceWidth = String.format(
                 pageTemplate,
@@ -2586,10 +2586,10 @@ public class AwSettingsTest extends AwTestBase {
                 DeviceDisplayInfo.create(testContainerView.getContext());
         int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
         int layoutWidth = displayWidth * 2;
-        final String page = "<html>" +
-                "<head><meta name='viewport' content='width=" + layoutWidth + "'>" +
-                "<style> body { width: " + layoutWidth + "px; }</style></head>" +
-                "<body>Page Text</body></html>";
+        final String page = "<html>"
+                + "<head><meta name='viewport' content='width=" + layoutWidth + "'>"
+                + "<style> body { width: " + layoutWidth + "px; }</style></head>"
+                + "<body>Page Text</body></html>";
 
         assertFalse(settings.getUseWideViewPort());
         // Without wide viewport the <meta viewport> tag will be ignored by WebView,
@@ -2682,9 +2682,9 @@ public class AwSettingsTest extends AwTestBase {
         // Make sure after 50% scale, page width still larger than screen.
         int height = screenSize.y * 2 + 1;
         int width = screenSize.x * 2 + 1;
-        final String page = "<html><body>" +
-                "<p style='height:" + height + "px;width:" + width + "px'>" +
-                "testSetInitialScale</p></body></html>";
+        final String page = "<html><body>"
+                + "<p style='height:" + height + "px;width:" + width + "px'>"
+                + "testSetInitialScale</p></body></html>";
         final float defaultScale =
                 getInstrumentation().getTargetContext().getResources().getDisplayMetrics().density;
 
@@ -2756,9 +2756,9 @@ public class AwSettingsTest extends AwTestBase {
         VideoTestWebServer webServer = new VideoTestWebServer(
                 getInstrumentation().getTargetContext());
         try {
-            String data = "<html><head><body>" +
-                    "<video id='video' control src='" +
-                    webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
+            String data = "<html><head><body>"
+                    + "<video id='video' control src='"
+                    + webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
             loadDataAsync(awContents, data, "text/html", false);
             videoPosterAccessedCallbackHelper.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
         } finally {
@@ -2796,8 +2796,8 @@ public class AwSettingsTest extends AwTestBase {
             httpServer.setResponse(jsUrl, "window.loaded_js = 42;", null);
             httpServer.setResponseBase64(imageUrl, CommonResources.FAVICON_DATA_BASE64, null);
 
-            final String jsHtml = "<script src=\"" + httpServer.getResponseUrl(jsUrl) +
-                    "\"></script>";
+            final String jsHtml = "<script src=\"" + httpServer.getResponseUrl(jsUrl)
+                    + "\"></script>";
             final String imageHtml = "<img src=\"" + httpServer.getResponseUrl(imageUrl) + "\" />";
             final String secureHtml = "<body>" + imageHtml + " " + jsHtml + "</body>";
 
@@ -2936,9 +2936,9 @@ public class AwSettingsTest extends AwTestBase {
     static void assertFileIsReadable(String filePath) {
         File file = new File(filePath);
         try {
-            assertTrue("Test file \"" + filePath + "\" is not readable." +
-                    "Please make sure that files from android_webview/test/data/device_files/ " +
-                    "has been pushed to the device before testing",
+            assertTrue("Test file \"" + filePath + "\" is not readable."
+                    + "Please make sure that files from android_webview/test/data/device_files/ "
+                    + "has been pushed to the device before testing",
                     file.canRead());
         } catch (SecurityException e) {
             fail("Got a SecurityException for \"" + filePath + "\": " + e.toString());

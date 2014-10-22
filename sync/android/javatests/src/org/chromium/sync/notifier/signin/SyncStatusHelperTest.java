@@ -320,20 +320,20 @@ public class SyncStatusHelperTest extends InstrumentationTestCase {
         mSyncContentResolverDelegate.disableObserverNotifications();
 
         mCachedAccountSyncSettings.updateSyncSettingsForAccount(null);
-        assertTrue("Update sync settings failed to exit early", mCachedAccountSyncSettings.
-                mUpdateSyncSettingsForAccountInternalCalls == 0);
+        assertTrue("Update sync settings failed to exit early", mCachedAccountSyncSettings
+                .mUpdateSyncSettingsForAccountInternalCalls == 0);
 
         mCachedAccountSyncSettings.updateSyncSettingsForAccount(mTestAccount);
-        assertTrue("Update sync settings should not have exited early", mCachedAccountSyncSettings.
-                mUpdateSyncSettingsForAccountInternalCalls == 1);
+        assertTrue("Update sync settings should not have exited early", mCachedAccountSyncSettings
+                .mUpdateSyncSettingsForAccountInternalCalls == 1);
 
         mCachedAccountSyncSettings.setIsSyncable(mTestAccount);
         assertTrue("setIsSyncable should not have exited early",
                 mCachedAccountSyncSettings.mSetIsSyncableInternalCalls == 1);
 
         mCachedAccountSyncSettings.setIsSyncable(mTestAccount);
-        assertTrue("setIsSyncable failed to exit early", mCachedAccountSyncSettings.
-                mSetIsSyncableInternalCalls == 1);
+        assertTrue("setIsSyncable failed to exit early", mCachedAccountSyncSettings
+                .mSetIsSyncableInternalCalls == 1);
 
         mCachedAccountSyncSettings.setSyncAutomatically(mTestAccount, true);
         assertTrue("setSyncAutomatically should not have to exited early",

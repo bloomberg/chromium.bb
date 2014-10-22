@@ -27,8 +27,8 @@ public class DeviceFormFactor {
     @CalledByNative
     public static boolean isTablet(Context context) {
         if (sIsTablet == null) {
-            int minimumScreenWidthDp = context.getResources().getConfiguration().
-                    smallestScreenWidthDp;
+            int minimumScreenWidthDp = context.getResources().getConfiguration()
+                    .smallestScreenWidthDp;
             sIsTablet = minimumScreenWidthDp >= MINIMUM_TABLET_WIDTH_DP;
         }
         return sIsTablet;
