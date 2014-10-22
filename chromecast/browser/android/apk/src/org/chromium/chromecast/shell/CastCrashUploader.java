@@ -100,7 +100,7 @@ public final class CastCrashUploader {
             public void run() {
                 // Multipart dump filename has format "[random string].dmp[pid]", e.g.
                 // 20597a65-b822-008e-31f8fc8e-02bb45c0.dmp18169
-                queueAllCrashDumpUpload(".*\\.dmp\\d+", null);
+                queueAllCrashDumpUpload(".*\\.dmp\\d*", null);
             }
         });
     }
@@ -183,6 +183,12 @@ public final class CastCrashUploader {
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode != HttpStatus.SC_OK) {
                         Log.e(TAG, "Failed response (" + statusCode + "): " + responseLine);
+
+                        // 400 Bad Request is returned if the dump file is malformed. Delete file
+                        // to prevent re-attempting later.
+                        if (statusCode == HttpStatus.SC_BAD_REQUEST) {
+                            dumpFile.delete();
+                        }
                         return;
                     }
 
