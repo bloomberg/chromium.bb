@@ -442,32 +442,71 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
 
 
 class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
-  """Tests related to BuildAUTestTarball."""
+  """Tests related to Building the Test Tarball Artifacts."""
 
   def setUp(self):
     self._buildroot = os.path.join(self.tempdir, 'buildroot')
     os.makedirs(self._buildroot)
     self._board = 'test-board'
+    self._cwd = os.path.abspath(
+        os.path.join(self._buildroot, 'chroot', 'build', self._board,
+                     constants.AUTOTEST_BUILD_PATH, '..'))
+    self._tarball_dir = self.tempdir
 
   def testBuildAUTestTarball(self):
     """Tests that our call to generate an au test tarball is correct."""
-    tarball_dir = self.tempdir
     archive_url = 'gs://mytest/path/version'
     with mock.patch.object(commands, 'BuildTarball') as m:
       tarball_path = commands.BuildAUTestTarball(
-          self._buildroot, self._board, tarball_dir, 'R26-3928.0.0',
+          self._buildroot, self._board, self._tarball_dir, 'R26-3928.0.0',
           archive_url)
       m.assert_called_once_with(self._buildroot, ['autotest/au_control_files'],
-                                os.path.join(tarball_dir, 'au_control.tar.bz2'),
-                                cwd=tarball_dir)
+                                os.path.join(self._tarball_dir,
+                                             'au_control.tar.bz2'),
+                                cwd=self._tarball_dir)
 
-      self.assertEquals(os.path.join(tarball_dir, 'au_control.tar.bz2'),
+      self.assertEquals(os.path.join(self._tarball_dir, 'au_control.tar.bz2'),
                         tarball_path)
 
     # Full release test with partial args defined.
     self.assertCommandContains(['site_utils/autoupdate/full_release_test.py',
                                 '--archive_url', archive_url, '3928.0.0',
                                 self._board])
+
+  def testBuildFullAutotestTarball(self):
+    """Tests that our call to generate the full autotest tarball is correct."""
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      m.return_value.returncode = 0
+      commands.BuildFullAutotestTarball(self._buildroot, self._board,
+                                        self._tarball_dir)
+      m.assert_called_once_with(self._buildroot, ['autotest'],
+                                os.path.join(self._tarball_dir,
+                                             'autotest.tar.bz2'),
+                                cwd=self._cwd, error_code_ok=True)
+
+  def testBuildAutotestPackagesTarball(self):
+    """Tests that generating the autotest packages tarball is correct."""
+    with mock.patch.object(commands, 'BuildTarball') as m:
+      commands.BuildAutotestPackagesTarball(self._buildroot, self._cwd,
+                                            self._tarball_dir)
+      m.assert_called_once_with(self._buildroot, ['autotest/packages'],
+                                os.path.join(self._tarball_dir,
+                                             'autotest_packages.tar'),
+                                cwd=self._cwd, compressed=False)
+
+  def testBuildAutotestControlFilesTarball(self):
+    """Tests that generating the autotest control files tarball is correct."""
+    control_file_list = ['autotest/client/site_tests/testA/control',
+                         'autotest/server/site_tests/testB/control']
+    with mock.patch.object(commands, 'FindFilesWithPattern') as find_mock:
+      find_mock.return_value = control_file_list
+      with mock.patch.object(commands, 'BuildTarball') as tar_mock:
+        commands.BuildAutotestControlFilesTarball(self._buildroot, self._cwd,
+                                                  self._tarball_dir)
+        tar_mock.assert_called_once_with(self._buildroot, control_file_list,
+                                         os.path.join(self._tarball_dir,
+                                                      'control_files.tar'),
+                                         cwd=self._cwd, compressed=False)
 
 
 class UnmockedTests(cros_test_lib.TempDirTestCase):

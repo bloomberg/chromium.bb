@@ -1548,13 +1548,14 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
       inputs=input_list, **kwargs)
 
 
-def FindFilesWithPattern(pattern, target='./', cwd=os.curdir):
+def FindFilesWithPattern(pattern, target='./', cwd=os.curdir, exclude_dirs=()):
   """Search the root directory recursively for matching filenames.
 
   Args:
     pattern: the pattern used to match the filenames.
     target: the target directory to search.
     cwd: current working directory.
+    exclude_dirs: Directories to not include when searching.
 
   Returns:
     A list of paths of the matched files.
@@ -1565,6 +1566,8 @@ def FindFilesWithPattern(pattern, target='./', cwd=os.curdir):
 
   matches = []
   for target, _, filenames in os.walk(target):
+    if target in exclude_dirs:
+      continue
     for filename in fnmatch.filter(filenames, pattern):
       matches.append(os.path.join(target, filename))
 
@@ -1619,6 +1622,61 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
   cros_build_lib.RunCommand(cmd, env=run_env, cwd=cwd)
   BuildTarball(buildroot, [control_files_subdir], au_test_tarball, cwd=work_dir)
   return au_test_tarball
+
+
+def BuildAutotestControlFilesTarball(buildroot, cwd, tarball_dir):
+  """Tar up the autotest control files.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    cwd: Current working directory.
+    tarball_dir: Location for storing autotest tarball.
+
+  Returns:
+    Path of the partial autotest control files tarball.
+  """
+  # Find the control files in autotest/
+  control_files = FindFilesWithPattern('control*', target='autotest', cwd=cwd,
+                                       exclude_dirs=['autotest/test_suites'])
+  control_files_tarball = os.path.join(tarball_dir, 'control_files.tar')
+  BuildTarball(buildroot, control_files, control_files_tarball, cwd=cwd,
+               compressed=False)
+  return control_files_tarball
+
+
+def BuildAutotestPackagesTarball(buildroot, cwd, tarball_dir):
+  """Tar up the autotest packages.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    cwd: Current working directory.
+    tarball_dir: Location for storing autotest tarball.
+
+  Returns:
+    Path of the partial autotest packages tarball.
+  """
+  input_list = ['autotest/packages']
+  packages_tarball = os.path.join(tarball_dir, 'autotest_packages.tar')
+  BuildTarball(buildroot, input_list, packages_tarball, cwd=cwd,
+               compressed=False)
+  return packages_tarball
+
+
+def BuildAutotestTestSuitesTarball(buildroot, cwd, tarball_dir):
+  """Tar up the autotest test suite control files.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    cwd: Current working directory.
+    tarball_dir: Location for storing autotest tarball.
+
+  Returns:
+    Path of the autotest test suites tarball.
+  """
+  test_suites_tarball = os.path.join(tarball_dir, 'test_suites.tar.bz2')
+  BuildTarball(buildroot, ['autotest/test_suites'], test_suites_tarball,
+               cwd=cwd)
+  return test_suites_tarball
 
 
 def BuildFullAutotestTarball(buildroot, board, tarball_dir):

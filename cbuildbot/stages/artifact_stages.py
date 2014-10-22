@@ -734,21 +734,17 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
                          self._current_board, constants.AUTOTEST_BUILD_PATH,
                          '..'))
 
-        # Find the control files in autotest/
-        control_files = commands.FindFilesWithPattern(
-            'control*', target='autotest', cwd=cwd)
+        control_files_tarball = commands.BuildAutotestControlFilesTarball(
+            self._build_root, cwd, tempdir)
+        queue.put([control_files_tarball])
 
-        # Tar the control files and the packages.
-        autotest_tarball = os.path.join(tempdir, 'autotest.tar')
-        input_list = control_files + ['autotest/packages']
-        commands.BuildTarball(self._build_root, input_list, autotest_tarball,
-                              cwd=cwd, compressed=False)
-        queue.put([autotest_tarball])
+        packages_tarball = commands.BuildAutotestPackagesTarball(
+            self._build_root, cwd, tempdir)
+        queue.put([packages_tarball])
 
         # Tar up the test suites.
-        test_suites_tarball = os.path.join(tempdir, 'test_suites.tar.bz2')
-        commands.BuildTarball(self._build_root, ['autotest/test_suites'],
-                              test_suites_tarball, cwd=cwd)
+        test_suites_tarball = commands.BuildAutotestTestSuitesTarball(
+            self._build_root, cwd, tempdir)
         queue.put([test_suites_tarball])
 
   def _GeneratePayloads(self, image_name, **kwargs):
