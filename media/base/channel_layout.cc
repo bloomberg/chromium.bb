@@ -48,7 +48,7 @@ static const int kLayoutToChannels[] = {
 // channel at that index is not used for that layout. For example, the left side
 // surround sound channel in FFmpeg's 5.1 layout is in the 5th position (because
 // the order is L, R, C, LFE, LS, RS), so
-// kChannelOrderings[CHANNEL_LAYOUT_5POINT1][SIDE_LEFT] = 4;
+// kChannelOrderings[CHANNEL_LAYOUT_5_1][SIDE_LEFT] = 4;
 static const int kChannelOrderings[CHANNEL_LAYOUT_MAX + 1][CHANNELS_MAX + 1] = {
     // FL | FR | FC | LFE | BL | BR | FLofC | FRofC | BC | SL | SR
 

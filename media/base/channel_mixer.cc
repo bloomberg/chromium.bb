@@ -38,20 +38,18 @@ static void ValidateLayout(ChannelLayout layout) {
   // Symmetry allows simplifying the matrix building code by allowing us to
   // assume that if one channel of a pair exists, the other will too.
   if (channel_count > 1) {
-    DCHECK((ChannelOrder(layout, LEFT) >= 0 &&
-            ChannelOrder(layout, RIGHT) >= 0) ||
-           (ChannelOrder(layout, SIDE_LEFT) >= 0 &&
-            ChannelOrder(layout, SIDE_RIGHT) >= 0) ||
-           (ChannelOrder(layout, BACK_LEFT) >= 0 &&
-            ChannelOrder(layout, BACK_RIGHT) >= 0) ||
-           (ChannelOrder(layout, LEFT_OF_CENTER) >= 0 &&
-            ChannelOrder(layout, RIGHT_OF_CENTER) >= 0))
-        << "Non-symmetric channel layout encountered.";
+    // Assert that LEFT exists if and only if RIGHT exists, and so on.
+    DCHECK_EQ(ChannelOrder(layout, LEFT) >= 0,
+              ChannelOrder(layout, RIGHT) >= 0);
+    DCHECK_EQ(ChannelOrder(layout, SIDE_LEFT) >= 0,
+              ChannelOrder(layout, SIDE_RIGHT) >= 0);
+    DCHECK_EQ(ChannelOrder(layout, BACK_LEFT) >= 0,
+              ChannelOrder(layout, BACK_RIGHT) >= 0);
+    DCHECK_EQ(ChannelOrder(layout, LEFT_OF_CENTER) >= 0,
+              ChannelOrder(layout, RIGHT_OF_CENTER) >= 0);
   } else {
     DCHECK_EQ(layout, CHANNEL_LAYOUT_MONO);
   }
-
-  return;
 }
 
 class MatrixBuilder {
@@ -96,19 +94,18 @@ class MatrixBuilder {
 
   // Helper methods for managing unaccounted input channels.
   void AccountFor(Channels ch);
-  bool IsUnaccounted(Channels ch);
+  bool IsUnaccounted(Channels ch) const;
 
   // Helper methods for checking if |ch| exists in either |input_layout_| or
   // |output_layout_| respectively.
-  bool HasInputChannel(Channels ch);
-  bool HasOutputChannel(Channels ch);
+  bool HasInputChannel(Channels ch) const;
+  bool HasOutputChannel(Channels ch) const;
 
   // Helper methods for updating |matrix_| with the proper value for
   // mixing |input_ch| into |output_ch|.  MixWithoutAccounting() does not
   // remove the channel from |unaccounted_inputs_|.
   void Mix(Channels input_ch, Channels output_ch, float scale);
-  void MixWithoutAccounting(Channels input_ch, Channels output_ch,
-                                          float scale);
+  void MixWithoutAccounting(Channels input_ch, Channels output_ch, float scale);
 
   DISALLOW_COPY_AND_ASSIGN(MatrixBuilder);
 };
@@ -219,8 +216,8 @@ bool MatrixBuilder::CreateTransformationMatrix(
   // Mix back LR into: side LR || back center || front LR || front center.
   if (IsUnaccounted(BACK_LEFT)) {
     if (HasOutputChannel(SIDE_LEFT)) {
-      // If we have side LR, mix back LR into side LR, but instead if the input
-      // doesn't have side LR (but output does) copy back LR to side LR.
+      // If the input has side LR, mix back LR into side LR, but instead if the
+      // input doesn't have side LR (but output does) copy back LR to side LR.
       float scale = HasInputChannel(SIDE_LEFT) ? kEqualPowerScale : 1;
       Mix(BACK_LEFT, SIDE_LEFT, scale);
       Mix(BACK_RIGHT, SIDE_RIGHT, scale);
@@ -242,8 +239,8 @@ bool MatrixBuilder::CreateTransformationMatrix(
   // Mix side LR into: back LR || back center || front LR || front center.
   if (IsUnaccounted(SIDE_LEFT)) {
     if (HasOutputChannel(BACK_LEFT)) {
-      // If we have back LR, mix side LR into back LR, but instead if the input
-      // doesn't have back LR (but output does) copy side LR to back LR.
+      // If the input has back LR, mix side LR into back LR, but instead if the
+      // input doesn't have back LR (but output does) copy side LR to back LR.
       float scale = HasInputChannel(BACK_LEFT) ? kEqualPowerScale : 1;
       Mix(SIDE_LEFT, BACK_LEFT, scale);
       Mix(SIDE_RIGHT, BACK_RIGHT, scale);
@@ -284,7 +281,7 @@ bool MatrixBuilder::CreateTransformationMatrix(
     }
   }
 
-  // Mix LR of center into: front center || front LR.
+  // Mix LR of center into: front LR || front center.
   if (IsUnaccounted(LEFT_OF_CENTER)) {
     if (HasOutputChannel(LEFT)) {
       // Mix LR of center into front LR.
@@ -297,7 +294,7 @@ bool MatrixBuilder::CreateTransformationMatrix(
     }
   }
 
-  // Mix LFE into: front LR || front center.
+  // Mix LFE into: front center || front LR.
   if (IsUnaccounted(LFE)) {
     if (!HasOutputChannel(CENTER)) {
       // Mix LFE into front LR.
@@ -373,16 +370,16 @@ void MatrixBuilder::AccountFor(Channels ch) {
       unaccounted_inputs_.begin(), unaccounted_inputs_.end(), ch));
 }
 
-bool MatrixBuilder::IsUnaccounted(Channels ch) {
+bool MatrixBuilder::IsUnaccounted(Channels ch) const {
   return std::find(unaccounted_inputs_.begin(), unaccounted_inputs_.end(),
                    ch) != unaccounted_inputs_.end();
 }
 
-bool MatrixBuilder::HasInputChannel(Channels ch) {
+bool MatrixBuilder::HasInputChannel(Channels ch) const {
   return ChannelOrder(input_layout_, ch) >= 0;
 }
 
-bool MatrixBuilder::HasOutputChannel(Channels ch) {
+bool MatrixBuilder::HasOutputChannel(Channels ch) const {
   return ChannelOrder(output_layout_, ch) >= 0;
 }
 
