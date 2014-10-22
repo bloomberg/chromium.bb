@@ -41,6 +41,12 @@
  .gridMaxContentAndMaxContentFixed {
      grid-template-columns: max-content minmax(max-content, 35px);
  }
+ .gridMinContentFixedAndFixedFixedAndAuto {
+     grid-template-columns: minmax(min-content, 20px) minmax(20px, 30px) auto;
+ }
+ .gridAutoAndFixedFixedAndMaxContentFixed {
+     grid-template-columns: auto minmax(20px, 30px) minmax(max-content, 20px);
+ }
 
 </style>
 <script src="../../resources/js-test.js"></script>
@@ -260,6 +266,35 @@
     <div class="firstRowSecondColumn">XXXXXXX</div>
 </div>
 
+<!-- The next four force the grid to grow only a particular subset of tracks above the limits -->
+<div class="constrainedContainer">
+    <div class="grid gridMinContentFixedAndAuto" id="gridMinContentFixedAndAutoAboveLimits">
+	<div class="firstRowBothColumn">XXXX XXXX</div>
+	<div class="firstRowBothColumn">XXXXXXXXXXX</div>
+    </div>
+</div>
+
+<div class="constrainedContainer">
+    <div class="grid gridMaxContentFixedAndAuto" id="gridMaxContentFixedAndAutoAboveLimits">
+	<div class="firstRowBothColumn">XXXX XXXX</div>
+	<div class="firstRowBothColumn">XXXXXXXXXXXXXXX</div>
+    </div>
+</div>
+
+<div class="constrainedContainer">
+    <div class="grid gridMinContentFixedAndFixedFixedAndAuto" id="gridMinContentFixedAndFixedFixedAndAuto">
+	<div class="firstRowBothColumn">XXXX XXXX</div>
+	<div class="firstRowBothColumn">XXXXXXXXXX</div>
+    </div>
+</div>
+
+<div class="constrainedContainer">
+    <div class="grid gridAutoAndFixedFixedAndMaxContentFixed" id="gridAutoAndFixedFixedAndMaxContentFixed">
+	<div class="firstRowBothColumn">XXXX XXXX</div>
+	<div class="firstRowBothColumn">XXXXXXXXXXXXXXX</div>
+    </div>
+</div>
+
 <script>
    function testGridColumnsValues(id, computedColumnValue)
    {
@@ -308,6 +343,13 @@
    testGridColumnsValues("gridAutoMaxContentUnsorted", "0px 90px");
    testGridColumnsValues("gridMaxContentAndMinContentFixedUnsorted", "55px 40px");
    testGridColumnsValues("gridMaxContentAndMaxContentFixedUnsorted", "75px 70px");
+
+   debug("");
+   debug("Check that only a subset of tracks grow above track limits.");
+   testGridColumnsValues("gridMinContentFixedAndAutoAboveLimits", "15px 95px");
+   testGridColumnsValues("gridMaxContentFixedAndAutoAboveLimits", "65px 85px");
+   testGridColumnsValues("gridMinContentFixedAndFixedFixedAndAuto", "20px 20px 60px");
+   testGridColumnsValues("gridAutoAndFixedFixedAndMaxContentFixed", "40px 20px 90px");
 </script>
 </body>
 </html>

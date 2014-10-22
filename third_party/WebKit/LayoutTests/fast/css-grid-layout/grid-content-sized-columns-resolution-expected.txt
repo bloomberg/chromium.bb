@@ -38,6 +38,12 @@ PASS window.getComputedStyle(gridAutoMinContentUnsorted, '').getPropertyValue('g
 PASS window.getComputedStyle(gridAutoMaxContentUnsorted, '').getPropertyValue('grid-template-columns') is "0px 90px"
 PASS window.getComputedStyle(gridMaxContentAndMinContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "55px 40px"
 PASS window.getComputedStyle(gridMaxContentAndMaxContentFixedUnsorted, '').getPropertyValue('grid-template-columns') is "75px 70px"
+
+Check that only a subset of tracks grow above track limits.
+PASS window.getComputedStyle(gridMinContentFixedAndAutoAboveLimits, '').getPropertyValue('grid-template-columns') is "15px 95px"
+PASS window.getComputedStyle(gridMaxContentFixedAndAutoAboveLimits, '').getPropertyValue('grid-template-columns') is "65px 85px"
+PASS window.getComputedStyle(gridMinContentFixedAndFixedFixedAndAuto, '').getPropertyValue('grid-template-columns') is "20px 20px 60px"
+PASS window.getComputedStyle(gridAutoAndFixedFixedAndMaxContentFixed, '').getPropertyValue('grid-template-columns') is "40px 20px 90px"
 PASS successfullyParsed is true
 
 TEST COMPLETE
@@ -117,3 +123,11 @@ XX
 XXXX XXXX
 XX XX XX XX
 XXXXXXX
+XXXX XXXX
+XXXXXXXXXXX
+XXXX XXXX
+XXXXXXXXXXXXXXX
+XXXX XXXX
+XXXXXXXXXX
+XXXX XXXX
+XXXXXXXXXXXXXXX
