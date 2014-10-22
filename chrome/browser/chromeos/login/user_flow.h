@@ -21,6 +21,10 @@ class UserFlow {
  public:
   UserFlow();
   virtual ~UserFlow() = 0;
+
+  // Provides ability to alter command line before session has started.
+  virtual void AppendAdditionalCommandLineSwitches() = 0;
+
   // Indicates if screen locking should be enabled or disabled for a flow.
   virtual bool CanLockScreen() = 0;
   virtual bool ShouldShowSettings() = 0;
@@ -51,6 +55,7 @@ class DefaultUserFlow : public UserFlow {
  public:
   virtual ~DefaultUserFlow();
 
+  virtual void AppendAdditionalCommandLineSwitches() override;
   virtual bool CanLockScreen() override;
   virtual bool ShouldShowSettings() override;
   virtual bool ShouldLaunchBrowser() override;
@@ -70,7 +75,10 @@ class ExtendedUserFlow : public UserFlow {
   explicit ExtendedUserFlow(const std::string& user_id);
   virtual ~ExtendedUserFlow();
 
+  virtual void AppendAdditionalCommandLineSwitches() override;
   virtual bool ShouldShowSettings() override;
+  virtual void HandleOAuthTokenStatusChange(
+      user_manager::User::OAuthTokenStatus status) override;
 
  protected:
   // Subclasses can call this method to unregister flow in the next event.

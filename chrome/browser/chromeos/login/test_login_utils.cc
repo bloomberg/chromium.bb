@@ -24,8 +24,9 @@ void TestLoginUtils::PrepareProfile(
     Delegate* delegate) {
   if (user_context != expected_user_context_)
     NOTREACHED();
+
   // Profile hasn't been loaded.
-  delegate->OnProfilePrepared(NULL);
+  delegate->OnProfilePrepared(NULL, false);
 }
 
 void TestLoginUtils::DelegateDeleted(Delegate* delegate) {

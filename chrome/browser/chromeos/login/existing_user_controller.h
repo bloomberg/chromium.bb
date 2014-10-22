@@ -156,19 +156,14 @@ class ExistingUserController : public LoginDisplay::Delegate,
       const std::string& username, bool success) override;
 
   // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) override;
+  virtual void OnProfilePrepared(Profile* profile,
+                                 bool browser_launched) override;
 
   // Called when device settings change.
   void DeviceSettingsChanged();
 
-  // Starts WizardController with the specified screen.
-  void ActivateWizard(const std::string& screen_name);
-
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
-
-  // Adds first-time login URLs.
-  void InitializeStartUrls() const;
 
   // Show error message. |error_id| error message ID in resources.
   // If |details| string is not empty, it specify additional error text
@@ -234,6 +229,14 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Starts the actual login process for a public session. Invoked when all
   // preconditions have been verified.
   void LoginAsPublicSessionInternal(const UserContext& user_context);
+
+  // Performs sets of actions right prior to login has been started.
+  void PerformPreLoginActions(const UserContext& user_context);
+
+  // Performs set of actions when login has been completed or has been
+  // cancelled. If |start_public_session_timer| is true than public session
+  // auto-login timer is started.
+  void PerformLoginFinishedActions(bool start_public_session_timer);
 
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;

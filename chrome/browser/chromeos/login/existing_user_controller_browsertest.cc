@@ -163,6 +163,9 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_, Shutdown())
         .Times(1);
+    EXPECT_CALL(*mock_user_manager_, FindUser(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(ReturnNull());
   }
 
   virtual void SetUpOnMainThread() override {
@@ -175,7 +178,8 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     profile_prepared_cb_ =
         base::Bind(&ExistingUserController::OnProfilePrepared,
                    base::Unretained(existing_user_controller()),
-                   testing_profile_.get());
+                   testing_profile_.get(),
+                   false);
   }
 
   virtual void TearDownOnMainThread() override {
@@ -232,10 +236,8 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
-  // This is disabled twice: once right after signin but before checking for
-  // auto-enrollment, and again after doing an ownership status check.
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-      .Times(2);
+      .Times(1);
   UserContext user_context(kUsername);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(kUsername);
@@ -246,10 +248,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
-  EXPECT_CALL(*mock_login_utils_,
-              DoBrowserLaunch(testing_profile_.get(),
-                              mock_login_display_host_.get()))
-      .Times(1);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
@@ -294,10 +292,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
               StartWizardPtr(WizardController::kEnrollmentScreenName,
                              _))
       .Times(0);
-  EXPECT_CALL(*mock_login_display_host_,
-              StartWizardPtr(WizardController::kTermsOfServiceScreenName,
-                             NULL))
-      .Times(1);
   UserContext user_context(kNewUsername);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(kNewUsername);
@@ -327,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
   // This is disabled twice: once right after signin but before checking for
   // auto-enrollment, and again after doing an ownership status check.
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-      .Times(2)
+      .Times(1)
       .InSequence(uiEnabledSequence);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
       .Times(1)
@@ -437,10 +431,6 @@ class ExistingUserControllerPublicSessionTest
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                     &base::Callback<void(void)>::Run));
-    EXPECT_CALL(*mock_login_utils_,
-                DoBrowserLaunch(testing_profile_.get(),
-                                mock_login_display_host_.get()))
-        .Times(1);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
         .Times(1);
     EXPECT_CALL(*mock_login_display_host_,

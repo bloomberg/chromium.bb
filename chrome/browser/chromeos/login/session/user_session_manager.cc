@@ -15,6 +15,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
@@ -23,8 +24,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
@@ -35,8 +38,12 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -45,6 +52,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -78,6 +86,11 @@
 namespace chromeos {
 
 namespace {
+
+// ChromeVox tutorial URL (used in place of "getting started" url when
+// accessibility is enabled).
+const char kChromeVoxTutorialURLPattern[] =
+    "http://www.chromevox.com/tutorial/index.html?lang=%s";
 
 void InitLocaleAndInputMethodsForNewUser(
     UserSessionManager* session_manager,
@@ -278,12 +291,14 @@ void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
 
 void UserSessionManager::StartSession(
     const UserContext& user_context,
+    StartSessionType start_session_type,
     scoped_refptr<Authenticator> authenticator,
     bool has_auth_cookies,
     bool has_active_session,
     UserSessionManagerDelegate* delegate) {
   authenticator_ = authenticator;
   delegate_ = delegate;
+  start_session_type_ = start_session_type;
 
   VLOG(1) << "Starting session for " << user_context.GetUserID();
 
@@ -615,9 +630,8 @@ void UserSessionManager::OnConnectionTypeChanged(
   }
 }
 
-void UserSessionManager::OnProfilePrepared(Profile* profile) {
-  LoginUtils::Get()->DoBrowserLaunch(profile, NULL);  // host_, not needed here
-
+void UserSessionManager::OnProfilePrepared(Profile* profile,
+                                           bool browser_launched) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestName)) {
     // Did not log in (we crashed or are debugging), need to restore Sync.
     // TODO(nkostylev): Make sure that OAuth state is restored correctly for all
@@ -743,8 +757,10 @@ void UserSessionManager::InitProfilePreferences(
 void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 bool is_incognito_profile,
                                                 const std::string& user_id) {
+  // Demo user signed in.
   if (is_incognito_profile) {
     profile->OnLogin();
+
     // Send the notification before creating the browser so additional objects
     // that need the profile (e.g. the launcher) can be created first.
     content::NotificationService::current()->Notify(
@@ -753,7 +769,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
         content::Details<Profile>(profile));
 
     if (delegate_)
-      delegate_->OnProfilePrepared(profile);
+      delegate_->OnProfilePrepared(profile, false);
 
     return;
   }
@@ -852,6 +868,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   UpdateEasyUnlockKeys(user_context_);
   user_context_.ClearSecrets();
 
+  // Now that profile is ready, proceed to either alternative login flows or
+  // launch browser.
+  bool browser_launched = InitializeUserSession(profile);
+
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
   // like LoginUtilsImpl::OnProfileCreated() may be getting called before
   // UserSessionManager::PrepareProfile() has set |delegate_| when Chrome is
@@ -859,7 +879,103 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // this 'if' statement with a CHECK(delegate_) once the underlying issue is
   // resolved.
   if (delegate_)
-    delegate_->OnProfilePrepared(profile);
+    delegate_->OnProfilePrepared(profile, browser_launched);
+}
+
+void UserSessionManager::ActivateWizard(const std::string& screen_name) {
+  LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
+  DCHECK(host);
+  if (host) {
+    scoped_ptr<base::DictionaryValue> params;
+    host->StartWizard(screen_name, params.Pass());
+  }
+}
+
+void UserSessionManager::InitializeStartUrls() const {
+  std::vector<std::string> start_urls;
+
+  const base::ListValue *urls;
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  bool can_show_getstarted_guide =
+      user_manager->GetActiveUser()->GetType() ==
+          user_manager::USER_TYPE_REGULAR &&
+      !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
+  if (user_manager->IsLoggedInAsDemoUser()) {
+    if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
+      // The retail mode user will get start URLs from a special policy if it is
+      // set.
+      for (base::ListValue::const_iterator it = urls->begin();
+           it != urls->end(); ++it) {
+        std::string url;
+        if ((*it)->GetAsString(&url))
+          start_urls.push_back(url);
+      }
+    }
+    can_show_getstarted_guide = false;
+  // Skip the default first-run behavior for public accounts.
+  } else if (!user_manager->IsLoggedInAsPublicAccount()) {
+    if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+      const char* url = kChromeVoxTutorialURLPattern;
+      PrefService* prefs = g_browser_process->local_state();
+      const std::string current_locale =
+          base::StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
+      std::string vox_url = base::StringPrintf(url, current_locale.c_str());
+      start_urls.push_back(vox_url);
+      can_show_getstarted_guide = false;
+    }
+  }
+
+  // Only show getting started guide for a new user.
+  const bool should_show_getstarted_guide = user_manager->IsCurrentUserNew();
+
+  if (can_show_getstarted_guide && should_show_getstarted_guide) {
+    // Don't open default Chrome window if we're going to launch the first-run
+    // app. Because we dont' want the first-run app to be hidden in the
+    // background.
+    CommandLine::ForCurrentProcess()->AppendSwitch(::switches::kSilentLaunch);
+    first_run::MaybeLaunchDialogAfterSessionStart();
+  } else {
+    for (size_t i = 0; i < start_urls.size(); ++i) {
+      CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+    }
+  }
+}
+
+bool UserSessionManager::InitializeUserSession(Profile* profile) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+
+  // Kiosk apps has their own session initialization pipeline.
+  if (user_manager->IsLoggedInAsKioskApp())
+    return false;
+
+  if (start_session_type_ == PRIMARY_USER_SESSION) {
+    UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();
+    WizardController* oobe_controller = WizardController::default_controller();
+    base::CommandLine* cmdline = CommandLine::ForCurrentProcess();
+    bool skip_post_login_screens =
+        user_flow->ShouldSkipPostLoginScreens() ||
+        (oobe_controller && oobe_controller->skip_post_login_screens()) ||
+        cmdline->HasSwitch(chromeos::switches::kOobeSkipPostLogin);
+
+    if (user_manager->IsCurrentUserNew() && !skip_post_login_screens) {
+      // Don't specify start URLs if the administrator has configured the start
+      // URLs via policy.
+      if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs()))
+        InitializeStartUrls();
+
+      // Mark the device as registered., i.e. the second part of OOBE as
+      // completed.
+      if (!StartupUtils::IsDeviceRegistered())
+        StartupUtils::MarkDeviceRegistered(base::Closure());
+
+      ActivateWizard(WizardController::kTermsOfServiceScreenName);
+      return false;
+    }
+  }
+
+  LoginUtils::Get()->DoBrowserLaunch(profile,
+                                     LoginDisplayHostImpl::default_host());
+  return true;
 }
 
 void UserSessionManager::InitSessionRestoreStrategy() {
@@ -944,7 +1060,7 @@ void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
   }
   // Init the RLZ library.
   int ping_delay = profile->GetPrefs()->GetInteger(
-      first_run::GetPingDelayPrefName().c_str());
+      ::first_run::GetPingDelayPrefName().c_str());
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
   RLZTracker::InitRlzFromProfileDelayed(
@@ -1043,10 +1159,13 @@ void UserSessionManager::RestorePendingUserSessions() {
     user_context.SetIsUsingOAuth(false);
 
     // Will call OnProfilePrepared() once profile has been loaded.
+    // Only handling secondary users here since primary user profile
+    // (and session) has been loaded on Chrome startup.
     StartSession(user_context,
+                 SECONDARY_USER_SESSION_AFTER_CRASH,
                  NULL,   // authenticator
                  false,  // has_auth_cookies
-                 true,   // has_active_session
+                 true,   // has_active_session, this is restart after crash
                  this);
   } else {
     RestorePendingUserSessions();

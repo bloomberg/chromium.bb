@@ -29,7 +29,10 @@ class LoginUtils {
   class Delegate {
    public:
     // Called after profile is loaded and prepared for the session.
-    virtual void OnProfilePrepared(Profile* profile) = 0;
+    // |browser_launched| will be true is browser has been launched, otherwise
+    // it will return false and client is responsible on launching browser.
+    virtual void OnProfilePrepared(Profile* profile,
+                                   bool browser_launched) = 0;
 
 #if defined(ENABLE_RLZ)
     // Called after post-profile RLZ initialization.

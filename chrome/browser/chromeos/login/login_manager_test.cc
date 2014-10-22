@@ -118,14 +118,14 @@ void LoginManagerTest::JSExpect(const std::string& expression) {
 }
 
 void LoginManagerTest::InitializeWebContents() {
-    LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
-    EXPECT_TRUE(host != NULL);
+  LoginDisplayHost* host = LoginDisplayHostImpl::default_host();
+  EXPECT_TRUE(host != NULL);
 
-    content::WebContents* web_contents =
-        host->GetWebUILoginView()->GetWebContents();
-    EXPECT_TRUE(web_contents != NULL);
-    set_web_contents(web_contents);
-    js_checker_.set_web_contents(web_contents);
-  }
+  content::WebContents* web_contents =
+      host->GetWebUILoginView()->GetWebContents();
+  EXPECT_TRUE(web_contents != NULL);
+  set_web_contents(web_contents);
+  js_checker_.set_web_contents(web_contents);
+}
 
 }  // namespace chromeos

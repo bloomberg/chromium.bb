@@ -57,7 +57,8 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
       const std::string& email, bool success) override;
 
   // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) override;
+  virtual void OnProfilePrepared(Profile* profile,
+                                 bool browser_launched) override;
 
   std::string user_id_;
   bool use_guest_mount_;

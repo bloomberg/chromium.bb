@@ -183,7 +183,8 @@ void KioskProfileLoader::OnOnlineChecked(
   NOTREACHED();
 }
 
-void KioskProfileLoader::OnProfilePrepared(Profile* profile) {
+void KioskProfileLoader::OnProfilePrepared(Profile* profile,
+                                           bool browser_launched) {
   // This object could be deleted any time after successfully reporting
   // a profile load, so invalidate the LoginUtils delegate now.
   LoginUtils::Get()->DelegateDeleted(this);

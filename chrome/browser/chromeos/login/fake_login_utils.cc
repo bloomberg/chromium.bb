@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -60,11 +61,11 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
                                     bool has_cookies,
                                     bool has_active_session,
                                     LoginUtils::Delegate* delegate) {
-  user_manager::UserManager::Get()->UserLoggedIn(
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  user_manager->UserLoggedIn(
       user_context.GetUserID(), user_context.GetUserIDHash(), false);
   user_manager::User* user =
-      user_manager::UserManager::Get()->FindUserAndModify(
-          user_context.GetUserID());
+      user_manager->FindUserAndModify(user_context.GetUserID());
   DCHECK(user);
 
   // Make sure that we get the real Profile instead of the login Profile.
@@ -73,9 +74,8 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
   profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                  user_context.GetUserID());
 
-  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    user_manager::User* active_user =
-        user_manager::UserManager::Get()->GetActiveUser();
+  if (user_manager->IsLoggedInAsSupervisedUser()) {
+    user_manager::User* active_user = user_manager->GetActiveUser();
     std::string supervised_user_sync_id =
         ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
             active_user->email());
@@ -89,8 +89,22 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources(),
       content::Details<Profile>(profile));
+
+  // Emulate UserSessionManager::InitializeUserSession() for now till
+  // FakeLoginUtils are deprecated.
+  bool browser_launched = false;
+  if (!user_manager->IsLoggedInAsKioskApp()) {
+    if (user_manager->IsCurrentUserNew()) {
+      NOTREACHED() << "Method not implemented.";
+    } else {
+      browser_launched = true;
+      LoginUtils::Get()->DoBrowserLaunch(profile,
+                                         LoginDisplayHostImpl::default_host());
+    }
+  }
+
   if (delegate)
-    delegate->OnProfilePrepared(profile);
+    delegate->OnProfilePrepared(profile, browser_launched);
 }
 
 void FakeLoginUtils::DelegateDeleted(LoginUtils::Delegate* delegate) {

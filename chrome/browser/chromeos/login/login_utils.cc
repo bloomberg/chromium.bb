@@ -48,6 +48,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -200,7 +201,8 @@ class LoginUtilsImpl : public LoginUtils,
                                                    bool early_restart) override;
 
   // UserSessionManager::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile) override;
+  virtual void OnProfilePrepared(Profile* profile,
+                                 bool browser_launched) override;
 #if defined(ENABLE_RLZ)
   virtual void OnRlzInitialized() override;
 #endif
@@ -371,12 +373,21 @@ void LoginUtilsImpl::PrepareProfile(
   // as it coexist with SessionManager.
   delegate_ = delegate;
 
+  UserSessionManager::StartSessionType start_session_type =
+      UserAddingScreen::Get()->IsRunning() ?
+          UserSessionManager::SECONDARY_USER_SESSION :
+          UserSessionManager::PRIMARY_USER_SESSION;
+
   // For the transition part LoginUtils will just delegate profile
   // creation and initialization to SessionManager. Later LoginUtils will be
   // removed and all LoginUtils clients will just work with SessionManager
   // directly.
-  UserSessionManager::GetInstance()->StartSession(
-      user_context, authenticator_, has_auth_cookies, has_active_session, this);
+  UserSessionManager::GetInstance()->StartSession(user_context,
+                                                  start_session_type,
+                                                  authenticator_,
+                                                  has_auth_cookies,
+                                                  has_active_session,
+                                                  this);
 }
 
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
@@ -429,9 +440,10 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
   return authenticator_;
 }
 
-void LoginUtilsImpl::OnProfilePrepared(Profile* profile) {
+void LoginUtilsImpl::OnProfilePrepared(Profile* profile,
+                                       bool browser_launched) {
   if (delegate_)
-    delegate_->OnProfilePrepared(profile);
+    delegate_->OnProfilePrepared(profile, browser_launched);
 }
 
 #if defined(ENABLE_RLZ)

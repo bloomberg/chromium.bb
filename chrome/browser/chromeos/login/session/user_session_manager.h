@@ -41,7 +41,10 @@ class EasyUnlockKeyManager;
 class UserSessionManagerDelegate {
  public:
   // Called after profile is loaded and prepared for the session.
-  virtual void OnProfilePrepared(Profile* profile) = 0;
+  // |browser_launched| will be true is browser has been launched, otherwise
+  // it will return false and client is responsible on launching browser.
+  virtual void OnProfilePrepared(Profile* profile,
+                                 bool browser_launched) = 0;
 
 #if defined(ENABLE_RLZ)
   // Called after post-profile RLZ initialization.
@@ -61,10 +64,10 @@ class UserSessionStateObserver {
 };
 
 // UserSessionManager is responsible for starting user session which includes:
-// load and initialize Profile (including custom Profile preferences),
-// mark user as logged in and notify observers,
-// initialize OAuth2 authentication session,
-// initialize and launch user session based on the user type.
+// * load and initialize Profile (including custom Profile preferences),
+// * mark user as logged in and notify observers,
+// * initialize OAuth2 authentication session,
+// * initialize and launch user session based on the user type.
 // Also supports restoring active user sessions after browser crash:
 // load profile, restore OAuth authentication session etc.
 class UserSessionManager
@@ -74,6 +77,21 @@ class UserSessionManager
       public UserSessionManagerDelegate,
       public user_manager::UserManager::UserSessionStateObserver {
  public:
+  // Context of StartSession calls.
+  typedef enum {
+    // Starting primary user session, through login UI.
+    PRIMARY_USER_SESSION,
+
+    // Starting secondary user session, through multi-profiles login UI.
+    SECONDARY_USER_SESSION,
+
+    // Starting primary user session after browser crash.
+    PRIMARY_USER_SESSION_AFTER_CRASH,
+
+    // Starting secondary user session after browser crash.
+    SECONDARY_USER_SESSION_AFTER_CRASH,
+  } StartSessionType;
+
   // Returns UserSessionManager instance.
   static UserSessionManager* GetInstance();
 
@@ -91,6 +109,7 @@ class UserSessionManager
   // Start user session given |user_context| and |authenticator| which holds
   // authentication context (profile).
   void StartSession(const UserContext& user_context,
+                    StartSessionType start_session_type,
                     scoped_refptr<Authenticator> authenticator,
                     bool has_auth_cookies,
                     bool has_active_session,
@@ -198,7 +217,8 @@ class UserSessionManager
 
   // UserSessionManagerDelegate overrides:
   // Used when restoring user sessions after crash.
-  virtual void OnProfilePrepared(Profile* profile) override;
+  virtual void OnProfilePrepared(Profile* profile,
+                                 bool browser_launched) override;
 
   void CreateUserSession(const UserContext& user_context,
                          bool has_auth_cookies);
@@ -232,6 +252,18 @@ class UserSessionManager
 
   // Finalized profile preparation.
   void FinalizePrepareProfile(Profile* profile);
+
+  // Starts out-of-box flow with the specified screen.
+  void ActivateWizard(const std::string& screen_name);
+
+  // Adds first-time login URLs.
+  void InitializeStartUrls() const;
+
+  // Perform session initialization and either move to additional login flows
+  // such as TOS (public sessions), priority pref sync UI (new users) or
+  // launch browser.
+  // Returns true if browser has been launched or false otherwise.
+  bool InitializeUserSession(Profile* profile);
 
   // Initializes member variables needed for session restore process via
   // OAuthLoginManager.
@@ -270,6 +302,7 @@ class UserSessionManager
   // Authentication/user context.
   UserContext user_context_;
   scoped_refptr<Authenticator> authenticator_;
+  StartSessionType start_session_type_;
 
   // True if the authentication context's cookie jar contains authentication
   // cookies from the authentication extension login flow.
