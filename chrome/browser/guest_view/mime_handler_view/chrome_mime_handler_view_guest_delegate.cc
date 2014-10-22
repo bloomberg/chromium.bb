@@ -18,9 +18,11 @@
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
 
+namespace extensions {
+
 ChromeMimeHandlerViewGuestDelegate::ChromeMimeHandlerViewGuestDelegate(
-    extensions::MimeHandlerViewGuest* guest)
-    : extensions::MimeHandlerViewGuestDelegate(guest), guest_(guest) {
+    MimeHandlerViewGuest* guest)
+    : MimeHandlerViewGuestDelegate(guest), guest_(guest) {
 }
 
 ChromeMimeHandlerViewGuestDelegate::~ChromeMimeHandlerViewGuestDelegate() {
@@ -50,3 +52,5 @@ void ChromeMimeHandlerViewGuestDelegate::ChangeZoom(bool zoom_in) {
       guest_->embedder_web_contents(),
       zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
 }
+
+}  // namespace extensions

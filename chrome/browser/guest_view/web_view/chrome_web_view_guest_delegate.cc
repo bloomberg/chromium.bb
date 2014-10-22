@@ -26,8 +26,10 @@
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
 
+namespace extensions {
+
 ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
-    extensions::WebViewGuest* web_view_guest)
+    WebViewGuest* web_view_guest)
     : pending_context_menu_request_id_(0),
       chromevox_injected_(false),
       current_zoom_factor_(1.0),
@@ -58,8 +60,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
   web_view_guest()->DispatchEventToEmbedder(
-      new extensions::GuestViewBase::Event(
-          webview::kEventContextMenu, args.Pass()));
+      new GuestViewBase::Event(webview::kEventContextMenu, args.Pass()));
   return true;
 }
 
@@ -76,8 +77,7 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
   ZoomController::CreateForWebContents(contents);
 
   FaviconTabHelper::CreateForWebContents(contents);
-  extensions::ChromeExtensionWebContentsObserver::
-      CreateForWebContents(contents);
+  ChromeExtensionWebContentsObserver::CreateForWebContents(contents);
 #if defined(ENABLE_PRINTING)
 #if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager::CreateForWebContents(contents);
@@ -144,9 +144,9 @@ void ChromeWebViewGuestDelegate::OnGuestReady() {
 
 void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
   // Clean up custom context menu items for this guest.
-  extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
+  MenuManager* menu_manager = MenuManager::Get(
       Profile::FromBrowserContext(web_view_guest()->browser_context()));
-  menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
+  menu_manager->RemoveAllContextItems(MenuItem::ExtensionKey(
       web_view_guest()->embedder_extension_id(),
       web_view_guest()->view_instance_id()));
 }
@@ -178,8 +178,7 @@ void ChromeWebViewGuestDelegate::OnSetZoom(double zoom_factor) {
   args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
   args->SetDouble(webview::kNewZoomFactor, zoom_factor);
   web_view_guest()->DispatchEventToEmbedder(
-      new extensions::GuestViewBase::Event(
-          webview::kEventZoomChange, args.Pass()));
+      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
   current_zoom_factor_ = zoom_factor;
 }
 
@@ -235,3 +234,5 @@ void ChromeWebViewGuestDelegate::OnZoomChanged(
   ZoomController::FromWebContents(guest_web_contents())->
       SetZoomLevel(data.new_zoom_level);
 }
+
+}  // namespace extensions

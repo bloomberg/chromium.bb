@@ -11,11 +11,11 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-class ChromeMimeHandlerViewGuestDelegate
-    : public extensions::MimeHandlerViewGuestDelegate {
+namespace extensions {
+
+class ChromeMimeHandlerViewGuestDelegate : public MimeHandlerViewGuestDelegate {
  public:
-  explicit ChromeMimeHandlerViewGuestDelegate(
-      extensions::MimeHandlerViewGuest* guest);
+  explicit ChromeMimeHandlerViewGuestDelegate(MimeHandlerViewGuest* guest);
   ~ChromeMimeHandlerViewGuestDelegate() override;
 
   // MimeHandlerViewGuestDelegate.
@@ -23,9 +23,11 @@ class ChromeMimeHandlerViewGuestDelegate
   void ChangeZoom(bool zoom_in) override;
 
  private:
-  extensions::MimeHandlerViewGuest* guest_;  // Owns us.
+  MimeHandlerViewGuest* guest_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMimeHandlerViewGuestDelegate);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_MIME_HANDLER_VIEW_CHROME_MIME_HANDLER_VIEW_GUEST_DELEGATE_H_

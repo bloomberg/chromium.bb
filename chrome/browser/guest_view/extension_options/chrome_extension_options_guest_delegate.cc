@@ -22,7 +22,7 @@ ChromeExtensionOptionsGuestDelegate::~ChromeExtensionOptionsGuestDelegate() {
 }
 
 void ChromeExtensionOptionsGuestDelegate::DidInitialize() {
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+  ChromeExtensionWebContentsObserver::CreateForWebContents(
       extension_options_guest()->web_contents());
 }
 

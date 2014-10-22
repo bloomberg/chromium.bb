@@ -17,8 +17,10 @@
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
+namespace extensions {
+
 ChromeWebViewPermissionHelperDelegate::ChromeWebViewPermissionHelperDelegate(
-    extensions::WebViewPermissionHelper* web_view_permission_helper)
+    WebViewPermissionHelper* web_view_permission_helper)
     : WebViewPermissionHelperDelegate(web_view_permission_helper),
       weak_factory_(this) {
 }
@@ -188,7 +190,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
   // It is safe to hold an unretained pointer to
   // ChromeWebViewPermissionHelperDelegate because this callback is called from
   // ChromeWebViewPermissionHelperDelegate::SetPermission.
-  const extensions::WebViewPermissionHelper::PermissionResponseCallback
+  const WebViewPermissionHelper::PermissionResponseCallback
       permission_callback =
       base::Bind(&ChromeWebViewPermissionHelperDelegate::
                      OnGeolocationPermissionResponse,
@@ -346,3 +348,5 @@ void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedSyncResponse(
                                                                   allowed);
   Send(reply_msg);
 }
+
+}  // namespace extensions

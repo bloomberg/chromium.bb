@@ -10,13 +10,12 @@
 
 namespace extensions {
 class WebViewGuest;
-}
 
 class ChromeWebViewPermissionHelperDelegate :
-  public extensions::WebViewPermissionHelperDelegate {
+  public WebViewPermissionHelperDelegate {
  public:
   explicit ChromeWebViewPermissionHelperDelegate(
-      extensions::WebViewPermissionHelper* web_view_permission_helper);
+      WebViewPermissionHelper* web_view_permission_helper);
   ~ChromeWebViewPermissionHelperDelegate() override;
 
   // WebViewPermissionHelperDelegate implementation.
@@ -115,7 +114,7 @@ class ChromeWebViewPermissionHelperDelegate :
                                       IPC::Message* reply_msg,
                                       bool allowed);
 
-  extensions::WebViewGuest* web_view_guest() {
+  WebViewGuest* web_view_guest() {
     return web_view_permission_helper()->web_view_guest();
   }
 
@@ -125,5 +124,7 @@ class ChromeWebViewPermissionHelperDelegate :
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewPermissionHelperDelegate);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_PERMISSION_HELPER_DELEGATE_H_
