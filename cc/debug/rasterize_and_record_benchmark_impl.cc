@@ -211,9 +211,10 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
   FixedInvalidationPictureLayerTilingClient client(
       layer, gfx::Rect(layer->content_bounds()));
-  PictureLayerTilingSet tiling_set(&client, layer->content_bounds());
+  PictureLayerTilingSet tiling_set(&client);
 
-  PictureLayerTiling* tiling = tiling_set.AddTiling(layer->contents_scale_x());
+  PictureLayerTiling* tiling =
+      tiling_set.AddTiling(layer->contents_scale_x(), layer->bounds());
   tiling->CreateAllTilesForTesting();
   for (PictureLayerTiling::CoverageIterator it(
            tiling, layer->contents_scale_x(), layer->visible_content_rect());

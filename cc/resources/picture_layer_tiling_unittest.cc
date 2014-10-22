@@ -1456,9 +1456,9 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
   client_.SetTileSize(tile_size);
   client_.set_tree(PENDING_TREE);
 
-  PictureLayerTilingSet active_set(&client_, layer_bounds);
+  PictureLayerTilingSet active_set(&client_);
 
-  active_set.AddTiling(1.f);
+  active_set.AddTiling(1.f, layer_bounds);
 
   VerifyTiles(active_set.tiling_at(0),
               1.f,
@@ -1478,7 +1478,7 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
               base::Bind(&TileExists, true));
 
   // Add the same tilings to the pending set.
-  PictureLayerTilingSet pending_set(&client_, layer_bounds);
+  PictureLayerTilingSet pending_set(&client_);
   Region invalidation;
   pending_set.SyncTilings(active_set, layer_bounds, invalidation, 0.f);
 

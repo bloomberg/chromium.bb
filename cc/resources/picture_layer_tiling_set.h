@@ -34,8 +34,7 @@ class CC_EXPORT PictureLayerTilingSet {
     size_t end;
   };
 
-  PictureLayerTilingSet(PictureLayerTilingClient* client,
-                        const gfx::Size& layer_bounds);
+  explicit PictureLayerTilingSet(PictureLayerTilingClient* client);
   ~PictureLayerTilingSet();
 
   void SetClient(PictureLayerTilingClient* client);
@@ -53,9 +52,8 @@ class CC_EXPORT PictureLayerTilingSet {
                    const Region& layer_invalidation,
                    float minimum_contents_scale);
 
-  gfx::Size layer_bounds() const { return layer_bounds_; }
-
-  PictureLayerTiling* AddTiling(float contents_scale);
+  PictureLayerTiling* AddTiling(float contents_scale,
+                                const gfx::Size& layer_bounds);
   size_t num_tilings() const { return tilings_.size(); }
   int NumHighResTilings() const;
   PictureLayerTiling* tiling_at(size_t idx) { return tilings_[idx]; }
@@ -126,7 +124,6 @@ class CC_EXPORT PictureLayerTilingSet {
 
  private:
   PictureLayerTilingClient* client_;
-  gfx::Size layer_bounds_;
   ScopedPtrVector<PictureLayerTiling> tilings_;
 
   friend class Iterator;

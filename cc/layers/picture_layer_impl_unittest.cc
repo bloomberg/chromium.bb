@@ -2194,15 +2194,19 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
 
   SetupDrawPropertiesAndUpdateTiles(
       active_layer_, 0.5f, 0.5f, 0.5f, 0.5f, false);
+  pending_layer_->tilings()->RemoveAllTilings();
   active_layer_->tilings()->RemoveAllTilings();
-  PictureLayerTiling* tiling = active_layer_->tilings()->AddTiling(0.5f);
-  active_layer_->tilings()->AddTiling(1.5f);
-  active_layer_->tilings()->AddTiling(0.25f);
+  PictureLayerTiling* tiling = active_layer_->AddTiling(0.5f);
+  active_layer_->AddTiling(1.5f);
+  active_layer_->AddTiling(0.25f);
   tiling->set_resolution(HIGH_RESOLUTION);
 
   // Sanity checks.
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
   ASSERT_EQ(tiling, active_layer_->tilings()->TilingAtScale(0.5f));
+
+  pending_layer_->tilings()->RemoveAllTilings();
+  ASSERT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   // Now, set the bounds to be 1x1 (so that minimum contents scale becomes
   // 1.0f). Note that we should also ensure that the pending layer needs post

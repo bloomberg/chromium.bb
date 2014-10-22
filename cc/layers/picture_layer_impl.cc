@@ -793,7 +793,7 @@ void PictureLayerImpl::SyncTiling(
     const PictureLayerTiling* tiling) {
   if (!CanHaveTilingWithScale(tiling->contents_scale()))
     return;
-  tilings_->AddTiling(tiling->contents_scale());
+  tilings_->AddTiling(tiling->contents_scale(), bounds());
 
   // If this tree needs update draw properties, then the tiling will
   // get updated prior to drawing or activation.  If this tree does not
@@ -843,7 +843,7 @@ void PictureLayerImpl::DoPostCommitInitialization() {
   DCHECK(layer_tree_impl()->IsPendingTree());
 
   if (!tilings_)
-    tilings_.reset(new PictureLayerTilingSet(this, bounds()));
+    tilings_ = make_scoped_ptr(new PictureLayerTilingSet(this));
 
   DCHECK(!twin_layer_);
   twin_layer_ = static_cast<PictureLayerImpl*>(
@@ -864,7 +864,7 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   DCHECK(CanHaveTilingWithScale(contents_scale)) <<
       "contents_scale: " << contents_scale;
 
-  PictureLayerTiling* tiling = tilings_->AddTiling(contents_scale);
+  PictureLayerTiling* tiling = tilings_->AddTiling(contents_scale, bounds());
 
   DCHECK(pile_->HasRecordings());
 
