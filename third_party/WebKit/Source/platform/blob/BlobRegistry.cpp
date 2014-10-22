@@ -39,7 +39,6 @@
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebThreadSafeData.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/MainThread.h"
@@ -197,18 +196,16 @@ static void addDataToStreamTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
     if (WebBlobRegistry* registry = blobRegistry()) {
-        WebThreadSafeData webThreadSafeData(blobRegistryContext->streamData);
-        registry->addDataToStream(blobRegistryContext->url, webThreadSafeData);
+        RefPtr<RawData> data(blobRegistryContext->streamData);
+        registry->addDataToStream(blobRegistryContext->url, data->data(), data->length());
     }
 }
 
 void BlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamData)
 {
     if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry()) {
-            WebThreadSafeData webThreadSafeData(streamData);
-            registry->addDataToStream(url, webThreadSafeData);
-        }
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->addDataToStream(url, streamData->data(), streamData->length());
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, streamData));
         callOnMainThread(&addDataToStreamTask, context.leakPtr());

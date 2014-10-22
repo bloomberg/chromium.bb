@@ -37,7 +37,6 @@ namespace blink {
 
 class WebBlobData;
 class WebString;
-class WebThreadSafeData;
 class WebURL;
 
 class WebBlobRegistry {
@@ -59,7 +58,7 @@ public:
     virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) { BLINK_ASSERT_NOT_REACHED(); };
 
     // Add data to the stream referred by the URL.
-    virtual void addDataToStream(const WebURL&, WebThreadSafeData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void addDataToStream(const WebURL&, const char* data, size_t length) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Tell the registry that construction of this stream has completed
     // successfully and so it won't receive any more data.
