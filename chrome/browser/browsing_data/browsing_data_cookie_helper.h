@@ -126,9 +126,9 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   bool empty() const;
 
   // BrowsingDataCookieHelper methods.
-  virtual void StartFetching(
+  void StartFetching(
       const net::CookieMonster::GetCookieListCallback& callback) override;
-  virtual void DeleteCookie(const net::CanonicalCookie& cookie) override;
+  void DeleteCookie(const net::CanonicalCookie& cookie) override;
 
   // Returns the number of stored cookies.
   size_t GetCookieCount() const;
@@ -145,7 +145,7 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   bool DeleteMatchingCookie(const net::CanonicalCookie& add_cookie,
                             canonical_cookie::CookieHashSet* cookie_set);
 
-  virtual ~CannedBrowsingDataCookieHelper();
+  ~CannedBrowsingDataCookieHelper() override;
 
   // Returns the |CookieSet| for the given |origin|.
   canonical_cookie::CookieHashSet* GetCookiesFor(const GURL& origin);

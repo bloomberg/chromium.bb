@@ -36,13 +36,12 @@ class MockBrowsingDataIndexedDBHelper
   bool AllDeleted();
 
   // BrowsingDataIndexedDBHelper.
-  virtual void StartFetching(
-      const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
-          callback) override;
-  virtual void DeleteIndexedDB(const GURL& origin) override;
+  void StartFetching(const base::Callback<
+      void(const std::list<content::IndexedDBInfo>&)>& callback) override;
+  void DeleteIndexedDB(const GURL& origin) override;
 
  private:
-  virtual ~MockBrowsingDataIndexedDBHelper();
+  ~MockBrowsingDataIndexedDBHelper() override;
 
   base::Callback<void(const std::list<content::IndexedDBInfo>&)> callback_;
   std::map<GURL, bool> origins_;

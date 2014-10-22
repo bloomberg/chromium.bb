@@ -24,11 +24,11 @@ class BrowsingDataChannelIDHelperImpl
       net::URLRequestContextGetter* request_context);
 
   // BrowsingDataChannelIDHelper methods.
-  virtual void StartFetching(const FetchResultCallback& callback) override;
-  virtual void DeleteChannelID(const std::string& server_id) override;
+  void StartFetching(const FetchResultCallback& callback) override;
+  void DeleteChannelID(const std::string& server_id) override;
 
  private:
-  virtual ~BrowsingDataChannelIDHelperImpl();
+  ~BrowsingDataChannelIDHelperImpl() override;
 
   // Fetch the certs. This must be called in the IO thread.
   void FetchOnIOThread();

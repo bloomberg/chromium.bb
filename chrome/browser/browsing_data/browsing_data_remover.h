@@ -250,7 +250,14 @@ class BrowsingDataRemover
   // to be deleted by other objects so make destructor private and DeleteHelper
   // a friend.
   friend class base::DeleteHelper<BrowsingDataRemover>;
-  virtual ~BrowsingDataRemover();
+
+  // When plugins aren't enabled, there is no base class, so adding an override
+  // specifier would result in a compile error.
+#if defined(ENABLE_PLUGINS)
+  ~BrowsingDataRemover() override;
+#else
+  ~BrowsingDataRemover();
+#endif
 
   // Callback for when TemplateURLService has finished loading. Clears the data,
   // clears the respective waiting flag, and invokes NotifyAndDeleteIfDone.
@@ -261,8 +268,8 @@ class BrowsingDataRemover
 
 #if defined(ENABLE_PLUGINS)
   // PepperFlashSettingsManager::Client implementation.
-  virtual void OnDeauthorizeContentLicensesCompleted(uint32 request_id,
-                                                     bool success) override;
+  void OnDeauthorizeContentLicensesCompleted(uint32 request_id,
+                                             bool success) override;
 #endif
 
 #if defined (OS_CHROMEOS)

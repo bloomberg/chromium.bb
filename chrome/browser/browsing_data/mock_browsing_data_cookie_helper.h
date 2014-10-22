@@ -18,9 +18,9 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
       net::URLRequestContextGetter* request_context_getter);
 
   // BrowsingDataCookieHelper methods.
-  virtual void StartFetching(
-      const net::CookieMonster::GetCookieListCallback &callback) override;
-  virtual void DeleteCookie(const net::CanonicalCookie& cookie) override;
+  void StartFetching(
+      const net::CookieMonster::GetCookieListCallback& callback) override;
+  void DeleteCookie(const net::CanonicalCookie& cookie) override;
 
   // Adds some cookie samples.
   void AddCookieSamples(const GURL& url, const std::string& cookie_line);
@@ -36,7 +36,7 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   bool AllDeleted();
 
  private:
-  virtual ~MockBrowsingDataCookieHelper();
+  ~MockBrowsingDataCookieHelper() override;
 
   net::CookieMonster::GetCookieListCallback callback_;
 

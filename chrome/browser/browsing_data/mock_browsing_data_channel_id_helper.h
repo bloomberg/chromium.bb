@@ -17,8 +17,8 @@ class MockBrowsingDataChannelIDHelper
   MockBrowsingDataChannelIDHelper();
 
   // BrowsingDataChannelIDHelper methods.
-  virtual void StartFetching(const FetchResultCallback& callback) override;
-  virtual void DeleteChannelID(const std::string& server_id) override;
+  void StartFetching(const FetchResultCallback& callback) override;
+  void DeleteChannelID(const std::string& server_id) override;
 
   // Adds a channel_id sample.
   void AddChannelIDSample(const std::string& server_id);
@@ -34,7 +34,7 @@ class MockBrowsingDataChannelIDHelper
   bool AllDeleted();
 
  private:
-  virtual ~MockBrowsingDataChannelIDHelper();
+  ~MockBrowsingDataChannelIDHelper() override;
 
   FetchResultCallback callback_;
 

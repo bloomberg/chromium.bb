@@ -38,7 +38,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
  public:
   BrowsingDataRemoverBrowserTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     base::FilePath path;
     PathService::Get(content::DIR_TEST_DATA, &path);
     BrowserThread::PostTask(

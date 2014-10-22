@@ -134,14 +134,13 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   const std::set<PendingDatabaseInfo>& GetPendingDatabaseInfo();
 
   // BrowsingDataDatabaseHelper implementation.
-  virtual void StartFetching(
-      const base::Callback<void(const std::list<DatabaseInfo>&)>& callback)
-          override;
-  virtual void DeleteDatabase(const std::string& origin_identifier,
-                              const std::string& name) override;
+  void StartFetching(const base::Callback<void(const std::list<DatabaseInfo>&)>&
+                         callback) override;
+  void DeleteDatabase(const std::string& origin_identifier,
+                      const std::string& name) override;
 
  private:
-  virtual ~CannedBrowsingDataDatabaseHelper();
+  ~CannedBrowsingDataDatabaseHelper() override;
 
   std::set<PendingDatabaseInfo> pending_database_info_;
 

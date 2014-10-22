@@ -115,13 +115,12 @@ class CannedBrowsingDataIndexedDBHelper
       GetIndexedDBInfo() const;
 
   // BrowsingDataIndexedDBHelper methods.
-  virtual void StartFetching(
-      const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
-          callback) override;
-  virtual void DeleteIndexedDB(const GURL& origin) override;
+  void StartFetching(const base::Callback<
+      void(const std::list<content::IndexedDBInfo>&)>& callback) override;
+  void DeleteIndexedDB(const GURL& origin) override;
 
  private:
-  virtual ~CannedBrowsingDataIndexedDBHelper();
+  ~CannedBrowsingDataIndexedDBHelper() override;
 
   std::set<PendingIndexedDBInfo> pending_indexed_db_info_;
 

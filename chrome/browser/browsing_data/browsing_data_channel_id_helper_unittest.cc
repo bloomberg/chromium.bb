@@ -53,9 +53,7 @@ class BrowsingDataChannelIDHelperTest
   }
 
   // net::SSLConfigService::Observer implementation:
-  virtual void OnSSLConfigChanged() override {
-    ssl_config_changed_count_++;
-  }
+  void OnSSLConfigChanged() override { ssl_config_changed_count_++; }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;

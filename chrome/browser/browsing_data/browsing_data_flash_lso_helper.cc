@@ -21,20 +21,17 @@ class BrowsingDataFlashLSOHelperImpl
       content::BrowserContext* browser_context);
 
   // BrowsingDataFlashLSOHelper implementation:
-  virtual void StartFetching(
-      const GetSitesWithFlashDataCallback& callback) override;
-  virtual void DeleteFlashLSOsForSite(const std::string& site) override;
+  void StartFetching(const GetSitesWithFlashDataCallback& callback) override;
+  void DeleteFlashLSOsForSite(const std::string& site) override;
 
   // PepperFlashSettingsManager::Client overrides:
-  virtual void OnGetSitesWithDataCompleted(
+  void OnGetSitesWithDataCompleted(
       uint32 request_id,
       const std::vector<std::string>& sites) override;
-  virtual void OnClearSiteDataCompleted(
-      uint32 request_id,
-      bool success) override;
+  void OnClearSiteDataCompleted(uint32 request_id, bool success) override;
 
  private:
-  virtual ~BrowsingDataFlashLSOHelperImpl();
+  ~BrowsingDataFlashLSOHelperImpl() override;
 
   // Asynchronously fetches and deletes data and calls us back.
   PepperFlashSettingsManager settings_manager_;

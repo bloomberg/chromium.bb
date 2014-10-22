@@ -126,12 +126,12 @@ class CannedBrowsingDataServiceWorkerHelper
       GetServiceWorkerUsageInfo() const;
 
   // BrowsingDataServiceWorkerHelper methods.
-  virtual void StartFetching(const base::Callback<void(
+  void StartFetching(const base::Callback<void(
       const std::list<content::ServiceWorkerUsageInfo>&)>& callback) override;
-  virtual void DeleteServiceWorkers(const GURL& origin) override;
+  void DeleteServiceWorkers(const GURL& origin) override;
 
  private:
-  virtual ~CannedBrowsingDataServiceWorkerHelper();
+  ~CannedBrowsingDataServiceWorkerHelper() override;
 
   std::set<PendingServiceWorkerUsageInfo> pending_service_worker_info_;
 

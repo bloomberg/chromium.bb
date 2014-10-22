@@ -92,13 +92,13 @@ class CannedBrowsingDataLocalStorageHelper
   const std::set<GURL>& GetLocalStorageInfo() const;
 
   // BrowsingDataLocalStorageHelper implementation.
-  virtual void StartFetching(
+  void StartFetching(
       const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
-          override;
-  virtual void DeleteOrigin(const GURL& origin) override;
+      override;
+  void DeleteOrigin(const GURL& origin) override;
 
  private:
-  virtual ~CannedBrowsingDataLocalStorageHelper();
+  ~CannedBrowsingDataLocalStorageHelper() override;
 
   std::set<GURL> pending_local_storage_info_;
 
