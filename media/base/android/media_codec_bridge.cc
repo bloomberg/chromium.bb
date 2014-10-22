@@ -24,6 +24,7 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaIntArrayToIntVector;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
@@ -168,6 +169,27 @@ std::string MediaCodecBridge::GetDefaultCodecName(
   ScopedJavaLocalRef<jstring> j_codec_name =
       Java_MediaCodecBridge_getDefaultCodecName(env, j_mime.obj(), direction);
   return ConvertJavaStringToUTF8(env, j_codec_name.obj());
+}
+
+// static
+std::set<int> MediaCodecBridge::GetEncoderColorFormats(
+    const std::string& mime_type) {
+  std::set<int> color_formats;
+  if (!IsAvailable())
+    return color_formats;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime_type);
+  ScopedJavaLocalRef<jintArray> j_color_format_array =
+      Java_MediaCodecBridge_getEncoderColorFormatsForMime(env, j_mime.obj());
+
+  if (j_color_format_array.obj()) {
+    std::vector<int> formats;
+    JavaIntArrayToIntVector(env, j_color_format_array.obj(), &formats);
+    color_formats = std::set<int>(formats.begin(), formats.end());
+  }
+
+  return color_formats;
 }
 
 // static

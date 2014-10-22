@@ -81,6 +81,11 @@ class MEDIA_EXPORT MediaCodecBridge {
   static std::string GetDefaultCodecName(const std::string& mime_type,
                                          MediaCodecDirection direction);
 
+  // Get a list of encoder supported color formats for |mime_type|.
+  // The mapping of color format name and its value refers to
+  // MediaCodecInfo.CodecCapabilities.
+  static std::set<int> GetEncoderColorFormats(const std::string& mime_type);
+
   virtual ~MediaCodecBridge();
 
   // Resets both input and output, all indices previously returned in calls to

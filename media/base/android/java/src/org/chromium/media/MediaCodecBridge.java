@@ -228,6 +228,30 @@ class MediaCodecBridge {
         return codecName;
     }
 
+    /**
+     * Get a list of encoder supported color formats for specified mime type.
+     */
+    @CalledByNative
+    private static int[] getEncoderColorFormatsForMime(String mime) {
+        int count = MediaCodecList.getCodecCount();
+        for (int i = 0; i < count; ++i) {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            if (!info.isEncoder())
+                continue;
+
+            String[] supportedTypes = info.getSupportedTypes();
+            for (int j = 0; j < supportedTypes.length; ++j) {
+                if (!supportedTypes[j].equalsIgnoreCase(mime))
+                    continue;
+
+                MediaCodecInfo.CodecCapabilities capabilities =
+                    info.getCapabilitiesForType(mime);
+                return capabilities.colorFormats;
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("deprecation")
     private static String getDecoderNameForMime(String mime) {
         int count = MediaCodecList.getCodecCount();
