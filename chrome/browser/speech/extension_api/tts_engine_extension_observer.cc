@@ -41,16 +41,16 @@ class TtsEngineExtensionObserverFactory
     DependsOn(extensions::ExtensionSystemFactory::GetInstance());
   }
 
-  virtual ~TtsEngineExtensionObserverFactory() {}
+  ~TtsEngineExtensionObserverFactory() override {}
 
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override {
     // If given an incognito profile (including the Chrome OS login
     // profile), share the service with the original profile.
     return chrome::GetBrowserContextRedirectedInIncognito(context);
   }
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override {
     return new TtsEngineExtensionObserver(static_cast<Profile*>(profile));
   }

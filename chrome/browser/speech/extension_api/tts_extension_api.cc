@@ -88,10 +88,10 @@ class TtsExtensionEventHandler
  public:
   explicit TtsExtensionEventHandler(const std::string& src_extension_id);
 
-  virtual void OnTtsEvent(Utterance* utterance,
-                          TtsEventType event_type,
-                          int char_index,
-                          const std::string& error_message) override;
+  void OnTtsEvent(Utterance* utterance,
+                  TtsEventType event_type,
+                  int char_index,
+                  const std::string& error_message) override;
 
  private:
   // The extension ID of the extension that called speak() and should

@@ -27,21 +27,20 @@ class TtsEngineExtensionObserver
   bool SawExtensionLoad(const std::string& extension_id, bool update);
 
   // Implementation of KeyedService.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Implementation of extensions::EventRouter::Observer.
-  virtual void OnListenerAdded(
-      const extensions::EventListenerInfo& details) override;
+  void OnListenerAdded(const extensions::EventListenerInfo& details) override;
 
   // extensions::ExtensionRegistryObserver overrides.
-  virtual void OnExtensionUnloaded(
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 
  private:
   explicit TtsEngineExtensionObserver(Profile* profile);
-  virtual ~TtsEngineExtensionObserver();
+  ~TtsEngineExtensionObserver() override;
 
   bool IsLoadedTtsEngine(const std::string& extension_id);
 

@@ -188,9 +188,9 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
   }
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED ||
            type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED);
@@ -230,7 +230,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
 
   friend class base::RefCountedThreadSafe<TabWatcher>;
 
-  virtual ~TabWatcher() {
+  ~TabWatcher() override {
     // Must be destroyed on the UI thread due to |registrar_| non thread-safety.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
