@@ -80,6 +80,16 @@ bool MaybeBypassProxyAndPrepareToRetry(
       GetDataReductionProxyBypassType(original_response_headers,
                                       &data_reduction_proxy_info);
 
+  // Requests with CORS headers do not support block-once, so emulate block-once
+  // with block=1. See crbug.com/418342.
+  // TODO(bengr): Remove this when block-once is supported for all requests.
+  if (bypass_type == BYPASS_EVENT_TYPE_CURRENT &&
+      request->extra_request_headers().HasHeader("origin")) {
+    bypass_type = BYPASS_EVENT_TYPE_SHORT;
+    data_reduction_proxy_info.mark_proxies_as_bad = true;
+    data_reduction_proxy_info.bypass_duration = base::TimeDelta::FromSeconds(1);
+  }
+
   if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER &&
       DataReductionProxyParams::
           IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial()) {
