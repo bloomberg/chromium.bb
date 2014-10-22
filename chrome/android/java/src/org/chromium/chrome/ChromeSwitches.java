@@ -9,11 +9,11 @@ package org.chromium.chrome;
  * portion of Chromium on Android.
  */
 public abstract class ChromeSwitches {
-    // Enables the new Website Settings dialog, which replaces the old one.
-    // TODO(sashab): Once the new WebsiteSettingsPopup is ready to launch,
+    // Disables the new Website Settings dialog, which replaces the old one.
+    // TODO(sashab): Once the new WebsiteSettingsPopup is ready to be permanent,
     // remove this flag and delete WebsiteSettingsLegacyPopup and all it's
     // dependencies.
-    public static final String ENABLE_NEW_WEBSITE_SETTINGS = "enable-new-website-settings";
+    public static final String DISABLE_NEW_WEBSITE_SETTINGS = "disable-new-website-settings";
 
     // Prevent instantiation.
     private ChromeSwitches() {}

@@ -376,7 +376,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      */
     @SuppressWarnings("unused")
     public static void show(Context context, WebContents webContents) {
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_NEW_WEBSITE_SETTINGS)) {
+        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_NEW_WEBSITE_SETTINGS)) {
             new WebsiteSettingsPopup(context, webContents);
         } else {
             WebsiteSettingsPopupLegacy.show(context, webContents);
