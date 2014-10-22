@@ -625,6 +625,13 @@ gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
   float scale = layer_tree_impl()->page_scale_factor();
 
   gfx::Vector2dF delta_from_scroll = scroll_clip_layer_->bounds_delta();
+
+  // In virtual-viewport mode, we don't need to compensate for pinch zoom or
+  // scale since the fixed container is the outer viewport, which sits below
+  // the page scale.
+  if (layer_tree_impl()->settings().use_pinch_virtual_viewport)
+    return delta_from_scroll;
+
   delta_from_scroll.Scale(1.f / scale);
 
   // The delta-from-pinch component requires some explanation: A viewport of

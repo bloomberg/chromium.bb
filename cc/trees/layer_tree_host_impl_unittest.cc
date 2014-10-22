@@ -906,19 +906,10 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
-    gfx::Vector2dF expected_container_size_delta(
-        container_layer->bounds().width(), container_layer->bounds().height());
-    expected_container_size_delta.Scale((1.f - page_scale_delta) /
-                                        (page_scale_factor * page_scale_delta));
 
     host_impl_->ScrollBegin(gfx::Point(50, 50), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
-    // While the gesture is still active, the scroll layer should have a
-    // container size delta = container->bounds() * ((1.f -
-    // page_scale_delta)/())
-    EXPECT_EQ(expected_container_size_delta,
-              scroll_layer->FixedContainerSizeDelta());
     host_impl_->PinchGestureEnd();
     host_impl_->ScrollEnd();
     EXPECT_FALSE(did_request_animate_);
@@ -2249,6 +2240,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
         clip_size_(layer_size_) {
     settings_.calculate_top_controls_position = true;
     settings_.top_controls_height = 50;
+    settings_.use_pinch_virtual_viewport = true;
 
     viewport_size_ =
         gfx::Size(clip_size_.width(),
@@ -2391,8 +2383,8 @@ TEST_F(LayerTreeHostImplTopControlsTest,
 }
 
 TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsByFractionalAmount) {
-  CreateHostImpl(settings_, CreateOutputSurface());
-  SetupTopControlsAndScrollLayer();
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(10, 10), gfx::Size(10, 10), gfx::Size(10, 10));
   DrawFrame();
 
   EXPECT_EQ(InputHandler::ScrollStarted,
@@ -2414,36 +2406,56 @@ TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsByFractionalAmount) {
             inner_viewport_scroll_layer->FixedContainerSizeDelta());
 }
 
-TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsWithPageScale) {
-  CreateHostImpl(settings_, CreateOutputSurface());
-  SetupTopControlsAndScrollLayer();
+// Test that the fixed position container delta is appropriately adjusted
+// by the top controls showing/hiding and page scale doesn't affect it.
+TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(100, 100), gfx::Size(100, 100), gfx::Size(100, 100));
   DrawFrame();
+
+  float page_scale = 1.5f;
+  float top_controls_height = settings_.top_controls_height;
+  LayerImpl* outer_viewport_scroll_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+
+  // Zoom in, since the fixed container is the outer viewport, the delta should
+  // not be scaled.
+  host_impl_->active_tree()->SetPageScaleFactorAndLimits(page_scale, 1.f, 2.f);
 
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
 
-  float page_scale = 1.5f;
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(page_scale, 1.f, 2.f);
-
-  gfx::Vector2dF top_controls_scroll_delta(0.f, 5.f);
-  gfx::Vector2dF expected_container_size_delta =
-      ScaleVector2d(top_controls_scroll_delta, 1.f / page_scale);
+  // Scroll down, the top controls hiding should expand the viewport size so
+  // the delta should be equal to the scroll distance.
+  gfx::Vector2dF top_controls_scroll_delta(0.f, 20.f);
   host_impl_->top_controls_manager()->ScrollBegin();
   host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
-  host_impl_->top_controls_manager()->ScrollEnd();
-
-  LayerImpl* inner_viewport_scroll_layer =
-      host_impl_->active_tree()->InnerViewportScrollLayer();
-  DCHECK(inner_viewport_scroll_layer);
+  EXPECT_EQ(top_controls_height - top_controls_scroll_delta.y(),
+            host_impl_->top_controls_manager()->ContentTopOffset());
+  EXPECT_VECTOR_EQ(top_controls_scroll_delta,
+                   outer_viewport_scroll_layer->FixedContainerSizeDelta());
   host_impl_->ScrollEnd();
 
-  // Use a tolerance that requires the container size delta to be within 0.01
-  // pixels.
-  double tolerance = 0.0001;
-  EXPECT_LT(
-      (expected_container_size_delta -
-       inner_viewport_scroll_layer->FixedContainerSizeDelta()).LengthSquared(),
-      tolerance);
+  // Scroll past the maximum extent. The delta shouldn't be greater than the
+  // top controls height.
+  host_impl_->top_controls_manager()->ScrollBegin();
+  host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
+  host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
+  host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
+  EXPECT_EQ(0.f, host_impl_->top_controls_manager()->ContentTopOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, top_controls_height),
+                   outer_viewport_scroll_layer->FixedContainerSizeDelta());
+  host_impl_->ScrollEnd();
+
+  // Scroll in the direction to make the top controls show.
+  host_impl_->top_controls_manager()->ScrollBegin();
+  host_impl_->top_controls_manager()->ScrollBy(-top_controls_scroll_delta);
+  EXPECT_EQ(top_controls_scroll_delta.y(),
+            host_impl_->top_controls_manager()->ContentTopOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(0, top_controls_height - top_controls_scroll_delta.y()),
+      outer_viewport_scroll_layer->FixedContainerSizeDelta());
+  host_impl_->top_controls_manager()->ScrollEnd();
 }
 
 // Ensure setting the top controls position explicitly using the setters on the
