@@ -20,7 +20,7 @@ function test() {
     {
         var request = event.data;
         var done = false;
-        if (request._type._name !== "websocket")
+        if (request.resourceType().name() !== "websocket")
             return;
         var previous_frames = frames;
         frames = [];

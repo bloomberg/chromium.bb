@@ -16,7 +16,7 @@ function test() {
     function onRequest(event)
     {
         var request = event.data;
-        if (request._type._name === "websocket") {
+        if (request.resourceType().name() === "websocket") {
             var websocketFrames = request.frames();
             for (var i = 0; i < websocketFrames.length; i++) {
                 var frame = websocketFrames[i];

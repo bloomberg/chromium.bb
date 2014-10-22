@@ -13,7 +13,7 @@ function test()
     {
         function format(resource)
         {
-            return resource.type.name() + " " + resource.mimeType + " " + resource.url;
+            return resource.resourceType().name() + " " + resource.mimeType + " " + resource.url;
         }
 
         InspectorTest.dumpResources(format);

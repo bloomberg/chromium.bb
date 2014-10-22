@@ -11,11 +11,11 @@ function test() {
     InspectorTest.addResult("Clicked '" + types.XHR.name() + "' button.");
 
     var requestFoo = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
-    requestFoo.type = types.Script;
+    requestFoo.setResourceType(types.Script);
     requestFoo.requestId = "foo";
     target._appendRequest(requestFoo);
     var requestBar = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
-    requestBar.type = types.Script;
+    requestBar.setResourceType(types.Script);
     requestBar.requestId = "bar";
     target._appendRequest(requestBar);
     target.refresh();
@@ -25,11 +25,11 @@ function test() {
     }
 
     InspectorTest.addResult("");
-    InspectorTest.addResult("Request [" + requestFoo.requestId + "] of type '" + requestFoo.type.name() + "' is hidden: " + isFilteredOut(requestFoo));
-    InspectorTest.addResult("Request [" + requestBar.requestId + "] of type '" + requestBar.type.name() + "' is hidden: " + isFilteredOut(requestBar));
+    InspectorTest.addResult("Request [" + requestFoo.requestId + "] of type '" + requestFoo.resourceType().name() + "' is hidden: " + isFilteredOut(requestFoo));
+    InspectorTest.addResult("Request [" + requestBar.requestId + "] of type '" + requestBar.resourceType().name() + "' is hidden: " + isFilteredOut(requestBar));
 
     InspectorTest.addResult("");
-    requestFoo.type = types.XHR;
+    requestFoo.setResourceType(types.XHR);
     target._refreshRequest(requestFoo);
     InspectorTest.addResult("Updated request [" + requestFoo.requestId + "] type.");
     target._refreshRequest(requestBar);
@@ -37,8 +37,8 @@ function test() {
     target.refresh();
 
     InspectorTest.addResult("");
-    InspectorTest.addResult("Request [" + requestFoo.requestId + "] of type '" + requestFoo.type.name() + "' is hidden: " + isFilteredOut(requestFoo));
-    InspectorTest.addResult("Request [" + requestBar.requestId + "] of type '" + requestBar.type.name() + "' is hidden: " + isFilteredOut(requestBar));
+    InspectorTest.addResult("Request [" + requestFoo.requestId + "] of type '" + requestFoo.resourceType().name() + "' is hidden: " + isFilteredOut(requestFoo));
+    InspectorTest.addResult("Request [" + requestBar.requestId + "] of type '" + requestBar.resourceType().name() + "' is hidden: " + isFilteredOut(requestBar));
 
     InspectorTest.completeTest();
 }

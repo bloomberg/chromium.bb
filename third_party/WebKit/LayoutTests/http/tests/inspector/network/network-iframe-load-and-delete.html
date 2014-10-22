@@ -47,7 +47,7 @@ function test()
         var requests = InspectorTest.networkRequests();
         var request1 = requests[requests.length - 2];
         InspectorTest.addResult(request1.url);
-        InspectorTest.addResult("resource.type: " + request1.type);
+        InspectorTest.addResult("resource.type: " + request1.resourceType());
         InspectorTest.addResult("resource.content before requesting content: " + request1.content);
         request1.requestContent(step3);
     }
@@ -60,7 +60,7 @@ function test()
 
         var request2 = requests[requests.length - 1];
         InspectorTest.addResult(request2.url);
-        InspectorTest.addResult("resource.type: " + request2.type);
+        InspectorTest.addResult("resource.type: " + request2.resourceType());
         InspectorTest.addResult("resource.content before requesting content: " + request2.content);
         request2.requestContent(step4);
     }

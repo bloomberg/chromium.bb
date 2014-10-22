@@ -11,7 +11,7 @@ function test()
     function step2()
     {
         var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request1.type.name());
+        InspectorTest.addResult(request1.resourceType().name());
         InspectorTest.completeTest();
     }
 }

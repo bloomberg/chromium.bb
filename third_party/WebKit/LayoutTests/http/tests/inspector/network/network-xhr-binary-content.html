@@ -12,7 +12,7 @@ function test()
     function step2()
     {
         var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("request.type: " + request.type);
+        InspectorTest.addResult("request.type: " + request.resourceType());
         InspectorTest.addResult("request.mimeType: " + request.mimeType);
         request.requestContent(step3);
     }
