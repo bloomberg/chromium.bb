@@ -213,3 +213,19 @@ function assertNotEquals(expected, actual) {
   }
 }
 
+// Returns has-video-input-device to the test if there's a webcam available on
+// the system.
+function hasVideoInputDeviceOnSystem() {
+  MediaStreamTrack.getSources(function(devices) {
+    var hasVideoInputDevice = false;
+    devices.forEach(function(device) {
+      if (device.kind == 'video')
+        hasVideoInputDevice = true;
+    });
+
+    if (hasVideoInputDevice)
+      sendValueToTest('has-video-input-device');
+    else
+      sendValueToTest('no-video-input-devices');
+  });
+}
