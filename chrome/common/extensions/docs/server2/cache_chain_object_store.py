@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from future import Future
+from future import All, Future
 from object_store import ObjectStore
 
 
@@ -29,8 +29,8 @@ class CacheChainObjectStore(ObjectStore):
 
   def SetMulti(self, mapping):
     self._cache.update(mapping)
-    for object_store in self._object_stores:
-      object_store.SetMulti(mapping)
+    return All([object_store.SetMulti(mapping)
+                for object_store in self._object_stores])
 
   def GetMulti(self, keys):
     missing_keys = list(keys)

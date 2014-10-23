@@ -21,12 +21,14 @@ class ObjectStore(object):
     raise NotImplementedError(self.__class__)
 
   def Set(self, key, value):
-    '''Sets key -> value in the object store.
+    '''Sets key -> value in the object store. Returns a |Future| which is
+    resolved once the key's new value has been stored.
     '''
-    self.SetMulti({ key: value })
+    return self.SetMulti({ key: value })
 
   def SetMulti(self, items):
     '''Atomically sets the mapping of keys to values in the object store.
+    Returns a |Future| which is resolved once the new mapping has been stored.
     '''
     raise NotImplementedError(self.__class__)
 

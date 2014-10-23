@@ -166,8 +166,9 @@ except ImportError:
 
     class Client(object):
       def set_multi_async(self, mapping, namespace='', time=0):
-        for k, v in mapping.iteritems():
-          memcache.set(k, v, namespace=namespace, time=time)
+        return _RPC(result=dict(
+          (k, memcache.set(k, v, namespace=namespace, time=time))
+           for k, v in mapping.iteritems()))
 
       def get_multi_async(self, keys, namespace='', time=0):
         return _RPC(result=dict(

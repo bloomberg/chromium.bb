@@ -34,6 +34,7 @@ class TestObjectStore(ObjectStore):
   def SetMulti(self, mapping):
     self._set_count += 1
     self._store.update(mapping)
+    return Future(value=None)
 
   def DelMulti(self, keys):
     self._del_count += 1

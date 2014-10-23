@@ -5,9 +5,10 @@
 import logging
 
 from appengine_wrappers import memcache
+from future import Future
 from object_store import ObjectStore
 
-class _AsyncMemcacheGetFuture(object):
+class _AsyncMemcacheIOFuture(object):
   def __init__(self, rpc):
     self._rpc = rpc
 
@@ -22,16 +23,18 @@ class MemcacheObjectStore(ObjectStore):
     # talking_alarm_clock always fails because the zip is too big.
     # TODO(kalman): store example zips in blobstore.
     if any(key.find('talking_alarm_clock') != -1 for key in mapping.iterkeys()):
-      return
+      return Future(value=None)
     try:
-      memcache.Client().set_multi_async(mapping, namespace=self._namespace)
+      rpc = memcache.Client().set_multi_async(mapping,
+          namespace=self._namespace)
+      return _AsyncMemcacheIOFuture(rpc)
     except ValueError as e:
       logging.error('Caught "ValueError: %s" when mapping keys %s' % (
           e, mapping.keys()))
 
   def GetMulti(self, keys):
     rpc = memcache.Client().get_multi_async(keys, namespace=self._namespace)
-    return _AsyncMemcacheGetFuture(rpc)
+    return _AsyncMemcacheIOFuture(rpc)
 
   def DelMulti(self, keys):
     memcache.delete_multi(keys, namespace=self._namespace)

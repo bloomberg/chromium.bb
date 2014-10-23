@@ -5,7 +5,7 @@
 from appengine_wrappers import db
 from datastore_models import PersistentObjectStoreItem
 from environment import IsDevServer
-from future import Future
+from future import All, Future
 from object_store import ObjectStore
 
 
@@ -16,14 +16,14 @@ class PersistentObjectStore(ObjectStore):
     self._namespace = namespace
 
   def SetMulti(self, mapping):
-    futures = []
-    for key, value in mapping.items():
-      futures.append(db.put_async(
-          PersistentObjectStoreItem.CreateItem(self._namespace, key, value)))
+    rpcs = [db.put_async(
+        PersistentObjectStoreItem.CreateItem(self._namespace, key, value))
+        for key, value in mapping.iteritems()]
     # If running the dev server, the futures don't complete until the server is
     # *quitting*. This is annoying. Flush now.
     if IsDevServer():
-      [future.wait() for future in futures]
+      [rpc.wait() for rpc in rpcs]
+    return All(Future(callback=lambda: rpc.get_result()) for rpc in rpcs)
 
   def GetMulti(self, keys):
     db_futures = dict(
