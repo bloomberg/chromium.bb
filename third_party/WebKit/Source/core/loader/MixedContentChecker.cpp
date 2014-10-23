@@ -249,6 +249,15 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
     if (contextType == ContextTypeBlockableUnlessLax)
         contextType = RuntimeEnabledFeatures::laxMixedContentCheckingEnabled() ? ContextTypeOptionallyBlockable : ContextTypeBlockable;
 
+    // If we're loading the main resource of a subframe, we need to take a close look at the loaded URL.
+    // If we're dealing with a CORS-enabled scheme, then block mixed frames as active content. Otherwise,
+    // treat frames as passive content.
+    //
+    // FIXME: Remove this temporary hack once we have a reasonable API for launching external applications
+    // via URLs. http://crbug.com/318788 and https://crbug.com/393481
+    if (resourceRequest.frameType() == WebURLRequest::FrameTypeNested && !SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(url.protocol()))
+        contextType = ContextTypeOptionallyBlockable;
+
     switch (contextType) {
     case ContextTypeOptionallyBlockable:
         allowed = client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);

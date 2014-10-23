@@ -230,15 +230,16 @@ class Driver(object):
         """Convert a test name to a URI.
 
         Tests which have an 'https' directory in their paths (e.g.
-        '/http/tests/security/mixedContent/https/test1.html') will be loaded
-        over HTTPS; all other tests over HTTP.
+        '/http/tests/security/mixedContent/https/test1.html') or '.https.' in
+        their name (e.g. 'http/tests/security/mixedContent/test1.https.html') will
+        be loaded over HTTPS; all other tests over HTTP.
         """
         if not self.is_http_test(test_name):
             return path.abspath_to_uri(self._port.host.platform, self._port.abspath_for_test(test_name))
 
         relative_path = test_name[len(self.HTTP_DIR):]
 
-        if "/https/" in test_name:
+        if "/https/" in test_name or ".https." in test_name:
             return "https://127.0.0.1:8443/" + relative_path
         return "http://127.0.0.1:8000/" + relative_path
 
