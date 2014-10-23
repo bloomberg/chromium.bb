@@ -40,7 +40,7 @@ void MoveMatchingRequests(
 
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
                                      ResourceProvider* provider)
-    : manager_(manager), provider_(provider) {
+    : manager_(manager), provider_(provider), next_render_pass_id_(1) {
   DCHECK(manager_);
 }
 
@@ -48,25 +48,23 @@ SurfaceAggregator::~SurfaceAggregator() {}
 
 class SurfaceAggregator::RenderPassIdAllocator {
  public:
-  explicit RenderPassIdAllocator(SurfaceId surface_id)
-      : surface_id_(surface_id), next_index_(1) {}
+  explicit RenderPassIdAllocator(int* next_index) : next_index_(next_index) {}
   ~RenderPassIdAllocator() {}
 
   void AddKnownPass(RenderPassId id) {
     if (id_to_index_map_.find(id) != id_to_index_map_.end())
       return;
-    id_to_index_map_[id] = next_index_++;
+    id_to_index_map_[id] = (*next_index_)++;
   }
 
   RenderPassId Remap(RenderPassId id) {
     DCHECK(id_to_index_map_.find(id) != id_to_index_map_.end());
-    return RenderPassId(surface_id_.id, id_to_index_map_[id]);
+    return RenderPassId(1, id_to_index_map_[id]);
   }
 
  private:
   base::hash_map<RenderPassId, int> id_to_index_map_;
-  SurfaceId surface_id_;
-  int next_index_;
+  int* next_index_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderPassIdAllocator);
 };
@@ -82,7 +80,7 @@ RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
                                             SurfaceId surface_id) {
   RenderPassIdAllocator* allocator = render_pass_allocator_map_.get(surface_id);
   if (!allocator) {
-    allocator = new RenderPassIdAllocator(surface_id);
+    allocator = new RenderPassIdAllocator(&next_render_pass_id_);
     render_pass_allocator_map_.set(surface_id, make_scoped_ptr(allocator));
   }
   allocator->AddKnownPass(surface_local_pass_id);

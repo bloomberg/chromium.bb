@@ -67,7 +67,7 @@ TEST_F(SurfaceAggregatorTest, ValidSurfaceNoFrame) {
 
 class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  public:
-  SurfaceAggregatorValidSurfaceTest() : allocator_(1u) {}
+  SurfaceAggregatorValidSurfaceTest() : allocator_(1u), child_allocator_(2u) {}
 
   virtual void SetUp() {
     SurfaceAggregatorTest::SetUp();
@@ -95,6 +95,12 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
     TestPassesMatchExpectations(
         expected_passes, expected_pass_count, &frame_data->render_pass_list);
+
+    // Ensure no duplicate pass ids output.
+    std::set<RenderPassId> used_passes;
+    for (auto* pass : frame_data->render_pass_list) {
+      EXPECT_TRUE(used_passes.insert(pass->id).second);
+    }
 
     EXPECT_EQ(expected_surface_count,
               aggregator_.previous_contained_surfaces().size());
@@ -133,6 +139,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  protected:
   SurfaceId root_surface_id_;
   SurfaceIdAllocator allocator_;
+  SurfaceIdAllocator child_allocator_;
 };
 
 // Tests that a very simple frame containing only two solid color quads makes it
@@ -153,8 +160,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSimpleFrame) {
                             test::Quad::SolidColorQuad(SK_ColorLTGRAY)},
                            {test::Quad::SolidColorQuad(SK_ColorGRAY),
                             test::Quad::SolidColorQuad(SK_ColorDKGRAY)}};
-  test::Pass passes[] = {test::Pass(quads[0], arraysize(quads[0])),
-                         test::Pass(quads[1], arraysize(quads[1]))};
+  test::Pass passes[] = {
+      test::Pass(quads[0], arraysize(quads[0]), RenderPassId(1, 1)),
+      test::Pass(quads[1], arraysize(quads[1]), RenderPassId(1, 2))};
 
   SubmitFrame(passes, arraysize(passes), root_surface_id_);
 
@@ -341,7 +349,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
 
 // This tests referencing a surface that has multiple render passes.
 TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
-  SurfaceId embedded_surface_id = allocator_.GenerateId();
+  SurfaceId embedded_surface_id = child_allocator_.GenerateId();
   factory_.Create(embedded_surface_id, SurfaceSize());
 
   RenderPassId pass_ids[] = {RenderPassId(1, 1), RenderPassId(1, 2),

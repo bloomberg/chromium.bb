@@ -66,6 +66,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   typedef base::ScopedPtrHashMap<SurfaceId, RenderPassIdAllocator>
       RenderPassIdAllocatorMap;
   RenderPassIdAllocatorMap render_pass_allocator_map_;
+  int next_render_pass_id_;
 
   typedef base::hash_map<SurfaceId, int> SurfaceToResourceChildIdMap;
   SurfaceToResourceChildIdMap surface_id_to_resource_child_id_;
