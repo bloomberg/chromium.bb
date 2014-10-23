@@ -189,10 +189,6 @@
       "platforms": ["linux", "win"]
     },
     {
-      "test": "mojo_view_manager_unittests",
-      "platforms": ["linux"]
-    },
-    {
       "test": "views_unittests",
       "platforms": ["linux", "win"]
     },
