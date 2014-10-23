@@ -195,17 +195,6 @@ SubtreeContentTransformScope::~SubtreeContentTransformScope()
 
 float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const RenderObject* renderer)
 {
-    ASSERT(renderer);
-
-    AffineTransform ctm;
-    // FIXME: calculateDeviceSpaceTransformation() queries layer compositing state - which is not
-    // supported during layout. Hence, the result may not include all CSS transforms.
-    calculateDeviceSpaceTransformation(renderer, ctm);
-    return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
-}
-
-void SVGRenderingContext::calculateDeviceSpaceTransformation(const RenderObject* renderer, AffineTransform& absoluteTransform)
-{
     // FIXME: trying to compute a device space transform at record time is wrong. All clients
     // should be updated to avoid relying on this information, and the method should be removed.
 
@@ -214,15 +203,17 @@ void SVGRenderingContext::calculateDeviceSpaceTransformation(const RenderObject*
     float deviceScaleFactor = renderer->document().frameHost()->deviceScaleFactor();
 
     // Walk up the render tree, accumulating SVG transforms.
-    absoluteTransform = currentContentTransformation();
+    AffineTransform ctm = currentContentTransformation();
     while (renderer) {
-        absoluteTransform = renderer->localToParentTransform() * absoluteTransform;
+        ctm = renderer->localToParentTransform() * ctm;
         if (renderer->isSVGRoot())
             break;
         renderer = renderer->parent();
     }
 
     // Continue walking up the layer tree, accumulating CSS transforms.
+    // FIXME: this queries layer compositing state - which is not
+    // supported during layout. Hence, the result may not include all CSS transforms.
     RenderLayer* layer = renderer ? renderer->enclosingLayer() : 0;
     while (layer && layer->isAllowedToQueryCompositingState()) {
         // We can stop at compositing layers, to match the backing resolution.
@@ -234,12 +225,14 @@ void SVGRenderingContext::calculateDeviceSpaceTransformation(const RenderObject*
             break;
 
         if (TransformationMatrix* layerTransform = layer->transform())
-            absoluteTransform = layerTransform->toAffineTransform() * absoluteTransform;
+            ctm = layerTransform->toAffineTransform() * ctm;
 
         layer = layer->parent();
     }
 
-    absoluteTransform.scale(deviceScaleFactor);
+    ctm.scale(deviceScaleFactor);
+
+    return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
 }
 
 void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* item)

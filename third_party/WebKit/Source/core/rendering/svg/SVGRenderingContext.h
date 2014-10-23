@@ -85,7 +85,6 @@ public:
     static void renderSubtree(GraphicsContext*, RenderObject*);
 
     static float calculateScreenFontSizeScalingFactor(const RenderObject*);
-    static void calculateDeviceSpaceTransformation(const RenderObject*, AffineTransform& absoluteTransform);
 
     // Support for the buffered-rendering hint.
     bool bufferForeground(OwnPtr<ImageBuffer>&);
