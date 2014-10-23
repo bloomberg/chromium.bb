@@ -17,7 +17,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/gpu_support.h"
-#include "ash/host/ash_window_tree_host.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -57,10 +56,8 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
-#include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -68,8 +65,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/debug_utils.h"
-#include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
@@ -82,15 +77,6 @@ namespace ash {
 namespace {
 
 using base::UserMetricsAction;
-
-bool DebugShortcutsEnabled() {
-#if defined(NDEBUG)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDebugShortcuts);
-#else
-  return true;
-#endif
-}
 
 bool HandleAccessibleFocusCycle(bool reverse) {
   if (reverse) {
@@ -506,11 +492,6 @@ bool HandleToggleFullscreen(ui::KeyboardCode key_code) {
   return true;
 }
 
-bool HandleToggleRootWindowFullScreen() {
-  Shell::GetPrimaryRootWindowController()->ash_host()->ToggleFullScreen();
-  return true;
-}
-
 bool HandleWindowSnapOrDock(int action) {
   wm::WindowState* window_state = wm::GetActiveWindowState();
   // Disable window snapping shortcut key for full screen window due to
@@ -541,12 +522,6 @@ bool HandleWindowMinimize() {
 }
 
 #if defined(OS_CHROMEOS)
-bool HandleAddRemoveDisplay() {
-  base::RecordAction(UserMetricsAction("Accel_Add_Remove_Display"));
-  Shell::GetInstance()->display_manager()->AddRemoveDisplay();
-  return true;
-}
-
 bool HandleCrosh() {
   base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
@@ -682,71 +657,6 @@ bool HandleToggleCapsLock(ui::KeyboardCode key_code,
 
 #endif  // defined(OS_CHROMEOS)
 
-// Debug print methods.
-
-bool HandlePrintLayerHierarchy() {
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (size_t i = 0; i < root_windows.size(); ++i) {
-    ui::PrintLayerHierarchy(
-        root_windows[i]->layer(),
-        root_windows[i]->GetHost()->dispatcher()->GetLastMouseLocationInRoot());
-  }
-  return true;
-}
-
-bool HandlePrintViewHierarchy() {
-  aura::Window* active_window = ash::wm::GetActiveWindow();
-  if (!active_window)
-    return true;
-  views::Widget* browser_widget =
-      views::Widget::GetWidgetForNativeWindow(active_window);
-  if (!browser_widget)
-    return true;
-  views::PrintViewHierarchy(browser_widget->GetRootView());
-  return true;
-}
-
-void PrintWindowHierarchy(aura::Window* window,
-                          int indent,
-                          std::ostringstream* out) {
-  std::string indent_str(indent, ' ');
-  std::string name(window->name());
-  if (name.empty())
-    name = "\"\"";
-  *out << indent_str << name << " (" << window << ")"
-       << " type=" << window->type()
-       << (wm::IsActiveWindow(window) ? " [active] " : " ")
-       << (window->IsVisible() ? " visible " : " ")
-       << window->bounds().ToString()
-       << '\n';
-
-  for (size_t i = 0; i < window->children().size(); ++i)
-    PrintWindowHierarchy(window->children()[i], indent + 3, out);
-}
-
-bool HandlePrintWindowHierarchy() {
-  Shell::RootWindowControllerList controllers =
-      Shell::GetAllRootWindowControllers();
-  for (size_t i = 0; i < controllers.size(); ++i) {
-    std::ostringstream out;
-    out << "RootWindow " << i << ":\n";
-    PrintWindowHierarchy(controllers[i]->GetRootWindow(), 0, &out);
-    // Error so logs can be collected from end-users.
-    LOG(ERROR) << out.str();
-  }
-  return true;
-}
-
-bool HandlePrintUIHierarchies() {
-  // This is a separate command so the user only has to hit one key to generate
-  // all the logs. Developers use the individual dumps repeatedly, so keep
-  // those as separate commands to avoid spamming their logs.
-  HandlePrintLayerHierarchy();
-  HandlePrintWindowHierarchy();
-  HandlePrintViewHierarchy();
-  return true;
-}
-
 class AutoSet {
  public:
   AutoSet(ui::Accelerator* scoped, ui::Accelerator new_value)
@@ -798,14 +708,11 @@ void AcceleratorController::Init() {
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
-#if !defined(NDEBUG)
-  RegisterAccelerators(kDesktopAcceleratorData, kDesktopAcceleratorDataLength);
-#endif
-
-  if (DebugShortcutsEnabled()) {
+  if (debug::DebugAcceleratorsEnabled()) {
     RegisterAccelerators(kDebugAcceleratorData, kDebugAcceleratorDataLength);
-    for (size_t i = 0; i < kReservedDebugActionsLength; ++i)
-      reserved_actions_.insert(kReservedDebugActions[i]);
+    // All debug accelerators are reserved.
+    for (size_t i = 0; i < kDebugAcceleratorDataLength; ++i)
+      reserved_actions_.insert(kDebugAcceleratorData[i].action);
   }
 
 #if defined(OS_CHROMEOS)
@@ -913,8 +820,6 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_OVERVIEW:
       return ToggleOverview(accelerator);
 #if defined(OS_CHROMEOS)
-    case ADD_REMOVE_DISPLAY:
-      return HandleAddRemoveDisplay();
     case TOGGLE_MIRROR_MODE:
       return HandleToggleMirrorMode();
     case LOCK_SCREEN:
@@ -925,7 +830,7 @@ bool AcceleratorController::PerformAction(int action,
       return HandleCrosh();
     case SILENCE_SPOKEN_FEEDBACK:
       HandleSilenceSpokenFeedback();
-      break;
+      return false;
     case SWAP_PRIMARY_DISPLAY:
       return HandleSwapPrimaryDisplay();
     case SWITCH_TO_NEXT_USER:
@@ -980,21 +885,21 @@ bool AcceleratorController::PerformAction(int action,
     case BRIGHTNESS_DOWN:
       if (brightness_control_delegate_)
         return brightness_control_delegate_->HandleBrightnessDown(accelerator);
-      break;
+      return false;
     case BRIGHTNESS_UP:
       if (brightness_control_delegate_)
         return brightness_control_delegate_->HandleBrightnessUp(accelerator);
-      break;
+      return false;
     case KEYBOARD_BRIGHTNESS_DOWN:
       if (keyboard_brightness_control_delegate_)
         return keyboard_brightness_control_delegate_->
             HandleKeyboardBrightnessDown(accelerator);
-      break;
+      return false;
     case KEYBOARD_BRIGHTNESS_UP:
       if (keyboard_brightness_control_delegate_)
         return keyboard_brightness_control_delegate_->
             HandleKeyboardBrightnessUp(accelerator);
-      break;
+      return false;
     case VOLUME_MUTE: {
       ash::VolumeControlDelegate* volume_delegate =
           shell->system_tray_delegate()->GetVolumeControlDelegate();
@@ -1033,7 +938,8 @@ bool AcceleratorController::PerformAction(int action,
     case PREVIOUS_IME:
       return HandlePreviousIme(ime_control_delegate_.get(), accelerator);
     case PRINT_UI_HIERARCHIES:
-      return HandlePrintUIHierarchies();
+      debug::PrintUIHierarchies();
+      return true;
     case SWITCH_IME:
       return HandleSwitchIme(ime_control_delegate_.get(), accelerator);
     case LAUNCH_APP_0:
@@ -1076,22 +982,6 @@ bool AcceleratorController::PerformAction(int action,
       return HandleRotateActiveWindow();
     case ROTATE_SCREEN:
       return HandleRotateScreen();
-    case TOGGLE_DESKTOP_BACKGROUND_MODE:
-      return debug::CycleDesktopBackgroundMode();
-    case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
-      return HandleToggleRootWindowFullScreen();
-    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-      Shell::GetInstance()->display_manager()->ToggleDisplayScaleFactor();
-      return true;
-    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
-      ash::debug::ToggleShowDebugBorders();
-      return true;
-    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
-      ash::debug::ToggleShowFpsCounter();
-      return true;
-    case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
-      ash::debug::ToggleShowPaintRects();
-      return true;
     case MAGNIFY_SCREEN_ZOOM_IN:
       return HandleMagnifyScreen(1);
     case MAGNIFY_SCREEN_ZOOM_OUT:
@@ -1122,15 +1012,14 @@ bool AcceleratorController::PerformAction(int action,
       Shell::GetInstance()->power_button_controller()->
           OnLockButtonEvent(action == LOCK_PRESSED, base::TimeTicks());
       return true;
-    case PRINT_LAYER_HIERARCHY:
-      return HandlePrintLayerHierarchy();
-    case PRINT_VIEW_HIERARCHY:
-      return HandlePrintViewHierarchy();
-    case PRINT_WINDOW_HIERARCHY:
-      return HandlePrintWindowHierarchy();
     default:
-      NOTREACHED() << "Unhandled action " << action;
+      DCHECK(debug::DebugAcceleratorsEnabled())
+          << "Unhandled action " << action;
   }
+
+  // If |action| is a debug action, run it.
+  debug::PerformDebugAction(action);
+
   return false;
 }
 

@@ -12,9 +12,16 @@
 namespace ash {
 namespace debug {
 
-// Cycle through different wallpaper modes. This is used when running
-// on desktop for testing.
-ASH_EXPORT bool CycleDesktopBackgroundMode();
+// Print the views::View, ui::Layer and aura::Window hierarchies. This may be
+// useful in debugging user reported bugs.
+ASH_EXPORT void PrintUIHierarchies();
+
+// Returns true if debug accelerators are enabled.
+ASH_EXPORT bool DebugAcceleratorsEnabled();
+
+// Performs |action| if |action| belongs to a debug-only accelerator and
+// debug accelerators are enabled.
+ASH_EXPORT void PerformDebugAction(int action);
 
 }  // namespace debug
 }  // namespace ash

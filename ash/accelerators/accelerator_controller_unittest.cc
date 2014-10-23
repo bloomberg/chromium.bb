@@ -977,17 +977,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
 #endif
 
-#if !defined(NDEBUG)
-  // ToggleDesktopBackgroundMode
-  EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)));
-#if !defined(OS_LINUX)
-  // ToggleDesktopFullScreen (not implemented yet on Linux)
-  EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_F11, ui::EF_CONTROL_DOWN)));
-#endif  // OS_LINUX
-#endif  // !NDEBUG
-
 #if !defined(OS_WIN)
   // Exit
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
@@ -1326,11 +1315,9 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   std::set<AcceleratorAction> all_actions;
   for (size_t i = 0 ; i < kAcceleratorDataLength; ++i)
     all_actions.insert(kAcceleratorData[i].action);
-#if !defined(NDEBUG)
-  std::set<AcceleratorAction> all_desktop_actions;
-  for (size_t i = 0 ; i < kDesktopAcceleratorDataLength; ++i)
-    all_desktop_actions.insert(kDesktopAcceleratorData[i].action);
-#endif
+  std::set<AcceleratorAction> all_debug_actions;
+  for (size_t i = 0 ; i < kDebugAcceleratorDataLength; ++i)
+    all_debug_actions.insert(kDebugAcceleratorData[i].action);
 
   std::set<AcceleratorAction> actionsAllowedAtModalWindow;
   for (size_t k = 0 ; k < kActionsAllowedAtModalWindowLength; ++k)
@@ -1338,14 +1325,10 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   for (std::set<AcceleratorAction>::const_iterator it =
            actionsAllowedAtModalWindow.begin();
        it != actionsAllowedAtModalWindow.end(); ++it) {
-    EXPECT_TRUE(all_actions.find(*it) != all_actions.end()
-
-#if !defined(NDEBUG)
-                || all_desktop_actions.find(*it) != all_desktop_actions.end()
-#endif
-                )
+    EXPECT_TRUE(all_actions.find(*it) != all_actions.end() ||
+                all_debug_actions.find(*it) != all_debug_actions.end())
         << " action from kActionsAllowedAtModalWindow"
-        << " not found in kAcceleratorData or kDesktopAcceleratorData. "
+        << " not found in kAcceleratorData or kDebugAcceleratorData. "
         << "action: " << *it;
   }
   scoped_ptr<aura::Window> window(

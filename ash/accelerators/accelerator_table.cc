@@ -179,8 +179,7 @@ const AcceleratorData kAcceleratorData[] = {
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
-#if !defined(NDEBUG)
-const AcceleratorData kDesktopAcceleratorData[] = {
+const AcceleratorData kDebugAcceleratorData[] = {
 #if defined(OS_CHROMEOS)
   // Extra shortcut for debug build to control magnifier on linux desktop.
   { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN,
@@ -191,11 +190,11 @@ const AcceleratorData kDesktopAcceleratorData[] = {
   { true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
   { true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
-    ADD_REMOVE_DISPLAY },
+    DEBUG_ADD_REMOVE_DISPLAY },
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
     TOGGLE_MIRROR_MODE },
   { true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI },
-  // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
+  // Extra shortcut for display swapping as alt-f4 is taken on linux desktop.
   { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     SWAP_PRIMARY_DISPLAY },
 #endif
@@ -204,26 +203,20 @@ const AcceleratorData kDesktopAcceleratorData[] = {
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ROTATE_SCREEN },
   // For testing on systems where Alt-Tab is already mapped.
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
-
-  { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
+  { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN,
+    DEBUG_TOGGLE_ROOT_WINDOW_FULL_SCREEN },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
       CYCLE_BACKWARD_MRU },
   { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    TOGGLE_DESKTOP_BACKGROUND_MODE },
+    DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE },
   { true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     TOGGLE_FULLSCREEN },
-};
-
-const size_t kDesktopAcceleratorDataLength = arraysize(kDesktopAcceleratorData);
-#endif
-
-const AcceleratorData kDebugAcceleratorData[] = {
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    PRINT_LAYER_HIERARCHY },
+    DEBUG_PRINT_LAYER_HIERARCHY },
   { true, ui::VKEY_V, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    PRINT_VIEW_HIERARCHY },
+    DEBUG_PRINT_VIEW_HIERARCHY },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    PRINT_WINDOW_HIERARCHY },
+    DEBUG_PRINT_WINDOW_HIERARCHY },
   { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     DEBUG_TOGGLE_DEVICE_SCALE_FACTOR },
   { true, ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -255,21 +248,12 @@ const AcceleratorAction kReservedActions[] = {
 
 const size_t kReservedActionsLength = arraysize(kReservedActions);
 
-const AcceleratorAction kReservedDebugActions[] = {
-  PRINT_LAYER_HIERARCHY,
-  PRINT_VIEW_HIERARCHY,
-  PRINT_WINDOW_HIERARCHY,
-  DEBUG_TOGGLE_DEVICE_SCALE_FACTOR,
-  DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
-  DEBUG_TOGGLE_SHOW_FPS_COUNTER,
-  DEBUG_TOGGLE_SHOW_PAINT_RECTS,
-};
-
-const size_t kReservedDebugActionsLength = arraysize(kReservedDebugActions);
-
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
+  DEBUG_PRINT_LAYER_HIERARCHY,
+  DEBUG_PRINT_VIEW_HIERARCHY,
+  DEBUG_PRINT_WINDOW_HIERARCHY,
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
@@ -277,10 +261,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
   NEXT_IME,
   PREVIOUS_IME,
-  PRINT_LAYER_HIERARCHY,
   PRINT_UI_HIERARCHIES,
-  PRINT_VIEW_HIERARCHY,
-  PRINT_WINDOW_HIERARCHY,
   ROTATE_WINDOW,
   SHOW_SYSTEM_TRAY_BUBBLE,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
@@ -293,10 +274,10 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
-  TOGGLE_TOUCH_VIEW_TESTING,
-  TOGGLE_SPOKEN_FEEDBACK,
-  ADD_REMOVE_DISPLAY,
+  DEBUG_ADD_REMOVE_DISPLAY,
   DISABLE_GPU_WATCHDOG,
+  TOGGLE_SPOKEN_FEEDBACK,
+  TOGGLE_TOUCH_VIEW_TESTING,
   TOGGLE_MIRROR_MODE,
 #endif
 #if defined(OS_CHROMEOS) && !defined(NDEBUG)
@@ -347,13 +328,11 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
-  SWAP_PRIMARY_DISPLAY,
-  TOGGLE_SPOKEN_FEEDBACK,
-#if !defined(NDEBUG)
-  ADD_REMOVE_DISPLAY,
-#endif
+  DEBUG_ADD_REMOVE_DISPLAY,
   LOCK_SCREEN,
+  SWAP_PRIMARY_DISPLAY,
   TOGGLE_MIRROR_MODE,
+  TOGGLE_SPOKEN_FEEDBACK,
 #endif
 };
 
@@ -383,6 +362,9 @@ const size_t kNonrepeatableActionsLength =
 const AcceleratorAction kActionsAllowedInAppMode[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
+  DEBUG_PRINT_LAYER_HIERARCHY,
+  DEBUG_PRINT_VIEW_HIERARCHY,
+  DEBUG_PRINT_WINDOW_HIERARCHY,
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
@@ -395,10 +377,7 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   POWER_PRESSED,
   POWER_RELEASED,
   PREVIOUS_IME,
-  PRINT_LAYER_HIERARCHY,
   PRINT_UI_HIERARCHIES,
-  PRINT_VIEW_HIERARCHY,
-  PRINT_WINDOW_HIERARCHY,
   ROTATE_SCREEN,
   SCALE_UI_DOWN,
   SCALE_UI_RESET,
@@ -411,11 +390,11 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
-  SWAP_PRIMARY_DISPLAY,
-  TOGGLE_SPOKEN_FEEDBACK,
-  ADD_REMOVE_DISPLAY,
+  DEBUG_ADD_REMOVE_DISPLAY,
   DISABLE_GPU_WATCHDOG,
+  SWAP_PRIMARY_DISPLAY,
   TOGGLE_MIRROR_MODE,
+  TOGGLE_SPOKEN_FEEDBACK,
 #endif  // defined(OS_CHROMEOS)
 };
 
