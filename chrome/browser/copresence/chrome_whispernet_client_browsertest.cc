@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/copresence/public/copresence_constants.h"
 #include "media/base/audio_bus.h"
 
 namespace {
@@ -73,7 +74,8 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     expected_token_ = kSixZeros;
     expected_audible_ = audible;
 
-    client->EncodeToken(kSixZeros, audible);
+    client->EncodeToken(kSixZeros,
+                        audible ? copresence::AUDIBLE : copresence::INAUDIBLE);
     run_loop_->Run();
 
     EXPECT_GT(saved_samples_->frames(), 0);
@@ -102,7 +104,9 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
            saved_samples_->channel(0),
            sizeof(float) * saved_samples_->frames());
 
-    client->DecodeSamples(AudioBusToString(samples_bus));
+    client->DecodeSamples(
+        expect_audible ? copresence::AUDIBLE : copresence::INAUDIBLE,
+        AudioBusToString(samples_bus));
     run_loop_->Run();
   }
 
@@ -128,10 +132,10 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
 
   void SamplesCallback(
       const std::string& token,
-      bool audible,
+      copresence::AudioType type,
       const scoped_refptr<media::AudioBusRefCounted>& samples) {
     EXPECT_EQ(expected_token_, token);
-    EXPECT_EQ(expected_audible_, audible);
+    EXPECT_EQ(expected_audible_, type == copresence::AUDIBLE);
     saved_samples_ = samples;
     ASSERT_TRUE(run_loop_);
     run_loop_->Quit();

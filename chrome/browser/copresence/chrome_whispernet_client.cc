@@ -63,7 +63,7 @@ void ChromeWhispernetClient::Shutdown() {
 
 // Fire an event to request a token encode.
 void ChromeWhispernetClient::EncodeToken(const std::string& token,
-                                         bool audible) {
+                                         copresence::AudioType type) {
   DCHECK(extension_loaded_);
   DCHECK(browser_context_);
   DCHECK(extensions::EventRouter::Get(browser_context_));
@@ -71,7 +71,7 @@ void ChromeWhispernetClient::EncodeToken(const std::string& token,
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::copresence_private::OnEncodeTokenRequest::kEventName,
       extensions::api::copresence_private::OnEncodeTokenRequest::Create(
-          token, audible),
+          token, type == copresence::AUDIBLE),
       browser_context_));
 
   extensions::EventRouter::Get(browser_context_)
@@ -79,15 +79,22 @@ void ChromeWhispernetClient::EncodeToken(const std::string& token,
 }
 
 // Fire an event to request a decode for the given samples.
-void ChromeWhispernetClient::DecodeSamples(const std::string& samples) {
+void ChromeWhispernetClient::DecodeSamples(copresence::AudioType type,
+                                           const std::string& samples) {
   DCHECK(extension_loaded_);
   DCHECK(browser_context_);
   DCHECK(extensions::EventRouter::Get(browser_context_));
 
+  extensions::api::copresence_private::DecodeSamplesParameters request_type;
+  request_type.decode_audible =
+      type == copresence::AUDIBLE || type == copresence::BOTH;
+  request_type.decode_inaudible =
+      type == copresence::INAUDIBLE || type == copresence::BOTH;
+
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::copresence_private::OnDecodeSamplesRequest::kEventName,
       extensions::api::copresence_private::OnDecodeSamplesRequest::Create(
-          samples),
+          samples, request_type),
       browser_context_));
 
   extensions::EventRouter::Get(browser_context_)

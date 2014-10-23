@@ -117,7 +117,7 @@ class RpcHandler {
   // whispernet, setting the samples return callback to samples_callback.
   void AudioDirectiveListToWhispernetConnector(
       const std::string& token,
-      bool audible,
+      AudioType type,
       const WhispernetClient::SamplesCallback& samples_callback);
 
   CopresenceDelegate* delegate_;  // Belongs to the caller.

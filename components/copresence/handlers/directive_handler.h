@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
-#include "components/copresence/mediums/audio/audio_recorder.h"
+#include "components/copresence/mediums/audio/audio_manager.h"
 
 namespace copresence {
 
@@ -28,17 +28,15 @@ class DirectiveHandler {
   // This function must be called before any others.
   // TODO(ckehoe): Instead of this, use a static Create() method
   //               and make the constructor private.
-  virtual void Initialize(
-      const AudioRecorder::DecodeSamplesCallback& decode_cb,
-      const AudioDirectiveHandler::EncodeTokenCallback& encode_cb);
+  virtual void Initialize(const AudioManager::DecodeSamplesCallback& decode_cb,
+                          const AudioManager::EncodeTokenCallback& encode_cb);
 
   // Adds a directive to handle.
   virtual void AddDirective(const copresence::Directive& directive);
   // Removes any directives associated with the given operation id.
   virtual void RemoveDirectives(const std::string& op_id);
 
-  const std::string& CurrentAudibleToken() const;
-  const std::string& CurrentInaudibleToken() const;
+  const std::string GetCurrentAudioToken(AudioType type) const;
 
  private:
   scoped_ptr<AudioDirectiveHandler> audio_handler_;

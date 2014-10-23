@@ -49,7 +49,7 @@ function WhisperEncoder(params, whisperNacl) {
     sample_rate: params.sampleRate || 48000.0,
     upsampling_factor: params.bitsPerSample || 16,
   };
-  this.whisperNacl_.send(JSON.stringify(msg));
+  this.whisperNacl_.send(msg);
 }
 
 /**
@@ -71,7 +71,7 @@ WhisperEncoder.prototype.encode = function(token, audible, raw) {
     use_dtmf: audible,
     return_raw_samples: raw
   };
-  this.whisperNacl_.send(JSON.stringify(msg));
+  this.whisperNacl_.send(msg);
 };
 
 /**
@@ -119,7 +119,7 @@ function WhisperDecoder(params, whisperNacl) {
     max_candidates: 1,
     max_buffer_duration_in_seconds: 3
   };
-  this.whisperNacl_.send(JSON.stringify(msg));
+  this.whisperNacl_.send(msg);
 }
 
 /**
@@ -129,7 +129,7 @@ WhisperDecoder.prototype.wipeDecoder = function() {
   var msg = {
     type: 'wipe_decode_buffer'
   };
-  this.whisperNacl_.send(JSON.stringify(msg));
+  this.whisperNacl_.send(msg);
 };
 
 /**
@@ -139,17 +139,23 @@ WhisperDecoder.prototype.detectBroadcast = function() {
   var msg = {
     type: 'detect_broadcast'
   };
-  this.whisperNacl_.send(JSON.stringify(msg));
+  this.whisperNacl_.send(msg);
 };
 
 /**
  * Method to request the decoder to process samples.
  * @param {ArrayBuffer} samples Array of samples to process.
+ * @param {Object} type Type of decoding to perform.
  */
-WhisperDecoder.prototype.processSamples = function(samples) {
-  // For sample processing, the Nacl module doesn't expect any frills in the
-  // message, just send the samples directly.
-  this.whisperNacl_.send(samples);
+WhisperDecoder.prototype.processSamples = function(samples, type) {
+  var msg = {
+    type: 'decode_tokens',
+    decode_audible: type.decodeAudible,
+    decode_inaudible: type.decodeInaudible,
+    data: samples,
+  };
+
+  this.whisperNacl_.send(msg);
 };
 
 /**
@@ -179,7 +185,7 @@ WhisperDecoder.prototype.onDetectBroadcast = function(callback) {
 WhisperDecoder.prototype.onNaclMessage_ = function(e) {
   var msg = e.data;
   if (msg.type == 'decode_tokens_response') {
-    this.handleCandidates_(JSON.parse(msg.tokens), msg.audible);
+    this.handleCandidates_(msg.tokens, msg.audible);
   } else if (msg.type == 'detect_broadcast_response') {
     this.detectBroadcastCallback_(msg.detected);
   }

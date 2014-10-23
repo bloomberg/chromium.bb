@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/public/whispernet_client.h"
 
 namespace content {
@@ -30,7 +31,7 @@ class AudioBusRefCounted;
 
 // This class is responsible for communication with our ledger_proxy extension
 // that talks to the whispernet audio library.
-class ChromeWhispernetClient : public copresence::WhispernetClient {
+class ChromeWhispernetClient final : public copresence::WhispernetClient {
  public:
   // The browser context needs to outlive this class.
   explicit ChromeWhispernetClient(content::BrowserContext* browser_context);
@@ -40,8 +41,10 @@ class ChromeWhispernetClient : public copresence::WhispernetClient {
   void Initialize(const SuccessCallback& init_callback) override;
   void Shutdown() override;
 
-  void EncodeToken(const std::string& token, bool audible) override;
-  void DecodeSamples(const std::string& samples) override;
+  void EncodeToken(const std::string& token,
+                   copresence::AudioType type) override;
+  void DecodeSamples(copresence::AudioType type,
+                     const std::string& samples) override;
   void DetectBroadcast() override;
 
   void RegisterTokensCallback(const TokensCallback& tokens_callback) override;

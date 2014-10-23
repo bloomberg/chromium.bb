@@ -11,6 +11,7 @@
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 #include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/common/extensions/api/copresence_private.h"
+#include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "media/base/audio_bus.h"
 
@@ -63,7 +64,9 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
          params->samples.size());
 
   GetWhispernetClient()->GetSamplesCallback().Run(
-      params->token.token, params->token.audible, samples);
+      params->token.token,
+      params->token.audible ? copresence::AUDIBLE : copresence::INAUDIBLE,
+      samples);
   return RespondNow(NoArguments());
 }
 

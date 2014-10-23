@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "components/copresence/handlers/directive_handler.h"
+#include "components/copresence/mediums/audio/audio_manager.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
@@ -46,9 +47,9 @@ class FakeDirectiveHandler : public DirectiveHandler {
     return added_directives_;
   }
 
-  void Initialize(
-      const AudioRecorder::DecodeSamplesCallback& decode_cb,
-      const AudioDirectiveHandler::EncodeTokenCallback& encode_cb) override {}
+  void Initialize(const AudioManager::DecodeSamplesCallback& decode_cb,
+                  const AudioManager::EncodeTokenCallback& encode_cb) override {
+  }
 
   void AddDirective(const Directive& directive) override {
     added_directives_.push_back(directive);

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "components/copresence/mediums/audio/audio_player_impl.h"
 #include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/test/audio_test_support.h"
 #include "media/audio/audio_manager.h"
@@ -81,7 +82,7 @@ class AudioPlayerTest : public testing::Test,
 
   void CreatePlayer() {
     DeletePlayer();
-    player_ = new AudioPlayer();
+    player_ = new AudioPlayerImpl();
     player_->set_output_stream_for_testing(new TestAudioOutputStream(
         kDefaultFrameCount,
         kMaxFrameCount,
@@ -129,7 +130,8 @@ class AudioPlayerTest : public testing::Test,
   scoped_ptr<media::AudioBus> buffer_;
   int buffer_index_;
 
-  AudioPlayer* player_;
+  // Deleted by calling Finalize() on the object.
+  AudioPlayerImpl* player_;
   base::MessageLoop message_loop_;
 };
 

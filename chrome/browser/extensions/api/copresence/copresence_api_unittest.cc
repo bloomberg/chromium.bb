@@ -12,7 +12,7 @@
 #include "components/copresence/public/copresence_manager.h"
 
 using base::ListValue;
-using copresence::AUDIBLE;
+using copresence::AUDIO_CONFIGURATION_AUDIBLE;
 using copresence::AUDIO_CONFIGURATION_UNKNOWN;
 using copresence::BROADCAST_ONLY;
 using copresence::CopresenceDelegate;
@@ -193,7 +193,7 @@ TEST_F(CopresenceApiUnittest, Subscribe) {
   copresence::BroadcastScanConfiguration broadcast_scan =
       subscription.token_exchange_strategy().broadcast_scan_configuration();
   EXPECT_EQ(BROADCAST_ONLY, broadcast_scan);
-  EXPECT_EQ(AUDIBLE,
+  EXPECT_EQ(AUDIO_CONFIGURATION_AUDIBLE,
             subscription.token_exchange_strategy().audio_configuration());
 }
 

@@ -27,6 +27,17 @@ extern const float kDefaultCarrierFrequency;
 extern const int kDefaultChannels;
 extern const media::ChannelLayout kDefaultChannelLayout;
 
+// These constants are used from everywhere.
+// Particularly, these are used to index the directive lists in the
+// audio manager, so do not change these enums without changing
+// audio_directive_list.[h|cc].
+enum AudioType {
+  AUDIBLE = 0,
+  INAUDIBLE = 1,
+  BOTH = 2,
+  AUDIO_TYPE_UNKNOWN = 3,
+};
+
 }  // namespace copresence
 
 #endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_

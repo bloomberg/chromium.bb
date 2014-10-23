@@ -25,6 +25,7 @@
 #include "components/copresence/proto/codes.pb.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
+#include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/public/copresence_delegate.h"
 #include "net/http/http_status_code.h"
 
@@ -166,6 +167,8 @@ RpcHandler::~RpcHandler() {
   if (delegate_ && delegate_->GetWhispernetClient()) {
     delegate_->GetWhispernetClient()->RegisterTokensCallback(
         WhispernetClient::TokensCallback());
+    delegate_->GetWhispernetClient()->RegisterSamplesCallback(
+        WhispernetClient::SamplesCallback());
   }
 }
 
@@ -382,9 +385,10 @@ void RpcHandler::AddPlayingTokens(ReportRequest* request) {
   if (!directive_handler_)
     return;
 
-  const std::string& audible_token = directive_handler_->CurrentAudibleToken();
+  const std::string& audible_token =
+      directive_handler_->GetCurrentAudioToken(AUDIBLE);
   const std::string& inaudible_token =
-      directive_handler_->CurrentInaudibleToken();
+      directive_handler_->GetCurrentAudioToken(INAUDIBLE);
 
   if (!audible_token.empty())
     AddTokenToRequest(request, AudioToken(audible_token, true));
@@ -477,12 +481,13 @@ void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,
 
 void RpcHandler::AudioDirectiveListToWhispernetConnector(
     const std::string& token,
-    bool audible,
+    AudioType type,
     const WhispernetClient::SamplesCallback& samples_callback) {
+  DCHECK(type == AUDIBLE || type == INAUDIBLE);
   WhispernetClient* whispernet_client = delegate_->GetWhispernetClient();
   if (whispernet_client) {
     whispernet_client->RegisterSamplesCallback(samples_callback);
-    whispernet_client->EncodeToken(token, audible);
+    whispernet_client->EncodeToken(token, type);
   }
 }
 

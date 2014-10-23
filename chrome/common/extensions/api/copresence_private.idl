@@ -5,6 +5,10 @@
 // Use the <code>chrome.copresencePrivate</code> API to interface with Chrome
 // from the whispernet_proxy extension.
 namespace copresencePrivate {
+  dictionary DecodeSamplesParameters {
+    boolean decodeAudible;
+    boolean decodeInaudible;
+  };
 
   dictionary PlayParameters {
     double sampleRate;
@@ -47,7 +51,8 @@ namespace copresencePrivate {
     // Fired to request encoding of the given token.
     static void onEncodeTokenRequest(DOMString base64Token, boolean audible);
     // Fired when we have new samples to decode.
-    static void onDecodeSamplesRequest(ArrayBuffer audioSamples);
+    static void onDecodeSamplesRequest(ArrayBuffer samples,
+                                       DecodeSamplesParameters request);
     // Fired to request a DetectBroadcast.
     static void onDetectBroadcastRequest();
   };

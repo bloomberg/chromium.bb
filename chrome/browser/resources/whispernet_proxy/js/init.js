@@ -50,11 +50,12 @@ function encodeTokenRequest(token, audible) {
 
 /**
  * Sends a request to whispernet to decode samples.
- * @param {ArrayBuffer} samples Array of samples to decode.
+ * @param {ArrayBuffer} samples Array of samples to process.
+ * @param {Object} type Type of decoding to perform.
  */
-function decodeSamplesRequest(samples) {
+function decodeSamplesRequest(samples, type) {
   if (whisperDecoder) {
-    whisperDecoder.processSamples(samples);
+    whisperDecoder.processSamples(samples, type);
   } else {
     console.error('decodeSamplesRequest: Whisper not initialized!');
   }

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/copresence/public/copresence_constants.h"
 
 namespace media {
 class AudioBusRefCounted;
@@ -37,7 +38,7 @@ class WhispernetClient {
   typedef base::Callback<void(const std::vector<AudioToken>&)> TokensCallback;
   // Callback that returns encoded samples for a given token.
   typedef base::Callback<void(const std::string&,
-                              bool,
+                              AudioType,
                               const scoped_refptr<media::AudioBusRefCounted>&)>
       SamplesCallback;
 
@@ -48,9 +49,9 @@ class WhispernetClient {
   virtual void Shutdown() = 0;
 
   // Fires an event to request a token encode.
-  virtual void EncodeToken(const std::string& token, bool audible) = 0;
+  virtual void EncodeToken(const std::string& token, AudioType type) = 0;
   // Fires an event to request a decode for the given samples.
-  virtual void DecodeSamples(const std::string& samples) = 0;
+  virtual void DecodeSamples(AudioType type, const std::string& samples) = 0;
   // Fires an event to request detection of a whispernet broadcast.
   virtual void DetectBroadcast() = 0;
 

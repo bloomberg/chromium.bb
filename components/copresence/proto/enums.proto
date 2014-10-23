@@ -81,7 +81,7 @@ enum OptInState {
 }
 enum AudioConfiguration {
   AUDIO_CONFIGURATION_UNKNOWN = 0;
-  AUDIBLE = 1;
+  AUDIO_CONFIGURATION_AUDIBLE = 1;
 }
 enum BroadcastScanConfiguration {
   BROADCAST_SCAN_CONFIGURATION_UNKNOWN = 0;

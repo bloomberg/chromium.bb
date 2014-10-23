@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/mediums/audio/audio_player.h"
+#include "components/copresence/mediums/audio/audio_player_impl.h"
 
 #include <algorithm>
 #include <string>
@@ -28,47 +28,49 @@ namespace copresence {
 
 // Public methods.
 
-AudioPlayer::AudioPlayer()
+AudioPlayerImpl::AudioPlayerImpl()
     : is_playing_(false), stream_(NULL), frame_index_(0) {
 }
 
-AudioPlayer::~AudioPlayer() {
+AudioPlayerImpl::~AudioPlayerImpl() {
 }
 
-void AudioPlayer::Initialize() {
+void AudioPlayerImpl::Initialize() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioPlayer::InitializeOnAudioThread,
+      base::Bind(&AudioPlayerImpl::InitializeOnAudioThread,
                  base::Unretained(this)));
 }
 
-void AudioPlayer::Play(
+void AudioPlayerImpl::Play(
     const scoped_refptr<media::AudioBusRefCounted>& samples) {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(
-          &AudioPlayer::PlayOnAudioThread, base::Unretained(this), samples));
+      base::Bind(&AudioPlayerImpl::PlayOnAudioThread,
+                 base::Unretained(this),
+                 samples));
 }
 
-void AudioPlayer::Stop() {
+void AudioPlayerImpl::Stop() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioPlayer::StopOnAudioThread, base::Unretained(this)));
+      base::Bind(&AudioPlayerImpl::StopOnAudioThread, base::Unretained(this)));
 }
 
-bool AudioPlayer::IsPlaying() {
+bool AudioPlayerImpl::IsPlaying() {
   return is_playing_;
 }
 
-void AudioPlayer::Finalize() {
+void AudioPlayerImpl::Finalize() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioPlayer::FinalizeOnAudioThread, base::Unretained(this)));
+      base::Bind(&AudioPlayerImpl::FinalizeOnAudioThread,
+                 base::Unretained(this)));
 }
 
 // Private methods.
 
-void AudioPlayer::InitializeOnAudioThread() {
+void AudioPlayerImpl::InitializeOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   stream_ = output_stream_for_testing_
                 ? output_stream_for_testing_.get()
@@ -92,7 +94,7 @@ void AudioPlayer::InitializeOnAudioThread() {
   stream_->SetVolume(kOutputVolumePercent);
 }
 
-void AudioPlayer::PlayOnAudioThread(
+void AudioPlayerImpl::PlayOnAudioThread(
     const scoped_refptr<media::AudioBusRefCounted>& samples) {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   if (!stream_)
@@ -112,7 +114,7 @@ void AudioPlayer::PlayOnAudioThread(
   stream_->Start(this);
 }
 
-void AudioPlayer::StopOnAudioThread() {
+void AudioPlayerImpl::StopOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   if (!stream_)
     return;
@@ -121,7 +123,7 @@ void AudioPlayer::StopOnAudioThread() {
   is_playing_ = false;
 }
 
-void AudioPlayer::StopAndCloseOnAudioThread() {
+void AudioPlayerImpl::StopAndCloseOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   if (!stream_)
     return;
@@ -134,14 +136,14 @@ void AudioPlayer::StopAndCloseOnAudioThread() {
   is_playing_ = false;
 }
 
-void AudioPlayer::FinalizeOnAudioThread() {
+void AudioPlayerImpl::FinalizeOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   StopAndCloseOnAudioThread();
   delete this;
 }
 
-int AudioPlayer::OnMoreData(media::AudioBus* dest,
-                            uint32 /* total_bytes_delay */) {
+int AudioPlayerImpl::OnMoreData(media::AudioBus* dest,
+                                uint32 /* total_bytes_delay */) {
   base::AutoLock al(state_lock_);
   // Continuously play our samples till explicitly told to stop.
   const int leftover_frames = samples_->frames() - frame_index_;
@@ -160,15 +162,15 @@ int AudioPlayer::OnMoreData(media::AudioBus* dest,
   return dest->frames();
 }
 
-void AudioPlayer::OnError(media::AudioOutputStream* /* stream */) {
+void AudioPlayerImpl::OnError(media::AudioOutputStream* /* stream */) {
   LOG(ERROR) << "Error during system sound reproduction.";
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioPlayer::StopAndCloseOnAudioThread,
+      base::Bind(&AudioPlayerImpl::StopAndCloseOnAudioThread,
                  base::Unretained(this)));
 }
 
-void AudioPlayer::FlushAudioLoopForTesting() {
+void AudioPlayerImpl::FlushAudioLoopForTesting() {
   if (media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread())
     return;
 
@@ -177,7 +179,7 @@ void AudioPlayer::FlushAudioLoopForTesting() {
   base::RunLoop rl;
   media::AudioManager::Get()->GetTaskRunner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&AudioPlayer::FlushAudioLoopForTesting),
+      base::Bind(base::IgnoreResult(&AudioPlayerImpl::FlushAudioLoopForTesting),
                  base::Unretained(this)),
       rl.QuitClosure());
   rl.Run();

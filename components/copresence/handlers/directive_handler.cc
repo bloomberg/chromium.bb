@@ -4,6 +4,7 @@
 
 #include "components/copresence/handlers/directive_handler.h"
 
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
 #include "components/copresence/proto/data.pb.h"
@@ -13,10 +14,10 @@ namespace copresence {
 DirectiveHandler::DirectiveHandler() {}
 
 void DirectiveHandler::Initialize(
-    const AudioRecorder::DecodeSamplesCallback& decode_cb,
-    const AudioDirectiveHandler::EncodeTokenCallback& encode_cb) {
-  audio_handler_.reset(new AudioDirectiveHandler(decode_cb, encode_cb));
-  audio_handler_->Initialize();
+    const AudioManager::DecodeSamplesCallback& decode_cb,
+    const AudioManager::EncodeTokenCallback& encode_cb) {
+  audio_handler_.reset(new AudioDirectiveHandler());
+  audio_handler_->Initialize(decode_cb, encode_cb);
 }
 
 DirectiveHandler::~DirectiveHandler() {
@@ -53,12 +54,8 @@ void DirectiveHandler::RemoveDirectives(const std::string& op_id) {
   audio_handler_->RemoveInstructions(op_id);
 }
 
-const std::string& DirectiveHandler::CurrentAudibleToken() const {
-  return audio_handler_->PlayingAudibleToken();
-}
-
-const std::string& DirectiveHandler::CurrentInaudibleToken() const {
-  return audio_handler_->PlayingInaudibleToken();
+const std::string DirectiveHandler::GetCurrentAudioToken(AudioType type) const {
+  return audio_handler_->PlayingToken(type);
 }
 
 }  // namespace copresence

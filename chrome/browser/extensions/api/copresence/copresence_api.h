@@ -17,6 +17,8 @@
 #include "components/copresence/public/copresence_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
+class ChromeWhispernetClient;
+
 namespace copresence {
 class CopresenceManager;
 class WhispernetClient;
@@ -74,7 +76,7 @@ class CopresenceService : public BrowserContextKeyedAPI,
   std::string api_key_;
 
   scoped_ptr<copresence::CopresenceManager> manager_;
-  scoped_ptr<copresence::WhispernetClient> whispernet_client_;
+  scoped_ptr<ChromeWhispernetClient> whispernet_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceService);
 };

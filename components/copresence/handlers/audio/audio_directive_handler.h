@@ -10,20 +10,22 @@
 #include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "components/copresence/handlers/audio/audio_directive_list.h"
-#include "components/copresence/mediums/audio/audio_recorder.h"
+#include "components/copresence/mediums/audio/audio_manager.h"
 #include "components/copresence/proto/data.pb.h"
-#include "components/copresence/timed_map.h"
+
+namespace base {
+class TickClock;
+class Timer;
+}
 
 namespace media {
 class AudioBusRefCounted;
 }
 
 namespace copresence {
-
-class AudioPlayer;
 
 // The AudioDirectiveHandler handles audio transmit and receive instructions.
 // TODO(rkc): Currently since WhispernetClient can only have one token encoded
@@ -32,22 +34,14 @@ class AudioPlayer;
 // out token encoding to a separate class, or allowing whispernet to have
 // multiple callbacks for encoded tokens being sent back and have two versions
 // of this class.
-class AudioDirectiveHandler {
+class AudioDirectiveHandler final {
  public:
-  typedef base::Callback<void(const std::string&,
-                              bool,
-                              const scoped_refptr<media::AudioBusRefCounted>&)>
-      SamplesCallback;
-  typedef base::Callback<void(const std::string&, bool, const SamplesCallback&)>
-      EncodeTokenCallback;
-
-  AudioDirectiveHandler(
-      const AudioRecorder::DecodeSamplesCallback& decode_cb,
-      const AudioDirectiveHandler::EncodeTokenCallback& encode_cb);
-  virtual ~AudioDirectiveHandler();
+  AudioDirectiveHandler();
+  ~AudioDirectiveHandler();
 
   // Do not use this class before calling this.
-  void Initialize();
+  void Initialize(const AudioManager::DecodeSamplesCallback& decode_cb,
+                  const AudioManager::EncodeTokenCallback& encode_cb);
 
   // Adds an instruction to our handler. The instruction will execute and be
   // removed after the ttl expires.
@@ -58,73 +52,35 @@ class AudioDirectiveHandler {
   // Removes all instructions associated with this operation id.
   void RemoveInstructions(const std::string& op_id);
 
-  // Returns the currently playing DTMF token.
-  const std::string& PlayingAudibleToken() const {
-    return current_token_audible_;
-  }
+  // Returns the currently playing token.
+  const std::string PlayingToken(AudioType type) const;
 
-  // Returns the currently playing DSSS token.
-  const std::string& PlayingInaudibleToken() const {
-    return current_token_inaudible_;
-  }
-
-  void set_player_audible_for_testing(AudioPlayer* player) {
-    player_audible_ = player;
-  }
-
-  void set_player_inaudible_for_testing(AudioPlayer* player) {
-    player_inaudible_ = player;
-  }
-
-  void set_recorder_for_testing(AudioRecorder* recorder) {
-    recorder_ = recorder;
+  // The manager being passed in needs to be uninitialized.
+  void set_audio_manager_for_testing(scoped_ptr<AudioManager> manager) {
+    audio_manager_ = manager.Pass();
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AudioDirectiveHandlerTest, Basic);
+  // Processes the next active instruction, updating our audio manager state
+  // accordingly.
+  void ProcessNextInstruction();
 
-  typedef TimedMap<std::string, scoped_refptr<media::AudioBusRefCounted>>
-      SamplesMap;
+  // Returns the time that an instruction expires at. This will always return
+  // the earliest expiry time among all the active receive and transmit
+  // instructions. In case we don't have any active instructions, this method
+  // returns false.
+  bool GetNextInstructionExpiry(base::TimeTicks* next_event);
 
-  // Processes the next active transmit instruction.
-  void ProcessNextTransmit();
-  // Processes the next active receive instruction.
-  void ProcessNextReceive();
+  scoped_ptr<AudioManager> audio_manager_;
 
-  void PlayToken(const std::string token, bool audible);
+  // Audible and inaudible lists.
+  // AUDIBLE = 0, INAUDIBLE = 1 (see copresence_constants.h).
+  AudioDirectiveList transmits_list_[2];
+  AudioDirectiveList receives_list_[2];
 
-  // This is the method that the whispernet client needs to call to return
-  // samples to us.
-  void PlayEncodedToken(
-      const std::string& token,
-      bool audible,
-      const scoped_refptr<media::AudioBusRefCounted>& samples);
+  scoped_ptr<base::Timer> audio_event_timer_;
 
-  AudioDirectiveList transmits_list_audible_;
-  AudioDirectiveList transmits_list_inaudible_;
-  AudioDirectiveList receives_list_;
-
-  // Currently playing tokens.
-  std::string current_token_audible_;
-  std::string current_token_inaudible_;
-
-  // AudioPlayer and AudioRecorder objects are self-deleting. When we call
-  // Finalize on them, they clean themselves up on the Audio thread.
-  AudioPlayer* player_audible_;
-  AudioPlayer* player_inaudible_;
-  AudioRecorder* recorder_;
-
-  AudioRecorder::DecodeSamplesCallback decode_cb_;
-  EncodeTokenCallback encode_cb_;
-
-  base::OneShotTimer<AudioDirectiveHandler> stop_audible_playback_timer_;
-  base::OneShotTimer<AudioDirectiveHandler> stop_inaudible_playback_timer_;
-  base::OneShotTimer<AudioDirectiveHandler> stop_recording_timer_;
-
-  // Cache that holds the encoded samples. After reaching its limit, the cache
-  // expires the oldest samples first.
-  SamplesMap samples_cache_audible_;
-  SamplesMap samples_cache_inaudible_;
+  scoped_ptr<base::TickClock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveHandler);
 };

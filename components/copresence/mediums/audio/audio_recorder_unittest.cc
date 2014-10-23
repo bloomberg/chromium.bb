@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/aligned_memory.h"
 #include "base/run_loop.h"
+#include "components/copresence/mediums/audio/audio_recorder_impl.h"
 #include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/test/audio_test_support.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -85,9 +86,9 @@ class AudioRecorderTest : public testing::Test {
 
   void CreateSimpleRecorder() {
     DeleteRecorder();
-    recorder_ = new AudioRecorder(
+    recorder_ = new AudioRecorderImpl();
+    recorder_->Initialize(
         base::Bind(&AudioRecorderTest::DecodeSamples, base::Unretained(this)));
-    recorder_->Initialize();
   }
 
   void CreateRecorder(size_t channels,
@@ -108,12 +109,12 @@ class AudioRecorderTest : public testing::Test {
 
     total_samples_ = samples;
 
-    recorder_ = new AudioRecorder(
-        base::Bind(&AudioRecorderTest::DecodeSamples, base::Unretained(this)));
+    recorder_ = new AudioRecorderImpl();
     recorder_->set_input_stream_for_testing(
         new TestAudioInputStream(params_, channel_data_, samples));
     recorder_->set_params_for_testing(new media::AudioParameters(params_));
-    recorder_->Initialize();
+    recorder_->Initialize(
+        base::Bind(&AudioRecorderTest::DecodeSamples, base::Unretained(this)));
   }
 
   void DeleteRecorder() {
@@ -181,7 +182,8 @@ class AudioRecorderTest : public testing::Test {
   media::AudioParameters params_;
   size_t total_samples_;
 
-  AudioRecorder* recorder_;
+  // Deleted by calling Finalize() on the object.
+  AudioRecorderImpl* recorder_;
 
   std::string received_samples_;
 

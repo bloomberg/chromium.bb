@@ -9,7 +9,7 @@
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
 
-using copresence::AUDIBLE;
+using copresence::AUDIO_CONFIGURATION_AUDIBLE;
 using copresence::AUDIO_CONFIGURATION_UNKNOWN;
 using copresence::BROADCAST_AND_SCAN;
 using copresence::BROADCAST_ONLY;
@@ -57,8 +57,8 @@ void SetTokenExchangeStrategy(const Strategy* strategy,
         config == BROADCAST_SCAN_CONFIGURATION_UNKNOWN ?
         default_config : config);
     strategy_proto->set_audio_configuration(
-        strategy->audible && *strategy->audible ?
-        AUDIBLE : AUDIO_CONFIGURATION_UNKNOWN);
+        strategy->audible && *strategy->audible ? AUDIO_CONFIGURATION_AUDIBLE
+                                                : AUDIO_CONFIGURATION_UNKNOWN);
   } else {
     strategy_proto->set_broadcast_scan_configuration(default_config);
     strategy_proto->set_audio_configuration(AUDIO_CONFIGURATION_UNKNOWN);

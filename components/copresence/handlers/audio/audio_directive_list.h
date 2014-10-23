@@ -13,19 +13,25 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace media {
 class AudioBusRefCounted;
 }
 
 namespace copresence {
 
-struct AudioDirective {
+struct AudioDirective final {
   // Default ctor, required by the priority queue.
   AudioDirective();
-  AudioDirective(const std::string& op_id, base::Time end_time);
+  AudioDirective(const std::string& op_id, base::TimeTicks end_time);
 
   std::string op_id;
-  base::Time end_time;
+  // We're currently using TimeTicks to track time. This may not work for cases
+  // where your machine suspends. See crbug.com/426136
+  base::TimeTicks end_time;
 };
 
 // This class maintains a list of active audio directives. It fetches the audio
@@ -37,7 +43,7 @@ struct AudioDirective {
 class AudioDirectiveList {
  public:
   AudioDirectiveList();
-  virtual ~AudioDirectiveList();
+  ~AudioDirectiveList();
 
   void AddDirective(const std::string& op_id, base::TimeDelta ttl);
   void RemoveDirective(const std::string& op_id);
@@ -61,6 +67,8 @@ class AudioDirectiveList {
   // This vector will be organized as a heap with the latest time as the first
   // element. Only currently active directives will exist in this list.
   std::vector<AudioDirective> active_directives_;
+
+  scoped_ptr<base::TickClock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveList);
 };

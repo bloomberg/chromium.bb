@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/mediums/audio/audio_recorder.h"
+#include "components/copresence/mediums/audio/audio_recorder_impl.h"
 
 #include <algorithm>
 #include <vector>
@@ -38,8 +38,9 @@ void AudioBusToString(scoped_ptr<media::AudioBus> source, std::string* buffer) {
 // Called every kProcessIntervalMs to process the recorded audio. This
 // converts our samples to the required sample rate, interleaves the samples
 // and sends them to the whispernet decoder to process.
-void ProcessSamples(scoped_ptr<media::AudioBus> bus,
-                    const AudioRecorder::DecodeSamplesCallback& callback) {
+void ProcessSamples(
+    scoped_ptr<media::AudioBus> bus,
+    const AudioRecorderImpl::RecordedSamplesCallback& callback) {
   std::string samples;
   AudioBusToString(bus.Pass(), &samples);
   content::BrowserThread::PostTask(
@@ -50,50 +51,54 @@ void ProcessSamples(scoped_ptr<media::AudioBus> bus,
 
 // Public methods.
 
-AudioRecorder::AudioRecorder(const DecodeSamplesCallback& decode_callback)
+AudioRecorderImpl::AudioRecorderImpl()
     : is_recording_(false),
       stream_(NULL),
-      decode_callback_(decode_callback),
+      temp_conversion_buffer_(NULL),
       total_buffer_frames_(0),
       buffer_frame_index_(0) {
 }
 
-void AudioRecorder::Initialize() {
+void AudioRecorderImpl::Initialize(
+    const RecordedSamplesCallback& decode_callback) {
+  decode_callback_ = decode_callback;
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioRecorder::InitializeOnAudioThread,
+      base::Bind(&AudioRecorderImpl::InitializeOnAudioThread,
                  base::Unretained(this)));
 }
 
-AudioRecorder::~AudioRecorder() {
+AudioRecorderImpl::~AudioRecorderImpl() {
 }
 
-void AudioRecorder::Record() {
+void AudioRecorderImpl::Record() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioRecorder::RecordOnAudioThread, base::Unretained(this)));
+      base::Bind(&AudioRecorderImpl::RecordOnAudioThread,
+                 base::Unretained(this)));
 }
 
-void AudioRecorder::Stop() {
+void AudioRecorderImpl::Stop() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioRecorder::StopOnAudioThread, base::Unretained(this)));
+      base::Bind(&AudioRecorderImpl::StopOnAudioThread,
+                 base::Unretained(this)));
 }
 
-bool AudioRecorder::IsRecording() {
+bool AudioRecorderImpl::IsRecording() {
   return is_recording_;
 }
 
-void AudioRecorder::Finalize() {
+void AudioRecorderImpl::Finalize() {
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioRecorder::FinalizeOnAudioThread,
+      base::Bind(&AudioRecorderImpl::FinalizeOnAudioThread,
                  base::Unretained(this)));
 }
 
 // Private methods.
 
-void AudioRecorder::InitializeOnAudioThread() {
+void AudioRecorderImpl::InitializeOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
 
   media::AudioParameters params =
@@ -134,7 +139,7 @@ void AudioRecorder::InitializeOnAudioThread() {
   stream_->SetVolume(stream_->GetMaxVolume());
 }
 
-void AudioRecorder::RecordOnAudioThread() {
+void AudioRecorderImpl::RecordOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   if (!stream_ || is_recording_)
     return;
@@ -144,7 +149,7 @@ void AudioRecorder::RecordOnAudioThread() {
   is_recording_ = true;
 }
 
-void AudioRecorder::StopOnAudioThread() {
+void AudioRecorderImpl::StopOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   if (!stream_ || !is_recording_)
     return;
@@ -153,7 +158,7 @@ void AudioRecorder::StopOnAudioThread() {
   is_recording_ = false;
 }
 
-void AudioRecorder::StopAndCloseOnAudioThread() {
+void AudioRecorderImpl::StopAndCloseOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   if (!stream_)
     return;
@@ -163,16 +168,16 @@ void AudioRecorder::StopAndCloseOnAudioThread() {
   stream_ = NULL;
 }
 
-void AudioRecorder::FinalizeOnAudioThread() {
+void AudioRecorderImpl::FinalizeOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   StopAndCloseOnAudioThread();
   delete this;
 }
 
-void AudioRecorder::OnData(media::AudioInputStream* stream,
-                           const media::AudioBus* source,
-                           uint32 /* hardware_delay_bytes */,
-                           double /* volume */) {
+void AudioRecorderImpl::OnData(media::AudioInputStream* stream,
+                               const media::AudioBus* source,
+                               uint32 /* hardware_delay_bytes */,
+                               double /* volume */) {
   temp_conversion_buffer_ = source;
   while (temp_conversion_buffer_) {
     // source->frames() == source_params.frames_per_buffer(), so we only have
@@ -216,16 +221,16 @@ void AudioRecorder::OnData(media::AudioInputStream* stream,
   }
 }
 
-void AudioRecorder::OnError(media::AudioInputStream* /* stream */) {
+void AudioRecorderImpl::OnError(media::AudioInputStream* /* stream */) {
   LOG(ERROR) << "Error during sound recording.";
   media::AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioRecorder::StopAndCloseOnAudioThread,
+      base::Bind(&AudioRecorderImpl::StopAndCloseOnAudioThread,
                  base::Unretained(this)));
 }
 
-double AudioRecorder::ProvideInput(media::AudioBus* dest,
-                                   base::TimeDelta /* buffer_delay */) {
+double AudioRecorderImpl::ProvideInput(media::AudioBus* dest,
+                                       base::TimeDelta /* buffer_delay */) {
   DCHECK(temp_conversion_buffer_);
   DCHECK_LE(temp_conversion_buffer_->frames(), dest->frames());
   temp_conversion_buffer_->CopyTo(dest);
@@ -233,7 +238,7 @@ double AudioRecorder::ProvideInput(media::AudioBus* dest,
   return 1.0;
 }
 
-void AudioRecorder::FlushAudioLoopForTesting() {
+void AudioRecorderImpl::FlushAudioLoopForTesting() {
   if (media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread())
     return;
 
@@ -242,8 +247,9 @@ void AudioRecorder::FlushAudioLoopForTesting() {
   base::RunLoop rl;
   media::AudioManager::Get()->GetTaskRunner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&AudioRecorder::FlushAudioLoopForTesting),
-                 base::Unretained(this)),
+      base::Bind(
+          base::IgnoreResult(&AudioRecorderImpl::FlushAudioLoopForTesting),
+          base::Unretained(this)),
       rl.QuitClosure());
   rl.Run();
 }
