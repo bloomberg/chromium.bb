@@ -22,8 +22,9 @@ class VariationsRegistrySyncer {
   void RequestRegistrySync();
 
  private:
-  // Perform the actual synchronization process with the registry.
-  void SyncWithRegistry();
+  // Starts the actual synchronization process with the registry. Posts a task
+  // to do it on the blocking pool to avoid jank.
+  void StartRegistrySync();
 
   // A timer used to delay the writes to the registry. This is done to optimize
   // the case where lazy-loaded features start their field trials some time

@@ -8,37 +8,24 @@
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/variations/experiment_labels.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "content/public/browser/browser_thread.h"
+
+namespace chrome_variations {
 
 namespace {
 
 // Delay before performing a registry sync, in seconds.
 const int kRegistrySyncDelaySeconds = 5;
 
-}  // namespace
+// Performs the actual synchronization process with the registry, which should
+// be done on a blocking pool thread.
+void SyncWithRegistryOnBlockingPool() {
+  base::ThreadRestrictions::AssertIOAllowed();
 
-namespace chrome_variations {
-
-VariationsRegistrySyncer::VariationsRegistrySyncer() {
-}
-
-VariationsRegistrySyncer::~VariationsRegistrySyncer() {
-}
-
-void VariationsRegistrySyncer::RequestRegistrySync() {
-  if (timer_.IsRunning()) {
-    timer_.Reset();
-    return;
-  }
-
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kRegistrySyncDelaySeconds),
-               this, &VariationsRegistrySyncer::SyncWithRegistry);
-}
-
-void VariationsRegistrySyncer::SyncWithRegistry() {
   // Note that all registry operations are done here on the UI thread as there
   // are no threading restrictions on them.
   base::FilePath chrome_exe;
@@ -79,6 +66,33 @@ void VariationsRegistrySyncer::SyncWithRegistry() {
     DVLOG(1) << "Error writing Variation labels to the registry: "
              << combined_labels;
   }
+}
+
+}  // namespace
+
+VariationsRegistrySyncer::VariationsRegistrySyncer() {
+}
+
+VariationsRegistrySyncer::~VariationsRegistrySyncer() {
+}
+
+void VariationsRegistrySyncer::RequestRegistrySync() {
+  if (timer_.IsRunning()) {
+    timer_.Reset();
+    return;
+  }
+
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromSeconds(kRegistrySyncDelaySeconds),
+               this,
+               &VariationsRegistrySyncer::StartRegistrySync);
+}
+
+void VariationsRegistrySyncer::StartRegistrySync() {
+  // Do the work on a blocking pool thread, as chrome://profiler has shown
+  // that it can cause jank if done on the UI thrread.
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE, base::Bind(&SyncWithRegistryOnBlockingPool));
 }
 
 }  // namespace chrome_variations
