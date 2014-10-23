@@ -4501,6 +4501,7 @@ usage(int error_code)
 		"  --no-config\t\tDo not read weston.ini\n"
 		"  -h, --help\t\tThis help message\n\n");
 
+#if defined(BUILD_DRM_COMPOSITOR)
 	fprintf(stderr,
 		"Options for drm-backend.so:\n\n"
 		"  --connector=ID\tBring up only this connector\n"
@@ -4508,12 +4509,16 @@ usage(int error_code)
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --current-mode\tPrefer current KMS mode over EDID preferred mode\n\n");
+#endif
 
+#if defined(BUILD_FBDEV_COMPOSITOR)
 	fprintf(stderr,
 		"Options for fbdev-backend.so:\n\n"
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --device=DEVICE\tThe framebuffer device to use\n\n");
+#endif
 
+#if defined(BUILD_X11_COMPOSITOR)
 	fprintf(stderr,
 		"Options for x11-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of X window\n"
@@ -4522,7 +4527,9 @@ usage(int error_code)
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --output-count=COUNT\tCreate multiple outputs\n"
 		"  --no-input\t\tDont create input devices\n\n");
+#endif
 
+#if defined(BUILD_WAYLAND_COMPOSITOR)
 	fprintf(stderr,
 		"Options for wayland-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of Wayland surface\n"
@@ -4533,6 +4540,7 @@ usage(int error_code)
 		"  --output-count=COUNT\tCreate multiple outputs\n"
 		"  --sprawl\t\tCreate one fullscreen output for every parent output\n"
 		"  --display=DISPLAY\tWayland display to connect to\n\n");
+#endif
 
 #if defined(BUILD_RPI_COMPOSITOR) && defined(HAVE_BCM_HOST)
 	fprintf(stderr,
