@@ -372,6 +372,12 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, Request* request, cons
 
 ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Response* response)
 {
+    KURL url(KURL(), request->url());
+    if (!url.protocolIsInHTTPFamily())
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("Request scheme '" + url.protocol() + "' is unsupported", scriptState->isolate()));
+    if (request->method() != "GET")
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("Request method '" + request->method() + "' is unsupported", scriptState->isolate()));
+
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));
     batchOperations[0].operationType = WebServiceWorkerCache::OperationTypePut;
     request->populateWebServiceWorkerRequest(batchOperations[0].request);
