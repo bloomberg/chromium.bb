@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -346,9 +347,13 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
   // OnSSLCertificateError is not called when the HTTPS connection is reused.
   // So we check cert_status here.
   if (net::IsCertStatusError(request->ssl_info().cert_status)) {
-    AsyncNotifyDoneHelper(net::URLRequestStatus(
-        net::URLRequestStatus::FAILED, net::ERR_INSECURE_RESPONSE));
-    return;
+    const net::HttpNetworkSession::Params* session_params =
+        request->context()->GetNetworkSessionParams();
+    if (!session_params || !session_params->ignore_certificate_errors) {
+      AsyncNotifyDoneHelper(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                                  net::ERR_INSECURE_RESPONSE));
+      return;
+    }
   }
   // To prevent most user-uploaded content from being used as a serviceworker.
   if (version_->script_url() == url_) {
