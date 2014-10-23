@@ -194,17 +194,22 @@ HotwordService::HotwordService(Profile* profile)
   // This will be called during profile initialization which is a good time
   // to check the user's hotword state.
   HotwordEnabled enabled_state = UNSET;
-  if (profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled)) {
-    if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
-      enabled_state = ENABLED;
-    else
-      enabled_state = DISABLED;
+  if (IsExperimentalHotwordingEnabled()) {
+    // Disable the old extension so it doesn't interfere with the new stuff.
+    DisableHotwordExtension(GetExtensionService(profile_));
   } else {
-    // If the preference has not been set the hotword extension should
-    // not be running. However, this should only be done if auto-install
-    // is enabled which is gated through the IsHotwordAllowed check.
-    if (IsHotwordAllowed())
-      DisableHotwordExtension(GetExtensionService(profile_));
+    if (profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled)) {
+      if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
+        enabled_state = ENABLED;
+      else
+        enabled_state = DISABLED;
+    } else {
+      // If the preference has not been set the hotword extension should
+      // not be running. However, this should only be done if auto-install
+      // is enabled which is gated through the IsHotwordAllowed check.
+      if (IsHotwordAllowed())
+        DisableHotwordExtension(GetExtensionService(profile_));
+    }
   }
   UMA_HISTOGRAM_ENUMERATION("Hotword.Enabled", enabled_state,
                             NUM_HOTWORD_ENABLED_METRICS);
@@ -435,7 +440,7 @@ bool HotwordService::IsAlwaysOnEnabled() {
 
 void HotwordService::EnableHotwordExtension(
     ExtensionService* extension_service) {
-  if (extension_service)
+  if (extension_service && !IsExperimentalHotwordingEnabled())
     extension_service->EnableExtension(extension_misc::kHotwordExtensionId);
 }
 
