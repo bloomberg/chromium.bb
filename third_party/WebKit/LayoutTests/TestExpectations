@@ -942,7 +942,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagina
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules-stacking.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/fixed-column-percent-logical-height-orthogonal-writing-mode.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/flipped-blocks-border-after.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/flipped-blocks-hit-test.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/float-avoidance.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/float-multicol.html [ Skip ]
