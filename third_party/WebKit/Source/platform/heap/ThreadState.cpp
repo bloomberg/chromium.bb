@@ -1029,6 +1029,7 @@ void ThreadState::unregisterSweepingTask()
 
 void ThreadState::waitUntilSweepersDone()
 {
+    TRACE_EVENT0("blink_gc", "ThreadState::waitUntilSweepersDone");
     MutexLocker locker(m_sweepMutex);
     while (m_numberOfSweeperTasks > 0)
         m_sweepThreadCondition.wait(m_sweepMutex);
