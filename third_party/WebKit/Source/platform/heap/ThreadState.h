@@ -683,7 +683,6 @@ public:
 
     void getStats(HeapStats&);
     HeapStats& stats() { return m_stats; }
-    HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
 
     void setupHeapsForTermination();
 
