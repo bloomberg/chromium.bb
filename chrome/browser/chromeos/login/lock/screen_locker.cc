@@ -506,10 +506,6 @@ void ScreenLocker::ScreenLockReady() {
       desktop_background_controller()->MoveDesktopToLockedContainer();
 #endif
 
-  input_method::InputMethodManager::Get()
-      ->GetActiveIMEState()
-      ->EnableLockScreenLayouts();
-
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
   content::NotificationService::current()->Notify(
@@ -518,6 +514,10 @@ void ScreenLocker::ScreenLockReady() {
       content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
+
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->EnableLockScreenLayouts();
 }
 
 content::WebUI* ScreenLocker::GetAssociatedWebUI() {
