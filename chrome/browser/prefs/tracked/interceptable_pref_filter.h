@@ -33,10 +33,10 @@ class InterceptablePrefFilter
            scoped_ptr<base::DictionaryValue> prefs)> FilterOnLoadInterceptor;
 
   InterceptablePrefFilter();
-  virtual ~InterceptablePrefFilter();
+  ~InterceptablePrefFilter() override;
 
   // PrefFilter partial implementation.
-  virtual void FilterOnLoad(
+  void FilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
       scoped_ptr<base::DictionaryValue> pref_store_contents) override;
 

@@ -46,17 +46,15 @@ const char kPreviouslyProtectedPrefValue[] = "previously_protected_value";
 class SimpleInterceptablePrefFilter : public InterceptablePrefFilter {
  public:
   // PrefFilter remaining implementation.
-  virtual void FilterUpdate(const std::string& path) override {
-    ADD_FAILURE();
-  }
-  virtual void FilterSerializeData(
+  void FilterUpdate(const std::string& path) override { ADD_FAILURE(); }
+  void FilterSerializeData(
       base::DictionaryValue* pref_store_contents) override {
     ADD_FAILURE();
   }
 
  private:
   // InterceptablePrefFilter implementation.
-  virtual void FinalizeFilterOnLoad(
+  void FinalizeFilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
       scoped_ptr<base::DictionaryValue> pref_store_contents,
       bool prefs_altered) override {

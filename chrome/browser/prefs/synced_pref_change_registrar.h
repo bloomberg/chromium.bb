@@ -43,8 +43,7 @@ class SyncedPrefChangeRegistrar : public SyncedPrefObserver {
 
  private:
   // SyncedPrefObserver implementation
-  virtual void OnSyncedPrefChanged(const std::string& path, bool from_sync)
-      override;
+  void OnSyncedPrefChanged(const std::string& path, bool from_sync) override;
 
   typedef std::map<std::string, NamedChangeCallback> ObserverMap;
 

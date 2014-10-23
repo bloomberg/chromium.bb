@@ -11,7 +11,7 @@
 class PrefServiceMockFactory : public PrefServiceSyncableFactory {
  public:
   PrefServiceMockFactory();
-  virtual ~PrefServiceMockFactory();
+  ~PrefServiceMockFactory() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefServiceMockFactory);

@@ -24,13 +24,13 @@ class BrowserUIPrefsMigrator : public PrefStore::Observer {
   explicit BrowserUIPrefsMigrator(WriteablePrefStore* pref_store);
 
   // Overrides from PrefStore::Observer.
-  virtual void OnPrefValueChanged(const std::string& key) override {}
-  virtual void OnInitializationCompleted(bool succeeded) override;
+  void OnPrefValueChanged(const std::string& key) override {}
+  void OnInitializationCompleted(bool succeeded) override;
 
  private:
   friend struct base::DefaultDeleter<BrowserUIPrefsMigrator>;
 
-  virtual ~BrowserUIPrefsMigrator();
+  ~BrowserUIPrefsMigrator() override;
 
   WriteablePrefStore* pref_store_;
 

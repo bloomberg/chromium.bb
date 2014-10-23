@@ -27,11 +27,10 @@ class TrackedAtomicPreference : public TrackedPreference {
                           TrackedPreferenceValidationDelegate* delegate);
 
   // TrackedPreference implementation.
-  virtual void OnNewValue(const base::Value* value,
-                          PrefHashStoreTransaction* transaction) const override;
-  virtual bool EnforceAndReport(
-      base::DictionaryValue* pref_store_contents,
-      PrefHashStoreTransaction* transaction) const override;
+  void OnNewValue(const base::Value* value,
+                  PrefHashStoreTransaction* transaction) const override;
+  bool EnforceAndReport(base::DictionaryValue* pref_store_contents,
+                        PrefHashStoreTransaction* transaction) const override;
 
  private:
   const std::string pref_path_;

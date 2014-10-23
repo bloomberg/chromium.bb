@@ -23,7 +23,7 @@ class PrefRegistrySimple;
 class PrefMetricsService : public KeyedService {
  public:
   explicit PrefMetricsService(Profile* profile);
-  virtual ~PrefMetricsService();
+  ~PrefMetricsService() override;
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -33,14 +33,14 @@ class PrefMetricsService : public KeyedService {
     friend struct DefaultSingletonTraits<Factory>;
 
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
     // BrowserContextKeyedServiceFactory implementation
-    virtual KeyedService* BuildServiceInstanceFor(
+    KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* profile) const override;
-    virtual bool ServiceIsCreatedWithBrowserContext() const override;
-    virtual bool ServiceIsNULLWhileTesting() const override;
-    virtual content::BrowserContext* GetBrowserContextToUse(
+    bool ServiceIsCreatedWithBrowserContext() const override;
+    bool ServiceIsNULLWhileTesting() const override;
+    content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const override;
   };
 

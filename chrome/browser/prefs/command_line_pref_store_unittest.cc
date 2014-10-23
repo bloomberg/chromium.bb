@@ -59,7 +59,7 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
   }
 
  private:
-  virtual ~TestCommandLinePrefStore() {}
+  ~TestCommandLinePrefStore() override {}
 };
 
 // Tests a simple string pref on the command line.

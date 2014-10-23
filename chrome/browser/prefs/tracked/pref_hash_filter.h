@@ -75,7 +75,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
       size_t reporting_ids_count,
       bool report_super_mac_validity);
 
-  virtual ~PrefHashFilter();
+  ~PrefHashFilter() override;
 
   // Registers required user preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -94,13 +94,12 @@ class PrefHashFilter : public InterceptablePrefFilter {
   void Initialize(base::DictionaryValue* pref_store_contents);
 
   // PrefFilter remaining implementation.
-  virtual void FilterUpdate(const std::string& path) override;
-  virtual void FilterSerializeData(
-      base::DictionaryValue* pref_store_contents) override;
+  void FilterUpdate(const std::string& path) override;
+  void FilterSerializeData(base::DictionaryValue* pref_store_contents) override;
 
  private:
   // InterceptablePrefFilter implementation.
-  virtual void FinalizeFilterOnLoad(
+  void FinalizeFilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
       scoped_ptr<base::DictionaryValue> pref_store_contents,
       bool prefs_altered) override;

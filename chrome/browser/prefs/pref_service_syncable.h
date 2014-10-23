@@ -44,7 +44,7 @@ class PrefServiceSyncable : public PrefService {
       base::Callback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback,
       bool async);
-  virtual ~PrefServiceSyncable();
+  ~PrefServiceSyncable() override;
 
   // Creates an incognito copy of the pref service that shares most pref stores
   // but uses a fresh non-persistent overlay for the user pref store and an
@@ -79,7 +79,7 @@ class PrefServiceSyncable : public PrefService {
   syncer::SyncableService* GetSyncableService(const syncer::ModelType& type);
 
   // Do not call this after having derived an incognito or per tab pref service.
-  virtual void UpdateCommandLinePrefStore(PrefStore* cmd_line_store) override;
+  void UpdateCommandLinePrefStore(PrefStore* cmd_line_store) override;
 
   void AddSyncedPrefObserver(const std::string& name,
                              SyncedPrefObserver* observer);

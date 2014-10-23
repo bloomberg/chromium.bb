@@ -51,7 +51,7 @@ class RegistryVerifier : public PrefStore::Observer {
       : pref_registry_(pref_registry) {}
 
   // PrefStore::Observer implementation
-  virtual void OnPrefValueChanged(const std::string& key) override {
+  void OnPrefValueChanged(const std::string& key) override {
     EXPECT_TRUE(pref_registry_->end() !=
                 std::find_if(pref_registry_->begin(),
                              pref_registry_->end(),
@@ -59,7 +59,7 @@ class RegistryVerifier : public PrefStore::Observer {
         << "Unregistered key " << key << " was changed.";
   }
 
-  virtual void OnInitializationCompleted(bool succeeded) override {}
+  void OnInitializationCompleted(bool succeeded) override {}
 
  private:
   scoped_refptr<PrefRegistry> pref_registry_;

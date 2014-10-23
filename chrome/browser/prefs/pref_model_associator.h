@@ -38,23 +38,22 @@ class PrefModelAssociator
       public base::NonThreadSafe {
  public:
   explicit PrefModelAssociator(syncer::ModelType type);
-  virtual ~PrefModelAssociator();
+  ~PrefModelAssociator() override;
 
   // See description above field for details.
   bool models_associated() const { return models_associated_; }
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
+  void StopSyncing(syncer::ModelType type) override;
 
   // Returns the list of preference names that are registered as syncable, and
   // hence should be monitored for changes.

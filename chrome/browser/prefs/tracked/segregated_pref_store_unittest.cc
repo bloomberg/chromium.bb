@@ -42,7 +42,7 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
   }
 
   // PersistentPrefStore::ReadErrorDelegate implementation
-  virtual void OnError(PersistentPrefStore::PrefReadError read_error) override {
+  void OnError(PersistentPrefStore::PrefReadError read_error) override {
     EXPECT_FALSE(data_->invoked);
     data_->invoked = true;
     data_->read_error = read_error;

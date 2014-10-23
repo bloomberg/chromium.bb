@@ -85,9 +85,7 @@ class MockPrefHashStore : public PrefHashStore {
         transactions_performed_(0),
         transaction_active_(false) {}
 
-  virtual ~MockPrefHashStore() {
-    EXPECT_FALSE(transaction_active_);
-  }
+  ~MockPrefHashStore() override { EXPECT_FALSE(transaction_active_); }
 
   // Set the result that will be returned when |path| is passed to
   // |CheckValue/CheckSplitValue|.
@@ -153,7 +151,7 @@ class MockPrefHashStore : public PrefHashStore {
   }
 
   // PrefHashStore implementation.
-  virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
+  scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
       scoped_ptr<HashStoreContents> storage) override;
 
  private:
@@ -166,29 +164,28 @@ class MockPrefHashStore : public PrefHashStore {
     explicit MockPrefHashStoreTransaction(MockPrefHashStore* outer)
         : outer_(outer) {}
 
-    virtual ~MockPrefHashStoreTransaction() {
+    ~MockPrefHashStoreTransaction() override {
       outer_->transaction_active_ = false;
       ++outer_->transactions_performed_;
     }
 
     // PrefHashStoreTransaction implementation.
-    virtual PrefHashStoreTransaction::ValueState CheckValue(
-        const std::string& path, const base::Value* value) const override;
-    virtual void StoreHash(const std::string& path,
-                           const base::Value* new_value) override;
-    virtual PrefHashStoreTransaction::ValueState CheckSplitValue(
+    PrefHashStoreTransaction::ValueState CheckValue(
+        const std::string& path,
+        const base::Value* value) const override;
+    void StoreHash(const std::string& path,
+                   const base::Value* new_value) override;
+    PrefHashStoreTransaction::ValueState CheckSplitValue(
         const std::string& path,
         const base::DictionaryValue* initial_split_value,
         std::vector<std::string>* invalid_keys) const override;
-    virtual void StoreSplitHash(
-        const std::string& path,
-        const base::DictionaryValue* split_value) override;
-    virtual bool HasHash(const std::string& path) const override;
-    virtual void ImportHash(const std::string& path,
-                            const base::Value* hash) override;
-    virtual void ClearHash(const std::string& path) override;
-    virtual bool IsSuperMACValid() const override;
-    virtual bool StampSuperMac() override;
+    void StoreSplitHash(const std::string& path,
+                        const base::DictionaryValue* split_value) override;
+    bool HasHash(const std::string& path) const override;
+    void ImportHash(const std::string& path, const base::Value* hash) override;
+    void ClearHash(const std::string& path) override;
+    bool IsSuperMACValid() const override;
+    bool StampSuperMac() override;
 
    private:
     MockPrefHashStore* outer_;

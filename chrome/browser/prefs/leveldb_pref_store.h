@@ -37,33 +37,31 @@ class LevelDBPrefStore : public PersistentPrefStore {
                    base::SequencedTaskRunner* sequenced_task_runner);
 
   // PrefStore overrides:
-  virtual bool GetValue(const std::string& key,
-                        const base::Value** result) const override;
-  virtual void AddObserver(PrefStore::Observer* observer) override;
-  virtual void RemoveObserver(PrefStore::Observer* observer) override;
-  virtual bool HasObservers() const override;
-  virtual bool IsInitializationComplete() const override;
+  bool GetValue(const std::string& key,
+                const base::Value** result) const override;
+  void AddObserver(PrefStore::Observer* observer) override;
+  void RemoveObserver(PrefStore::Observer* observer) override;
+  bool HasObservers() const override;
+  bool IsInitializationComplete() const override;
 
   // PersistentPrefStore overrides:
-  virtual bool GetMutableValue(const std::string& key,
-                               base::Value** result) override;
+  bool GetMutableValue(const std::string& key, base::Value** result) override;
   // Takes ownership of value.
-  virtual void SetValue(const std::string& key, base::Value* value) override;
-  virtual void SetValueSilently(const std::string& key,
-                                base::Value* value) override;
-  virtual void RemoveValue(const std::string& key) override;
-  virtual bool ReadOnly() const override;
-  virtual PrefReadError GetReadError() const override;
-  virtual PrefReadError ReadPrefs() override;
-  virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
-  virtual void CommitPendingWrite() override;
-  virtual void ReportValueChanged(const std::string& key) override;
+  void SetValue(const std::string& key, base::Value* value) override;
+  void SetValueSilently(const std::string& key, base::Value* value) override;
+  void RemoveValue(const std::string& key) override;
+  bool ReadOnly() const override;
+  PrefReadError GetReadError() const override;
+  PrefReadError ReadPrefs() override;
+  void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
+  void CommitPendingWrite() override;
+  void ReportValueChanged(const std::string& key) override;
 
  private:
   struct ReadingResults;
   class FileThreadSerializer;
 
-  virtual ~LevelDBPrefStore();
+  ~LevelDBPrefStore() override;
 
   static scoped_ptr<ReadingResults> DoReading(const base::FilePath& path);
   static void OpenDB(const base::FilePath& path,

@@ -39,7 +39,7 @@ class PrefHashStoreImpl : public PrefHashStore {
                     const std::string& device_id,
                     bool use_super_mac);
 
-  virtual ~PrefHashStoreImpl();
+  ~PrefHashStoreImpl() override;
 
   // Provides an external HashStoreContents implementation to be used.
   // BeginTransaction() will ignore |storage| if this is provided.
@@ -51,7 +51,7 @@ class PrefHashStoreImpl : public PrefHashStore {
   void Reset();
 
   // PrefHashStore implementation.
-  virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
+  scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
       scoped_ptr<HashStoreContents> storage) override;
 
  private:

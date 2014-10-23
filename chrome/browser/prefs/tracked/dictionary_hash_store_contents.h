@@ -31,13 +31,13 @@ class DictionaryHashStoreContents : public HashStoreContents {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // HashStoreContents implementation
-  virtual std::string hash_store_id() const override;
-  virtual void Reset() override;
-  virtual bool IsInitialized() const override;
-  virtual const base::DictionaryValue* GetContents() const override;
-  virtual scoped_ptr<MutableDictionary> GetMutableContents() override;
-  virtual std::string GetSuperMac() const override;
-  virtual void SetSuperMac(const std::string& super_mac) override;
+  std::string hash_store_id() const override;
+  void Reset() override;
+  bool IsInitialized() const override;
+  const base::DictionaryValue* GetContents() const override;
+  scoped_ptr<MutableDictionary> GetMutableContents() override;
+  std::string GetSuperMac() const override;
+  void SetSuperMac(const std::string& super_mac) override;
 
  private:
   base::DictionaryValue* storage_;

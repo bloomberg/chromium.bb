@@ -27,7 +27,7 @@ class PrefRegistrySyncable;
 class PrefServiceSyncableFactory : public base::PrefServiceFactory {
  public:
   PrefServiceSyncableFactory();
-  virtual ~PrefServiceSyncableFactory();
+  ~PrefServiceSyncableFactory() override;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // Set up policy pref stores using the given policy service.

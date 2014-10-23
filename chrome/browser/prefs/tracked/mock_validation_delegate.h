@@ -35,7 +35,7 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
   };
 
   MockValidationDelegate();
-  virtual ~MockValidationDelegate();
+  ~MockValidationDelegate() override;
 
   // Returns the number of recorded validations.
   size_t recorded_validations_count() const { return validations_.size(); }
@@ -48,12 +48,12 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
   const ValidationEvent* GetEventForPath(const std::string& pref_path) const;
 
   // TrackedPreferenceValidationDelegate implementation.
-  virtual void OnAtomicPreferenceValidation(
+  void OnAtomicPreferenceValidation(
       const std::string& pref_path,
       const base::Value* value,
       PrefHashStoreTransaction::ValueState value_state,
       TrackedPreferenceHelper::ResetAction reset_action) override;
-  virtual void OnSplitPreferenceValidation(
+  void OnSplitPreferenceValidation(
       const std::string& pref_path,
       const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,

@@ -17,26 +17,23 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   // members of its |outer| PrefHashStoreImpl.
   PrefHashStoreTransactionImpl(PrefHashStoreImpl* outer,
                                scoped_ptr<HashStoreContents> storage);
-  virtual ~PrefHashStoreTransactionImpl();
+  ~PrefHashStoreTransactionImpl() override;
 
   // PrefHashStoreTransaction implementation.
-  virtual ValueState CheckValue(const std::string& path,
-                                const base::Value* value) const override;
-  virtual void StoreHash(const std::string& path,
-                         const base::Value* value) override;
-  virtual ValueState CheckSplitValue(
+  ValueState CheckValue(const std::string& path,
+                        const base::Value* value) const override;
+  void StoreHash(const std::string& path, const base::Value* value) override;
+  ValueState CheckSplitValue(
       const std::string& path,
       const base::DictionaryValue* initial_split_value,
       std::vector<std::string>* invalid_keys) const override;
-  virtual void StoreSplitHash(
-      const std::string& path,
-      const base::DictionaryValue* split_value) override;
-  virtual bool HasHash(const std::string& path) const override;
-  virtual void ImportHash(const std::string& path,
-                          const base::Value* hash) override;
-  virtual void ClearHash(const std::string& path) override;
-  virtual bool IsSuperMACValid() const override;
-  virtual bool StampSuperMac() override;
+  void StoreSplitHash(const std::string& path,
+                      const base::DictionaryValue* split_value) override;
+  bool HasHash(const std::string& path) const override;
+  void ImportHash(const std::string& path, const base::Value* hash) override;
+  void ClearHash(const std::string& path) override;
+  bool IsSuperMACValid() const override;
+  bool StampSuperMac() override;
 
  private:
   bool GetSplitMacs(const std::string& path,

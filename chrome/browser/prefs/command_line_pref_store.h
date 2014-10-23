@@ -17,7 +17,7 @@ class CommandLinePrefStore : public ValueMapPrefStore {
   explicit CommandLinePrefStore(const base::CommandLine* command_line);
 
  protected:
-  virtual ~CommandLinePrefStore();
+  ~CommandLinePrefStore() override;
 
   // Logs a message and returns false if the proxy switches are
   // self-contradictory. Protected so it can be used in unit testing.
