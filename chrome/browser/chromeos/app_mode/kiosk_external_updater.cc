@@ -140,10 +140,6 @@ void KioskExternalUpdater::OnMountEvent(
       return;
     }
 
-    NotifyKioskUpdateProgress(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_KIOSK_EXTERNAL_UPDATE_IN_PROGRESS));
-
     base::DictionaryValue* parsed_manifest = new base::DictionaryValue();
     ExternalUpdateErrorCode* parsing_error = new ExternalUpdateErrorCode;
     backend_task_runner_->PostTaskAndReply(
@@ -239,9 +235,6 @@ void KioskExternalUpdater::ProcessParsedManifest(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (*parsing_error == ERROR_NO_MANIFEST) {
-    NotifyKioskUpdateProgress(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_KIOSK_EXTERNAL_UPDATE_NO_MANIFEST));
     KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(false);
     return;
   } else if (*parsing_error == ERROR_INVALID_MANIFEST) {
@@ -251,6 +244,10 @@ void KioskExternalUpdater::ProcessParsedManifest(
     KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(false);
     return;
   }
+
+  NotifyKioskUpdateProgress(
+      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+          IDS_KIOSK_EXTERNAL_UPDATE_IN_PROGRESS));
 
   external_update_path_ = external_update_dir;
   for (base::DictionaryValue::Iterator it(*parsed_manifest); !it.IsAtEnd();

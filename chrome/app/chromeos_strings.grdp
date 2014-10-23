@@ -5117,9 +5117,6 @@ Battery full
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_NO_UPDATES" desc="Error message for no external extensions to update.">
     No kiosk apps with newer version are found on the usb stick, nothing to update. Please remove the usb stick.
   </message>
-  <message name="IDS_KIOSK_EXTERNAL_UPDATE_NO_MANIFEST" desc="Error message for external update manifest file not found.">
-    Can't find kiosk external update manifest file on the usb stick, failed to update kiosk apps. Please remove the usb stick.
-  </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_INVALID_MANIFEST" desc="Error message for invalid external update manifest file from usb stick.">
     Found invalid kiosk external update manifest file on the usb stick, failed to update kiosk apps. Please remove the usb stick.
   </message>
