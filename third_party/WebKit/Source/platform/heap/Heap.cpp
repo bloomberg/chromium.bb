@@ -2690,7 +2690,7 @@ void ThreadHeap<Header>::prepareHeapForTermination()
 }
 
 template<typename Header>
-BaseHeap* ThreadHeap<Header>::split(int numberOfNormalPages)
+PassOwnPtr<BaseHeap> ThreadHeap<Header>::split(int numberOfNormalPages)
 {
     // Create a new split off thread heap containing
     // |numberOfNormalPages| of the pages of this ThreadHeap for
@@ -2698,7 +2698,7 @@ BaseHeap* ThreadHeap<Header>::split(int numberOfNormalPages)
     // with this heap at the end of sweeping and the temporary
     // ThreadHeap object will be deallocated after the merge.
     ASSERT(numberOfNormalPages > 0);
-    ThreadHeap<Header>* splitOff = new ThreadHeap(m_threadState, m_index);
+    OwnPtr<ThreadHeap<Header>> splitOff = adoptPtr(new ThreadHeap(m_threadState, m_index));
     HeapPage<Header>* splitPoint = m_firstPage;
     for (int i = 1; i < numberOfNormalPages; i++)
         splitPoint = splitPoint->next();
@@ -2708,13 +2708,13 @@ BaseHeap* ThreadHeap<Header>::split(int numberOfNormalPages)
     splitOff->m_numberOfNormalPages = numberOfNormalPages;
     m_numberOfNormalPages -= numberOfNormalPages;
     splitPoint->m_next = 0;
-    return splitOff;
+    return splitOff.release();
 }
 
 template<typename Header>
-void ThreadHeap<Header>::merge(BaseHeap* splitOffBase)
+void ThreadHeap<Header>::merge(PassOwnPtr<BaseHeap> splitOffBase)
 {
-    ThreadHeap<Header>* splitOff = static_cast<ThreadHeap<Header>*>(splitOffBase);
+    ThreadHeap<Header>* splitOff = static_cast<ThreadHeap<Header>*>(splitOffBase.get());
     // If the mergePoint is zero all split off pages became empty in
     // this round and we don't have to merge. There are no pages and
     // nothing on the freelists.
@@ -2735,7 +2735,6 @@ void ThreadHeap<Header>::merge(BaseHeap* splitOffBase)
             }
         }
     }
-    delete splitOffBase;
 }
 
 void Heap::getHeapSpaceSize(uint64_t* objectSpaceSize, uint64_t* allocatedSpaceSize)

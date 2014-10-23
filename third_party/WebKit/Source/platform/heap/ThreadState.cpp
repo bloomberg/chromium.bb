@@ -1148,7 +1148,7 @@ void ThreadState::performPendingSweepInParallel()
     // swept on other threads.
     static const int minNumberOfPagesForParallelSweep = 10;
     HeapStats heapStatsVector[NumberOfNonFinalizedHeaps];
-    BaseHeap* splitOffHeaps[NumberOfNonFinalizedHeaps] = { 0 };
+    OwnPtr<BaseHeap> splitOffHeaps[NumberOfNonFinalizedHeaps];
     for (int i = 0; i < NumberOfNonFinalizedHeaps && pagesToSweepInParallel > 0; i++) {
         BaseHeap* heap = m_heaps[FirstNonFinalizedHeap + i];
         int pageCount = heap->normalPageCount();
@@ -1160,10 +1160,9 @@ void ThreadState::performPendingSweepInParallel()
             // sweeper thread and the owner thread.
             int pagesToSplitOff = std::min(pageCount, pagesToSweepInParallel);
             pagesToSweepInParallel -= pagesToSplitOff;
-            BaseHeap* splitOff = heap->split(pagesToSplitOff);
-            splitOffHeaps[i] = splitOff;
+            splitOffHeaps[i] = heap->split(pagesToSplitOff);
             HeapStats* stats = &heapStatsVector[i];
-            m_sweeperThread->postTask(new SweepNonFinalizedHeapTask(this, splitOff, stats));
+            m_sweeperThread->postTask(new SweepNonFinalizedHeapTask(this, splitOffHeaps[i].get(), stats));
         }
     }
 
@@ -1193,8 +1192,8 @@ void ThreadState::performPendingSweepInParallel()
     waitUntilSweepersDone();
     for (int i = 0; i < NumberOfNonFinalizedHeaps; i++) {
         m_stats.add(&heapStatsVector[i]);
-        if (BaseHeap* splitOff = splitOffHeaps[i])
-            m_heaps[FirstNonFinalizedHeap + i]->merge(splitOff);
+        if (splitOffHeaps[i])
+            m_heaps[FirstNonFinalizedHeap + i]->merge(splitOffHeaps[i].release());
     }
 
     for (int i = 0; i < NumberOfHeaps; i++)

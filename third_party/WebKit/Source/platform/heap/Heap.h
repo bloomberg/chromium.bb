@@ -722,8 +722,8 @@ public:
 
     virtual int normalPageCount() = 0;
 
-    virtual BaseHeap* split(int normalPages) = 0;
-    virtual void merge(BaseHeap* other) = 0;
+    virtual PassOwnPtr<BaseHeap> split(int normalPages) = 0;
+    virtual void merge(PassOwnPtr<BaseHeap> other) = 0;
 
     // Returns a bucket number for inserting a FreeListEntry of a
     // given size. All FreeListEntries in the given bucket, n, have
@@ -784,8 +784,8 @@ public:
 
     virtual int normalPageCount() { return m_numberOfNormalPages; }
 
-    virtual BaseHeap* split(int numberOfNormalPages);
-    virtual void merge(BaseHeap* splitOffBase);
+    virtual PassOwnPtr<BaseHeap> split(int numberOfNormalPages) override;
+    virtual void merge(PassOwnPtr<BaseHeap> splitOffBase) override;
 
     void removePageFromHeap(HeapPage<Header>*);
 
