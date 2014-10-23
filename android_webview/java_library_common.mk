@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+LOCAL_SDK_VERSION := 21
+
 LOCAL_SRC_FILES := $(call all-java-files-under, java/src)
 
 # contentview and its dependencies
