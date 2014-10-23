@@ -104,7 +104,7 @@ const CGFloat kTabLabelTopPadding = 6;
 // The amount of padding to leave on either side of the tab label.
 const CGFloat kTabLabelXPadding = 12;
 
-// Return the text color to use for the indentity status when the site's
+// Return the text color to use for the identity status when the site's
 // identity has been verified.
 NSColor* IdentityVerifiedTextColor() {
   // RGB components are specified using integer RGB [0-255] values for easy
@@ -131,9 +131,20 @@ NSColor* IdentityVerifiedTextColor() {
   // the same as the currently selected segment.
   NSInteger keySegment_;
 }
+
+// The text attributes to use for the tab labels.
++ (NSDictionary*)textAttributes;
+
 @end
 
 @implementation WebsiteSettingsTabSegmentedCell
+
++ (NSDictionary*)textAttributes {
+  NSFont* smallSystemFont =
+      [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+  return @{ NSFontAttributeName : smallSystemFont };
+}
+
 - (id)init {
   if ((self = [super init])) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -245,17 +256,29 @@ NSColor* IdentityVerifiedTextColor() {
 }
 
 - (void)drawSegment:(NSInteger)segment
-            inFrame:(NSRect)frame
+            inFrame:(NSRect)tabFrame
            withView:(NSView*)controlView {
-  // Call the superclass to draw the label, adjusting the rectangle so that
-  // the label appears centered in the tab.
+  // Adjust the tab's frame so that the label appears centered in the tab.
   if (segment == 0) {
-    frame.origin.x += kTabStripXPadding / 2;
-    frame.size.width -= kTabStripXPadding;
+    tabFrame.origin.x += kTabStripXPadding;
+    tabFrame.size.width -= kTabStripXPadding;
   }
-  frame.origin.y += kTabLabelTopPadding;
-  frame.size.height -= kTabLabelTopPadding;
-  [super drawSegment:segment inFrame:frame withView:controlView];
+  tabFrame.origin.y += kTabLabelTopPadding;
+  tabFrame.size.height -= kTabLabelTopPadding;
+
+  // Center the label's frame in the tab's frame.
+  NSString* label = [self labelForSegment:segment];
+  NSDictionary* textAttributes =
+      [WebsiteSettingsTabSegmentedCell textAttributes];
+  NSSize textSize = [label sizeWithAttributes:textAttributes];
+  NSRect labelFrame;
+  labelFrame.size = textSize;
+  labelFrame.origin.x =
+      tabFrame.origin.x + (NSWidth(tabFrame) - textSize.width) / 2.0;
+  labelFrame.origin.y =
+      tabFrame.origin.y + (NSHeight(tabFrame) - textSize.height) / 2.0;
+
+  [label drawInRect:labelFrame withAttributes:textAttributes];
 }
 
 // Overrides the default tracking behavior to only respond to clicks inside the
@@ -415,11 +438,8 @@ NSColor* IdentityVerifiedTextColor() {
   [segmentedControl_ setAction:@selector(tabSelected:)];
   [segmentedControl_ setAutoresizingMask:NSViewWidthSizable];
 
-  NSFont* smallSystemFont =
-      [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
   NSDictionary* textAttributes =
-      [NSDictionary dictionaryWithObject:smallSystemFont
-                                  forKey:NSFontAttributeName];
+      [WebsiteSettingsTabSegmentedCell textAttributes];
 
   // Create the "Permissions" tab.
   NSString* label = l10n_util::GetNSString(
@@ -428,8 +448,6 @@ NSColor* IdentityVerifiedTextColor() {
                    forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
   NSSize textSize = [label sizeWithAttributes:textAttributes];
   CGFloat tabWidth = textSize.width + 2 * kTabLabelXPadding;
-  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding
-                   forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
 
   // Create the "Connection" tab.
   label = l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION);
@@ -449,7 +467,7 @@ NSColor* IdentityVerifiedTextColor() {
   [segmentedControl_ setWidth:tabWidth
                    forSegment:WebsiteSettingsUI::TAB_ID_CONNECTION];
 
-  [segmentedControl_ setFont:smallSystemFont];
+  [segmentedControl_ setFont:[textAttributes objectForKey:NSFontAttributeName]];
   [contentView_ addSubview:segmentedControl_];
 
   NSRect tabFrame = NSMakeRect(0, 0, [self defaultWindowWidth], 300);
