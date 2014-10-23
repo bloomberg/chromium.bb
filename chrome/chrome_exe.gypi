@@ -674,6 +674,8 @@
           'type': 'none',
           'dependencies': [
             'chrome',
+            # Runtime dependencies
+            '../third_party/mesa/mesa.gyp:osmesa',
           ],
           'includes': [
             '../build/isolate.gypi',
