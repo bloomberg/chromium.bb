@@ -67,11 +67,15 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   // Called when the browser process has approved (or denied) access to
   // MIDI hardware.
-  // TODO(toyoshim): MidiPortInfoList objects should be notified separately
-  // port by port.
-  void OnSessionStarted(media::MidiResult result,
-                        media::MidiPortInfoList inputs,
-                        media::MidiPortInfoList outputs);
+  void OnSessionStarted(media::MidiResult result);
+
+  // These functions are called in 2 cases:
+  //  (1) Just before calling |OnSessionStarted|, to notify the recipient about
+  //      existing ports.
+  //  (2) To notify the recipient that a new device was connected and that new
+  //      ports have been created.
+  void OnAddInputPort(media::MidiPortInfo info);
+  void OnAddOutputPort(media::MidiPortInfo info);
 
   // Called when the browser process has sent MIDI data containing one or
   // more messages.
@@ -86,6 +90,9 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   // Following methods, Handle*, run on |main_message_loop_|.
   void HandleClientAdded(media::MidiResult result);
+
+  void HandleAddInputPort(media::MidiPortInfo info);
+  void HandleAddOutputPort(media::MidiPortInfo info);
 
   void HandleDataReceived(uint32 port,
                           const std::vector<uint8>& data,

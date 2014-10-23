@@ -60,6 +60,9 @@ class FakeMidiManagerClient : public MidiManagerClient {
   ~FakeMidiManagerClient() override {}
 
   // MidiManagerClient implementation.
+  void AddInputPort(const MidiPortInfo& info) override {}
+  void AddOutputPort(const MidiPortInfo& info) override {}
+
   void CompleteStartSession(MidiResult result) override {
     EXPECT_TRUE(wait_for_result_);
     result_ = result;

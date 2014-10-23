@@ -125,23 +125,24 @@ void MidiHost::OnEndSession() {
 
 void MidiHost::CompleteStartSession(media::MidiResult result) {
   DCHECK(is_session_requested_);
-  MidiPortInfoList input_ports;
-  MidiPortInfoList output_ports;
-
   if (result == media::MIDI_OK) {
-    input_ports = midi_manager_->input_ports();
-    output_ports = midi_manager_->output_ports();
-    received_messages_queues_.clear();
-    received_messages_queues_.resize(input_ports.size());
     // ChildSecurityPolicy is set just before OnStartSession by
     // MidiDispatcherHost. So we can safely cache the policy.
     has_sys_ex_permission_ = ChildProcessSecurityPolicyImpl::GetInstance()->
         CanSendMidiSysExMessage(renderer_process_id_);
   }
+  Send(new MidiMsg_SessionStarted(result));
+}
 
-  Send(new MidiMsg_SessionStarted(result,
-                                  input_ports,
-                                  output_ports));
+void MidiHost::AddInputPort(const media::MidiPortInfo& info) {
+  base::AutoLock auto_lock(messages_queues_lock_);
+  // MidiMessageQueue is created later in ReceiveMidiData().
+  received_messages_queues_.push_back(nullptr);
+  Send(new MidiMsg_AddInputPort(info));
+}
+
+void MidiHost::AddOutputPort(const media::MidiPortInfo& info) {
+  Send(new MidiMsg_AddOutputPort(info));
 }
 
 void MidiHost::ReceiveMidiData(
@@ -151,11 +152,12 @@ void MidiHost::ReceiveMidiData(
     double timestamp) {
   TRACE_EVENT0("midi", "MidiHost::ReceiveMidiData");
 
+  base::AutoLock auto_lock(messages_queues_lock_);
   if (received_messages_queues_.size() <= port)
     return;
 
   // Lazy initialization
-  if (received_messages_queues_[port] == NULL)
+  if (received_messages_queues_[port] == nullptr)
     received_messages_queues_[port] = new media::MidiMessageQueue(true);
 
   received_messages_queues_[port]->Add(data, length);

@@ -54,10 +54,14 @@ IPC_MESSAGE_CONTROL0(MidiHostMsg_EndSession)
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_CONTROL3(MidiMsg_SessionStarted,
-                     media::MidiResult /* result */,
-                     media::MidiPortInfoList /* input ports */,
-                     media::MidiPortInfoList /* output ports */)
+IPC_MESSAGE_CONTROL1(MidiMsg_AddInputPort,
+                     media::MidiPortInfo /* input port */)
+
+IPC_MESSAGE_CONTROL1(MidiMsg_AddOutputPort,
+                     media::MidiPortInfo /* output port */)
+
+IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted,
+                     media::MidiResult /* result */)
 
 IPC_MESSAGE_CONTROL3(MidiMsg_DataReceived,
                      uint32 /* port */,

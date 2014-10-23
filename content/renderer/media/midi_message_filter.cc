@@ -27,7 +27,7 @@ namespace content {
 // TODO(crbug.com/425389): Rewrite this class as a RenderFrameObserver.
 MidiMessageFilter::MidiMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : sender_(NULL),
+    : sender_(nullptr),
       io_message_loop_(io_message_loop),
       main_message_loop_(base::MessageLoopProxy::current()),
       session_result_(media::MIDI_NOT_INITIALIZED),
@@ -58,6 +58,8 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
     clients_waiting_session_queue_.erase(it);
   if (clients_.empty() && clients_waiting_session_queue_.empty()) {
     session_result_ = media::MIDI_NOT_INITIALIZED;
+    inputs_.clear();
+    outputs_.clear();
     io_message_loop_->PostTask(FROM_HERE,
         base::Bind(&MidiMessageFilter::EndSessionOnIOThread, this));
   }
@@ -112,6 +114,8 @@ bool MidiMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MidiMessageFilter, message)
     IPC_MESSAGE_HANDLER(MidiMsg_SessionStarted, OnSessionStarted)
+    IPC_MESSAGE_HANDLER(MidiMsg_AddInputPort, OnAddInputPort)
+    IPC_MESSAGE_HANDLER(MidiMsg_AddOutputPort, OnAddOutputPort)
     IPC_MESSAGE_HANDLER(MidiMsg_DataReceived, OnDataReceived)
     IPC_MESSAGE_HANDLER(MidiMsg_AcknowledgeSentData, OnAcknowledgeSentData)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -133,24 +137,30 @@ void MidiMessageFilter::OnFilterRemoved() {
 
 void MidiMessageFilter::OnChannelClosing() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  sender_ = NULL;
+  sender_ = nullptr;
 }
 
-void MidiMessageFilter::OnSessionStarted(media::MidiResult result,
-                                         MidiPortInfoList inputs,
-                                         MidiPortInfoList outputs) {
+void MidiMessageFilter::OnSessionStarted(media::MidiResult result) {
   TRACE_EVENT0("midi", "MidiMessageFilter::OnSessionStarted");
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  // TODO(toyoshim): |inputs_| and |outputs_| should not be updated on
-  // |io_message_loop_|. This should be fixed in a following change not to
-  // distribute MidiPortInfo via OnSessionStarted().
-  // For now, this is safe because these are not updated later.
-  inputs_ = inputs;
-  outputs_ = outputs;
   // Handle on the main JS thread.
   main_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&MidiMessageFilter::HandleClientAdded, this, result));
+}
+
+void MidiMessageFilter::OnAddInputPort(media::MidiPortInfo info) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  main_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&MidiMessageFilter::HandleAddInputPort, this, info));
+}
+
+void MidiMessageFilter::OnAddOutputPort(media::MidiPortInfo info) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  main_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&MidiMessageFilter::HandleAddOutputPort, this, info));
 }
 
 void MidiMessageFilter::OnDataReceived(uint32 port,
@@ -223,6 +233,18 @@ void MidiMessageFilter::HandleClientAdded(media::MidiResult result) {
     clients_.insert(client);
   }
   clients_waiting_session_queue_.clear();
+}
+
+void MidiMessageFilter::HandleAddInputPort(media::MidiPortInfo info) {
+  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  inputs_.push_back(info);
+  // TODO(toyoshim): Notify to clients that were already added.
+}
+
+void MidiMessageFilter::HandleAddOutputPort(media::MidiPortInfo info) {
+  DCHECK(main_message_loop_->BelongsToCurrentThread());
+  outputs_.push_back(info);
+  // TODO(toyoshim): Notify to clients that were already added.
 }
 
 void MidiMessageFilter::HandleDataReceived(uint32 port,

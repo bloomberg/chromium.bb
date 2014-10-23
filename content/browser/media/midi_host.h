@@ -37,6 +37,8 @@ class CONTENT_EXPORT MidiHost
 
   // MidiManagerClient implementation.
   void CompleteStartSession(media::MidiResult result) override;
+  void AddInputPort(const media::MidiPortInfo& info) override;
+  void AddOutputPort(const media::MidiPortInfo& info) override;
   void ReceiveMidiData(uint32 port,
                        const uint8* data,
                        size_t length,
@@ -85,6 +87,9 @@ class CONTENT_EXPORT MidiHost
 
   // Buffers where data sent from each MIDI input port is stored.
   ScopedVector<media::MidiMessageQueue> received_messages_queues_;
+
+  // Protects access to |received_messages_queues_|;
+  base::Lock messages_queues_lock_;
 
   // The number of bytes sent to the platform-specific MIDI sending
   // system, but not yet completed.

@@ -77,8 +77,10 @@ void MidiManager::StartSession(MidiManagerClient* client) {
   MidiResult result;
   {
     base::AutoLock auto_lock(lock_);
-    if (result_ == MIDI_OK)
+    if (result_ == MIDI_OK) {
+      AddInitialPorts(client);
       clients_.insert(client);
+    }
     result = result_;
   }
   client->CompleteStartSession(result);
@@ -115,11 +117,17 @@ void MidiManager::CompleteInitialization(MidiResult result) {
 }
 
 void MidiManager::AddInputPort(const MidiPortInfo& info) {
+  base::AutoLock auto_lock(lock_);
   input_ports_.push_back(info);
+  for (auto client : clients_)
+    client->AddInputPort(info);
 }
 
 void MidiManager::AddOutputPort(const MidiPortInfo& info) {
+  base::AutoLock auto_lock(lock_);
   output_ports_.push_back(info);
+  for (auto client : clients_)
+    client->AddOutputPort(info);
 }
 
 void MidiManager::ReceiveMidiData(
@@ -129,7 +137,7 @@ void MidiManager::ReceiveMidiData(
     double timestamp) {
   base::AutoLock auto_lock(lock_);
 
-  for (MidiManagerClient* client : clients_)
+  for (auto client : clients_)
     client->ReceiveMidiData(port_index, data, length, timestamp);
 }
 
@@ -142,12 +150,23 @@ void MidiManager::CompleteInitializationInternal(MidiResult result) {
   initialized_ = true;
   result_ = result;
 
-  for (MidiManagerClient* client : pending_clients_) {
-    if (result_ == MIDI_OK)
+  for (auto client : pending_clients_) {
+    if (result_ == MIDI_OK) {
+      AddInitialPorts(client);
       clients_.insert(client);
+    }
     client->CompleteStartSession(result_);
   }
   pending_clients_.clear();
+}
+
+void MidiManager::AddInitialPorts(MidiManagerClient* client) {
+  lock_.AssertAcquired();
+
+  for (const auto& info : input_ports_)
+    client->AddInputPort(info);
+  for (const auto& info : output_ports_)
+    client->AddOutputPort(info);
 }
 
 }  // namespace media

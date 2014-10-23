@@ -499,6 +499,7 @@ MidiManagerWin::MidiManagerWin()
 void MidiManagerWin::StartInitialization() {
   const UINT num_in_devices = midiInGetNumDevs();
   in_devices_.reserve(num_in_devices);
+  int inport_index = 0;
   for (UINT device_id = 0; device_id < num_in_devices; ++device_id) {
     MIDIINCAPS caps = {};
     MMRESULT result = midiInGetDevCaps(device_id, &caps, sizeof(caps));
@@ -516,7 +517,7 @@ void MidiManagerWin::StartInitialization() {
         base::WideToUTF8(caps.szPname),
         base::IntToString(static_cast<int>(caps.vDriverVersion)));
     AddInputPort(info);
-    in_device->set_port_index(input_ports().size() - 1);
+    in_device->set_port_index(inport_index++);
     in_devices_.push_back(in_device.Pass());
   }
 
@@ -548,8 +549,8 @@ void MidiManagerWin::StartInitialization() {
 MidiManagerWin::~MidiManagerWin() {
   // Cleanup order is important. |send_thread_| must be stopped before
   // |out_devices_| is cleared.
-  for (size_t i = 0; i < output_ports().size(); ++i)
-    out_devices_[i]->Quit();
+  for (auto& device : out_devices_)
+    device->Quit();
   send_thread_.Stop();
 
   out_devices_.clear();

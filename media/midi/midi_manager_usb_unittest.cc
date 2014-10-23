@@ -78,6 +78,14 @@ class FakeMidiManagerClient : public MidiManagerClient {
         logger_(logger) {}
   ~FakeMidiManagerClient() override {}
 
+  void AddInputPort(const MidiPortInfo& info) override {
+    input_ports_.push_back(info);
+  }
+
+  void AddOutputPort(const MidiPortInfo& info) override {
+    output_ports_.push_back(info);
+  }
+
   void CompleteStartSession(MidiResult result) override {
     complete_start_session_ = true;
     result_ = result;
@@ -103,6 +111,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
 
   bool complete_start_session_;
   MidiResult result_;
+  MidiPortInfoList input_ports_;
+  MidiPortInfoList output_ports_;
 
  private:
   Logger* logger_;
@@ -183,6 +193,9 @@ class MidiManagerUsbTest : public ::testing::Test {
     }
   }
 
+  const MidiPortInfoList& input_ports() { return client_->input_ports_; }
+  const MidiPortInfoList& output_ports() { return client_->output_ports_; }
+
   scoped_ptr<MidiManagerUsbForTesting> manager_;
   scoped_ptr<FakeMidiManagerClient> client_;
   // Owned by manager_.
@@ -223,8 +236,8 @@ TEST_F(MidiManagerUsbTest, Initialize) {
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(MIDI_OK, GetInitializationResult());
 
-  ASSERT_EQ(1u, manager_->input_ports().size());
-  ASSERT_EQ(2u, manager_->output_ports().size());
+  ASSERT_EQ(1u, input_ports().size());
+  ASSERT_EQ(2u, output_ports().size());
   ASSERT_TRUE(manager_->input_stream());
   std::vector<UsbMidiInputStream::JackUniqueKey> keys =
       manager_->input_stream()->RegisteredJackKeysForTesting();
