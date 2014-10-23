@@ -150,6 +150,7 @@ class TestStoragePartition : public StoragePartition {
   content::ServiceWorkerContext* GetServiceWorkerContext() override {
     return NULL;
   }
+  content::GeofencingManager* GetGeofencingManager() override { return NULL; }
 
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,

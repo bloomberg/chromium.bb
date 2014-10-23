@@ -7,97 +7,90 @@
 #include <algorithm>
 
 #include "base/callback.h"
-#include "base/memory/singleton.h"
-#include "content/browser/geofencing/geofencing_provider.h"
+#include "content/browser/geofencing/geofencing_service.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
-#include "url/gurl.h"
 
 namespace content {
 
-struct GeofencingManager::RegistrationKey {
-  RegistrationKey(BrowserContext* browser_context,
-                  int64 service_worker_registration_id,
-                  const GURL& service_worker_origin,
-                  const std::string& region_id);
-
-  BrowserContext* browser_context;
+struct GeofencingManager::Registration {
+  Registration(int64 service_worker_registration_id,
+               const std::string& region_id,
+               const blink::WebCircularGeofencingRegion& region,
+               const StatusCallback& callback,
+               int64 geofencing_registration_id);
 
   int64 service_worker_registration_id;
-  GURL service_worker_origin;
-
   std::string region_id;
-};
-
-GeofencingManager::RegistrationKey::RegistrationKey(
-    BrowserContext* browser_context,
-    int64 service_worker_registration_id,
-    const GURL& service_worker_origin,
-    const std::string& region_id)
-    : browser_context(browser_context),
-      service_worker_registration_id(service_worker_registration_id),
-      service_worker_origin(service_worker_origin),
-      region_id(region_id) {
-}
-
-struct GeofencingManager::Registration {
-  Registration();
-  Registration(const RegistrationKey& key,
-               const blink::WebCircularGeofencingRegion& region);
-
-  RegistrationKey key;
   blink::WebCircularGeofencingRegion region;
 
-  // Registration id as returned by the GeofencingProvider, set to -1 if not
-  // currently registered with the provider.
-  int registration_id;
+  // Registration ID as returned by the |GeofencingService|.
+  int64 geofencing_registration_id;
 
-  // Flag to indicate if this registration has completed, and thus should be
+  // Callback to call when registration is completed. This field is reset when
+  // registration is complete.
+  StatusCallback registration_callback;
+
+  // Returns true if registration has been completed, and thus should be
   // included in calls to GetRegisteredRegions.
-  bool is_active;
+  bool is_active() const { return registration_callback.is_null(); }
 };
-
-GeofencingManager::Registration::Registration() : key(nullptr, -1, GURL(), "") {
-}
 
 GeofencingManager::Registration::Registration(
-    const RegistrationKey& key,
-    const blink::WebCircularGeofencingRegion& region)
-    : key(key), region(region), registration_id(-1), is_active(false) {
+    int64 service_worker_registration_id,
+    const std::string& region_id,
+    const blink::WebCircularGeofencingRegion& region,
+    const GeofencingManager::StatusCallback& callback,
+    int64 geofencing_registration_id)
+    : service_worker_registration_id(service_worker_registration_id),
+      region_id(region_id),
+      region(region),
+      geofencing_registration_id(geofencing_registration_id),
+      registration_callback(callback) {
 }
 
-class GeofencingManager::RegistrationMatches {
- public:
-  RegistrationMatches(const RegistrationKey& key) : key_(key) {}
-
-  bool operator()(const Registration& registration) {
-    return registration.key.browser_context == key_.browser_context &&
-           registration.key.service_worker_registration_id ==
-               key_.service_worker_registration_id &&
-           registration.key.service_worker_origin ==
-               key_.service_worker_origin &&
-           registration.key.region_id == key_.region_id;
-  }
-
- private:
-  const RegistrationKey& key_;
-};
-
-GeofencingManager::GeofencingManager() {
+GeofencingManager::GeofencingManager(
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
+    : service_(nullptr), service_worker_context_(service_worker_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 GeofencingManager::~GeofencingManager() {
 }
 
-GeofencingManager* GeofencingManager::GetInstance() {
+void GeofencingManager::Init() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&GeofencingManager::InitOnIO, this));
+}
+
+void GeofencingManager::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&GeofencingManager::ShutdownOnIO, this));
+}
+
+void GeofencingManager::InitOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return Singleton<GeofencingManager>::get();
+  service_ = GeofencingServiceImpl::GetInstance();
+}
+
+void GeofencingManager::ShutdownOnIO() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Clean up all registrations with the |GeofencingService|.
+  // TODO(mek): This will need to change to support geofence registrations that
+  //     outlive the browser, although removing the references to this
+  //     |GeofencingManager| from the |GeofencingService| will still be needed.
+  for (const auto& registration : registrations_by_id_) {
+    service_->UnregisterRegion(registration.first);
+  }
 }
 
 void GeofencingManager::RegisterRegion(
-    BrowserContext* browser_context,
     int64 service_worker_registration_id,
-    const GURL& service_worker_origin,
     const std::string& region_id,
     const blink::WebCircularGeofencingRegion& region,
     const StatusCallback& callback) {
@@ -105,148 +98,148 @@ void GeofencingManager::RegisterRegion(
 
   // TODO(mek): Validate region_id and region.
 
-  if (!provider_.get()) {
-    callback.Run(GeofencingStatus::
-                     GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE);
+  if (!service_->IsServiceAvailable()) {
+    callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE);
     return;
   }
 
-  RegistrationKey key(browser_context,
-                      service_worker_registration_id,
-                      service_worker_origin,
-                      region_id);
-  if (FindRegistration(key)) {
+  if (FindRegistration(service_worker_registration_id, region_id)) {
     // Already registered, return an error.
-    callback.Run(GeofencingStatus::GEOFENCING_STATUS_ERROR);
+    // TODO(mek): Use a more specific error code.
+    callback.Run(GEOFENCING_STATUS_ERROR);
     return;
   }
 
-  // Add registration, but don't mark it as active yet. This prevents duplicate
-  // registrations.
-  AddRegistration(key, region);
-
-  // Register with provider.
-  provider_->RegisterRegion(
-      region,
-      base::Bind(&GeofencingManager::RegisterRegionCompleted,
-                 base::Unretained(this),
-                 callback,
-                 key));
+  AddRegistration(service_worker_registration_id,
+                  region_id,
+                  region,
+                  callback,
+                  service_->RegisterRegion(region, this));
 }
 
-void GeofencingManager::UnregisterRegion(BrowserContext* browser_context,
-                                         int64 service_worker_registration_id,
-                                         const GURL& service_worker_origin,
+void GeofencingManager::UnregisterRegion(int64 service_worker_registration_id,
                                          const std::string& region_id,
                                          const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(mek): Validate region_id.
 
-  if (!provider_.get()) {
-    callback.Run(GeofencingStatus::
-                     GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE);
+  if (!service_->IsServiceAvailable()) {
+    callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE);
     return;
   }
 
-  RegistrationKey key(browser_context,
-                      service_worker_registration_id,
-                      service_worker_origin,
-                      region_id);
-  Registration* registration = FindRegistration(key);
+  Registration* registration =
+      FindRegistration(service_worker_registration_id, region_id);
   if (!registration) {
-    // Not registered, return an error/
-    callback.Run(GeofencingStatus::GEOFENCING_STATUS_ERROR);
+    // Not registered, return an error.
+    callback.Run(GEOFENCING_STATUS_UNREGISTRATION_FAILED_NOT_REGISTERED);
     return;
   }
 
-  if (!registration->is_active) {
+  if (!registration->is_active()) {
     // Started registration, but not completed yet, error.
-    callback.Run(GeofencingStatus::GEOFENCING_STATUS_ERROR);
+    callback.Run(GEOFENCING_STATUS_UNREGISTRATION_FAILED_NOT_REGISTERED);
     return;
   }
 
-  if (registration->registration_id != -1) {
-    provider_->UnregisterRegion(registration->registration_id);
-  }
-  ClearRegistration(key);
-  callback.Run(GeofencingStatus::GEOFENCING_STATUS_OK);
+  service_->UnregisterRegion(registration->geofencing_registration_id);
+  ClearRegistration(registration);
+  callback.Run(GEOFENCING_STATUS_OK);
 }
 
 GeofencingStatus GeofencingManager::GetRegisteredRegions(
-    BrowserContext* browser_context,
     int64 service_worker_registration_id,
-    const GURL& service_worker_origin,
     std::map<std::string, blink::WebCircularGeofencingRegion>* result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   CHECK(result);
 
-  if (!provider_.get()) {
-    return GeofencingStatus::
-        GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE;
+  if (!service_->IsServiceAvailable()) {
+    return GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE;
   }
 
   // Populate result, filtering out inactive registrations.
   result->clear();
-  for (const auto& registration : registrations_) {
-    if (registration.key.browser_context == browser_context &&
-        registration.key.service_worker_registration_id ==
-            service_worker_registration_id &&
-        registration.key.service_worker_origin == service_worker_origin &&
-        registration.is_active) {
-      (*result)[registration.key.region_id] = registration.region;
-    }
+  ServiceWorkerRegistrationsMap::iterator registrations =
+      registrations_.find(service_worker_registration_id);
+  if (registrations == registrations_.end())
+    return GEOFENCING_STATUS_OK;
+  for (const auto& registration : registrations->second) {
+    if (registration.second.is_active())
+      (*result)[registration.first] = registration.second.region;
   }
-  return GeofencingStatus::GEOFENCING_STATUS_OK;
+  return GEOFENCING_STATUS_OK;
 }
 
-void GeofencingManager::RegisterRegionCompleted(const StatusCallback& callback,
-                                                const RegistrationKey& key,
-                                                GeofencingStatus status,
-                                                int registration_id) {
+void GeofencingManager::RegistrationFinished(int64 geofencing_registration_id,
+                                             GeofencingStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status != GEOFENCING_STATUS_OK) {
-    ClearRegistration(key);
-    callback.Run(status);
-    return;
-  }
-
-  Registration* registration = FindRegistration(key);
+  Registration* registration = FindRegistrationById(geofencing_registration_id);
   DCHECK(registration);
-  registration->registration_id = registration_id;
-  registration->is_active = true;
-  callback.Run(GeofencingStatus::GEOFENCING_STATUS_OK);
-}
+  DCHECK(!registration->is_active());
+  registration->registration_callback.Run(status);
+  registration->registration_callback.Reset();
 
-void GeofencingManager::SetProviderForTests(
-    scoped_ptr<GeofencingProvider> provider) {
-  DCHECK(!provider_.get());
-  provider_ = provider.Pass();
+  // If the registration wasn't succesful, remove it from our storage.
+  if (status != GEOFENCING_STATUS_OK)
+    ClearRegistration(registration);
 }
 
 GeofencingManager::Registration* GeofencingManager::FindRegistration(
-    const RegistrationKey& key) {
-  std::vector<Registration>::iterator it = std::find_if(
-      registrations_.begin(), registrations_.end(), RegistrationMatches(key));
-  if (it == registrations_.end())
+    int64 service_worker_registration_id,
+    const std::string& region_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerRegistrationsMap::iterator registrations_iterator =
+      registrations_.find(service_worker_registration_id);
+  if (registrations_iterator == registrations_.end())
     return nullptr;
-  return &*it;
+  RegionIdRegistrationMap::iterator registration =
+      registrations_iterator->second.find(region_id);
+  if (registration == registrations_iterator->second.end())
+    return nullptr;
+  return &registration->second;
+}
+
+GeofencingManager::Registration* GeofencingManager::FindRegistrationById(
+    int64 geofencing_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  RegistrationIdRegistrationMap::iterator registration_iterator =
+      registrations_by_id_.find(geofencing_registration_id);
+  if (registration_iterator == registrations_by_id_.end())
+    return nullptr;
+  return &registration_iterator->second->second;
 }
 
 GeofencingManager::Registration& GeofencingManager::AddRegistration(
-    const RegistrationKey& key,
-    const blink::WebCircularGeofencingRegion& region) {
-  DCHECK(!FindRegistration(key));
-  registrations_.push_back(Registration(key, region));
-  return registrations_.back();
+    int64 service_worker_registration_id,
+    const std::string& region_id,
+    const blink::WebCircularGeofencingRegion& region,
+    const StatusCallback& callback,
+    int64 geofencing_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!FindRegistration(service_worker_registration_id, region_id));
+  RegionIdRegistrationMap::iterator registration =
+      registrations_[service_worker_registration_id]
+          .insert(std::make_pair(region_id,
+                                 Registration(service_worker_registration_id,
+                                              region_id,
+                                              region,
+                                              callback,
+                                              geofencing_registration_id)))
+          .first;
+  registrations_by_id_[geofencing_registration_id] = registration;
+  return registration->second;
 }
 
-void GeofencingManager::ClearRegistration(const RegistrationKey& key) {
-  std::vector<Registration>::iterator it = std::find_if(
-      registrations_.begin(), registrations_.end(), RegistrationMatches(key));
-  if (it == registrations_.end())
-    return;
-  registrations_.erase(it);
+void GeofencingManager::ClearRegistration(Registration* registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  registrations_by_id_.erase(registration->geofencing_registration_id);
+  ServiceWorkerRegistrationsMap::iterator registrations_iterator =
+      registrations_.find(registration->service_worker_registration_id);
+  DCHECK(registrations_iterator != registrations_.end());
+  registrations_iterator->second.erase(registration->region_id);
+  if (registrations_iterator->second.empty())
+    registrations_.erase(registrations_iterator);
 }
 
 }  // namespace content

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/geofencing/geofencing_manager.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
@@ -366,7 +367,8 @@ StoragePartitionImpl::StoragePartitionImpl(
     IndexedDBContextImpl* indexed_db_context,
     ServiceWorkerContextWrapper* service_worker_context,
     WebRTCIdentityStore* webrtc_identity_store,
-    storage::SpecialStoragePolicy* special_storage_policy)
+    storage::SpecialStoragePolicy* special_storage_policy,
+    GeofencingManager* geofencing_manager)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -376,7 +378,8 @@ StoragePartitionImpl::StoragePartitionImpl(
       indexed_db_context_(indexed_db_context),
       service_worker_context_(service_worker_context),
       webrtc_identity_store_(webrtc_identity_store),
-      special_storage_policy_(special_storage_policy) {
+      special_storage_policy_(special_storage_policy),
+      geofencing_manager_(geofencing_manager) {
 }
 
 StoragePartitionImpl::~StoragePartitionImpl() {
@@ -397,6 +400,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetServiceWorkerContext())
     GetServiceWorkerContext()->Shutdown();
+
+  if (GetGeofencingManager())
+    GetGeofencingManager()->Shutdown();
 }
 
 // TODO(ajwong): Break the direct dependency on |context|. We only
@@ -468,6 +474,10 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy(
       context->GetSpecialStoragePolicy());
 
+  scoped_refptr<GeofencingManager> geofencing_manager =
+      new GeofencingManager(service_worker_context);
+  geofencing_manager->Init();
+
   return new StoragePartitionImpl(partition_path,
                                   quota_manager.get(),
                                   appcache_service.get(),
@@ -477,7 +487,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                   indexed_db_context.get(),
                                   service_worker_context.get(),
                                   webrtc_identity_store.get(),
-                                  special_storage_policy.get());
+                                  special_storage_policy.get(),
+                                  geofencing_manager.get());
 }
 
 base::FilePath StoragePartitionImpl::GetPath() {
@@ -519,6 +530,10 @@ IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
 
 ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
   return service_worker_context_.get();
+}
+
+GeofencingManager* StoragePartitionImpl::GetGeofencingManager() {
+  return geofencing_manager_.get();
 }
 
 void StoragePartitionImpl::ClearDataImpl(

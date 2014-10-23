@@ -43,6 +43,7 @@ class StoragePartitionImpl : public StoragePartition {
   DOMStorageContextWrapper* GetDOMStorageContext() override;
   IndexedDBContextImpl* GetIndexedDBContext() override;
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
+  GeofencingManager* GetGeofencingManager() override;
 
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,
@@ -116,7 +117,8 @@ class StoragePartitionImpl : public StoragePartition {
       IndexedDBContextImpl* indexed_db_context,
       ServiceWorkerContextWrapper* service_worker_context,
       WebRTCIdentityStore* webrtc_identity_store,
-      storage::SpecialStoragePolicy* special_storage_policy);
+      storage::SpecialStoragePolicy* special_storage_policy,
+      GeofencingManager* geofencing_manager);
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
@@ -156,6 +158,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<GeofencingManager> geofencing_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };

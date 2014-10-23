@@ -7,16 +7,15 @@
 #include "content/browser/geofencing/geofencing_manager.h"
 #include "content/common/geofencing_messages.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
-#include "url/gurl.h"
 
 namespace content {
 
 static const int kMaxRegionIdLength = 200;
 
 GeofencingDispatcherHost::GeofencingDispatcherHost(
-    BrowserContext* browser_context)
+    GeofencingManager* geofencing_manager)
     : BrowserMessageFilter(GeofencingMsgStart),
-      browser_context_(browser_context),
+      manager_(geofencing_manager),
       weak_factory_(this) {
 }
 
@@ -47,10 +46,8 @@ void GeofencingDispatcherHost::OnRegisterRegion(
     return;
   }
   // TODO(mek): Actually pass service worker information to manager.
-  GeofencingManager::GetInstance()->RegisterRegion(
-      browser_context_,
-      0,      /* service_worker_registration_id */
-      GURL(), /* service_worker_origin */
+  manager_->RegisterRegion(
+      0, /* service_worker_registration_id */
       region_id,
       region,
       base::Bind(&GeofencingDispatcherHost::RegisterRegionCompleted,
@@ -70,10 +67,8 @@ void GeofencingDispatcherHost::OnUnregisterRegion(
     return;
   }
   // TODO(mek): Actually pass service worker information to manager.
-  GeofencingManager::GetInstance()->UnregisterRegion(
-      browser_context_,
-      0,      /* service_worker_registration_id */
-      GURL(), /* service_worker_origin */
+  manager_->UnregisterRegion(
+      0, /* service_worker_registration_id */
       region_id,
       base::Bind(&GeofencingDispatcherHost::UnregisterRegionCompleted,
                  weak_factory_.GetWeakPtr(),
@@ -86,11 +81,8 @@ void GeofencingDispatcherHost::OnGetRegisteredRegions(int thread_id,
   GeofencingRegistrations result;
   // TODO(mek): Actually pass service worker information to manager.
   GeofencingStatus status =
-      GeofencingManager::GetInstance()->GetRegisteredRegions(
-          browser_context_,
-          0,      /* service_worker_registration_id */
-          GURL(), /* service_worker_origin */
-          &result);
+      manager_->GetRegisteredRegions(0, /* service_worker_registration_id */
+                                     &result);
   Send(new GeofencingMsg_GetRegisteredRegionsComplete(
       thread_id, request_id, status, result));
 }

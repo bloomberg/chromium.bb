@@ -14,11 +14,11 @@ struct WebCircularGeofencingRegion;
 
 namespace content {
 
-class BrowserContext;
+class GeofencingManager;
 
 class GeofencingDispatcherHost : public BrowserMessageFilter {
  public:
-  explicit GeofencingDispatcherHost(BrowserContext* browser_context);
+  explicit GeofencingDispatcherHost(GeofencingManager* geofencing_manager);
 
  private:
   ~GeofencingDispatcherHost() override;
@@ -42,7 +42,7 @@ class GeofencingDispatcherHost : public BrowserMessageFilter {
                                  int request_id,
                                  GeofencingStatus result);
 
-  BrowserContext* browser_context_;
+  scoped_refptr<GeofencingManager> manager_;
   base::WeakPtrFactory<GeofencingDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GeofencingDispatcherHost);
