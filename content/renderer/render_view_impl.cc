@@ -77,6 +77,7 @@
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
+#include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
@@ -2381,6 +2382,9 @@ void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame) {
 
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame);
+
+  if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
+    GpuBenchmarking::Install(frame);
 
   if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     MemoryBenchmarkingExtension::Install(frame);

@@ -5,16 +5,58 @@
 #ifndef CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
 #define CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
 
+#include "base/basictypes.h"
+#include "gin/wrappable.h"
+
+namespace blink {
+class WebFrame;
+}
+
+namespace gin {
+class Arguments;
+}
+
 namespace v8 {
-class Extension;
+class Function;
+class Isolate;
+class Object;
+template <typename T> class Handle;
 }
 
 namespace content {
 
-// V8 extension for gpu benchmarking
-class GpuBenchmarkingExtension {
+// gin class for gpu benchmarking
+class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
  public:
-  static v8::Extension* Get();
+  static gin::WrapperInfo kWrapperInfo;
+  static void Install(blink::WebFrame* frame);
+
+ private:
+  GpuBenchmarking();
+  virtual ~GpuBenchmarking();
+
+  // gin::Wrappable.
+  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) override;
+
+  // JavaScript handlers.
+  void SetNeedsDisplayOnAllLayers();
+  void SetRasterizeOnlyVisibleContent();
+  void PrintToSkPicture(v8::Isolate* isolate, const std::string& dirname);
+  bool GestureSourceTypeSupported(int gesture_source_type);
+  bool SmoothScrollBy(gin::Arguments* args);
+  bool Swipe(gin::Arguments* args);
+  bool ScrollBounce(gin::Arguments* args);
+  bool PinchBy(gin::Arguments* args);
+  bool Tap(gin::Arguments* args);
+  void BeginWindowSnapshotPNG(v8::Isolate* isolate,
+                              v8::Handle<v8::Function> callback);
+  void ClearImageCache();
+  int RunMicroBenchmark(gin::Arguments* args);
+  bool SendMessageToMicroBenchmark(int id, v8::Handle<v8::Object> message);
+  bool HasGpuProcess();
+
+  DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);
 };
 
 }  // namespace content

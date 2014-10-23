@@ -74,7 +74,6 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
-#include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
@@ -486,8 +485,6 @@ void RenderThreadImpl::Init() {
   InitSkiaEventTracer();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
-      RegisterExtension(GpuBenchmarkingExtension::Get());
 
   is_impl_side_painting_enabled_ =
       command_line.HasSwitch(switches::kEnableImplSidePainting);
