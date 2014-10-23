@@ -100,12 +100,10 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // WebUI message handlers.
   void HandleFrameLoadingCompleted(int status);
-  void HandleCompleteAuthentication(const std::string& gaia_id,
-                                    const std::string& email,
+  void HandleCompleteAuthentication(const std::string& email,
                                     const std::string& password,
                                     const std::string& auth_code);
-  void HandleCompleteLogin(const std::string& gaia_id,
-                           const std::string& typed_email,
+  void HandleCompleteLogin(const std::string& typed_email,
                            const std::string& password,
                            bool using_saml);
 
@@ -116,15 +114,13 @@ class GaiaScreenHandler : public BaseScreenHandler {
   void HandleGaiaUIReady();
 
   // This is called when ConsumerManagementService::SetOwner() returns.
-  void OnSetOwnerDone(const std::string& gaia_id,
-                      const std::string& typed_email,
+  void OnSetOwnerDone(const std::string& typed_email,
                       const std::string& password,
                       bool using_saml,
                       bool success);
 
   // Really handles the complete login message.
-  void DoCompleteLogin(const std::string& gaia_id,
-                       const std::string& typed_email,
+  void DoCompleteLogin(const std::string& typed_email,
                        const std::string& password,
                        bool using_saml);
 

@@ -22,6 +22,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     EXTERNAL_API: [
       'loadAuthExtension',
       'updateAuthExtension',
+      'setAuthenticatedUserEmail',
       'doReload',
       'onFrameError',
       'updateCancelButtonState'
@@ -93,16 +94,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
+      this.gaiaAuthHost_.retrieveAuthenticatedUserEmailCallback =
+          this.onRetrieveAuthenticatedUserEmail_.bind(this);
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
           this.onAuthNoPassword_.bind(this);
       this.gaiaAuthHost_.insecureContentBlockedCallback =
           this.onInsecureContentBlocked_.bind(this);
-      this.gaiaAuthHost_.missingGaiaInfoCallback =
-          this.missingGaiaInfo_.bind(this);
-      this.gaiaAuthHost_.samlApiUsedCallback =
-          this.samlApiUsed_.bind(this);
       this.gaiaAuthHost_.addEventListener('authFlowChange',
           this.onAuthFlowChange_.bind(this));
 
@@ -339,6 +338,21 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Sends the authenticated user's e-mail address to the auth extension.
+     * @param {number} attemptToken The opaque token provided to
+     *     onRetrieveAuthenticatedUserEmail_.
+     * @param {string} email The authenticated user's e-mail address.
+     */
+    setAuthenticatedUserEmail: function(attemptToken, email) {
+      if (!email) {
+        this.showFatalAuthError(
+            loadTimeData.getString('fatalErrorMessageNoEmail'));
+      } else {
+        this.gaiaAuthHost_.setAuthenticatedUserEmail(attemptToken, email);
+      }
+    },
+
+    /**
      * Updates [Cancel] button state. Allow cancellation of screen only when
      * user pods can be displayed.
      */
@@ -396,6 +410,27 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       // Warm up the user images screen.
       Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
+    },
+
+    /**
+     * Invoked when the user has successfully authenticated via SAML and the
+     * auth host needs to retrieve the user's e-mail.
+     * @param {number} attemptToken Opaque token to be passed to
+     *     setAuthenticatedUserEmail along with the e-mail address.
+     * @param {boolean} apiUsed Whether the principals API was used during
+     *     authentication.
+     * @private
+     */
+    onRetrieveAuthenticatedUserEmail_: function(attemptToken, apiUsed) {
+      if (apiUsed) {
+        // If the principals API was used, report this to the C++ backend so
+        // that statistics can be kept. If password scraping was used instead,
+        // there is no need to inform the C++ backend at this point: Either
+        // onAuthNoPassword_ or onAuthConfirmPassword_ will be called in a
+        // moment, both of which imply to the backend that the API was not used.
+        chrome.send('usingSAMLAPI');
+      }
+      chrome.send('retrieveAuthenticatedUserEmail', [attemptToken]);
     },
 
     /**
@@ -468,21 +503,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Show fatal auth error when information is missing from GAIA.
-     */
-    missingGaiaInfo_: function() {
-      this.showFatalAuthError(
-          loadTimeData.getString('fatalErrorMessageNoAccountDetails'));
-    },
-
-    /**
-     * Record that SAML API was used during sign-in.
-     */
-    samlApiUsed_: function() {
-      chrome.send('usingSAMLAPI');
-    },
-
-    /**
      * Invoked when auth is completed successfully.
      * @param {!Object} credentials Credentials of the completed authentication.
      * @private
@@ -491,19 +511,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (credentials.useOffline) {
         this.email = credentials.email;
         chrome.send('authenticateUser',
-                    [credentials.gaiaId,
-                     credentials.email,
-                     credentials.password]);
+                    [credentials.email, credentials.password]);
       } else if (credentials.authCode) {
         chrome.send('completeAuthentication',
-                    [credentials.gaiaId,
-                     credentials.email,
+                    [credentials.email,
                      credentials.password,
                      credentials.authCode]);
       } else {
         chrome.send('completeLogin',
-                    [credentials.gaiaId,
-                     credentials.email,
+                    [credentials.email,
                      credentials.password,
                      credentials.usingSAML]);
       }

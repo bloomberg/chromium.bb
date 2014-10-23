@@ -79,18 +79,6 @@ class AccountTrackerService : public KeyedService,
   // there are still unfininshed fetchers.
   virtual bool IsAllUserInfoFetched() const;
 
-  // Picks the correct account_id for the specified account depending on the
-  // migration state.
-  std::string PickAccountIdForAccount(const std::string& gaia,
-                                      const std::string& email);
-  static std::string PickAccountIdForAccount(PrefService* pref_service,
-                                             const std::string& gaia,
-                                             const std::string& email);
-
-  // Seeds the account whose account_id is given by PickAccountIdForAccount()
-  // with its corresponding gaia id and email address.
-  void SeedAccountInfo(const std::string& gaia, const std::string& email);
-
   AccountIdMigrationState GetMigrationState();
   static AccountIdMigrationState GetMigrationState(PrefService* pref_service);
 

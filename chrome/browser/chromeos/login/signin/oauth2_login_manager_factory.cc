@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -18,7 +17,6 @@ OAuth2LoginManagerFactory::OAuth2LoginManagerFactory()
     : BrowserContextKeyedServiceFactory(
         "OAuth2LoginManager",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());

@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
@@ -147,6 +148,8 @@ EnrollmentScreenHandler::~EnrollmentScreenHandler() {
 // EnrollmentScreenHandler, WebUIMessageHandler implementation --
 
 void EnrollmentScreenHandler::RegisterMessages() {
+  AddCallback("oauthEnrollRetrieveAuthenticatedUserEmail",
+              &EnrollmentScreenHandler::HandleRetrieveAuthenticatedUserEmail);
   AddCallback("oauthEnrollClose",
               &EnrollmentScreenHandler::HandleClose);
   AddCallback("oauthEnrollCompleteLogin",
@@ -515,6 +518,16 @@ void EnrollmentScreenHandler::OnFrameError(
   }
 }
 // EnrollmentScreenHandler, private -----------------------------
+
+void EnrollmentScreenHandler::HandleRetrieveAuthenticatedUserEmail(
+    double attempt_token) {
+  email_retriever_.reset(new AuthenticatedUserEmailRetriever(
+      base::Bind(&EnrollmentScreenHandler::CallJS<double, std::string>,
+                 base::Unretained(this),
+                 "setAuthenticatedUserEmail",
+                 attempt_token),
+      Profile::FromWebUI(web_ui())->GetRequestContext()));
+}
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   DCHECK(controller_);

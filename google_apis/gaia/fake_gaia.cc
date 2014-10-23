@@ -51,8 +51,6 @@ const char kTestOAuthLoginSID[] = "fake-oauth-SID-cookie";
 const char kTestOAuthLoginLSID[] = "fake-oauth-LSID-cookie";
 const char kTestOAuthLoginAuthCode[] = "fake-oauth-auth-code";
 
-const char kDefaultGaiaId[]  ="12345";
-
 const base::FilePath::CharType kServiceLogin[] =
     FILE_PATH_LITERAL("google_apis/test/service_login.html");
 
@@ -163,30 +161,6 @@ void FakeGaia::SetFakeMergeSessionParams(
 void FakeGaia::SetMergeSessionParams(
     const MergeSessionParams& params) {
   merge_session_params_ = params;
-}
-
-void FakeGaia::MapEmailToGaiaId(const std::string& email,
-                                const std::string& gaia_id) {
-  DCHECK(!email.empty());
-  DCHECK(!gaia_id.empty());
-  email_to_gaia_id_map_[email] = gaia_id;
-}
-
-std::string FakeGaia::GetGaiaIdOfEmail(const std::string& email) const {
-  DCHECK(!email.empty());
-  auto it = email_to_gaia_id_map_.find(email);
-  return it == email_to_gaia_id_map_.end() ? std::string(kDefaultGaiaId) :
-      it->second;
-}
-
-void FakeGaia::AddGoogleAccountsSigninHeader(
-    net::test_server::BasicHttpResponse* http_response,
-    const std::string& email) const {
-  DCHECK(!email.empty());
-  http_response->AddCustomHeader("google-accounts-signin",
-      base::StringPrintf(
-          "email=\"%s\", obfuscatedid=\"%s\", sessionindex=0",
-          email.c_str(), GetGaiaIdOfEmail(email).c_str()));
 }
 
 void FakeGaia::Initialize() {
@@ -441,11 +415,8 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
   std::string redirect_url = continue_url;
 
   std::string email;
-  const bool is_saml =
-      GetQueryParameter(request.content, "Email", &email) &&
-      saml_account_idp_map_.find(email) != saml_account_idp_map_.end();
-
-  if (is_saml) {
+  if (GetQueryParameter(request.content, "Email", &email) &&
+      saml_account_idp_map_.find(email) != saml_account_idp_map_.end()) {
     GURL url(saml_account_idp_map_[email]);
     url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
     url = net::AppendQueryParameter(url, "RelayState", continue_url);
@@ -460,12 +431,8 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
 
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url);
-
-  // SAML sign-ins complete in HandleSSO().
-  if (is_saml)
-    return;
-
-  AddGoogleAccountsSigninHeader(http_response, email);
+  http_response->AddCustomHeader("google-accounts-signin",
+      base::StringPrintf("email=\"%s\", sessionindex=0", email.c_str()));
 }
 
 void FakeGaia::HandleSSO(const HttpRequest& request,
@@ -482,9 +449,6 @@ void FakeGaia::HandleSSO(const HttpRequest& request,
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url);
   http_response->AddCustomHeader("Google-Accounts-SAML", "End");
-
-  if (!merge_session_params_.email.empty())
-    AddGoogleAccountsSigninHeader(http_response, merge_session_params_.email);
 }
 
 void FakeGaia::HandleAuthToken(const HttpRequest& request,
@@ -616,4 +580,3 @@ void FakeGaia::HandleGetUserInfo(const HttpRequest& request,
       merge_session_params_.email.c_str()));
   http_response->set_code(net::HTTP_OK);
 }
-

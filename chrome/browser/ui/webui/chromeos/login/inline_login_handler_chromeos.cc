@@ -4,17 +4,13 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/inline_login_handler_chromeos.h"
 
-#include <string>
-
 #include "chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/common/url_constants.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -76,20 +72,10 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
   dict->GetString("sessionIndex", &session_index);
   CHECK(!session_index.empty()) << "Session index is empty.";
 
-  std::string email;
-  dict->GetString("email", &email);
-  CHECK(!email.empty()) << "Email is empty.";
+  std::string account_id;
+  dict->GetString("email", &account_id);
+  CHECK(!account_id.empty()) << "Account ID is empty.";
 
-  std::string gaia_id;
-  dict->GetString("gaiaId", &gaia_id);
-  CHECK(!gaia_id.empty()) << "Gaia ID is empty.";
-
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  account_tracker->SeedAccountInfo(gaia_id, email);
-
-  const std::string account_id =
-      account_tracker->PickAccountIdForAccount(gaia_id, email);
   oauth2_delegate_.reset(new InlineLoginUIOAuth2Delegate(web_ui(), account_id));
   net::URLRequestContextGetter* request_context =
       content::BrowserContext::GetStoragePartitionForSite(
