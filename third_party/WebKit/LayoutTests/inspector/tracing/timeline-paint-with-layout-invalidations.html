@@ -45,30 +45,34 @@ function test()
                 InspectorTest.assertEquals(invalidations[2].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[2].nodeName, "DIV id='testElement'");
                 InspectorTest.assertGreaterOrEqual(invalidations[2].stackTrace.length, 1);
-                InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", next);
+
+                next();
             });
         },
 
         function testSubframe(next)
         {
-            // The first paint corresponds to the local frame and should have no invalidations.
-            var firstPaintRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
-            var firstInvalidations = firstPaintRecord._event.invalidationTrackingEvents;
-            InspectorTest.assertEquals(firstInvalidations, undefined);
+            InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
+                // The first paint corresponds to the local frame and should have no invalidations.
+                var firstPaintRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
+                var firstInvalidations = firstPaintRecord._event.invalidationTrackingEvents;
+                InspectorTest.assertEquals(firstInvalidations, undefined);
 
-            // The second paint corresponds to the subframe and should have our layout/style invalidations.
-            var secondPaintRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 1);
-            var secondInvalidations = secondPaintRecord._event.invalidationTrackingEvents;
-            InspectorTest.assertEquals(secondInvalidations.length, 3);
-            InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
-            InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
-            InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
-            InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV");
-            InspectorTest.assertGreaterOrEqual(secondInvalidations[1].stackTrace.length, 1);
-            InspectorTest.assertEquals(secondInvalidations[2].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
-            InspectorTest.assertEquals(secondInvalidations[2].nodeName, "#document");
-            InspectorTest.assertGreaterOrEqual(secondInvalidations[2].stackTrace.length, 1);
-            next();
+                // The second paint corresponds to the subframe and should have our layout/style invalidations.
+                var secondPaintRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 1);
+                var secondInvalidations = secondPaintRecord._event.invalidationTrackingEvents;
+                InspectorTest.assertEquals(secondInvalidations.length, 3);
+                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
+                InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV");
+                InspectorTest.assertGreaterOrEqual(secondInvalidations[1].stackTrace.length, 1);
+                InspectorTest.assertEquals(secondInvalidations[2].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[2].nodeName, "#document");
+                InspectorTest.assertGreaterOrEqual(secondInvalidations[2].stackTrace.length, 1);
+
+                next();
+            });
         }
     ]);
 }
