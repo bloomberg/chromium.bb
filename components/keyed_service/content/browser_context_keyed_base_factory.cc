@@ -13,33 +13,10 @@
 BrowserContextKeyedBaseFactory::BrowserContextKeyedBaseFactory(
     const char* name,
     BrowserContextDependencyManager* manager)
-    : dependency_manager_(manager)
-#ifndef NDEBUG
-      ,
-      service_name_(name)
-#endif
-{
-  dependency_manager_->AddComponent(this);
+    : KeyedServiceBaseFactory(name, manager) {
 }
 
 BrowserContextKeyedBaseFactory::~BrowserContextKeyedBaseFactory() {
-  dependency_manager_->RemoveComponent(this);
-}
-
-void BrowserContextKeyedBaseFactory::DependsOn(
-    BrowserContextKeyedBaseFactory* rhs) {
-  dependency_manager_->AddEdge(rhs, this);
-}
-
-void BrowserContextKeyedBaseFactory::RegisterProfilePrefsIfNecessaryForContext(
-    const content::BrowserContext* context,
-    user_prefs::PrefRegistrySyncable* registry) {
-  std::set<const content::BrowserContext*>::iterator it =
-      registered_preferences_.find(context);
-  if (it == registered_preferences_.end()) {
-    RegisterProfilePrefs(registry);
-    registered_preferences_.insert(context);
-  }
 }
 
 content::BrowserContext* BrowserContextKeyedBaseFactory::GetBrowserContextToUse(
@@ -47,7 +24,7 @@ content::BrowserContext* BrowserContextKeyedBaseFactory::GetBrowserContextToUse(
   DCHECK(CalledOnValidThread());
 
 #ifndef NDEBUG
-  dependency_manager_->AssertBrowserContextWasntDestroyed(context);
+  AssertContextWasntDestroyed(context);
 #endif
 
   // Safe default for the Incognito mode: no service.
@@ -59,6 +36,26 @@ content::BrowserContext* BrowserContextKeyedBaseFactory::GetBrowserContextToUse(
 
 void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContextForTest(
     content::BrowserContext* context) {
+  KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest(context);
+}
+
+bool BrowserContextKeyedBaseFactory::ServiceIsCreatedWithBrowserContext()
+    const {
+  return KeyedServiceBaseFactory::ServiceIsCreatedWithContext();
+}
+
+bool BrowserContextKeyedBaseFactory::ServiceIsNULLWhileTesting() const {
+  return KeyedServiceBaseFactory::ServiceIsNULLWhileTesting();
+}
+
+void BrowserContextKeyedBaseFactory::BrowserContextDestroyed(
+    content::BrowserContext* context) {
+  KeyedServiceBaseFactory::ContextDestroyed(context);
+}
+
+user_prefs::PrefRegistrySyncable*
+BrowserContextKeyedBaseFactory::GetAssociatedPrefRegistry(
+    base::SupportsUserData* context) const {
   // Safe timing for pref registration is hard. Previously, we made
   // BrowserContext responsible for all pref registration on every service
   // that used BrowserContext. Now we don't and there are timing issues.
@@ -84,38 +81,49 @@ void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContextForTest(
   // This is the purpose of RegisterProfilePrefsIfNecessary() which could be
   // replaced directly by RegisterProfilePrefs() if this method is ever phased
   // out.
-  PrefService* prefs = user_prefs::UserPrefs::Get(context);
+  PrefService* prefs = user_prefs::UserPrefs::Get(
+      static_cast<content::BrowserContext*>(context));
   user_prefs::PrefRegistrySyncable* registry =
       static_cast<user_prefs::PrefRegistrySyncable*>(
           prefs->DeprecatedGetPrefRegistry());
-  RegisterProfilePrefsIfNecessaryForContext(context, registry);
+  return registry;
 }
 
-bool BrowserContextKeyedBaseFactory::ServiceIsCreatedWithBrowserContext()
-    const {
-  return false;
+base::SupportsUserData* BrowserContextKeyedBaseFactory::GetContextToUse(
+    base::SupportsUserData* context) const {
+  return GetBrowserContextToUse(static_cast<content::BrowserContext*>(context));
 }
 
-bool BrowserContextKeyedBaseFactory::ServiceIsNULLWhileTesting() const {
-  return false;
+bool BrowserContextKeyedBaseFactory::ServiceIsCreatedWithContext() const {
+  return ServiceIsCreatedWithBrowserContext();
 }
 
-void BrowserContextKeyedBaseFactory::BrowserContextDestroyed(
-    content::BrowserContext* context) {
-  // While object destruction can be customized in ways where the object is
-  // only dereferenced, this still must run on the UI thread.
-  DCHECK(CalledOnValidThread());
-
-  registered_preferences_.erase(context);
+void BrowserContextKeyedBaseFactory::ContextShutdown(
+    base::SupportsUserData* context) {
+  BrowserContextShutdown(static_cast<content::BrowserContext*>(context));
 }
 
-bool BrowserContextKeyedBaseFactory::ArePreferencesSetOn(
-    content::BrowserContext* context) const {
-  return registered_preferences_.find(context) != registered_preferences_.end();
+void BrowserContextKeyedBaseFactory::ContextDestroyed(
+    base::SupportsUserData* context) {
+  BrowserContextDestroyed(static_cast<content::BrowserContext*>(context));
 }
 
-void BrowserContextKeyedBaseFactory::MarkPreferencesSetOn(
-    content::BrowserContext* context) {
-  DCHECK(!ArePreferencesSetOn(context));
-  registered_preferences_.insert(context);
+void BrowserContextKeyedBaseFactory::RegisterPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  RegisterProfilePrefs(registry);
+}
+
+void BrowserContextKeyedBaseFactory::SetEmptyTestingFactory(
+    base::SupportsUserData* context) {
+  SetEmptyTestingFactory(static_cast<content::BrowserContext*>(context));
+}
+
+bool BrowserContextKeyedBaseFactory::HasTestingFactory(
+    base::SupportsUserData* context) {
+  return HasTestingFactory(static_cast<content::BrowserContext*>(context));
+}
+
+void BrowserContextKeyedBaseFactory::CreateServiceNow(
+    base::SupportsUserData* context) {
+  CreateServiceNow(static_cast<content::BrowserContext*>(context));
 }

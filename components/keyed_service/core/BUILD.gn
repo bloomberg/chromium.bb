@@ -7,9 +7,13 @@ component("core") {
   sources = [
     "dependency_graph.cc",
     "dependency_graph.h",
+    "dependency_manager.cc",
+    "dependency_manager.h",
     "dependency_node.h",
     "keyed_service.cc",
     "keyed_service.h",
+    "keyed_service_base_factory.cc",
+    "keyed_service_base_factory.h",
     "keyed_service_export.h",
     "refcounted_keyed_service.cc",
     "refcounted_keyed_service.h",

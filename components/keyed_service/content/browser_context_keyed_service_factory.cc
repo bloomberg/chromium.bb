@@ -26,7 +26,7 @@ void BrowserContextKeyedServiceFactory::SetTestingFactory(
   // instance that was destroyed in an earlier test) in order to avoid accesses
   // to |context| in |BrowserContextShutdown| from causing
   // |AssertBrowserContextWasntDestroyed| to raise an error.
-  dependency_manager_->MarkBrowserContextLiveForTesting(context);
+  MarkContextLiveForTesting(context);
 #endif
 
   // We have to go through the shutdown and destroy mechanisms because there

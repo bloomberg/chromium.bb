@@ -5,10 +5,7 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
 
-#include <set>
-
-#include "base/threading/non_thread_safe.h"
-#include "components/keyed_service/core/dependency_node.h"
+#include "components/keyed_service/core/keyed_service_base_factory.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
 class BrowserContextDependencyManager;
@@ -31,8 +28,7 @@ class PrefRegistrySyncable;
 // dependency management between Factories; subclasses react to lifecycle
 // events and implement memory management.
 class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
-    : public base::NonThreadSafe,
-      NON_EXPORTED_BASE(public DependencyNode) {
+    : public KeyedServiceBaseFactory {
  public:
   // Registers preferences used in this service on the pref service of
   // |context|. This is the public interface and is safe to be called multiple
@@ -44,27 +40,10 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   void RegisterUserPrefsOnBrowserContextForTest(
       content::BrowserContext* context);
 
-#ifndef NDEBUG
-  // Returns our name. We don't keep track of this in release mode.
-  const char* name() const { return service_name_; }
-#endif
-
  protected:
   BrowserContextKeyedBaseFactory(const char* name,
                                  BrowserContextDependencyManager* manager);
   virtual ~BrowserContextKeyedBaseFactory();
-
-  // The main public interface for declaring dependencies between services
-  // created by factories.
-  void DependsOn(BrowserContextKeyedBaseFactory* rhs);
-
-  // Calls RegisterProfilePrefs() after doing house keeping required to work
-  // alongside RegisterUserPrefsOnBrowserContextForTest().
-  // TODO(gab): This method can be replaced by RegisterProfilePrefs() directly
-  // once RegisterUserPrefsOnBrowserContextForTest() is phased out.
-  void RegisterProfilePrefsIfNecessaryForContext(
-      const content::BrowserContext* context,
-      user_prefs::PrefRegistrySyncable* registry);
 
   // Interface for people building a concrete FooServiceFactory: --------------
 
@@ -82,7 +61,7 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   // TestingBrowserContext is NULL. (This is just a shortcut around
   // SetTestingFactory() to make sure our contexts don't directly refer to the
   // services they use.)
-  virtual bool ServiceIsNULLWhileTesting() const;
+  virtual bool ServiceIsNULLWhileTesting() const override;
 
   // Interface for people building a type of BrowserContextKeyedFactory: -------
 
@@ -104,30 +83,12 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   virtual void BrowserContextShutdown(content::BrowserContext* context) = 0;
   virtual void BrowserContextDestroyed(content::BrowserContext* context);
 
-  // Returns whether we've registered the preferences on this context.
-  bool ArePreferencesSetOn(content::BrowserContext* context) const;
-
-  // Mark context as Preferences set.
-  void MarkPreferencesSetOn(content::BrowserContext* context);
-
-  // Which BrowserContextDependencyManager we should communicate with.
-  // In real code, this will always be
-  // BrowserContextDependencyManager::GetInstance(), but unit tests will want
-  // to use their own copy.
-  BrowserContextDependencyManager* dependency_manager_;
-
  private:
-  friend class BrowserContextDependencyManager;
-  friend class BrowserContextDependencyManagerUnittests;
-
   // Registers any user preferences on this service. This is called by
   // RegisterProfilePrefsIfNecessary() and should be overriden by any service
   // that wants to register profile-specific preferences.
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) {}
-
-  // These two methods are for tight integration with the
-  // BrowserContextDependencyManager.
 
   // Because of ServiceIsNULLWhileTesting(), we need a way to tell different
   // subclasses that they should disable testing.
@@ -140,15 +101,18 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   // now for when we're creating the context.
   virtual void CreateServiceNow(content::BrowserContext* context) = 0;
 
-  // BrowserContexts that have this service's preferences registered on them.
-  std::set<const content::BrowserContext*> registered_preferences_;
-
-#if !defined(NDEBUG)
-  // A static string passed in to our constructor. Should be unique across all
-  // services. This is used only for debugging in debug mode. (We can print
-  // pretty graphs with GraphViz with this information.)
-  const char* service_name_;
-#endif
+  // KeyedServiceBaseFactory:
+  virtual user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
+      base::SupportsUserData* context) const final;
+  virtual base::SupportsUserData* GetContextToUse(
+      base::SupportsUserData* context) const final;
+  virtual bool ServiceIsCreatedWithContext() const final;
+  virtual void ContextShutdown(base::SupportsUserData* context) final;
+  virtual void ContextDestroyed(base::SupportsUserData* context) final;
+  virtual void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
+  virtual void SetEmptyTestingFactory(base::SupportsUserData* context) final;
+  virtual bool HasTestingFactory(base::SupportsUserData* context) final;
+  virtual void CreateServiceNow(base::SupportsUserData* context) final;
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_

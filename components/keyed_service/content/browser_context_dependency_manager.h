@@ -7,15 +7,12 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
-#include "base/memory/singleton.h"
-#include "components/keyed_service/core/dependency_graph.h"
+#include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
-#ifndef NDEBUG
-#include <set>
-#endif
-
 class BrowserContextKeyedBaseFactory;
+template <typename T>
+struct DefaultSingletonTraits;
 
 namespace content {
 class BrowserContext;
@@ -28,17 +25,9 @@ class PrefRegistrySyncable;
 // A singleton that listens for context destruction notifications and
 // rebroadcasts them to each BrowserContextKeyedBaseFactory in a safe order
 // based on the stated dependencies by each service.
-class KEYED_SERVICE_EXPORT BrowserContextDependencyManager {
+class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
+    : public DependencyManager {
  public:
-  // Adds/Removes a component from our list of live components. Removing will
-  // also remove live dependency links.
-  void AddComponent(BrowserContextKeyedBaseFactory* component);
-  void RemoveComponent(BrowserContextKeyedBaseFactory* component);
-
-  // Adds a dependency between two factories.
-  void AddEdge(BrowserContextKeyedBaseFactory* depended,
-               BrowserContextKeyedBaseFactory* dependee);
-
   // Registers profile-specific preferences for all services via |registry|.
   // |context| should be the BrowserContext containing |registry| and is used as
   // a key to prevent multiple registrations on the same BrowserContext in
@@ -85,7 +74,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager {
   // (i.e., 0xWhatever might be created, be destroyed, and then a new
   // BrowserContext object might be created at 0xWhatever).
   void MarkBrowserContextLiveForTesting(content::BrowserContext* context);
-#endif
+#endif  // NDEBUG
 
   static BrowserContextDependencyManager* GetInstance();
 
@@ -101,23 +90,15 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager {
   virtual ~BrowserContextDependencyManager();
 
 #ifndef NDEBUG
-  void DumpBrowserContextDependencies(content::BrowserContext* context);
-#endif
-
-  DependencyGraph dependency_graph_;
+  // DependencyManager:
+  virtual void DumpContextDependencies(
+      const base::SupportsUserData* context) const final;
+#endif  // NDEBUG
 
   // A list of callbacks to call just before executing
   // CreateBrowserContextServices() or CreateBrowserContextServicesForTest().
   base::CallbackList<void(content::BrowserContext*)>
       will_create_browser_context_services_callbacks_;
-
-#ifndef NDEBUG
-  // A list of context objects that have gone through the Shutdown()
-  // phase. These pointers are most likely invalid, but we keep track of their
-  // locations in memory so we can nicely assert if we're asked to do anything
-  // with them.
-  std::set<content::BrowserContext*> dead_context_pointers_;
-#endif
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_

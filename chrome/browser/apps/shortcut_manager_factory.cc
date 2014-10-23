@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/shortcut_manager_factory.h"
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
