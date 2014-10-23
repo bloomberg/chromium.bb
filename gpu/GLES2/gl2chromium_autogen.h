@@ -237,5 +237,6 @@
   GLES2_GET_FUN(ScheduleOverlayPlaneCHROMIUM)
 #define glMatrixLoadfCHROMIUM GLES2_GET_FUN(MatrixLoadfCHROMIUM)
 #define glMatrixLoadIdentityCHROMIUM GLES2_GET_FUN(MatrixLoadIdentityCHROMIUM)
+#define glBlendBarrierKHR GLES2_GET_FUN(BlendBarrierKHR)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

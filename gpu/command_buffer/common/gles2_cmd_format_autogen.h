@@ -9014,4 +9014,30 @@ COMPILE_ASSERT(offsetof(MatrixLoadIdentityCHROMIUM, header) == 0,
 COMPILE_ASSERT(offsetof(MatrixLoadIdentityCHROMIUM, matrixMode) == 4,
                OffsetOf_MatrixLoadIdentityCHROMIUM_matrixMode_not_4);
 
+struct BlendBarrierKHR {
+  typedef BlendBarrierKHR ValueType;
+  static const CommandId kCmdId = kBlendBarrierKHR;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(BlendBarrierKHR) == 4, Sizeof_BlendBarrierKHR_is_not_4);
+COMPILE_ASSERT(offsetof(BlendBarrierKHR, header) == 0,
+               OffsetOf_BlendBarrierKHR_header_not_0);
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

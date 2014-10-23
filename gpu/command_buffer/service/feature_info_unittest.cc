@@ -1347,5 +1347,39 @@ TEST_F(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering2) {
               Not(HasSubstr("GL_CHROMIUM_path_rendering")));
 }
 
+TEST_F(FeatureInfoTest, InitializeNoKHR_blend_equation_advanced) {
+  SetupInitExpectationsWithGLVersion("", "", "4.3");
+  EXPECT_FALSE(info_->feature_flags().blend_equation_advanced);
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_KHR_blend_equation_advanced")));
+}
+
+TEST_F(FeatureInfoTest, InitializeKHR_blend_equations_advanced) {
+  SetupInitExpectations("GL_KHR_blend_equation_advanced");
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_KHR_blend_equation_advanced"));
+  EXPECT_TRUE(info_->feature_flags().blend_equation_advanced);
+}
+
+TEST_F(FeatureInfoTest, InitializeNV_blend_equations_advanced) {
+  SetupInitExpectations("GL_NV_blend_equation_advanced");
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_KHR_blend_equation_advanced"));
+  EXPECT_TRUE(info_->feature_flags().blend_equation_advanced);
+}
+
+TEST_F(FeatureInfoTest, InitializeNoKHR_blend_equation_advanced_coherent) {
+  SetupInitExpectationsWithGLVersion("", "", "4.3");
+  EXPECT_FALSE(info_->feature_flags().blend_equation_advanced_coherent);
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_KHR_blend_equation_advanced_coherent")));
+}
+
+TEST_F(FeatureInfoTest, InitializeKHR_blend_equations_advanced_coherent) {
+  SetupInitExpectations("GL_KHR_blend_equation_advanced_coherent");
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_KHR_blend_equation_advanced_coherent"));
+  EXPECT_TRUE(info_->feature_flags().blend_equation_advanced);
+  EXPECT_TRUE(info_->feature_flags().blend_equation_advanced_coherent);
+}
+
 }  // namespace gles2
 }  // namespace gpu

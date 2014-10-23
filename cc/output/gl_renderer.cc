@@ -375,6 +375,9 @@ GLRenderer::GLRenderer(RendererClient* client,
 
   use_sync_query_ = context_caps.gpu.sync_query;
   use_blend_minmax_ = context_caps.gpu.blend_minmax;
+  use_blend_equation_advanced_ = context_caps.gpu.blend_equation_advanced;
+  use_blend_equation_advanced_coherent_ =
+      context_caps.gpu.blend_equation_advanced_coherent;
 
   InitializeSharedObjects();
 }
@@ -735,7 +738,8 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
 }
 
 bool GLRenderer::CanApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
-  return (use_blend_minmax_ && blend_mode == SkXfermode::kLighten_Mode) ||
+  return use_blend_equation_advanced_ ||
+         (use_blend_minmax_ && blend_mode == SkXfermode::kLighten_Mode) ||
          blend_mode == SkXfermode::kScreen_Mode ||
          blend_mode == SkXfermode::kSrcOver_Mode;
 }
@@ -744,11 +748,67 @@ void GLRenderer::ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
   DCHECK(CanApplyBlendModeUsingBlendFunc(blend_mode));
 
   // Any modes set here must be reset in RestoreBlendFuncToDefault
-  if (blend_mode == SkXfermode::kScreen_Mode) {
-    GLC(gl_, gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE));
-  } else if (blend_mode == SkXfermode::kLighten_Mode) {
-    GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE));
-    GLC(gl_, gl_->BlendEquation(GL_MAX_EXT));
+  if (use_blend_equation_advanced_) {
+    GLenum equation = GL_FUNC_ADD;
+
+    switch (blend_mode) {
+      case SkXfermode::kScreen_Mode:
+        equation = GL_SCREEN_KHR;
+        break;
+      case SkXfermode::kOverlay_Mode:
+        equation = GL_OVERLAY_KHR;
+        break;
+      case SkXfermode::kDarken_Mode:
+        equation = GL_DARKEN_KHR;
+        break;
+      case SkXfermode::kLighten_Mode:
+        equation = GL_LIGHTEN_KHR;
+        break;
+      case SkXfermode::kColorDodge_Mode:
+        equation = GL_COLORDODGE_KHR;
+        break;
+      case SkXfermode::kColorBurn_Mode:
+        equation = GL_COLORBURN_KHR;
+        break;
+      case SkXfermode::kHardLight_Mode:
+        equation = GL_HARDLIGHT_KHR;
+        break;
+      case SkXfermode::kSoftLight_Mode:
+        equation = GL_SOFTLIGHT_KHR;
+        break;
+      case SkXfermode::kDifference_Mode:
+        equation = GL_DIFFERENCE_KHR;
+        break;
+      case SkXfermode::kExclusion_Mode:
+        equation = GL_EXCLUSION_KHR;
+        break;
+      case SkXfermode::kMultiply_Mode:
+        equation = GL_MULTIPLY_KHR;
+        break;
+      case SkXfermode::kHue_Mode:
+        equation = GL_HSL_HUE_KHR;
+        break;
+      case SkXfermode::kSaturation_Mode:
+        equation = GL_HSL_SATURATION_KHR;
+        break;
+      case SkXfermode::kColor_Mode:
+        equation = GL_HSL_COLOR_KHR;
+        break;
+      case SkXfermode::kLuminosity_Mode:
+        equation = GL_HSL_LUMINOSITY_KHR;
+        break;
+      default:
+        return;
+    }
+
+    GLC(gl_, gl_->BlendEquation(equation));
+  } else {
+    if (blend_mode == SkXfermode::kScreen_Mode) {
+      GLC(gl_, gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE));
+    } else if (blend_mode == SkXfermode::kLighten_Mode) {
+      GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE));
+      GLC(gl_, gl_->BlendEquation(GL_MAX_EXT));
+    }
   }
 }
 
@@ -756,10 +816,14 @@ void GLRenderer::RestoreBlendFuncToDefault(SkXfermode::Mode blend_mode) {
   if (blend_mode == SkXfermode::kSrcOver_Mode)
     return;
 
-  GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-
-  if (blend_mode == SkXfermode::kLighten_Mode)
+  if (use_blend_equation_advanced_) {
     GLC(gl_, gl_->BlendEquation(GL_FUNC_ADD));
+  } else {
+    GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+
+    if (blend_mode == SkXfermode::kLighten_Mode)
+      GLC(gl_, gl_->BlendEquation(GL_FUNC_ADD));
+  }
 }
 
 bool GLRenderer::ShouldApplyBackgroundFilters(DrawingFrame* frame,
@@ -1095,8 +1159,12 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
               contents_resource_lock->target());
   }
 
-  if (CanApplyBlendModeUsingBlendFunc(blend_mode))
+  if (CanApplyBlendModeUsingBlendFunc(blend_mode)) {
+    if (!use_blend_equation_advanced_coherent_ && use_blend_equation_advanced_)
+      GLC(gl_, gl_->BlendBarrierKHR());
+
     ApplyBlendModeUsingBlendFunc(blend_mode);
+  }
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_,

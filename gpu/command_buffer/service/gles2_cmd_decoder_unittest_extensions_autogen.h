@@ -44,4 +44,13 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
+
+TEST_P(GLES2DecoderTestWithBlendEquationAdvanced, BlendBarrierKHRValidArgs) {
+  EXPECT_CALL(*gl_, BlendBarrierKHR());
+  SpecializedSetup<cmds::BlendBarrierKHR, 0>(true);
+  cmds::BlendBarrierKHR cmd;
+  cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_EXTENSIONS_AUTOGEN_H_

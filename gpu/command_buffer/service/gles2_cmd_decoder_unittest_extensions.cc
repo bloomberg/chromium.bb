@@ -35,6 +35,27 @@ class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
 INSTANTIATE_TEST_CASE_P(Service,
                         GLES2DecoderTestWithCHROMIUMPathRendering,
                         ::testing::Bool());
+
+class GLES2DecoderTestWithBlendEquationAdvanced : public GLES2DecoderTest {
+ public:
+  GLES2DecoderTestWithBlendEquationAdvanced() {}
+  virtual void SetUp() override {
+    InitState init;
+    init.gl_version = "opengl es 2.0";
+    init.has_alpha = true;
+    init.has_depth = true;
+    init.request_alpha = true;
+    init.request_depth = true;
+    init.bind_generates_resource = true;
+    init.extensions = "GL_KHR_blend_equation_advanced";
+    InitDecoder(init);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderTestWithBlendEquationAdvanced,
+                        ::testing::Bool());
+
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h"
 
 }  // namespace gles2

@@ -224,6 +224,30 @@
 #define GL_PATH_PROJECTION_CHROMIUM 0x1701
 #endif
 
+#ifndef GL_KHR_blend_equation_advanced
+#define GL_KHR_blend_equation_advanced 1
+#define GL_COLORBURN_KHR                  0x929A
+#define GL_COLORDODGE_KHR                 0x9299
+#define GL_DARKEN_KHR                     0x9297
+#define GL_DIFFERENCE_KHR                 0x929E
+#define GL_EXCLUSION_KHR                  0x92A0
+#define GL_HARDLIGHT_KHR                  0x929B
+#define GL_HSL_COLOR_KHR                  0x92AF
+#define GL_HSL_HUE_KHR                    0x92AD
+#define GL_HSL_LUMINOSITY_KHR             0x92B0
+#define GL_HSL_SATURATION_KHR             0x92AE
+#define GL_LIGHTEN_KHR                    0x9298
+#define GL_MULTIPLY_KHR                   0x9294
+#define GL_OVERLAY_KHR                    0x9296
+#define GL_SCREEN_KHR                     0x9295
+#define GL_SOFTLIGHT_KHR                  0x929C
+#endif /* GL_KHR_blend_equation_advanced */
+
+#ifndef GL_KHR_blend_equation_advanced_coherent
+#define GL_KHR_blend_equation_advanced_coherent 1
+#define GL_BLEND_ADVANCED_COHERENT_KHR    0x9285
+#endif /* GL_KHR_blend_equation_advanced_coherent */
+
 #ifndef GL_EXT_disjoint_timer_query
 #define GL_EXT_disjoint_timer_query 1
 #define GL_QUERY_COUNTER_BITS_EXT         0x8864

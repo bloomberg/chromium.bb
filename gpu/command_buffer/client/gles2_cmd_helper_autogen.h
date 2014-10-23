@@ -1929,4 +1929,11 @@ void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
   }
 }
 
+void BlendBarrierKHR() {
+  gles2::cmds::BlendBarrierKHR* c = GetCmdSpace<gles2::cmds::BlendBarrierKHR>();
+  if (c) {
+    c->Init();
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

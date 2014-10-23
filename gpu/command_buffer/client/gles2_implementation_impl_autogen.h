@@ -2162,4 +2162,12 @@ void GLES2Implementation::MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
   CheckGLError();
 }
 
+void GLES2Implementation::BlendBarrierKHR() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBlendBarrierKHR("
+                     << ")");
+  helper_->BlendBarrierKHR();
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

@@ -958,6 +958,9 @@ void GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
 void GLES2MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
   gles2::GetGLContext()->MatrixLoadIdentityCHROMIUM(matrixMode);
 }
+void GLES2BlendBarrierKHR() {
+  gles2::GetGLContext()->BlendBarrierKHR();
+}
 
 namespace gles2 {
 
@@ -1815,6 +1818,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glMatrixLoadIdentityCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glMatrixLoadIdentityCHROMIUM),
+    },
+    {
+     "glBlendBarrierKHR",
+     reinterpret_cast<GLES2FunctionPointer>(glBlendBarrierKHR),
     },
     {
      NULL,

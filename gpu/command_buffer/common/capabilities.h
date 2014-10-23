@@ -24,6 +24,8 @@ struct GPU_EXPORT Capabilities {
   bool image;
   bool future_sync_points;
   bool blend_minmax;
+  bool blend_equation_advanced;
+  bool blend_equation_advanced_coherent;
 
   Capabilities();
 };

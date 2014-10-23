@@ -868,6 +868,13 @@ GL_FUNCTIONS = [
                  'gl_versions': ['es3'],
                  'extensions': ['GL_NV_path_rendering'] }],
   'arguments': 'GLenum matrixMode' },
+  { 'return_type': 'void',
+    'known_as': 'glBlendBarrierKHR',
+    'versions': [{ 'name': 'glBlendBarrierNV',
+                   'extensions': ['GL_NV_blend_equation_advanced'] },
+                 { 'name': 'glBlendBarrierKHR',
+                   'extensions': ['GL_KHR_blend_equation_advanced'] }],
+    'arguments': 'void' },
 ]
 
 OSMESA_FUNCTIONS = [

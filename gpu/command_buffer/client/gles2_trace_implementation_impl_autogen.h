@@ -1509,4 +1509,9 @@ void GLES2TraceImplementation::MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
   gl_->MatrixLoadIdentityCHROMIUM(matrixMode);
 }
 
+void GLES2TraceImplementation::BlendBarrierKHR() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BlendBarrierKHR");
+  gl_->BlendBarrierKHR();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

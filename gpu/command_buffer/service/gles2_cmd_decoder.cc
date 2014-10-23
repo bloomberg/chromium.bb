@@ -2742,6 +2742,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.image = true;
 
   caps.blend_minmax = feature_info_->feature_flags().ext_blend_minmax;
+  caps.blend_equation_advanced =
+      feature_info_->feature_flags().blend_equation_advanced;
+  caps.blend_equation_advanced_coherent =
+      feature_info_->feature_flags().blend_equation_advanced_coherent;
   return caps;
 }
 

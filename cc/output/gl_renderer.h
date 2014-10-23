@@ -449,6 +449,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   scoped_ptr<SyncQuery> current_sync_query_;
   bool use_sync_query_;
   bool use_blend_minmax_;
+  bool use_blend_equation_advanced_;
+  bool use_blend_equation_advanced_coherent_;
 
   SkBitmap on_demand_tile_raster_bitmap_;
   ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;

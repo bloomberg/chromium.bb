@@ -144,7 +144,9 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       angle_texture_usage(false),
       ext_texture_storage(false),
       chromium_path_rendering(false),
-      ext_blend_minmax(false) {
+      ext_blend_minmax(false),
+      blend_equation_advanced(false),
+      blend_equation_advanced_coherent(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -878,6 +880,40 @@ void FeatureInfo::InitializeFeatures() {
   if (ui_gl_fence_works) {
     AddExtensionString("GL_CHROMIUM_sync_query");
     feature_flags_.chromium_sync_query = true;
+  }
+
+  bool blend_equation_advanced_coherent =
+    extensions.Contains("GL_NV_blend_equation_advanced_coherent") ||
+    extensions.Contains("GL_KHR_blend_equation_advanced_coherent");
+
+  if (blend_equation_advanced_coherent ||
+      extensions.Contains("GL_NV_blend_equation_advanced") ||
+      extensions.Contains("GL_KHR_blend_equation_advanced")) {
+    const GLenum equations[] = {GL_MULTIPLY_KHR,
+                                GL_SCREEN_KHR,
+                                GL_OVERLAY_KHR,
+                                GL_DARKEN_KHR,
+                                GL_LIGHTEN_KHR,
+                                GL_COLORDODGE_KHR,
+                                GL_COLORBURN_KHR,
+                                GL_HARDLIGHT_KHR,
+                                GL_SOFTLIGHT_KHR,
+                                GL_DIFFERENCE_KHR,
+                                GL_EXCLUSION_KHR,
+                                GL_HSL_HUE_KHR,
+                                GL_HSL_SATURATION_KHR,
+                                GL_HSL_COLOR_KHR,
+                                GL_HSL_LUMINOSITY_KHR};
+
+    for (GLenum equation : equations)
+      validators_.equation.AddValue(equation);
+    if (blend_equation_advanced_coherent)
+      AddExtensionString("GL_KHR_blend_equation_advanced_coherent");
+
+    AddExtensionString("GL_KHR_blend_equation_advanced");
+    feature_flags_.blend_equation_advanced = true;
+    feature_flags_.blend_equation_advanced_coherent =
+      blend_equation_advanced_coherent;
   }
 
   if (extensions.Contains("GL_NV_path_rendering")) {

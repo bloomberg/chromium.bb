@@ -1546,6 +1546,12 @@ _FUNCTION_INFO = {
     'type': 'StateSet',
     'state': 'BlendFunc',
   },
+  'BlendBarrierKHR': {
+    'gl_test_func': 'glBlendBarrierKHR',
+    'extension': True,
+    'extension_flag': 'blend_equation_advanced',
+    'client_test': False,
+  },
   'SampleCoverage': {'decoder_func': 'DoSampleCoverage'},
   'StencilFunc': {
     'type': 'StateSetFrontBack',

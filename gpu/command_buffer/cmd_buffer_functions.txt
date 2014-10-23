@@ -222,3 +222,5 @@ GL_APICALL void         GL_APIENTRY glScheduleOverlayPlaneCHROMIUM (GLint plane_
 GL_APICALL void         GL_APIENTRY glMatrixLoadfCHROMIUM (GLenumMatrixMode matrixMode, const GLfloat* m);
 GL_APICALL void         GL_APIENTRY glMatrixLoadIdentityCHROMIUM (GLenumMatrixMode matrixMode);
 
+// Extension KHR_blend_equation_advanced
+GL_APICALL void GL_APIENTRY glBlendBarrierKHR (void);

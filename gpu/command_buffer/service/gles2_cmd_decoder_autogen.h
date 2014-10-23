@@ -3302,6 +3302,22 @@ error::Error GLES2DecoderImpl::HandleMatrixLoadIdentityCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::BlendBarrierKHR& c =
+      *static_cast<const gles2::cmds::BlendBarrierKHR*>(cmd_data);
+  (void)c;
+  if (!features().blend_equation_advanced) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, "glBlendBarrierKHR", "function not available");
+    return error::kNoError;
+  }
+
+  glBlendBarrierKHR();
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:
