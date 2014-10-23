@@ -511,10 +511,8 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
                 // in future.
                 if (mailboxInfo->m_image) {
                     GrTexture* texture = mailboxInfo->m_image->getTexture();
-                    if (texture) {
-                        texture->resetFlag(static_cast<GrTextureFlags>(GrTexture::kReturnToCache_FlagBit));
+                    if (texture)
                         texture->textureParamsModified();
-                    }
                     mailboxInfo->m_image.clear();
                 }
                 if (m_destructionInProgress) {
