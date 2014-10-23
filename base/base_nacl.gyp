@@ -36,7 +36,7 @@
             ],
           },
           'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+            '../native_client/tools.gyp:prep_toolchain',
           ],
         },
         {
@@ -59,22 +59,15 @@
             ],
           },
           'dependencies': [
-            '<(DEPTH)/third_party/icu/icu_nacl.gyp:icudata_nacl',
-            '<(DEPTH)/third_party/icu/icu_nacl.gyp:icui18n_nacl',
-            '<(DEPTH)/third_party/icu/icu_nacl.gyp:icuuc_nacl',
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+            '../native_client/tools.gyp:prep_toolchain',
+            '../third_party/icu/icu_nacl.gyp:icudata_nacl',
+            '../third_party/icu/icu_nacl.gyp:icui18n_nacl',
+            '../third_party/icu/icu_nacl.gyp:icuuc_nacl',
           ],
         },
-      ],
-    }],
-    ['disable_nacl==0', {
-      'targets': [
         {
           'target_name': 'base_nacl_nonsfi',
           'type': 'none',
-          'include_dirs': [
-            '<(DEPTH)/native_client/src/public/linux_syscalls',
-          ],
           'variables': {
             'base_target': 1,
             'nacl_untrusted_build': 1,
@@ -116,8 +109,8 @@
             'rand_util_nacl.cc',
           ],
           'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-            '<(DEPTH)/third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
+            '../native_client/tools.gyp:prep_toolchain',
+            '../third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
           ],
         },
       ],
