@@ -17,9 +17,9 @@
 namespace blink {
 
 WorkerInspectorProxy::WorkerInspectorProxy()
-    : m_workerThread(0)
-    , m_executionContext(0)
-    , m_pageInspector(0)
+    : m_workerThread(nullptr)
+    , m_executionContext(nullptr)
+    , m_pageInspector(nullptr)
 {
 }
 
@@ -43,8 +43,8 @@ void WorkerInspectorProxy::workerThreadTerminated()
 {
     if (m_workerThread)
         InspectorInstrumentation::workerTerminated(m_executionContext, this);
-    m_workerThread = 0;
-    m_pageInspector = 0;
+    m_workerThread = nullptr;
+    m_pageInspector = nullptr;
 }
 
 static void connectToWorkerGlobalScopeInspectorTask(ExecutionContext* context, bool)
@@ -68,7 +68,7 @@ static void disconnectFromWorkerGlobalScopeInspectorTask(ExecutionContext* conte
 
 void WorkerInspectorProxy::disconnectFromInspector()
 {
-    m_pageInspector = 0;
+    m_pageInspector = nullptr;
     if (!m_workerThread)
         return;
     m_workerThread->postDebuggerTask(createCrossThreadTask(disconnectFromWorkerGlobalScopeInspectorTask, true));

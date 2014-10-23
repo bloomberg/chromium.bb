@@ -172,7 +172,7 @@ void WorkerMessagingProxy::reportException(const String& errorMessage, int lineN
     // We don't bother checking the askedToTerminate() flag here, because exceptions should *always* be reported even if the thread is terminated.
     // This is intentionally different than the behavior in MessageWorkerTask, because terminated workers no longer deliver messages (section 4.6 of the WebWorker spec), but they do report exceptions.
 
-    RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, 0);
+    RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, nullptr);
     bool errorHandled = !m_workerObject->dispatchEvent(event);
     if (!errorHandled)
         m_executionContext->reportException(event, 0, nullptr, NotSharableCrossOrigin);
@@ -199,19 +199,18 @@ void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<DedicatedWorkerThread>
     ASSERT(!m_askedToTerminate);
     m_workerThread = workerThread;
 
-    unsigned taskCount = m_queuedEarlyTasks.size();
     ASSERT(!m_unconfirmedMessageCount);
-    m_unconfirmedMessageCount = taskCount;
+    m_unconfirmedMessageCount = m_queuedEarlyTasks.size();
     m_workerThreadHadPendingActivity = true; // Worker initialization means a pending activity.
 
-    for (unsigned i = 0; i < taskCount; ++i)
-        m_workerThread->postTask(m_queuedEarlyTasks[i].release());
+    for (auto& earlyTasks : m_queuedEarlyTasks)
+        m_workerThread->postTask(earlyTasks.release());
     m_queuedEarlyTasks.clear();
 }
 
 void WorkerMessagingProxy::workerObjectDestroyed()
 {
-    m_workerObject = 0;
+    m_workerObject = nullptr;
     m_executionContext->postTask(createCrossThreadTask(&workerObjectDestroyedInternal, AllowCrossThreadAccess(this)));
 }
 

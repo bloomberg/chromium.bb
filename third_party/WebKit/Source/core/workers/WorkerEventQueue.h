@@ -60,7 +60,7 @@ private:
     bool m_isClosed;
 
     class EventDispatcherTask;
-    typedef WillBeHeapHashMap<RefPtrWillBeMember<Event>, EventDispatcherTask*> EventTaskMap;
+    using EventTaskMap = WillBeHeapHashMap<RefPtrWillBeMember<Event>, EventDispatcherTask*>;
     EventTaskMap m_eventTaskMap;
 };
 

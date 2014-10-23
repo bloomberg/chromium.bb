@@ -45,7 +45,7 @@ namespace blink {
 
 inline Worker::Worker(ExecutionContext* context)
     : AbstractWorker(context)
-    , m_contextProxy(0)
+    , m_contextProxy(nullptr)
 {
 }
 

@@ -136,9 +136,9 @@ bool WorkerEventQueue::cancelEvent(Event* event)
 void WorkerEventQueue::close()
 {
     m_isClosed = true;
-    for (EventTaskMap::iterator it = m_eventTaskMap.begin(); it != m_eventTaskMap.end(); ++it) {
-        Event* event = it->key.get();
-        EventDispatcherTask* task = it->value;
+    for (const auto& entry : m_eventTaskMap) {
+        Event* event = entry.key.get();
+        EventDispatcherTask* task = entry.value;
         InspectorInstrumentation::didRemoveEvent(event->target(), event);
         task->cancel();
     }

@@ -97,7 +97,7 @@ private:
 
     bool m_askedToTerminate;
 
-    Vector<OwnPtr<ExecutionContextTask> > m_queuedEarlyTasks; // Tasks are queued here until there's a thread object created.
+    Vector<OwnPtr<ExecutionContextTask>> m_queuedEarlyTasks; // Tasks are queued here until there's a thread object created.
     OwnPtr<WorkerInspectorProxy> m_workerInspectorProxy;
 
     OwnPtrWillBePersistent<WorkerClients> m_workerClients;

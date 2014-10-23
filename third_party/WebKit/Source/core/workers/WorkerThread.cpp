@@ -119,7 +119,7 @@ public:
         : m_workerThread(workerThread)
         , m_nextFireTime(0.0)
         , m_running(false)
-        , m_lastQueuedTask(0)
+        , m_lastQueuedTask(nullptr)
     { }
 
     typedef void (*SharedTimerFunction)();
@@ -450,11 +450,11 @@ void WorkerThread::terminateAndWaitForAllWorkers()
     // Keep this lock to prevent WorkerThread instances from being destroyed.
     MutexLocker lock(threadSetMutex());
     HashSet<WorkerThread*> threads = workerThreads();
-    for (HashSet<WorkerThread*>::iterator itr = threads.begin(); itr != threads.end(); ++itr)
-        (*itr)->stopInShutdownSequence();
+    for (WorkerThread* thread : threads)
+        thread->stopInShutdownSequence();
 
-    for (HashSet<WorkerThread*>::iterator itr = threads.begin(); itr != threads.end(); ++itr)
-        (*itr)->terminationEvent()->wait();
+    for (WorkerThread* thread : threads)
+        thread->terminationEvent()->wait();
 }
 
 bool WorkerThread::isCurrentThread() const
