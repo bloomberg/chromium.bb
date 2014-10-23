@@ -23,7 +23,7 @@ found in the LICENSE file.
 
   <body class="full-height">
 
-    <meta-include src="webapp/html/window_frame.html"/>
+    <meta-include src="webapp/crd/html/window_frame.html"/>
 
     <div class="window-body full-height">
 
@@ -44,10 +44,10 @@ found in the LICENSE file.
              data-ui-mode="home"
              hidden>
 
-          <meta-include src="webapp/html/ui_header.html"/>
-          <meta-include src="webapp/html/butterbar.html"/>
-          <meta-include src="webapp/html/ui_it2me.html"/>
-          <meta-include src="webapp/html/ui_me2me.html"/>
+          <meta-include src="webapp/crd/html/ui_header.html"/>
+          <meta-include src="webapp/crd/html/butterbar.html"/>
+          <meta-include src="webapp/crd/html/ui_it2me.html"/>
+          <meta-include src="webapp/crd/html/ui_me2me.html"/>
 
           <!-- The bottom-marker div is used to verify scroll-bar correctness
                in browser tests; it is not rendered. -->
@@ -60,8 +60,8 @@ found in the LICENSE file.
              class="full-height"
              hidden>
 
-          <meta-include src="webapp/html/toolbar.html"/>
-          <meta-include src="webapp/html/client_plugin.html"/>
+          <meta-include src="webapp/crd/html/toolbar.html"/>
+          <meta-include src="webapp/base/html/client_plugin.html"/>
 
         </div>  <!-- session-mode -->
 
@@ -70,7 +70,7 @@ found in the LICENSE file.
 
       </div>  <!-- scroller -->
 
-      <meta-include src="webapp/html/dialog_auth.html"/>
+      <meta-include src="webapp/base/html/dialog_auth.html"/>
 
       <div class="dialog-screen"
            data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings home.host-setup home.host-install"
@@ -80,27 +80,27 @@ found in the LICENSE file.
            data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
            hidden>
 
-        <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
-        <meta-include src="webapp/html/dialog_host_setup.html"/>
-        <meta-include src="webapp/html/dialog_host_install.html"/>
-        <meta-include src="webapp/html/dialog_host.html"/>
+        <meta-include src="webapp/crd/html/dialog_token_refresh_failed.html"/>
+        <meta-include src="webapp/crd/html/dialog_host_setup.html"/>
+        <meta-include src="webapp/crd/html/dialog_host_install.html"/>
+        <meta-include src="webapp/crd/html/dialog_host.html"/>
 
         <div id="client-dialog"
              class="kd-modaldialog"
              data-ui-mode="home.client">
 
-          <meta-include src="webapp/html/dialog_client_unconnected.html"/>
-          <meta-include src="webapp/html/dialog_client_connecting.html"/>
-          <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
-          <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
-          <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
-          <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
-          <meta-include src="webapp/html/dialog_client_session_finished.html"/>
+          <meta-include src="webapp/crd/html/dialog_client_unconnected.html"/>
+          <meta-include src="webapp/crd/html/dialog_client_connecting.html"/>
+          <meta-include src="webapp/crd/html/dialog_client_host_needs_upgrade.html"/>
+          <meta-include src="webapp/crd/html/dialog_client_pin_prompt.html"/>
+          <meta-include src="webapp/crd/html/dialog_client_third_party_auth.html"/>
+          <meta-include src="webapp/crd/html/dialog_client_connect_failed.html"/>
+          <meta-include src="webapp/crd/html/dialog_client_session_finished.html"/>
         </div>
 
-        <meta-include src="webapp/html/dialog_connection_history.html"/>
-        <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
-        <meta-include src="webapp/html/dialog_manage_pairings.html"/>
+        <meta-include src="webapp/crd/html/dialog_connection_history.html"/>
+        <meta-include src="webapp/crd/html/dialog_confirm_host_delete.html"/>
+        <meta-include src="webapp/crd/html/dialog_manage_pairings.html"/>
 
       </div>  <!-- dialog-container -->
 

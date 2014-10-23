@@ -142,7 +142,7 @@
           'variables': {
             'webapp_type': 'v2_pnacl',
             'extra_files': [
-              'webapp/remoting_client_pnacl.nmf',
+              'webapp/crd/remoting_client_pnacl.nmf',
               '<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe',
             ],
           },

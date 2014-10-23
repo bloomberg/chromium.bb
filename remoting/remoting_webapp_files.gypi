@@ -23,117 +23,117 @@
     # These files aren't included directly from main.html. They are
     # referenced from the manifest.json file (appsv1 only).
     'remoting_webapp_js_auth_v1_files': [
-      'webapp/cs_third_party_auth_trampoline.js',  # client to host
-      'webapp/cs_oauth2_trampoline.js',  # Google account
+      'webapp/crd/js/cs_third_party_auth_trampoline.js',  # client to host
+      'webapp/crd/js/cs_oauth2_trampoline.js',  # Google account
     ],
     # Auth (client to host) JavaScript files.
     'remoting_webapp_js_auth_client2host_files': [
-      'webapp/third_party_host_permissions.js',
-      'webapp/third_party_token_fetcher.js',
+      'webapp/crd/js/third_party_host_permissions.js',
+      'webapp/crd/js/third_party_token_fetcher.js',
     ],
     # Auth (Google account) JavaScript files.
     'remoting_webapp_js_auth_google_files': [
-      'webapp/identity.js',
-      'webapp/oauth2.js',
-      'webapp/oauth2_api.js',
+      'webapp/crd/js/identity.js',
+      'webapp/crd/js/oauth2.js',
+      'webapp/crd/js/oauth2_api.js',
     ],
     # Client JavaScript files.
     'remoting_webapp_js_client_files': [
-      'webapp/client_plugin.js',
-      'webapp/client_plugin_impl.js',
+      'webapp/crd/js/client_plugin.js',
+      'webapp/crd/js/client_plugin_impl.js',
       # TODO(garykac) For client_screen:
       # * Split out pin/access code stuff into separate file.
       # * Move client logic into session_connector
-      'webapp/client_screen.js',
-      'webapp/client_session.js',
-      'webapp/clipboard.js',
-      'webapp/hangout_session.js',
-      'webapp/media_source_renderer.js',
-      'webapp/session_connector.js',
-      'webapp/session_connector_impl.js',
-      'webapp/smart_reconnector.js',
-      'webapp/video_frame_recorder.js',
+      'webapp/crd/js/client_screen.js',
+      'webapp/crd/js/client_session.js',
+      'webapp/crd/js/clipboard.js',
+      'webapp/crd/js/hangout_session.js',
+      'webapp/crd/js/media_source_renderer.js',
+      'webapp/crd/js/session_connector.js',
+      'webapp/crd/js/session_connector_impl.js',
+      'webapp/crd/js/smart_reconnector.js',
+      'webapp/crd/js/video_frame_recorder.js',
     ],
     # Remoting core JavaScript files.
     'remoting_webapp_js_core_files': [
-      'webapp/base.js',
-      'webapp/error.js',
-      'webapp/event_handlers.js',
-      'webapp/platform.js',
-      'webapp/plugin_settings.js',
+      'webapp/base/js/base.js',
+      'webapp/base/js/platform.js',
+      'webapp/crd/js/error.js',
+      'webapp/crd/js/event_handlers.js',
+      'webapp/crd/js/plugin_settings.js',
       # TODO(garykac) Split out UI client stuff from remoting.js.
-      'webapp/remoting.js',
-      'webapp/typecheck.js',
-      'webapp/xhr.js',
+      'webapp/crd/js/remoting.js',
+      'webapp/crd/js/typecheck.js',
+      'webapp/crd/js/xhr.js',
     ],
     # Host JavaScript files.
     # Includes both it2me and me2me files.
     'remoting_webapp_js_host_files': [
-      'webapp/host_controller.js',
-      'webapp/host_daemon_facade.js',
-      'webapp/it2me_host_facade.js',
-      'webapp/host_session.js',
+      'webapp/crd/js/host_controller.js',
+      'webapp/crd/js/host_daemon_facade.js',
+      'webapp/crd/js/it2me_host_facade.js',
+      'webapp/crd/js/host_session.js',
     ],
     # Logging and stats JavaScript files.
     'remoting_webapp_js_logging_files': [
-      'webapp/format_iq.js',
-      'webapp/log_to_server.js',
-      'webapp/server_log_entry.js',
-      'webapp/stats_accumulator.js',
+      'webapp/crd/js/format_iq.js',
+      'webapp/crd/js/log_to_server.js',
+      'webapp/crd/js/server_log_entry.js',
+      'webapp/crd/js/stats_accumulator.js',
     ],
     # UI JavaScript files.
     'remoting_webapp_js_ui_files': [
-      'webapp/butter_bar.js',
-      'webapp/connection_stats.js',
-      'webapp/feedback.js',
-      'webapp/fullscreen.js',
-      'webapp/fullscreen_v1.js',
-      'webapp/fullscreen_v2.js',
-      'webapp/l10n.js',
-      'webapp/menu_button.js',
-      'webapp/options_menu.js',
-      'webapp/ui_mode.js',
-      'webapp/toolbar.js',
-      'webapp/window_frame.js',
+      'webapp/crd/js/butter_bar.js',
+      'webapp/crd/js/connection_stats.js',
+      'webapp/crd/js/feedback.js',
+      'webapp/crd/js/fullscreen.js',
+      'webapp/crd/js/fullscreen_v1.js',
+      'webapp/crd/js/fullscreen_v2.js',
+      'webapp/crd/js/l10n.js',
+      'webapp/crd/js/menu_button.js',
+      'webapp/crd/js/options_menu.js',
+      'webapp/crd/js/ui_mode.js',
+      'webapp/crd/js/toolbar.js',
+      'webapp/crd/js/window_frame.js',
     ],
     # UI files for controlling the local machine as a host.
     'remoting_webapp_js_ui_host_control_files': [
-      'webapp/host_screen.js',
-      'webapp/host_setup_dialog.js',
-      'webapp/host_install_dialog.js',
-      'webapp/host_installer.js',
-      'webapp/paired_client_manager.js',
+      'webapp/crd/js/host_screen.js',
+      'webapp/crd/js/host_setup_dialog.js',
+      'webapp/crd/js/host_install_dialog.js',
+      'webapp/crd/js/host_installer.js',
+      'webapp/crd/js/paired_client_manager.js',
     ],
     # UI files for displaying (in the client) info about available hosts.
     'remoting_webapp_js_ui_host_display_files': [
-      'webapp/host.js',
-      'webapp/host_list.js',
-      'webapp/host_settings.js',
-      'webapp/host_table_entry.js',
+      'webapp/crd/js/host.js',
+      'webapp/crd/js/host_list.js',
+      'webapp/crd/js/host_settings.js',
+      'webapp/crd/js/host_table_entry.js',
     ],
     # Remoting signaling files.
     'remoting_webapp_js_signaling_files': [
-      'webapp/signal_strategy.js',
-      'webapp/wcs_adapter.js',
-      'webapp/wcs_sandbox_container.js',
-      'webapp/xmpp_connection.js',
-      'webapp/xmpp_login_handler.js',
-      'webapp/xmpp_stream_parser.js',
+      'webapp/crd/js/signal_strategy.js',
+      'webapp/crd/js/wcs_adapter.js',
+      'webapp/crd/js/wcs_sandbox_container.js',
+      'webapp/crd/js/xmpp_connection.js',
+      'webapp/crd/js/xmpp_login_handler.js',
+      'webapp/crd/js/xmpp_stream_parser.js',
     ],
     # Remoting WCS sandbox JavaScript files.
     'remoting_webapp_js_wcs_sandbox_files': [
-      'webapp/wcs.js',
-      'webapp/wcs_loader.js',
-      'webapp/wcs_sandbox_content.js',
-      'webapp/xhr_proxy.js',
+      'webapp/crd/js/wcs.js',
+      'webapp/crd/js/wcs_loader.js',
+      'webapp/crd/js/wcs_sandbox_content.js',
+      'webapp/crd/js/xhr_proxy.js',
     ],
     # gnubby authentication JavaScript files.
     'remoting_webapp_js_gnubby_auth_files': [
-      'webapp/gnubby_auth_handler.js',
+      'webapp/crd/js/gnubby_auth_handler.js',
     ],
     # cast extension handler JavaScript files.
     'remoting_webapp_js_cast_extension_files': [
-      'webapp/cast_extension_handler.js',
+      'webapp/crd/js/cast_extension_handler.js',
     ],
     # browser test JavaScript files.
     'remoting_webapp_js_browser_test_files': [
@@ -151,10 +151,10 @@
     'remoting_webapp_unittest_exclude_files': [
       # background.js is where the onLoad handler is defined, which
       # makes it the entry point of the background page.
-      'webapp/background/background.js',
+      'webapp/crd/js/background.js',
       # event_handlers.js is where the onLoad handler is defined, which
       # makes it the entry point of the webapp.
-      'webapp/event_handlers.js',
+      'webapp/crd/js/event_handlers.js',
     ],
     # The unit test cases for the webapp
     'remoting_webapp_unittest_js_files': [
@@ -171,10 +171,10 @@
       'webapp/unittests/xmpp_stream_parser_unittest.js',
     ],
     'remoting_webapp_unittest_additional_files': [
-      'webapp/menu_button.css',
+      'webapp/crd/html/menu_button.css',
     ],
     'remoting_webapp_unittest_template_main':
-      'webapp/html/template_unittest.html',
+      'webapp/crd/html/template_unittest.html',
 
     # The JavaScript files required by main.html.
     'remoting_webapp_main_html_js_files': [
@@ -199,29 +199,29 @@
 
     # The JavaScript files that are used in the background page.
     'remoting_webapp_background_js_files': [
-      'webapp/base.js',
-      'webapp/client_session.js',
-      'webapp/error.js',
-      'webapp/host_installer.js',
-      'webapp/host_session.js',
-      'webapp/it2me_host_facade.js',
-      'webapp/l10n.js',
-      'webapp/plugin_settings.js',
-      'webapp/typecheck.js',
-      'webapp/background/app_launcher.js',
-      'webapp/background/background.js',
-      'webapp/background/it2me_helpee_channel.js',
-      'webapp/background/it2me_helper_channel.js',
-      'webapp/background/it2me_service.js',
-      'webapp/background/message_window_helper.js',
-      'webapp/background/message_window_manager.js',
+      'webapp/base/js/base.js',
+      'webapp/base/js/message_window_helper.js',
+      'webapp/base/js/message_window_manager.js',
+      'webapp/crd/js/app_launcher.js',
+      'webapp/crd/js/background.js',
+      'webapp/crd/js/client_session.js',
+      'webapp/crd/js/error.js',
+      'webapp/crd/js/host_installer.js',
+      'webapp/crd/js/host_session.js',
+      'webapp/crd/js/it2me_helpee_channel.js',
+      'webapp/crd/js/it2me_helper_channel.js',
+      'webapp/crd/js/it2me_host_facade.js',
+      'webapp/crd/js/it2me_service.js',
+      'webapp/crd/js/l10n.js',
+      'webapp/crd/js/plugin_settings.js',
+      'webapp/crd/js/typecheck.js',
     ],
 
     # The JavaScript files required by wcs_sandbox.html.
     'remoting_webapp_wcs_sandbox_html_js_files': [
       '<@(remoting_webapp_js_wcs_sandbox_files)',
-      'webapp/error.js',
-      'webapp/plugin_settings.js',
+      'webapp/crd/js/error.js',
+      'webapp/crd/js/plugin_settings.js',
     ],
 
     # All the JavaScript files required by the webapp.
@@ -230,7 +230,7 @@
       '<@(remoting_webapp_main_html_js_files)',
       '<@(remoting_webapp_background_js_files)',
       # JS files for message_window.html
-      'webapp/background/message_window.js',
+      'webapp/base/js/message_window.js',
       # JS files for wcs_sandbox.html.
       # Use r_w_js_wcs_sandbox_files instead of r_w_wcs_sandbox_html_js_files
       # so that we don't double include error.js and plugin_settings.js.
@@ -260,17 +260,17 @@
       'resources/plus.webp',
       'resources/reload.webp',
       'resources/tick.webp',
-      'webapp/connection_stats.css',
-      'webapp/html/message_window.html',
-      'webapp/main.css',
-      'webapp/menu_button.css',
-      'webapp/message_window.css',
-      'webapp/open_sans.css',
-      'webapp/open_sans.woff',
-      'webapp/scale-to-fit.webp',
-      'webapp/spinner.gif',
-      'webapp/toolbar.css',
-      'webapp/window_frame.css',
+      'webapp/base/html/connection_stats.css',
+      'webapp/base/html/message_window.html',
+      'webapp/base/html/main.css',
+      'webapp/base/html/message_window.css',
+      'webapp/base/resources/open_sans.css',
+      'webapp/base/resources/open_sans.woff',
+      'webapp/base/resources/spinner.gif',
+      'webapp/crd/html/toolbar.css',
+      'webapp/crd/html/menu_button.css',
+      'webapp/crd/html/window_frame.css',
+      'webapp/crd/resources/scale-to-fit.webp',
     ],
 
     'remoting_webapp_files': [
@@ -281,37 +281,37 @@
 
     # These template files are used to construct the webapp html files.
     'remoting_webapp_template_main':
-      'webapp/html/template_main.html',
+      'webapp/crd/html/template_main.html',
 
     'remoting_webapp_template_wcs_sandbox':
-      'webapp/html/template_wcs_sandbox.html',
+      'webapp/base/html/template_wcs_sandbox.html',
 
     'remoting_webapp_template_background':
-      'webapp/html/template_background.html',
+      'webapp/crd/html/template_background.html',
 
     'remoting_webapp_template_files': [
-      'webapp/html/butterbar.html',
-      'webapp/html/client_plugin.html',
-      'webapp/html/dialog_auth.html',
-      'webapp/html/dialog_client_connect_failed.html',
-      'webapp/html/dialog_client_connecting.html',
-      'webapp/html/dialog_client_host_needs_upgrade.html',
-      'webapp/html/dialog_client_pin_prompt.html',
-      'webapp/html/dialog_client_session_finished.html',
-      'webapp/html/dialog_client_third_party_auth.html',
-      'webapp/html/dialog_client_unconnected.html',
-      'webapp/html/dialog_confirm_host_delete.html',
-      'webapp/html/dialog_connection_history.html',
-      'webapp/html/dialog_host.html',
-      'webapp/html/dialog_host_install.html',
-      'webapp/html/dialog_host_setup.html',
-      'webapp/html/dialog_manage_pairings.html',
-      'webapp/html/dialog_token_refresh_failed.html',
-      'webapp/html/toolbar.html',
-      'webapp/html/ui_header.html',
-      'webapp/html/ui_it2me.html',
-      'webapp/html/ui_me2me.html',
-      'webapp/html/window_frame.html',
+      'webapp/base/html/client_plugin.html',
+      'webapp/base/html/dialog_auth.html',
+      'webapp/crd/html/butterbar.html',
+      'webapp/crd/html/dialog_client_connect_failed.html',
+      'webapp/crd/html/dialog_client_connecting.html',
+      'webapp/crd/html/dialog_client_host_needs_upgrade.html',
+      'webapp/crd/html/dialog_client_pin_prompt.html',
+      'webapp/crd/html/dialog_client_session_finished.html',
+      'webapp/crd/html/dialog_client_third_party_auth.html',
+      'webapp/crd/html/dialog_client_unconnected.html',
+      'webapp/crd/html/dialog_confirm_host_delete.html',
+      'webapp/crd/html/dialog_connection_history.html',
+      'webapp/crd/html/dialog_host.html',
+      'webapp/crd/html/dialog_host_install.html',
+      'webapp/crd/html/dialog_host_setup.html',
+      'webapp/crd/html/dialog_manage_pairings.html',
+      'webapp/crd/html/dialog_token_refresh_failed.html',
+      'webapp/crd/html/toolbar.html',
+      'webapp/crd/html/ui_header.html',
+      'webapp/crd/html/ui_it2me.html',
+      'webapp/crd/html/ui_me2me.html',
+      'webapp/crd/html/window_frame.html',
     ],
 
   },
