@@ -5,6 +5,7 @@
 #ifndef InspectorTraceEvents_h
 #define InspectorTraceEvents_h
 
+#include "core/css/CSSSelector.h"
 #include "platform/EventTracer.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
@@ -24,6 +25,7 @@ class KURL;
 class LayoutRect;
 class LocalFrame;
 class Node;
+class QualifiedName;
 class RenderImage;
 class RenderLayer;
 class RenderObject;
@@ -39,6 +41,29 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(FrameView*);
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(RenderObject* rootForThisLayout);
 };
+
+class InspectorScheduleStyleInvalidationTrackingEvent {
+public:
+    static const char Attribute[];
+    static const char Class[];
+    static const char Id[];
+    static const char Pseudo[];
+
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> attributeChange(Element&, const DescendantInvalidationSet&, const QualifiedName&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> classChange(Element&, const DescendantInvalidationSet&, const AtomicString&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> idChange(Element&, const DescendantInvalidationSet&, const AtomicString&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> pseudoChange(Element&, const DescendantInvalidationSet&, CSSSelector::PseudoType);
+
+private:
+    static PassRefPtr<TracedValue> fillCommonPart(Element&, const DescendantInvalidationSet&, const char* invalidatedSelector);
+};
+
+#define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet, changeType, ...) \
+    TRACE_EVENT_INSTANT1( \
+        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
+        "ScheduleStyleInvalidationTracking", \
+        "data", \
+        InspectorScheduleStyleInvalidationTrackingEvent::changeType((element), (invalidationSet), __VA_ARGS__))
 
 class InspectorStyleRecalcInvalidationTrackingEvent {
 public:

@@ -65,6 +65,145 @@ void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const 
         value->setString(nameFieldName, node->debugName());
 }
 
+const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
+{
+    switch (pseudoType) {
+#define DEFINE_STRING_MAPPING(pseudoType) case CSSSelector::pseudoType: return #pseudoType;
+        DEFINE_STRING_MAPPING(PseudoNotParsed)
+        DEFINE_STRING_MAPPING(PseudoUnknown)
+        DEFINE_STRING_MAPPING(PseudoEmpty)
+        DEFINE_STRING_MAPPING(PseudoFirstChild)
+        DEFINE_STRING_MAPPING(PseudoFirstOfType)
+        DEFINE_STRING_MAPPING(PseudoLastChild)
+        DEFINE_STRING_MAPPING(PseudoLastOfType)
+        DEFINE_STRING_MAPPING(PseudoOnlyChild)
+        DEFINE_STRING_MAPPING(PseudoOnlyOfType)
+        DEFINE_STRING_MAPPING(PseudoFirstLine)
+        DEFINE_STRING_MAPPING(PseudoFirstLetter)
+        DEFINE_STRING_MAPPING(PseudoNthChild)
+        DEFINE_STRING_MAPPING(PseudoNthOfType)
+        DEFINE_STRING_MAPPING(PseudoNthLastChild)
+        DEFINE_STRING_MAPPING(PseudoNthLastOfType)
+        DEFINE_STRING_MAPPING(PseudoLink)
+        DEFINE_STRING_MAPPING(PseudoVisited)
+        DEFINE_STRING_MAPPING(PseudoAny)
+        DEFINE_STRING_MAPPING(PseudoAnyLink)
+        DEFINE_STRING_MAPPING(PseudoAutofill)
+        DEFINE_STRING_MAPPING(PseudoHover)
+        DEFINE_STRING_MAPPING(PseudoDrag)
+        DEFINE_STRING_MAPPING(PseudoFocus)
+        DEFINE_STRING_MAPPING(PseudoActive)
+        DEFINE_STRING_MAPPING(PseudoChecked)
+        DEFINE_STRING_MAPPING(PseudoEnabled)
+        DEFINE_STRING_MAPPING(PseudoFullPageMedia)
+        DEFINE_STRING_MAPPING(PseudoDefault)
+        DEFINE_STRING_MAPPING(PseudoDisabled)
+        DEFINE_STRING_MAPPING(PseudoOptional)
+        DEFINE_STRING_MAPPING(PseudoRequired)
+        DEFINE_STRING_MAPPING(PseudoReadOnly)
+        DEFINE_STRING_MAPPING(PseudoReadWrite)
+        DEFINE_STRING_MAPPING(PseudoValid)
+        DEFINE_STRING_MAPPING(PseudoInvalid)
+        DEFINE_STRING_MAPPING(PseudoIndeterminate)
+        DEFINE_STRING_MAPPING(PseudoTarget)
+        DEFINE_STRING_MAPPING(PseudoBefore)
+        DEFINE_STRING_MAPPING(PseudoAfter)
+        DEFINE_STRING_MAPPING(PseudoBackdrop)
+        DEFINE_STRING_MAPPING(PseudoLang)
+        DEFINE_STRING_MAPPING(PseudoNot)
+        DEFINE_STRING_MAPPING(PseudoResizer)
+        DEFINE_STRING_MAPPING(PseudoRoot)
+        DEFINE_STRING_MAPPING(PseudoScope)
+        DEFINE_STRING_MAPPING(PseudoScrollbar)
+        DEFINE_STRING_MAPPING(PseudoScrollbarButton)
+        DEFINE_STRING_MAPPING(PseudoScrollbarCorner)
+        DEFINE_STRING_MAPPING(PseudoScrollbarThumb)
+        DEFINE_STRING_MAPPING(PseudoScrollbarTrack)
+        DEFINE_STRING_MAPPING(PseudoScrollbarTrackPiece)
+        DEFINE_STRING_MAPPING(PseudoWindowInactive)
+        DEFINE_STRING_MAPPING(PseudoCornerPresent)
+        DEFINE_STRING_MAPPING(PseudoDecrement)
+        DEFINE_STRING_MAPPING(PseudoIncrement)
+        DEFINE_STRING_MAPPING(PseudoHorizontal)
+        DEFINE_STRING_MAPPING(PseudoVertical)
+        DEFINE_STRING_MAPPING(PseudoStart)
+        DEFINE_STRING_MAPPING(PseudoEnd)
+        DEFINE_STRING_MAPPING(PseudoDoubleButton)
+        DEFINE_STRING_MAPPING(PseudoSingleButton)
+        DEFINE_STRING_MAPPING(PseudoNoButton)
+        DEFINE_STRING_MAPPING(PseudoSelection)
+        DEFINE_STRING_MAPPING(PseudoLeftPage)
+        DEFINE_STRING_MAPPING(PseudoRightPage)
+        DEFINE_STRING_MAPPING(PseudoFirstPage)
+        DEFINE_STRING_MAPPING(PseudoFullScreen)
+        DEFINE_STRING_MAPPING(PseudoFullScreenDocument)
+        DEFINE_STRING_MAPPING(PseudoFullScreenAncestor)
+        DEFINE_STRING_MAPPING(PseudoInRange)
+        DEFINE_STRING_MAPPING(PseudoOutOfRange)
+        DEFINE_STRING_MAPPING(PseudoUserAgentCustomElement)
+        DEFINE_STRING_MAPPING(PseudoWebKitCustomElement)
+        DEFINE_STRING_MAPPING(PseudoCue)
+        DEFINE_STRING_MAPPING(PseudoFutureCue)
+        DEFINE_STRING_MAPPING(PseudoPastCue)
+        DEFINE_STRING_MAPPING(PseudoUnresolved)
+        DEFINE_STRING_MAPPING(PseudoContent)
+        DEFINE_STRING_MAPPING(PseudoHost)
+        DEFINE_STRING_MAPPING(PseudoHostContext)
+        DEFINE_STRING_MAPPING(PseudoShadow)
+        DEFINE_STRING_MAPPING(PseudoSpatialNavigationFocus)
+        DEFINE_STRING_MAPPING(PseudoListBox)
+#undef DEFINE_STRING_MAPPING
+    }
+
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
+}
+
+PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCommonPart(Element& element, const DescendantInvalidationSet& invalidationSet, const char* invalidatedSelector)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(element.document().frame()));
+    setNodeInfo(value.get(), &element, "nodeId", "nodeName");
+    value->setString("invalidationSet", descendantInvalidationSetToIdString(invalidationSet));
+    value->setString("InvalidatedSelectorId", invalidatedSelector);
+    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
+        value->setArray("stackTrace", stackTrace->buildInspectorArray()->asArray());
+    return value.release();
+}
+
+const char InspectorScheduleStyleInvalidationTrackingEvent::Attribute[] = "attribute";
+const char InspectorScheduleStyleInvalidationTrackingEvent::Class[] = "class";
+const char InspectorScheduleStyleInvalidationTrackingEvent::Id[] = "id";
+const char InspectorScheduleStyleInvalidationTrackingEvent::Pseudo[] = "pseudo";
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::idChange(Element& element, const DescendantInvalidationSet& invalidationSet, const AtomicString& id)
+{
+    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Id);
+    value->setString("changedId", id);
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::classChange(Element& element, const DescendantInvalidationSet& invalidationSet, const AtomicString& className)
+{
+    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Class);
+    value->setString("changedClass", className);
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::attributeChange(Element& element, const DescendantInvalidationSet& invalidationSet, const QualifiedName& attributeName)
+{
+    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
+    value->setString("changedAttribute", attributeName.toString());
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScheduleStyleInvalidationTrackingEvent::pseudoChange(Element& element, const DescendantInvalidationSet& invalidationSet, CSSSelector::PseudoType pseudoType)
+{
+    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
+    value->setString("changedPseudo", pseudoTypeToString(pseudoType));
+    return value.release();
 }
 
 String descendantInvalidationSetToIdString(const DescendantInvalidationSet& set)

@@ -37,6 +37,7 @@
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "wtf/BitVector.h"
 
 namespace blink {
@@ -598,33 +599,42 @@ void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitStr
 
 void RuleFeatureSet::scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element& element)
 {
-
-    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName()))
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName())) {
+        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, attributeChange, attributeName);
         m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+    }
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForIdChange(const AtomicString& oldId, const AtomicString& newId, Element& element)
 {
     if (!oldId.isEmpty()) {
-        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(oldId))
+        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(oldId)) {
+            TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, idChange, oldId);
             m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+        }
     }
     if (!newId.isEmpty()) {
-        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(newId))
+        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(newId)) {
+            TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, idChange, newId);
             m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+        }
     }
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoType pseudo, Element& element)
 {
-    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_pseudoInvalidationSets.get(pseudo))
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_pseudoInvalidationSets.get(pseudo)) {
+        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, pseudoChange, pseudo);
         m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+    }
 }
 
-void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element& element)
+inline void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element& element)
 {
-    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className))
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className)) {
+        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, classChange, className);
         m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+    }
 }
 
 StyleInvalidator& RuleFeatureSet::styleInvalidator()
