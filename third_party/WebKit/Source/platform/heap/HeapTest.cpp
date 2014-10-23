@@ -1114,21 +1114,28 @@ public:
         return map;
     }
 
+    static void clearObservers()
+    {
+        delete s_observerMap;
+        s_observerMap = nullptr;
+    }
+
     static bool s_didCallWillFinalize;
 
 private:
     static ObserverMap& observers()
     {
-        DEFINE_STATIC_LOCAL(Persistent<ObserverMap>, observerMap, ());
-        if (!observerMap)
-            observerMap = new ObserverMap();
-        return *observerMap;
+        if (!s_observerMap)
+            s_observerMap = new Persistent<ObserverMap>(new ObserverMap());
+        return **s_observerMap;
     }
 
     Observable& m_target;
+    static Persistent<ObserverMap>* s_observerMap;
 };
 
 bool FinalizationObserverWithHashMap::s_didCallWillFinalize = false;
+Persistent<FinalizationObserverWithHashMap::ObserverMap>* FinalizationObserverWithHashMap::s_observerMap;
 
 class SuperClass;
 
@@ -3311,6 +3318,8 @@ TEST(HeapTest, FinalizationObserver)
     EXPECT_EQ(0u, Bar::s_live);
     EXPECT_EQ(0u, map.size());
     EXPECT_TRUE(FinalizationObserverWithHashMap::s_didCallWillFinalize);
+
+    FinalizationObserverWithHashMap::clearObservers();
 }
 
 TEST(HeapTest, PreFinalizer)
