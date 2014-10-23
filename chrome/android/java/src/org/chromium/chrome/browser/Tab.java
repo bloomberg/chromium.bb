@@ -31,10 +31,8 @@ import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.NavigationClient;
 import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
@@ -72,7 +70,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  unless special care is taken to make sure {@link Tab#incrementIdCounterTo(int)} is called with
  *  the correct value across all affected {@link Activity}s.
  */
-public class Tab implements NavigationClient {
+public class Tab {
     public static final int INVALID_TAB_ID = -1;
 
     /** Used for automatically generating tab ids. */
@@ -407,23 +405,6 @@ public class Tab implements NavigationClient {
      */
     public void goForward() {
         if (getWebContents() != null) getWebContents().getNavigationController().goForward();
-    }
-
-    @Override
-    public NavigationHistory getDirectedNavigationHistory(boolean isForward, int itemLimit) {
-        if (getWebContents() != null) {
-            return getWebContents().getNavigationController()
-                    .getDirectedNavigationHistory(isForward, itemLimit);
-        } else {
-            return new NavigationHistory();
-        }
-    }
-
-    @Override
-    public void goToNavigationIndex(int index) {
-        if (getWebContents() != null) {
-            getWebContents().getNavigationController().goToNavigationIndex(index);
-        }
     }
 
     /**

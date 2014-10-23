@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.NavigationClient;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.base.LocalizationUtils;
@@ -41,7 +41,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     private static final int MAXIMUM_HISTORY_ITEMS = 8;
 
     private final Context mContext;
-    private final NavigationClient mNavigationClient;
+    private final NavigationController mNavigationController;
     private final NavigationHistory mHistory;
     private final NavigationAdapter mAdapter;
     private final ListItemFactory mListItemFactory;
@@ -54,15 +54,15 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
      * Constructs a new popup with the given history information.
      *
      * @param context The context used for building the popup.
-     * @param navigationClient The owner of the history being displayed.
+     * @param navigationController The controller which takes care of page navigations.
      * @param isForward Whether to request forward navigation entries.
      */
     public NavigationPopup(
-            Context context, NavigationClient navigationClient, boolean isForward) {
+            Context context, NavigationController navigationController, boolean isForward) {
         super(context, null, android.R.attr.popupMenuStyle);
         mContext = context;
-        mNavigationClient = navigationClient;
-        mHistory = mNavigationClient.getDirectedNavigationHistory(
+        mNavigationController = navigationController;
+        mHistory = mNavigationController.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
         mAdapter = new NavigationAdapter();
 
@@ -130,7 +130,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         NavigationEntry entry = (NavigationEntry) parent.getItemAtPosition(position);
-        mNavigationClient.goToNavigationIndex(entry.getIndex());
+        mNavigationController.goToNavigationIndex(entry.getIndex());
         dismiss();
     }
 
