@@ -48,6 +48,7 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"libwinhook.dll",                    // V-Bates.
   L"lmrn.dll",                          // Unknown.
   L"minisp.dll",                        // Unknown (suspected malware).
+  L"safetynut.dll",                     // Unknown (suspected adware).
   L"systemk.dll",                       // Unknown (suspected adware).
   L"windowsapihookdll32.dll",           // Lenovo One Key Theater.
                                         // See crbug.com/379218.
