@@ -90,7 +90,8 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::take(ScriptPromiseResolver
 
 void ServiceWorkerRegistration::dispose(WebType* registration)
 {
-    delete registration;
+    if (registration && !registration->proxy())
+        delete registration;
 }
 
 String ServiceWorkerRegistration::scope() const

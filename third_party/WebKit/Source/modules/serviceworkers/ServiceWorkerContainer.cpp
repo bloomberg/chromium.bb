@@ -207,12 +207,6 @@ static void deleteIfNoExistingOwner(WebServiceWorker* serviceWorker)
         delete serviceWorker;
 }
 
-static void deleteIfNoExistingOwner(WebServiceWorkerRegistration* registration)
-{
-    if (registration && !registration->proxy())
-        delete registration;
-}
-
 void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker)
 {
     if (!executionContext()) {
@@ -225,7 +219,7 @@ void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker)
 void ServiceWorkerContainer::setReadyRegistration(WebServiceWorkerRegistration* registration)
 {
     if (!executionContext()) {
-        deleteIfNoExistingOwner(registration);
+        ServiceWorkerRegistration::dispose(registration);
         return;
     }
 
