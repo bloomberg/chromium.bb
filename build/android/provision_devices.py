@@ -190,11 +190,11 @@ def ProvisionDevice(device, options, is_perf):
                      battery_info.get('level', 0))
         time.sleep(60)
         battery_info = device.old_interface.GetBatteryInfo()
+    # TODO(jbudorick): Tune the timeout per OS version.
+    device.Reboot(True, timeout=600, retries=0)
     device.RunShellCommand('date -s %s' % time.strftime('%Y%m%d.%H%M%S',
                                                         time.gmtime()),
                            as_root=True)
-    # TODO(jbudorick): Tune the timeout per OS version.
-    device.Reboot(True, timeout=600, retries=0)
     props = device.RunShellCommand('getprop')
     for prop in props:
       logging.info('  %s' % prop)
