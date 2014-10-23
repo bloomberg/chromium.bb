@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "extensions/common/extension.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -28,7 +28,7 @@
 namespace {
 
 // In the browser actions container's chevron menu, a menu item view's icon
-// comes from ToolbarActionView::GetIconWithBadge() when the menu item view is
+// comes from BrowserActionView::GetIconWithBadge() when the menu item view is
 // created. But, the browser action's icon may not be loaded in time because it
 // is read from file system in another thread.
 // The IconUpdater will update the menu item view's icon when the browser
@@ -47,7 +47,7 @@ class IconUpdater : public ExtensionActionIconFactory::Observer {
     view_controller_->set_icon_observer(NULL);
   }
 
-  // ExtensionActionIconFactory::Observer:
+  // BrowserActionView::IconObserver:
   virtual void OnIconUpdated() override {
     menu_item_view_->SetIcon(view_controller_->GetIconWithBadge());
   }
@@ -125,7 +125,7 @@ class ChevronMenuButton::MenuController : public views::MenuDelegate {
   // Resposible for running the menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  // The index into the ToolbarActionView vector, indicating where to start
+  // The index into the BrowserActionView vector, indicating where to start
   // picking browser actions to draw.
   int start_index_;
 
@@ -157,9 +157,9 @@ ChevronMenuButton::MenuController::MenuController(
 
   size_t command_id = 1;  // Menu id 0 is reserved, start with 1.
   for (size_t i = start_index_;
-       i < browser_actions_container_->num_toolbar_actions(); ++i) {
-    ToolbarActionView* view =
-        browser_actions_container_->GetToolbarActionViewAt(i);
+       i < browser_actions_container_->num_browser_actions(); ++i) {
+    BrowserActionView* view =
+        browser_actions_container_->GetBrowserActionViewAt(i);
     ExtensionActionViewController* view_controller =
         static_cast<ExtensionActionViewController*>(view->view_controller());
     views::MenuItemView* menu_item = menu_->AppendMenuItemWithIcon(
@@ -211,13 +211,13 @@ void ChevronMenuButton::MenuController::CloseMenu() {
 }
 
 bool ChevronMenuButton::MenuController::IsCommandEnabled(int id) const {
-  ToolbarActionView* view =
-      browser_actions_container_->GetToolbarActionViewAt(start_index_ + id - 1);
+  BrowserActionView* view =
+      browser_actions_container_->GetBrowserActionViewAt(start_index_ + id - 1);
   return view->view_controller()->IsEnabled(view->GetCurrentWebContents());
 }
 
 void ChevronMenuButton::MenuController::ExecuteCommand(int id) {
-  browser_actions_container_->GetToolbarActionViewAt(start_index_ + id - 1)->
+  browser_actions_container_->GetBrowserActionViewAt(start_index_ + id - 1)->
       view_controller()->ExecuteAction(true);
 }
 
@@ -226,7 +226,7 @@ bool ChevronMenuButton::MenuController::ShowContextMenu(
     int id,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-  ToolbarActionView* view = browser_actions_container_->GetToolbarActionViewAt(
+  BrowserActionView* view = browser_actions_container_->GetBrowserActionViewAt(
       start_index_ + id - 1);
   ExtensionActionViewController* view_controller =
       static_cast<ExtensionActionViewController*>(view->view_controller());

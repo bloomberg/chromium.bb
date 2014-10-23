@@ -295,7 +295,7 @@ void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);
   if (browser_actions_)
-    browser_actions_->RefreshToolbarActionViews();
+    browser_actions_->RefreshBrowserActionViews();
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
 }
