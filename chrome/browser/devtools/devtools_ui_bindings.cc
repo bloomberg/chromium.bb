@@ -877,10 +877,9 @@ void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
   // In the DEBUG_DEVTOOLS mode, the DocumentOnLoadCompletedInMainFrame event
   // arrives before the LoadCompleted event, thus it should not trigger the
   // frontend load handling.
-#if defined(DEBUG_DEVTOOLS)
-  return;
-#endif
+#if !defined(DEBUG_DEVTOOLS)
   FrontendLoaded();
+#endif
 }
 
 void DevToolsUIBindings::DidNavigateMainFrame() {
