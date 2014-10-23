@@ -173,7 +173,8 @@ group("root") {
 
   if (is_android) {
     deps += [
-      "//base/android:chromium_android_linker",
+      "//base/android/linker:chromium_android_linker",
+      "//build/android/rezip",
       "//third_party/openmax_dl/dl",
       "//content/shell/android:content_shell_apk",
       "//chrome/android:chrome_shell_apk",

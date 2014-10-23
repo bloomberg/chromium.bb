@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/android/linker/config.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
 import("//tools/grit/grit_rule.gni")
@@ -732,6 +733,68 @@ template("android_library") {
   }
 }
 
+template("java_library") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+
+  assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir)
+      || defined(invoker.srcjars))
+
+  _srcjar_deps = []
+  if (defined(invoker.srcjar_deps)) {
+    _srcjar_deps = invoker.srcjar_deps
+  }
+
+  _srcjars = []
+  if (defined(invoker.srcjars)) {
+    _srcjars = invoker.srcjars
+  }
+
+  _java_files = []
+  if (defined(invoker.java_files)) {
+    _java_files = invoker.java_files
+  } else if (defined(invoker.DEPRECATED_java_in_dir)) {
+    _src_dir = invoker.DEPRECATED_java_in_dir + "/src"
+    _src_dir_exists = exec_script("//build/dir_exists.py",
+          [ rebase_path(_src_dir, root_build_dir) ],
+          "string")
+    assert(_src_dir_exists == "False",
+        "In GN, java_in_dir should be the fully specified java directory " +
+        "(i.e. including the trailing \"/src\")")
+
+    _java_files_build_rel = exec_script(
+        "//build/android/gyp/find.py",
+        [
+          "--pattern",
+          "*.java",
+          rebase_path(invoker.DEPRECATED_java_in_dir, root_build_dir)
+        ],
+        "list lines"
+        )
+    _java_files = rebase_path(_java_files_build_rel, ".", root_build_dir)
+  }
+  assert(_java_files != [] || _srcjar_deps != [] || _srcjars != [])
+
+  # TODO(cjhopman): Write a proper build config so that java library
+  # dependencies work correctly.
+  _build_config = "$target_gen_dir/$target_name.build_config"
+  write_file(
+      _build_config,
+      "{ \"javac\": { \"classpath\": [], \"srcjars\": [] } }")
+
+  _jar_path = "$root_build_dir/lib.java/$target_name.jar"
+  if (defined(invoker.jar_path)) {
+    _jar_path = invoker.jar_path
+  }
+
+  compile_java(target_name) {
+    build_config = _build_config
+    jar_path = _jar_path
+    java_files = _java_files
+    srcjar_deps = _srcjar_deps
+    srcjars = _srcjars
+  }
+}
+
 
 # Declare an Android library target for a prebuilt jar
 #
@@ -875,28 +938,6 @@ template("android_apk") {
   _dist_jar_path = _dist_jar_path_list[0]
 
   _native_libs = []
-  if (defined(invoker.native_libs)) {
-    _use_chromium_linker = false
-    if (defined(invoker.use_chromium_linker)) {
-      _use_chromium_linker = invoker.use_chromium_linker
-    }
-
-    # TODO(GYP) add "|| profiling_full_stack_frames
-    # Only enable the chromium linker on regular builds, since the
-    # component build crashes on Android 4.4. See b/11379966
-    if (is_component_build || cpu_arch == "arm64" || cpu_arch == "x64") {
-      _use_chromium_linker = false
-    }
-
-    _native_libs = invoker.native_libs
-    _native_libs_dir = base_path + "/libs"
-
-    if (_use_chromium_linker) {
-      _native_libs += [
-        "$root_build_dir/lib.stripped/libchromium_android_linker.so"
-      ]
-    }
-  }
 
   _keystore_path = android_default_keystore_path
   _keystore_name = android_default_keystore_name
@@ -911,6 +952,28 @@ template("android_apk") {
   _srcjar_deps = []
   if (defined(invoker.srcjar_deps)) {
     _srcjar_deps += invoker.srcjar_deps
+  }
+
+  _load_library_from_apk = false
+  if (defined(invoker.load_library_from_apk)) {
+    _load_library_from_apk = invoker.load_library_from_apk
+  }
+
+  if (defined(invoker.native_libs)) {
+    _use_chromium_linker = false
+    if (defined(invoker.use_chromium_linker)) {
+      _use_chromium_linker = (invoker.use_chromium_linker &&
+        chromium_linker_supported)
+    }
+
+    _native_libs = invoker.native_libs
+    _native_libs_dir = base_path + "/libs"
+
+    if (_use_chromium_linker) {
+      _native_libs += [
+        "$root_build_dir/lib.stripped/libchromium_android_linker.so"
+      ]
+    }
   }
 
   _rebased_build_config = rebase_path(build_config, root_build_dir)
@@ -945,7 +1008,6 @@ template("android_apk") {
       _enable_chromium_linker_tests = invoker.enable_chromium_linker_tests
     }
 
-    _load_library_from_apk = false
     _native_lib_version_name = ""
 
     java_cpp_template("${_template_name}__native_libraries_java") {
@@ -1049,6 +1111,7 @@ template("android_apk") {
     android_manifest = invoker.android_manifest
     resources_zip = all_resources_zip_path
     dex_path = final_dex_path
+    load_library_from_apk = _load_library_from_apk
 
     if (defined(invoker.asset_location)) {
       asset_location = invoker.asset_location

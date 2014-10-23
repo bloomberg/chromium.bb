@@ -6,6 +6,7 @@
 {
   'targets': [
     {
+      # GN: //build/android/rezip:rezip
       'target_name': 'rezip_apk_jar',
       'type': 'none',
       'variables': {

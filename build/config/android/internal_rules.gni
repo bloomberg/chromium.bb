@@ -236,6 +236,7 @@ template("create_apk") {
   _keystore_path = invoker.keystore_path
   _keystore_name = invoker.keystore_name
   _keystore_password = invoker.keystore_password
+  _load_library_from_apk = invoker.load_library_from_apk
 
   _deps = []
   if (defined(invoker.deps)) {
@@ -271,7 +272,7 @@ template("create_apk") {
 
     script = "//build/android/gyp/package_resources.py"
     depfile = "${target_gen_dir}/${target_name}.d"
-    source_prereqs = [
+    inputs = [
       _android_manifest,
       _resources_zip,
     ]
@@ -302,7 +303,7 @@ template("create_apk") {
 
     depfile = "$target_gen_dir/$target_name.d"
 
-    source_prereqs = [
+    inputs = [
       _dex_path,
       _resource_packaged_apk_path,
       _ant_script
@@ -344,7 +345,7 @@ template("create_apk") {
     depfile = "$target_gen_dir/$target_name.d"
 
     sources = [_packaged_apk_path]
-    source_prereqs = [_keystore_path]
+    inputs = [_keystore_path]
     outputs = [depfile, _final_apk_path]
 
     args = [
@@ -356,6 +357,16 @@ template("create_apk") {
       "--key-name", _keystore_name,
       "--key-passwd", _keystore_password,
     ]
+    if (_load_library_from_apk) {
+      _rezip_jar_path = "$root_build_dir/lib.java/rezip_apk.jar"
+      inputs += [
+        _rezip_jar_path
+      ]
+      args += [
+        "--load-library-from-zip-file=1",
+        "--rezip-apk-jar-path", rebase_path(_rezip_jar_path, root_build_dir)
+      ]
+    }
   }
 
   group(target_name) {
@@ -446,7 +457,7 @@ template("java_prebuilt") {
 #     dependencies srcjar outputs will be compiled and added to the output jar.
 #   jar_path: Use this to explicitly set the output jar path. Defaults to
 #     "${target_gen_dir}/${target_name}.jar.
-template("java_library") {
+template("compile_java") {
   if (defined(invoker.testonly)) { testonly = invoker.testonly }
 
   assert(defined(invoker.java_files))
@@ -598,7 +609,7 @@ template("android_java_library") {
   _final_deps = []
   _final_datadeps = []
 
-  java_library("${target_name}__java_library") {
+  compile_java("${target_name}__compile_java") {
     jar_path = _jar_path
     if (defined(invoker.jar_excluded_patterns)) {
       jar_excluded_patterns = invoker.jar_excluded_patterns
@@ -634,7 +645,7 @@ template("android_java_library") {
 
   group(target_name) {
     deps = [
-      ":${target_name}__java_library",
+      ":${target_name}__compile_java",
       ":${target_name}__dex",
     ] + _final_deps + _final_datadeps
   }
@@ -672,7 +683,7 @@ template("process_resources") {
         )
     sources = rebase_path(sources_build_rel, ".", root_build_dir)
 
-    source_prereqs = [
+    inputs = [
       build_config,
       android_manifest,
     ]

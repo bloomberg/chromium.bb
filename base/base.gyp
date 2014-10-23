@@ -1423,7 +1423,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          # GN: //base/android/chromium_android_linker
+          # GN: //base/android/linker:chromium_android_linker
           'target_name': 'chromium_android_linker',
           'type': 'shared_library',
           'conditions': [
