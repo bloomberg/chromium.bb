@@ -526,6 +526,7 @@
       'browser/service_process/service_process_control_browsertest.cc',
       'browser/services/gcm/fake_gcm_profile_service.cc',
       'browser/services/gcm/fake_gcm_profile_service.h',
+      'browser/services/gcm/push_messaging_browsertest.cc',
       'browser/sessions/better_session_restore_browsertest.cc',
       'browser/sessions/persistent_tab_restore_service_browsertest.cc',
       'browser/sessions/session_restore_browsertest.cc',

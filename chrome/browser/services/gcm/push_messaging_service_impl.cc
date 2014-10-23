@@ -14,6 +14,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/push_messaging_application_id.h"
+#include "chrome/browser/services/gcm/push_messaging_constants.h"
 #include "chrome/browser/services/gcm/push_messaging_permission_context.h"
 #include "chrome/browser/services/gcm/push_messaging_permission_context_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -129,6 +130,10 @@ void PushMessagingServiceImpl::OnMessage(
   }
 }
 
+void PushMessagingServiceImpl::SetProfileForTesting(Profile* profile) {
+  profile_ = profile;
+}
+
 void PushMessagingServiceImpl::DeliverMessageCallback(
     const PushMessagingApplicationId& application_id,
     const GCMClient::IncomingMessage& message,
@@ -233,7 +238,7 @@ void PushMessagingServiceImpl::RegisterEnd(
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& registration_id,
     content::PushRegistrationStatus status) {
-  GURL endpoint = GURL("https://android.googleapis.com/gcm/send");
+  GURL endpoint = GURL(std::string(kPushMessagingEndpoint));
   callback.Run(endpoint, registration_id, status);
   if (status == content::PUSH_REGISTRATION_STATUS_SUCCESS) {
     // TODO(johnme): Make sure the pref doesn't get out of sync after crashes.

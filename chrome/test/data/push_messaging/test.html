@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>Push API Test</title>
+  <script>
+    function sendResultToTest(result) {
+      console.log(result);
+      if (window.domAutomationController) {
+        domAutomationController.send('' + result);
+      }
+    }
+
+    function sendErrorToTest(error) {
+      sendResultToTest(error.name + ' - ' + error.message);
+    }
+
+    function registerServiceWorker() {
+      navigator.serviceWorker.register('service_worker.js').then(function(swRegistration) {
+        console.log(swRegistration);
+        sendResultToTest('ok');
+      }, sendErrorToTest);
+    }
+
+    function registerPush(senderId) {
+      navigator.serviceWorker.ready.then(function() {
+        navigator.push.register(senderId).then(function(pushRegistration) {
+          sendResultToTest(pushRegistration.pushEndpoint + ' - ' + pushRegistration.pushRegistrationId);
+        }, sendErrorToTest);
+      }, sendErrorToTest);
+    }
+  </script>
+ </head>
+ <body>Push API Test</body>
+</html>

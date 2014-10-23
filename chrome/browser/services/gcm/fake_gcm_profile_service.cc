@@ -111,7 +111,10 @@ KeyedService* FakeGCMProfileService::Build(content::BrowserContext* context) {
 }
 
 FakeGCMProfileService::FakeGCMProfileService(Profile* profile)
-    : collect_(false) {}
+    : collect_(false) {
+  static_cast<PushMessagingServiceImpl*>(push_messaging_service())
+      ->SetProfileForTesting(profile);
+}
 
 FakeGCMProfileService::~FakeGCMProfileService() {}
 

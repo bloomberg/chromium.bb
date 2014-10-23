@@ -358,6 +358,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       'gif': 'image/gif',
       'jpeg' : 'image/jpeg',
       'jpg' : 'image/jpeg',
+      'js' : 'application/javascript',
       'json': 'application/json',
       'pdf' : 'application/pdf',
       'txt' : 'text/plain',

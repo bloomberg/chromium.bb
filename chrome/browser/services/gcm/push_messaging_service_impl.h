@@ -58,6 +58,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       bool user_gesture,
       const content::PushMessagingService::RegisterCallback& callback) override;
 
+  void SetProfileForTesting(Profile* profile);
+
  private:
   void DeliverMessageCallback(const PushMessagingApplicationId& application_id,
                               const GCMClient::IncomingMessage& message,
