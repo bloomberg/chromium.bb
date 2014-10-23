@@ -197,9 +197,9 @@ void SitePerProcessBrowserTest::SetUpOnMainThread() {
   SetupCrossSiteRedirector(embedded_test_server());
 }
 
-// It fails on ChromeOS and Android, so disabled while investigating.
+// It times out on Android, so disabled while investigating.
 // http://crbug.com/399775
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
 #define MAYBE_CrossSiteIframe DISABLED_CrossSiteIframe
 #else
 #define MAYBE_CrossSiteIframe CrossSiteIframe
@@ -305,9 +305,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 }
 
-// It fails on ChromeOS and Android, so disabled while investigating.
+// It times out on Android, so disabled while investigating.
 // http://crbug.com/399775
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
 #define MAYBE_NavigateRemoteFrame DISABLED_NavigateRemoteFrame
 #else
 #define MAYBE_NavigateRemoteFrame NavigateRemoteFrame
