@@ -69,8 +69,7 @@ V8GCForContextDispose& V8GCForContextDispose::instance()
 
 void V8GCForContextDispose::pseudoIdleTimerFired(Timer<V8GCForContextDispose>*)
 {
-    const int idlePauseInMs = 10;
-    V8PerIsolateData::mainThreadIsolate()->IdleNotification(idlePauseInMs);
+    V8PerIsolateData::mainThreadIsolate()->IdleNotification(0);
     reset();
 }
 
