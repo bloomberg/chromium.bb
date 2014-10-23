@@ -322,6 +322,63 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   EXPECT_GE(increasing_distance_tiles, 3 * tile_count / 4);
 }
 
+TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
+  SetupDefaultTrees(gfx::Size(1000, 1000));
+
+  active_layer_->CreateDefaultTilingsAndTiles();
+  pending_layer_->CreateDefaultTilingsAndTiles();
+
+  // Create a pending child layer.
+  gfx::Size tile_size(256, 256);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
+  scoped_ptr<FakePictureLayerImpl> pending_child =
+      FakePictureLayerImpl::CreateWithPile(
+          host_impl_.pending_tree(), id_ + 1, pending_pile);
+  pending_layer_->AddChild(pending_child.Pass());
+  FakePictureLayerImpl* pending_child_raw = static_cast<FakePictureLayerImpl*>(
+      host_impl_.pending_tree()->LayerById(id_ + 1));
+  ASSERT_TRUE(pending_child_raw);
+
+  pending_child_raw->SetDrawsContent(true);
+  pending_child_raw->DoPostCommitInitializationIfNeeded();
+  pending_child_raw->CreateDefaultTilingsAndTiles();
+  ASSERT_TRUE(pending_child_raw->HighResTiling());
+
+  // Set a small viewport, so we have soon and eventually tiles.
+  gfx::Rect viewport(200, 200);
+  active_layer_->draw_properties().visible_content_rect = viewport;
+  active_layer_->UpdateTiles(Occlusion(), false);
+  pending_layer_->draw_properties().visible_content_rect = viewport;
+  pending_layer_->UpdateTiles(Occlusion(), false);
+  pending_child_raw->draw_properties().visible_content_rect = viewport;
+  pending_child_raw->UpdateTiles(Occlusion(), false);
+
+  RasterTilePriorityQueue queue;
+  host_impl_.SetRequiresHighResToDraw();
+  host_impl_.BuildRasterQueue(&queue, SMOOTHNESS_TAKES_PRIORITY);
+  EXPECT_FALSE(queue.IsEmpty());
+
+  // Get all the tiles that are NOW or SOON and make sure they are ready to
+  // draw.
+  std::vector<Tile*> all_tiles;
+  while (!queue.IsEmpty()) {
+    Tile* tile = queue.Top();
+    if (tile->combined_priority().priority_bin >= TilePriority::EVENTUALLY)
+      break;
+
+    all_tiles.push_back(tile);
+    queue.Pop();
+  }
+
+  tile_manager()->InitializeTilesWithResourcesForTesting(
+      std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
+
+  // Ensure we can activate.
+  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+  EXPECT_TRUE(pending_child_raw->AllTilesRequiredForActivationAreReadyToDraw());
+}
+
 TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   SetupDefaultTrees(gfx::Size(1000, 1000));
 

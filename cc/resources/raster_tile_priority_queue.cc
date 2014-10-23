@@ -17,7 +17,7 @@ class RasterOrderComparator {
       const RasterTilePriorityQueue::PairedPictureLayerQueue* a,
       const RasterTilePriorityQueue::PairedPictureLayerQueue* b) const {
     // Note that in this function, we have to return true if and only if
-    // b is strictly lower priority than a. Note that for the sake of
+    // a is strictly lower priority than b. Note that for the sake of
     // completeness, empty queue is considered to have lowest priority.
     if (a->IsEmpty() || b->IsEmpty())
       return b->IsEmpty() < a->IsEmpty();
@@ -39,6 +39,22 @@ class RasterOrderComparator {
         b_tile->priority_for_tree_priority(tree_priority_);
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
+    // In smoothness mode, we should return pending NOW tiles before active
+    // EVENTUALLY tiles. So if both priorities here are eventually, we need to
+    // check the pending priority.
+    if (prioritize_low_res &&
+        a_priority.priority_bin == TilePriority::EVENTUALLY &&
+        b_priority.priority_bin == TilePriority::EVENTUALLY) {
+      bool a_is_pending_now =
+          a_tile->priority(PENDING_TREE).priority_bin == TilePriority::NOW;
+      bool b_is_pending_now =
+          b_tile->priority(PENDING_TREE).priority_bin == TilePriority::NOW;
+      if (a_is_pending_now || b_is_pending_now)
+        return a_is_pending_now < b_is_pending_now;
+
+      // In case neither one is pending now, fall through.
+    }
+
     // If the bin is the same but the resolution is not, then the order will be
     // determined by whether we prioritize low res or not.
     // TODO(vmpstr): Remove this when TilePriority is no longer a member of Tile
@@ -56,6 +72,7 @@ class RasterOrderComparator {
         return b_priority.resolution == LOW_RESOLUTION;
       return b_priority.resolution == HIGH_RESOLUTION;
     }
+
     return b_priority.IsHigherPriorityThan(a_priority);
   }
 
