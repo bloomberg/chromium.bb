@@ -228,7 +228,7 @@ static void getHeapStats(HeapStats* stats)
 {
     TestGCScope scope(ThreadState::NoHeapPointersOnStack);
     EXPECT_TRUE(scope.allThreadsParked());
-    Heap::getStats(stats);
+    Heap::getStatsForTesting(stats);
 }
 
 #define DEFINE_VISITOR_METHODS(Type)                                       \
@@ -1609,7 +1609,6 @@ TEST(HeapTest, BasicFunctionality)
     if (testPagesAllocated)
         EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
 
-    DynamicallySizedObject* bigAreaRaw = bigArea;
     // Clear the persistent, so that the big area will be garbage collected.
     bigArea.release();
     clearOutOldGarbage(&heapStats);
@@ -1620,17 +1619,6 @@ TEST(HeapTest, BasicFunctionality)
     CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
     if (testPagesAllocated)
         EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
-
-    // Endless loop unless we eventually get the memory back that we just freed.
-    while (true) {
-        Persistent<DynamicallySizedObject>* alloc = new Persistent<DynamicallySizedObject>(DynamicallySizedObject::create(big / 2));
-        slack += 4;
-        persistents[persistentCount++] = alloc;
-        EXPECT_LT(persistentCount, numPersistents);
-        total += big / 2;
-        if (bigAreaRaw == alloc->get())
-            break;
-    }
 
     getHeapStats(&heapStats);
     CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);

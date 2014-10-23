@@ -642,6 +642,7 @@ template<typename Header>
 ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     : m_currentAllocationPoint(0)
     , m_remainingAllocationSize(0)
+    , m_lastRemainingAllocationSize(0)
     , m_firstPage(0)
     , m_firstLargeHeapObject(0)
     , m_firstPageAllocatedDuringSweeping(0)
@@ -679,14 +680,33 @@ void ThreadHeap<Header>::cleanupPages()
 }
 
 template<typename Header>
+void ThreadHeap<Header>::updateRemainingAllocationSize()
+{
+    if (m_lastRemainingAllocationSize > remainingAllocationSize()) {
+        stats().increaseObjectSpace(m_lastRemainingAllocationSize - remainingAllocationSize());
+        m_lastRemainingAllocationSize = remainingAllocationSize();
+    }
+    ASSERT(m_lastRemainingAllocationSize == remainingAllocationSize());
+}
+
+template<typename Header>
 Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
 {
     size_t allocationSize = allocationSizeFromSize(size);
+    ASSERT(allocationSize > remainingAllocationSize());
+    if (allocationSize > blinkPageSize / 2)
+        return allocateLargeObject(allocationSize, gcInfo);
+
+    updateRemainingAllocationSize();
     if (threadState()->shouldGC()) {
         if (threadState()->shouldForceConservativeGC())
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         else
             threadState()->setGCRequested();
+    }
+    if (remainingAllocationSize() > 0) {
+        addToFreeList(currentAllocationPoint(), remainingAllocationSize());
+        setAllocationPoint(0, 0);
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
     return allocate(size, gcInfo);
@@ -717,13 +737,6 @@ template<typename Header>
 void ThreadHeap<Header>::ensureCurrentAllocation(size_t minSize, const GCInfo* gcInfo)
 {
     ASSERT(minSize >= allocationGranularity);
-    if (remainingAllocationSize() >= minSize)
-        return;
-
-    if (remainingAllocationSize() > 0) {
-        addToFreeList(currentAllocationPoint(), remainingAllocationSize());
-        setAllocationPoint(0, 0);
-    }
     if (allocateFromFreeList(minSize))
         return;
     if (coalesce(minSize) && allocateFromFreeList(minSize))
@@ -913,7 +926,7 @@ bool ThreadHeap<Header>::coalesce(size_t minSize)
             ASSERT(basicHeader->size() < blinkPagePayloadSize());
 
             if (basicHeader->isPromptlyFreed()) {
-                stats().decreaseObjectSpace(reinterpret_cast<Header*>(basicHeader)->payloadSize());
+                stats().decreaseObjectSpace(reinterpret_cast<Header*>(basicHeader)->size());
                 size_t size = basicHeader->size();
                 ASSERT(size >= sizeof(Header));
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
@@ -978,6 +991,8 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 #if defined(ADDRESS_SANITIZER)
     allocationSize += allocationGranularity;
 #endif
+
+    updateRemainingAllocationSize();
     if (m_threadState->shouldGC())
         m_threadState->setGCRequested();
     m_threadState->shouldFlushHeapDoesNotContainCache();
@@ -996,7 +1011,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     ASAN_POISON_MEMORY_REGION(largeObject->address() + largeObject->size(), allocationGranularity);
     largeObject->link(&m_firstLargeHeapObject);
     stats().increaseAllocatedSpace(largeObject->size());
-    stats().increaseObjectSpace(largeObject->payloadSize());
+    stats().increaseObjectSpace(largeObject->size());
     return result;
 }
 
@@ -1313,17 +1328,17 @@ bool ThreadHeap<Header>::pagesAllocatedDuringSweepingContains(Address address)
     }
     return false;
 }
+#endif
 
 template<typename Header>
-void ThreadHeap<Header>::getScannedStats(HeapStats& scannedStats)
+void ThreadHeap<Header>::getStatsForTesting(HeapStats& stats)
 {
     ASSERT(!m_firstPageAllocatedDuringSweeping);
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next())
-        page->getStats(scannedStats);
+        page->getStatsForTesting(stats);
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next())
-        current->getStats(scannedStats);
+        current->getStatsForTesting(stats);
 }
-#endif
 
 template<typename Header>
 void ThreadHeap<Header>::sweepNormalPages(HeapStats* stats)
@@ -1358,7 +1373,7 @@ void ThreadHeap<Header>::sweepLargePages(HeapStats* stats)
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current;) {
         if (current->isMarked()) {
             stats->increaseAllocatedSpace(current->size());
-            stats->increaseObjectSpace(current->payloadSize());
+            stats->increaseObjectSpace(current->size());
             current->unmark();
             previousNext = &current->m_next;
             current = current->next();
@@ -1501,15 +1516,16 @@ void HeapPage<Header>::unlink(ThreadHeap<Header>* heap, HeapPage* unused, HeapPa
 }
 
 template<typename Header>
-void HeapPage<Header>::getStats(HeapStats& stats)
+void HeapPage<Header>::getStatsForTesting(HeapStats& stats)
 {
     stats.increaseAllocatedSpace(blinkPageSize);
     Address headerAddress = payload();
     ASSERT(headerAddress != end());
     do {
         Header* header = reinterpret_cast<Header*>(headerAddress);
-        if (!header->isFree())
+        if (!header->isFree()) {
             stats.increaseObjectSpace(header->payloadSize());
+        }
         ASSERT(header->size() < blinkPagePayloadSize());
         headerAddress += header->size();
         ASSERT(headerAddress <= end());
@@ -1573,7 +1589,7 @@ void HeapPage<Header>::sweep(HeapStats* stats, ThreadHeap<Header>* heap)
             heap->addToFreeList(startOfGap, headerAddress - startOfGap);
         header->unmark();
         headerAddress += header->size();
-        stats->increaseObjectSpace(header->payloadSize());
+        stats->increaseObjectSpace(header->size());
         startOfGap = headerAddress;
     }
     if (startOfGap != end())
@@ -1799,7 +1815,7 @@ inline bool HeapPage<FinalizedHeapObjectHeader>::hasVTable(FinalizedHeapObjectHe
 }
 
 template<typename Header>
-void LargeHeapObject<Header>::getStats(HeapStats& stats)
+void LargeHeapObject<Header>::getStatsForTesting(HeapStats& stats)
 {
     stats.increaseAllocatedSpace(size());
     stats.increaseObjectSpace(payloadSize());
@@ -2759,6 +2775,20 @@ void Heap::getStats(HeapStats* stats)
     for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
         HeapStats temp;
         (*it)->getStats(temp);
+        stats->add(&temp);
+    }
+}
+
+void Heap::getStatsForTesting(HeapStats* stats)
+{
+    stats->clear();
+    ASSERT(ThreadState::isAnyThreadInGC());
+    makeConsistentForSweeping();
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
+    for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        HeapStats temp;
+        (*it)->getStatsForTesting(temp);
         stats->add(&temp);
     }
 }

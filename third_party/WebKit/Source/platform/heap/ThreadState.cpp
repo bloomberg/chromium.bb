@@ -902,14 +902,13 @@ BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
 void ThreadState::getStats(HeapStats& stats)
 {
     stats = m_stats;
-#if ENABLE(ASSERT)
-    if (isConsistentForSweeping()) {
-        HeapStats scannedStats;
-        for (int i = 0; i < NumberOfHeaps; i++)
-            m_heaps[i]->getScannedStats(scannedStats);
-        ASSERT(scannedStats == stats);
-    }
-#endif
+}
+
+void ThreadState::getStatsForTesting(HeapStats& stats)
+{
+    ASSERT(isConsistentForSweeping());
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->getStatsForTesting(stats);
 }
 
 bool ThreadState::stopThreads()

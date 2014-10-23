@@ -264,7 +264,7 @@ public:
 
     bool isMarked();
     void unmark();
-    void getStats(HeapStats&);
+    void getStatsForTesting(HeapStats&);
     void mark(Visitor*);
     void finalize();
     void setDeadMark();
@@ -535,7 +535,7 @@ public:
 
     Address end() { return payload() + payloadSize(); }
 
-    void getStats(HeapStats&);
+    void getStatsForTesting(HeapStats&);
     void clearLiveAndMarkDead();
     void sweep(HeapStats*, ThreadHeap<Header>*);
     void clearObjectStartBitMap();
@@ -711,12 +711,12 @@ public:
     virtual void clearLiveAndMarkDead() = 0;
 
     virtual void makeConsistentForSweeping() = 0;
-
 #if ENABLE(ASSERT)
     virtual bool isConsistentForSweeping() = 0;
-
-    virtual void getScannedStats(HeapStats&) = 0;
 #endif
+    virtual void getStatsForTesting(HeapStats&) = 0;
+
+    virtual void updateRemainingAllocationSize() = 0;
 
     virtual void prepareHeapForTermination() = 0;
 
@@ -763,12 +763,12 @@ public:
     virtual void clearLiveAndMarkDead();
 
     virtual void makeConsistentForSweeping();
-
 #if ENABLE(ASSERT)
     virtual bool isConsistentForSweeping();
-
-    virtual void getScannedStats(HeapStats&);
 #endif
+    virtual void getStatsForTesting(HeapStats&);
+
+    virtual void updateRemainingAllocationSize();
 
     ThreadState* threadState() { return m_threadState; }
     HeapStats& stats() { return m_threadState->stats(); }
@@ -803,8 +803,9 @@ private:
     {
         ASSERT(!point || heapPageFromAddress(point));
         ASSERT(size <= HeapPage<Header>::payloadSize());
+        updateRemainingAllocationSize();
         m_currentAllocationPoint = point;
-        m_remainingAllocationSize = size;
+        m_lastRemainingAllocationSize = m_remainingAllocationSize = size;
     }
     void ensureCurrentAllocation(size_t, const GCInfo*);
     bool allocateFromFreeList(size_t);
@@ -823,6 +824,7 @@ private:
 
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
+    size_t m_lastRemainingAllocationSize;
 
     HeapPage<Header>* m_firstPage;
     LargeHeapObject<Header>* m_firstLargeHeapObject;
@@ -946,6 +948,8 @@ public:
     // garbage collector. Should only be called during garbage
     // collection where threads are known to be at safe points.
     static void getStats(HeapStats*);
+
+    static void getStatsForTesting(HeapStats*);
 
     static void getHeapSpaceSize(uint64_t*, uint64_t*);
 
@@ -1363,26 +1367,23 @@ template<typename Header>
 Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
 {
     size_t allocationSize = allocationSizeFromSize(size);
-    bool isLargeObject = allocationSize > blinkPageSize / 2;
-    if (isLargeObject)
-        return allocateLargeObject(allocationSize, gcInfo);
-    if (m_remainingAllocationSize < allocationSize)
-        return outOfLineAllocate(size, gcInfo);
-    Address headerAddress = m_currentAllocationPoint;
-    m_currentAllocationPoint += allocationSize;
-    m_remainingAllocationSize -= allocationSize;
-    Header* header = new (NotNull, headerAddress) Header(allocationSize, gcInfo);
-    size_t payloadSize = allocationSize - sizeof(Header);
-    stats().increaseObjectSpace(payloadSize);
-    Address result = headerAddress + sizeof(*header);
-    ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
-    // Unpoison the memory used for the object (payload).
-    ASAN_UNPOISON_MEMORY_REGION(result, payloadSize);
+    if (LIKELY(allocationSize <= m_remainingAllocationSize)) {
+        Address headerAddress = m_currentAllocationPoint;
+        m_currentAllocationPoint += allocationSize;
+        m_remainingAllocationSize -= allocationSize;
+        Header* header = new (NotNull, headerAddress) Header(allocationSize, gcInfo);
+        Address result = headerAddress + sizeof(*header);
+        ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
+
+        // Unpoison the memory used for the object (payload).
+        ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(Header));
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-    memset(result, 0, payloadSize);
+        memset(result, 0, allocationSize - sizeof(Header));
 #endif
-    ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
-    return result;
+        ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
+        return result;
+    }
+    return outOfLineAllocate(size, gcInfo);
 }
 
 template<typename T, typename HeapTraits>

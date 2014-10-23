@@ -682,6 +682,7 @@ public:
     bool popAndInvokeWeakPointerCallback(Visitor*);
 
     void getStats(HeapStats&);
+    void getStatsForTesting(HeapStats&);
     HeapStats& stats() { return m_stats; }
 
     void setupHeapsForTermination();
