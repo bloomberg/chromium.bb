@@ -70,6 +70,10 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   virtual TurnOffFlowStatus GetTurnOffFlowStatus() const override;
   virtual std::string GetChallenge() const override;
   virtual std::string GetWrappedSecret() const override;
+  virtual void RecordEasySignInOutcome(const std::string& user_id,
+                                       bool success) const override;
+  virtual void RecordPasswordLoginEvent(
+      const std::string& user_id) const override;
   virtual void InitializeInternal() override;
   virtual void ShutdownInternal() override;
   virtual bool IsAllowedInternal() override;

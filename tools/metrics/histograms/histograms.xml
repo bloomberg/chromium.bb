@@ -6134,6 +6134,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.SignIn.LoginEvent" enum="EasyUnlockLoginEvent">
+  <owner>xiaowenx@google.com</owner>
+  <owner>xiyuan@google.com</owner>
+  <summary>
+    Measures the use of Easy sign-in: records whether an Easy sign-in login
+    succeeded or  failed; or if a password fallback was used, the reason why.
+    Recorded upon a login attempt for users who have the Easy sign-in feature
+    enabled.
+  </summary>
+</histogram>
+
 <histogram name="EasyUnlock.StartupTimeFromSuspend" units="milliseconds">
   <owner>joshwoodward@google.com</owner>
   <owner>tengs@chromium.org</owner>
@@ -41355,6 +41366,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="Try out"/>
   <int value="4" label="Enable"/>
   <int value="5" label="Disable"/>
+</enum>
+
+<enum name="EasyUnlockLoginEvent" type="int">
+  <int value="0" label="Easy sign-in success"/>
+  <int value="1" label="Easy sign-in failure"/>
+  <int value="2" label="Password sign-in: No pairing"/>
+  <int value="3" label="Password sign-in: Pairing changed"/>
+  <int value="4" label="Password sign-in: User hardlock"/>
+  <int value="5" label="Password sign-in: Service not active"/>
+  <int value="6" label="Password sign-in: No Bluetooth"/>
+  <int value="7" label="Password sign-in: Bluetooth connecting"/>
+  <int value="8" label="Password sign-in: No phone"/>
+  <int value="9" label="Password sign-in: Phone not authenticated"/>
+  <int value="10" label="Password sign-in: Phone locked"/>
+  <int value="11" label="Password sign-in: Phone not lockable"/>
+  <int value="12" label="Password sign-in: Phone not nearby"/>
+  <int value="13" label="Password sign-in: Phone not supported"/>
+  <int value="14" label="Password sign-in: Phone authenticated"/>
 </enum>
 
 <enum name="EasyUnlockNotificationEvent" type="int">

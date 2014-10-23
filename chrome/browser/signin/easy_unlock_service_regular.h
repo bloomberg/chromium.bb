@@ -43,6 +43,9 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   TurnOffFlowStatus GetTurnOffFlowStatus() const override;
   std::string GetChallenge() const override;
   std::string GetWrappedSecret() const override;
+  void RecordEasySignInOutcome(const std::string& user_id,
+                               bool success) const override;
+  void RecordPasswordLoginEvent(const std::string& user_id) const override;
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() override;

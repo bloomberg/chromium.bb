@@ -79,6 +79,8 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   // Marks the current screenlock state as the one for trial Easy Unlock run.
   void SetTrialRun();
 
+  State state() const { return state_; }
+
  private:
   // ScreenlockBridge::Observer:
   void OnScreenDidLock() override;

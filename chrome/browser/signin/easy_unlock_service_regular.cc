@@ -163,6 +163,17 @@ std::string EasyUnlockServiceRegular::GetWrappedSecret() const {
   return std::string();
 }
 
+void EasyUnlockServiceRegular::RecordEasySignInOutcome(
+    const std::string& user_id,
+    bool success) const {
+  NOTREACHED();
+}
+
+void EasyUnlockServiceRegular::RecordPasswordLoginEvent(
+    const std::string& user_id) const {
+  NOTREACHED();
+}
+
 void EasyUnlockServiceRegular::InitializeInternal() {
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(

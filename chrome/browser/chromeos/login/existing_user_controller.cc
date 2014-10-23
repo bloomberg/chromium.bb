@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -50,7 +51,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/google/core/browser/google_util.h"
@@ -118,6 +118,26 @@ void TransferContextAuthenticationsOnIOThread(
                                    base::Bind(&RefreshPoliciesOnUIThread));
 }
 
+// Record UMA for Easy sign-in outcome.
+void RecordEasySignInOutcome(const std::string& user_id, bool success) {
+  EasyUnlockService* easy_unlock_service =
+      EasyUnlockService::Get(ProfileHelper::GetSigninProfile());
+  if (!easy_unlock_service)
+    return;
+  easy_unlock_service->RecordEasySignInOutcome(user_id, success);
+}
+
+// Record UMA for password login of regular user when Easy sign-in is enabled.
+void RecordPasswordLoginEvent(const UserContext& user_context) {
+  EasyUnlockService* easy_unlock_service =
+      EasyUnlockService::Get(ProfileHelper::GetSigninProfile());
+  if (user_context.GetUserType() == user_manager::USER_TYPE_REGULAR &&
+      user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE &&
+      easy_unlock_service) {
+    easy_unlock_service->RecordPasswordLoginEvent(user_context.GetUserID());
+  }
+}
+
 }  // namespace
 
 // static
@@ -128,6 +148,7 @@ ExistingUserController* ExistingUserController::current_controller_ = NULL;
 
 ExistingUserController::ExistingUserController(LoginDisplayHost* host)
     : auth_status_consumer_(NULL),
+      last_login_attempt_auth_flow_(UserContext::AUTH_FLOW_OFFLINE),
       host_(host),
       login_display_(host_->CreateLoginDisplay(this)),
       num_login_attempts_(0),
@@ -426,6 +447,8 @@ void ExistingUserController::PerformLogin(
 
   BootTimesLoader::Get()->RecordLoginAttempted();
 
+  last_login_attempt_auth_flow_ = user_context.GetAuthFlow();
+
   // Use the same LoginPerformer for subsequent login as it has state
   // such as Authenticator instance.
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
@@ -439,6 +462,7 @@ void ExistingUserController::PerformLogin(
     login_performer_->LoginAsSupervisedUser(user_context);
   } else {
     login_performer_->PerformLogin(user_context, auth_mode);
+    RecordPasswordLoginEvent(user_context);
   }
   SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
@@ -726,6 +750,10 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
 
   PerformLoginFinishedActions(false /* don't start public session timer */);
 
+  // TODO(xiyuan): Move into EasyUnlockUserLoginFlow.
+  if (last_login_attempt_auth_flow_ == UserContext::AUTH_FLOW_EASY_UNLOCK)
+    RecordEasySignInOutcome(last_login_attempt_username_, false);
+
   if (ChromeUserManager::Get()
           ->GetUserFlow(last_login_attempt_username_)
           ->HandleLoginFailure(failure)) {
@@ -795,6 +823,13 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   ChromeUserManager::Get()
       ->GetUserFlow(user_context.GetUserID())
       ->HandleLoginSuccess(user_context);
+
+  // TODO(xiyuan): Move into EasyUnlockUserLoginFlow.
+  if (last_login_attempt_auth_flow_ == UserContext::AUTH_FLOW_EASY_UNLOCK) {
+    DCHECK_EQ(last_login_attempt_username_, user_context.GetUserID());
+    DCHECK_EQ(last_login_attempt_auth_flow_, user_context.GetAuthFlow());
+    RecordEasySignInOutcome(last_login_attempt_username_, true);
+  }
 
   StopPublicSessionAutoLoginTimer();
 

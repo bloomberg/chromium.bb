@@ -107,6 +107,13 @@ class EasyUnlockService : public KeyedService {
   // for the user, returns an empty string.
   virtual std::string GetWrappedSecret() const = 0;
 
+  // Records metrics for Easy sign-in outcome for the given user.
+  virtual void RecordEasySignInOutcome(const std::string& user_id,
+                                       bool success) const = 0;
+
+  // Records metrics for password based flow for the given user.
+  virtual void RecordPasswordLoginEvent(const std::string& user_id) const = 0;
+
   // Whether easy unlock is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
   // permitted either the flag is enabled or its field trial is enabled.
@@ -200,6 +207,10 @@ class EasyUnlockService : public KeyedService {
   // Updates |screenlock_state_handler_|'s hardlocked state.
   void SetScreenlockHardlockedState(
       EasyUnlockScreenlockStateHandler::HardlockState state);
+
+  const EasyUnlockScreenlockStateHandler* screenlock_state_handler() const {
+    return screenlock_state_handler_.get();
+  }
 
  private:
   // A class to detect whether a bluetooth adapter is present.

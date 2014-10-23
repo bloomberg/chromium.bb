@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/login/auth/login_performer.h"
+#include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -36,7 +37,6 @@ namespace chromeos {
 
 class CrosSettings;
 class LoginDisplayHost;
-class UserContext;
 
 namespace login {
 class NetworkStateHelper;
@@ -256,6 +256,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Username of the last login attempt.
   std::string last_login_attempt_username_;
+
+  // Auth flow of the last login attempt.
+  UserContext::AuthFlow last_login_attempt_auth_flow_;
 
   // OOBE/login display host.
   LoginDisplayHost* host_;
