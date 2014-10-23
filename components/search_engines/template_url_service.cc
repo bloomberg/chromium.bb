@@ -892,17 +892,38 @@ void TemplateURLService::OnWebDataServiceRequestDone(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 4"));
 
     PatchMissingSyncGUIDs(&template_urls);
+
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile41(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 41"));
+
     SetTemplateURLs(&template_urls);
+
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile42(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 42"));
 
     // This initializes provider_map_ which should be done before
     // calling UpdateKeywordSearchTermsForURL.
     // This also calls NotifyObservers.
     ChangeToLoadedState();
 
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile43(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 43"));
+
     // Index any visits that occurred before we finished loading.
     for (size_t i = 0; i < visits_to_add_.size(); ++i)
       UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
     visits_to_add_.clear();
+
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile44(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 44"));
 
     if (new_resource_keyword_version)
       web_data_service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
