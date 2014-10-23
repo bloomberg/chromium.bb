@@ -6,6 +6,7 @@
 #include "public/web/WebFrame.h"
 
 #include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "platform/UserGestureIndicator.h"
@@ -75,10 +76,14 @@ bool WebFrame::swap(WebFrame* frame)
     // increments of connected subframes.
     FrameOwner* owner = oldFrame->owner();
     oldFrame->disconnectOwnerElement();
-    if (toCoreFrame(frame)) {
-        ASSERT(owner == toCoreFrame(frame)->owner());
-        if (owner->isLocal())
-            toHTMLFrameOwnerElement(owner)->setContentFrame(*toCoreFrame(frame));
+    if (Frame* newFrame = toCoreFrame(frame)) {
+        ASSERT(owner == newFrame->owner());
+        if (owner->isLocal()) {
+            HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(owner);
+            ownerElement->setContentFrame(*newFrame);
+            if (newFrame->isLocalFrame())
+                ownerElement->setWidget(toLocalFrame(newFrame)->view());
+        }
     } else if (frame->isWebLocalFrame()) {
         toWebLocalFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name(), nullAtom);
     } else {

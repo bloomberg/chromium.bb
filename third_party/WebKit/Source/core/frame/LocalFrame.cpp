@@ -183,7 +183,11 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
     if (ownerRenderer()) {
         HTMLFrameOwnerElement* owner = deprecatedLocalOwner();
         ASSERT(owner);
-        owner->setWidget(frameView);
+        // FIXME: OOPI might lead to us temporarily lying to a frame and telling it
+        // that it's owned by a FrameOwner that knows nothing about it. If we're
+        // lying to this frame, don't let it clobber the existing widget.
+        if (owner->contentFrame() == this)
+            owner->setWidget(frameView);
     }
 
     if (HTMLFrameOwnerElement* owner = deprecatedLocalOwner())
