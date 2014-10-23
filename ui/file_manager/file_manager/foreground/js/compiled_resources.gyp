@@ -104,6 +104,7 @@
           '<(CLOSURE_DIR)/externs/file_manager_private.js',
           '<(CLOSURE_DIR)/externs/metrics_private.js',
           '../../common/js/externs.js',
+          '../../../externs/html_menu_item_element.js',
         ],
       },
       'includes': [

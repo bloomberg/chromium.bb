@@ -1377,10 +1377,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogContainer_ = /** @type {!HTMLDivElement} */
         (this.dialogDom_.querySelector('.dialog-container'));
 
-    this.syncButton = /** @type {!HTMLElement} */
-        (this.dialogDom_.querySelector('#gear-menu-drive-sync-settings'));
-    this.hostedButton = /** @type {!HTMLElement} */
-        (this.dialogDom_.querySelector('#gear-menu-drive-hosted-settings'));
+    this.syncButton = /** @type {!HTMLMenuItemElement} */
+        (queryRequiredElement(this.dialogDom_,
+                              '#gear-menu-drive-sync-settings'));
+    this.hostedButton = /** @type {!HTMLMenuItemElement} */
+        (queryRequiredElement(this.dialogDom_,
+                             '#gear-menu-drive-hosted-settings'));
 
     this.ui_.toggleViewButton.addEventListener('click',
         this.onToggleViewButtonClick_.bind(this));
@@ -1398,8 +1400,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    this.defaultActionMenuItem_ = /** @type {HTMLElement} */
-        (this.dialogDom_.querySelector('#default-action'));
+    this.defaultActionMenuItem_ = /** @type {!HTMLMenuItemElement} */
+        (queryRequiredElement(this.dialogDom_, '#default-action'));
 
     this.openWithCommand_ = /** @type {cr.ui.Command} */
         (this.dialogDom_.querySelector('#open-with'));
