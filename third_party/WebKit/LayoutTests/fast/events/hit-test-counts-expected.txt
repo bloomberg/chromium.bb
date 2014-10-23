@@ -18,7 +18,7 @@ TouchMove: 0
 TouchEnd: 0
 GestureTapDown: 2
 GestureShowPress: 2
-GestureTap: 5
+GestureTap: 4
 GestureScrollBegin: 1
 GestureTapCancel: 1
 GestureScrollUpdate: 0
@@ -36,7 +36,7 @@ TouchMove: 0 0 0
 TouchEnd: 0 0 0
 GestureTapDown: 1 1 2
 GestureShowPress: 1 1 2
-GestureTap: 2 2 5
+GestureTap: 1 1 4
 GestureScrollBegin: 1 1 1
 GestureTapCancel: 1 1 1
 GestureScrollUpdate: 0 0 0
@@ -59,5 +59,23 @@ GestureScrollBegin: 1 1 0
 GestureTapCancel: 1 1 0
 GestureScrollUpdate: 0 0 0
 GestureScrollEnd: 0 0 0
+
+Event on a simple div (desktop viewport)
+---------------------
+Initial: 0
+MouseMove: 1
+MouseDown: 3
+MouseUp: 1
+Wheel: 1
+TouchStart: 1
+TouchMove: 0
+TouchEnd: 0
+GestureTapDown: 2
+GestureShowPress: 2
+GestureTap: 5
+GestureScrollBegin: 1
+GestureTapCancel: 1
+GestureScrollUpdate: 0
+GestureScrollEnd: 0
 
 

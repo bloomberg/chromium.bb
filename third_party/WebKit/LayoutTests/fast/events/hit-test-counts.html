@@ -1,5 +1,10 @@
 <!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
+html {
+  font-family: Ahem;
+  font-size: 10px;
+}
 #testArea {
   position: absolute;
   right: 50px;
@@ -21,6 +26,11 @@
 </div>
 <script src="../../resources/js-test.js"></script>
 <script>
+if (window.internals) {
+    window.internals.settings.setViewportEnabled(true);
+    window.internals.settings.setMockScrollbarsEnabled(true);
+}
+
 description("Count how many hit tests are required for various event scenarios.  Hit tests can be expensive and it's often tempting to add more.  These values should only ever be changed to go down, not up.");
 
 function hitTestCountDelta(doc)
@@ -127,6 +137,13 @@ onload = function() {
     debug('---------------------');
     var rect = frame.getBoundingClientRect();
     sendEvents(rect.left + 3, rect.top + 3, [document, doc2, doc3]);
+    debug('');
+
+    window.internals.settings.setViewportEnabled(false);
+    debug('Event on a simple div (desktop viewport)');
+    debug('---------------------');
+    var point = centerOf(document.getElementById('target'));
+    sendEvents(point.x, point.y, [document]);
     debug('');
 }
 </script>
