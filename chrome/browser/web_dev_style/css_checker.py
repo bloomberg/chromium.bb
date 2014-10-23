@@ -93,10 +93,10 @@ class CSSChecker(object):
     def close_brace_on_new_line(line):
       # Ignore single frames in a @keyframe, i.e. 0% { margin: 50px; }
       frame_reg = re.compile(r"""
-          \s*\d+%\s*{       # 50% {
-          \s*[\w-]+:        # rule:
-          (\s*[\w-]+)+\s*;  # value;
-          \s*}\s*           # }""",
+          \s*(from|to|\d+%)\s*{  # 50% {
+          \s*[\w-]+:             # rule:
+          (\s*[\w-]+)+\s*;       # value;
+          \s*}\s*                # }""",
           re.VERBOSE)
       return ('}' in line and re.search(r'[^ }]', line) and
               not frame_reg.match(line))

@@ -594,7 +594,8 @@ blah /* hey! */
   }}
 
 @-webkit-keyframe blah {
-  100% { height: -500px 0; }
+  from { height: 0; }
+  100% { height: 500px; }
 }
 
 #rule {
