@@ -32,8 +32,7 @@ extern const char kHotwordFieldTrialDisabledGroupName[];
 
 // Provides an interface for the Hotword component that does voice triggered
 // search.
-class HotwordService : public content::NotificationObserver,
-                       public extensions::ExtensionRegistryObserver,
+class HotwordService : public extensions::ExtensionRegistryObserver,
                        public KeyedService {
  public:
   // Returns true if the hotword supports the current system language.
@@ -44,11 +43,6 @@ class HotwordService : public content::NotificationObserver,
 
   explicit HotwordService(Profile* profile);
   ~HotwordService() override;
-
-  // Overridden from content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Overridden from ExtensionRegisterObserver:
   void OnExtensionInstalled(content::BrowserContext* browser_context,

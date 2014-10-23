@@ -215,10 +215,6 @@ HotwordService::HotwordService(Profile* profile)
       base::Bind(&HotwordService::OnHotwordSearchEnabledChanged,
                  base::Unretained(this)));
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                 content::NotificationService::AllSources());
-
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE,
       base::Bind(base::IgnoreResult(
@@ -234,25 +230,6 @@ HotwordService::HotwordService(Profile* profile)
 }
 
 HotwordService::~HotwordService() {
-}
-
-void HotwordService::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
-    // The microphone monitor must be initialized as the page is loading
-    // so that the state of the microphone is available when the page
-    // loads. The Ok Google Hotword setting will display an error if there
-    // is no microphone but this information will not be up-to-date unless
-    // the monitor had already been started. Furthermore, the pop up to
-    // opt in to hotwording won't be available if it thinks there is no
-    // microphone. There is no hard guarantee that the monitor will actually
-    // be up by the time it's needed, but this is the best we can do without
-    // starting it at start up which slows down start up too much.
-    // The content/media for microphone uses the same observer design and
-    // makes use of the same audio device monitor.
-    HotwordServiceFactory::GetInstance()->UpdateMicrophoneState();
-  }
 }
 
 void HotwordService::OnExtensionUninstalled(
@@ -417,10 +394,20 @@ bool HotwordService::IsServiceAvailable() {
   RecordErrorMetrics(error_message_);
 
   // Determine if the proper audio capabilities exist.
-  bool audio_capture_allowed =
-      profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed);
-  if (!audio_capture_allowed || !HotwordServiceFactory::IsMicrophoneAvailable())
-    error_message_ = IDS_HOTWORD_MICROPHONE_ERROR_MESSAGE;
+  // The first time this is called, it probably won't return in time, but that's
+  // why it won't be included in the error calculation (i.e., the call to
+  // IsAudioDeviceStateUpdated()). However, this use case is rare and typically
+  // the devices will be initialized by the time a user goes to settings.
+  bool audio_device_state_updated =
+      HotwordServiceFactory::IsAudioDeviceStateUpdated();
+  HotwordServiceFactory::GetInstance()->UpdateMicrophoneState();
+  if (audio_device_state_updated) {
+    bool audio_capture_allowed =
+        profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed);
+    if (!audio_capture_allowed ||
+        !HotwordServiceFactory::IsMicrophoneAvailable())
+      error_message_ = IDS_HOTWORD_MICROPHONE_ERROR_MESSAGE;
+  }
 
   return (error_message_ == 0) && IsHotwordAllowed();
 }

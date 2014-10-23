@@ -52,11 +52,17 @@ bool HotwordServiceFactory::IsMicrophoneAvailable() {
   return GetInstance()->microphone_available();
 }
 
+// static
+bool HotwordServiceFactory::IsAudioDeviceStateUpdated() {
+  return GetInstance()->audio_device_state_updated();
+}
+
 HotwordServiceFactory::HotwordServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "HotwordService",
         BrowserContextDependencyManager::GetInstance()),
-      microphone_available_(false) {
+      microphone_available_(false),
+      audio_device_state_updated_(false) {
   // No dependencies.
 
   // Register with the device observer list to update the microphone
@@ -77,19 +83,13 @@ void HotwordServiceFactory::InitializeMicrophoneObserver() {
 void HotwordServiceFactory::OnUpdateAudioDevices(
     const content::MediaStreamDevices& devices) {
   microphone_available_ = !devices.empty();
+  audio_device_state_updated_ = true;
 }
 
 void HotwordServiceFactory::UpdateMicrophoneState() {
   // In order to trigger the monitor, just call getAudioCaptureDevices.
   content::MediaStreamDevices devices =
-      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioCaptureDevices();
-
-  // If the monitor had not previously been started, there may be 0 devices
-  // even if that is not accurate. However, we can update the microphone
-  // availability state now. Either the number of devices will be correct or
-  // we know that the call above will start the monitor and the microphone
-  // state will be updated very soon and call OnUpdateAudioDevices.
-  OnUpdateAudioDevices(devices);
+    MediaCaptureDevicesDispatcher::GetInstance()->GetAudioCaptureDevices();
 }
 
 void HotwordServiceFactory::RegisterProfilePrefs(

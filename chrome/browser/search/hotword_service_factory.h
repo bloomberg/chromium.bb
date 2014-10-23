@@ -35,6 +35,11 @@ class HotwordServiceFactory : public MediaCaptureDevicesDispatcher::Observer,
   // is browser (not profile) specific, it resides in the factory.
   static bool IsMicrophoneAvailable();
 
+  // Returns whether the state of the audio devices has been updated.
+  // Essentially it indicates the validity of the return value from
+  // IsMicrophoneAvailable().
+  static bool IsAudioDeviceStateUpdated();
+
   // Overridden from MediaCaptureDevicesDispatcher::Observer
   void OnUpdateAudioDevices(
       const content::MediaStreamDevices& devices) override;
@@ -66,6 +71,13 @@ class HotwordServiceFactory : public MediaCaptureDevicesDispatcher::Observer,
   bool microphone_available() { return microphone_available_; }
 
   bool microphone_available_;
+
+  // Indicates if the check for audio devices has been run such that it can be
+  // included in the error checking. Audio checking is not done immediately
+  // upon start up because of the negative impact on performance.
+  bool audio_device_state_updated_;
+
+  bool audio_device_state_updated() { return audio_device_state_updated_; }
 
   DISALLOW_COPY_AND_ASSIGN(HotwordServiceFactory);
 };
