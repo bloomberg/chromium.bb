@@ -387,10 +387,13 @@
       # -fsanitize=address only works with clang, but asan=1 implies clang=1
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/addresssanitizer
       'asan%': 0,
+      'asan_blacklist%': '<(PRODUCT_DIR)/../../tools/memory/asan/blacklist.txt',
       # Enable coverage gathering instrumentation in ASan. This flag also
       # controls coverage granularity (1 for function-level coverage, 2 for
       # block-level coverage).
       'asan_coverage%': 0,
+      # Enable intra-object-overflow detection in ASan (experimental).
+      'asan_field_padding%': 0,
 
       # Enable Chromium overrides of the default configurations for various
       # dynamic tools (like ASan).
@@ -1120,7 +1123,9 @@
     'clang_use_chrome_plugins%': '<(clang_use_chrome_plugins)',
     'mac_want_real_dsym%': '<(mac_want_real_dsym)',
     'asan%': '<(asan)',
+    'asan_blacklist%': '<(asan_blacklist)',
     'asan_coverage%': '<(asan_coverage)',
+    'asan_field_padding%': '<(asan_field_padding)',
     'use_sanitizer_options%': '<(use_sanitizer_options)',
     'syzyasan%': '<(syzyasan)',
     'syzygy_optimize%': '<(syzygy_optimize)',
@@ -4112,6 +4117,7 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=address',
+                  '-fsanitize-blacklist=<(asan_blacklist)',
                 ],
                 'ldflags': [
                   '-fsanitize=address',
@@ -4169,6 +4175,15 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-mllvm -asan-coverage=<(asan_coverage)',
+                ],
+              }],
+            ],
+          }],
+          ['asan_field_padding!=0', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fsanitize-address-field-padding=<(asan_field_padding)',
                 ],
               }],
             ],
