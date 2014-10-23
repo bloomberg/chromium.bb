@@ -826,15 +826,6 @@ crbug.com/350829 [ Win Debug ] virtual/threaded/animations/missing-keyframe-prop
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/duplicated-keyframes-name-unprefixed-03.html [ Timeout Pass ]
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/keyframes-unprefixed-03.html [ Timeout Pass ]
 
-crbug.com/401814 svg/W3C-SVG-1.1/pservers-grad-06-b.svg [ NeedsRebaseline ]
-crbug.com/401814 svg/custom/nested-pattern-boundingBoxModeContent.svg [ NeedsRebaseline ]
-crbug.com/401814 svg/custom/non-scaling-stroke.svg [ NeedsRebaseline ]
-crbug.com/401814 svg/custom/pattern-scaled-pattern-space.svg [ NeedsRebaseline ]
-crbug.com/401814 svg/custom/pattern-skew-transformed.svg [ NeedsRebaseline ]
-crbug.com/401814 svg/custom/pattern-with-transformation.svg [ NeedsRebaseline ]
-crbug.com/401814 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
-crbug.com/401814 svg/transforms/text-with-pattern-with-svg-transform.svg [ NeedsRebaseline ]
-
 crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
