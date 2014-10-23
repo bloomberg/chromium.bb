@@ -194,7 +194,7 @@ static bool blockIsRowOfLinks(const RenderBlock* block)
 
     while (renderer) {
         if (!isPotentialClusterRoot(renderer)) {
-            if (renderer->isText() && toRenderText(renderer)->text().impl()->stripWhiteSpace()->length() > 3)
+            if (renderer->isText() && toRenderText(renderer)->text().stripWhiteSpace().length() > 3)
                 return false;
             if (!renderer->isInline() || renderer->isBR())
                 return false;
