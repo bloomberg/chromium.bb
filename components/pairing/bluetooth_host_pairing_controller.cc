@@ -445,6 +445,11 @@ void BluetoothHostPairingController::KeysEntered(
 void BluetoothHostPairingController::ConfirmPasskey(
     device::BluetoothDevice* device,
     uint32 passkey) {
+  // If a new connection is occurring, reset the stage.  This can occur if the
+  // pairing times out, or a new controller connects.
+  if (current_stage_ == STAGE_WAITING_FOR_CODE_CONFIRMATION)
+    ChangeStage(STAGE_WAITING_FOR_CONTROLLER);
+
   confirmation_code_ = base::StringPrintf("%06d", passkey);
   device->ConfirmPairing();
   ChangeStage(STAGE_WAITING_FOR_CODE_CONFIRMATION);
