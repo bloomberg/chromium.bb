@@ -80,12 +80,6 @@ COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
 test_input_directory = os.path.join(source_path, 'bindings', 'tests', 'idls')
 reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
 
-PLY_LEX_YACC_FILES = frozenset([
-    'lextab.py',  # PLY lex
-    'lextab.pyc',
-    'parsetab.pickle',  # PLY yacc
-])
-
 @contextmanager
 def TemporaryDirectory():
     """Wrapper for tempfile.mkdtemp() so it's usable with 'with' statement.
@@ -140,7 +134,7 @@ def generate_interface_dependencies(output_directory):
     # In order to allow test IDL files to override the production IDL files if
     # they have the same interface name, process the test IDL files after the
     # non-test IDL files.
-    reader = IdlReader(outputdir=output_directory)
+    reader = IdlReader()
     for idl_path_list in (non_test_idl_paths, test_idl_paths):
         for idl_path in idl_path_list:
             if os.path.basename(idl_path) in NON_BLINK_IDL_FILES:
@@ -183,11 +177,7 @@ def bindings_tests(output_directory, verbose):
         return executive.run_command(cmd, error_handler=lambda x: None)
 
     def is_cache_file(filename):
-        if filename in PLY_LEX_YACC_FILES:
-            return True
-        if filename.endswith('.cache'):  # Jinja
-            return True
-        return False
+        return filename.endswith('.cache')
 
     def delete_cache_files():
         # FIXME: Instead of deleting cache files, don't generate them.

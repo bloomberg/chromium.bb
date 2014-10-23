@@ -86,7 +86,7 @@ class IdlCompiler(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, output_directory, cache_directory='',
+    def __init__(self, output_directory, cache_directory=None,
                  code_generator=None, interfaces_info=None,
                  interfaces_info_filename='', only_if_changed=False,
                  target_component=None):
@@ -97,7 +97,6 @@ class IdlCompiler(object):
                 (avoids auxiliary file in run-bindings-tests)
             interfaces_info_file: filename of pickled interfaces_info
         """
-        cache_directory = cache_directory or output_directory
         self.cache_directory = cache_directory
         self.code_generator = code_generator
         if interfaces_info_filename:

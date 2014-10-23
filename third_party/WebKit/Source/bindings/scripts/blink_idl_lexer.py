@@ -110,6 +110,10 @@ class BlinkIDLLexer(IDLLexer):
                     except OSError:
                         pass
 
+            lextab = LEXTAB
+        else:
+            lextab = None
+
         IDLLexer.__init__(self)
         # Overrides to parent class
         self._RemoveTokens(REMOVE_TOKENS)
@@ -120,7 +124,7 @@ class BlinkIDLLexer(IDLLexer):
         self._lexobj = lex.lex(object=self,
                                debug=debug,
                                optimize=optimize,
-                               lextab=LEXTAB,
+                               lextab=lextab,
                                outputdir=outputdir)
 
 
