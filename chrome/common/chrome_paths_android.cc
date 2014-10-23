@@ -51,11 +51,9 @@ bool GetUserVideosDirectory(base::FilePath* result) {
 }
 
 bool ProcessNeedsProfileDir(const std::string& process_type) {
-  // SELinux prohibits accessing the data directory for isolated services.
-  if (process_type == switches::kRendererProcess)
-    return false;
-
-  return true;
+  // SELinux prohibits accessing the data directory from isolated services. Only
+  // the browser (empty process type) should access the profile directory.
+  return process_type.empty();
 }
 
 }  // namespace chrome
