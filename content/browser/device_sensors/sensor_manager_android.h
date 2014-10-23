@@ -86,6 +86,7 @@ class CONTENT_EXPORT SensorManagerAndroid {
   void ClearInternalMotionBuffers();
 
   void SetOrientationBufferReadyStatus(bool ready);
+  bool isUsingBackupSensorsForOrientation();
 
   // The Java provider of sensors info.
   base::android::ScopedJavaGlobalRef<jobject> device_sensors_;
@@ -101,6 +102,8 @@ class CONTENT_EXPORT SensorManagerAndroid {
   base::Lock light_buffer_lock_;
   base::Lock motion_buffer_lock_;
   base::Lock orientation_buffer_lock_;
+
+  bool is_using_backup_sensors_for_orientation_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorManagerAndroid);
 };

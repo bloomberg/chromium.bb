@@ -31,7 +31,8 @@ SensorManagerAndroid::SensorManagerAndroid()
       device_orientation_buffer_(NULL),
       is_light_buffer_ready_(false),
       is_motion_buffer_ready_(false),
-      is_orientation_buffer_ready_(false) {
+      is_orientation_buffer_ready_(false),
+      is_using_backup_sensors_for_orientation_(false) {
   memset(received_motion_data_, 0, sizeof(received_motion_data_));
   device_sensors_.Reset(Java_DeviceSensors_getInstance(
       AttachCurrentThread(), base::android::GetApplicationContext()));
@@ -67,7 +68,7 @@ void SensorManagerAndroid::GotOrientation(
 
   if (!is_orientation_buffer_ready_) {
     SetOrientationBufferReadyStatus(true);
-    updateRotationVectorHistogram(true);
+    updateRotationVectorHistogram(!is_using_backup_sensors_for_orientation_);
   }
 }
 
@@ -173,6 +174,11 @@ int SensorManagerAndroid::GetNumberActiveDeviceMotionSensors() {
       AttachCurrentThread(), device_sensors_.obj());
 }
 
+bool SensorManagerAndroid::isUsingBackupSensorsForOrientation() {
+  DCHECK(!device_sensors_.is_null());
+  return Java_DeviceSensors_isUsingBackupSensorsForOrientation(
+      AttachCurrentThread(), device_sensors_.obj());
+}
 
 // ----- Shared memory API methods
 
@@ -308,6 +314,9 @@ bool SensorManagerAndroid::StartFetchingDeviceOrientationData(
 
   if (!success)
     updateRotationVectorHistogram(false);
+  else
+    is_using_backup_sensors_for_orientation_ =
+        isUsingBackupSensorsForOrientation();
 
   return success;
 }

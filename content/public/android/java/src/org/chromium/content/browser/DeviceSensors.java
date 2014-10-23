@@ -49,6 +49,12 @@ class DeviceSensors implements SensorEventListener {
     // The lock to access the mNativePtr.
     private final Object mNativePtrLock = new Object();
 
+    // The acceleration vector including gravity expressed in the body frame.
+    private float[] mAccelerationIncludingGravityVector;
+
+    // The geomagnetic vector expressed in the body frame.
+    private float[] mMagneticFieldVector;
+
     // Holds a shortened version of the rotation vector for compatibility purposes.
     private float[] mTruncatedRotationVector;
 
@@ -67,9 +73,12 @@ class DeviceSensors implements SensorEventListener {
     static final int DEVICE_MOTION = 1;
     static final int DEVICE_LIGHT = 2;
 
-    static final Set<Integer> DEVICE_ORIENTATION_SENSORS = CollectionUtil.newHashSet(
+    static final Set<Integer> DEVICE_ORIENTATION_DEFAULT_SENSORS = CollectionUtil.newHashSet(
             Sensor.TYPE_ROTATION_VECTOR);
-
+    // Backup sensors are used when Sensor.TYPE_ROTATION_VECTOR is not available.
+    static final Set<Integer> DEVICE_ORIENTATION_BACKUP_SENSORS = CollectionUtil.newHashSet(
+            Sensor.TYPE_ACCELEROMETER,
+            Sensor.TYPE_MAGNETIC_FIELD);
     static final Set<Integer> DEVICE_MOTION_SENSORS = CollectionUtil.newHashSet(
             Sensor.TYPE_ACCELEROMETER,
             Sensor.TYPE_LINEAR_ACCELERATION,
@@ -79,9 +88,11 @@ class DeviceSensors implements SensorEventListener {
 
     @VisibleForTesting
     final Set<Integer> mActiveSensors = new HashSet<Integer>();
+    Set<Integer> mDeviceOrientationSensors = DEVICE_ORIENTATION_DEFAULT_SENSORS;
     boolean mDeviceLightIsActive = false;
     boolean mDeviceMotionIsActive = false;
     boolean mDeviceOrientationIsActive = false;
+    boolean mUseBackupOrientationSensors = false;
 
     protected DeviceSensors(Context context) {
         mAppContext = context.getApplicationContext();
@@ -104,8 +115,14 @@ class DeviceSensors implements SensorEventListener {
         synchronized (mNativePtrLock) {
             switch (eventType) {
                 case DEVICE_ORIENTATION:
-                    success = registerSensors(DEVICE_ORIENTATION_SENSORS, rateInMicroseconds,
-                        true);
+                    success = registerSensors(mDeviceOrientationSensors, rateInMicroseconds,
+                            true);
+                    if (!success) {
+                        mDeviceOrientationSensors = DEVICE_ORIENTATION_BACKUP_SENSORS;
+                        success = registerSensors(mDeviceOrientationSensors, rateInMicroseconds,
+                                true);
+                        mUseBackupOrientationSensors = success;
+                    }
                     break;
                 case DEVICE_MOTION:
                     // note: device motion spec does not require all sensors to be available
@@ -133,6 +150,11 @@ class DeviceSensors implements SensorEventListener {
         return DEVICE_MOTION_SENSORS.size() - deviceMotionSensors.size();
     }
 
+    @CalledByNative
+    public boolean isUsingBackupSensorsForOrientation() {
+        return mUseBackupOrientationSensors;
+    }
+
     /**
      * Stop listening to sensors for a given event type. Ensures that sensors are not disabled
      * if they are still in use by a different event type.
@@ -157,7 +179,7 @@ class DeviceSensors implements SensorEventListener {
                     break;
                 case DEVICE_MOTION:
                     if (mDeviceOrientationIsActive) {
-                        sensorsToRemainActive.addAll(DEVICE_ORIENTATION_SENSORS);
+                        sensorsToRemainActive.addAll(mDeviceOrientationSensors);
                     }
                     if (mDeviceLightIsActive) {
                         sensorsToRemainActive.addAll(DEVICE_LIGHT_SENSORS);
@@ -168,7 +190,7 @@ class DeviceSensors implements SensorEventListener {
                         sensorsToRemainActive.addAll(DEVICE_MOTION_SENSORS);
                     }
                     if (mDeviceOrientationIsActive) {
-                        sensorsToRemainActive.addAll(DEVICE_ORIENTATION_SENSORS);
+                        sensorsToRemainActive.addAll(mDeviceOrientationSensors);
                     }
                     break;
                 default:
@@ -203,6 +225,9 @@ class DeviceSensors implements SensorEventListener {
                 if (mDeviceMotionIsActive) {
                     gotAccelerationIncludingGravity(values[0], values[1], values[2]);
                 }
+                if (mDeviceOrientationIsActive && mUseBackupOrientationSensors) {
+                    getOrientationFromGeomagneticVectors(values, mMagneticFieldVector);
+                }
                 break;
             case Sensor.TYPE_LINEAR_ACCELERATION:
                 if (mDeviceMotionIsActive) {
@@ -229,6 +254,15 @@ class DeviceSensors implements SensorEventListener {
                     } else {
                         getOrientationFromRotationVector(values);
                     }
+                }
+                break;
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                if (mDeviceOrientationIsActive && mUseBackupOrientationSensors) {
+                    if (mMagneticFieldVector == null) {
+                        mMagneticFieldVector = new float[3];
+                    }
+                    System.arraycopy(values, 0, mMagneticFieldVector, 0,
+                            mMagneticFieldVector.length);
                 }
                 break;
             case Sensor.TYPE_LIGHT:
@@ -329,6 +363,23 @@ class DeviceSensors implements SensorEventListener {
     private void getOrientationFromRotationVector(float[] rotationVector) {
         float[] deviceRotationMatrix = new float[9];
         SensorManager.getRotationMatrixFromVector(deviceRotationMatrix, rotationVector);
+
+        double[] rotationAngles = new double[3];
+        computeDeviceOrientationFromRotationMatrix(deviceRotationMatrix, rotationAngles);
+
+        gotOrientation(Math.toDegrees(rotationAngles[0]),
+                       Math.toDegrees(rotationAngles[1]),
+                       Math.toDegrees(rotationAngles[2]));
+    }
+
+    private void getOrientationFromGeomagneticVectors(float[] acceleration, float[] magnetic) {
+        float[] deviceRotationMatrix = new float[9];
+        if (acceleration == null || magnetic == null) {
+            return;
+        }
+        if (!SensorManager.getRotationMatrix(deviceRotationMatrix, null, acceleration, magnetic)) {
+            return;
+        }
 
         double[] rotationAngles = new double[3];
         computeDeviceOrientationFromRotationMatrix(deviceRotationMatrix, rotationAngles);
