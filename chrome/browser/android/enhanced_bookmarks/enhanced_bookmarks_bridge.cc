@@ -43,7 +43,7 @@ void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
 ScopedJavaLocalRef<jstring> EnhancedBookmarksBridge::GetBookmarkDescription(
     JNIEnv* env, jobject obj, jlong id, jint type) {
   DCHECK(bookmark_model_->loaded());
-  DCHECK_EQ(type, BookmarkType::NORMAL);
+  DCHECK_EQ(BookmarkType::BOOKMARK_TYPE_NORMAL, type);
 
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
       bookmark_model_, static_cast<int64>(id));
@@ -60,7 +60,7 @@ void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
                                                      jint type,
                                                      jstring description) {
   DCHECK(bookmark_model_->loaded());
-  DCHECK_EQ(type, BookmarkType::NORMAL);
+  DCHECK_EQ(type, BookmarkType::BOOKMARK_TYPE_NORMAL);
 
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
       bookmark_model_, static_cast<int64>(id));

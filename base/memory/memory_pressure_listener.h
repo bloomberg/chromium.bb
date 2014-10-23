@@ -49,10 +49,17 @@ namespace base {
 //
 class BASE_EXPORT MemoryPressureListener {
  public:
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base
   enum MemoryPressureLevel {
-#define DEFINE_MEMORY_PRESSURE_LEVEL(name, value) name = value,
-#include "base/memory/memory_pressure_level_list.h"
-#undef DEFINE_MEMORY_PRESSURE_LEVEL
+    // Modules are advised to free buffers that are cheap to re-allocate and not
+    // immediately needed.
+    MEMORY_PRESSURE_LEVEL_MODERATE = 0,
+
+    // At this level, modules are advised to free all possible memory.  The
+    // alternative is to be killed by the system, which means all memory will
+    // have to be re-created, plus the cost of a cold start.
+    MEMORY_PRESSURE_LEVEL_CRITICAL = 2,
   };
 
   typedef base::Callback<void(MemoryPressureLevel)> MemoryPressureCallback;

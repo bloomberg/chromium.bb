@@ -124,13 +124,31 @@ class ProfileMetrics {
 #if defined(OS_ANDROID)
   // Enum for tracking user interactions with the account management menu
   // on Android.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.profiles
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ProfileAccountManagementMetrics
+  // GENERATED_JAVA_PREFIX_TO_STRIP: PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_
   enum ProfileAndroidAccountManagementMenu {
-
-#define PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU(label, value) \
-    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_##label = value,
-#include "profile_metrics_list.h"
-#undef PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU
-
+    // User arrived at the Account management screen.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_VIEW = 0,
+    // User arrived at the Account management screen, and clicked Add account.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_ADD_ACCOUNT = 1,
+    // User arrived at the Account management screen, and clicked Go incognito.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_GO_INCOGNITO = 2,
+    // User arrived at the Account management screen, and clicked on primary.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_CLICK_PRIMARY_ACCOUNT = 3,
+    // User arrived at the Account management screen, and clicked on secondary.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_CLICK_SECONDARY_ACCOUNT = 4,
+    // User arrived at the Account management screen, toggled Chrome signout.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_TOGGLE_SIGNOUT = 5,
+    // User toggled Chrome signout, and clicked Signout.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_SIGNOUT_SIGNOUT = 6,
+    // User toggled Chrome signout, and clicked Cancel.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_SIGNOUT_CANCEL = 7,
+    // User arrived at the android Account management screen directly from some
+    // Gaia requests.
+    PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_DIRECT_ADD_ACCOUNT = 8,
     NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS,
   };
 #endif  // defined(OS_ANDROID)

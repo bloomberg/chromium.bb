@@ -23,10 +23,32 @@ class ToolbarModel {
   // TODO(wtc): unify ToolbarModel::SecurityLevel with SecurityStyle.  We
   // don't need two sets of security UI levels.  SECURITY_STYLE_AUTHENTICATED
   // needs to be refined into three levels: warning, standard, and EV.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ui.toolbar
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ToolbarModelSecurityLevel
   enum SecurityLevel {
-#define DEFINE_TOOLBAR_MODEL_SECURITY_LEVEL(name,value)  name = value,
-#include "chrome/browser/ui/toolbar/toolbar_model_security_level_list.h"
-#undef DEFINE_TOOLBAR_MODEL_SECURITY_LEVEL
+    // HTTP/no URL/user is editing
+    NONE = 0,
+
+    // HTTPS with valid EV cert
+    EV_SECURE = 1,
+
+    // HTTPS (non-EV)
+    SECURE = 2,
+
+    // HTTPS, but unable to check certificate revocation status or with insecure
+    // content on the page
+    SECURITY_WARNING = 3,
+
+    // HTTPS, but the certificate verification chain is anchored on a
+    // certificate that was installed by the system administrator
+    SECURITY_POLICY_WARNING = 4,
+
+    // Attempted HTTPS and failed, page not authenticated
+    SECURITY_ERROR = 5,
+
+    NUM_SECURITY_LEVELS = 6,
   };
 
   virtual ~ToolbarModel();

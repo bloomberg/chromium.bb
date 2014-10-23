@@ -56,11 +56,11 @@ $(call intermediates-dir-for,GYP,shared)/enums/selection_event_type_java/org/chr
 $(call intermediates-dir-for,GYP,shared)/enums/speech_recognition_error_java/org/chromium/content_public/common/SpeechRecognitionErrorCode.java \
 $(call intermediates-dir-for,GYP,shared)/enums/top_controls_state_java/org/chromium/content_public/common/TopControlsState.java \
 $(call intermediates-dir-for,GYP,shared)/enums/window_open_disposition_java/org/chromium/ui/WindowOpenDisposition.java \
-$(call intermediates-dir-for,GYP,shared)/templates/base_java_application_state/org/chromium/base/ApplicationState.java \
-$(call intermediates-dir-for,GYP,shared)/templates/base_java_memory_pressure_level_list/org/chromium/base/MemoryPressureLevelList.java \
-$(call intermediates-dir-for,GYP,shared)/templates/media_android_imageformat_list/org/chromium/media/AndroidImageFormat.java \
+$(call intermediates-dir-for,GYP,shared)/enums/base_java_application_state/org/chromium/base/ApplicationState.java \
+$(call intermediates-dir-for,GYP,shared)/enums/base_java_memory_pressure_level/org/chromium/base/MemoryPressureLevel.java \
+$(call intermediates-dir-for,GYP,shared)/enums/media_android_imageformat/org/chromium/media/AndroidImageFormat.java \
+$(call intermediates-dir-for,GYP,shared)/enums/page_transition_types_java/org/chromium/ui/base/PageTransition.java \
 $(call intermediates-dir-for,GYP,shared)/templates/net_errors_java/org/chromium/net/NetError.java \
-$(call intermediates-dir-for,GYP,shared)/templates/page_transition_types_java/org/chromium/ui/base/PageTransitionTypes.java \
 
 # content dependencies on java components that are provided by the system on
 # android

@@ -58,7 +58,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.ActivityWindowAndroid;
-import org.chromium.ui.base.PageTransitionTypes;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -1122,11 +1122,11 @@ public class AwContents {
         // If we are reloading the same url, then set transition type as reload.
         if (params.getUrl() != null &&
                 params.getUrl().equals(mWebContents.getUrl()) &&
-                params.getTransitionType() == PageTransitionTypes.PAGE_TRANSITION_LINK) {
-            params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
+                params.getTransitionType() == PageTransition.LINK) {
+            params.setTransitionType(PageTransition.RELOAD);
         }
         params.setTransitionType(
-                params.getTransitionType() | PageTransitionTypes.PAGE_TRANSITION_FROM_API);
+                params.getTransitionType() | PageTransition.FROM_API);
 
         // For WebView, always use the user agent override, which is set
         // every time the user agent in AwSettings is modified.

@@ -24,12 +24,11 @@ generate_jni("bookmarks_jni_headers") {
 }
 
 # GYP: //components/bookmarks.gyp:bookmarks_type_java
-java_cpp_template("bookmark_type_javagen") {
+java_cpp_enum("bookmark_type_javagen") {
   sources = [
-    "java/src/org/chromium/components/bookmarks/BookmarkType.template",
+    "bookmark_type.h",
   ]
-  package_name = "org/chromium/components/bookmarks"
-  inputs = [
-    "bookmark_type_list.h",
+  outputs = [
+    "org/chromium/components/bookmarks/BookmarkType.java",
   ]
 }

@@ -98,14 +98,10 @@ android_library("chrome_java") {
   ]
 
   srcjar_deps = [
-    ":activity_type_ids_javagen",
     ":app_banner_metrics_ids_javagen",
-    ":profile_account_management_metrics_javagen",
-    ":profile_sync_service_model_type_selection_javagen",
-    ":resource_id_javagen",
-    ":toolbar_model_security_levels_javagen",
-    ":tab_load_status_javagen",
+    ":chrome_android_java_enums_srcjar",
     ":chrome_version_srcjar",
+    ":resource_id_javagen",
     "//chrome:page_info_connection_type_javagen",
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
@@ -115,13 +111,24 @@ android_library("chrome_java") {
 }
 
 # GYP: //chrome/chrome_browser.gypi:activity_type_ids_java
-java_cpp_template("activity_type_ids_javagen") {
+# GYP: //chrome/chrome_browser.gypi:profile_account_management_metrics_java
+# GYP: //chrome/chrome_browser.gypi:profile_sync_service_model_type_selection_java
+# GYP: //chrome/chrome_browser.gypi:tab_load_status_java
+# GYP: //chrome/chrome_browser.gypi:toolbar_model_security_levels_java
+java_cpp_enum("chrome_android_java_enums_srcjar") {
   sources = [
-    "java/ActivityTypeIds.template",
+    "//chrome/browser/android/activity_type_ids.h",
+    "//chrome/browser/android/tab_android.h",
+    "//chrome/browser/profiles/profile_metrics.h",
+    "//chrome/browser/sync/profile_sync_service_android.cc",
+    "//chrome/browser/ui/toolbar/toolbar_model.h",
   ]
-  package_name = "org/chromium/chrome/browser"
-  inputs = [
-    "../browser/android/activity_type_id_list.h"
+  outputs = [
+    "org/chromium/chrome/browser/ActivityTypeIds.java",
+    "org/chromium/chrome/browser/TabLoadStatus.java",
+    "org/chromium/chrome/browser/profiles/ProfileAccountManagementMetrics.java",
+    "org/chromium/chrome/browser/sync/ModelTypeSelection.java",
+    "org/chromium/chrome/browser/ui/toolbar/ToolbarModelSecurityLevel.java",
   ]
 }
 
@@ -144,50 +151,6 @@ java_cpp_template("resource_id_javagen") {
   package_name = "org/chromium/chrome/browser"
   inputs = [
     "../browser/android/resource_id.h"
-  ]
-}
-
-# GYP: //chrome/chrome_browser.gypi:profile_account_management_metrics_java
-java_cpp_template("profile_account_management_metrics_javagen") {
-  sources = [
-    "java/ProfileAccountManagementMetrics.template",
-  ]
-  package_name = "org/chromium/chrome/browser/profiles"
-  inputs = [
-    "../browser/profiles/profile_metrics_list.h"
-  ]
-}
-
-# GYP: //chrome/chrome_browser.gypi:profile_sync_service_model_type_selection_java
-java_cpp_template("profile_sync_service_model_type_selection_javagen") {
-  sources = [
-    "java/ModelTypeSelection.template",
-  ]
-  package_name = "org/chromium/chrome/browser/sync"
-  inputs = [
-    "../browser/sync/profile_sync_service_model_type_selection_android.h"
-  ]
-}
-
-# GYP: //chrome/chrome_browser.gypi:toolbar_model_security_levels_java
-java_cpp_template("toolbar_model_security_levels_javagen") {
-  sources = [
-    "java/ToolbarModelSecurityLevel.template",
-  ]
-  package_name = "org/chromium/chrome/browser/ui/toolbar"
-  inputs = [
-    "../browser/ui/toolbar/toolbar_model_security_level_list.h"
-  ]
-}
-
-# GYP: //chrome/chrome_browser.gypi:tab_load_status_java
-java_cpp_template("tab_load_status_javagen") {
-  sources = [
-    "java/TabLoadStatus.template",
-  ]
-  package_name = "org/chromium/chrome/browser"
-  inputs = [
-    "../browser/android/tab_load_status.h"
   ]
 }
 

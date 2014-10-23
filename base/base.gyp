@@ -1343,7 +1343,7 @@
           },
           'dependencies': [
             'base_java_application_state',
-            'base_java_memory_pressure_level_list',
+            'base_java_memory_pressure_level',
             'base_native_libraries_gen',
           ],
           'includes': [ '../build/java.gypi' ],
@@ -1368,34 +1368,22 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          # GN: //base:base_java_application_state
+          # GN: //base:base_android_java_enums_srcjar
           'target_name': 'base_java_application_state',
           'type': 'none',
-          # This target is used to auto-generate ApplicationState.java
-          # from a template file. The source file contains a list of
-          # Java constant declarations matching the ones in
-          # android/application_state_list.h.
-          'sources': [
-            'android/java/src/org/chromium/base/ApplicationState.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/base',
-            'template_deps': ['android/application_state_list.h'],
+            'source_file': 'android/application_status_listener.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-          # GN: //base:base_java_memory_pressure_level_list
-          'target_name': 'base_java_memory_pressure_level_list',
+          # GN: //base:base_android_java_enums_srcjar
+          'target_name': 'base_java_memory_pressure_level',
           'type': 'none',
-          'sources': [
-            'android/java/src/org/chromium/base/MemoryPressureLevelList.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/base',
-            'template_deps': ['memory/memory_pressure_level_list.h'],
+            'source_file': 'memory/memory_pressure_listener.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           # GN: //base:base_java_test_support

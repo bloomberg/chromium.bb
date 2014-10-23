@@ -153,14 +153,10 @@
           # GN: //components/bookmarks/common/android:bookmarks_type_javagen
           'target_name': 'bookmark_type_java',
           'type': 'none',
-          'sources': [
-            'bookmarks/common/android/java/src/org/chromium/components/bookmarks/BookmarkType.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/components/bookmarks',
-            'template_deps': ['bookmarks/common/android/bookmark_type_list.h'],
+            'source_file': 'bookmarks/common/android/bookmark_type.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
       ],
     }]

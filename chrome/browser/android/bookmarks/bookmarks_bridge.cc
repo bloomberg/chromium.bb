@@ -420,7 +420,7 @@ void BookmarksBridge::GetChildIDs(JNIEnv* env,
         env,
         j_result_obj,
         partner_bookmarks_shim_->GetPartnerBookmarksRoot()->id(),
-        BookmarkType::PARTNER);
+        BookmarkType::BOOKMARK_TYPE_PARTNER);
   }
 }
 
@@ -738,7 +738,7 @@ void BookmarksBridge::ExtractBookmarkNodeInformation(const BookmarkNode* node,
 
 const BookmarkNode* BookmarksBridge::GetNodeByID(long node_id, int type) {
   const BookmarkNode* node;
-  if (type == BookmarkType::PARTNER) {
+  if (type == BookmarkType::BOOKMARK_TYPE_PARTNER) {
     node = partner_bookmarks_shim_->GetNodeByID(
         static_cast<int64>(node_id));
   } else {
@@ -788,9 +788,9 @@ const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
 
 int BookmarksBridge::GetBookmarkType(const BookmarkNode* node) {
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
-    return BookmarkType::PARTNER;
+    return BookmarkType::BOOKMARK_TYPE_PARTNER;
   else
-    return BookmarkType::NORMAL;
+    return BookmarkType::BOOKMARK_TYPE_NORMAL;
 }
 
 base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {

@@ -20,28 +20,12 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          'target_name': 'cronet_url_request_error_list',
+          'target_name': 'cronet_url_request_java',
           'type': 'none',
-          'sources': [
-            'cronet/android/java/src/org/chromium/net/ChromiumUrlRequestError.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/cronet',
-            'template_deps': ['cronet/android/chromium_url_request_error_list.h'],
+            'source_file': 'cronet/android/chromium_url_request.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
-        },
-        {
-          'target_name': 'cronet_url_request_priority_list',
-          'type': 'none',
-          'sources': [
-            'cronet/android/java/src/org/chromium/net/ChromiumUrlRequestPriority.template',
-          ],
-          'variables': {
-            'package_name': 'org/chromium/cronet',
-            'template_deps': ['cronet/android/chromium_url_request_priority_list.h'],
-          },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'cronet_url_request_context_config_list',
@@ -111,8 +95,7 @@
             '../third_party/icu/icu.gyp:icuuc',
             'cronet_jni_headers',
             'cronet_url_request_context_config_list',
-            'cronet_url_request_error_list',
-            'cronet_url_request_priority_list',
+            'cronet_url_request_java',
             'cronet_version',
             '../net/net.gyp:net',
           ],
@@ -210,8 +193,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'cronet_stub',
-            'cronet_url_request_error_list',
-            'cronet_url_request_priority_list',
+            'cronet_url_request_java',
             'libcronet',
           ],
           'variables': {

@@ -4,22 +4,14 @@ assert(is_android)
 
 java_cpp_enum("java_enums_srcjar") {
   sources = [
+    "../base/page_transition_types.h",
     "../base/window_open_disposition.h",
     "../gfx/android/java_bitmap.h",
   ]
   outputs = [
     "org/chromium/ui/WindowOpenDisposition.java",
+    "org/chromium/ui/base/PageTransition.java",
     "org/chromium/ui/gfx/BitmapFormat.java",
-  ]
-}
-
-java_cpp_template("page_transition_types_srcjar") {
-  package_name = "org/chromium/ui/base"
-  sources = [
-    "java/PageTransitionTypes.template",
-  ]
-  inputs = [
-    "../base/page_transition_types_list.h",
   ]
 }
 
@@ -91,6 +83,5 @@ android_library("ui_java") {
   ]
   srcjar_deps = [
     ":java_enums_srcjar",
-    ":page_transition_types_srcjar",
   ]
 }

@@ -53,7 +53,7 @@ public class MemoryPressureListener {
 
                     @Override
                     public void onLowMemory() {
-                        nativeOnMemoryPressure(MemoryPressureLevelList.MEMORY_PRESSURE_CRITICAL);
+                        nativeOnMemoryPressure(MemoryPressureLevel.CRITICAL);
                     }
 
                     @Override
@@ -85,12 +85,12 @@ public class MemoryPressureListener {
 
     public static void maybeNotifyMemoryPresure(int level) {
         if (level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE) {
-            nativeOnMemoryPressure(MemoryPressureLevelList.MEMORY_PRESSURE_CRITICAL);
+            nativeOnMemoryPressure(MemoryPressureLevel.CRITICAL);
         } else if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ||
                 level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) {
             // Don't notifiy on TRIM_MEMORY_UI_HIDDEN, since this class only
             // dispatches actionable memory pressure signals to native.
-            nativeOnMemoryPressure(MemoryPressureLevelList.MEMORY_PRESSURE_MODERATE);
+            nativeOnMemoryPressure(MemoryPressureLevel.MODERATE);
         }
     }
 

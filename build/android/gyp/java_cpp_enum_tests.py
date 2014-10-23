@@ -9,13 +9,20 @@ This test suite containss various tests for the C++ -> Java enum generator.
 """
 
 import collections
+import optparse
+import os
+import sys
 import unittest
+
 from java_cpp_enum import EnumDefinition, GenerateOutput, HeaderParser
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "gyp"))
+from util import build_utils
 
 class TestPreprocess(unittest.TestCase):
   def testOutput(self):
-    definition = EnumDefinition(class_name='ClassName',
-                                class_package='some.package',
+    definition = EnumDefinition(original_enum_name='ClassName',
+                                enum_package='some.package',
                                 entries=[('E1', 1), ('E2', '2 << 2')])
     output = GenerateOutput('path/to/file', definition)
     expected = """
@@ -49,9 +56,52 @@ public class ClassName {
     self.assertEqual(1, len(definitions))
     definition = definitions[0]
     self.assertEqual('EnumName', definition.class_name)
-    self.assertEqual('test.namespace', definition.class_package)
+    self.assertEqual('test.namespace', definition.enum_package)
     self.assertEqual(collections.OrderedDict([('VALUE_ZERO', 0),
                                               ('VALUE_ONE', 1)]),
+                     definition.entries)
+
+  def testParseBitShifts(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum EnumName {
+        VALUE_ZERO = 1 << 0,
+        VALUE_ONE = 1 << 1,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual(1, len(definitions))
+    definition = definitions[0]
+    self.assertEqual('EnumName', definition.class_name)
+    self.assertEqual('test.namespace', definition.enum_package)
+    self.assertEqual(collections.OrderedDict([('VALUE_ZERO', '1 << 0'),
+                                              ('VALUE_ONE', '1 << 1')]),
+                     definition.entries)
+
+  def testParseClassNameOverride(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OverrideName
+      enum EnumName {
+        FOO
+      };
+
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OtherOverride
+      enum PrefixTest {
+        PREFIX_TEST_A,
+        PREFIX_TEST_B,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual(2, len(definitions))
+    definition = definitions[0]
+    self.assertEqual('OverrideName', definition.class_name)
+
+    definition = definitions[1]
+    self.assertEqual('OtherOverride', definition.class_name)
+    self.assertEqual(collections.OrderedDict([('A', 0),
+                                              ('B', 1)]),
                      definition.entries)
 
   def testParseTwoEnums(self):
@@ -78,20 +128,30 @@ public class ClassName {
     self.assertEqual(2, len(definitions))
     definition = definitions[0]
     self.assertEqual('EnumOne', definition.class_name)
-    self.assertEqual('test.namespace', definition.class_package)
+    self.assertEqual('test.namespace', definition.enum_package)
     self.assertEqual(collections.OrderedDict([('A', '1'),
                                               ('B', 'A')]),
                      definition.entries)
 
     definition = definitions[1]
     self.assertEqual('EnumTwo', definition.class_name)
-    self.assertEqual('other.package', definition.class_package)
+    self.assertEqual('other.package', definition.enum_package)
     self.assertEqual(collections.OrderedDict([('A', 0),
                                               ('B', 1)]),
                      definition.entries)
 
+  def testParseThrowsOnUnknownDirective(self):
+    test_data = """
+      // GENERATED_JAVA_UNKNOWN: Value
+      enum EnumName {
+        VALUE_ONE,
+      };
+    """.split('\n')
+    with self.assertRaises(Exception):
+      HeaderParser(test_data).ParseDefinitions()
+
   def testEnumValueAssignmentNoneDefined(self):
-    definition = EnumDefinition('c', 'p', [])
+    definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('A', None)
     definition.AppendEntry('B', None)
     definition.AppendEntry('C', None)
@@ -102,7 +162,7 @@ public class ClassName {
                      definition.entries)
 
   def testEnumValueAssignmentAllDefined(self):
-    definition = EnumDefinition('c', 'p', [])
+    definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('A', '1')
     definition.AppendEntry('B', '2')
     definition.AppendEntry('C', '3')
@@ -113,7 +173,7 @@ public class ClassName {
                      definition.entries)
 
   def testEnumValueAssignmentReferences(self):
-    definition = EnumDefinition('c', 'p', [])
+    definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('A', None)
     definition.AppendEntry('B', 'A')
     definition.AppendEntry('C', None)
@@ -125,39 +185,85 @@ public class ClassName {
                                               ('D', 1)]),
                      definition.entries)
 
-  def testEnumValueAssignmentRaises(self):
-    definition = EnumDefinition('c', 'p', [])
+  def testEnumValueAssignmentSet(self):
+    definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('A', None)
-    definition.AppendEntry('B', '1')
+    definition.AppendEntry('B', '2')
+    definition.AppendEntry('C', None)
+    definition.Finalize()
+    self.assertEqual(collections.OrderedDict([('A', 0),
+                                              ('B', 2),
+                                              ('C', 3)]),
+                     definition.entries)
+
+  def testEnumValueAssignmentSetReferences(self):
+    definition = EnumDefinition(original_enum_name='c', enum_package='p')
+    definition.AppendEntry('A', None)
+    definition.AppendEntry('B', 'A')
+    definition.AppendEntry('C', 'B')
+    definition.AppendEntry('D', None)
+    definition.Finalize()
+    self.assertEqual(collections.OrderedDict([('A', 0),
+                                              ('B', 0),
+                                              ('C', 0),
+                                              ('D', 1)]),
+                     definition.entries)
+
+  def testEnumValueAssignmentRaises(self):
+    definition = EnumDefinition(original_enum_name='c', enum_package='p')
+    definition.AppendEntry('A', None)
+    definition.AppendEntry('B', 'foo')
     definition.AppendEntry('C', None)
     with self.assertRaises(Exception):
       definition.Finalize()
 
   def testExplicitPrefixStripping(self):
-    definition = EnumDefinition('c', 'p', [])
+    definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('P_A', None)
     definition.AppendEntry('B', None)
     definition.AppendEntry('P_C', None)
+    definition.AppendEntry('P_LAST', 'P_C')
     definition.prefix_to_strip = 'P_'
     definition.Finalize()
-    self.assertEqual(['A', 'B', 'C'], definition.entries.keys())
+    self.assertEqual(collections.OrderedDict([('A', 0),
+                                              ('B', 1),
+                                              ('C', 2),
+                                              ('LAST', 2)]),
+                     definition.entries)
 
   def testImplicitPrefixStripping(self):
-    definition = EnumDefinition('ClassName', 'p', [])
+    definition = EnumDefinition(original_enum_name='ClassName',
+                                enum_package='p')
     definition.AppendEntry('CLASS_NAME_A', None)
     definition.AppendEntry('CLASS_NAME_B', None)
     definition.AppendEntry('CLASS_NAME_C', None)
+    definition.AppendEntry('CLASS_NAME_LAST', 'CLASS_NAME_C')
     definition.Finalize()
-    self.assertEqual(['A', 'B', 'C'], definition.entries.keys())
+    self.assertEqual(collections.OrderedDict([('A', 0),
+                                              ('B', 1),
+                                              ('C', 2),
+                                              ('LAST', 2)]),
+                     definition.entries)
 
   def testImplicitPrefixStrippingRequiresAllConstantsToBePrefixed(self):
-    definition = EnumDefinition('Name', 'p', [])
+    definition = EnumDefinition(original_enum_name='Name',
+                                enum_package='p')
     definition.AppendEntry('A', None)
     definition.AppendEntry('B', None)
     definition.AppendEntry('NAME_LAST', None)
     definition.Finalize()
     self.assertEqual(['A', 'B', 'NAME_LAST'], definition.entries.keys())
 
+def main(argv):
+  parser = optparse.OptionParser()
+  parser.add_option("--stamp", help="File to touch on success.")
+  options, _ = parser.parse_args(argv)
+
+  suite = unittest.TestLoader().loadTestsFromTestCase(TestPreprocess)
+  unittest.TextTestRunner(verbosity=0).run(suite)
+
+  if options.stamp:
+    build_utils.Touch(options.stamp)
 
 if __name__ == '__main__':
-  unittest.main()
+  main(sys.argv[1:])

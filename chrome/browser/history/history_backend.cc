@@ -710,7 +710,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 void HistoryBackend::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   bool trim_aggressively = memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL;
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
   if (db_)
     db_->TrimMemory(trim_aggressively);
   if (thumbnail_db_)

@@ -7,10 +7,11 @@
 
 namespace bookmarks {
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.bookmarks
 enum BookmarkType {
-#define DEFINE_BOOKMARK_TYPE(name, value) name = value,
-#include "components/bookmarks/common/android/bookmark_type_list.h"
-#undef DEFINE_BOOKMARK_TYPE
+  BOOKMARK_TYPE_NORMAL,
+  BOOKMARK_TYPE_PARTNER,
 };
 
 }

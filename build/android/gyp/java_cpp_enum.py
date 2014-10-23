@@ -14,16 +14,22 @@ import sys
 from util import build_utils
 
 class EnumDefinition(object):
-  def __init__(self, class_name=None, class_package=None, entries=None):
-    self.class_name = class_name
-    self.class_package = class_package
+  def __init__(self, original_enum_name=None, class_name_override=None,
+               enum_package=None, entries=None):
+    self.original_enum_name = original_enum_name
+    self.class_name_override = class_name_override
+    self.enum_package = enum_package
     self.entries = collections.OrderedDict(entries or [])
-    self.prefix_to_strip = ''
+    self.prefix_to_strip = None
 
   def AppendEntry(self, key, value):
     if key in self.entries:
       raise Exception('Multiple definitions of key %s found.' % key)
     self.entries[key] = value
+
+  @property
+  def class_name(self):
+    return self.class_name_override or self.original_enum_name
 
   def Finalize(self):
     self._Validate()
@@ -32,7 +38,7 @@ class EnumDefinition(object):
 
   def _Validate(self):
     assert self.class_name
-    assert self.class_package
+    assert self.enum_package
     assert self.entries
 
   def _AssignEntryIndices(self):
@@ -54,23 +60,59 @@ class EnumDefinition(object):
 
 
   def _StripPrefix(self):
-    if not self.prefix_to_strip:
-      prefix_to_strip = re.sub('(?!^)([A-Z]+)', r'_\1', self.class_name).upper()
+    prefix_to_strip = self.prefix_to_strip
+    if not prefix_to_strip:
+      prefix_to_strip = self.original_enum_name
+      prefix_to_strip = re.sub('(?!^)([A-Z]+)', r'_\1', prefix_to_strip).upper()
       prefix_to_strip += '_'
       if not all([w.startswith(prefix_to_strip) for w in self.entries.keys()]):
         prefix_to_strip = ''
-    else:
-      prefix_to_strip = self.prefix_to_strip
-    entries = ((k.replace(prefix_to_strip, '', 1), v) for (k, v) in
-               self.entries.iteritems())
-    self.entries = collections.OrderedDict(entries)
+
+    entries = collections.OrderedDict()
+    for (k, v) in self.entries.iteritems():
+      stripped_key = k.replace(prefix_to_strip, '', 1)
+      if isinstance(v, basestring):
+        stripped_value = v.replace(prefix_to_strip, '', 1)
+      else:
+        stripped_value = v
+      entries[stripped_key] = stripped_value
+
+    self.entries = entries
+
+class DirectiveSet(object):
+  class_name_override_key = 'CLASS_NAME_OVERRIDE'
+  enum_package_key = 'ENUM_PACKAGE'
+  prefix_to_strip_key = 'PREFIX_TO_STRIP'
+
+  known_keys = [class_name_override_key, enum_package_key, prefix_to_strip_key]
+
+  def __init__(self):
+    self._directives = {}
+
+  def Update(self, key, value):
+    if key not in DirectiveSet.known_keys:
+      raise Exception("Unknown directive: " + key)
+    self._directives[key] = value
+
+  @property
+  def empty(self):
+    return len(self._directives) == 0
+
+  def UpdateDefinition(self, definition):
+    definition.class_name_override = self._directives.get(
+        DirectiveSet.class_name_override_key, '')
+    definition.enum_package = self._directives.get(
+        DirectiveSet.enum_package_key)
+    definition.prefix_to_strip = self._directives.get(
+        DirectiveSet.prefix_to_strip_key)
+
 
 class HeaderParser(object):
   single_line_comment_re = re.compile(r'\s*//')
   multi_line_comment_start_re = re.compile(r'\s*/\*')
   enum_start_re = re.compile(r'^\s*enum\s+(\w+)\s+{\s*$')
   enum_line_re = re.compile(r'^\s*(\w+)(\s*\=\s*([^,\n]+))?,?')
-  enum_end_re = re.compile(r'^\s*}\s*;\s*$')
+  enum_end_re = re.compile(r'^\s*}\s*;\.*$')
   generator_directive_re = re.compile(
       r'^\s*//\s+GENERATED_JAVA_(\w+)\s*:\s*([\.\w]+)$')
 
@@ -79,7 +121,7 @@ class HeaderParser(object):
     self._enum_definitions = []
     self._in_enum = False
     self._current_definition = None
-    self._generator_directives = {}
+    self._generator_directives = DirectiveSet()
 
   def ParseDefinitions(self):
     for line in self._lines:
@@ -109,31 +151,23 @@ class HeaderParser(object):
       enum_value = enum_entry.groups()[2]
       self._current_definition.AppendEntry(enum_key, enum_value)
 
-  def _GetCurrentEnumPackageName(self):
-    return self._generator_directives.get('ENUM_PACKAGE')
-
-  def _GetCurrentEnumPrefixToStrip(self):
-    return self._generator_directives.get('PREFIX_TO_STRIP', '')
-
   def _ApplyGeneratorDirectives(self):
-    current_definition = self._current_definition
-    current_definition.class_package = self._GetCurrentEnumPackageName()
-    current_definition.prefix_to_strip = self._GetCurrentEnumPrefixToStrip()
-    self._generator_directives = {}
+    self._generator_directives.UpdateDefinition(self._current_definition)
+    self._generator_directives = DirectiveSet()
 
   def _ParseRegularLine(self, line):
     enum_start = HeaderParser.enum_start_re.match(line)
     generator_directive = HeaderParser.generator_directive_re.match(line)
     if enum_start:
-      if not self._GetCurrentEnumPackageName():
+      if self._generator_directives.empty:
         return
-      self._current_definition = EnumDefinition()
-      self._current_definition.class_name = enum_start.groups()[0]
+      self._current_definition = EnumDefinition(
+          original_enum_name=enum_start.groups()[0])
       self._in_enum = True
     elif generator_directive:
       directive_name = generator_directive.groups()[0]
       directive_value = generator_directive.groups()[1]
-      self._generator_directives[directive_name] = directive_value
+      self._generator_directives.Update(directive_name, directive_value)
 
 
 def GetScriptName():
@@ -147,7 +181,7 @@ def DoGenerate(options, source_paths):
   for source_path in source_paths:
     enum_definitions = DoParseHeaderFile(source_path)
     for enum_definition in enum_definitions:
-      package_path = enum_definition.class_package.replace('.', os.path.sep)
+      package_path = enum_definition.enum_package.replace('.', os.path.sep)
       file_name = enum_definition.class_name + '.java'
       output_path = os.path.join(options.output_dir, package_path, file_name)
       output_paths.append(output_path)
@@ -193,7 +227,7 @@ ${ENUM_ENTRIES}
   values = {
       'CLASS_NAME': enum_definition.class_name,
       'ENUM_ENTRIES': enum_entries_string,
-      'PACKAGE': enum_definition.class_package,
+      'PACKAGE': enum_definition.enum_package,
       'SCRIPT_NAME': GetScriptName(),
       'SOURCE_PATH': source_path,
   }

@@ -3517,17 +3517,13 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          # GN: //chrome/android:activity_type_ids_javagen
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'activity_type_ids_java',
           'type': 'none',
-          'sources': [
-            'android/java/ActivityTypeIds.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/chrome/browser',
-            'template_deps': ['browser/android/activity_type_id_list.h'],
+            'source_file': 'browser/android/activity_type_ids.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           # GN: //chrome/android:app_banner_metrics_ids_javagen
@@ -3556,56 +3552,40 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
-          # GN: //chrome/android/profile_account_management_metrics_javagen
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'profile_account_management_metrics_java',
           'type': 'none',
-          'sources': [
-            'android/java/ProfileAccountManagementMetrics.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/chrome/browser/profiles',
-            'template_deps': ['browser/profiles/profile_metrics_list.h'],
+            'source_file': 'browser/profiles/profile_metrics.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-          # GN: //chrome/android:profile_sync_service_model_type_selection_javagen
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'profile_sync_service_model_type_selection_java',
           'type': 'none',
-          'sources': [
-            'android/java/ModelTypeSelection.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/chrome/browser/sync',
-            'template_deps': ['browser/sync/profile_sync_service_model_type_selection_android.h'],
+            'source_file': 'browser/sync/profile_sync_service_android.cc',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-          # GN: //chrome/android:toolbar_model_security_levels_javagen
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'toolbar_model_security_levels_java',
           'type': 'none',
-          'sources': [
-            'android/java/ToolbarModelSecurityLevel.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/chrome/browser/ui/toolbar',
-            'template_deps': ['browser/ui/toolbar/toolbar_model_security_level_list.h'],
+            'source_file': 'browser/ui/toolbar/toolbar_model.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-          # GN: //chrome/android:tab_load_status_javagen
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'tab_load_status_java',
           'type': 'none',
-          'sources': [
-            'android/java/TabLoadStatus.template',
-          ],
           'variables': {
-            'package_name': 'org/chromium/chrome/browser',
-            'template_deps': ['browser/android/tab_load_status.h'],
+            'source_file': 'browser/android/tab_android.h',
           },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
       ],
     },],

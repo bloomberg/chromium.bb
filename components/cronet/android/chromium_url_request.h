@@ -11,18 +11,32 @@ namespace cronet {
 
 // Define request priority values like REQUEST_PRIORITY_IDLE in a
 // way that ensures they're always the same than their Java counterpart.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ChromiumUrlRequestPriority
+// GENERATED_JAVA_PREFIX_TO_STRIP: REQUEST_PRIORITY_
 enum UrlRequestPriority {
-#define DEFINE_REQUEST_PRIORITY(x, y) REQUEST_PRIORITY_##x = y,
-#include "components/cronet/android/chromium_url_request_priority_list.h"
-#undef DEFINE_REQUEST_PRIORITY
+  REQUEST_PRIORITY_IDLE = 0,
+  REQUEST_PRIORITY_LOWEST = 1,
+  REQUEST_PRIORITY_LOW = 2,
+  REQUEST_PRIORITY_MEDIUM = 3,
+  REQUEST_PRIORITY_HIGHEST = 4,
 };
 
 // Define request priority values like REQUEST_ERROR_SUCCESS in a
 // way that ensures they're always the same than their Java counterpart.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ChromiumUrlRequestError
+// GENERATED_JAVA_PREFIX_TO_STRIP: REQUEST_ERROR_
 enum UrlRequestError {
-#define DEFINE_REQUEST_ERROR(x, y) REQUEST_ERROR_##x = y,
-#include "components/cronet/android/chromium_url_request_error_list.h"
-#undef DEFINE_REQUEST_ERROR
+  REQUEST_ERROR_SUCCESS = 0,
+  REQUEST_ERROR_UNKNOWN = 1,
+  REQUEST_ERROR_MALFORMED_URL = 2,
+  REQUEST_ERROR_CONNECTION_TIMED_OUT = 3,
+  REQUEST_ERROR_UNKNOWN_HOST = 4,
 };
 
 bool ChromiumUrlRequestRegisterJni(JNIEnv* env);

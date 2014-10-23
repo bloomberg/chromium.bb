@@ -91,13 +91,12 @@ generate_jni("video_capture_jni_headers") {
   jni_package = "media"
 }
 
-java_cpp_template("media_android_imageformat_list") {
-  package_name = "org/chromium/media"
+java_cpp_enum("media_java_enums_srcjar") {
   sources = [
-    "java/src/org/chromium/media/AndroidImageFormat.template",
+    "//media/video/capture/android/video_capture_device_android.h",
   ]
-  inputs = [
-    "//media/video/capture/android/imageformat_list.h"
+  outputs = [
+    "org/chromium/media/AndroidImageFormat.java",
   ]
 }
 
@@ -107,7 +106,7 @@ android_library("media_java") {
   ]
 
   srcjar_deps = [
-    ":media_android_imageformat_list",
+    ":media_java_enums_srcjar",
   ]
 
   DEPRECATED_java_in_dir = "java/src"

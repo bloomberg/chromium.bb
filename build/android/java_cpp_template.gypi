@@ -6,6 +6,9 @@
 # to generate Java source files from templates that are processed
 # through the host C pre-processor.
 #
+# NOTE: For generating Java conterparts to enums prefer using the java_cpp_enum
+#       rule instead.
+#
 # To use this, create a gyp target with the following form:
 #  {
 #    'target_name': 'android_net_java_constants',
@@ -15,7 +18,7 @@
 #    ],
 #    'variables': {
 #      'package_name': 'org/chromium/net',
-#      'template_deps': ['net/base/certificate_mime_type_list.h'],
+#      'template_deps': ['base/net_error_list.h'],
 #    },
 #    'includes': [ '../build/android/java_cpp_template.gypi' ],
 #  },

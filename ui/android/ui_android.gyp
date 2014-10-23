@@ -18,14 +18,10 @@
     {
       'target_name': 'page_transition_types_java',
       'type': 'none',
-      'sources': [
-        'java/PageTransitionTypes.template',
-      ],
       'variables': {
-        'package_name': 'org/chromium/ui/base',
-        'template_deps': ['../base/page_transition_types_list.h'],
+        'source_file': '../base/page_transition_types.h',
       },
-      'includes': [ '../../build/android/java_cpp_template.gypi' ],
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
     },
     {
       'target_name': 'window_open_disposition_java',

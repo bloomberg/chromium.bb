@@ -1421,8 +1421,7 @@ if (is_android) {
   # GYP: //base.gyp:base_java
   android_library("base_java") {
     srcjar_deps = [
-      ":base_java_application_state",
-      ":base_java_memory_pressure_level_list",
+      ":base_android_java_enums_srcjar",
       ":base_native_libraries_gen",
     ]
 
@@ -1458,27 +1457,16 @@ if (is_android) {
   }
 
   # GYP: //base.gyp:base_java_application_state
-  java_cpp_template("base_java_application_state") {
+  # GYP: //base.gyp:base_java_memory_pressure_level
+  java_cpp_enum("base_android_java_enums_srcjar") {
     sources = [
-      "android/java/src/org/chromium/base/ApplicationState.template",
+      "android/application_status_listener.h",
+      "memory/memory_pressure_listener.h",
     ]
-    inputs = [
-      "android/application_state_list.h"
+    outputs = [
+      "org/chromium/base/ApplicationState.java",
+      "org/chromium/base/MemoryPressureLevel.java",
     ]
-
-    package_name = "org/chromium/base"
-  }
-
-  # GYP: //base.gyp:base_java_memory_pressure_level_list
-  java_cpp_template("base_java_memory_pressure_level_list") {
-    sources = [
-      "android/java/src/org/chromium/base/MemoryPressureLevelList.template",
-    ]
-    inputs = [
-      "memory/memory_pressure_level_list.h"
-    ]
-
-    package_name = "org/chromium/base"
   }
 
   # GYP: //base/base.gyp:base_native_libraries_gen

@@ -1510,7 +1510,7 @@ void RenderThreadImpl::OnMemoryPressure(
   }
 
   if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL) {
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
     if (blink_platform_impl_) {
       // Clear the image cache. Do not call into blink if it is not initialized.
       blink::WebImageCache::clear();

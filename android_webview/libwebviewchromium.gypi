@@ -14,7 +14,7 @@
       # android_webview_java in android_webview/java_library_common.mk.
       'dependencies': [
         '../base/base.gyp:base_java_application_state',
-        '../base/base.gyp:base_java_memory_pressure_level_list',
+        '../base/base.gyp:base_java_memory_pressure_level',
         '../content/content.gyp:content_gamepad_mapping',
         '../content/content.gyp:gesture_event_type_java',
         '../content/content.gyp:popup_item_type_java',
@@ -23,7 +23,7 @@
         '../content/content.gyp:selection_event_type_java',
         '../content/content.gyp:speech_recognition_error_java',
         '../content/content.gyp:top_controls_state_java',
-        '../media/media.gyp:media_android_imageformat_list',
+        '../media/media.gyp:media_android_imageformat',
         '../net/net.gyp:cert_verify_status_android_java',
         '../net/net.gyp:certificate_mime_types_java',
         '../net/net.gyp:net_errors_java',

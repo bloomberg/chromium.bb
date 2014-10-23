@@ -19,10 +19,18 @@ namespace android {
 
 // Define application state values like APPLICATION_STATE_VISIBLE in a
 // way that ensures they're always the same than their Java counterpart.
+//
+// Note that these states represent the most visible Activity state.
+// If there are activities with states paused and stopped, only
+// HAS_PAUSED_ACTIVITIES should be returned.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base
 enum ApplicationState {
-#define DEFINE_APPLICATION_STATE(x, y) APPLICATION_STATE_##x = y,
-#include "base/android/application_state_list.h"
-#undef DEFINE_APPLICATION_STATE
+  APPLICATION_STATE_HAS_RUNNING_ACTIVITIES = 1,
+  APPLICATION_STATE_HAS_PAUSED_ACTIVITIES = 2,
+  APPLICATION_STATE_HAS_STOPPED_ACTIVITIES = 3,
+  APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES = 4
 };
 
 // A native helper class to listen to state changes of the Android

@@ -34,9 +34,9 @@ public class BookmarkId {
     private static int getBookmarkTypeFromChar(char c) {
         switch (c) {
             case TYPE_PARTNER:
-                return BookmarkType.BOOKMARK_TYPE_PARTNER;
+                return BookmarkType.PARTNER;
             default:
-                return BookmarkType.BOOKMARK_TYPE_NORMAL;
+                return BookmarkType.NORMAL;
         }
     }
 
@@ -55,7 +55,7 @@ public class BookmarkId {
      */
     public static BookmarkId getBookmarkIdFromString(String s) {
         long id = ROOT_FOLDER_ID;
-        int type = BookmarkType.BOOKMARK_TYPE_NORMAL;
+        int type = BookmarkType.NORMAL;
         if (TextUtils.isEmpty(s))
             return new BookmarkId(id, type);
         char folderTypeChar = s.charAt(0);
@@ -89,9 +89,9 @@ public class BookmarkId {
 
     private String getBookmarkTypeString() {
         switch (mType) {
-            case BookmarkType.BOOKMARK_TYPE_PARTNER:
+            case BookmarkType.PARTNER:
                 return String.valueOf(TYPE_PARTNER);
-            case BookmarkType.BOOKMARK_TYPE_NORMAL:
+            case BookmarkType.NORMAL:
             default:
                 return "";
         }

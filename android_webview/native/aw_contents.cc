@@ -279,7 +279,7 @@ AwContents::~AwContents() {
   // without ever using another WebView.
   if (base::subtle::NoBarrier_Load(&g_instance_count) == 0) {
     base::MemoryPressureListener::NotifyMemoryPressure(
-        base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL);
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
 }
 

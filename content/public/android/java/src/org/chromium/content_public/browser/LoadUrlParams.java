@@ -7,7 +7,7 @@ package org.chromium.content_public.browser;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content_public.common.Referrer;
-import org.chromium.ui.base.PageTransitionTypes;
+import org.chromium.ui.base.PageTransition;
 
 import java.util.Locale;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class LoadUrlParams {
      * @param url the url to be loaded
      */
     public LoadUrlParams(String url) {
-        this(url, PageTransitionTypes.PAGE_TRANSITION_LINK);
+        this(url, PageTransition.LINK);
     }
 
     /**
@@ -110,7 +110,7 @@ public class LoadUrlParams {
 
         LoadUrlParams params = new LoadUrlParams(dataUrl.toString());
         params.setLoadType(LoadUrlParams.LOAD_TYPE_DATA);
-        params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_TYPED);
+        params.setTransitionType(PageTransition.TYPED);
         return params;
     }
 
@@ -174,7 +174,7 @@ public class LoadUrlParams {
             String url, byte[] postData) {
         LoadUrlParams params = new LoadUrlParams(url);
         params.setLoadType(LOAD_TYPE_BROWSER_INITIATED_HTTP_POST);
-        params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_TYPED);
+        params.setTransitionType(PageTransition.TYPED);
         params.setPostData(postData);
         return params;
     }
@@ -209,7 +209,7 @@ public class LoadUrlParams {
     }
 
     /**
-     * Set transition type of this load. Defaults to PAGE_TRANSITION_LINK.
+     * Set transition type of this load. Defaults to PageTransition.LINK.
      * @param transitionType One of PAGE_TRANSITION static constants in ContentView.
      */
     public void setTransitionType(int transitionType) {

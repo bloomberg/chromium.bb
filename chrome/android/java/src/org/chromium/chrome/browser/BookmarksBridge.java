@@ -435,7 +435,7 @@ public class BookmarksBridge {
      *         not editable), returns null.
      */
     public BookmarkId addFolder(BookmarkId parent, int index, String title) {
-        assert parent.getType() == BookmarkType.BOOKMARK_TYPE_NORMAL;
+        assert parent.getType() == BookmarkType.NORMAL;
         assert index >= 0;
         assert title != null;
 
@@ -455,7 +455,7 @@ public class BookmarksBridge {
      *         not editable), returns null.
      */
     public BookmarkId addBookmark(BookmarkId parent, int index, String title, String url) {
-        assert parent.getType() == BookmarkType.BOOKMARK_TYPE_NORMAL;
+        assert parent.getType() == BookmarkType.NORMAL;
         assert index >= 0;
         assert title != null;
         assert url != null;

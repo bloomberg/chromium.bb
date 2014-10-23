@@ -46,10 +46,13 @@ class TabAndroid : public CoreTabHelperDelegate,
                    public SearchTabHelperDelegate,
                    public content::NotificationObserver {
  public:
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
   enum TabLoadStatus {
-#define DEFINE_TAB_LOAD_STATUS(name, value)  name = value,
-#include "chrome/browser/android/tab_load_status.h"
-#undef DEFINE_TAB_LOAD_STATUS
+    PAGE_LOAD_FAILED = 0,
+    DEFAULT_PAGE_LOAD = 1,
+    PARTIAL_PRERENDERED_PAGE_LOAD = 2,
+    FULL_PRERENDERED_PAGE_LOAD = 3,
   };
 
   // Convenience method to retrieve the Tab associated with the passed

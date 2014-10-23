@@ -19,12 +19,6 @@ namespace media {
 class MEDIA_EXPORT VideoCaptureDeviceFactoryAndroid :
   public VideoCaptureDeviceFactory {
  public:
-  // Automatically generated enum to interface with Java world.
-  enum AndroidImageFormat {
-#define DEFINE_ANDROID_IMAGEFORMAT(name, value) name = value,
-#include "media/video/capture/android/imageformat_list.h"
-#undef DEFINE_ANDROID_IMAGEFORMAT
-  };
   static bool RegisterVideoCaptureDeviceFactory(JNIEnv* env);
   static base::android::ScopedJavaLocalRef<jobject> createVideoCaptureAndroid(
       int id,

@@ -187,6 +187,9 @@ template("generate_jar_jni") {
 
 # Declare a target for c-preprocessor-generated java files
 #
+# NOTE: For generating Java conterparts to enums prefer using the java_cpp_enum
+#       rule instead.
+#
 # This target generates java files using the host C pre-processor. Each file in
 # sources will be compiled using the C pre-processor. If include_path is
 # specified, it will be passed (with --I) to the pre-processor.

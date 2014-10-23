@@ -24,10 +24,15 @@ namespace media {
 class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
  public:
   // Automatically generated enum to interface with Java world.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
   enum AndroidImageFormat {
-#define DEFINE_ANDROID_IMAGEFORMAT(name, value) name = value,
-#include "media/video/capture/android/imageformat_list.h"
-#undef DEFINE_ANDROID_IMAGEFORMAT
+    // Android graphics ImageFormat mapping, see reference in:
+    // http://developer.android.com/reference/android/graphics/ImageFormat.html
+    ANDROID_IMAGE_FORMAT_NV21 = 17,
+    ANDROID_IMAGE_FORMAT_YV12 = 842094169,
+    ANDROID_IMAGE_FORMAT_UNKNOWN = 0,
   };
 
   explicit VideoCaptureDeviceAndroid(const Name& device_name);
