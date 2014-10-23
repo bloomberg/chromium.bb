@@ -109,7 +109,7 @@ class BisectResults(object):
     return warnings
 
   @staticmethod
-  def ConfidenceScore(good_results_lists, bad_results_lists,
+  def ConfidenceScore(sample1, sample2,
                       accept_single_bad_or_good=False):
     """Calculates a confidence score.
 
@@ -119,8 +119,8 @@ class BisectResults(object):
 
 
     Args:
-      good_results_lists: A list of lists of "good" result numbers.
-      bad_results_lists: A list of lists of "bad" result numbers.
+      sample1: A flat list of "good" result numbers.
+      sample2: A flat list of "bad" result numbers.
       accept_single_bad_or_good: If True, computes confidence even if there is
           just one bad or good revision, otherwise single good or bad revision
           always returns 0.0 confidence. This flag will probably get away when
@@ -134,12 +134,8 @@ class BisectResults(object):
     # classified good or bad; this isn't good enough evidence to make a
     # decision. If an empty list was passed, that also implies zero confidence.
     if not accept_single_bad_or_good:
-      if len(good_results_lists) <= 1 or len(bad_results_lists) <= 1:
+      if len(sample1) <= 1 or len(sample2) <= 1:
         return 0.0
-
-    # Flatten the lists of results lists.
-    sample1 = sum(good_results_lists, [])
-    sample2 = sum(bad_results_lists, [])
 
     # If there were only empty lists in either of the lists (this is unexpected
     # and normally shouldn't happen), then we also want to return 0.
@@ -171,7 +167,9 @@ class BisectResults(object):
       if revision_state.value:
         current_values = revision_state.value['values']
         if previous_values:
-          confidence = cls.ConfidenceScore(previous_values, [current_values],
+          confidence_params = (sum(previous_values, []),
+                               sum([current_values], []))
+          confidence = cls.ConfidenceScore(*confidence_params,
                                            accept_single_bad_or_good=True)
           mean_of_prev_runs = math_utils.Mean(sum(previous_values, []))
           mean_of_current_runs = math_utils.Mean(current_values)
@@ -253,7 +251,8 @@ class BisectResults(object):
     # Give a "confidence" in the bisect. At the moment we use how distinct the
     # values are before and after the last broken revision, and how noisy the
     # overall graph is.
-    confidence = cls.ConfidenceScore(working_means, broken_means)
+    confidence_params = (sum(working_means, []), sum(broken_means, []))
+    confidence = cls.ConfidenceScore(*confidence_params)
 
     bad_greater_than_good = mean_of_bad_runs > mean_of_good_runs
 

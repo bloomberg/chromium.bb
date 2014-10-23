@@ -87,22 +87,14 @@ class BisectResultsTest(unittest.TestCase):
       bad_values: First list of numbers.
       good_values: Second list of numbers.
     """
-    # ConfidenceScore takes a list of lists but these lists are flattened
-    # inside the function.
-    confidence = BisectResults.ConfidenceScore(
-        [[v] for v in bad_values],
-        [[v] for v in good_values])
+    confidence = BisectResults.ConfidenceScore(bad_values, good_values)
     self.assertEqual(score, confidence)
 
   def testConfidenceScoreIsZeroOnTooFewLists(self):
-    self._AssertConfidence(0.0, [], [[1], [2]])
-    self._AssertConfidence(0.0, [[1], [2]], [])
-    self._AssertConfidence(0.0, [[1]], [[1], [2]])
-    self._AssertConfidence(0.0, [[1], [2]], [[1]])
-
-  def testConfidenceScoreIsZeroOnEmptyLists(self):
-    self.assertEqual(BisectResults.ConfidenceScore([[], []], [[1], [2]]), 0.0)
-    self.assertEqual(BisectResults.ConfidenceScore([[1], [2]], [[], []]), 0.0)
+    self._AssertConfidence(0.0, [], [1, 2])
+    self._AssertConfidence(0.0, [1, 2], [])
+    self._AssertConfidence(0.0, [1], [1, 2])
+    self._AssertConfidence(0.0, [1, 2], [1])
 
   def testConfidenceScore_ZeroConfidence(self):
     # The good and bad sets contain the same values, so the confidence that

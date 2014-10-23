@@ -75,6 +75,10 @@ MAX_MAC_BUILD_TIME = 14400
 MAX_WIN_BUILD_TIME = 14400
 MAX_LINUX_BUILD_TIME = 14400
 
+# The confidence percentage we require to consider the initial range a
+# regression based on the test results of the inital good and bad revisions.
+REGRESSION_CONFIDENCE = 95
+
 # Patch template to add a new file, DEPS.sha under src folder.
 # This file contains SHA1 value of the DEPS changes made while bisecting
 # dependency repositories. This patch send along with DEPS patch to try server.
@@ -88,6 +92,23 @@ new file mode 100644
 @@ -0,0 +1 @@
 +%(deps_sha)s
 """
+
+REGRESSION_CONFIDENCE_ERROR_TEMPLATE = """
+We could not reproduce the regression with this test/metric/platform combination
+with enough confidence.
+
+Here are the results for the initial revision range:
+'Good' revision: {good_rev}
+\tmean: {good_mean}
+\tstd.err.:{good_std_err}
+\tsample size:{good_sample_size}
+'Bad' revision: {bad_rev}
+\tmean: {bad_mean}
+\tstd.err.:{bad_std_err}
+\tsample size:{bad_sample_size}
+
+NOTE: There's still a chance that this is actually a regression, but you may
+      need to bisect a different platform."""
 
 # Git branch name used to run bisect try jobs.
 BISECT_TRYJOB_BRANCH = 'bisect-tryjob'
@@ -588,6 +609,46 @@ def _GenerateProfileIfNecessary(command_args):
     return False
   return True
 
+
+def _CheckRegressionConfidenceError(
+    good_revision,
+    bad_revision,
+    known_good_value,
+    known_bad_value):
+  """Checks whether we can be confident beyond a certain degree that the given
+  metrics represent a regression.
+
+  Args:
+    good_revision: string representing the commit considered 'good'
+    bad_revision: Same as above for 'bad'.
+    known_good_value: A dict with at least: 'values', 'mean' and 'std_err'
+    known_bad_value: Same as above.
+
+  Returns:
+    False if there is no error (i.e. we can be confident there's a regressioni),
+    a string containing the details of the lack of confidence otherwise.
+  """
+  error = False
+  # Adding good and bad values to a parameter list.
+  confidenceParams = []
+  for l in [known_bad_value['values'], known_good_value['values']]:
+    # Flatten if needed
+    if isinstance(l, list) and all([isinstance(x, list) for x in l]):
+      confidenceParams.append(sum(l, []))
+    else:
+      confidenceParams.append(l)
+  regression_confidence = BisectResults.ConfidenceScore(*confidenceParams)
+  if regression_confidence < REGRESSION_CONFIDENCE:
+    error = REGRESSION_CONFIDENCE_ERROR_TEMPLATE.format(
+        good_rev=good_revision,
+        good_mean=known_good_value['mean'],
+        good_std_err=known_good_value['std_err'],
+        good_sample_size=len(known_good_value['values']),
+        bad_rev=bad_revision,
+        bad_mean=known_bad_value['mean'],
+        bad_std_err=known_bad_value['std_err'],
+        bad_sample_size=len(known_bad_value['values']))
+  return error
 
 class DepotDirectoryRegistry(object):
 
@@ -2217,6 +2278,15 @@ class BisectPerformanceMetrics(object):
 
       min_revision = 0
       max_revision = len(revision_states) - 1
+      # Check how likely it is that the good and bad results are different
+      # beyond chance-induced variation.
+      if not self.opts.debug_ignore_regression_confidence:
+        error = _CheckRegressionConfidenceError(good_revision,
+                                                bad_revision,
+                                                known_good_value,
+                                                known_bad_value)
+        if error:
+          return BisectResults(error=error)
 
       # Can just mark the good and bad revisions explicitly here since we
       # already know the results.
@@ -2425,6 +2495,7 @@ class BisectOptions(object):
     self.debug_ignore_build = None
     self.debug_ignore_sync = None
     self.debug_ignore_perf_test = None
+    self.debug_ignore_regression_confidence = None
     self.debug_fake_first_test_mean = 0
     self.gs_bucket = None
     self.target_arch = 'ia32'
@@ -2593,6 +2664,10 @@ class BisectOptions(object):
     group.add_option('--debug_ignore_perf_test',
                      action='store_true',
                      help='DEBUG: Don\'t perform performance tests.')
+    group.add_option('--debug_ignore_regression_confidence',
+                     action='store_true',
+                     help='DEBUG: Don\'t score the confidence of the initial '
+                          'good and bad revisions\' test results.')
     group.add_option('--debug_fake_first_test_mean',
                      type='int',
                      default='0',
