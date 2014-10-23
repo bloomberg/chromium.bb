@@ -43,7 +43,6 @@
 #include "bindings/core/v8/V8SharedWorkerGlobalScope.h"
 #include "bindings/core/v8/V8WorkerGlobalScope.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/DOMTimer.h"
 #include "core/inspector/ScriptCallStack.h"
