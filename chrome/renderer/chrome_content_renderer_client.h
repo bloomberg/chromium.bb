@@ -191,6 +191,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
 
+#if !defined(DISABLE_NACL)
   // Determines if a NaCl app is allowed, and modifies params to pass the app's
   // permissions to the trusted NaCl plugin.
   static bool IsNaClAllowed(const GURL& manifest_url,
@@ -198,6 +199,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             bool is_nacl_unrestricted,
                             const extensions::Extension* extension,
                             blink::WebPluginParams* params);
+#endif
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<web_cache::WebCacheRenderProcessObserver> web_cache_observer_;

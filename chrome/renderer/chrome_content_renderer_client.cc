@@ -19,9 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/render_messages.h"
@@ -79,10 +77,6 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
-#include "extensions/common/extension_urls.h"
-#include "extensions/common/switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -112,11 +106,17 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/chrome_extensions_client.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "chrome/renderer/extensions/extension_frame_helper.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
+#include "extensions/common/extension_urls.h"
+#include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
@@ -268,9 +268,9 @@ void IsGuestViewApiAvailableToScriptContext(
 ChromeContentRendererClient::ChromeContentRendererClient() {
   g_current_client = this;
 
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
-#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionsRendererClient::Set(
       ChromeExtensionsRendererClient::GetInstance());
 #endif
@@ -955,6 +955,7 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
+#if !defined(DISABLE_NACL)
 //  static
 bool ChromeContentRendererClient::IsNaClAllowed(
     const GURL& manifest_url,
@@ -996,17 +997,21 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 
   bool is_whitelisted_app = is_photo_app || is_hangouts_app;
 
-  bool is_extension_from_webstore = extension &&
-      extension->from_webstore();
+  bool is_extension_from_webstore = false;
+  bool is_invoked_by_hosted_app = false;
+  bool is_extension_unrestricted = false;
+#if defined(ENABLE_EXTENSIONS)
+  is_extension_from_webstore = extension && extension->from_webstore();
 
-  bool is_invoked_by_hosted_app = extension &&
+  is_invoked_by_hosted_app = extension &&
       extension->is_hosted_app() &&
       extension->web_extent().MatchesURL(app_url);
 
   // Allow built-in extensions and extensions under development.
-  bool is_extension_unrestricted = extension &&
+  is_extension_unrestricted = extension &&
       (extension->location() == extensions::Manifest::COMPONENT ||
        extensions::Manifest::IsUnpackedLocation(extension->location()));
+#endif  // defined(ENABLE_EXTENSIONS)
 
   bool is_invoked_by_extension = app_url.SchemeIs("chrome-extension");
 
@@ -1056,6 +1061,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   }
   return is_nacl_allowed;
 }
+#endif  // defined(DISABLE_NACL)
 
 bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
                                                std::string* error_domain) {
@@ -1497,7 +1503,11 @@ void ChromeContentRendererClient::AddKeySystems(
 
 bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(
     const base::string16& source) const {
+#if defined(ENABLE_EXTENSIONS)
   return extensions::IsSourceFromAnExtension(source);
+#else
+  return false;
+#endif
 }
 
 bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
@@ -1506,8 +1516,12 @@ bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   // running a normal web page from the Internet. We only turn on
   // SiteIsolationPolicy for a renderer process that does not have the extension
   // flag on.
+#if defined(ENABLE_EXTENSIONS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(extensions::switches::kExtensionProcess);
+#else
+  return true;
+#endif
 }
 
 blink::WebWorkerPermissionClientProxy*

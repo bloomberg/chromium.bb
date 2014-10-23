@@ -9,47 +9,65 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/common/webplugininfo.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#endif
+
+#if !defined(DISABLE_NACL)
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
-#include "url/gurl.h"
+#endif
 
+#if !defined(DISABLE_NACL)
 using blink::WebPluginParams;
 using blink::WebString;
 using blink::WebVector;
+#endif
+
 using content::WebPluginInfo;
 using content::WebPluginMimeType;
 
 namespace {
+
+#if !defined(DISABLE_NACL)
 const bool kNaClRestricted = false;
 const bool kNaClUnrestricted = true;
 const bool kExtensionRestricted = false;
 const bool kExtensionUnrestricted = true;
 const bool kExtensionNotFromWebStore = false;
 const bool kExtensionFromWebStore = true;
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
 const bool kNotHostedApp = false;
 const bool kHostedApp = true;
+#endif
 
+#if !defined(DISABLE_NACL)
 const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
 const char kPhotosAppURL1[] = "https://foo.plus.google.com";
 const char kPhotosAppURL2[] = "https://foo.plus.sandbox.google.com";
 const char kPhotosManifestURL1[] = "https://ssl.gstatic.com/s2/oz/nacl/foo";
 const char kPhotosManifestURL2[] = "https://ssl.gstatic.com/photos/nacl/foo";
-
-const char kChatAppURL1[] = "https://foo.talkgadget.google.com/hangouts/foo";
-const char kChatAppURL2[] = "https://foo.plus.google.com/hangouts/foo";
-const char kChatAppURL3[] = "https://foo.plus.sandbox.google.com/hangouts/foo";
 const char kChatManifestFS1[] =
   "filesystem:https://foo.talkgadget.google.com/foo";
 const char kChatManifestFS2[] = "filesystem:https://foo.plus.google.com/foo";
 const char kChatManifestFS3[] =
   "filesystem:https://foo.plus.sandbox.google.com/foo";
+#endif
 
+const char kChatAppURL1[] = "https://foo.talkgadget.google.com/hangouts/foo";
+const char kChatAppURL2[] = "https://foo.plus.google.com/hangouts/foo";
+const char kChatAppURL3[] = "https://foo.plus.sandbox.google.com/hangouts/foo";
+
+#if !defined(DISABLE_NACL)
 bool AllowsDevInterfaces(const WebPluginParams& params) {
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     if (params.attributeNames[i] == WebString::fromUTF8("@dev"))
@@ -66,6 +84,7 @@ void AddFakeDevAttribute(WebPluginParams* params) {
   params->attributeNames.swap(names);
   params->attributeValues.swap(values);
 }
+#endif
 
 void AddContentTypeHandler(content::WebPluginInfo* info,
                            const char* mime_type,
@@ -77,11 +96,13 @@ void AddContentTypeHandler(content::WebPluginInfo* info,
       base::UTF8ToUTF16(manifest_url));
   info->mime_types.push_back(mime_type_info);
 }
+
 }  // namespace
 
 typedef testing::Test ChromeContentRendererClientTest;
 
 
+#if defined(ENABLE_EXTENSIONS)
 scoped_refptr<const extensions::Extension> CreateTestExtension(
     bool is_unrestricted, bool is_from_webstore, bool is_hosted_app,
     const std::string& app_url) {
@@ -118,6 +139,7 @@ scoped_refptr<const extensions::Extension> CreateHostedApp(
   return CreateTestExtension(is_unrestricted, is_from_webstore, kHostedApp,
                              app_url);
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   // Unknown content types have no NaCl module.
@@ -135,6 +157,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
               ChromeContentRendererClient::GetNaClContentHandlerURL(
                   "application/x-foo", info));
   }
+#if !defined(DISABLE_NACL)
   // --enable-nacl allows all NaCl apps, with 'dev' interfaces.
   {
     WebPluginParams params;
@@ -372,6 +395,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
                         "http://example.com/").get(),
         &params));
   }
+#endif  // !defined(DISABLE_NACL)
 }
 
 TEST_F(ChromeContentRendererClientTest, AllowPepperMediaStreamAPI) {

@@ -272,7 +272,6 @@
         '../content/app/resources/content_resources.gyp:content_resources',
         '../content/app/strings/content_strings.gyp:content_strings',
         '../content/content.gyp:content_renderer',
-        '../extensions/extensions_resources.gyp:extensions_resources',
         '../media/cast/cast.gyp:cast_logging_proto',
         '../media/cast/cast.gyp:cast_net',
         '../media/cast/cast.gyp:cast_sender',
@@ -337,6 +336,7 @@
         ['enable_extensions==1', {
           'dependencies': [
             '../extensions/extensions.gyp:extensions_renderer',
+            '../extensions/extensions_resources.gyp:extensions_resources',
             # TODO(hclam): See crbug.com/298380 for details.
             # We should isolate the APIs needed by the renderer.
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',

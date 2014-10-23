@@ -28,6 +28,10 @@
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
+#if !defined(ENABLE_EXTENSIONS)
+#error "Extensions must be enabled"
+#endif
+
 namespace base {
 class DictionaryValue;
 class Version;

@@ -267,6 +267,7 @@ static_library("browser") {
     if (!use_aura || is_win || is_chromeos) {
       sources -= [ "background/background_mode_manager_aura.cc" ]
     }
+    defines += [ "ENABLE_BACKGROUND=1" ]
   }
   if (enable_task_manager) {
     sources += rebase_path(gypi_values.chrome_browser_task_manager_sources,
@@ -743,8 +744,6 @@ source_set("test_support") {
     "download/download_test_file_activity_observer.h",
     "download/test_download_shelf.cc",
     "download/test_download_shelf.h",
-    "extensions/extension_action_test_util.cc",
-    "extensions/extension_action_test_util.h",
     "invalidation/fake_invalidation_service.cc",
     "invalidation/fake_invalidation_service.h",
     "media/fake_desktop_media_list.cc",
@@ -819,6 +818,10 @@ source_set("test_support") {
   }
 
   if (enable_extensions) {
+    sources += [
+      "extensions/extension_action_test_util.cc",
+      "extensions/extension_action_test_util.h",
+    ]
     deps += [
       "//extensions:test_support",
     ]

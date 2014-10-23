@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 
 # GYP version: chrome/chrome_tests_unit.gypi:test_support_common
 source_set("test_support") {
+  defines = []
   testonly = true
 
   sources = [
@@ -109,7 +110,6 @@ source_set("test_support") {
 
   if (!is_ios) {
     deps += [
-      "//chrome/common/extensions/api",
       "//chrome/plugin",
       "//chrome/renderer",
       "//chrome/utility",
@@ -122,7 +122,6 @@ source_set("test_support") {
       "//components/captive_portal:test_support",
       "//components/infobars/core",
       "//components/sessions:test_support",
-      "//extensions:test_support",
       "//google_apis:test_support",
       "//ipc:test_support",
       "//media:test_support",
@@ -163,6 +162,17 @@ source_set("test_support") {
   }
   if (toolkit_views) {
     deps += [ "//ui/views:test_support" ]
+  }
+
+  if (enable_background) {
+    defines += [ "ENABLE_BACKGROUND=1" ]
+  }
+
+  if (enable_extensions) {
+    deps += [
+      "//chrome/common/extensions/api",
+      "//extensions:test_support",
+    ]
   }
 }
 

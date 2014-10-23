@@ -5,13 +5,6 @@
 import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojo") {
-  sources = [
-    "mojo/keep_alive.mojom",
-    "stash.mojom",
-  ]
-}
-
 # GYP version: extensions/extensions.gyp:extensions_common_constants
 source_set("common_constants") {
   sources = [
@@ -25,6 +18,16 @@ source_set("common_constants") {
     ]
   }
 }
+
+if (enable_extensions) {
+
+mojom("mojo") {
+  sources = [
+    "mojo/keep_alive.mojom",
+    "stash.mojom",
+  ]
+}
+
 
 # GYP version: extensions/extensions.gyp:extensions_common
 source_set("common") {
@@ -61,7 +64,6 @@ source_set("common") {
     "extension.h",
     "extension_api.cc",
     "extension_api.h",
-    "extension_api_stub.cc",
     "extension_icon_set.cc",
     "extension_icon_set.h",
     "extension_l10n_util.cc",
@@ -226,7 +228,11 @@ source_set("common") {
     "//components/url_matcher",
     "//content/public/common",
     "//crypto",
+    "//device/bluetooth",
+    "//device/usb",
+    "//extensions/common/api",
     "//extensions/strings",
+    "//extensions:extensions_resources",
     "//ipc",
     "//net",
     "//third_party/icu",
@@ -237,40 +243,6 @@ source_set("common") {
     "//ui/gfx/ipc",
     "//url",
   ]
-
-  if (enable_extensions) {
-    sources -= [
-      "extension_api_stub.cc",
-    ]
-
-    deps += [
-      "//device/bluetooth",
-      "//device/usb",
-      "//extensions/common/api",
-      "//extensions:extensions_resources",
-    ]
-  } else {
-    sources -= [
-      "api/bluetooth/bluetooth_manifest_data.cc",
-      "api/bluetooth/bluetooth_manifest_data.h",
-      "api/bluetooth/bluetooth_manifest_handler.cc",
-      "api/bluetooth/bluetooth_manifest_handler.h",
-      "api/bluetooth/bluetooth_manifest_permission.cc",
-      "api/bluetooth/bluetooth_manifest_permission.h",
-      "api/messaging/message.h",
-      "api/sockets/sockets_manifest_data.cc",
-      "api/sockets/sockets_manifest_data.h",
-      "api/sockets/sockets_manifest_handler.cc",
-      "api/sockets/sockets_manifest_handler.h",
-      "api/sockets/sockets_manifest_permission.cc",
-      "api/sockets/sockets_manifest_permission.h",
-      "extension_api.cc",
-      "manifest_handlers/externally_connectable.cc",
-      "manifest_handlers/externally_connectable.h",
-      "manifest_handlers/options_page_info.cc",
-      "manifest_handlers/options_page_info.h",
-    ]
-  }
 
   if (enable_nacl) {
     sources += [
@@ -285,3 +257,5 @@ source_set("common") {
     ]
   }
 }
+
+} # enable_extensions

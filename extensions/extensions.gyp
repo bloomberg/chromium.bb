@@ -98,7 +98,6 @@
         'common/extension.h',
         'common/extension_api.cc',
         'common/extension_api.h',
-        'common/extension_api_stub.cc',
         'common/extension_icon_set.cc',
         'common/extension_icon_set.h',
         'common/extension_l10n_util.cc',
@@ -266,9 +265,6 @@
             # For Mojo generated headers for generated_api.cc.
             '../device/serial/serial.gyp:device_serial_mojo',
             '../device/usb/usb.gyp:device_usb',
-          ],
-          'sources!': [
-            'common/extension_api_stub.cc',
           ],
         }, {  # enable_extensions == 0
           'sources!': [

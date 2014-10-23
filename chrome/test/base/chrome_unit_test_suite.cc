@@ -27,13 +27,16 @@
 
 #if !defined(OS_IOS)
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/common/extensions/chrome_extensions_client.h"
-#include "extensions/common/extension_paths.h"
 #include "ui/gl/gl_surface.h"
 #endif
 
 #if defined(OS_POSIX)
 #include "base/memory/shared_memory.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/chrome_extensions_client.h"
+#include "extensions/common/extension_paths.h"
 #endif
 
 namespace {
@@ -127,12 +130,14 @@ void ChromeUnitTestSuite::InitializeProviders() {
   chromeos::RegisterPathProvider();
 #endif
 
-#if !defined(OS_IOS)
+#if defined(ENABLE_EXTENSIONS)
   extensions::RegisterPathProvider();
 
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
+#endif
 
+#if !defined(OS_IOS)
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
 
