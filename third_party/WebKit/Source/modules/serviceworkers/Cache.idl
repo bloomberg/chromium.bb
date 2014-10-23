@@ -8,6 +8,7 @@
     GarbageCollected,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorkerCache,
+    TypeChecking=Interface,
 ] interface Cache {
   // FIXME: Blink doesn't support union types, we use overrides instead. See http://crbug.com/240176
 

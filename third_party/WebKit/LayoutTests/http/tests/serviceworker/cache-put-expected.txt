@@ -8,9 +8,11 @@ FAIL Cache.put with an empty response body assert_equals: Cache.put should updat
 PASS Cache.put with HTTP 500 response 
 FAIL Cache.put called twice with same Request and different Responses Entry already exists.
 FAIL Cache.put with an invalid request assert_promise_rejects: Cache.put should only accept a Request object as the request. Promise did not reject.
+PASS Cache.put with an invalid response 
 FAIL Cache.put with a non-HTTP/HTTPS request assert_promise_rejects: Cache.put should reject non-HTTP/HTTPS requests with a TypeError. Promise did not reject.
 FAIL Cache.put with a relative URL assert_equals: Cache.put should accept a relative URL as the request. :[object].url expected "" but got "http://127.0.0.1:8000/serviceworker/resources/relative-url"
 FAIL Cache.put with a non-GET request assert_promise_rejects: Cache.put should throw a TypeError for non-GET requests. Promise did not reject.
 FAIL Cache.put with a non-GET request assert_promise_rejects: Cache.put should throw a TypeError for non-GET requests. Promise did not reject.
+PASS Cache.put with an empty response 
 Harness: the test ran to completion.
 

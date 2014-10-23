@@ -32,6 +32,7 @@
 [
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
+    TypeChecking=Interface,
 ] interface ExtendableEvent : Event {
     [CallWith=ScriptState] void waitUntil(any value);
 };

@@ -31,7 +31,8 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-container-interface
 [
     RuntimeEnabled=ServiceWorker,
-    GarbageCollected
+    GarbageCollected,
+    TypeChecking=Interface,
 ] interface ServiceWorkerContainer {
     [Unforgeable] readonly attribute ServiceWorker? controller;
     [CallWith=ScriptState] readonly attribute Promise ready;

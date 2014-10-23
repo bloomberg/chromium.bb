@@ -7,6 +7,7 @@
     GarbageCollected,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorkerCache,
+    TypeChecking=Interface,
 ] interface CacheStorage {
   [CallWith=ScriptState] Promise has(ScalarValueString cacheName);
   [CallWith=ScriptState] Promise open(ScalarValueString cacheName);

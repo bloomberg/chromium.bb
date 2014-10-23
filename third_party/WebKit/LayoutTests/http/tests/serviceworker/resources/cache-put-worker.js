@@ -160,16 +160,12 @@ cache_test(function(cache) {
       'Cache.put should only accept a Request object as the request.');
   }, 'Cache.put with an invalid request');
 
-// TODO: This test currently causes a renderer crash. Enable test again once the
-// crash is resolved. http://crbug.com/426153
-if (false) {
-  cache_test(function(cache) {
-      return assert_promise_rejects(
-        cache.put(new_test_request(), 'Hello world!'),
-        new TypeError(),
-        'Cache.put should only accept a Response object as the response.');
-    }, 'Cache.put with an invalid response');
-}
+cache_test(function(cache) {
+    return assert_promise_rejects(
+      cache.put(new_test_request(), 'Hello world!'),
+      new TypeError(),
+      'Cache.put should only accept a Response object as the response.');
+  }, 'Cache.put with an invalid response');
 
 cache_test(function(cache) {
   return assert_promise_rejects(
@@ -207,13 +203,9 @@ cache_test(function(cache) {
       'Cache.put should throw a TypeError for non-GET requests.');
   }, 'Cache.put with a non-GET request');
 
-// TODO: This test currently causes a renderer crash. Enable test again once the
-// crash is resolved. http://crbug.com/426153
-if (false) {
-  cache_test(function(cache) {
-      return assert_promise_rejects(
-        cache.put(new_test_request(), null),
-        new TypeError(),
-        'Cache.put should throw a TypeError for an empty response.');
-    }, 'Cache.put with an empty response');
-}
+cache_test(function(cache) {
+    return assert_promise_rejects(
+      cache.put(new_test_request(), null),
+      new TypeError(),
+      'Cache.put should throw a TypeError for an empty response.');
+  }, 'Cache.put with an empty response');

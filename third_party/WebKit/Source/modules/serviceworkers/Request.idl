@@ -16,6 +16,7 @@ enum RequestCredentials { "omit", "same-origin", "include" };
     RaisesException=Constructor,
     ActiveDOMObject,
     GarbageCollected,
+    TypeChecking=Interface,
 ] interface Request {
     readonly attribute ByteString method;
     readonly attribute ScalarValueString url;

@@ -18,6 +18,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque" };
     RaisesException=Constructor,
     ActiveDOMObject,
     GarbageCollected,
+    TypeChecking=Interface,
 ] interface Response {
     // FIXME: Implement redirect().
     readonly attribute ResponseType type;
