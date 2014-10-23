@@ -140,7 +140,7 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   profile()->CreateBookmarkModel(true);
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  test::WaitForBookmarkModelToLoad(model);
+  bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   // Navigate to a url.
   GURL url1("http://foo/1");

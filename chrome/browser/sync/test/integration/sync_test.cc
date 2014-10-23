@@ -350,7 +350,7 @@ bool SyncTest::SetupClients() {
 
   // Create the verifier profile.
   verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
-  test::WaitForBookmarkModelToLoad(
+  bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(verifier()));
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
       verifier(), Profile::EXPLICIT_ACCESS));
@@ -395,7 +395,7 @@ void SyncTest::InitializeInstance(int index) {
                                          << index << ".";
   InitializeInvalidations(index);
 
-  test::WaitForBookmarkModelToLoad(
+  bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(GetProfile(index)));
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
       GetProfile(index), Profile::EXPLICIT_ACCESS));

@@ -145,7 +145,7 @@ class AndroidProviderBackendTest : public testing::Test {
     bookmark_model_ = BookmarkModelFactory::GetForProfile(testing_profile);
     history_client_ =
         ChromeHistoryClientFactory::GetForProfile(testing_profile);
-    test::WaitForBookmarkModelToLoad(bookmark_model_);
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
     ASSERT_TRUE(bookmark_model_);
 
     // Get the BookmarkModel from LastUsedProfile, this is the same way that

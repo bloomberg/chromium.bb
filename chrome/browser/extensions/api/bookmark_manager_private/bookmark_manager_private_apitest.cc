@@ -32,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   ChromeBookmarkClient* client =
       ChromeBookmarkClientFactory::GetForProfile(profile);
-  test::WaitForBookmarkModelToLoad(model);
+  bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   base::ListValue list;
   base::DictionaryValue* node = new base::DictionaryValue();
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   // Provide some testing data here, since bookmark editing will be disabled
   // within the extension.
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  test::WaitForBookmarkModelToLoad(model);
+  bookmarks::test::WaitForBookmarkModelToLoad(model);
   const BookmarkNode* bar = model->bookmark_bar_node();
   const BookmarkNode* folder =
       model->AddFolder(bar, 0, base::ASCIIToUTF16("Folder"));

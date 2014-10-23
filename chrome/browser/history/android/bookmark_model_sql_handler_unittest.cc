@@ -47,7 +47,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
     // Create the BookmarkModel that doesn't need to invoke load().
     testing_profile->CreateBookmarkModel(true);
     bookmark_model_ = BookmarkModelFactory::GetForProfile(testing_profile);
-    test::WaitForBookmarkModelToLoad(bookmark_model_);
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
     ASSERT_TRUE(bookmark_model_);
     // Get the BookmarkModel from LastUsedProfile, this is the same way that
     // how the BookmarkModelSQLHandler gets the BookmarkModel.

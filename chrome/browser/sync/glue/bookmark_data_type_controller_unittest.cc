@@ -124,7 +124,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
       bookmark_model_ = static_cast<BookmarkModel*>(
           BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
               &profile_, BuildBookmarkModel));
-      test::WaitForBookmarkModelToLoad(bookmark_model_);
+      bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
     } else {
       bookmark_model_ = static_cast<BookmarkModel*>(
           BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -205,7 +205,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
                         profile_.GetIOTaskRunner(),
                         content::BrowserThread::GetMessageLoopProxyForThread(
                             content::BrowserThread::UI));
-  test::WaitForBookmarkModelToLoad(bookmark_model_);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
   EXPECT_EQ(DataTypeController::MODEL_LOADED, bookmark_dtc_->state());
 
   bookmark_dtc_->StartAssociating(

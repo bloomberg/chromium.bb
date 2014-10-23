@@ -203,7 +203,7 @@ void InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
   ASSERT_TRUE(profile_.CreateHistoryService(true, false));
   profile_.CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(
+  bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(&profile_));
   profile_.BlockUntilHistoryProcessesPendingRequests();
   profile_.BlockUntilHistoryIndexIsRefreshed();

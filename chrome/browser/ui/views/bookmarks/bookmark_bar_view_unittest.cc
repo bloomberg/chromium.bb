@@ -63,7 +63,7 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   // BookmarkBarView.
   void CreateBookmarkModelAndBookmarkBarView() {
     profile()->CreateBookmarkModel(true);
-    test::WaitForBookmarkModelToLoad(
+    bookmarks::test::WaitForBookmarkModelToLoad(
         BookmarkModelFactory::GetForProfile(profile()));
     CreateBookmarkBarView();
   }

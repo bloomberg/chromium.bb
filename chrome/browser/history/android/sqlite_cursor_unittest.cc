@@ -65,7 +65,7 @@ class SQLiteCursorTest : public testing::Test,
         chrome::kInitialProfile);
 
     testing_profile_->CreateBookmarkModel(true);
-    test::WaitForBookmarkModelToLoad(
+    bookmarks::test::WaitForBookmarkModelToLoad(
         BookmarkModelFactory::GetForProfile(testing_profile_));
 
     testing_profile_->CreateFaviconService();

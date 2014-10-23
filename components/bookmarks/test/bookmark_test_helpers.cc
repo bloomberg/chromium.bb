@@ -14,6 +14,9 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "url/gurl.h"
 
+namespace bookmarks {
+namespace test {
+
 namespace {
 
 // BookmarkLoadObserver is used when blocking until the BookmarkModel finishes
@@ -92,8 +95,6 @@ std::string::size_type AddNodesFromString(BookmarkModel* model,
 
 }  // namespace
 
-namespace test {
-
 void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   if (model->loaded())
     return;
@@ -136,3 +137,4 @@ void AddNodesFromModelString(BookmarkModel* model,
 }
 
 }  // namespace test
+}  // namespace bookmarks

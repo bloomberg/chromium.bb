@@ -158,7 +158,7 @@ TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
   TestingProfile* other_profile =
       testing_profile_manager()->CreateTestingProfile("other");
   other_profile->CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(
+  bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(other_profile));
 
   mock_controller_.reset(GetMockController(

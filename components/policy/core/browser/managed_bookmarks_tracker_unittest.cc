@@ -66,7 +66,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
                  base::FilePath(),
                  base::MessageLoopProxy::current(),
                  base::MessageLoopProxy::current());
-    test::WaitForBookmarkModelToLoad(model_.get());
+    bookmarks::test::WaitForBookmarkModelToLoad(model_.get());
     Mock::VerifyAndClearExpectations(&observer_);
 
     ASSERT_EQ(1u, client_.extra_nodes().size());

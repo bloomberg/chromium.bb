@@ -109,7 +109,7 @@ TEST_F(AvatarIconControllerTest, SupervisedUserLabel) {
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       profile, &AutocompleteClassifierFactory::BuildInstanceFor);
   profile->CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(
+  bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(profile));
 
   Browser* browser =

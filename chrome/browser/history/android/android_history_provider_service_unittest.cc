@@ -54,7 +54,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
         chrome::kInitialProfile);
 
     testing_profile_->CreateBookmarkModel(true);
-    test::WaitForBookmarkModelToLoad(
+    bookmarks::test::WaitForBookmarkModelToLoad(
         BookmarkModelFactory::GetForProfile(testing_profile_));
     ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
     service_.reset(new AndroidHistoryProviderService(testing_profile_));

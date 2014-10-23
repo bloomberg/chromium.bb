@@ -64,7 +64,7 @@ class PartnerBookmarksShimTest : public testing::Test {
     profile_->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    test::WaitForBookmarkModelToLoad(model_);
+    bookmarks::test::WaitForBookmarkModelToLoad(model_);
   }
 
   virtual void TearDown() override {

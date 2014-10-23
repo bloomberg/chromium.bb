@@ -53,7 +53,7 @@ class ChromeBookmarkClientTest : public testing::Test {
   void ResetModel() {
     profile_.CreateBookmarkModel(false);
     model_ = BookmarkModelFactory::GetForProfile(&profile_);
-    test::WaitForBookmarkModelToLoad(model_);
+    bookmarks::test::WaitForBookmarkModelToLoad(model_);
     model_->AddObserver(&observer_);
     client_ = ChromeBookmarkClientFactory::GetForProfile(&profile_);
     DCHECK(client_);

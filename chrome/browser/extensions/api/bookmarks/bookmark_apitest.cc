@@ -28,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   ChromeBookmarkClient* client =
       ChromeBookmarkClientFactory::GetForProfile(profile);
-  test::WaitForBookmarkModelToLoad(model);
+  bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   base::ListValue list;
   base::DictionaryValue* node = new base::DictionaryValue();

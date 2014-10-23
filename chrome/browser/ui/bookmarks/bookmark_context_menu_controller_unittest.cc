@@ -55,7 +55,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
     profile_ = builder.Build();
     profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    test::WaitForBookmarkModelToLoad(model_);
+    bookmarks::test::WaitForBookmarkModelToLoad(model_);
     AddTestData(model_);
   }
 
@@ -245,7 +245,7 @@ TEST_F(BookmarkContextMenuControllerTest, DisableIncognito) {
 
   incognito->CreateBookmarkModel(true);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(incognito);
-  test::WaitForBookmarkModelToLoad(model);
+  bookmarks::test::WaitForBookmarkModelToLoad(model);
   AddTestData(model);
 
   std::vector<const BookmarkNode*> nodes;

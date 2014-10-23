@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_IncognitoSplitMode) {
                            page2_complete(incognito_browser->profile());
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(browser()->profile());
-    test::WaitForBookmarkModelToLoad(bookmark_model);
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
     const BookmarkNode* parent = bookmark_model->bookmark_bar_node();
     bookmark_model->AddURL(
         parent, 0, base::ASCIIToUTF16("Title"), GURL("about:blank"));
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   // Send an event by making a bookmark.
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(browser()->profile());
-  test::WaitForBookmarkModelToLoad(bookmark_model);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
   bookmarks::AddIfNotBookmarked(bookmark_model,
                                 GURL("http://www.google.com"),
                                 base::UTF8ToUTF16("Google"));

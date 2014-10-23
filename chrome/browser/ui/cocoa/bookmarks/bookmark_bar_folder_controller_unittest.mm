@@ -729,10 +729,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu and drag in a button from the bar.
@@ -761,7 +761,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   const std::string expected_string("2f:[ 2f1b 1b 2f2f:[ 2f2f1b "
       "2f2f2b 2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ "
       "4f2f1b 4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  EXPECT_EQ(expected_string, test::ModelStringFromNode(root));
+  EXPECT_EQ(expected_string, bookmarks::test::ModelStringFromNode(root));
 
   // Verify the window still appears by looking for its controller.
   EXPECT_TRUE([bar_ folderController]);
@@ -792,7 +792,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   [bar_ dragButton:draggedButton
                 to:[targetButton left]
               copy:NO];
-  EXPECT_EQ(model_string, test::ModelStringFromNode(root));
+  EXPECT_EQ(model_string, bookmarks::test::ModelStringFromNode(root));
   // Don't check the folder window since it's not supposed to be showing.
 }
 
@@ -802,10 +802,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu and copy in a button from the bar.
@@ -833,7 +833,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
   const std::string expected_1("1b 2f:[ 2f1b 1b 2f2f:[ 2f2f1b "
     "2f2f2b 2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ "
     "4f2f1b 4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  EXPECT_EQ(expected_1, test::ModelStringFromNode(root));
+  EXPECT_EQ(expected_1, bookmarks::test::ModelStringFromNode(root));
 
   // Gather the new frames.
   NSRect newToFolderFrame = [toFolder frame];
@@ -857,7 +857,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragCopyBarBookmarkToFolder) {
   const std::string expected_2("1b 2f:[ 2f1b 1b 2f2f:[ 2f2f1b "
       "2f2f2b 2f2f3b ] 2f3b ] 3b 1b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ "
       "4f2f1b 4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  EXPECT_EQ(expected_2, test::ModelStringFromNode(root));
+  EXPECT_EQ(expected_2, bookmarks::test::ModelStringFromNode(root));
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
@@ -866,10 +866,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu and a subfolder menu.
@@ -907,7 +907,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
   const std::string expected_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b "
       "2f2f2b 2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ "
       "4f2f1b 4f2f2b 4f2f3b 5b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] ");
-  EXPECT_EQ(expected_string, test::ModelStringFromNode(root));
+  EXPECT_EQ(expected_string, bookmarks::test::ModelStringFromNode(root));
 
   // Check button spacing.
   [folderController validateMenuSpacing];
@@ -931,10 +931,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveWithinFolder) {
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu.
@@ -961,7 +961,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveWithinFolder) {
   const std::string expected_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b "
       "2f2f2b 2f2f3b ] 2f3b ] 3b 4f:[ 4f2f:[ 4f2f1b 4f2f2b 4f2f3b ] "
       "4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  EXPECT_EQ(expected_string, test::ModelStringFromNode(root));
+  EXPECT_EQ(expected_string, bookmarks::test::ModelStringFromNode(root));
 
   // The window should not have gone away.
   EXPECT_TRUE([bar_ folderController]);
@@ -980,10 +980,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragParentOntoChild) {
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu.
@@ -1005,7 +1005,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragParentOntoChild) {
                             to:[targetButton top]
                           copy:NO];
   // The model should not have changed.
-  EXPECT_EQ(model_string, test::ModelStringFromNode(root));
+  EXPECT_EQ(model_string, bookmarks::test::ModelStringFromNode(root));
 
   // Check button spacing.
   [folderController validateMenuSpacing];
@@ -1017,10 +1017,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveChildToParent) {
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f:[ 4f2f1b "
       "4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu and a subfolder menu.
@@ -1053,7 +1053,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveChildToParent) {
   const std::string expected_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b "
       "2f2f3b ] 2f3b ] 3b 4f:[ 4f1f:[ 4f1f1b 4f1f2b 4f1f3b ] 4f2f3b 4f2f:[ "
       "4f2f1b 4f2f2b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
-  EXPECT_EQ(expected_string, test::ModelStringFromNode(root));
+  EXPECT_EQ(expected_string, bookmarks::test::ModelStringFromNode(root));
 
   // Check button spacing.
   [folderController validateMenuSpacing];
@@ -1068,10 +1068,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragWindowResizing) {
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string(
       "a b:[ b1 b2 b3 ] reallyReallyLongBookmarkName c ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu.
@@ -1097,7 +1097,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragWindowResizing) {
   // Verify the model change.
   const std::string expected_string(
       "a b:[ b1 reallyReallyLongBookmarkName b2 b3 ] c ");
-  EXPECT_EQ(expected_string, test::ModelStringFromNode(root));
+  EXPECT_EQ(expected_string, bookmarks::test::ModelStringFromNode(root));
   // Verify the window grew. Just test a reasonable width gain.
   CGFloat newWidth = NSWidth([toWindow frame]);
   EXPECT_LT(oldWidth + 30.0, newWidth);
@@ -1107,10 +1107,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MoveRemoveAddButtons) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b 2f3b ] 3b 4b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Pop up a folder menu.
@@ -1207,10 +1207,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, ControllerForNode) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Find the main bar controller.
@@ -1242,10 +1242,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2b 3b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   const BookmarkNode* parent = model->bookmark_bar_node();
@@ -1406,16 +1406,16 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
   const BookmarkNode* other = model->other_node();
   const std::string other_string("O1b O2b O3f:[ O3f1b O3f2f ] "
                                  "O4f:[ O4f1b O4f2f ] 05b ");
-  test::AddNodesFromModelString(model, other, other_string);
+  bookmarks::test::AddNodesFromModelString(model, other, other_string);
 
   // Validate initial model.
-  std::string actual = test::ModelStringFromNode(root);
+  std::string actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actual);
-  actual = test::ModelStringFromNode(other);
+  actual = bookmarks::test::ModelStringFromNode(other);
   EXPECT_EQ(other_string, actual);
 
   // Pop open a folder.
@@ -1440,7 +1440,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   // Verify the model.
   const std::string expected("1b 2f:[ O3f:[ O3f1b O3f2f ] 2f1b 2f2f:[ 2f2f1b "
                              "2f2f2b 2f2f3b ] 2f3b ] 3b 4b ");
-  actual = test::ModelStringFromNode(root);
+  actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(expected, actual);
 
   // Now drag over a folder button.
@@ -1456,7 +1456,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   const std::string expectedA("1b 2f:[ O3f:[ O3f1b O3f2f ] 2f1b 2f2f:[ "
                               "2f2f1b 2f2f2b 2f2f3b O4f:[ O4f1b O4f2f ] ] "
                               "2f3b ] 3b 4b ");
-  actual = test::ModelStringFromNode(root);
+  actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(expectedA, actual);
 
   // Check button spacing.
@@ -1468,10 +1468,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actual = test::ModelStringFromNode(root);
+  std::string actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actual);
 
   const BookmarkNode* folderNode = root->GetChild(1);
@@ -1499,7 +1499,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
   // Verify the model.
   const std::string expected("1b 2f:[ 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                              "2f3b ] 3b 4b ");
-  actual = test::ModelStringFromNode(root);
+  actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(expected, actual);
 
   // Check button spacing.
@@ -1511,10 +1511,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, AddURLs) {
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actual = test::ModelStringFromNode(root);
+  std::string actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actual);
 
   // Pop open a folder.
@@ -1544,7 +1544,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, AddURLs) {
   // Verify the model.
   const std::string expected("1b 2f:[ SiteA SiteB 2f1b 2f2f:[ 2f2f1b 2f2f2b "
                              "2f2f3b ] 2f3b ] 3b 4b ");
-  actual = test::ModelStringFromNode(root);
+  actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(expected, actual);
 
   // Check button spacing.
@@ -1556,10 +1556,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actual = test::ModelStringFromNode(root);
+  std::string actual = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actual);
 
   // Pop open the folder.
@@ -1615,10 +1615,10 @@ TEST_F(BookmarkBarFolderControllerClosingTest, DeleteClosesFolder) {
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b ] "
                                  "2f3b ] 3b ");
-  test::AddNodesFromModelString(model, root, model_string);
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
 
   // Validate initial model.
-  std::string actualModelString = test::ModelStringFromNode(root);
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
   // Open the folder menu and submenu.

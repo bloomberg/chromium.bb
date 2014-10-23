@@ -60,7 +60,7 @@ void CocoaProfileTest::SetUp() {
       profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
 
   profile_->CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(
+  bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(profile_));
 
   browser_.reset(CreateBrowser());

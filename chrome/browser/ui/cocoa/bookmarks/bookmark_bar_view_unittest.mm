@@ -257,7 +257,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
 
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(profile());
-  test::WaitForBookmarkModelToLoad(bookmark_model);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
   const BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),

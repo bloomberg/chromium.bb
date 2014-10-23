@@ -39,7 +39,7 @@ BookmarkUndoServiceTest::BookmarkUndoServiceTest() {}
 void BookmarkUndoServiceTest::SetUp() {
   profile_.reset(new TestingProfile);
   profile_->CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(GetModel());
+  bookmarks::test::WaitForBookmarkModelToLoad(GetModel());
 }
 
 BookmarkModel* BookmarkUndoServiceTest::GetModel() {
