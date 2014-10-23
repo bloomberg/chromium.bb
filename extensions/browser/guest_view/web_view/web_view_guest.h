@@ -94,7 +94,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void DidAttachToEmbedder() override;
   void DidInitialize() override;
   void DidStopLoading() override;
-  void EmbedderDestroyed() override;
+  void EmbedderWillBeDestroyed() override;
   void GuestDestroyed() override;
   void GuestReady() override;
   void GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,

@@ -142,6 +142,18 @@ void ChromeWebViewGuestDelegate::OnGuestReady() {
   zoom_controller->SetZoomMode(ZoomController::ZOOM_MODE_ISOLATED);
 }
 
+void ChromeWebViewGuestDelegate::OnEmbedderWillBeDestroyed() {
+  content::WebContents* embedder_web_contents =
+      web_view_guest()->embedder_web_contents();
+  if (!embedder_web_contents)
+    return;
+
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(embedder_web_contents);
+  if (zoom_controller)
+    zoom_controller->RemoveObserver(this);
+}
+
 void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
   // Clean up custom context menu items for this guest.
   MenuManager* menu_manager = MenuManager::Get(

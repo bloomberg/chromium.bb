@@ -349,7 +349,10 @@ void WebViewGuest::DidStopLoading() {
       new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
 }
 
-void WebViewGuest::EmbedderDestroyed() {
+void WebViewGuest::EmbedderWillBeDestroyed() {
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->OnEmbedderWillBeDestroyed();
+
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

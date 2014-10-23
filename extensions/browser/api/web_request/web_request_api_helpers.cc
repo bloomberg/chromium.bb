@@ -1206,9 +1206,11 @@ void NotifyWebRequestAPIUsed(
 
   extensions::RuntimeData* runtime_data =
       extensions::ExtensionSystem::Get(browser_context)->runtime_data();
-  if (runtime_data->HasUsedWebRequest(extension.get()))
-    return;
-  runtime_data->SetHasUsedWebRequest(extension.get(), true);
+  if (extension.get()) {
+    if (runtime_data->HasUsedWebRequest(extension.get()))
+      return;
+    runtime_data->SetHasUsedWebRequest(extension.get(), true);
+  }
 
   for (content::RenderProcessHost::iterator it =
            content::RenderProcessHost::AllHostsIterator();

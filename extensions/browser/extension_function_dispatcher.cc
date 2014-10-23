@@ -229,8 +229,6 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     const ExtensionHostMsg_Request_Params& params) {
   const Extension* extension =
       extension_info_map->extensions().GetByID(params.extension_id);
-  if (!extension)
-    return;
 
   ExtensionFunction::ResponseCallback callback(
       base::Bind(&IOThreadResponseCallback, ipc_sender, routing_id,
@@ -255,11 +253,20 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   }
   function_io->set_ipc_sender(ipc_sender, routing_id);
   function_io->set_extension_info_map(extension_info_map);
-  function->set_include_incognito(
-      extension_info_map->IsIncognitoEnabled(extension->id()));
+  if (extension) {
+    function->set_include_incognito(
+        extension_info_map->IsIncognitoEnabled(extension->id()));
+  }
 
   if (!CheckPermissions(function.get(), params, callback))
     return;
+
+  if (!extension) {
+    // Skip all of the UMA, quota, event page, activity logging stuff if there
+    // isn't an extension, e.g. if the function call was from WebUI.
+    function->Run()->Execute();
+    return;
+  }
 
   QuotaService* quota = extension_info_map->GetQuotaService();
   std::string violation_error = quota->Assess(extension->id(),

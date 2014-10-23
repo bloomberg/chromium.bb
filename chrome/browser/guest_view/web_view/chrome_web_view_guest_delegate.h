@@ -38,6 +38,7 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate,
   void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
   void OnGuestReady() override;
+  void OnEmbedderWillBeDestroyed() override;
   void OnGuestDestroyed() override;
   void OnSetZoom(double zoom_factor) override;
   void OnShowContextMenu(int request_id, const MenuItemVector* items) override;

@@ -91,9 +91,10 @@ class GuestViewBase::EmbedderLifetimeObserver : public WebContentsObserver {
   void Destroy() {
     if (destroyed_)
       return;
+
     destroyed_ = true;
+    guest_->EmbedderWillBeDestroyed();
     guest_->embedder_web_contents_ = NULL;
-    guest_->EmbedderDestroyed();
     guest_->Destroy();
   }
 

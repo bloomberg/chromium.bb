@@ -2213,8 +2213,9 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
       ipc_sender.get() ? ipc_sender->render_process_id() : -1;
 
   const Extension* extension =
-      extension_info_map()->extensions().GetByID(extension_id());
-  std::string extension_name = extension ? extension->name() : extension_id();
+      extension_info_map()->extensions().GetByID(extension_id_safe());
+  std::string extension_name =
+      extension ? extension->name() : extension_id_safe();
 
   bool is_web_view_guest = webview_instance_id != 0;
   // We check automatically whether the extension has the 'webRequest'
@@ -2244,7 +2245,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
 
   bool success =
       ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-          profile_id(), extension_id(), extension_name,
+          profile_id(), extension_id_safe(), extension_name,
           event_name, sub_event_name, filter, extra_info_spec,
           embedder_process_id, webview_instance_id, ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
@@ -2269,7 +2270,7 @@ void WebRequestInternalEventHandledFunction::RespondWithError(
   error_ = error;
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id(),
-      extension_id(),
+      extension_id_safe(),
       event_name,
       sub_event_name,
       request_id,
@@ -2296,9 +2297,9 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
 
     if (!value->empty()) {
       base::Time install_time =
-          extension_info_map()->GetInstallTime(extension_id());
+          extension_info_map()->GetInstallTime(extension_id_safe());
       response.reset(new ExtensionWebRequestEventRouter::EventResponse(
-          extension_id(), install_time));
+          extension_id_safe(), install_time));
     }
 
     if (value->HasKey("cancel")) {
@@ -2421,7 +2422,7 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
   }
 
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
-      profile_id(), extension_id(), event_name, sub_event_name, request_id,
+      profile_id(), extension_id_safe(), event_name, sub_event_name, request_id,
       response.release());
 
   return true;
@@ -2445,7 +2446,7 @@ void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
   // Post warning message.
   WarningSet warnings;
   warnings.insert(
-      Warning::CreateRepeatedCacheFlushesWarning(extension_id()));
+      Warning::CreateRepeatedCacheFlushesWarning(extension_id_safe()));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,

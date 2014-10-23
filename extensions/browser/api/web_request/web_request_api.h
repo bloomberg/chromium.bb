@@ -13,6 +13,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
@@ -488,8 +489,20 @@ class ExtensionWebRequestEventRouter
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
 
+class WebRequestInternalFunction : public SyncIOThreadExtensionFunction {
+ public:
+  WebRequestInternalFunction() {}
+
+ protected:
+  ~WebRequestInternalFunction() override {}
+
+  const std::string& extension_id_safe() const {
+    return extension() ? extension_id() : base::EmptyString();
+  }
+};
+
 class WebRequestInternalAddEventListenerFunction
-    : public SyncIOThreadExtensionFunction {
+    : public WebRequestInternalFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webRequestInternal.addEventListener",
                              WEBREQUESTINTERNAL_ADDEVENTLISTENER)
@@ -502,7 +515,7 @@ class WebRequestInternalAddEventListenerFunction
 };
 
 class WebRequestInternalEventHandledFunction
-    : public SyncIOThreadExtensionFunction {
+    : public WebRequestInternalFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webRequestInternal.eventHandled",
                              WEBREQUESTINTERNAL_EVENTHANDLED)
@@ -526,7 +539,7 @@ class WebRequestInternalEventHandledFunction
 };
 
 class WebRequestHandlerBehaviorChangedFunction
-    : public SyncIOThreadExtensionFunction {
+    : public WebRequestInternalFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webRequest.handlerBehaviorChanged",
                              WEBREQUEST_HANDLERBEHAVIORCHANGED)

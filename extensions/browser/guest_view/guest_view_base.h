@@ -87,12 +87,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // completed loading.
   virtual void DidStopLoading() {}
 
-  // This method is called when the guest's embedder WebContents has been
-  // destroyed and the guest will be destroyed shortly.
-  //
-  // This gives the derived class an opportunity to perform some cleanup prior
-  // to destruction.
-  virtual void EmbedderDestroyed() {}
+  // This method is called before the embedder is destroyed.
+  // |embedder_web_contents_| should still be valid during this call. This
+  // allows the derived class to perform some cleanup related to the embedder
+  // web contents.
+  virtual void EmbedderWillBeDestroyed() {}
 
   // This method is called when the guest WebContents has been destroyed. This
   // object will be destroyed after this call returns.

@@ -218,7 +218,14 @@ class ExtensionFunction
     extension_ = extension;
   }
   const extensions::Extension* extension() const { return extension_.get(); }
-  const std::string& extension_id() const { return extension_->id(); }
+  const std::string& extension_id() const {
+    DCHECK(extension())
+        << "extension_id() called without an Extension. If " << name()
+        << " is allowed to be called without any Extension then you should "
+        << "check extension() first. If not, there is a bug in the Extension "
+        << "platform, so page somebody in extensions/OWNERS";
+    return extension_->id();
+  }
 
   void set_request_id(int request_id) { request_id_ = request_id; }
   int request_id() { return request_id_; }
