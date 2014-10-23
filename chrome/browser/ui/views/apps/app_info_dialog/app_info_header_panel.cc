@@ -101,20 +101,23 @@ void AppInfoHeaderPanel::CreateControls() {
     // Create a horizontal container to store the app's links.
     views::View* horizontal_links_container =
         CreateHorizontalStack(kSpacingBetweenAppLinks);
-    if (CanShowAppInWebStore()) {
-      view_in_store_link_ = new views::Link(
-          l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
-      view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      view_in_store_link_->set_listener(this);
-      horizontal_links_container->AddChildView(view_in_store_link_);
-    }
+
+    // If the app/extension has a custom home page, display a link to the
+    // developer's homepage *instead of* a link to the webstore.
     if (CanShowAppHomePage()) {
       homepage_link_ = new views::Link(
           l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_HOMEPAGE_LINK));
       homepage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       homepage_link_->set_listener(this);
       horizontal_links_container->AddChildView(homepage_link_);
+    } else if (CanShowAppInWebStore()) {
+      view_in_store_link_ = new views::Link(
+          l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
+      view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      view_in_store_link_->set_listener(this);
+      horizontal_links_container->AddChildView(view_in_store_link_);
     }
+
     if (CanDisplayLicenses()) {
       licenses_link_ = new views::Link(
           l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT));
