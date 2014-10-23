@@ -110,6 +110,16 @@ bool MediaStreamTrack::muted() const
     return m_component->muted();
 }
 
+bool MediaStreamTrack::remote() const
+{
+    return m_component->source()->remote();
+}
+
+bool MediaStreamTrack::readonly() const
+{
+    return m_component->source()->readonly();
+}
+
 String MediaStreamTrack::readyState() const
 {
     if (ended())

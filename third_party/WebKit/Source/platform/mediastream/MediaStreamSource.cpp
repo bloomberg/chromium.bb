@@ -34,15 +34,17 @@
 
 namespace blink {
 
-PassRefPtr<MediaStreamSource> MediaStreamSource::create(const String& id, Type type, const String& name, ReadyState readyState, bool requiresConsumer)
+PassRefPtr<MediaStreamSource> MediaStreamSource::create(const String& id, Type type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
 {
-    return adoptRef(new MediaStreamSource(id, type, name, readyState, requiresConsumer));
+    return adoptRef(new MediaStreamSource(id, type, name, remote, readonly, readyState, requiresConsumer));
 }
 
-MediaStreamSource::MediaStreamSource(const String& id, Type type, const String& name, ReadyState readyState, bool requiresConsumer)
+MediaStreamSource::MediaStreamSource(const String& id, Type type, const String& name, bool remote, bool readonly, ReadyState readyState, bool requiresConsumer)
     : m_id(id)
     , m_type(type)
     , m_name(name)
+    , m_remote(remote)
+    , m_readonly(readonly)
     , m_readyState(readyState)
     , m_requiresConsumer(requiresConsumer)
 {

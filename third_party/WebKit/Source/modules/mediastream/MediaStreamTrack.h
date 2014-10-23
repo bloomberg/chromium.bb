@@ -55,6 +55,8 @@ public:
     String kind() const;
     String id() const;
     String label() const;
+    bool remote() const;
+    bool readonly() const;
 
     bool enabled() const;
     void setEnabled(bool);

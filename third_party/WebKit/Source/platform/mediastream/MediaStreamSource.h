@@ -68,11 +68,13 @@ public:
         ReadyStateEnded = 2
     };
 
-    static PassRefPtr<MediaStreamSource> create(const String& id, Type, const String& name, ReadyState = ReadyStateLive, bool requiresConsumer = false);
+    static PassRefPtr<MediaStreamSource> create(const String& id, Type, const String& name, bool remote, bool readonly, ReadyState = ReadyStateLive, bool requiresConsumer = false);
 
     const String& id() const { return m_id; }
     Type type() const { return m_type; }
     const String& name() const { return m_name; }
+    bool remote() const { return m_remote; }
+    bool readonly() const { return m_readonly; }
 
     void setReadyState(ReadyState);
     ReadyState readyState() const { return m_readyState; }
@@ -95,11 +97,13 @@ public:
     const HeapHashSet<Member<AudioDestinationConsumer> >& audioConsumers() { return m_audioConsumers; }
 
 private:
-    MediaStreamSource(const String& id, Type, const String& name, ReadyState, bool requiresConsumer);
+    MediaStreamSource(const String& id, Type, const String& name, bool remote, bool readonly, ReadyState, bool requiresConsumer);
 
     String m_id;
     Type m_type;
     String m_name;
+    bool m_remote;
+    bool m_readonly;
     ReadyState m_readyState;
     bool m_requiresConsumer;
     Vector<Observer*> m_observers;
