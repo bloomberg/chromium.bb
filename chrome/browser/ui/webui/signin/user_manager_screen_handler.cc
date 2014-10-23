@@ -480,6 +480,15 @@ void UserManagerScreenHandler::OnClientLoginFailure(
                   state == GoogleServiceAuthError::ACCOUNT_DELETED ||
                   state == GoogleServiceAuthError::ACCOUNT_DISABLED ||
                   state == GoogleServiceAuthError::WEB_LOGIN_REQUIRED);
+
+  // If the password was correct, the user must have changed it since the
+  // profile was locked.  Save the password to streamline future unlocks.
+  if (success) {
+    DCHECK(!password_attempt_.empty());
+    chrome::SetLocalAuthCredentials(authenticating_profile_index_,
+                                    password_attempt_);
+  }
+
   bool offline = (state == GoogleServiceAuthError::CONNECTION_FAILED ||
                   state == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
                   state == GoogleServiceAuthError::REQUEST_CANCELED);
