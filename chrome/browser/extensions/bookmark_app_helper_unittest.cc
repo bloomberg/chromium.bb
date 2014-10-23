@@ -23,7 +23,9 @@
 namespace {
 
 const char kAppUrl[] = "http://www.chromium.org";
+const char kAlternativeAppUrl[] = "http://www.notchromium.org";
 const char kAppTitle[] = "Test title";
+const char kAppShortName[] = "Test short name";
 const char kAlternativeAppTitle[] = "Different test title";
 const char kAppDescription[] = "Test description";
 
@@ -129,6 +131,10 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
     extension_ = extension;
   }
 
+  void CompleteGetManifest(const content::Manifest& manifest) {
+    BookmarkAppHelper::OnDidGetManifest(manifest);
+  }
+
   void CompleteIconDownload(
       bool success,
       const std::map<GURL, std::vector<SkBitmap> >& bitmaps) {
@@ -173,6 +179,34 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   EXPECT_FALSE(
       IconsInfo::GetIconResource(
           extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY).empty());
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
+  WebApplicationInfo web_app_info;
+
+  scoped_ptr<content::WebContents> contents(
+      content::WebContentsTester::CreateTestWebContents(profile_.get(), NULL));
+  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
+  helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                           base::Unretained(&helper)));
+
+  content::Manifest manifest;
+  manifest.start_url = GURL(kAppUrl);
+  manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
+  helper.CompleteGetManifest(manifest);
+
+  std::map<GURL, std::vector<SkBitmap> > icon_map;
+  helper.CompleteIconDownload(true, icon_map);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(helper.extension());
+  const Extension* extension =
+      service_->GetInstalledExtension(helper.extension()->id());
+  EXPECT_TRUE(extension);
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_TRUE(extension->from_bookmark());
+  EXPECT_EQ(kAppTitle, extension->name());
+  EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
@@ -284,6 +318,26 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
       base::Bind(
           &ValidateWebApplicationInfo, run_loop.QuitClosure(), web_app_info));
   run_loop.Run();
+}
+
+TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
+  WebApplicationInfo web_app_info;
+  web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
+  web_app_info.app_url = GURL(kAlternativeAppUrl);
+
+  content::Manifest manifest;
+  manifest.start_url = GURL(kAppUrl);
+  manifest.short_name = base::NullableString16(base::UTF8ToUTF16(kAppShortName),
+                                               false);
+
+  BookmarkAppHelper::UpdateWebAppInfoFromManifest(manifest, &web_app_info);
+  EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
+  EXPECT_EQ(GURL(kAppUrl), web_app_info.app_url);
+
+  // Test that |manifest.name| takes priority over |manifest.short_name|
+  manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
+  BookmarkAppHelper::UpdateWebAppInfoFromManifest(manifest, &web_app_info);
+  EXPECT_EQ(base::UTF8ToUTF16(kAppTitle), web_app_info.title);
 }
 
 TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {

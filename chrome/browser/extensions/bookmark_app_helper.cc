@@ -117,6 +117,22 @@ void OnIconsLoaded(
 namespace extensions {
 
 // static
+void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
+    const content::Manifest& manifest,
+    WebApplicationInfo* web_app_info) {
+  if (!manifest.short_name.is_null())
+    web_app_info->title = manifest.short_name.string();
+
+  // Give the full length name priority.
+  if (!manifest.name.is_null())
+    web_app_info->title = manifest.name.string();
+
+  // Set the url based on the manifest value, if any.
+  if (manifest.start_url.is_valid())
+    web_app_info->app_url = manifest.start_url;
+}
+
+// static
 std::map<int, SkBitmap> BookmarkAppHelper::ConstrainBitmapsToSizes(
     const std::vector<SkBitmap>& bitmaps,
     const std::set<int>& sizes) {
@@ -170,7 +186,8 @@ void BookmarkAppHelper::GenerateIcon(std::map<int, SkBitmap>* bitmaps,
 BookmarkAppHelper::BookmarkAppHelper(ExtensionService* service,
                                      WebApplicationInfo web_app_info,
                                      content::WebContents* contents)
-    : web_app_info_(web_app_info),
+    : contents_(contents),
+      web_app_info_(web_app_info),
       crx_installer_(extensions::CrxInstaller::CreateSilent(service)) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_CRX_INSTALLER_DONE,
@@ -207,10 +224,22 @@ BookmarkAppHelper::~BookmarkAppHelper() {}
 void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
   callback_ = callback;
 
-  if (favicon_downloader_.get())
-    favicon_downloader_->Start();
-  else
+  if (contents_) {
+    contents_->GetManifest(base::Bind(&BookmarkAppHelper::OnDidGetManifest,
+                                     base::Unretained(this)));
+  } else {
     OnIconsDownloaded(true, std::map<GURL, std::vector<SkBitmap> >());
+  }
+}
+
+void BookmarkAppHelper::OnDidGetManifest(const content::Manifest& manifest) {
+  if (contents_->IsBeingDestroyed())
+    return;
+
+  UpdateWebAppInfoFromManifest(manifest, &web_app_info_);
+
+  DCHECK(favicon_downloader_.get());
+  favicon_downloader_->Start();
 }
 
 void BookmarkAppHelper::OnIconsDownloaded(

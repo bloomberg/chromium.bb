@@ -15,6 +15,7 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/manifest.h"
 
 class ExtensionService;
 class FaviconDownloader;
@@ -44,6 +45,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
                     content::WebContents* contents);
   ~BookmarkAppHelper() override;
 
+  // Update the given WebApplicationInfo with information from the manifest.
+  static void UpdateWebAppInfoFromManifest(const content::Manifest& manifest,
+                                           WebApplicationInfo* web_app_info);
+
   // This finds the closest not-smaller bitmap in |bitmaps| for each size in
   // |sizes| and resizes it to that size. This returns a map of sizes to bitmaps
   // which contains only bitmaps of a size in |sizes| and at most one bitmap of
@@ -66,6 +71,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
  private:
   friend class TestBookmarkAppHelper;
 
+  // Called by the WebContents when the manifest has been downloaded. If there
+  // is no manifest, or the WebContents is destroyed before the manifest could
+  // be downloaded, this is called with an empty manifest.
+  void OnDidGetManifest(const content::Manifest& manifest);
+
   // Performs post icon download tasks including installing the bookmark app.
   void OnIconsDownloaded(bool success,
                          const std::map<GURL, std::vector<SkBitmap> >& bitmaps);
@@ -74,6 +84,9 @@ class BookmarkAppHelper : public content::NotificationObserver {
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // The web contents that the bookmark app is being created for.
+  content::WebContents* contents_;
 
   // The WebApplicationInfo that the bookmark app is being created for.
   WebApplicationInfo web_app_info_;

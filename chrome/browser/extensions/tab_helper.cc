@@ -119,6 +119,9 @@ TabHelper::~TabHelper() {
 
 void TabHelper::CreateApplicationShortcuts() {
   DCHECK(CanCreateApplicationShortcuts());
+  if (pending_web_app_action_ != NONE)
+    return;
+
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetApplicationInfo.
   GetApplicationInfo(CREATE_SHORTCUT);
@@ -126,6 +129,9 @@ void TabHelper::CreateApplicationShortcuts() {
 
 void TabHelper::CreateHostedAppFromWebContents() {
   DCHECK(CanCreateBookmarkApp());
+  if (pending_web_app_action_ != NONE)
+    return;
+
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetApplicationInfo.
   GetApplicationInfo(CREATE_HOSTED_APP);
@@ -135,8 +141,7 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 #if defined(OS_MACOSX)
   return false;
 #else
-  return web_app::IsValidUrl(web_contents()->GetURL()) &&
-      pending_web_app_action_ == NONE;
+  return web_app::IsValidUrl(web_contents()->GetURL());
 #endif
 }
 
@@ -144,8 +149,7 @@ bool TabHelper::CanCreateBookmarkApp() const {
 #if defined(OS_MACOSX)
   return false;
 #else
-  return IsValidBookmarkAppUrl(web_contents()->GetURL()) &&
-         pending_web_app_action_ == NONE;
+  return IsValidBookmarkAppUrl(web_contents()->GetURL());
 #endif
 }
 
