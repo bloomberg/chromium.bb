@@ -26,6 +26,7 @@
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
@@ -175,7 +176,7 @@ static inline bool svgPaintTypeHasURL(SVGPaintType paintType)
     return false;
 }
 
-static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(TreeScope& treeScope, const SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
+static inline RenderSVGResourcePaintServer* paintingResourceFromSVGPaint(TreeScope& treeScope, const SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
 {
     if (!svgPaintTypeHasURL(paintType))
         return 0;
@@ -187,11 +188,10 @@ static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(TreeScope
         return 0;
     }
 
-    RenderSVGResourceType resourceType = container->resourceType();
-    if (resourceType != PatternResourceType && resourceType != LinearGradientResourceType && resourceType != RadialGradientResourceType)
+    if (!container->isSVGPaintServer())
         return 0;
 
-    return container;
+    return toRenderSVGResourcePaintServer(container);
 }
 
 static inline void registerPendingResource(SVGDocumentExtensions& extensions, const AtomicString& id, SVGElement* element)
@@ -275,7 +275,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
         if (style.hasFill()) {
             bool hasPendingResource = false;
             AtomicString id;
-            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(treeScope, style.fillPaintType(), style.fillPaintUri(), id, hasPendingResource);
+            RenderSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.fillPaintType(), style.fillPaintUri(), id, hasPendingResource);
             if (!ensureResources(resources)->setFill(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
             }
@@ -284,7 +284,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
         if (style.hasStroke()) {
             bool hasPendingResource = false;
             AtomicString id;
-            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(treeScope, style.strokePaintType(), style.strokePaintUri(), id, hasPendingResource);
+            RenderSVGResourcePaintServer* resource = paintingResourceFromSVGPaint(treeScope, style.strokePaintType(), style.strokePaintUri(), id, hasPendingResource);
             if (!ensureResources(resources)->setStroke(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
             }
@@ -321,9 +321,9 @@ void SVGResources::layoutIfNeeded()
     }
 
     if (m_fillStrokeData) {
-        if (RenderSVGResourceContainer* fill = m_fillStrokeData->fill)
+        if (RenderSVGResourcePaintServer* fill = m_fillStrokeData->fill)
             fill->layoutIfNeeded();
-        if (RenderSVGResourceContainer* stroke = m_fillStrokeData->stroke)
+        if (RenderSVGResourcePaintServer* stroke = m_fillStrokeData->stroke)
             stroke->layoutIfNeeded();
     }
 
@@ -610,14 +610,10 @@ void SVGResources::resetMasker()
     m_clipperFilterMaskerData->masker = 0;
 }
 
-bool SVGResources::setFill(RenderSVGResourceContainer* fill)
+bool SVGResources::setFill(RenderSVGResourcePaintServer* fill)
 {
     if (!fill)
         return false;
-
-    ASSERT(fill->resourceType() == PatternResourceType
-           || fill->resourceType() == LinearGradientResourceType
-           || fill->resourceType() == RadialGradientResourceType);
 
     if (!m_fillStrokeData)
         m_fillStrokeData = FillStrokeData::create();
@@ -633,14 +629,10 @@ void SVGResources::resetFill()
     m_fillStrokeData->fill = 0;
 }
 
-bool SVGResources::setStroke(RenderSVGResourceContainer* stroke)
+bool SVGResources::setStroke(RenderSVGResourcePaintServer* stroke)
 {
     if (!stroke)
         return false;
-
-    ASSERT(stroke->resourceType() == PatternResourceType
-           || stroke->resourceType() == LinearGradientResourceType
-           || stroke->resourceType() == RadialGradientResourceType);
 
     if (!m_fillStrokeData)
         m_fillStrokeData = FillStrokeData::create();
@@ -701,9 +693,9 @@ void SVGResources::dump(const RenderObject* object)
     }
 
     if (m_fillStrokeData) {
-        if (RenderSVGResourceContainer* fill = m_fillStrokeData->fill)
+        if (RenderSVGResourcePaintServer* fill = m_fillStrokeData->fill)
             fprintf(stderr, " |-> Fill       : %p (node=%p)\n", fill, fill->element());
-        if (RenderSVGResourceContainer* stroke = m_fillStrokeData->stroke)
+        if (RenderSVGResourcePaintServer* stroke = m_fillStrokeData->stroke)
             fprintf(stderr, " |-> Stroke     : %p (node=%p)\n", stroke, stroke->element());
     }
 

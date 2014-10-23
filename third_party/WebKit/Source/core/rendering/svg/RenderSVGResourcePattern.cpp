@@ -41,7 +41,7 @@ public:
 const RenderSVGResourceType RenderSVGResourcePattern::s_resourceType = PatternResourceType;
 
 RenderSVGResourcePattern::RenderSVGResourcePattern(SVGPatternElement* node)
-    : RenderSVGResourceContainer(node)
+    : RenderSVGResourcePaintServer(node)
     , m_shouldCollectPatternAttributes(true)
 {
 }

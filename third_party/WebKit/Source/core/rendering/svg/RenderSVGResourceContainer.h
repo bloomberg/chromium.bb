@@ -21,7 +21,6 @@
 #define RenderSVGResourceContainer_h
 
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
 namespace blink {
@@ -38,8 +37,7 @@ enum RenderSVGResourceType {
 
 class RenderLayer;
 
-class RenderSVGResourceContainer : public RenderSVGHiddenContainer,
-                                   public RenderSVGResource {
+class RenderSVGResourceContainer : public RenderSVGHiddenContainer {
 public:
     explicit RenderSVGResourceContainer(SVGElement*);
     virtual ~RenderSVGResourceContainer();
@@ -52,6 +50,14 @@ public:
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceContainer || RenderSVGHiddenContainer::isOfType(type); }
 
     virtual RenderSVGResourceType resourceType() const = 0;
+
+    bool isSVGPaintServer() const
+    {
+        RenderSVGResourceType resourceType = this->resourceType();
+        return resourceType == PatternResourceType
+            || resourceType == LinearGradientResourceType
+            || resourceType == RadialGradientResourceType;
+    }
 
     void idChanged();
     void addClientRenderLayer(Node*);
@@ -92,8 +98,8 @@ private:
     // Track global (markAllClientsForInvalidation) invals to avoid redundant crawls.
     unsigned m_invalidationMask : 8;
 
-    bool m_registered : 1;
-    bool m_isInvalidating : 1;
+    unsigned m_registered : 1;
+    unsigned m_isInvalidating : 1;
     // 22 padding bits available
 
     HashSet<RenderObject*> m_clients;

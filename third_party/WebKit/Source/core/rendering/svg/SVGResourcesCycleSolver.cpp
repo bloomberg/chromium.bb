@@ -27,11 +27,9 @@
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGFilterElement.h"
-#include "core/svg/SVGGradientElement.h"
-#include "core/svg/SVGPatternElement.h"
 
 namespace blink {
 

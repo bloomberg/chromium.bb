@@ -34,6 +34,7 @@ class RenderSVGResourceContainer;
 class RenderSVGResourceFilter;
 class RenderSVGResourceMarker;
 class RenderSVGResourceMasker;
+class RenderSVGResourcePaintServer;
 class SVGElement;
 class SVGRenderStyle;
 
@@ -63,8 +64,8 @@ public:
     }
 
     // Paint servers
-    RenderSVGResourceContainer* fill() const { return m_fillStrokeData ? m_fillStrokeData->fill : 0; }
-    RenderSVGResourceContainer* stroke() const { return m_fillStrokeData ? m_fillStrokeData->stroke : 0; }
+    RenderSVGResourcePaintServer* fill() const { return m_fillStrokeData ? m_fillStrokeData->fill : 0; }
+    RenderSVGResourcePaintServer* stroke() const { return m_fillStrokeData ? m_fillStrokeData->stroke : 0; }
 
     // Chainable resources - linked through xlink:href
     RenderSVGResourceContainer* linkedResource() const { return m_linkedResource; }
@@ -101,8 +102,8 @@ private:
     bool setMarkerMid(RenderSVGResourceMarker*);
     bool setMarkerEnd(RenderSVGResourceMarker*);
     bool setMasker(RenderSVGResourceMasker*);
-    bool setFill(RenderSVGResourceContainer*);
-    bool setStroke(RenderSVGResourceContainer*);
+    bool setFill(RenderSVGResourcePaintServer*);
+    bool setStroke(RenderSVGResourcePaintServer*);
     bool setLinkedResource(RenderSVGResourceContainer*);
 
     // From SVG 1.1 2nd Edition
@@ -170,8 +171,8 @@ private:
             return adoptPtr(new FillStrokeData);
         }
 
-        RenderSVGResourceContainer* fill;
-        RenderSVGResourceContainer* stroke;
+        RenderSVGResourcePaintServer* fill;
+        RenderSVGResourcePaintServer* stroke;
     };
 
     OwnPtr<ClipperFilterMaskerData> m_clipperFilterMaskerData;

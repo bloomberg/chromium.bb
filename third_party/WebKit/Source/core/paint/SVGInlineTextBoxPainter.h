@@ -6,7 +6,7 @@
 #define SVGInlineTextBoxPainter_h
 
 #include "core/rendering/style/RenderStyleConstants.h"
-#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 
 namespace blink {
 

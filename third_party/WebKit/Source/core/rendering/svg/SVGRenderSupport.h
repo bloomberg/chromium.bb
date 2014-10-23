@@ -24,7 +24,7 @@
 #ifndef SVGRenderSupport_h
 #define SVGRenderSupport_h
 
-#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 
 namespace blink {
 

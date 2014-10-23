@@ -253,17 +253,15 @@ static void writeSVGPaintingResource(TextStream& ts, const SVGPaintDescription& 
         return;
     }
 
-    RenderSVGResource* resource = paintDescription.resource;
-    // All other resources derive from RenderSVGResourceContainer
-    RenderSVGResourceContainer* container = static_cast<RenderSVGResourceContainer*>(resource);
-    SVGElement* element = container->element();
+    RenderSVGResourcePaintServer* paintServerContainer = paintDescription.resource;
+    SVGElement* element = paintServerContainer->element();
     ASSERT(element);
 
-    if (container->resourceType() == PatternResourceType)
+    if (paintServerContainer->resourceType() == PatternResourceType)
         ts << "[type=PATTERN]";
-    else if (container->resourceType() == LinearGradientResourceType)
+    else if (paintServerContainer->resourceType() == LinearGradientResourceType)
         ts << "[type=LINEAR-GRADIENT]";
-    else if (container->resourceType() == RadialGradientResourceType)
+    else if (paintServerContainer->resourceType() == RadialGradientResourceType)
         ts << "[type=RADIAL-GRADIENT]";
 
     ts << " [id=\"" << element->getIdAttribute() << "\"]";
@@ -282,7 +280,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
         const RenderSVGShape& shape = static_cast<const RenderSVGShape&>(object);
         ASSERT(shape.element());
 
-        SVGPaintDescription strokePaintDescription = RenderSVGResource::requestPaintDescription(shape, shape.style(), ApplyToStrokeMode);
+        SVGPaintDescription strokePaintDescription = RenderSVGResourcePaintServer::requestPaintDescription(shape, shape.style(), ApplyToStrokeMode);
         if (strokePaintDescription.isValid) {
             TextStreamSeparator s(" ");
             ts << " [stroke={" << s;
@@ -311,7 +309,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
             ts << "}]";
         }
 
-        SVGPaintDescription fillPaintDescription = RenderSVGResource::requestPaintDescription(shape, shape.style(), ApplyToFillMode);
+        SVGPaintDescription fillPaintDescription = RenderSVGResourcePaintServer::requestPaintDescription(shape, shape.style(), ApplyToFillMode);
         if (fillPaintDescription.isValid) {
             TextStreamSeparator s(" ");
             ts << " [fill={" << s;

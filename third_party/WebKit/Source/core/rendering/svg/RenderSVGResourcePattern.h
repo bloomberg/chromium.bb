@@ -22,7 +22,7 @@
 #ifndef RenderSVGResourcePattern_h
 #define RenderSVGResourcePattern_h
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 #include "core/svg/PatternAttributes.h"
 
 #include "wtf/HashMap.h"
@@ -37,7 +37,7 @@ class FloatRect;
 class SVGPatternElement;
 struct PatternData;
 
-class RenderSVGResourcePattern final : public RenderSVGResourceContainer {
+class RenderSVGResourcePattern final : public RenderSVGResourcePaintServer {
 public:
     explicit RenderSVGResourcePattern(SVGPatternElement*);
 

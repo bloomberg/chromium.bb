@@ -22,7 +22,7 @@
 #ifndef RenderSVGResourceGradient_h
 #define RenderSVGResourceGradient_h
 
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 #include "core/svg/SVGGradientElement.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Gradient.h"
@@ -40,7 +40,7 @@ public:
 
 class GraphicsContext;
 
-class RenderSVGResourceGradient : public RenderSVGResourceContainer {
+class RenderSVGResourceGradient : public RenderSVGResourcePaintServer {
 public:
     explicit RenderSVGResourceGradient(SVGGradientElement*);
 

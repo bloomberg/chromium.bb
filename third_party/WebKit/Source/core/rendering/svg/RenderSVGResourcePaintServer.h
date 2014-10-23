@@ -17,9 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGResource_h
-#define RenderSVGResource_h
+#ifndef RenderSVGResourcePaintServer_h
+#define RenderSVGResourcePaintServer_h
 
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/Pattern.h"
@@ -34,7 +35,7 @@ enum RenderSVGResourceMode {
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class RenderObject;
-class RenderSVGResource;
+class RenderSVGResourcePaintServer;
 class RenderStyle;
 
 class SVGPaintServer {
@@ -64,25 +65,27 @@ private:
 struct SVGPaintDescription {
     SVGPaintDescription() : resource(nullptr), isValid(false), hasFallback(false) { }
     SVGPaintDescription(Color color) : resource(nullptr), color(color), isValid(true), hasFallback(false) { }
-    SVGPaintDescription(RenderSVGResource* resource) : resource(resource), isValid(true), hasFallback(false) { ASSERT(resource); }
-    SVGPaintDescription(RenderSVGResource* resource, Color fallbackColor) : resource(resource), color(fallbackColor), isValid(true), hasFallback(true) { ASSERT(resource); }
+    SVGPaintDescription(RenderSVGResourcePaintServer* resource) : resource(resource), isValid(true), hasFallback(false) { ASSERT(resource); }
+    SVGPaintDescription(RenderSVGResourcePaintServer* resource, Color fallbackColor) : resource(resource), color(fallbackColor), isValid(true), hasFallback(true) { ASSERT(resource); }
 
-    RenderSVGResource* resource;
+    RenderSVGResourcePaintServer* resource;
     Color color;
     bool isValid;
     bool hasFallback;
 };
 
-class RenderSVGResource {
+class RenderSVGResourcePaintServer : public RenderSVGResourceContainer {
 public:
-    RenderSVGResource() { }
-    virtual ~RenderSVGResource() { }
+    RenderSVGResourcePaintServer(SVGElement*);
+    virtual ~RenderSVGResourcePaintServer();
 
-    virtual SVGPaintServer preparePaintServer(const RenderObject&);
+    virtual SVGPaintServer preparePaintServer(const RenderObject&) = 0;
 
     // Helper utilities used in to access the underlying resources for DRT.
     static SVGPaintDescription requestPaintDescription(const RenderObject&, const RenderStyle*, RenderSVGResourceMode);
 };
+
+DEFINE_TYPE_CASTS(RenderSVGResourcePaintServer, RenderSVGResourceContainer, resource, resource->isSVGPaintServer(), resource.isSVGPaintServer());
 
 }
 

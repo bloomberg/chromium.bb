@@ -21,10 +21,9 @@
  */
 
 #include "config.h"
-#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -133,7 +132,7 @@ static SVGPaintDescription requestPaint(const RenderObject& object, const Render
         return SVGPaintDescription(color);
     }
 
-    RenderSVGResource* uriResource = 0;
+    RenderSVGResourcePaintServer* uriResource = 0;
     if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(&object))
         uriResource = applyToFill ? resources->fill() : resources->stroke();
 
@@ -178,13 +177,16 @@ bool SVGPaintServer::existsForRenderer(const RenderObject& renderer, const Rende
     return requestPaint(renderer, style, resourceMode).isValid;
 }
 
-SVGPaintServer RenderSVGResource::preparePaintServer(const RenderObject&)
+RenderSVGResourcePaintServer::RenderSVGResourcePaintServer(SVGElement* element)
+    : RenderSVGResourceContainer(element)
 {
-    ASSERT_NOT_REACHED();
-    return SVGPaintServer::invalid();
 }
 
-SVGPaintDescription RenderSVGResource::requestPaintDescription(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
+RenderSVGResourcePaintServer::~RenderSVGResourcePaintServer()
+{
+}
+
+SVGPaintDescription RenderSVGResourcePaintServer::requestPaintDescription(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
 {
     return requestPaint(renderer, style, resourceMode);
 }

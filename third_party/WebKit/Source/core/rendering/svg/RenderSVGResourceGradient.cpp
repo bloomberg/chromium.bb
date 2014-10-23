@@ -26,7 +26,7 @@
 namespace blink {
 
 RenderSVGResourceGradient::RenderSVGResourceGradient(SVGGradientElement* node)
-    : RenderSVGResourceContainer(node)
+    : RenderSVGResourcePaintServer(node)
     , m_shouldCollectGradientAttributes(true)
 {
 }
@@ -107,10 +107,7 @@ bool RenderSVGResourceGradient::isChildAllowed(RenderObject* child, RenderStyle*
     if (!child->isSVGResourceContainer())
         return false;
 
-    RenderSVGResourceContainer* resource = toRenderSVGResourceContainer(child);
-    return resource->resourceType() == PatternResourceType
-        || resource->resourceType() == LinearGradientResourceType
-        || resource->resourceType() == RadialGradientResourceType;
+    return toRenderSVGResourceContainer(child)->isSVGPaintServer();
 }
 
 void RenderSVGResourceGradient::addStops(GradientData* gradientData, const Vector<Gradient::ColorStop>& stops) const
