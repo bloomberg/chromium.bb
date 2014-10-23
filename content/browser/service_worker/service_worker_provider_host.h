@@ -133,6 +133,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
  private:
   friend class ServiceWorkerProviderHostTest;
+  friend class ServiceWorkerWriteToCacheJobTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateBefore24Hours);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
