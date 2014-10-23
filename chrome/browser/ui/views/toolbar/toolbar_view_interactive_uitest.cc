@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
 
   ASSERT_EQ(1u, browser_actions()->VisibleBrowserActions());
 
-  BrowserActionView* view = browser_actions()->GetBrowserActionViewAt(0);
+  ToolbarActionView* view = browser_actions()->GetToolbarActionViewAt(0);
   ASSERT_TRUE(view);
 
   gfx::Point browser_action_view_loc = test::GetCenterInScreenCoordinates(view);
