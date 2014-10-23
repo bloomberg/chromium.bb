@@ -85,6 +85,8 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
     ExecutionContext* context = frame().document();
     if (!context)
         return;
+    if (!messageStorage())
+        return;
 
     String messageURL;
     unsigned lineNumber = 0;
@@ -165,23 +167,31 @@ void FrameConsole::unmute()
 
 ConsoleMessageStorage* FrameConsole::messageStorage()
 {
-    ASSERT(m_frame->page());
-    return &m_frame->page()->frameHost().consoleMessageStorage();
+    if (!m_frame->host())
+        return nullptr;
+    return &m_frame->host()->consoleMessageStorage();
 }
 
 void FrameConsole::clearMessages()
 {
-    messageStorage()->clear();
+    ConsoleMessageStorage* storage = messageStorage();
+    if (storage)
+        storage->clear();
 }
 
 void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* proxy)
 {
-    messageStorage()->adoptWorkerMessagesAfterTermination(proxy);
+    ConsoleMessageStorage* storage = messageStorage();
+    if (storage)
+        storage->adoptWorkerMessagesAfterTermination(proxy);
 }
 
 void FrameConsole::didFailLoading(unsigned long requestIdentifier, const ResourceError& error)
 {
     if (error.isCancellation()) // Report failures only.
+        return;
+    ConsoleMessageStorage* storage = messageStorage();
+    if (!storage)
         return;
     StringBuilder message;
     message.appendLiteral("Failed to load resource");
@@ -191,13 +201,12 @@ void FrameConsole::didFailLoading(unsigned long requestIdentifier, const Resourc
     }
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL());
     consoleMessage->setRequestIdentifier(requestIdentifier);
-    messageStorage()->reportMessage(consoleMessage.release());
+    storage->reportMessage(consoleMessage.release());
 }
 
 void FrameConsole::trace(Visitor* visitor)
 {
     visitor->trace(m_frame);
-    visitor->trace(m_consoleMessageStorage);
 }
 
 } // namespace blink

@@ -65,7 +65,6 @@ public:
     static void mute();
     static void unmute();
 
-    ConsoleMessageStorage* messageStorage();
     void clearMessages();
 
     void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
@@ -81,8 +80,9 @@ private:
         return *m_frame;
     }
 
+    ConsoleMessageStorage* messageStorage();
+
     RawPtrWillBeMember<LocalFrame> m_frame;
-    OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;
 };
 
 } // namespace blink

@@ -1456,11 +1456,11 @@ String Internals::dumpRefCountedInstanceCounts() const
 
 Vector<String> Internals::consoleMessageArgumentCounts(Document* document) const
 {
-    LocalFrame* frame = document->frame();
-    if (!frame)
+    FrameHost* host = document->frameHost();
+    if (!host)
         return Vector<String>();
 
-    Vector<unsigned> counts = frame->console().messageStorage()->argumentCounts();
+    Vector<unsigned> counts = host->consoleMessageStorage().argumentCounts();
     Vector<String> result(counts.size());
     for (size_t i = 0; i < counts.size(); i++)
         result[i] = String::number(counts[i]);
