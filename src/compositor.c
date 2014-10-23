@@ -4656,6 +4656,45 @@ weston_create_listening_socket(struct wl_display *display, const char *socket_na
 	return 0;
 }
 
+static const struct { const char *name; uint32_t token; } transforms[] = {
+	{ "normal",     WL_OUTPUT_TRANSFORM_NORMAL },
+	{ "90",         WL_OUTPUT_TRANSFORM_90 },
+	{ "180",        WL_OUTPUT_TRANSFORM_180 },
+	{ "270",        WL_OUTPUT_TRANSFORM_270 },
+	{ "flipped",    WL_OUTPUT_TRANSFORM_FLIPPED },
+	{ "flipped-90", WL_OUTPUT_TRANSFORM_FLIPPED_90 },
+	{ "flipped-180", WL_OUTPUT_TRANSFORM_FLIPPED_180 },
+	{ "flipped-270", WL_OUTPUT_TRANSFORM_FLIPPED_270 },
+};
+
+WL_EXPORT int
+weston_parse_transform(const char *transform, uint32_t *out)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_LENGTH(transforms); i++)
+		if (strcmp(transforms[i].name, transform) == 0) {
+			*out = transforms[i].token;
+			return 0;
+		}
+
+	*out = WL_OUTPUT_TRANSFORM_NORMAL;
+	return -1;
+}
+
+WL_EXPORT const char *
+weston_transform_to_string(uint32_t output_transform)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_LENGTH(transforms); i++)
+		if (transforms[i].token == output_transform)
+			return transforms[i].name;
+
+	return "<illegal value>";
+}
+
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_SUCCESS;

@@ -281,38 +281,6 @@ rpi_output_destroy(struct weston_output *base)
 	free(output);
 }
 
-static const char *transform_names[] = {
-	[WL_OUTPUT_TRANSFORM_NORMAL] = "normal",
-	[WL_OUTPUT_TRANSFORM_90] = "90",
-	[WL_OUTPUT_TRANSFORM_180] = "180",
-	[WL_OUTPUT_TRANSFORM_270] = "270",
-	[WL_OUTPUT_TRANSFORM_FLIPPED] = "flipped",
-	[WL_OUTPUT_TRANSFORM_FLIPPED_90] = "flipped-90",
-	[WL_OUTPUT_TRANSFORM_FLIPPED_180] = "flipped-180",
-	[WL_OUTPUT_TRANSFORM_FLIPPED_270] = "flipped-270",
-};
-
-static int
-str2transform(const char *name)
-{
-	unsigned i;
-
-	for (i = 0; i < ARRAY_LENGTH(transform_names); i++)
-		if (strcmp(name, transform_names[i]) == 0)
-			return i;
-
-	return -1;
-}
-
-static const char *
-transform2str(uint32_t output_transform)
-{
-	if (output_transform >= ARRAY_LENGTH(transform_names))
-		return "<illegal value>";
-
-	return transform_names[output_transform];
-}
-
 static int
 rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 {
@@ -390,9 +358,10 @@ rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 	weston_log_continue(STAMP_SPACE "guessing %d Hz and 96 dpi\n",
 			    output->mode.refresh / 1000);
 	weston_log_continue(STAMP_SPACE "orientation: %s\n",
-			    transform2str(output->base.transform));
+			    weston_transform_to_string(output->base.transform));
 
-	if (!strncmp(transform2str(output->base.transform), "flipped", 7))
+	if (!strncmp(weston_transform_to_string(output->base.transform),
+						"flipped", 7))
 		weston_log("warning: flipped output transforms may not work\n");
 
 	return 0;
@@ -580,7 +549,6 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	     struct weston_config *config)
 {
 	const char *transform = "normal";
-	int ret;
 
 	struct rpi_parameters param = {
 		.tty = 0, /* default to current tty */
@@ -600,11 +568,8 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	parse_options(rpi_options, ARRAY_LENGTH(rpi_options), argc, argv);
 
-	ret = str2transform(transform);
-	if (ret < 0)
+	if (weston_parse_transform(transform, &param.output_transform) < 0)
 		weston_log("invalid transform \"%s\"\n", transform);
-	else
-		param.output_transform = ret;
 
 	return rpi_compositor_create(display, argc, argv, config, &param);
 }

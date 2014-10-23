@@ -1473,6 +1473,12 @@ weston_transformed_region(int width, int height,
 void *
 weston_load_module(const char *name, const char *entrypoint);
 
+int
+weston_parse_transform(const char *transform, uint32_t *out);
+
+const char *
+weston_transform_to_string(uint32_t output_transform);
+
 #ifdef  __cplusplus
 }
 #endif

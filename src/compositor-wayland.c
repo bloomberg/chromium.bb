@@ -1077,18 +1077,7 @@ wayland_output_create_for_config(struct wayland_compositor *c,
 	char *mode, *t, *name, *str;
 	int width, height, scale;
 	uint32_t transform;
-	unsigned int i, slen;
-
-	static const struct { const char *name; uint32_t token; } transform_names[] = {
-		{ "normal",	WL_OUTPUT_TRANSFORM_NORMAL },
-		{ "90",		WL_OUTPUT_TRANSFORM_90 },
-		{ "180",	WL_OUTPUT_TRANSFORM_180 },
-		{ "270",	WL_OUTPUT_TRANSFORM_270 },
-		{ "flipped",	WL_OUTPUT_TRANSFORM_FLIPPED },
-		{ "flipped-90",	WL_OUTPUT_TRANSFORM_FLIPPED_90 },
-		{ "flipped-180", WL_OUTPUT_TRANSFORM_FLIPPED_180 },
-		{ "flipped-270", WL_OUTPUT_TRANSFORM_FLIPPED_270 },
-	};
+	unsigned int slen;
 
 	weston_config_section_get_string(config_section, "name", &name, NULL);
 	if (name) {
@@ -1125,15 +1114,9 @@ wayland_output_create_for_config(struct wayland_compositor *c,
 
 	weston_config_section_get_string(config_section,
 					 "transform", &t, "normal");
-	transform = WL_OUTPUT_TRANSFORM_NORMAL;
-	for (i = 0; i < ARRAY_LENGTH(transform_names); i++) {
-		if (strcmp(transform_names[i].name, t) == 0) {
-			transform = transform_names[i].token;
-			break;
-		}
-	}
-	if (i >= ARRAY_LENGTH(transform_names))
-		weston_log("Invalid transform \"%s\" for output %s\n", t, name);
+	if (weston_parse_transform(t, &transform) < 0)
+		weston_log("Invalid transform \"%s\" for output %s\n",
+			   t, name);
 	free(t);
 
 	output = wayland_output_create(c, x, y, width, height, name, 0,

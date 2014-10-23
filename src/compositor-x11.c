@@ -1429,31 +1429,6 @@ x11_destroy(struct weston_compositor *ec)
 	free(ec);
 }
 
-static uint32_t
-parse_transform(const char *transform, const char *output_name)
-{
-	static const struct { const char *name; uint32_t token; } names[] = {
-		{ "normal",	WL_OUTPUT_TRANSFORM_NORMAL },
-		{ "90",		WL_OUTPUT_TRANSFORM_90 },
-		{ "180",	WL_OUTPUT_TRANSFORM_180 },
-		{ "270",	WL_OUTPUT_TRANSFORM_270 },
-		{ "flipped",	WL_OUTPUT_TRANSFORM_FLIPPED },
-		{ "flipped-90",	WL_OUTPUT_TRANSFORM_FLIPPED_90 },
-		{ "flipped-180", WL_OUTPUT_TRANSFORM_FLIPPED_180 },
-		{ "flipped-270", WL_OUTPUT_TRANSFORM_FLIPPED_270 },
-	};
-	unsigned int i;
-
-	for (i = 0; i < ARRAY_LENGTH(names); i++)
-		if (strcmp(names[i].name, transform) == 0)
-			return names[i].token;
-
-	weston_log("Invalid transform \"%s\" for output %s\n",
-		   transform, output_name);
-
-	return WL_OUTPUT_TRANSFORM_NORMAL;
-}
-
 static int
 init_gl_renderer(struct x11_compositor *c)
 {
@@ -1576,7 +1551,9 @@ x11_compositor_create(struct wl_display *display,
 
 		weston_config_section_get_string(section,
 						 "transform", &t, "normal");
-		transform = parse_transform(t, name);
+		if (weston_parse_transform(t, &transform) < 0)
+			weston_log("Invalid transform \"%s\" for output %s\n",
+				   t, name);
 		free(t);
 
 		output = x11_compositor_create_output(c, x, 0,

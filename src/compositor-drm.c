@@ -1862,31 +1862,6 @@ parse_modeline(const char *s, drmModeModeInfo *mode)
 	return 0;
 }
 
-static uint32_t
-parse_transform(const char *transform, const char *output_name)
-{
-	static const struct { const char *name; uint32_t token; } names[] = {
-		{ "normal",	WL_OUTPUT_TRANSFORM_NORMAL },
-		{ "90",		WL_OUTPUT_TRANSFORM_90 },
-		{ "180",	WL_OUTPUT_TRANSFORM_180 },
-		{ "270",	WL_OUTPUT_TRANSFORM_270 },
-		{ "flipped",	WL_OUTPUT_TRANSFORM_FLIPPED },
-		{ "flipped-90",	WL_OUTPUT_TRANSFORM_FLIPPED_90 },
-		{ "flipped-180", WL_OUTPUT_TRANSFORM_FLIPPED_180 },
-		{ "flipped-270", WL_OUTPUT_TRANSFORM_FLIPPED_270 },
-	};
-	unsigned int i;
-
-	for (i = 0; i < ARRAY_LENGTH(names); i++)
-		if (strcmp(names[i].name, transform) == 0)
-			return names[i].token;
-
-	weston_log("Invalid transform \"%s\" for output %s\n",
-		   transform, output_name);
-
-	return WL_OUTPUT_TRANSFORM_NORMAL;
-}
-
 static void
 setup_output_seat_constraint(struct drm_compositor *ec,
 			     struct weston_output *output,
@@ -1999,7 +1974,10 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	weston_config_section_get_int(section, "scale", &scale, 1);
 	weston_config_section_get_string(section, "transform", &s, "normal");
-	transform = parse_transform(s, output->base.name);
+	if (weston_parse_transform(s, &transform) < 0)
+		weston_log("Invalid transform \"%s\" for output %s\n",
+			   s, output->base.name);
+
 	free(s);
 
 	if (get_gbm_format_from_section(section,
