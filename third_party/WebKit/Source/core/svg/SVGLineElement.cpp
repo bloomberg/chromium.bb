@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/svg/SVGLineElement.h"
 
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/svg/SVGLength.h"
 
@@ -82,7 +81,7 @@ void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute) {
         renderer->setNeedsShapeUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 

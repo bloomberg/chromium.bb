@@ -60,6 +60,8 @@ public:
 
     void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = 0);
 
+    static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
+
 protected:
     // When adding modes, make sure we don't overflow m_invalidationMask below.
     enum InvalidationMode {

@@ -24,7 +24,6 @@
 #include "core/XLinkNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGLength.h"
 #include "wtf/Assertions.h"
 
@@ -107,11 +106,11 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
                           || attrName == SVGNames::widthAttr
                           || attrName == SVGNames::heightAttr;
 
-    if (isLengthAttribute)
+    if (isLengthAttribute) {
         updateRelativeLengthsInformation();
-
-    if (RenderObject* renderer = this->renderer())
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        if (RenderObject* renderer = this->renderer())
+            markForLayoutAndParentResourceInvalidation(renderer);
+    }
 }
 
 RenderObject* SVGForeignObjectElement::createRenderer(RenderStyle*)

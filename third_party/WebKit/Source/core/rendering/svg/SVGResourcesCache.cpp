@@ -135,14 +135,14 @@ void SVGResourcesCache::clientStyleChanged(RenderObject* renderer, StyleDifferen
         cache->addResourcesFromRenderObject(renderer, newStyle);
     }
 
-    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer, false);
+    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 }
 
 void SVGResourcesCache::clientWasAddedToTree(RenderObject* renderer, const RenderStyle* newStyle)
 {
     if (!renderer->node())
         return;
-    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer, false);
+    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 
     if (!rendererCanHaveResources(renderer))
         return;
@@ -154,7 +154,7 @@ void SVGResourcesCache::clientWillBeRemovedFromTree(RenderObject* renderer)
 {
     if (!renderer->node())
         return;
-    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer, false);
+    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 
     if (!rendererCanHaveResources(renderer))
         return;

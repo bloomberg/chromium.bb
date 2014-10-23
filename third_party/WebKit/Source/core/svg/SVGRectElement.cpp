@@ -19,11 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGRectElement.h"
 
 #include "core/rendering/svg/RenderSVGRect.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGLength.h"
 
 namespace blink {
@@ -91,7 +89,7 @@ void SVGRectElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute) {
         renderer->setNeedsShapeUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 

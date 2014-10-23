@@ -19,11 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGStopElement.h"
 
 #include "core/rendering/svg/RenderSVGGradientStop.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace blink {
 
@@ -47,8 +45,7 @@ void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
         SVGElement::InvalidationGuard invalidationGuard(this);
 
         if (renderer())
-            RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer());
-
+            markForLayoutAndParentResourceInvalidation(renderer());
         return;
     }
 

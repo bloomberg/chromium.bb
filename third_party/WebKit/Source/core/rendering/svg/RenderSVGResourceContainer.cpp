@@ -21,6 +21,10 @@
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 
 #include "wtf/TemporaryChange.h"
@@ -117,7 +121,7 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
         if (markForInvalidation)
             markClientForInvalidation(client, mode);
 
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(client, needsLayout);
+        RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(client, needsLayout);
     }
 
     markAllClientLayersForInvalidation();
@@ -223,6 +227,72 @@ void RenderSVGResourceContainer::registerResource()
         diff.setNeedsFullLayout();
         SVGResourcesCache::clientStyleChanged(renderer, diff, renderer->style());
         renderer->setNeedsLayoutAndFullPaintInvalidation();
+    }
+}
+
+static inline void removeFromCacheAndInvalidateDependencies(RenderObject* object, bool needsLayout)
+{
+    ASSERT(object);
+    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object)) {
+        if (RenderSVGResourceFilter* filter = resources->filter())
+            filter->removeClientFromCache(object);
+
+        if (RenderSVGResourceMasker* masker = resources->masker())
+            masker->removeClientFromCache(object);
+
+        if (RenderSVGResourceClipper* clipper = resources->clipper())
+            clipper->removeClientFromCache(object);
+    }
+
+    if (!object->node() || !object->node()->isSVGElement())
+        return;
+    SVGElementSet* dependencies = toSVGElement(object->node())->setOfIncomingReferences();
+    if (!dependencies)
+        return;
+
+    // We allow cycles in SVGDocumentExtensions reference sets in order to avoid expensive
+    // reference graph adjustments on changes, so we need to break possible cycles here.
+    // This strong reference is safe, as it is guaranteed that this set will be emptied
+    // at the end of recursion.
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGElementSet>, invalidatingDependencies, (adoptPtrWillBeNoop(new SVGElementSet)));
+
+    SVGElementSet::iterator end = dependencies->end();
+    for (SVGElementSet::iterator it = dependencies->begin(); it != end; ++it) {
+        if (RenderObject* renderer = (*it)->renderer()) {
+            if (UNLIKELY(!invalidatingDependencies->add(*it).isNewEntry)) {
+                // Reference cycle: we are in process of invalidating this dependant.
+                continue;
+            }
+
+            RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, needsLayout);
+            invalidatingDependencies->remove(*it);
+        }
+    }
+}
+
+void RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(RenderObject* object, bool needsLayout)
+{
+    ASSERT(object);
+    ASSERT(object->node());
+
+    if (needsLayout && !object->documentBeingDestroyed())
+        object->setNeedsLayoutAndFullPaintInvalidation();
+
+    removeFromCacheAndInvalidateDependencies(object, needsLayout);
+
+    // Invalidate resources in ancestor chain, if needed.
+    RenderObject* current = object->parent();
+    while (current) {
+        removeFromCacheAndInvalidateDependencies(current, needsLayout);
+
+        if (current->isSVGResourceContainer()) {
+            // This will process the rest of the ancestors.
+            toRenderSVGResourceContainer(current)->removeAllClientsFromCache();
+            break;
+        }
+
+        current = current->parent();
     }
 }
 

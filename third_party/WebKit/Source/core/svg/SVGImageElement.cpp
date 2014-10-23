@@ -27,7 +27,6 @@
 #include "core/XLinkNames.h"
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/svg/RenderSVGImage.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace blink {
 
@@ -136,12 +135,12 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute) {
         if (toRenderSVGImage(renderer)->updateImageViewport())
-            RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+            markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 
     if (attrName == SVGNames::preserveAspectRatioAttr) {
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 

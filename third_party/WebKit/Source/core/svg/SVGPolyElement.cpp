@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/svg/SVGPolyElement.h"
 
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/svg/SVGAnimatedPointList.h"
 #include "core/svg/SVGParserUtilities.h"
@@ -54,7 +53,7 @@ void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
 
     renderer->setNeedsShapeUpdate();
-    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+    markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 }

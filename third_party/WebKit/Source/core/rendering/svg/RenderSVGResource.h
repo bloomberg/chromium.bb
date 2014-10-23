@@ -82,8 +82,6 @@ public:
 
     // Helper utilities used in to access the underlying resources for DRT.
     static SVGPaintDescription requestPaintDescription(const RenderObject&, const RenderStyle*, RenderSVGResourceMode);
-
-    static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
 };
 
 }

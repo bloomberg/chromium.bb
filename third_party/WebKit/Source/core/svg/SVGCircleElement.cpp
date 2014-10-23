@@ -19,11 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGCircleElement.h"
 
 #include "core/rendering/svg/RenderSVGEllipse.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGLength.h"
 
 namespace blink {
@@ -79,7 +77,7 @@ void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute) {
         renderer->setNeedsShapeUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 

@@ -22,7 +22,6 @@
 #include "core/svg/SVGPathElement.h"
 
 #include "core/rendering/svg/RenderSVGPath.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGPathSegArcAbs.h"
@@ -227,7 +226,7 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (renderer)
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 void SVGPathElement::invalidateMPathDependencies()
@@ -267,7 +266,7 @@ void SVGPathElement::pathSegListChanged(ListModification listModification)
         return;
 
     renderer->setNeedsShapeUpdate();
-    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+    markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 FloatRect SVGPathElement::getBBox()

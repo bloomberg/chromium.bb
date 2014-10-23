@@ -22,7 +22,6 @@
 #include "core/svg/SVGTextPathElement.h"
 
 #include "core/XLinkNames.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTextPath.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
@@ -104,7 +103,7 @@ void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
 
     if (RenderObject* object = renderer())
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(object);
+        markForLayoutAndParentResourceInvalidation(object);
 }
 
 RenderObject* SVGTextPathElement::createRenderer(RenderStyle*)

@@ -39,7 +39,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGAngleTearOff.h"
@@ -302,7 +301,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
     if (updateRelativeLengthsOrViewBox
         || SVGZoomAndPan::isKnownAttribute(attrName)) {
         if (renderer())
-            RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer());
+            markForLayoutAndParentResourceInvalidation(renderer());
         return;
     }
 
@@ -683,7 +682,7 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
     if (fragmentIdentifier.startsWith("xpointer(")) {
         // FIXME: XPointer references are ignored (https://bugs.webkit.org/show_bug.cgi?id=17491)
         if (renderer && hadUseCurrentView)
-            RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+            markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 
@@ -697,7 +696,7 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
             view->reset();
 
         if (renderer && (hadUseCurrentView || m_useCurrentView))
-            RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+            markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
 
@@ -712,7 +711,7 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
             svg->inheritViewAttributes(&viewElement);
 
             if (RenderObject* renderer = svg->renderer())
-                RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+                markForLayoutAndParentResourceInvalidation(renderer);
         }
     }
 

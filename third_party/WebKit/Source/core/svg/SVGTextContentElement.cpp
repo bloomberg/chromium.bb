@@ -31,7 +31,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGTextQuery.h"
 
 namespace blink {
@@ -243,7 +242,7 @@ void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::InvalidationGuard invalidationGuard(this);
 
     if (RenderObject* renderer = this->renderer())
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 bool SVGTextContentElement::selfHasRelativeLengths() const

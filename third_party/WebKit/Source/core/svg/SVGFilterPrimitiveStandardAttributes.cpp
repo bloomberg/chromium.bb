@@ -20,13 +20,13 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 #include "core/SVGNames.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/svg/SVGLength.h"
+#include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
 
@@ -126,6 +126,12 @@ bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const RenderStyle& s
     return false;
 }
 
+void SVGFilterPrimitiveStandardAttributes::invalidate()
+{
+    if (RenderObject* primitiveRenderer = renderer())
+        markForLayoutAndParentResourceInvalidation(primitiveRenderer);
+}
+
 void SVGFilterPrimitiveStandardAttributes::primitiveAttributeChanged(const QualifiedName& attribute)
 {
     if (RenderObject* primitiveRenderer = renderer())
@@ -146,7 +152,7 @@ void invalidateFilterPrimitiveParent(SVGElement* element)
     if (!renderer || !renderer->isSVGResourceFilterPrimitive())
         return;
 
-    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer, false);
+    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
 }
 
 }

@@ -21,7 +21,6 @@
 #ifndef SVGFilterPrimitiveStandardAttributes_h
 #define SVGFilterPrimitiveStandardAttributes_h
 
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
@@ -60,12 +59,7 @@ protected:
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
 
-    inline void invalidate()
-    {
-        if (RenderObject* primitiveRenderer = renderer())
-            RenderSVGResource::markForLayoutAndParentResourceInvalidation(primitiveRenderer);
-    }
-
+    void invalidate();
     void primitiveAttributeChanged(const QualifiedName&);
 
 private:

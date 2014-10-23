@@ -960,6 +960,12 @@ bool SVGElement::hasFocusEventListeners() const
         || hasEventListeners(EventTypeNames::focus) || hasEventListeners(EventTypeNames::blur);
 }
 
+void SVGElement::markForLayoutAndParentResourceInvalidation(RenderObject* renderer)
+{
+    ASSERT(renderer);
+    RenderSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, true);
+}
+
 void SVGElement::invalidateInstances()
 {
     if (!inDocument())

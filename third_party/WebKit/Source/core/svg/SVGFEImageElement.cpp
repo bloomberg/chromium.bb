@@ -26,12 +26,10 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/graphics/filters/SVGFEImage.h"
 #include "platform/graphics/Image.h"
-#include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
 
@@ -171,7 +169,7 @@ void SVGFEImageElement::notifyFinished(Resource*)
         return;
 
     if (RenderObject* renderer = this->renderer())
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
+        markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 PassRefPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
