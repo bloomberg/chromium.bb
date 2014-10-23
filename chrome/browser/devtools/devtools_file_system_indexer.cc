@@ -44,13 +44,8 @@ const size_t kTrigramCount =
     kTrigramCharacterCount * kTrigramCharacterCount * kTrigramCharacterCount;
 const int kMaxReadLength = 10 * 1024;
 const TrigramChar kUndefinedTrigramChar = -1;
+const TrigramChar kBinaryTrigramChar = -2;
 const Trigram kUndefinedTrigram = -1;
-
-base::LazyInstance<vector<bool> >::Leaky g_is_binary_char =
-    LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<vector<TrigramChar> >::Leaky g_trigram_chars =
-    LAZY_INSTANCE_INITIALIZER;
 
 class Index {
  public:
@@ -82,47 +77,42 @@ class Index {
 
 base::LazyInstance<Index>::Leaky g_trigram_index = LAZY_INSTANCE_INITIALIZER;
 
-void InitIsBinaryCharMap() {
-  for (size_t i = 0; i < 256; ++i) {
-    unsigned char ch = i;
-    bool is_binary_char = ch < 9 || (ch >= 14 && ch < 32) || ch == 127;
-    g_is_binary_char.Get().push_back(is_binary_char);
-  }
-}
-
-bool IsBinaryChar(char c) {
-  unsigned char uc = static_cast<unsigned char>(c);
-  return g_is_binary_char.Get()[uc];
-}
-
-void InitTrigramCharsMap() {
-  for (size_t i = 0; i < 256; ++i) {
-    if (i > 127) {
-      g_trigram_chars.Get().push_back(kUndefinedTrigramChar);
-      continue;
-    }
-    char ch = i;
-    if (ch == '\t')
-      ch = ' ';
-    if (ch >= 'A' && ch <= 'Z')
-      ch = ch - 'A' + 'a';
-    if ((IsBinaryChar(ch)) || (ch < ' ')) {
-      g_trigram_chars.Get().push_back(kUndefinedTrigramChar);
-      continue;
-    }
-
-    if (ch >= 'Z')
-      ch = ch - 'Z' - 1 + 'A';
-    ch -= ' ';
-    char signed_trigram_char_count = static_cast<char>(kTrigramCharacterCount);
-    CHECK(ch >= 0 && ch < signed_trigram_char_count);
-    g_trigram_chars.Get().push_back(ch);
-  }
-}
-
 TrigramChar TrigramCharForChar(char c) {
+  static TrigramChar* trigram_chars = nullptr;
+  if (!trigram_chars) {
+    trigram_chars = new TrigramChar[256];
+    for (size_t i = 0; i < 256; ++i) {
+      if (i > 127) {
+        trigram_chars[i] = kUndefinedTrigramChar;
+        continue;
+      }
+      char ch = static_cast<char>(i);
+      if (ch == '\t')
+        ch = ' ';
+      if (ch >= 'A' && ch <= 'Z')
+        ch = ch - 'A' + 'a';
+
+      bool is_binary_char = ch < 9 || (ch >= 14 && ch < 32) || ch == 127;
+      if (is_binary_char) {
+        trigram_chars[i] = kBinaryTrigramChar;
+        continue;
+      }
+
+      if (ch < ' ') {
+        trigram_chars[i] = kUndefinedTrigramChar;
+        continue;
+      }
+
+      if (ch >= 'Z')
+        ch = ch - 'Z' - 1 + 'A';
+      ch -= ' ';
+      char signed_trigram_count = static_cast<char>(kTrigramCharacterCount);
+      CHECK(ch >= 0 && ch < signed_trigram_count);
+      trigram_chars[i] = ch;
+    }
+  }
   unsigned char uc = static_cast<unsigned char>(c);
-  return g_trigram_chars.Get()[uc];
+  return trigram_chars[uc];
 }
 
 Trigram TrigramAtIndex(const vector<TrigramChar>& trigram_chars, size_t index) {
@@ -173,8 +163,12 @@ vector<FilePath> Index::Search(string query) {
   const char* data = query.c_str();
   vector<TrigramChar> trigram_chars;
   trigram_chars.reserve(query.size());
-  for (size_t i = 0; i < query.size(); ++i)
-      trigram_chars.push_back(TrigramCharForChar(data[i]));
+  for (size_t i = 0; i < query.size(); ++i) {
+      TrigramChar trigram_char = TrigramCharForChar(data[i]);
+      if (trigram_char == kBinaryTrigramChar)
+        trigram_char = kUndefinedTrigramChar;
+      trigram_chars.push_back(trigram_char);
+  }
   vector<Trigram> trigrams;
   for (size_t i = 0; i + 2 < query.size(); ++i) {
     Trigram trigram = TrigramAtIndex(trigram_chars, i);
@@ -377,12 +371,13 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::OnRead(
   vector<TrigramChar> trigram_chars;
   trigram_chars.reserve(size);
   for (size_t i = 0; i < size; ++i) {
-    if (IsBinaryChar(data[i])) {
+    TrigramChar trigram_char = TrigramCharForChar(data[i]);
+    if (trigram_char == kBinaryTrigramChar) {
       current_trigrams_.clear();
       FinishFileIndexing(true);
       return;
     }
-    trigram_chars.push_back(TrigramCharForChar(data[i]));
+    trigram_chars.push_back(trigram_char);
   }
 
   for (size_t i = 0; i + 2 < size; ++i) {
@@ -436,12 +431,6 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::ReportWorked() {
 }
 
 DevToolsFileSystemIndexer::DevToolsFileSystemIndexer() {
-  static bool maps_initialized = false;
-  if (!maps_initialized) {
-    InitIsBinaryCharMap();
-    InitTrigramCharsMap();
-    maps_initialized = true;
-  }
 }
 
 DevToolsFileSystemIndexer::~DevToolsFileSystemIndexer() {}
