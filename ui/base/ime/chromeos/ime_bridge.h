@@ -50,8 +50,8 @@ class UI_BASE_EXPORT IMEEngineHandlerInterface {
   // A type of each member is based on the html spec, but InputContext can be
   // used to specify about a non html text field like Omnibox.
   struct InputContext {
-    InputContext(ui::TextInputType type_, ui::TextInputMode mode_) :
-      type(type_), mode(mode_) {}
+    InputContext(ui::TextInputType type_, ui::TextInputMode mode_, int flags_) :
+      type(type_), mode(mode_), flags(flags_) {}
 
     // An attribute of the field defined at
     // http://www.w3.org/TR/html401/interact/forms.html#input-control-types.
@@ -61,6 +61,9 @@ class UI_BASE_EXPORT IMEEngineHandlerInterface {
     //  association-of-controls-and-forms.html#input-modalities
     //  :-the-inputmode-attribute.
     ui::TextInputMode mode;
+    // An antribute to indicate the flags for web input fields. Please refer to
+    // WebTextInputType.
+    int flags;
   };
 
   virtual ~IMEEngineHandlerInterface() {}

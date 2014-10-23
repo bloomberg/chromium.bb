@@ -173,7 +173,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void SetIsLoading(bool is_loading) override;
   virtual void TextInputTypeChanged(ui::TextInputType type,
                                     ui::TextInputMode input_mode,
-                                    bool can_compose_inline) override;
+                                    bool can_compose_inline,
+                                    int flags) override;
   virtual void ImeCancelComposition() override;
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -247,6 +248,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual gfx::NativeWindow GetAttachedWindow() const override;
   virtual ui::TextInputType GetTextInputType() const override;
   virtual ui::TextInputMode GetTextInputMode() const override;
+  virtual int GetTextInputFlags() const override;
   virtual bool CanComposeInline() const override;
   virtual gfx::Rect GetCaretBounds() const override;
   virtual bool GetCompositionCharacterBounds(uint32 index,
@@ -527,6 +529,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   ui::TextInputType text_input_type_;
   // The current text input mode corresponding to HTML5 inputmode attribute.
   ui::TextInputMode text_input_mode_;
+  // The current text input flags.
+  int text_input_flags_;
   bool can_compose_inline_;
 
   // Rectangles for the selection anchor and focus.

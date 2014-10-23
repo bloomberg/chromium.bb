@@ -222,7 +222,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Updates the type of the input method attached to the view.
   virtual void TextInputTypeChanged(ui::TextInputType type,
                                     ui::TextInputMode mode,
-                                    bool can_compose_inline) = 0;
+                                    bool can_compose_inline,
+                                    int flags) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;

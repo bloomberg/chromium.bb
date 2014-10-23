@@ -47,6 +47,7 @@ class UI_BASE_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   bool IsActive() override;
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
+  int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   bool IsCandidatePopupOpen() const override;
   void ShowImeIfNeeded() override;

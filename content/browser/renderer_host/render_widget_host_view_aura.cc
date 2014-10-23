@@ -441,6 +441,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       is_loading_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
+      text_input_flags_(0),
       can_compose_inline_(true),
       has_composition_text_(false),
       accept_return_character_(false),
@@ -860,13 +861,16 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewAura::TextInputTypeChanged(
     ui::TextInputType type,
     ui::TextInputMode input_mode,
-    bool can_compose_inline) {
+    bool can_compose_inline,
+    int flags) {
   if (text_input_type_ != type ||
       text_input_mode_ != input_mode ||
-      can_compose_inline_ != can_compose_inline) {
+      can_compose_inline_ != can_compose_inline ||
+      text_input_flags_ != flags) {
     text_input_type_ = type;
     text_input_mode_ = input_mode;
     can_compose_inline_ = can_compose_inline;
+    text_input_flags_ = flags;
     if (GetInputMethod())
       GetInputMethod()->OnTextInputTypeChanged(this);
     if (touch_editing_client_)
@@ -876,6 +880,7 @@ void RenderWidgetHostViewAura::TextInputTypeChanged(
 
 void RenderWidgetHostViewAura::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
+  text_input_flags_ = params.flags;
   if (params.show_ime_if_needed && params.type != ui::TEXT_INPUT_TYPE_NONE) {
     if (GetInputMethod())
       GetInputMethod()->ShowImeIfNeeded();
@@ -1459,6 +1464,10 @@ ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
 
 ui::TextInputMode RenderWidgetHostViewAura::GetTextInputMode() const {
   return text_input_mode_;
+}
+
+int RenderWidgetHostViewAura::GetTextInputFlags() const {
+  return text_input_flags_;
 }
 
 bool RenderWidgetHostViewAura::CanComposeInline() const {

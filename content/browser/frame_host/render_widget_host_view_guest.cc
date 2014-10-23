@@ -284,7 +284,8 @@ void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewGuest::TextInputTypeChanged(
     ui::TextInputType type,
     ui::TextInputMode input_mode,
-    bool can_compose_inline) {
+    bool can_compose_inline,
+    int flags) {
   if (!guest_)
     return;
 
@@ -292,7 +293,7 @@ void RenderWidgetHostViewGuest::TextInputTypeChanged(
   if (!rwhv)
     return;
   // Forward the information to embedding RWHV.
-  rwhv->TextInputTypeChanged(type, input_mode, can_compose_inline);
+  rwhv->TextInputTypeChanged(type, input_mode, can_compose_inline, flags);
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {

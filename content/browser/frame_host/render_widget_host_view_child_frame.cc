@@ -153,7 +153,8 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewChildFrame::TextInputTypeChanged(
     ui::TextInputType type,
     ui::TextInputMode input_mode,
-    bool can_compose_inline) {
+    bool can_compose_inline,
+    int flags) {
   NOTREACHED();
 }
 

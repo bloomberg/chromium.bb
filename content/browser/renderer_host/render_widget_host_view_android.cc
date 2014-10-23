@@ -625,7 +625,8 @@ void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewAndroid::TextInputTypeChanged(
     ui::TextInputType type,
     ui::TextInputMode input_mode,
-    bool can_compose_inline) {
+    bool can_compose_inline,
+    int flags) {
   // Unused on Android, which uses OnTextInputChanged instead.
 }
 

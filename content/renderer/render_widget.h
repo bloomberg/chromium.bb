@@ -656,6 +656,9 @@ class CONTENT_EXPORT RenderWidget
   // Stores the current text input mode of |webwidget_|.
   ui::TextInputMode text_input_mode_;
 
+  // Stores the current text input flags of |webwidget_|.
+  int text_input_flags_;
+
   // Stores the current type of composition text rendering of |webwidget_|.
   bool can_compose_inline_;
 

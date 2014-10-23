@@ -35,6 +35,7 @@ class DummyInputMethod : public InputMethod {
   bool IsActive() override;
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
+  int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   bool IsCandidatePopupOpen() const override;
   void ShowImeIfNeeded() override;

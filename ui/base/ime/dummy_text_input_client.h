@@ -25,6 +25,7 @@ class DummyTextInputClient : public TextInputClient {
   gfx::NativeWindow GetAttachedWindow() const override;
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
+  int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
   bool GetCompositionCharacterBounds(uint32 index,

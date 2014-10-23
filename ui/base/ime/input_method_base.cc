@@ -80,6 +80,11 @@ TextInputMode InputMethodBase::GetTextInputMode() const {
   return client ? client->GetTextInputMode() : TEXT_INPUT_MODE_DEFAULT;
 }
 
+int InputMethodBase::GetTextInputFlags() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->GetTextInputFlags() : 0;
+}
+
 bool InputMethodBase::CanComposeInline() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->CanComposeInline() : true;

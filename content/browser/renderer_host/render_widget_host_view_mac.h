@@ -268,7 +268,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetIsLoading(bool is_loading) override;
   void TextInputTypeChanged(ui::TextInputType type,
                             ui::TextInputMode input_mode,
-                            bool can_compose_inline) override;
+                            bool can_compose_inline,
+                            int flags) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,

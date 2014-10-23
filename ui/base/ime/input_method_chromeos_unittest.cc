@@ -279,6 +279,9 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   virtual TextInputMode GetTextInputMode() const override {
     return input_mode_;
   }
+  virtual int GetTextInputFlags() const override {
+    return 0;
+  }
   virtual bool CanComposeInline() const override {
     return can_compose_inline_;
   }

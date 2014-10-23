@@ -44,6 +44,10 @@ TextInputMode DummyTextInputClient::GetTextInputMode() const {
   return TEXT_INPUT_MODE_DEFAULT;
 }
 
+int DummyTextInputClient::GetTextInputFlags() const {
+  return 0;
+}
+
 bool DummyTextInputClient::CanComposeInline() const {
   return false;
 }

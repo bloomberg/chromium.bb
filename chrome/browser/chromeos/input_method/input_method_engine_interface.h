@@ -89,6 +89,9 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
   struct InputContext {
     int id;
     std::string type;
+    bool auto_correct;
+    bool auto_complete;
+    bool spell_check;
   };
 
   struct UsageEntry {

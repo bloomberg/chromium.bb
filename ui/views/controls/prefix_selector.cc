@@ -67,6 +67,10 @@ ui::TextInputMode PrefixSelector::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
 
+int PrefixSelector::GetTextInputFlags() const {
+  return 0;
+}
+
 bool PrefixSelector::CanComposeInline() const {
   return false;
 }

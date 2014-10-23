@@ -127,7 +127,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual void SetIsLoading(bool is_loading) override;
   virtual void TextInputTypeChanged(ui::TextInputType type,
                                     ui::TextInputMode input_mode,
-                                    bool can_compose_inline) override;
+                                    bool can_compose_inline,
+                                    int flags) override;
   virtual void ImeCancelComposition() override;
   virtual void FocusedNodeChanged(bool is_editable_node) override;
   virtual void RenderProcessGone(base::TerminationStatus status,

@@ -403,6 +403,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       input_method_is_active_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
+      text_input_flags_(0),
       can_compose_inline_(true),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
@@ -1780,17 +1781,21 @@ void RenderWidget::UpdateTextInputType() {
   if (webwidget_)
     new_info = webwidget_->textInputInfo();
   const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
+  int new_flags = new_info.flags;
 
   if (text_input_type_ != new_type
       || can_compose_inline_ != new_can_compose_inline
-      || text_input_mode_ != new_mode) {
+      || text_input_mode_ != new_mode
+      || text_input_flags_ != new_flags) {
     Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
                                               new_type,
                                               new_mode,
-                                              new_can_compose_inline));
+                                              new_can_compose_inline,
+                                              new_flags));
     text_input_type_ = new_type;
     can_compose_inline_ = new_can_compose_inline;
     text_input_mode_ = new_mode;
+    text_input_flags_ = new_flags;
   }
 }
 
@@ -1845,13 +1850,15 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
                                               new_type,
                                               text_input_mode_,
-                                              new_can_compose_inline));
+                                              new_can_compose_inline,
+                                              new_info.flags));
 #endif
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
 
     text_input_info_ = new_info;
     text_input_type_ = new_type;
     can_compose_inline_ = new_can_compose_inline;
+    text_input_flags_ = new_info.flags;
   }
 }
 #endif

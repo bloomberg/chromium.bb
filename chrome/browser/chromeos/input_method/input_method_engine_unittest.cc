@@ -15,6 +15,7 @@
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/base/ime/text_input_flags.h"
 
 namespace chromeos {
 
@@ -138,7 +139,7 @@ class InputMethodEngineTest :  public testing::Test {
 
   void FocusIn(ui::TextInputType input_type) {
     IMEEngineHandlerInterface::InputContext input_context(
-        input_type, ui::TEXT_INPUT_MODE_DEFAULT);
+        input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE);
     engine_->FocusIn(input_context);
     IMEBridge::Get()->SetCurrentTextInputType(input_type);
   }

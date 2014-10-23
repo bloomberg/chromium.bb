@@ -1680,9 +1680,10 @@ void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(bool enabled) {
 void RenderWidgetHostImpl::OnTextInputTypeChanged(
     ui::TextInputType type,
     ui::TextInputMode input_mode,
-    bool can_compose_inline) {
+    bool can_compose_inline,
+    int flags) {
   if (view_)
-    view_->TextInputTypeChanged(type, input_mode, can_compose_inline);
+    view_->TextInputTypeChanged(type, input_mode, can_compose_inline, flags);
 }
 
 #if defined(OS_MACOSX) || defined(USE_AURA)

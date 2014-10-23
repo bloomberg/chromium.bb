@@ -27,6 +27,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
@@ -566,6 +567,13 @@ void InputMethodEngine::FocusIn(
       break;
   }
 
+  context.auto_correct =
+      !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  context.auto_complete =
+      !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
+  context.spell_check =
+      !(input_context.flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF);
+
   observer_->OnFocus(context);
 }
 
@@ -585,8 +593,9 @@ void InputMethodEngine::Enable(const std::string& component_id) {
   active_component_id_ = component_id;
   observer_->OnActivate(component_id);
   current_input_type_ = IMEBridge::Get()->GetCurrentTextInputType();
-  FocusIn(IMEEngineHandlerInterface::InputContext(
-      current_input_type_, ui::TEXT_INPUT_MODE_DEFAULT));
+  FocusIn(IMEEngineHandlerInterface::InputContext(current_input_type_,
+                                                  ui::TEXT_INPUT_MODE_DEFAULT,
+                                                  ui::TEXT_INPUT_FLAG_NONE));
   EnableInputView();
 }
 

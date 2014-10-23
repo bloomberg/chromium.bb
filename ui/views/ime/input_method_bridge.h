@@ -59,6 +59,7 @@ class InputMethodBridge : public InputMethodBase,
   virtual gfx::NativeWindow GetAttachedWindow() const override;
   virtual ui::TextInputType GetTextInputType() const override;
   virtual ui::TextInputMode GetTextInputMode() const override;
+  virtual int GetTextInputFlags() const override;
   virtual bool CanComposeInline() const override;
   virtual gfx::Rect GetCaretBounds() const override;
   virtual bool GetCompositionCharacterBounds(uint32 index,

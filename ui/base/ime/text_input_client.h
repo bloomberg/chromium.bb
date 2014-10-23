@@ -68,6 +68,11 @@ class UI_BASE_EXPORT TextInputClient {
   // TEXT_INPUT_MODE_DEFAULT at runtime.
   virtual ui::TextInputMode GetTextInputMode() const = 0;
 
+  // Returns the current text input flags, which is a bit map of
+  // WebTextInputType defined in blink. This is valid only for web input fileds;
+  // it will return TEXT_INPUT_FLAG_NONE for native input fields.
+  virtual int GetTextInputFlags() const = 0;
+
   // Returns if the client supports inline composition currently.
   virtual bool CanComposeInline() const = 0;
 

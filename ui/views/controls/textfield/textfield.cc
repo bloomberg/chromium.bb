@@ -1416,6 +1416,10 @@ ui::TextInputMode Textfield::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
 
+int Textfield::GetTextInputFlags() const {
+  return 0;
+}
+
 bool Textfield::CanComposeInline() const {
   return true;
 }

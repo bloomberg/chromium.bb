@@ -290,7 +290,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   void OnTextInputTypeChanged(ui::TextInputType type,
                               ui::TextInputMode input_mode,
-                              bool can_compose_inline);
+                              bool can_compose_inline,
+                              int flags);
   void OnImeSetComposition(
       int instance_id,
       const std::string& text,
@@ -371,6 +372,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // Text input type states.
   ui::TextInputType last_text_input_type_;
   ui::TextInputMode last_input_mode_;
+  int last_input_flags_;
   bool last_can_compose_inline_;
 
   // The is the routing ID for a swapped out RenderView for the guest

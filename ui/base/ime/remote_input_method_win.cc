@@ -270,6 +270,11 @@ class RemoteInputMethodWin : public InputMethod,
                               : TEXT_INPUT_MODE_DEFAULT;
   }
 
+  virtual int GetTextInputFlags() const override {
+    return text_input_client_ ? text_input_client_->GetTextInputFlags()
+                              : 0;
+  }
+
   virtual bool CanComposeInline() const override {
     return text_input_client_ ? text_input_client_->CanComposeInline() : true;
   }

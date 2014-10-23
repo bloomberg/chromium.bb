@@ -924,7 +924,7 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
       render_view_->routing_id(),
       static_cast<ui::TextInputType>(input_type),
       ui::TEXT_INPUT_MODE_DEFAULT,
-      true));
+      true, 0));
 
   ViewHostMsg_SelectionBounds_Params bounds_params;
   bounds_params.anchor_rect = bounds_params.focus_rect = caret_rect;

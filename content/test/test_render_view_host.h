@@ -98,7 +98,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void UpdateCursor(const WebCursor& cursor) override {}
   void TextInputTypeChanged(ui::TextInputType type,
                             ui::TextInputMode input_mode,
-                            bool can_compose_inline) override {}
+                            bool can_compose_inline,
+                            int flags) override {}
   void ImeCancelComposition() override {}
 #if defined(OS_MACOSX) || defined(USE_AURA)
   void ImeCompositionRangeChanged(

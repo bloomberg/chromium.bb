@@ -49,6 +49,7 @@ class UI_BASE_EXPORT InputMethodBase
 
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
+  int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   void ShowImeIfNeeded() override;
 

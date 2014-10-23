@@ -167,7 +167,7 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
     // The focus in to or out from password field should also notify engine.
     engine->FocusOut();
     chromeos::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode());
+        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
     engine->FocusIn(context);
   }
 
@@ -271,7 +271,7 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
 
   if (GetEngine()) {
     chromeos::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode());
+        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
     GetEngine()->FocusIn(context);
   }
 }

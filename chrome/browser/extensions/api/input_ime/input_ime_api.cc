@@ -135,6 +135,9 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     input_ime::InputContext context_value;
     context_value.context_id = context.id;
     context_value.type = input_ime::InputContext::ParseType(context.type);
+    context_value.auto_correct = context.auto_correct;
+    context_value.auto_complete = context.auto_complete;
+    context_value.spell_check = context.spell_check;
 
     scoped_ptr<base::ListValue> args(input_ime::OnFocus::Create(context_value));
 

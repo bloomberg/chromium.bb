@@ -86,6 +86,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       is_in_destruction_(false),
       last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       last_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
+      last_input_flags_(0),
       last_can_compose_inline_(true),
       guest_proxy_routing_id_(MSG_ROUTING_NONE),
       delegate_(delegate),
@@ -121,7 +122,7 @@ void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh, bool focused) {
       rwh->GetView());
   if (rwhv) {
     rwhv->TextInputTypeChanged(last_text_input_type_, last_input_mode_,
-                               last_can_compose_inline_);
+                               last_can_compose_inline_, last_input_flags_);
   }
 }
 
@@ -800,15 +801,17 @@ void BrowserPluginGuest::OnTakeFocus(bool reverse) {
 
 void BrowserPluginGuest::OnTextInputTypeChanged(ui::TextInputType type,
                                                 ui::TextInputMode input_mode,
-                                                bool can_compose_inline) {
+                                                bool can_compose_inline,
+                                                int flags) {
   // Save the state of text input so we can restore it on focus.
   last_text_input_type_ = type;
   last_input_mode_ = input_mode;
+  last_input_flags_ = flags;
   last_can_compose_inline_ = can_compose_inline;
 
   static_cast<RenderWidgetHostViewBase*>(
       web_contents()->GetRenderWidgetHostView())->TextInputTypeChanged(
-          type, input_mode, can_compose_inline);
+          type, input_mode, can_compose_inline, flags);
 }
 
 void BrowserPluginGuest::OnImeCancelComposition() {
