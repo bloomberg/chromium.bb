@@ -16,6 +16,7 @@
   },
   'targets': [
     {
+      # GN: //tools/relocation_packer:lib_relocation_packer
       'target_name': 'lib_relocation_packer',
       'toolsets': ['host'],
       'type': 'static_library',
@@ -36,6 +37,7 @@
       ],
     },
     {
+      # GN: //tools/relocation_packer:relocation_packer
       'target_name': 'relocation_packer',
       'toolsets': ['host'],
       'type': 'executable',
@@ -51,6 +53,7 @@
       ],
     },
     {
+      # GN: //tools/relocation_packer:relocation_packer_unittests
       'target_name': 'relocation_packer_unittests',
       'toolsets': ['host'],
       'type': 'executable',
@@ -98,6 +101,7 @@
     #
     # See test_data/generate_elf_file_unittest_relocs.sh for instructions.
     {
+      # GN: //tools/relocation_packer:relocation_packer_test_data
       'target_name': 'relocation_packer_test_data',
       'toolsets': ['target'],
       'type': 'shared_library',
@@ -110,6 +114,7 @@
       ],
     },
     {
+      # GN: //tools/relocation_packer:relocation_packer_unittests_test_data
       'target_name': 'relocation_packer_unittests_test_data',
       'toolsets': ['target'],
       'type': 'none',

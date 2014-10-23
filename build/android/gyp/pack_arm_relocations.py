@@ -35,9 +35,6 @@ def PackArmLibraryRelocations(android_pack_relocations,
                               has_relocations_with_addends,
                               library_path,
                               output_path):
-  if not build_utils.IsTimeStale(output_path, [library_path]):
-    return
-
   # Select an appropriate name for the section we add.
   if has_relocations_with_addends:
     new_section = '.android.rela.dyn'
@@ -59,15 +56,17 @@ def PackArmLibraryRelocations(android_pack_relocations,
 
 
 def CopyArmLibraryUnchanged(library_path, output_path):
-  if not build_utils.IsTimeStale(output_path, [library_path]):
-    return
-
   shutil.copy(library_path, output_path)
 
 
 def main(args):
   args = build_utils.ExpandFileArgs(args)
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
+  parser.add_option('--clear-dir', action='store_true',
+                    help='If set, the destination directory will be deleted '
+                    'before copying files to it. This is highly recommended to '
+                    'ensure that no stale files are left in the directory.')
 
   parser.add_option('--configuration-name',
       default='Release',
@@ -102,11 +101,15 @@ def main(args):
 
   libraries = build_utils.ParseGypList(options.libraries)
 
+  if options.clear_dir:
+    build_utils.DeleteDirectory(options.packed_libraries_dir)
+
   build_utils.MakeDirectory(options.packed_libraries_dir)
 
   for library in libraries:
     library_path = os.path.join(options.stripped_libraries_dir, library)
-    output_path = os.path.join(options.packed_libraries_dir, library)
+    output_path = os.path.join(
+        options.packed_libraries_dir, os.path.basename(library))
 
     if enable_packing and library not in exclude_packing_set:
       PackArmLibraryRelocations(options.android_pack_relocations,
@@ -116,6 +119,11 @@ def main(args):
                                 output_path)
     else:
       CopyArmLibraryUnchanged(library_path, output_path)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        libraries + build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

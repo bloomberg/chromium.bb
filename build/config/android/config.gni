@@ -114,7 +114,9 @@ if (is_android) {
     assert(false, "Need android libgcc support for your target arch.")
   }
 
-  android_readelf = "$android_toolchain_root/bin/$_binary_prefix-readelf"
+  android_tool_prefix = "$android_toolchain_root/bin/$_binary_prefix-"
+  android_readelf = "${android_tool_prefix}readelf"
+  android_objcopy = "${android_tool_prefix}objcopy"
   android_gdbserver = "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"
 
   # stlport stuff --------------------------------------------------------------
