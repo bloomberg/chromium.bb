@@ -348,8 +348,6 @@
         'win/accessibility_misc_utils.cc',
         'win/accessibility_misc_utils.h',
         'win/atl_module.h',
-        'win/dpi_setup.cc',
-        'win/dpi_setup.h',
         'win/foreground_helper.cc',
         'win/foreground_helper.h',
         'win/hidden_window.cc',

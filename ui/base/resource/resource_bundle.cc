@@ -46,7 +46,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "ui/base/win/dpi_setup.h"
 #include "ui/gfx/win/dpi.h"
 #endif
 
@@ -649,7 +648,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   // Don't initialize the device scale factor if it has already been
   // initialized.
   if (!gfx::win::IsDeviceScaleFactorSet())
-    ui::win::InitDeviceScaleFactor();
+    gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
 #endif
 }
 

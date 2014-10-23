@@ -78,7 +78,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/win/atl_module.h"
-#include "ui/base/win/dpi_setup.h"
 #include "ui/gfx/win/dpi.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -634,7 +633,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       }
     }
     if (init_device_scale_factor)
-      ui::win::InitDeviceScaleFactor();
+      gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
 #endif
 
     if (!GetContentClient())
