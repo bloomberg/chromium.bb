@@ -19,11 +19,16 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_NACL)
+#if !defined(OS_NACL)
+#if defined(OS_MACOSX)
 #include <ifaddrs.h>
+#else
+#include "net/base/address_tracker_linux.h"
+#include "net/base/net_util_posix.h"
+#endif  // OS_MACOSX
 #include <net/if.h>
 #include <netinet/in.h>
-#endif
+#endif  // !defined(OS_NACL)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include <net/if_media.h>
@@ -31,15 +36,48 @@
 #include <sys/ioctl.h>
 #endif
 
-#if defined(OS_ANDROID)
-#include "net/android/network_library.h"
-#endif
-
 namespace net {
 
 namespace {
 
-#if !defined(OS_ANDROID)
+// The application layer can pass |policy| defined in net_util.h to
+// request filtering out certain type of interfaces.
+bool ShouldIgnoreInterface(const std::string& name, int policy) {
+  // Filter out VMware interfaces, typically named vmnet1 and vmnet8,
+  // which might not be useful for use cases like WebRTC.
+  if ((policy & EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES) &&
+      ((name.find("vmnet") != std::string::npos) ||
+       (name.find("vnic") != std::string::npos))) {
+    return true;
+  }
+
+  return false;
+}
+
+// Check if the address is unspecified (i.e. made of zeroes) or loopback.
+bool IsLoopbackOrUnspecifiedAddress(const sockaddr* addr) {
+  if (addr->sa_family == AF_INET6) {
+    const struct sockaddr_in6* addr_in6 =
+        reinterpret_cast<const struct sockaddr_in6*>(addr);
+    const struct in6_addr* sin6_addr = &addr_in6->sin6_addr;
+    if (IN6_IS_ADDR_LOOPBACK(sin6_addr) || IN6_IS_ADDR_UNSPECIFIED(sin6_addr)) {
+      return true;
+    }
+  } else if (addr->sa_family == AF_INET) {
+    const struct sockaddr_in* addr_in =
+        reinterpret_cast<const struct sockaddr_in*>(addr);
+    if (addr_in->sin_addr.s_addr == INADDR_LOOPBACK ||
+        addr_in->sin_addr.s_addr == 0) {
+      return true;
+    }
+  } else {
+    // Skip non-IP addresses.
+    return true;
+  }
+  return false;
+}
+
+#if defined(OS_MACOSX)
 
 struct NetworkInterfaceInfo {
   NetworkInterfaceInfo() : permanent(true) { }
@@ -83,10 +121,7 @@ void RemovePermanentIPv6AddressesWhereTemporaryExists(
   }
 }
 
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-
+#if !defined(OS_IOS)
 NetworkChangeNotifier::ConnectionType GetNetworkInterfaceType(
     int addr_family, const std::string& interface_name) {
   NetworkChangeNotifier::ConnectionType type =
@@ -111,50 +146,151 @@ NetworkChangeNotifier::ConnectionType GetNetworkInterfaceType(
   return type;
 }
 
-#endif
+#endif                   // !defined(OS_IOS)
+#elif !defined(OS_NACL)  // OS_MACOSX
 
+// Convert platform native IPv6 address attributes to net IP address
+// attributes and drop ones that can't be used by the application
+// layer.
+bool TryConvertNativeToNetIPAttributes(int native_attributes,
+                                       int* net_attributes) {
+  // For Linux/ChromeOS/Android, we disallow addresses with attributes
+  // IFA_F_OPTIMISTIC, IFA_F_DADFAILED, and IFA_F_TENTATIVE as these
+  // are still progressing through duplicated address detection (DAD)
+  // and shouldn't be used by the application layer until DAD process
+  // is completed.
+  if (native_attributes & (
+#if !defined(OS_ANDROID)
+    IFA_F_OPTIMISTIC | IFA_F_DADFAILED |
+#endif  // !OS_ANDROID
+    IFA_F_TENTATIVE)) {
+    return false;
+  }
+
+  if (native_attributes & IFA_F_TEMPORARY) {
+    *net_attributes |= IP_ADDRESS_ATTRIBUTE_TEMPORARY;
+  }
+
+  if (native_attributes & IFA_F_DEPRECATED) {
+    *net_attributes |= IP_ADDRESS_ATTRIBUTE_DEPRECATED;
+  }
+
+  return true;
+}
+#endif  // OS_MACOSX
 }  // namespace
 
+namespace internal {
+
+#if !defined(OS_MACOSX) && !defined(OS_NACL)
+
+inline const unsigned char* GetIPAddressData(const IPAddressNumber& ip) {
+#if defined(OS_ANDROID)
+  return ip.begin();
+#else
+  return ip.data();
+#endif
+}
+
+bool GetNetworkListImpl(
+    NetworkInterfaceList* networks,
+    int policy,
+    const base::hash_set<int>& online_links,
+    const internal::AddressTrackerLinux::AddressMap& address_map,
+    GetInterfaceNameFunction get_interface_name) {
+  std::map<int, std::string> ifnames;
+
+  for (internal::AddressTrackerLinux::AddressMap::const_iterator it =
+           address_map.begin();
+       it != address_map.end();
+       ++it) {
+    // Ignore addresses whose links are not online.
+    if (online_links.find(it->second.ifa_index) == online_links.end())
+      continue;
+
+    sockaddr_storage sock_addr;
+    socklen_t sock_len = sizeof(sockaddr_storage);
+
+    // Convert to sockaddr for next check.
+    if (!IPEndPoint(it->first, 0)
+             .ToSockAddr(reinterpret_cast<sockaddr*>(&sock_addr), &sock_len)) {
+      continue;
+    }
+
+    // Skip unspecified addresses (i.e. made of zeroes) and loopback addresses
+    if (IsLoopbackOrUnspecifiedAddress(reinterpret_cast<sockaddr*>(&sock_addr)))
+      continue;
+
+    int ip_attributes = IP_ADDRESS_ATTRIBUTE_NONE;
+
+    if (it->second.ifa_family == AF_INET6) {
+      // Ignore addresses whose attributes are not actionable by
+      // the application layer.
+      if (!TryConvertNativeToNetIPAttributes(it->second.ifa_flags,
+                                             &ip_attributes))
+        continue;
+    }
+
+    // Find the name of this link.
+    std::map<int, std::string>::const_iterator itname =
+        ifnames.find(it->second.ifa_index);
+    std::string ifname;
+    if (itname == ifnames.end()) {
+      char buffer[IF_NAMESIZE] = {0};
+      if (get_interface_name(it->second.ifa_index, buffer)) {
+        ifname = ifnames[it->second.ifa_index] = buffer;
+      } else {
+        // Ignore addresses whose interface name can't be retrieved.
+        continue;
+      }
+    } else {
+      ifname = itname->second;
+    }
+
+    // Based on the interface name and policy, determine whether we
+    // should ignore it.
+    if (ShouldIgnoreInterface(ifname, policy))
+      continue;
+
+    networks->push_back(
+        NetworkInterface(ifname,
+                         ifname,
+                         it->second.ifa_index,
+                         NetworkChangeNotifier::CONNECTION_UNKNOWN,
+                         it->first,
+                         it->second.ifa_prefixlen,
+                         ip_attributes));
+  }
+
+  return true;
+}
+#endif
+
+}  // namespace internal
+
 bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
+  if (networks == NULL)
+    return false;
 #if defined(OS_NACL)
   NOTIMPLEMENTED();
   return false;
-#elif defined(OS_ANDROID)
-  std::string network_list = android::GetNetworkList();
-  base::StringTokenizer network_interfaces(network_list, "\n");
-  while (network_interfaces.GetNext()) {
-    std::string network_item = network_interfaces.token();
-    base::StringTokenizer network_tokenizer(network_item, "\t");
-    CHECK(network_tokenizer.GetNext());
-    std::string name = network_tokenizer.token();
+#elif !defined(OS_MACOSX)
 
-    CHECK(network_tokenizer.GetNext());
-    std::string interface_address = network_tokenizer.token();
-    IPAddressNumber address;
-    size_t network_prefix = 0;
-    CHECK(ParseCIDRBlock(network_tokenizer.token(),
-                         &address,
-                         &network_prefix));
+  internal::AddressTrackerLinux tracker;
+  tracker.Init();
 
-    CHECK(network_tokenizer.GetNext());
-    uint32 index = 0;
-    CHECK(base::StringToUint(network_tokenizer.token(), &index));
+  return internal::GetNetworkListImpl(networks,
+                                      policy,
+                                      tracker.GetOnlineLinks(),
+                                      tracker.GetAddressMap(),
+                                      &if_indextoname);
 
-    networks->push_back(
-        NetworkInterface(name,
-                         name,
-                         index,
-                         NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                         address,
-                         network_prefix,
-                         IP_ADDRESS_ATTRIBUTE_NONE));
-  }
-  return true;
-#else
+#else  // Only OS_MACOSX and OS_IOS will run the code below
+
   // getifaddrs() may require IO operations.
   base::ThreadRestrictions::AssertIOAllowed();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_IOS)
   int ioctl_socket = -1;
   if (policy & INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE) {
     // we need a socket to query information about temporary address.
@@ -163,7 +299,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   }
 #endif
 
-  ifaddrs *interfaces;
+  ifaddrs* interfaces;
   if (getifaddrs(&interfaces) < 0) {
     PLOG(ERROR) << "getifaddrs";
     return false;
@@ -187,41 +323,26 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 
     // Skip unspecified addresses (i.e. made of zeroes) and loopback addresses
     // configured on non-loopback interfaces.
+    if (IsLoopbackOrUnspecifiedAddress(addr))
+      continue;
+
     int addr_size = 0;
     if (addr->sa_family == AF_INET6) {
-      struct sockaddr_in6* addr_in6 =
-          reinterpret_cast<struct sockaddr_in6*>(addr);
-      struct in6_addr* sin6_addr = &addr_in6->sin6_addr;
-      addr_size = sizeof(*addr_in6);
-      if (IN6_IS_ADDR_LOOPBACK(sin6_addr) ||
-          IN6_IS_ADDR_UNSPECIFIED(sin6_addr)) {
-        continue;
-      }
+      addr_size = sizeof(sockaddr_in6);
     } else if (addr->sa_family == AF_INET) {
-      struct sockaddr_in* addr_in =
-          reinterpret_cast<struct sockaddr_in*>(addr);
-      addr_size = sizeof(*addr_in);
-      if (addr_in->sin_addr.s_addr == INADDR_LOOPBACK ||
-          addr_in->sin_addr.s_addr == 0) {
-        continue;
-      }
-    } else {
-      // Skip non-IP addresses.
-      continue;
+      addr_size = sizeof(sockaddr_in);
     }
 
     const std::string& name = interface->ifa_name;
     // Filter out VMware interfaces, typically named vmnet1 and vmnet8.
-    if ((policy & EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES) &&
-        ((name.find("vmnet") != std::string::npos) ||
-         (name.find("vnic") != std::string::npos))) {
+    if (ShouldIgnoreInterface(name, policy)) {
       continue;
     }
 
     NetworkInterfaceInfo network_info;
     NetworkChangeNotifier::ConnectionType connection_type =
         NetworkChangeNotifier::CONNECTION_UNKNOWN;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_IOS)
     // Check if this is a temporary address. Currently this is only supported
     // on Mac.
     if ((policy & INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE) &&
@@ -264,7 +385,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     }
   }
   freeifaddrs(interfaces);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_IOS)
   if (ioctl_socket >= 0) {
     close(ioctl_socket);
   }

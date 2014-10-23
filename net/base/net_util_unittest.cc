@@ -17,6 +17,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
+
+#if !defined(OS_NACL) && !defined(OS_WIN)
+#include <net/if.h>
+#include <netinet/in.h>
+#endif  // !OS_NACL && !OS_WIN
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -25,9 +30,15 @@
 #include <objbase.h>
 #include "base/win/windows_version.h"
 #include "net/base/net_util_win.h"
-#elif !defined(OS_ANDROID)
-#include <net/if.h>
 #endif  // OS_WIN
+
+#if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_WIN)
+#include "net/base/address_tracker_linux.h"
+#endif  // !OS_MACOSX && !OS_NACL && !OS_WIN
+
+#if !defined(OS_WIN)
+#include "net/base/net_util_posix.h"
+#endif  // !OS_WIN
 
 using base::ASCIIToUTF16;
 using base::WideToUTF16;
@@ -800,6 +811,152 @@ TEST(NetUtilTest, GetNetworkList) {
 #endif
   }
 }
+
+#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_NACL)
+
+char* CopyInterfaceName(const char* ifname, int ifname_size, char* output) {
+  EXPECT_LT(ifname_size, IF_NAMESIZE);
+  memcpy(output, ifname, ifname_size);
+  return output;
+}
+
+static const char ifname_em1[] = "em1";
+char* GetInterfaceName(unsigned int interface_index, char* ifname) {
+  return CopyInterfaceName(ifname_em1, arraysize(ifname_em1), ifname);
+}
+
+static const char ifname_vm[] = "vmnet";
+char* GetInterfaceNameVM(unsigned int interface_index, char* ifname) {
+  return CopyInterfaceName(ifname_vm, arraysize(ifname_vm), ifname);
+}
+
+TEST(NetUtilTest, GetNetworkListTrimming) {
+  NetworkInterfaceList results;
+  ::base::hash_set<int> online_links;
+  net::internal::AddressTrackerLinux::AddressMap address_map;
+
+  const unsigned char kIPv6LocalAddr[] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+  const unsigned char kIPv6Addr[] =
+    {0x24, 0x01, 0xfa, 0x00, 0x00, 0x04, 0x10, 0x00, 0xbe, 0x30, 0x5b, 0xff,
+     0xfe, 0xe5, 0x00, 0xc3};
+
+  IPAddressNumber ipv6_local_address(
+      kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
+  IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
+
+  // Interface 1 is offline.
+  struct ifaddrmsg msg = {
+      AF_INET6,
+      1,               /* prefix length */
+      IFA_F_TEMPORARY, /* address flags */
+      0,               /* link scope */
+      1                /* link index */
+  };
+
+  // Address of offline links should be ignored.
+  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  EXPECT_TRUE(
+      net::internal::GetNetworkListImpl(&results,
+                                        INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+                                        online_links,
+                                        address_map,
+                                        GetInterfaceName));
+  EXPECT_EQ(results.size(), 0ul);
+
+  // Mark interface 1 online.
+  online_links.insert(1);
+
+  // Local address should be trimmed out.
+  address_map.clear();
+  ASSERT_TRUE(
+      address_map.insert(std::make_pair(ipv6_local_address, msg)).second);
+  EXPECT_TRUE(
+      net::internal::GetNetworkListImpl(&results,
+                                        INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+                                        online_links,
+                                        address_map,
+                                        GetInterfaceName));
+  EXPECT_EQ(results.size(), 0ul);
+
+  // vmware address should return by default.
+  address_map.clear();
+  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  EXPECT_TRUE(
+      net::internal::GetNetworkListImpl(&results,
+                                        INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+                                        online_links,
+                                        address_map,
+                                        GetInterfaceNameVM));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_vm);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  results.clear();
+
+  // vmware address should be trimmed out if policy specified so.
+  address_map.clear();
+  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  EXPECT_TRUE(
+      net::internal::GetNetworkListImpl(&results,
+                                        EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+                                        online_links,
+                                        address_map,
+                                        GetInterfaceNameVM));
+  EXPECT_EQ(results.size(), 0ul);
+  results.clear();
+
+  // Addresses with banned attributes should be ignored.
+  address_map.clear();
+  msg.ifa_flags = IFA_F_TENTATIVE;
+  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  EXPECT_TRUE(
+      net::internal::GetNetworkListImpl(&results,
+                                        INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+                                        online_links,
+                                        address_map,
+                                        GetInterfaceName));
+  EXPECT_EQ(results.size(), 0ul);
+  results.clear();
+
+  // Addresses with allowed attribute IFA_F_TEMPORARY should be returned and
+  // attributes should be translated correctly.
+  address_map.clear();
+  msg.ifa_flags = IFA_F_TEMPORARY;
+  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  EXPECT_TRUE(
+      net::internal::GetNetworkListImpl(&results,
+                                        INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+                                        online_links,
+                                        address_map,
+                                        GetInterfaceName));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_em1);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_TEMPORARY);
+  results.clear();
+
+  // Addresses with allowed attribute IFA_F_DEPRECATED should be returned and
+  // attributes should be translated correctly.
+  address_map.clear();
+  msg.ifa_flags = IFA_F_DEPRECATED;
+  ASSERT_TRUE(address_map.insert(std::make_pair(ipv6_address, msg)).second);
+  EXPECT_TRUE(
+      net::internal::GetNetworkListImpl(&results,
+                                        INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+                                        online_links,
+                                        address_map,
+                                        GetInterfaceName));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_em1);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_DEPRECATED);
+  results.clear();
+}
+
+#endif
 
 namespace {
 

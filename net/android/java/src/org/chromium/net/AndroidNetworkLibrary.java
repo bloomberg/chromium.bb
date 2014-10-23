@@ -14,9 +14,6 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
 
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URLConnection;
@@ -137,65 +134,6 @@ class AndroidNetworkLibrary {
             }
         }
         return true;
-    }
-
-    /**
-     * @return the network interfaces list (if any) string. The items in
-     *         the list string are delimited by a new line, each item
-     *         is tab separated network interface name, address with network
-     *         prefix length and network interface index.
-     *         as "name\taddress/prefix\tindex". e.g.
-     *           eth0\t10.0.0.2/8\t5\neth0\tfe80::5054:ff:fe12:3456/16\t5
-     *         represents a network list string with two items.
-     */
-    @CalledByNative
-    public static String getNetworkList() {
-        Enumeration<NetworkInterface> list = null;
-        try {
-            list = NetworkInterface.getNetworkInterfaces();
-            if (list == null) return "";
-        } catch (SocketException e) {
-            Log.w(TAG, "Unable to get network interfaces: " + e);
-            return "";
-        }
-
-        StringBuilder result = new StringBuilder();
-        while (list.hasMoreElements()) {
-            NetworkInterface netIf = list.nextElement();
-            try {
-                // Skip loopback interfaces, and ones which are down.
-                if (!netIf.isUp() || netIf.isLoopback())
-                    continue;
-                for (InterfaceAddress interfaceAddress : netIf.getInterfaceAddresses()) {
-                    InetAddress address = interfaceAddress.getAddress();
-                    // Skip loopback addresses configured on non-loopback interfaces.
-                    if (address.isLoopbackAddress())
-                        continue;
-                    StringBuilder addressString = new StringBuilder();
-                    addressString.append(netIf.getName());
-                    addressString.append("\t");
-
-                    String ipAddress = address.getHostAddress();
-                    if (address instanceof Inet6Address && ipAddress.contains("%")) {
-                        ipAddress = ipAddress.substring(0, ipAddress.lastIndexOf("%"));
-                    }
-                    addressString.append(ipAddress);
-                    addressString.append("/");
-                    addressString.append(interfaceAddress.getNetworkPrefixLength());
-                    addressString.append("\t");
-
-                    // TODO(vitalybuka): use netIf.getIndex() when API level 19 is availible.
-                    addressString.append("0");
-
-                    if (result.length() != 0)
-                        result.append("\n");
-                    result.append(addressString.toString());
-                }
-            } catch (SocketException e) {
-                continue;
-            }
-        }
-        return result.toString();
     }
 
     /**

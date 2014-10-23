@@ -99,13 +99,6 @@ bool HaveOnlyLoopbackAddresses() {
   return Java_AndroidNetworkLibrary_haveOnlyLoopbackAddresses(env);
 }
 
-std::string GetNetworkList() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> ret =
-      Java_AndroidNetworkLibrary_getNetworkList(env);
-  return ConvertJavaStringToUTF8(ret);
-}
-
 bool GetMimeTypeFromExtension(const std::string& extension,
                               std::string* result) {
   JNIEnv* env = AttachCurrentThread();
