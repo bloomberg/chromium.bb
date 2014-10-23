@@ -2,7 +2,7 @@ Name: Khronos header files
 Short Name: khronos_headers
 URL: http://www.khronos.org/registry
 Version: unknown
-Date: 2013-12-13
+Date: 2014-10-20
 License: MIT/X11, SGI Free Software License B
 Security Critical: no
 
@@ -21,6 +21,13 @@ and not here.
 
 GLES2/gl2.h
  - Added include of gl2chromium.h
+GLES2/gl2ext.h
+ - Chromium-specific define to account for issues in gles2_conform_test, 
+   see http://crbug.com/329708.
+ - Commented out GL_SAMPLER, conflicts with third_party/gles2_conform
+ - Drop const from last argument of GLDEBUGPROCKHR (win trybot fail)
+ - Added ifdef around GL_LINES_ADJACENCY_EXT to fix conflict with OSX
+   OpenGL framework headers.
 EGL/eglplatform.h
  - Added EGLNative*Type for Mac.
  - Added EGLNative*Type for native linux framebuffers.
