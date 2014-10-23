@@ -27,13 +27,6 @@
 #include "ui/wm/core/window_modality_controller.h"
 #endif
 
-// TODO(wittman): this code should not depend on ash.
-#if defined(USE_ASH)
-#include "ash/ash_constants.h"
-#include "ash/frame/custom_frame_view_ash.h"
-#include "ash/shell.h"
-#endif
-
 using web_modal::NativeWebContentsModalDialog;
 using web_modal::SingleWebContentsDialogManager;
 using web_modal::SingleWebContentsDialogManagerDelegate;
@@ -83,9 +76,7 @@ class NativeWebContentsModalDialogManagerViews
     wm::SetWindowVisibilityAnimationType(
         widget->GetNativeWindow(),
         wm::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
-#endif
 
-#if defined(USE_ASH)
     gfx::NativeView parent = platform_util::GetParent(widget->GetNativeView());
     wm::SetChildWindowVisibilityChangesAnimated(parent);
     // No animations should get performed on the window since that will re-order
@@ -143,7 +134,7 @@ class NativeWebContentsModalDialogManagerViews
     if (widget->widget_delegate() &&
         widget->widget_delegate()->GetInitiallyFocusedView())
       widget->widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
-#if defined(USE_ASH)
+#if defined(USE_AURA)
     // We don't necessarily have a RootWindow yet.
     if (widget->GetNativeView()->GetRootWindow())
       widget->GetNativeView()->Focus();
@@ -221,7 +212,7 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   void WidgetClosing(views::Widget* widget) {
-#if defined(USE_ASH)
+#if defined(USE_AURA)
     gfx::NativeView view = platform_util::GetParent(widget->GetNativeView());
     // Allow the parent to animate again.
     if (view && view->parent())
