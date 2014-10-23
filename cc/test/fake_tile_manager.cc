@@ -5,6 +5,7 @@
 #include "cc/test/fake_tile_manager.h"
 
 #include <deque>
+#include <limits>
 
 #include "base/lazy_instance.h"
 #include "cc/resources/raster_buffer.h"
@@ -68,7 +69,9 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   base::MessageLoopProxy::current(),
                   NULL,
                   g_fake_rasterizer.Pointer(),
-                  NULL) {}
+                  NULL,
+                  std::numeric_limits<size_t>::max()) {
+}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourcePool* resource_pool)
@@ -76,7 +79,9 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   base::MessageLoopProxy::current(),
                   resource_pool,
                   g_fake_rasterizer.Pointer(),
-                  NULL) {}
+                  NULL,
+                  std::numeric_limits<size_t>::max()) {
+}
 
 FakeTileManager::~FakeTileManager() {}
 

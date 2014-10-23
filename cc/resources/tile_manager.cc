@@ -193,8 +193,6 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
 
-const size_t kScheduledRasterTasksLimit = 32u;
-
 }  // namespace
 
 RasterTaskCompletionStats::RasterTaskCompletionStats()
@@ -215,12 +213,14 @@ scoped_ptr<TileManager> TileManager::Create(
     base::SequencedTaskRunner* task_runner,
     ResourcePool* resource_pool,
     Rasterizer* rasterizer,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    size_t scheduled_raster_task_limit) {
   return make_scoped_ptr(new TileManager(client,
                                          task_runner,
                                          resource_pool,
                                          rasterizer,
-                                         rendering_stats_instrumentation));
+                                         rendering_stats_instrumentation,
+                                         scheduled_raster_task_limit));
 }
 
 TileManager::TileManager(
@@ -228,11 +228,13 @@ TileManager::TileManager(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ResourcePool* resource_pool,
     Rasterizer* rasterizer,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    size_t scheduled_raster_task_limit)
     : client_(client),
       task_runner_(task_runner),
       resource_pool_(resource_pool),
       rasterizer_(rasterizer),
+      scheduled_raster_task_limit_(scheduled_raster_task_limit),
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
@@ -570,7 +572,7 @@ void TileManager::AssignGpuMemoryToTiles(
 
     // We won't be able to schedule this tile, so break out early.
     if (tiles_that_need_to_be_rasterized->size() >=
-        kScheduledRasterTasksLimit) {
+        scheduled_raster_task_limit_) {
       all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
       break;
     }

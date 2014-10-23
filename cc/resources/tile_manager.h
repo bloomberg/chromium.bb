@@ -98,7 +98,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
       base::SequencedTaskRunner* task_runner,
       ResourcePool* resource_pool,
       Rasterizer* rasterizer,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      size_t scheduled_raster_task_limit);
   ~TileManager() override;
 
   void ManageTiles(const GlobalStateThatImpactsTilePriority& state);
@@ -163,7 +164,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
               ResourcePool* resource_pool,
               Rasterizer* rasterizer,
-              RenderingStatsInstrumentation* rendering_stats_instrumentation);
+              RenderingStatsInstrumentation* rendering_stats_instrumentation,
+              size_t scheduled_raster_task_limit);
 
   void FreeResourcesForReleasedTiles();
   void CleanUpReleasedTiles();
@@ -236,6 +238,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   ResourcePool* resource_pool_;
   Rasterizer* rasterizer_;
   GlobalStateThatImpactsTilePriority global_state_;
+  const size_t scheduled_raster_task_limit_;
 
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
   TileMap tiles_;
