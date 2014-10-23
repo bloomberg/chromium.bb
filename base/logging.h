@@ -450,13 +450,35 @@ const LogSeverity LOG_0 = LOG_ERROR;
 
 #else
 
+#if defined(_PREFAST_) && defined(OS_WIN)
+// Use __analysis_assume to tell the VC++ static analysis engine that
+// assert conditions are true, to suppress warnings.  The LAZY_STREAM
+// parameter doesn't reference 'condition' in /analyze builds because
+// this evaluation confuses /analyze. The !! before condition is because
+// __analysis_assume gets confused on some conditions:
+// http://randomascii.wordpress.com/2011/09/13/analyze-for-visual-studio-the-ugly-part-5/
+
+#define CHECK(condition)                \
+  __analysis_assume(!!(condition)),     \
+  LAZY_STREAM(LOG_STREAM(FATAL), false) \
+  << "Check failed: " #condition ". "
+
+#define PCHECK(condition)                \
+  __analysis_assume(!!(condition)),      \
+  LAZY_STREAM(PLOG_STREAM(FATAL), false) \
+  << "Check failed: " #condition ". "
+
+#else  // _PREFAST_
+
 #define CHECK(condition)                       \
   LAZY_STREAM(LOG_STREAM(FATAL), !(condition)) \
   << "Check failed: " #condition ". "
 
-#define PCHECK(condition) \
+#define PCHECK(condition)                       \
   LAZY_STREAM(PLOG_STREAM(FATAL), !(condition)) \
   << "Check failed: " #condition ". "
+
+#endif  // _PREFAST_
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use CHECK_EQ et al below.
@@ -616,6 +638,21 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 // variable warnings if the only use of a variable is in a DCHECK.
 // This behavior is different from DLOG_IF et al.
 
+#if defined(_PREFAST_) && defined(OS_WIN)
+// See comments on the previous use of __analysis_assume.
+
+#define DCHECK(condition)                                               \
+  __analysis_assume(!!(condition)),                                     \
+  LAZY_STREAM(LOG_STREAM(DCHECK), false)                                \
+  << "Check failed: " #condition ". "
+
+#define DPCHECK(condition)                                              \
+  __analysis_assume(!!(condition)),                                     \
+  LAZY_STREAM(PLOG_STREAM(DCHECK), false)                               \
+  << "Check failed: " #condition ". "
+
+#else  // _PREFAST_
+
 #define DCHECK(condition)                                               \
   LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON ? !(condition) : false)  \
   << "Check failed: " #condition ". "
@@ -623,6 +660,8 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 #define DPCHECK(condition)                                              \
   LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON ? !(condition) : false) \
   << "Check failed: " #condition ". "
+
+#endif  // _PREFAST_
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use DCHECK_EQ et al below.
