@@ -1245,6 +1245,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if defined(OS_WIN)
     switches::kDisableDirectWrite,
+    switches::kEnableWin32kRendererLockDown,
 #endif
 #if defined(OS_CHROMEOS)
     switches::kDisableVaapiAcceleratedVideoEncode,

@@ -47,6 +47,7 @@
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "installer_util_strings/installer_util_strings.h"
 #include "ui/base/cursor/cursor_loader_win.h"
@@ -218,6 +219,21 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
         chrome::MESSAGE_BOX_TYPE_WARNING);
   }
 
+  // Windows 8+ provides a mode where by a process cannot call Win32K/GDI
+  // functions in the kernel (win32k.sys). If we are on Windows 8+ and if
+  // we are launched with the kEnableWin32kRendererLockDown switch then we
+  // force the PDF pepper plugin to run out of process. This is because the
+  // PDF plugin uses GDI for text rendering which does not work in the
+  // Win32K lockdown mode. Running it out of process ensures that the process
+  // launched for the plugin does not have the Win32K lockdown mode enabled.
+  // TODO(ananta)
+  // Revisit this when the pdf plugin uses skia and stops using GDI.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWin32kRendererLockDown) &&
+      base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kOutOfProcessPdf);
+  }
   return rv;
 }
 

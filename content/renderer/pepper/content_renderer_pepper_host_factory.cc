@@ -34,6 +34,12 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
+#if defined(OS_WIN)
+#include "base/command_line.h"
+#include "base/win/windows_version.h"
+#include "content/public/common/content_switches.h"
+#endif
+
 using ppapi::host::ResourceHost;
 using ppapi::UnpackMessage;
 
@@ -142,8 +148,24 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
         NOTREACHED();
         return scoped_ptr<ResourceHost>();
       }
+      ppapi::PPB_ImageData_Shared::ImageDataType image_type =
+          ppapi::PPB_ImageData_Shared::PLATFORM;
+#if defined(OS_WIN)
+      // If Win32K lockdown mitigations are enabled for Windows 8 and beyond
+      // we use the SIMPLE image data type as the PLATFORM image data type
+      // calls GDI functions to create DIB sections etc which fail in Win32K
+      // lockdown mode.
+      // TODO(ananta)
+      // Look into whether this causes a loss of functionality. From cursory
+      // testing things seem to work well.
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableWin32kRendererLockDown) &&
+          base::win::GetVersion() >= base::win::VERSION_WIN8) {
+        image_type = ppapi::PPB_ImageData_Shared::SIMPLE;
+      }
+#endif
       scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(
-          instance, ppapi::PPB_ImageData_Shared::PLATFORM));
+          instance, image_type));
       return scoped_ptr<ResourceHost>(
           PepperGraphics2DHost::Create(host_,
                                        instance,
