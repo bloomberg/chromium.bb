@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.shell;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.ClipDrawable;
@@ -189,6 +190,7 @@ public class ChromeShellToolbar extends LinearLayout {
             }
         });
         menuButton.setOnTouchListener(new OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View view, MotionEvent event) {
                 return mAppMenuButtonHelper != null && mAppMenuButtonHelper.onTouch(view, event);

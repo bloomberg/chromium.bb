@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -121,6 +122,7 @@ public class PopupTouchHandleDrawable extends View {
         };
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         final PopupTouchHandleDrawableDelegate delegate = mDelegate.get();
@@ -205,7 +207,7 @@ public class PopupTouchHandleDrawable extends View {
         setVisibility(visible ? VISIBLE : INVISIBLE);
     }
 
-     private void updateAlpha() {
+    private void updateAlpha() {
         if (mAlpha == 1.f) return;
         long currentTimeMillis = AnimationUtils.currentAnimationTimeMillis();
         mAlpha = Math.min(1.f, (float) (currentTimeMillis - mFadeStartTime) / FADE_IN_DURATION_MS);

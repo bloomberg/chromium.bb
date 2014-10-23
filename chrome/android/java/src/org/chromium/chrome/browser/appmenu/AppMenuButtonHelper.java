@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.appmenu;
 
+import android.annotation.SuppressLint;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -75,8 +76,8 @@ public class AppMenuButtonHelper implements OnTouchListener {
         return showAppMenu(false);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
-
     public boolean onTouch(View view, MotionEvent event) {
         boolean isTouchEventConsumed = false;
 
