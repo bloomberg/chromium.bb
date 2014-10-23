@@ -165,12 +165,11 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
     GraphicsContext* context = builder->context();
     if (!context)
         return adoptRef(SkBitmapSource::Create(SkBitmap()));
-    AffineTransform contentTransformation;
     FloatRect bounds(FloatPoint(), dstRect.size());
     context->save();
     context->beginRecording(bounds);
     context->concatCTM(transform);
-    SVGRenderingContext::renderSubtree(context, renderer, contentTransformation);
+    SVGRenderingContext::renderSubtree(context, renderer);
     RefPtr<DisplayList> displayList = context->endRecording();
     context->restore();
     RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(displayList->picture(), dstRect));

@@ -204,13 +204,15 @@ PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternA
     if (attributes.patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
         contentTransformation = tileImageTransform;
 
+    SubtreeContentTransformScope contentTransformScope(contentTransformation);
+
     // Draw the content into the ImageBuffer.
     for (SVGElement* element = Traversal<SVGElement>::firstChild(*attributes.patternContentElement()); element; element = Traversal<SVGElement>::nextSibling(*element)) {
         if (!element->renderer())
             continue;
         if (element->renderer()->needsLayout())
             return nullptr;
-        SVGRenderingContext::renderSubtree(tileImage->context(), element->renderer(), contentTransformation);
+        SVGRenderingContext::renderSubtree(tileImage->context(), element->renderer());
     }
 
     return tileImage.release();

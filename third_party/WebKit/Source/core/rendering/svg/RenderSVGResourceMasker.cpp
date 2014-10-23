@@ -115,14 +115,15 @@ void RenderSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, cons
         context->concatCTM(contentTransformation);
     }
 
-    if (!m_maskContentDisplayList)
-        createDisplayList(context, contentTransformation);
+    if (!m_maskContentDisplayList) {
+        SubtreeContentTransformScope contentTransformScope(contentTransformation);
+        createDisplayList(context);
+    }
     ASSERT(m_maskContentDisplayList);
     context->drawDisplayList(m_maskContentDisplayList.get());
 }
 
-void RenderSVGResourceMasker::createDisplayList(GraphicsContext* context,
-    const AffineTransform& contentTransform)
+void RenderSVGResourceMasker::createDisplayList(GraphicsContext* context)
 {
     ASSERT(context);
 
@@ -139,7 +140,7 @@ void RenderSVGResourceMasker::createDisplayList(GraphicsContext* context,
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        SVGRenderingContext::renderSubtree(context, renderer, contentTransform);
+        SVGRenderingContext::renderSubtree(context, renderer);
     }
     m_maskContentDisplayList = context->endRecording();
 }

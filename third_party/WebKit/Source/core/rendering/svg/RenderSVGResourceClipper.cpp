@@ -229,15 +229,16 @@ void RenderSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, con
         context->concatCTM(contentTransformation);
     }
 
-    if (!m_clipContentDisplayList)
-        createDisplayList(context, contentTransformation);
+    if (!m_clipContentDisplayList) {
+        SubtreeContentTransformScope contentTransformScope(contentTransformation);
+        createDisplayList(context);
+    }
 
     ASSERT(m_clipContentDisplayList);
     context->drawDisplayList(m_clipContentDisplayList.get());
 }
 
-void RenderSVGResourceClipper::createDisplayList(GraphicsContext* context,
-    const AffineTransform& contentTransformation)
+void RenderSVGResourceClipper::createDisplayList(GraphicsContext* context)
 {
     ASSERT(context);
     ASSERT(frame());
@@ -285,7 +286,7 @@ void RenderSVGResourceClipper::createDisplayList(GraphicsContext* context,
         if (isUseElement)
             renderer = childElement->renderer();
 
-        SVGRenderingContext::renderSubtree(context, renderer, contentTransformation);
+        SVGRenderingContext::renderSubtree(context, renderer);
     }
 
     frame()->view()->setPaintBehavior(oldBehavior);

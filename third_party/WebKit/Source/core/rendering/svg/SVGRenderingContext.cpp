@@ -183,6 +183,18 @@ static AffineTransform& currentContentTransformation()
     return s_currentContentTransformation;
 }
 
+SubtreeContentTransformScope::SubtreeContentTransformScope(const AffineTransform& subtreeContentTransformation)
+{
+    AffineTransform& contentTransformation = currentContentTransformation();
+    m_savedContentTransformation = contentTransformation;
+    contentTransformation = subtreeContentTransformation * contentTransformation;
+}
+
+SubtreeContentTransformScope::~SubtreeContentTransformScope()
+{
+    currentContentTransformation() = m_savedContentTransformation;
+}
+
 float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const RenderObject* renderer)
 {
     ASSERT(renderer);
@@ -232,21 +244,14 @@ void SVGRenderingContext::calculateDeviceSpaceTransformation(const RenderObject*
     absoluteTransform.scale(deviceScaleFactor);
 }
 
-void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* item, const AffineTransform& subtreeContentTransformation)
+void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* item)
 {
-    ASSERT(item);
     ASSERT(context);
+    ASSERT(item);
+    ASSERT(!item->needsLayout());
 
     PaintInfo info(context, PaintInfo::infiniteRect(), PaintPhaseForeground, PaintBehaviorNormal);
-
-    AffineTransform& contentTransformation = currentContentTransformation();
-    AffineTransform savedContentTransformation = contentTransformation;
-    contentTransformation = subtreeContentTransformation * contentTransformation;
-
-    ASSERT(!item->needsLayout());
     item->paint(info, IntPoint());
-
-    contentTransformation = savedContentTransformation;
 }
 
 FloatRect SVGRenderingContext::clampedAbsoluteTargetRect(const FloatRect& absoluteTargetRect)
