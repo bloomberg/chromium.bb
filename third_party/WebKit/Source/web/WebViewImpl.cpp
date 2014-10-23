@@ -1687,6 +1687,9 @@ void WebViewImpl::performResize()
     if (pinchVirtualViewportEnabled())
         page()->frameHost().pinchViewport().setSize(m_size);
 
+    // In case we didn't have a size when the top controls were updated.
+    didUpdateTopControls();
+
     // When device emulation is enabled, device size values may change - they are
     // usually set equal to the view size. These values are not considered viewport-dependent
     // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
@@ -1729,6 +1732,10 @@ void WebViewImpl::didUpdateTopControls()
         view->setTopControlsViewportAdjustment(topControlsViewportAdjustment);
     } else {
         PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+
+        if (pinchViewport.visibleRect().isEmpty())
+            return;
+
         pinchViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
 
         // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.

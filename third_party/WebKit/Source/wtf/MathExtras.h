@@ -353,8 +353,7 @@ template<> inline double defaultMinimumForClamp<double>() { return -std::numeric
 // And, finally, the actual function for people to call.
 template<typename LimitType, typename ValueType> inline LimitType clampTo(ValueType value, LimitType min = defaultMinimumForClamp<LimitType>(), LimitType max = defaultMaximumForClamp<LimitType>())
 {
-    // FIXME: Uncomment this after fixing all callsites which violate it.
-    // ASSERT(!std::isnan(static_cast<double>(value)));
+    ASSERT(!std::isnan(static_cast<double>(value)));
     ASSERT(min <= max); // This also ensures |min| and |max| aren't NaN.
     return ClampToHelper<LimitType, ValueType>::clampTo(value, min, max);
 }
