@@ -176,9 +176,8 @@ public class ValidationTest extends MojoTestCase {
 
     /**
      * Testing the conformance suite.
-     * Disabled: http://crbug.com/426564
      */
-    @DisabledTest
+    @SmallTest
     public void testConformance() throws FileNotFoundException {
         runTest("conformance_", ConformanceTestInterface.MANAGER.buildStub(null,
                 ConformanceTestInterface.MANAGER.buildProxy(null, new SinkMessageReceiver())));
