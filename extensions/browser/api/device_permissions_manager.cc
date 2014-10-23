@@ -381,4 +381,12 @@ KeyedService* DevicePermissionsManagerFactory::BuildServiceInstanceFor(
   return new DevicePermissionsManager(context);
 }
 
+BrowserContext* DevicePermissionsManagerFactory::GetBrowserContextToUse(
+    BrowserContext* context) const {
+  // Return the original (possibly off-the-record) browser context so that a
+  // separate instance of the DevicePermissionsManager is used in incognito
+  // mode. The parent class's implemenation returns NULL.
+  return context;
+}
+
 }  // namespace extensions
