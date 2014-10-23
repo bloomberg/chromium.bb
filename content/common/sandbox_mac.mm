@@ -38,6 +38,11 @@ extern "C" {
 #include "ui/base/layout.h"
 #include "ui/gl/gl_surface.h"
 
+extern "C" {
+void CGSSetDenyWindowServerConnections(bool);
+void CGSShutdownServerConnections();
+};
+
 namespace content {
 namespace {
 
@@ -268,8 +273,8 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
         kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
 
     // Load in the color profiles we'll need (as a side effect).
-    (void) base::mac::GetSRGBColorSpace();
-    (void) base::mac::GetSystemColorSpace();
+    ignore_result(base::mac::GetSRGBColorSpace());
+    ignore_result(base::mac::GetSystemColorSpace());
 
     // CGColorSpaceCreateSystemDefaultCMYK - 10.6
     base::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(
@@ -324,6 +329,18 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
     // Preload AppKit color spaces used for Flash/ppapi. http://crbug.com/348304
     NSColor* color = [NSColor controlTextColor];
     [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+  }
+
+  if (sandbox_type == SANDBOX_TYPE_RENDERER &&
+      base::mac::IsOSMountainLionOrLater()) {
+    // Now disconnect from WindowServer, after all objects have been warmed up.
+    // Shutting down the connection requires connecting to WindowServer,
+    // so do this before actually engaging the sandbox. This is only done on
+    // 10.8 and higher because doing it on earlier OSes causes layout tests to
+    // fail <http://crbug.com/397642#c48>. This may cause two log messages to
+    // be printed to the system logger on certain OS versions.
+    CGSSetDenyWindowServerConnections(true);
+    CGSShutdownServerConnections();
   }
 }
 
