@@ -40,7 +40,6 @@
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/platform_notification_messages.h"
-#include "content/common/render_frame_setup.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -204,11 +203,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
   }
 
   if (GetProcess()->GetServiceRegistry()) {
-    RenderFrameSetupPtr setup;
-    GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
+    GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
+        &render_frame_setup_);
     mojo::ServiceProviderPtr service_provider;
-    setup->GetServiceProviderForFrame(routing_id_,
-                                      mojo::GetProxy(&service_provider));
+    render_frame_setup_->GetServiceProviderForFrame(
+        routing_id_, mojo::GetProxy(&service_provider));
     service_registry_.BindRemoteServiceProvider(
         service_provider.PassMessagePipe());
 

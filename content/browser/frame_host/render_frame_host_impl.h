@@ -19,6 +19,7 @@
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/content_export.h"
 #include "content/common/mojo/service_registry_impl.h"
+#include "content/common/render_frame_setup.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
 #include "net/http/http_response_headers.h"
@@ -564,6 +565,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PlzNavigate: Owns the stream used in navigations to store the body of the
   // response once it has started.
   scoped_ptr<StreamHandle> stream_handle_;
+
+  // Holds the browser-side handle to the pipe used to establish the Mojo
+  // connection between this instance and its associated render frame.
+  // TODO(blundell): Change this back to being a local variable if/once Mojo
+  // is changed to guarantee that message writes that are pending when the proxy
+  // pointer dies are delivered. See the discussion on the mojo-dev@ thread
+  // "Advice request to track down a flaky dropped message".
+  RenderFrameSetupPtr render_frame_setup_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
