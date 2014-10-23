@@ -1173,12 +1173,27 @@ void RenderGrid::populateGridPositions(const GridSizingData& sizingData)
         m_rowPositions[i + 1] = m_rowPositions[i] + sizingData.rowTracks[i].m_usedBreadth;
 }
 
+static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, LayoutUnit startOfTrack, LayoutUnit endOfTrack, LayoutUnit childBreadth)
+{
+    LayoutUnit trackBreadth = endOfTrack - startOfTrack;
+    LayoutUnit offset = trackBreadth - childBreadth;
+
+    // If overflow is 'safe', we have to make sure we don't overflow the 'start'
+    // edge (potentially cause some data loss as the overflow is unreachable).
+    if (overflow == OverflowAlignmentSafe)
+        offset = std::max<LayoutUnit>(0, offset);
+
+    // If we overflow our alignment container and overflow is 'true' (default), we
+    // ignore the overflow and just return the value regardless (which may cause data
+    // loss as we overflow the 'start' edge).
+    return offset;
+}
+
 LayoutUnit RenderGrid::startOfColumnForChild(const RenderBox& child) const
 {
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    // FIXME: This should account for the grid item's <overflow-position>.
     return startOfColumn + marginStartForChild(&child);
 }
 
@@ -1190,8 +1205,9 @@ LayoutUnit RenderGrid::endOfColumnForChild(const RenderBox& child) const
     LayoutUnit columnPosition = startOfColumn + marginStartForChild(&child);
 
     LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
-    // FIXME: This should account for the grid item's <overflow-position>.
-    return columnPosition + std::max<LayoutUnit>(0, endOfColumn - m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()] - child.logicalWidth());
+    LayoutUnit offsetFromColumnPosition = computeOverflowAlignmentOffset(child.style()->justifySelfOverflowAlignment(), startOfColumn, endOfColumn, child.logicalWidth());
+
+    return columnPosition + offsetFromColumnPosition;
 }
 
 LayoutUnit RenderGrid::columnPositionAlignedWithGridContainerStart(const RenderBox& child) const
@@ -1216,8 +1232,9 @@ LayoutUnit RenderGrid::centeredColumnPositionForChild(const RenderBox& child) co
     LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
     LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
     LayoutUnit columnPosition = startOfColumn + marginStartForChild(&child);
-    // FIXME: This should account for the grid item's <overflow-position>.
-    return columnPosition + std::max<LayoutUnit>(0, endOfColumn - startOfColumn - child.logicalWidth()) / 2;
+    LayoutUnit offsetFromColumnPosition = computeOverflowAlignmentOffset(child.style()->justifySelfOverflowAlignment(), startOfColumn, endOfColumn, child.logicalWidth());
+
+    return columnPosition + offsetFromColumnPosition / 2;
 }
 
 static ItemPosition resolveJustification(const RenderStyle* parentStyle, const RenderStyle* childStyle)
@@ -1225,7 +1242,6 @@ static ItemPosition resolveJustification(const RenderStyle* parentStyle, const R
     ItemPosition justify = childStyle->justifySelf();
     if (justify == ItemPositionAuto)
         justify = (parentStyle->justifyItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->justifyItems();
-
     return justify;
 }
 
@@ -1312,8 +1328,9 @@ LayoutUnit RenderGrid::endOfRowForChild(const RenderBox& child) const
     LayoutUnit rowPosition = startOfRow + marginBeforeForChild(&child);
 
     LayoutUnit endOfRow = m_rowPositions[coordinate.rows.resolvedFinalPosition.next().toInt()];
-    // FIXME: This should account for the grid item's <overflow-position>.
-    return rowPosition + std::max<LayoutUnit>(0, endOfRow - startOfRow - child.logicalHeight());
+    LayoutUnit offsetFromRowPosition = computeOverflowAlignmentOffset(child.style()->alignSelfOverflowAlignment(), startOfRow, endOfRow, child.logicalHeight());
+
+    return rowPosition + offsetFromRowPosition;
 }
 
 LayoutUnit RenderGrid::startOfRowForChild(const RenderBox& child) const
@@ -1322,7 +1339,6 @@ LayoutUnit RenderGrid::startOfRowForChild(const RenderBox& child) const
 
     LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    // FIXME: This should account for the grid item's <overflow-position>.
     LayoutUnit rowPosition = startOfRow + marginBeforeForChild(&child);
 
     return rowPosition;
@@ -1335,17 +1351,17 @@ LayoutUnit RenderGrid::centeredRowPositionForChild(const RenderBox& child) const
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
     LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()] + marginBeforeForChild(&child);
     LayoutUnit endOfRow = m_rowPositions[coordinate.rows.resolvedFinalPosition.next().toInt()];
+    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(&child);
+    LayoutUnit offsetFromRowPosition = computeOverflowAlignmentOffset(child.style()->alignSelfOverflowAlignment(), startOfRow, endOfRow, child.logicalHeight());
 
-    // FIXME: This should account for the grid item's <overflow-position>.
-    return startOfRow + std::max<LayoutUnit>(0, endOfRow - startOfRow - child.logicalHeight()) / 2;
+    return rowPosition + offsetFromRowPosition / 2;
 }
 
 LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-    ItemPosition alignSelf = RenderStyle::resolveAlignment(style(), child.style());
 
-    switch (alignSelf) {
+    switch (RenderStyle::resolveAlignment(style(), child.style())) {
     case ItemPositionSelfStart:
         // If orthogonal writing-modes, this computes to 'Start'.
         // FIXME: grid track sizing and positioning does not support orthogonal modes yet.
