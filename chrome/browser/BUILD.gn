@@ -264,7 +264,7 @@ static_library("browser") {
   if (enable_background) {
     sources += rebase_path(gypi_values.chrome_browser_background_sources,
                            ".", "//chrome")
-    if (!use_aura || is_win) {
+    if (!use_aura || is_win || is_chromeos) {
       sources -= [ "background/background_mode_manager_aura.cc" ]
     }
   }

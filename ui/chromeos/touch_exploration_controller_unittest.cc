@@ -94,10 +94,10 @@ class MockTouchExplorationControllerDelegate
   }
 
   const std::vector<float> VolumeChanges() { return volume_changes_; }
-  const size_t NumAdjustSounds() { return num_times_adjust_sound_played_; }
-  const size_t NumPassthroughSounds() { return num_times_passthrough_played_; }
-  const size_t NumExitScreenSounds() { return num_times_exit_screen_played_; }
-  const size_t NumEnterScreenSounds() {
+  size_t NumAdjustSounds() { return num_times_adjust_sound_played_; }
+  size_t NumPassthroughSounds() { return num_times_passthrough_played_; }
+  size_t NumExitScreenSounds() { return num_times_exit_screen_played_; }
+  size_t NumEnterScreenSounds() {
     return num_times_enter_screen_played_;
   }
 

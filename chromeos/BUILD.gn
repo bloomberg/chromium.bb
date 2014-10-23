@@ -100,8 +100,8 @@ static_library("test_support") {
     "network/mock_managed_network_configuration_handler.h",
     "network/onc/onc_test_utils.cc",
     "network/onc/onc_test_utils.h",
-    "system/mock_statistics_provider.cc",
-    "system/mock_statistics_provider.h",
+    "system/fake_statistics_provider.cc",
+    "system/fake_statistics_provider.h",
   ]
 }
 
