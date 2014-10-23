@@ -61,14 +61,15 @@ class FakeCIDBConnection(object):
     self.clActionTable.extend(rows)
     return len(rows)
 
-  def GetActionsForChange(self, change):
-    """Gets all the actions for the given change."""
-    change_number = int(change.gerrit_number)
-    change_source = 'internal' if change.internal else 'external'
+  def GetActionsForChanges(self, changes):
+    """Gets all the actions for the given changes."""
+    clauses = set()
+    for change in changes:
+      change_source = 'internal' if change.internal else 'external'
+      clauses.add((int(change.gerrit_number), change_source))
     values = []
     for item, action_id in zip(self.clActionTable, itertools.count()):
-      if (item['change_number'] == change_number and
-          item['change_source'] == change_source):
+      if ((item['change_number'], item['change_source']) in clauses):
         row = (
             action_id,
             item['build_id'],

@@ -261,8 +261,8 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(rejected_cl_count, 8)
     self.assertEqual(total_actions, 1877)
 
-    actions_for_change = db.GetActionsForChange(
-        metadata_lib.GerritChangeTuple(205535, False))
+    actions_for_change = db.GetActionsForChanges(
+        [metadata_lib.GerritChangeTuple(205535, False)])
 
     self.assertEqual(len(actions_for_change), 60)
     last_action_dict = dict(actions_for_change[-1]._asdict())

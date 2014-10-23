@@ -2826,10 +2826,10 @@ class ValidationPool(object):
       return
 
     db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-    # Fetch action history for changes, serially. If this becomes a
-    # performance concern we can consider parallelizing.
+    # Fetch action history for changes, serially. In a follow-up CL all the
+    # actions will be fetched in a single query.
     for change in changes:
-      cls._CL_ACTION_HISTORY_CACHE[change] = db.GetActionsForChange(change)
+      cls._CL_ACTION_HISTORY_CACHE[change] = db.GetActionsForChanges([change])
 
 
   @classmethod

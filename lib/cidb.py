@@ -721,26 +721,36 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                               'finish_time', 'status'])
 
   @minimum_schema(11)
-  def GetActionsForChange(self, change):
-    """Gets all the actions for the given change.
+  def GetActionsForChanges(self, changes):
+    """Gets all the actions for the given changes.
 
-    Note, this includes all patches of the given change.
+    Note, this includes all patches of the given changes.
 
     Args:
-      change: A GerritChangeTuple, GerritPatchTuple or GerritPatch
-              specifying the change.
+      changes: A list of GerritChangeTuple, GerritPatchTuple or GerritPatch
+               specifying the changes to whose actions should be fetched.
 
     Returns:
-      A list of CLAction instances, in timestamp order.
+      A list of CLAction instances, in action id order.
     """
-    change_number = int(change.gerrit_number)
-    change_source = 'internal' if change.internal else 'external'
+    if not changes:
+      return []
+
+    clauses = []
+    # Note: We are using a string of OR statements rather than a 'WHERE IN'
+    # style clause, because 'WHERE IN' does not make use of multi-column
+    # indexes, and therefore has poor performance with a large table.
+    for change in changes:
+      change_number = int(change.gerrit_number)
+      change_source = 'internal' if change.internal else 'external'
+      clauses.append('(change_number, change_source) = (%s, "%s")' %
+                     (change_number, change_source))
+    clause = ' OR '.join(clauses)
     results = self._Execute(
         'SELECT c.id, b.id, action, c.reason, build_config, change_number, '
         'patch_number, change_source, timestamp FROM '
         'clActionTable c JOIN buildTable b ON build_id = b.id '
-        'WHERE change_number = %s AND change_source = "%s"' % (
-        change_number, change_source)).fetchall()
+        'WHERE %s' % clause).fetchall()
     return [clactions.CLAction(*values) for values in results]
 
 
