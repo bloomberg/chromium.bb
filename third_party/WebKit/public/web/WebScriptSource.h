@@ -36,6 +36,8 @@
 
 namespace blink {
 
+class ScriptSourceCode;
+
 struct WebScriptSource {
     WebString code;
     WebURL url;
@@ -47,6 +49,10 @@ struct WebScriptSource {
         : code(code), url(url), startLine(1) { }
     WebScriptSource(const WebString& code, const WebURL& url, int startLine)
         : code(code), url(url), startLine(startLine) { }
+
+#if BLINK_IMPLEMENTATION
+    operator ScriptSourceCode() const;
+#endif
 };
 
 } // namespace blink

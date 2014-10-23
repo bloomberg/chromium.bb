@@ -50,6 +50,7 @@ class GeolocationClientProxy;
 class IntSize;
 class KURL;
 class Range;
+class ScriptSourceCode;
 class SharedWorkerRepositoryClientImpl;
 class TextFinder;
 class WebDataSourceImpl;
@@ -57,6 +58,7 @@ class WebFrameClient;
 class WebPerformance;
 class WebPlugin;
 class WebPluginContainerImpl;
+class WebScriptExecutionCallback;
 class WebView;
 class WebViewImpl;
 struct FrameLoadRequest;
@@ -110,9 +112,14 @@ public:
     virtual bool checkIfRunInsecureContent(const WebURL&) const override;
     virtual v8::Handle<v8::Value> executeScriptAndReturnValue(
         const WebScriptSource&) override;
+    virtual void requestExecuteScriptAndReturnValue(
+        const WebScriptSource&, bool userGesture, WebScriptExecutionCallback*) override;
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
         int extensionGroup, WebVector<v8::Local<v8::Value> >* results) override;
+    virtual void requestExecuteScriptInIsolatedWorld(
+        int worldID, const WebScriptSource* sourceIn, unsigned numSources,
+        int extensionGroup, bool userGesture, WebScriptExecutionCallback*) override;
     virtual v8::Handle<v8::Value> callFunctionEvenIfScriptDisabled(
         v8::Handle<v8::Function>,
         v8::Handle<v8::Value>,

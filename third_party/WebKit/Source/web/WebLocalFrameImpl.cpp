@@ -201,6 +201,7 @@
 #include "web/NotificationPermissionClientImpl.h"
 #include "web/PageOverlay.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
+#include "web/SuspendableScriptExecutor.h"
 #include "web/TextFinder.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentPrivate.h"
@@ -276,6 +277,13 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
         if (output.length() >= maxChars)
             return; // Filled up the buffer.
     }
+}
+
+static Vector<ScriptSourceCode> createSourcesVector(const WebScriptSource* sourcesIn, unsigned numSources)
+{
+    Vector<ScriptSourceCode> sources;
+    sources.append(sourcesIn, numSources);
+    return sources;
 }
 
 WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromFrame(LocalFrame* frame)
@@ -706,12 +714,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
-    Vector<ScriptSourceCode> sources;
-    for (unsigned i = 0; i < numSources; ++i) {
-        TextPosition position(OrdinalNumber::fromOneBasedInt(sourcesIn[i].startLine), OrdinalNumber::first());
-        sources.append(ScriptSourceCode(sourcesIn[i].code, sourcesIn[i].url, position));
-    }
-
+    Vector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
     v8::HandleScope handleScope(toIsolate(frame()));
     frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
 }
@@ -783,18 +786,22 @@ v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebSc
     return frame()->script().executeScriptInMainWorldAndReturnValue(ScriptSourceCode(source.code, source.url, position));
 }
 
+void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(const WebScriptSource& source, bool userGesture, WebScriptExecutionCallback* callback)
+{
+    ASSERT(frame());
+
+    Vector<ScriptSourceCode> sources = createSourcesVector(&source, 1);
+    SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(frame(), 0, sources, 0, userGesture, callback);
+    executor->run();
+}
+
 void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
 {
     ASSERT(frame());
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
-    Vector<ScriptSourceCode> sources;
-
-    for (unsigned i = 0; i < numSources; ++i) {
-        TextPosition position(OrdinalNumber::fromOneBasedInt(sourcesIn[i].startLine), OrdinalNumber::first());
-        sources.append(ScriptSourceCode(sourcesIn[i].code, sourcesIn[i].url, position));
-    }
+    Vector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
 
     if (results) {
         Vector<v8::Local<v8::Value> > scriptResults;
@@ -807,6 +814,17 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
         v8::HandleScope handleScope(toIsolate(frame()));
         frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
     }
+}
+
+void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
+{
+    ASSERT(frame());
+    RELEASE_ASSERT(worldID > 0);
+    RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
+
+    Vector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
+    SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(frame(), worldID, sources, extensionGroup, userGesture, callback);
+    executor->run();
 }
 
 v8::Handle<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> argv[])

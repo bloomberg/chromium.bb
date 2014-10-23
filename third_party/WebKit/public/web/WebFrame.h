@@ -299,11 +299,13 @@ public:
 
     // Executes script in the context of the current page and returns the value
     // that the script evaluated to.
+    // DEPRECATED: Use WebLocalFrame::requestExecuteScriptAndReturnValue.
     virtual v8::Handle<v8::Value> executeScriptAndReturnValue(
         const WebScriptSource&) = 0;
 
     // worldID must be > 0 (as 0 represents the main world).
     // worldID must be < EmbedderWorldIdLimit, high number used internally.
+    // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
         int extensionGroup, WebVector<v8::Local<v8::Value> >* results) = 0;

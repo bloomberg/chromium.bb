@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class WebScriptExecutionCallback;
+
 // Interface for interacting with in process frames. This contains methods that
 // require interacting with a frame's document.
 // FIXME: Move lots of methods from WebFrame in here.
@@ -67,6 +69,18 @@ public:
 
 
     // Scripting --------------------------------------------------------------
+    // Executes script in the context of the current page and returns the value
+    // that the script evaluated to with callback. Script execution can be
+    // suspend.
+    virtual void requestExecuteScriptAndReturnValue(const WebScriptSource&,
+        bool userGesture, WebScriptExecutionCallback*) = 0;
+
+    // worldID must be > 0 (as 0 represents the main world).
+    // worldID must be < EmbedderWorldIdLimit, high number used internally.
+    virtual void requestExecuteScriptInIsolatedWorld(
+        int worldID, const WebScriptSource* sourceIn, unsigned numSources,
+        int extensionGroup, bool userGesture, WebScriptExecutionCallback*) = 0;
+
     // ONLY FOR TESTS: Forwards to executeScriptAndReturnValue, but sets a fake
     // UserGestureIndicator before execution.
     virtual v8::Handle<v8::Value> executeScriptAndReturnValueForTests(const WebScriptSource&) = 0;
