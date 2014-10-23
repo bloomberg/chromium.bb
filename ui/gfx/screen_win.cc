@@ -94,7 +94,7 @@ ScreenWin::~ScreenWin() {
 }
 
 bool ScreenWin::IsDIPEnabled() {
-  return IsInHighDPIMode();
+  return GetDPIScale() > 1.0;
 }
 
 gfx::Point ScreenWin::GetCursorScreenPoint() {
@@ -164,7 +164,7 @@ gfx::Display ScreenWin::GetPrimaryDisplay() const {
   gfx::Display display = GetDisplay(mi);
   // TODO(kevers|girard): Test if these checks can be reintroduced for high-DIP
   // once more of the app is DIP-aware.
-  if (!(IsInHighDPIMode() || IsHighDPIEnabled())) {
+  if (!(GetDPIScale() > 1.0 || IsHighDPIEnabled())) {
     DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), display.size().width());
     DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), display.size().height());
   }

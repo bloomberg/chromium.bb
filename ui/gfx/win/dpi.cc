@@ -159,10 +159,6 @@ bool IsHighDPIEnabled() {
   return value != 0;
 }
 
-bool IsInHighDPIMode() {
-  return GetDPIScale() > 1.0;
-}
-
 void EnableHighDPISupport() {
   if (IsHighDPIEnabled() &&
       !SetProcessDpiAwarenessWrapper(PROCESS_SYSTEM_DPI_AWARE)) {

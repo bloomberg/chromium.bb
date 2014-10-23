@@ -28,8 +28,6 @@ GFX_EXPORT float GetDPIScale();
 // Tests to see if the command line flag "--high-dpi-support" is set.
 GFX_EXPORT bool IsHighDPIEnabled();
 
-GFX_EXPORT bool IsInHighDPIMode();
-
 GFX_EXPORT void EnableHighDPISupport();
 
 GFX_EXPORT void ForceHighDPISupportForTesting(float scale);
