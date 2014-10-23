@@ -93,6 +93,8 @@ public:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
+    void addOverflowFromCell(const RenderTableCell*);
+
 private:
     virtual RenderObjectChildList* virtualChildren() override { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const override { return children(); }

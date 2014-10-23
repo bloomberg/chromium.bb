@@ -955,7 +955,8 @@ void RenderTableSection::layoutRows()
 
     for (unsigned r = 0; r < totalRows; r++) {
         // Set the row's x/y position and width/height.
-        if (RenderTableRow* rowRenderer = m_grid[r].rowRenderer) {
+        RenderTableRow* rowRenderer = m_grid[r].rowRenderer;
+        if (rowRenderer) {
             rowRenderer->setLocation(LayoutPoint(0, m_rowPos[r]));
             rowRenderer->setLogicalWidth(logicalWidth());
             rowRenderer->setLogicalHeight(m_rowPos[r + 1] - m_rowPos[r] - vspacing);
@@ -1052,6 +1053,9 @@ void RenderTableSection::layoutRows()
                 cell->setLogicalHeight(rHeight);
                 cell->computeOverflow(oldLogicalHeight, false);
             }
+
+            if (rowRenderer)
+                rowRenderer->addOverflowFromCell(cell);
 
             LayoutSize childOffset(cell->location() - oldCellRect.location());
             if (childOffset.width() || childOffset.height()) {
