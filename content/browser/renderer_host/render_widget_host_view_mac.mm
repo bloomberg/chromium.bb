@@ -58,6 +58,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/platform_canvas.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/mac/WebInputEventFactory.h"
@@ -531,11 +532,11 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
 
-  // Make this view host a solid white layer when there is no content ready to
-  // draw.
+  // Paint this view host with |background_color_| when there is no content
+  // ready to draw.
   background_layer_.reset([[CALayer alloc] init]);
   [background_layer_
-      setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+      setBackgroundColor:gfx::CGColorCreateFromSkColor(background_color_)];
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
@@ -1532,10 +1533,15 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
   helper.ShowDefinitionForSelection();
 }
 
-void RenderWidgetHostViewMac::SetBackgroundOpaque(bool opaque) {
-  RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
+void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
+  RenderWidgetHostViewBase::SetBackgroundColor(color);
   if (render_widget_host_)
-    render_widget_host_->SetBackgroundOpaque(opaque);
+    render_widget_host_->SetBackgroundOpaque(GetBackgroundOpaque());
+
+  if (background_layer_) {
+    [background_layer_
+        setBackgroundColor:gfx::CGColorCreateFromSkColor(background_color_)];
+  }
 }
 
 BrowserAccessibilityManager*

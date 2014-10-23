@@ -51,7 +51,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  void SetBackgroundOpaque(bool opaque) override;
+  void SetBackgroundColor(SkColor color) override;
   gfx::Size GetPhysicalBackingSize() const override;
 
   // RenderWidgetHostViewBase implementation.

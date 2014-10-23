@@ -50,6 +50,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "grit/theme_resources.h"
@@ -1911,6 +1912,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSView* webview = webContents_->GetNativeView();
   [webview setFrameSize:NSMakeSize(kFixedGaiaViewWidth, kFixedGaiaViewHeight)];
   [container addSubview:webview];
+  content::RenderWidgetHostView* rwhv = webContents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetBackgroundColor(profiles::kAvatarBubbleGaiaBackgroundColor);
   yOffset = NSMaxY([webview frame]);
 
   // Adds the title card.

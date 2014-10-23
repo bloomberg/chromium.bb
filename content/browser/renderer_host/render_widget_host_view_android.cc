@@ -821,9 +821,10 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
   NOTREACHED() << "Selection bounds should be routed through the compositor.";
 }
 
-void RenderWidgetHostViewAndroid::SetBackgroundOpaque(bool opaque) {
-  RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
-  host_->SetBackgroundOpaque(opaque);
+void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
+  RenderWidgetHostViewBase::SetBackgroundColor(color);
+  host_->SetBackgroundOpaque(GetBackgroundOpaque());
+  OnDidChangeBodyBackgroundColor(color);
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(

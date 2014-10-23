@@ -293,7 +293,7 @@ void NativeAppWindowViews::RenderViewCreated(
   if (app_window_->requested_alpha_enabled() && CanHaveAlphaEnabled()) {
     content::RenderWidgetHostView* view = render_view_host->GetView();
     DCHECK(view);
-    view->SetBackgroundOpaque(false);
+    view->SetBackgroundColor(SK_ColorTRANSPARENT);
   }
 }
 

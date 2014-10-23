@@ -154,7 +154,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void Hide() override;
   virtual bool IsShowing() override;
   virtual gfx::Rect GetViewBounds() const override;
-  virtual void SetBackgroundOpaque(bool opaque) override;
+  virtual void SetBackgroundColor(SkColor color) override;
   virtual gfx::Size GetVisibleViewportSize() const override;
   virtual void SetInsets(const gfx::Insets& insets) override;
 

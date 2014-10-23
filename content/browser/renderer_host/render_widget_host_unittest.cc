@@ -760,7 +760,7 @@ TEST_F(RenderWidgetHostTest, Background) {
   host_->SetView(view.get());
 
   EXPECT_TRUE(view->GetBackgroundOpaque());
-  view->SetBackgroundOpaque(false);
+  view->SetBackgroundColor(SK_ColorTRANSPARENT);
   EXPECT_FALSE(view->GetBackgroundOpaque());
 
   const IPC::Message* set_background =

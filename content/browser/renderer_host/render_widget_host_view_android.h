@@ -142,7 +142,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const ViewHostMsg_SelectionBounds_Params& params) override;
   virtual void AcceleratedSurfaceInitialized(int route_id) override;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-  virtual void SetBackgroundOpaque(bool transparent) override;
+  virtual void SetBackgroundColor(SkColor color) override;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,

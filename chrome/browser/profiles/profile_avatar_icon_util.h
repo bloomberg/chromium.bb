@@ -31,6 +31,8 @@ extern const int kAvatarIconHeight;
 extern const SkColor kAvatarTutorialBackgroundColor;
 extern const SkColor kAvatarTutorialContentTextColor;
 extern const SkColor kAvatarBubbleAccountsBackgroundColor;
+extern const SkColor kAvatarBubbleGaiaBackgroundColor;
+extern const SkColor kUserManagerBackgroundColor;
 
 // Gets the number of default avatar icons that exist.
 size_t GetDefaultAvatarIconCount();
