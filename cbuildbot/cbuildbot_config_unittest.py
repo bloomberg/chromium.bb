@@ -30,7 +30,7 @@ class ConfigDumpTest(cros_test_lib.TestCase):
   def testDump(self):
     """Make sure the json & config are kept in sync"""
     cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cbuildbot_view_config'),
-           '-d', '--pretty']
+           '-d', '-s', '--pretty']
     dump_file_path = os.path.join(constants.CHROMITE_DIR, 'cbuildbot',
                                   'config_dump.json')
     new_dump = cros_build_lib.RunCommand(cmd, capture_output=True).output
@@ -38,7 +38,7 @@ class ConfigDumpTest(cros_test_lib.TestCase):
     self.assertTrue(
         new_dump == old_dump, 'config_dump.json does not match the '
         'configs defined in cbuildbot_config.py. Run '
-        'bin/cbuildbot_view_config -d --pretty > cbuildbot/config_dump.json')
+        'bin/cbuildbot_view_config -d -s --pretty > cbuildbot/config_dump.json')
 
 
 class ConfigPickleTest(cros_test_lib.TestCase):
@@ -72,8 +72,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
     This checks for mispelled keys, or keys that are somehow removed.
     """
-    # pylint: disable=W0212
-    expected_keys = set(cbuildbot_config._default.keys())
+    expected_keys = set(cbuildbot_config.default.keys())
     for build_name, config in cbuildbot_config.config.iteritems():
       config_keys = set(config.keys())
 

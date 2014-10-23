@@ -898,7 +898,7 @@ class _config(dict):
     # to ensure any far flung consumers of the config dictionary
     # aren't affected by recent refactorings.
 
-    config_dict = _default.derive(self, *inherits, **overrides)
+    config_dict = default.derive(self, *inherits, **overrides)
 
     # TODO(mtennant): This is just confusing.  Some random _config object
     # (self) can add a new _config object to the global config dict.  Even if
@@ -925,10 +925,10 @@ class _config(dict):
     Returns:
       A new _config instance.
     """
-    child_configs = [_default.derive(x, grouped=True) for x in args]
+    child_configs = [default.derive(x, grouped=True) for x in args]
     return args[0].add_config(name, child_configs=child_configs, **kwargs)
 
-_default = _config(**_settings)
+default = _config(**_settings)
 
 
 # Arch-specific mixins.

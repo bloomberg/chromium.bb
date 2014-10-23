@@ -51,6 +51,25 @@ def _DumpConfigJson(cfg):
   print(json.dumps(cfg, cls=_JSONEncoder))
 
 
+def _HideDefaults(cfg):
+  """Hide the defaults from a given config entry.
+
+  Args:
+    cfg: A config entry.
+
+  Returns:
+    The same config entry, but without any defaults.
+  """
+  d = {}
+  for k, v in cfg.iteritems():
+    if cbuildbot_config.default.get(k) != v:
+      if k == 'child_configs':
+        d[k] = [_HideDefaults(x) for x in v]
+      else:
+        d[k] = v
+  return d
+
+
 def _DumpConfigPrettyJson(cfg):
   """Dump |cfg| contents in pretty JSON format.
 
@@ -118,6 +137,8 @@ def GetParser():
                       help='If dumping, make json output human readable.')
   parser.add_argument('--for-buildbot', action='store_true', default=False,
                       help='Include the display position in data.')
+  parser.add_argument('-s', '--separate-defaults', action='store_true',
+                      default=False, help='Show the defaults separately.')
   parser.add_argument('config_targets', metavar='config_target', nargs='*',
                       help='Name of a cbuildbot config target.')
 
@@ -137,6 +158,13 @@ def main(argv):
     convert = _InjectDisplayPosition
 
   config = convert(cbuildbot_config.config)
+
+  # Separate the defaults and show them at the top. We prefix the name with
+  # an underscore so that it sorts to the top.
+  if options.separate_defaults:
+    for k, v in config.iteritems():
+      config[k] = _HideDefaults(v)
+    config['_default'] = cbuildbot_config.default
 
   # If config_targets specified, only dump/load those.
   if options.config_targets:
