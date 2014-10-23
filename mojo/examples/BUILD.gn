@@ -22,14 +22,9 @@ group("examples") {
   if (use_aura) {
     deps += [
       "//mojo/examples/aura_demo:mojo_aura_demo",
-      "//mojo/examples/browser",
       "//mojo/examples/demo_launcher",
-      "//mojo/examples/embedded_app",
       "//mojo/examples/media_viewer",
-      "//mojo/examples/nesting_app",
       "//mojo/examples/keyboard",
-      "//mojo/examples/window_manager",
-      "//mojo/examples/wm_flow",
     ]
   }
 }

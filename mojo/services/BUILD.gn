@@ -20,16 +20,10 @@ group("services") {
     "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/surfaces",
     "//mojo/services/test_service:bindings",
+    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/services/public/interfaces/window_manager2",
   ]
   if (!is_android) {
     deps += ["//mojo/services/native_viewport"]
-  }
-  if (use_aura) {
-    deps += [
-      "//mojo/services/public/interfaces/view_manager",
-      "//mojo/services/public/interfaces/window_manager2",
-      "//mojo/services/view_manager",
-      "//mojo/services/window_manager",
-    ]
   }
 }

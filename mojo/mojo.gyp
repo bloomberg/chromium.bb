@@ -53,14 +53,6 @@
         'public/mojo_public.gyp:mojo_public',
       ],
       'conditions': [
-        ['use_aura==1', {
-          'dependencies': [
-            'mojo_core_window_manager',
-            'mojo_core_window_manager_unittests',
-            'mojo_view_manager',
-            'mojo_view_manager_unittests',
-          ],
-        }],
         ['OS == "linux"', {
           'dependencies': [
             'mojo_external_application_tests',
