@@ -36,7 +36,7 @@ a {
   text-decoration: none;
 }
 
-.error-img {
+#error-img {
   /* Can't access chrome:// urls from an untrusted renderer process, so embed
    * the resource manually. */
   -webkit-user-select: none;
@@ -47,7 +47,7 @@ a {
   margin-top: 10px;
 }
 
-.avatar-container {
+#avatar-container {
   position: relative;
 }
 
@@ -87,6 +87,19 @@ button {
 }
 
 @media (max-width: 375px) {
+  #button-container {
+    display: flex;
+    flex-flow: column;
+  }
+
+  #back-button {
+    order: 2;
+  }
+
+  #request-access-button {
+    order: 1;
+  }
+
   button {
     width: 100%;
   }
