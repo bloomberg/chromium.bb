@@ -173,17 +173,17 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     private int getImageResourceForPermission(int permission) {
         switch (permission) {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
-                return R.drawable.page_info_image;
+                return R.drawable.permission_images;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-                return R.drawable.page_info_javascript;
+                return R.drawable.permission_javascript;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                return R.drawable.page_info_location;
+                return R.drawable.permission_location;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-                return R.drawable.page_info_media;
+                return R.drawable.permission_media;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-                return R.drawable.page_info_notification;
+                return R.drawable.permission_push_notification;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
-                return R.drawable.page_info_popups;
+                return R.drawable.permission_popups;
             default:
                 assert false : "Icon requested for invalid permission: " + permission;
                 return -1;
