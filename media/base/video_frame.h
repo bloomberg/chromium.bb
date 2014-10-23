@@ -78,6 +78,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       base::TimeDelta timestamp);
 
+  // Returns true if |plane| is a valid plane number for the given format. This
+  // can be used to DCHECK() plane parameters.
+  static bool IsValidPlane(size_t plane, VideoFrame::Format format);
+
   // Call prior to CreateFrame to ensure validity of frame configuration. Called
   // automatically by VideoDecoderConfig::IsValidConfig().
   // TODO(scherkus): VideoDecoderConfig shouldn't call this method
@@ -226,7 +230,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // given coded size and format.
   static size_t AllocationSize(Format format, const gfx::Size& coded_size);
 
-  // Returns the plane size for a plane of the given coded size and format.
+  // Returns the plane size (in bytes) for a plane of the given coded size and
+  // format.
   static gfx::Size PlaneSize(Format format,
                              size_t plane,
                              const gfx::Size& coded_size);
@@ -248,6 +253,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // The height may be aligned to format requirements.
   static size_t Rows(size_t plane, Format format, int height);
 
+  // Returns the number of columns for the given plane, format, and width.
+  // The width may be aligned to format requirements.
+  static size_t Columns(size_t plane, Format format, int width);
+
   Format format() const { return format_; }
 
   const gfx::Size& coded_size() const { return coded_size_; }
@@ -265,7 +274,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns pointer to the buffer for a given plane. The memory is owned by
   // VideoFrame object and must not be freed by the caller.
-  uint8* data(size_t plane) const;
+  const uint8* data(size_t plane) const;
+  uint8* data(size_t plane);
+
+  // Returns pointer to the data in the visible region of the frame. I.e. the
+  // returned pointer is offsetted into the plane buffer specified by
+  // visible_rect().origin(). Memory is owned by VideoFrame object and must not
+  // be freed by the caller.
+  const uint8* visible_data(size_t plane) const;
+  uint8* visible_data(size_t plane);
 
   // Returns the mailbox holder of the native texture wrapped by this frame.
   // Only valid to call if this is a NATIVE_TEXTURE frame. Before using the
@@ -318,10 +335,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
  private:
   friend class base::RefCountedThreadSafe<VideoFrame>;
-
-  // Returns true if |plane| is a valid plane number for the given format. This
-  // can be used to DCHECK() plane parameters.
-  static bool IsValidPlane(size_t plane, VideoFrame::Format format);
 
   // Clients must use the static CreateFrame() method to create a new frame.
   VideoFrame(Format format,

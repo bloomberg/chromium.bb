@@ -48,19 +48,17 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
                             cricket::VideoFormat* best_format) override;
   bool IsScreencast() const override;
 
-  void UpdateI420Buffer(const scoped_refptr<media::VideoFrame>& src);
-
   // |thread_checker_| is bound to the libjingle worker thread.
   base::ThreadChecker thread_checker_;
 
   const bool is_screencast_;
   bool running_;
   base::TimeDelta first_frame_timestamp_;
-  // |buffer_| used if cropping is needed. It is created only if needed and
-  // owned by WebRtcVideoCapturerAdapter. If its created, it exists until
-  // WebRtcVideoCapturerAdapter is destroyed.
-  uint8* buffer_;
-  size_t buffer_size_;
+
+  // This is an alias to the frame_factory_ in the base class
+  // cricket::VideoCapturer.
+  class MediaVideoFrameFactory;
+  MediaVideoFrameFactory* frame_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCapturerAdapter);
 };

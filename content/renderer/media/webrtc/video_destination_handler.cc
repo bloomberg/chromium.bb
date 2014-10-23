@@ -141,10 +141,6 @@ void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
   const base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
       time_stamp_ns / base::Time::kNanosecondsPerMicrosecond);
 
-  // TODO(perkj): It would be more efficient to use I420 here. Using YV12 will
-  // force a copy into a tightly packed I420 frame in
-  // WebRtcVideoCapturerAdapter before the frame is delivered to libJingle.
-  // crbug/359587.
   scoped_refptr<media::VideoFrame> new_frame =
       frame_pool_.CreateFrame(media::VideoFrame::YV12, frame_size,
                               gfx::Rect(frame_size), frame_size, timestamp);
