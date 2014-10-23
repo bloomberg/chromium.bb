@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from pylib import constants
+
 
 class ContentSettings(dict):
 
@@ -15,7 +17,7 @@ class ContentSettings(dict):
     sdk_version_string = device.GetProp('ro.build.version.sdk')
     try:
       sdk_version = int(sdk_version_string)
-      assert sdk_version >= 16, (
+      assert sdk_version >= constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN, (
           'ContentSettings supported only on SDK 16 and later')
     except ValueError:
       assert False, ('Unknown SDK version %s' % sdk_version_string)

@@ -4,6 +4,7 @@
 
 import logging
 
+from pylib import constants
 from pylib import content_settings
 
 _LOCK_SCREEN_SETTINGS_PATH = '/data/system/locksettings.db'
@@ -32,7 +33,7 @@ def ConfigureContentSettings(device, desired_settings):
                   device.GetProp('ro.build.version.sdk'))
     return
 
-  if sdk_version < 16:
+  if sdk_version < constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN:
     logging.error('Skipping content settings configuration due to outdated sdk')
     return
 
