@@ -73,7 +73,7 @@ typedef base::Callback<void(scoped_ptr<
 // The callback used by
 // ConvertFileSelectedInfoListToFileChooserFileInfoList. Returns the result of
 // the conversion as a list.
-typedef base::Callback<void(scoped_ptr<FileChooserFileInfoList>)>
+typedef base::Callback<void(const FileChooserFileInfoList&)>
     FileChooserFileInfoListCallback;
 
 // Returns a file system context associated with the given profile and the

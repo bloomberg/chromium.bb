@@ -249,7 +249,7 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
         web_contents_->GetSiteInstance()->GetSiteURL(),
         files,
         base::Bind(
-            &FileSelectHelper::ProcessSelectedFilesChromeOSAfterConversion,
+            &FileSelectHelper::NotifyRenderViewHostAndEndAfterConversion,
             this));
     return;
   }
@@ -262,25 +262,18 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
     chooser_file.display_name = file.display_name;
     chooser_files.push_back(chooser_file);
   }
-  render_view_host_->FilesSelectedInChooser(chooser_files, dialog_mode_);
+
+  NotifyRenderViewHostAndEndAfterConversion(chooser_files);
+}
+
+void FileSelectHelper::NotifyRenderViewHostAndEndAfterConversion(
+    const std::vector<content::FileChooserFileInfo>& list) {
+  if (render_view_host_)
+    render_view_host_->FilesSelectedInChooser(list, dialog_mode_);
 
   // No members should be accessed from here on.
   RunFileChooserEnd();
 }
-
-#if defined(OS_CHROMEOS)
-void FileSelectHelper::ProcessSelectedFilesChromeOSAfterConversion(
-    scoped_ptr<std::vector<content::FileChooserFileInfo>> list) {
-  if (render_view_host_) {
-    render_view_host_->FilesSelectedInChooser(
-        list ? *list : std::vector<content::FileChooserFileInfo>(),
-        dialog_mode_);
-  }
-
-  // No members should be accessed from here on.
-  RunFileChooserEnd();
-}
-#endif  // defined(OS_CHROMEOS)
 
 void FileSelectHelper::DeleteTemporaryFiles() {
   BrowserThread::PostTask(BrowserThread::FILE,

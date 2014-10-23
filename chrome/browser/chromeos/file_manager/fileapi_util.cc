@@ -394,13 +394,16 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
   // Returns a result to the |callback_|.
   void NotifyComplete(Lifetime /* lifetime */) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback_.Run(chooser_info_list_.Pass());
+    callback_.Run(*chooser_info_list_);
+    // Reset the list so that the file systems are not revoked at the
+    // destructor.
+    chooser_info_list_.reset();
   }
 
   // Returns an empty list to the |callback_|.
   void NotifyError(Lifetime /* lifetime */) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback_.Run(make_scoped_ptr<FileChooserFileInfoList>(NULL));
+    callback_.Run(FileChooserFileInfoList());
   }
 
   scoped_refptr<storage::FileSystemContext> context_;

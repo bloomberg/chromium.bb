@@ -24,9 +24,9 @@ namespace util {
 namespace {
 
 // Passes the |result| to the |output| pointer.
-void PassFileChooserFileInfoList(scoped_ptr<FileChooserFileInfoList>* output,
-                                 scoped_ptr<FileChooserFileInfoList> result) {
-  *output = result.Pass();
+void PassFileChooserFileInfoList(FileChooserFileInfoList* output,
+                                 const FileChooserFileInfoList& result) {
+  *output = result;
 }
 
 // Creates the drive integration service for the |profile|.
@@ -106,7 +106,7 @@ TEST(FileManagerFileAPIUtilTest,
   }
 
   // Run the test target.
-  scoped_ptr<FileChooserFileInfoList> result;
+  FileChooserFileInfoList result;
   ConvertSelectedFileInfoListToFileChooserFileInfoList(
       context,
       GURL("http://example.com"),
@@ -115,30 +115,28 @@ TEST(FileManagerFileAPIUtilTest,
   content::RunAllBlockingPoolTasksUntilIdle();
 
   // Check the result.
-  ASSERT_TRUE(result);
-  ASSERT_EQ(3u, result->size());
+  ASSERT_EQ(3u, result.size());
 
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("/native/File 1.txt")),
-            result->at(0).file_path);
-  EXPECT_EQ("display_name", result->at(0).display_name);
-  EXPECT_FALSE(result->at(0).file_system_url.is_valid());
+  EXPECT_EQ(FILE_PATH_LITERAL("/native/File 1.txt"),
+            result[0].file_path.value());
+  EXPECT_EQ("display_name", result[0].display_name);
+  EXPECT_FALSE(result[0].file_system_url.is_valid());
 
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("/native/cache/xxx")),
-            result->at(1).file_path);
-  EXPECT_EQ("display_name", result->at(1).display_name);
-  EXPECT_FALSE(result->at(1).file_system_url.is_valid());
+  EXPECT_EQ(FILE_PATH_LITERAL("/native/cache/xxx"),
+            result[1].file_path.value());
+  EXPECT_EQ("display_name", result[1].display_name);
+  EXPECT_FALSE(result[1].file_system_url.is_valid());
 
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL(
-                "/special/drive-test-user-hash/root/File 1.txt")),
-            result->at(2).file_path);
-  EXPECT_TRUE(result->at(2).display_name.empty());
-  EXPECT_TRUE(result->at(2).file_system_url.is_valid());
+  EXPECT_EQ(FILE_PATH_LITERAL("/special/drive-test-user-hash/root/File 1.txt"),
+            result[2].file_path.value());
+  EXPECT_TRUE(result[2].display_name.empty());
+  EXPECT_TRUE(result[2].file_system_url.is_valid());
   const storage::FileSystemURL url =
-      context->CrackURL(result->at(2).file_system_url);
+      context->CrackURL(result[2].file_system_url);
   EXPECT_EQ(GURL("http://example.com"), url.origin());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(storage::kFileSystemTypeDrive, url.type());
-  EXPECT_EQ(26u, result->at(2).length);
+  EXPECT_EQ(26u, result[2].length);
 }
 
 }  // namespace
