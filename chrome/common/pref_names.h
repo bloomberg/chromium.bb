@@ -324,7 +324,6 @@ extern const char kShowUpdatePromotionInfoBar[];
 extern const char kUseCustomChromeFrame[];
 extern const char kDefaultContentSettings[];
 extern const char kOverrideContentSettings[];
-extern const char kContentSettingsClearOnExitMigrated[];
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsPatternPairs[];
 extern const char kContentSettingsPluginWhitelist[];

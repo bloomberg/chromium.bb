@@ -999,11 +999,6 @@ const char kDefaultContentSettings[] = "profile.default_content_settings";
 // If a value is not set, it means the setting is allowed.
 const char kOverrideContentSettings[] = "profile.override_content_settings";
 
-// Boolean indicating whether the clear on exit pref was migrated to content
-// settings yet.
-const char kContentSettingsClearOnExitMigrated[] =
-    "profile.content_settings.clear_on_exit_migrated";
-
 // Version of the pattern format used to define content settings.
 const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 

@@ -94,11 +94,6 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
 
   content_settings_providers_[OVERRIDE_PROVIDER] =
       new content_settings::OverrideProvider(prefs_, is_off_the_record_);
-
-  if (!is_off_the_record_) {
-    // Migrate obsolete preferences.
-    MigrateObsoleteClearOnExitPref();
-  }
 }
 
 // static
@@ -108,10 +103,6 @@ void HostContentSettingsMap::RegisterProfilePrefs(
       prefs::kContentSettingsWindowLastTabIndex,
       0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kContentSettingsClearOnExitMigrated,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
   content_settings::DefaultProvider::RegisterProfilePrefs(registry);
@@ -580,55 +571,6 @@ void HostContentSettingsMap::ShutdownOnUIThread() {
        ++it) {
     it->second->ShutdownOnUIThread();
   }
-}
-
-void HostContentSettingsMap::MigrateObsoleteClearOnExitPref() {
-  // Don't migrate more than once.
-  if (prefs_->HasPrefPath(prefs::kContentSettingsClearOnExitMigrated) &&
-      prefs_->GetBoolean(prefs::kContentSettingsClearOnExitMigrated)) {
-    return;
-  }
-
-  if (!prefs_->GetBoolean(prefs::kClearSiteDataOnExit)) {
-    // Nothing to be done
-    prefs_->SetBoolean(prefs::kContentSettingsClearOnExitMigrated, true);
-    return;
-  }
-
-  // Change the default cookie settings:
-  //  old              new
-  //  ---------------- ----------------
-  //  ALLOW            SESSION_ONLY
-  //  SESSION_ONLY     SESSION_ONLY
-  //  BLOCK            BLOCK
-  ContentSetting default_setting = GetDefaultContentSettingFromProvider(
-      CONTENT_SETTINGS_TYPE_COOKIES,
-      content_settings_providers_[DEFAULT_PROVIDER]);
-  if (default_setting == CONTENT_SETTING_ALLOW) {
-    SetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_SESSION_ONLY);
-  }
-
-  // Change the exceptions using the same rules.
-  ContentSettingsForOneType exceptions;
-  AddSettingsForOneType(content_settings_providers_[PREF_PROVIDER],
-                        PREF_PROVIDER,
-                        CONTENT_SETTINGS_TYPE_COOKIES,
-                        std::string(),
-                        &exceptions,
-                        false);
-  for (ContentSettingsForOneType::iterator it = exceptions.begin();
-       it != exceptions.end(); ++it) {
-    if (it->setting != CONTENT_SETTING_ALLOW)
-      continue;
-    SetWebsiteSetting(it->primary_pattern,
-                      it->secondary_pattern,
-                      CONTENT_SETTINGS_TYPE_COOKIES,
-                      std::string(),
-                      new base::FundamentalValue(CONTENT_SETTING_SESSION_ONLY));
-  }
-
-  prefs_->SetBoolean(prefs::kContentSettingsClearOnExitMigrated, true);
 }
 
 void HostContentSettingsMap::AddSettingsForOneType(

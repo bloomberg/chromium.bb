@@ -301,9 +301,6 @@ class HostContentSettingsMap
       ContentSettingsType content_type,
       content_settings::ProviderInterface* provider) const;
 
-  // Migrate the Clear on exit pref into equivalent content settings.
-  void MigrateObsoleteClearOnExitPref();
-
   // Adds content settings for |content_type| and |resource_identifier|,
   // provided by |provider|, into |settings|. If |incognito| is true, adds only
   // the content settings which are applicable to the incognito mode and differ
