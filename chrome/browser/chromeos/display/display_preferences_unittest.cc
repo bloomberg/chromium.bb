@@ -26,7 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/gfx/vector3d_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"
 
 using ash::ResolutionNotificationController;

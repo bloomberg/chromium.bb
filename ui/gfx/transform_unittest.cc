@@ -15,11 +15,11 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/box_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/transform_util.h"
-#include "ui/gfx/vector3d_f.h"
 
 namespace gfx {
 

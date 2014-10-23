@@ -20,7 +20,7 @@
 #include "ui/accelerometer/accelerometer_types.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/vector3d_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"
 
 #if defined(USE_X11)
