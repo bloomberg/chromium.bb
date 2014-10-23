@@ -4,13 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if [ $# -gt 0 ] ; then
-   INTENT_ARGS="-d \"$1\""  # e.g. a URL
-fi
+optional_url=$1
 
 adb logcat -c
 adb shell am start -S \
   -a android.intent.action.VIEW \
   -n org.chromium.mojo_shell_apk/.MojoShellActivity \
-  $INTENT_ARGS
+  ${optional_url:+-d "$optional_url"}
 adb logcat -s MojoShellApplication MojoShellActivity chromium
