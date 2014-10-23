@@ -612,6 +612,7 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
       event.flags() == last_key_event_->flags() &&
       (event.time_stamp() - last_key_event_->time_stamp()).InMilliseconds() <
       kMaxAutoRepeatTimeMs) {
+    last_key_event_->set_time_stamp(event.time_stamp());
     return true;
   }
   delete last_key_event_;

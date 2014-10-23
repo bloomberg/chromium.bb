@@ -389,6 +389,19 @@ TEST(EventTest, KeyEventCode) {
 #endif  // OS_WIN
 }
 
+namespace {
+#if defined(USE_X11)
+void SetKeyEventTimestamp(XEvent* event, long time) {
+  event->xkey.time = time;
+}
+
+#elif defined(OS_WIN)
+void SetKeyEventTimestamp(MSG& msg, long time) {
+  msg.time = time;
+}
+#endif
+}  // namespace
+
 #if defined(USE_X11) || defined(OS_WIN)
 TEST(EventTest, AutoRepeat) {
   const uint16 kNativeCodeA = ui::KeycodeConverter::CodeToNativeKeycode("KeyA");
@@ -396,6 +409,13 @@ TEST(EventTest, AutoRepeat) {
 #if defined(USE_X11)
   ScopedXI2Event native_event_a_pressed;
   native_event_a_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, kNativeCodeA);
+  ScopedXI2Event native_event_a_pressed_1500;
+  native_event_a_pressed_1500.InitKeyEvent(
+      ET_KEY_PRESSED, VKEY_A, kNativeCodeA);
+  ScopedXI2Event native_event_a_pressed_3000;
+  native_event_a_pressed_3000.InitKeyEvent(
+      ET_KEY_PRESSED, VKEY_A, kNativeCodeA);
+
   ScopedXI2Event native_event_a_released;
   native_event_a_released.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, kNativeCodeA);
   ScopedXI2Event native_event_b_pressed;
@@ -410,41 +430,64 @@ TEST(EventTest, AutoRepeat) {
   const LPARAM lParam_a = GetLParamFromScanCode(kNativeCodeA);
   const LPARAM lParam_b = GetLParamFromScanCode(kNativeCodeB);
   MSG native_event_a_pressed = { NULL, WM_KEYDOWN, VKEY_A, lParam_a };
+  MSG native_event_a_pressed_1500 = { NULL, WM_KEYDOWN, VKEY_A, lParam_a };
+  MSG native_event_a_pressed_3000 = { NULL, WM_KEYDOWN, VKEY_A, lParam_a };
   MSG native_event_a_released = { NULL, WM_KEYUP, VKEY_A, lParam_a };
   MSG native_event_b_pressed = { NULL, WM_KEYUP, VKEY_B, lParam_b };
 #endif
-  KeyEvent key_a1(native_event_a_pressed);
-  EXPECT_FALSE(key_a1.IsRepeat());
-  KeyEvent key_a1_released(native_event_a_released);
-  EXPECT_FALSE(key_a1_released.IsRepeat());
+  SetKeyEventTimestamp(native_event_a_pressed_1500, 1500);
+  SetKeyEventTimestamp(native_event_a_pressed_3000, 3000);
 
-  KeyEvent key_a2(native_event_a_pressed);
-  EXPECT_FALSE(key_a2.IsRepeat());
-  KeyEvent key_a2_repeated(native_event_a_pressed);
-  EXPECT_TRUE(key_a2_repeated.IsRepeat());
-  KeyEvent key_a2_released(native_event_a_released);
-  EXPECT_FALSE(key_a2_released.IsRepeat());
+  {
+    KeyEvent key_a1(native_event_a_pressed);
+    EXPECT_FALSE(key_a1.IsRepeat());
+    KeyEvent key_a1_released(native_event_a_released);
+    EXPECT_FALSE(key_a1_released.IsRepeat());
 
-  KeyEvent key_a3(native_event_a_pressed);
-  EXPECT_FALSE(key_a3.IsRepeat());
-  KeyEvent key_b(native_event_b_pressed);
-  EXPECT_FALSE(key_b.IsRepeat());
-  KeyEvent key_a3_again(native_event_a_pressed);
-  EXPECT_FALSE(key_a3_again.IsRepeat());
-  KeyEvent key_a3_repeated(native_event_a_pressed);
-  EXPECT_TRUE(key_a3_repeated.IsRepeat());
-  KeyEvent key_a3_repeated2(native_event_a_pressed);
-  EXPECT_TRUE(key_a3_repeated2.IsRepeat());
-  KeyEvent key_a3_released(native_event_a_released);
-  EXPECT_FALSE(key_a3_released.IsRepeat());
+    KeyEvent key_a2(native_event_a_pressed);
+    EXPECT_FALSE(key_a2.IsRepeat());
+    KeyEvent key_a2_repeated(native_event_a_pressed);
+    EXPECT_TRUE(key_a2_repeated.IsRepeat());
+    KeyEvent key_a2_released(native_event_a_released);
+    EXPECT_FALSE(key_a2_released.IsRepeat());
+  }
+
+  {
+    KeyEvent key_a3(native_event_a_pressed);
+    EXPECT_FALSE(key_a3.IsRepeat());
+    KeyEvent key_b(native_event_b_pressed);
+    EXPECT_FALSE(key_b.IsRepeat());
+    KeyEvent key_a3_again(native_event_a_pressed);
+    EXPECT_FALSE(key_a3_again.IsRepeat());
+    KeyEvent key_a3_repeated(native_event_a_pressed);
+    EXPECT_TRUE(key_a3_repeated.IsRepeat());
+    KeyEvent key_a3_repeated2(native_event_a_pressed);
+    EXPECT_TRUE(key_a3_repeated2.IsRepeat());
+    KeyEvent key_a3_released(native_event_a_released);
+    EXPECT_FALSE(key_a3_released.IsRepeat());
+  }
+
+  // Hold the key longer than max auto repeat timeout.
+  {
+    KeyEvent key_a4_0(native_event_a_pressed);
+    EXPECT_FALSE(key_a4_0.IsRepeat());
+    KeyEvent key_a4_1500(native_event_a_pressed_1500);
+    EXPECT_TRUE(key_a4_1500.IsRepeat());
+    KeyEvent key_a4_3000(native_event_a_pressed_3000);
+    EXPECT_TRUE(key_a4_3000.IsRepeat());
+    KeyEvent key_a4_released(native_event_a_released);
+    EXPECT_FALSE(key_a4_released.IsRepeat());
+  }
 
 #if defined(USE_X11)
-  KeyEvent key_a4_pressed(native_event_a_pressed);
-  EXPECT_FALSE(key_a4_pressed.IsRepeat());
+  {
+    KeyEvent key_a4_pressed(native_event_a_pressed);
+    EXPECT_FALSE(key_a4_pressed.IsRepeat());
 
-  KeyEvent key_a4_pressed_nonstandard_state(
-      native_event_a_pressed_nonstandard_state);
-  EXPECT_FALSE(key_a4_pressed_nonstandard_state.IsRepeat());
+    KeyEvent key_a4_pressed_nonstandard_state(
+        native_event_a_pressed_nonstandard_state);
+    EXPECT_FALSE(key_a4_pressed_nonstandard_state.IsRepeat());
+  }
 #endif
 }
 #endif  // USE_X11 || OS_WIN
