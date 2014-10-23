@@ -333,6 +333,10 @@ void CoreOobeHandler::UpdateA11yState() {
 }
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
+#if defined(USE_ATHENA)
+  // Athena builds have their own way to display version so hide ours.
+  bool should_show_version = false;
+#else
   // Don't show version label on the stable channel by default.
   bool should_show_version = true;
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -340,6 +344,7 @@ void CoreOobeHandler::UpdateOobeUIVisibility() {
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     should_show_version = false;
   }
+#endif
   CallJS("showVersion", should_show_version);
   CallJS("showOobeUI", show_oobe_ui_);
   if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())

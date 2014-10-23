@@ -205,10 +205,11 @@ void OnConnectSucceeded(const std::string& service_path) {
 // networks or repeat connect attempts).
 void CallConnectToNetwork(const std::string& service_path,
                           bool check_error_state) {
-  if (!ash::Shell::HasInstance())
-    return;
-  message_center::MessageCenter::Get()->RemoveNotification(
-      network_connect::kNetworkConnectNotificationId, false /* not by user */);
+  if (message_center::MessageCenter::Get()) {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        network_connect::kNetworkConnectNotificationId,
+        false /* not by user */);
+  }
 
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       service_path,
