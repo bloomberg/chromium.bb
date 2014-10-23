@@ -189,6 +189,7 @@ static const char* const kAcceptLanguageList[] = {
 bool IsDuplicateName(const std::string& locale_name) {
   static const char* const kDuplicateNames[] = {
     "en",
+    "en_001",
     "pt",
     "zh",
     "zh_hans_cn",
