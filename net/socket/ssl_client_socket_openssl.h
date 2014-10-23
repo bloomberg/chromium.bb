@@ -130,8 +130,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void OnRecvComplete(int result);
 
   int DoHandshakeLoop(int last_io_result);
-  int DoReadLoop(int result);
-  int DoWriteLoop(int result);
+  int DoReadLoop();
+  int DoWriteLoop();
   int DoPayloadRead();
   int DoPayloadWrite();
 

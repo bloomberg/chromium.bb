@@ -1873,6 +1873,54 @@ TEST_F(SSLClientSocketTest, Read_WithZeroReturn) {
   EXPECT_EQ(0, rv);
 }
 
+// Tests that SSLClientSocket cleanly returns a Read of size 0 if the
+// underlying socket is cleanly closed asynchronously.
+// This is a regression test for https://crbug.com/422246
+TEST_F(SSLClientSocketTest, Read_WithAsyncZeroReturn) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> real_transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  scoped_ptr<SynchronousErrorStreamSocket> error_socket(
+      new SynchronousErrorStreamSocket(real_transport.Pass()));
+  SynchronousErrorStreamSocket* raw_error_socket = error_socket.get();
+  scoped_ptr<FakeBlockingStreamSocket> transport(
+      new FakeBlockingStreamSocket(error_socket.Pass()));
+  FakeBlockingStreamSocket* raw_transport = transport.get();
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+
+  // Disable TLS False Start to ensure the handshake has completed.
+  SSLConfig ssl_config;
+  ssl_config.false_start_enabled = false;
+
+  scoped_ptr<SSLClientSocket> sock(
+      CreateSSLClientSocket(transport.Pass(),
+                            test_server.host_port_pair(),
+                            ssl_config));
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock->IsConnected());
+
+  raw_error_socket->SetNextReadError(0);
+  raw_transport->BlockReadResult();
+  scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
+  rv = sock->Read(buf.get(), 4096, callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  raw_transport->UnblockReadResult();
+  rv = callback.GetResult(rv);
+  EXPECT_EQ(0, rv);
+}
+
 TEST_F(SSLClientSocketTest, Read_SmallChunks) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
                                 SpawnedTestServer::kLocalhost,
