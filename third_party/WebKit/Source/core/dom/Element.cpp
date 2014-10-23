@@ -1198,10 +1198,9 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
         return prefix();
 
     AttributeCollection attributes = this->attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-        if (it->prefix() == xmlnsAtom && it->value() == namespaceToLocate)
-            return it->localName();
+    for (const Attribute& attr : attributes) {
+        if (attr.prefix() == xmlnsAtom && attr.value() == namespaceToLocate)
+            return attr.localName();
     }
 
     if (Element* parent = parentElement())
@@ -2933,10 +2932,9 @@ void Element::detachAllAttrNodesFromElement()
     ASSERT(list);
 
     AttributeCollection attributes = elementData()->attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*list, it->name()))
-            attrNode->detachFromElementWithValue(it->value());
+    for (const Attribute& attr : attributes) {
+        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*list, attr.name()))
+            attrNode->detachFromElementWithValue(attr.value());
     }
 
     removeAttrNodeList();
@@ -3001,9 +2999,8 @@ void Element::cloneAttributesFromElement(const Element& other)
         m_elementData = other.m_elementData->makeUniqueCopy();
 
     AttributeCollection attributes = m_elementData->attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it)
-        attributeChangedFromParserOrByCloning(it->name(), it->value(), ModifiedByCloning);
+    for (const Attribute& attr : attributes)
+        attributeChangedFromParserOrByCloning(attr.name(), attr.value(), ModifiedByCloning);
 }
 
 void Element::cloneDataFromElement(const Element& other)

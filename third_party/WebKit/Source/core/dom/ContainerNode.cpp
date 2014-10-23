@@ -205,7 +205,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<
         return nullptr;
     }
 
-    // nothing to do
+    // Nothing to do.
     if (refChild->previousSibling() == newChild || refChild == newChild)
         return newChild;
 
@@ -228,9 +228,9 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<
     InspectorInstrumentation::willInsertDOMNode(this);
 
     ChildListMutationScope mutation(*this);
-    for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
-        ASSERT(*it);
-        Node& child = **it;
+    for (const auto& targetNode : targets) {
+        ASSERT(targetNode);
+        Node& child = *targetNode;
 
         // Due to arbitrary code running in response to a DOM mutation event it's
         // possible that "next" is no longer a child of "this".
@@ -327,7 +327,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
 
     RefPtrWillBeRawPtr<Node> protect(this);
 
-    if (oldChild == newChild) // nothing to do
+    if (oldChild == newChild) // Nothing to do.
         return oldChild;
 
     if (!oldChild) {
@@ -337,7 +337,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
 
     RefPtrWillBeRawPtr<Node> child = oldChild;
 
-    // Make sure replacing the old child with the new is ok
+    // Make sure replacing the old child with the new is OK.
     if (!checkAcceptChild(newChild.get(), child.get(), exceptionState)) {
         if (exceptionState.hadException())
             return nullptr;
@@ -354,7 +354,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
 
     RefPtrWillBeRawPtr<Node> next = child->nextSibling();
 
-    // Remove the node we're replacing
+    // Remove the node we're replacing.
     removeChild(child, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
@@ -383,10 +383,10 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
 
     InspectorInstrumentation::willInsertDOMNode(this);
 
-    // Add the new child(ren)
-    for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
-        ASSERT(*it);
-        Node& child = **it;
+    // Add the new child(ren).
+    for (const auto& targetNode : targets) {
+        ASSERT(targetNode);
+        Node& child = *targetNode;
 
         // Due to arbitrary code running in response to a DOM mutation event it's
         // possible that "next" is no longer a child of "this".
@@ -431,9 +431,9 @@ void ContainerNode::willRemoveChildren()
     getChildNodes(*this, children);
 
     ChildListMutationScope mutation(*this);
-    for (NodeVector::const_iterator it = children.begin(); it != children.end(); ++it) {
-        ASSERT(*it);
-        Node& child = **it;
+    for (const auto& node : children) {
+        ASSERT(node);
+        Node& child = *node;
         mutation.willRemoveChild(child);
         child.notifyMutationObserversNodeWillDetach();
         dispatchChildRemovalEvents(child);
@@ -446,22 +446,23 @@ void ContainerNode::willRemoveChildren()
 void ContainerNode::removeDetachedChildrenInContainer(ContainerNode& container)
 {
     // List of nodes to be deleted.
-    Node* head = 0;
-    Node* tail = 0;
+    Node* head = nullptr;
+    Node* tail = nullptr;
 
     addChildNodesToDeletionQueue(head, tail, container);
 
     Node* n;
     Node* next;
-    while ((n = head) != 0) {
+    while (head) {
+        n = head;
         ASSERT_WITH_SECURITY_IMPLICATION(n->m_deletionHasBegun);
 
         next = n->nextSibling();
-        n->setNextSibling(0);
+        n->setNextSibling(nullptr);
 
         head = next;
-        if (next == 0)
-            tail = 0;
+        if (!next)
+            tail = nullptr;
 
         if (n->hasChildren())
             addChildNodesToDeletionQueue(head, tail, toContainerNode(*n));
@@ -473,16 +474,16 @@ void ContainerNode::removeDetachedChildrenInContainer(ContainerNode& container)
 void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, ContainerNode& container)
 {
     // We have to tell all children that their parent has died.
-    Node* next = 0;
+    Node* next = nullptr;
     for (Node* n = container.firstChild(); n; n = next) {
         ASSERT_WITH_SECURITY_IMPLICATION(!n->m_deletionHasBegun);
 
         next = n->nextSibling();
-        n->setNextSibling(0);
-        n->setParentOrShadowHostNode(0);
+        n->setNextSibling(nullptr);
+        n->setParentOrShadowHostNode(nullptr);
         container.setFirstChild(next);
         if (next)
-            next->setPreviousSibling(0);
+            next->setPreviousSibling(nullptr);
 
         if (!n->refCount()) {
 #if ENABLE(SECURITY_ASSERT)
@@ -504,7 +505,7 @@ void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, Conta
         }
     }
 
-    container.setLastChild(0);
+    container.setLastChild(nullptr);
 }
 #endif
 
@@ -589,9 +590,9 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& ol
     if (m_lastChild == &oldChild)
         m_lastChild = previousChild;
 
-    oldChild.setPreviousSibling(0);
-    oldChild.setNextSibling(0);
-    oldChild.setParentOrShadowHostNode(0);
+    oldChild.setPreviousSibling(nullptr);
+    oldChild.setNextSibling(nullptr);
+    oldChild.setParentOrShadowHostNode(nullptr);
 
     document().adoptIfNeeded(oldChild);
 }
@@ -615,7 +616,7 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
     childrenChanged(ChildrenChange::forRemoval(oldChild, prev, next, ChildrenChangeSourceParser));
 }
 
-// this differs from other remove functions because it forcibly removes all the children,
+// This differs from other remove functions because it forcibly removes all the children,
 // regardless of read-only status or event exceptions, e.g.
 void ContainerNode::removeChildren()
 {
@@ -715,11 +716,11 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<N
 
     InspectorInstrumentation::willInsertDOMNode(this);
 
-    // Now actually add the child(ren)
+    // Now actually add the child(ren).
     ChildListMutationScope mutation(*this);
-    for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
-        ASSERT(*it);
-        Node& child = **it;
+    for (const auto& targetNode : targets) {
+        ASSERT(targetNode);
+        Node& child = *targetNode;
 
         // If the child has a parent again, just stop what we're doing, because
         // that means someone is doing something with DOM mutation -- can't re-parent
@@ -782,8 +783,7 @@ void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
 
     childrenChanged(ChildrenChange::forInsertion(root, source));
 
-    for (size_t i = 0; i < postInsertionNotificationTargets.size(); ++i) {
-        Node* targetNode = postInsertionNotificationTargets[i].get();
+    for (const auto& targetNode : postInsertionNotificationTargets) {
         if (targetNode->inDocument())
             targetNode->didNotifySubtreeInsertionsToDocument();
     }
@@ -864,15 +864,15 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
 {
     if (!renderer())
         return false;
-    // What is this code really trying to do?
-    RenderObject* o = renderer();
 
+    // FIXME: What is this code really trying to do?
+    RenderObject* o = renderer();
     if (!o->isInline() || o->isReplaced()) {
         point = o->localToAbsolute(FloatPoint(), UseTransforms);
         return true;
     }
 
-    // find the next text/image child, to get a position
+    // Find the next text/image child, to get a position.
     while (o) {
         RenderObject* p = o;
         if (RenderObject* oFirstChild = o->slowFirstChild()) {
@@ -880,7 +880,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         } else if (o->nextSibling()) {
             o = o->nextSibling();
         } else {
-            RenderObject* next = 0;
+            RenderObject* next = nullptr;
             while (!next && o->parent()) {
                 o = o->parent();
                 next = o->nextSibling();
@@ -898,7 +898,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         }
 
         if (p->node() && p->node() == this && o->isText() && !o->isBR() && !toRenderText(o)->firstTextBox()) {
-            // do nothing - skip unrendered whitespace that is a child or next sibling of the anchor
+            // Do nothing - skip unrendered whitespace that is a child or next sibling of the anchor.
         } else if ((o->isText() && !o->isBR()) || o->isReplaced()) {
             point = FloatPoint();
             if (o->isText() && toRenderText(o)->firstTextBox()) {
@@ -933,21 +933,21 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
         return true;
     }
 
-    // find the last text/image child, to get a position
+    // Find the last text/image child, to get a position.
     while (o) {
         if (RenderObject* oLastChild = o->slowLastChild()) {
             o = oLastChild;
         } else if (o->previousSibling()) {
             o = o->previousSibling();
         } else {
-            RenderObject* prev = 0;
-        while (!prev) {
-            o = o->parent();
-            if (!o)
-                return false;
-            prev = o->previousSibling();
-        }
-        o = prev;
+            RenderObject* prev = nullptr;
+            while (!prev) {
+                o = o->parent();
+                if (!o)
+                    return false;
+                prev = o->previousSibling();
+            }
+            o = prev;
         }
         ASSERT(o);
         if (o->isText() || o->isReplaced()) {
@@ -1161,13 +1161,13 @@ static void dispatchChildRemovalEvents(Node& child)
     RefPtrWillBeRawPtr<Node> c(child);
     RefPtrWillBeRawPtr<Document> document(child.document());
 
-    // dispatch pre-removal mutation events
+    // Dispatch pre-removal mutation events.
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEREMOVED_LISTENER)) {
         NodeChildRemovalTracker scope(child);
         c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeRemoved, true, c->parentNode()));
     }
 
-    // dispatch the DOMNodeRemovedFromDocument event to all descendants
+    // Dispatch the DOMNodeRemovedFromDocument event to all descendants.
     if (c->inDocument() && document->hasListenerType(Document::DOMNODEREMOVEDFROMDOCUMENT_LISTENER)) {
         NodeChildRemovalTracker scope(child);
         for (; c; c = NodeTraversal::next(*c, &child))
@@ -1219,7 +1219,7 @@ void ContainerNode::recalcChildStyle(StyleRecalcChange change)
     // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
     // See crbug.com/288225
     StyleResolver& styleResolver = document().ensureStyleResolver();
-    Text* lastTextNode = 0;
+    Text* lastTextNode = nullptr;
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
         if (child->isTextNode()) {
             toText(child)->recalcTextStyle(change, lastTextNode);
@@ -1231,7 +1231,7 @@ void ContainerNode::recalcChildStyle(StyleRecalcChange change)
             else if (element->supportsStyleSharing())
                 styleResolver.addToStyleSharingList(*element);
             if (element->renderer())
-                lastTextNode = 0;
+                lastTextNode = nullptr;
         }
     }
 }
@@ -1292,11 +1292,11 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
         ASSERT(changeType != FinishedParsingChildren);
         // Find our new first child element.
         Element* firstChildElement = ElementTraversal::firstChild(*this);
-        RenderStyle* firstChildElementStyle = firstChildElement ? firstChildElement->renderStyle() : 0;
+        RenderStyle* firstChildElementStyle = firstChildElement ? firstChildElement->renderStyle() : nullptr;
 
         // Find the first element after the change.
         Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
-        RenderStyle* elementAfterChangeStyle = elementAfterChange ? elementAfterChange->renderStyle() : 0;
+        RenderStyle* elementAfterChangeStyle = elementAfterChange ? elementAfterChange->renderStyle() : nullptr;
 
         // This is the element insertion as first child element case.
         if (firstChildElement != elementAfterChange && elementAfterChangeStyle && elementAfterChangeStyle->firstChildState()) {
@@ -1314,11 +1314,11 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
     if (childrenAffectedByLastChildRules() && nodeBeforeChange) {
         // Find our new last child element.
         Element* lastChildElement = ElementTraversal::lastChild(*this);
-        RenderStyle* lastChildElementStyle = lastChildElement ? lastChildElement->renderStyle() : 0;
+        RenderStyle* lastChildElementStyle = lastChildElement ? lastChildElement->renderStyle() : nullptr;
 
         // Find the last element before the change.
         Element* elementBeforeChange = nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
-        RenderStyle* elementBeforeChangeStyle = elementBeforeChange ? elementBeforeChange->renderStyle() : 0;
+        RenderStyle* elementBeforeChangeStyle = elementBeforeChange ? elementBeforeChange->renderStyle() : nullptr;
 
         // This is the element insertion as last child element case.
         if (lastChildElement != elementBeforeChange && elementBeforeChangeStyle && elementBeforeChangeStyle->lastChildState()) {
@@ -1413,7 +1413,7 @@ Element* ContainerNode::getElementById(const AtomicString& id) const
         // and check if the matching element is in our subtree.
         Element* element = treeScope().getElementById(id);
         if (!element)
-            return 0;
+            return nullptr;
         if (element->isDescendantOf(this))
             return element;
     }
@@ -1423,7 +1423,7 @@ Element* ContainerNode::getElementById(const AtomicString& id) const
         if (element.getIdAttribute() == id)
             return &element;
     }
-    return 0;
+    return nullptr;
 }
 
 NodeListsNodeData& ContainerNode::ensureNodeLists()

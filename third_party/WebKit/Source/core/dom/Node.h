@@ -82,7 +82,7 @@ class RenderStyle;
 class SVGQualifiedName;
 class ShadowRoot;
 template <typename NodeType> class StaticNodeTypeList;
-typedef StaticNodeTypeList<Node> StaticNodeList;
+using StaticNodeList = StaticNodeTypeList<Node>;
 class TagCollection;
 class Text;
 class TouchEvent;
@@ -278,12 +278,12 @@ public:
     bool hasSyntheticAttrChildNodes() const { return getFlag(HasSyntheticAttrChildNodesFlag); }
     void setHasSyntheticAttrChildNodes(bool flag) { setFlag(flag, HasSyntheticAttrChildNodesFlag); }
 
-    // If this node is in a shadow tree, returns its shadow host. Otherwise, returns 0.
+    // If this node is in a shadow tree, returns its shadow host. Otherwise, returns nullptr.
     Element* shadowHost() const;
     ShadowRoot* containingShadowRoot() const;
     ShadowRoot* youngestShadowRoot() const;
 
-    // Returns 0, a child of ShadowRoot, or a legacy shadow root.
+    // Returns nullptr, a child of ShadowRoot, or a legacy shadow root.
     Node* nonBoundaryShadowTreeRootNode();
 
     // Node's parent, shadow tree host.
@@ -294,7 +294,7 @@ public:
     // Knows about all kinds of hosts.
     ContainerNode* parentOrShadowHostOrTemplateHostNode() const;
 
-    // Returns the parent node, but 0 if the parent node is a ShadowRoot.
+    // Returns the parent node, but nullptr if the parent node is a ShadowRoot.
     ContainerNode* nonShadowBoundaryParentNode() const;
 
     bool selfOrAncestorHasDirAutoAttribute() const { return getFlag(SelfOrAncestorHasDirAutoFlag); }
@@ -313,13 +313,13 @@ public:
     Node* previousNodeConsideringAtomicNodes() const;
     Node* nextNodeConsideringAtomicNodes() const;
 
-    // Returns the next leaf node or 0 if there are no more.
+    // Returns the next leaf node or nullptr if there are no more.
     // Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
     // Uses an editing-specific concept of what a leaf node is, and should probably be moved
     // out of the Node class into an editing-specific source file.
     Node* nextLeafNode() const;
 
-    // Returns the previous leaf node or 0 if there are no more.
+    // Returns the previous leaf node or nullptr if there are no more.
     // Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
     // Uses an editing-specific concept of what a leaf node is, and should probably be moved
     // out of the Node class into an editing-specific source file.
@@ -509,7 +509,7 @@ public:
         RenderStyle* resolvedStyle;
         bool performingReattach;
 
-        AttachContext() : resolvedStyle(0), performingReattach(false) { }
+        AttachContext() : resolvedStyle(nullptr), performingReattach(false) { }
     };
 
     // Attaches this node to the rendering tree. This calculates the style to be applied to the node and creates an
@@ -606,7 +606,7 @@ public:
 
     // Handlers to do/undo actions on the target node before an event is dispatched to it and after the event
     // has been dispatched.  The data pointer is handed back by the preDispatch and passed to postDispatch.
-    virtual void* preDispatchEventHandler(Event*) { return 0; }
+    virtual void* preDispatchEventHandler(Event*) { return nullptr; }
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
     using EventTarget::dispatchEvent;
@@ -622,7 +622,7 @@ public:
 
     bool dispatchKeyEvent(const PlatformKeyboardEvent&);
     bool dispatchWheelEvent(const PlatformWheelEvent&);
-    bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = 0);
+    bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = nullptr);
     bool dispatchGestureEvent(const PlatformGestureEvent&);
     bool dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent>);
 
@@ -794,7 +794,7 @@ private:
 
     void setStyleChange(StyleChangeType);
 
-    virtual RenderStyle* nonRendererStyle() const { return 0; }
+    virtual RenderStyle* nonRendererStyle() const { return nullptr; }
 
     virtual RenderStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
 
@@ -810,7 +810,7 @@ private:
     RawPtrWillBeMember<Node> m_next;
     // When a node has rare data we move the renderer into the rare data.
     union DataUnion {
-        DataUnion() : m_renderer(0) { }
+        DataUnion() : m_renderer(nullptr) { }
         RenderObject* m_renderer;
         NodeRareDataBase* m_rareData;
     } m_data;
@@ -830,7 +830,7 @@ inline ContainerNode* Node::parentOrShadowHostNode() const
 
 inline ContainerNode* Node::parentNode() const
 {
-    return isShadowRoot() ? 0 : parentOrShadowHostNode();
+    return isShadowRoot() ? nullptr : parentOrShadowHostNode();
 }
 
 inline void Node::lazyReattachIfAttached()

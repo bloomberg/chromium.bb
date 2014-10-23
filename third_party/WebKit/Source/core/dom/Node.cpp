@@ -124,7 +124,7 @@ void Node::operator delete(void* ptr)
 #endif
 
 #if DUMP_NODE_STATISTICS
-typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<Node> > WeakNodeSet;
+using WeakNodeSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Node>>;
 static WeakNodeSet& liveNodeSet()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WeakNodeSet>, set, (adoptPtrWillBeNoop(new WeakNodeSet())));
@@ -155,9 +155,7 @@ void Node::dumpStatistics()
     size_t elementsWithRareData = 0;
     size_t elementsWithNamedNodeMap = 0;
 
-    for (WeakNodeSet::iterator it = liveNodeSet().begin(); it != liveNodeSet().end(); ++it) {
-        Node* node = *it;
-
+    for (Node* node : liveNodeSet()) {
         if (node->hasRareData()) {
             ++nodesWithRareData;
             if (node->isElementNode()) {
@@ -237,8 +235,8 @@ void Node::dumpStatistics()
     printf("  Number of ShadowRoot nodes: %zu\n", shadowRootNodes);
 
     printf("Element tag name distibution:\n");
-    for (HashMap<String, size_t>::iterator it = perTagCount.begin(); it != perTagCount.end(); ++it)
-        printf("  Number of <%s> tags: %zu\n", it->key.utf8().data(), it->value);
+    for (const auto& entry : perTagCount)
+        printf("  Number of <%s> tags: %zu\n", entry.key.utf8().data(), entry.value);
 
     printf("Attributes:\n");
     printf("  Number of Attributes (non-Node and Node): %zu [%zu]\n", attributes, sizeof(Attribute));
@@ -300,9 +298,9 @@ Node::~Node()
         willBeDeletedFromDocument();
 
     if (m_previous)
-        m_previous->setNextSibling(0);
+        m_previous->setNextSibling(nullptr);
     if (m_next)
-        m_next->setPreviousSibling(0);
+        m_next->setPreviousSibling(nullptr);
 
     if (m_treeScope)
         m_treeScope->guardDeref();
@@ -601,13 +599,13 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
 RenderBox* Node::renderBox() const
 {
     RenderObject* renderer = this->renderer();
-    return renderer && renderer->isBox() ? toRenderBox(renderer) : 0;
+    return renderer && renderer->isBox() ? toRenderBox(renderer) : nullptr;
 }
 
 RenderBoxModelObject* Node::renderBoxModelObject() const
 {
     RenderObject* renderer = this->renderer();
-    return renderer && renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : 0;
+    return renderer && renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : nullptr;
 }
 
 LayoutRect Node::boundingBox() const
@@ -642,10 +640,10 @@ bool Node::hasNonEmptyBoundingBox() const
 inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 {
     if (!node->isElementNode())
-        return 0;
+        return nullptr;
     if (ElementShadow* shadow = toElement(node)->shadow())
         return shadow->oldestShadowRoot();
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -766,15 +764,15 @@ bool Node::isInert() const
 unsigned Node::nodeIndex() const
 {
     Node *_tempNode = previousSibling();
-    unsigned count=0;
-    for ( count=0; _tempNode; count++ )
+    unsigned count = 0;
+    for (count = 0; _tempNode; count++)
         _tempNode = _tempNode->previousSibling();
     return count;
 }
 
 NodeListsNodeData* Node::nodeLists()
 {
-    return hasRareData() ? rareData()->nodeLists() : 0;
+    return hasRareData() ? rareData()->nodeLists() : nullptr;
 }
 
 void Node::clearNodeLists()
@@ -851,7 +849,7 @@ Node* Node::commonAncestor(const Node& other, Node* (*parent)(const Node&))
     if (this == other)
         return this;
     if (document() != other.document())
-        return 0;
+        return nullptr;
     int thisDepth = 0;
     for (Node* node = this; node; node = parent(*node)) {
         if (node == &other)
@@ -880,7 +878,7 @@ Node* Node::commonAncestor(const Node& other, Node* (*parent)(const Node&))
         otherIterator = parent(*otherIterator);
     }
     ASSERT(!otherIterator);
-    return 0;
+    return nullptr;
 }
 
 void Node::reattach(const AttachContext& context)
@@ -927,7 +925,7 @@ void Node::detach(const AttachContext& context)
 
     if (renderer())
         renderer()->destroyAndCleanupAnonymousWrappers();
-    setRenderer(0);
+    setRenderer(nullptr);
 
     // Do not remove the element's hovered and active status
     // if performing a reattach.
@@ -951,7 +949,7 @@ void Node::detach(const AttachContext& context)
     clearNeedsStyleInvalidation();
 
 #if ENABLE(ASSERT)
-    detachingNode = 0;
+    detachingNode = nullptr;
 #endif
 }
 
@@ -973,10 +971,10 @@ void Node::reattachWhitespaceSiblings(Text* start)
 }
 
 // FIXME: This code is used by editing.  Seems like it could move over there and not pollute Node.
-Node *Node::previousNodeConsideringAtomicNodes() const
+Node* Node::previousNodeConsideringAtomicNodes() const
 {
     if (previousSibling()) {
-        Node *n = previousSibling();
+        Node* n = previousSibling();
         while (!isAtomicNode(n) && n->lastChild())
             n = n->lastChild();
         return n;
@@ -985,49 +983,49 @@ Node *Node::previousNodeConsideringAtomicNodes() const
         return parentNode();
     }
     else {
-        return 0;
+        return nullptr;
     }
 }
 
-Node *Node::nextNodeConsideringAtomicNodes() const
+Node* Node::nextNodeConsideringAtomicNodes() const
 {
     if (!isAtomicNode(this) && hasChildren())
         return firstChild();
     if (nextSibling())
         return nextSibling();
-    const Node *n = this;
+    const Node* n = this;
     while (n && !n->nextSibling())
         n = n->parentNode();
     if (n)
         return n->nextSibling();
-    return 0;
+    return nullptr;
 }
 
-Node *Node::previousLeafNode() const
+Node* Node::previousLeafNode() const
 {
-    Node *node = previousNodeConsideringAtomicNodes();
+    Node* node = previousNodeConsideringAtomicNodes();
     while (node) {
         if (isAtomicNode(node))
             return node;
         node = node->previousNodeConsideringAtomicNodes();
     }
-    return 0;
+    return nullptr;
 }
 
-Node *Node::nextLeafNode() const
+Node* Node::nextLeafNode() const
 {
-    Node *node = nextNodeConsideringAtomicNodes();
+    Node* node = nextNodeConsideringAtomicNodes();
     while (node) {
         if (isAtomicNode(node))
             return node;
         node = node->nextNodeConsideringAtomicNodes();
     }
-    return 0;
+    return nullptr;
 }
 
 RenderStyle* Node::virtualComputedStyle(PseudoId pseudoElementSpecifier)
 {
-    return parentOrShadowHostNode() ? parentOrShadowHostNode()->computedStyle(pseudoElementSpecifier) : 0;
+    return parentOrShadowHostNode() ? parentOrShadowHostNode()->computedStyle(pseudoElementSpecifier) : nullptr;
 }
 
 int Node::maxCharacterOffset() const
@@ -1057,13 +1055,13 @@ Element* Node::shadowHost() const
 {
     if (ShadowRoot* root = containingShadowRoot())
         return root->host();
-    return 0;
+    return nullptr;
 }
 
 ShadowRoot* Node::containingShadowRoot() const
 {
     Node& root = treeScope().rootNode();
-    return root.isShadowRoot() ? toShadowRoot(&root) : 0;
+    return root.isShadowRoot() ? toShadowRoot(&root) : nullptr;
 }
 
 Node* Node::nonBoundaryShadowTreeRootNode()
@@ -1078,26 +1076,26 @@ Node* Node::nonBoundaryShadowTreeRootNode()
             return root;
         root = parent;
     }
-    return 0;
+    return nullptr;
 }
 
 ContainerNode* Node::nonShadowBoundaryParentNode() const
 {
     ContainerNode* parent = parentNode();
-    return parent && !parent->isShadowRoot() ? parent : 0;
+    return parent && !parent->isShadowRoot() ? parent : nullptr;
 }
 
 Element* Node::parentOrShadowHostElement() const
 {
     ContainerNode* parent = parentOrShadowHostNode();
     if (!parent)
-        return 0;
+        return nullptr;
 
     if (parent->isShadowRoot())
         return toShadowRoot(parent)->host();
 
     if (!parent->isElementNode())
-        return 0;
+        return nullptr;
 
     return toElement(parent);
 }
@@ -1127,7 +1125,7 @@ Element* Node::rootEditableElement(EditableType editableType) const
 
 Element* Node::rootEditableElement() const
 {
-    Element* result = 0;
+    Element* result = nullptr;
     for (Node* n = const_cast<Node*>(this); n && n->hasEditableStyle(); n = n->parentNode()) {
         if (n->isElementNode())
             result = toElement(n);
@@ -1142,7 +1140,7 @@ Element* Node::rootEditableElement() const
 Document* Node::ownerDocument() const
 {
     Document* doc = &document();
-    return doc == this ? 0 : doc;
+    return doc == this ? nullptr : doc;
 }
 
 KURL Node::baseURI() const
@@ -1214,10 +1212,9 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
                 return element.namespaceURI() == namespaceURI;
 
             AttributeCollection attributes = element.attributes();
-            AttributeCollection::iterator end = attributes.end();
-            for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-                if (it->localName() == xmlnsAtom)
-                    return it->value() == namespaceURI;
+            for (const Attribute& attr : attributes) {
+                if (attr.localName() == xmlnsAtom)
+                    return attr.value() == namespaceURI;
             }
 
             if (Element* parent = parentElement())
@@ -1264,7 +1261,7 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
             break;
         case DOCUMENT_FRAGMENT_NODE:
         case DOCUMENT_TYPE_NODE:
-            context = 0;
+            context = nullptr;
             break;
         // FIXME: Remove this when Attr no longer extends Node (CR305105)
         case ATTRIBUTE_NODE:
@@ -1297,16 +1294,15 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
                 return element.namespaceURI();
 
             AttributeCollection attributes = element.attributes();
-            AttributeCollection::iterator end = attributes.end();
-            for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-                if (it->prefix() == xmlnsAtom && it->localName() == prefix) {
-                    if (!it->value().isEmpty())
-                        return it->value();
+            for (const Attribute& attr : attributes) {
+                if (attr.prefix() == xmlnsAtom && attr.localName() == prefix) {
+                    if (!attr.value().isEmpty())
+                        return attr.value();
                     return nullAtom;
                 }
-                if (it->localName() == xmlnsAtom && prefix.isNull()) {
-                    if (!it->value().isEmpty())
-                        return it->value();
+                if (attr.localName() == xmlnsAtom && prefix.isNull()) {
+                    if (!attr.value().isEmpty())
+                        return attr.value();
                     return nullAtom;
                 }
             }
@@ -1427,15 +1423,15 @@ bool Node::offsetInCharacters() const
 
 unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesTreatment treatment) const
 {
-    // It is not clear what should be done if |otherNode| is 0.
+    // It is not clear what should be done if |otherNode| is nullptr.
     if (!otherNode)
         return DOCUMENT_POSITION_DISCONNECTED;
 
     if (otherNode == this)
         return DOCUMENT_POSITION_EQUIVALENT;
 
-    const Attr* attr1 = nodeType() == ATTRIBUTE_NODE ? toAttr(this) : 0;
-    const Attr* attr2 = otherNode->nodeType() == ATTRIBUTE_NODE ? toAttr(otherNode) : 0;
+    const Attr* attr1 = nodeType() == ATTRIBUTE_NODE ? toAttr(this) : nullptr;
+    const Attr* attr2 = otherNode->nodeType() == ATTRIBUTE_NODE ? toAttr(otherNode) : nullptr;
 
     const Node* start1 = attr1 ? attr1->ownerElement() : this;
     const Node* start2 = attr2 ? attr2->ownerElement() : otherNode;
@@ -1458,16 +1454,15 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
         // We are comparing two attributes on the same node. Crawl our attribute map and see which one we hit first.
         const Element* owner1 = attr1->ownerElement();
         AttributeCollection attributes = owner1->attributes();
-        AttributeCollection::iterator end = attributes.end();
-        for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
+        for (const Attribute& attr : attributes) {
             // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an
             // implementation-dependent order between the determining nodes is returned. This order is stable as long as no nodes of
             // the same nodeType are inserted into or removed from the direct container. This would be the case, for example,
             // when comparing two attributes of the same element, and inserting or removing additional attributes might change
             // the order between existing attributes.
-            if (attr1->qualifiedName() == it->name())
+            if (attr1->qualifiedName() == attr.name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_FOLLOWING;
-            if (attr2->qualifiedName() == it->name())
+            if (attr2->qualifiedName() == attr.name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_PRECEDING;
         }
 
@@ -1778,7 +1773,7 @@ Element* Node::enclosingLinkEventParentOrSelf()
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 const AtomicString& Node::interfaceName() const
@@ -1819,16 +1814,15 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     else if (oldDocument.frameHost() != document().frameHost())
         EventHandlerRegistry::didMoveBetweenFrameHosts(*this, oldDocument.frameHost(), document().frameHost());
 
-    if (WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* registry = mutationObserverRegistry()) {
+    if (WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>>* registry = mutationObserverRegistry()) {
         for (size_t i = 0; i < registry->size(); ++i) {
             document().addMutationObserverTypes(registry->at(i)->mutationTypes());
         }
     }
 
-    if (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >* transientRegistry = transientMutationObserverRegistry()) {
-        for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::iterator iter = transientRegistry->begin(); iter != transientRegistry->end(); ++iter) {
-            document().addMutationObserverTypes((*iter)->mutationTypes());
-        }
+    if (transientMutationObserverRegistry()) {
+        for (MutationObserverRegistration* registration : *transientMutationObserverRegistry())
+            document().addMutationObserverTypes(registration->mutationTypes());
     }
 }
 
@@ -1885,8 +1879,7 @@ void Node::removeAllEventListenersRecursively()
     }
 }
 
-typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Node>, OwnPtr<EventTargetData> > EventTargetDataMap;
-
+using EventTargetDataMap = WillBeHeapHashMap<RawPtrWillBeWeakMember<Node>, OwnPtr<EventTargetData>>;
 static EventTargetDataMap& eventTargetDataMap()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<EventTargetDataMap>, map, (adoptPtrWillBeNoop(new EventTargetDataMap())));
@@ -1895,7 +1888,7 @@ static EventTargetDataMap& eventTargetDataMap()
 
 EventTargetData* Node::eventTargetData()
 {
-    return hasEventTargetData() ? eventTargetDataMap().get(this) : 0;
+    return hasEventTargetData() ? eventTargetDataMap().get(this) : nullptr;
 }
 
 EventTargetData& Node::ensureEventTargetData()
@@ -1915,23 +1908,23 @@ void Node::clearEventTargetData()
 }
 #endif
 
-WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* Node::mutationObserverRegistry()
+WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>>* Node::mutationObserverRegistry()
 {
     if (!hasRareData())
-        return 0;
+        return nullptr;
     NodeMutationObserverData* data = rareData()->mutationObserverData();
     if (!data)
-        return 0;
+        return nullptr;
     return &data->registry;
 }
 
-WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >* Node::transientMutationObserverRegistry()
+WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>>* Node::transientMutationObserverRegistry()
 {
     if (!hasRareData())
-        return 0;
+        return nullptr;
     NodeMutationObserverData* data = rareData()->mutationObserverData();
     if (!data)
-        return 0;
+        return nullptr;
     return &data->transientRegistry;
 }
 
@@ -1940,11 +1933,11 @@ static inline void collectMatchingObserversForMutation(WillBeHeapHashMap<RawPtrW
 {
     if (!registry)
         return;
-    for (typename Registry::iterator iter = registry->begin(); iter != registry->end(); ++iter) {
-        const MutationObserverRegistration& registration = **iter;
-        if (registration.shouldReceiveMutationFrom(target, type, attributeName)) {
-            MutationRecordDeliveryOptions deliveryOptions = registration.deliveryOptions();
-            WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>::AddResult result = observers.add(&registration.observer(), deliveryOptions);
+
+    for (const auto& registration : *registry) {
+        if (registration->shouldReceiveMutationFrom(target, type, attributeName)) {
+            MutationRecordDeliveryOptions deliveryOptions = registration->deliveryOptions();
+            WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>::AddResult result = observers.add(&registration->observer(), deliveryOptions);
             if (!result.isNewEntry)
                 result.storedValue->value |= deliveryOptions;
         }
@@ -1964,8 +1957,8 @@ void Node::getRegisteredMutationObserversOfType(WillBeHeapHashMap<RawPtrWillBeMe
 
 void Node::registerMutationObserver(MutationObserver& observer, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
 {
-    MutationObserverRegistration* registration = 0;
-    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >& registry = ensureRareData().ensureMutationObserverData().registry;
+    MutationObserverRegistration* registration = nullptr;
+    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>>& registry = ensureRareData().ensureMutationObserverData().registry;
     for (size_t i = 0; i < registry.size(); ++i) {
         if (&registry[i]->observer() == &observer) {
             registration = registry[i].get();
@@ -1983,7 +1976,7 @@ void Node::registerMutationObserver(MutationObserver& observer, MutationObserver
 
 void Node::unregisterMutationObserver(MutationObserverRegistration* registration)
 {
-    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* registry = mutationObserverRegistry();
+    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>>* registry = mutationObserverRegistry();
     ASSERT(registry);
     if (!registry)
         return;
@@ -2012,7 +2005,7 @@ void Node::registerTransientMutationObserver(MutationObserverRegistration* regis
 
 void Node::unregisterTransientMutationObserver(MutationObserverRegistration* registration)
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >* transientRegistry = transientMutationObserverRegistry();
+    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>>* transientRegistry = transientMutationObserverRegistry();
     ASSERT(transientRegistry);
     if (!transientRegistry)
         return;
@@ -2027,14 +2020,14 @@ void Node::notifyMutationObserversNodeWillDetach()
         return;
 
     for (Node* node = parentNode(); node; node = node->parentNode()) {
-        if (WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> >* registry = node->mutationObserverRegistry()) {
+        if (WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>>* registry = node->mutationObserverRegistry()) {
             const size_t size = registry->size();
             for (size_t i = 0; i < size; ++i)
                 registry->at(i)->observedSubtreeNodeWillDetach(*this);
         }
 
-        if (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >* transientRegistry = node->transientMutationObserverRegistry()) {
-            for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> >::iterator iter = transientRegistry->begin(); iter != transientRegistry->end(); ++iter)
+        if (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>>* transientRegistry = node->transientMutationObserverRegistry()) {
+            for (WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>>::iterator iter = transientRegistry->begin(); iter != transientRegistry->end(); ++iter)
                 (*iter)->observedSubtreeNodeWillDetach(*this);
         }
     }
@@ -2309,7 +2302,7 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
     document().updateDistributionForNodeIfNeeded(this);
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
     collectDestinationInsertionPoints(*this, insertionPoints);
-    WillBeHeapVector<RefPtrWillBeMember<Node> > filteredInsertionPoints;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> filteredInsertionPoints;
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* insertionPoint = insertionPoints[i];
         ASSERT(insertionPoint->containingShadowRoot());

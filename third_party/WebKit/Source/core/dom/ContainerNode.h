@@ -37,7 +37,7 @@ class ExceptionState;
 class FloatPoint;
 class HTMLCollection;
 template <typename NodeType> class StaticNodeTypeList;
-typedef StaticNodeTypeList<Element> StaticElementList;
+using StaticElementList = StaticNodeTypeList<Element>;
 class TagCollection;
 
 enum DynamicRestyleFlags {
@@ -59,7 +59,7 @@ enum DynamicRestyleFlags {
 // for a Node Vector that is used to store child Nodes of a given Node.
 // FIXME: Optimize the value.
 const int initialNodeVectorSize = 11;
-typedef WillBeHeapVector<RefPtrWillBeMember<Node>, initialNodeVectorSize> NodeVector;
+using NodeVector = WillBeHeapVector<RefPtrWillBeMember<Node>, initialNodeVectorSize>;
 
 class ContainerNode : public Node {
 public:
@@ -203,7 +203,7 @@ public:
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
-    void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = 0, Element* attributeOwnerElement = 0);
+    void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = nullptr, Element* attributeOwnerElement = nullptr);
 
 #if !ENABLE(OILPAN)
     void removeDetachedChildren();
@@ -283,7 +283,7 @@ inline ContainerNode::ContainerNode(TreeScope* treeScope, ConstructionType type)
 inline void ContainerNode::attachChildren(const AttachContext& context)
 {
     AttachContext childrenContext(context);
-    childrenContext.resolvedStyle = 0;
+    childrenContext.resolvedStyle = nullptr;
 
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         ASSERT(child->needsAttach() || childAttachedAllowedWhenAttachingChildren(this));
@@ -295,7 +295,7 @@ inline void ContainerNode::attachChildren(const AttachContext& context)
 inline void ContainerNode::detachChildren(const AttachContext& context)
 {
     AttachContext childrenContext(context);
-    childrenContext.resolvedStyle = 0;
+    childrenContext.resolvedStyle = nullptr;
 
     for (Node* child = firstChild(); child; child = child->nextSibling())
         child->detach(childrenContext);
@@ -311,27 +311,27 @@ inline unsigned Node::countChildren() const
 inline Node* Node::firstChild() const
 {
     if (!isContainerNode())
-        return 0;
+        return nullptr;
     return toContainerNode(this)->firstChild();
 }
 
 inline Node* Node::lastChild() const
 {
     if (!isContainerNode())
-        return 0;
+        return nullptr;
     return toContainerNode(this)->lastChild();
 }
 
 inline ContainerNode* Node::parentElementOrShadowRoot() const
 {
     ContainerNode* parent = parentNode();
-    return parent && (parent->isElementNode() || parent->isShadowRoot()) ? parent : 0;
+    return parent && (parent->isElementNode() || parent->isShadowRoot()) ? parent : nullptr;
 }
 
 inline ContainerNode* Node::parentElementOrDocumentFragment() const
 {
     ContainerNode* parent = parentNode();
-    return parent && (parent->isElementNode() || parent->isDocumentFragment()) ? parent : 0;
+    return parent && (parent->isElementNode() || parent->isDocumentFragment()) ? parent : nullptr;
 }
 
 inline bool Node::isTreeScope() const

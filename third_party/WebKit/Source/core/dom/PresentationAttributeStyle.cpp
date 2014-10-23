@@ -45,7 +45,7 @@ namespace blink {
 using namespace HTMLNames;
 
 struct PresentationAttributeCacheKey {
-    PresentationAttributeCacheKey() : tagName(0) { }
+    PresentationAttributeCacheKey() : tagName(nullptr) { }
     StringImpl* tagName;
     Vector<std::pair<StringImpl*, AtomicString>, 3> attributesAndValues;
 };
@@ -66,7 +66,7 @@ public:
     RefPtrWillBeMember<StylePropertySet> value;
 };
 
-typedef WillBeHeapHashMap<unsigned, OwnPtrWillBeMember<PresentationAttributeCacheEntry>, AlreadyHashed> PresentationAttributeCache;
+using PresentationAttributeCache = WillBeHeapHashMap<unsigned, OwnPtrWillBeMember<PresentationAttributeCacheEntry>, AlreadyHashed>;
 static PresentationAttributeCache& presentationAttributeCache()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<PresentationAttributeCache>, cache, (adoptPtrWillBeNoop(new PresentationAttributeCache())));
@@ -127,16 +127,15 @@ static void makePresentationAttributeCacheKey(Element& element, PresentationAttr
     if (isHTMLInputElement(element))
         return;
     AttributeCollection attributes = element.attributesWithoutUpdate();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-        if (!element.isPresentationAttribute(it->name()))
+    for (const Attribute& attr : attributes) {
+        if (!element.isPresentationAttribute(attr.name()))
             continue;
-        if (!it->namespaceURI().isNull())
+        if (!attr.namespaceURI().isNull())
             return;
         // FIXME: Background URL may depend on the base URL and can't be shared. Disallow caching.
-        if (it->name() == backgroundAttr)
+        if (attr.name() == backgroundAttr)
             return;
-        result.attributesAndValues.append(std::make_pair(it->localName().impl(), it->value()));
+        result.attributesAndValues.append(std::make_pair(attr.localName().impl(), attr.value()));
     }
     if (result.attributesAndValues.isEmpty())
         return;
@@ -172,7 +171,7 @@ PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Eleme
         if (cacheValue->value && cacheValue->value->key != cacheKey)
             cacheHash = 0;
     } else {
-        cacheValue = 0;
+        cacheValue = nullptr;
     }
 
     RefPtrWillBeRawPtr<StylePropertySet> style = nullptr;
@@ -182,9 +181,8 @@ PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Eleme
     } else {
         style = MutableStylePropertySet::create(element.isSVGElement() ? SVGAttributeMode : HTMLAttributeMode);
         AttributeCollection attributes = element.attributesWithoutUpdate();
-        AttributeCollection::iterator end = attributes.end();
-        for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it)
-            element.collectStyleForPresentationAttribute(it->name(), it->value(), toMutableStylePropertySet(style));
+        for (const Attribute& attr : attributes)
+            element.collectStyleForPresentationAttribute(attr.name(), attr.value(), toMutableStylePropertySet(style));
     }
 
     if (!cacheHash || cacheValue->value)

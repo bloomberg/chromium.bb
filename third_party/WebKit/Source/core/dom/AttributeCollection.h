@@ -42,8 +42,8 @@ namespace blink {
 template <typename Container, typename ContainerMemberType = Container>
 class AttributeCollectionGeneric {
 public:
-    typedef typename Container::ValueType ValueType;
-    typedef ValueType* iterator;
+    using ValueType = typename Container::ValueType;
+    using iterator = ValueType*;
 
     AttributeCollectionGeneric(Container& attributes)
         : m_attributes(attributes)
@@ -76,7 +76,7 @@ protected:
 
 class AttributeArray {
 public:
-    typedef const Attribute ValueType;
+    using ValueType = const Attribute;
 
     AttributeArray(const Attribute* array, unsigned size)
         : m_array(array)
@@ -102,7 +102,7 @@ public:
     { }
 };
 
-typedef Vector<Attribute, 4> AttributeVector;
+using AttributeVector = Vector<Attribute, 4>;
 class MutableAttributeCollection : public AttributeCollectionGeneric<AttributeVector, AttributeVector&> {
 public:
     explicit MutableAttributeCollection(AttributeVector& attributes)
@@ -128,7 +128,7 @@ template <typename Container, typename ContainerMemberType>
 inline typename AttributeCollectionGeneric<Container, ContainerMemberType>::iterator AttributeCollectionGeneric<Container, ContainerMemberType>::find(const AtomicString& name, bool shouldIgnoreCase) const
 {
     size_t index = findIndex(name, shouldIgnoreCase);
-    return index != kNotFound ? &at(index) : 0;
+    return index != kNotFound ? &at(index) : nullptr;
 }
 
 template <typename Container, typename ContainerMemberType>
@@ -177,7 +177,7 @@ inline typename AttributeCollectionGeneric<Container, ContainerMemberType>::iter
         if (it->name().matches(name))
             return it;
     }
-    return 0;
+    return nullptr;
 }
 
 template <typename Container, typename ContainerMemberType>

@@ -586,7 +586,7 @@ static inline Node* childOfCommonRootBeforeOffset(Node* container, unsigned offs
 
 PassRefPtrWillBeRawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionState& exceptionState)
 {
-    typedef WillBeHeapVector<RefPtrWillBeMember<Node> > NodeVector;
+    typedef WillBeHeapVector<RefPtrWillBeMember<Node>> NodeVector;
 
     RefPtrWillBeRawPtr<DocumentFragment> fragment = nullptr;
     if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS)
@@ -752,7 +752,7 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
         }
 
         Node* n = container->firstChild();
-        WillBeHeapVector<RefPtrWillBeMember<Node> > nodes;
+        WillBeHeapVector<RefPtrWillBeMember<Node>> nodes;
         for (unsigned i = startOffset; n && i; i--)
             n = n->nextSibling();
         for (unsigned i = startOffset; n && i < endOffset; i++, n = n->nextSibling())
@@ -765,18 +765,18 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
     return result.release();
 }
 
-void Range::processNodes(ActionType action, WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes, PassRefPtrWillBeRawPtr<Node> oldContainer, PassRefPtrWillBeRawPtr<Node> newContainer, ExceptionState& exceptionState)
+void Range::processNodes(ActionType action, WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes, PassRefPtrWillBeRawPtr<Node> oldContainer, PassRefPtrWillBeRawPtr<Node> newContainer, ExceptionState& exceptionState)
 {
-    for (unsigned i = 0; i < nodes.size(); i++) {
+    for (auto& node : nodes) {
         switch (action) {
         case DELETE_CONTENTS:
-            oldContainer->removeChild(nodes[i].get(), exceptionState);
+            oldContainer->removeChild(node.get(), exceptionState);
             break;
         case EXTRACT_CONTENTS:
-            newContainer->appendChild(nodes[i].release(), exceptionState); // will remove n from its parent
+            newContainer->appendChild(node.release(), exceptionState); // Will remove n from its parent.
             break;
         case CLONE_CONTENTS:
-            newContainer->appendChild(nodes[i]->cloneNode(true), exceptionState);
+            newContainer->appendChild(node->cloneNode(true), exceptionState);
             break;
         }
     }
@@ -784,7 +784,7 @@ void Range::processNodes(ActionType action, WillBeHeapVector<RefPtrWillBeMember<
 
 PassRefPtrWillBeRawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node* container, ContentsProcessDirection direction, PassRefPtrWillBeRawPtr<Node> passedClonedContainer, Node* commonRoot, ExceptionState& exceptionState)
 {
-    typedef WillBeHeapVector<RefPtrWillBeMember<Node> > NodeVector;
+    typedef WillBeHeapVector<RefPtrWillBeMember<Node>> NodeVector;
 
     RefPtrWillBeRawPtr<Node> clonedContainer = passedClonedContainer;
     NodeVector ancestors;
@@ -792,8 +792,7 @@ PassRefPtrWillBeRawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType 
         ancestors.append(n);
 
     RefPtrWillBeRawPtr<Node> firstChildInAncestorToProcess = direction == ProcessContentsForward ? container->nextSibling() : container->previousSibling();
-    for (NodeVector::const_iterator it = ancestors.begin(); it != ancestors.end(); ++it) {
-        RefPtrWillBeRawPtr<Node> ancestor = *it;
+    for (const RefPtrWillBeRawPtr<Node>& ancestor : ancestors) {
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             if (RefPtrWillBeRawPtr<Node> clonedAncestor = ancestor->cloneNode(false)) { // Might have been removed already during mutation event.
                 clonedAncestor->appendChild(clonedContainer, exceptionState);
@@ -811,8 +810,8 @@ PassRefPtrWillBeRawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType 
             child = (direction == ProcessContentsForward) ? child->nextSibling() : child->previousSibling())
             nodes.append(child);
 
-        for (NodeVector::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
-            Node* child = it->get();
+        for (const RefPtrWillBeRawPtr<Node>& node : nodes) {
+            Node* child = node.get();
             switch (action) {
             case DELETE_CONTENTS:
                 // Prior call of ancestor->removeChild() may cause a tree change due to DOMSubtreeModified event.
@@ -1053,23 +1052,23 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
     switch (n->nodeType()) {
         case Node::DOCUMENT_TYPE_NODE:
             exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
-            return 0;
+            return nullptr;
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
         case Node::TEXT_NODE:
             if (static_cast<unsigned>(offset) > toCharacterData(n)->length())
                 exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to the node's length (" + String::number(toCharacterData(n)->length()) + ").");
-            return 0;
+            return nullptr;
         case Node::PROCESSING_INSTRUCTION_NODE:
             if (static_cast<unsigned>(offset) > toProcessingInstruction(n)->data().length())
                 exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to than the node's length (" + String::number(toProcessingInstruction(n)->data().length()) + ").");
-            return 0;
+            return nullptr;
         case Node::ATTRIBUTE_NODE:
         case Node::DOCUMENT_FRAGMENT_NODE:
         case Node::DOCUMENT_NODE:
         case Node::ELEMENT_NODE: {
             if (!offset)
-                return 0;
+                return nullptr;
             Node* childBefore = NodeTraversal::childAt(*n, offset - 1);
             if (!childBefore)
                 exceptionState.throwDOMException(IndexSizeError, "There is no child at offset " + String::number(offset) + ".");
@@ -1077,7 +1076,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
         }
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
@@ -1400,7 +1399,7 @@ Node* Range::firstNode() const
 
 ShadowRoot* Range::shadowRoot() const
 {
-    return startContainer() ? startContainer()->containingShadowRoot() : 0;
+    return startContainer() ? startContainer()->containingShadowRoot() : nullptr;
 }
 
 Node* Range::pastLastNode() const
@@ -1417,9 +1416,8 @@ IntRect Range::boundingBox() const
     IntRect result;
     Vector<IntRect> rects;
     textRects(rects);
-    const size_t n = rects.size();
-    for (size_t i = 0; i < n; ++i)
-        result.unite(rects[i]);
+    for (const IntRect& rect : rects)
+        result.unite(rect);
     return result;
 }
 
@@ -1722,7 +1720,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
     Node* endContainer = m_end.container();
     Node* stopNode = pastLastNode();
 
-    WillBeHeapHashSet<RawPtrWillBeMember<Node> > nodeSet;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node>> nodeSet;
     for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
         if (node->isElementNode())
             nodeSet.add(node);
@@ -1760,12 +1758,10 @@ FloatRect Range::boundingRect() const
 
     Vector<FloatQuad> quads;
     getBorderAndTextQuads(quads);
-    if (quads.isEmpty())
-        return FloatRect();
 
     FloatRect result;
-    for (size_t i = 0; i < quads.size(); ++i)
-        result.unite(quads[i].boundingBox());
+    for (const FloatQuad& quad : quads)
+        result.unite(quad.boundingBox());
 
     return result;
 }
