@@ -27,14 +27,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Fails on all platforms
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         bug=421710)
-    self.Fail('conformance/glsl/misc/struct-unary-operators.html',
-        bug=421709)
-    self.Fail('conformance/renderbuffers/feedback-loop.html',
-        bug=421695)
-
-    # Flaky on Win
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['win'], bug=369349)
 
     # Win failures
     self.Fail('conformance/glsl/misc/struct-equals.html',
@@ -51,12 +43,13 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win'], bug=420357)
     self.Fail('conformance/glsl/misc/ternary-operators-in-global-initializers.html',
         ['win'], bug=415694)
-    self.Fail('conformance/glsl/misc/ternary-operators-in-initializers.html',
-        ['win'], bug=415694)
     # This test still causes itself and any tests afterwards to time out
     # in Win Debug bots.
     self.Skip('conformance/textures/texture-copying-feedback-loops.html',
         ['Win'], bug=421695)
+    # Flaky on Win
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['win'], bug=369349)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
