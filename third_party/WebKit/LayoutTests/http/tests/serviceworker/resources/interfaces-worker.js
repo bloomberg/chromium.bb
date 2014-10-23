@@ -1,5 +1,6 @@
 importScripts('interfaces.js');
 importScripts('worker-testharness.js');
+importScripts('/resources/testharness-helpers.js');
 
 test(function() {
     var EVENT_HANDLER = 'object';
@@ -37,3 +38,20 @@ test(function() {
                       keys: 'function'
                     });
   }, 'Interfaces and attributes in ServiceWorkerGlobalScope');
+
+promise_test(function(t) {
+    return create_temporary_cache(t)
+      .then(function(cache) {
+          verifyInterface('Cache',
+                          cache,
+                          {
+                            match: 'function',
+                            matchAll: 'function',
+                            add: 'function',
+                            addAll: 'function',
+                            put: 'function',
+                            delete: 'function',
+                            keys: 'function'
+                          });
+        });
+  }, 'Cache');
