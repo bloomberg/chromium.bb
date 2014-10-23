@@ -4,8 +4,9 @@ compiler:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y texinfo
-script:
-  - ./autogen.sh && ./configure && make && make check
-  - ./autogen.sh && ./configure --enable-ucs4 && make && make check
+env:
+  - ENABLE_UCS4=
+  - ENABLE_UCS4=--enable-ucs4
+script: "./autogen.sh && ./configure $ENABLE_UCS4 && make && make check"
 notifications:
   irc: "irc.oftc.net#liblouis"
