@@ -32,3 +32,10 @@ class TabSwitchingToughEnergyCases(benchmark.Benchmark):
   test = tab_switching.TabSwitching
   page_set = page_sets.ToughEnergyCasesPageSet
   options = {'pageset_repeat': 10}
+
+
+@benchmark.Disabled  # Just for local testing, not on waterfall.
+class TabSwitchingFlashEnergyCases(benchmark.Benchmark):
+  test = tab_switching.TabSwitching
+  page_set = page_sets.FlashEnergyCasesPageSet
+  options = {'pageset_repeat': 10}

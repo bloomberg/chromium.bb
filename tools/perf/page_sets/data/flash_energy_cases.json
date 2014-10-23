@@ -1,0 +1,13 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "flash_energy_cases_000.wpr": [
+            "http://nos.nl/video/712855-eerste-beelden-na-de-aanslag-in-canada.html", 
+            "http://forum.gazeta.pl/forum/f,17007,Polityka_i_Gospodarka.html", 
+            "http://tinypic.com/", 
+            "https://www.facebook.com/video.php?v=524346051035153&set=vb.134474600022302&type=2&theater", 
+            "http://v.qq.com/cover/d/dm9vn9cnsn2v2gx.html?ptag=v.newplaybutton.program.dpjd", 
+            "http://videos.huffingtonpost.com/politics/protesters-march-to-hong-kong-leaders-home-518476075"
+        ]
+    }
+}
