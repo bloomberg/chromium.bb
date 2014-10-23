@@ -437,6 +437,9 @@ TEST_F(DisplayConfiguratorTest, FindDisplayModeMatchingSize) {
 
   // Fields are width, height, interlaced, refresh rate.
   modes.push_back(new DisplayMode(gfx::Size(1920, 1200), false, 60.0));
+  DisplayMode* native_mode =
+      new DisplayMode(gfx::Size(1920, 1200), false, 50.0);
+  modes.push_back(native_mode);
   // Different rates.
   modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 30.0));
   modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 50.0));
@@ -460,40 +463,42 @@ TEST_F(DisplayConfiguratorTest, FindDisplayModeMatchingSize) {
 
   TestDisplaySnapshot output;
   output.set_modes(modes.get());
+  output.set_native_mode(native_mode);
 
-  EXPECT_EQ(modes[0],
+  // Should pick native over highest refresh rate.
+  EXPECT_EQ(modes[1],
             DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1920, 1200)));
 
   // Should pick highest refresh rate.
-  EXPECT_EQ(modes[2],
+  EXPECT_EQ(modes[3],
             DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1920, 1080)));
 
   // Should pick non-interlaced mode.
-  EXPECT_EQ(modes[6],
+  EXPECT_EQ(modes[7],
             DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1280, 720)));
 
   // Interlaced only. Should pick one with the highest refresh rate in
   // interlaced mode.
-  EXPECT_EQ(modes[9],
+  EXPECT_EQ(modes[10],
             DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1024, 768)));
 
   // Mixed: Should pick one with the highest refresh rate in
   // interlaced mode.
-  EXPECT_EQ(modes[12],
+  EXPECT_EQ(modes[13],
             DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(1024, 600)));
 
   // Just one interlaced mode.
-  EXPECT_EQ(modes[13],
+  EXPECT_EQ(modes[14],
             DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(640, 480)));
 
   // Refresh rate not available.
-  EXPECT_EQ(modes[14],
+  EXPECT_EQ(modes[15],
             DisplayConfigurator::FindDisplayModeMatchingSize(
                 output, gfx::Size(320, 200)));
 

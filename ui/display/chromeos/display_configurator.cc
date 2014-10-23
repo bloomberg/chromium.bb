@@ -129,6 +129,11 @@ const DisplayMode* DisplayConfigurator::FindDisplayModeMatchingSize(
     if (mode->size() != size)
       continue;
 
+    if (mode == display.native_mode()) {
+      best_mode = mode;
+      break;
+    }
+
     if (!best_mode) {
       best_mode = mode;
       continue;
