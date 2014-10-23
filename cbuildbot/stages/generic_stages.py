@@ -29,7 +29,6 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
-from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -773,12 +772,10 @@ class ArchivingStageMixin(object):
       cros_build_lib.Info('Uploading metadata file %s now.', metadata_json)
       self.UploadArtifact(filename, archive=False)
 
-    if cidb.CIDBConnectionFactory.IsCIDBSetup():
-      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-      if db:
-        build_id = self._run.attrs.metadata.GetValue('build_id')
-        cros_build_lib.Info('Writing updated metadata to database for build_id '
-                            '%s.', build_id)
-        db.UpdateMetadata(build_id, self._run.attrs.metadata)
-      else:
-        cros_build_lib.Info('Skipping database update.')
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      cros_build_lib.Info('Writing updated metadata to database for build_id '
+                          '%s.', build_id)
+      db.UpdateMetadata(build_id, self._run.attrs.metadata)
+    else:
+      cros_build_lib.Info('Skipping database update, no database or build_id.')

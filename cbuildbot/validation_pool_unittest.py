@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import ConfigParser
+import collections
 import contextlib
 import copy
 import functools
@@ -25,13 +26,12 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import metadata_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cidb
-from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
@@ -74,6 +74,36 @@ class MockManifest(object):
     self.root = path
     for key, attr in kwargs.iteritems():
       setattr(self, key, attr)
+
+class FakeBuilderRun(object):
+  """A lightweight partial implementation of BuilderRun.
+
+  validation_pool.ValidationPool makes use of a BuilderRun to access
+  cidb and metadata, but does not need to make use of the extensive
+  other BuilderRun features. This lightweight partial reimplementation
+  allows unit tests to be much faster.
+  """
+  def __init__(self, fake_db=None):
+    self.fake_db = fake_db
+    FakeAttrs = collections.namedtuple('FakeAttrs', ['metadata'])
+    self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata())
+
+  def GetCIDBHandle(self):
+    """Get the build_id and cidb handle, if available.
+
+    Returns:
+      A (build_id, CIDBConnection) tuple if fake_db is set up and a build_id is
+      known in metadata. Otherwise, (None, None).
+    """
+    try:
+      build_id = self.attrs.metadata.GetValue('build_id')
+    except KeyError:
+      return (None, None)
+
+    if build_id is not None and self.fake_db:
+      return (build_id, self.fake_db)
+
+    return (None, None)
 
 
 # pylint: disable=W0212,R0904
@@ -606,14 +636,23 @@ class TestPatchSeries(MoxBase):
 
 
 def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
-             builder_name='foon', is_master=True, dryrun=True, **kwargs):
+             builder_name='foon', is_master=True, dryrun=True,
+             fake_db=None, **kwargs):
   """Helper for creating ValidationPool objects for tests."""
   kwargs.setdefault('changes', [])
   build_root = kwargs.pop('build_root', '/fake_root')
 
+  builder_run = FakeBuilderRun(fake_db)
+  if fake_db:
+    build_id = fake_db.InsertBuild(
+        builder_name, constants.WATERFALL_INTERNAL, build_number,
+        'build-config', 'bot hostname')
+    builder_run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+
+
   pool = validation_pool.ValidationPool(
       overlays, build_root, build_number, builder_name, is_master,
-      dryrun, **kwargs)
+      dryrun, builder_run=builder_run, **kwargs)
   return pool
 
 
@@ -660,8 +699,8 @@ class TestSubmitChange(MoxBase):
     change = self.MockPatch(change_id=12345, patch_number=1)
     pool = self.mox.CreateMock(validation_pool.ValidationPool)
     pool.dryrun = False
-    pool._metadata = metadata_lib.CBuildbotMetadata()
-    pool._metadata.UpdateWithDict({'build_id': build_id})
+    pool._run = FakeBuilderRun(self.fake_db)
+    pool._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
     pool._helper_pool = self.mox.CreateMock(validation_pool.HelperPool)
     helper = self.mox.CreateMock(validation_pool.gerrit.GerritHelper)
 
@@ -671,8 +710,7 @@ class TestSubmitChange(MoxBase):
     # Prepare replay script.
     pool._helper_pool.ForChange(change).AndReturn(helper)
     helper.SubmitChange(change, dryrun=False)
-    validation_pool.ValidationPool._InsertCLActionToDatabase(build_id, change,
-                                                             mox.IgnoreArg())
+    pool._InsertCLActionToDatabase(change, mox.IgnoreArg())
     for result in results:
       helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
     self.mox.ReplayAll()
@@ -716,11 +754,8 @@ class ValidationFailureOrTimeout(MoxBase):
 
   def setUp(self):
     self._patches = self.GetPatches(3)
-    self._pool = MakePool(changes=self._patches)
+    self._pool = MakePool(changes=self._patches, fake_db=self.fake_db)
 
-    self.PatchObject(
-        validation_pool.ValidationPool, 'GetCLPreCQStatus',
-        return_value=constants.CL_STATUS_PASSED)
     self.PatchObject(
         validation_pool.CalculateSuspects, 'FindSuspects',
         return_value=self._patches)
@@ -729,7 +764,6 @@ class ValidationFailureOrTimeout(MoxBase):
         return_value=self._PATCH_MESSAGE)
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.PatchObject(validation_pool.ValidationPool, 'RemoveCommitReady')
-    self.PatchObject(validation_pool.ValidationPool, 'UpdateCLPreCQStatus')
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      return_value=self._patches)
     self.PatchObject(validation_pool.CalculateSuspects, 'OnlyLabFailures',
@@ -757,6 +791,8 @@ class ValidationFailureOrTimeout(MoxBase):
     self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
 
   def testPreCQ(self):
+    for change in self._patches:
+      self._pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_PASSED)
     self._pool.pre_cq = True
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
     self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
@@ -797,7 +833,7 @@ class TestCoreLogic(MoxBase):
     return cros_patch.ApplyPatchException(patch, inflight=inflight)
 
   def GetPool(self, changes, applied=(), tot=(), inflight=(), **kwargs):
-    pool = self.MakePool(changes=changes, **kwargs)
+    pool = self.MakePool(changes=changes, fake_db=self.fake_db, **kwargs)
     applied = list(applied)
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
@@ -873,7 +909,7 @@ class TestCoreLogic(MoxBase):
   def testHandleApplySuccess(self):
     """Validate steps taken for successfull application."""
     patch = self.GetPatches(1)
-    pool = self.MakePool()
+    pool = self.MakePool(fake_db=self.fake_db)
     pool.SendNotification(patch, mox.StrContains('has picked up your change'))
     self.mox.ReplayAll()
     pool._HandleApplySuccess(patch)
@@ -1359,127 +1395,6 @@ class TestPrintLinks(MoxBase):
       validation_pool.ValidationPool.PrintLinksToChanges(changes)
 
 
-class TestCLPreCQStatus(MoxBase):
-  """Tests methods related to CL pre-CQ status."""
-  def testGetAndUpdateCLPreCQStatus(self):
-    change = self.GetPatches()
-    # Initial pre-CQ status of a change is None.
-    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     None)
-
-    # Builders can update the CL's pre-CQ status.
-    build_id = self.fake_db.InsertBuild(constants.PRE_CQ_LAUNCHER_NAME,
-        constants.WATERFALL_INTERNAL, 1, constants.PRE_CQ_LAUNCHER_CONFIG,
-        'bot-hostname')
-    validation_pool.ValidationPool.UpdateCLPreCQStatus(
-        change, constants.CL_STATUS_WAITING, build_id)
-    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     constants.CL_STATUS_WAITING)
-
-    validation_pool.ValidationPool.UpdateCLPreCQStatus(
-        change, constants.CL_STATUS_INFLIGHT, build_id)
-    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     constants.CL_STATUS_INFLIGHT)
-
-    # Updating to an invalid status should raise a KeyError, and leave status
-    # unaffected.
-    with self.assertRaises(KeyError):
-      validation_pool.ValidationPool.UpdateCLPreCQStatus(
-          change, 'invalid status', build_id)
-    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     constants.CL_STATUS_INFLIGHT)
-
-    # Recording a cl action that is not a valid pre-cq status should leave
-    # pre-cq status unaffected.
-    self.fake_db.InsertCLActions(
-        build_id,
-        [clactions.CLAction.FromGerritPatchAndAction(change, 'polenta')])
-    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     constants.CL_STATUS_INFLIGHT)
-
-
-class TestCLStatusCounter(MoxBase):
-  """Tests that GetCLActionCount behaves as expected."""
-
-  def setUp(self):
-    validation_pool.ValidationPool.ClearActionCache()
-
-  def tearDown(self):
-    validation_pool.ValidationPool.ClearActionCache()
-
-  def testGetCLActionCount(self):
-    c1p1 = metadata_lib.GerritPatchTuple(1, 1, False)
-    c1p2 = metadata_lib.GerritPatchTuple(1, 2, False)
-    precq_build_id = self.fake_db.InsertBuild(constants.PRE_CQ_LAUNCHER_NAME,
-        constants.WATERFALL_INTERNAL, 1, constants.PRE_CQ_LAUNCHER_CONFIG,
-        'bot-hostname')
-    melon_build_id = self.fake_db.InsertBuild('melon builder name',
-        constants.WATERFALL_INTERNAL, 1, 'melon-config-name',
-        'grape-bot-hostname')
-
-    # Count should be zero before any actions are recorded.
-    self.assertEqual(
-        0,
-        validation_pool.ValidationPool.GetCLActionCount(
-            c1p1, validation_pool.CQ_PIPELINE_CONFIGS,
-            constants.CL_ACTION_KICKED_OUT))
-
-    # Record 3 failures for c1p1, and some other actions. Only count the
-    # actions from builders in validation_pool.CQ_PIPELINE_CONFIGS.
-    self.fake_db.InsertCLActions(
-        precq_build_id,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            c1p1, constants.CL_ACTION_KICKED_OUT)])
-    self.fake_db.InsertCLActions(
-        precq_build_id,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            c1p1, constants.CL_ACTION_PICKED_UP)])
-    self.fake_db.InsertCLActions(
-        precq_build_id,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            c1p1, constants.CL_ACTION_KICKED_OUT)])
-    self.fake_db.InsertCLActions(
-        melon_build_id,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            c1p1, constants.CL_ACTION_KICKED_OUT)])
-
-    # Clear action cache so that it gets refilled.
-    validation_pool.ValidationPool.ClearActionCache()
-
-    self.assertEqual(
-        2,
-        validation_pool.ValidationPool.GetCLActionCount(
-            c1p1, validation_pool.CQ_PIPELINE_CONFIGS,
-            constants.CL_ACTION_KICKED_OUT))
-
-    # Record a failure for c1p2. Now the latest patches failure count should be
-    # 1 (true weather we pass c1p1 or c1p2), whereas the total failure count
-    # should be 3.
-    self.fake_db.InsertCLActions(
-        precq_build_id,
-        [clactions.CLAction.FromGerritPatchAndAction(
-            c1p2, constants.CL_ACTION_KICKED_OUT)])
-
-    validation_pool.ValidationPool.ClearActionCache()
-
-    self.assertEqual(
-        1,
-        validation_pool.ValidationPool.GetCLActionCount(
-            c1p1, validation_pool.CQ_PIPELINE_CONFIGS,
-            constants.CL_ACTION_KICKED_OUT))
-    self.assertEqual(
-        1,
-        validation_pool.ValidationPool.GetCLActionCount(
-            c1p2, validation_pool.CQ_PIPELINE_CONFIGS,
-            constants.CL_ACTION_KICKED_OUT))
-    self.assertEqual(
-        3,
-        validation_pool.ValidationPool.GetCLActionCount(
-            c1p2, validation_pool.CQ_PIPELINE_CONFIGS,
-            constants.CL_ACTION_KICKED_OUT,
-            latest_patchset_only=False))
-
-
 class TestCreateValidationFailureMessage(Base):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
 
@@ -1564,6 +1479,7 @@ class TestCreateValidationFailureMessage(Base):
 
 class TestCreateDisjointTransactions(Base):
   """Test the CreateDisjointTransactions function."""
+
 
   def setUp(self):
     self.patch_mock = self.StartPatcher(MockPatchSeries())
@@ -1691,6 +1607,7 @@ class MockValidationPool(partial_mock.PartialMock):
     return changes
 
   RemoveCommitReady = None
+
 
 
 class BaseSubmitPoolTestCase(Base):

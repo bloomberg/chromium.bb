@@ -39,6 +39,7 @@ from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import validation_pool
+from chromite.lib import cidb
 from chromite.lib import portage_util
 
 
@@ -667,6 +668,27 @@ class _BuilderRunBase(object):
   def ShouldUploadPrebuilts(self):
     """Return True if this run should upload prebuilts."""
     return self.options.prebuilts and self.config.prebuilts
+
+  def GetCIDBHandle(self):
+    """Get the build_id and cidb handle, if available.
+
+    Returns:
+      A (build_id, CIDBConnection) tuple if cidb is set up and a build_id is
+      known in metadata. Otherwise, (None, None).
+    """
+    try:
+      build_id = self.attrs.metadata.GetValue('build_id')
+    except KeyError:
+      return (None, None)
+
+    if not cidb.CIDBConnectionFactory.IsCIDBSetup():
+      return (None, None)
+
+    cidb_handle = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+    if cidb_handle:
+      return (build_id, cidb_handle)
+    else:
+      return (None, None)
 
   def ShouldReexecAfterSync(self):
     """Return True if this run should re-exec itself after sync stage."""

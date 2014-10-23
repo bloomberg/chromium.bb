@@ -139,3 +139,38 @@ def GetCLPreCQStatus(change, action_history):
 
   return TranslatePreCQActionToStatus(actions_for_patch[-1].action)
 
+
+def GetCLActionCount(change, configs, action, action_history,
+                     latest_patchset_only=True):
+  """Return how many times |action| has occured on |change|.
+
+  Args:
+    change: GerritPatch instance to operate upon.
+    configs: List or set of config names to consider.
+    action: The action string to look for.
+    action_history: List of CLAction instances to count through.
+    latest_patchset_only: If True, only count actions that occured to the
+      latest patch number. Note, this may be different than the patch
+      number specified in |change|. Default: True.
+
+  Returns:
+    The count of how many times |action| occured on |change| by the given
+    |config|.
+  """
+  change_number = int(change.gerrit_number)
+  change_source = BoolToChangeSource(change.internal)
+  actions_for_change = [a for a in action_history
+                        if a.change_source == change_source and
+                           a.change_number == change_number]
+
+  if actions_for_change and latest_patchset_only:
+    latest_patch_number = max(a.patch_number for a in actions_for_change)
+    actions_for_change = [a for a in actions_for_change
+                          if a.patch_number == latest_patch_number]
+
+  actions_for_change = [a for a in actions_for_change
+                        if (a.build_config in configs and
+                            a.action == action)]
+
+  return len(actions_for_change)
+

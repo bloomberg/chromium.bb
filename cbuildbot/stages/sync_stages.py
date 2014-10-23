@@ -26,8 +26,8 @@ from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import build_stages
+from chromite.lib import clactions
 from chromite.lib import commandline
-from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -693,15 +693,19 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     filename = self._run.options.validation_pool
     if filename:
       self.pool = validation_pool.ValidationPool.Load(filename,
-          metadata=self._run.attrs.metadata)
+          builder_run=self._run)
     else:
       self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
+  # pylint: disable-msg=W0613
   def _ChangeFilter(self, pool, changes, non_manifest_changes):
     # First, look for changes that were tested by the Pre-CQ.
     changes_to_test = []
+
+    _, db = self._run.GetCIDBHandle()
+    actions_for_changes = db.GetActionsForChanges(changes)
     for change in changes:
-      status = pool.GetCLPreCQStatus(change)
+      status = clactions.GetCLPreCQStatus(change, actions_for_changes)
       if status == constants.CL_STATUS_PASSED:
         changes_to_test.append(change)
 
@@ -722,7 +726,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         manifest, self._run.config.overlays, self.repo,
         self._run.buildnumber, self.builder_name,
         self._run.config.master, self._run.options.debug,
-        metadata=self._run.attrs.metadata)
+        builder_run=self._run)
 
   def _GetLGKMVersionFromManifest(self, manifest):
     manifest_dom = minidom.parse(manifest)
@@ -755,7 +759,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
                             self._run.options.mock_tree_status,
             changes_query=self._run.options.cq_gerrit_override,
             change_filter=self._ChangeFilter, throttled_ok=True,
-            metadata=self._run.attrs.metadata)
+            builder_run=self._run)
 
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
@@ -820,7 +824,7 @@ class PreCQSyncStage(SyncStage):
     filename = self._run.options.validation_pool
     if filename:
       self.pool = validation_pool.ValidationPool.Load(filename,
-          metadata=self._run.attrs.metadata)
+          builder_run=self._run)
 
   def PerformStage(self):
     super(PreCQSyncStage, self).PerformStage()
@@ -828,23 +832,20 @@ class PreCQSyncStage(SyncStage):
         self._run.config.overlays, self._build_root,
         self._run.buildnumber, self._run.config.name,
         dryrun=self._run.options.debug_forced, changes=self.patches,
-        metadata=self._run.attrs.metadata)
+        builder_run=self._run)
     self.pool.ApplyPoolIntoRepo()
 
     if len(self.pool.changes) == 0:
       cros_build_lib.Die('No changes have been applied.')
 
     # Mark changes that are not passed with pre-cq status inflight.
-    if (cidb.CIDBConnectionFactory.IsCIDBSetup() and
-        cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()):
-      build_id = self._run.attrs.metadata.GetValue('build_id')
+    _, db = self._run.GetCIDBHandle()
+    if db:
+      action_history = db.GetActionsForChanges(self.pool.changes)
       for change in self.pool.changes:
-        current_status = validation_pool.ValidationPool.GetCLPreCQStatus(
-            change)
+        current_status = clactions.GetCLPreCQStatus(change, action_history)
         if current_status != constants.CL_STATUS_PASSED:
-          validation_pool.ValidationPool.UpdateCLPreCQStatus(
-              change, constants.CL_STATUS_INFLIGHT,
-              build_id)
+          self.pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_INFLIGHT)
 
 
 class PreCQLauncherStage(SyncStage):
@@ -975,14 +976,12 @@ class PreCQLauncherStage(SyncStage):
 
             pool.SendNotification(change, '%(details)s', details=msg)
             pool.RemoveCommitReady(change)
-            pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED,
-                                     self._build_id)
+            pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED)
             self.retried.discard(change)
           else:
             # Try the change again.
             self.retried.add(change)
-            pool.UpdateCLPreCQStatus(change, self.STATUS_WAITING,
-                                     self._build_id)
+            pool.UpdateCLPreCQStatus(change, self.STATUS_WAITING)
       elif status == self.STATUS_INFLIGHT:
         # Once a Pre-CQ run actually starts, it'll set the status to
         # STATUS_INFLIGHT.
@@ -1001,16 +1000,14 @@ class PreCQLauncherStage(SyncStage):
 
           pool.SendNotification(change, '%(details)s', details=msg)
           pool.RemoveCommitReady(change)
-          pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED,
-                                   self._build_id)
+          pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED)
       elif status == self.STATUS_FAILED:
         # The Pre-CQ run failed for this change. It's possible that we got
         # unlucky and this change was just marked as 'Not Ready' by a bot. To
         # test this, mark the CL as 'waiting' for now. If the CL is still marked
         # as 'Ready' next time we check, we'll know the CL is truly still ready.
         busy.add(change)
-        pool.UpdateCLPreCQStatus(change, self.STATUS_WAITING,
-                                 self._build_id)
+        pool.UpdateCLPreCQStatus(change, self.STATUS_WAITING)
         self._PrintPatchStatus(change, status)
       elif status == self.STATUS_PASSED:
         passed.add(change)
@@ -1036,10 +1033,12 @@ class PreCQLauncherStage(SyncStage):
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
       self._PrintPatchStatus(patch, 'testing')
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
+    _, db = self._run.GetCIDBHandle()
+    action_history = db.GetActionsForChanges(plan)
     for patch in plan:
-      if pool.GetCLPreCQStatus(patch) != self.STATUS_PASSED:
-        pool.UpdateCLPreCQStatus(patch, self.STATUS_LAUNCHING,
-                                 self._build_id)
+      if clactions.GetCLPreCQStatus(patch,
+                                    action_history) != self.STATUS_PASSED:
+        pool.UpdateCLPreCQStatus(patch, self.STATUS_LAUNCHING)
 
   def GetDisjointTransactionsToTest(self, pool, changes, status_map):
     """Get the list of disjoint transactions to test.
@@ -1092,8 +1091,10 @@ class PreCQLauncherStage(SyncStage):
     """
     # Get change status.
     status_map = {}
+    _, db = self._run.GetCIDBHandle()
+    action_history = db.GetActionsForChanges(changes)
     for change in changes:
-      status = pool.GetCLPreCQStatus(change)
+      status = clactions.GetCLPreCQStatus(change, action_history)
       status_map[change] = status
 
     # Launch trybots for manifest changes.
@@ -1124,4 +1125,4 @@ class PreCQLauncherStage(SyncStage):
         dryrun=self._run.options.debug,
         changes_query=self._run.options.cq_gerrit_override,
         check_tree_open=False, change_filter=self.ProcessChanges,
-        metadata=self._run.attrs.metadata)
+        builder_run=self._run)

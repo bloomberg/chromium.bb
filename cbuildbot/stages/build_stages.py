@@ -17,7 +17,6 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
-from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -291,12 +290,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
           self._current_board, update_dict)
 
       # Write board metadata update to cidb
-      if cidb.CIDBConnectionFactory.IsCIDBSetup():
-        db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-        if db:
-          build_id = self._run.attrs.metadata.GetValue('build_id')
-          db.UpdateBoardPerBuildMetadata(build_id, self._current_board,
-                                         update_dict)
+      build_id, db = self._run.GetCIDBHandle()
+      if db:
+        db.UpdateBoardPerBuildMetadata(build_id, self._current_board,
+                                       update_dict)
 
 
 class BuildImageStage(BuildPackagesStage):

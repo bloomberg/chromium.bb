@@ -27,6 +27,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import cidb
+from chromite.lib import clactions
 from chromite.lib import fake_cidb
 from chromite.lib import gerrit
 from chromite.lib import git_unittest
@@ -361,19 +362,16 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     # an "Inflight" action for the same change.
     original_method = validation_pool.ValidationPool.UpdateCLPreCQStatus
 
-    def new_method(change, status, build_id):
-      original_method(change, status, build_id)
+    def new_method(target, change, status):
+      original_method(target, change, status)
       if (status == self.STATUS_LAUNCHING):
-        new_build_id = self.fake_db.InsertBuild('Pre cq group',
-                                                constants.WATERFALL_TRYBOT,
-                                                1,
-                                                constants.PRE_CQ_GROUP_CONFIG,
-                                                'bot-hostname')
-        original_method(change, self.STATUS_INFLIGHT,
-                        new_build_id)
+        # This is going to pretend to insert the inflight action from the same
+        # build_id as the pre-cq-launcher. In reality, that action would be
+        # inserted by another builder.
+        original_method(target, change, self.STATUS_INFLIGHT)
 
     self.PatchObject(validation_pool.ValidationPool, 'UpdateCLPreCQStatus',
-                     side_effect=new_method)
+                     new_method)
 
 
   def _Prepare(self, bot_id=None, **kwargs):
@@ -410,16 +408,19 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     """Test launching a trybot."""
     change = self._testCommitManifestChange()[0]
 
-    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     self.STATUS_LAUNCHING)
+    self.assertEqual(self._GetPreCQStatus(change), self.STATUS_LAUNCHING)
 
   def testLaunchTrybotWithAutolaunch(self):
     """Test launching a trybot with auto-launch."""
     self._PrepareAutoLaunch()
     change = self._testCommitManifestChange()[0]
 
-    self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     self.STATUS_INFLIGHT)
+    self.assertEqual(self._GetPreCQStatus(change), self.STATUS_INFLIGHT)
+
+  def _GetPreCQStatus(self, change):
+    """Helper method to get pre-cq status of a CL from fake_db."""
+    action_history = self.fake_db.GetActionsForChanges([change])
+    return clactions.GetCLPreCQStatus(change, action_history)
 
   def runTrybotTest(self, launching=0, waiting=0, failed=0, runs=0):
     """Helper function for testing PreCQLauncher.
@@ -430,18 +431,19 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     respectively.
     """
     change = self._testCommitManifestChange(runs=runs)[0]
+
     # Count the number of recorded actions corresponding to launching, watiting,
     # and failed, and ensure they are correct.
-    validation_pool.ValidationPool.ClearActionCache()
-
     expected = (launching, waiting, failed)
     actions = (constants.CL_ACTION_PRE_CQ_LAUNCHING,
                constants.CL_ACTION_PRE_CQ_WAITING,
                constants.CL_ACTION_PRE_CQ_FAILED)
 
+    action_history = self.fake_db.GetActionsForChanges([change])
+
     for exp, action in zip(expected, actions):
-      cnt = validation_pool.ValidationPool.GetCLActionCount(
-          change, [constants.PRE_CQ_LAUNCHER_CONFIG], action)
+      cnt = clactions.GetCLActionCount(
+          change, [constants.PRE_CQ_LAUNCHER_CONFIG], action, action_history)
       self.assertEqual(
           exp, cnt, '%s != %s (action=%s)' % (exp, cnt, action))
 
@@ -468,7 +470,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testSubmit(self):
     """Test submission of patches."""
-    self.PatchObject(validation_pool.ValidationPool, 'GetCLPreCQStatus',
+    self.PatchObject(clactions, 'GetCLPreCQStatus',
                      return_value=self.STATUS_READY_TO_SUBMIT)
     m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
     self.runTrybotTest(runs=1)

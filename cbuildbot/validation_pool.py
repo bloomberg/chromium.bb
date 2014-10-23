@@ -27,7 +27,6 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import tree_status
-from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
@@ -1347,13 +1346,10 @@ class ValidationPool(object):
   # errors.
   REJECTION_GRACE_PERIOD = 30 * 60
 
-  # Cache for the action history of CLs.
-  _CL_ACTION_HISTORY_CACHE = {}
-
 
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, pre_cq=False, metadata=None):
+               conflicting_changes=None, pre_cq=False, builder_run=None):
     """Initializes an instance by setting default variables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -1374,8 +1370,8 @@ class ValidationPool(object):
         because they conflict with other changes in flight.
       pre_cq: If set to True, this builder is verifying CLs before they go to
         the commit queue.
-      metadata: Optional CBuildbotMetadata instance where CL actions will
-                be recorded.
+      builder_run: Optional BuilderRun instance used to fetch cidb handle and
+        metadata instance.
     """
 
     self.build_root = build_root
@@ -1416,7 +1412,7 @@ class ValidationPool(object):
 
     self.is_master = bool(is_master)
     self.pre_cq = pre_cq
-    self._metadata = metadata
+    self._run = builder_run
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
     self.queue = 'A trybot' if pre_cq else 'The Commit Queue'
     self.bot = PRE_CQ if pre_cq else CQ
@@ -1480,11 +1476,11 @@ class ValidationPool(object):
 
   def __reduce__(self):
     """Used for pickling to re-create validation pool."""
-    # NOTE: self._metadata is specifically excluded from the validation pool
+    # NOTE: self._run is specifically excluded from the validation pool
     # pickle. We do not want the un-pickled validation pool to have a reference
-    # to its own un-pickled metadata instance. Instead, we want to to refer
-    # to the builder run's metadata instance. This is accomplished by setting
-    # metadata at un-pickle time, in ValidationPool.Load(...).
+    # to its own un-pickled BuilderRun instance. Instead, we want to to refer
+    # to the new builder run's metadata instance. This is accomplished by
+    # setting the BuilderRun at un-pickle time, in ValidationPool.Load(...).
     return (
         self.__class__,
         (
@@ -1584,7 +1580,7 @@ class ValidationPool(object):
   @classmethod
   def AcquirePool(cls, overlays, repo, build_number, builder_name,
                   dryrun=False, changes_query=None, check_tree_open=True,
-                  change_filter=None, throttled_ok=False, metadata=None):
+                  change_filter=None, throttled_ok=False, builder_run=None):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which changes are ready to be committed.
@@ -1604,8 +1600,8 @@ class ValidationPool(object):
         non_manifest_changes) to filter out unwanted patches.
       throttled_ok: if |check_tree_open|, treat a throttled tree as open.
                     Default: True.
-      metadata: Optional CBuildbotMetadata instance where CL actions will
-                be recorded.
+      builder_run: Optional BuilderRun instance used to record CL actions to
+        metadata and cidb.
 
     Returns:
       ValidationPool object.
@@ -1653,7 +1649,7 @@ class ValidationPool(object):
 
       # Only master configurations should call this method.
       pool = ValidationPool(overlays, repo.directory, build_number,
-                            builder_name, True, dryrun, metadata=metadata)
+                            builder_name, True, dryrun, builder_run=builder_run)
 
       draft_changes = []
       # Iterate through changes from all gerrit instances we care about.
@@ -1730,7 +1726,8 @@ class ValidationPool(object):
 
   @classmethod
   def AcquirePoolFromManifest(cls, manifest, overlays, repo, build_number,
-                              builder_name, is_master, dryrun, metadata=None):
+                              builder_name, is_master, dryrun,
+                              builder_run=None):
     """Acquires the current pool from a given manifest.
 
     This function assumes that you have already synced to the given manifest.
@@ -1744,14 +1741,14 @@ class ValidationPool(object):
       is_master: Boolean that indicates whether this is a pool for a master.
         config or not.
       dryrun: Don't submit anything to gerrit.
-      metadata: Optional CBuildbotMetadata instance where CL actions will
-                be recorded.
+      builder_run: Optional BuilderRun instance used to record CL actions to
+        metadata and cidb.
 
     Returns:
       ValidationPool object.
     """
     pool = ValidationPool(overlays, repo.directory, build_number, builder_name,
-                          is_master, dryrun, metadata=metadata)
+                          is_master, dryrun, builder_run=builder_run)
     pool.AddPendingCommitsIntoPool(manifest)
     pool.RecordPatchesInMetadataAndDatabase()
     return pool
@@ -1921,16 +1918,19 @@ class ValidationPool(object):
         self._HandleApplyFailure(errors)
         raise
 
-      # Completely fill the action cache.
-      self._FillCLActionCache(applied)
-      for change in applied:
-        change.total_fail_count = self.GetCLActionCount(
-            change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_KICKED_OUT,
-            latest_patchset_only=False)
-        change.fail_count = self.GetCLActionCount(
-            change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_KICKED_OUT)
-        change.pass_count = self.GetCLActionCount(
-            change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_SUBMIT_FAILED)
+      _, db = self._run.GetCIDBHandle()
+      if db:
+        action_history = db.GetActionsForChanges(applied)
+        for change in applied:
+          change.total_fail_count = clactions.GetCLActionCount(
+              change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_KICKED_OUT,
+              action_history, latest_patchset_only=False)
+          change.fail_count = clactions.GetCLActionCount(
+              change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_KICKED_OUT,
+              action_history)
+          change.pass_count = clactions.GetCLActionCount(
+              change, CQ_PIPELINE_CONFIGS, constants.CL_ACTION_SUBMIT_FAILED,
+              action_history)
 
     else:
       # Slaves do not need to create transactions and should simply
@@ -1976,18 +1976,18 @@ class ValidationPool(object):
     return bool(self.changes)
 
   @staticmethod
-  def Load(filename, metadata=None):
+  def Load(filename, builder_run=None):
     """Loads the validation pool from the file.
 
     Args:
       filename: path of file to load from.
-      metadata: Optional CBuildbotInstance to use as metadata object
-                for loaded pool (as metadata instances do not survive
-                pickle/unpickle)
+      builder_run: Optional BuilderRun instance to use in unpickled
+        validation pool, used for fetching cidb handle for access to
+        metadata.
     """
     with open(filename, 'rb') as p_file:
       pool = cPickle.load(p_file)
-      pool._metadata = metadata
+      pool._run = builder_run
       return pool
 
   def Save(self, filename):
@@ -2138,26 +2138,24 @@ class ValidationPool(object):
   def RecordPatchesInMetadataAndDatabase(self):
     """Mark all patches as having been picked up in metadata.json and cidb.
 
-    If self._metadata is None, then this function does nothing.
+    If self._run is None, then this function does nothing.
     """
-    if not self._metadata:
+    if not self._run:
       return
 
-    using_db = (cidb.CIDBConnectionFactory.IsCIDBSetup() and
-                cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder())
+    metadata = self._run.attrs.metadata
 
-    build_id = self._metadata.GetValue('build_id') if using_db else 0
+    _, db = self._run.GetCIDBHandle()
 
     timestamp = int(time.time())
     for change in self.changes:
-      self._metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
-                                    timestamp)
+      metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
+                              timestamp)
       # TODO(akeshet): If a separate query for each insert here becomes
       # a performance issue, consider batch inserting all the cl actions
       # with a single query.
-      if using_db:
-        ValidationPool._InsertCLActionToDatabase(build_id, change,
-                                                 constants.CL_ACTION_PICKED_UP)
+      if db:
+        self._InsertCLActionToDatabase(change, constants.CL_ACTION_PICKED_UP)
 
   @classmethod
   def FilterModifiedChanges(cls, changes):
@@ -2247,15 +2245,17 @@ class ValidationPool(object):
         logging.error('Most likely gerrit was unable to merge change %s.',
                       change.gerrit_number_str)
 
-    if self._metadata:
+    if self._run:
+      metadata = self._run.attrs.metadata
       if was_change_submitted:
         action = constants.CL_ACTION_SUBMITTED
       else:
         action = constants.CL_ACTION_SUBMIT_FAILED
       timestamp = int(time.time())
-      build_id = self._metadata.GetValue('build_id')
-      self._metadata.RecordCLAction(change, action, timestamp)
-      ValidationPool._InsertCLActionToDatabase(build_id, change, action)
+      metadata.RecordCLAction(change, action, timestamp)
+      _, db = self._run.GetCIDBHandle()
+      if db:
+        self._InsertCLActionToDatabase(change, action)
 
     return was_change_submitted
 
@@ -2263,32 +2263,27 @@ class ValidationPool(object):
     """Remove the commit ready bit for the specified |change|."""
     self._helper_pool.ForChange(change).RemoveCommitReady(change,
         dryrun=self.dryrun)
-    if self._metadata:
-      build_id = self._metadata.GetValue('build_id')
+    if self._run:
+      metadata = self._run.attrs.metadata
+      _, db = self._run.GetCIDBHandle()
       timestamp = int(time.time())
-      self._metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT,
-                                    timestamp)
-      ValidationPool._InsertCLActionToDatabase(build_id, change,
-                                               constants.CL_ACTION_KICKED_OUT)
+      metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT,
+                              timestamp)
+      if db:
+        self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT)
 
-  @classmethod
-  def _InsertCLActionToDatabase(cls, build_id, change, action, timestamp=None):
+  def _InsertCLActionToDatabase(self, change, action):
     """If cidb is set up and not None, insert given cl action to cidb.
 
     Args:
-      build_id: The build id of the build taking the action.
       change: A GerritPatch or GerritPatchTuple object.
       action: The action taken, should be one of constants.CL_ACTIONS
-      timestamp: An integer timestamp such as int(time.time()) at which
-                 the action was taken. Default: Now.
     """
-    if cidb.CIDBConnectionFactory.IsCIDBSetup():
-      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-      if db:
-        db.InsertCLActions(
-            build_id,
-            [clactions.CLAction.FromGerritPatchAndAction(change, action,
-                                                         timestamp)])
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      db.InsertCLActions(
+          build_id,
+          [clactions.CLAction.FromGerritPatchAndAction(change, action)])
 
   def SubmitNonManifestChanges(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
@@ -2508,23 +2503,26 @@ class ValidationPool(object):
     ok_statuses = (constants.CL_STATUS_PASSED,
                    constants.CL_STATUS_READY_TO_SUBMIT)
 
-    build_id = self._metadata.GetValue('build_id')
+    _, db = self._run.GetCIDBHandle()
+    action_history = db.GetActionsForChanges(self.changes)
 
     def ProcessChange(change):
-      if self.GetCLPreCQStatus(change) not in ok_statuses:
+      # Note: This function has no unit test coverage. Be careful when
+      # modifying.
+      if clactions.GetCLPreCQStatus(change, action_history) not in ok_statuses:
         self.SendNotification(change, msg)
-        if self._metadata:
+        if self._run:
+          metadata = self._run.attrs.metadata
           timestamp = int(time.time())
           # Record both a VERIFIED action for this builder, and also a pre-CQ
           # PASSED status. In the future, not all pre-cq builders will
           # necessarily write a PASSED status. Instead, the pre-cq-launcher will
           # wait until the relevant builders have VERIFIED the CL, before
           # marking it as PASSED.
-          self._metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
-                                        timestamp)
-          ValidationPool._InsertCLActionToDatabase(build_id, change,
-                                                   constants.CL_ACTION_VERIFIED)
-          self.UpdateCLPreCQStatus(change, new_status, build_id)
+          metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
+                                  timestamp)
+          self._InsertCLActionToDatabase(change, constants.CL_ACTION_VERIFIED)
+          self.UpdateCLPreCQStatus(change, new_status)
 
     # Set the new statuses in parallel.
     inputs = [[change] for change in self.changes]
@@ -2682,10 +2680,17 @@ class ValidationPool(object):
     changes = self.ReloadChanges(changes)
 
     candidates = []
+
+    _, db = self._run.GetCIDBHandle()
+    action_history = []
+    if db:
+      action_history = db.GetActionsForChanges(changes)
+
     for change in changes:
       # Pre-CQ ignores changes that were already verified.
-      if (self.pre_cq and
-          self.GetCLPreCQStatus(change) == constants.CL_STATUS_PASSED):
+      pre_cq_status = clactions.GetCLPreCQStatus(
+          change, action_history)
+      if (self.pre_cq and pre_cq_status == constants.CL_STATUS_PASSED):
         continue
       candidates.append(change)
 
@@ -2738,8 +2743,10 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
+    _, db = self._run.GetCIDBHandle()
+    action_history = db.GetActionsForChanges([change])
     if self.pre_cq:
-      status = self.GetCLPreCQStatus(change)
+      status = clactions.GetCLPreCQStatus(change, action_history)
       if status == constants.CL_STATUS_PASSED:
         return
     msg = ('%(queue)s has picked up your change. '
@@ -2747,95 +2754,10 @@ class ValidationPool(object):
     self.SendNotification(change, msg)
 
 
-  @classmethod
-  def GetCLPreCQStatus(cls, change):
-    """Get the status for |change| on |bot|.
-
-    To ensure that the latest status is used, the action cache for |change|
-    will be filled.
-
-    Args:
-      change: GerritPatch instance to operate upon.
-
-    Returns:
-      The status, as a string, or None if there is no recorded pre-cq status.
-    """
-    # Always refresh the action cache, so we get the latest status.
-    cls._FillCLActionCache([change])
-    return clactions.GetCLPreCQStatus(change,
-                                      cls._CL_ACTION_HISTORY_CACHE[change])
-
-
-  @classmethod
-  def UpdateCLPreCQStatus(cls, change, status, build_id):
+  def UpdateCLPreCQStatus(self, change, status):
     """Update the pre-CQ |status| of |change|."""
     action = clactions.TranslatePreCQStatusToAction(status)
-    ValidationPool._InsertCLActionToDatabase(build_id, change, action)
-
-
-  @classmethod
-  def GetCLActionCount(cls, change, configs, action, latest_patchset_only=True):
-    """Return how many times |action| has occured on |change|.
-
-    If |change|'s action history cache has not already been filled by a call
-    to _FillCLActionCache, it will be filled.
-
-    Args:
-      configs: List or set of config names to consider.
-      change: GerritPatch instance to operate upon.
-      action: The action string to look for.
-      latest_patchset_only: If True, only count actions that occured to the
-        latest patch number. Note, this may be different than the patch
-        number specified in |change|. Default: True.
-
-    Returns:
-      The count of how many times |action| occured on |change| by the given
-      |config|.
-    """
-    if change not in cls._CL_ACTION_HISTORY_CACHE:
-      cls._FillCLActionCache([change])
-
-    actions_for_change = cls._CL_ACTION_HISTORY_CACHE[change]
-
-    if actions_for_change and latest_patchset_only:
-      latest_patch_number = max(a.patch_number for a in actions_for_change)
-      actions_for_change = [a for a in actions_for_change
-                            if a.patch_number == latest_patch_number]
-
-    actions_for_change = [a for a in actions_for_change
-                          if (a.build_config in configs and
-                              a.action == action)]
-
-    return len(actions_for_change)
-
-
-  @classmethod
-  def _FillCLActionCache(cls, changes):
-    """Cache action history of |changes|.
-
-    If no cidb connection is set up, or a None connection has been set up,
-    pretend that all the |changes| have an empty list of actions.
-
-    Args:
-      changes: Changes to cache, of type GerritPatch.
-    """
-    if (not cidb.CIDBConnectionFactory.IsCIDBSetup() or
-        not cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()):
-      for c in changes:
-        cls._CL_ACTION_HISTORY_CACHE[c] = []
-      return
-
-    db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-    # Fetch action history for changes, serially. In a follow-up CL all the
-    # actions will be fetched in a single query.
-    for change in changes:
-      cls._CL_ACTION_HISTORY_CACHE[change] = db.GetActionsForChanges([change])
-
-
-  @classmethod
-  def ClearActionCache(cls):
-    """Clear action history cache."""
-    cls._CL_ACTION_HISTORY_CACHE = {}
+    self._InsertCLActionToDatabase(change, action)
 
 
   def CreateDisjointTransactions(self, manifest, max_txn_length=None):

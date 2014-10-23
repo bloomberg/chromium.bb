@@ -115,6 +115,9 @@ class BuildStartStage(generic_stages.BuilderStage):
                    d['build_id'])
       return
 
+    # Note: In other build stages we use self._run.GetCIDBHandle to fetch
+    # a cidb handle. However, since we don't yet have a build_id, we can't
+    # do that here.
     if cidb.CIDBConnectionFactory.IsCIDBSetup():
       db_type = cidb.CIDBConnectionFactory.GetCIDBConnectionType()
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
@@ -130,7 +133,8 @@ class BuildStartStage(generic_stages.BuilderStage):
              master_build_id=d['master_build_id'])
         self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
                                                  'db_type': db_type})
-        logging.info('Inserted build_id %s into cidb database.', build_id)
+        logging.info('Inserted build_id %s into cidb database type %s.',
+                     build_id, db_type)
 
 
   def HandleSkip(self):
@@ -232,19 +236,17 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
     # Write child-per-build and board-per-build rows to database
-    if cidb.CIDBConnectionFactory.IsCIDBSetup():
-      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-      if db:
-        build_id = self._run.attrs.metadata.GetValue('build_id')
-        # TODO(akeshet): replace this with a GetValue call once crbug.com/406522
-        # is resolved
-        per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
-        for board, board_metadata in per_board_dict.items():
-          db.InsertBoardPerBuild(build_id, board)
-          if board_metadata:
-            db.UpdateBoardPerBuildMetadata(build_id, board, board_metadata)
-        for child_config in self._run.attrs.metadata.GetValue('child-configs'):
-          db.InsertChildConfigPerBuild(build_id, child_config['name'])
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      # TODO(akeshet): replace this with a GetValue call once crbug.com/406522
+      # is resolved
+      per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
+      for board, board_metadata in per_board_dict.items():
+        db.InsertBoardPerBuild(build_id, board)
+        if board_metadata:
+          db.UpdateBoardPerBuildMetadata(build_id, board, board_metadata)
+      for child_config in self._run.attrs.metadata.GetValue('child-configs'):
+        db.InsertChildConfigPerBuild(build_id, child_config['name'])
 
 
 class ReportStage(generic_stages.BuilderStage,
@@ -508,27 +510,25 @@ class ReportStage(generic_stages.BuilderStage,
 
     retry_stats.ReportStats(sys.stdout)
 
-    if cidb.CIDBConnectionFactory.IsCIDBSetup():
-      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-      if db:
-        build_id = self._run.attrs.metadata.GetValue('build_id')
-        # TODO(akeshet): Eliminate this status string translate once
-        # these differing status strings are merged, crbug.com/318930
-        if final_status == constants.FINAL_STATUS_PASSED:
-          status_for_db = constants.BUILDER_STATUS_PASSED
-        else:
-          status_for_db = constants.BUILDER_STATUS_FAILED
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      # TODO(akeshet): Eliminate this status string translate once
+      # these differing status strings are merged, crbug.com/318930
+      if final_status == constants.FINAL_STATUS_PASSED:
+        status_for_db = constants.BUILDER_STATUS_PASSED
+      else:
+        status_for_db = constants.BUILDER_STATUS_FAILED
 
-        # TODO(akeshet): Consider uploading the status pickle to the database,
-        # (by specifying that argument to FinishBuild), or come up with a
-        # pickle-free mechanism to describe failure details in database.
-        # TODO(akeshet): Find a clearer way to get the "primary upload url" for
-        # the metadata.json file. One alternative is _GetUploadUrls(...)[0].
-        # Today it seems that element 0 of its return list is the primary upload
-        # url, but there is no guarantee or unit test coverage of that.
-        metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
-        db.FinishBuild(build_id, status=status_for_db,
-                       metadata_url=metadata_url)
+      # TODO(akeshet): Consider uploading the status pickle to the database,
+      # (by specifying that argument to FinishBuild), or come up with a
+      # pickle-free mechanism to describe failure details in database.
+      # TODO(akeshet): Find a clearer way to get the "primary upload url" for
+      # the metadata.json file. One alternative is _GetUploadUrls(...)[0].
+      # Today it seems that element 0 of its return list is the primary upload
+      # url, but there is no guarantee or unit test coverage of that.
+      metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
+      db.FinishBuild(build_id, status=status_for_db,
+                     metadata_url=metadata_url)
 
 
 class RefreshPackageStatusStage(generic_stages.BuilderStage):
