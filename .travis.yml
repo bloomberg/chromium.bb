@@ -1,12 +1,23 @@
+# define liblouis so that Travis CI service can build and test it
+
 language: c
+
 compiler:
   - gcc
+
+# make sure we have texinfo
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y texinfo
+
+# let's have two parallel builds. One with ucs4 disabled and the other
+# enabling it
 env:
   - ENABLE_UCS4=
   - ENABLE_UCS4=--enable-ucs4
+
 script: "./autogen.sh && ./configure $ENABLE_UCS4 && make && make check"
+
+# tell the irc channel about the results of the build
 notifications:
   irc: "irc.oftc.net#liblouis"
