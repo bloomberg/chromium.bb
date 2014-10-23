@@ -1039,8 +1039,6 @@ bool BrowserOptionsHandler::ShouldShowMultiProfilesUserList() {
   // On Chrome OS we use different UI for multi-profiles.
   return false;
 #else
-  if (helper::GetDesktopType(web_ui()) != chrome::HOST_DESKTOP_TYPE_NATIVE)
-    return false;
   Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->IsGuestSession())
     return false;

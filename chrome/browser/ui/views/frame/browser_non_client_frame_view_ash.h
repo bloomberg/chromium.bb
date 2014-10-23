@@ -115,8 +115,9 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // accoutrements.
   bool UseWebAppHeaderStyle() const;
 
-  // Layout the incognito icon.
+  // Layout the avatar button.
   void LayoutAvatar();
+  void LayoutNewStyleAvatar();
 
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.

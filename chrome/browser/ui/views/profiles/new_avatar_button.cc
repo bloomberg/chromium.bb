@@ -53,8 +53,6 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
   SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
   SetTextColor(views::Button::STATE_HOVERED, SK_ColorWHITE);
   SetTextColor(views::Button::STATE_PRESSED, SK_ColorWHITE);
-  SetTextShadows(gfx::ShadowValues(10,
-      gfx::ShadowValue(gfx::Point(), 1.0f, SK_ColorDKGRAY)));
   SetTextSubpixelRenderingEnabled(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
@@ -74,7 +72,8 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
     generic_avatar_ =
         *rb->GetImageNamed(IDR_AVATAR_THEMED_BUTTON_AVATAR).ToImageSkia();
 #if defined(OS_WIN)
-  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
+             browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_NORMAL);
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_HOVER);
     const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_PRESSED);
@@ -185,6 +184,12 @@ void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
 
   SetText(use_generic_button ? base::string16() :
       profiles::GetAvatarButtonTextForProfile(browser_->profile()));
+
+  // If the button has no text, clear the text shadows to make sure the
+  // image is centered correctly.
+  SetTextShadows(use_generic_button ? gfx::ShadowValues() : gfx::ShadowValues(
+      10, gfx::ShadowValue(gfx::Point(), 1.0f, SK_ColorDKGRAY)));
+
   // We want the button to resize if the new text is shorter.
   SetMinSize(gfx::Size());
 
