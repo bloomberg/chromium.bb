@@ -8,6 +8,7 @@
     <output filename="grit/ui_resources_map.h" type="resource_map_header" context="default_100_percent" />
     <output filename="ui_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="ui_resources_200_percent.pak" type="data_package" context="default_200_percent" />
+    <output filename="ui_resources_300_percent.pak" type="data_package" context="default_300_percent" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">
