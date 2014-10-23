@@ -12,13 +12,14 @@
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/app_list/app_list_item_observer.h"
-#include "ui/gfx/geometry/rect.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace app_list {
 
 class AppListItemList;
-
-typedef std::vector<gfx::Rect> Rects;
 
 // AppListFolderItem implements the model/controller for folders.
 class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
@@ -70,7 +71,8 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons in sequence of top left, top right,
   // bottom left, bottom right.
-  static Rects GetTopIconsBounds(const gfx::Rect& folder_icon_bounds);
+  static std::vector<gfx::Rect> GetTopIconsBounds(
+      const gfx::Rect& folder_icon_bounds);
 
   // Returns an id for a new folder.
   static std::string GenerateId();

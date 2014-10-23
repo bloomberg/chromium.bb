@@ -194,7 +194,7 @@ void AppsContainerView::SetShowState(ShowState show_state,
   Layout();
 }
 
-Rects AppsContainerView::GetTopItemIconBoundsInActiveFolder() {
+std::vector<gfx::Rect> AppsContainerView::GetTopItemIconBoundsInActiveFolder() {
   // Get the active folder's icon bounds relative to AppsContainerView.
   AppListItemView* folder_item_view =
       apps_grid_view_->activated_folder_item_view();

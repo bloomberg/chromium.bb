@@ -8,6 +8,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -62,7 +63,7 @@ class FolderImageSource : public gfx::CanvasImageSource {
     // Draw top items' icons.
     const gfx::Size item_icon_size =
         gfx::Size(kItemIconDimension, kItemIconDimension);
-    Rects top_icon_bounds =
+    std::vector<gfx::Rect> top_icon_bounds =
         AppListFolderItem::GetTopIconsBounds(gfx::Rect(size()));
 
     for (size_t i= 0; i < kNumFolderTopItems && i < icons_.size(); ++i) {
@@ -115,7 +116,8 @@ gfx::Rect AppListFolderItem::GetTargetIconRectInFolderForItem(
     const gfx::Rect& folder_icon_bounds) {
   for (size_t i = 0; i < top_items_.size(); ++i) {
     if (item->id() == top_items_[i]->id()) {
-      Rects rects = AppListFolderItem::GetTopIconsBounds(folder_icon_bounds);
+      std::vector<gfx::Rect> rects =
+          AppListFolderItem::GetTopIconsBounds(folder_icon_bounds);
       return rects[i];
     }
   }
@@ -134,11 +136,11 @@ void AppListFolderItem::Activate(int event_flags) {
 const char AppListFolderItem::kItemType[] = "FolderItem";
 
 // static
-Rects AppListFolderItem::GetTopIconsBounds(
+std::vector<gfx::Rect> AppListFolderItem::GetTopIconsBounds(
     const gfx::Rect& folder_icon_bounds) {
   const int delta_to_center = 1;
   gfx::Point icon_center = folder_icon_bounds.CenterPoint();
-  Rects top_icon_bounds;
+  std::vector<gfx::Rect> top_icon_bounds;
 
   // Get the top left icon bounds.
   int left_x = icon_center.x() - kItemIconDimension - delta_to_center;

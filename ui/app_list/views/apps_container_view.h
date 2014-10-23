@@ -11,6 +11,10 @@
 #include "ui/app_list/views/top_icon_animation_view.h"
 #include "ui/views/view.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace app_list {
 
 class AppsGridView;
@@ -85,7 +89,7 @@ class AppsContainerView : public views::View,
   // is relative to AppsContainerView.
   // Returns the bounds of top items' icon in sequence of top left, top right,
   // bottom left, bottom right.
-  Rects GetTopItemIconBoundsInActiveFolder();
+  std::vector<gfx::Rect> GetTopItemIconBoundsInActiveFolder();
 
   // Creates the transitional views for animating the top items in the folder
   // when opening or closing a folder.
