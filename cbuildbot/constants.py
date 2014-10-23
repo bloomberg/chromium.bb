@@ -481,6 +481,17 @@ CL_ACTION_REQUEUED = 'requeued'           # Recorded for a change when it is
                                           # noticed that a previously rejected
                                           # patch is again in the queue.
 
+# Recorded by pre-cq launcher when it has screened a change for necessary
+# tryjobs
+CL_ACTION_SCREENED_FOR_PRE_CQ = 'screened_for_pre_cq'
+# Recorded by pre-cq launcher for each tryjob config necessary to validate
+# a change, with |reason| field specifying the config.
+CL_ACTION_VALIDATION_PENDING_PRE_CQ = 'validation_pending_pre_cq'
+
+# Recorded by CQ slaves builds when a picked-up CL is determined to be
+# irrelevant to that slave build.
+CL_ACTION_IRRELEVANT_TO_SLAVE = 'irrelevant_to_slave'
+
 CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_SUBMITTED,
               CL_ACTION_KICKED_OUT,
@@ -492,7 +503,10 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_PRE_CQ_LAUNCHING,
               CL_ACTION_PRE_CQ_WAITING,
               CL_ACTION_PRE_CQ_READY_TO_SUBMIT,
-              CL_ACTION_REQUEUED]
+              CL_ACTION_REQUEUED,
+              CL_ACTION_SCREENED_FOR_PRE_CQ,
+              CL_ACTION_VALIDATION_PENDING_PRE_CQ,
+              CL_ACTION_IRRELEVANT_TO_SLAVE]
 
 # CQ types.
 CQ = 'cq'
