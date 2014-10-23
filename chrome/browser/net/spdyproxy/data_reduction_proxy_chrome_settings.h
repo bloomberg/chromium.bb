@@ -37,7 +37,7 @@ class DataReductionProxyChromeSettings
       data_reduction_proxy::DataReductionProxyParams* params);
 
   // Destructs the settings object.
-  virtual ~DataReductionProxyChromeSettings();
+  ~DataReductionProxyChromeSettings() override;
 
   // Initialize the settings object with the given configurator, prefs services,
   // and request context.

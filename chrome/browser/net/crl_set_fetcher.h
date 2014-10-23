@@ -33,16 +33,16 @@ class CRLSetFetcher : public component_updater::ComponentInstaller,
   void DeleteFromDisk(const base::FilePath& path);
 
   // ComponentInstaller interface
-  virtual void OnUpdateError(int error) override;
-  virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) override;
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) override;
+  void OnUpdateError(int error) override;
+  bool Install(const base::DictionaryValue& manifest,
+               const base::FilePath& unpack_path) override;
+  bool GetInstalledFile(const std::string& file,
+                        base::FilePath* installed_file) override;
 
  private:
   friend class base::RefCountedThreadSafe<CRLSetFetcher>;
 
-  virtual ~CRLSetFetcher();
+  ~CRLSetFetcher() override;
 
   // GetCRLSetbase::FilePath gets the path of the CRL set file in the user data
   // dir.

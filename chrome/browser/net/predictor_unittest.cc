@@ -705,10 +705,10 @@ TEST_F(PredictorTest, DiscardPredictorResults) {
 class TestPredictorObserver : public PredictorObserver {
  public:
   // PredictorObserver implementation:
-  virtual void OnPreconnectUrl(const GURL& url,
-                               const GURL& first_party_for_cookies,
-                               UrlInfo::ResolutionMotivation motivation,
-                               int count) override {
+  void OnPreconnectUrl(const GURL& url,
+                       const GURL& first_party_for_cookies,
+                       UrlInfo::ResolutionMotivation motivation,
+                       int count) override {
     preconnected_urls_.push_back(url);
   }
 

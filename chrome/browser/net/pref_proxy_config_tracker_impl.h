@@ -35,16 +35,13 @@ class ChromeProxyConfigService
   // GetLatestProxyConfig returns ConfigAvailability::CONFIG_PENDING until
   // UpdateProxyConfig has been called.
   explicit ChromeProxyConfigService(net::ProxyConfigService* base_service);
-  virtual ~ChromeProxyConfigService();
+  ~ChromeProxyConfigService() override;
 
   // ProxyConfigService implementation:
-  virtual void AddObserver(
-      net::ProxyConfigService::Observer* observer) override;
-  virtual void RemoveObserver(
-      net::ProxyConfigService::Observer* observer) override;
-  virtual ConfigAvailability GetLatestProxyConfig(
-      net::ProxyConfig* config) override;
-  virtual void OnLazyPoll() override;
+  void AddObserver(net::ProxyConfigService::Observer* observer) override;
+  void RemoveObserver(net::ProxyConfigService::Observer* observer) override;
+  ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config) override;
+  void OnLazyPoll() override;
 
   // Method on IO thread that receives the preference proxy settings pushed from
   // PrefProxyConfigTrackerImpl.
@@ -53,8 +50,8 @@ class ChromeProxyConfigService
 
  private:
   // ProxyConfigService::Observer implementation:
-  virtual void OnProxyConfigChanged(const net::ProxyConfig& config,
-                                    ConfigAvailability availability) override;
+  void OnProxyConfigChanged(const net::ProxyConfig& config,
+                            ConfigAvailability availability) override;
 
   // Makes sure that the observer registration with the base service is set up.
   void RegisterObserver();
@@ -85,15 +82,15 @@ class ChromeProxyConfigService
 class PrefProxyConfigTrackerImpl : public PrefProxyConfigTracker {
  public:
   explicit PrefProxyConfigTrackerImpl(PrefService* pref_service);
-  virtual ~PrefProxyConfigTrackerImpl();
+  ~PrefProxyConfigTrackerImpl() override;
 
   // PrefProxyConfigTracker implementation:
-  virtual scoped_ptr<net::ProxyConfigService> CreateTrackingProxyConfigService(
+  scoped_ptr<net::ProxyConfigService> CreateTrackingProxyConfigService(
       scoped_ptr<net::ProxyConfigService> base_service) override;
 
   // Notifies the tracker that the pref service passed upon construction is
   // about to go away. This must be called from the UI thread.
-  virtual void DetachFromPrefService() override;
+  void DetachFromPrefService() override;
 
   // Determines if |config_state| takes precedence regardless, which happens if
   // config is from policy or extension or other-precede.

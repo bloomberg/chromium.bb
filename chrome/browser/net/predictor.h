@@ -619,18 +619,18 @@ class SimplePredictor : public Predictor {
  public:
   explicit SimplePredictor(bool preconnect_enabled, bool predictor_enabled)
       : Predictor(preconnect_enabled, predictor_enabled) {}
-  virtual ~SimplePredictor() {}
-  virtual void InitNetworkPredictor(
-      PrefService* user_prefs,
-      PrefService* local_state,
-      IOThread* io_thread,
-      net::URLRequestContextGetter* getter,
-      ProfileIOData* profile_io_data) override;
-  virtual void ShutdownOnUIThread() override;
+  ~SimplePredictor() override {}
+  void InitNetworkPredictor(PrefService* user_prefs,
+                            PrefService* local_state,
+                            IOThread* io_thread,
+                            net::URLRequestContextGetter* getter,
+                            ProfileIOData* profile_io_data) override;
+  void ShutdownOnUIThread() override;
+
  private:
   // These member functions return True for unittests.
-  virtual bool CanPrefetchAndPrerender() const override;
-  virtual bool CanPreresolveAndPreconnect() const override;
+  bool CanPrefetchAndPrerender() const override;
+  bool CanPreresolveAndPreconnect() const override;
 };
 
 }  // namespace chrome_browser_net

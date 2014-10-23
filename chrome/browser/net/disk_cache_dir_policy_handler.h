@@ -15,11 +15,11 @@ namespace policy {
 class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   DiskCacheDirPolicyHandler();
-  virtual ~DiskCacheDirPolicyHandler();
+  ~DiskCacheDirPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DiskCacheDirPolicyHandler);

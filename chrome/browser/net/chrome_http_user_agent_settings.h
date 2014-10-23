@@ -21,13 +21,13 @@ class ChromeHttpUserAgentSettings : public net::HttpUserAgentSettings {
   // Must be called on the UI thread.
   explicit ChromeHttpUserAgentSettings(PrefService* prefs);
   // Must be called on the IO thread.
-  virtual ~ChromeHttpUserAgentSettings();
+  ~ChromeHttpUserAgentSettings() override;
 
   void CleanupOnUIThread();
 
   // net::HttpUserAgentSettings implementation
-  virtual std::string GetAcceptLanguage() const override;
-  virtual std::string GetUserAgent() const override;
+  std::string GetAcceptLanguage() const override;
+  std::string GetUserAgent() const override;
 
  private:
   StringPrefMember pref_accept_language_;

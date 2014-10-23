@@ -23,7 +23,7 @@ class NetLogTempFile;
 class ChromeNetLog : public net::NetLog {
  public:
   ChromeNetLog();
-  virtual ~ChromeNetLog();
+  ~ChromeNetLog() override;
 
   NetLogTempFile* net_log_temp_file() {
     return net_log_temp_file_.get();

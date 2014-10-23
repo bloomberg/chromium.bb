@@ -38,12 +38,11 @@ class ProxyAdvisor : public net::URLRequest::Delegate {
  public:
   ProxyAdvisor(PrefService* pref_service,
                net::URLRequestContextGetter* context_getter);
-  virtual ~ProxyAdvisor();
+  ~ProxyAdvisor() override;
 
   // net::URLRequest::Delegate callbacks.
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   // Tell the advisor that |url| is being preconnected or pre-resolved and why.
   // If |url| would be proxied (according to WouldProxyURL()), the ProxyAdvisor

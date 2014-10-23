@@ -33,12 +33,12 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   int mock_sent_count() const { return mock_sent_count_; }
 
  private:
-  virtual void StartDnsProbe() override {
+  void StartDnsProbe() override {
     EXPECT_FALSE(mock_probe_running_);
     mock_probe_running_ = true;
   }
 
-  virtual void SendInfo() override {
+  void SendInfo() override {
     last_status_sent_ = dns_probe_status();
     mock_sent_count_++;
   }

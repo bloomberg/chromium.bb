@@ -24,7 +24,7 @@ class ChromeFraudulentCertificateReporter
   explicit ChromeFraudulentCertificateReporter(
       net::URLRequestContext* request_context);
 
-  virtual ~ChromeFraudulentCertificateReporter();
+  ~ChromeFraudulentCertificateReporter() override;
 
   // Allows users of this class to override this and set their own URLRequest
   // type. Used by SendReport.
@@ -32,13 +32,12 @@ class ChromeFraudulentCertificateReporter
       net::URLRequestContext* context);
 
   // net::FraudulentCertificateReporter
-  virtual void SendReport(const std::string& hostname,
-                          const net::SSLInfo& ssl_info) override;
+  void SendReport(const std::string& hostname,
+                  const net::SSLInfo& ssl_info) override;
 
   // net::URLRequest::Delegate
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
  protected:
   net::URLRequestContext* const request_context_;

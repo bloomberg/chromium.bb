@@ -59,9 +59,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
         storage_(this),
         weak_factory_(this) {}
 
-  virtual ~ExperimentURLRequestContext() {
-    AssertNoURLRequests();
-  }
+  ~ExperimentURLRequestContext() override { AssertNoURLRequests(); }
 
   // Creates a proxy config service for |experiment|. On success returns net::OK
   // and fills |config_service| with a new pointer. Otherwise returns a network
@@ -318,9 +316,8 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
   void Run(const Experiment& experiment);
 
   // Overridden from net::URLRequest::Delegate:
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
   // TODO(eroman): handle cases requiring authentication.
 
  private:

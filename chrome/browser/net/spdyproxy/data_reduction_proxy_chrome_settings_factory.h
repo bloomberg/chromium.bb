@@ -36,10 +36,10 @@ class DataReductionProxyChromeSettingsFactory
 
   DataReductionProxyChromeSettingsFactory();
 
-  virtual ~DataReductionProxyChromeSettingsFactory();
+  ~DataReductionProxyChromeSettingsFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyChromeSettingsFactory);

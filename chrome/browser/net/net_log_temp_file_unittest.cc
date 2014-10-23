@@ -25,13 +25,13 @@ class TestNetLogTempFile : public NetLogTempFile {
   }
 
   // NetLogTempFile implementation:
-  virtual bool GetNetExportLogDirectory(base::FilePath* path) override {
+  bool GetNetExportLogDirectory(base::FilePath* path) override {
     if (lie_about_net_export_log_directory_)
       return false;
     return NetLogTempFile::GetNetExportLogDirectory(path);
   }
 
-  virtual bool NetExportLogExists() override {
+  bool NetExportLogExists() override {
     if (lie_about_file_existence_)
       return false;
     return NetLogTempFile::NetExportLogExists();

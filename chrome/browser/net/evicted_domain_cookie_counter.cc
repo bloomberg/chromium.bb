@@ -28,10 +28,9 @@ class DelegateImpl : public EvictedDomainCookieCounter::Delegate {
   DelegateImpl();
 
   // EvictedDomainCookieCounter::Delegate implementation.
-  virtual void Report(
-      const EvictedDomainCookieCounter::EvictedCookie& evicted_cookie,
-      const Time& reinstatement_time) override;
-  virtual Time CurrentTime() const override;
+  void Report(const EvictedDomainCookieCounter::EvictedCookie& evicted_cookie,
+              const Time& reinstatement_time) override;
+  Time CurrentTime() const override;
 };
 
 DelegateImpl::DelegateImpl() {}

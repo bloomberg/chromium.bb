@@ -33,7 +33,7 @@ class NetErrorTabHelper
   typedef base::Callback<void(chrome_common_net::DnsProbeStatus)>
       DnsProbeStatusSnoopCallback;
 
-  virtual ~NetErrorTabHelper();
+  ~NetErrorTabHelper() override;
 
   static void set_state_for_testing(TestingState testing_state);
 
@@ -46,26 +46,25 @@ class NetErrorTabHelper
   }
 
   // content::WebContentsObserver implementation.
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
 
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
 
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;
 
-  virtual void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description) override;
+  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url,
+                              int error_code,
+                              const base::string16& error_description) override;
 
  protected:
   // |contents| is the WebContents of the tab this NetErrorTabHelper is

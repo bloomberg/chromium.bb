@@ -33,12 +33,12 @@ class DnsProbeService : public net::NetworkChangeNotifier::DNSObserver {
       ProbeCallback;
 
   DnsProbeService();
-  virtual ~DnsProbeService();
+  ~DnsProbeService() override;
 
   virtual void ProbeDns(const ProbeCallback& callback);
 
   // NetworkChangeNotifier::DNSObserver implementation:
-  virtual void OnDNSChanged() override;
+  void OnDNSChanged() override;
 
   void SetSystemClientForTesting(scoped_ptr<net::DnsClient> system_client);
   void SetPublicClientForTesting(scoped_ptr<net::DnsClient> public_client);

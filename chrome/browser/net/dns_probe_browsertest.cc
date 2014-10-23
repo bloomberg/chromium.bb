@@ -78,11 +78,9 @@ class DelayingDnsProbeService : public DnsProbeService {
  public:
   DelayingDnsProbeService() {}
 
-  virtual ~DelayingDnsProbeService() {
-    EXPECT_TRUE(delayed_probes_.empty());
-  }
+  ~DelayingDnsProbeService() override { EXPECT_TRUE(delayed_probes_.empty()); }
 
-  virtual void ProbeDns(const ProbeCallback& callback) override {
+  void ProbeDns(const ProbeCallback& callback) override {
     delayed_probes_.push_back(callback);
   }
 
@@ -143,7 +141,7 @@ class DelayableURLRequestFailedJob : public URLRequestFailedJob,
         start_delayed_(false),
         destruction_callback_(destruction_callback) {}
 
-  virtual void Start() override {
+  void Start() override {
     if (should_delay_) {
       DCHECK(!start_delayed_);
       start_delayed_ = true;
@@ -152,7 +150,7 @@ class DelayableURLRequestFailedJob : public URLRequestFailedJob,
     URLRequestFailedJob::Start();
   }
 
-  virtual void Resume() override {
+  void Resume() override {
     DCHECK(should_delay_);
     should_delay_ = false;
     if (start_delayed_) {
@@ -162,7 +160,7 @@ class DelayableURLRequestFailedJob : public URLRequestFailedJob,
   }
 
  private:
-  virtual ~DelayableURLRequestFailedJob() {
+  ~DelayableURLRequestFailedJob() override {
     if (should_delay_)
       destruction_callback_.Run(this);
   }
@@ -191,7 +189,7 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
         start_delayed_(false),
         destruction_callback_(destruction_callback) {}
 
-  virtual void Start() override {
+  void Start() override {
     if (should_delay_) {
       DCHECK(!start_delayed_);
       start_delayed_ = true;
@@ -200,7 +198,7 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
     URLRequestMockHTTPJob::Start();
   }
 
-  virtual void Resume() override {
+  void Resume() override {
     DCHECK(should_delay_);
     should_delay_ = false;
     if (start_delayed_) {
@@ -210,7 +208,7 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
   }
 
  private:
-  virtual ~DelayableURLRequestMockHTTPJob() {
+  ~DelayableURLRequestMockHTTPJob() override {
     if (should_delay_)
       destruction_callback_.Run(this);
   }
@@ -235,12 +233,12 @@ class BreakableCorrectionInterceptor : public URLRequestInterceptor {
                        base::Unretained(this))) {
   }
 
-  virtual ~BreakableCorrectionInterceptor() {
+  ~BreakableCorrectionInterceptor() override {
     // All delayed requests should have been resumed or cancelled by this point.
     EXPECT_TRUE(delayed_requests_.empty());
   }
 
-  virtual URLRequestJob* MaybeInterceptRequest(
+  URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,
       NetworkDelegate* network_delegate) const override {
     if (net_error_ != net::OK) {
@@ -433,8 +431,8 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
   DnsProbeBrowserTest();
   virtual ~DnsProbeBrowserTest();
 
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
  protected:
   // Sets the browser object that other methods apply to, and that has the

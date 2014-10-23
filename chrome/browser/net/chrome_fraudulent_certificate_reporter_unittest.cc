@@ -82,14 +82,14 @@ class SendingTestReporter : public TestReporter {
 
   // Passes if invoked with a good SSLInfo and for a hostname that is a Google
   // pinned property.
-  virtual void SendReport(const std::string& hostname,
-                          const SSLInfo& ssl_info) override {
+  void SendReport(const std::string& hostname,
+                  const SSLInfo& ssl_info) override {
     EXPECT_TRUE(IsGoodSSLInfo(ssl_info));
     EXPECT_TRUE(net::TransportSecurityState::IsGooglePinnedProperty(hostname));
     passed_ = true;
   }
 
-  virtual ~SendingTestReporter() {
+  ~SendingTestReporter() override {
     // If the object is destroyed without having its SendReport method invoked,
     // we failed.
     EXPECT_TRUE(passed_);
@@ -105,8 +105,8 @@ class NotSendingTestReporter : public TestReporter {
 
   // Passes if invoked with a bad SSLInfo and for a hostname that is not a
   // Google pinned property.
-  virtual void SendReport(const std::string& hostname,
-                          const SSLInfo& ssl_info) override {
+  void SendReport(const std::string& hostname,
+                  const SSLInfo& ssl_info) override {
     EXPECT_FALSE(IsGoodSSLInfo(ssl_info));
     EXPECT_FALSE(net::TransportSecurityState::IsGooglePinnedProperty(hostname));
   }
@@ -119,7 +119,7 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
   explicit MockReporter(net::URLRequestContext* request_context)
     : ChromeFraudulentCertificateReporter(request_context) {}
 
-  virtual scoped_ptr<net::URLRequest> CreateURLRequest(
+  scoped_ptr<net::URLRequest> CreateURLRequest(
       net::URLRequestContext* context) override {
     return context->CreateRequest(GURL(std::string()),
                                   net::DEFAULT_PRIORITY,
@@ -127,9 +127,8 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
                                   NULL);
   }
 
-  virtual void SendReport(
-      const std::string& hostname,
-      const net::SSLInfo& ssl_info) override {
+  void SendReport(const std::string& hostname,
+                  const net::SSLInfo& ssl_info) override {
     DCHECK(!hostname.empty());
     DCHECK(ssl_info.is_valid());
     ChromeFraudulentCertificateReporter::SendReport(hostname, ssl_info);

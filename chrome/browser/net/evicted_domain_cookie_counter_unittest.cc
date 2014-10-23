@@ -35,10 +35,9 @@ class EvictedDomainCookieCounterTest : public testing::Test {
     explicit MockDelegate(EvictedDomainCookieCounterTest* tester);
 
     // EvictedDomainCookieCounter::Delegate implementation.
-    virtual void Report(
-        const EvictedDomainCookieCounter::EvictedCookie& evicted_cookie,
-        const Time& reinstatement_time) override;
-    virtual Time CurrentTime() const override;
+    void Report(const EvictedDomainCookieCounter::EvictedCookie& evicted_cookie,
+                const Time& reinstatement_time) override;
+    Time CurrentTime() const override;
 
    private:
     EvictedDomainCookieCounterTest* tester_;
@@ -184,16 +183,16 @@ TEST_F(EvictedDomainCookieCounterTest, TestChain) {
    public:
     explicit ChangedDelegateDummy(int* result) : result_(result) {}
 
-    virtual void OnCookieChanged(const net::CanonicalCookie& cookie,
-                                 bool removed,
-                                 ChangeCause cause) override {
+    void OnCookieChanged(const net::CanonicalCookie& cookie,
+                         bool removed,
+                         ChangeCause cause) override {
       ++(*result_);
     }
 
-    virtual void OnLoaded() override {}
+    void OnLoaded() override {}
 
    private:
-    virtual ~ChangedDelegateDummy() {}
+    ~ChangedDelegateDummy() override {}
 
     int* result_;
   };

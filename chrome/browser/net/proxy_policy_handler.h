@@ -37,13 +37,13 @@ class ProxyPolicyHandler : public ConfigurationPolicyHandler {
   };
 
   ProxyPolicyHandler();
-  virtual ~ProxyPolicyHandler();
+  ~ProxyPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  virtual bool CheckPolicySettings(const PolicyMap& policies,
-                                   PolicyErrorMap* errors) override;
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) override;
+  bool CheckPolicySettings(const PolicyMap& policies,
+                           PolicyErrorMap* errors) override;
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override;
 
  private:
   const base::Value* GetProxyPolicyValue(const PolicyMap& policies,
