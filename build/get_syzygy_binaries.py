@@ -46,9 +46,7 @@ _RESOURCES = [
   ('benchmark.zip', 'benchmark', '', None),
   ('binaries.zip', 'binaries', 'exe', None),
   ('symbols.zip', 'symbols', 'exe',
-      lambda x: x.filename.endswith('.dll.pdb')),
-  ('include.zip', 'include', 'include', None),
-  ('lib.zip', 'library', 'lib', None)]
+      lambda x: x.filename.endswith('.dll.pdb'))]
 
 
 def _Shell(*cmd, **kw):
