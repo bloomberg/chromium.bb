@@ -22,6 +22,9 @@ div { direction: ltr; all: initial; color: red; }
 div { all: initial; font-size: 10px; }
 
 div { all: initial; width: inherit; }
+
+div { all: unset; }
+div { all: unset; color: red; }
 </style>
 <script>
 description('Test for crbug.com/172051: all shorthand property.');
@@ -32,7 +35,7 @@ function contains(cssText, property) {
 
 var cssRules = document.styleSheets[1].cssRules;
 
-shouldBe('cssRules.length', '16');
+shouldBe('cssRules.length', '18');
 shouldBe('cssRules[0].cssText', '"div { all: initial; }"');
 shouldNotBe('cssRules[1].cssText', '"div { all: initial; color: red; }"');
 shouldBeTrue('contains(cssRules[1].cssText, "color: red;")');
@@ -67,14 +70,17 @@ shouldBe('cssRules[11].cssText', '"div { all: initial; direction: rtl; }"');
 shouldBe('cssRules[12].cssText', '"div { direction: ltr; unicode-bidi: bidi-override; all: initial !important; }"');
 
 shouldBeFalse('contains(cssRules[13].cssText, "all: initial;")');
+shouldBeFalse('contains(cssRules[13].cssText, "-internal-")');
 shouldBeTrue('contains(cssRules[13].cssText, "direction: ltr;")');
 shouldBeTrue('contains(cssRules[13].cssText, "color: red;")');
 
 shouldBeFalse('contains(cssRules[14].cssText, "all: initial;")');
+shouldBeFalse('contains(cssRules[14].cssText, "-internal-")');
 shouldBeFalse('contains(cssRules[14].cssText, "font: initial;")');
 shouldBeTrue('contains(cssRules[14].cssText, "font-family: initial;")');
 
 shouldBeFalse('contains(cssRules[15].cssText, "all: initial;")');
+shouldBeFalse('contains(cssRules[15].cssText, "-internal-")');
 shouldBeFalse('contains(cssRules[14].cssText, "font: initial;")');
 shouldBeFalse('contains(cssRules[14].cssText, "marker: initial;")');
 shouldBeTrue('contains(cssRules[15].cssText, "width: inherit;")');
@@ -83,4 +89,11 @@ shouldBeTrue('contains(cssRules[15].cssText, "max-width: initial;")');
 shouldBeTrue('contains(cssRules[15].cssText, "marker-start: initial;")');
 shouldBeTrue('contains(cssRules[15].cssText, "marker-mid: initial;")');
 shouldBeTrue('contains(cssRules[15].cssText, "marker-end: initial;")');
+
+shouldBe('cssRules[16].cssText', '"div { all: unset; }"');
+shouldBeFalse('contains(cssRules[17].cssText, "all: unset;")');
+shouldBeTrue('contains(cssRules[17].cssText, "color: red;")');
+<!-- FIXME: when using "all: unset", the all should be expanded to be -->
+<!-- "display: unset; ..." -->
+shouldBeTrue('contains(cssRules[17].cssText, "display: unset;")');
 </script>
