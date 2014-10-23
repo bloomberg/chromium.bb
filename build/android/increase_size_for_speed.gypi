@@ -18,6 +18,22 @@
               'cflags!': ['-Os'],
               'cflags': ['-O2'],
             }],
+            # Do not merge -Os and -O2 in LTO.
+            # LTO merges all optimization options at link-time. -O2 takes
+            # precedence over -Os. Avoid using LTO simultaneously
+            # on -Os and -O2 parts for that reason.
+            ['use_lto==1', {
+              'cflags!': [
+                '-flto',
+                '-ffat-lto-objects',
+              ],
+            }],
+            ['use_lto_o2==1', {
+              'cflags': [
+                '-flto',
+                '-ffat-lto-objects',
+              ],
+            }],
           ],
         }],
       ],

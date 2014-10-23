@@ -2624,6 +2624,11 @@
         '../components/components.gyp:dom_distiller_core',
         '../sync/sync.gyp:sync',
       ],
+      'includes': [
+        # Disable LTO due to undefined reference
+        # crbug.com/422252
+        '../build/android/disable_lto.gypi',
+      ],
       'conditions': [
         ['OS != "ios"', {
           'sources': [

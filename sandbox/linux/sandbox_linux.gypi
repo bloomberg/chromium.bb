@@ -153,6 +153,11 @@
       'defines': [
         'SANDBOX_IMPLEMENTATION',
       ],
+      'includes': [
+        # Disable LTO due to compiler bug
+        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57703
+        '../../build/android/disable_lto.gypi',
+      ],
       'include_dirs': [
         '../..',
       ],

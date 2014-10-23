@@ -29,6 +29,11 @@
       'sources': [
         '<@(gles2_implementation_source_files)',
       ],
+      'includes': [
+        # Disable LTO due to ELF section name out of range
+        # crbug.com/422251
+        '../build/android/disable_lto.gypi',
+      ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
@@ -479,6 +484,9 @@
           'includes': [
             'command_buffer_service.gypi',
             '../build/android/increase_size_for_speed.gypi',
+            # Disable LTO due to ELF section name out of range
+            # crbug.com/422251
+            '../build/android/disable_lto.gypi',
           ],
           'dependencies': [
             'command_buffer_common',

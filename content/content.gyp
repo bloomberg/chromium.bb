@@ -150,6 +150,9 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'includes': [
             'content_browser.gypi',
+            # Disable LTO due to ELF section name out of range
+            # crbug.com/422251
+            '../build/android/disable_lto.gypi',
           ],
           'dependencies': [
             'content_common',
