@@ -2635,6 +2635,7 @@ _release.add_config('rush-release',
 _release.add_config('rush_ryu-release',
   non_testable_builder,
   boards=['rush_ryu'],
+  useflags=_release['useflags'] + ['highdpi'],
   hw_tests=[],
   usepkg_toolchain=False,
 )
