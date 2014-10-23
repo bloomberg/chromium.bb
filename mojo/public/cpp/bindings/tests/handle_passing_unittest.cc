@@ -166,7 +166,7 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
 
 class HandlePassingTest : public testing::Test {
  public:
-  virtual void TearDown() { PumpMessages(); }
+  void TearDown() override { PumpMessages(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 

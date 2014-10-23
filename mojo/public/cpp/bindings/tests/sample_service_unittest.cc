@@ -312,7 +312,7 @@ class SimpleMessageReceiver : public mojo::MessageReceiverWithResponder {
 class BindingsSampleTest : public testing::Test {
  public:
   BindingsSampleTest() {}
-  virtual ~BindingsSampleTest() {}
+  ~BindingsSampleTest() override {}
 
  private:
   mojo::Environment env_;

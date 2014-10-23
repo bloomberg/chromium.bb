@@ -5,24 +5,23 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_context.h"
 
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
 
 namespace mojo {
 class ApplicationImpl;
 
-void ConnectCallback(bool success) {}
-
 class ViewManagerContext::InternalState {
  public:
-  InternalState(ApplicationImpl* application_impl) {
-    application_impl->ConnectToService("mojo:view_manager", &init_service_);
+  explicit InternalState(ApplicationImpl* application_impl) {
+    application_impl->ConnectToService("mojo:window_manager", &wm_);
   }
   ~InternalState() {}
 
-  ViewManagerInitService* init_service() { return init_service_.get(); }
+  WindowManager* wm() { return wm_.get(); }
 
  private:
-  ViewManagerInitServicePtr init_service_;
+  WindowManagerPtr wm_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(InternalState);
 };
@@ -47,7 +46,7 @@ scoped_ptr<ServiceProvider> ViewManagerContext::Embed(
     BindToProxy(registry, &sp);
     imported_services.reset(registry->CreateRemoteServiceProvider());
   }
-  state_->init_service()->Embed(url, sp.Pass(), base::Bind(&ConnectCallback));
+  state_->wm()->Embed(url, MakeRequest<ServiceProvider>(sp.PassMessagePipe()));
   return imported_services.Pass();
 }
 

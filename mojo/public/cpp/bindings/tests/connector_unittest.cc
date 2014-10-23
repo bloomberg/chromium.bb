@@ -75,11 +75,9 @@ class ConnectorTest : public testing::Test {
  public:
   ConnectorTest() {}
 
-  virtual void SetUp() override {
-    CreateMessagePipe(nullptr, &handle0_, &handle1_);
-  }
+  void SetUp() override { CreateMessagePipe(nullptr, &handle0_, &handle1_); }
 
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   void AllocMessage(const char* text, Message* message) {
     size_t payload_size = strlen(text) + 1;  // Plus null terminator.

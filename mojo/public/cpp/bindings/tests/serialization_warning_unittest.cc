@@ -40,7 +40,7 @@ Array<Array<ScopedHandle>> CreateTestNestedHandleArray() {
 
 class SerializationWarningTest : public testing::Test {
  public:
-  virtual ~SerializationWarningTest() {}
+  ~SerializationWarningTest() override {}
 
  protected:
   template <typename T>

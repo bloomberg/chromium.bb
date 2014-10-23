@@ -28,21 +28,6 @@ enum ErrorCode {
   ILLEGAL_ARGUMENT,
 };
 
-// ViewManagerInitService is used to grant an application a connection to the
-// ViewManager by embedding it at an approriate View.
-interface ViewManagerInitService {
-  // Embed the application @ |url| at an appropriate View.
-  // The first time this method is called in the lifetime of a View Manager
-  // application instance, the "appropriate View" is defined as being the
-  // service root View.
-  // Subsequent times, implementation of this method is delegated to the
-  // application embedded at the service root View. This application is
-  // typically referred to as the "window manager", and will have a specific
-  // definition of where within its View hierarchy to embed an unparented URL.
-  // See ViewManagerService below for more details about |service_provider|.
-  Embed(string url, ServiceProvider? service_provider) => (bool success);
-};
-
 // Views are identified by a uint32. The upper 16 bits are the connection id,
 // and the lower 16 the id assigned by the client.
 //
@@ -124,10 +109,6 @@ interface ViewManagerService {
   // children the children are removed. The one exception is the root
   // connection.
   //
-  // If |view_id| is 0, the View Manager delegates determination of what view to
-  // embed |url| at to the app embedded at the service root view (i.e. the
-  // window manager).
-  // 
   // |service_provider| encapsulates services offered by the embedder to the
   // embedded app alongside this Embed() call. It also provides a means for
   // the embedder to connect to services symmetrically exposed by the embedded

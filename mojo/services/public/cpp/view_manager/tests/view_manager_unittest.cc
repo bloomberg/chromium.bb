@@ -299,7 +299,7 @@ class ViewManagerTest : public testing::Test {
 
  private:
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     ConnectApplicationLoader::LoadedCallback ready_callback = base::Bind(
         &ViewManagerTest::OnViewManagerLoaded, base::Unretained(this));
     test_helper_.Init();
@@ -312,27 +312,7 @@ class ViewManagerTest : public testing::Test {
             new ConnectApplicationLoader(ready_callback)),
         GURL(kEmbeddedApp1URL));
 
-    test_helper_.application_manager()->ConnectToService(
-        GURL("mojo:view_manager"), &view_manager_init_);
-    ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kWindowManagerURL));
-  }
-
-  void EmbedRootCallback(bool* result_cache, bool result) {
-    *result_cache = result;
-  }
-
-  bool EmbedRoot(ViewManagerInitService* view_manager_init,
-                 const std::string& url) {
-    bool result = false;
-    ServiceProviderPtr sp;
-    BindToProxy(new ServiceProviderImpl, &sp);
-    view_manager_init->Embed(
-        url, sp.Pass(),
-        base::Bind(&ViewManagerTest::EmbedRootCallback, base::Unretained(this),
-                   &result));
-    RunRunLoop();
-    window_manager_ = GetLoadedViewManager();
-    return result;
+    // TODO(sky): resolve this. Need to establish initial connection.
   }
 
   void OnViewManagerLoaded(ViewManager* view_manager, View* root) {
@@ -349,7 +329,6 @@ class ViewManagerTest : public testing::Test {
 
   base::RunLoop* connect_loop_;
   shell::ShellTestHelper test_helper_;
-  ViewManagerInitServicePtr view_manager_init_;
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* loaded_view_manager_;
   // The View Manager connection held by the window manager (app running at the

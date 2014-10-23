@@ -32,7 +32,7 @@ const size_t kStringIntDataSize = 4;
 
 class MapTest : public testing::Test {
  public:
-  virtual ~MapTest() {}
+  ~MapTest() override {}
 
  private:
   Environment env_;

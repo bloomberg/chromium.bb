@@ -42,6 +42,7 @@ interface ConformanceTestInterface {
   Method7(StructF param0, array<array<uint8, 3>?, 2> param1);
   Method8(array<array<string>?> param0);
   Method9(array<array<handle?>>? param0);
+  Method10(map<string, uint8> param0);
 };
 
 struct BasicStruct {

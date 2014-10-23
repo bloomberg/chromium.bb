@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_services.gypi:mojo_network_utility
 source_set("network") {
   deps = [
     "//base",
@@ -10,9 +9,12 @@ source_set("network") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
+    "//mojo/services/public/interfaces/network",
   ]
 
   sources = [
+    "udp_socket_wrapper.cc",
+    "udp_socket_wrapper.h",
     "web_socket_read_queue.cc",
     "web_socket_read_queue.h",
     "web_socket_write_queue.cc",

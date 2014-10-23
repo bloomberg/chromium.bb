@@ -35,7 +35,7 @@ class LoggingTest : public testing::Test {
     minimum_log_level_ = MOJO_LOG_LEVEL_INFO;
     ResetMockLogger();
   }
-  virtual ~LoggingTest() {}
+  ~LoggingTest() override {}
 
  protected:
   // Note: Does not reset |minimum_log_level_|.

@@ -187,7 +187,7 @@ class DummyMessageReceiver : public MessageReceiver {
 
 class ValidationTest : public testing::Test {
  public:
-  virtual ~ValidationTest() {}
+  ~ValidationTest() override {}
 
  private:
   Environment env_;
@@ -197,9 +197,9 @@ class ValidationIntegrationTest : public ValidationTest {
  public:
   ValidationIntegrationTest() : test_message_receiver_(nullptr) {}
 
-  virtual ~ValidationIntegrationTest() {}
+  ~ValidationIntegrationTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ScopedMessagePipeHandle tester_endpoint;
     ASSERT_EQ(MOJO_RESULT_OK,
               CreateMessagePipe(nullptr, &tester_endpoint, &testee_endpoint_));
@@ -207,7 +207,7 @@ class ValidationIntegrationTest : public ValidationTest {
         new TestMessageReceiver(this, tester_endpoint.Pass());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     delete test_message_receiver_;
     test_message_receiver_ = nullptr;
 

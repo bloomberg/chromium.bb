@@ -103,11 +103,9 @@ class RouterTest : public testing::Test {
  public:
   RouterTest() {}
 
-  virtual void SetUp() override {
-    CreateMessagePipe(nullptr, &handle0_, &handle1_);
-  }
+  void SetUp() override { CreateMessagePipe(nullptr, &handle0_, &handle1_); }
 
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 

@@ -13,7 +13,6 @@
       'dependencies': [
         'mojo_clipboard_bindings',
         'mojo_content_handler_bindings',
-        'mojo_core_window_manager_bindings',
         'mojo_geometry_bindings',
         'mojo_gpu_bindings',
         'mojo_input_events_bindings',
@@ -24,6 +23,7 @@
         'mojo_surfaces_bindings',
         'mojo_view_manager_bindings',
         'mojo_view_manager_common',
+        'mojo_window_manager_bindings',
       ],
     },
     {
@@ -263,7 +263,7 @@
     },
     {
       # GN version: //mojo/services/public/interfaces/window_manager2
-      'target_name': 'mojo_core_window_manager_bindings',
+      'target_name': 'mojo_window_manager2_bindings',
       'type': 'static_library',
       'sources': [
         'interfaces/window_manager2/window_manager2.mojom',

@@ -18,7 +18,7 @@ namespace {
 class TestAsyncWaitCallback {
  public:
   TestAsyncWaitCallback() : result_count_(0), last_result_(MOJO_RESULT_OK) {}
-  virtual ~TestAsyncWaitCallback() {}
+  ~TestAsyncWaitCallback() {}
 
   int result_count() const { return result_count_; }
 

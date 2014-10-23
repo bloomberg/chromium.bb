@@ -112,7 +112,7 @@ class MessagePipeReaderThread : public mojo::Thread {
 class CorePerftest : public testing::Test {
  public:
   CorePerftest() : buffer_(NULL), num_bytes_(0) {}
-  virtual ~CorePerftest() {}
+  ~CorePerftest() override {}
 
   static void NoOp(void* /*closure*/) {}
 

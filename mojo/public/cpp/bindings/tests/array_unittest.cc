@@ -23,7 +23,7 @@ using mojo::internal::String_Data;
 
 class ArrayTest : public testing::Test {
  public:
-  virtual ~ArrayTest() {}
+  ~ArrayTest() override {}
 
  private:
   Environment env_;

@@ -2,8 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package system;
+package system
+
+import "mojo/public/go/system/impl"
 
 type Core interface {
 	GetTimeTicksNow() int64
+}
+
+var core *impl.CoreImpl
+
+func init() {
+     core = &impl.CoreImpl{}
+}
+
+func GetCore() Core {
+     return core
 }

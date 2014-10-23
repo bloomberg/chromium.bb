@@ -50,11 +50,11 @@ class RunLoopTest : public testing::Test {
  public:
   RunLoopTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     Test::SetUp();
     RunLoop::SetUp();
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     RunLoop::TearDown();
     Test::TearDown();
   }

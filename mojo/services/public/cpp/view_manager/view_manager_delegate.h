@@ -25,7 +25,7 @@ class ViewManagerDelegate {
   // instance of |view_manager| only for every unique connection. See
   // the class description of ViewManager for some rules about when a new
   // connection is made.
-  // |exported_services| is an object that the delegate can add services to to
+  // |exported_services| is an object that the delegate can add services to
   // expose to the embedder. |imported_services| exposes the services offered by
   // the embedder to the delegate. Note that if a different application is
   // subsequently embedded at |root|, the pipe(s) connecting |imported_services|

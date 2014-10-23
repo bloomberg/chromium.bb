@@ -152,7 +152,7 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
 
 class InterfacePtrTest : public testing::Test {
  public:
-  virtual ~InterfacePtrTest() { loop_.RunUntilIdle(); }
+  ~InterfacePtrTest() override { loop_.RunUntilIdle(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 

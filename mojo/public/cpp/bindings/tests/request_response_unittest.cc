@@ -75,7 +75,7 @@ class MessagePipeWriter {
 
 class RequestResponseTest : public testing::Test {
  public:
-  virtual ~RequestResponseTest() { loop_.RunUntilIdle(); }
+  ~RequestResponseTest() override { loop_.RunUntilIdle(); }
 
   void PumpMessages() { loop_.RunUntilIdle(); }
 

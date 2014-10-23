@@ -22,7 +22,7 @@ RectPtr CreateRect() {
 
 class EqualsTest : public testing::Test {
  public:
-  virtual ~EqualsTest() {}
+  ~EqualsTest() override {}
 
  private:
   Environment env_;

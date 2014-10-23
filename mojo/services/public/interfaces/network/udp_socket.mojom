@@ -54,7 +54,7 @@ interface UDPSocket {
   // Notifies that the client is ready to accept |number| of datagrams.
   // Correspondingly, OnReceived() of the UDPSocketClient interface will be
   // called |number| times (errors also count), unless the connection is closed
-  // before that. The socket must be bound.
+  // before that.
   //
   // It is allowed to call this method again before the previous request is
   // completely satisfied. For example:

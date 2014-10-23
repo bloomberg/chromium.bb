@@ -249,11 +249,15 @@ void ViewManagerClientImpl::OnEmbed(
   roots_.push_back(root);
   root->AddObserver(new RootObserver(root));
 
-  // BindToRequest() binds the lifetime of |exported_services| to the pipe.
-  ServiceProviderImpl* exported_services = new ServiceProviderImpl;
-  BindToRequest(exported_services, &service_provider);
-  scoped_ptr<ServiceProvider> remote(
-      exported_services->CreateRemoteServiceProvider());
+  ServiceProviderImpl* exported_services = nullptr;
+  scoped_ptr<ServiceProvider> remote;
+
+  if (service_provider.is_pending()) {
+    // BindToRequest() binds the lifetime of |exported_services| to the pipe.
+    exported_services = new ServiceProviderImpl;
+    BindToRequest(exported_services, &service_provider);
+    remote.reset(exported_services->CreateRemoteServiceProvider());
+  }
   delegate_->OnEmbed(this, root, exported_services, remote.Pass());
 }
 

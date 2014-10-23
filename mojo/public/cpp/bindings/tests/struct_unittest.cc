@@ -29,7 +29,7 @@ void CheckRect(const Rect& rect, int32_t factor = 1) {
 
 class StructTest : public testing::Test {
  public:
-  virtual ~StructTest() {}
+  ~StructTest() override {}
 
  private:
   Environment env_;

@@ -18,6 +18,18 @@ ViewManagerClientFactory::ViewManagerClientFactory(
 ViewManagerClientFactory::~ViewManagerClientFactory() {
 }
 
+// static
+scoped_ptr<ViewManagerClient>
+ViewManagerClientFactory::WeakBindViewManagerToPipe(
+    ScopedMessagePipeHandle handle,
+    Shell* shell,
+    ViewManagerDelegate* delegate) {
+  scoped_ptr<ViewManagerClientImpl> client(
+      new ViewManagerClientImpl(delegate, shell));
+  WeakBindToPipe(client.get(), handle.Pass());
+  return client.Pass();
+}
+
 // InterfaceFactory<ViewManagerClient> implementation.
 void ViewManagerClientFactory::Create(
     ApplicationConnection* connection,
