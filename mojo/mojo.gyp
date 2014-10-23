@@ -26,6 +26,7 @@
       'type': 'none',
       'dependencies': [
         'edk/mojo_edk.gyp:mojo_edk',
+        'html_viewer',
         'mojo_application_manager',
         'mojo_application_manager_unittests',
         'mojo_apps_js_unittests',
@@ -33,7 +34,6 @@
         'mojo_clipboard',
         'mojo_clipboard_unittests',
         'mojo_geometry_lib',
-        'mojo_html_viewer',
         'mojo_input_events_lib',
         'mojo_js_content_handler',
         'mojo_js_standalone',

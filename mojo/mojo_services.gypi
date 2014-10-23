@@ -64,7 +64,7 @@
     },
     {
       # GN version: //mojo/services/html_viewer
-      'target_name': 'mojo_html_viewer',
+      'target_name': 'html_viewer',
       'type': 'loadable_module',
       'dependencies': [
         '../cc/blink/cc_blink.gyp:cc_blink',
