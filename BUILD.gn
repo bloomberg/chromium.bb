@@ -115,6 +115,7 @@ action("ffmpeg_generate_stubs") {
 
 if (build_ffmpegsumo) {
   shared_library("ffmpegsumo") {
+    # TODO(gyp): Add version number to dll.
     sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
       "$platform_config_root/libavutil/avconfig.h",
