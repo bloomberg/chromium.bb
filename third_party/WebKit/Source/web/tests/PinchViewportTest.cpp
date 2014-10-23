@@ -781,7 +781,7 @@ TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
     pinchViewport.setScale(2);
     pinchViewport.setLocation(FloatPoint(950, 950));
 
-    RefPtr<HistoryItem> firstItem = webViewImpl()->mainFrameImpl()->frame()->loader().currentItem();
+    RefPtrWillBePersistent<HistoryItem> firstItem = webViewImpl()->mainFrameImpl()->frame()->loader().currentItem();
     EXPECT_POINT_EQ(IntPoint(0, 1000), firstItem->scrollPoint());
 
     // Now navigate to a page which causes a smaller frameView. Make sure that

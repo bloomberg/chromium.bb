@@ -30,6 +30,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -39,15 +40,15 @@ namespace blink {
 class Document;
 class DocumentState;
 class FormData;
-class HistoryItem;
 class KURL;
 class ResourceRequest;
 
-typedef Vector<RefPtr<HistoryItem> > HistoryItemVector;
-
-class HistoryItem : public RefCounted<HistoryItem> {
+class HistoryItem final : public RefCountedWillBeGarbageCollectedFinalized<HistoryItem> {
 public:
-    static PassRefPtr<HistoryItem> create() { return adoptRef(new HistoryItem); }
+    static PassRefPtrWillBeRawPtr<HistoryItem> create()
+    {
+        return adoptRefWillBeNoop(new HistoryItem);
+    }
     ~HistoryItem();
 
     // Used when the frame this item represents was navigated to a different
@@ -102,6 +103,8 @@ public:
 
     bool isCurrentDocument(Document*) const;
 
+    void trace(Visitor*);
+
 private:
     HistoryItem();
 
@@ -113,7 +116,7 @@ private:
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
     Vector<String> m_documentStateVector;
-    RefPtrWillBePersistent<DocumentState> m_documentState;
+    RefPtrWillBeMember<DocumentState> m_documentState;
 
     // If two HistoryItems have the same item sequence number, then they are
     // clones of one another. Traversing history from one such HistoryItem to

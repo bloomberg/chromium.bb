@@ -239,9 +239,12 @@ private:
     RefPtr<DocumentLoader> m_policyDocumentLoader;
     OwnPtrWillBeMember<FetchContext> m_fetchContext;
 
-    RefPtr<HistoryItem> m_currentItem;
-    RefPtr<HistoryItem> m_provisionalItem;
+    RefPtrWillBeMember<HistoryItem> m_currentItem;
+    RefPtrWillBeMember<HistoryItem> m_provisionalItem;
+
     struct DeferredHistoryLoad {
+        DISALLOW_ALLOCATION();
+    public:
         DeferredHistoryLoad(HistoryItem* item, HistoryLoadType type, ResourceRequestCachePolicy cachePolicy)
             : m_item(item)
             , m_type(type)
@@ -253,10 +256,16 @@ private:
 
         bool isValid() { return m_item; }
 
-        RefPtr<HistoryItem> m_item;
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(m_item);
+        }
+
+        RefPtrWillBeMember<HistoryItem> m_item;
         HistoryLoadType m_type;
         ResourceRequestCachePolicy m_cachePolicy;
     };
+
     DeferredHistoryLoad m_deferredHistoryLoad;
 
     bool m_inStopAllLoaders;

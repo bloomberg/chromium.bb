@@ -891,11 +891,11 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
     // Emulate a user scroll
     webViewImpl->setMainFrameScrollOffset(WebPoint(0, 900));
     LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
-    RefPtr<HistoryItem> item1 = mainFrameLocal->loader().currentItem();
+    RefPtrWillBePersistent<HistoryItem> item1 = mainFrameLocal->loader().currentItem();
 
     // Click an anchor
     mainFrameLocal->loader().load(FrameLoadRequest(mainFrameLocal->document(), ResourceRequest(mainFrameLocal->document()->completeURL("#a"))));
-    RefPtr<HistoryItem> item2 = mainFrameLocal->loader().currentItem();
+    RefPtrWillBePersistent<HistoryItem> item2 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward, then back again.
     mainFrameLocal->loader().loadHistoryItem(item1.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
@@ -904,7 +904,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
 
     // Click a different anchor
     mainFrameLocal->loader().load(FrameLoadRequest(mainFrameLocal->document(), ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
-    RefPtr<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
+    RefPtrWillBePersistent<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward. The scroll position should be properly set on the forward navigation.
     mainFrameLocal->loader().loadHistoryItem(item1.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);

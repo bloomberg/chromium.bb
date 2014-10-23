@@ -137,6 +137,9 @@ void FrameLoader::trace(Visitor* visitor)
     visitor->trace(m_mixedContentChecker);
     visitor->trace(m_progressTracker);
     visitor->trace(m_fetchContext);
+    visitor->trace(m_currentItem);
+    visitor->trace(m_provisionalItem);
+    visitor->trace(m_deferredHistoryLoad);
 }
 
 void FrameLoader::init()

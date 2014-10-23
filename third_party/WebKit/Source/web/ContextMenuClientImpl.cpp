@@ -307,7 +307,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     data.pageURL = urlFromFrame(m_webView->mainFrameImpl()->frame());
     if (selectedFrame != m_webView->mainFrameImpl()->frame()) {
         data.frameURL = urlFromFrame(selectedFrame);
-        RefPtr<HistoryItem> historyItem = selectedFrame->loader().currentItem();
+        RefPtrWillBeRawPtr<HistoryItem> historyItem = selectedFrame->loader().currentItem();
         if (historyItem)
             data.frameHistoryItem = WebHistoryItem(historyItem);
     }

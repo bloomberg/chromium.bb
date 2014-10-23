@@ -214,5 +214,9 @@ bool HistoryItem::isCurrentDocument(Document* doc) const
     return equalIgnoringFragmentIdentifier(url(), doc->url());
 }
 
-} // namespace blink
+void HistoryItem::trace(Visitor* visitor)
+{
+    visitor->trace(m_documentState);
+}
 
+} // namespace blink

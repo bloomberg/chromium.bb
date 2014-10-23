@@ -849,7 +849,7 @@ void WebLocalFrameImpl::loadRequest(const WebURLRequest& request)
 void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
 {
     ASSERT(frame());
-    RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
+    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
     ASSERT(historyItem);
     frame()->loader().loadHistoryItem(historyItem.get(), FrameLoadTypeBackForward,
         static_cast<HistoryLoadType>(loadType), static_cast<ResourceRequestCachePolicy>(cachePolicy));
@@ -1605,9 +1605,9 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
-    RefPtr<HistoryItem> childItem;
+    RefPtrWillBeRawPtr<HistoryItem> childItem = nullptr;
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = PassRefPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame(webframeChild));
+        childItem = PassRefPtrWillBeRawPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame(webframeChild));
 
     if (childItem)
         child->loader().loadHistoryItem(childItem.get(), FrameLoadTypeInitialHistoryLoad);
