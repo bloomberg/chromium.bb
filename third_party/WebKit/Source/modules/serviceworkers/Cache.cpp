@@ -78,16 +78,16 @@ protected:
 };
 
 // FIXME: Consider using CallbackPromiseAdapter.
-class CacheWithOneResponseCallbacks : public CacheWithResponsesCallbacks {
-    WTF_MAKE_NONCOPYABLE(CacheWithOneResponseCallbacks);
+class CacheAddOrPutCallbacks : public CacheWithResponsesCallbacks {
+    WTF_MAKE_NONCOPYABLE(CacheAddOrPutCallbacks);
 public:
-    CacheWithOneResponseCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
+    CacheAddOrPutCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
         : CacheWithResponsesCallbacks(resolver) { }
 
     virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
-        ASSERT(webResponses->size() == 1);
-        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), (*webResponses)[0]));
+        // FIXME: Since response is ignored, consider simplifying public API.
+        m_resolver->resolve();
         m_resolver.clear();
     }
 };
@@ -101,6 +101,7 @@ public:
 
     virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
+        // FIXME: Since response is ignored, consider simplifying public API.
         m_resolver->resolve(true);
         m_resolver.clear();
     }
@@ -378,7 +379,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    m_webCache->dispatchBatch(new CacheWithOneResponseCallbacks(resolver), batchOperations);
+    m_webCache->dispatchBatch(new CacheAddOrPutCallbacks(resolver), batchOperations);
     return promise;
 }
 
