@@ -11,6 +11,7 @@
 #include "base/tracked_objects.h"
 #include "components/metrics/metrics_log.h"
 #include "components/nacl/common/nacl_process_type.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/common/process_type.h"
 
 using tracked_objects::ProcessDataSnapshot;
@@ -106,6 +107,13 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
   }
 }
 
+bool SkipProfilerDataUpload() {
+  // If skip_profiler_data is set in experiment params then skip the uplaod.
+  std::string skip_profiler_data = variations::GetVariationParamValue(
+      "UMALogUploadInterval", "skip_profiler_data");
+  return skip_profiler_data == "true";
+}
+
 }  // namespace
 
 ProfilerMetricsProvider::ProfilerMetricsProvider() : has_profiler_data_(false) {
@@ -131,6 +139,9 @@ void ProfilerMetricsProvider::ProvideGeneralMetrics(
 void ProfilerMetricsProvider::RecordProfilerData(
     const tracked_objects::ProcessDataSnapshot& process_data,
     int process_type) {
+  if (SkipProfilerDataUpload())
+    return;
+
   if (tracked_objects::GetTimeSourceType() !=
       tracked_objects::TIME_SOURCE_TYPE_WALL_TIME) {
     // We currently only support the default time source, wall clock time.
