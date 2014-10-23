@@ -79,6 +79,10 @@ env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
                        'run_sel_main_chrome_vcache_no_srpc_load_test',
                        is_broken=not env.Bit('nacl_static_link'))
 
+# Disable the seg_gap tests for MIPS, since its SFI is based on data section
+# starting at 256 MB, so even nexes that do not use IRT have a gap.
+if env.Bit('target_mips32'):
+  Return()
 
 # Test 'irt_load_optional' can help skip loading the IRT if a nexe is built
 # without IRT support (a sufficient segment gap).
