@@ -26,6 +26,8 @@
 #  endif /* !DYNAMIC_CRC_TABLE */
 #endif /* MAKECRCH */
 
+#include "deflate.h"
+#include "x86.h"
 #include "zutil.h"      /* for STDC and FAR definitions */
 
 #define local static
@@ -439,4 +441,29 @@ uLong ZEXPORT crc32_combine64(crc1, crc2, len2)
     z_off64_t len2;
 {
     return crc32_combine_(crc1, crc2, len2);
+}
+
+ZLIB_INTERNAL void crc_reset(deflate_state *const s)
+{
+    if (x86_cpu_enable_simd) {
+        crc_fold_init(s);
+        return;
+    }
+    s->strm->adler = crc32(0L, Z_NULL, 0);
+}
+
+ZLIB_INTERNAL void crc_finalize(deflate_state *const s)
+{
+    if (x86_cpu_enable_simd)
+        s->strm->adler = crc_fold_512to32(s);
+}
+
+ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Bytef *dst, long size)
+{
+    if (x86_cpu_enable_simd) {
+        crc_fold_copy(strm->state, dst, strm->next_in, size);
+        return;
+    }
+    zmemcpy(dst, strm->next_in, size);
+    strm->adler = crc32(strm->adler, dst, size);
 }
