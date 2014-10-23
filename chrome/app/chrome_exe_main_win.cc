@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/client_util.h"
 #include "chrome/browser/chrome_process_finder_win.h"
@@ -78,6 +79,59 @@ bool AttemptFastNotify(const CommandLine& command_line) {
       chrome::NOTIFY_SUCCESS;
 }
 
+// Duplicated from Win8.1 SDK ShellScalingApi.h
+typedef enum PROCESS_DPI_AWARENESS {
+    PROCESS_DPI_UNAWARE = 0,
+    PROCESS_SYSTEM_DPI_AWARE = 1,
+    PROCESS_PER_MONITOR_DPI_AWARE = 2
+} PROCESS_DPI_AWARENESS;
+
+typedef enum MONITOR_DPI_TYPE {
+    MDT_EFFECTIVE_DPI = 0,
+    MDT_ANGULAR_DPI = 1,
+    MDT_RAW_DPI = 2,
+    MDT_DEFAULT = MDT_EFFECTIVE_DPI
+} MONITOR_DPI_TYPE;
+
+// Win8.1 supports monitor-specific DPI scaling.
+bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
+  typedef BOOL(WINAPI *SetProcessDpiAwarenessPtr)(PROCESS_DPI_AWARENESS);
+  SetProcessDpiAwarenessPtr set_process_dpi_awareness_func =
+      reinterpret_cast<SetProcessDpiAwarenessPtr>(
+          GetProcAddress(GetModuleHandleA("user32.dll"),
+                          "SetProcessDpiAwarenessInternal"));
+  if (set_process_dpi_awareness_func) {
+    HRESULT hr = set_process_dpi_awareness_func(value);
+    if (SUCCEEDED(hr)) {
+      VLOG(1) << "SetProcessDpiAwareness succeeded.";
+      return true;
+    } else if (hr == E_ACCESSDENIED) {
+      LOG(ERROR) << "Access denied error from SetProcessDpiAwareness. "
+          "Function called twice, or manifest was used.";
+    }
+  }
+  return false;
+}
+
+// This function works for Windows Vista through Win8. Win8.1 must use
+// SetProcessDpiAwareness[Wrapper]
+BOOL SetProcessDPIAwareWrapper() {
+  typedef BOOL(WINAPI *SetProcessDPIAwarePtr)(VOID);
+  SetProcessDPIAwarePtr set_process_dpi_aware_func =
+      reinterpret_cast<SetProcessDPIAwarePtr>(
+      GetProcAddress(GetModuleHandleA("user32.dll"),
+                      "SetProcessDPIAware"));
+  return set_process_dpi_aware_func &&
+    set_process_dpi_aware_func();
+}
+
+
+void EnableHighDPISupport() {
+  if (!SetProcessDpiAwarenessWrapper(PROCESS_SYSTEM_DPI_AWARE)) {
+    SetProcessDPIAwareWrapper();
+  }
+}
+
 }  // namespace
 
 #if !defined(ADDRESS_SANITIZER)
@@ -102,7 +156,7 @@ int main() {
   // DirectWrite there. GDI fonts are kerned very badly, so better to leave
   // DPI-unaware and at effective 1.0. See also ShouldUseDirectWrite().
   if (base::win::GetVersion() > base::win::VERSION_VISTA)
-    gfx::EnableHighDPISupport();
+    EnableHighDPISupport();
 
   if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
     return 0;

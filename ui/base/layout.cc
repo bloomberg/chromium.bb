@@ -84,10 +84,10 @@ ScaleFactor GetSupportedScaleFactor(float scale) {
 
 float GetImageScale(ScaleFactor scale_factor) {
 #if defined(OS_WIN)
-  if (gfx::IsHighDPIEnabled())
-    return gfx::GetDPIScale();
-#endif
+  return gfx::GetDPIScale();
+#else
   return GetScaleForScaleFactor(scale_factor);
+#endif
 }
 
 float GetScaleForScaleFactor(ScaleFactor scale_factor) {

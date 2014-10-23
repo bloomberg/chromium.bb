@@ -49,7 +49,6 @@ void ResourceBundle::LoadCommonResources() {
         SCALE_FACTOR_100P);
   }
   if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
-    DCHECK(gfx::IsHighDPIEnabled());
     AddDataPackFromPath(
         GetResourcesPakFilePath("chrome_200_percent.pak"),
         SCALE_FACTOR_200P);

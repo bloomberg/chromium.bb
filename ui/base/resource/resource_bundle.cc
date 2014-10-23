@@ -629,14 +629,12 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #elif defined(OS_WIN)
   bool default_to_100P = true;
-  if (gfx::IsHighDPIEnabled()) {
-    // On Windows if the dpi scale is greater than 1.25 on high dpi machines
-    // downscaling from 200 percent looks better than scaling up from 100
-    // percent.
-    if (gfx::GetDPIScale() > 1.25) {
-      supported_scale_factors.push_back(SCALE_FACTOR_200P);
-      default_to_100P = false;
-    }
+  // On Windows if the dpi scale is greater than 1.25 on high dpi machines
+  // downscaling from 200 percent looks better than scaling up from 100
+  // percent.
+  if (gfx::GetDPIScale() > 1.25) {
+    supported_scale_factors.push_back(SCALE_FACTOR_200P);
+    default_to_100P = false;
   }
   if (default_to_100P)
     supported_scale_factors.push_back(SCALE_FACTOR_100P);
@@ -645,10 +643,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 #if defined(OS_WIN)
   // Must be called _after_ supported scale factors are set since it
   // uses them.
-  // Don't initialize the device scale factor if it has already been
-  // initialized.
-  if (!gfx::win::IsDeviceScaleFactorSet())
-    gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
+  gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
 #endif
 }
 
