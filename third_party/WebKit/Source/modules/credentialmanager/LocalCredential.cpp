@@ -6,6 +6,7 @@
 #include "modules/credentialmanager/LocalCredential.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/html/DOMFormData.h"
 #include "platform/credentialmanager/PlatformLocalCredential.h"
 #include "public/platform/WebCredential.h"
 #include "public/platform/WebLocalCredential.h"
@@ -32,12 +33,21 @@ LocalCredential::LocalCredential(WebLocalCredential* webLocalCredential)
 
 LocalCredential::LocalCredential(const String& id, const String& password, const String& name, const KURL& avatar)
     : Credential(PlatformLocalCredential::create(id, password, name, avatar))
+    , m_formData(DOMFormData::create())
 {
+    m_formData->append("username", id);
+    m_formData->append("password", password);
 }
 
 const String& LocalCredential::password() const
 {
     return static_cast<PlatformLocalCredential*>(m_platformCredential.get())->password();
+}
+
+void LocalCredential::trace(Visitor* visitor)
+{
+    visitor->trace(m_formData);
+    Credential::trace(visitor);
 }
 
 } // namespace blink

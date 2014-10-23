@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class DOMFormData;
 class WebLocalCredential;
 
 class LocalCredential final : public Credential {
@@ -33,12 +34,18 @@ public:
 
     // LocalCredential.idl
     const String& password() const;
+    DOMFormData* formData() const { return m_formData.get(); };
+
+    virtual void trace(Visitor*) override;
 
 private:
     LocalCredential(WebLocalCredential*);
     LocalCredential(const String& id, const String& password, const String& name, const KURL& avatar);
+
+    // FIXME: Reconsider use of GarbageCollectedFinalized once this can be a Member.
+    RefPtrWillBeMember<DOMFormData> m_formData;
 };
 
 } // namespace blink
 
-#endif // Credential_h
+#endif // LocalCredential_h

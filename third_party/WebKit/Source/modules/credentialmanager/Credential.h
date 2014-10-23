@@ -14,7 +14,7 @@ namespace blink {
 
 class ExceptionState;
 
-class Credential : public GarbageCollected<Credential>, public ScriptWrappable {
+class Credential : public GarbageCollectedFinalized<Credential>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Credential* create(const String& id, const String& name, const KURL& avatar);
