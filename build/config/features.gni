@@ -36,6 +36,9 @@ declare_args() {
   #enable_webrtc = !is_ios  TODO(GYP) use this condition when WebRTC works in
   #                         the GN build.
   enable_webrtc = false
+
+  # Enables proprietary codecs and demuxers; e.g. H264, MOV, AAC, and MP3.
+  proprietary_codecs = false
 }
 
 # Additional dependent variables -----------------------------------------------

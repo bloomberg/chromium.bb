@@ -4,8 +4,9 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
-import("//build/config/ui.gni")
+import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//build/config/ui.gni")
 import("//media/media_options.gni")
 
 # Common configuration for targets in the media directory.
@@ -30,9 +31,6 @@ config("media_dependent_config") {
   defines = []
   if (!media_use_libvpx) {
     defines += [ "MEDIA_DISABLE_LIBVPX" ]
-  }
-  if (proprietary_codecs) {
-    defines += [ "USE_PROPRIETARY_CODECS" ]
   }
   if (is_win) {
     ldflags = [

@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # Enables proprietary codecs and demuxers; e.g. H264, MOV, AAC, and MP3.
-  proprietary_codecs = false
-
   # Allows distributions to link pulseaudio directly (DT_NEEDED) instead of
   # using dlopen. This helps with automated detection of ABI mismatches and
   # prevents silent errors.
