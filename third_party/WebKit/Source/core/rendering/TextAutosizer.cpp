@@ -509,6 +509,12 @@ void TextAutosizer::updatePageInfo()
         RenderView* renderView = m_document->renderView();
         bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
 
+        // FIXME: With out-of-process iframes, the top frame can be remote and
+        // doesn't have sizing information. Just return if this is the case.
+        Frame* frame = m_document->frame()->tree().top();
+        if (frame->isRemoteFrame())
+            return;
+
         LocalFrame* mainFrame = m_document->page()->deprecatedLocalMainFrame();
         IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
         if (frameSize.isEmpty())
