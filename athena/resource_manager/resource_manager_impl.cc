@@ -147,7 +147,7 @@ class ResourceManagerImpl : public ResourceManager,
 };
 
 namespace {
-ResourceManagerImpl* instance = NULL;
+ResourceManagerImpl* instance = nullptr;
 
 // We allow this many activities to be visible. All others must be at state of
 // invisible or below.
@@ -367,7 +367,7 @@ void ResourceManagerImpl::TryToUnloadAnActivity() {
   }
 
   // Check if / which activity we want to unload.
-  Activity* oldest_media_activity = NULL;
+  Activity* oldest_media_activity = nullptr;
   std::vector<Activity*> unloadable_activities;
   for (std::vector<Activity*>::iterator it = activity_list_.begin();
        it != activity_list_.end(); ++it) {
@@ -476,14 +476,14 @@ ResourceManager* ResourceManager::Get() {
 void ResourceManager::Shutdown() {
   DCHECK(instance);
   delete instance;
-  instance = NULL;
+  instance = nullptr;
 }
 
 ResourceManager::ResourceManager() {}
 
 ResourceManager::~ResourceManager() {
   DCHECK(instance);
-  instance = NULL;
+  instance = nullptr;
 }
 
 }  // namespace athena

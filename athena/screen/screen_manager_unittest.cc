@@ -104,8 +104,8 @@ TEST_F(ScreenManagerTest, NonActivatableContainer) {
   aura::Window* activatable_container =
       ScreenManager::Get()->CreateContainer(activatable);
 
-  scoped_ptr<aura::Window> window(
-      CreateWindow(no_activatable_container, NULL, gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> window(CreateWindow(
+      no_activatable_container, nullptr, gfx::Rect(0, 0, 100, 100)));
   EXPECT_FALSE(wm::CanActivateWindow(window.get()));
 
   activatable_container->AddChild(window.get());
@@ -155,7 +155,7 @@ TEST_F(ScreenManagerTest, DefaultContainer) {
   params.default_parent = true;
   params.modal_container_priority = CP_END + 2;
   aura::Window* new_default = ScreenManager::Get()->CreateContainer(params);
-  aura::Window* w = test::CreateNormalWindow(NULL, NULL).release();
+  aura::Window* w = test::CreateNormalWindow(nullptr, nullptr).release();
   EXPECT_EQ(new_default, w->parent());
   delete new_default;
 
@@ -170,7 +170,7 @@ class ScreenManagerTargeterTest
       public testing::WithParamInterface<bool> {
  public:
   ScreenManagerTargeterTest()
-      : targeter_(GetParam() ? NULL : new aura::WindowTargeter) {}
+      : targeter_(GetParam() ? nullptr : new aura::WindowTargeter) {}
   virtual ~ScreenManagerTargeterTest() {}
 
  protected:

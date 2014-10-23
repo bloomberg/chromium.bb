@@ -195,8 +195,8 @@ AthenaStartPageView::AthenaStartPageView(
   logo_->SetSize(gfx::Size(kWebViewWidth, kWebViewHeight));
   AddChildView(logo_);
 
-  search_results_view_ = new app_list::SearchResultListView(
-      NULL, view_delegate);
+  search_results_view_ =
+      new app_list::SearchResultListView(nullptr, view_delegate);
   // search_results_view_'s size will shrink after settings results.
   search_results_height_ = static_cast<views::View*>(
       search_results_view_)->GetHeightForWidth(kSearchBoxWidth);

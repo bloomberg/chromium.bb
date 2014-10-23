@@ -11,11 +11,11 @@
 namespace athena {
 
 TEST(FillLayoutManagerTest, ChildWindowSizedCorrectly) {
-  scoped_ptr<aura::Window> parent(new aura::Window(NULL));
+  scoped_ptr<aura::Window> parent(new aura::Window(nullptr));
   parent->SetBounds(gfx::Rect(10, 20, 30, 40));
   parent->SetLayoutManager(new FillLayoutManager(parent.get()));
 
-  scoped_ptr<aura::Window> child(new aura::Window(NULL));
+  scoped_ptr<aura::Window> child(new aura::Window(nullptr));
   child->SetBounds(gfx::Rect(0, 0, 5, 10));
 
   EXPECT_NE(child->bounds().size().ToString(),
@@ -30,7 +30,7 @@ TEST(FillLayoutManagerTest, ChildWindowSizedCorrectly) {
             parent->bounds().size().ToString());
 
   // Menu and tooltip should not be filled.
-  scoped_ptr<aura::Window> menu(new aura::Window(NULL));
+  scoped_ptr<aura::Window> menu(new aura::Window(nullptr));
   menu->SetType(ui::wm::WINDOW_TYPE_MENU);
   menu->SetBounds(gfx::Rect(0, 0, 5, 10));
 
@@ -40,7 +40,7 @@ TEST(FillLayoutManagerTest, ChildWindowSizedCorrectly) {
   menu->SetBounds(gfx::Rect(0, 0, 100, 200));
   EXPECT_EQ(menu->bounds().ToString(), "0,0 100x200");
 
-  scoped_ptr<aura::Window> tooltip(new aura::Window(NULL));
+  scoped_ptr<aura::Window> tooltip(new aura::Window(nullptr));
   tooltip->SetType(ui::wm::WINDOW_TYPE_TOOLTIP);
   tooltip->SetBounds(gfx::Rect(0, 0, 5, 10));
 

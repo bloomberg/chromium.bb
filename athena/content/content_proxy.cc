@@ -101,7 +101,7 @@ void ContentProxy::OnPreContentDestroyed() {
   // make the web content visible if the window gets destroyed shortly after.
   ShowOriginalContent();
 
-  web_view_ = NULL;
+  web_view_ = nullptr;
 }
 
 void ContentProxy::ShowOriginalContent() {

@@ -29,7 +29,7 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
   virtual content::WebDragDestDelegate* GetDragDestDelegate() override {
     // TODO(oshima): crbug.com/401610
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
 
   virtual bool Focus() override {
@@ -128,7 +128,7 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
 
   views::FocusManager* GetFocusManager() {
     views::Widget* toplevel_widget = GetTopLevelWidget();
-    return toplevel_widget ? toplevel_widget->GetFocusManager() : NULL;
+    return toplevel_widget ? toplevel_widget->GetFocusManager() : nullptr;
   }
 
   void SetInitialFocus() {

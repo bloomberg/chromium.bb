@@ -17,12 +17,13 @@ class WindowOverviewModeDelegate {
   virtual ~WindowOverviewModeDelegate() {}
 
   // Called to activate |window|, set its bounds and set its visibility when
-  // |window| is selected in overview mode. |window| is NULL if there are no
+  // |window| is selected in overview mode. |window| is nullptr if there are no
   // windows in overview mode.
   virtual void OnSelectWindow(aura::Window* window) = 0;
 
   // Gets into split-view mode with |left| on the left-side of the screen, and
-  // |right| on the right-side. If |left| or |right| is NULL, then the delegate
+  // |right| on the right-side. If |left| or |right| is nullptr, then the
+  // delegate
   // selects the best option in its place.
   virtual void OnSelectSplitViewWindow(aura::Window* left,
                                        aura::Window* right,

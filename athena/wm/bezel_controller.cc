@@ -67,8 +67,8 @@ BezelController::BezelController(aura::Window* container)
     : container_(container),
       state_(NONE),
       scroll_bezel_(BEZEL_NONE),
-      scroll_target_(NULL),
-      left_right_delegate_(NULL) {
+      scroll_target_(nullptr),
+      left_right_delegate_(nullptr) {
 }
 
 void BezelController::SetState(BezelController::State state) {
@@ -88,7 +88,7 @@ void BezelController::SetState(BezelController::State state,
 
   if (state == NONE) {
     scroll_bezel_ = BEZEL_NONE;
-    scroll_target_ = NULL;
+    scroll_target_ = nullptr;
   }
 
   if (state == BEZEL_SCROLLING_TWO_FINGERS) {

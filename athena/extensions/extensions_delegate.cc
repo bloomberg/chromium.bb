@@ -9,7 +9,7 @@
 namespace athena {
 namespace {
 
-ExtensionsDelegate* instance = NULL;
+ExtensionsDelegate* instance = nullptr;
 
 }  // namespace
 
@@ -20,7 +20,7 @@ ExtensionsDelegate::ExtensionsDelegate() {
 
 ExtensionsDelegate::~ExtensionsDelegate() {
   DCHECK(instance);
-  instance = NULL;
+  instance = nullptr;
 }
 
 // static

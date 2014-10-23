@@ -91,7 +91,7 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
       metrics::OmniboxEventProto::PageClassification page_classification,
       AutocompleteMatch* match,
       GURL* alternate_nav_url) override {}
-  virtual history::URLDatabase* InMemoryDatabase() override { return NULL; }
+  virtual history::URLDatabase* InMemoryDatabase() override { return nullptr; }
   virtual void DeleteMatchingURLsForKeywordFromHistory(
       history::KeywordID keyword_id,
       const base::string16& term) override {}
@@ -208,13 +208,13 @@ UrlSearchProvider::UrlSearchProvider(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       // TODO(mukai): introduce the real parameters when it's necessary.
       template_url_service_(new TemplateURLService(
-          NULL /* prefs */,
+          nullptr /* prefs */,
           scoped_ptr<SearchTermsData>(new AthenaSearchTermsData()),
-          NULL /* KeywordWebDataService */,
+          nullptr /* KeywordWebDataService */,
           scoped_ptr<TemplateURLServiceClient>(
               new AthenaTemplateURLServiceClient()),
-          NULL /*GoogleURLTracker */,
-          NULL /* RapporService */,
+          nullptr /*GoogleURLTracker */,
+          nullptr /* RapporService */,
           base::Closure() /* dsp_change_callback */)),
       provider_(new ::SearchProvider(
           this,
@@ -248,7 +248,7 @@ void UrlSearchProvider::Start(const base::string16& query) {
   if (input_.type() == metrics::OmniboxInputType::URL) {
     // TODO(hashimoto): Componentize HistoryURLProvider and remove this code.
     AutocompleteMatch what_you_typed_match(
-        NULL, 0, false, AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+        nullptr, 0, false, AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     what_you_typed_match.destination_url = input_.canonicalized_url();
     what_you_typed_match.contents = input_.text();
     what_you_typed_match.relevance = kScoreForWhatYouTypedResult;

@@ -54,7 +54,7 @@ struct WindowOverviewState {
 DECLARE_WINDOW_PROPERTY_TYPE(WindowOverviewState*);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowOverviewState,
                                  kWindowOverviewState,
-                                 NULL);
+                                 nullptr);
 
 namespace athena {
 
@@ -297,7 +297,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
             container,
             scoped_ptr<ui::EventTargeter>(
                 new StaticWindowTargeter(container)))),
-        dragged_window_(NULL) {
+        dragged_window_(nullptr) {
     CHECK(delegate_);
     container_->set_target_handler(this);
 
@@ -425,13 +425,13 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       targeter = window->GetEventTargeter();
     }
     if (!targeter)
-      return NULL;
+      return nullptr;
     aura::Window* target = static_cast<aura::Window*>(
         targeter->FindTargetForLocatedEvent(container_, event));
     while (target && target->parent() != container_)
       target = target->parent();
     aura::Window* transient_parent =
-        target ? wm::GetTransientParent(target) : NULL;
+        target ? wm::GetTransientParent(target) : nullptr;
     return transient_parent ? transient_parent : target;
   }
 
@@ -508,7 +508,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   aura::Window* GetSplitWindowDropTarget(const ui::GestureEvent& event) const {
     if (!split_view_controller_->IsSplitViewModeActive())
-      return NULL;
+      return nullptr;
     CHECK(dragged_window_);
     CHECK_NE(split_view_controller_->left_window(), dragged_window_);
     CHECK_NE(split_view_controller_->right_window(), dragged_window_);
@@ -518,7 +518,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     window = split_view_controller_->right_window();
     if (GetTransformedBounds(window).Contains(event.location()))
       return window;
-    return NULL;
+    return nullptr;
   }
 
   void DragWindow(const ui::GestureEvent& event) {
@@ -631,7 +631,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       setter.SetOpacity(kMinOpacity);
     }
     delete dragged_window_;
-    dragged_window_ = NULL;
+    dragged_window_ = nullptr;
   }
 
   void RestoreDragWindow() {
@@ -643,7 +643,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     AnimateTransientGroupSetter setter(dragged_window_);
     setter.SetTransform(GetTransformForState(dragged_window_, dragged_state));
     setter.SetOpacity(1.0f);
-    dragged_window_ = NULL;
+    dragged_window_ = nullptr;
   }
 
   void EndDragWindow(const ui::GestureEvent& gesture) {
@@ -652,9 +652,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     OverviewToolbar::ActionType action = overview_toolbar_->current_action();
     overview_toolbar_.reset();
     if (action == OverviewToolbar::ACTION_TYPE_SPLIT) {
-      delegate_->OnSelectSplitViewWindow(NULL,
-                                         dragged_window_,
-                                         dragged_window_);
+      delegate_->OnSelectSplitViewWindow(
+          nullptr, dragged_window_, dragged_window_);
       return;
     }
 
@@ -733,7 +732,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           // these windows will terminate the split-view mode. Until then, do
           // not allow closing these (since otherwise it gets into an undefined
           // state).
-          dragged_window_ = NULL;
+          dragged_window_ = nullptr;
         }
 
         if (dragged_window_) {
@@ -771,7 +770,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         RemoveAnimationObserver();
         gesture->SetHandled();
       }
-      dragged_window_ = NULL;
+      dragged_window_ = nullptr;
     }
   }
 

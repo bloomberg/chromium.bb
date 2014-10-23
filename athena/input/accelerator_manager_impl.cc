@@ -102,7 +102,7 @@ class FocusManagerDelegate : public views::FocusManagerDelegate {
       const ui::Accelerator& accelerator) const override {
     return accelerator_manager_->IsRegistered(accelerator, AF_NONE)
                ? accelerator_manager_
-               : NULL;
+               : nullptr;
   }
 
  private:
@@ -126,7 +126,8 @@ class FocusManagerFactory : public views::FocusManagerFactory {
       bool desktop_widget) override {
     return new views::FocusManager(
         widget,
-        desktop_widget ? NULL : new FocusManagerDelegate(accelerator_manager_));
+        desktop_widget ? nullptr
+                       : new FocusManagerDelegate(accelerator_manager_));
   }
 
  private:
@@ -246,7 +247,7 @@ AcceleratorManagerImpl::~AcceleratorManagerImpl() {
   accelerator_filter_.reset();
   // Reset to use the default focus manager because the athena's
   // FocusManager has the reference to this object.
-  views::FocusManagerFactory::Install(NULL);
+  views::FocusManagerFactory::Install(nullptr);
 }
 
 void AcceleratorManagerImpl::Init() {

@@ -37,7 +37,7 @@ class TestAppActivity : public AppActivity {
         view_(new views::View()),
         current_state_(ACTIVITY_VISIBLE) {
     app_activity_registry_ =
-        AppRegistry::Get()->GetAppActivityRegistry(app_id, NULL);
+        AppRegistry::Get()->GetAppActivityRegistry(app_id, nullptr);
     app_activity_registry_->RegisterAppActivity(this);
   }
   virtual ~TestAppActivity() {
@@ -76,7 +76,7 @@ class TestAppActivity : public AppActivity {
   virtual base::string16 GetTitle() const override { return title_; }
   virtual bool UsesFrame() const override { return true; }
   virtual views::View* GetContentsView() override { return view_; }
-  virtual views::Widget* CreateWidget() override { return NULL; }
+  virtual views::Widget* CreateWidget() override { return nullptr; }
   virtual gfx::ImageSkia GetOverviewModeImage() override {
     return gfx::ImageSkia();
   }
@@ -108,7 +108,7 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
 
   // ExtensionsDelegate:
   virtual content::BrowserContext* GetBrowserContext() const override {
-    return NULL;
+    return nullptr;
   }
   virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
     return extension_set_;
@@ -143,7 +143,7 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
 // Our testing base.
 class AppActivityTest : public AthenaTestBase {
  public:
-  AppActivityTest() : test_extensions_delegate_(NULL) {}
+  AppActivityTest() : test_extensions_delegate_(nullptr) {}
   virtual ~AppActivityTest() {}
 
   // AthenaTestBase:
@@ -204,7 +204,7 @@ TEST_F(AppActivityTest, OneAppActivity) {
     TestAppActivity* app_activity = CreateAppActivity(kDummyApp1);
     EXPECT_EQ(1, AppRegistry::Get()->NumberOfApplications());
     EXPECT_EQ(1, app_activity->app_activity_registry()->NumberOfActivities());
-    EXPECT_EQ(AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, NULL),
+    EXPECT_EQ(AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, nullptr),
               app_activity->app_activity_registry());
     DeleteActivity(app_activity);
   }
@@ -297,7 +297,7 @@ TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
   // created.
   ASSERT_EQ(1, AppRegistry::Get()->NumberOfApplications());
   ASSERT_EQ(app_activity_registry,
-            AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, NULL));
+            AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, nullptr));
   EXPECT_EQ(0, app_activity_registry->NumberOfActivities());
   Activity* activity_proxy = app_activity_registry->unloaded_activity_proxy();
   ASSERT_TRUE(activity_proxy);
@@ -387,7 +387,7 @@ TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
   // Now there should only be the proxy activity left.
   ASSERT_EQ(1, AppRegistry::Get()->NumberOfApplications());
   ASSERT_EQ(app_activity_registry,
-            AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, NULL));
+            AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, nullptr));
   EXPECT_EQ(0, app_activity_registry->NumberOfActivities());
   Activity* activity_proxy = app_activity_registry->unloaded_activity_proxy();
   ASSERT_TRUE(activity_proxy);

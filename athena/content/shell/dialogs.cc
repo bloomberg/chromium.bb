@@ -12,7 +12,7 @@ content::ColorChooser* OpenColorChooser(
     SkColor initial_color,
     const std::vector<content::ColorSuggestion>& suggestions) {
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 void OpenFileChooser(content::WebContents* web_contents,

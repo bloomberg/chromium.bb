@@ -29,7 +29,8 @@ class WindowManagerTest : public test::AthenaTestBase {
 
   scoped_ptr<aura::Window> CreateAndActivateWindow(
       aura::WindowDelegate* delegate) {
-    scoped_ptr<aura::Window> window(test::CreateNormalWindow(delegate, NULL));
+    scoped_ptr<aura::Window> window(
+        test::CreateNormalWindow(delegate, nullptr));
     window->Show();
     wm::ActivateWindow(window.get());
     return window.Pass();
@@ -94,7 +95,7 @@ TEST_F(WindowManagerTest, OverviewToSplitViewMode) {
 
   // Go into split-view mode.
   WindowOverviewModeDelegate* overview_delegate = wm_api.wm();
-  overview_delegate->OnSelectSplitViewWindow(w3.get(), NULL, w3.get());
+  overview_delegate->OnSelectSplitViewWindow(w3.get(), nullptr, w3.get());
   EXPECT_TRUE(w3->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_FALSE(w1->IsVisible());
@@ -297,7 +298,7 @@ TEST_F(WindowManagerTest, NewWindowBounds) {
   EXPECT_EQ(first->bounds().ToString(), second->bounds().ToString());
 
   // Get into split view.
-  wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL, NULL);
+  wm_api.GetSplitViewController()->ActivateSplitMode(nullptr, nullptr, nullptr);
   const gfx::Rect left_bounds =
       wm_api.GetSplitViewController()->left_window()->bounds();
   EXPECT_NE(work_area.ToString(),
@@ -364,7 +365,7 @@ TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {
   scoped_ptr<aura::Window> w3(CreateAndActivateWindow(&delegate));
 
   // Get into split-view mode, and then turn on overview mode.
-  wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL, NULL);
+  wm_api.GetSplitViewController()->ActivateSplitMode(nullptr, nullptr, nullptr);
   WindowManager::Get()->EnterOverview();
   EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
   EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());

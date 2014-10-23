@@ -33,9 +33,9 @@ namespace {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(ScreenManager::ContainerParams,
                                  kContainerParamsKey,
-                                 NULL);
+                                 nullptr);
 
-ScreenManagerImpl* instance = NULL;
+ScreenManagerImpl* instance = nullptr;
 
 // A functor to find a container that has the higher priority.
 struct HigherPriorityFinder {
@@ -111,7 +111,7 @@ class AthenaFocusRules : public wm::BaseFocusRules {
   virtual aura::Window* GetNextActivatableWindow(
       aura::Window* ignore) const override {
     aura::Window* next = wm::BaseFocusRules::GetNextActivatableWindow(ignore);
-    // TODO(oshima): Search from activatable containers if |next| is NULL.
+    // TODO(oshima): Search from activatable containers if |next| is nullptr.
     // crbug.com/424750.
     return next;
   }
@@ -195,7 +195,7 @@ class AthenaWindowTargeter : public aura::WindowTargeter {
     // there is no target found so that windows behind it will not be searched.
     const ScreenManager::ContainerParams* params =
         static_cast<aura::Window*>(root)->GetProperty(kContainerParamsKey);
-    return (params && params->block_events) ? root : NULL;
+    return (params && params->block_events) ? root : nullptr;
   }
 
   // Not owned.
@@ -216,13 +216,13 @@ ScreenManagerImpl::ScreenManagerImpl(aura::Window* root_window)
 }
 
 ScreenManagerImpl::~ScreenManagerImpl() {
-  aura::client::SetScreenPositionClient(root_window_, NULL);
-  aura::client::SetWindowTreeClient(root_window_, NULL);
+  aura::client::SetScreenPositionClient(root_window_, nullptr);
+  aura::client::SetWindowTreeClient(root_window_, nullptr);
   wm::FocusController* focus_controller =
       static_cast<wm::FocusController*>(focus_client_.get());
   root_window_->RemovePreTargetHandler(focus_controller);
-  aura::client::SetActivationClient(root_window_, NULL);
-  aura::client::SetFocusClient(root_window_, NULL);
+  aura::client::SetActivationClient(root_window_, nullptr);
+  aura::client::SetFocusClient(root_window_, nullptr);
   aura::Window::Windows children = root_window_->children();
   // Close All children:
   for (aura::Window::Windows::iterator iter = children.begin();
@@ -230,7 +230,7 @@ ScreenManagerImpl::~ScreenManagerImpl() {
        ++iter) {
     delete *iter;
   }
-  instance = NULL;
+  instance = nullptr;
 }
 
 void ScreenManagerImpl::Init() {
@@ -260,7 +260,7 @@ aura::Window* ScreenManagerImpl::FindContainerByPriority(int priority) {
     if (window->GetProperty(kContainerParamsKey)->z_order_priority == priority)
       return window;
   }
-  return NULL;
+  return nullptr;
 }
 
 aura::Window* ScreenManagerImpl::CreateContainer(
@@ -277,7 +277,7 @@ aura::Window* ScreenManagerImpl::CreateContainer(
   // Default parent must specify modal_container_priority.
   DCHECK(!params.default_parent || params.modal_container_priority != -1);
 
-  aura::Window* container = new aura::Window(NULL);
+  aura::Window* container = new aura::Window(nullptr);
   CHECK_GE(params.z_order_priority, 0);
   container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   container->SetName(params.name);

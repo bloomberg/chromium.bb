@@ -19,7 +19,7 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
  private:
   // ExtensionsDelegate:
   virtual content::BrowserContext* GetBrowserContext() const override {
-    return NULL;
+    return nullptr;
   }
   virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
     return shell_extensions_;

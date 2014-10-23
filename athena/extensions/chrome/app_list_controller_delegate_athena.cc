@@ -23,7 +23,7 @@ void AppListControllerDelegateAthena::DismissView() {
 
 gfx::NativeWindow AppListControllerDelegateAthena::GetAppListWindow() {
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 gfx::Rect AppListControllerDelegateAthena::GetAppListBounds() {

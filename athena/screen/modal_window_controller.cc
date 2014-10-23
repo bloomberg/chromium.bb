@@ -18,7 +18,7 @@ namespace {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(ModalWindowController,
                                  kModalWindowControllerKey,
-                                 NULL);
+                                 nullptr);
 
 }  // namespace
 
@@ -31,8 +31,8 @@ ModalWindowController* ModalWindowController::Get(aura::Window* container) {
 }
 
 ModalWindowController::ModalWindowController(int priority)
-    : modal_container_(NULL),
-      dimmer_window_(new aura::Window(NULL)),
+    : modal_container_(nullptr),
+      dimmer_window_(new aura::Window(nullptr)),
       dimmed_(false) {
   ScreenManager::ContainerParams params("ModalContainer", priority);
   params.can_activate_children = true;
@@ -61,14 +61,14 @@ void ModalWindowController::OnWindowAdded(aura::Window* child) {
   DCHECK_NE(child, dimmer_window_);
   if (IsChildWindow(child)) {
     child->AddObserver(this);
-    UpdateDimming(NULL);
+    UpdateDimming(nullptr);
   }
 }
 
 void ModalWindowController::OnWindowVisibilityChanged(aura::Window* window,
                                                       bool visible) {
   if (IsChildWindow(window))
-    UpdateDimming(NULL);
+    UpdateDimming(nullptr);
 }
 
 void ModalWindowController::OnWindowBoundsChanged(aura::Window* window,
@@ -113,8 +113,8 @@ void ModalWindowController::UpdateDimming(aura::Window* ignore) {
     modal_container_->RemoveObserver(this);
     modal_container_->parent()->RemoveChild(modal_container_);
     base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, modal_container_);
-    modal_container_ = NULL;
-    dimmer_window_ = NULL;
+    modal_container_ = nullptr;
+    dimmer_window_ = nullptr;
   }
 }
 

@@ -81,7 +81,7 @@ bool AthenaChromeAppDelegate::CheckMediaAccessPermission(
 void AthenaChromeAppDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents,
     bool blocked) {
-  // RenderViewHost may be NULL during shutdown.
+  // RenderViewHost may be nullptr during shutdown.
   content::RenderViewHost* host = web_contents->GetRenderViewHost();
   if (host) {
     host->Send(new ChromeViewMsg_SetVisuallyDeemphasized(host->GetRoutingID(),

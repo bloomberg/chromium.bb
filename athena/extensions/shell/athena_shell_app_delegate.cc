@@ -26,7 +26,7 @@ content::ColorChooser* AthenaShellAppDelegate::ShowColorChooser(
     content::WebContents* web_contents,
     SkColor initial_color) {
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 void AthenaShellAppDelegate::RunFileChooser(

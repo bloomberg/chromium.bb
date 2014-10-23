@@ -18,7 +18,7 @@ namespace athena {
 
 namespace {
 
-ActivityManager* instance = NULL;
+ActivityManager* instance = nullptr;
 
 views::Widget* CreateWidget(Activity* activity) {
   ActivityViewModel* view_model = activity->GetActivityViewModel();
@@ -51,7 +51,7 @@ ActivityManagerImpl::~ActivityManagerImpl() {
     Activity::Delete(activities_.front());
 
   CHECK_EQ(this, instance);
-  instance = NULL;
+  instance = nullptr;
 }
 
 void ActivityManagerImpl::AddActivity(Activity* activity) {
@@ -95,7 +95,7 @@ Activity* ActivityManagerImpl::GetActivityForWindow(aura::Window* window) {
   };
   std::vector<Activity*>::iterator iter =
       std::find_if(activities_.begin(), activities_.end(), Matcher(window));
-  return iter != activities_.end() ? *iter : NULL;
+  return iter != activities_.end() ? *iter : nullptr;
 }
 
 void ActivityManagerImpl::AddObserver(ActivityManagerObserver* observer) {

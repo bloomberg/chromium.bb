@@ -24,10 +24,11 @@ namespace athena {
 
 AppActivityRegistry::AppActivityRegistry(
     const std::string& app_id,
-    content::BrowserContext* browser_context) :
-      app_id_(app_id),
+    content::BrowserContext* browser_context)
+    : app_id_(app_id),
       browser_context_(browser_context),
-      unloaded_activity_proxy_(NULL) {}
+      unloaded_activity_proxy_(nullptr) {
+}
 
 AppActivityRegistry::~AppActivityRegistry() {
   CHECK(activity_list_.empty());
@@ -62,7 +63,7 @@ void AppActivityRegistry::UnregisterAppActivity(AppActivity* app_activity) {
 
 AppActivity* AppActivityRegistry::GetAppActivityAt(size_t index) {
   if (index >= activity_list_.size())
-    return NULL;
+    return nullptr;
   return activity_list_[index];
 }
 
@@ -94,7 +95,7 @@ void AppActivityRegistry::Unload() {
 
 void AppActivityRegistry::ProxyDestroyed(AppActivityProxy* proxy) {
   DCHECK_EQ(unloaded_activity_proxy_, proxy);
-  unloaded_activity_proxy_ = NULL;
+  unloaded_activity_proxy_ = nullptr;
   if (activity_list_.empty()) {
     AppRegistry::Get()->RemoveAppActivityRegistry(this);
     // |This| is gone now.
@@ -133,7 +134,7 @@ AppActivity* AppActivityRegistry::GetMruActivity() {
     }
   }
   NOTREACHED() << "The application does not get tracked by the mru list";
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace athena

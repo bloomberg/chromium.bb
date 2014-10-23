@@ -8,7 +8,7 @@
 namespace athena {
 
 ScreenLockManager* ScreenLockManager::Create() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace athena

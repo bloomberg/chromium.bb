@@ -57,10 +57,10 @@ class PasswordView : public views::View, public views::ButtonListener {
                const base::Callback<void(bool)>& callback)
       : network_(network),
         callback_(callback),
-        connect_(NULL),
-        cancel_(NULL),
-        textfield_(NULL),
-        error_msg_(NULL),
+        connect_(nullptr),
+        cancel_(nullptr),
+        textfield_(nullptr),
+        error_msg_(nullptr),
         weak_ptr_(this) {
     const int kHorizontal = 5;
     const int kVertical = 0;
@@ -163,7 +163,7 @@ class PasswordView : public views::View, public views::ButtonListener {
       if (error_msg_) {
         RemoveChildView(error_msg_);
         delete error_msg_;
-        error_msg_ = NULL;
+        error_msg_ = nullptr;
       }
       connect_->SetEnabled(false);
       NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
@@ -317,7 +317,7 @@ class NetworkSelector : public ui::NetworkListDelegate,
                         public views::DialogDelegate {
  public:
   NetworkSelector()
-      : scroll_content_(NULL), scroller_(NULL), network_list_(this) {
+      : scroll_content_(nullptr), scroller_(nullptr), network_list_(this) {
     CreateNetworkList();
     CreateWidget();
 
@@ -335,7 +335,7 @@ class NetworkSelector : public ui::NetworkListDelegate,
   void CreateWidget() {
     // Same as CreateDialogWidgetWithBounds() with an empty |bounds|.
     views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
-        this, athena::ScreenManager::Get()->GetContext(), NULL);
+        this, athena::ScreenManager::Get()->GetContext(), nullptr);
     widget->Show();
     widget->CenterWindow(gfx::Size(400, 400));
   }

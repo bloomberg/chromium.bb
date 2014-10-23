@@ -94,7 +94,7 @@ class ATHENA_EXPORT Activity {
   virtual aura::Window* GetWindow() = 0;
 
   // Returns the web contents used to draw the content of the activity.
-  // This may return NULL if the web content is not available.
+  // This may return nullptr if the web content is not available.
   virtual content::WebContents* GetWebContents() = 0;
 
  protected:

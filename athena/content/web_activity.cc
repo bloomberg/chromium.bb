@@ -265,8 +265,8 @@ class AthenaWebView : public views::WebView {
       default:
         break;
     }
-    // NULL is returned if the URL wasn't opened immediately.
-    return NULL;
+    // nullptr is returned if the URL wasn't opened immediately.
+    return nullptr;
   }
 
   virtual bool CanOverscrollContent() const override {
@@ -338,7 +338,7 @@ class AthenaWebView : public views::WebView {
 
   virtual void LoadingStateChanged(content::WebContents* source,
                                    bool to_different_document) override {
-    bool has_stopped = source == NULL || !source->IsLoading();
+    bool has_stopped = source == nullptr || !source->IsLoading();
     LoadProgressChanged(source, has_stopped ? 1 : 0);
   }
 
@@ -367,7 +367,7 @@ class AthenaWebView : public views::WebView {
   virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
       override {
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
 
   virtual content::ColorChooser* OpenColorChooser(
@@ -505,7 +505,7 @@ void WebActivity::SetCurrentState(Activity::ActivityState state) {
       DCHECK_NE(ACTIVITY_UNLOADED, current_state_);
       if (content_proxy_)
         content_proxy_->ContentWillUnload();
-      Observe(NULL);
+      Observe(nullptr);
       web_view_->EvictContent();
       break;
   }
@@ -568,7 +568,7 @@ views::View* WebActivity::GetContentsView() {
 }
 
 views::Widget* WebActivity::CreateWidget() {
-  return NULL;  // Use default widget.
+  return nullptr;  // Use default widget.
 }
 
 gfx::ImageSkia WebActivity::GetOverviewModeImage() {
@@ -634,7 +634,7 @@ void WebActivity::OnDidDownloadFavicon(
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
   icon_ = CreateFaviconImageSkia(
-      bitmaps, original_bitmap_sizes, kIconSize, NULL);
+      bitmaps, original_bitmap_sizes, kIconSize, nullptr);
   ActivityManager::Get()->UpdateActivity(this);
 }
 
@@ -645,7 +645,7 @@ void WebActivity::DidChangeThemeColor(SkColor theme_color) {
 
 void WebActivity::HideContentProxy() {
   if (content_proxy_.get())
-    content_proxy_.reset(NULL);
+    content_proxy_.reset(nullptr);
 }
 
 void WebActivity::ShowContentProxy() {

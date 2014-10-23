@@ -9,7 +9,7 @@
 namespace athena {
 namespace {
 
-ScreenLockManager* instance = NULL;
+ScreenLockManager* instance = nullptr;
 
 }  // namespace
 
@@ -20,7 +20,7 @@ ScreenLockManagerBase::ScreenLockManagerBase() {
 
 ScreenLockManagerBase::~ScreenLockManagerBase() {
   DCHECK_EQ(instance, this);
-  instance = NULL;
+  instance = nullptr;
 }
 
 // static

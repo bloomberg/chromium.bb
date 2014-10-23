@@ -31,7 +31,7 @@ class AppRegistryImpl : public AppRegistry {
 
 namespace {
 
-AppRegistryImpl* instance = NULL;
+AppRegistryImpl* instance = nullptr;
 
 }  // namespace
 
@@ -88,7 +88,7 @@ void AppRegistry::ShutDown() {
 AppRegistry::AppRegistry() {}
 
 AppRegistry::~AppRegistry() {
-  instance = NULL;
+  instance = nullptr;
 }
 
 }  // namespace athena

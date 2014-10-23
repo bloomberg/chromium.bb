@@ -10,8 +10,7 @@ namespace athena {
 
 namespace {
 
-ActivityFactory* instance = NULL;
-
+ActivityFactory* instance = nullptr;
 }
 
 // static
@@ -30,7 +29,7 @@ ActivityFactory* ActivityFactory::Get() {
 void ActivityFactory::Shutdown() {
   DCHECK(instance);
   delete instance;
-  instance = NULL;
+  instance = nullptr;
 }
 
 }  // namespace athena

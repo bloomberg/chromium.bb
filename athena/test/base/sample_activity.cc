@@ -18,7 +18,7 @@ SampleActivity::SampleActivity(SkColor color,
     : color_(color),
       contents_color_(contents_color),
       title_(title),
-      contents_view_(NULL),
+      contents_view_(nullptr),
       current_state_(ACTIVITY_UNLOADED) {
 }
 
@@ -46,12 +46,12 @@ Activity::ActivityMediaState SampleActivity::GetMediaState() {
 }
 
 aura::Window* SampleActivity::GetWindow() {
-  return !contents_view_ ? NULL
+  return !contents_view_ ? nullptr
                          : contents_view_->GetWidget()->GetNativeWindow();
 }
 
 content::WebContents* SampleActivity::GetWebContents() {
-  return NULL;
+  return nullptr;
 }
 
 void SampleActivity::Init() {
@@ -83,7 +83,7 @@ views::View* SampleActivity::GetContentsView() {
 }
 
 views::Widget* SampleActivity::CreateWidget() {
-  return NULL;
+  return nullptr;
 }
 
 gfx::ImageSkia SampleActivity::GetOverviewModeImage() {

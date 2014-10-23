@@ -22,7 +22,9 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
     extensions::AppWindowClient::Set(&app_window_client_);
   }
 
-  virtual ~ShellExtensionsDelegate() { extensions::AppWindowClient::Set(NULL); }
+  virtual ~ShellExtensionsDelegate() {
+    extensions::AppWindowClient::Set(nullptr);
+  }
 
  private:
   // ExtensionsDelegate:

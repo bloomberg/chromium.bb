@@ -44,7 +44,7 @@ class AppItem : public app_list::AppListItem {
         extension_misc::EXTENSION_ICON_MEDIUM,
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_APP_DEFAULT_ICON),
-        NULL));
+        nullptr));
     icon_image_->image_skia().EnsureRepsForSupportedScales();
     SetIcon(icon_image_->image_skia(), false);
     SetName(extension->name());

@@ -157,11 +157,11 @@ TEST_F(WindowListProviderImplTest, SimpleChecks) {
       new WindowListProviderImpl(container.get()));
 
   scoped_ptr<aura::Window> normal_window =
-      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+      CreateWindow(nullptr, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   scoped_ptr<aura::Window> popup_window =
-      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_POPUP);
+      CreateWindow(nullptr, &delegate, ui::wm::WINDOW_TYPE_POPUP);
   scoped_ptr<aura::Window> menu_window =
-      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_MENU);
+      CreateWindow(nullptr, &delegate, ui::wm::WINDOW_TYPE_MENU);
 
   // Check which windows are valid and which are not.
   EXPECT_TRUE(list_provider->IsValidWindow(normal_window.get()));
@@ -188,11 +188,11 @@ TEST_F(WindowListProviderImplTest, TestWindowOrderingFunctions) {
       new WindowListObserver(list_provider.get()));
 
   scoped_ptr<aura::Window> window1 =
-      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+      CreateWindow(nullptr, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   scoped_ptr<aura::Window> window2 =
-      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+      CreateWindow(nullptr, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   scoped_ptr<aura::Window> window3 =
-      CreateWindow(NULL, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
+      CreateWindow(nullptr, &delegate, ui::wm::WINDOW_TYPE_NORMAL);
 
   EXPECT_FALSE(list_provider->IsWindowInList(window1.get()));
   EXPECT_FALSE(list_provider->IsWindowInList(window2.get()));
@@ -296,9 +296,9 @@ TEST_F(WindowListProviderImplTest, TransientWindows) {
 
   scoped_ptr<WindowListObserver> observer(
       new WindowListObserver(list_provider));
-  scoped_ptr<aura::Window> w1 = test::CreateNormalWindow(&delegate, NULL);
+  scoped_ptr<aura::Window> w1 = test::CreateNormalWindow(&delegate, nullptr);
   w1->Show();
-  scoped_ptr<aura::Window> w2 = test::CreateNormalWindow(&delegate, NULL);
+  scoped_ptr<aura::Window> w2 = test::CreateNormalWindow(&delegate, nullptr);
   w2->Show();
   scoped_ptr<aura::Window> t1 = test::CreateTransientWindow(
       &delegate, w1.get(), ui::MODAL_TYPE_NONE, false);

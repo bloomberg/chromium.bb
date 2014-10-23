@@ -32,7 +32,7 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
   }
 
   virtual ~ChromeExtensionsDelegate() {
-    extensions::AppWindowClient::Set(NULL);
+    extensions::AppWindowClient::Set(nullptr);
   }
 
  private:

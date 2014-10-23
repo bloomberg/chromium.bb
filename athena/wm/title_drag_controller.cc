@@ -59,7 +59,7 @@ void TitleDragController::EndTransition(aura::Window* window, bool complete) {
 void TitleDragController::OnTransitionEnd(aura::Window* window, bool complete) {
   weak_ptr_.InvalidateWeakPtrs();
   if (!tracker_.Contains(window))
-    window = NULL;
+    window = nullptr;
   shadow_.reset();
   if (window) {
     window->SetTransform(gfx::Transform());

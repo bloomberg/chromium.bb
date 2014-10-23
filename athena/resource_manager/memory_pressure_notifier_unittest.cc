@@ -83,7 +83,7 @@ class TestMemoryPressureObserver : public MemoryPressureObserver {
 // Our testing base.
 class MemoryPressureTest : public AthenaTestBase {
  public:
-  MemoryPressureTest() : test_resource_manager_delegate_(NULL) {}
+  MemoryPressureTest() : test_resource_manager_delegate_(nullptr) {}
   virtual ~MemoryPressureTest() {}
 
   // AthenaTestBase:

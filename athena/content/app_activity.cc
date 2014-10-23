@@ -20,12 +20,11 @@
 namespace athena {
 
 // TODO(mukai): specifies the same accelerators of WebActivity.
-AppActivity::AppActivity(const std::string& app_id,
-                         views::WebView* web_view)
+AppActivity::AppActivity(const std::string& app_id, views::WebView* web_view)
     : app_id_(app_id),
       web_view_(web_view),
       current_state_(ACTIVITY_UNLOADED),
-      app_activity_registry_(NULL) {
+      app_activity_registry_(nullptr) {
   Observe(web_view->GetWebContents());
 }
 
@@ -94,11 +93,11 @@ Activity::ActivityMediaState AppActivity::GetMediaState() {
 }
 
 aura::Window* AppActivity::GetWindow() {
-  return !web_view_ ? NULL : web_view_->GetWidget()->GetNativeWindow();
+  return !web_view_ ? nullptr : web_view_->GetWidget()->GetNativeWindow();
 }
 
 content::WebContents* AppActivity::GetWebContents() {
-  return !web_view_ ? NULL : web_view_->GetWebContents();
+  return !web_view_ ? nullptr : web_view_->GetWebContents();
 }
 
 void AppActivity::Init() {
@@ -198,9 +197,9 @@ void AppActivity::ResetContentsView() {
 
 AppActivity::AppActivity(const std::string& app_id)
     : app_id_(app_id),
-      web_view_(NULL),
+      web_view_(nullptr),
       current_state_(ACTIVITY_UNLOADED),
-      app_activity_registry_(NULL) {
+      app_activity_registry_(nullptr) {
 }
 
 AppActivity::~AppActivity() {

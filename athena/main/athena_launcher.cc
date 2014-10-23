@@ -63,7 +63,7 @@ struct AthenaEnvState {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(athena::AthenaEnvState,
                                  kAthenaEnvStateKey,
-                                 NULL);
+                                 nullptr);
 
 // This class observes the change of the virtual keyboard and distribute the
 // change to appropriate modules of athena.

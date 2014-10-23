@@ -77,7 +77,7 @@ class ContentProxy {
 
   // The web view which was passed on creation and is associated with this
   // object. It will be shown when OnPreContentDestroyed() gets called and then
-  // set to NULL. The ownership remains with the creator.
+  // set to nullptr. The ownership remains with the creator.
   views::WebView* web_view_;
 
   // While we are doing our PNG encode, we keep the read back image to have

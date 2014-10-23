@@ -34,10 +34,10 @@ namespace athena {
 
 namespace {
 
-AthenaEnv* instance = NULL;
+AthenaEnv* instance = nullptr;
 
 // Screen object used during shutdown.
-gfx::Screen* screen_for_shutdown = NULL;
+gfx::Screen* screen_for_shutdown = nullptr;
 
 // TODO(flackr:oshima): Remove this once athena switches to share
 // ash::DisplayManager.
@@ -57,10 +57,10 @@ class ScreenForShutdown : public gfx::Screen {
 
   // gfx::Screen overrides:
   virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-  virtual gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
+  virtual gfx::NativeWindow GetWindowUnderCursor() override { return nullptr; }
   virtual gfx::NativeWindow GetWindowAtScreenPoint(
       const gfx::Point& point) override {
-    return NULL;
+    return nullptr;
   }
   virtual int GetNumDisplays() const override { return 1; }
   virtual std::vector<gfx::Display> GetAllDisplays() const override {
@@ -219,7 +219,7 @@ class AthenaEnvImpl : public AthenaEnv,
   }
 
   virtual ~AthenaEnvImpl() {
-    instance = NULL;
+    instance = nullptr;
 
     host_->RemoveObserver(this);
     if (input_method_filter_)

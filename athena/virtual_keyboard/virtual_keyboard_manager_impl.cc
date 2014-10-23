@@ -62,8 +62,7 @@ class BasicKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
 class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
  public:
   explicit VirtualKeyboardManagerImpl(content::BrowserContext* browser_context)
-      : browser_context_(browser_context),
-        container_(NULL) {
+      : browser_context_(browser_context), container_(nullptr) {
     CHECK(!instance);
     instance = this;
     Init();
@@ -71,9 +70,9 @@ class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
 
   virtual ~VirtualKeyboardManagerImpl() {
     CHECK_EQ(this, instance);
-    instance = NULL;
+    instance = nullptr;
 
-    keyboard::KeyboardController::ResetInstance(NULL);
+    keyboard::KeyboardController::ResetInstance(nullptr);
   }
 
  private:

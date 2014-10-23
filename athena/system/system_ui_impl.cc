@@ -21,7 +21,7 @@
 namespace athena {
 namespace {
 
-SystemUI* instance = NULL;
+SystemUI* instance = nullptr;
 
 // View which positions the TimeView on the left and the StatusIconView on the
 // right.
@@ -74,7 +74,7 @@ class SystemUIImpl : public SystemUI {
  public:
   SystemUIImpl(scoped_refptr<base::TaskRunner> blocking_task_runner)
       : orientation_controller_(new OrientationController()),
-        background_container_(NULL) {
+        background_container_(nullptr) {
     orientation_controller_->InitWith(blocking_task_runner);
   }
 
@@ -144,7 +144,7 @@ SystemUI* SystemUI::Get() {
 void SystemUI::Shutdown() {
   CHECK(instance);
   delete instance;
-  instance = NULL;
+  instance = nullptr;
 }
 
 }  // namespace athena

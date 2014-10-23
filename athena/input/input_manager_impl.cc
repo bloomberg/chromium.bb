@@ -12,7 +12,7 @@
 namespace athena {
 namespace {
 
-InputManager* instance = NULL;
+InputManager* instance = nullptr;
 
 }  // namespace
 
@@ -27,7 +27,7 @@ InputManagerImpl::InputManagerImpl()
 InputManagerImpl::~InputManagerImpl() {
   DCHECK_EQ(instance, this);
   Shutdown();
-  instance = NULL;
+  instance = nullptr;
 }
 
 void InputManagerImpl::Init() {
@@ -83,7 +83,7 @@ scoped_ptr<ui::EventTargetIterator> InputManagerImpl::GetChildIterator() const {
 
 ui::EventTargeter* InputManagerImpl::GetEventTargeter() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void InputManagerImpl::OnEvent(ui::Event* event) {

@@ -65,7 +65,7 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   athena::ExtensionsDelegate::CreateExtensionsDelegateForTest();
   athena::StartAthenaSession(new SampleActivityFactory(),
                              make_scoped_ptr(new TestAppModelBuilder()),
-                             CreateSearchControllerFactory(NULL));
+                             CreateSearchControllerFactory(nullptr));
 }
 
 void AthenaTestHelper::TearDown() {

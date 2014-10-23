@@ -48,9 +48,10 @@ class ATHENA_EXPORT SplitViewController
   bool IsSplitViewModeActive() const;
 
   // Activates split-view mode with |left| and |right| windows. If |left| and/or
-  // |right| is NULL, then the first window in the window-list (which is neither
+  // |right| is nullptr, then the first window in the window-list (which is
+  // neither
   // |left| nor |right|) is selected instead. |to_activate| indicates which of
-  // |left| or |right| should be activated. If |to_activate| is NULL, the
+  // |left| or |right| should be activated. If |to_activate| is nullptr, the
   // currently active window is kept active if it is one of the split-view
   // windows.
   void ActivateSplitMode(aura::Window* left,
@@ -79,7 +80,7 @@ class ATHENA_EXPORT SplitViewController
 
   enum State {
     // Split View mode is not active. |left_window_| and |right_window| are
-    // NULL.
+    // nullptr.
     INACTIVE,
     // Two windows |left_window_| and |right_window| are shown side by side and
     // there is a horizontal scroll in progress which is dragging the divider
@@ -140,7 +141,7 @@ class ATHENA_EXPORT SplitViewController
   WindowListProvider* window_list_provider_;
 
   // Windows for the left and right activities shown in SCROLLING and ACTIVE
-  // states. In INACTIVE state these are NULL.
+  // states. In INACTIVE state these are nullptr.
   aura::Window* left_window_;
   aura::Window* right_window_;
 

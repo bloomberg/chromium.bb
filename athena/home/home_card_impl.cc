@@ -32,7 +32,7 @@
 namespace athena {
 namespace {
 
-HomeCard* instance = NULL;
+HomeCard* instance = nullptr;
 
 gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
                             HomeCard::State state) {
@@ -67,9 +67,7 @@ gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
 // vertically.
 class HomeCardLayoutManager : public aura::LayoutManager {
  public:
-  HomeCardLayoutManager()
-      : home_card_(NULL),
-        minimized_layer_(NULL) {}
+  HomeCardLayoutManager() : home_card_(nullptr), minimized_layer_(nullptr) {}
 
   virtual ~HomeCardLayoutManager() {}
 
@@ -116,7 +114,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   }
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {
     if (home_card_ == child)
-      home_card_ = NULL;
+      home_card_ = nullptr;
   }
   virtual void OnWindowRemovedFromLayout(aura::Window* child) override {
   }
@@ -236,9 +234,9 @@ HomeCardImpl::HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
       search_factory_(search_factory.Pass()),
       state_(HIDDEN),
       original_state_(VISIBLE_MINIMIZED),
-      home_card_widget_(NULL),
-      home_card_view_(NULL),
-      layout_manager_(NULL) {
+      home_card_widget_(nullptr),
+      home_card_view_(nullptr),
+      layout_manager_(nullptr) {
   DCHECK(!instance);
   instance = this;
   WindowManager::Get()->AddObserver(this);
@@ -252,7 +250,7 @@ HomeCardImpl::~HomeCardImpl() {
   // Reset the view delegate first as it access search provider during
   // shutdown.
   view_delegate_.reset();
-  instance = NULL;
+  instance = nullptr;
 }
 
 void HomeCardImpl::Init() {
@@ -290,7 +288,7 @@ void HomeCardImpl::Init() {
 }
 
 aura::Window* HomeCardImpl::GetHomeCardWindowForTest() const {
-  return home_card_widget_ ? home_card_widget_->GetNativeWindow() : NULL;
+  return home_card_widget_ ? home_card_widget_->GetNativeWindow() : nullptr;
 }
 
 void HomeCardImpl::InstallAccelerators() {
@@ -439,7 +437,7 @@ HomeCard* HomeCard::Create(scoped_ptr<AppModelBuilder> model_builder,
 void HomeCard::Shutdown() {
   DCHECK(instance);
   delete instance;
-  instance = NULL;
+  instance = nullptr;
 }
 
 // static

@@ -8,8 +8,8 @@
 
 namespace athena {
 
-ActivityLifetimeTracker::ActivityLifetimeTracker() : new_activity_(NULL),
-                                                     deleted_activity_(NULL) {
+ActivityLifetimeTracker::ActivityLifetimeTracker()
+    : new_activity_(nullptr), deleted_activity_(nullptr) {
   ActivityManager::Get()->AddObserver(this);
 }
 
@@ -27,13 +27,13 @@ void ActivityLifetimeTracker::OnActivityEnding(Activity* activity) {
 
 Activity* ActivityLifetimeTracker::GetNewActivityAndReset() {
   Activity* activity = new_activity_;
-  new_activity_ = NULL;
+  new_activity_ = nullptr;
   return activity;
 }
 
 void* ActivityLifetimeTracker::GetDeletedActivityAndReset() {
   void* activity = deleted_activity_;
-  deleted_activity_ = NULL;
+  deleted_activity_ = nullptr;
   return activity;
 }
 

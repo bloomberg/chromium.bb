@@ -61,7 +61,7 @@ class AthenaDesktopController : public extensions::DesktopController {
       content::BrowserContext* context,
       const extensions::Extension* extension) override {
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
 
   // Adds the window to the desktop.

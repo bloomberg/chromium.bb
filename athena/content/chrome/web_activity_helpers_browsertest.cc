@@ -50,7 +50,7 @@ class HelpersCreatedChecker : public content::NotificationObserver {
     content::WebContents* web_contents =
         content::Source<content::WebContents>(source).ptr();
     helpers_created_prior_to_render_view_ &=
-        (extensions::TabHelper::FromWebContents(web_contents) != NULL);
+        (extensions::TabHelper::FromWebContents(web_contents) != nullptr);
   }
 
   bool helpers_created_prior_to_render_view_;

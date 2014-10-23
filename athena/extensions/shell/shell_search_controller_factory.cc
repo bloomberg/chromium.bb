@@ -22,7 +22,7 @@ scoped_ptr<app_list::SearchController> ShellSearchControllerFactory::Create(
     app_list::AppListModel::SearchResults* results) {
   scoped_ptr<app_list::SearchController> controller(
       new app_list::SearchController(
-          search_box, results, NULL /* no history */));
+          search_box, results, nullptr /* no history */));
   controller->AddProvider(app_list::Mixer::MAIN_GROUP,
                           scoped_ptr<app_list::SearchProvider>(
                               new UrlSearchProvider(browser_context_)));

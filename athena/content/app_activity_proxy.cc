@@ -60,7 +60,7 @@ aura::Window* AppActivityProxy::GetWindow() {
 }
 
 content::WebContents* AppActivityProxy::GetWebContents() {
-  return NULL;
+  return nullptr;
 }
 
 void AppActivityProxy::Init() {
@@ -73,7 +73,7 @@ void AppActivityProxy::Init() {
                                             replaced_activity_->GetWindow());
   // After the Init() function returns, the passed |replaced_activity_| might
   // get destroyed. Since we do not need it anymore we reset it.
-  replaced_activity_ = NULL;
+  replaced_activity_ = nullptr;
 }
 
 SkColor AppActivityProxy::GetRepresentativeColor() const {
@@ -97,7 +97,7 @@ views::View* AppActivityProxy::GetContentsView() {
 }
 
 views::Widget* AppActivityProxy::CreateWidget() {
-  return NULL;
+  return nullptr;
 }
 
 gfx::ImageSkia AppActivityProxy::GetOverviewModeImage() {

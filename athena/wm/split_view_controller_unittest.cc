@@ -103,7 +103,8 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   ScopedVector<aura::Window> windows;
   const int kNumWindows = 6;
   for (size_t i = 0; i < kNumWindows; ++i) {
-    scoped_ptr<aura::Window> window = test::CreateNormalWindow(NULL, NULL);
+    scoped_ptr<aura::Window> window =
+        test::CreateNormalWindow(nullptr, nullptr);
     windows.push_back(window.release());
     windows[i]->Hide();
   }
@@ -114,7 +115,7 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   SplitViewController* controller = api()->GetSplitViewController();
   ASSERT_FALSE(controller->IsSplitViewModeActive());
 
-  controller->ActivateSplitMode(NULL, NULL, NULL);
+  controller->ActivateSplitMode(nullptr, nullptr, nullptr);
   ASSERT_TRUE(controller->IsSplitViewModeActive());
   // The last two windows should be on the left and right, respectively.
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
@@ -126,7 +127,7 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   // Select the window that is currently on the left for the right panel. The
   // windows should switch.
   controller->ActivateSplitMode(
-      NULL, windows[kNumWindows - 1], windows[kNumWindows - 1]);
+      nullptr, windows[kNumWindows - 1], windows[kNumWindows - 1]);
   EXPECT_EQ(windows[kNumWindows - 2], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 1], controller->right_window());
   EXPECT_EQ(windows[kNumWindows - 1], GetTopmostWindow());
@@ -134,7 +135,7 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
   controller->ActivateSplitMode(
-      windows[kNumWindows - 1], NULL, windows[kNumWindows - 1]);
+      windows[kNumWindows - 1], nullptr, windows[kNumWindows - 1]);
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[kNumWindows - 2], controller->right_window());
   EXPECT_EQ(windows[kNumWindows - 1], GetTopmostWindow());
@@ -153,14 +154,14 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
 
   // Select one of the windows behind the stacks for the right panel. The window
   // on the left should remain unchanged.
-  controller->ActivateSplitMode(NULL, windows[0], windows[0]);
+  controller->ActivateSplitMode(nullptr, windows[0], windows[0]);
   EXPECT_EQ(windows[kNumWindows - 1], controller->left_window());
   EXPECT_EQ(windows[0], controller->right_window());
   EXPECT_EQ(windows[0], GetTopmostWindow());
   EXPECT_EQ(windows[kNumWindows - 1], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
-  controller->ActivateSplitMode(windows[1], NULL, NULL);
+  controller->ActivateSplitMode(windows[1], nullptr, nullptr);
   EXPECT_EQ(windows[1], controller->left_window());
   EXPECT_EQ(windows[0], controller->right_window());
   EXPECT_EQ(windows[0], GetTopmostWindow());
@@ -174,7 +175,7 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   EXPECT_EQ(windows[4], GetSecondTopmostWindow());
   EXPECT_TRUE(OnlySplitViewWindowsVisible());
 
-  controller->ActivateSplitMode(windows[0], NULL, windows[0]);
+  controller->ActivateSplitMode(windows[0], nullptr, windows[0]);
   EXPECT_EQ(windows[0], controller->left_window());
   EXPECT_EQ(windows[5], controller->right_window());
   EXPECT_EQ(windows[0], GetTopmostWindow());
@@ -195,7 +196,8 @@ TEST_F(SplitViewControllerTest, ScrollDragHandle) {
   ScopedVector<aura::Window> windows;
   const int kNumWindows = 2;
   for (size_t i = 0; i < kNumWindows; ++i) {
-    scoped_ptr<aura::Window> window = test::CreateNormalWindow(NULL, NULL);
+    scoped_ptr<aura::Window> window =
+        test::CreateNormalWindow(nullptr, nullptr);
     windows.push_back(window.release());
     windows[i]->Hide();
   }
@@ -239,8 +241,8 @@ TEST_F(SplitViewControllerTest, ScrollDragHandle) {
   HandleScrollUpdate(large_distance);
   HandleScrollEnd(0.0f);
   ASSERT_FALSE(controller->IsSplitViewModeActive());
-  EXPECT_EQ(NULL, controller->left_window());
-  EXPECT_EQ(NULL, controller->right_window());
+  EXPECT_EQ(nullptr, controller->left_window());
+  EXPECT_EQ(nullptr, controller->right_window());
   EXPECT_EQ(left_window, GetTopmostWindow());
 
   // Re-activate split view mode.
@@ -267,8 +269,8 @@ TEST_F(SplitViewControllerTest, ScrollDragHandle) {
   HandleScrollUpdate(-large_distance);
   HandleScrollEnd(slow_velocity);
   ASSERT_FALSE(controller->IsSplitViewModeActive());
-  EXPECT_EQ(NULL, controller->left_window());
-  EXPECT_EQ(NULL, controller->right_window());
+  EXPECT_EQ(nullptr, controller->left_window());
+  EXPECT_EQ(nullptr, controller->right_window());
   EXPECT_EQ(right_window, GetTopmostWindow());
 
   // Re-activate split view mode.
@@ -281,8 +283,8 @@ TEST_F(SplitViewControllerTest, ScrollDragHandle) {
   HandleScrollUpdate(-large_distance);
   HandleScrollEnd(fast_velocity);
   ASSERT_FALSE(controller->IsSplitViewModeActive());
-  EXPECT_EQ(NULL, controller->left_window());
-  EXPECT_EQ(NULL, controller->right_window());
+  EXPECT_EQ(nullptr, controller->left_window());
+  EXPECT_EQ(nullptr, controller->right_window());
   EXPECT_EQ(left_window, GetTopmostWindow());
 }
 
@@ -291,7 +293,8 @@ TEST_F(SplitViewControllerTest, LandscapeOnly) {
   ScopedVector<aura::Window> windows;
   const int kNumWindows = 2;
   for (size_t i = 0; i < kNumWindows; ++i) {
-    scoped_ptr<aura::Window> window = test::CreateNormalWindow(NULL, NULL);
+    scoped_ptr<aura::Window> window =
+        test::CreateNormalWindow(nullptr, nullptr);
     window->Hide();
     windows.push_back(window.release());
   }
@@ -305,7 +308,7 @@ TEST_F(SplitViewControllerTest, LandscapeOnly) {
   ASSERT_TRUE(IsSplitViewAllowed());
   ASSERT_FALSE(controller->IsSplitViewModeActive());
 
-  controller->ActivateSplitMode(NULL, NULL, NULL);
+  controller->ActivateSplitMode(nullptr, nullptr, nullptr);
   ASSERT_TRUE(controller->IsSplitViewModeActive());
 
   // Screen rotation should be locked while in splitview.

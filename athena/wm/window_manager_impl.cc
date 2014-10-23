@@ -31,7 +31,7 @@
 
 namespace athena {
 namespace {
-class WindowManagerImpl* instance = NULL;
+class WindowManagerImpl* instance = nullptr;
 
 void SetWindowState(aura::Window* window,
                     const gfx::Rect& bounds,
@@ -185,7 +185,7 @@ WindowManagerImpl::~WindowManagerImpl() {
   // |title_drag_controller_| needs to be reset before |container_|.
   title_drag_controller_.reset();
   container_.reset();
-  instance = NULL;
+  instance = nullptr;
 }
 
 void WindowManagerImpl::ToggleSplitView() {
@@ -201,7 +201,7 @@ void WindowManagerImpl::ToggleSplitView() {
     FOR_EACH_OBSERVER(WindowManagerObserver,
                       observers_,
                       OnSplitViewModeEnter());
-    split_view_controller_->ActivateSplitMode(NULL, NULL, NULL);
+    split_view_controller_->ActivateSplitMode(nullptr, nullptr, nullptr);
   }
 }
 
@@ -209,7 +209,7 @@ void WindowManagerImpl::EnterOverview() {
   if (IsOverviewModeActive())
     return;
 
-  bezel_controller_->set_left_right_delegate(NULL);
+  bezel_controller_->set_left_right_delegate(nullptr);
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeEnter());
 
   // Note: The window_list_provider_ resembles the exact window list of the
@@ -370,7 +370,7 @@ aura::Window* WindowManagerImpl::GetWindowBehind(aura::Window* window) {
       std::find(windows.rbegin(), windows.rend(), window);
   CHECK(iter != windows.rend());
   ++iter;
-  aura::Window* behind = NULL;
+  aura::Window* behind = nullptr;
   if (iter != windows.rend())
     behind = *iter++;
 
@@ -379,7 +379,7 @@ aura::Window* WindowManagerImpl::GetWindowBehind(aura::Window* window) {
     aura::Window* right = split_view_controller_->right_window();
     CHECK(window == left || window == right);
     if (behind == left || behind == right)
-      behind = (iter == windows.rend()) ? NULL : *iter;
+      behind = (iter == windows.rend()) ? nullptr : *iter;
   }
 
   return behind;

@@ -32,10 +32,10 @@ class ActivityLifetimeTracker : public ActivityManagerObserver {
   void* GetDeletedActivityAndReset();
 
  private:
-  // The activity which got created if not NULL.
+  // The activity which got created if not nullptr.
   Activity* new_activity_;
 
-  // An old activity which got unloaded if not NULL.
+  // An old activity which got unloaded if not nullptr.
   void* deleted_activity_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLifetimeTracker);

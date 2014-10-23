@@ -16,7 +16,7 @@ namespace athena {
 
 class BackgroundView : public views::View {
  public:
-  BackgroundView() : system_info_view_(NULL) {
+  BackgroundView() : system_info_view_(nullptr) {
     system_info_view_ =
         SystemUI::Get()->CreateSystemInfoView(SystemUI::COLOR_SCHEME_LIGHT);
     AddChildView(system_info_view_);

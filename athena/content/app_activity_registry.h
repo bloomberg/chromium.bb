@@ -45,7 +45,7 @@ class ATHENA_EXPORT AppActivityRegistry {
   // Returns the number of activities/windows with this application.
   int NumberOfActivities() const { return activity_list_.size(); }
 
-  // Returns the |AppActivity| at |index|. It will return NULL if an invalid
+  // Returns the |AppActivity| at |index|. It will return nullptr if an invalid
   // index was specified.
   AppActivity* GetAppActivityAt(size_t index);
 
@@ -53,7 +53,7 @@ class ATHENA_EXPORT AppActivityRegistry {
   void Unload();
 
   // Returns true if the application is in the unloaded state.
-  bool IsUnloaded() { return unloaded_activity_proxy_ != NULL; }
+  bool IsUnloaded() { return unloaded_activity_proxy_ != nullptr; }
 
   content::BrowserContext* browser_context() const { return browser_context_; }
   const std::string& app_id() const { return app_id_; }

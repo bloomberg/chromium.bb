@@ -109,7 +109,7 @@ TEST_F(HomeCardTest, AppSelection) {
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
 
   athena::ActivityFactory::Get()->CreateWebActivity(
-      NULL, base::string16(), GURL("http://www.google.com/"));
+      nullptr, base::string16(), GURL("http://www.google.com/"));
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 }
 
@@ -309,7 +309,7 @@ TEST_F(HomeCardTest, DontMinimizeWithModalWindow) {
 
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> modal(test::CreateTransientWindow(
-      &delegate, NULL, ui::MODAL_TYPE_SYSTEM, false));
+      &delegate, nullptr, ui::MODAL_TYPE_SYSTEM, false));
   modal->Show();
   wm::ActivateWindow(modal.get());
   EXPECT_TRUE(wm::IsActiveWindow(modal.get()));

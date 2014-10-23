@@ -133,7 +133,7 @@ class PriorityWindowTargeter : public aura::WindowTargeter,
   virtual void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     window_->RemoveObserver(this);
-    window_ = NULL;
+    window_ = nullptr;
   }
 
   // Minimum dimension of a target to be comfortably touchable.
@@ -170,12 +170,12 @@ SplitViewController::SplitViewController(
     : state_(INACTIVE),
       container_(container),
       window_list_provider_(window_list_provider),
-      left_window_(NULL),
-      right_window_(NULL),
+      left_window_(nullptr),
+      right_window_(nullptr),
       divider_position_(0),
       divider_scroll_start_position_(0),
-      divider_widget_(NULL),
-      drag_handle_(NULL),
+      divider_widget_(nullptr),
+      drag_handle_(nullptr),
       weak_factory_(this) {
 }
 
@@ -264,7 +264,7 @@ void SplitViewController::ReplaceWindow(aura::Window* window,
   CHECK(replace_with != left_window_ && replace_with != right_window_);
   DCHECK(window_list_provider_->IsWindowInList(replace_with));
 
-  aura::Window* not_replaced = NULL;
+  aura::Window* not_replaced = nullptr;
   if (window == left_window_) {
     left_window_ = replace_with;
     not_replaced = right_window_;
@@ -285,7 +285,7 @@ void SplitViewController::DeactivateSplitMode() {
   CHECK_EQ(ACTIVE, state_);
   SetState(INACTIVE);
   UpdateLayout(false);
-  left_window_ = right_window_ = NULL;
+  left_window_ = right_window_ = nullptr;
 }
 
 void SplitViewController::InitializeDivider() {
@@ -373,7 +373,7 @@ void SplitViewController::SetState(SplitViewController::State state) {
   if (state_ == state)
     return;
 
-  if (divider_widget_ == NULL)
+  if (divider_widget_ == nullptr)
     InitializeDivider();
 
   state_ = state;
@@ -454,7 +454,7 @@ void SplitViewController::UpdateLayout(bool animate) {
     SetWindowTransforms(
         left_transform, right_transform, divider_transform, animate);
   }
-  // Note: |left_window_| and |right_window_| may be NULL if calling
+  // Note: |left_window_| and |right_window_| may be nullptr if calling
   // SetWindowTransforms():
   // - caused the in-progress animation to abort.
   // - started a zero duration animation.
@@ -495,7 +495,7 @@ void SplitViewController::SetWindowTransforms(
 
 void SplitViewController::OnAnimationCompleted() {
   // Animation can be cancelled when deactivated.
-  if (left_window_ == NULL)
+  if (left_window_ == nullptr)
     return;
   UpdateLayout(false);
 
@@ -504,8 +504,8 @@ void SplitViewController::OnAnimationCompleted() {
   to_hide_.clear();
 
   if (state_ == INACTIVE) {
-    left_window_ = NULL;
-    right_window_ = NULL;
+    left_window_ = nullptr;
+    right_window_ = nullptr;
   }
 }
 

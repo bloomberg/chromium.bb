@@ -58,7 +58,7 @@ void AthenaExtensionInstallUI::OnInstallSuccess(
   base::string16 message = l10n_util::GetStringFUTF16(
       IDS_EXTENSION_INSTALLED_HEADING, extension_name);
   views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
-      new MessageDialogDelegate(message), NULL, NULL);
+      new MessageDialogDelegate(message), nullptr, nullptr);
   widget->Show();
 }
 
@@ -68,7 +68,7 @@ void AthenaExtensionInstallUI::OnInstallFailure(
     return;
 
   views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
-      new MessageDialogDelegate(error.message()), NULL, NULL);
+      new MessageDialogDelegate(error.message()), nullptr, nullptr);
   widget->Show();
 }
 
@@ -84,7 +84,7 @@ void AthenaExtensionInstallUI::SetSkipPostInstallUI(bool skip_ui) {
 }
 
 gfx::NativeWindow AthenaExtensionInstallUI::GetDefaultInstallDialogParent() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace athena

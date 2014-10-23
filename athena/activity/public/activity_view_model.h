@@ -45,12 +45,12 @@ class ATHENA_EXPORT ActivityViewModel {
   // draws its own frame.
   virtual bool UsesFrame() const = 0;
 
-  // Returns the contents view which might be NULL if the activity is not
+  // Returns the contents view which might be nullptr if the activity is not
   // loaded. Note that the caller should not hold on to the view since it can
   // be deleted by the resource manager.
   virtual views::View* GetContentsView() = 0;
 
-  // Creates a custom widget for the activity. Returns NULL to use default
+  // Creates a custom widget for the activity. Returns nullptr to use default
   // implementation.
   virtual views::Widget* CreateWidget() = 0;
 

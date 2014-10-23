@@ -41,8 +41,8 @@ class AppActivityBrowserTest : public AthenaAppBrowserTest {
   // until the application got restarted returning the new application activity.
   Activity* WaitForProxyDestruction(Activity* proxy_activity) {
     ActivityLifetimeTracker tracker;
-    void* deleted_activity = NULL;
-    Activity* app_activity = NULL;
+    void* deleted_activity = nullptr;
+    Activity* app_activity = nullptr;
     while (!app_activity && !deleted_activity) {
       deleted_activity = tracker_->GetDeletedActivityAndReset();
       app_activity = tracker_->GetNewActivityAndReset();
@@ -68,7 +68,7 @@ class AppActivityBrowserTest : public AthenaAppBrowserTest {
     Activity* app_activity = CreateTestAppActivity(GetTestAppID());
     ASSERT_TRUE(app_activity);
     EXPECT_EQ(app_activity, tracker_->GetNewActivityAndReset());
-    EXPECT_EQ(NULL, tracker_->GetDeletedActivityAndReset());
+    EXPECT_EQ(nullptr, tracker_->GetDeletedActivityAndReset());
 
     // Then a web activity (which will then be in front of the app).
     *web_activity = test_util::CreateTestWebActivity(
@@ -77,7 +77,7 @@ class AppActivityBrowserTest : public AthenaAppBrowserTest {
         GURL(kTestUrl));
     ASSERT_TRUE(*web_activity);
     EXPECT_EQ(*web_activity, tracker_->GetNewActivityAndReset());
-    EXPECT_EQ(NULL, tracker_->GetDeletedActivityAndReset());
+    EXPECT_EQ(nullptr, tracker_->GetDeletedActivityAndReset());
 
     const aura::Window::Windows& windows =
         WindowManager::Get()->GetWindowListProvider()->GetWindowList();
@@ -138,13 +138,13 @@ IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, CreatedAppGetsFocus) {
 // upon changing it to invisible it gets reloaded it its current list location.
 IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, UnloadReloadApplicationInPlace) {
   // Set up the experiment.
-  Activity* proxy_activity = NULL;
-  Activity* web_activity = NULL;
+  Activity* proxy_activity = nullptr;
+  Activity* web_activity = nullptr;
   SetUpWebAndProxyActivity(&web_activity, &proxy_activity);
   // By returning to a low memory pressure the application should start again.
   test_util::SendTestMemoryPressureEvent(ResourceManager::MEMORY_PRESSURE_LOW);
   Activity* app_activity = WaitForProxyDestruction(proxy_activity);
-  proxy_activity = NULL;  // The proxy is gone now.
+  proxy_activity = nullptr;  // The proxy is gone now.
 
   // After this, the application should remain at its current location in the
   // stack and the current window should stay active.
@@ -159,8 +159,8 @@ IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, UnloadReloadApplicationInPlace) {
 // front of the stack (and activate it).
 IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, ReloadActivatedApplication) {
   // Set up the experiment.
-  Activity* proxy_activity = NULL;
-  Activity* web_activity = NULL;
+  Activity* proxy_activity = nullptr;
+  Activity* web_activity = nullptr;
   SetUpWebAndProxyActivity(&web_activity, &proxy_activity);
 
   // Activating the proxy should push back the web app, lauch the application,
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, ReloadActivatedApplication) {
   EXPECT_EQ(web_activity->GetWindow(), windows[0]);
 
   Activity* app_activity = WaitForProxyDestruction(proxy_activity);
-  proxy_activity = NULL;  // The proxy is gone now.
+  proxy_activity = nullptr;  // The proxy is gone now.
 
   // After this, the application should remain at its current location in the
   // stack and the activation focus should remain on the current window as well.
@@ -185,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, ReloadActivatedApplication) {
 // and activate it.
 IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, ReloadMovedApplication) {
   // Set up the experiment.
-  Activity* proxy_activity = NULL;
-  Activity* web_activity = NULL;
+  Activity* proxy_activity = nullptr;
+  Activity* web_activity = nullptr;
   SetUpWebAndProxyActivity(&web_activity, &proxy_activity);
   // Moving the window to the front will restart the app.
   WindowManager::Get()->GetWindowListProvider()->StackWindowFrontOf(
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, ReloadMovedApplication) {
   EXPECT_EQ(web_activity->GetWindow(), windows[0]);
 
   Activity* app_activity = WaitForProxyDestruction(proxy_activity);
-  proxy_activity = NULL;  // The proxy is gone now.
+  proxy_activity = nullptr;  // The proxy is gone now.
 
   // After this, the application should remain at its current location in the
   // stack and the activation focus should remain on the current window as well.

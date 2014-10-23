@@ -30,7 +30,7 @@ class ATHENA_EXPORT ActivityManager {
   virtual void RemoveActivity(Activity* activity) = 0;
 
   // Returns the activity that has a |window| as toplevel window, or
-  // NULL if such activity does not exist.
+  // nullptr if such activity does not exist.
   virtual Activity* GetActivityForWindow(aura::Window* window) = 0;
 
   // Updates the UI when the task color/title changes.

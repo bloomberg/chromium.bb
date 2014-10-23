@@ -44,7 +44,7 @@ void CreateAthenaViewsDelegate() {
 void ShutdownAthenaViewsDelegate() {
   CHECK(views::ViewsDelegate::views_delegate);
   delete views::ViewsDelegate::views_delegate;
-  views::ViewsDelegate::views_delegate = NULL;
+  views::ViewsDelegate::views_delegate = nullptr;
 }
 
 }  // namespace athena

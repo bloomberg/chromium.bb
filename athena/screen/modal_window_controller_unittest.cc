@@ -23,7 +23,7 @@ aura::Window* FindContainerByPriority(int priority) {
 TEST_F(ModalWindowControllerTest, ModalContainer) {
   aura::test::EventCountDelegate delegate;
   scoped_ptr<aura::Window> modal(test::CreateTransientWindow(
-      &delegate, NULL, ui::MODAL_TYPE_SYSTEM, false));
+      &delegate, nullptr, ui::MODAL_TYPE_SYSTEM, false));
 
   aura::Window* modal_container = FindContainerByPriority(CP_SYSTEM_MODAL);
   EXPECT_TRUE(modal_container);
@@ -49,9 +49,9 @@ TEST_F(ModalWindowControllerTest, ModalContainer) {
 
   // Create two.
   modal = test::CreateTransientWindow(
-              &delegate, NULL, ui::MODAL_TYPE_SYSTEM, false).Pass();
+              &delegate, nullptr, ui::MODAL_TYPE_SYSTEM, false).Pass();
   scoped_ptr<aura::Window> modal2(test::CreateTransientWindow(
-      &delegate, NULL, ui::MODAL_TYPE_SYSTEM, false));
+      &delegate, nullptr, ui::MODAL_TYPE_SYSTEM, false));
 
   modal_container = FindContainerByPriority(CP_SYSTEM_MODAL);
   EXPECT_TRUE(modal_container);
@@ -94,7 +94,8 @@ TEST_F(ModalWindowControllerTest, NestedModalWindows) {
   aura::Window* default_container = FindContainerByPriority(CP_DEFAULT);
   EXPECT_TRUE(default_container);
 
-  scoped_ptr<aura::Window> normal_w1(test::CreateNormalWindow(&delegate, NULL));
+  scoped_ptr<aura::Window> normal_w1(
+      test::CreateNormalWindow(&delegate, nullptr));
   EXPECT_EQ(default_container, normal_w1->parent());
 
   scoped_ptr<aura::Window> normal_m1(test::CreateTransientWindow(
@@ -119,7 +120,7 @@ TEST_F(ModalWindowControllerTest, NestedModalWindows) {
   // Creating a modal with always on top creates the modal dialog on top
   // most dialog container.
   scoped_ptr<aura::Window> top_m0(test::CreateTransientWindow(
-      &delegate, NULL, ui::MODAL_TYPE_SYSTEM, true));
+      &delegate, nullptr, ui::MODAL_TYPE_SYSTEM, true));
 
   aura::Window* top_modal_container = FindContainerByPriority(CP_END + 1);
   EXPECT_EQ(top_modal_container, top_m0->parent());
