@@ -4490,9 +4490,25 @@ usage(int error_code)
 
 		"Core options:\n\n"
 		"  --version\t\tPrint weston version\n"
-		"  -B, --backend=MODULE\tBackend module, one of drm-backend.so,\n"
-		"\t\t\t\tfbdev-backend.so, x11-backend.so or\n"
-		"\t\t\t\twayland-backend.so\n"
+		"  -B, --backend=MODULE\tBackend module, one of\n"
+#if defined(BUILD_DRM_COMPOSITOR)
+			"\t\t\t\tdrm-backend.so\n"
+#endif
+#if defined(BUILD_FBDEV_COMPOSITOR)
+			"\t\t\t\tfbdev-backend.so"
+#endif
+#if defined(BUILD_X11_COMPOSITOR)
+			"\t\t\t\tx11-backend.so\n"
+#endif
+#if defined(BUILD_WAYLAND_COMPOSITOR)
+			"\t\t\t\twayland-backend.so\n"
+#endif
+#if defined(BUILD_RDP_COMPOSITOR)
+			"\t\t\t\trdp-backend.so\n"
+#endif
+#if defined(BUILD_RPI_COMPOSITOR) && defined(HAVE_BCM_HOST)
+			"\t\t\t\trpi-backend.so\n"
+#endif
 		"  --shell=MODULE\tShell module, defaults to desktop-shell.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
