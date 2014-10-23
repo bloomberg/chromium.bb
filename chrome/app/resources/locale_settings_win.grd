@@ -169,6 +169,12 @@
         Courier New
       </message>
 
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Arabic script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_ARABIC" use_name_for_id="true">
+        Segoe UI
+      </message>
+
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Cyrillic script. -->
       <message name="IDS_SERIF_FONT_FAMILY_CYRILLIC" use_name_for_id="true">

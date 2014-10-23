@@ -205,6 +205,8 @@ const FontDefault kFontDefaults[] = {
   { prefs::kWebKitFixedFontFamilyTraditionalHan,
     IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN },
 #elif defined(OS_WIN)
+  { prefs::kWebKitSansSerifFontFamilyArabic,
+    IDS_SANS_SERIF_FONT_FAMILY_ARABIC },
   { prefs::kWebKitStandardFontFamilyCyrillic,
     IDS_STANDARD_FONT_FAMILY_CYRILLIC },
   { prefs::kWebKitFixedFontFamilyCyrillic, IDS_FIXED_FONT_FAMILY_CYRILLIC },
