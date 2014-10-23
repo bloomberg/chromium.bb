@@ -26,7 +26,6 @@
       'type': 'none',
       'dependencies': [
         'edk/mojo_edk.gyp:mojo_edk',
-        'html_viewer',
         'mojo_application_manager',
         'mojo_application_manager_unittests',
         'mojo_apps_js_unittests',
@@ -48,7 +47,6 @@
         'mojo_surfaces_service',
         'mojo_test_app',
         'mojo_test_request_tracker_app',
-        'mojo_view_manager_lib_unittests',
         'services/public/mojo_services_public.gyp:mojo_services_public',
         'public/mojo_public.gyp:mojo_public',
       ],
@@ -477,94 +475,6 @@
             'shell/incoming_connection_listener_unittest.cc',
             'shell/external_application_listener_unittest.cc',
             'shell/external_application_test_main.cc',
-          ],
-        },
-      ],
-    }],
-    ['use_aura==1', {
-      'targets': [
-        {
-          # GN version: //mojo/aura
-          'target_name': 'mojo_aura_support',
-          'type': 'static_library',
-          'dependencies': [
-            '../cc/cc.gyp:cc',
-            '../ui/aura/aura.gyp:aura',
-            '../ui/compositor/compositor.gyp:compositor',
-            '../ui/events/events.gyp:events',
-            '../ui/events/events.gyp:events_base',
-            'mojo_cc_support',
-            'mojo_geometry_lib',
-            'mojo_surfaces_lib',
-            'mojo_view_manager_lib',
-            'public/mojo_public.gyp:mojo_application_base',
-            'public/mojo_public.gyp:mojo_application_bindings',
-            'services/public/mojo_services_public.gyp:mojo_native_viewport_bindings',
-          ],
-          'includes': [
-            'mojo_public_gles2_for_loadable_module.gypi',
-          ],
-          'sources': [
-            'aura/aura_init.cc',
-            'aura/aura_init.h',
-            'aura/screen_mojo.cc',
-            'aura/screen_mojo.h',
-            'aura/surface_binding.cc',
-            'aura/surface_binding.h',
-            'aura/surface_context_factory.cc',
-            'aura/surface_context_factory.h',
-            'aura/window_tree_host_mojo.cc',
-            'aura/window_tree_host_mojo.h',
-          ],
-        },
-        {
-          # GN version: //mojo/views:views
-          'target_name': 'mojo_views_support',
-          'type': 'static_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../skia/skia.gyp:skia',
-            '../third_party/icu/icu.gyp:icui18n',
-            '../third_party/icu/icu.gyp:icuuc',
-            '../ui/aura/aura.gyp:aura',
-            '../ui/base/ui_base.gyp:ui_base',
-            '../ui/gfx/gfx.gyp:gfx',
-            '../ui/views/views.gyp:views',
-            '../ui/wm/wm.gyp:wm',
-            'mojo_aura_support',
-            'mojo_view_manager_lib',
-            'services/public/mojo_services_public.gyp:mojo_view_manager_bindings',
-          ],
-          'sources': [
-            'views/input_method_mojo_linux.cc',
-            'views/input_method_mojo_linux.h',
-            'views/native_widget_view_manager.cc',
-            'views/native_widget_view_manager.h',
-            'views/views_init.cc',
-            'views/views_init.h',
-          ],
-        },
-        {
-          # GN version: //mojo/services/public/cpp/view_manager/lib:run_unittests
-          'target_name': 'mojo_view_manager_run_unittests',
-          'type': 'static_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:test_support_base',
-          ],
-          'sources': [
-            'services/public/cpp/view_manager/lib/view_manager_test_suite.cc',
-            'services/public/cpp/view_manager/lib/view_manager_test_suite.h',
-            'services/public/cpp/view_manager/lib/view_manager_unittests.cc',
-          ],
-          'conditions': [
-            ['use_x11==1', {
-              'dependencies': [
-                '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
-              ],
-            }],
           ],
         },
       ],
