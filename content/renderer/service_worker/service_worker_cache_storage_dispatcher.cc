@@ -520,12 +520,13 @@ void ServiceWorkerCacheStorageDispatcher::PopulateWebResponseFromResponse(
                             base::ASCIIToUTF16(i.second));
   }
 
-  web_response->setBlob(blink::WebString::fromUTF8(response.blob_uuid),
-                        response.blob_size);
-
-  // Let the host know that it can release its reference to the blob.
-  script_context_->Send(new ServiceWorkerHostMsg_BlobDataHandled(
-      script_context_->GetRoutingID(), response.blob_uuid));
+  if (!response.blob_uuid.empty()) {
+    web_response->setBlob(blink::WebString::fromUTF8(response.blob_uuid),
+                          response.blob_size);
+    // Let the host know that it can release its reference to the blob.
+    script_context_->Send(new ServiceWorkerHostMsg_BlobDataHandled(
+        script_context_->GetRoutingID(), response.blob_uuid));
+  }
 }
 
 blink::WebVector<blink::WebServiceWorkerResponse>

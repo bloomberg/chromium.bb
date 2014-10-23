@@ -356,7 +356,8 @@ void ServiceWorkerCacheListener::OnCacheMatchCallback(
     return;
   }
 
-  StoreBlobDataHandle(blob_data_handle.Pass());
+  if (blob_data_handle)
+    StoreBlobDataHandle(blob_data_handle.Pass());
 
   Send(ServiceWorkerMsg_CacheMatchSuccess(request_id, *response));
 }
