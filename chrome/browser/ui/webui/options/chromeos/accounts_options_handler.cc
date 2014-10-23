@@ -142,7 +142,6 @@ void AccountsOptionsHandler::HandleUpdateWhitelist(
   for (size_t i = 0; i < new_list->GetSize(); ++i) {
     std::string whitelisted_user;
     new_list->GetString(i, &whitelisted_user);
-    LOG(ERROR) << gaia::ExtractDomainName(whitelisted_user);
     if (gaia::ExtractDomainName(whitelisted_user) ==
         chromeos::login::kSupervisedUserDomain) {
       new_list->Remove(i, NULL);
