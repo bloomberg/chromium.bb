@@ -335,6 +335,7 @@ void Dispatcher::DidCreateScriptContext(
   if (context->GetAvailability("webViewInternal").is_available()) {
     module_system->Require("webView");
     module_system->Require("webViewConstants");
+    module_system->Require("webViewAttributes");
     if (context->GetAvailability("webViewExperimentalInternal")
             .is_available()) {
       module_system->Require("webViewExperimental");
@@ -549,6 +550,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   // Note: webView not webview so that this doesn't interfere with the
   // chrome.webview API bindings.
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
+  resources.push_back(std::make_pair("webViewAttributes",
+                                     IDR_WEB_VIEW_ATTRIBUTES_JS));
   resources.push_back(std::make_pair("webViewConstants",
                                      IDR_WEB_VIEW_CONSTANTS_JS));
   resources.push_back(std::make_pair("webViewEvents", IDR_WEB_VIEW_EVENTS_JS));

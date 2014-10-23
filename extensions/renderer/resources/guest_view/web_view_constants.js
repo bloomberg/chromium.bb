@@ -13,7 +13,12 @@ var WebViewConstants = {
   ATTRIBUTE_MAXWIDTH: 'maxwidth',
   ATTRIBUTE_MINHEIGHT: 'minheight',
   ATTRIBUTE_MINWIDTH: 'minwidth',
+  ATTRIBUTE_NAME: 'name',
   ATTRIBUTE_PARTITION: 'partition',
+  ATTRIBUTE_SRC: 'src',
+
+  // Internal attribute.
+  ATTRIBUTE_INTERNALINSTANCEID: 'internalinstanceid',
 
   // Error messages.
   ERROR_MSG_ALREADY_NAVIGATED:
