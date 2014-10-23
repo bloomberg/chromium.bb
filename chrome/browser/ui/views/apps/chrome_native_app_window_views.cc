@@ -524,17 +524,15 @@ views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
         scoped_ptr<ash::wm::WindowStateDelegate>(
             new NativeAppWindowStateDelegate(app_window(), this)).Pass());
 
+    if (IsFrameless())
+      return CreateNonStandardAppFrame();
+
     if (app_window()->window_type_is_panel()) {
-      ash::PanelFrameView::FrameType frame_type = IsFrameless() ?
-          ash::PanelFrameView::FRAME_NONE : ash::PanelFrameView::FRAME_ASH;
       views::NonClientFrameView* frame_view =
-          new ash::PanelFrameView(widget, frame_type);
+          new ash::PanelFrameView(widget, ash::PanelFrameView::FRAME_ASH);
       frame_view->set_context_menu_controller(this);
       return frame_view;
     }
-
-    if (IsFrameless())
-      return CreateNonStandardAppFrame();
 
     ash::CustomFrameViewAsh* custom_frame_view =
         new ash::CustomFrameViewAsh(widget);
