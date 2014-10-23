@@ -50,12 +50,24 @@ class ManifestFetchData {
     // server's perspective.
     int rollcall_days;
     int active_days;
-    // Wether the extension is enabled or not.
+
+    // Whether the extension is enabled or not.
     bool is_enabled;
 
-    PingData() : rollcall_days(0), active_days(0), is_enabled(true) {}
-    PingData(int rollcall, int active, bool enabled)
-        : rollcall_days(rollcall), active_days(active), is_enabled(enabled) {}
+    // A bitmask of Extension::DisableReason's, which may contain one or more
+    // reasons why an extension is disabled.
+    int disable_reasons;
+
+    PingData()
+        : rollcall_days(0),
+          active_days(0),
+          is_enabled(true),
+          disable_reasons(0) {}
+    PingData(int rollcall, int active, bool enabled, int reasons)
+        : rollcall_days(rollcall),
+          active_days(active),
+          is_enabled(enabled),
+          disable_reasons(reasons) {}
   };
 
   ManifestFetchData(const GURL& update_url,

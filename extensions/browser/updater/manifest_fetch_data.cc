@@ -11,7 +11,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "extensions/common/extension.h"
 #include "net/base/escape.h"
+
+namespace extensions {
 
 namespace {
 
@@ -19,9 +22,20 @@ namespace {
 // request. We want to stay under 2K because of proxies, etc.
 const int kExtensionsManifestMaxURLSize = 2000;
 
-}  // namespace
+void AddMetricsToPing(std::string* ping_value,
+                      const ManifestFetchData::PingData* ping_data) {
+  *ping_value += "&e=" + std::string(ping_data->is_enabled ? "1" : "0");
+  if (!ping_data->is_enabled) {
+    // Add a dr=<number> param for each bit set in disable reasons.
+    for (int enum_value = 1; enum_value < Extension::DISABLE_REASON_LAST;
+         enum_value <<= 1) {
+      if (ping_data->disable_reasons & enum_value)
+        *ping_value += "&dr=" + base::IntToString(enum_value);
+    }
+  }
+}
 
-namespace extensions {
+}  // namespace
 
 ManifestFetchData::ManifestFetchData(const GURL& update_url,
                                      int request_id,
@@ -106,14 +120,13 @@ bool ManifestFetchData::AddExtension(const std::string& id,
       parts.push_back(base::StringPrintf("brand=%s", brand_code_.c_str()));
 
     std::string ping_value;
-    pings_[id] = PingData(0, 0, false);
+    pings_[id] = PingData(0, 0, false, 0);
     if (ping_data) {
       if (ping_data->rollcall_days == kNeverPinged ||
           ping_data->rollcall_days > 0) {
         ping_value += "r=" + base::IntToString(ping_data->rollcall_days);
-        if (ping_mode_ == PING_WITH_METRICS) {
-          ping_value += "&e=" + std::string(ping_data->is_enabled ? "1" : "0");
-        }
+        if (ping_mode_ == PING_WITH_METRICS)
+          AddMetricsToPing(&ping_value, ping_data);
         pings_[id].rollcall_days = ping_data->rollcall_days;
         pings_[id].is_enabled = ping_data->is_enabled;
       }
