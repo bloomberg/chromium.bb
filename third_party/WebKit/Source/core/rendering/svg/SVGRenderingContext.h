@@ -86,8 +86,6 @@ public:
 
     static float calculateScreenFontSizeScalingFactor(const RenderObject*);
     static void calculateDeviceSpaceTransformation(const RenderObject*, AffineTransform& absoluteTransform);
-    static FloatRect clampedAbsoluteTargetRect(const FloatRect& absoluteTargetRect);
-    static void clear2DRotation(AffineTransform&);
 
     // Support for the buffered-rendering hint.
     bool bufferForeground(OwnPtr<ImageBuffer>&);

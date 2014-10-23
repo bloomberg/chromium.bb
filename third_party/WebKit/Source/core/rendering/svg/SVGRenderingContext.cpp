@@ -37,8 +37,6 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/FloatConversion.h"
 
-static int kMaxImageBufferSize = 4096;
-
 namespace blink {
 
 SVGRenderingContext::~SVGRenderingContext()
@@ -252,20 +250,6 @@ void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* 
 
     PaintInfo info(context, PaintInfo::infiniteRect(), PaintPhaseForeground, PaintBehaviorNormal);
     item->paint(info, IntPoint());
-}
-
-FloatRect SVGRenderingContext::clampedAbsoluteTargetRect(const FloatRect& absoluteTargetRect)
-{
-    const FloatSize maxImageBufferSize(kMaxImageBufferSize, kMaxImageBufferSize);
-    return FloatRect(absoluteTargetRect.location(), absoluteTargetRect.size().shrunkTo(maxImageBufferSize));
-}
-
-void SVGRenderingContext::clear2DRotation(AffineTransform& transform)
-{
-    AffineTransform::DecomposedType decomposition;
-    transform.decompose(decomposition);
-    decomposition.angle = 0;
-    transform.recompose(decomposition);
 }
 
 bool SVGRenderingContext::bufferForeground(OwnPtr<ImageBuffer>& imageBuffer)

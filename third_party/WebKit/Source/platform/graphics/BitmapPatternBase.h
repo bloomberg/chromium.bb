@@ -14,9 +14,9 @@ public:
     BitmapPatternBase(RepeatMode, int64_t externalMemoryAllocated = 0);
     virtual ~BitmapPatternBase();
 
+protected:
     virtual PassRefPtr<SkShader> createShader() override;
 
-protected:
     virtual SkImageInfo getBitmapInfo() = 0;
     virtual void drawBitmapToCanvas(SkCanvas&, SkPaint&) = 0;
 };

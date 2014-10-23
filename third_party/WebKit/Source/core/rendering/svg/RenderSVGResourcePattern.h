@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright 2014 The Chromium Authors. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -23,24 +24,18 @@
 
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/PatternAttributes.h"
-#include "core/svg/SVGPatternElement.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/Pattern.h"
-#include "platform/transforms/AffineTransform.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
-struct PatternData {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    RefPtr<Pattern> pattern;
-    AffineTransform transform;
-};
+class AffineTransform;
+class DisplayList;
+class FloatRect;
+class SVGPatternElement;
+struct PatternData;
 
 class RenderSVGResourcePattern final : public RenderSVGResourceContainer {
 public:
@@ -57,15 +52,19 @@ public:
     static const RenderSVGResourceType s_resourceType;
 
 private:
-    bool buildTileImageTransform(const RenderObject&, const PatternAttributes&, const SVGPatternElement*, FloatRect& patternBoundaries, AffineTransform& tileImageTransform) const;
-
-    PassOwnPtr<ImageBuffer> createTileImage(const PatternAttributes&, const FloatRect& tileBoundaries,
-                                            const FloatRect& absoluteTileBoundaries, const AffineTransform& tileImageTransform) const;
-
-    PatternData* buildPattern(const RenderObject&, const SVGPatternElement*);
+    PassOwnPtr<PatternData> buildPatternData(const RenderObject&);
+    PassRefPtr<DisplayList> asDisplayList(const FloatRect& tileBounds, const AffineTransform&) const;
+    PatternData* patternForRenderer(const RenderObject&);
 
     bool m_shouldCollectPatternAttributes : 1;
     PatternAttributes m_attributes;
+
+    // FIXME: we can almost do away with this per-object map, but not quite: the tile size can be
+    // relative to the client bounding box, and it gets captured in the cached Pattern shader.
+    // Hence, we need one Pattern shader per client. The display list OTOH is the same => we
+    // should be able to cache a single display list per RenderSVGResourcePattern + one
+    // Pattern(shader) for each client -- this would avoid re-recording when multiple clients
+    // share the same pattern.
     HashMap<const RenderObject*, OwnPtr<PatternData> > m_patternMap;
 };
 

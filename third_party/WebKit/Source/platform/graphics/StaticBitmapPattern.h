@@ -15,9 +15,9 @@ public:
 
     virtual ~StaticBitmapPattern();
 
+protected:
     virtual PassRefPtr<SkShader> createShader() override;
 
-protected:
     virtual SkImageInfo getBitmapInfo() override;
     virtual void drawBitmapToCanvas(SkCanvas&, SkPaint&) override;
 

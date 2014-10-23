@@ -29,6 +29,8 @@
 #include "platform/graphics/Pattern.h"
 
 #include "platform/graphics/BitmapPattern.h"
+#include "platform/graphics/DisplayList.h"
+#include "platform/graphics/DisplayListPattern.h"
 #include "platform/graphics/StaticBitmapPattern.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -42,6 +44,12 @@ PassRefPtr<Pattern> Pattern::createBitmapPattern(PassRefPtr<Image> tileImage, Re
         return StaticBitmapPattern::create(tileImage, repeatMode);
 
     return BitmapPattern::create(tileImage, repeatMode);
+}
+
+PassRefPtr<Pattern> Pattern::createDisplayListPattern(PassRefPtr<DisplayList> displayList,
+    RepeatMode repeatMode)
+{
+    return DisplayListPattern::create(displayList, repeatMode);
 }
 
 Pattern::Pattern(RepeatMode repeatMode, int64_t externalMemoryAllocated)

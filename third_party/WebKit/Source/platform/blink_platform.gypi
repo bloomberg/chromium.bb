@@ -559,6 +559,8 @@
       'graphics/DeferredImageDecoder.cpp',
       'graphics/DeferredImageDecoder.h',
       'graphics/DisplayList.h',
+      'graphics/DisplayListPattern.cpp',
+      'graphics/DisplayListPattern.h',
       'graphics/DrawLooperBuilder.cpp',
       'graphics/DrawLooperBuilder.h',
       'graphics/FirstPaintInvalidationTracking.cpp',
