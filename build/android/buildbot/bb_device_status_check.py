@@ -31,7 +31,6 @@ from pylib import android_commands
 from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
 from pylib.device import device_blacklist
-from pylib.device import device_errors
 from pylib.device import device_list
 from pylib.device import device_utils
 
@@ -83,8 +82,13 @@ def DeviceInfo(serial, options):
   errors = []
   dev_good = True
   if battery_level < 15:
-    errors += ['Device critically low in battery. Turning off device.']
+    errors += ['Device critically low in battery. Will add to blacklist.']
     dev_good = False
+    if not device_adb.old_interface.IsDeviceCharging():
+      if device_adb.old_interface.CanControlUsbCharging():
+        device_adb.old_interface.EnableUsbCharging()
+      else:
+        logging.error('Device %s is not charging' % serial)
   if not options.no_provisioning_check:
     setup_wizard_disabled = (
         device_adb.GetProp('ro.setupwizard.mode') == 'DISABLED')
@@ -94,16 +98,6 @@ def DeviceInfo(serial, options):
       battery_info.get('AC powered', None) != 'true'):
     errors += ['Mantaray device not connected to AC power.']
 
-  # Turn off devices with low battery.
-  if battery_level < 15:
-    try:
-      device_adb.EnableRoot()
-    except device_errors.CommandFailedError as e:
-      # Attempt shutdown anyway.
-      # TODO(jbudorick) Handle this exception appropriately after interface
-      #                 conversions are finished.
-      logging.error(str(e))
-    device_adb.old_interface.Shutdown()
   full_report = '\n'.join(report)
   return device_type, device_build, battery_level, full_report, errors, dev_good
 
@@ -377,10 +371,13 @@ def main():
         'unique_builds': unique_builds,
       }))
 
-  if False in fail_step_lst:
-    # TODO(navabi): Build fails on device status check step if there exists any
-    # devices with critically low battery. Remove those devices from testing,
-    # allowing build to continue with good devices.
+  num_failed_devs = 0
+  for fail_status, device in zip(fail_step_lst, devices):
+    if not fail_status:
+      device_blacklist.ExtendBlacklist([str(device)])
+      num_failed_devs += 1
+
+  if num_failed_devs == len(devices):
     return 2
 
   if not devices:
