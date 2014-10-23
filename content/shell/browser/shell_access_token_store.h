@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_GEOLOCATION_SHELL_ACCESS_TOKEN_STORE_H_
-#define CONTENT_SHELL_GEOLOCATION_SHELL_ACCESS_TOKEN_STORE_H_
+#ifndef CONTENT_SHELL_BROWSER_SHELL_ACCESS_TOKEN_STORE_H_
+#define CONTENT_SHELL_BROWSER_SHELL_ACCESS_TOKEN_STORE_H_
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/access_token_store.h"
@@ -39,4 +39,4 @@ class ShellAccessTokenStore : public content::AccessTokenStore {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_GEOLOCATION_SHELL_ACCESS_TOKEN_STORE_H_
+#endif  // CONTENT_SHELL_BROWSER_SHELL_ACCESS_TOKEN_STORE_H_

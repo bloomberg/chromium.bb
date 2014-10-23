@@ -20,6 +20,7 @@
 #include "content/shell/browser/layout_test/layout_test_browser_main_parts.h"
 #include "content/shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_access_token_store.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
@@ -31,7 +32,6 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
-#include "content/shell/geolocation/shell_access_token_store.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
