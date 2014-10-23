@@ -132,8 +132,10 @@ class WifiConfigView : public ChildNetworkConfigView,
   // certificate or empty properties if no client cert is required.
   void SetEapClientCertProperties(base::DictionaryValue* properties) const;
 
-  // Fill in |properties| with the appropriate values.
-  void SetEapProperties(base::DictionaryValue* properties);
+  // Fill in |properties| with the appropriate values. If |configured| is
+  // true then this is for an already configured network.
+  void SetEapProperties(base::DictionaryValue* properties,
+                        bool configured);
 
   // Returns true if the EAP method requires a user certificate.
   bool UserCertRequired() const;

@@ -699,7 +699,7 @@ bool WifiConfigView::Login() {
       }
     } else {
       security = shill::kSecurity8021x;
-      SetEapProperties(&properties);
+      SetEapProperties(&properties, false /* not configured */);
     }
     properties.SetStringWithoutPathExpansion(
         shill::kSecurityProperty, security);
@@ -715,7 +715,7 @@ bool WifiConfigView::Login() {
       return true;  // Close dialog
     }
     if (eap_method_combobox_) {
-      SetEapProperties(&properties);
+      SetEapProperties(&properties, true /* configured */);
       properties.SetBooleanWithoutPathExpansion(
           shill::kSaveCredentialsProperty, GetSaveCredentials());
     } else {
@@ -862,7 +862,8 @@ std::string WifiConfigView::GetEapAnonymousIdentity() const {
   return base::UTF16ToUTF8(identity_anonymous_textfield_->text());
 }
 
-void WifiConfigView::SetEapProperties(base::DictionaryValue* properties) {
+void WifiConfigView::SetEapProperties(base::DictionaryValue* properties,
+                                      bool configured) {
   properties->SetStringWithoutPathExpansion(
       shill::kEapIdentityProperty, GetEapIdentity());
   properties->SetStringWithoutPathExpansion(
@@ -878,9 +879,10 @@ void WifiConfigView::SetEapProperties(base::DictionaryValue* properties) {
 
   properties->SetBooleanWithoutPathExpansion(
       shill::kEapUseSystemCasProperty, GetEapUseSystemCas());
-  properties->SetStringWithoutPathExpansion(
-      shill::kEapPasswordProperty, GetPassphrase());
-
+  if (!configured || passphrase_textfield_->changed()) {
+    properties->SetStringWithoutPathExpansion(
+        shill::kEapPasswordProperty, GetPassphrase());
+  }
   base::ListValue* pem_list = new base::ListValue;
   std::string ca_cert_pem = GetEapServerCaCertPEM();
   if (!ca_cert_pem.empty())

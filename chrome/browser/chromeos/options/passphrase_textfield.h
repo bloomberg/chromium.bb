@@ -27,6 +27,7 @@ class PassphraseTextfield : public views::Textfield {
   // Returns the passphrase. If it's unchanged, then returns an empty string.
   std::string GetPassphrase();
 
+  bool changed() const { return changed_; }
   bool show_fake() const { return show_fake_; }
 
  private:
