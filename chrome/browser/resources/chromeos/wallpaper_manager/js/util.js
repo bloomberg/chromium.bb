@@ -54,6 +54,7 @@ WallpaperUtil.storeWallpaperFromSyncFSToLocalFS = function(wallpaperFileEntry) {
   var storeDir = Constants.WallpaperDirNameEnum.ORIGINAL;
   if (filenName.indexOf(Constants.CustomWallpaperThumbnailSuffix) != -1)
     storeDir = Constants.WallpaperDirNameEnum.THUMBNAIL;
+  filenName = filenName.replace(Constants.CustomWallpaperThumbnailSuffix, '');
   wallpaperFileEntry.file(function(file) {
     var reader = new FileReader();
     reader.onloadend = function() {
