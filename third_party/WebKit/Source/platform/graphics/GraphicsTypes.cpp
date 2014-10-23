@@ -49,6 +49,7 @@ static const char* const compositeOperatorNames[] = {
 };
 
 static const char* const blendOperatorNames[] = {
+    "normal",
     "multiply",
     "screen",
     "overlay",
@@ -80,8 +81,7 @@ bool parseCompositeAndBlendOperator(const String& s, CompositeOperator& op, WebB
 
     for (int i = 0; i < numBlendOperatorNames; i++) {
         if (s == blendOperatorNames[i]) {
-            blendOp = static_cast<WebBlendMode>(i+1);
-            // For now, blending will always assume source-over. This will be fixed in the future
+            blendOp = static_cast<WebBlendMode>(i);
             op = CompositeSourceOver;
             return true;
         }
@@ -90,16 +90,13 @@ bool parseCompositeAndBlendOperator(const String& s, CompositeOperator& op, WebB
     return false;
 }
 
-// FIXME: when we support blend modes in combination with compositing other than source-over
-// this routine needs to be updated.
 String compositeOperatorName(CompositeOperator op, WebBlendMode blendOp)
 {
     ASSERT(op >= 0);
     ASSERT(op < numCompositeOperatorNames);
     ASSERT(blendOp >= 0);
-    ASSERT(blendOp <= numBlendOperatorNames);
     if (blendOp != WebBlendModeNormal)
-        return blendOperatorNames[blendOp-1];
+        return blendOperatorNames[blendOp];
     return compositeOperatorNames[op];
 }
 
