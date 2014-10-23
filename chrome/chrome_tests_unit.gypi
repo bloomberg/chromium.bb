@@ -2592,6 +2592,7 @@
             'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
             'browser/ui/window_sizer/window_sizer_common_unittest.cc',
             'browser/ui/window_sizer/window_sizer_unittest.cc',
+            'browser/ui/zoom/zoom_controller_unittest.cc',
             'browser/upgrade_detector_impl_unittest.cc',
             'common/net/x509_certificate_model_unittest.cc',
             'test/base/browser_with_test_window_test.cc',

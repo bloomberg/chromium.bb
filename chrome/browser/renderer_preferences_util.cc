@@ -7,14 +7,18 @@
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "ui/gfx/font_render_params.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -38,15 +42,20 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
+
+  double default_zoom_level = -1;
+#if !defined(OS_ANDROID)
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
-  if (zoom_controller) {
-    prefs->default_zoom_level = zoom_controller->GetDefaultZoomLevel();
-  } else {
-    prefs->default_zoom_level =
-        content::HostZoomMap::GetDefaultForBrowserContext(
-            web_contents->GetBrowserContext())->GetDefaultZoomLevel();
+  if (zoom_controller)
+    default_zoom_level = zoom_controller->GetDefaultZoomLevel();
+#endif
+
+  if (default_zoom_level < 0) {
+    default_zoom_level = content::HostZoomMap::GetDefaultForBrowserContext(
+        web_contents->GetBrowserContext())->GetDefaultZoomLevel();
   }
+  prefs->default_zoom_level = default_zoom_level;
 
 #if defined(USE_DEFAULT_RENDER_THEME)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);

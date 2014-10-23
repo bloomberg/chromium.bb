@@ -1125,8 +1125,6 @@
       'browser/ui/window_sizer/window_sizer_mac.mm',
       'browser/ui/zoom/chrome_zoom_level_prefs.cc',
       'browser/ui/zoom/chrome_zoom_level_prefs.h',
-      'browser/ui/zoom/zoom_controller.cc',
-      'browser/ui/zoom/zoom_controller.h',
       'browser/ui/zoom/zoom_event_manager.cc',
       'browser/ui/zoom/zoom_event_manager.h',
       'browser/ui/zoom/zoom_observer.h',
@@ -1805,6 +1803,8 @@
       'browser/ui/webui/uber/uber_ui.h',
       'browser/ui/window_sizer/window_sizer.cc',
       'browser/ui/window_sizer/window_sizer.h',
+      'browser/ui/zoom/zoom_controller.cc',
+      'browser/ui/zoom/zoom_controller.h',
     ],
     'chrome_browser_ui_print_preview_sources': [
       'browser/ui/webui/print_preview/print_preview_handler.cc',
