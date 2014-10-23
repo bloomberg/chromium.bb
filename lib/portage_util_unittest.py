@@ -754,6 +754,8 @@ class PortageDBTest(cros_test_lib.MoxTempDirTestCase):
                  'category2' : [ 'package-3', 'package-4' ],
                  'category3' : [ 'invalid', 'semi-invalid' ],
                  'with' : [ 'files-1' ],
+                 'dash-category' : [ 'package-5', ],
+                 '-invalid' : [ 'package-6' ],
                  'invalid' : [], }
   fake_packages = []
   build_root = None
@@ -795,8 +797,12 @@ class PortageDBTest(cros_test_lib.MoxTempDirTestCase):
           # Invalid package does not meet existence of "%s/%s.ebuild" file.
           osutils.Touch(os.path.join(pkgpath, 'whatever'))
           continue
-        # Correct pkg.
+        # Create the package.
         osutils.Touch(os.path.join(pkgpath, pkg + '.ebuild'))
+        if cat.startswith('-'):
+          # Invalid category.
+          continue
+        # Correct pkg.
         pv = portage_util.SplitPV(pkg)
         key = '%s/%s' % (cat, pv.package)
         self.fake_packages.append((key, pv.version))
