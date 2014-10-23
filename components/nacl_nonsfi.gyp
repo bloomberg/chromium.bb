@@ -41,7 +41,13 @@
               ['target_arch=="ia32" or target_arch=="x64"', {
                 'extra_deps_newlib32_nonsfi': [
                   '>(tc_lib_dir_nonsfi_helper32)/libbase_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libcommand_buffer_client_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libcommand_buffer_common_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libevent_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libgles2_cmd_helper_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libgles2_implementation_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libgles2_utils_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libgpu_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libshared_memory_support_nacl.a',
                 ],
               }],
@@ -56,6 +62,12 @@
             # Temporarily depends on some libraries to make sure they can be
             # built properly. These are depended on by PPAPI library.
             # TODO(hidehiko): Remove them when PPAPI library is introduced.
+            '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
+            '../gpu/gpu_nacl.gyp:command_buffer_client_nacl',
+            '../gpu/gpu_nacl.gyp:command_buffer_common_nacl',
+            '../gpu/gpu_nacl.gyp:gles2_cmd_helper_nacl',
+            '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
+            '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
             '../media/media_nacl.gyp:shared_memory_support_nacl',
           ],
         },

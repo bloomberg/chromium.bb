@@ -23,10 +23,13 @@
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
           },
           'dependencies': [
             '../../native_client/tools.gyp:prep_toolchain',
             '../../base/base_nacl.gyp:base_nacl',
+            '../../base/base_nacl.gyp:base_nacl_nonsfi',
             '../../third_party/khronos/khronos.gyp:khronos_headers',
           ],
         },
