@@ -6,10 +6,13 @@
 #define CC_RESOURCES_ONE_COPY_RASTER_WORKER_POOL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/values.h"
+#include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/rasterizer.h"
+#include "cc/resources/resource_provider.h"
 
 namespace base {
 namespace debug {
@@ -21,7 +24,8 @@ class TracedValue;
 namespace cc {
 class ResourcePool;
 class ResourceProvider;
-class ScopedResource;
+
+typedef int64 CopySequenceNumber;
 
 class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
                                           public Rasterizer,
@@ -50,6 +54,17 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
       const Resource* resource) override;
   void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override;
 
+  // Schedule copy of |src| resource to |dst| resource. Returns a non-zero
+  // sequence number for this copy operation.
+  CopySequenceNumber ScheduleCopyOnWorkerThread(
+      scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
+      const Resource* src,
+      const Resource* dst);
+
+  // Issues copy operations until |sequence| has been processed. This will
+  // return immediately if |sequence| has already been processed.
+  void AdvanceLastIssuedCopyTo(CopySequenceNumber sequence);
+
  protected:
   OneCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,
                           TaskGraphRunner* task_graph_runner,
@@ -58,7 +73,23 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
                           ResourcePool* resource_pool);
 
  private:
+  struct CopyOperation {
+    typedef ScopedPtrDeque<CopyOperation> Deque;
+
+    CopyOperation(
+        scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
+        ResourceProvider::ResourceId src,
+        ResourceProvider::ResourceId dst);
+    ~CopyOperation();
+
+    scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock;
+    ResourceProvider::ResourceId src;
+    ResourceProvider::ResourceId dst;
+  };
+
   void OnRasterFinished(TaskSet task_set);
+  void AdvanceLastFlushedCopyTo(CopySequenceNumber sequence);
+  void IssueCopyOperations(int64 count);
   scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
   void StagingStateAsValueInto(base::debug::TracedValue* staging_state) const;
 
@@ -71,12 +102,22 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
   ResourcePool* resource_pool_;
   TaskSetCollection raster_pending_;
   scoped_refptr<RasterizerTask> raster_finished_tasks_[kNumberOfTaskSets];
+  CopySequenceNumber last_issued_copy_operation_;
+  CopySequenceNumber last_flushed_copy_operation_;
 
   // Task graph used when scheduling tasks and vector used to gather
   // completed tasks.
   TaskGraph graph_;
   Task::Vector completed_tasks_;
 
+  base::Lock lock_;
+  // |lock_| must be acquired when accessing the following members.
+  CopyOperation::Deque pending_copy_operations_;
+  CopySequenceNumber next_copy_operation_sequence_;
+
+  base::WeakPtrFactory<OneCopyRasterWorkerPool> weak_ptr_factory_;
+  // "raster finished" tasks need their own factory as they need to be
+  // canceled when ScheduleTasks() is called.
   base::WeakPtrFactory<OneCopyRasterWorkerPool>
       raster_finished_weak_ptr_factory_;
 
