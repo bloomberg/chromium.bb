@@ -66,16 +66,10 @@ from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params
 from _emerge.depgraph import backtrack_depgraph
-try:
-  from _emerge.main import clean_logs
-except ImportError:
-  # Older portage versions did not provide clean_logs, so stub it.
-  # We need this if running in an older chroot that hasn't yet upgraded
-  # the portage version.
-  clean_logs = lambda x: None
 from _emerge.main import emerge_main
 from _emerge.main import parse_opts
 from _emerge.Package import Package
+from _emerge.post_emerge import clean_logs
 from _emerge.Scheduler import Scheduler
 from _emerge.stdout_spinner import stdout_spinner
 from portage._global_updates import _global_updates
@@ -454,7 +448,7 @@ class DepGraphGenerator(object):
     # pylint: disable=W0212
     digraph = depgraph._dynamic_config.digraph
     root = emerge.settings["ROOT"]
-    final_db = get_db(depgraph._dynamic_config, root)
+    final_db = depgraph._dynamic_config._filtered_trees[root]['graph_db']
     for node, node_deps in digraph.nodes.items():
       # Calculate dependency packages that need to be installed first. Each
       # child on the digraph is a dependency. The "operation" field specifies
@@ -1811,19 +1805,6 @@ def main(argv):
         x.join(1)
 
 
-def get_db(config, root):
-  """Return the dbapi.
-  Handles both portage 2.1.11 and 2.2.10 (where mydbapi has been removed).
-
-  TODO(bsimonnet): Remove this once portage has been uprevd.
-  """
-  try:
-    return config.mydbapi[root]
-  except AttributeError:
-    # pylint: disable=W0212
-    return config._filtered_trees[root]['graph_db']
-
-
 def real_main(argv):
   parallel_emerge_args = argv[:]
   deps = DepGraphGenerator()
@@ -1873,7 +1854,7 @@ def real_main(argv):
   portage_upgrade = False
   root = emerge.settings["ROOT"]
   # pylint: disable=W0212
-  final_db = get_db(emerge.depgraph._dynamic_config, root)
+  final_db = emerge.depgraph._dynamic_config._filtered_trees[root]['graph_db']
   if root == "/":
     for db_pkg in final_db.match_pkgs("sys-apps/portage"):
       portage_pkg = deps_graph.get(db_pkg.cpv)
