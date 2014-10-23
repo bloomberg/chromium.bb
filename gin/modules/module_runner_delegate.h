@@ -26,7 +26,7 @@ class GIN_EXPORT ModuleRunnerDelegate : public ShellRunnerDelegate {
  public:
   explicit ModuleRunnerDelegate(
       const std::vector<base::FilePath>& search_paths);
-  virtual ~ModuleRunnerDelegate();
+  ~ModuleRunnerDelegate() override;
 
   void AddBuiltinModule(const std::string& id, ModuleGetter getter);
   void AddBuiltinModule(const std::string& id,
@@ -39,11 +39,11 @@ class GIN_EXPORT ModuleRunnerDelegate : public ShellRunnerDelegate {
   typedef std::map<std::string, ModuleGetterCallback> BuiltinModuleMap;
 
   // From ShellRunnerDelegate:
-  virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
+  v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
       ShellRunner* runner,
       v8::Isolate* isolate) override;
-  virtual void DidCreateContext(ShellRunner* runner) override;
-  virtual void DidRunScript(ShellRunner* runner) override;
+  void DidCreateContext(ShellRunner* runner) override;
+  void DidRunScript(ShellRunner* runner) override;
 
   BuiltinModuleMap builtin_modules_;
   FileModuleProvider module_provider_;

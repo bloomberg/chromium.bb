@@ -29,13 +29,12 @@ class GIN_EXPORT Timer : public Wrappable<Timer> {
   static Handle<Timer> Create(TimerType type, v8::Isolate* isolate,
                               int delay_ms, v8::Handle<v8::Function> function);
 
-  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) override;
+  ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate) override;
 
  private:
   Timer(v8::Isolate* isolate, bool repeating, int delay_ms,
         v8::Handle<v8::Function> function);
-  virtual ~Timer();
+  ~Timer() override;
   void OnTimerFired();
 
   base::Timer timer_;
@@ -55,10 +54,9 @@ class GIN_EXPORT TimerModule : public Wrappable<TimerModule> {
 
  private:
   TimerModule();
-  virtual ~TimerModule();
+  ~TimerModule() override;
 
-  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) override;
+  ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate) override;
 };
 
 }  // namespace gin

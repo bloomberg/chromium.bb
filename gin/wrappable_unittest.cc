@@ -40,9 +40,8 @@ class MyObject : public BaseClass,
 
  protected:
   MyObject() : value_(0) {}
-  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) override;
-  virtual ~MyObject() {}
+  ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate) override;
+  ~MyObject() override {}
 
  private:
   int value_;
@@ -61,7 +60,7 @@ class MyObjectSubclass : public MyObject {
   std::string result;
 
  private:
-  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
+  ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override {
     return MyObject::GetObjectTemplateBuilder(isolate)
         .SetMethod("sayHello", &MyObjectSubclass::SayHello);
@@ -70,8 +69,7 @@ class MyObjectSubclass : public MyObject {
   MyObjectSubclass() {
   }
 
-  virtual ~MyObjectSubclass() {
-  }
+  ~MyObjectSubclass() override {}
 };
 
 class MyCallableObject : public Wrappable<MyCallableObject> {
@@ -85,7 +83,7 @@ class MyCallableObject : public Wrappable<MyCallableObject> {
   int result() { return result_; }
 
  private:
-  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
+  ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override {
     return Wrappable<MyCallableObject>::GetObjectTemplateBuilder(isolate)
         .SetCallAsFunctionHandler(&MyCallableObject::Call);
@@ -94,8 +92,7 @@ class MyCallableObject : public Wrappable<MyCallableObject> {
   MyCallableObject() : result_(0) {
   }
 
-  virtual ~MyCallableObject() {
-  }
+  ~MyCallableObject() override {}
 
   void Call(int val, const gin::Arguments& arguments) {
     if (arguments.IsConstructCall())

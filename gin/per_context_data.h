@@ -24,7 +24,7 @@ class GIN_EXPORT PerContextData : public base::SupportsUserData {
  public:
   PerContextData(ContextHolder* context_holder,
                  v8::Handle<v8::Context> context);
-  virtual ~PerContextData();
+  ~PerContextData() override;
 
   // Can return NULL after the ContextHolder has detached from context.
   static PerContextData* From(v8::Handle<v8::Context> context);

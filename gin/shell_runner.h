@@ -37,19 +37,19 @@ class GIN_EXPORT ShellRunnerDelegate {
 class GIN_EXPORT ShellRunner : public Runner {
  public:
   ShellRunner(ShellRunnerDelegate* delegate, v8::Isolate* isolate);
-  virtual ~ShellRunner();
+  ~ShellRunner() override;
 
   // Before running script in this context, you'll need to enter the runner's
   // context by creating an instance of Runner::Scope on the stack.
 
   // Runner overrides:
-  virtual void Run(const std::string& source,
-                   const std::string& resource_name) override;
-  virtual v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
-                                     v8::Handle<v8::Value> receiver,
-                                     int argc,
-                                     v8::Handle<v8::Value> argv[]) override;
-  virtual ContextHolder* GetContextHolder() override;
+  void Run(const std::string& source,
+           const std::string& resource_name) override;
+  v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
+                             v8::Handle<v8::Value> receiver,
+                             int argc,
+                             v8::Handle<v8::Value> argv[]) override;
+  ContextHolder* GetContextHolder() override;
 
  private:
   friend class Scope;

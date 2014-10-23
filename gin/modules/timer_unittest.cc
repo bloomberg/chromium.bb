@@ -37,10 +37,9 @@ class Result : public Wrappable<Result> {
   Result() : count_(0) {
   }
 
-  virtual ~Result() {
-  }
+  ~Result() override {}
 
-  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(
+  ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override {
     return Wrappable<Result>::GetObjectTemplateBuilder(isolate)
         .SetProperty("count", &Result::count, &Result::set_count)

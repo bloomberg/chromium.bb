@@ -31,9 +31,8 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
   void set_value(int value) { value_ = value; }
 
   // gin::NamedPropertyInterceptor
-  virtual v8::Local<v8::Value> GetNamedProperty(v8::Isolate* isolate,
-                                                const std::string& property)
-      override {
+  v8::Local<v8::Value> GetNamedProperty(v8::Isolate* isolate,
+                                        const std::string& property) override {
     if (property == "value") {
       return ConvertToV8(isolate, value_);
     } else if (property == "func") {
@@ -42,16 +41,16 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
       return v8::Local<v8::Value>();
     }
   }
-  virtual bool SetNamedProperty(v8::Isolate* isolate,
-                                const std::string& property,
-                                v8::Local<v8::Value> value) override {
+  bool SetNamedProperty(v8::Isolate* isolate,
+                        const std::string& property,
+                        v8::Local<v8::Value> value) override {
     if (property == "value") {
       ConvertFromV8(isolate, value, &value_);
       return true;
     }
     return false;
   }
-  virtual std::vector<std::string> EnumerateNamedProperties(
+  std::vector<std::string> EnumerateNamedProperties(
       v8::Isolate* isolate) override {
     std::vector<std::string> result;
     result.push_back("func");
@@ -60,15 +59,15 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
   }
 
   // gin::IndexedPropertyInterceptor
-  virtual v8::Local<v8::Value> GetIndexedProperty(v8::Isolate* isolate,
-                                                  uint32_t index) override {
+  v8::Local<v8::Value> GetIndexedProperty(v8::Isolate* isolate,
+                                          uint32_t index) override {
     if (index == 0)
       return ConvertToV8(isolate, value_);
     return v8::Local<v8::Value>();
   }
-  virtual bool SetIndexedProperty(v8::Isolate* isolate,
-                                  uint32_t index,
-                                  v8::Local<v8::Value> value) override {
+  bool SetIndexedProperty(v8::Isolate* isolate,
+                          uint32_t index,
+                          v8::Local<v8::Value> value) override {
     if (index == 0) {
       ConvertFromV8(isolate, value, &value_);
       return true;
@@ -76,8 +75,8 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
     // Don't allow bypassing the interceptor.
     return true;
   }
-  virtual std::vector<uint32_t> EnumerateIndexedProperties(v8::Isolate* isolate)
-      override {
+  std::vector<uint32_t> EnumerateIndexedProperties(
+      v8::Isolate* isolate) override {
     std::vector<uint32_t> result;
     result.push_back(0);
     return result;
@@ -89,11 +88,11 @@ class MyInterceptor : public Wrappable<MyInterceptor>,
         IndexedPropertyInterceptor(isolate, this),
         value_(0),
         template_cache_(isolate) {}
-  virtual ~MyInterceptor() {}
+  ~MyInterceptor() override {}
 
   // gin::Wrappable
-  virtual ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate)
-      override {
+  ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) override {
     return Wrappable<MyInterceptor>::GetObjectTemplateBuilder(isolate)
         .AddNamedPropertyInterceptor()
         .AddIndexedPropertyInterceptor();

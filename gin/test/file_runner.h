@@ -20,12 +20,11 @@ namespace gin {
 class FileRunnerDelegate : public ModuleRunnerDelegate {
  public:
   FileRunnerDelegate();
-  virtual ~FileRunnerDelegate();
+  ~FileRunnerDelegate() override;
 
  private:
   // From ModuleRunnerDelegate:
-  virtual void UnhandledException(ShellRunner* runner,
-                                  TryCatch& try_catch) override;
+  void UnhandledException(ShellRunner* runner, TryCatch& try_catch) override;
 
   DISALLOW_COPY_AND_ASSIGN(FileRunnerDelegate);
 };

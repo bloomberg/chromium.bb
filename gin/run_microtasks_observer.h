@@ -18,8 +18,8 @@ class RunMicrotasksObserver : public base::MessageLoop::TaskObserver {
  public:
   RunMicrotasksObserver(v8::Isolate* isolate);
 
-  virtual void WillProcessTask(const base::PendingTask& pending_task) override;
-  virtual void DidProcessTask(const base::PendingTask& pending_task) override;
+  void WillProcessTask(const base::PendingTask& pending_task) override;
+  void DidProcessTask(const base::PendingTask& pending_task) override;
 
  private:
   v8::Isolate* isolate_;
