@@ -142,8 +142,8 @@
                   '|Source/core/rendering/RenderLayer'
     },
     "content_security_policy": {
-      'filepath': 'Source/core/page/.*SecurityPolicy' \
-                  '|Source/core/dom/SecurityPolicyViolationEvent' \
+      'filepath': 'Source/core/frame/csp' \
+                  '|Source/core/events/SecurityPolicyViolationEvent' \
                   '|LayoutTests/http/tests/security/contentSecurityPolicy'
     },
     "prerender": {
@@ -341,8 +341,6 @@
                            'dschulze@chromium.org',
                            'rob.buis@samsung.com',
                            'jbroman@chromium.org' ],
-    'platform': [ 'mkwst+moarreviews@chromium.org' ],
-    'web': [ 'mkwst+moarreviews@chromium.org' ],
     'svg': [ 'schenney@chromium.org', 'pdr+svgwatchlist@chromium.org', 'fmalita@chromium.org', 'dschulze@chromium.org', 'rob.buis@samsung.com', 'fs@opera.com', 'ed+blinkwatch@opera.com', 'gyuyoung.kim@webkit.org', 'kouhei+svg@chromium.org' ],
     'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org', 'dglazkov+blink@chromium.org', 'ed+blinkwatch@opera.com', 'rune+blink@opera.com', 'rob.buis@samsung.com', 'blink-reviews-css@chromium.org' ],
     'dom': [ 'eae+blinkwatch@chromium.org',
@@ -359,8 +357,7 @@
                  'falken@chromium.org' ],
     'wtf': [ 'mikhail.pozdnyakov@intel.com',
              'aandrey+blink@chromium.org',
-             'blink-reviews-wtf@chromium.org',
-             'mkwst+moarreviews@chromium.org' ],
+             'blink-reviews-wtf@chromium.org' ],
     'indexed_db': ['dgrogan@chromium.org',
                    'jsbell+idb@chromium.org', 'cmumford@chromium.org'],
     'rendering': [ 'pdr+renderingwatchlist@chromium.org',
@@ -371,7 +368,7 @@
                    'rune+blink@opera.com',
                    'blink-reviews-rendering@chromium.org' ],
     'compositing': [ ],
-    'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
+    'content_security_policy': [ 'mkwst+watchlist-csp@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org',
                    'yoav@yoav.ws' ],
     'preloadScanner': [ 'yoav@yoav.ws' ],
