@@ -447,6 +447,8 @@
         'browser/chromeos/login/easy_unlock/easy_unlock_remove_keys_operation.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_types.cc',
         'browser/chromeos/login/easy_unlock/easy_unlock_types.h',
+        'browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.cc',
+        'browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h',
         'browser/chromeos/login/enrollment/auto_enrollment_check_screen.cc',
         'browser/chromeos/login/enrollment/auto_enrollment_check_screen.h',
         'browser/chromeos/login/enrollment/auto_enrollment_check_screen_actor.h',

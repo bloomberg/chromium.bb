@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
@@ -136,6 +137,11 @@ void ChromeLoginPerformer::SetupSupervisedUserFlow(const std::string& user_id) {
   SupervisedUserLoginFlow* new_flow = new SupervisedUserLoginFlow(user_id);
   new_flow->set_host(ChromeUserManager::Get()->GetUserFlow(user_id)->host());
   ChromeUserManager::Get()->SetUserFlow(user_id, new_flow);
+}
+
+void ChromeLoginPerformer::SetupEasyUnlockUserFlow(const std::string& user_id) {
+  ChromeUserManager::Get()->SetUserFlow(user_id,
+                                        new EasyUnlockUserLoginFlow(user_id));
 }
 
 bool ChromeLoginPerformer::CheckPolicyForUser(const std::string& user_id) {

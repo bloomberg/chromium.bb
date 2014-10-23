@@ -99,6 +99,14 @@ bool EasyUnlockScreenlockStateHandler::IsActive() const {
   return state_ != STATE_INACTIVE;
 }
 
+bool EasyUnlockScreenlockStateHandler::InStateValidOnRemoteAuthFailure() const {
+  // Note that NO_PHONE is not valid in this case because the phone may close
+  // the connection if the auth challenge sent to it is invalid. This case
+  // should be handled as authentication failure.
+  return state_ == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
+         state_ == EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED;
+}
+
 void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   if (state_ == new_state)
     return;
@@ -149,6 +157,9 @@ void EasyUnlockScreenlockStateHandler::SetHardlockState(
   if (hardlock_state_ == new_state)
     return;
 
+  if (new_state == LOGIN_FAILED && hardlock_state_ != NO_HARDLOCK)
+    return;
+
   hardlock_state_ = new_state;
 
   // If hardlock_state_ was set to NO_HARDLOCK, this means the screen is about
@@ -177,6 +188,8 @@ void EasyUnlockScreenlockStateHandler::OnScreenDidLock() {
 }
 
 void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock() {
+  if (hardlock_state_ == LOGIN_FAILED)
+    hardlock_state_ = NO_HARDLOCK;
   hardlock_ui_shown_ = false;
   is_trial_run_ = false;
 }
@@ -216,7 +229,11 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
     return;
 
   ScreenlockBridge::UserPodCustomIconOptions icon_options;
-  icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
+  if (hardlock_state_ == LOGIN_FAILED) {
+    icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED);
+  } else {
+    icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
+  }
 
   // TODO(tbarzic): Remove this condition for M-40.
   if (IsLocaleEnUS()) {
@@ -227,6 +244,9 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
     } else if (hardlock_state_ == PAIRING_CHANGED) {
       tooltip = l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED);
+    } else if (hardlock_state_ == LOGIN_FAILED) {
+      tooltip = l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
     } else {
       LOG(ERROR) << "Unknown hardlock state " << hardlock_state_;
     }

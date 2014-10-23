@@ -432,8 +432,12 @@ void ExistingUserController::Login(const UserContext& user_context,
     return;
   }
 
-  if (!user_context.HasCredentials())
+  if (!user_context.HasCredentials()) {
+    // For easy unlock auth, login UI gets disabled prior to attempting login.
+    if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_EASY_UNLOCK)
+      login_display_->SetUIEnabled(true);
     return;
+  }
 
   PerformPreLoginActions(user_context);
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_INTERNAL);

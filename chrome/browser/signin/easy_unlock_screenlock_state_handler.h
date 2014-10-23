@@ -50,7 +50,9 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
     NO_HARDLOCK = 0,           // Hard lock is not enforced. This is default.
     USER_HARDLOCK = 1 << 0,    // Hard lock is requested by user.
     PAIRING_CHANGED = 1 << 1,  // Hard lock because pairing data is changed.
-    NO_PAIRING = 1 << 2        // Hard lock because there is no pairing data.
+    NO_PAIRING = 1 << 2,       // Hard lock because there is no pairing data.
+    LOGIN_FAILED = 1 << 3      // Transient hard lock caused by login attempt
+                               // failure. Reset when screen is unlocked.
   };
 
   // |user_email|: The email for the user associated with the profile to which
@@ -65,6 +67,11 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
 
   // Returns true if handler is not in INACTIVE state.
   bool IsActive() const;
+
+  // Whether the handler is in state that is allowed just after auth failure
+  // (i.e. the state that would cause auth failure rather than one caused by an
+  // auth failure).
+  bool InStateValidOnRemoteAuthFailure() const;
 
   // Changes internal state to |new_state| and updates the user's screenlock
   // accordingly.

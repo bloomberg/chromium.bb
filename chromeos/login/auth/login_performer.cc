@@ -153,6 +153,10 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
     NotifyWhitelistCheckFailure();
     return;
   }
+
+  if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_EASY_UNLOCK)
+    SetupEasyUnlockUserFlow(user_context.GetUserID());
+
   switch (auth_mode_) {
     case AUTH_MODE_EXTENSION: {
       RunOnlineWhitelistCheck(

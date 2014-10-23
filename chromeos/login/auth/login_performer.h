@@ -162,6 +162,9 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
   // Set up sign-in flow for supervised user.
   virtual void SetupSupervisedUserFlow(const std::string& user_id) = 0;
 
+  // Set up sign-in flow for Easy Unlock.
+  virtual void SetupEasyUnlockUserFlow(const std::string& user_id) = 0;
+
   // Run policy check for |user_id|. If something is wrong, delegate's
   // PolicyLoadFailed is called.
   virtual bool CheckPolicyForUser(const std::string& user_id) = 0;

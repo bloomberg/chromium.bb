@@ -55,6 +55,8 @@ class ChromeLoginPerformer : public LoginPerformer {
 
   virtual void SetupSupervisedUserFlow(const std::string& user_id) override;
 
+  virtual void SetupEasyUnlockUserFlow(const std::string& user_id) override;
+
   virtual scoped_refptr<Authenticator> CreateAuthenticator() override;
   virtual bool CheckPolicyForUser(const std::string& user_id) override;
   virtual content::BrowserContext* GetSigninContext() override;

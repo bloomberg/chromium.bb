@@ -18,9 +18,6 @@
 
 namespace {
 
-// Fake secret used to force invalid login.
-const char kStubSecret[] = "\xFF\x00";
-
 // Decrypts the secret that should be used to login from |wrapped_secret| using
 // raw AES key |raw_key|.
 // In a case of error, an empty string is returned.
@@ -132,12 +129,6 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const std::string& user_id,
 
 
   std::string unwrapped_secret = UnwrapSecret(wrapped_secret, raw_session_key);
-
-  // If secret is not set, set it to an arbitrary value, otherwise there will
-  // be no authenitcation attempt and the ui will get stuck.
-  // TODO(tbarzic): Find a better way to handle this case.
-  if (unwrapped_secret.empty())
-    unwrapped_secret = kStubSecret;
 
   std::string key_label;
 #if defined(OS_CHROMEOS)

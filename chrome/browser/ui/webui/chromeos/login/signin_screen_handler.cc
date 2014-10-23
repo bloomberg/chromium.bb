@@ -1029,10 +1029,6 @@ void SigninScreenHandler::AttemptEasySignin(const std::string& user_email,
   user_context.SetKey(Key(secret));
   user_context.GetKey()->SetLabel(key_label);
 
-  // TODO(tbarzic): Handle empty secret. The delegate will end up ignoring login
-  // attempt if the key is not set, and the UI will remain disabled.
-  DCHECK(!secret.empty());
-
   delegate_->Login(user_context, SigninSpecifics());
 }
 

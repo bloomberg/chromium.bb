@@ -147,6 +147,9 @@ class EasyUnlockService : public KeyedService {
   // exists.
   void FinalizeSignin(const std::string& secret);
 
+  // Handles Easy Unlock auth failure for the user.
+  void HandleAuthFailure(const std::string& user_id);
+
   // Checks the consistency between pairing data and cryptohome keys. Set
   // hardlock state if the two do not match.
   void CheckCryptohomeKeysAndMaybeHardlock();

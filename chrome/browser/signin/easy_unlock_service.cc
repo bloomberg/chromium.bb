@@ -312,8 +312,13 @@ bool EasyUnlockService::UpdateScreenlockState(
 
   handler->ChangeState(state);
 
-  if (state != EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED)
+  if (state != EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED &&
+      auth_attempt_.get()) {
     auth_attempt_.reset();
+
+    if (!handler->InStateValidOnRemoteAuthFailure())
+      HandleAuthFailure(GetUserEmail());
+  }
   return true;
 }
 
@@ -328,18 +333,41 @@ void EasyUnlockService::AttemptAuth(const std::string& user_id) {
 }
 
 void EasyUnlockService::FinalizeUnlock(bool success) {
-  if (auth_attempt_)
-    auth_attempt_->FinalizeUnlock(GetUserEmail(), success);
+  if (!auth_attempt_.get())
+    return;
+
+  auth_attempt_->FinalizeUnlock(GetUserEmail(), success);
   auth_attempt_.reset();
+
+  // Make sure that the lock screen is updated on failure.
+  if (!success)
+    HandleAuthFailure(GetUserEmail());
 }
 
 void EasyUnlockService::FinalizeSignin(const std::string& key) {
-  if (!auth_attempt_)
+  if (!auth_attempt_.get())
     return;
   std::string wrapped_secret = GetWrappedSecret();
   if (!wrapped_secret.empty())
     auth_attempt_->FinalizeSignin(GetUserEmail(), wrapped_secret, key);
   auth_attempt_.reset();
+
+  // Processing empty key is equivalent to auth cancellation. In this case the
+  // signin request will not actually be processed by login stack, so the lock
+  // screen state should be set from here.
+  if (key.empty())
+    HandleAuthFailure(GetUserEmail());
+}
+
+void EasyUnlockService::HandleAuthFailure(const std::string& user_id) {
+  if (user_id != GetUserEmail())
+    return;
+
+  if (!screenlock_state_handler_.get())
+    return;
+
+  screenlock_state_handler_->SetHardlockState(
+      EasyUnlockScreenlockStateHandler::LOGIN_FAILED);
 }
 
 void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
