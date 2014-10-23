@@ -82,6 +82,10 @@ class UI_BASE_EXPORT InputMethodBase
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);
 
+  // Convenience method to notify all observers of CaretBounds changes on
+  // |client| which is the text input client with focus.
+  void NotifyTextInputCaretBoundsChanged(const TextInputClient* client);
+
   // Interface for for signalling candidate window events.
   // See also *Callback functions below. To avoid reentrancy issue that
   // TextInputClient manipulates IME state during even handling, these methods

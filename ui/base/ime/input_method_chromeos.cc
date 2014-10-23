@@ -123,7 +123,7 @@ bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
   // normal input field (not a password field).
   // Note: We need to send the key event to ibus even if the |context_| is not
   // enabled, so that ibus can have a chance to enable the |context_|.
-  if (!IsInputFieldFocused() || !GetEngine()) {
+  if (!IsNonPasswordInputFieldFocused() || !GetEngine()) {
     if (event.type() == ET_KEY_PRESSED) {
       if (ExecuteCharacterComposer(event)) {
         // Treating as PostIME event if character composer handles key event and
@@ -178,6 +178,11 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!IsInputFieldFocused() || !IsTextInputClientFocused(client))
     return;
 
+  NotifyTextInputCaretBoundsChanged(client);
+
+  if (!IsNonPasswordInputFieldFocused())
+    return;
+
   // The current text input type should not be NONE if |context_| is focused.
   DCHECK(!IsTextInputTypeNone());
   const gfx::Rect rect = GetTextInputClient()->GetCaretBounds();
@@ -230,7 +235,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
 }
 
 void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {
-  if (IsInputFieldFocused() && IsTextInputClientFocused(client))
+  if (IsNonPasswordInputFieldFocused() && IsTextInputClientFocused(client))
     ResetContext();
 }
 
@@ -285,7 +290,7 @@ void InputMethodChromeOS::ConfirmCompositionText() {
 }
 
 void InputMethodChromeOS::ResetContext() {
-  if (!IsInputFieldFocused() || !GetTextInputClient())
+  if (!IsNonPasswordInputFieldFocused() || !GetTextInputClient())
     return;
 
   DCHECK(system_toplevel_window_focused());
@@ -319,7 +324,7 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
-    candidate_window->FocusStateChanged(IsInputFieldFocused());
+    candidate_window->FocusStateChanged(IsNonPasswordInputFieldFocused());
 
   chromeos::IMEBridge::Get()->SetCurrentTextInputType(GetTextInputType());
 
@@ -654,9 +659,13 @@ void InputMethodChromeOS::ExtractCompositionText(
   }
 }
 
-bool InputMethodChromeOS::IsInputFieldFocused() {
+bool InputMethodChromeOS::IsNonPasswordInputFieldFocused() {
   TextInputType type = GetTextInputType();
   return (type != TEXT_INPUT_TYPE_NONE) && (type != TEXT_INPUT_TYPE_PASSWORD);
+}
+
+bool InputMethodChromeOS::IsInputFieldFocused() {
+  return GetTextInputType() != TEXT_INPUT_TYPE_NONE;
 }
 
 }  // namespace ui

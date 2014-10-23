@@ -12,9 +12,15 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -22,11 +28,39 @@ namespace {
 const int kRootHeight = 600;
 const int kRootWidth = 800;
 
+const int kTextInputWindowWidth = 50;
+const int kTextInputWindowHeight = 50;
+
+class TextInputView : public views::WidgetDelegateView {
+ public:
+  TextInputView() : text_field_(new views::Textfield) {
+    text_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+    AddChildView(text_field_);
+    SetLayoutManager(new views::FillLayout);
+  }
+
+  virtual ~TextInputView() {}
+
+  virtual gfx::Size GetPreferredSize() const override {
+    return gfx::Size(kTextInputWindowWidth, kTextInputWindowHeight);
+  }
+
+  // Overridden from views::WidgetDelegate:
+  virtual views::View* GetContentsView() override { return this; }
+
+  void FocusOnTextInput() { GetFocusManager()->SetFocusedView(text_field_); }
+
+ private:
+  views::Textfield* text_field_;  // owned by views hierarchy
+
+  DISALLOW_COPY_AND_ASSIGN(TextInputView);
+};
+
 }  // namespace
 
 class MagnificationControllerTest: public test::AshTestBase {
  public:
-  MagnificationControllerTest() {}
+  MagnificationControllerTest() : text_input_view_(NULL) {}
   virtual ~MagnificationControllerTest() {}
 
   virtual void SetUp() override {
@@ -75,7 +109,51 @@ class MagnificationControllerTest: public test::AshTestBase {
         GetPointOfInterestForTesting().ToString();
   }
 
+  void CreateAndShowTextInputView(const gfx::Rect& bounds) {
+    text_input_view_ = new TextInputView;
+    views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+        text_input_view_, GetRootWindow(), bounds);
+    widget->Show();
+  }
+
+  // Returns the text input view's bounds in root window coordinates.
+  gfx::Rect GetTextInputViewBounds() {
+    DCHECK(text_input_view_);
+    gfx::Rect bounds = text_input_view_->bounds();
+    gfx::Point origin = bounds.origin();
+    // Convert origin to screen coordinates.
+    views::View::ConvertPointToScreen(text_input_view_, &origin);
+    // Convert origin to root_window_ coordinates.
+    wm::ConvertPointFromScreen(GetRootWindow(), &origin);
+    return gfx::Rect(origin.x(), origin.y(), bounds.width(), bounds.height());
+  }
+
+  // Returns the caret bounds in root window coordinates.
+  gfx::Rect GetCaretBounds() {
+    gfx::Rect caret_bounds =
+        GetInputMethod()->GetTextInputClient()->GetCaretBounds();
+    gfx::Point origin = caret_bounds.origin();
+    wm::ConvertPointFromScreen(GetRootWindow(), &origin);
+    return gfx::Rect(
+        origin.x(), origin.y(), caret_bounds.width(), caret_bounds.height());
+  }
+
+  void FocusOnTextInputView() {
+    DCHECK(text_input_view_);
+    text_input_view_->FocusOnTextInput();
+  }
+
  private:
+  TextInputView* text_input_view_;
+
+  ui::InputMethod* GetInputMethod() {
+    DCHECK(text_input_view_);
+    return text_input_view_->GetWidget()
+        ->GetNativeWindow()
+        ->GetRootWindow()
+        ->GetProperty(aura::client::kRootWindowInputMethodKey);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MagnificationControllerTest);
 };
 
@@ -438,6 +516,72 @@ TEST_F(MagnificationControllerTest, PanWindowToLeft) {
   generator.MoveMouseToInHost(gfx::Point(0, 300));
   EXPECT_EQ("139,298", env->last_mouse_location().ToString());
   EXPECT_EQ("100,300", GetHostMouseLocation());
+}
+
+TEST_F(MagnificationControllerTest, FollowTextInputFieldFocus) {
+  CreateAndShowTextInputView(gfx::Rect(500, 300, 80, 80));
+  gfx::Rect text_input_bounds = GetTextInputViewBounds();
+
+  // Enables magnifier and confirm the viewport is at center.
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+  EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+
+  // Move the viewport to (0, 0), so that text input field will be out of
+  // the viewport region.
+  GetMagnificationController()->MoveWindow(0, 0, false);
+  EXPECT_EQ("0,0 400x300", GetViewport().ToString());
+  EXPECT_FALSE(GetViewport().Intersects(text_input_bounds));
+
+  // Focus on the text input field.
+  FocusOnTextInputView();
+
+  // Verify the view port has been moved to the place where the text field is
+  // contained in the view port and the caret is at the center of the view port.
+  gfx::Rect view_port = GetViewport();
+  EXPECT_TRUE(view_port.Contains(text_input_bounds));
+  gfx::Rect caret_bounds = GetCaretBounds();
+  EXPECT_TRUE(text_input_bounds.Contains(caret_bounds));
+  EXPECT_EQ(caret_bounds.origin(), view_port.CenterPoint());
+}
+
+TEST_F(MagnificationControllerTest, FollowTextInputFieldKeyPress) {
+  CreateAndShowTextInputView(gfx::Rect(385, 200, 80, 80));
+  gfx::Rect text_input_bounds = GetTextInputViewBounds();
+
+  // Enables magnifier and confirm the viewport is at center.
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+  EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+
+  // Move the viewport to (0, 0), so that text input field intersects the
+  // view port at the right edge.
+  GetMagnificationController()->MoveWindow(0, 0, false);
+  EXPECT_EQ("0,0 400x300", GetViewport().ToString());
+  EXPECT_TRUE(GetViewport().Intersects(text_input_bounds));
+
+  // Focus on the text input field.
+  FocusOnTextInputView();
+
+  // Verify the view port is not moved, and the caret is inside the view port.
+  gfx::Rect view_port = GetViewport();
+  EXPECT_EQ("0,0 400x300", view_port.ToString());
+  EXPECT_TRUE(view_port.Intersects(text_input_bounds));
+  EXPECT_TRUE(text_input_bounds.Contains(GetCaretBounds()));
+
+  // Press keys on text input simulate typing on text field and the caret
+  // moves out of the old view port region. The view port is moved to the place
+  // where caret's x coordinate is centered at the new view port.
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.PressKey(ui::VKEY_A, 0);
+  generator.ReleaseKey(ui::VKEY_A, 0);
+  gfx::Rect caret_bounds = GetCaretBounds();
+  EXPECT_FALSE(view_port.Intersects(caret_bounds));
+
+  gfx::Rect new_view_port = GetViewport();
+  EXPECT_TRUE(new_view_port.Contains(caret_bounds));
+  EXPECT_EQ(caret_bounds.x(), new_view_port.CenterPoint().x());
+  EXPECT_EQ(view_port.y(), new_view_port.y());
 }
 
 }  // namespace ash

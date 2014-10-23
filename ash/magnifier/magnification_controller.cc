@@ -15,10 +15,13 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_observer.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -31,6 +34,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace {
 
@@ -45,6 +49,10 @@ const float kScrollScaleChangeFactor = 0.05f;
 // Threadshold of panning. If the cursor moves to within pixels (in DIP) of
 // |kPanningMergin| from the edge, the view-port moves.
 const int kPanningMergin = 100;
+
+// Gives a little panning margin for following caret, so that we will move the
+// view-port before the caret is completely out of sight.
+const int kCaretPanningMargin = 10;
 
 void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
   gfx::Point3F host_location_3f(root_location);
@@ -63,7 +71,8 @@ namespace ash {
 class MagnificationControllerImpl : virtual public MagnificationController,
                                     public ui::EventHandler,
                                     public ui::ImplicitAnimationObserver,
-                                    public aura::WindowObserver {
+                                    public aura::WindowObserver,
+                                    public ui::InputMethodObserver {
  public:
   MagnificationControllerImpl();
   virtual ~MagnificationControllerImpl();
@@ -144,6 +153,29 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   virtual void OnScrollEvent(ui::ScrollEvent* event) override;
   virtual void OnTouchEvent(ui::TouchEvent* event) override;
 
+  // Moves the view port when |point| is located within
+  // |x_panning_margin| and |y_pannin_margin| to the edge of the visible
+  // window region. The view port will be moved so that the |point| will be
+  // moved to the point where it has |x_target_margin| and |y_target_margin|
+  // to the edge of the visible region.
+  void MoveMagnifierWindow(const gfx::Point& point,
+                           int x_panning_margin,
+                           int y_panning_margin,
+                           int x_target_margin,
+                           int y_target_margin);
+
+  // ui::InputMethodObserver:
+  virtual void OnTextInputTypeChanged(
+      const ui::TextInputClient* client) override {}
+  virtual void OnFocus() override {}
+  virtual void OnBlur() override {}
+  virtual void OnTextInputStateChanged(
+      const ui::TextInputClient* client) override {}
+  virtual void OnInputMethodDestroyed(
+      const ui::InputMethod* input_method) override {}
+  virtual void OnShowImeIfNeeded() override {}
+  virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
+
   // Target root window. This must not be NULL.
   aura::Window* root_window_;
 
@@ -169,6 +201,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   ScrollDirection scroll_direction_;
 
+  ui::InputMethod* input_method_;  // Not owned.
+
   DISALLOW_COPY_AND_ASSIGN(MagnificationControllerImpl);
 };
 
@@ -181,13 +215,17 @@ MagnificationControllerImpl::MagnificationControllerImpl()
       is_enabled_(false),
       move_cursor_after_animation_(false),
       scale_(kNonMagnifiedScale),
-      scroll_direction_(SCROLL_NONE) {
+      scroll_direction_(SCROLL_NONE),
+      input_method_(NULL) {
   Shell::GetInstance()->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
   point_of_interest_ = root_window_->bounds().CenterPoint();
 }
 
 MagnificationControllerImpl::~MagnificationControllerImpl() {
+  if (input_method_)
+    input_method_->RemoveObserver(this);
+
   root_window_->RemoveObserver(this);
 
   Shell::GetInstance()->RemovePreTargetHandler(this);
@@ -317,55 +355,8 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
   DCHECK(root_window_);
 
   gfx::Point mouse(location);
-
-  int x = origin_.x();
-  int y = origin_.y();
-  bool start_zoom = false;
-
-  const gfx::Rect window_rect = gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
-  const int left = window_rect.x();
-  const int right = window_rect.right();
   int margin = kPanningMergin / scale_;  // No need to consider DPI.
-
-  int x_diff = 0;
-
-  if (mouse.x() < left + margin) {
-    // Panning left.
-    x_diff = mouse.x() - (left + margin);
-    start_zoom = true;
-  } else if (right - margin < mouse.x()) {
-    // Panning right.
-    x_diff = mouse.x() - (right - margin);
-    start_zoom = true;
-  }
-  x = left + x_diff;
-
-  const int top = window_rect.y();
-  const int bottom = window_rect.bottom();
-
-  int y_diff = 0;
-  if (mouse.y() < top + margin) {
-    // Panning up.
-    y_diff = mouse.y() - (top + margin);
-    start_zoom = true;
-  } else if (bottom - margin < mouse.y()) {
-    // Panning down.
-    y_diff = mouse.y() - (bottom - margin);
-    start_zoom = true;
-  }
-  y = top + y_diff;
-
-  if (start_zoom && !is_on_animation_) {
-    // No animation on panning.
-    bool animate = false;
-    bool ret = RedrawDIP(gfx::Point(x, y), scale_, animate);
-
-    if (ret) {
-      // If the magnified region is moved, hides the mouse cursor and moves it.
-      if (x_diff != 0 || y_diff != 0)
-        MoveCursorTo(root_window_->GetHost(), mouse);
-    }
-  }
+  MoveMagnifierWindow(mouse, margin, margin, margin, margin);
 }
 
 void MagnificationControllerImpl::AfterAnimationMoveCursorTo(
@@ -517,6 +508,13 @@ void MagnificationControllerImpl::SetScrollDirection(
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
   Shell* shell = Shell::GetInstance();
   if (enabled) {
+    if (!input_method_) {
+      input_method_ =
+          root_window_->GetProperty(aura::client::kRootWindowInputMethodKey);
+      if (input_method_)
+        input_method_->AddObserver(this);
+    }
+
     float scale =
         Shell::GetInstance()->accessibility_delegate()->
         GetSavedScreenMagnifierScale();
@@ -535,6 +533,11 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     // Do nothing, if already disabled.
     if (!is_enabled_)
       return;
+
+    if (input_method_) {
+      input_method_->RemoveObserver(this);
+      input_method_ = NULL;
+    }
 
     RedrawKeepingMousePosition(kNonMagnifiedScale, true);
     is_enabled_ = enabled;
@@ -595,6 +598,87 @@ void MagnificationControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
     if (root_bounds.Contains(event->root_location()))
       point_of_interest_ = event->root_location();
   }
+}
+
+void MagnificationControllerImpl::MoveMagnifierWindow(const gfx::Point& point,
+                                                      int x_panning_margin,
+                                                      int y_panning_margin,
+                                                      int x_target_margin,
+                                                      int y_target_margin) {
+  DCHECK(root_window_);
+  int x = origin_.x();
+  int y = origin_.y();
+  bool start_zoom = false;
+
+  const gfx::Rect window_rect = gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
+  const int left = window_rect.x();
+  const int right = window_rect.right();
+
+  int x_diff = 0;
+  if (point.x() < left + x_panning_margin) {
+    // Panning left.
+    x_diff = point.x() - (left + x_target_margin);
+    start_zoom = true;
+  } else if (right - x_panning_margin < point.x()) {
+    // Panning right.
+    x_diff = point.x() - (right - x_target_margin);
+    start_zoom = true;
+  }
+  x = left + x_diff;
+
+  const int top = window_rect.y();
+  const int bottom = window_rect.bottom();
+
+  int y_diff = 0;
+  if (point.y() < top + y_panning_margin) {
+    // Panning up.
+    y_diff = point.y() - (top + y_target_margin);
+    start_zoom = true;
+  } else if (bottom - y_panning_margin < point.y()) {
+    // Panning down.
+    y_diff = point.y() - (bottom - y_target_margin);
+    start_zoom = true;
+  }
+  y = top + y_diff;
+  if (start_zoom && !is_on_animation_) {
+    // No animation on panning.
+    bool animate = false;
+    bool ret = RedrawDIP(gfx::Point(x, y), scale_, animate);
+
+    if (ret) {
+      // If the magnified region is moved, hides the mouse cursor and moves it.
+      if (x_diff != 0 || y_diff != 0)
+        MoveCursorTo(root_window_->GetHost(), point);
+    }
+  }
+}
+
+void MagnificationControllerImpl::OnCaretBoundsChanged(
+    const ui::TextInputClient* client) {
+  // caret bounds in screen coordinates.
+  const gfx::Rect caret_bounds = client->GetCaretBounds();
+  // Note: OnCaretBoundsChanged could be fired OnTextInputTypeChanged during
+  // which the caret position is not set a meaning position, and we do not
+  // need to adjust the view port position based on the bogus caret position.
+  // This is only a transition period, the caret position will be fixed upon
+  // focusing right after.
+  if (caret_bounds.width() == 0 && caret_bounds.height() == 0)
+    return;
+
+  gfx::Point caret_origin = caret_bounds.origin();
+  // caret_origin in |root_window_| coordinates.
+  wm::ConvertPointFromScreen(root_window_, &caret_origin);
+
+  // Visible window_rect in |root_window_| coordinates.
+  const gfx::Rect visible_window_rect =
+      gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
+
+  const int panning_margin = kCaretPanningMargin / scale_;
+  MoveMagnifierWindow(caret_origin,
+                      panning_margin,
+                      panning_margin,
+                      visible_window_rect.width() / 2,
+                      visible_window_rect.height() / 2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

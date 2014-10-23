@@ -131,6 +131,12 @@ void InputMethodBase::NotifyTextInputStateChanged(
                     OnTextInputStateChanged(client));
 }
 
+void InputMethodBase::NotifyTextInputCaretBoundsChanged(
+    const TextInputClient* client) {
+  FOR_EACH_OBSERVER(
+      InputMethodObserver, observer_list_, OnCaretBoundsChanged(client));
+}
+
 void InputMethodBase::SetFocusedTextInputClientInternal(
     TextInputClient* client) {
   if (switches::IsTextInputFocusManagerEnabled())
