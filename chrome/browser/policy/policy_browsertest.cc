@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -75,6 +76,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -124,12 +126,15 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/url_util.h"
@@ -1602,6 +1607,78 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
   EXPECT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
   EXPECT_FALSE(InstallExtension(kGoodCrxName));
   EXPECT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
+  // Verifies that shared_modules are not affected by the blacklist.
+
+  const char kImporterId[] = "pchakhniekfaeoddkifplhnfbffomabh";
+  const char kSharedModuleId[] = "nfgclafboonjbiafbllihiailjlhelpm";
+
+  // Make sure that "import" and "export" are available to these extension IDs
+  // by mocking the release channel.
+  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+
+  // Verify that the extensions are not installed initially.
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kImporterId, true));
+  ASSERT_FALSE(service->GetExtensionById(kSharedModuleId, true));
+
+  // Mock the webstore update URL. This is where the shared module extension
+  // will be installed from.
+  base::FilePath update_xml_path = base::FilePath(kTestExtensionsDir)
+                                       .AppendASCII("policy_shared_module")
+                                       .AppendASCII("update.xml");
+  GURL update_xml_url(URLRequestMockHTTPJob::GetMockUrl(update_xml_path));
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryUpdateURL, update_xml_url.spec());
+  ui_test_utils::NavigateToURL(browser(), update_xml_url);
+
+  // Blacklist "*" but force-install the importer extension. The shared module
+  // should be automatically installed too.
+  base::ListValue blacklist;
+  blacklist.AppendString("*");
+  base::ListValue forcelist;
+  forcelist.AppendString(
+      base::StringPrintf("%s;%s", kImporterId, update_xml_url.spec().c_str()));
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
+  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, forcelist.DeepCopy(), NULL);
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  extensions::TestExtensionRegistryObserver observe_importer(
+      registry, kImporterId);
+  extensions::TestExtensionRegistryObserver observe_shared_module(
+      registry, kSharedModuleId);
+  UpdateProviderPolicy(policies);
+  observe_importer.WaitForExtensionLoaded();
+  observe_shared_module.WaitForExtensionLoaded();
+
+  // Verify that both extensions got installed.
+  const extensions::Extension* importer =
+      service->GetExtensionById(kImporterId, true);
+  ASSERT_TRUE(importer);
+  EXPECT_EQ(kImporterId, importer->id());
+  const extensions::Extension* shared_module =
+      service->GetExtensionById(kSharedModuleId, true);
+  ASSERT_TRUE(shared_module);
+  EXPECT_EQ(kSharedModuleId, shared_module->id());
+  EXPECT_TRUE(shared_module->is_shared_module());
+
+  // Verify the dependency.
+  scoped_ptr<extensions::ExtensionSet> set =
+      service->shared_module_service()->GetDependentExtensions(shared_module);
+  ASSERT_TRUE(set);
+  EXPECT_EQ(1u, set->size());
+  EXPECT_TRUE(set->Contains(importer->id()));
+
+  std::vector<extensions::SharedModuleInfo::ImportInfo> imports =
+      extensions::SharedModuleInfo::GetImports(importer);
+  ASSERT_EQ(1u, imports.size());
+  EXPECT_EQ(kSharedModuleId, imports[0].extension_id);
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {

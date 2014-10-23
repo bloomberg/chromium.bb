@@ -76,6 +76,12 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   if (Manifest::IsComponentLocation(extension->location()))
     return true;
 
+  // Shared modules are always allowed too: they only contain resources that
+  // are used by other extensions. The extension that depends on the shared
+  // module may be filtered by policy.
+  if (extension->is_shared_module())
+    return true;
+
   ExtensionManagement::InstallationMode installation_mode =
       settings_->GetInstallationMode(extension->id());
 

@@ -486,14 +486,8 @@ void CrxInstaller::CheckInstall() {
       Version version_required(i->minimum_version);
       const Extension* imported_module =
           service->GetExtensionById(i->extension_id, true);
-      if (!imported_module) {
-        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_FOUND,
-            base::ASCIIToUTF16(i->extension_id),
-            base::ASCIIToUTF16(i->minimum_version))));
-        return;
-      } else if (imported_module &&
-                 !SharedModuleInfo::IsSharedModule(imported_module)) {
+      if (imported_module &&
+          !SharedModuleInfo::IsSharedModule(imported_module)) {
         ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
             IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
             base::UTF8ToUTF16(imported_module->name()))));
@@ -508,8 +502,8 @@ void CrxInstaller::CheckInstall() {
             base::ASCIIToUTF16(imported_module->version()->GetString()))));
         return;
       } else if (imported_module &&
-          !SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
-                                                        extension()->id())) {
+                 !SharedModuleInfo::IsExportAllowedByWhitelist(
+                     imported_module, extension()->id())) {
         ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
             IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_WHITELISTED,
             base::UTF8ToUTF16(extension()->name()),
