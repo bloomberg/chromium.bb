@@ -563,6 +563,7 @@ def overloads_context(interface, overloads):
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
         'minarg': lengths[0],
         'per_context_enabled_function_all': common_value(overloads, 'per_context_enabled_function'),  # [PerContextEnabled]
+        'returns_promise_all': promise_overload_count > 0,
         'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]
         'valid_arities': lengths
             # Only need to report valid arities if there is a gap in the

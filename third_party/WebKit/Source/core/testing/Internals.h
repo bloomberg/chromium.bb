@@ -305,6 +305,9 @@ public:
     ScriptPromise promiseCheck(ScriptState*, long, bool, const Dictionary&, const String&, const Vector<String>&, ExceptionState&);
     ScriptPromise promiseCheckWithoutExceptionState(ScriptState*, const Dictionary&, const String&, const Vector<String>&);
     ScriptPromise promiseCheckRange(ScriptState*, long);
+    ScriptPromise promiseCheckOverload(ScriptState*, Location*);
+    ScriptPromise promiseCheckOverload(ScriptState*, Document*);
+    ScriptPromise promiseCheckOverload(ScriptState*, Location*, long, long);
 
     void trace(Visitor*);
 

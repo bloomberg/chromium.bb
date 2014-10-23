@@ -376,8 +376,6 @@ interface TestObject {
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
     void voidMethodDictionarySequenceArg(sequence<Dictionary> dictionarySequenceArg);
-    Promise overloadedPromiseMethod(long arg);
-    Promise overloadedPromiseMethod(DOMString arg);
 
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
@@ -438,6 +436,9 @@ interface TestObject {
     void overloadedMethodJ(DOMString stringArg);
     void overloadedMethodJ(TestDictionary testDictionaryArg);
 
+    Promise promiseOverloadMethod();
+    Promise promiseOverloadMethod(Window arg1, double arg2);
+    Promise promiseOverloadMethod(Document arg1, double arg2);
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();
     [PerWorldBindings] void overloadedPerWorldBindingsMethod(long longArg);

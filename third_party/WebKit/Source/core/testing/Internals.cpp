@@ -2179,6 +2179,21 @@ ScriptPromise Internals::promiseCheckRange(ScriptState* scriptState, long arg1)
     return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
 }
 
+ScriptPromise Internals::promiseCheckOverload(ScriptState* scriptState, Location*)
+{
+    return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
+}
+
+ScriptPromise Internals::promiseCheckOverload(ScriptState* scriptState, Document*)
+{
+    return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
+}
+
+ScriptPromise Internals::promiseCheckOverload(ScriptState* scriptState, Location*, long, long)
+{
+    return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
+}
+
 void Internals::trace(Visitor* visitor)
 {
     visitor->trace(m_runtimeFlags);

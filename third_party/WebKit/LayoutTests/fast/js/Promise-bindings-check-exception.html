@@ -36,6 +36,7 @@ function shouldBeResolved(promise, message) {
 var check = internals.promiseCheck.bind(internals);
 var check2 = internals.promiseCheckWithoutExceptionState.bind(internals);
 var check3 = internals.promiseCheckRange.bind(internals);
+var check4 = internals.promiseCheckOverload.bind(internals);
 
 Promise.resolve().then(function() {
     return shouldBeRejected(check(), 'no arguments');
@@ -84,6 +85,16 @@ Promise.resolve().then(function() {
     return shouldBeRejected(check2({}, '', '', x), 'conversion error(String...)');
 }).then(function() {
     return shouldBeRejected(check3(-1), 'range error(octet)');
+}).then(function() {
+    return shouldBeResolved(check4(location), 'valid argument (Location)');
+}).then(function() {
+    return shouldBeResolved(check4(document), 'valid argument (Document)');
+}).then(function() {
+    return shouldBeResolved(check4(location, 0, 0), 'valid argument (Location, long, long)');
+}).then(function() {
+    return shouldBeRejected(check4({}), 'type error (Object)');
+}).then(function() {
+    return shouldBeRejected(check4(location, 0), 'type error (Location, long)');
 }).then(undefined, function(e) {
     testFailed('An exception is thrown from a method');
     debug(e);

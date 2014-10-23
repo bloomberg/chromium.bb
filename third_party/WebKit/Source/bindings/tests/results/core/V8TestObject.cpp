@@ -6807,62 +6807,6 @@ static void voidMethodDictionarySequenceArgMethodCallback(const v8::FunctionCall
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void overloadedPromiseMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPromiseMethod", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    int arg;
-    {
-        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg, toInt32(info[0], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
-    }
-    v8SetReturnValue(info, impl->overloadedPromiseMethod(arg).v8Value());
-}
-
-static void overloadedPromiseMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPromiseMethod", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    V8StringResource<> arg;
-    {
-        TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg, info[0], exceptionState, info, ScriptState::current(info.GetIsolate()));
-    }
-    v8SetReturnValue(info, impl->overloadedPromiseMethod(arg).v8Value());
-}
-
-static void overloadedPromiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPromiseMethod", "TestObject", info.Holder(), info.GetIsolate());
-    switch (std::min(1, info.Length())) {
-    case 1:
-        if (info[0]->IsNumber()) {
-            overloadedPromiseMethod1Method(info);
-            return;
-        }
-        if (true) {
-            overloadedPromiseMethod2Method(info);
-            return;
-        }
-        if (true) {
-            overloadedPromiseMethod1Method(info);
-            return;
-        }
-        break;
-    default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
-}
-
-static void overloadedPromiseMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::overloadedPromiseMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringArgLongArg", "TestObject", info.Holder(), info.GetIsolate());
@@ -8094,6 +8038,79 @@ static void overloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::V
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestObjectV8Internal::overloadedMethodJMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void promiseOverloadMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    v8SetReturnValue(info, impl->promiseOverloadMethod().v8Value());
+}
+
+static void promiseOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseOverloadMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    LocalDOMWindow* arg1;
+    double arg2;
+    {
+        arg1 = toDOMWindow(info[0], info.GetIsolate());
+        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg2, toDouble(info[1], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
+    }
+    v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());
+}
+
+static void promiseOverloadMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseOverloadMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    Document* arg1;
+    double arg2;
+    {
+        arg1 = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        TONATIVE_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(arg2, toDouble(info[1], exceptionState), exceptionState, info, ScriptState::current(info.GetIsolate()));
+    }
+    v8SetReturnValue(info, impl->promiseOverloadMethod(arg1, arg2).v8Value());
+}
+
+static void promiseOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseOverloadMethod", "TestObject", info.Holder(), info.GetIsolate());
+    switch (std::min(2, info.Length())) {
+    case 0:
+        if (true) {
+            promiseOverloadMethod1Method(info);
+            return;
+        }
+        break;
+    case 2:
+        if (V8Window::hasInstance(info[0], info.GetIsolate())) {
+            promiseOverloadMethod2Method(info);
+            return;
+        }
+        if (V8Document::hasInstance(info[0], info.GetIsolate())) {
+            promiseOverloadMethod3Method(info);
+            return;
+        }
+        break;
+    default:
+        if (info.Length() >= 0) {
+            setArityTypeError(exceptionState, "[0, 2]", info.Length());
+            v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+            return;
+        }
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
+        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+}
+
+static void promiseOverloadMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::promiseOverloadMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -10385,7 +10402,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodSerializedScriptValueArg", TestObjectV8Internal::voidMethodSerializedScriptValueArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodXPathNSResolverArg", TestObjectV8Internal::voidMethodXPathNSResolverArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDictionarySequenceArg", TestObjectV8Internal::voidMethodDictionarySequenceArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
-    {"overloadedPromiseMethod", TestObjectV8Internal::overloadedPromiseMethodMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodStringArgLongArg", TestObjectV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodOptionalStringArg", TestObjectV8Internal::voidMethodOptionalStringArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodOptionalTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
@@ -10423,6 +10439,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"overloadedMethodH", TestObjectV8Internal::overloadedMethodHMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"overloadedMethodI", TestObjectV8Internal::overloadedMethodIMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"overloadedMethodJ", TestObjectV8Internal::overloadedMethodJMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"promiseOverloadMethod", TestObjectV8Internal::promiseOverloadMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

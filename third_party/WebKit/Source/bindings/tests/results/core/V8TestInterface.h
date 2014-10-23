@@ -56,6 +56,8 @@ public:
     static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
     static void registerVoidMethodPartialOverloadMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
     static void registerStaticVoidMethodPartialOverloadMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+    static void registerPromiseMethodPartialOverloadMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
+    static void registerStaticPromiseMethodPartialOverloadMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
     static void registerPartial2VoidMethodMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
     static void registerPartial2StaticVoidMethodMethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
 

@@ -326,8 +326,8 @@ ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{er
 
 
 {######################################}
-{% macro throw_from_exception_state(method) %}
-{% if method.idl_type == 'Promise' %}
+{% macro throw_from_exception_state(method_or_overloads) %}
+{% if method_or_overloads.idl_type == 'Promise' or method_or_overloads.returns_promise_all %}
 v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value())
 {%- else %}
 exceptionState.throwIfNeeded()
@@ -410,13 +410,13 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         {% if overloads.valid_arities %}
         if (info.Length() >= {{overloads.minarg}}) {
             setArityTypeError(exceptionState, "{{overloads.valid_arities}}", info.Length());
-            exceptionState.throwIfNeeded();
+            {{throw_from_exception_state(overloads)}};
             return;
         }
         {% endif %}
         {# Otherwise just report "not enough arguments" #}
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.minarg}}, info.Length()));
-        exceptionState.throwIfNeeded();
+        {{throw_from_exception_state(overloads)}};
         return;
     {% endif %}
     }
@@ -426,7 +426,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% else %}
     {# No match, throw error #}
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
+    {{throw_from_exception_state(overloads)}};
     {% endif %}
 }
 {% endmacro %}

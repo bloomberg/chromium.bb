@@ -36,6 +36,15 @@ Error: Thrown from toString
 PASS Rejected as expected: range error(octet)
 PASS reason instanceof Error is true
 TypeError: Failed to execute 'promiseCheckRange' on 'Internals': Value is outside the 'octet' value range.
+PASS Resolved as expected: valid argument (Location)
+PASS Resolved as expected: valid argument (Document)
+PASS Resolved as expected: valid argument (Location, long, long)
+PASS Rejected as expected: type error (Object)
+PASS reason instanceof Error is true
+TypeError: Failed to execute 'promiseCheckOverload' on 'Internals': No function was found that matched the signature provided.
+PASS Rejected as expected: type error (Location, long)
+PASS reason instanceof Error is true
+TypeError: Failed to execute 'promiseCheckOverload' on 'Internals': Valid arities are: [1, 3], but 2 arguments provided.
 PASS successfullyParsed is true
 
 TEST COMPLETE

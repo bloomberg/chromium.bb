@@ -10,10 +10,12 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
+#include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Iterator.h"
@@ -21,6 +23,7 @@
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/tests/idls/core/TestImplements2.h"
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
 #include "bindings/tests/idls/core/TestPartialInterface.h"
@@ -46,6 +49,8 @@ const WrapperTypeInfo& TestInterfaceImplementation::s_wrapperTypeInfo = V8TestIn
 namespace TestInterfaceImplementationV8Internal {
 static void (*voidMethodPartialOverloadMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
 static void (*staticVoidMethodPartialOverloadMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
+static void (*promiseMethodPartialOverloadMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
+static void (*staticPromiseMethodPartialOverloadMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
 static void (*partial2VoidMethodMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
 static void (*partial2StaticVoidMethodMethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
 
@@ -1147,6 +1152,31 @@ static void staticVoidMethodPartialOverload1Method(const v8::FunctionCallbackInf
     TestInterfaceImplementation::staticVoidMethodPartialOverload();
 }
 
+static void promiseMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    v8SetReturnValue(info, impl->promiseMethodPartialOverload().v8Value());
+}
+
+static void promiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    LocalDOMWindow* window;
+    {
+        if (info.Length() > 0 && !V8Window::hasInstance(info[0], info.GetIsolate())) {
+            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Window'."), info.GetIsolate())));
+            return;
+        }
+        window = toDOMWindow(info[0], info.GetIsolate());
+    }
+    v8SetReturnValue(info, impl->promiseMethodPartialOverload(window).v8Value());
+}
+
+static void staticPromiseMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8SetReturnValue(info, TestInterfaceImplementation::staticPromiseMethodPartialOverload().v8Value());
+}
+
 static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -1458,6 +1488,58 @@ static void staticVoidMethodPartialOverloadMethodCallback(const v8::FunctionCall
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 0:
+        if (true) {
+            promiseMethodPartialOverload1Method(info);
+            return;
+        }
+        break;
+    case 1:
+        if (V8Window::hasInstance(info[0], info.GetIsolate())) {
+            promiseMethodPartialOverload2Method(info);
+            return;
+        }
+        break;
+    }
+    ASSERT(promiseMethodPartialOverloadMethodForPartialInterface);
+    (promiseMethodPartialOverloadMethodForPartialInterface)(info);
+}
+
+static void promiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "staticPromiseMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 0:
+        if (true) {
+            staticPromiseMethodPartialOverload1Method(info);
+            return;
+        }
+        break;
+    case 1:
+        break;
+    }
+    ASSERT(staticPromiseMethodPartialOverloadMethodForPartialInterface);
+    (staticPromiseMethodPartialOverloadMethodForPartialInterface)(info);
+}
+
+static void staticPromiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partial2VoidMethod", "TestInterface", info.Holder(), info.GetIsolate());
@@ -1732,6 +1814,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
     {"implementsCustomVoidMethod", TestInterfaceImplementationV8Internal::implementsCustomVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"implements3VoidMethod", TestInterfaceImplementationV8Internal::implements3VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodPartialOverload", TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"promiseMethodPartialOverload", TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"partial2VoidMethod", TestInterfaceImplementationV8Internal::partial2VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 };
 
@@ -1877,6 +1960,10 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemp
         "staticVoidMethodPartialOverload", TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, staticVoidMethodPartialOverloadMethodConfiguration, isolate);
+    static const V8DOMConfiguration::MethodConfiguration staticPromiseMethodPartialOverloadMethodConfiguration = {
+        "staticPromiseMethodPartialOverload", TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
+    };
+    V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, staticPromiseMethodPartialOverloadMethodConfiguration, isolate);
     static const V8DOMConfiguration::MethodConfiguration partial2StaticVoidMethodMethodConfiguration = {
         "partial2StaticVoidMethod", TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
@@ -2089,6 +2176,14 @@ void V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface
 void V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
 {
     TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodForPartialInterface = method;
+}
+void V8TestInterface::registerPromiseMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
+{
+    TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethodForPartialInterface = method;
+}
+void V8TestInterface::registerStaticPromiseMethodPartialOverloadMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
+{
+    TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethodForPartialInterface = method;
 }
 void V8TestInterface::registerPartial2VoidMethodMethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&))
 {

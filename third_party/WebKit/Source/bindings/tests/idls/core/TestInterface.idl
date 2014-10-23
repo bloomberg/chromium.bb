@@ -92,6 +92,10 @@
     void voidMethodPartialOverload();
     void voidMethodPartialOverload(double doubleArg);
     static void staticVoidMethodPartialOverload();
+
+    Promise promiseMethodPartialOverload();
+    Promise promiseMethodPartialOverload(Window window);
+    static Promise staticPromiseMethodPartialOverload();
 };
 
 TestInterface implements TestImplements;

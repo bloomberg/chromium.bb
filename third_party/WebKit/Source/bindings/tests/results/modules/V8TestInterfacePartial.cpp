@@ -10,13 +10,16 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
+#include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
+#include "bindings/core/v8/V8Window.h"
 #include "bindings/tests/idls/modules/TestPartialInterfaceImplementation3.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
@@ -90,6 +93,72 @@ static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
+}
+
+static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    Document* document;
+    {
+        if (info.Length() > 0 && !V8Document::hasInstance(info[0], info.GetIsolate())) {
+            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Document'."), info.GetIsolate())));
+            return;
+        }
+        document = V8Document::toImpl(v8::Handle<v8::Object>::Cast(info[0]));
+    }
+    v8SetReturnValue(info, TestPartialInterfaceImplementation3::promiseMethodPartialOverload(*impl, document).v8Value());
+}
+
+static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 0:
+        break;
+    case 1:
+        if (V8Document::hasInstance(info[0], info.GetIsolate())) {
+            promiseMethodPartialOverload3Method(info);
+            return;
+        }
+        break;
+    default:
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
+        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+}
+
+static void staticPromiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "staticPromiseMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    V8StringResource<> value;
+    {
+        TOSTRING_VOID_EXCEPTIONSTATE_PROMISE_INTERNAL(value, info[0], exceptionState, info, ScriptState::current(info.GetIsolate()));
+    }
+    v8SetReturnValue(info, TestPartialInterfaceImplementation3::staticPromiseMethodPartialOverload(value).v8Value());
+}
+
+static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "staticPromiseMethodPartialOverload", "TestInterface", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 0:
+        break;
+    case 1:
+        if (true) {
+            staticPromiseMethodPartialOverload2Method(info);
+            return;
+        }
+        break;
+    default:
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
+        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
 }
 
 static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -239,6 +308,8 @@ void V8TestInterfacePartial::initialize()
         &V8TestInterfacePartial::installConditionallyEnabledMethods);
     V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::voidMethodPartialOverloadMethod);
     V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticVoidMethodPartialOverloadMethod);
+    V8TestInterface::registerPromiseMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::promiseMethodPartialOverloadMethod);
+    V8TestInterface::registerStaticPromiseMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticPromiseMethodPartialOverloadMethod);
     V8TestInterface::registerPartial2VoidMethodMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::partial2VoidMethodMethod);
     V8TestInterface::registerPartial2StaticVoidMethodMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::partial2StaticVoidMethodMethod);
 }
