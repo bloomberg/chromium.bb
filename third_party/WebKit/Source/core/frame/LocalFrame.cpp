@@ -222,6 +222,7 @@ void LocalFrame::trace(Visitor* visitor)
     visitor->trace(m_loader);
     visitor->trace(m_navigationScheduler);
     visitor->trace(m_view);
+    visitor->trace(m_domWindow);
     visitor->trace(m_pagePopupOwner);
     visitor->trace(m_script);
     visitor->trace(m_editor);
@@ -234,6 +235,11 @@ void LocalFrame::trace(Visitor* visitor)
     HeapSupplementable<LocalFrame>::trace(visitor);
 #endif
     Frame::trace(visitor);
+}
+
+LocalDOMWindow* LocalFrame::domWindow() const
+{
+    return m_domWindow.get();
 }
 
 void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
@@ -336,7 +342,10 @@ void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
     }
     if (domWindow)
         script().clearWindowProxy();
-    Frame::setDOMWindow(domWindow);
+
+    if (m_domWindow)
+        m_domWindow->reset();
+    m_domWindow = domWindow;
 }
 
 Document* LocalFrame::document() const

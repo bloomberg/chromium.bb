@@ -27,6 +27,12 @@ RemoteFrame::~RemoteFrame()
     setView(nullptr);
 }
 
+void RemoteFrame::trace(Visitor* visitor)
+{
+    visitor->trace(m_view);
+    Frame::trace(visitor);
+}
+
 void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
 {
     // The process where this frame actually lives won't have sufficient information to determine
@@ -47,12 +53,6 @@ void RemoteFrame::detach()
 void RemoteFrame::forwardInputEvent(Event* event)
 {
     remoteFrameClient()->forwardInputEvent(event);
-}
-
-void RemoteFrame::trace(Visitor* visitor)
-{
-    visitor->trace(m_view);
-    Frame::trace(visitor);
 }
 
 void RemoteFrame::setView(PassRefPtrWillBeRawPtr<RemoteFrameView> view)

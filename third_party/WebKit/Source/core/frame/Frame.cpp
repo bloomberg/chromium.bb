@@ -60,11 +60,6 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 Frame::~Frame()
 {
     ASSERT(!m_owner);
-#if !ENABLE(OILPAN)
-    // FIXME: We should not be doing all this work inside the destructor
-    setDOMWindow(nullptr);
-#endif
-
 #ifndef NDEBUG
     frameCounter.decrement();
 #endif
@@ -75,7 +70,6 @@ void Frame::trace(Visitor* visitor)
     visitor->trace(m_treeNode);
     visitor->trace(m_host);
     visitor->trace(m_owner);
-    visitor->trace(m_domWindow);
 }
 
 void Frame::detach()
@@ -141,14 +135,6 @@ bool Frame::isLocalRoot() const
 HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
 {
     return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : 0;
-}
-
-void Frame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
-{
-    if (m_domWindow)
-        m_domWindow->reset();
-
-    m_domWindow = domWindow;
 }
 
 static ChromeClient& emptyChromeClient()

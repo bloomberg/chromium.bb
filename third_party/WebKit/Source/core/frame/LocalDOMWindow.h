@@ -28,6 +28,7 @@
 #define LocalDOMWindow_h
 
 #include "core/events/EventTarget.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "platform/LifecycleContext.h"
@@ -83,7 +84,7 @@ enum PageshowEventPersistence {
 
 enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-class LocalDOMWindow final : public RefCountedWillBeGarbageCollectedFinalized<LocalDOMWindow>, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
+class LocalDOMWindow final : public RefCountedWillBeGarbageCollectedFinalized<LocalDOMWindow>, public EventTargetWithInlineData, public DOMWindow, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(LocalDOMWindow);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
@@ -97,10 +98,13 @@ public:
 
     PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
+    // EventTarget overrides:
     virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
-
     virtual LocalDOMWindow* toDOMWindow() override;
+
+    // DOMWindow overrides:
+    ScriptWrappable* toScriptWrappable() override { return this; }
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);

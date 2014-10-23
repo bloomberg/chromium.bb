@@ -59,6 +59,9 @@ public:
     virtual bool isLocalFrame() const { return false; }
     virtual bool isRemoteFrame() const { return false; }
 
+    // FIXME: This should return a DOMWindow*.
+    virtual LocalDOMWindow* domWindow() const = 0;
+
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) = 0;
 
     virtual void detach();
@@ -79,11 +82,6 @@ public:
     FrameOwner* owner() const;
     void setOwner(FrameOwner* owner) { m_owner = owner; }
     HTMLFrameOwnerElement* deprecatedLocalOwner() const;
-
-    // FIXME: LocalDOMWindow and Document should both be moved to LocalFrame
-    // after RemoteFrame is complete enough to exist without them.
-    virtual void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>);
-    LocalDOMWindow* domWindow() const;
 
     FrameTree& tree() const;
     ChromeClient& chromeClient() const;
@@ -110,8 +108,6 @@ protected:
     RawPtrWillBeMember<FrameHost> m_host;
     RawPtrWillBeMember<FrameOwner> m_owner;
 
-    RefPtrWillBeMember<LocalDOMWindow> m_domWindow;
-
 private:
     FrameClient* m_client;
     WebLayer* m_remotePlatformLayer;
@@ -120,11 +116,6 @@ private:
 inline FrameClient* Frame::client() const
 {
     return m_client;
-}
-
-inline LocalDOMWindow* Frame::domWindow() const
-{
-    return m_domWindow.get();
 }
 
 inline FrameOwner* Frame::owner() const

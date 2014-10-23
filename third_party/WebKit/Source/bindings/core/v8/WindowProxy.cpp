@@ -291,13 +291,14 @@ static v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> contex
 
 bool WindowProxy::installDOMWindow()
 {
-    LocalDOMWindow* window = m_frame->domWindow();
-    const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
+    DOMWindow* window = m_frame->domWindow();
+    ScriptWrappable* scriptWrappable = window->toScriptWrappable();
+    const WrapperTypeInfo* wrapperTypeInfo = scriptWrappable->wrapperTypeInfo();
     v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(wrapperTypeInfo));
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, window->toScriptWrappableBase());
+    V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, scriptWrappable->toScriptWrappableBase());
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -312,9 +313,9 @@ bool WindowProxy::installDOMWindow()
     //       outer, inner, and LocalDOMWindow instance all appear to be the same
     //       JavaScript object.
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
-    V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, window->toScriptWrappableBase());
+    V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, scriptWrappable->toScriptWrappableBase());
     innerGlobalObject->SetPrototype(windowWrapper);
-    V8DOMWrapper::associateObjectWithWrapperNonTemplate(window, wrapperTypeInfo, windowWrapper, m_isolate);
+    V8DOMWrapper::associateObjectWithWrapperNonTemplate(scriptWrappable, wrapperTypeInfo, windowWrapper, m_isolate);
     wrapperTypeInfo->installConditionallyEnabledProperties(windowWrapper, m_isolate);
     return true;
 }

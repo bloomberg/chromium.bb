@@ -79,6 +79,7 @@ namespace blink {
         virtual ~LocalFrame();
         virtual void trace(Visitor*) override;
         virtual bool isLocalFrame() const override { return true; }
+        virtual LocalDOMWindow* domWindow() const override;
         virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
         virtual void detach() override;
         virtual void disconnectOwnerElement() override;
@@ -88,7 +89,7 @@ namespace blink {
 
         void willDetachFrameHost();
 
-        virtual void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>) override;
+        void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>);
         FrameView* view() const;
         Document* document() const;
         void setPagePopupOwner(Element&);
@@ -176,6 +177,7 @@ namespace blink {
         mutable NavigationScheduler m_navigationScheduler;
 
         RefPtrWillBeMember<FrameView> m_view;
+        RefPtrWillBeMember<LocalDOMWindow> m_domWindow;
         // Usually 0. Non-null if this is the top frame of PagePopup.
         RefPtrWillBeMember<Element> m_pagePopupOwner;
 

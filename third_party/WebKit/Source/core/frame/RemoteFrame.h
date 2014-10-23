@@ -16,10 +16,13 @@ class RemoteFrameView;
 class RemoteFrame: public Frame {
 public:
     static PassRefPtrWillBeRawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
-    virtual bool isRemoteFrame() const override { return true; }
 
     virtual ~RemoteFrame();
 
+    // Frame overrides:
+    void trace(Visitor*) override;
+    virtual bool isRemoteFrame() const override { return true; }
+    virtual LocalDOMWindow* domWindow() const override { return 0; }
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void detach() override;
 
@@ -32,7 +35,6 @@ public:
 
     RemoteFrameView* view() const;
 
-    void trace(Visitor*) override;
 
 private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);

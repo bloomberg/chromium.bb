@@ -1173,6 +1173,7 @@
             'frame/DOMTimer.h',
             'frame/DOMWindowBase64.cpp',
             'frame/DOMWindowBase64.h',
+            'frame/DOMWindow.h',
             'frame/DOMWindowEventHandlers.h',
             'frame/DOMWindowLifecycleNotifier.cpp',
             'frame/DOMWindowLifecycleNotifier.h',
