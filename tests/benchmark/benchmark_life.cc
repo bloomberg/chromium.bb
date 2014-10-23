@@ -23,7 +23,10 @@ const int kHeight = 2048;
 
 #if defined(HAVE_SIMD)
 // 128 bit vector types
-typedef uint8_t u8x16_t __attribute__ ((vector_size (16)));
+typedef uint8_t u8x16_t __attribute__((vector_size(16)))
+                        __attribute__((aligned(1)));
+// TODO(dschuff): remove aligned(1) attribute above once nacl-clang has
+// same vector alignment rules as pnacl.
 
 // Helper function to broadcast x across 16 element vector.
 INLINE u8x16_t broadcast(uint8_t x) {

@@ -16,11 +16,6 @@
 #endif
 #endif
 
-// TODO(nfullagar): For now, we must undefine HAVE_SIMD regardless of the above
-// until unaligned memory access works across all platforms.  Remove the
-// undef override below when unaligned access works.
-#undef HAVE_SIMD
-
 // Derive each benchmark (NBody, Life, etc.) from Benchmark class,
 // and provide Name() and Run() virtual functions.  Also provide optional
 // Notes() function to annotate benchmark with additional info, such as
