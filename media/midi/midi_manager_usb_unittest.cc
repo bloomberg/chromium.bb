@@ -78,7 +78,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
         logger_(logger) {}
   ~FakeMidiManagerClient() override {}
 
-  void CompleteStartSession(int client_id, MidiResult result) override {
+  void CompleteStartSession(MidiResult result) override {
     complete_start_session_ = true;
     result_ = result;
   }
@@ -159,7 +159,7 @@ class MidiManagerUsbTest : public ::testing::Test {
  protected:
   void Initialize() {
     client_.reset(new FakeMidiManagerClient(&logger_));
-    manager_->StartSession(client_.get(), 0);
+    manager_->StartSession(client_.get());
   }
 
   void Finalize() {

@@ -5,7 +5,6 @@
 #ifndef MEDIA_MIDI_MIDI_MANAGER_H_
 #define MEDIA_MIDI_MIDI_MANAGER_H_
 
-#include <map>
 #include <set>
 #include <vector>
 
@@ -32,7 +31,7 @@ class MEDIA_EXPORT MidiManagerClient {
 
   // CompleteStartSession() is called when platform dependent preparation is
   // finished.
-  virtual void CompleteStartSession(int client_id, MidiResult result) = 0;
+  virtual void CompleteStartSession(MidiResult result) = 0;
 
   // ReceiveMidiData() is called when MIDI data has been received from the
   // MIDI system.
@@ -71,7 +70,7 @@ class MEDIA_EXPORT MidiManager {
   // Otherwise CompleteStartSession() is called with proper MidiResult code.
   // StartSession() and EndSession() can be called on the Chrome_IOThread.
   // CompleteStartSession() will be invoked on the same Chrome_IOThread.
-  void StartSession(MidiManagerClient* client, int client_id);
+  void StartSession(MidiManagerClient* client);
 
   // A client calls EndSession() to stop receiving MIDI data.
   void EndSession(MidiManagerClient* client);
@@ -148,12 +147,11 @@ class MEDIA_EXPORT MidiManager {
   void CompleteInitializationInternal(MidiResult result);
 
   // Keeps track of all clients who wish to receive MIDI data.
-  typedef std::set<MidiManagerClient*> ClientList;
-  ClientList clients_;
+  typedef std::set<MidiManagerClient*> ClientSet;
+  ClientSet clients_;
 
   // Keeps track of all clients who are waiting for CompleteStartSession().
-  typedef std::multimap<MidiManagerClient*, int> PendingClientMap;
-  PendingClientMap pending_clients_;
+  ClientSet pending_clients_;
 
   // Keeps a SingleThreadTaskRunner of the thread that calls StartSession in
   // order to invoke CompleteStartSession() on the thread.

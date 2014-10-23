@@ -9,7 +9,8 @@ namespace media {
 
 // Result codes for MIDI.
 enum MidiResult {
-  MIDI_OK,
+  MIDI_NOT_INITIALIZED = -1,
+  MIDI_OK = 0,
   MIDI_NOT_SUPPORTED,
   MIDI_INITIALIZATION_ERROR,
 

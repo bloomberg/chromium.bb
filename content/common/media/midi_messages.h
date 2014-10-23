@@ -43,18 +43,18 @@ IPC_MESSAGE_ROUTED2(MidiMsg_SysExPermissionApproved,
 // Messages for IPC between MidiMessageFilter and MidiHost.
 
 // Renderer request to browser for access to MIDI services.
-IPC_MESSAGE_CONTROL1(MidiHostMsg_StartSession,
-                     int /* client id */)
+IPC_MESSAGE_CONTROL0(MidiHostMsg_StartSession)
 
 IPC_MESSAGE_CONTROL3(MidiHostMsg_SendData,
                      uint32 /* port */,
                      std::vector<uint8> /* data */,
                      double /* timestamp */)
 
+IPC_MESSAGE_CONTROL0(MidiHostMsg_EndSession)
+
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_CONTROL4(MidiMsg_SessionStarted,
-                     int /* client id */,
+IPC_MESSAGE_CONTROL3(MidiMsg_SessionStarted,
                      media::MidiResult /* result */,
                      media::MidiPortInfoList /* input ports */,
                      media::MidiPortInfoList /* output ports */)

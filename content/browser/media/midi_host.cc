@@ -52,13 +52,16 @@ MidiHost::MidiHost(int renderer_process_id, media::MidiManager* midi_manager)
     : BrowserMessageFilter(MidiMsgStart),
       renderer_process_id_(renderer_process_id),
       has_sys_ex_permission_(false),
+      is_session_requested_(false),
       midi_manager_(midi_manager),
       sent_bytes_in_flight_(0),
       bytes_sent_since_last_acknowledgement_(0) {
+  CHECK(midi_manager_);
 }
 
 MidiHost::~MidiHost() {
-  if (midi_manager_)
+  // Close an open session, or abort opening a session.
+  if (is_session_requested_)
     midi_manager_->EndSession(this);
 }
 
@@ -72,23 +75,21 @@ bool MidiHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(MidiHost, message)
     IPC_MESSAGE_HANDLER(MidiHostMsg_StartSession, OnStartSession)
     IPC_MESSAGE_HANDLER(MidiHostMsg_SendData, OnSendData)
+    IPC_MESSAGE_HANDLER(MidiHostMsg_EndSession, OnEndSession)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-void MidiHost::OnStartSession(int client_id) {
-  if (midi_manager_)
-    midi_manager_->StartSession(this, client_id);
+void MidiHost::OnStartSession() {
+  is_session_requested_ = true;
+  midi_manager_->StartSession(this);
 }
 
 void MidiHost::OnSendData(uint32 port,
                           const std::vector<uint8>& data,
                           double timestamp) {
-  if (!midi_manager_)
-    return;
-
   if (data.empty())
     return;
 
@@ -117,7 +118,13 @@ void MidiHost::OnSendData(uint32 port,
   midi_manager_->DispatchSendMidiData(this, port, data, timestamp);
 }
 
-void MidiHost::CompleteStartSession(int client_id, media::MidiResult result) {
+void MidiHost::OnEndSession() {
+  is_session_requested_ = false;
+  midi_manager_->EndSession(this);
+}
+
+void MidiHost::CompleteStartSession(media::MidiResult result) {
+  DCHECK(is_session_requested_);
   MidiPortInfoList input_ports;
   MidiPortInfoList output_ports;
 
@@ -132,8 +139,7 @@ void MidiHost::CompleteStartSession(int client_id, media::MidiResult result) {
         CanSendMidiSysExMessage(renderer_process_id_);
   }
 
-  Send(new MidiMsg_SessionStarted(client_id,
-                                  result,
+  Send(new MidiMsg_SessionStarted(result,
                                   input_ports,
                                   output_ports));
 }

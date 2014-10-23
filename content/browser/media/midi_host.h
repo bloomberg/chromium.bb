@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,7 +36,7 @@ class CONTENT_EXPORT MidiHost
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // MidiManagerClient implementation.
-  void CompleteStartSession(int client_id, media::MidiResult result) override;
+  void CompleteStartSession(media::MidiResult result) override;
   void ReceiveMidiData(uint32 port,
                        const uint8* data,
                        size_t length,
@@ -43,12 +44,14 @@ class CONTENT_EXPORT MidiHost
   void AccumulateMidiBytesSent(size_t n) override;
 
   // Start session to access MIDI hardware.
-  void OnStartSession(int client_id);
+  void OnStartSession();
 
   // Data to be sent to a MIDI output port.
   void OnSendData(uint32 port,
                   const std::vector<uint8>& data,
                   double timestamp);
+
+  void OnEndSession();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MidiHostTest, IsValidWebMIDIData);
@@ -69,6 +72,9 @@ class CONTENT_EXPORT MidiHost
   // Represents if the renderer has a permission to send/receive MIDI SysEX
   // messages.
   bool has_sys_ex_permission_;
+
+  // Represents if a session is requested to start.
+  bool is_session_requested_;
 
   // |midi_manager_| talks to the platform-specific MIDI APIs.
   // It can be NULL if the platform (or our current implementation)

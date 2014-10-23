@@ -21,7 +21,7 @@ RendererWebMIDIAccessorImpl::~RendererWebMIDIAccessorImpl() {
 }
 
 void RendererWebMIDIAccessorImpl::startSession() {
-  midi_message_filter()->StartSession(client_);
+  midi_message_filter()->AddClient(client_);
 }
 
 void RendererWebMIDIAccessorImpl::sendMIDIData(
