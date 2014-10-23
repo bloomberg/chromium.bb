@@ -91,8 +91,6 @@ class ScreenMac : public gfx::Screen {
         ScreenMac::DisplayReconfigurationCallBack, this);
   }
 
-  bool IsDIPEnabled() override { return true; }
-
   gfx::Point GetCursorScreenPoint() override {
     NSPoint mouseLocation  = [NSEvent mouseLocation];
     // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.

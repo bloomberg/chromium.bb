@@ -122,11 +122,8 @@ ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
 #if !defined(OS_MACOSX)
 float GetScaleFactorForNativeView(gfx::NativeView view) {
   gfx::Screen* screen = gfx::Screen::GetScreenFor(view);
-  if (screen->IsDIPEnabled()) {
-    gfx::Display display = screen->GetDisplayNearestWindow(view);
-    return display.device_scale_factor();
-  }
-  return 1.0f;
+  gfx::Display display = screen->GetDisplayNearestWindow(view);
+  return display.device_scale_factor();
 }
 #endif  // !defined(OS_MACOSX)
 

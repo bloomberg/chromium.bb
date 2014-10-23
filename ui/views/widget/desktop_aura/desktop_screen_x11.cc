@@ -112,10 +112,6 @@ DesktopScreenX11::~DesktopScreenX11() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenX11, gfx::Screen implementation:
 
-bool DesktopScreenX11::IsDIPEnabled() {
-  return true;
-}
-
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   TRACE_EVENT0("views", "DesktopScreenX11::GetCursorScreenPoint()");
 

@@ -24,7 +24,6 @@ class ScreenMojo : public gfx::Screen {
 
  protected:
   // gfx::Screen overrides:
-  bool IsDIPEnabled() override;
   gfx::Point GetCursorScreenPoint() override;
   gfx::NativeWindow GetWindowUnderCursor() override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;

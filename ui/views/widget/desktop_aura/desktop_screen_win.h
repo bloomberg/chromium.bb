@@ -17,7 +17,6 @@ public:
 
  private:
   // Overridden from gfx::ScreenWin:
-  virtual bool IsDIPEnabled() override;
   virtual gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override;
   virtual HWND GetHWNDFromNativeView(gfx::NativeView window) const override;

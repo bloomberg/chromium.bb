@@ -26,10 +26,6 @@ DesktopScreenWin::~DesktopScreenWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenWin, gfx::ScreenWin implementation:
 
-bool DesktopScreenWin::IsDIPEnabled() {
-  return true;
-}
-
 gfx::Display DesktopScreenWin::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   return GetDisplayNearestPoint(match_rect.CenterPoint());

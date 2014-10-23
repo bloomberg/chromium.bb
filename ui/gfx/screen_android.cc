@@ -15,8 +15,6 @@ class ScreenAndroid : public Screen {
  public:
   ScreenAndroid() {}
 
-  virtual bool IsDIPEnabled() override { return true; }
-
   virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
 
   virtual gfx::NativeWindow GetWindowUnderCursor() override {

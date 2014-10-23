@@ -93,10 +93,6 @@ ScreenWin::~ScreenWin() {
   SingletonHwnd::GetInstance()->RemoveObserver(this);
 }
 
-bool ScreenWin::IsDIPEnabled() {
-  return GetDPIScale() > 1.0;
-}
-
 gfx::Point ScreenWin::GetCursorScreenPoint() {
   POINT pt;
   GetCursorPos(&pt);

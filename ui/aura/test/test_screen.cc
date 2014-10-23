@@ -109,10 +109,6 @@ gfx::Transform TestScreen::GetUIScaleTransform() const {
   return ui_scale;
 }
 
-bool TestScreen::IsDIPEnabled() {
-  return true;
-}
-
 void TestScreen::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
   DCHECK_EQ(host_->window(), window);

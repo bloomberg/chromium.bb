@@ -25,7 +25,6 @@ class FakeScreen : public gfx::Screen {
   }
 
   // gfx::Screen implementation (only what's needed for testing).
-  virtual bool IsDIPEnabled() override { return true; }
   virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
   virtual gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
   virtual gfx::NativeWindow GetWindowAtScreenPoint(

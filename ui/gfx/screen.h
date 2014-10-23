@@ -50,9 +50,6 @@ class GFX_EXPORT Screen {
   Screen();
   virtual ~Screen();
 
-  // Returns true if DIP is enabled.
-  virtual bool IsDIPEnabled() = 0;
-
   // Returns the current absolute position of the mouse pointer.
   virtual gfx::Point GetCursorScreenPoint() = 0;
 

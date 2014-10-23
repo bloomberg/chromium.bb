@@ -31,7 +31,6 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   virtual ~DesktopScreenX11();
 
   // Overridden from gfx::Screen:
-  virtual bool IsDIPEnabled() override;
   virtual gfx::Point GetCursorScreenPoint() override;
   virtual gfx::NativeWindow GetWindowUnderCursor() override;
   virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)

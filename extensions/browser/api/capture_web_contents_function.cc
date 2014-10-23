@@ -76,12 +76,10 @@ bool CaptureWebContentsFunction::RunAsync() {
   gfx::Size bitmap_size = view_size;
   const gfx::NativeView native_view = view->GetNativeView();
   gfx::Screen* const screen = gfx::Screen::GetScreenFor(native_view);
-  if (screen->IsDIPEnabled()) {
-    const float scale =
-        screen->GetDisplayNearestWindow(native_view).device_scale_factor();
-    if (scale > 1.0f)
-      bitmap_size = gfx::ToCeiledSize(gfx::ScaleSize(view_size, scale));
-  }
+  const float scale =
+      screen->GetDisplayNearestWindow(native_view).device_scale_factor();
+  if (scale > 1.0f)
+    bitmap_size = gfx::ToCeiledSize(gfx::ScaleSize(view_size, scale));
 
   host->CopyFromBackingStore(
       gfx::Rect(view_size),

@@ -17,11 +17,6 @@ ScreenMojo* ScreenMojo::Create() {
 ScreenMojo::~ScreenMojo() {
 }
 
-bool ScreenMojo::IsDIPEnabled() {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 gfx::Point ScreenMojo::GetCursorScreenPoint() {
   NOTIMPLEMENTED();
   return gfx::Point();

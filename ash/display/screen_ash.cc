@@ -71,9 +71,6 @@ class ScreenForShutdown : public gfx::Screen {
   }
 
   // gfx::Screen overrides:
-  virtual bool IsDIPEnabled() override {
-    return true;
-  }
   virtual gfx::Point GetCursorScreenPoint() override {
     return gfx::Point();
   }
@@ -202,10 +199,6 @@ void ScreenAsh::NotifyDisplayAdded(const gfx::Display& display) {
 void ScreenAsh::NotifyDisplayRemoved(const gfx::Display& display) {
   FOR_EACH_OBSERVER(
       gfx::DisplayObserver, observers_, OnDisplayRemoved(display));
-}
-
-bool ScreenAsh::IsDIPEnabled() {
-  return true;
 }
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {

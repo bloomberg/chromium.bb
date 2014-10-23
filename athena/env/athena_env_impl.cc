@@ -56,7 +56,6 @@ class ScreenForShutdown : public gfx::Screen {
       : primary_display_(primary_display) {}
 
   // gfx::Screen overrides:
-  virtual bool IsDIPEnabled() override { return true; }
   virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
   virtual gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
   virtual gfx::NativeWindow GetWindowAtScreenPoint(

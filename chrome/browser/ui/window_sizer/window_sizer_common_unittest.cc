@@ -25,11 +25,6 @@ class TestScreen : public gfx::Screen {
   ~TestScreen() override {}
 
   // Overridden from gfx::Screen:
-  bool IsDIPEnabled() override {
-    NOTREACHED();
-    return false;
-  }
-
   gfx::Point GetCursorScreenPoint() override {
     NOTREACHED();
     return gfx::Point();

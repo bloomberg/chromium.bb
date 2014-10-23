@@ -73,7 +73,6 @@ class MockScreen : public Screen {
 
  protected:
   // Overridden from gfx::Screen:
-  bool IsDIPEnabled() override { return true; }
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
   gfx::NativeWindow GetWindowUnderCursor() override {
     return gfx::NativeWindow();

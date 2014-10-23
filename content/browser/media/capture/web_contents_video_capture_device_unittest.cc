@@ -472,7 +472,6 @@ class FakeScreen : public gfx::Screen {
   ~FakeScreen() override {}
 
   // gfx::Screen implementation (only what's needed for testing).
-  bool IsDIPEnabled() override { return true; }
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
   gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {

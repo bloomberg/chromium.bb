@@ -12,10 +12,6 @@
 namespace {
 
 class ScreenIos : public gfx::Screen {
-  virtual bool IsDIPEnabled() override {
-    return true;
-  }
-
   virtual gfx::Point GetCursorScreenPoint() override {
     NOTIMPLEMENTED();
     return gfx::Point(0, 0);

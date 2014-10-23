@@ -667,15 +667,13 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalTargetSize() const {
   if (rwhv) {
     const gfx::NativeView view = rwhv->GetNativeView();
     gfx::Screen* const screen = gfx::Screen::GetScreenFor(view);
-    if (screen->IsDIPEnabled()) {
-      const gfx::Display display = screen->GetDisplayNearestWindow(view);
-      const float scale = display.device_scale_factor();
-      if (scale > 1.0f) {
-        const gfx::Size shrunk_size(
-            gfx::ToFlooredSize(gfx::ScaleSize(optimal_size, 1.0f / scale)));
-        if (shrunk_size.width() > 0 && shrunk_size.height() > 0)
-          optimal_size = shrunk_size;
-      }
+    const gfx::Display display = screen->GetDisplayNearestWindow(view);
+    const float scale = display.device_scale_factor();
+    if (scale > 1.0f) {
+      const gfx::Size shrunk_size(
+          gfx::ToFlooredSize(gfx::ScaleSize(optimal_size, 1.0f / scale)));
+      if (shrunk_size.width() > 0 && shrunk_size.height() > 0)
+        optimal_size = shrunk_size;
     }
   }
 

@@ -49,7 +49,6 @@ class TestScreen : public gfx::Screen,
   virtual void OnWindowDestroying(Window* window) override;
 
   // gfx::Screen overrides:
-  virtual bool IsDIPEnabled() override;
   virtual gfx::Point GetCursorScreenPoint() override;
   virtual gfx::NativeWindow GetWindowUnderCursor() override;
   virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
