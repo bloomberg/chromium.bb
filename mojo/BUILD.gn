@@ -7,9 +7,6 @@ import("//build/config/ui.gni")
 group("mojo") {
   # Meta-target, don't link into production code.
   testonly = true
-  declare_args() {
-    mojo_use_go = false
-  }
   deps = [
     ":tests",
     "//mojo/apps/js:mojo_js_content_handler",
@@ -26,14 +23,6 @@ group("mojo") {
     deps += [
       "//mojo/android",
     ]
-  }
-
-  if (is_linux) {
-    if (mojo_use_go) {
-      deps += [
-        "//mojo/go",
-      ]
-    }
   }
 }
 
