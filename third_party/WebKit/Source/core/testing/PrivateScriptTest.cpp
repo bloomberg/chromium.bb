@@ -6,14 +6,14 @@
 #include "core/testing/PrivateScriptTest.h"
 
 #include "bindings/core/v8/PrivateScriptRunner.h"
-#include "core/frame/LocalFrame.h"
+#include "core/dom/Document.h"
 #include <v8.h>
 
 namespace blink {
 
-PrivateScriptTest::PrivateScriptTest(LocalFrame* frame)
+PrivateScriptTest::PrivateScriptTest(Document* document)
 {
-    v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(frame, "PrivateScriptTest");
+    v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(document, "PrivateScriptTest");
     RELEASE_ASSERT(!classObject.IsEmpty());
 }
 

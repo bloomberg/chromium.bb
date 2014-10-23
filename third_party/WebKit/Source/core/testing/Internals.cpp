@@ -1794,7 +1794,7 @@ TypeConversions* Internals::typeConversions() const
 
 PrivateScriptTest* Internals::privateScriptTest() const
 {
-    return PrivateScriptTest::create(frame());
+    return PrivateScriptTest::create(frame()->document());
 }
 
 DictionaryTest* Internals::dictionaryTest() const

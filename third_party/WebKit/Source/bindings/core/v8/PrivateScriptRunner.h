@@ -11,12 +11,12 @@
 
 namespace blink {
 
-class LocalFrame;
+class Document;
 class ScriptState;
 
 class PrivateScriptRunner {
 public:
-    static v8::Handle<v8::Value> installClassIfNeeded(LocalFrame*, String className);
+    static v8::Handle<v8::Value> installClassIfNeeded(Document*, String className);
     static v8::Handle<v8::Value> runDOMAttributeGetter(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder);
     static bool runDOMAttributeSetter(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Handle<v8::Value> holder, v8::Handle<v8::Value> v8Value);
     static v8::Handle<v8::Value> runDOMMethod(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* methodName, v8::Handle<v8::Value> holder, int argc, v8::Handle<v8::Value> argv[]);
