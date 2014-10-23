@@ -113,6 +113,7 @@ class DevToolsProtocol {
 
    private:
     friend class DevToolsProtocol;
+    friend class DevToolsProtocolClient;
     ~Notification() override;
 
     // Takes ownership of |params|.

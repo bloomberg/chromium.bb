@@ -11,8 +11,13 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
-#include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/dom_handler.h"
+#include "content/browser/devtools/protocol/input_handler.h"
+#include "content/browser/devtools/protocol/network_handler.h"
+#include "content/browser/devtools/protocol/page_handler.h"
+#include "content/browser/devtools/protocol/power_handler.h"
+#include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -113,21 +118,21 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(new devtools::page::PageHandler()),
       power_handler_(new devtools::power::PowerHandler()),
+      tracing_handler_(new devtools::tracing::TracingHandler(
+          devtools::tracing::TracingHandler::Renderer)),
       handler_impl_(new DevToolsProtocolHandlerImpl()),
-      tracing_handler_(
-          new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
       reattaching_(false) {
   handler_impl_->SetDOMHandler(dom_handler_.get());
   handler_impl_->SetInputHandler(input_handler_.get());
   handler_impl_->SetNetworkHandler(network_handler_.get());
   handler_impl_->SetPageHandler(page_handler_.get());
   handler_impl_->SetPowerHandler(power_handler_.get());
+  handler_impl_->SetTracingHandler(tracing_handler_.get());
   SetRenderViewHost(rvh);
   DevToolsProtocol::Notifier notifier(base::Bind(
       &RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend,
       base::Unretained(this)));
   handler_impl_->SetNotifier(notifier);
-  tracing_handler_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderViewHostDestroyed.
   DevToolsManager::GetInstance()->AgentHostChanged(this);
@@ -158,8 +163,6 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
         overridden_response = DevToolsProtocol::ParseResponse(
             overridden_response_value.get());
     }
-    if (!overridden_response.get())
-      overridden_response = tracing_handler_->HandleCommand(command);
     if (!overridden_response.get())
       overridden_response = handler_impl_->HandleCommand(command);
     if (overridden_response.get()) {
@@ -212,9 +215,9 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
-  tracing_handler_->OnClientDetached();
   page_handler_->Detached();
   power_handler_->Detached();
+  tracing_handler_->Detached();
   ClientDetachedFromRenderer();
 
   // TODO(kaznacheev): Move this call back to DevToolsManager when
