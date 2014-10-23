@@ -48,7 +48,6 @@
 #include "core/rendering/style/StyleGridData.h"
 #include "core/rendering/style/StyleGridItemData.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include "core/rendering/style/StyleMarqueeData.h"
 #include "core/rendering/style/StyleMultiColData.h"
 #include "core/rendering/style/StyleRareInheritedData.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
@@ -814,11 +813,6 @@ public:
     bool hasVisualOverflowingEffect() const { return boxShadow() || hasBorderImageOutsets() || hasOutline(); }
 
     EBoxSizing boxSizing() const { return m_box->boxSizing(); }
-    const Length& marqueeIncrement() const { return rareNonInheritedData->m_marquee->increment; }
-    int marqueeSpeed() const { return rareNonInheritedData->m_marquee->speed; }
-    int marqueeLoopCount() const { return rareNonInheritedData->m_marquee->loops; }
-    EMarqueeBehavior marqueeBehavior() const { return static_cast<EMarqueeBehavior>(rareNonInheritedData->m_marquee->behavior); }
-    EMarqueeDirection marqueeDirection() const { return static_cast<EMarqueeDirection>(rareNonInheritedData->m_marquee->direction); }
     EUserModify userModify() const { return static_cast<EUserModify>(rareInheritedData->userModify); }
     EUserDrag userDrag() const { return static_cast<EUserDrag>(rareNonInheritedData->userDrag); }
     EUserSelect userSelect() const { return static_cast<EUserSelect>(rareInheritedData->userSelect); }
@@ -1297,11 +1291,6 @@ public:
     void setGridRowStart(const GridPosition& rowStartPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowStart, rowStartPosition); }
     void setGridRowEnd(const GridPosition& rowEndPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowEnd, rowEndPosition); }
 
-    void setMarqueeIncrement(const Length& f) { SET_VAR(rareNonInheritedData.access()->m_marquee, increment, f); }
-    void setMarqueeSpeed(int f) { SET_VAR(rareNonInheritedData.access()->m_marquee, speed, f); }
-    void setMarqueeDirection(EMarqueeDirection d) { SET_VAR(rareNonInheritedData.access()->m_marquee, direction, d); }
-    void setMarqueeBehavior(EMarqueeBehavior b) { SET_VAR(rareNonInheritedData.access()->m_marquee, behavior, b); }
-    void setMarqueeLoopCount(int i) { SET_VAR(rareNonInheritedData.access()->m_marquee, loops, i); }
     void setUserModify(EUserModify u) { SET_VAR(rareInheritedData, userModify, u); }
     void setUserDrag(EUserDrag d) { SET_VAR(rareNonInheritedData, userDrag, d); }
     void setUserSelect(EUserSelect s) { SET_VAR(rareInheritedData, userSelect, s); }
@@ -1625,11 +1614,6 @@ public:
     static ItemPositionType initialJustifyItemsPositionType() { return NonLegacyPosition; }
     static ItemPosition initialJustifySelf() { return ItemPositionAuto; }
     static OverflowAlignment initialJustifySelfOverflowAlignment() { return OverflowAlignmentDefault; }
-    static int initialMarqueeLoopCount() { return -1; }
-    static int initialMarqueeSpeed() { return 85; }
-    static Length initialMarqueeIncrement() { return Length(6, Fixed); }
-    static EMarqueeBehavior initialMarqueeBehavior() { return MSCROLL; }
-    static EMarqueeDirection initialMarqueeDirection() { return MAUTO; }
     static EUserModify initialUserModify() { return READ_ONLY; }
     static EUserDrag initialUserDrag() { return DRAG_AUTO; }
     static EUserSelect initialUserSelect() { return SELECT_TEXT; }

@@ -493,22 +493,6 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 {{apply_grid_template('CSSPropertyGridTemplateColumns', 'Column')}}
 {{apply_grid_template('CSSPropertyGridTemplateRows', 'Row')}}
 
-{% macro apply_value_number(property_id, id_for_minus_one) %}
-{{declare_value_function(property_id)}}
-{
-    {% set property = properties[property_id] %}
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == {{id_for_minus_one}})
-        {{set_value(property)}}(-1);
-    else
-        {{set_value(property)}}(primitiveValue->getValue<{{property.type_name}}>(CSSPrimitiveValue::CSS_NUMBER));
-}
-{% endmacro %}
-{{apply_value_number('CSSPropertyInternalMarqueeRepetition', 'CSSValueInfinite')}}
-
 {% macro apply_alignment(property_id, alignment_type) %}
 {% set property = properties[property_id] %}
 {{declare_initial_function(property_id)}}

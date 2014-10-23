@@ -124,7 +124,6 @@ ALWAYS_INLINE RenderStyle::RenderStyle(DefaultStyleTag)
     rareNonInheritedData.init();
     rareNonInheritedData.access()->m_deprecatedFlexibleBox.init();
     rareNonInheritedData.access()->m_flexibleBox.init();
-    rareNonInheritedData.access()->m_marquee.init();
     rareNonInheritedData.access()->m_multiCol.init();
     rareNonInheritedData.access()->m_transform.init();
     rareNonInheritedData.access()->m_willChange.init();

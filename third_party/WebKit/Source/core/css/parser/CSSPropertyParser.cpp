@@ -1089,18 +1089,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyOrder:
         validPrimitive = validUnit(value, FInteger);
         break;
-    case CSSPropertyInternalMarqueeIncrement:
-        validPrimitive = validUnit(value, FLength | FPercent);
-        break;
-    case CSSPropertyInternalMarqueeRepetition:
-        if (id == CSSValueInfinite)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FInteger | FNonNeg);
-        break;
-    case CSSPropertyInternalMarqueeSpeed:
-        validPrimitive = validUnit(value, FInteger | FNonNeg);
-        break;
     case CSSPropertyTransform:
     case CSSPropertyWebkitTransform:
         if (id == CSSValueNone)

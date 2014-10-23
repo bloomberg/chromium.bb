@@ -536,26 +536,6 @@ wrap-reverse
 dense
 stack
 
-// -internal-marquee-direction
-forwards
-backwards
-ahead
-// reverse
-// left
-// right
-up
-down
-// auto
-
-// -internal-marquee-repetition
-infinite
-
-// -internal-marquee-style
-// none
-slide
-// scroll
-alternate
-
 //
 // -webkit-user-modify
 //
@@ -716,21 +696,19 @@ visual
 //
 // animation-direction
 //
-// alternate
-
+alternate
 alternate-reverse
 
 //
 // animation-fill-mode
 //
-// forwards
-// backwards
+forwards
+backwards
 // both
 
 //
 // animation-iteration-count
-//
-// infinite
+infinite
 
 //
 // animation-play-state

@@ -104,7 +104,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_draggableRegionMode(o.m_draggableRegionMode)
     , m_deprecatedFlexibleBox(o.m_deprecatedFlexibleBox)
     , m_flexibleBox(o.m_flexibleBox)
-    , m_marquee(o.m_marquee)
     , m_multiCol(o.m_multiCol)
     , m_transform(o.m_transform)
     , m_willChange(o.m_willChange)
@@ -190,7 +189,6 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_draggableRegionMode == o.m_draggableRegionMode
         && m_deprecatedFlexibleBox == o.m_deprecatedFlexibleBox
         && m_flexibleBox == o.m_flexibleBox
-        && m_marquee == o.m_marquee
         && m_multiCol == o.m_multiCol
         && m_transform == o.m_transform
         && m_willChange == o.m_willChange

@@ -53,7 +53,6 @@ class StyleFilterData;
 class StyleFlexibleBoxData;
 class StyleGridData;
 class StyleGridItemData;
-class StyleMarqueeData;
 class StyleMultiColData;
 class StyleReflection;
 class StyleTransformData;
@@ -100,7 +99,6 @@ public:
 
     DataRef<StyleDeprecatedFlexibleBoxData> m_deprecatedFlexibleBox; // Flexible box properties
     DataRef<StyleFlexibleBoxData> m_flexibleBox;
-    DataRef<StyleMarqueeData> m_marquee; // Marquee properties
     DataRef<StyleMultiColData> m_multiCol; //  CSS3 multicol properties
     DataRef<StyleTransformData> m_transform; // Transform properties (rotate, scale, skew, etc.)
     DataRef<StyleWillChangeData> m_willChange; // CSS Will Change

@@ -2749,15 +2749,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyUserZoom:
             break;
 
-        // Internal properties that shouldn't be exposed throught getComputedStyle.
-        case CSSPropertyInternalMarqueeDirection:
-        case CSSPropertyInternalMarqueeIncrement:
-        case CSSPropertyInternalMarqueeRepetition:
-        case CSSPropertyInternalMarqueeSpeed:
-        case CSSPropertyInternalMarqueeStyle:
-            ASSERT_NOT_REACHED();
-            return nullptr;
-
         case CSSPropertyBufferedRendering:
         case CSSPropertyClipPath:
         case CSSPropertyClipRule:

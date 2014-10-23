@@ -506,12 +506,6 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     // 3. Run the update_use_counter_css.py script in
     // chromium/src/tools/metrics/histograms to update the UMA histogram names.
 
-    // Internal properties should not be counted.
-    case CSSPropertyInternalMarqueeDirection:
-    case CSSPropertyInternalMarqueeIncrement:
-    case CSSPropertyInternalMarqueeRepetition:
-    case CSSPropertyInternalMarqueeSpeed:
-    case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyInvalid:
         ASSERT_NOT_REACHED();
         return 0;

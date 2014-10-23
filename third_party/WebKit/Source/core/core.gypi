@@ -1891,7 +1891,6 @@
             'rendering/style/StyleGridData.cpp',
             'rendering/style/StyleGridItemData.cpp',
             'rendering/style/StyleInheritedData.cpp',
-            'rendering/style/StyleMarqueeData.cpp',
             'rendering/style/StyleMultiColData.cpp',
             'rendering/style/StylePendingImage.h',
             'rendering/style/StyleRareInheritedData.cpp',

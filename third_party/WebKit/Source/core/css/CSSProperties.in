@@ -386,14 +386,6 @@ word-wrap inherited, name_for_methods=OverflowWrap
 writing-mode inherited, svg, type_name=SVGWritingMode
 z-index animatable, type_name=int, custom_all
 
-// Internal properties
-
--internal-marquee-direction name_for_methods=MarqueeDirection
--internal-marquee-increment name_for_methods=MarqueeIncrement, converter=convertLength
--internal-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
--internal-marquee-speed name_for_methods=MarqueeSpeed, converter=convertNumberOrPercentage
--internal-marquee-style name_for_methods=MarqueeBehavior
-
 // Non-standard direction aware properties
 
 -webkit-border-end-color direction_aware

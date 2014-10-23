@@ -332,11 +332,6 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginTopCollapse:
         return valueID == CSSValueCollapse || valueID == CSSValueSeparate || valueID == CSSValueDiscard;
-    case CSSPropertyInternalMarqueeDirection:
-        return valueID == CSSValueForwards || valueID == CSSValueBackwards || valueID == CSSValueAhead || valueID == CSSValueReverse || valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueDown
-            || valueID == CSSValueUp || valueID == CSSValueAuto;
-    case CSSPropertyInternalMarqueeStyle:
-        return valueID == CSSValueNone || valueID == CSSValueSlide || valueID == CSSValueScroll || valueID == CSSValueAlternate;
     case CSSPropertyWebkitPrintColorAdjust:
         return valueID == CSSValueExact || valueID == CSSValueEconomy;
     case CSSPropertyWebkitRtlOrdering:
@@ -447,8 +442,6 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitMarginBeforeCollapse:
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginTopCollapse:
-    case CSSPropertyInternalMarqueeDirection:
-    case CSSPropertyInternalMarqueeStyle:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:

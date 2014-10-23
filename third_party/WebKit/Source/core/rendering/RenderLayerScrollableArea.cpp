@@ -350,11 +350,9 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
 void RenderLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
 {
-    if (!box().isMarquee()) {
-        // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
-        if (m_scrollDimensionsDirty)
-            computeScrollDimensions();
-    }
+    // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
+    if (m_scrollDimensionsDirty)
+        computeScrollDimensions();
 
     if (scrollOffset() == toDoubleSize(newScrollOffset))
         return;
@@ -394,7 +392,7 @@ void RenderLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffs
 
     bool requiresPaintInvalidation = true;
 
-    if (!box().isMarquee() && box().view()->compositor()->inCompositingMode()) {
+    if (box().view()->compositor()->inCompositingMode()) {
         // Hits in virtual/gpu/fast/canvas/canvas-scroll-path-into-view.html.
         DisableCompositingQueryAsserts disabler;
         bool onlyScrolledCompositedLayers = scrollsOverflow()
@@ -590,13 +588,11 @@ void RenderLayerScrollableArea::updateAfterLayout()
 
     computeScrollDimensions();
 
-    if (!box().isMarquee()) {
-        // Layout may cause us to be at an invalid scroll position. In this case we need
-        // to pull our scroll offsets back to the max (or push them up to the min).
-        DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
-        if (clampedScrollOffset != adjustedScrollOffset())
-            scrollToOffset(clampedScrollOffset);
-    }
+    // Layout may cause us to be at an invalid scroll position. In this case we need
+    // to pull our scroll offsets back to the max (or push them up to the min).
+    DoubleSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
+    if (clampedScrollOffset != adjustedScrollOffset())
+        scrollToOffset(clampedScrollOffset);
 
     if (originalScrollOffset != adjustedScrollOffset()) {
         DoublePoint origin(scrollOrigin());

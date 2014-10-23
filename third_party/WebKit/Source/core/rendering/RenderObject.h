@@ -345,7 +345,6 @@ public:
     bool isListBox() const { return isOfType(RenderObjectListBox); }
     bool isListItem() const { return isOfType(RenderObjectListItem); }
     bool isListMarker() const { return isOfType(RenderObjectListMarker); }
-    bool isMarquee() const { return isOfType(RenderObjectMarquee); }
     bool isMedia() const { return isOfType(RenderObjectMedia); }
     bool isMenuList() const { return isOfType(RenderObjectMenuList); }
     bool isMeter() const { return isOfType(RenderObjectMeter); }
@@ -1070,7 +1069,6 @@ protected:
         RenderObjectListBox,
         RenderObjectListItem,
         RenderObjectListMarker,
-        RenderObjectMarquee,
         RenderObjectMedia,
         RenderObjectMenuList,
         RenderObjectMeter,

@@ -1995,24 +1995,11 @@ static bool isStretchingColumnFlexItem(const RenderObject* flexitem)
 
 bool RenderBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
 {
-    // Marquees in WinIE are like a mixture of blocks and inline-blocks.  They size as though they're blocks,
-    // but they allow text to sit on the same line as the marquee.
-    if (isFloating() || (isInlineBlockOrInlineTable() && !isMarquee()))
+    if (isFloating() || isInlineBlockOrInlineTable())
         return true;
 
     if (logicalWidth.type() == Intrinsic)
         return true;
-
-    // Children of a horizontal marquee do not fill the container by default.
-    // FIXME: Need to deal with MAUTO value properly.  It could be vertical.
-    // FIXME: Think about block-flow here.  Need to find out how marquee direction relates to
-    // block-flow (as well as how marquee overflow should relate to block flow).
-    // https://bugs.webkit.org/show_bug.cgi?id=46472
-    if (parent()->isMarquee()) {
-        EMarqueeDirection dir = parent()->style()->marqueeDirection();
-        if (dir == MAUTO || dir == MFORWARD || dir == MBACKWARD || dir == MLEFT || dir == MRIGHT)
-            return true;
-    }
 
     // Flexible box items should shrink wrap, so we lay them out at their intrinsic widths.
     // In the case of columns that have a stretch alignment, we go ahead and layout at the
@@ -3754,8 +3741,8 @@ PositionWithAffinity RenderBox::positionForPoint(const LayoutPoint& point)
 
 bool RenderBox::shrinkToAvoidFloats() const
 {
-    // Floating objects don't shrink.  Objects that don't avoid floats don't shrink.  Marquees don't shrink.
-    if ((isInline() && !isMarquee()) || !avoidsFloats() || isFloating())
+    // Floating objects don't shrink.  Objects that don't avoid floats don't shrink.
+    if (isInline() || !avoidsFloats() || isFloating())
         return false;
 
     // Only auto width objects can possibly shrink to avoid floats.
