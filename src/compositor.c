@@ -4497,7 +4497,7 @@ usage(int error_code)
 		"  -S, --socket=NAME\tName of socket to listen on\n"
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
 		"  --modules\t\tLoad the comma-separated list of modules\n"
-		"  --log==FILE\t\tLog to the given file\n"
+		"  --log=FILE\t\tLog to the given file\n"
 		"  --no-config\t\tDo not read weston.ini\n"
 		"  -h, --help\t\tThis help message\n\n");
 
@@ -4527,7 +4527,7 @@ usage(int error_code)
 		"Options for wayland-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of Wayland surface\n"
 		"  --height=HEIGHT\tHeight of Wayland surface\n"
-		"  --scale=SCALE\t\tScale factor of ouput\n"
+		"  --scale=SCALE\t\tScale factor of output\n"
 		"  --fullscreen\t\tRun in fullscreen mode\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --output-count=COUNT\tCreate multiple outputs\n"
