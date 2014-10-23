@@ -9,7 +9,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
-#include "ui/gfx/size.h"
 
 namespace cc {
 

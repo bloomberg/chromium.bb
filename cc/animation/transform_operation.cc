@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "cc/animation/transform_operation.h"
 #include "cc/animation/transform_operations.h"
-#include "ui/gfx/box_f.h"
+#include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform_util.h"
 

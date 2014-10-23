@@ -10,9 +10,9 @@
 #include "cc/base/cc_export.h"
 #include "cc/quads/content_draw_quad_base.h"
 #include "cc/resources/picture_pile_impl.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

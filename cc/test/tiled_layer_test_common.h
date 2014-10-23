@@ -12,8 +12,8 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_update_queue.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

@@ -12,8 +12,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/returned_resource.h"
-#include "ui/gfx/rect_f.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 class DelegatedFrameData;

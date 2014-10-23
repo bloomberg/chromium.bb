@@ -10,12 +10,12 @@
 
 #include "base/debug/trace_event_argument.h"
 #include "base/values.h"
-#include "ui/gfx/quad_f.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_conversions.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
-#include "ui/gfx/vector2d_f.h"
 
 namespace cc {
 

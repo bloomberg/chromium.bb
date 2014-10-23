@@ -12,8 +12,8 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface.h"
 #include "cc/layers/render_surface_impl.h"
-#include "ui/gfx/quad_f.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
 

@@ -10,8 +10,7 @@
 #include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/core/SkTypes.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
 

@@ -9,7 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

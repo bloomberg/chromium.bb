@@ -12,7 +12,7 @@
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/layer_iterator.h"
 #include "cc/trees/occlusion.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class LayerImpl;

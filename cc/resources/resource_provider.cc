@@ -27,9 +27,9 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/vector2d.h"
 
 using gpu::gles2::GLES2Interface;
 

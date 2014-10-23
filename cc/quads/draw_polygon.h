@@ -9,10 +9,10 @@
 
 #include "cc/base/math_util.h"
 #include "cc/output/bsp_compare_result.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-#include "ui/gfx/point3_f.h"
-#include "ui/gfx/quad_f.h"
-#include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

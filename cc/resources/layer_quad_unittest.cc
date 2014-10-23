@@ -5,7 +5,7 @@
 #include "cc/resources/layer_quad.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/quad_f.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace cc {
 namespace {

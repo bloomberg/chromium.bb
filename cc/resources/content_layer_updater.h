@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/resources/layer_updater.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
 

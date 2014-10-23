@@ -10,14 +10,13 @@
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "cc/base/util.h"
-#include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 using gpu::gles2::GLES2Interface;
 

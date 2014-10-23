@@ -31,7 +31,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 class GrContext;
 

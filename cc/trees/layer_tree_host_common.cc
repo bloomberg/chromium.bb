@@ -16,7 +16,7 @@
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/layer_sorter.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

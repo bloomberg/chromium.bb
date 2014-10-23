@@ -5,7 +5,7 @@
 #ifndef CC_LAYERS_PAINT_PROPERTIES_H_
 #define CC_LAYERS_PAINT_PROPERTIES_H_
 
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

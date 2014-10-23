@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/layers/contents_scaling_layer.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
 

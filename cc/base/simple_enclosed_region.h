@@ -8,7 +8,7 @@
 #include <string>
 
 #include "cc/base/cc_export.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 

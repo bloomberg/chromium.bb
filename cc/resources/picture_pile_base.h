@@ -15,7 +15,7 @@
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
 #include "cc/resources/picture.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 namespace debug {

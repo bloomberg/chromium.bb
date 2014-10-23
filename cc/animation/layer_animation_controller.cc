@@ -16,7 +16,7 @@
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/output/filter_operations.h"
-#include "ui/gfx/box_f.h"
+#include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

@@ -12,8 +12,8 @@
 #include "cc/layers/ui_resource_layer_impl.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/ui_resource_client.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class DictionaryValue;

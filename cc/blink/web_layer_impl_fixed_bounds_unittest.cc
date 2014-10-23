@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
-#include "ui/gfx/point3_f.h"
+#include "ui/gfx/geometry/point3_f.h"
 
 using blink::WebFloatPoint;
 using blink::WebSize;

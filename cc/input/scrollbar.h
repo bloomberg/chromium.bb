@@ -6,8 +6,8 @@
 #define CC_INPUT_SCROLLBAR_H_
 
 #include "cc/base/cc_export.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
 

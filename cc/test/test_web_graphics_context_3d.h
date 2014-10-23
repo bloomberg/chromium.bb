@@ -20,7 +20,7 @@
 #include "cc/test/ordered_texture_map.h"
 #include "cc/test/test_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 

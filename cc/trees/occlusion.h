@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/simple_enclosed_region.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

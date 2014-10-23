@@ -9,12 +9,9 @@
 #include <limits>
 #include <string>
 
-#include "base/memory/ref_counted.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/resources/picture_pile.h"
-#include "ui/gfx/quad_f.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
+#include "cc/base/cc_export.h"
 
 namespace base {
 class Value;

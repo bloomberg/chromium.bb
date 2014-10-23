@@ -7,11 +7,10 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/memory/shared_memory.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

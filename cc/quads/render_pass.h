@@ -15,8 +15,8 @@
 #include "cc/quads/list_container.h"
 #include "cc/quads/render_pass_id.h"
 #include "skia/ext/refptr.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace base {

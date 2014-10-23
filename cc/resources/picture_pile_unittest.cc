@@ -9,8 +9,8 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect_conversions.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
 namespace {

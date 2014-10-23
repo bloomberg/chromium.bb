@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
-#include "ui/gfx/size.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 

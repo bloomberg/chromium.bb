@@ -5,15 +5,13 @@
 #include "cc/resources/content_layer_updater.h"
 
 #include "base/debug/trace_event.h"
-#include "base/time/time.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
-#include "ui/gfx/rect_conversions.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {

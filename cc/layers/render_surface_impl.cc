@@ -20,7 +20,7 @@
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

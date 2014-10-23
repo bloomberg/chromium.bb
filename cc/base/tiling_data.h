@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Vector2d;

@@ -6,7 +6,7 @@
 
 #include "cc/animation/keyframed_animation_curve.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/gfx/box_f.h"
+#include "ui/gfx/geometry/box_f.h"
 
 namespace cc {
 

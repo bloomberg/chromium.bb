@@ -4,8 +4,8 @@
 
 #include "cc/base/math_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/quad_f.h"
-#include "ui/gfx/rect_f.h"
+#include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

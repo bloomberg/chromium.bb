@@ -11,10 +11,9 @@
 #include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace {
 // Dimensions of the tiles in this picture pile as well as the dimensions of

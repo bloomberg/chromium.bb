@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/shared_bitmap.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

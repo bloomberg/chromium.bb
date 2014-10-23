@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 

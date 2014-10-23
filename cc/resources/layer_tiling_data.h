@@ -14,7 +14,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/base/tiling_data.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 

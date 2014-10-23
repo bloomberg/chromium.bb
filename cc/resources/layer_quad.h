@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "ui/gfx/point_f.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace gfx {
 class QuadF;

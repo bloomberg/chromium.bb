@@ -8,7 +8,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_provider.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

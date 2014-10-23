@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "cc/resources/shared_bitmap.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 

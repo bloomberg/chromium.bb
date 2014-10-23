@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/resource_format.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 

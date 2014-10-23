@@ -6,7 +6,7 @@
 
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
-#include "ui/gfx/box_f.h"
+#include "ui/gfx/geometry/box_f.h"
 
 namespace cc {
 

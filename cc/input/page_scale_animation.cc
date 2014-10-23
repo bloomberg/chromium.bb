@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "cc/animation/timing_function.h"
-#include "ui/gfx/point_f.h"
-#include "ui/gfx/rect_f.h"
-#include "ui/gfx/vector2d_conversions.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace {
 

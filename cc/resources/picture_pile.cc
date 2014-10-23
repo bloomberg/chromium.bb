@@ -10,9 +10,8 @@
 
 #include "cc/base/region.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_worker_pool.h"
-#include "cc/resources/tile_priority.h"
+#include "skia/ext/analysis_canvas.h"
 
 namespace {
 // Layout pixel buffer around the visible layer rect to record.  Any base

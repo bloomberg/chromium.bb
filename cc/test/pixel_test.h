@@ -8,7 +8,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/test/pixel_comparator.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"
 
 #ifndef CC_TEST_PIXEL_TEST_H_

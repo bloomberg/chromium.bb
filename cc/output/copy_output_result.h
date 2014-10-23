@@ -9,7 +9,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
 

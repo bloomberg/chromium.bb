@@ -18,7 +18,7 @@
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/trees/occlusion.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace base {
 namespace debug {

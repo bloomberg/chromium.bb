@@ -6,8 +6,8 @@
 #define CC_RESOURCES_RESOURCE_UPDATE_H_
 
 #include "cc/base/cc_export.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 class SkBitmap;
 

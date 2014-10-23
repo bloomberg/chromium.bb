@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/geometry/scroll_offset.h"
-#include "ui/gfx/size_f.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
 

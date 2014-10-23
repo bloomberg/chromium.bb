@@ -16,12 +16,10 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/priority_calculator.h"
 #include "cc/resources/resource.h"
-#include "cc/trees/proxy.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 
-class PriorityCalculator;
 class Proxy;
 
 class CC_EXPORT PrioritizedResourceManager {

@@ -9,8 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_impl.h"
-#include "ui/gfx/size.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace base {
 class TimeTicks;

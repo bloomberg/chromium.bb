@@ -29,8 +29,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/rect.h"
 
 using testing::Mock;
 using testing::NiceMock;

@@ -39,7 +39,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/proxy.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class AnimationRegistrar;

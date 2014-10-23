@@ -18,7 +18,7 @@
 #include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 struct LatencyInfo;
