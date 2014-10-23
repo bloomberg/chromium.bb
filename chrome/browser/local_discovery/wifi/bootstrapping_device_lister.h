@@ -42,7 +42,7 @@ class BootstrappingDeviceLister : public NetworkListObserver {
 
   BootstrappingDeviceLister(WifiManager* wifi_manager,
                             const UpdateCallback& update_callback);
-  virtual ~BootstrappingDeviceLister();
+  ~BootstrappingDeviceLister() override;
 
   void Start();
 
@@ -51,7 +51,7 @@ class BootstrappingDeviceLister : public NetworkListObserver {
       std::pair<std::string /*ssid*/, std::string /*internal_name*/> >
       ActiveDeviceList;
 
-  virtual void OnNetworkListChanged(
+  void OnNetworkListChanged(
       const std::vector<NetworkProperties>& ssids) override;
 
   void UpdateChangedSSIDs(bool available,

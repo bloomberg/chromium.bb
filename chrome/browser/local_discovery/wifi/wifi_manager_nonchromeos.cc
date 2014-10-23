@@ -55,7 +55,7 @@ class WifiManagerNonChromeos::WifiServiceWrapper
   explicit WifiServiceWrapper(
       base::WeakPtr<WifiManagerNonChromeos> wifi_manager);
 
-  virtual ~WifiServiceWrapper();
+  ~WifiServiceWrapper() override;
 
   void Start();
 
@@ -79,7 +79,7 @@ class WifiManagerNonChromeos::WifiServiceWrapper
 
  private:
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   void GetSSIDListInternal(NetworkPropertiesList* ssid_list);

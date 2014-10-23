@@ -71,10 +71,10 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
       net::URLRequestContextGetter* request_context,
       Delegate* delegate);
 
-  virtual ~PrivetURLFetcher();
+  ~PrivetURLFetcher() override;
 
   // net::URLFetcherDelegate methods.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   static void SetTokenForHost(const std::string& host,
                               const std::string& token);

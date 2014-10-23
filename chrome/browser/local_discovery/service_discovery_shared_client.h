@@ -21,7 +21,7 @@ class ServiceDiscoverySharedClient
 
  protected:
   ServiceDiscoverySharedClient();
-  virtual ~ServiceDiscoverySharedClient();
+  ~ServiceDiscoverySharedClient() override;
 
  private:
   friend class base::RefCounted<ServiceDiscoverySharedClient>;

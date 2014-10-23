@@ -24,19 +24,19 @@ class GCDApiFlowImpl : public GCDApiFlow,
                  OAuth2TokenService* token_service,
                  const std::string& account_id);
 
-  virtual ~GCDApiFlowImpl();
+  ~GCDApiFlowImpl() override;
 
-  virtual void Start(scoped_ptr<Request> request) override;
+  void Start(scoped_ptr<Request> request) override;
 
   // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // OAuth2TokenService::Consumer implementation:
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
  private:
   void CreateRequest(const GURL& url);

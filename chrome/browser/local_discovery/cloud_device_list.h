@@ -20,14 +20,13 @@ class CloudDeviceList : public GCDApiFlowRequest {
   typedef DeviceList::const_iterator iterator;
 
   explicit CloudDeviceList(CloudDeviceListDelegate* delegate);
-  virtual ~CloudDeviceList();
+  ~CloudDeviceList() override;
 
-  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) override;
+  void OnGCDAPIFlowError(GCDApiFlow::Status status) override;
 
-  virtual void OnGCDAPIFlowComplete(
-      const base::DictionaryValue& value) override;
+  void OnGCDAPIFlowComplete(const base::DictionaryValue& value) override;
 
-  virtual GURL GetURL() override;
+  GURL GetURL() override;
 
  private:
   bool FillDeviceDetails(const base::DictionaryValue& value,

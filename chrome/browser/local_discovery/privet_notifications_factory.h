@@ -20,13 +20,13 @@ class PrivetNotificationServiceFactory
   friend struct DefaultSingletonTraits<PrivetNotificationServiceFactory>;
 
   PrivetNotificationServiceFactory();
-  virtual ~PrivetNotificationServiceFactory();
+  ~PrivetNotificationServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 }  // namespace local_discovery

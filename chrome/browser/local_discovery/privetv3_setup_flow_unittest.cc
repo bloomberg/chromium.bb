@@ -75,7 +75,7 @@ class MockDelegate : public PrivetV3SetupFlow::Delegate {
    public:
     explicit MockGCDApiFlow(MockDelegate* delegate) : delegate_(delegate) {}
 
-    virtual void Start(scoped_ptr<Request> request) override {
+    void Start(scoped_ptr<Request> request) override {
       ASSERT_FALSE(delegate_->gcd_request_);
       delegate_->gcd_request_ = request.Pass();
       delegate_->ReplyWithToken();

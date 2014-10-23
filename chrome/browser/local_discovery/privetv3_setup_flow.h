@@ -62,7 +62,7 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
   };
 
   explicit PrivetV3SetupFlow(Delegate* delegate);
-  virtual ~PrivetV3SetupFlow();
+  ~PrivetV3SetupFlow() override;
 
   // Starts registration.
   void Register(const std::string& service_name);
@@ -72,12 +72,10 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
 #endif  // ENABLE_WIFI_BOOTSTRAPPING
 
   // PrivetV3Session::Delegate implementation.
-  virtual void OnSetupConfirmationNeeded(
-      const std::string& confirmation_code,
-      extensions::api::gcd_private::ConfirmationType confirmation_type)
-      override;
-  virtual void OnSessionStatus(
-      extensions::api::gcd_private::Status status) override;
+  void OnSetupConfirmationNeeded(const std::string& confirmation_code,
+                                 extensions::api::gcd_private::ConfirmationType
+                                     confirmation_type) override;
+  void OnSessionStatus(extensions::api::gcd_private::Status status) override;
 
   void OnSetupError();
   void OnDeviceRegistered();

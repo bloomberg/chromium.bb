@@ -29,17 +29,17 @@ class PrivetInfoOperationImpl : public PrivetJSONOperation,
  public:
   PrivetInfoOperationImpl(PrivetHTTPClient* privet_client,
                           const PrivetJSONOperation::ResultCallback& callback);
-  virtual ~PrivetInfoOperationImpl();
+  ~PrivetInfoOperationImpl() override;
 
-  virtual void Start() override;
+  void Start() override;
 
-  virtual PrivetHTTPClient* GetHTTPClient() override;
+  PrivetHTTPClient* GetHTTPClient() override;
 
-  virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) override;
-  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue& value,
-                            bool has_error) override;
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override;
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override;
 
  private:
   PrivetHTTPClient* privet_client_;
@@ -55,36 +55,37 @@ class PrivetRegisterOperationImpl
   PrivetRegisterOperationImpl(PrivetHTTPClient* privet_client,
                               const std::string& user,
                               PrivetRegisterOperation::Delegate* delegate);
-  virtual ~PrivetRegisterOperationImpl();
+  ~PrivetRegisterOperationImpl() override;
 
-  virtual void Start() override;
-  virtual void Cancel() override;
-  virtual void CompleteRegistration() override;
+  void Start() override;
+  void Cancel() override;
+  void CompleteRegistration() override;
 
-  virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) override;
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override;
 
-  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue& value,
-                            bool has_error) override;
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override;
 
-  virtual void OnNeedPrivetToken(
+  void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
 
-  virtual PrivetHTTPClient* GetHTTPClient() override;
+  PrivetHTTPClient* GetHTTPClient() override;
+
  private:
   class Cancelation : public PrivetURLFetcher::Delegate {
    public:
     Cancelation(PrivetHTTPClient* privet_client, const std::string& user);
-    virtual ~Cancelation();
+    ~Cancelation() override;
 
-    virtual void OnError(PrivetURLFetcher* fetcher,
-                         PrivetURLFetcher::ErrorType error) override;
+    void OnError(PrivetURLFetcher* fetcher,
+                 PrivetURLFetcher::ErrorType error) override;
 
-    virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                              const base::DictionaryValue& value,
-                              bool has_error) override;
+    void OnParsedJson(PrivetURLFetcher* fetcher,
+                      const base::DictionaryValue& value,
+                      bool has_error) override;
 
     void Cleanup();
 
@@ -126,17 +127,17 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
                           const std::string& path,
                           const std::string& query_params,
                           const PrivetJSONOperation::ResultCallback& callback);
-  virtual ~PrivetJSONOperationImpl();
-  virtual void Start() override;
+  ~PrivetJSONOperationImpl() override;
+  void Start() override;
 
-  virtual PrivetHTTPClient* GetHTTPClient() override;
+  PrivetHTTPClient* GetHTTPClient() override;
 
-  virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) override;
-  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue& value,
-                            bool has_error) override;
-  virtual void OnNeedPrivetToken(
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override;
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override;
+  void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
 
@@ -157,28 +158,28 @@ class PrivetDataReadOperationImpl : public PrivetDataReadOperation,
       const std::string& path,
       const std::string& query_params,
       const PrivetDataReadOperation::ResultCallback& callback);
-  virtual ~PrivetDataReadOperationImpl();
+  ~PrivetDataReadOperationImpl() override;
 
-  virtual void Start() override;
+  void Start() override;
 
-  virtual void SetDataRange(int range_start, int range_end) override;
+  void SetDataRange(int range_start, int range_end) override;
 
-  virtual void SaveDataToFile() override;
+  void SaveDataToFile() override;
 
-  virtual PrivetHTTPClient* GetHTTPClient() override;
+  PrivetHTTPClient* GetHTTPClient() override;
 
-  virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) override;
-  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue& value,
-                            bool has_error) override;
-  virtual void OnNeedPrivetToken(
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override;
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override;
+  void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
-  virtual bool OnRawData(PrivetURLFetcher* fetcher,
-                         bool is_file,
-                         const std::string& data_str,
-                         const base::FilePath& file_path) override;
+  bool OnRawData(PrivetURLFetcher* fetcher,
+                 bool is_file,
+                 const std::string& data_str,
+                 const base::FilePath& file_path) override;
 
  private:
   PrivetHTTPClient* privet_client_;
@@ -202,35 +203,34 @@ class PrivetLocalPrintOperationImpl
   PrivetLocalPrintOperationImpl(PrivetHTTPClient* privet_client,
                                 PrivetLocalPrintOperation::Delegate* delegate);
 
-  virtual ~PrivetLocalPrintOperationImpl();
-  virtual void Start() override;
+  ~PrivetLocalPrintOperationImpl() override;
+  void Start() override;
 
-  virtual void SetData(
-      const scoped_refptr<base::RefCountedBytes>& data) override;
+  void SetData(const scoped_refptr<base::RefCountedBytes>& data) override;
 
-  virtual void SetCapabilities(const std::string& capabilities) override;
+  void SetCapabilities(const std::string& capabilities) override;
 
-  virtual void SetTicket(const std::string& ticket) override;
+  void SetTicket(const std::string& ticket) override;
 
-  virtual void SetUsername(const std::string& user) override;
+  void SetUsername(const std::string& user) override;
 
-  virtual void SetJobname(const std::string& jobname) override;
+  void SetJobname(const std::string& jobname) override;
 
-  virtual void SetOffline(bool offline) override;
+  void SetOffline(bool offline) override;
 
-  virtual void SetPageSize(const gfx::Size& page_size) override;
+  void SetPageSize(const gfx::Size& page_size) override;
 
-  virtual void SetPWGRasterConverterForTesting(
+  void SetPWGRasterConverterForTesting(
       scoped_ptr<PWGRasterConverter> pwg_raster_converter) override;
 
-  virtual PrivetHTTPClient* GetHTTPClient() override;
+  PrivetHTTPClient* GetHTTPClient() override;
 
-  virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) override;
-  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue& value,
-                            bool has_error) override;
-  virtual void OnNeedPrivetToken(
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override;
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override;
+  void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
 
@@ -292,17 +292,17 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       const std::string& name,
       const net::HostPortPair& host_port,
       net::URLRequestContextGetter* request_context);
-  virtual ~PrivetHTTPClientImpl();
+  ~PrivetHTTPClientImpl() override;
 
   // PrivetHTTPClient implementation.
-  virtual const std::string& GetName() override;
-  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+  const std::string& GetName() override;
+  scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) override;
-  virtual scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
+  scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       PrivetURLFetcher::Delegate* delegate) override;
-  virtual void RefreshPrivetToken(
+  void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& token_callback) override;
 
  private:
@@ -323,17 +323,17 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
 class PrivetV1HTTPClientImpl : public PrivetV1HTTPClient {
  public:
   explicit PrivetV1HTTPClientImpl(scoped_ptr<PrivetHTTPClient> info_client);
-  virtual ~PrivetV1HTTPClientImpl();
+  ~PrivetV1HTTPClientImpl() override;
 
-  virtual const std::string& GetName() override;
-  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+  const std::string& GetName() override;
+  scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) override;
-  virtual scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
+  scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
       const std::string& user,
       PrivetRegisterOperation::Delegate* delegate) override;
-  virtual scoped_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
+  scoped_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
       const PrivetJSONOperation::ResultCallback& callback) override;
-  virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
+  scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) override;
 
  private:

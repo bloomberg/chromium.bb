@@ -21,16 +21,15 @@ class GCDRegistrationTicketRequest : public GCDApiFlowRequest {
                               const std::string& device_id)> ResponseCallback;
 
   explicit GCDRegistrationTicketRequest(const ResponseCallback& callback);
-  virtual ~GCDRegistrationTicketRequest();
+  ~GCDRegistrationTicketRequest() override;
 
   // GCDApiFlowImpl::Request implementation.
-  virtual void GetUploadData(std::string* upload_type,
-                             std::string* upload_data) override;
-  virtual net::URLFetcher::RequestType GetRequestType() override;
-  virtual void OnGCDAPIFlowError(GCDApiFlow::Status status) override;
-  virtual void OnGCDAPIFlowComplete(
-      const base::DictionaryValue& value) override;
-  virtual GURL GetURL() override;
+  void GetUploadData(std::string* upload_type,
+                     std::string* upload_data) override;
+  net::URLFetcher::RequestType GetRequestType() override;
+  void OnGCDAPIFlowError(GCDApiFlow::Status status) override;
+  void OnGCDAPIFlowComplete(const base::DictionaryValue& value) override;
+  GURL GetURL() override;
 
  private:
   ResponseCallback callback_;

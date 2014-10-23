@@ -31,17 +31,17 @@ class PrivetV3Session::FetcherDelegate : public PrivetURLFetcher::Delegate {
  public:
   FetcherDelegate(const base::WeakPtr<PrivetV3Session>& session,
                   Request* request);
-  virtual ~FetcherDelegate();
+  ~FetcherDelegate() override;
 
   // PrivetURLFetcher::Delegate methods.
-  virtual void OnNeedPrivetToken(
+  void OnNeedPrivetToken(
       PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
-  virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) override;
-  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue& value,
-                            bool has_error) override;
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override;
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override;
 
  private:
   friend class PrivetV3Session;
