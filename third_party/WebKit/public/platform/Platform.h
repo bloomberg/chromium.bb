@@ -85,7 +85,7 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMessagePortChannel;
 class WebMimeRegistry;
-class WebNotificationPresenter;
+class WebNotificationManager;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -632,7 +632,7 @@ public:
 
     // Web Notifications --------------------------------------------------
 
-    virtual WebNotificationPresenter* notificationPresenter() { return 0; }
+    virtual WebNotificationManager* notificationManager() { return 0; }
 
 
     // Geofencing ---------------------------------------------------------
