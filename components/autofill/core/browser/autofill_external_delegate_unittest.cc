@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
@@ -13,6 +14,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -440,6 +442,34 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
   // Ensure the popup tries to hide itself, since it is not allowed to show
   // anything.
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
+
+  external_delegate_->OnSuggestionsReturned(kQueryId,
+                                            autofill_items,
+                                            autofill_items,
+                                            autofill_items,
+                                            autofill_ids);
+}
+
+TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kIgnoreAutocompleteOffForAutofill);
+
+  const FormData form;
+  FormFieldData field;
+  field.is_focusable = true;
+  field.should_autocomplete = false;
+  const gfx::RectF element_bounds;
+
+  external_delegate_->OnQuery(kQueryId, form, field, element_bounds, false);
+
+  std::vector<base::string16> autofill_items;
+  autofill_items.push_back(base::string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
+
+  // Ensure the popup tries to show itself, despite autocomplete="off".
+  EXPECT_CALL(autofill_client_, ShowAutofillPopup(_, _, _, _, _, _, _));
+  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(0);
 
   external_delegate_->OnSuggestionsReturned(kQueryId,
                                             autofill_items,

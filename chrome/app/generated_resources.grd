@@ -14536,11 +14536,18 @@ Do you accept?
         Personalized
       </message>
     </if>
+
     <message name="IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_NAME" desc="Name of the disable ignore autocomplete='off' lab">
-      Disable ignore autocomplete='off'
+      Disable ignore autocomplete='off' (Passwords)
     </message>
     <message name="IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION" desc="Description of the disable ignore autocomplete='off' lab">
       Disable ignore autocomplete='off' for password forms in the password manager.
+    </message>
+    <message name="IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_NAME" desc="Name of the ignore autocomplete='off' for Autofill lab">
+      Ignore autocomplete='off' (Autofill)
+    </message>
+    <message name="IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_DESCRIPTION" desc="Description of the ignore autocomplete='off' for Autofill lab">
+      Ignore autocomplete='off' for forms that Chrome can Autofill with credit card or address data.
     </message>
 
     <!-- Reader mode experiment flags -->

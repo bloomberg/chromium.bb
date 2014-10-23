@@ -493,8 +493,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       // provide credit card suggestions for non-HTTPS pages. However, provide a
       // warning to the user in these cases.
       int warning = 0;
-      if (is_filling_credit_card && !FormIsHTTPS(*form_structure))
+      if (is_filling_credit_card && !FormIsHTTPS(*form_structure)) {
         warning = IDS_AUTOFILL_WARNING_INSECURE_CONNECTION;
+      }
       if (warning) {
         values.assign(1, l10n_util::GetStringUTF16(warning));
         labels.assign(1, base::string16());
@@ -530,12 +531,20 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
     }
   }
 
-  // Add the results from AutoComplete.  They come back asynchronously, so we
-  // hand off what we generated and they will send the results back to the
-  // renderer.
-  autocomplete_history_manager_->OnGetAutocompleteSuggestions(
-      query_id, field.name, field.value, field.form_control_type, values,
-      labels, icons, unique_ids);
+  if (field.should_autocomplete) {
+    // Add the results from AutoComplete.  They come back asynchronously, so we
+    // hand off what we generated and they will send the results back to the
+    // renderer.
+    autocomplete_history_manager_->OnGetAutocompleteSuggestions(
+        query_id, field.name, field.value, field.form_control_type, values,
+        labels, icons, unique_ids);
+  } else {
+    // Autocomplete is disabled for this field; only pass back Autofill
+    // suggestions.
+    autocomplete_history_manager_->CancelPendingQuery();
+    external_delegate_->OnSuggestionsReturned(
+        query_id, values, labels, icons, unique_ids);
+  }
 }
 
 void AutofillManager::FillOrPreviewForm(

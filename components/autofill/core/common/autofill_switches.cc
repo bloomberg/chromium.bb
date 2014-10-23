@@ -19,6 +19,10 @@ const char kDisablePasswordGeneration[]     = "disable-password-generation";
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
+// Ignores autocomplete="off" for Autofill data (profiles + credit cards).
+const char kIgnoreAutocompleteOffForAutofill[] =
+    "ignore-autocomplete-off-autofill";
+
 // Removes the requirement that we recieved a ping from the autofill servers
 // and that the user doesn't have the given form blacklisted. Used in testing.
 const char kLocalHeuristicsOnlyForPasswordGeneration[] =

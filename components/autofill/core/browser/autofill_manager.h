@@ -372,6 +372,10 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            FormSubmittedAutocompleteEnabled);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           AutocompleteOffRespected);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           AutocompleteOffRespectedWithFlag);
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
 
