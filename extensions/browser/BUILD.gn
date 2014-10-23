@@ -404,6 +404,8 @@ source_set("browser") {
       "lazy_background_task_queue.h",
       "management_policy.cc",
       "management_policy.h",
+      "mojo/keep_alive_impl.cc",
+      "mojo/keep_alive_impl.h",
       "pref_names.cc",
       "pref_names.h",
       "process_manager.cc",

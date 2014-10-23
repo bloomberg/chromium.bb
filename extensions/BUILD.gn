@@ -195,6 +195,7 @@ test("extensions_unittests") {
     "browser/info_map_unittest.cc",
     "browser/lazy_background_task_queue_unittest.cc",
     "browser/management_policy_unittest.cc",
+    "browser/mojo/keep_alive_impl_unittest.cc",
     "browser/process_manager_unittest.cc",
     "browser/process_map_unittest.cc",
     "browser/quota_service_unittest.cc",
