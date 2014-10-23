@@ -371,6 +371,15 @@ void SVGAngle::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
     setValue(value() + otherAngle->value());
 }
 
+void SVGAngle::assign(const SVGAngle& other)
+{
+    SVGMarkerOrientType otherOrientType = other.orientType()->enumValue();
+    if (otherOrientType == SVGMarkerOrientAngle)
+        newValueSpecifiedUnits(other.unitType(), other.valueInSpecifiedUnits());
+    else
+        m_orientType->setEnumValue(otherOrientType);
+}
+
 void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
@@ -378,55 +387,40 @@ void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement, flo
 
     RefPtr<SVGAngle> fromAngle = isToAnimation ? this : toSVGAngle(from);
     RefPtr<SVGAngle> toAngle = toSVGAngle(to);
-    RefPtr<SVGAngle> toAtEndOfDurationAngle = toSVGAngle(toAtEndOfDuration);
-
     SVGMarkerOrientType fromOrientType = fromAngle->orientType()->enumValue();
     SVGMarkerOrientType toOrientType = toAngle->orientType()->enumValue();
 
     if (fromOrientType != toOrientType) {
-        // Animating from eg. 90deg to auto.
-        if (fromOrientType == SVGMarkerOrientAngle) {
-            // Animating from an angle value to eg. 'auto' - this disabled additive as 'auto' is a keyword..
-            if (toOrientType == SVGMarkerOrientAuto || toOrientType == SVGMarkerOrientAutoStartReverse) {
-                if (percentage < 0.5f) {
-                    newValueSpecifiedUnits(fromAngle->unitType(), fromAngle->valueInSpecifiedUnits());
-                    return;
-                }
-                orientType()->setEnumValue(toOrientType);
-                return;
-            }
-            m_valueInSpecifiedUnits = 0;
-            orientType()->setEnumValue(SVGMarkerOrientUnknown);
-            return;
-        } else if (toOrientType == SVGMarkerOrientAuto || toOrientType == SVGMarkerOrientAutoStartReverse) {
-            // Animating from e.g 'auto' to 'auto-start-reverse'
-            if (percentage >= 0.5f) {
-                m_valueInSpecifiedUnits = 0;
-                orientType()->setEnumValue(toOrientType);
-                return;
-            }
-        }
-    }
-
-    // From 'auto' to 'auto', or 'auto-start-reverse' to 'auto-start-reverse'
-    if (fromOrientType == SVGMarkerOrientAuto || fromOrientType == SVGMarkerOrientAutoStartReverse) {
-        m_valueInSpecifiedUnits = 0;
-        orientType()->setEnumValue(fromOrientType);
+        // Fall back to discrete animation.
+        assign(percentage < 0.5f ? *fromAngle : *toAngle);
         return;
     }
 
+    switch (fromOrientType) {
+    // From 'auto' to 'auto', or 'auto-start-reverse' to 'auto-start-reverse'
+    case SVGMarkerOrientAuto:
+    case SVGMarkerOrientAutoStartReverse:
+        orientType()->setEnumValue(fromOrientType);
+        return;
+
+    // Regular from angle to angle animation, with all features like additive etc.
+    case SVGMarkerOrientAngle:
+        {
+            float animatedValue = value();
+            RefPtr<SVGAngle> toAtEndOfDurationAngle = toSVGAngle(toAtEndOfDuration);
+
+            animationElement->animateAdditiveNumber(percentage, repeatCount, fromAngle->value(), toAngle->value(), toAtEndOfDurationAngle->value(), animatedValue);
+            orientType()->setEnumValue(SVGMarkerOrientAngle);
+            setValue(animatedValue);
+        }
+        return;
+
     // If the enumeration value is not angle or auto, its unknown.
-    if (fromOrientType != SVGMarkerOrientAngle) {
+    default:
         m_valueInSpecifiedUnits = 0;
         orientType()->setEnumValue(SVGMarkerOrientUnknown);
         return;
     }
-
-    // Regular from angle to angle animation, with all features like additive etc.
-    float animatedValue = value();
-    animationElement->animateAdditiveNumber(percentage, repeatCount, fromAngle->value(), toAngle->value(), toAtEndOfDurationAngle->value(), animatedValue);
-    orientType()->setEnumValue(SVGMarkerOrientAngle);
-    setValue(animatedValue);
 }
 
 float SVGAngle::calculateDistance(PassRefPtr<SVGPropertyBase> other, SVGElement*)

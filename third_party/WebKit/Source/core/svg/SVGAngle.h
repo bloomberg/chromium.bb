@@ -93,6 +93,7 @@ public:
     void convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState&);
 
     SVGEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
+    const SVGEnumeration<SVGMarkerOrientType>* orientType() const { return m_orientType.get(); }
     void orientTypeChanged();
 
     // SVGPropertyBase:
@@ -111,6 +112,8 @@ public:
 private:
     SVGAngle();
     SVGAngle(SVGAngleType, float, SVGMarkerOrientType);
+
+    void assign(const SVGAngle&);
 
     SVGAngleType m_unitType;
     float m_valueInSpecifiedUnits;
