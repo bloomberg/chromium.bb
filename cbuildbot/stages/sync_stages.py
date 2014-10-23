@@ -786,13 +786,18 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         # In order to acquire a pool, we need an initialized buildroot.
         if not git.FindRepoDir(self.repo.directory):
           self.repo.Initialize()
+
+        query = constants.CQ_READY_QUERY
+        if self._run.options.cq_gerrit_override:
+          query = (self._run.options.cq_gerrit_override, None)
+
         self.pool = pool = validation_pool.ValidationPool.AcquirePool(
             self._run.config.overlays, self.repo,
             self._run.buildnumber, self.builder_name,
-            self._run.options.debug,
+            query,
+            dryrun=self._run.options.debug,
             check_tree_open=not self._run.options.debug or
                             self._run.options.mock_tree_status,
-            changes_query=self._run.options.cq_gerrit_override,
             change_filter=self._ChangeFilter, throttled_ok=True,
             builder_run=self._run)
 
@@ -1056,11 +1061,13 @@ class PreCQLauncherStage(SyncStage):
     # Get the set of busy and passed CLs.
     busy, verified = clactions.GetPreCQCategories(progress_map)
 
+    screened_changes = set(progress_map)
+
     # Create a list of disjoint transactions to test.
     manifest = git.ManifestCheckout.Cached(self._build_root)
     plans = pool.CreateDisjointTransactions(
-        manifest, max_txn_length=self.MAX_PATCHES_PER_TRYBOT_RUN)
-    screened_changes = set(progress_map)
+        manifest, screened_changes,
+        max_txn_length=self.MAX_PATCHES_PER_TRYBOT_RUN)
     for plan in plans:
       # If any of the CLs in the plan is not yet screened, wait for them to
       # be screened.
@@ -1093,22 +1100,23 @@ class PreCQLauncherStage(SyncStage):
         for config in pending_configs:
           yield (plan, config)
 
-  def _ProcessRequeued(self, change, action_history):
+  def _ProcessRequeuedAndSpeculative(self, change, action_history,
+                                     is_speculative):
     """Detect if |change| was requeued by developer, and mark in cidb.
 
     Args:
       change: GerritPatch instance to check.
       action_history: List of CLActions.
-
-    Returns:
-      True if the change was marked as requeued.
+      is_speculative: Boolean indicating if |change| is speculative, i.e. it
+                      does not have CQ approval.
     """
-    if clactions.WasChangeRequeued(change, action_history):
-      action = clactions.CLAction.FromGerritPatchAndAction(
-          change, constants.CL_ACTION_REQUEUED)
+    action_string = clactions.GetRequeuedOrSpeculative(
+        change, action_history, is_speculative)
+    if action_string:
       build_id, db = self._run.GetCIDBHandle()
+      action = clactions.CLAction.FromGerritPatchAndAction(
+          change, action_string)
       db.InsertCLActions(build_id, [action])
-      return True
 
   def _ProcessTimeouts(self, change, progress_map, pool, current_time):
     """Enforce per-config launch and inflight timeouts.
@@ -1198,23 +1206,32 @@ class PreCQLauncherStage(SyncStage):
     already_passed = set(c for c in changes
                          if status_map[c] in passed_statuses)
     to_process = set(changes) - already_passed
+
+    # We don't know for sure they were initially part of a speculative PreCQ
+    # run. It might just be someone turned off the flag, mid-run.
+    speculative = set(c for c in changes
+                      if not c.HasApproval('COMR', ('1', '2')))
+
     # Changes that can be submitted, if their dependencies can be too. Only
     # include changes that have not already been marked as passed.
     can_submit = set(c for c in (verified.intersection(to_process)) if
                      self.CanSubmitChangeInPreCQ(c))
+    can_submit.difference_update(speculative)
+
     # Changes that will be submitted.
     will_submit = set()
     # Changes that will be passed
     will_pass = set()
 
     for change in changes:
-      self._ProcessRequeued(change, action_history)
+      self._ProcessRequeuedAndSpeculative(change, action_history,
+                                          change in speculative)
 
     for change in to_process:
       status = status_map[change]
 
       # Detect if change is ready to be marked as passed, or ready to submit.
-      if change in verified:
+      if change in verified and change not in speculative:
         to_submit, to_pass = self._ProcessVerified(change, can_submit,
                                                    will_submit)
         will_submit.update(to_submit)
@@ -1236,9 +1253,13 @@ class PreCQLauncherStage(SyncStage):
 
       self._ProcessTimeouts(change, progress_map, pool, current_db_time)
 
-    # Launch any necessary tryjobs
+    # Filter out speculative changes that have already failed before launching.
+    launchable_progress_map = {
+        k: v for k, v in progress_map.iteritems()
+            if k not in speculative or status_map[k] != self.STATUS_FAILED}
+
     for plan, config in self.GetDisjointTransactionsToTest(
-        pool, progress_map):
+        pool, launchable_progress_map):
       self.LaunchTrybot(plan, config)
 
     # Submit changes that are ready to submit, if we can.
@@ -1264,12 +1285,16 @@ class PreCQLauncherStage(SyncStage):
     # Setup and initialize the repo.
     super(PreCQLauncherStage, self).PerformStage()
 
+    query = constants.PRECQ_READY_QUERY
+    if self._run.options.cq_gerrit_override:
+      query = (self._run.options.cq_gerrit_override, None)
+
     # Loop through all of the changes until we hit a timeout.
     validation_pool.ValidationPool.AcquirePool(
         self._run.config.overlays, self.repo,
         self._run.buildnumber,
         constants.PRE_CQ_LAUNCHER_NAME,
+        query,
         dryrun=self._run.options.debug,
-        changes_query=self._run.options.cq_gerrit_override,
         check_tree_open=False, change_filter=self.ProcessChanges,
         builder_run=self._run)

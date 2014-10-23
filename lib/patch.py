@@ -1484,6 +1484,19 @@ class GerritPatch(GerritFetchOnlyPatch):
     else:
       return value in type_approvals
 
+  def HasApprovals(self, flags):
+    """Return whether the current patchset has the specified approval.
+
+    Args:
+      flags: A dictionary of flag -> value mappings in
+        GerritPatch.HasApproval format.
+        ex: { 'CRVW': '2', 'VRIF': '1', 'COMR': ('1', '2') }
+
+    returns boolean telling if all flag requirements are met.
+    """
+    return all(self.HasApproval(field, value)
+               for field, value in flags.iteritems())
+
   def GetLatestApproval(self, field):
     """Return most recent value of specific field on the current patchset.
 

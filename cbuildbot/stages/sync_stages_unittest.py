@@ -110,13 +110,32 @@ class MockPatch(mock.MagicMock):
   }
   remote = 'cros'
 
-  def HasApproval(self, field, value):
+  def __init__(self, *args, **kwargs):
+    super(MockPatch, self).__init__(*args, **kwargs)
+
+    # Flags can vary per-patch.
+    self.flags = {
+      'CRVW': '2',
+      'VRIF': '1',
+      'COMR': '1',
+    }
+
+  def HasApproval(self, field, allowed):
     """Pretends the patch is good.
 
     Pretend the patch has all of the values listed in
     constants.DEFAULT_CQ_READY_FIELDS, but not any other fields.
+
+    Args:
+      field: The name of the field as a string. 'CRVW', etc.
+      allowed: Value, or list of values that are acceptable expressed as
+               strings.
     """
-    return constants.DEFAULT_CQ_READY_FIELDS.get(field, 0) == value
+    flag_value = self.flags.get(field, 0)
+    if isinstance(allowed, (tuple, list)):
+      return flag_value in allowed
+    else:
+      return flag_value == allowed
 
 
 class BaseCQTestCase(generic_stages_unittest.StageTest):
@@ -374,7 +393,7 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
     """Test that if the tree is throttled, we use an alternate gerrit query."""
     changes = self.PerformSync(tree_throttled=True)
     gerrit.GerritHelper.Query.assert_called_with(
-        mock.ANY, constants.THROTTLED_CQ_READY_QUERY,
+        mock.ANY, constants.THROTTLED_CQ_READY_QUERY[0],
         sort='lastUpdated')
     self.assertItemsEqual(self.sync_stage.pool.changes, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
@@ -509,7 +528,6 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     # Change should be marked as pre-cq passed, rather than being submitted.
     self.assertEqual(constants.CL_STATUS_PASSED, self._GetPreCQStatus(change))
 
-
   def testPreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications(
         [['banana'], ['orange', 'apple']])
@@ -572,6 +590,69 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.assertEqual(self._GetPreCQStatus(changes[1]),
                      constants.CL_STATUS_FAILED)
 
+  def testSpeculativePreCQ(self):
+    changes = self._PrepareChangesWithPendingVerifications()
+
+    # Turn our changes into speculatifve PreCQ candidates.
+    for change in changes:
+      change.flags.pop('COMR')
+
+    def assertAllStatuses(progress_map, status):
+      for change in changes:
+        for config in progress_map[change]:
+          self.assertEqual(progress_map[change][config][0], status)
+
+    # Fake that launch delay has expired by changing change approval times.
+    for change in changes:
+      change.approval_timestamp = 0
+
+    # This should cause the changes to be pending.
+    self.PerformSync(pre_cq_status=None, changes=changes)
+
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_PENDING)
+
+    # This should move the change from pending -> launched.
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
+    # Make sure every speculative change is marked that way.
+    for change in changes:
+      actions = [a.action for a in self.fake_db.GetActionsForChanges([change])]
+      self.assertIn(constants.CL_ACTION_SPECULATIVE, actions)
+
+    # Fake all these tryjobs starting.
+    build_ids = self._FakeLaunchTryjobs(progress_map)
+
+    # After 1 more Sync all configs should now be inflight.
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
+
+    # Fake the CLs being verified.
+    self.fake_db.InsertCLActions(
+        build_ids[constants.PRE_CQ_GROUP_CONFIG],
+        [clactions.CLAction.FromGerritPatchAndAction(
+            changes[0], constants.CL_ACTION_VERIFIED)])
+
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+
+    # Verify that we don't mark the change as passed.
+    self.assertEqual(self._GetPreCQStatus(changes[0]), None)
+
+    # Mark our changes as ready, and see if they are immediately passed.
+    for change in changes:
+      change.flags['COMR'] = '1'
+
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+
+    self.assertEqual(self._GetPreCQStatus(changes[0]),
+                     constants.CL_STATUS_PASSED)
 
   def _FakeLaunchTryjobs(self, progress_map):
     """Pretend to start all launched tryjobs."""
@@ -587,7 +668,6 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
               [clactions.CLAction.FromGerritPatchAndAction(
                   change, constants.CL_ACTION_PICKED_UP)])
     return build_ids_per_config
-
 
   def testCommitNonManifestChange(self):
     """See MasterCQSyncTestCase"""

@@ -1269,7 +1269,7 @@ class ValidationPool(object):
                 constants.DEFAULT_CQ_SHOULD_REJECT_FIELDS.iteritems())]
 
   @classmethod
-  def FilterNonMatchingChanges(cls, changes):
+  def FilterNonMatchingChanges(cls, changes, flags):
     """Filter out changes that don't actually match our query.
 
     Generally, Gerrit should only return patches that match our
@@ -1286,6 +1286,8 @@ class ValidationPool(object):
 
     Args:
       changes: List of changes to filter.
+      flags: A dictionary of flag -> value mappings in
+        GerritPatch.HasApproval format.
 
     Returns:
       List of changes that match our query.
@@ -1301,10 +1303,7 @@ class ValidationPool(object):
         continue
       # Check that the user (or chrome-bot) uploaded a new change under our
       # feet while Gerrit was in the middle of answering our query.
-      for field, value in constants.DEFAULT_CQ_READY_FIELDS.iteritems():
-        if not change.HasApproval(field, value):
-          break
-      else:
+      if change.HasApprovals(flags):
         filtered_changes.append(change)
 
     return filtered_changes
@@ -1320,8 +1319,8 @@ class ValidationPool(object):
     return pool
 
   @classmethod
-  def AcquirePool(cls, overlays, repo, build_number, builder_name,
-                  dryrun=False, changes_query=None, check_tree_open=True,
+  def AcquirePool(cls, overlays, repo, build_number, builder_name, query,
+                  dryrun=False, check_tree_open=True,
                   change_filter=None, throttled_ok=False, builder_run=None):
     """Acquires the current pool from Gerrit.
 
@@ -1334,9 +1333,9 @@ class ValidationPool(object):
         against.
       build_number: Corresponding build number for the build.
       builder_name: Builder name on buildbot dashboard.
+      query: constants.CQ_READY_QUERY, PRECQ_READY_QUERY, or a custom
+        query description of the form (<query_str>, None).
       dryrun: Don't submit anything to gerrit.
-      changes_query: The gerrit query to use to identify changes; if None,
-        uses the internal defaults.
       check_tree_open: If True, only return when the tree is open.
       change_filter: If set, use change_filter(pool, changes,
         non_manifest_changes) to filter out unwanted patches.
@@ -1373,18 +1372,14 @@ class ValidationPool(object):
       else:
         status = constants.TREE_OPEN
 
+      gerrit_query, ready_flags = query
       waiting_for = 'new CLs'
 
-      # Select the right default gerrit query based on the the tree
-      # status, or use custom |changes_query| if it was provided.
-      using_default_query = (changes_query is None)
-      if not using_default_query:
-        query = changes_query
-      elif status == constants.TREE_THROTTLED:
-        query = constants.THROTTLED_CQ_READY_QUERY
+      # If we are using the CQ query, adjust for a throttled tree.
+      if (query == constants.CQ_READY_QUERY and
+          status == constants.TREE_THROTTLED):
+        gerrit_query, ready_flags = constants.THROTTLED_CQ_READY_QUERY
         waiting_for = 'new CQ+2 CLs or the tree to open'
-      else:
-        query = constants.DEFAULT_CQ_READY_QUERY
 
       # Sync so that we are up-to-date on what is committed.
       repo.Sync()
@@ -1396,27 +1391,25 @@ class ValidationPool(object):
       draft_changes = []
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
-        raw_changes = helper.Query(query, sort='lastUpdated')
+        raw_changes = helper.Query(gerrit_query, sort='lastUpdated')
         raw_changes.reverse()
 
         # Reload the changes because the data in the Gerrit cache may be stale.
         raw_changes = list(cls.ReloadChanges(raw_changes))
 
-        # If we used a default query, verify the results match the query, to
-        # prevent race conditions. Note, this filters using the conditions
-        # of DEFAULT_CQ_READY_QUERY even if the tree is throttled. Since that
-        # query is strictly more permissive than the throttled query, we are
-        # not at risk of incorrectly losing any patches here. We only expose
-        # ourselves to the minor race condititon that a CQ+2 patch could have
-        # been marked as CQ+1 out from under us, but still end up being picked
-        # up in a throttled CQ run.
-        if using_default_query:
-          published_changes = cls.FilterDraftChanges(raw_changes)
-          draft_changes.extend(set(raw_changes) - set(published_changes))
-          raw_changes = cls.FilterNonMatchingChanges(published_changes)
+        # We always filter draft CLs, even if the query allowed them.
+        published_changes = cls.FilterDraftChanges(raw_changes)
+        draft_changes.extend(set(raw_changes) - set(published_changes))
+
+        if ready_flags:
+          # The query passed in may include a dictionary of flags to use for
+          # revalidating the query results. We need to do this because Gerrit
+          # caches are sometimes stale and need sanity checking.
+          published_changes = cls.FilterNonMatchingChanges(
+              published_changes, ready_flags)
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-            raw_changes, git.ManifestCheckout.Cached(repo.directory))
+            published_changes, git.ManifestCheckout.Cached(repo.directory))
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
 
@@ -1848,7 +1841,8 @@ class ValidationPool(object):
 
     # Filter out changes that aren't marked as CR=+2, CQ=+1, V=+1 anymore, in
     # case the patch status changed during the CQ run.
-    filtered_changes = self.FilterNonMatchingChanges(unmodified_changes)
+    filtered_changes = self.FilterNonMatchingChanges(
+        unmodified_changes, constants.DEFAULT_CQ_READY_FIELDS)
     for change in set(unmodified_changes) - set(filtered_changes):
       errors[change] = PatchNotCommitReady(change)
 
@@ -2248,6 +2242,7 @@ class ValidationPool(object):
     config_name = self._run.config.name
     msg = ('%(queue)s job with config %(config)s successfully verified your '
            'change in %(build_log)s .')
+
     def ProcessChange(change):
       # Note: This function has no unit test coverage. Be careful when
       # modifying.
@@ -2496,11 +2491,12 @@ class ValidationPool(object):
     action = clactions.TranslatePreCQStatusToAction(status)
     self._InsertCLActionToDatabase(change, action)
 
-  def CreateDisjointTransactions(self, manifest, max_txn_length=None):
+  def CreateDisjointTransactions(self, manifest, changes, max_txn_length=None):
     """Create a list of disjoint transactions from the changes in the pool.
 
     Args:
       manifest: Manifest to use.
+      changes: List of changes to use.
       max_txn_length: The maximum length of any given transaction. Optional.
         By default, do not limit the length of transactions.
 
@@ -2512,7 +2508,7 @@ class ValidationPool(object):
     """
     patches = PatchSeries(self.build_root, forced_manifest=manifest)
     plans, failed = patches.CreateDisjointTransactions(
-        self.changes, max_txn_length=max_txn_length)
+        changes, max_txn_length=max_txn_length)
     failed = self._FilterDependencyErrors(failed)
     if failed:
       self._HandleApplyFailure(failed)

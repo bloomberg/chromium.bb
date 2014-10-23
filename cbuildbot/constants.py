@@ -436,21 +436,6 @@ TREE_MAINTENANCE = 'maintenance'
 VALID_TREE_STATUSES = (TREE_OPEN, TREE_THROTTLED, TREE_CLOSED, TREE_MAINTENANCE)
 
 
-_GERRIT_QUERY_TEMPLATE = ('status:open AND '
-                          'label:Code-Review=+2 AND '
-                          'label:Verified=+1 AND '
-                          'label:Commit-Queue>=%+i AND '
-                          'NOT ( label:CodeReview=-2 OR label:Verified=-1 OR '
-                          'is:draft )')
-
-# Default gerrit query used to find changes for CQ.
-# Permits CQ+1 or CQ+2 changes.
-DEFAULT_CQ_READY_QUERY = _GERRIT_QUERY_TEMPLATE % 1
-
-# Gerrit query used to find changes for CQ when tree is throttled.
-# Permits only CQ+2 changes.
-THROTTLED_CQ_READY_QUERY = _GERRIT_QUERY_TEMPLATE % 2
-
 # Default filter rules for verifying that Gerrit returned results that matched
 # our query. This used for working around Gerrit bugs.
 DEFAULT_CQ_READY_FIELDS = {
@@ -463,6 +448,38 @@ DEFAULT_CQ_SHOULD_REJECT_FIELDS = {
     'CRVW': '-2',
     'VRIF': '-1',
 }
+
+# Common parts of query used for CQ, THROTTLED_CQ, and PRECQ.
+_BASIC_QUERY = ('status:open AND '
+                'label:Code-Review=+2 AND '
+                'label:Verified=+1 AND '
+                '( NOT ( label:CodeReview=-2 OR label:Verified=-1 OR '
+                'is:draft ) )')
+
+#
+# Please note that requiring the +2 code review for all CQ and PreCQ
+# runs is a security requirement. Otherwise arbitrary people can
+# run code on our servers.
+#
+
+# Default gerrit query used to find changes for CQ.
+# Permits CQ+1 or CQ+2 changes.
+CQ_READY_QUERY = (
+    _BASIC_QUERY + ' AND label:Commit-Queue>=1',
+    DEFAULT_CQ_READY_FIELDS)
+
+# Gerrit query used to find changes for CQ when tree is throttled.
+# Permits only CQ+2 changes.
+THROTTLED_CQ_READY_QUERY = (
+    _BASIC_QUERY + ' AND label:Commit-Queue>=2',
+    { 'CRVW': '2', 'VRIF': '1', 'COMR': '2' })
+
+# The PreCQ does not require the CQ flag to be set if it's a recent CL.
+PRECQ_READY_QUERY = CQ_READY_QUERY
+# Change to this query, to enable speculative PreCQ runs.
+#    (_BASIC_QUERY + ' AND (label:Commit-Queue>=1 OR NOT age:1day)',
+#     { 'CRVW': '2', 'VRIF': '1' })
+
 
 GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',

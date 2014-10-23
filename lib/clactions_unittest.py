@@ -26,8 +26,8 @@ class CLActionTest(cros_test_lib.TestCase):
     pass
 
 
-class TestCLPreCQStatus(cros_test_lib.TestCase):
-  """Tests methods related to CL pre-CQ status."""
+class TestCLActionHistory(cros_test_lib.TestCase):
+  """Tests various methods related to CL action history."""
 
 
   def setUp(self):
@@ -46,6 +46,56 @@ class TestCLPreCQStatus(cros_test_lib.TestCase):
     action_history = self.fake_db.GetActionsForChanges([change])
     return clactions.GetCLPreCQStatus(change, action_history)
 
+
+  def testGetRequeuedOrSpeculative(self):
+    """Tests GetRequeuedOrSpeculative function."""
+    change = metadata_lib.GerritPatchTuple(1, 1, False)
+    speculative_change = metadata_lib.GerritPatchTuple(2, 2, False)
+    changes = [change, speculative_change]
+
+    build_id = self.fake_db.InsertBuild('n', 'w', 1, 'c', 'h')
+
+    # A fresh change should not be marked requeued. A fresh specualtive
+    # change should be marked as speculative.
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    a = clactions.GetRequeuedOrSpeculative(change, action_history, False)
+    self.assertEqual(a, None)
+    a = clactions.GetRequeuedOrSpeculative(speculative_change, action_history,
+                                           True)
+    self.assertEqual(a, constants.CL_ACTION_SPECULATIVE)
+    self._Act(build_id, speculative_change, a)
+
+    # After picking up either change, neither should need an additional
+    # requeued or speculative action.
+    self._Act(build_id, speculative_change, constants.CL_ACTION_PICKED_UP)
+    self._Act(build_id, change, constants.CL_ACTION_PICKED_UP)
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    a = clactions.GetRequeuedOrSpeculative(change, action_history, False)
+    self.assertEqual(a, None)
+    a = clactions.GetRequeuedOrSpeculative(speculative_change, action_history,
+                                           True)
+    self.assertEqual(a, None)
+
+    # After being rejected, both changes need an action (requeued and
+    # speculative accordingly).
+    self._Act(build_id, speculative_change, constants.CL_ACTION_KICKED_OUT)
+    self._Act(build_id, change, constants.CL_ACTION_KICKED_OUT)
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    a = clactions.GetRequeuedOrSpeculative(change, action_history, False)
+    self.assertEqual(a, constants.CL_ACTION_REQUEUED)
+    self._Act(build_id, change, a)
+    a = clactions.GetRequeuedOrSpeculative(speculative_change, action_history,
+                                           True)
+    self.assertEqual(a, constants.CL_ACTION_SPECULATIVE)
+    self._Act(build_id, speculative_change, a)
+
+    # Once a speculative change becomes un-speculative, it needs a REQUEUD
+    # action.
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    a = clactions.GetRequeuedOrSpeculative(speculative_change, action_history,
+                                           False)
+    self.assertEqual(a, constants.CL_ACTION_REQUEUED)
+    self._Act(build_id, speculative_change, a)
 
   def testGetCLPreCQStatus(self):
     change = metadata_lib.GerritPatchTuple(1, 1, False)

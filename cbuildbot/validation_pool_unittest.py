@@ -1231,7 +1231,8 @@ class TestCreateDisjointTransactions(MoxBase):
       expected_plans = [txn[:max_txn_length] for txn in txns]
 
     pool = MakePool(changes=patches)
-    plans = pool.CreateDisjointTransactions(None, max_txn_length=max_txn_length)
+    plans = pool.CreateDisjointTransactions(None, pool.changes,
+                                            max_txn_length=max_txn_length)
 
     # If the dependencies are circular, the order of the patches is not
     # guaranteed, so compare them in sorted order.
@@ -1255,7 +1256,8 @@ class TestCreateDisjointTransactions(MoxBase):
                               'SendNotification')
     remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
     pool = MakePool(changes=changes)
-    plans = pool.CreateDisjointTransactions(None, max_txn_length=max_txn_length)
+    plans = pool.CreateDisjointTransactions(None, changes,
+                                            max_txn_length=max_txn_length)
     self.assertEqual(plans, [])
     self.assertEqual(remove.call_count, notify.call_count)
     return remove.call_count

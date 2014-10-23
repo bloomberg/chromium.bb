@@ -162,37 +162,47 @@ def ActionsForPatch(change, action_history):
   return actions_for_patch
 
 
-def WasChangeRequeued(change, action_history):
-  """For a |change| that is ready, determine if it has been re-marked as such.
+def GetRequeuedOrSpeculative(change, action_history, is_speculative):
+  """For a |change| get either a requeued or speculative action if necessary.
 
-  This method is meant to be used on a |change| that is currently marked as
-  CQ ready. It determines if |change| had been previously rejected but not
-  yet marked as requeued.
-
-  If this returns True, then a REQUEUED action should be separately recorded
-  for |change|.
+  This method returns an action string for an action that should be recorded
+  on |change|, or None if no action needs to be recorded.
 
   Args:
     change: GerritPatch instance to operate upon.
     action_history: List of CL actions (may include actions on changes other
                     than |change|).
+    is_speculative: Boolean indicating if |change| is speculative, i.e. it does
+                    not have CQ approval.
 
   Returns:
-    True is |change| has been re-marked as CQ ready by a developer, but
-    not yet marked as REQUEUED in its action history.
+    CL_ACTION_REQUEUED, CL_ACTION_SPECULATIVE, or None.
   """
   actions_for_patch = ActionsForPatch(change, action_history)
 
-  # Return True if the newest KICKED_OUT action is newer than the newest
-  # REQUEUED action.
-  for a in reversed(actions_for_patch):
-    if a.action == constants.CL_ACTION_KICKED_OUT:
-      return True
-    if a.action == constants.CL_ACTION_REQUEUED:
-      return False
+  if is_speculative:
+    # Speculative changes should have 1 CL_ACTION_SPECULATIVE action that is
+    # newer than the newest REQUEUED or KICKED_OUT action, and at least 1
+    # action if there is no REQUEUED or KICKED_OUT action.
+    for a in reversed(actions_for_patch):
+      if a.action == constants.CL_ACTION_SPECULATIVE:
+        return None
+      elif (a.action == constants.CL_ACTION_REQUEUED or
+            a.action == constants.CL_ACTION_KICKED_OUT):
+        return constants.CL_ACTION_SPECULATIVE
+    return constants.CL_ACTION_SPECULATIVE
+  else:
+    # Non speculative changes should have 1 CL_ACTION_REQUEUED action that is
+    # newer than the newest SPECULATIVE or KICKED_OUT action, but no action if
+    # there are no SPECULATIVE or REQUEUED actions.
+    for a in reversed(actions_for_patch):
+      if (a.action == constants.CL_ACTION_KICKED_OUT or
+          a.action == constants.CL_ACTION_SPECULATIVE):
+        return constants.CL_ACTION_REQUEUED
+      if a.action == constants.CL_ACTION_REQUEUED:
+        return None
 
-  return False
-
+  return None
 
 def GetCLActionCount(change, configs, action, action_history,
                      latest_patchset_only=True):
