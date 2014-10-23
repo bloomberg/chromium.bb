@@ -132,7 +132,6 @@ enum AccessibilityRole {
     OutlineRole,
     ParagraphRole,
     PopUpButtonRole,
-    PreRole,
     PresentationalRole,
     ProgressIndicatorRole,
     RadioButtonRole,
