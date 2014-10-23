@@ -606,12 +606,12 @@ shouldBeUndefined("converter.testByteStringTreatReturnedNullStringAsUndefinedAtt
 shouldBeNull("converter.getTestByteStringTreatReturnedNullStringAsNullMethod()");
 shouldBeUndefined("converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod()");
 
-evalAndLog("converter.testScalarValueString = '!@#123ABCabc\\x00\\x80\\xFF\\r\\n\\t'");
-shouldBeEqualToString("converter.testScalarValueString", "!@#123ABCabc\x00\x80\xFF\r\n\t");
-evalAndLog("converter.testScalarValueString = '\\u0100'");
-shouldBeEqualToString("converter.testScalarValueString", "\u0100");
-shouldThrow("converter.testScalarValueString = {toString: function() { throw Error(); }}");
-shouldBeEqualToString("converter.testScalarValueString", "\u0100");
+evalAndLog("converter.testUSVString = '!@#123ABCabc\\x00\\x80\\xFF\\r\\n\\t'");
+shouldBeEqualToString("converter.testUSVString", "!@#123ABCabc\x00\x80\xFF\r\n\t");
+evalAndLog("converter.testUSVString = '\\u0100'");
+shouldBeEqualToString("converter.testUSVString", "\u0100");
+shouldThrow("converter.testUSVString = {toString: function() { throw Error(); }}");
+shouldBeEqualToString("converter.testUSVString", "\u0100");
 [{input: "\uD800", expected: "\uFFFD"},
  {input: "\uDC00", expected: "\uFFFD"},
  {input: "\uD800\u0000", expected: "\uFFFD\u0000"},
@@ -619,27 +619,27 @@ shouldBeEqualToString("converter.testScalarValueString", "\u0100");
  {input: "\uDC00\uD800", expected: "\uFFFD\uFFFD"},
  {input: "\uD834\uDD1E", expected: "\uD834\uDD1E"},
 ].forEach(function(test) {
-    evalAndLog("converter.testScalarValueString = " + JSON.stringify(test.input));
-    shouldBeEqualToString("converter.testScalarValueString", test.expected);
+    evalAndLog("converter.testUSVString = " + JSON.stringify(test.input));
+    shouldBeEqualToString("converter.testUSVString", test.expected);
 });
 ["true", "123", "null", "undefined"].forEach(function(value) {
-    evalAndLog("converter.testScalarValueString = " + value);
-    shouldBeEqualToString("converter.testScalarValueString", value);
-    shouldBeEqualToString("converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute", value);
-    shouldBeEqualToString("converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute", value);
-    shouldBeEqualToString("converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod()", value);
-    shouldBeEqualToString("converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod()", value);
+    evalAndLog("converter.testUSVString = " + value);
+    shouldBeEqualToString("converter.testUSVString", value);
+    shouldBeEqualToString("converter.testUSVStringTreatReturnedNullStringAsNullAttribute", value);
+    shouldBeEqualToString("converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute", value);
+    shouldBeEqualToString("converter.getTestUSVStringTreatReturnedNullStringAsNullMethod()", value);
+    shouldBeEqualToString("converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod()", value);
 });
-shouldNotThrow("converter.setTestScalarValueString('abc')");
-shouldNotThrow("converter.setTestScalarValueStringDefaultNull('abc')");
-shouldNotThrow("converter.setTestScalarValueString('\\u0100')");
-shouldNotThrow("converter.setTestScalarValueStringDefaultNull('\\u0100')");
-shouldThrow("converter.setTestScalarValueString()");
-shouldNotThrow("converter.setTestScalarValueStringDefaultNull()");
-shouldBeEqualToString("converter.testScalarValueString", "");
-shouldBeNull("converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute");
-shouldBeUndefined("converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute");
-shouldBeNull("converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod()");
-shouldBeUndefined("converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod()");
+shouldNotThrow("converter.setTestUSVString('abc')");
+shouldNotThrow("converter.setTestUSVStringDefaultNull('abc')");
+shouldNotThrow("converter.setTestUSVString('\\u0100')");
+shouldNotThrow("converter.setTestUSVStringDefaultNull('\\u0100')");
+shouldThrow("converter.setTestUSVString()");
+shouldNotThrow("converter.setTestUSVStringDefaultNull()");
+shouldBeEqualToString("converter.testUSVString", "");
+shouldBeNull("converter.testUSVStringTreatReturnedNullStringAsNullAttribute");
+shouldBeUndefined("converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute");
+shouldBeNull("converter.getTestUSVStringTreatReturnedNullStringAsNullMethod()");
+shouldBeUndefined("converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod()");
 
 </script>

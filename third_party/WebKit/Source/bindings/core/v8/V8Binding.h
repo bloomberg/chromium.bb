@@ -542,7 +542,7 @@ double toDouble(v8::Handle<v8::Value>, ExceptionState&);
 String toByteString(v8::Handle<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, replacing unmatched UTF-16 surrogates with replacement characters.
-String toScalarValueString(v8::Handle<v8::Value>, ExceptionState&);
+String toUSVString(v8::Handle<v8::Value>, ExceptionState&);
 
 inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
 {

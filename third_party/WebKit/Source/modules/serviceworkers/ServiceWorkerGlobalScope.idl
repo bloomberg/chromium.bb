@@ -37,7 +37,7 @@
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
   readonly attribute ServiceWorkerClients clients;
-  [CallWith=ExecutionContext, Unforgeable] readonly attribute ScalarValueString scope;
+  [CallWith=ExecutionContext, Unforgeable] readonly attribute USVString scope;
   [CallWith=ExecutionContext, Unforgeable, RuntimeEnabled=ServiceWorkerCache] readonly attribute CacheStorage caches;
 
   [CallWith=ScriptState] Promise fetch(DOMString request, optional Dictionary requestInitDict);

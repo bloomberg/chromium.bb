@@ -46,11 +46,11 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), info.GetIsolate());
-    V8StringResource<> scalarValueStringArg;
+    V8StringResource<> usvStringArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(scalarValueStringArg, toScalarValueString(info[0], exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(usvStringArg, toUSVString(info[0], exceptionState), exceptionState);
     }
-    RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(scalarValueStringArg);
+    RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(usvStringArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
     impl->associateWithWrapper(&V8TestInterfaceConstructor4::wrapperTypeInfo, wrapper, info.GetIsolate());
     v8SetReturnValue(info, wrapper);

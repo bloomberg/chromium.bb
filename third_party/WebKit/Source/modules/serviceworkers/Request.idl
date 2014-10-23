@@ -8,7 +8,7 @@ enum RequestMode { "same-origin", "no-cors", "cors" };
 enum RequestCredentials { "omit", "same-origin", "include" };
 
 [
-    Constructor(ScalarValueString input, optional Dictionary requestInitDict),
+    Constructor(USVString input, optional Dictionary requestInitDict),
     Constructor(Request input, optional Dictionary requestInitDict),
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=ServiceWorker,
@@ -19,7 +19,7 @@ enum RequestCredentials { "omit", "same-origin", "include" };
     TypeChecking=Interface,
 ] interface Request {
     readonly attribute ByteString method;
-    readonly attribute ScalarValueString url;
+    readonly attribute USVString url;
     readonly attribute Headers headers;
 
     readonly attribute DOMString referrer;

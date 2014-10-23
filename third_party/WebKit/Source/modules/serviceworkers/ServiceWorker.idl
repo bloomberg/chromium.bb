@@ -49,7 +49,7 @@ enum ServiceWorkerState {
 
     [RaisesException] void terminate();
 
-    readonly attribute ScalarValueString scriptURL;
+    readonly attribute USVString scriptURL;
     readonly attribute ServiceWorkerState  state;
 
     attribute EventHandler onstatechange;

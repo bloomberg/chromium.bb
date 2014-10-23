@@ -9,9 +9,9 @@
     RuntimeEnabled=ServiceWorkerCache,
     TypeChecking=Interface,
 ] interface CacheStorage {
-  [CallWith=ScriptState] Promise has(ScalarValueString cacheName);
-  [CallWith=ScriptState] Promise open(ScalarValueString cacheName);
-  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString cacheName);
+  [CallWith=ScriptState] Promise has(USVString cacheName);
+  [CallWith=ScriptState] Promise open(USVString cacheName);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(USVString cacheName);
   [CallWith=ScriptState] Promise keys();
   // FIXME: From https://github.com/slightlyoff/ServiceWorker/issues/372 and the updated
   // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage ,

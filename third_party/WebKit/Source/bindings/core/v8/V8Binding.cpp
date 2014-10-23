@@ -665,10 +665,9 @@ static String replaceUnmatchedSurrogates(const String& string)
     return u.toString();
 }
 
-String toScalarValueString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+String toUSVString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    // From the Encoding standard (with a TODO to move to Web IDL):
-    // http://encoding.spec.whatwg.org/#type-scalarvaluestring
+    // http://heycam.github.io/webidl/#es-USVString
     if (value.IsEmpty())
         return String();
 
@@ -679,7 +678,7 @@ String toScalarValueString(v8::Handle<v8::Value> value, ExceptionState& exceptio
         return String();
     }
 
-    // ScalarValueString is identical to DOMString except that "convert a
+    // USVString is identical to DOMString except that "convert a
     // DOMString to a sequence of Unicode characters" is used subsequently
     // when converting to an IDL value
     String x = toCoreString(stringObject);

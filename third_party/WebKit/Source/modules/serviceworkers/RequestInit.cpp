@@ -78,7 +78,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         }
         blobData->setContentType(AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + httpBody->boundary().data());
     } else if (body->IsString()) {
-        String stringValue(toScalarValueString(body, exceptionState));
+        String stringValue(toUSVString(body, exceptionState));
         blobData->appendText(stringValue, false);
         blobData->setContentType("text/plain;charset=UTF-8");
     } else {

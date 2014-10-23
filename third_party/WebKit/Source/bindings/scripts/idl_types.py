@@ -46,11 +46,10 @@ BASIC_TYPES = (PRIMITIVE_TYPES | frozenset([
     # http://heycam.github.io/webidl/#idl-types
     'DOMString',
     'ByteString',
+    'USVString',
     'Date',
-    # http://heycam.github.io/webidl/#es-type-mapping
+    # http://heycam.github.io/webidl/#idl-types
     'void',
-    # http://encoding.spec.whatwg.org/#type-scalarvaluestring
-    'ScalarValueString',
 ]))
 TYPE_NAMES = {
     # http://heycam.github.io/webidl/#dfn-type-name
@@ -70,7 +69,7 @@ TYPE_NAMES = {
     'unrestricted double': 'UnrestrictedDouble',
     'DOMString': 'String',
     'ByteString': 'ByteString',
-    'ScalarValueString': 'ScalarValueString',
+    'USVString': 'USVString',
     'object': 'Object',
     'Date': 'Date',
 }
@@ -80,7 +79,7 @@ STRING_TYPES = frozenset([
     # (Interface object [[Call]] method's string types.)
     'String',
     'ByteString',
-    'ScalarValueString',
+    'USVString',
 ])
 
 

@@ -1058,59 +1058,59 @@ PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is null
 PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
 PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is null
 PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
-converter.testScalarValueString = '!@#123ABCabc\x00\x80\xFF\r\n\t'
-PASS converter.testScalarValueString is "!@#123ABCabc\u0000¬Ä√ø\r\n\t"
-converter.testScalarValueString = '\u0100'
-PASS converter.testScalarValueString is "ƒÄ"
-PASS converter.testScalarValueString = {toString: function() { throw Error(); }} threw exception Error.
-PASS converter.testScalarValueString is "ƒÄ"
-converter.testScalarValueString = "Ì†Ä"
-PASS converter.testScalarValueString is "ÔøΩ"
-converter.testScalarValueString = "Ì∞Ä"
-PASS converter.testScalarValueString is "ÔøΩ"
-converter.testScalarValueString = "Ì†Ä\u0000"
-PASS converter.testScalarValueString is "ÔøΩ\u0000"
-converter.testScalarValueString = "Ì∞Ä\u0000"
-PASS converter.testScalarValueString is "ÔøΩ\u0000"
-converter.testScalarValueString = "Ì∞ÄÌ†Ä"
-PASS converter.testScalarValueString is "ÔøΩÔøΩ"
-converter.testScalarValueString = "ùÑû"
-PASS converter.testScalarValueString is "ùÑû"
-converter.testScalarValueString = true
-PASS converter.testScalarValueString is "true"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "true"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "true"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "true"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "true"
-converter.testScalarValueString = 123
-PASS converter.testScalarValueString is "123"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "123"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "123"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "123"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "123"
-converter.testScalarValueString = null
-PASS converter.testScalarValueString is "null"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "null"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "null"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "null"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "null"
-converter.testScalarValueString = undefined
-PASS converter.testScalarValueString is "undefined"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is "undefined"
-PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is "undefined"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is "undefined"
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is "undefined"
-PASS converter.setTestScalarValueString('abc') did not throw exception.
-PASS converter.setTestScalarValueStringDefaultNull('abc') did not throw exception.
-PASS converter.setTestScalarValueString('\u0100') did not throw exception.
-PASS converter.setTestScalarValueStringDefaultNull('\u0100') did not throw exception.
-PASS converter.setTestScalarValueString() threw exception TypeError: Failed to execute 'setTestScalarValueString' on 'TypeConversions': 1 argument required, but only 0 present..
-PASS converter.setTestScalarValueStringDefaultNull() did not throw exception.
-PASS converter.testScalarValueString is ""
-PASS converter.testScalarValueStringTreatReturnedNullStringAsNullAttribute is null
-PASS converter.testScalarValueStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsNullMethod() is null
-PASS converter.getTestScalarValueStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
+converter.testUSVString = '!@#123ABCabc\x00\x80\xFF\r\n\t'
+PASS converter.testUSVString is "!@#123ABCabc\u0000¬Ä√ø\r\n\t"
+converter.testUSVString = '\u0100'
+PASS converter.testUSVString is "ƒÄ"
+PASS converter.testUSVString = {toString: function() { throw Error(); }} threw exception Error.
+PASS converter.testUSVString is "ƒÄ"
+converter.testUSVString = "Ì†Ä"
+PASS converter.testUSVString is "ÔøΩ"
+converter.testUSVString = "Ì∞Ä"
+PASS converter.testUSVString is "ÔøΩ"
+converter.testUSVString = "Ì†Ä\u0000"
+PASS converter.testUSVString is "ÔøΩ\u0000"
+converter.testUSVString = "Ì∞Ä\u0000"
+PASS converter.testUSVString is "ÔøΩ\u0000"
+converter.testUSVString = "Ì∞ÄÌ†Ä"
+PASS converter.testUSVString is "ÔøΩÔøΩ"
+converter.testUSVString = "ùÑû"
+PASS converter.testUSVString is "ùÑû"
+converter.testUSVString = true
+PASS converter.testUSVString is "true"
+PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "true"
+PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "true"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "true"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "true"
+converter.testUSVString = 123
+PASS converter.testUSVString is "123"
+PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "123"
+PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "123"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "123"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "123"
+converter.testUSVString = null
+PASS converter.testUSVString is "null"
+PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "null"
+PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "null"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "null"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "null"
+converter.testUSVString = undefined
+PASS converter.testUSVString is "undefined"
+PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "undefined"
+PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "undefined"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "undefined"
+PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "undefined"
+PASS converter.setTestUSVString('abc') did not throw exception.
+PASS converter.setTestUSVStringDefaultNull('abc') did not throw exception.
+PASS converter.setTestUSVString('\u0100') did not throw exception.
+PASS converter.setTestUSVStringDefaultNull('\u0100') did not throw exception.
+PASS converter.setTestUSVString() threw exception TypeError: Failed to execute 'setTestUSVString' on 'TypeConversions': 1 argument required, but only 0 present..
+PASS converter.setTestUSVStringDefaultNull() did not throw exception.
+PASS converter.testUSVString is ""
+PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is null
+PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
+PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is null
+PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

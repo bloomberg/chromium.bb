@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Encoding API: ScalarValueString surrogate handling when encoding</title>
+<title>Encoding API: USVString surrogate handling when encoding</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="resources/shared.js"></script>
@@ -45,11 +45,11 @@ bad.forEach(function(t) {
         var encoded = new TextEncoder(encoding).encode(t.input);
         var decoded = new TextDecoder(encoding).decode(encoded);
         assert_equals(decoded, t.expected);
-    }, 'ScalarValueString handling: ' + t.name);
+    }, 'USVString handling: ' + t.name);
 });
 
 test(function() {
     assert_equals(new TextEncoder(encoding).encode().length, 0, 'Should default to empty string');
-}, 'ScalarValueString default');
+}, 'USVString default');
 
 </script>

@@ -897,7 +897,7 @@ def resolution_tests_methods(effective_overloads):
     # types at position i of its type list,
     # • DOMString
     # • ByteString
-    # • ScalarValueString [a DOMString typedef, per definition.]
+    # • USVString
     # • an enumeration type
     try:
         method = next(method for idl_type, method in idl_types_methods

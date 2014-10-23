@@ -64,8 +64,8 @@ public:
     const String& testByteString() const { return m_byteString; }
     void setTestByteString(const String& value) { m_byteString = value; }
 
-    const String& testScalarValueString() const { return m_scalarValueString; }
-    void setTestScalarValueString(const String& value) { m_scalarValueString = value; }
+    const String& testUSVString() const { return m_usvString; }
+    void setTestUSVString(const String& value) { m_usvString = value; }
 
     void trace(Visitor*) { }
 
@@ -90,7 +90,7 @@ private:
     int16_t m_short;
     uint16_t m_unsignedShort;
     String m_byteString;
-    String m_scalarValueString;
+    String m_usvString;
 };
 
 } // namespace blink

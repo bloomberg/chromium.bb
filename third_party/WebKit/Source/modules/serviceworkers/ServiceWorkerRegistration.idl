@@ -12,7 +12,7 @@
     [Unforgeable] readonly attribute ServiceWorker? installing;
     [Unforgeable] readonly attribute ServiceWorker? waiting;
     [Unforgeable] readonly attribute ServiceWorker? active;
-    readonly attribute ScalarValueString scope;
+    readonly attribute USVString scope;
 
     [CallWith=ScriptState] Promise unregister();
 

@@ -260,33 +260,33 @@ static void byteStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void scalarValueStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void usvStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueString(info, impl->scalarValueStringAttribute(), info.GetIsolate());
+    v8SetReturnValueString(info, impl->usvStringAttribute(), info.GetIsolate());
 }
 
-static void scalarValueStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void usvStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::scalarValueStringAttributeAttributeGetter(info);
+    TestObjectV8Internal::usvStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void scalarValueStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void usvStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "scalarValueStringAttribute", "TestObject", holder, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "usvStringAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toScalarValueString(v8Value, exceptionState), exceptionState);
-    impl->setScalarValueStringAttribute(cppValue);
+    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toUSVString(v8Value, exceptionState), exceptionState);
+    impl->setUsvStringAttribute(cppValue);
 }
 
-static void scalarValueStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void usvStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::scalarValueStringAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::usvStringAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -4347,63 +4347,63 @@ static void treatReturnedNullStringAsUndefinedByteStringAttributeAttributeSetter
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void treatReturnedNullStringAsNullScalarValueStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsNullUSVStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueStringOrNull(info, impl->treatReturnedNullStringAsNullScalarValueStringAttribute(), info.GetIsolate());
+    v8SetReturnValueStringOrNull(info, impl->treatReturnedNullStringAsNullUSVStringAttribute(), info.GetIsolate());
 }
 
-static void treatReturnedNullStringAsNullScalarValueStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsNullUSVStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeGetter(info);
+    TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void treatReturnedNullStringAsNullScalarValueStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void treatReturnedNullStringAsNullUSVStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "treatReturnedNullStringAsNullScalarValueStringAttribute", "TestObject", holder, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "treatReturnedNullStringAsNullUSVStringAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toScalarValueString(v8Value, exceptionState), exceptionState);
-    impl->setTreatReturnedNullStringAsNullScalarValueStringAttribute(cppValue);
+    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toUSVString(v8Value, exceptionState), exceptionState);
+    impl->setTreatReturnedNullStringAsNullUSVStringAttribute(cppValue);
 }
 
-static void treatReturnedNullStringAsNullScalarValueStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void treatReturnedNullStringAsNullUSVStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueStringOrUndefined(info, impl->treatReturnedNullStringAsUndefinedScalarValueStringAttribute(), info.GetIsolate());
+    v8SetReturnValueStringOrUndefined(info, impl->treatReturnedNullStringAsUndefinedUSVStringAttribute(), info.GetIsolate());
 }
 
-static void treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeGetter(info);
+    TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "treatReturnedNullStringAsUndefinedScalarValueStringAttribute", "TestObject", holder, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "treatReturnedNullStringAsUndefinedUSVStringAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toScalarValueString(v8Value, exceptionState), exceptionState);
-    impl->setTreatReturnedNullStringAsUndefinedScalarValueStringAttribute(cppValue);
+    TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toUSVString(v8Value, exceptionState), exceptionState);
+    impl->setTreatReturnedNullStringAsUndefinedUSVStringAttribute(cppValue);
 }
 
-static void treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeSetter(v8Value, info);
+    TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -5023,16 +5023,16 @@ static void byteStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void scalarValueStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void usvStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValueString(info, impl->scalarValueStringMethod(), info.GetIsolate());
+    v8SetReturnValueString(info, impl->usvStringMethod(), info.GetIsolate());
 }
 
-static void scalarValueStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void usvStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::scalarValueStringMethodMethod(info);
+    TestObjectV8Internal::usvStringMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -5257,26 +5257,26 @@ static void voidMethodByteStringArgMethodCallback(const v8::FunctionCallbackInfo
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void voidMethodScalarValueStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodUSVStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodScalarValueStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUSVStringArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         setMinimumArityTypeError(exceptionState, 1, info.Length());
         exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    V8StringResource<> scalarValueStringArg;
+    V8StringResource<> usvStringArg;
     {
-        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(scalarValueStringArg, toScalarValueString(info[0], exceptionState), exceptionState);
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(usvStringArg, toUSVString(info[0], exceptionState), exceptionState);
     }
-    impl->voidMethodScalarValueStringArg(scalarValueStringArg);
+    impl->voidMethodUSVStringArg(usvStringArg);
 }
 
-static void voidMethodScalarValueStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodUSVStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::voidMethodScalarValueStringArgMethod(info);
+    TestObjectV8Internal::voidMethodUSVStringArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -9649,29 +9649,29 @@ static void treatReturnedNullStringAsUndefinedByteStringMethodMethodCallback(con
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void treatReturnedNullStringAsNullScalarValueStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsNullUSVStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValueStringOrNull(info, impl->treatReturnedNullStringAsNullScalarValueStringMethod(), info.GetIsolate());
+    v8SetReturnValueStringOrNull(info, impl->treatReturnedNullStringAsNullUSVStringMethod(), info.GetIsolate());
 }
 
-static void treatReturnedNullStringAsNullScalarValueStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsNullUSVStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringMethodMethod(info);
+    TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void treatReturnedNullStringAsUndefinedScalarValueStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsUndefinedUSVStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValueStringOrUndefined(info, impl->treatReturnedNullStringAsUndefinedScalarValueStringMethod(), info.GetIsolate());
+    v8SetReturnValueStringOrUndefined(info, impl->treatReturnedNullStringAsUndefinedUSVStringMethod(), info.GetIsolate());
 }
 
-static void treatReturnedNullStringAsUndefinedScalarValueStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void treatReturnedNullStringAsUndefinedUSVStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringMethodMethod(info);
+    TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -10147,7 +10147,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"dateAttribute", TestObjectV8Internal::dateAttributeAttributeGetterCallback, TestObjectV8Internal::dateAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"stringAttribute", TestObjectV8Internal::stringAttributeAttributeGetterCallback, TestObjectV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"byteStringAttribute", TestObjectV8Internal::byteStringAttributeAttributeGetterCallback, TestObjectV8Internal::byteStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"scalarValueStringAttribute", TestObjectV8Internal::scalarValueStringAttributeAttributeGetterCallback, TestObjectV8Internal::scalarValueStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"usvStringAttribute", TestObjectV8Internal::usvStringAttributeAttributeGetterCallback, TestObjectV8Internal::usvStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"domTimeStampAttribute", TestObjectV8Internal::domTimeStampAttributeAttributeGetterCallback, TestObjectV8Internal::domTimeStampAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"booleanAttribute", TestObjectV8Internal::booleanAttributeAttributeGetterCallback, TestObjectV8Internal::booleanAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"byteAttribute", TestObjectV8Internal::byteAttributeAttributeGetterCallback, TestObjectV8Internal::byteAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
@@ -10278,8 +10278,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"cachedTreatReturnedNullStringAsUndefinedStringAttribute", TestObjectV8Internal::cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGetterCallback, TestObjectV8Internal::cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"treatReturnedNullStringAsNullByteStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullByteStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullByteStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"treatReturnedNullStringAsUndefinedByteStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"treatReturnedNullStringAsNullScalarValueStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-    {"treatReturnedNullStringAsUndefinedScalarValueStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"treatReturnedNullStringAsNullUSVStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"treatReturnedNullStringAsUndefinedUSVStringAttribute", TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"typeCheckingInterfaceFloatAttribute", TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceFloatAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"typeCheckingInterfaceTestInterfaceAttribute", TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceTestInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"typeCheckingInterfaceTestInterfaceOrNullAttribute", TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::typeCheckingInterfaceTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
@@ -10308,7 +10308,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"dateMethod", TestObjectV8Internal::dateMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"stringMethod", TestObjectV8Internal::stringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"byteStringMethod", TestObjectV8Internal::byteStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"scalarValueStringMethod", TestObjectV8Internal::scalarValueStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"usvStringMethod", TestObjectV8Internal::usvStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"readonlyDOMTimeStampMethod", TestObjectV8Internal::readonlyDOMTimeStampMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"booleanMethod", TestObjectV8Internal::booleanMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"byteMethod", TestObjectV8Internal::byteMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
@@ -10324,7 +10324,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodDateArg", TestObjectV8Internal::voidMethodDateArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodStringArg", TestObjectV8Internal::voidMethodStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodByteStringArg", TestObjectV8Internal::voidMethodByteStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
-    {"voidMethodScalarValueStringArg", TestObjectV8Internal::voidMethodScalarValueStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodUSVStringArg", TestObjectV8Internal::voidMethodUSVStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDOMTimeStampArg", TestObjectV8Internal::voidMethodDOMTimeStampArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodBooleanArg", TestObjectV8Internal::voidMethodBooleanArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodByteArg", TestObjectV8Internal::voidMethodByteArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
@@ -10494,8 +10494,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"treatReturnedNullStringAsUndefinedStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"treatReturnedNullStringAsNullByteStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullByteStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"treatReturnedNullStringAsUndefinedByteStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedByteStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"treatReturnedNullStringAsNullScalarValueStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullScalarValueStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-    {"treatReturnedNullStringAsUndefinedScalarValueStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedScalarValueStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"treatReturnedNullStringAsNullUSVStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullUSVStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"treatReturnedNullStringAsUndefinedUSVStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedUSVStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg", TestObjectV8Internal::typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

@@ -451,7 +451,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'Date': 'toCoreDate({v8_value})',
     'DOMString': '{v8_value}',
     'ByteString': 'toByteString({arguments})',
-    'ScalarValueString': 'toScalarValueString({arguments})',
+    'USVString': 'toUSVString({arguments})',
     'boolean': '{v8_value}->BooleanValue()',
     'float': 'toFloat({arguments})',
     'unrestricted float': 'toFloat({arguments})',
@@ -480,7 +480,7 @@ V8_VALUE_TO_CPP_VALUE = {
 def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_numeric_type or
             idl_type.is_dictionary or
-            idl_type.name in ('ByteString', 'ScalarValueString', 'SerializedScriptValue'))
+            idl_type.name in ('ByteString', 'USVString', 'SerializedScriptValue'))
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
@@ -736,7 +736,7 @@ V8_SET_RETURN_VALUE = {
     'unsigned': 'v8SetReturnValueUnsigned(info, {cpp_value})',
     'DOMString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     'ByteString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
-    'ScalarValueString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
+    'USVString': 'v8SetReturnValueString(info, {cpp_value}, info.GetIsolate())',
     # [TreatReturnedNullStringAs]
     'StringOrNull': 'v8SetReturnValueStringOrNull(info, {cpp_value}, info.GetIsolate())',
     'StringOrUndefined': 'v8SetReturnValueStringOrUndefined(info, {cpp_value}, info.GetIsolate())',
@@ -809,7 +809,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'Date': 'v8DateOrNaN({cpp_value}, {isolate})',
     'DOMString': 'v8String({isolate}, {cpp_value})',
     'ByteString': 'v8String({isolate}, {cpp_value})',
-    'ScalarValueString': 'v8String({isolate}, {cpp_value})',
+    'USVString': 'v8String({isolate}, {cpp_value})',
     'boolean': 'v8Boolean({cpp_value}, {isolate})',
     'int': 'v8::Integer::New({isolate}, {cpp_value})',
     'unsigned': 'v8::Integer::NewFromUnsigned({isolate}, {cpp_value})',

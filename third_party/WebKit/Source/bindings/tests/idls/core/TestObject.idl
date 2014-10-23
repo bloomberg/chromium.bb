@@ -88,7 +88,7 @@ interface TestObject {
     attribute Date dateAttribute;
     attribute DOMString stringAttribute;
     attribute ByteString byteStringAttribute;
-    attribute ScalarValueString scalarValueStringAttribute;
+    attribute USVString usvStringAttribute;
     attribute DOMTimeStamp domTimeStampAttribute;
     attribute boolean booleanAttribute;
     attribute byte byteAttribute;
@@ -244,8 +244,8 @@ interface TestObject {
     [TreatReturnedNullStringAs=Undefined, CachedAttribute=isStringDirty] attribute DOMString cachedTreatReturnedNullStringAsUndefinedStringAttribute;
     [TreatReturnedNullStringAs=Null] attribute ByteString treatReturnedNullStringAsNullByteStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute ByteString treatReturnedNullStringAsUndefinedByteStringAttribute;
-    [TreatReturnedNullStringAs=Null] attribute ScalarValueString treatReturnedNullStringAsNullScalarValueStringAttribute;
-    [TreatReturnedNullStringAs=Undefined] attribute ScalarValueString treatReturnedNullStringAsUndefinedScalarValueStringAttribute;
+    [TreatReturnedNullStringAs=Null] attribute USVString treatReturnedNullStringAsNullUSVStringAttribute;
+    [TreatReturnedNullStringAs=Undefined] attribute USVString treatReturnedNullStringAsUndefinedUSVStringAttribute;
     [TypeChecking=Interface] attribute float typeCheckingInterfaceFloatAttribute; // nop for non-interface types
     [TypeChecking=Interface] attribute TestInterface typeCheckingInterfaceTestInterfaceAttribute;
     [TypeChecking=Interface] attribute TestInterface? typeCheckingInterfaceTestInterfaceOrNullAttribute;
@@ -268,7 +268,7 @@ interface TestObject {
     Date dateMethod();
     DOMString stringMethod();
     ByteString byteStringMethod();
-    ScalarValueString scalarValueStringMethod();
+    USVString usvStringMethod();
     DOMTimeStamp readonlyDOMTimeStampMethod();
     boolean booleanMethod();
     byte byteMethod();
@@ -285,7 +285,7 @@ interface TestObject {
     void voidMethodDateArg(Date dateArg);
     void voidMethodStringArg(DOMString stringArg);
     void voidMethodByteStringArg(ByteString stringArg);
-    void voidMethodScalarValueStringArg(ScalarValueString scalarValueStringArg);
+    void voidMethodUSVStringArg(USVString usvStringArg);
     void voidMethodDOMTimeStampArg(DOMTimeStamp domTimeStampArg);
     void voidMethodBooleanArg(boolean booleanArg);
     void voidMethodByteArg(byte byteArg);
@@ -519,8 +519,8 @@ interface TestObject {
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [TreatReturnedNullStringAs=Null] ByteString treatReturnedNullStringAsNullByteStringMethod();
     [TreatReturnedNullStringAs=Undefined] ByteString treatReturnedNullStringAsUndefinedByteStringMethod();
-    [TreatReturnedNullStringAs=Null] ScalarValueString treatReturnedNullStringAsNullScalarValueStringMethod();
-    [TreatReturnedNullStringAs=Undefined] ScalarValueString treatReturnedNullStringAsUndefinedScalarValueStringMethod();
+    [TreatReturnedNullStringAs=Null] USVString treatReturnedNullStringAsNullUSVStringMethod();
+    [TreatReturnedNullStringAs=Undefined] USVString treatReturnedNullStringAsUndefinedUSVStringMethod();
     [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [TypeChecking=Interface] void typeCheckingInterfaceVoidMethodTestInterfaceEmptyVariadicArg(TestInterfaceEmpty... testInterfaceEmptyArg);
     // Avoid redundant type checking

@@ -12,32 +12,32 @@
 ] interface Cache {
   // FIXME: Blink doesn't support union types, we use overrides instead. See http://crbug.com/240176
 
-  // [CallWith=ScriptState] Promise match((Request or ScalarValueString) request, optional CacheQueryOptions options);
+  // [CallWith=ScriptState] Promise match((Request or USVString) request, optional CacheQueryOptions options);
   [CallWith=ScriptState] Promise match(Request request, optional CacheQueryOptions options);
-  [CallWith=ScriptState] Promise match(ScalarValueString request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise match(USVString request, optional CacheQueryOptions options);
 
-  // [CallWith=ScriptState] Promise matchAll((Request or ScalarValueString) request, optional CacheQueryOptions options);
+  // [CallWith=ScriptState] Promise matchAll((Request or USVString) request, optional CacheQueryOptions options);
   [CallWith=ScriptState] Promise matchAll(Request request, optional CacheQueryOptions options);
-  [CallWith=ScriptState] Promise matchAll(ScalarValueString request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise matchAll(USVString request, optional CacheQueryOptions options);
 
-  // [CallWith=ScriptState] Promise add((Request or ScalarValueString) request);
+  // [CallWith=ScriptState] Promise add((Request or USVString) request);
   [CallWith=ScriptState] Promise add(Request request);
-  [CallWith=ScriptState] Promise add(ScalarValueString request);
+  [CallWith=ScriptState] Promise add(USVString request);
 
   // FIXME: The lack of union type support together with the sequence mean we can't use overrides here, instead
   // bind a generic type.
-  // [CallWith=ScriptState] Promise addAll(sequence<Request or ScalarValueString> requests);
+  // [CallWith=ScriptState] Promise addAll(sequence<Request or USVString> requests);
   [CallWith=ScriptState] Promise addAll(sequence<any> requests);
 
-  // [CallWith=ScriptState] Promise put((Request or ScalarValueString) request, Response response);
+  // [CallWith=ScriptState] Promise put((Request or USVString) request, Response response);
   [CallWith=ScriptState] Promise put(Request request, Response response);
-  [CallWith=ScriptState] Promise put(ScalarValueString request, Response response);
+  [CallWith=ScriptState] Promise put(USVString request, Response response);
 
-  // [CallWith=ScriptState] Promise delete((Request or ScalarValueString) request, optional CacheQueryOptions options);
+  // [CallWith=ScriptState] Promise delete((Request or USVString) request, optional CacheQueryOptions options);
   [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(Request request, optional CacheQueryOptions options);
-  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString request, optional CacheQueryOptions options);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(USVString request, optional CacheQueryOptions options);
 
-  // [CallWith=ScriptState] Promise keys(optional (Request or ScalarValueString) request, optional CacheQueryOptions options);
+  // [CallWith=ScriptState] Promise keys(optional (Request or USVString) request, optional CacheQueryOptions options);
   [CallWith=ScriptState] Promise keys(optional Request request, optional CacheQueryOptions options);
-  [CallWith=ScriptState] Promise keys(ScalarValueString request, optional CacheQueryOptions options);
+  [CallWith=ScriptState] Promise keys(USVString request, optional CacheQueryOptions options);
 };
