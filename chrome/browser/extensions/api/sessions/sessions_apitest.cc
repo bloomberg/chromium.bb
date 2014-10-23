@@ -37,9 +37,10 @@ namespace extensions {
 
 namespace {
 
-// If more sessions are added to session tags, num sessions should be updated.
+// Fake session tabs (used to construct arbitrary device info) and tab IDs
+// (used to construct arbitrary tab info) to use in all tests.
 const char* kSessionTags[] = {"tag0", "tag1", "tag2", "tag3", "tag4"};
-const size_t kNumSessions = 5;
+const SessionID::id_type kTabIDs[] = {5, 10, 13, 17};
 
 void BuildSessionSpecifics(const std::string& tag,
                            sync_pb::SessionSpecifics* meta) {
@@ -63,7 +64,8 @@ void BuildWindowSpecifics(int window_id,
   }
 }
 
-void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
+void BuildTabSpecifics(const std::string& tag,
+                       int tab_id,
                        sync_pb::SessionSpecifics* tab_base) {
   tab_base->set_session_tag(tag);
   tab_base->set_tab_node_id(0);
@@ -75,12 +77,11 @@ void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
   tab->set_extension_app_id("app_id");
   sync_pb::TabNavigation* navigation = tab->add_navigation();
   navigation->set_virtual_url("http://foo/1");
-  navigation->set_referrer("referrer");
-  navigation->set_title("title");
+  navigation->set_favicon_url("http://foo/favicon.ico");
+  navigation->set_referrer("MyReferrer");
+  navigation->set_title("MyTitle");
   navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
 }
-
-} // namespace
 
 class ExtensionSessionsTest : public InProcessBrowserTest {
  public:
@@ -186,18 +187,16 @@ void ExtensionSessionsTest::CreateTestExtension() {
 
 void ExtensionSessionsTest::CreateSessionModels() {
   syncer::SyncDataList initial_data;
-  for (size_t index = 0; index < kNumSessions; ++index) {
+  for (size_t index = 0; index < arraysize(kSessionTags); ++index) {
     // Fill an instance of session specifics with a foreign session's data.
     sync_pb::SessionSpecifics meta;
     BuildSessionSpecifics(kSessionTags[index], &meta);
-    SessionID::id_type tab_nums1[] = {5, 10, 13, 17};
-    std::vector<SessionID::id_type> tab_list1(
-        tab_nums1, tab_nums1 + arraysize(tab_nums1));
-    BuildWindowSpecifics(index, tab_list1, &meta);
-    std::vector<sync_pb::SessionSpecifics> tabs1;
-    tabs1.resize(tab_list1.size());
-    for (size_t i = 0; i < tab_list1.size(); ++i) {
-      BuildTabSpecifics(kSessionTags[index], 0, tab_list1[i], &tabs1[i]);
+    std::vector<SessionID::id_type> tab_list(kTabIDs,
+                                             kTabIDs + arraysize(kTabIDs));
+    BuildWindowSpecifics(index, tab_list, &meta);
+    std::vector<sync_pb::SessionSpecifics> tabs(tab_list.size());
+    for (size_t i = 0; i < tab_list.size(); ++i) {
+      BuildTabSpecifics(kSessionTags[index], tab_list[i], &tabs[i]);
     }
 
     sync_pb::EntitySpecifics entity;
@@ -208,9 +207,9 @@ void ExtensionSessionsTest::CreateSessionModels() {
         base::Time(),
         syncer::AttachmentIdList(),
         syncer::AttachmentServiceProxyForTest::Create()));
-    for (size_t i = 0; i < tabs1.size(); i++) {
+    for (size_t i = 0; i < tabs.size(); i++) {
       sync_pb::EntitySpecifics entity;
-      entity.mutable_session()->CopyFrom(tabs1[i]);
+      entity.mutable_session()->CopyFrom(tabs[i]);
       initial_data.push_back(syncer::SyncData::CreateRemoteData(
           i + 2,
           entity,
@@ -229,48 +228,66 @@ void ExtensionSessionsTest::CreateSessionModels() {
           new syncer::SyncErrorFactoryMock()));
 }
 
+testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
+                                            size_t num_sessions) {
+  EXPECT_EQ(5u, devices.GetSize());
+  const base::DictionaryValue* device = NULL;
+  const base::ListValue* sessions = NULL;
+  for (size_t i = 0; i < devices.GetSize(); ++i) {
+    EXPECT_TRUE(devices.GetDictionary(i, &device));
+    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
+    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "deviceName"));
+    EXPECT_TRUE(device->GetList("sessions", &sessions));
+    EXPECT_EQ(num_sessions, sessions->GetSize());
+    // Because this test is hurried, really there are only ever 0 or 1
+    // sessions, and if 1, that will be a Window. Grab it.
+    if (num_sessions == 0)
+      continue;
+    const base::DictionaryValue* session = NULL;
+    EXPECT_TRUE(sessions->GetDictionary(0, &session));
+    const base::DictionaryValue* window = NULL;
+    EXPECT_TRUE(session->GetDictionary("window", &window));
+    // Only the tabs are interesting.
+    const base::ListValue* tabs = NULL;
+    EXPECT_TRUE(window->GetList("tabs", &tabs));
+    EXPECT_EQ(arraysize(kTabIDs), tabs->GetSize());
+    for (size_t j = 0; j < tabs->GetSize(); ++j) {
+      const base::DictionaryValue* tab = NULL;
+      EXPECT_TRUE(tabs->GetDictionary(j, &tab));
+      EXPECT_FALSE(tab->HasKey("id"));  // sessions API does not give tab IDs
+      EXPECT_EQ(static_cast<int>(j), utils::GetInteger(tab, "index"));
+      EXPECT_EQ(0, utils::GetInteger(tab, "windowId"));
+      EXPECT_EQ(true, utils::GetBoolean(tab, "pinned"));
+      EXPECT_EQ("http://foo/1", utils::GetString(tab, "url"));
+      EXPECT_EQ("MyTitle", utils::GetString(tab, "title"));
+      EXPECT_EQ("http://foo/favicon.ico", utils::GetString(tab, "favIconUrl"));
+      EXPECT_EQ(base::StringPrintf("%s.%d", kSessionTags[i], kTabIDs[j]),
+                utils::GetString(tab, "sessionId"));
+    }
+  }
+  return testing::AssertionSuccess();
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevices) {
   CreateSessionModels();
-
   scoped_ptr<base::ListValue> result(utils::ToList(
       utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsGetDevicesFunction>(true).get(),
           "[{\"maxResults\": 0}]",
           browser_)));
   ASSERT_TRUE(result);
-  base::ListValue* devices = result.get();
-  EXPECT_EQ(5u, devices->GetSize());
-  base::DictionaryValue* device = NULL;
-  base::ListValue* sessions = NULL;
-  for (size_t i = 0; i < devices->GetSize(); ++i) {
-    EXPECT_TRUE(devices->GetDictionary(i, &device));
-    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
-    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "deviceName"));
-    EXPECT_TRUE(device->GetList("sessions", &sessions));
-    EXPECT_EQ(0u, sessions->GetSize());
-  }
+  EXPECT_TRUE(CheckSessionModels(*result, 0u));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesMaxResults) {
   CreateSessionModels();
-
   scoped_ptr<base::ListValue> result(utils::ToList(
       utils::RunFunctionAndReturnSingleResult(
           CreateFunction<SessionsGetDevicesFunction>(true).get(),
           "[]",
           browser_)));
   ASSERT_TRUE(result);
-  base::ListValue* devices = result.get();
-  EXPECT_EQ(5u, devices->GetSize());
-  base::DictionaryValue* device = NULL;
-  base::ListValue* sessions = NULL;
-  for (size_t i = 0; i < devices->GetSize(); ++i) {
-    EXPECT_TRUE(devices->GetDictionary(i, &device));
-    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
-    EXPECT_EQ(kSessionTags[i], utils::GetString(device, "deviceName"));
-    EXPECT_TRUE(device->GetList("sessions", &sessions));
-    EXPECT_EQ(1u, sessions->GetSize());
-  }
+  EXPECT_TRUE(CheckSessionModels(*result, 1u));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesListEmpty) {
@@ -366,5 +383,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_SessionsApis) {
   ASSERT_TRUE(RunExtensionSubtest("sessions",
                                   "sessions.html")) << message_;
 }
+
+}  // namespace
 
 }  // namespace extensions

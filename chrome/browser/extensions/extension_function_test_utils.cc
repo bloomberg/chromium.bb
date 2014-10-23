@@ -67,21 +67,22 @@ base::DictionaryValue* ParseDictionary(
   return dict;
 }
 
-bool GetBoolean(base::DictionaryValue* val, const std::string& key) {
+bool GetBoolean(const base::DictionaryValue* val, const std::string& key) {
   bool result = false;
   if (!val->GetBoolean(key, &result))
       ADD_FAILURE() << key << " does not exist or is not a boolean.";
   return result;
 }
 
-int GetInteger(base::DictionaryValue* val, const std::string& key) {
+int GetInteger(const base::DictionaryValue* val, const std::string& key) {
   int result = 0;
   if (!val->GetInteger(key, &result))
     ADD_FAILURE() << key << " does not exist or is not an integer.";
   return result;
 }
 
-std::string GetString(base::DictionaryValue* val, const std::string& key) {
+std::string GetString(const base::DictionaryValue* val,
+                      const std::string& key) {
   std::string result;
   if (!val->GetString(key, &result))
     ADD_FAILURE() << key << " does not exist or is not a string.";

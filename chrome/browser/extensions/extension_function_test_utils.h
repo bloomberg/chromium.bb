@@ -38,9 +38,9 @@ base::DictionaryValue* ParseDictionary(const std::string& data);
 // Get |key| from |val| as the specified type. If |key| does not exist, or is
 // not of the specified type, adds a failure to the current test and returns
 // false, 0, empty string, etc.
-bool GetBoolean(base::DictionaryValue* val, const std::string& key);
-int GetInteger(base::DictionaryValue* val, const std::string& key);
-std::string GetString(base::DictionaryValue* val, const std::string& key);
+bool GetBoolean(const base::DictionaryValue* val, const std::string& key);
+int GetInteger(const base::DictionaryValue* val, const std::string& key);
+std::string GetString(const base::DictionaryValue* val, const std::string& key);
 
 // If |val| is a dictionary, return it as one, otherwise NULL.
 base::DictionaryValue* ToDictionary(base::Value* val);
