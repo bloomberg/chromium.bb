@@ -151,6 +151,12 @@ class ScrollManager {
   explicit ScrollManager(PropRegistry* prop_reg);
   ~ScrollManager() {}
 
+  // Returns true if a finger's movement should be suppressed based on
+  // max_stationary_move_* properties below.
+  bool SuppressStationaryFingerMovement(const FingerState& fs,
+                                        const FingerState& prev,
+                                        stime_t dt);
+
   // Looking at this finger and the previous ones within a small window
   // and returns true iff this finger is stationary and the pressure is
   // changing so quickly that we expect it's arriving on the pad or
@@ -177,9 +183,14 @@ class ScrollManager {
   void UpdateScrollEventBuffer(GestureType gesture_type,
                                ScrollEventBuffer* scroll_buffer) const;
 
-  // Set to true when a scroll is blocked b/c of high pressure change. Cleared
-  // when a normal scroll goes through.
-  bool prev_result_high_pressure_change_;
+  void ResetSameFingerState() {
+    stationary_move_distance_.clear();
+  }
+
+  // Set to true when a scroll or move is blocked b/c of high pressure
+  // change or small movement. Cleared when a normal scroll or move
+  // goes through.
+  bool prev_result_suppress_finger_movement_;
 
  private:
   // Set to true when generating a non-zero scroll gesture. Reset to false
@@ -195,6 +206,14 @@ class ScrollManager {
   // on an N-point linear regression.
   void RegressScrollVelocity(const ScrollEventBuffer& scroll_buffer,
                              int count, ScrollEvent* out) const;
+
+  // In addition to checking for large pressure changes when moving
+  // slow, we can suppress all motion under a certain speed, unless
+  // the total distance exceeds a threshold.
+  DoubleProperty max_stationary_move_speed_;
+  DoubleProperty max_stationary_move_speed_hysteresis_;
+  DoubleProperty max_stationary_move_suppress_distance_;
+  map<short, float, kMaxFingers> stationary_move_distance_;
 
   // A finger must change in pressure by less than this per second to trigger
   // motion.
