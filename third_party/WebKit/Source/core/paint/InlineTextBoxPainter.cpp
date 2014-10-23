@@ -33,6 +33,13 @@ void InlineTextBoxPainter::removeFromTextBlobCache(InlineTextBox& inlineTextBox)
         gTextBlobCache->remove(&inlineTextBox);
 }
 
+static TextBlobPtr* addToTextBlobCache(InlineTextBox& inlineTextBox)
+{
+    if (!gTextBlobCache)
+        gTextBlobCache = new InlineTextBoxBlobCacheMap;
+    return &gTextBlobCache->add(&inlineTextBox, nullptr).storedValue->value;
+}
+
 void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (m_inlineTextBox.isLineBreak() || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.renderer()) || m_inlineTextBox.renderer().style()->visibility() != VISIBLE
@@ -187,17 +194,18 @@ void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintO
         // RuntimeEnabledFeature is off.
         bool textBlobIsCacheable = RuntimeEnabledFeatures::textBlobEnabled() && startOffset == 0 && endOffset == length;
         TextBlobPtr* cachedTextBlob = 0;
-        if (textBlobIsCacheable) {
-            if (!gTextBlobCache)
-                gTextBlobCache = new InlineTextBoxBlobCacheMap;
-            cachedTextBlob = &gTextBlobCache->add(&m_inlineTextBox, nullptr).storedValue->value;
-        }
+        if (textBlobIsCacheable)
+            cachedTextBlob = addToTextBlobCache(m_inlineTextBox);
         textPainter.paint(startOffset, endOffset, length, textStyle, cachedTextBlob);
     }
 
     if ((paintSelectedTextOnly || paintSelectedTextSeparately) && selectionStart < selectionEnd) {
         // paint only the text that is selected
-        textPainter.paint(selectionStart, selectionEnd, length, selectionStyle);
+        bool textBlobIsCacheable = RuntimeEnabledFeatures::textBlobEnabled() && selectionStart == 0 && selectionEnd == length;
+        TextBlobPtr* cachedTextBlob = 0;
+        if (textBlobIsCacheable)
+            cachedTextBlob = addToTextBlobCache(m_inlineTextBox);
+        textPainter.paint(selectionStart, selectionEnd, length, selectionStyle, cachedTextBlob);
     }
 
     // Paint decorations
