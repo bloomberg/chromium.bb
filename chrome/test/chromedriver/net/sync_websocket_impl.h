@@ -17,7 +17,6 @@
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/websocket.h"
 #include "net/base/completion_callback.h"
-#include "net/socket_stream/socket_stream.h"
 
 namespace base {
 class WaitableEvent;

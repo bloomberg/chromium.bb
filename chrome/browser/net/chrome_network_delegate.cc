@@ -53,7 +53,6 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
-#include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -801,23 +800,6 @@ bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
       url, first_party_for_cookies);
   bool privacy_mode = !(reading_cookie_allowed && setting_cookie_allowed);
   return privacy_mode;
-}
-
-int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
-    net::SocketStream* socket,
-    const net::CompletionCallback& callback) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  if (url_blacklist_manager_ &&
-      url_blacklist_manager_->IsURLBlocked(socket->url())) {
-    // URL access blocked by policy.
-    socket->net_log()->AddEvent(
-        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,
-        net::NetLog::StringCallback("url",
-                                    &socket->url().possibly_invalid_spec()));
-    return net::ERR_BLOCKED_BY_ADMINISTRATOR;
-  }
-#endif
-  return net::OK;
 }
 
 bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(

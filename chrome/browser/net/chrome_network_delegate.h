@@ -262,9 +262,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   bool OnCanEnablePrivacyMode(
       const GURL& url,
       const GURL& first_party_for_cookies) const override;
-  int OnBeforeSocketStreamConnect(
-      net::SocketStream* stream,
-      const net::CompletionCallback& callback) override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const net::URLRequest& request,
       const GURL& target_url,
