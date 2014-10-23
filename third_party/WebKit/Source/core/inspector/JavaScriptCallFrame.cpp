@@ -151,11 +151,15 @@ v8::Handle<v8::Value> JavaScriptCallFrame::returnValue() const
     return m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "returnValue"));
 }
 
-v8::Handle<v8::Value> JavaScriptCallFrame::evaluateWithExceptionDetails(const String& expression)
+ScriptValue JavaScriptCallFrame::evaluateWithExceptionDetails(ScriptState* scriptState, const String& expression, const ScriptValue& scopeExtension)
 {
+    ScriptState::Scope scriptScope(scriptState);
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> evalFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "evaluate")));
-    v8::Handle<v8::Value> argv[] = { v8String(m_debuggerContext.newLocal(m_isolate)->GetIsolate(), expression) };
+    v8::Handle<v8::Value> argv[] = {
+        v8String(m_debuggerContext.newLocal(m_isolate)->GetIsolate(), expression),
+        scopeExtension.isEmpty() ? v8::Handle<v8::Value>::Cast(v8::Undefined(m_isolate)) : scopeExtension.v8Value()
+    };
     v8::TryCatch tryCatch;
     v8::Handle<v8::Value> result = evalFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv);
 
@@ -167,7 +171,7 @@ v8::Handle<v8::Value> JavaScriptCallFrame::evaluateWithExceptionDetails(const St
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), result);
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), v8::Undefined(m_isolate));
     }
-    return wrappedResult;
+    return ScriptValue(scriptState, wrappedResult);
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::restart()

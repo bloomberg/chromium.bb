@@ -35,13 +35,6 @@
 
 namespace blink {
 
-void V8JavaScriptCallFrame::evaluateWithExceptionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());
-    String expression = toCoreStringWithUndefinedOrNullCheck(info[0]);
-    v8SetReturnValue(info, impl->evaluateWithExceptionDetails(expression));
-}
-
 void V8JavaScriptCallFrame::restartMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());

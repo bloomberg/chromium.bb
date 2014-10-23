@@ -445,9 +445,9 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         return displayName || func.name() || func.inferredName();
     }
 
-    function evaluate(expression)
+    function evaluate(expression, scopeExtension)
     {
-        return frameMirror.evaluate(expression, false).value();
+        return frameMirror.evaluate(expression, false, scopeExtension).value();
     }
 
     function restart()

@@ -68,7 +68,7 @@ public:
     bool isAtReturn() const;
     v8::Handle<v8::Value> returnValue() const;
 
-    v8::Handle<v8::Value> evaluateWithExceptionDetails(const String& expression);
+    ScriptValue evaluateWithExceptionDetails(ScriptState*, const String& expression, const ScriptValue& scopeExtension);
     v8::Handle<v8::Value> restart();
     ScriptValue setVariableValue(ScriptState*, int scopeNumber, const String& variableName, const ScriptValue& newValue);
 
