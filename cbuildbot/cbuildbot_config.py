@@ -993,7 +993,6 @@ paladin = _config(
   trybot_list=True,
   description='Commit Queue',
   upload_standalone_images=False,
-  chroot_replace=True,
   images=['test'],
   chrome_sdk=True,
   chrome_sdk_build_chrome=False,
@@ -1002,6 +1001,7 @@ paladin = _config(
 # Used for paladin builders that build from source.
 full_paladin = _config(
   board_replace=True,
+  chroot_replace=True,
   chrome_binhost_only=True,
 )
 
@@ -1661,6 +1661,7 @@ pre_cq = internal_paladin.derive(
   pre_cq=True,
   archive=False,
   chrome_sdk=False,
+  chroot_replace=True,
   debug_symbols=False,
   prebuilts=False,
   cpe_export=False,
