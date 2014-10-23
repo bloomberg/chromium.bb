@@ -117,7 +117,7 @@ void SpellChecker::toggleContinuousSpellChecking()
     for (Frame* frame = this->frame().page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        for (Node& node : NodeTraversal::from(&toLocalFrame(frame)->document()->rootNode()))
+        for (Node& node : NodeTraversal::startsAt(&toLocalFrame(frame)->document()->rootNode()))
             node.setAlreadySpellChecked(false);
     }
 }

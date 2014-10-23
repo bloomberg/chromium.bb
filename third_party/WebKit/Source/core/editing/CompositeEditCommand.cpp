@@ -811,7 +811,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<Text> > nodes;
-    for (Node& node : NodeTraversal::from(start.deprecatedNode())) {
+    for (Node& node : NodeTraversal::startsAt(start.deprecatedNode())) {
         if (node.isTextNode())
             nodes.append(toText(&node));
         if (&node == end.deprecatedNode())

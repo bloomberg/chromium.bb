@@ -175,7 +175,7 @@ private:
         // To make each minor GC time bounded, we might need to give up
         // traversing at some point for a large DOM tree. That being said,
         // I could not observe the need even in pathological test cases.
-        for (Node& node : NodeTraversal::from(rootNode)) {
+        for (Node& node : NodeTraversal::startsAt(rootNode)) {
             if (node.containsWrapper()) {
                 if (!node.isV8CollectableDuringMinorGC()) {
                     // This node is not in the new space of V8. This indicates that

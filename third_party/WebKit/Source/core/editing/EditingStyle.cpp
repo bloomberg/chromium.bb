@@ -712,7 +712,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
 
     TriState state = FalseTriState;
     bool nodeIsStart = true;
-    for (Node& node : NodeTraversal::from(selection.start().deprecatedNode())) {
+    for (Node& node : NodeTraversal::startsAt(selection.start().deprecatedNode())) {
         if (node.renderer() && node.hasEditableStyle()) {
             RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {

@@ -1872,7 +1872,7 @@ void Node::removeAllEventListeners()
 
 void Node::removeAllEventListenersRecursively()
 {
-    for (Node& node : NodeTraversal::from(this)) {
+    for (Node& node : NodeTraversal::startsAt(this)) {
         node.removeAllEventListeners();
         for (ShadowRoot* root = node.youngestShadowRoot(); root; root = root->olderShadowRoot())
             root->removeAllEventListenersRecursively();

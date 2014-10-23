@@ -615,7 +615,7 @@ PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFormElement::elements()
 void HTMLFormElement::collectAssociatedElements(Node& root, FormAssociatedElement::List& elements) const
 {
     elements.clear();
-    for (HTMLElement& element : Traversal<HTMLElement>::fromNext(root)) {
+    for (HTMLElement& element : Traversal<HTMLElement>::startsAfter(root)) {
         FormAssociatedElement* associatedElement = 0;
         if (element.isFormControlElement())
             associatedElement = toHTMLFormControlElement(&element);
@@ -649,7 +649,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
 void HTMLFormElement::collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& elements)
 {
     elements.clear();
-    for (HTMLImageElement& image : Traversal<HTMLImageElement>::fromNext(root)) {
+    for (HTMLImageElement& image : Traversal<HTMLImageElement>::startsAfter(root)) {
         if (image.formOwner() == this)
             elements.append(&image);
     }

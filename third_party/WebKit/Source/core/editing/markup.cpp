@@ -674,7 +674,7 @@ static const char fragmentMarkerTag[] = "webkit-fragment-marker";
 
 static bool findNodesSurroundingContext(Document* document, RefPtrWillBeRawPtr<Comment>& nodeBeforeContext, RefPtrWillBeRawPtr<Comment>& nodeAfterContext)
 {
-    for (Node& node : NodeTraversal::from(document->firstChild())) {
+    for (Node& node : NodeTraversal::startsAt(document->firstChild())) {
         if (node.nodeType() == Node::COMMENT_NODE && toComment(node).data() == fragmentMarkerTag) {
             if (!nodeBeforeContext)
                 nodeBeforeContext = &toComment(node);

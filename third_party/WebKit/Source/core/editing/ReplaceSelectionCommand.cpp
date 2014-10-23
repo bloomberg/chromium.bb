@@ -782,7 +782,7 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
     // the top of the fragment, but Mail sometimes adds a wrapper (for Paste As Quotation),
     // so search for the top level style span instead of assuming it's at the top.
 
-    for (Node& node : NodeTraversal::from(insertedNodes.firstNodeInserted())) {
+    for (Node& node : NodeTraversal::startsAt(insertedNodes.firstNodeInserted())) {
         if (isLegacyAppleHTMLSpanElement(&node)) {
             wrappingStyleSpan = toHTMLSpanElement(&node);
             break;

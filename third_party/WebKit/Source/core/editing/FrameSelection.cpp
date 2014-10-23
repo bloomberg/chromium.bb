@@ -1750,7 +1750,7 @@ static HTMLFormElement* scanForForm(Node* start)
     if (!start)
         return 0;
 
-    for (HTMLElement& element : Traversal<HTMLElement>::from(start->isHTMLElement() ? toHTMLElement(start) : Traversal<HTMLElement>::next(*start))) {
+    for (HTMLElement& element : Traversal<HTMLElement>::startsAt(start->isHTMLElement() ? toHTMLElement(start) : Traversal<HTMLElement>::next(*start))) {
         if (HTMLFormElement* form = associatedFormElement(element))
             return form;
 
