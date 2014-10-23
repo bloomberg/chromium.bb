@@ -2741,6 +2741,18 @@ TEST(HttpCache, SimplePOST_SkipsCache) {
   EXPECT_EQ(0, cache.disk_cache()->create_count());
 }
 
+// Tests POST handling with a disabled cache (no DCHECK).
+TEST(HttpCache, SimplePOST_DisabledCache) {
+  MockHttpCache cache;
+  cache.http_cache()->set_mode(net::HttpCache::Mode::DISABLE);
+
+  RunTransactionTest(cache.http_cache(), kSimplePOST_Transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(0, cache.disk_cache()->create_count());
+}
+
 TEST(HttpCache, SimplePOST_LoadOnlyFromCache_Miss) {
   MockHttpCache cache;
 

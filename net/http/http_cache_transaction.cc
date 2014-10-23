@@ -1208,6 +1208,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     UpdateTransactionPattern(PATTERN_ENTRY_NOT_CACHED);
   }
 
+  // Invalidate any cached GET with a successful PUT or DELETE.
   if (mode_ == WRITE &&
       (request_->method == "PUT" || request_->method == "DELETE")) {
     if (NonErrorResponse(new_response->headers->response_code())) {
@@ -1219,7 +1220,9 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     mode_ = NONE;
   }
 
-  if (request_->method == "POST" &&
+  // Invalidate any cached GET with a successful POST.
+  if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) &&
+      request_->method == "POST" &&
       NonErrorResponse(new_response->headers->response_code())) {
     cache_->DoomMainEntryForUrl(request_->url);
   }
