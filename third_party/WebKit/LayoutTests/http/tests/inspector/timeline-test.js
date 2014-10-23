@@ -280,13 +280,23 @@ InspectorTest.printTimelineRecordProperties = function(record)
 
 InspectorTest.findFirstTimelineRecord = function(type)
 {
+    return InspectorTest.findTimelineRecord(type, 0);
+}
+
+// Find the (n+1)th timeline record of a specific type.
+InspectorTest.findTimelineRecord = function(type, n)
+{
     var result;
     function findByType(record)
     {
         if (record.type() !== type)
             return false;
-        result = record;
-        return true;
+        if (n === 0) {
+            result = record;
+            return true;
+        }
+        n--;
+        return false;
     }
     InspectorTest.timelineModel().forAllRecords(findByType);
     return result;
