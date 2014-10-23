@@ -65,11 +65,17 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOrigin, workerClients)
     , m_fetchManager(adoptPtr(new FetchManager(this)))
+    , m_didEvaluateScript(false)
 {
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 {
+}
+
+void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
+{
+    m_didEvaluateScript = true;
 }
 
 void ServiceWorkerGlobalScope::stopFetch()
@@ -163,6 +169,20 @@ ServiceWorkerClients* ServiceWorkerGlobalScope::clients()
 void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(InvalidAccessError, "Not supported.");
+}
+
+bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+{
+    if (m_didEvaluateScript) {
+        if (eventType == EventTypeNames::install) {
+            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'install' event must be added on the initial evaluation of worker script.");
+            addMessageToWorkerConsole(consoleMessage.release());
+        } else if (eventType == EventTypeNames::activate) {
+            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Event handler of 'activate' event must be added on the initial evaluation of worker script.");
+            addMessageToWorkerConsole(consoleMessage.release());
+        }
+    }
+    return WorkerGlobalScope::addEventListener(eventType, listener, useCapture);
 }
 
 const AtomicString& ServiceWorkerGlobalScope::interfaceName() const

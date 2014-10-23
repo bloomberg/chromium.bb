@@ -55,7 +55,10 @@ public:
 
     virtual ~ServiceWorkerGlobalScope();
     virtual bool isServiceWorkerGlobalScope() const override { return true; }
+
+    // WorkerGlobalScope
     virtual void stopFetch() override;
+    virtual void didEvaluateWorkerScript() override;
 
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
@@ -71,6 +74,7 @@ public:
     void close(ExceptionState&);
 
     // EventTarget
+    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
     virtual const AtomicString& interfaceName() const override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
@@ -89,6 +93,7 @@ private:
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
     OwnPtr<FetchManager> m_fetchManager;
     PersistentWillBeMember<CacheStorage> m_caches;
+    bool m_didEvaluateScript;
 };
 
 } // namespace blink

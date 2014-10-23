@@ -321,6 +321,7 @@ void WorkerThread::initialize()
         script->initializeContextIfNeeded();
     InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);
     script->evaluate(ScriptSourceCode(sourceCode, scriptURL));
+    m_workerGlobalScope->didEvaluateWorkerScript();
 
     postInitialize();
 

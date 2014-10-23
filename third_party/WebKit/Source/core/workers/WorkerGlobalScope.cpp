@@ -215,6 +215,10 @@ void WorkerGlobalScope::dispose()
     // scope are gone.
 }
 
+void WorkerGlobalScope::didEvaluateWorkerScript()
+{
+}
+
 void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)
 {
     ASSERT(contentSecurityPolicy());

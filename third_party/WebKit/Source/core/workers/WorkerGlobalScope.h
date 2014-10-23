@@ -83,6 +83,7 @@ public:
     void clearScript() { m_script.clear(); }
     void clearInspector();
 
+    virtual void didEvaluateWorkerScript();
     void dispose();
 
     WorkerThread* thread() const { return m_thread; }
