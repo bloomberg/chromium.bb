@@ -430,6 +430,9 @@ bool NetErrorHelperCore::IsReloadableError(
     const NetErrorHelperCore::ErrorPageInfo& info) {
   return info.error.domain.utf8() == net::kErrorDomain &&
          info.error.reason != net::ERR_ABORTED &&
+         // For now, net::ERR_UNKNOWN_URL_SCHEME is only being displayed on
+         // Chrome for Android.
+         info.error.reason != net::ERR_UNKNOWN_URL_SCHEME &&
          !info.was_failed_post;
 }
 

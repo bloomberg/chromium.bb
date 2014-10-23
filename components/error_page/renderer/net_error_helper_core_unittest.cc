@@ -2171,7 +2171,19 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, OnlinePartialErrorReplacement) {
 TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressNonReloadableErrorPage) {
   DoErrorLoad(net::ERR_ABORTED);
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                              GURL(kFailedUrl)));
+                                               GURL(kFailedUrl)));
+
+  DoErrorLoad(net::ERR_UNKNOWN_URL_SCHEME);
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+                                               GURL(kFailedUrl)));
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotReload) {
+  DoErrorLoad(net::ERR_ABORTED);
+  EXPECT_FALSE(timer()->IsRunning());
+
+  DoErrorLoad(net::ERR_UNKNOWN_URL_SCHEME);
+  EXPECT_FALSE(timer()->IsRunning());
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {
