@@ -7,6 +7,7 @@ package org.chromium.mojo.bindings;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.MojoTestCase;
@@ -176,8 +177,9 @@ public class ValidationTest extends MojoTestCase {
 
     /**
      * Testing the conformance suite.
+     * Disabled: http://crbug.com/426564
      */
-    @SmallTest
+    @DisabledTest
     public void testConformance() throws FileNotFoundException {
         runTest("conformance_", ConformanceTestInterface.MANAGER.buildStub(null,
                 ConformanceTestInterface.MANAGER.buildProxy(null, new SinkMessageReceiver())));
