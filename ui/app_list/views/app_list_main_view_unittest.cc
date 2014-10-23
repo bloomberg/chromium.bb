@@ -76,9 +76,10 @@ class AppListMainViewTest : public views::ViewsTestBase {
     // In Ash, the third argument is a container aura::Window, but it is always
     // NULL on Windows, and not needed for tests. It is only used to determine
     // the scale factor for preloading icons.
-    main_view_ = new AppListMainView(delegate_.get(), 0, NULL);
+    main_view_ = new AppListMainView(delegate_.get());
     main_view_->SetPaintToLayer(true);
     main_view_->model()->SetFoldersEnabled(true);
+    main_view_->Init(NULL, 0);
 
     widget_ = new views::Widget;
     views::Widget::InitParams params =

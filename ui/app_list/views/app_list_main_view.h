@@ -39,10 +39,10 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
                                         public SearchResultListViewDelegate {
  public:
   // Takes ownership of |delegate|.
-  explicit AppListMainView(AppListViewDelegate* delegate,
-                           int initial_apps_page,
-                           gfx::NativeView parent);
+  explicit AppListMainView(AppListViewDelegate* delegate);
   virtual ~AppListMainView();
+
+  void Init(gfx::NativeView parent, int initial_apps_page);
 
   void ShowAppListWhenReady();
 

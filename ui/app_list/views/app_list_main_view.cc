@@ -106,9 +106,7 @@ class AppListMainView::IconLoader : public AppListItemObserver {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListMainView:
 
-AppListMainView::AppListMainView(AppListViewDelegate* delegate,
-                                 int initial_apps_page,
-                                 gfx::NativeView parent)
+AppListMainView::AppListMainView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
       search_box_view_(NULL),
@@ -129,6 +127,13 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                          kExperimentalWindowPadding));
   }
   AddChildView(container);
+}
+
+AppListMainView::~AppListMainView() {
+  pending_icon_loaders_.clear();
+}
+
+void AppListMainView::Init(gfx::NativeView parent, int initial_apps_page) {
   AddContentsViews();
 
   // Switch the apps grid view to the specified page.
@@ -158,10 +163,6 @@ void AppListMainView::AddContentsViews() {
   contents_view_->layer()->SetMasksToBounds(true);
 
   delegate_->StartSearch();
-}
-
-AppListMainView::~AppListMainView() {
-  pending_icon_loaders_.clear();
 }
 
 void AppListMainView::ShowAppListWhenReady() {
