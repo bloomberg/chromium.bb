@@ -284,6 +284,17 @@
       "input_view": "inputview.html#id=t13n-rtl&language=ur&passwordLayout=t13n-rtl&name=transliteration_ur"
     },
     {
+      "name": "__MSG_inputmethod_hangul__",
+      "type": "ime",
+      "id": "ko-t-i0-und",
+      "indicator": "\uD55C",
+      "description": "Korean input method.",
+      "language": "ko",
+      "layouts": ["us"],
+      "input_view": "inputview.html#id=m17n:ko_2set&language=ko&passwordLayout=us&name=inputmethod_hangul",
+      "options_page": "hmm_options.html?code=ko-t-i0-und"
+    },
+    {
       "name": "__MSG_inputmethod_mozc_us__",
       "type": "ime",
       "id": "nacl_mozc_us",

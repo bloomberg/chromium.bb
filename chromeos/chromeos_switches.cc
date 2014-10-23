@@ -89,6 +89,15 @@ const char kEnableConsumerManagement[] = "enable-consumer-management";
 // of GAIA.
 const char kEnableEmbeddedSignin[] = "enable-embedded-signin";
 
+// If this switch is set, the new Korean IME will be available in
+// chrome://settings/languages.
+const char kEnableNewKoreanIme[] = "enable-new-korean-ime";
+
+// If this switch is set, the US keyboard input method will provide suggestions
+// as typing on physical keyboard.
+const char kEnablePhysicalKeyboardAutocorrect[] =
+    "enable-physical-keyboard-autocorrect";
+
 // Enabled sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
 

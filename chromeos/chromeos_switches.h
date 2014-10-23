@@ -49,6 +49,8 @@ CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];
 CHROMEOS_EXPORT extern const char kEnableNetworkPortalNotification[];
+CHROMEOS_EXPORT extern const char kEnableNewKoreanIme[];
+CHROMEOS_EXPORT extern const char kEnablePhysicalKeyboardAutocorrect[];
 CHROMEOS_EXPORT extern const char kEnableRequestTabletSite[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableVideoPlayerChromecastSupport[];

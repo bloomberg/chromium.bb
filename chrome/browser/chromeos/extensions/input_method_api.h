@@ -17,6 +17,22 @@ class ExtensionInputMethodEventRouter;
 
 namespace extensions {
 
+// Implements the inputMethodPrivate.getInputMethodConfig  method.
+class GetInputMethodConfigFunction : public UIThreadExtensionFunction {
+ public:
+  GetInputMethodConfigFunction() {}
+
+ protected:
+  virtual ~GetInputMethodConfigFunction() {}
+
+  virtual ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethodConfig",
+                             INPUTMETHODPRIVATE_GETINPUTMETHODCONFIG)
+  DISALLOW_COPY_AND_ASSIGN(GetInputMethodConfigFunction);
+};
+
 // Implements the inputMethodPrivate.getCurrentInputMethod method.
 class GetCurrentInputMethodFunction : public UIThreadExtensionFunction {
  public:
@@ -30,6 +46,7 @@ class GetCurrentInputMethodFunction : public UIThreadExtensionFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getCurrentInputMethod",
                              INPUTMETHODPRIVATE_GETCURRENTINPUTMETHOD)
+  DISALLOW_COPY_AND_ASSIGN(GetCurrentInputMethodFunction);
 };
 
 // Implements the inputMethodPrivate.setCurrentInputMethod method.
@@ -45,6 +62,7 @@ class SetCurrentInputMethodFunction : public UIThreadExtensionFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setCurrentInputMethod",
                              INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD)
+  DISALLOW_COPY_AND_ASSIGN(SetCurrentInputMethodFunction);
 };
 
 // Implements the inputMethodPrivate.getInputMethods method.
@@ -60,6 +78,7 @@ class GetInputMethodsFunction : public UIThreadExtensionFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethods",
                              INPUTMETHODPRIVATE_GETINPUTMETHODS)
+  DISALLOW_COPY_AND_ASSIGN(GetInputMethodsFunction);
 };
 
 class InputMethodAPI : public BrowserContextKeyedAPI,

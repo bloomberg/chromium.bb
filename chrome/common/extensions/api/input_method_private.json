@@ -9,6 +9,28 @@
     "description": "none",
     "functions": [
       {
+        "name": "getInputMethodConfig",
+        "type": "function",
+        "description": "Gets configurations for input methods.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": false,
+            "description": "Callback which is called with the config object.",
+            "parameters": [
+              {
+                "name": "config",
+                "type": "object",
+                "description": "The input method config object.",
+                "properties": {
+                  "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"}
+                }
+              }
+            ]
+          }
+        ]
+      }, {
         "name": "getInputMethods",
         "type": "function",
         "description": "Gets all whitelisted input methods.",

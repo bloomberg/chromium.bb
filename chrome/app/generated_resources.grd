@@ -13853,6 +13853,20 @@ Do you accept?
         Enable IME extensions to supply custom views for user input such as  virtual keyboards.
       </message>
 
+      <message name="IDS_FLAGS_ENABLE_NEW_KOREAN_IME_NAME" desc="Name of about::flags option to enable the new Korean IME">
+        Enable new Korean IME.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NEW_KOREAN_IME_DESCRIPTION" desc="Description of about::flags option to enable the new Korean IME">
+        Enable new Korean IME, which is based on Google Input Tools' HMM engine.
+      </message>
+
+      <message name="IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME" desc="Name of about::flags option to enable physical keyboard autocorrect for US keyboard">
+        Enable physical keyboard autocorrect.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION" desc="Description of about::flags option to enable physical keyboard autocorrect for US keyboard">
+        Enable physical keyboard autocorrect for US keyboard, which can provide suggestions as typing on physical keyboard.
+      </message>
+
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_NAME" desc="Name of about::flags option to enable experimental features for IME input-views">
         Experimental input view features.
       </message>

@@ -1314,6 +1314,20 @@ const Experiment kExperiments[] = {
                               keyboard::switches::kDisableInputView)
   },
   {
+    "enable-new-korean-ime",
+    IDS_FLAGS_ENABLE_NEW_KOREAN_IME_NAME,
+    IDS_FLAGS_ENABLE_NEW_KOREAN_IME_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewKoreanIme)
+  },
+  {
+    "enable-physical-keyboard-autocorrect",
+    IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME,
+    IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnablePhysicalKeyboardAutocorrect)
+  },
+  {
     "enable-experimental-input-view-features",
     IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_NAME,
     IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION,

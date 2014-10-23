@@ -4752,6 +4752,9 @@ Battery full
   <message name="IDS_IME_NAME_INPUTMETHOD_ZHUYIN" desc="The input method name shows in system tray menu, this is Zhuyin input method for Traditional Chinese.">
     Zhuyin input method
   </message>
+  <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL" desc="The input method name shows in system tray menu, this is Korean Hangul input method.">
+    Hangul input method
+  </message>
   <message name="IDS_IME_NAME_INPUTMETHOD_HANGUL_2_SET" desc="The input method name shows in system tray menu, this is Korean Hangul input method, 2 Set mode.">
     Hangul 2 Set
   </message>
