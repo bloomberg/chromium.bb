@@ -21,6 +21,7 @@ import generate_v14_compatible_resources
 
 from util import build_utils
 
+
 def ParseArgs(args):
   """Parses command line options.
 
@@ -220,7 +221,8 @@ def main():
                        '--auto-add-overlay',
                        '-I', android_jar,
                        '--output-text-symbols', gen_dir,
-                       '-J', gen_dir]
+                       '-J', gen_dir,
+                       '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
 
     for d in input_resource_dirs:
       package_command += ['-S', d]
@@ -258,7 +260,8 @@ def main():
       aapt_cmd = [aapt,
                   'crunch',
                   '-C', crunch_dir,
-                  '-S', d]
+                  '-S', d,
+                  '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
       build_utils.CheckOutput(aapt_cmd, stderr_filter=FilterCrunchStderr,
                               fail_func=DidCrunchFail)
 

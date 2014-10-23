@@ -126,6 +126,7 @@ def main():
 
                        '-I', android_jar,
                        '-F', options.apk_path,
+                       '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN,
                        ]
 
     if options.no_compress:
