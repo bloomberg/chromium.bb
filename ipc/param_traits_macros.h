@@ -39,8 +39,11 @@
 // Convenience macro for defining enumerated type traits for types which are
 // range-checked by the IPC system to be in the range of minvalue..maxvalue
 // inclusive. This macro should not need to be subsequently redefined.
+// TODO(tsepez): Cast to std::underlying_type<>::type once that is permitted.
 #define IPC_ENUM_TRAITS_MIN_MAX_VALUE(type, minvalue, maxvalue)  \
-  IPC_ENUM_TRAITS_VALIDATE(type, (value >= (minvalue) && value <= (maxvalue)))
+  IPC_ENUM_TRAITS_VALIDATE( \
+      type, (static_cast<int>(value) >= static_cast<int>(minvalue) && \
+             static_cast<int>(value) <= static_cast<int>(maxvalue)))
 
 // Traits generation for enums. This macro may be redefined later.
 #define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression) \
