@@ -55,9 +55,7 @@ void CanvasSkiaPaint::Init(bool opaque) {
   const int width = ps_.rcPaint.right - ps_.rcPaint.left;
   const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
 
-  RecreateBackingCanvas(gfx::Size(width, height),
-      gfx::win::GetDeviceScaleFactor(),
-      opaque);
+  RecreateBackingCanvas(gfx::Size(width, height), gfx::GetDPIScale(), opaque);
   skia::PlatformCanvas* canvas = platform_canvas();
 
   canvas->clear(SkColorSetARGB(0, 0, 0, 0));
@@ -65,8 +63,8 @@ void CanvasSkiaPaint::Init(bool opaque) {
   // This will bring the canvas into the screen coordinate system for the
   // dirty rect
   canvas->translate(
-      -ps_.rcPaint.left / gfx::win::GetDeviceScaleFactor(),
-      -ps_.rcPaint.top / gfx::win::GetDeviceScaleFactor());
+      -ps_.rcPaint.left / gfx::GetDPIScale(),
+      -ps_.rcPaint.top / gfx::GetDPIScale());
 }
 
 }  // namespace gfx

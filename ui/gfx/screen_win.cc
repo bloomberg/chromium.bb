@@ -29,7 +29,7 @@ gfx::Display GetDisplay(MONITORINFOEX& monitor_info) {
   gfx::Rect bounds = gfx::Rect(monitor_info.rcMonitor);
   gfx::Display display(id, bounds);
   display.set_work_area(gfx::Rect(monitor_info.rcWork));
-  display.SetScaleAndBounds(gfx::win::GetDeviceScaleFactor(), bounds);
+  display.SetScaleAndBounds(gfx::GetDPIScale(), bounds);
 
   DEVMODE mode;
   memset(&mode, 0, sizeof(DEVMODE));

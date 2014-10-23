@@ -85,7 +85,7 @@ ScaleFactor GetSupportedScaleFactor(float scale) {
 float GetImageScale(ScaleFactor scale_factor) {
 #if defined(OS_WIN)
   if (gfx::IsHighDPIEnabled())
-    return gfx::win::GetDeviceScaleFactor();
+    return gfx::GetDPIScale();
 #endif
   return GetScaleForScaleFactor(scale_factor);
 }

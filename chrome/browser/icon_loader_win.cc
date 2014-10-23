@@ -61,8 +61,7 @@ void IconLoader::ReadIcon() {
     scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(
         file_info.hIcon));
     if (bitmap.get()) {
-      gfx::ImageSkia image_skia(gfx::ImageSkiaRep(
-          *bitmap, gfx::win::GetDeviceScaleFactor()));
+      gfx::ImageSkia image_skia(gfx::ImageSkiaRep(*bitmap, gfx::GetDPIScale()));
       image_skia.MakeThreadSafe();
       image_.reset(new gfx::Image(image_skia));
       DestroyIcon(file_info.hIcon);

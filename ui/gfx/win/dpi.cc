@@ -34,9 +34,7 @@ float g_device_scale_factor = 0.0f;
 
 float GetUnforcedDeviceScaleFactor() {
   // If the global device scale factor is initialized use it. This is to ensure
-  // we use the same scale factor across all callsites. We don't use the
-  // GetDeviceScaleFactor function here because it fires a DCHECK if the
-  // g_device_scale_factor global is 0.
+  // we use the same scale factor across all callsites.
   if (g_device_scale_factor)
     return g_device_scale_factor;
   return static_cast<float>(gfx::GetDPI().width()) /
@@ -172,18 +170,12 @@ GFX_EXPORT const wchar_t kRegistryProfilePath[] =
     L"Software\\Google\\Chrome\\Profile";
 GFX_EXPORT const wchar_t kHighDPISupportW[] = L"high-dpi-support";
 
-float GetDeviceScaleFactor() {
-  DCHECK_NE(0.0f, g_device_scale_factor);
-  return g_device_scale_factor;
-}
-
 Point ScreenToDIPPoint(const Point& pixel_point) {
-  return ToFlooredPoint(ScalePoint(pixel_point,
-                                   1.0f / GetDeviceScaleFactor()));
+  return ToFlooredPoint(ScalePoint(pixel_point, 1.0f / GetDPIScale()));
 }
 
 Point DIPToScreenPoint(const Point& dip_point) {
-  return ToFlooredPoint(ScalePoint(dip_point, GetDeviceScaleFactor()));
+  return ToFlooredPoint(ScalePoint(dip_point, GetDPIScale()));
 }
 
 Rect ScreenToDIPRect(const Rect& pixel_bounds) {
@@ -204,18 +196,16 @@ Rect DIPToScreenRect(const Rect& dip_bounds) {
 
 Size ScreenToDIPSize(const Size& size_in_pixels) {
   // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
-  return ToCeiledSize(
-      ScaleSize(size_in_pixels, 1.0f / GetDeviceScaleFactor()));
+  return ToCeiledSize(ScaleSize(size_in_pixels, 1.0f / GetDPIScale()));
 }
 
 Size DIPToScreenSize(const Size& dip_size) {
   // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
-  return ToCeiledSize(ScaleSize(dip_size, GetDeviceScaleFactor()));
+  return ToCeiledSize(ScaleSize(dip_size, GetDPIScale()));
 }
 
 int GetSystemMetricsInDIP(int metric) {
-  return static_cast<int>(GetSystemMetrics(metric) /
-      GetDeviceScaleFactor() + 0.5);
+  return static_cast<int>(GetSystemMetrics(metric) / GetDPIScale() + 0.5);
 }
 
 bool IsDeviceScaleFactorSet() {

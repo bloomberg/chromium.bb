@@ -36,8 +36,6 @@ GFX_EXPORT void ForceHighDPISupportForTesting(float scale);
 
 namespace win {
 
-GFX_EXPORT float GetDeviceScaleFactor();
-
 GFX_EXPORT Point ScreenToDIPPoint(const Point& pixel_point);
 
 GFX_EXPORT Point DIPToScreenPoint(const Point& dip_point);

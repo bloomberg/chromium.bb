@@ -32,7 +32,7 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
   // returning it.
   POINT minimize_button_corner = { titlebar_info.rgrect[2].left, 0 };
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
-  return minimize_button_corner.x / gfx::win::GetDeviceScaleFactor();
+  return minimize_button_corner.x / gfx::GetDPIScale();
 }
 
 }  // namespace
