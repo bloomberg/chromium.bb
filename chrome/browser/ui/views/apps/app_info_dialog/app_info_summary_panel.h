@@ -35,9 +35,10 @@ class AppInfoSummaryPanel : public AppInfoPanel,
 
  private:
   // Internal initialisation methods.
-  void CreateDescriptionControl();
-  void CreateDetailsControl();
-  void CreateLaunchOptionControl();
+  void AddDescriptionControl(views::View* vertical_stack);
+  void AddDetailsControl(views::View* vertical_stack);
+  void AddLaunchOptionControl(views::View* vertical_stack);
+  void AddSubviews();
 
   // Overridden from views::ComboboxListener:
   virtual void OnPerformAction(views::Combobox* combobox) override;

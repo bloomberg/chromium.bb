@@ -53,10 +53,6 @@ views::View* AppInfoPanel::CreateHorizontalStack(int child_spacing) const {
   return vertically_stacked_view;
 }
 
-views::View* AppInfoPanel::CreateHorizontalStack() const {
-  return CreateVerticalStack(views::kRelatedControlHorizontalSpacing);
-}
-
 views::View* AppInfoPanel::CreateKeyValueField(views::View* key,
                                                views::View* value) const {
   views::View* horizontal_stack =

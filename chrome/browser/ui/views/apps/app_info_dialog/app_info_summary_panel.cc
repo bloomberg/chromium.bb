@@ -130,17 +130,12 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
       size_value_(NULL),
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
-  // Layout elements.
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           0,
-                           0,
-                           views::kUnrelatedControlVerticalSpacing));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
+                                        0,
+                                        0,
+                                        views::kRelatedControlVerticalSpacing));
 
-  // Create UI elements.
-  CreateDescriptionControl();
-  CreateDetailsControl();
-  CreateLaunchOptionControl();
+  AddSubviews();
 }
 
 AppInfoSummaryPanel::~AppInfoSummaryPanel() {
@@ -148,75 +143,88 @@ AppInfoSummaryPanel::~AppInfoSummaryPanel() {
   RemoveAllChildViews(true);
 }
 
-void AppInfoSummaryPanel::CreateDescriptionControl() {
-  if (!app_->description().empty()) {
-    const size_t kMaxLength = 400;
+void AppInfoSummaryPanel::AddDescriptionControl(views::View* vertical_stack) {
+  if (app_->description().empty())
+    return;
 
-    base::string16 text = base::UTF8ToUTF16(app_->description());
-    if (text.length() > kMaxLength) {
-      text = text.substr(0, kMaxLength);
-      text += base::ASCIIToUTF16(" ... ");
-    }
-
-    views::Label* description_label = new views::Label(text);
-    description_label->SetMultiLine(true);
-    description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(description_label);
+  // TODO(sashab): Clip the app's description to 4 lines, and use Label's
+  // built-in elide behavior to add ellipses at the end: crbug.com/358053
+  const size_t max_length = 400;
+  base::string16 text = base::UTF8ToUTF16(app_->description());
+  if (text.length() > max_length) {
+    text = text.substr(0, max_length);
+    text += base::ASCIIToUTF16(" ... ");
   }
+
+  views::Label* description_label = new views::Label(text);
+  description_label->SetMultiLine(true);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  vertical_stack->AddChildView(description_label);
 }
 
-void AppInfoSummaryPanel::CreateDetailsControl() {
-  views::View* details_stack =
+void AppInfoSummaryPanel::AddDetailsControl(views::View* vertical_stack) {
+  // Component apps have no details.
+  if (app_->location() == extensions::Manifest::COMPONENT)
+    return;
+
+  views::View* details_list =
       CreateVerticalStack(views::kRelatedControlSmallVerticalSpacing);
 
-  // The size doesn't make sense for component apps.
-  if (app_->location() != extensions::Manifest::COMPONENT) {
-    views::Label* size_title = new views::Label(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LABEL));
-    size_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Add the size.
+  views::Label* size_title = new views::Label(
+      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LABEL));
+  size_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    size_value_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LOADING_LABEL));
-    size_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    StartCalculatingAppSize();
+  size_value_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LOADING_LABEL));
+  size_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  StartCalculatingAppSize();
 
-    details_stack->AddChildView(CreateKeyValueField(size_title, size_value_));
-  }
+  details_list->AddChildView(CreateKeyValueField(size_title, size_value_));
 
   // The version doesn't make sense for bookmark apps.
   if (!app_->from_bookmark()) {
-    // Display 'Version: Built-in' for component apps.
-    base::string16 version_str = base::ASCIIToUTF16(app_->VersionString());
-    if (app_->location() == extensions::Manifest::COMPONENT)
-      version_str = l10n_util::GetStringUTF16(
-          IDS_APPLICATION_INFO_VERSION_BUILT_IN_LABEL);
-
     views::Label* version_title = new views::Label(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_VERSION_LABEL));
     version_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    views::Label* version_value = new views::Label(version_str);
+    views::Label* version_value =
+        new views::Label(base::UTF8ToUTF16(app_->VersionString()));
     version_value->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    details_stack->AddChildView(
+    details_list->AddChildView(
         CreateKeyValueField(version_title, version_value));
   }
 
-  AddChildView(details_stack);
+  vertical_stack->AddChildView(details_list);
 }
 
-void AppInfoSummaryPanel::CreateLaunchOptionControl() {
-  if (CanSetLaunchType()) {
-    launch_options_combobox_model_.reset(new LaunchOptionsComboboxModel());
-    launch_options_combobox_ =
-        new views::Combobox(launch_options_combobox_model_.get());
+void AppInfoSummaryPanel::AddLaunchOptionControl(views::View* vertical_stack) {
+  if (!CanSetLaunchType())
+    return;
 
-    launch_options_combobox_->set_listener(this);
-    launch_options_combobox_->SetSelectedIndex(
-        launch_options_combobox_model_->GetIndexForLaunchType(GetLaunchType()));
+  launch_options_combobox_model_.reset(new LaunchOptionsComboboxModel());
+  launch_options_combobox_ =
+      new views::Combobox(launch_options_combobox_model_.get());
+  launch_options_combobox_->set_listener(this);
+  launch_options_combobox_->SetSelectedIndex(
+      launch_options_combobox_model_->GetIndexForLaunchType(GetLaunchType()));
 
-    AddChildView(launch_options_combobox_);
-  }
+  vertical_stack->AddChildView(launch_options_combobox_);
+}
+
+void AppInfoSummaryPanel::AddSubviews() {
+  AddChildView(CreateHeading(
+      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_APP_OVERVIEW_TITLE)));
+
+  views::View* vertical_stack =
+      CreateVerticalStack(views::kUnrelatedControlVerticalSpacing);
+  AddChildView(vertical_stack);
+
+  AddDescriptionControl(vertical_stack);
+  AddDetailsControl(vertical_stack);
+  AddLaunchOptionControl(vertical_stack);
 }
 
 void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {

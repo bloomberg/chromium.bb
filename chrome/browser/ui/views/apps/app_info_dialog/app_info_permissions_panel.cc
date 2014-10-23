@@ -28,8 +28,8 @@ AppInfoPermissionsPanel::AppInfoPermissionsPanel(
     Profile* profile,
     const extensions::Extension* app)
     : AppInfoPanel(profile, app),
-      active_permissions_heading_(NULL),
-      active_permissions_list_(NULL),
+      permissions_heading_(NULL),
+      permissions_list_(NULL),
       retained_files_heading_(NULL),
       retained_files_list_(NULL),
       revoke_file_permissions_button_(NULL),
@@ -115,6 +115,8 @@ views::View* AppInfoPermissionsPanel::CreateBulletedListView(
 }
 
 void AppInfoPermissionsPanel::CreateActivePermissionsControl() {
+  permissions_heading_ = CreateHeading(
+      l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_APP_PERMISSIONS_TITLE));
   std::vector<base::string16> permission_strings =
       GetActivePermissionMessages();
   if (permission_strings.empty()) {
@@ -124,13 +126,9 @@ void AppInfoPermissionsPanel::CreateActivePermissionsControl() {
                 ? IDS_APPLICATION_INFO_EXTENSION_NO_PERMISSIONS_TEXT
                 : IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT));
     no_permissions_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    active_permissions_list_ = no_permissions_text;
+    permissions_list_ = no_permissions_text;
   } else {
-    active_permissions_heading_ = new views::Label(l10n_util::GetStringUTF16(
-        app_->is_extension() ? IDS_APPLICATION_INFO_EXTENSION_PERMISSIONS_TITLE
-                             : IDS_APPLICATION_INFO_APP_PERMISSIONS_TITLE));
-    active_permissions_heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    active_permissions_list_ =
+    permissions_list_ =
         CreateBulletedListView(permission_strings, true, gfx::NO_ELIDE);
   }
 }
@@ -172,14 +170,10 @@ void AppInfoPermissionsPanel::CreateRetainedDevicesControl() {
 }
 
 void AppInfoPermissionsPanel::LayoutActivePermissionsControl() {
-  if (active_permissions_list_) {
-    views::View* vertical_stack = CreateVerticalStack();
-    if (active_permissions_heading_)
-      vertical_stack->AddChildView(active_permissions_heading_);
-    vertical_stack->AddChildView(active_permissions_list_);
-
-    AddChildView(vertical_stack);
-  }
+  views::View* vertical_stack = CreateVerticalStack();
+  vertical_stack->AddChildView(permissions_heading_);
+  vertical_stack->AddChildView(permissions_list_);
+  AddChildView(vertical_stack);
 }
 
 void AppInfoPermissionsPanel::LayoutRetainedFilesControl() {

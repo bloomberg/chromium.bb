@@ -74,8 +74,8 @@ class AppInfoPermissionsPanel : public AppInfoPanel,
   void RevokeDevicePermissions();
 
   // UI elements on the dialog.
-  views::Label* active_permissions_heading_;
-  views::View* active_permissions_list_;
+  views::Label* permissions_heading_;
+  views::View* permissions_list_;
 
   views::Label* retained_files_heading_;
   views::View* retained_files_list_;
