@@ -723,6 +723,7 @@
         'renderer/pepper/v8_var_converter_unittest.cc',
         'renderer/render_thread_impl_unittest.cc',
         'renderer/render_widget_unittest.cc',
+        'renderer/scheduler/task_queue_manager_unittest.cc',
         'renderer/screen_orientation/screen_orientation_dispatcher_unittest.cc',
         'renderer/skia_benchmarking_extension_unittest.cc',
         'renderer/v8_value_converter_impl_unittest.cc',
