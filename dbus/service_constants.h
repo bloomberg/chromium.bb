@@ -604,6 +604,7 @@ const char kEapPhase2AuthTTLSCHAP[] = "auth=CHAP";
 // Flimflam VPN provider types.
 const char kProviderL2tpIpsec[] = "l2tpipsec";
 const char kProviderOpenVpn[] = "openvpn";
+const char kProviderThirdPartyVpn[] = "thirdpartyvpn";
 
 // Flimflam VPN service properties
 const char kVPNDomainProperty[] = "VPN.Domain";
