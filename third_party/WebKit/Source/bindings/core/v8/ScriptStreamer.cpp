@@ -13,6 +13,7 @@
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/Settings.h"
 #include "platform/SharedBuffer.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/TextEncodingRegistry.h"
@@ -224,28 +225,20 @@ void ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, S
         blink::Platform::current()->histogramEnumeration(startedStreamingHistogramName(scriptType), 0, 2);
 }
 
-void ScriptStreamer::streamingComplete()
+void ScriptStreamer::streamingCompleteOnBackgroundThread()
 {
-    ASSERT(isMainThread());
-    // It's possible that the corresponding Resource was deleted before V8
-    // finished streaming. In that case, the data or the notification is not
-    // needed. In addition, if the streaming is suppressed, the non-streaming
-    // code path will resume after the resource has loaded, before the
-    // background task finishes.
-    if (m_detached || m_streamingSuppressed) {
-        deref();
-        return;
-    }
-
-    // We have now streamed the whole script to V8 and it has parsed the
-    // script. We're ready for the next step: compiling and executing the
-    // script.
+    ASSERT(!isMainThread());
+    MutexLocker locker(m_mutex);
     m_parsingFinished = true;
-
-    notifyFinishedToClient();
-
-    // The background thread no longer holds an implicit reference.
-    deref();
+    if (shouldBlockMainThread()) {
+        // Normally, the main thread is waiting at this point, but it can also
+        // happen that the load is not yet finished (e.g., a parse error). In
+        // that case, notifyFinished will be called eventually and it will not
+        // wait on m_parsingFinishedCondition.
+        m_parsingFinishedCondition.signal();
+    } else {
+        callOnMainThread(WTF::bind(&ScriptStreamer::streamingComplete, this));
+    }
 }
 
 void ScriptStreamer::cancel()
@@ -262,6 +255,7 @@ void ScriptStreamer::cancel()
 
 void ScriptStreamer::suppressStreaming()
 {
+    MutexLocker locker(m_mutex);
     ASSERT(!m_parsingFinished);
     ASSERT(!m_loadingFinished);
     m_streamingSuppressed = true;
@@ -294,7 +288,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         ASSERT(m_task);
         // ScriptStreamer needs to stay alive as long as the background task is
         // running. This is taken care of with a manual ref() & deref() pair;
-        // the corresponding deref() is in streamingComplete.
+        // the corresponding deref() is in streamingComplete or in
+        // notifyFinished.
         ref();
         ScriptStreamingTask* task = new ScriptStreamingTask(m_task.release(), this);
         ScriptStreamerThread::shared()->postTask(task);
@@ -318,10 +313,33 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     }
     m_stream->didFinishLoading();
     m_loadingFinished = true;
+
+    if (shouldBlockMainThread()) {
+        // Make the main thead wait until the streaming is complete, to make
+        // sure that the script gets the main thread's attention as early as
+        // possible (for possible compiling, if the client wants to do it
+        // right away). Note that blocking here is not any worse than the
+        // non-streaming code path where the main thread eventually blocks
+        // to parse the script.
+        TRACE_EVENT0("v8", "v8.mainThreadWaitingForParserThread");
+        MutexLocker locker(m_mutex);
+        if (!isFinished()) {
+            m_parsingFinishedCondition.wait(m_mutex);
+        }
+        ASSERT(isFinished());
+    }
+
     notifyFinishedToClient();
+
+    if (shouldBlockMainThread() && m_parsingFinished) {
+        // streamingComplete won't be called, so do the ramp-down work
+        // here. Since m_parsingFinished is true, we know that there was a
+        // background task and we need to deref().
+        deref();
+    }
 }
 
-ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::StreamedSource::Encoding encoding, PendingScript::Type scriptType)
+ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::StreamedSource::Encoding encoding, PendingScript::Type scriptType, ScriptStreamingMode mode)
     : m_resource(resource)
     , m_detached(false)
     , m_stream(new SourceStream(this))
@@ -332,7 +350,35 @@ ScriptStreamer::ScriptStreamer(ScriptResource* resource, v8::ScriptCompiler::Str
     , m_haveEnoughDataForStreaming(false)
     , m_streamingSuppressed(false)
     , m_scriptType(scriptType)
+    , m_scriptStreamingMode(mode)
 {
+}
+
+void ScriptStreamer::streamingComplete()
+{
+    // The background task is completed; do the necessary ramp-down in the main
+    // thread.
+    ASSERT(isMainThread());
+    // In the blocking mode, the ramp-down is done in notifyFinished.
+    ASSERT(!shouldBlockMainThread());
+
+    // It's possible that the corresponding Resource was deleted before V8
+    // finished streaming. In that case, the data or the notification is not
+    // needed. In addition, if the streaming is suppressed, the non-streaming
+    // code path will resume after the resource has loaded, before the
+    // background task finishes.
+    if (m_detached || m_streamingSuppressed) {
+        deref();
+        return;
+    }
+
+    // We have now streamed the whole script to V8 and it has parsed the
+    // script. We're ready for the next step: compiling and executing the
+    // script.
+    notifyFinishedToClient();
+
+    // The background thread no longer holds an implicit reference.
+    deref();
 }
 
 void ScriptStreamer::notifyFinishedToClient()
@@ -346,6 +392,7 @@ void ScriptStreamer::notifyFinishedToClient()
     // function calling notifyFinishedToClient was already scheduled in the task
     // queue and the upper layer decided that it's not interested in the script
     // and called removeClient.
+    MutexLocker locker(m_mutex);
     if (isFinished() && m_client)
         m_client->notifyFinished(m_resource);
 }
@@ -374,6 +421,10 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
     ASSERT(isMainThread());
     if (!settings || !settings->v8ScriptStreamingEnabled())
         return false;
+    if (settings->v8ScriptStreamingMode() == ScriptStreamingModeOnlyAsyncAndDefer
+        && scriptType == PendingScript::ParsingBlocking)
+        return false;
+
     ScriptResource* resource = script.resource();
     ASSERT(!resource->isLoaded());
     if (!resource->url().protocolIsInHTTPFamily())
@@ -415,7 +466,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
     // The Resource might go out of scope if the script is no longer needed. We
     // will soon call PendingScript::setStreamer, which makes the PendingScript
     // notify the ScriptStreamer when it is destroyed.
-    RefPtr<ScriptStreamer> streamer = adoptRef(new ScriptStreamer(resource, encoding, scriptType));
+    RefPtr<ScriptStreamer> streamer = adoptRef(new ScriptStreamer(resource, encoding, scriptType, settings->v8ScriptStreamingMode()));
 
     // Decide what kind of cached data we should produce while streaming. By
     // default, we generate the parser cache for streamed scripts, to emulate
