@@ -12,7 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "ui/base/l10n/l10n_util_android.h"
+#include "base/android/locale_utils.h"
 #endif  // defined(OS_ANDROID)
 
 namespace chromecast {
@@ -31,7 +31,7 @@ std::string CastHttpUserAgentSettings::GetAcceptLanguage() const {
   if (accept_language_.empty()) {
     accept_language_ = net::HttpUtil::GenerateAcceptLanguageHeader(
 #if defined(OS_ANDROID)
-        l10n_util::GetDefaultLocale()
+        base::android::GetDefaultLocale()
 #else
         l10n_util::GetStringUTF8(IDS_CHROMECAST_SETTINGS_ACCEPT_LANGUAGES)
 #endif  // defined(OS_ANDROID)
