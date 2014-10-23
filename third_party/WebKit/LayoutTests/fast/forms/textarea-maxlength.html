@@ -21,6 +21,14 @@ shouldBe('textArea.maxLength', '-1');
 textArea.setAttribute('maxlength', 'xyz');
 shouldBe('textArea.maxLength', '-1');
 
+// Leading whitespaces in maxlength attributes
+textArea.setAttribute('maxlength', '\t  \n\r1');
+shouldBe('textArea.maxLength', '1');
+textArea.setAttribute('maxlength', "\u20021");
+shouldBe('textArea.maxLength', '-1');
+textArea.setAttribute('maxlength', "\u20091");
+shouldBe('textArea.maxLength', '-1');
+
 // Valid maxlength attributes
 textArea.setAttribute('maxlength', '1');
 shouldBe('textArea.maxLength', '1');

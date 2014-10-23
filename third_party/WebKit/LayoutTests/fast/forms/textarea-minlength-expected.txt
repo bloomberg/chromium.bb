@@ -7,6 +7,9 @@ PASS textArea.minLength is -1
 PASS textArea.minLength is -1
 PASS textArea.minLength is -1
 PASS textArea.minLength is 1
+PASS textArea.minLength is -1
+PASS textArea.minLength is -1
+PASS textArea.minLength is 1
 PASS textArea.minLength is 256
 PASS textArea.getAttribute("minlength") is "6"
 PASS textArea.minLength = -1 threw exception IndexSizeError: Failed to set the 'minLength' property on 'HTMLTextAreaElement': The value provided (-1) is not positive or 0..

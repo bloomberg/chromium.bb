@@ -43,6 +43,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormDataList.h"
 #include "core/html/forms/FormController.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Chrome.h"
@@ -448,16 +449,18 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
 
 int HTMLTextAreaElement::maxLength() const
 {
-    bool ok;
-    int value = getAttribute(maxlengthAttr).toInt(&ok);
-    return ok && value >= 0 ? value : -1;
+    int value;
+    if (!parseHTMLInteger(getAttribute(maxlengthAttr), value))
+        return -1;
+    return value >= 0 ? value : -1;
 }
 
 int HTMLTextAreaElement::minLength() const
 {
-    bool ok;
-    int value = getAttribute(minlengthAttr).string().toInt(&ok);
-    return ok && value >= 0 ? value : -1;
+    int value;
+    if (!parseHTMLInteger(getAttribute(minlengthAttr), value))
+        return -1;
+    return value >= 0 ? value : -1;
 }
 
 void HTMLTextAreaElement::setMaxLength(int newValue, ExceptionState& exceptionState)

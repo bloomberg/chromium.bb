@@ -21,6 +21,14 @@ shouldBe('textArea.minLength', '-1');
 textArea.setAttribute('minlength', 'xyz');
 shouldBe('textArea.minLength', '-1');
 
+// Leading whitespaces in minlength attributes
+textArea.setAttribute('minlength', '\t  \n\r1');
+shouldBe('textArea.minLength', '1');
+textArea.setAttribute('minlength', "\u20021");
+shouldBe('textArea.minLength', '-1');
+textArea.setAttribute('minlength', "\u20091");
+shouldBe('textArea.minLength', '-1');
+
 // Valid minlength attributes
 textArea.setAttribute('minlength', '1');
 shouldBe('textArea.minLength', '1');
