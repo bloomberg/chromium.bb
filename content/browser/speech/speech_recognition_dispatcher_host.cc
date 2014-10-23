@@ -42,6 +42,10 @@ SpeechRecognitionDispatcherHost::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void SpeechRecognitionDispatcherHost::OnDestruct() const {
+  BrowserThread::DeleteOnIOThread::Destruct(this);
+}
+
 bool SpeechRecognitionDispatcherHost::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;

@@ -50,6 +50,7 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
                            float noise_volume) override;
 
   // BrowserMessageFilter implementation.
+  void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OverrideThreadForMessage(const IPC::Message& message,
                                 BrowserThread::ID* thread) override;
@@ -57,6 +58,9 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   void OnChannelClosing() override;
 
  private:
+  friend class base::DeleteHelper<SpeechRecognitionDispatcherHost>;
+  friend class BrowserThread;
+
   ~SpeechRecognitionDispatcherHost() override;
 
   void OnStartRequest(
