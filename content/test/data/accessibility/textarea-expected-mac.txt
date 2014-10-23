@@ -1,0 +1,5 @@
+#<skip -- AXValue for AXTextArea is not in same line crbug.com/425485>
+AXWebArea AXRoleDescription='HTML content'
+    AXGroup AXRoleDescription='group'
+        AXTextArea AXRoleDescription='text entry area' AXValue='The textarea tag defines a multi-line text input control.
+'
