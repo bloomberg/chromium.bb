@@ -920,13 +920,6 @@ class StartupWatchDogThread : public base::Watchdog {
   // alarming.
   explicit StartupWatchDogThread(const base::TimeDelta& duration)
       : base::Watchdog(duration, "Startup watchdog thread", true) {
-#if defined(OS_ANDROID)
-    // TODO(rtenneti): Delete this code, after getting data.
-    start_time_clock_= base::Time::Now();
-    start_time_monotonic_ = base::TimeTicks::Now();
-    start_time_thread_now_ = base::TimeTicks::IsThreadNowSupported()
-        ? base::TimeTicks::ThreadNow() : base::TimeTicks::Now();
-#endif  // OS_ANDROID
   }
 
   // Alarm is called if the time expires after an Arm() without someone calling
@@ -939,29 +932,12 @@ class StartupWatchDogThread : public base::Watchdog {
 #elif !defined(OS_ANDROID)
     WatchDogThread::PostTask(FROM_HERE, base::Bind(&StartupHang));
     return;
-#else  // Android release: gather stats to figure out when to crash.
-    // TODO(rtenneti): Delete this code, after getting data.
-    UMA_HISTOGRAM_TIMES("StartupTimeBomb.Alarm.TimeDuration",
-                        base::Time::Now() - start_time_clock_);
-    UMA_HISTOGRAM_TIMES("StartupTimeBomb.Alarm.TimeTicksDuration",
-                        base::TimeTicks::Now() - start_time_monotonic_);
-    if (base::TimeTicks::IsThreadNowSupported()) {
-      UMA_HISTOGRAM_TIMES(
-          "StartupTimeBomb.Alarm.ThreadNowDuration",
-          base::TimeTicks::ThreadNow() - start_time_thread_now_);
-    }
-    return;
+#else
+    // TODO(rtenneti): Enable crashing for Android.
 #endif  // OS_ANDROID
   }
 
  private:
-#if defined(OS_ANDROID)
-  // TODO(rtenneti): Delete this code, after getting data.
-  base::Time start_time_clock_;
-  base::TimeTicks start_time_monotonic_;
-  base::TimeTicks start_time_thread_now_;
-#endif  // OS_ANDROID
-
   DISALLOW_COPY_AND_ASSIGN(StartupWatchDogThread);
 };
 
