@@ -54,7 +54,12 @@ const size_t SdchManager::kMaxDictionarySize = 1000 * 1000;
 bool SdchManager::g_sdch_enabled_ = true;
 
 // static
+#if defined(OS_IOS)
+// Workaround for http://crbug.com/418975; remove when fixed.
+bool SdchManager::g_secure_scheme_supported_ = false;
+#else
 bool SdchManager::g_secure_scheme_supported_ = true;
+#endif
 
 //------------------------------------------------------------------------------
 SdchManager::Dictionary::Dictionary(const std::string& dictionary_text,

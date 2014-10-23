@@ -518,12 +518,21 @@ TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
   GURL url("http://www.google.com");
   GURL secure_url("https://www.google.com");
 
-  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
-  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(secure_url));
+#if !defined(OS_IOS)
+  // Workaround for http://crbug.com/418975; remove when fixed.
+  bool expect_https_support = true;
+#else
+  bool expect_https_support = false;
+#endif
 
-  SdchManager::EnableSecureSchemeSupport(false);
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
-  EXPECT_FALSE(sdch_manager()->IsInSupportedDomain(secure_url));
+  EXPECT_EQ(expect_https_support,
+            sdch_manager()->IsInSupportedDomain(secure_url));
+
+  SdchManager::EnableSecureSchemeSupport(!expect_https_support);
+  EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
+  EXPECT_NE(expect_https_support,
+            sdch_manager()->IsInSupportedDomain(secure_url));
 }
 
 TEST_F(SdchManagerTest, ClearDictionaryData) {
