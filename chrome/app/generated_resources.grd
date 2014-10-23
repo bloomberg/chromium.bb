@@ -14216,11 +14216,8 @@ Do you accept?
     </message>
 
     <!-- Password generation strings -->
-    <message name="IDS_PASSWORD_GENERATION_BUBBLE_TITLE" desc="The title of the bubble asking users if they would like Chrome to generate a password for them on an account creation page.">
+    <message name="IDS_PASSWORD_GENERATION_ACCESSIBLE_TITLE" desc="The accessibility name of the popup asking users if they would like Chrome to generate a password for them.">
       Password Suggestion
-    </message>
-    <message name="IDS_PASSWORD_GENERATION_BUTTON_TEXT" desc="The text on the button that users click to accept the generated password">
-      Try it
     </message>
 
     <!-- Identity internals strings -->

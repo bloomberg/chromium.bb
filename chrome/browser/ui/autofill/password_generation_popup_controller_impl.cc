@@ -273,6 +273,10 @@ const base::string16& PasswordGenerationPopupControllerImpl::HelpText() {
   return help_text_;
 }
 
+base::string16 PasswordGenerationPopupControllerImpl::AccessibleName() {
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_ACCESSIBLE_TITLE);
+}
+
 const gfx::Range& PasswordGenerationPopupControllerImpl::HelpTextLinkRange() {
   return link_range_;
 }
