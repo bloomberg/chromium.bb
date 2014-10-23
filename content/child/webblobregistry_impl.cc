@@ -163,11 +163,6 @@ void WebBlobRegistryImpl::registerStreamURL(
 }
 
 void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
-                                          WebThreadSafeData& data) {
-  addDataToStream(url, data.data(), data.size());
-}
-
-void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
                                           const char* data, size_t length) {
   DCHECK(ChildThread::current());
   if (length == 0)

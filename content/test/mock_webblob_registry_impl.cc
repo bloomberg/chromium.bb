@@ -10,7 +10,6 @@
 
 using blink::WebBlobData;
 using blink::WebString;
-using blink::WebThreadSafeData;
 using blink::WebURL;
 
 namespace content {
@@ -44,10 +43,6 @@ void MockWebBlobRegistryImpl::registerStreamURL(const WebURL& url,
 
 void MockWebBlobRegistryImpl::registerStreamURL(const WebURL& url,
                                                 const blink::WebURL& src_url) {
-}
-
-void MockWebBlobRegistryImpl::addDataToStream(const WebURL& url,
-                                              WebThreadSafeData& data) {
 }
 
 void MockWebBlobRegistryImpl::addDataToStream(const WebURL& url,
