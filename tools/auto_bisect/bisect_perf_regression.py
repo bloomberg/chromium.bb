@@ -1073,18 +1073,19 @@ class BisectPerformanceMetrics(object):
       return destination_dir
     return None
 
-  def GetBuildArchiveForRevision(self, revision, gs_bucket, target_arch,
-                                 patch_sha, out_dir):
+  def _GetBuildArchiveForRevision(self, revision, gs_bucket, target_arch,
+                                  patch_sha, out_dir):
     """Checks and downloads build archive for a given revision.
 
     Checks for build archive with Git hash or SVN revision. If either of the
     file exists, then downloads the archive file.
 
     Args:
-      revision: A Git hash revision.
-      gs_bucket: Cloud storage bucket name
-      target_arch: 32 or 64 bit build target
-      patch: A DEPS patch (used while bisecting 3rd party repositories).
+      revision: A git commit hash.
+      gs_bucket: Cloud storage bucket name.
+      target_arch: Architecture name string, e.g. "ia32" or "x64".
+      patch_sha: A SHA1 hex digest of a DEPS file patch, used while
+          bisecting 3rd party repositories.
       out_dir: Build output directory where downloaded file is stored.
 
     Returns:
@@ -1104,11 +1105,11 @@ class BisectPerformanceMetrics(object):
         return FetchFromCloudStorage(gs_bucket, source_file, out_dir)
     return downloaded_archive
 
-  def DownloadCurrentBuild(self, revision, depot, build_type='Release'):
+  def _DownloadAndUnzipBuild(self, revision, depot, build_type='Release'):
     """Downloads the build archive for the given revision.
 
     Args:
-      revision: The git revision to download or build.
+      revision: The git revision to download.
       depot: The name of a dependency repository. Should be in DEPOT_NAMES.
       build_type: Target build type, e.g. Release', 'Debug', 'Release_x64' etc.
 
@@ -1129,59 +1130,49 @@ class BisectPerformanceMetrics(object):
       # 'DEPS.sha' and add patch_sha evaluated above to it.
       patch = '%s\n%s' % (patch, DEPS_SHA_PATCH % {'deps_sha': patch_sha})
 
-    # Get build output directory.
     build_dir = builder.GetBuildOutputDirectory(self.opts, self.src_cwd)
-    abs_build_dir = os.path.abspath(build_dir)
+    downloaded_file = self._WaitForBuildDownload(
+        revision, build_dir, deps_patch=patch, deps_patch_sha=patch_sha)
+    if not downloaded_file:
+      return False
+    return self._UnzipAndMoveBuildProducts(downloaded_file, build_dir,
+                                           build_type=build_type)
 
-    fetch_build_func = lambda: self.GetBuildArchiveForRevision(
-      revision, self.opts.gs_bucket, self.opts.target_arch,
-      patch_sha, abs_build_dir)
+  def _WaitForBuildDownload(self, revision, build_dir, deps_patch=None,
+                            deps_patch_sha=None):
+    """Tries to download a zip archive for a build.
+
+    This involves seeing whether the archive is already available, and if not,
+    then requesting a build and waiting before downloading.
+
+    Args:
+      revision: A git commit hash.
+      build_dir: The directory to download the build into.
+      deps_patch: A patch which changes a dependency repository revision in
+          the DEPS, if applicable.
+      deps_patch_sha: The SHA1 hex digest of the above patch.
+
+    Returns:
+      File path of the downloaded file if successful, otherwise None.
+    """
+    abs_build_dir = os.path.abspath(build_dir)
+    fetch_build_func = lambda: self._GetBuildArchiveForRevision(
+        revision, self.opts.gs_bucket, self.opts.target_arch,
+        deps_patch_sha, abs_build_dir)
 
     # Downloaded archive file path, downloads build archive for given revision.
+    # This will be False if the build isn't yet available.
     downloaded_file = fetch_build_func()
 
-    # When build archive doesn't exists, post a build request to tryserver
+    # When build archive doesn't exist, post a build request to try server
     # and wait for the build to be produced.
     if not downloaded_file:
       downloaded_file = self._RequestBuildAndWait(
-          revision, fetch_build=fetch_build_func, patch=patch)
+          revision, fetch_build=fetch_build_func, patch=deps_patch)
       if not downloaded_file:
-        return False
+        return None
 
-    # Generic name for the archive, created when archive file is extracted.
-    output_dir = os.path.join(
-        abs_build_dir, GetZipFileName(target_arch=self.opts.target_arch))
-
-    # Unzip build archive directory.
-    try:
-      RemoveDirectoryTree(output_dir)
-      self.BackupOrRestoreOutputDirectory(restore=False)
-      # Build output directory based on target(e.g. out/Release, out/Debug).
-      target_build_output_dir = os.path.join(abs_build_dir, build_type)
-      ExtractZip(downloaded_file, abs_build_dir)
-      if not os.path.exists(output_dir):
-        # Due to recipe changes, the builds extract folder contains
-        # out/Release instead of full-build-<platform>/Release.
-        if os.path.exists(os.path.join(abs_build_dir, 'out', build_type)):
-          output_dir = os.path.join(abs_build_dir, 'out', build_type)
-        else:
-          raise IOError('Missing extracted folder %s ' % output_dir)
-
-      print 'Moving build from %s to %s' % (
-          output_dir, target_build_output_dir)
-      shutil.move(output_dir, target_build_output_dir)
-      return True
-    except Exception as e:
-      print 'Something went wrong while extracting archive file: %s' % e
-      self.BackupOrRestoreOutputDirectory(restore=True)
-      # Cleanup any leftovers from unzipping.
-      if os.path.exists(output_dir):
-        RemoveDirectoryTree(output_dir)
-    finally:
-      # Delete downloaded archive
-      if os.path.exists(downloaded_file):
-        os.remove(downloaded_file)
-    return False
+    return downloaded_file
 
   def _RequestBuildAndWait(self, git_revision, fetch_build, patch=None):
     """Triggers a try job for a build job.
@@ -1251,6 +1242,55 @@ class BisectPerformanceMetrics(object):
     if bisect_utils.IsMacHost():
       return MAX_MAC_BUILD_TIME
     raise NotImplementedError('Unsupported Platform "%s".' % sys.platform)
+
+  def _UnzipAndMoveBuildProducts(self, downloaded_file, build_dir,
+                                 build_type='Release'):
+    """Unzips the build archive and moves it to the build output directory.
+
+    The build output directory is whereever the binaries are expected to
+    be in order to start Chrome and run tests.
+
+    Args:
+      downloaded_file: File path of the downloaded zip file.
+      build_dir: Directory where the the zip file was downloaded to.
+      build_type: "Release" or "Debug".
+
+    Returns:
+      True if successful, False otherwise.
+    """
+    abs_build_dir = os.path.abspath(build_dir)
+    output_dir = os.path.join(
+        abs_build_dir, GetZipFileName(target_arch=self.opts.target_arch))
+
+    try:
+      RemoveDirectoryTree(output_dir)
+      self.BackupOrRestoreOutputDirectory(restore=False)
+      # Build output directory based on target(e.g. out/Release, out/Debug).
+      target_build_output_dir = os.path.join(abs_build_dir, build_type)
+      ExtractZip(downloaded_file, abs_build_dir)
+      if not os.path.exists(output_dir):
+        # Due to recipe changes, the builds extract folder contains
+        # out/Release instead of full-build-<platform>/Release.
+        if os.path.exists(os.path.join(abs_build_dir, 'out', build_type)):
+          output_dir = os.path.join(abs_build_dir, 'out', build_type)
+        else:
+          raise IOError('Missing extracted folder %s ' % output_dir)
+
+      print 'Moving build from %s to %s' % (
+          output_dir, target_build_output_dir)
+      shutil.move(output_dir, target_build_output_dir)
+      return True
+    except Exception as e:
+      print 'Something went wrong while extracting archive file: %s' % e
+      self.BackupOrRestoreOutputDirectory(restore=True)
+      # Cleanup any leftovers from unzipping.
+      if os.path.exists(output_dir):
+        RemoveDirectoryTree(output_dir)
+    finally:
+      # Delete downloaded archive
+      if os.path.exists(downloaded_file):
+        os.remove(downloaded_file)
+    return False
 
   def IsDownloadable(self, depot):
     """Checks if build can be downloaded based on target platform and depot."""
@@ -1389,11 +1429,16 @@ class BisectPerformanceMetrics(object):
             'DEPS checkout Failed for chromium revision : [%s]' % chromium_sha)
     return (None, None)
 
-  def BuildCurrentRevision(self, depot, revision=None):
-    """Builds chrome and performance_ui_tests on the current revision.
+  def _ObtainBuild(self, depot, revision=None):
+    """Obtains a build by either downloading or building directly.
+
+    Args:
+      depot: Dependency repository name.
+      revision: A git commit hash. If None is given, the currently checked-out
+          revision is built.
 
     Returns:
-      True if the build was successful.
+      True for success.
     """
     if self.opts.debug_ignore_build:
       return True
@@ -1404,7 +1449,7 @@ class BisectPerformanceMetrics(object):
     # Fetch build archive for the given revision from the cloud storage when
     # the storage bucket is passed.
     if self.IsDownloadable(depot) and revision:
-      build_success = self.DownloadCurrentBuild(revision, depot)
+      build_success = self._DownloadAndUnzipBuild(revision, depot)
     else:
       # These codes are executed when bisect bots builds binaries locally.
       build_success = self.builder.Build(depot, self.opts)
@@ -1801,7 +1846,7 @@ class BisectPerformanceMetrics(object):
     # Obtain a build for this revision. This may be done by requesting a build
     # from another builder, waiting for it and downloading it.
     start_build_time = time.time()
-    build_success = self.BuildCurrentRevision(depot, revision)
+    build_success = self._ObtainBuild(depot, revision)
     if not build_success:
       return ('Failed to build revision: [%s]' % str(revision),
               BUILD_RESULT_FAIL)
