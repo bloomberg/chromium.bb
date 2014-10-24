@@ -10,6 +10,7 @@
     # DO NOT remove the define until you are ready to rebaseline, and
     # AFTER the flag has been removed from skia.gyp in Chromium.
     'blink_skia_defines': [
+          'SK_FM_NEW_MATCH_FAMILY_STYLE_CHARACTER=1',
     ],
   },
 }
