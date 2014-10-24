@@ -18,7 +18,7 @@
 #include "gpu/config/dx_diag_node.h"
 #include "gpu/config/gpu_performance_stats.h"
 #include "gpu/gpu_export.h"
-#include "media/video/video_encode_accelerator.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gpu {
 
@@ -33,6 +33,34 @@ enum CollectInfoResult {
   kCollectInfoSuccess = 1,
   kCollectInfoNonFatalFailure = 2,
   kCollectInfoFatalFailure = 3
+};
+
+// Video profile.  This *must* match media::VideoCodecProfile.
+enum VideoCodecProfile {
+  VIDEO_CODEC_PROFILE_UNKNOWN = -1,
+  VIDEO_CODEC_PROFILE_MIN = VIDEO_CODEC_PROFILE_UNKNOWN,
+  H264PROFILE_BASELINE = 0,
+  H264PROFILE_MAIN = 1,
+  H264PROFILE_EXTENDED = 2,
+  H264PROFILE_HIGH = 3,
+  H264PROFILE_HIGH10PROFILE = 4,
+  H264PROFILE_HIGH422PROFILE = 5,
+  H264PROFILE_HIGH444PREDICTIVEPROFILE = 6,
+  H264PROFILE_SCALABLEBASELINE = 7,
+  H264PROFILE_SCALABLEHIGH = 8,
+  H264PROFILE_STEREOHIGH = 9,
+  H264PROFILE_MULTIVIEWHIGH = 10,
+  VP8PROFILE_ANY = 11,
+  VP9PROFILE_ANY = 12,
+  VIDEO_CODEC_PROFILE_MAX = VP9PROFILE_ANY,
+};
+
+// Specification of an encoding profile supported by a hardware encoder.
+struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
+  VideoCodecProfile profile;
+  gfx::Size max_resolution;
+  uint32 max_framerate_numerator;
+  uint32 max_framerate_denominator;
 };
 
 struct GPU_EXPORT GPUInfo {
@@ -178,7 +206,7 @@ struct GPU_EXPORT GPUInfo {
   DxDiagNode dx_diagnostics;
 #endif
 
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+  std::vector<VideoEncodeAcceleratorSupportedProfile>
       video_encode_accelerator_supported_profiles;
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
@@ -204,7 +232,7 @@ struct GPU_EXPORT GPUInfo {
     virtual void BeginGPUDevice() = 0;
     virtual void EndGPUDevice() = 0;
 
-    // Markers indicating that a VideoEncodeAccelerator::SupportedProfile is
+    // Markers indicating that a VideoEncodeAcceleratorSupportedProfile is
     // being described.
     virtual void BeginVideoEncodeAcceleratorSupportedProfile() = 0;
     virtual void EndVideoEncodeAcceleratorSupportedProfile() = 0;

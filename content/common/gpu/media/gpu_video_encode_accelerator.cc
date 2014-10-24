@@ -163,12 +163,29 @@ void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
 }
 
 // static
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
 GpuVideoEncodeAccelerator::GetSupportedProfiles() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder = CreateEncoder();
   if (!encoder)
-    return std::vector<media::VideoEncodeAccelerator::SupportedProfile>();
-  return encoder->GetSupportedProfiles();
+    return std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>();
+  return ConvertMediaToGpuProfiles(encoder->GetSupportedProfiles());
+}
+
+std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
+GpuVideoEncodeAccelerator::ConvertMediaToGpuProfiles(const std::vector<
+    media::VideoEncodeAccelerator::SupportedProfile>& media_profiles) {
+  std::vector<gpu::VideoEncodeAcceleratorSupportedProfile> profiles;
+  for (size_t i = 0; i < media_profiles.size(); i++) {
+    gpu::VideoEncodeAcceleratorSupportedProfile profile;
+    profile.profile =
+        static_cast<gpu::VideoCodecProfile>(media_profiles[i].profile);
+    profile.max_resolution = media_profiles[i].max_resolution;
+    profile.max_framerate_numerator = media_profiles[i].max_framerate_numerator;
+    profile.max_framerate_denominator =
+        media_profiles[i].max_framerate_denominator;
+    profiles.push_back(profile);
+  }
+  return profiles;
 }
 
 scoped_ptr<media::VideoEncodeAccelerator>

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "gpu/config/gpu_info.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/size.h"
@@ -58,8 +59,11 @@ class GpuVideoEncodeAccelerator
 
   // Static query for supported profiles.  This query calls the appropriate
   // platform-specific version.
-  static std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfiles();
+  static std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
+  GetSupportedProfiles();
+  static std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
+  ConvertMediaToGpuProfiles(const std::vector<
+      media::VideoEncodeAccelerator::SupportedProfile>& media_profiles);
 
  private:
   // Create the appropriate platform-specific VEA.

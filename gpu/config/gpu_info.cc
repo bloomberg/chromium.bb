@@ -19,7 +19,7 @@ void EnumerateGPUDevice(gpu::GPUInfo::Enumerator* enumerator,
 
 void EnumerateVideoEncodeAcceleratorSupportedProfile(
     gpu::GPUInfo::Enumerator* enumerator,
-    const media::VideoEncodeAccelerator::SupportedProfile profile) {
+    const gpu::VideoEncodeAcceleratorSupportedProfile profile) {
   enumerator->BeginVideoEncodeAcceleratorSupportedProfile();
   enumerator->AddInt("profile", profile.profile);
   enumerator->AddInt("maxResolutionWidth", profile.max_resolution.width());
@@ -101,7 +101,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     CollectInfoResult dx_diagnostics_info_state;
     DxDiagNode dx_diagnostics;
 #endif
-    std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+    std::vector<VideoEncodeAcceleratorSupportedProfile>
         video_encode_accelerator_supported_profiles;
   };
 

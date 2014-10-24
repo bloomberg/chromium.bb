@@ -12,6 +12,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -248,8 +249,9 @@ RendererGpuVideoAcceleratorFactories::GetTaskRunner() {
 std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 RendererGpuVideoAcceleratorFactories::
     GetVideoEncodeAcceleratorSupportedProfiles() {
-  return gpu_channel_host_->gpu_info()
-      .video_encode_accelerator_supported_profiles;
+  return GpuVideoEncodeAcceleratorHost::ConvertGpuToMediaProfiles(
+      gpu_channel_host_->gpu_info()
+          .video_encode_accelerator_supported_profiles);
 }
 
 }  // namespace content

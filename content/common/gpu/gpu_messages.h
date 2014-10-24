@@ -64,6 +64,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(gpu::CollectInfoResult,
                               gpu::kCollectInfoNone,
                               gpu::kCollectInfoFatalFailure)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(gpu::VideoCodecProfile,
+                              gpu::VIDEO_CODEC_PROFILE_MIN,
+                              gpu::VIDEO_CODEC_PROFILE_MAX)
 
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(int32, share_group_id)
@@ -138,7 +141,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo::GPUDevice)
   IPC_STRUCT_TRAITS_MEMBER(device_string)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::VideoEncodeAccelerator::SupportedProfile)
+IPC_STRUCT_TRAITS_BEGIN(gpu::VideoEncodeAcceleratorSupportedProfile)
   IPC_STRUCT_TRAITS_MEMBER(profile)
   IPC_STRUCT_TRAITS_MEMBER(max_resolution)
   IPC_STRUCT_TRAITS_MEMBER(max_framerate_numerator)

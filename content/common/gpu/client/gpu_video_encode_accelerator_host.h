@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "gpu/config/gpu_info.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -43,6 +44,10 @@ class GpuVideoEncodeAcceleratorHost
   // for |channel_| and |impl_|.)
   GpuVideoEncodeAcceleratorHost(GpuChannelHost* channel,
                                 CommandBufferProxyImpl* impl);
+
+  static std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+  ConvertGpuToMediaProfiles(const std::vector<
+      gpu::VideoEncodeAcceleratorSupportedProfile>& gpu_profiles);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
