@@ -387,7 +387,8 @@ void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
        target != popup_parent_host_view_->window_)) {
     // Note: popup_parent_host_view_ may be NULL when there are multiple
     // popup children per view. See: RenderWidgetHostViewAura::InitAsPopup().
-    Shutdown();
+    in_shutdown_ = true;
+    host_->Shutdown();
   }
 }
 
@@ -1827,7 +1828,10 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
         }
       }
     }
-    Shutdown();
+    if (!in_shutdown_) {
+      in_shutdown_ = true;
+      host_->Shutdown();
+    }
   } else {
     if (event->key_code() == ui::VKEY_RETURN) {
       // Do not forward return key release events if no press event was handled.
@@ -2217,15 +2221,9 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
           return;
       }
 #endif
-      Shutdown();
-      return;
+      in_shutdown_ = true;
+      host_->Shutdown();
     }
-
-    // Close the child popup window if we lose focus (e.g. due to a JS alert or
-    // system modal dialog). This is particularly important if
-    // |popup_child_host_view_| has mouse capture.
-    if (popup_child_host_view_)
-      popup_child_host_view_->Shutdown();
   }
 }
 
@@ -2314,13 +2312,6 @@ ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
   if (!root_window)
     return NULL;
   return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
-}
-
-void RenderWidgetHostViewAura::Shutdown() {
-  if (!in_shutdown_) {
-    in_shutdown_ = true;
-    host_->Shutdown();
-  }
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {
