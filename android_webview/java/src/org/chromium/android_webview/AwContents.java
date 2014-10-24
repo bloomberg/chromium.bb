@@ -340,8 +340,8 @@ public class AwContents {
                 mContentsClient.getCallbackHelper().postOnLoadResource(url);
             }
 
-            if (params.isMainFrame && awWebResourceResponse != null &&
-                    awWebResourceResponse.getData() == null) {
+            if (params.isMainFrame && awWebResourceResponse != null
+                    && awWebResourceResponse.getData() == null) {
                 // In this case the intercepted URLRequest job will simulate an empty response
                 // which doesn't trigger the onReceivedError callback. For WebViewClassic
                 // compatibility we synthesize that callback. http://crbug.com/180950
@@ -431,8 +431,9 @@ public class AwContents {
 
         @Override
         public boolean isLayoutParamsHeightWrapContent() {
-            return mContainerView.getLayoutParams() != null &&
-                    mContainerView.getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
+            return mContainerView.getLayoutParams() != null
+                    && (mContainerView.getLayoutParams().height
+                            == ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
         @Override
@@ -779,9 +780,9 @@ public class AwContents {
 
         long nativeWebContents = nativeGetWebContents(mNativeAwContents);
 
-        mWindowAndroid = mContext instanceof Activity ?
-                new ActivityWindowAndroid((Activity) mContext) :
-                new WindowAndroid(mContext.getApplicationContext());
+        mWindowAndroid = mContext instanceof Activity
+                ? new ActivityWindowAndroid((Activity) mContext)
+                : new WindowAndroid(mContext.getApplicationContext());
         mContentViewCore = createAndInitializeContentViewCore(
                 mContainerView, mContext, mInternalAccessAdapter, nativeWebContents,
                 new AwGestureStateListener(), mContentViewClient, mZoomControls, mWindowAndroid);
@@ -1111,8 +1112,8 @@ public class AwContents {
     public void loadUrl(LoadUrlParams params) {
         if (isDestroyed()) return;
 
-        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA &&
-                !params.isBaseUrlDataScheme()) {
+        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA
+                && !params.isBaseUrlDataScheme()) {
             // This allows data URLs with a non-data base URL access to file:///android_asset/ and
             // file:///android_res/ URLs. If AwSettings.getAllowFileAccess permits, it will also
             // allow access to file:// URLs (subject to OS level permission checks).
@@ -1120,9 +1121,9 @@ public class AwContents {
         }
 
         // If we are reloading the same url, then set transition type as reload.
-        if (params.getUrl() != null &&
-                params.getUrl().equals(mWebContents.getUrl()) &&
-                params.getTransitionType() == PageTransition.LINK) {
+        if (params.getUrl() != null
+                && params.getUrl().equals(mWebContents.getUrl())
+                && params.getTransitionType() == PageTransition.LINK) {
             params.setTransitionType(PageTransition.RELOAD);
         }
         params.setTransitionType(
@@ -1163,8 +1164,8 @@ public class AwContents {
             requestVisitedHistoryFromClient();
         }
 
-        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA &&
-                params.getBaseUrl() != null) {
+        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA
+                && params.getBaseUrl() != null) {
             // Data loads with a base url will be resolved in Blink, and not cause an onPageStarted
             // event to be sent. Sending the callback directly from here.
             mContentsClient.getCallbackHelper().postOnPageStarted(params.getBaseUrl());
@@ -2157,9 +2158,9 @@ public class AwContents {
 
     private void setPageScaleFactorAndLimits(
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor) {
-        if (mPageScaleFactor == pageScaleFactor &&
-                mMinPageScaleFactor == minPageScaleFactor &&
-                mMaxPageScaleFactor == maxPageScaleFactor) {
+        if (mPageScaleFactor == pageScaleFactor
+                && mMinPageScaleFactor == minPageScaleFactor
+                && mMaxPageScaleFactor == maxPageScaleFactor) {
             return;
         }
         mMinPageScaleFactor = minPageScaleFactor;
@@ -2292,9 +2293,9 @@ public class AwContents {
 
         private void updateHardwareAcceleratedFeaturesToggle() {
             mSettings.setEnableSupportedHardwareAcceleratedFeatures(
-                    mIsAttachedToWindow && mContainerView.isHardwareAccelerated() &&
-                            (mLayerType == View.LAYER_TYPE_NONE
-                            || mLayerType == View.LAYER_TYPE_HARDWARE));
+                    mIsAttachedToWindow && mContainerView.isHardwareAccelerated()
+                            && (mLayerType == View.LAYER_TYPE_NONE
+                                    || mLayerType == View.LAYER_TYPE_HARDWARE));
         }
 
         @Override
@@ -2354,8 +2355,8 @@ public class AwContents {
             if (mOverScrollGlow != null) {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     mOverScrollGlow.setShouldPull(true);
-                } else if (event.getActionMasked() == MotionEvent.ACTION_UP ||
-                        event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                } else if (event.getActionMasked() == MotionEvent.ACTION_UP
+                        || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
                     mOverScrollGlow.setShouldPull(false);
                     mOverScrollGlow.releaseAll();
                 }

@@ -198,8 +198,8 @@ class OverScrollGlow {
      * @return True if any glow is still animating
      */
     public boolean isAnimating() {
-        return (!mEdgeGlowTop.isFinished() || !mEdgeGlowBottom.isFinished() ||
-                !mEdgeGlowLeft.isFinished() || !mEdgeGlowRight.isFinished());
+        return (!mEdgeGlowTop.isFinished() || !mEdgeGlowBottom.isFinished()
+                || !mEdgeGlowLeft.isFinished() || !mEdgeGlowRight.isFinished());
     }
 
     /**

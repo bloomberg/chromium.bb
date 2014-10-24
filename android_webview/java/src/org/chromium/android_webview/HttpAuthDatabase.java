@@ -200,8 +200,8 @@ public class HttpAuthDatabase {
         final String[] columns = new String[] {
             HTTPAUTH_USERNAME_COL, HTTPAUTH_PASSWORD_COL
         };
-        final String selection = "(" + HTTPAUTH_HOST_COL + " == ?) AND " +
-                "(" + HTTPAUTH_REALM_COL + " == ?)";
+        final String selection = "(" + HTTPAUTH_HOST_COL + " == ?) AND "
+                + "(" + HTTPAUTH_REALM_COL + " == ?)";
 
         String[] ret = null;
         Cursor cursor = null;

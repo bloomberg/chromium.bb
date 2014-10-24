@@ -89,8 +89,8 @@ public class AndroidProtocolHandler {
         String assetType = pathSegments.get(1);
         String assetName = pathSegments.get(2);
         if (!("/" + assetPath + "/").equals(nativeGetAndroidResourcePath())) {
-            Log.e(TAG, "Resource path does not start with " + nativeGetAndroidResourcePath() +
-                    ": " + uri);
+            Log.e(TAG, "Resource path does not start with " + nativeGetAndroidResourcePath()
+                    + ": " + uri);
             return null;
         }
         // Drop the file extension.
@@ -166,8 +166,8 @@ public class AndroidProtocolHandler {
             if (uri.getScheme().equals(CONTENT_SCHEME)) {
                 return context.getContentResolver().getType(uri);
                 // Asset files may have a known extension.
-            } else if (uri.getScheme().equals(FILE_SCHEME) &&
-                       path.startsWith(nativeGetAndroidAssetPath())) {
+            } else if (uri.getScheme().equals(FILE_SCHEME)
+                       && path.startsWith(nativeGetAndroidAssetPath())) {
                 String mimeType = URLConnection.guessContentTypeFromName(path);
                 if (mimeType != null) {
                     return mimeType;

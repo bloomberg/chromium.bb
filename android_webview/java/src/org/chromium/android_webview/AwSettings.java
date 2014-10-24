@@ -300,8 +300,8 @@ public class AwSettings {
     public void setBlockNetworkLoads(boolean flag) {
         synchronized (mAwSettingsLock) {
             if (!flag && !mHasInternetPermission) {
-                throw new SecurityException("Permission denied - " +
-                        "application missing INTERNET permission");
+                throw new SecurityException("Permission denied - "
+                        + "application missing INTERNET permission");
             }
             mBlockNetworkLoads = flag;
         }
@@ -1438,8 +1438,8 @@ public class AwSettings {
      */
     public void setDefaultVideoPosterURL(String url) {
         synchronized (mAwSettingsLock) {
-            if (mDefaultVideoPosterURL != null && !mDefaultVideoPosterURL.equals(url) ||
-                    mDefaultVideoPosterURL == null && url != null) {
+            if (mDefaultVideoPosterURL != null && !mDefaultVideoPosterURL.equals(url)
+                    || mDefaultVideoPosterURL == null && url != null) {
                 mDefaultVideoPosterURL = url;
                 mEventHandler.updateWebkitPreferencesLocked();
             }
@@ -1563,8 +1563,8 @@ public class AwSettings {
     @CalledByNative
     private boolean getAllowDisplayingInsecureContentLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mMixedContentMode == MIXED_CONTENT_ALWAYS_ALLOW ||
-                mMixedContentMode == MIXED_CONTENT_COMPATIBILITY_MODE;
+        return mMixedContentMode == MIXED_CONTENT_ALWAYS_ALLOW
+                || mMixedContentMode == MIXED_CONTENT_COMPATIBILITY_MODE;
     }
 
     /**

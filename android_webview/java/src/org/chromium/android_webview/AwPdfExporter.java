@@ -90,8 +90,8 @@ public class AwPdfExporter {
         int horizontalDpi = attributes.getResolution().getHorizontalDpi();
         int verticalDpi = attributes.getResolution().getVerticalDpi();
         if (horizontalDpi != verticalDpi) {
-            Log.w(TAG, "Horizontal and vertical DPIs differ. Using horizontal DPI " +
-                    " hDpi=" + horizontalDpi + " vDPI=" + verticalDpi);
+            Log.w(TAG, "Horizontal and vertical DPIs differ. Using horizontal DPI "
+                    + " hDpi=" + horizontalDpi + " vDPI=" + verticalDpi);
         }
         return horizontalDpi;
     }

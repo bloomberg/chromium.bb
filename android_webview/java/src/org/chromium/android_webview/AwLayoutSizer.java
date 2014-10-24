@@ -109,13 +109,13 @@ public class AwLayoutSizer {
         // ignore changes to dimensions that are 'fixed'.
         final int heightPix = (int) (heightCss * mPageScaleFactor * mDIPScale);
         boolean pageScaleChanged = mPageScaleFactor != pageScaleFactor;
-        boolean contentHeightChangeMeaningful = !mHeightMeasurementIsFixed &&
-                (!mHeightMeasurementLimited || heightPix < mHeightMeasurementLimit);
+        boolean contentHeightChangeMeaningful = !mHeightMeasurementIsFixed
+                && (!mHeightMeasurementLimited || heightPix < mHeightMeasurementLimit);
         boolean pageScaleChangeMeaningful =
                 !mWidthMeasurementIsFixed || contentHeightChangeMeaningful;
-        boolean layoutNeeded = (mContentWidthCss != widthCss && !mWidthMeasurementIsFixed) ||
-                (mContentHeightCss != heightCss && contentHeightChangeMeaningful) ||
-                (pageScaleChanged && pageScaleChangeMeaningful);
+        boolean layoutNeeded = (mContentWidthCss != widthCss && !mWidthMeasurementIsFixed)
+                || (mContentHeightCss != heightCss && contentHeightChangeMeaningful)
+                || (pageScaleChanged && pageScaleChangeMeaningful);
 
         mContentWidthCss = widthCss;
         mContentHeightCss = heightCss;

@@ -194,8 +194,8 @@ public final class AwCookieManager {
                 IllegalStateException {
             if (callback == null) return null;
             if (Looper.myLooper() == null) {
-                throw new IllegalStateException("CookieCallback.convert should be called on " +
-                        "a thread with a running Looper.");
+                throw new IllegalStateException("CookieCallback.convert should be called on "
+                        + "a thread with a running Looper.");
             }
             return new CookieCallback<T>(callback, new Handler());
         }

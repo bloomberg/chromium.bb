@@ -25,8 +25,8 @@ class InputStreamUtil {
     private static final int EXCEPTION_THROWN_STATUS = -2;
 
     private static String logMessage(String method) {
-        return "Got exception when calling " + method + "() on an InputStream returned from " +
-            "shouldInterceptRequest. This will cause the related request to fail.";
+        return "Got exception when calling " + method + "() on an InputStream returned from "
+                + "shouldInterceptRequest. This will cause the related request to fail.";
     }
 
     @CalledByNative

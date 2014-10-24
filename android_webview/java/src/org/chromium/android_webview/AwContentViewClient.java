@@ -60,8 +60,8 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
 
     @Override
     public boolean shouldBlockMediaRequest(String url) {
-        return mAwSettings != null ?
-                mAwSettings.getBlockNetworkLoads() && URLUtil.isNetworkUrl(url) : true;
+        return mAwSettings != null
+                ? mAwSettings.getBlockNetworkLoads() && URLUtil.isNetworkUrl(url) : true;
     }
 
     @Override

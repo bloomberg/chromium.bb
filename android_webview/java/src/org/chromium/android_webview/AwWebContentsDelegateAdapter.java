@@ -81,8 +81,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     @Override
     public boolean takeFocus(boolean reverse) {
         int direction =
-                (reverse == (mContainerView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL)) ?
-                View.FOCUS_RIGHT : View.FOCUS_LEFT;
+                (reverse == (mContainerView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL))
+                ? View.FOCUS_RIGHT : View.FOCUS_LEFT;
         if (tryToMoveFocus(direction)) return true;
         direction = reverse ? View.FOCUS_UP : View.FOCUS_DOWN;
         return tryToMoveFocus(direction);

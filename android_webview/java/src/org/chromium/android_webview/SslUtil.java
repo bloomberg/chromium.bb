@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-public class SslUtil {
+class SslUtil {
     private static final String TAG = "SslUtil";
 
     /**
