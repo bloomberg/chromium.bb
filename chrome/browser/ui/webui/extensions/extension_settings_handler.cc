@@ -302,6 +302,9 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
                              OptionsPageInfo::ShouldOpenInTab(extension));
   extension_data->SetString("optionsPageHref",
                             OptionsPageInfo::GetOptionsPage(extension).spec());
+  extension_data->SetBoolean("enableExtensionInfoDialog",
+                             CommandLine::ForCurrentProcess()->HasSwitch(
+                                 switches::kEnableExtensionInfoDialog));
 
   // Add dependent extensions.
   base::ListValue* dependents_list = new base::ListValue;

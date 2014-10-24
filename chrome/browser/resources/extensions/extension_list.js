@@ -18,6 +18,7 @@
  *            dependentExtensions: Array,
  *            description: string,
  *            detailsUrl: string,
+ *            enableExtensionInfoDialog: boolean,
  *            enable_show_button: boolean,
  *            enabled: boolean,
  *            enabledIncognito: boolean,
@@ -308,7 +309,7 @@ cr.define('options', function() {
       });
 
       // The 'View in Web Store/View Web Site' link.
-      if (extension.homepageUrl) {
+      if (extension.homepageUrl && !extension.enableExtensionInfoDialog) {
         var siteLink = node.querySelector('.site-link');
         siteLink.href = extension.homepageUrl;
         siteLink.textContent = loadTimeData.getString(
