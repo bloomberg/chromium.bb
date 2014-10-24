@@ -1304,9 +1304,15 @@ void Browser::ShowDownload(content::DownloadItem* download) {
 
   // If the download occurs in a new tab, and it's not a save page
   // download (started before initial navigation completed) close it.
+  // Avoid calling CloseContents if the tab is not in this browser's tab strip
+  // model; this can happen if the download was initiated by something internal
+  // to Chrome, such as by the app list.
   WebContents* source = download->GetWebContents();
   if (source && source->GetController().IsInitialNavigation() &&
-      tab_strip_model_->count() > 1 && !download->IsSavePackageDownload()) {
+      tab_strip_model_->count() > 1 &&
+      tab_strip_model_->GetIndexOfWebContents(source) !=
+          TabStripModel::kNoTab &&
+      !download->IsSavePackageDownload()) {
     CloseContents(source);
   }
 
