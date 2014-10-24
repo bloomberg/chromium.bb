@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * @param {Element} playerContainer Main container.
  * @param {Element} videoContainer Container for the video element.

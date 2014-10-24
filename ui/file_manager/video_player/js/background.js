@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 // Stores the app windows OLNY for test purpose.
 // We SHOULD NOT use it as it is except for test, since the files which have
 // the same name will be overridden each other.

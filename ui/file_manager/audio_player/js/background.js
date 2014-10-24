@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * Icon of the audio player.
  * TODO(yoshiki): Consider providing an exact size icon, instead of relying

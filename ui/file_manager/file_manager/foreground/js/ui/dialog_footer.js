@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * Footer shown when the Files.app is opened as a file/folder selecting dialog.
  * @param {DialogType} dialogType Dialog type.

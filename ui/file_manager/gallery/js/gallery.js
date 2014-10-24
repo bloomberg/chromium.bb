@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * Called from the main frame when unloading.
  * @param {boolean=} opt_exiting True if the app is exiting.

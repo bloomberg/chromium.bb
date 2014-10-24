@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * @constructor
  * @param {ArrayBuffer} arrayBuffer An array of buffers to be read from.

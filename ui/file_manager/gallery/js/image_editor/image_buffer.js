@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * A stack of overlays that display itself and handle mouse events.
  * TODO(kaznacheev) Consider disbanding this class and moving

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * Drag selector used on the file list or the grid table.
  * TODO(hirono): Support drag selection for grid view. crbug.com/224832

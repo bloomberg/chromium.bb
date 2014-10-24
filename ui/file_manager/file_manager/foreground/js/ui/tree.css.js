@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * Custom version of chrome://resources/css/tree.css.js, adding support for
  * inverted arrow icons.
  */
 (function() {
+  'use strict';
+
   /**
    * @type {number}
    * @const

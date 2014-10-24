@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 /**
  * TODO(dzvorygin): Here we use this hack, since 'hidden' is standard
  * attribute and we can't use it's setter as usual.
