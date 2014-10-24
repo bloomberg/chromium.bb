@@ -151,6 +151,7 @@ enum WebAXRole {
     WebAXRoleOutline,
     WebAXRoleParagraph,
     WebAXRolePopUpButton,
+    WebAXRolePre,
     WebAXRolePresentational,
     WebAXRoleProgressIndicator,
     WebAXRoleRadioButton,

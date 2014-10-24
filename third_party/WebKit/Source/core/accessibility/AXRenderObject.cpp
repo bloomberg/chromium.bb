@@ -409,6 +409,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(asideTag))
         return ComplementaryRole;
 
+    if (node && node->hasTagName(preTag))
+        return PreRole;
+
     if (node && node->hasTagName(sectionTag))
         return RegionRole;
 

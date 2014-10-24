@@ -251,6 +251,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleNote, NoteRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleOutline, OutlineRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleParagraph, ParagraphRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRolePopUpButton, PopUpButtonRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRolePre, PreRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRolePresentational, PresentationalRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleProgressIndicator, ProgressIndicatorRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleRadioButton, RadioButtonRole);
