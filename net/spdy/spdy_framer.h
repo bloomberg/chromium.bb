@@ -709,35 +709,17 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyError error);
 
-  // The maximum size of the control frames that we support.
-  // This limit is arbitrary. We can enforce it here or at the application
-  // layer. We chose the framing layer, but this can be changed (or removed)
-  // if necessary later down the line.
-  size_t GetControlFrameBufferMaxSize() const {
-    // The theoretical maximum for SPDY3 and earlier is (2^24 - 1) +
-    // 8, since the length field does not count the size of the
-    // header.
-    if (spdy_version_ == SPDY2) {
-      return 64 * 1024;
-    }
-    if (spdy_version_ == SPDY3) {
-      return 16 * 1024 * 1024;
-    }
-    // Absolute maximum size of HTTP2 frame payload (section 4.2 "Frame size").
-    return (1<<14) - 1;
-  }
-
-  // TODO(jgraettinger): For h2-13 interop testing coverage,
-  // fragment at smaller payload boundaries.
-  size_t GetHeaderFragmentMaxSize() const {
-    return GetControlFrameBufferMaxSize() >> 4;  // 1023 bytes.
-  }
-
   // The size of the control frame buffer.
   // Since this is only used for control frame headers, the maximum control
   // frame header size (SYN_STREAM) is sufficient; all remaining control
   // frame data is streamed to the visitor.
   static const size_t kControlFrameBufferSize;
+
+  // The maximum size of the control frames that we support.
+  // This limit is arbitrary. We can enforce it here or at the application
+  // layer. We chose the framing layer, but this can be changed (or removed)
+  // if necessary later down the line.
+  static const size_t kMaxControlFrameSize;
 
   SpdyState state_;
   SpdyState previous_state_;

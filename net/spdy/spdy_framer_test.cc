@@ -502,6 +502,12 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     header_buffer_.reset(new char[header_buffer_size]);
   }
 
+  // Largest control frame that the SPDY implementation sends, including the
+  // size of the header.
+  static size_t sent_control_frame_max_size() {
+    return SpdyFramer::kMaxControlFrameSize;
+  }
+
   static size_t header_data_chunk_max_size() {
     return SpdyFramer::kHeaderDataChunkMaxSize;
   }
@@ -3147,12 +3153,12 @@ TEST_P(SpdyFramerTest, CreatePushPromiseThenContinuationUncompressed) {
         "PUSH_PROMISE and CONTINUATION frames with one byte of padding";
 
     const unsigned char kPartialPushPromiseFrameData[] = {
-        0x00, 0x03, 0xf6, 0x05,  // PUSH_PROMISE
+        0x00, 0x03, 0xf7, 0x05,  // PUSH_PROMISE
         0x08, 0x00, 0x00, 0x00,  // PADDED
         0x2a, 0x00, 0x00, 0x00,  // Stream 42
         0x00, 0x39, 0x00, 0x03,  // Promised stream 57
         0x78, 0x78, 0x78, 0x7f,  // xxx.
-        0x80, 0x07, 0x78, 0x78,  // ..xx
+        0x81, 0x07, 0x78, 0x78,  // ..xx
         0x78, 0x78, 0x78, 0x78,  // xxxx
         0x78, 0x78, 0x78, 0x78,  // xxxx
         0x78, 0x78, 0x78, 0x78,  // xxxx
@@ -3189,7 +3195,7 @@ TEST_P(SpdyFramerTest, CreatePushPromiseThenContinuationUncompressed) {
 
     SpdyPushPromiseIR push_promise(42, 57);
     push_promise.set_padding_len(1);
-    string big_value(framer.GetHeaderFragmentMaxSize(), 'x');
+    string big_value(TestSpdyVisitor::sent_control_frame_max_size(), 'x');
     push_promise.SetHeader("xxx", big_value);
     scoped_ptr<SpdySerializedFrame> frame(
         framer.SerializePushPromise(push_promise));
@@ -3211,8 +3217,9 @@ TEST_P(SpdyFramerTest, CreatePushPromiseThenContinuationUncompressed) {
 
     // Length of everything listed above except big_value.
     int len_non_data_payload = 31;
-    EXPECT_EQ(framer.GetHeaderFragmentMaxSize() + len_non_data_payload,
-              frame->size());
+    EXPECT_EQ(
+        TestSpdyVisitor::sent_control_frame_max_size() + len_non_data_payload,
+        frame->size());
 
     // Partially compare the PUSH_PROMISE frame against the template.
     const unsigned char* frame_data =
@@ -3224,7 +3231,7 @@ TEST_P(SpdyFramerTest, CreatePushPromiseThenContinuationUncompressed) {
                                   arraysize(kPartialPushPromiseFrameData));
 
     // Compare the CONTINUATION frame against the template.
-    frame_data += framer.GetHeaderFragmentMaxSize();
+    frame_data += TestSpdyVisitor::sent_control_frame_max_size();
     CompareCharArraysWithHexError(kDescription,
                                   frame_data,
                                   arraysize(kContinuationFrameData),
@@ -3395,14 +3402,15 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
   syn_stream.SetHeader("aa", "");
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSynStream(syn_stream));
   const size_t kBigValueSize =
-      framer.GetControlFrameBufferMaxSize() - control_frame->size();
+      TestSpdyVisitor::sent_control_frame_max_size() - control_frame->size();
 
   // Create a frame at exactly that size.
   string big_value(kBigValueSize, 'x');
   syn_stream.SetHeader("aa", big_value);
   control_frame.reset(framer.SerializeSynStream(syn_stream));
   EXPECT_TRUE(control_frame.get() != NULL);
-  EXPECT_EQ(framer.GetControlFrameBufferMaxSize(), control_frame->size());
+  EXPECT_EQ(TestSpdyVisitor::sent_control_frame_max_size(),
+            control_frame->size());
 
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
@@ -3416,7 +3424,10 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
   EXPECT_LT(kBigValueSize, visitor.header_buffer_length_);
 }
 
-TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
+// This test is disabled because Chromium is willing to accept control frames up
+// to the maximum size allowed by the specification, and SpdyFrameBuilder is not
+// capable of building larger frames.
+TEST_P(SpdyFramerTest, DISABLED_ControlFrameTooLarge) {
   if (spdy_version_ > SPDY3) {
     // TODO(jgraettinger): This test setup doesn't work with HPACK.
     return;
@@ -3430,7 +3441,8 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
   syn_stream.set_priority(1);
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSynStream(syn_stream));
   const size_t kBigValueSize =
-      framer.GetControlFrameBufferMaxSize() - control_frame->size() + 1;
+      SpdyConstants::GetFrameMaximumSize(spdy_version_) -
+      control_frame->size() + 1;
 
   // Create a frame at exatly that size.
   string big_value(kBigValueSize, 'x');
@@ -3441,7 +3453,7 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
   control_frame.reset(framer.SerializeSynStream(syn_stream));
 
   EXPECT_TRUE(control_frame.get() != NULL);
-  EXPECT_EQ(framer.GetControlFrameBufferMaxSize() + 1,
+  EXPECT_EQ(SpdyConstants::GetFrameMaximumSize(spdy_version_) + 1,
             control_frame->size());
 
   TestSpdyVisitor visitor(spdy_version_);
@@ -3468,12 +3480,13 @@ TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {
 
   // Exact payload length will change with HPACK, but this should be long
   // enough to cause an overflow.
-  const size_t kBigValueSize = framer.GetControlFrameBufferMaxSize();
+  const size_t kBigValueSize = kControlFrameSizeLimit;
   string big_value(kBigValueSize, 'x');
   headers.SetHeader("aa", big_value);
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeHeaders(headers));
   EXPECT_TRUE(control_frame.get() != NULL);
-  EXPECT_GT(control_frame->size(), framer.GetControlFrameBufferMaxSize());
+  EXPECT_GT(control_frame->size(),
+            TestSpdyVisitor::sent_control_frame_max_size());
 
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
@@ -3497,13 +3510,14 @@ TEST_P(SpdyFramerTest, TooLargePushPromiseFrameUsesContinuation) {
 
   // Exact payload length will change with HPACK, but this should be long
   // enough to cause an overflow.
-  const size_t kBigValueSize = framer.GetControlFrameBufferMaxSize();
+  const size_t kBigValueSize = kControlFrameSizeLimit;
   string big_value(kBigValueSize, 'x');
   push_promise.SetHeader("aa", big_value);
   scoped_ptr<SpdyFrame> control_frame(
       framer.SerializePushPromise(push_promise));
   EXPECT_TRUE(control_frame.get() != NULL);
-  EXPECT_GT(control_frame->size(), framer.GetControlFrameBufferMaxSize());
+  EXPECT_GT(control_frame->size(),
+            TestSpdyVisitor::sent_control_frame_max_size());
 
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(

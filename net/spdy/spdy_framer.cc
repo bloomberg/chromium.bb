@@ -77,6 +77,8 @@ const size_t kPadLengthFieldSize = 1;
 
 const SpdyStreamId SpdyFramer::kInvalidStream = static_cast<SpdyStreamId>(-1);
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
+// We fragment sent control frames at smaller payload boundaries.
+const size_t SpdyFramer::kMaxControlFrameSize = 1024;
 // The size of the control frame buffer. Must be >= the minimum size of the
 // largest control frame, which is SYN_STREAM. See GetSynStreamMinimumSize() for
 // calculation details.
@@ -163,6 +165,9 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version)
       end_stream_when_done_(false) {
   DCHECK_GE(spdy_version_, SPDY_MIN_VERSION);
   DCHECK_LE(spdy_version_, SPDY_MAX_VERSION);
+  DCHECK_LE(kMaxControlFrameSize,
+            SpdyConstants::GetFrameMaximumSize(spdy_version_) +
+                SpdyConstants::GetControlFrameHeaderSize(spdy_version_));
   Reset();
 }
 
@@ -1049,7 +1054,9 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
     return;
   }
 
-  if (current_frame_length_ > GetControlFrameBufferMaxSize()) {
+  if (current_frame_length_ >
+      SpdyConstants::GetFrameMaximumSize(protocol_version()) +
+          SpdyConstants::GetControlFrameHeaderSize(protocol_version())) {
     DLOG(WARNING) << "Received control frame with way too big of a payload: "
                   << current_frame_length_;
     set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
@@ -2659,7 +2666,7 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
           headers.name_value_block(), &hpack_encoding);
     }
     size += hpack_encoding.size();
-    if (size > GetHeaderFragmentMaxSize()) {
+    if (size > kMaxControlFrameSize) {
       size += GetNumberRequiredContinuationFrames(size) *
               GetContinuationMinimumSize();
       flags &= ~HEADERS_FLAG_END_HEADERS;
@@ -2767,7 +2774,7 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
         push_promise.name_value_block(), &hpack_encoding);
   }
   size += hpack_encoding.size();
-  if (size > GetHeaderFragmentMaxSize()) {
+  if (size > kMaxControlFrameSize) {
     size += GetNumberRequiredContinuationFrames(size) *
             GetContinuationMinimumSize();
     flags &= ~PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
@@ -2965,7 +2972,6 @@ size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers) {
 }
 
 size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
-  const size_t kMaxControlFrameSize = GetHeaderFragmentMaxSize();
   DCHECK_GT(protocol_version(), SPDY3);
   DCHECK_GT(size, kMaxControlFrameSize);
   size_t overflow = size - kMaxControlFrameSize;
@@ -2977,8 +2983,6 @@ void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
                                               SpdyStreamId stream_id,
                                               SpdyFrameType type,
                                               int padding_payload_len) {
-  const size_t kMaxControlFrameSize = GetHeaderFragmentMaxSize();
-
     uint8 end_flag = 0;
     uint8 flags = 0;
     if (type == HEADERS) {

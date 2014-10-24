@@ -52,7 +52,7 @@ const int32 kSpdyStreamInitialWindowSize = 64 * 1024;  // 64 KBytes
 // The maxmium possible control frame size allowed by the spec.
 const int32 kSpdyMaxControlFrameSize = (1 << 24) - 1;
 
-// The maximum control frame size we actually send/accept.
+// The maximum control frame size we accept.
 const int32 kControlFrameSizeLimit = 1 << 14;
 
 // Initial window size for a Spdy session in bytes.
