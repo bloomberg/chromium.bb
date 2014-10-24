@@ -33,6 +33,7 @@
 #include "core/html/parser/HTMLSrcsetParser.h"
 
 #include "core/dom/Document.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -354,7 +355,19 @@ static int selectionLogic(Vector<ImageCandidate>& imageCandidates, float deviceS
     return i;
 }
 
-static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sourceSize, Vector<ImageCandidate>& imageCandidates)
+static unsigned avoidDownloadIfHigherDensityResourceIsInCache(Vector<ImageCandidate>& imageCandidates, unsigned winner, Document* document)
+{
+    if (!document)
+        return winner;
+    for (unsigned i = imageCandidates.size() - 1; i > winner; --i) {
+        KURL url = document->completeURL(stripLeadingAndTrailingHTMLSpaces(imageCandidates[i].url()));
+        if (memoryCache()->resourceForURL(url))
+            return i;
+    }
+    return winner;
+}
+
+static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sourceSize, Vector<ImageCandidate>& imageCandidates, Document* document = nullptr)
 {
     const float defaultDensityValue = 1.0;
     bool ignoreSrc = false;
@@ -373,16 +386,15 @@ static ImageCandidate pickBestImageCandidate(float deviceScaleFactor, float sour
 
     std::stable_sort(imageCandidates.begin(), imageCandidates.end(), compareByDensity);
 
-    unsigned i = selectionLogic(imageCandidates, deviceScaleFactor, ignoreSrc);
-    ASSERT(i < imageCandidates.size());
+    unsigned winner = selectionLogic(imageCandidates, deviceScaleFactor, ignoreSrc);
+    ASSERT(winner < imageCandidates.size());
+    winner = avoidDownloadIfHigherDensityResourceIsInCache(imageCandidates, winner, document);
 
-    float winningDensity = imageCandidates[i].density();
-
-    unsigned winner = i;
+    float winningDensity = imageCandidates[winner].density();
     // 16. If an entry b in candidates has the same associated ... pixel density as an earlier entry a in candidates,
     // then remove entry b
-    while ((i > 0) && (imageCandidates[--i].density() == winningDensity))
-        winner = i;
+    while ((winner > 0) && (imageCandidates[winner - 1].density() == winningDensity))
+        --winner;
 
     return imageCandidates[winner];
 }
@@ -393,7 +405,7 @@ ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, float so
 
     parseImageCandidatesFromSrcsetAttribute(srcsetAttribute, imageCandidates, document);
 
-    return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates);
+    return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates, document);
 }
 
 ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, const String& srcsetAttribute, Document* document)
@@ -411,7 +423,7 @@ ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, float so
     if (!srcAttribute.isEmpty())
         imageCandidates.append(ImageCandidate(srcAttribute, 0, srcAttribute.length(), DescriptorParsingResult(), ImageCandidate::SrcOrigin));
 
-    return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates);
+    return pickBestImageCandidate(deviceScaleFactor, sourceSize, imageCandidates, document);
 }
 
 String bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate)
