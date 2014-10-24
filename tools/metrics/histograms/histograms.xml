@@ -10039,6 +10039,39 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Hotword.HotwordMediaStreamResult"
+    enum="HotwordMediaStreamResult">
+  <owner>amistry@chromium.org</owner>
+  <owner>rlp@chromium.org</owner>
+  <owner>somast@chromium.org</owner>
+  <summary>
+    Success or error when attempting to open a MediaStream for the microphone.
+    At most one success or error will be logged for an attempt to open a stream.
+  </summary>
+</histogram>
+
+<histogram name="Hotword.HotwordNaClMessageTimeout"
+    enum="HotwordNaClMessageTimeout">
+  <owner>amistry@chromium.org</owner>
+  <owner>rlp@chromium.org</owner>
+  <owner>somast@chromium.org</owner>
+  <summary>
+    Timeout occured while waiting for a message from the NaCl hotword detector
+    plugin. This value is the message that was expected to be received from the
+    plugin.
+  </summary>
+</histogram>
+
+<histogram name="Hotword.HotwordNaClPluginLoadResult"
+    enum="HotwordNaClPluginLoadResult">
+  <owner>amistry@chromium.org</owner>
+  <owner>rlp@chromium.org</owner>
+  <owner>somast@chromium.org</owner>
+  <summary>
+    Success or error when attempting to load the NaCl hotword detector plugin.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.AsyncValidationDuration" units="milliseconds">
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -45023,6 +45056,38 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Generic error"/>
   <int value="2" label="NaCl error"/>
   <int value="3" label="Microphone error"/>
+</enum>
+
+<enum name="HotwordMediaStreamResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown error"/>
+  <int value="2" label="NotSupportedError"/>
+  <int value="3" label="PermissionDeniedError"/>
+  <int value="4" label="ConstraintNotSatisfiedError"/>
+  <int value="5" label="OverconstrainedError"/>
+  <int value="6" label="NotFoundError"/>
+  <int value="7" label="AbortError"/>
+  <int value="8" label="SourceUnavailableError"/>
+  <int value="9" label="PermissionDismissedError"/>
+  <int value="10" label="InvalidStateError"/>
+  <int value="11" label="DevicesNotFoundError"/>
+  <int value="12" label="InvalidSecurityOriginError"/>
+</enum>
+
+<enum name="HotwordNaClMessageTimeout" type="int">
+  <int value="0" label="REQUEST_MODEL"/>
+  <int value="1" label="MODEL_LOADED"/>
+  <int value="2" label="READY_FOR_AUDIO"/>
+  <int value="3" label="STOPPED"/>
+  <int value="4" label="HOTWORD_DETECTED"/>
+  <int value="5" label="MS_CONFIGURED"/>
+</enum>
+
+<enum name="HotwordNaClPluginLoadResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown error"/>
+  <int value="2" label="Module crash"/>
+  <int value="3" label="Module not found"/>
 </enum>
 
 <enum name="HotwordPrefState" type="int">

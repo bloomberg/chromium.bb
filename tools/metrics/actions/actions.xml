@@ -3130,6 +3130,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Hotword.HotwordTrigger">
+  <owner>amistry@chromium.org</owner>
+  <owner>rlp@chromium.org</owner>
+  <owner>somast@chromium.org</owner>
+  <description>User triggered the hotword by saying 'Ok Google'.</description>
+</action>
+
 <action name="ImportLockDialogCocoa_Shown">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

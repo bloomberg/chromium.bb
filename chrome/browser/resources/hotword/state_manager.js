@@ -102,6 +102,34 @@ cr.define('hotword', function() {
   };
   var State_ = StateManager.State_;
 
+  var UmaMediaStreamOpenResults_ = {
+    // These first error are defined by the MediaStream spec:
+    // http://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-MediaStreamError
+    'NotSupportedError':
+        hotword.constants.UmaMediaStreamOpenResult.NOT_SUPPORTED,
+    'PermissionDeniedError':
+        hotword.constants.UmaMediaStreamOpenResult.PERMISSION_DENIED,
+    'ConstraintNotSatisfiedError':
+        hotword.constants.UmaMediaStreamOpenResult.CONSTRAINT_NOT_SATISFIED,
+    'OverconstrainedError':
+        hotword.constants.UmaMediaStreamOpenResult.OVERCONSTRAINED,
+    'NotFoundError': hotword.constants.UmaMediaStreamOpenResult.NOT_FOUND,
+    'AbortError': hotword.constants.UmaMediaStreamOpenResult.ABORT,
+    'SourceUnavailableError':
+        hotword.constants.UmaMediaStreamOpenResult.SOURCE_UNAVAILABLE,
+    // The next few errors are chrome-specific. See:
+    // content/renderer/media/user_media_client_impl.cc
+    // (UserMediaClientImpl::GetUserMediaRequestFailed)
+    'PermissionDismissedError':
+        hotword.constants.UmaMediaStreamOpenResult.PERMISSION_DISMISSED,
+    'InvalidStateError':
+        hotword.constants.UmaMediaStreamOpenResult.INVALID_STATE,
+    'DevicesNotFoundError':
+        hotword.constants.UmaMediaStreamOpenResult.DEVICES_NOT_FOUND,
+    'InvalidSecurityOriginError':
+        hotword.constants.UmaMediaStreamOpenResult.INVALID_SECURITY_ORIGIN
+  };
+
   StateManager.prototype = {
     /**
      * Request status details update. Intended to be called from the
@@ -199,12 +227,26 @@ cr.define('hotword', function() {
           navigator.webkitGetUserMedia(
               /** @type {MediaStreamConstraints} */ (constraints),
               function(stream) {
+                hotword.metrics.recordEnum(
+                    hotword.constants.UmaMetrics.MEDIA_STREAM_RESULT,
+                    hotword.constants.UmaMediaStreamOpenResult.SUCCESS,
+                    hotword.constants.UmaMediaStreamOpenResult.MAX);
                 if (!this.pluginManager_.initialize(naclArch, stream)) {
                   this.state_ = State_.ERROR;
                   this.shutdownPluginManager_();
                 }
               }.bind(this),
               function(error) {
+                if (error.name in UmaMediaStreamOpenResults_) {
+                  var metricValue = UmaMediaStreamOpenResults_[error.name];
+                } else {
+                  var metricValue =
+                      hotword.constants.UmaMediaStreamOpenResult.UNKNOWN;
+                }
+                hotword.metrics.recordEnum(
+                    hotword.constants.UmaMetrics.MEDIA_STREAM_RESULT,
+                    metricValue,
+                    hotword.constants.UmaMediaStreamOpenResult.MAX);
                 this.state_ = State_.ERROR;
                 this.pluginManager_ = null;
               }.bind(this));
@@ -285,6 +327,8 @@ cr.define('hotword', function() {
      */
     onTrigger_: function() {
       hotword.debug('Hotword triggered!');
+      chrome.metricsPrivate.recordUserAction(
+          hotword.constants.UmaMetrics.TRIGGER);
       assert(this.pluginManager_, 'No NaCl plugin loaded on trigger');
       // Detector implicitly stops when the hotword is detected.
       this.state_ = State_.STOPPED;

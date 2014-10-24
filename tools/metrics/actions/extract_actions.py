@@ -407,6 +407,9 @@ def AddExtensionActions(actions):
   actions.add('ConnectivityDiagnostics.UA.TestResultExpanded')
   actions.add('ConnectivityDiagnostics.UA.TestSuiteRun')
 
+  # Actions sent by 'Ok Google' Hotwording.
+  actions.add('Hotword.HotwordTrigger')
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 

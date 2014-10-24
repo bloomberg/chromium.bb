@@ -125,6 +125,68 @@ var SessionSource = {
 };
 
 /**
+ * MediaStream open success/errors to be reported via UMA.
+ * DO NOT remove or renumber values in this enum. Only add new ones.
+ * @enum {number}
+ */
+var UmaMediaStreamOpenResult = {
+  SUCCESS: 0,
+  UNKNOWN: 1,
+  NOT_SUPPORTED: 2,
+  PERMISSION_DENIED: 3,
+  CONSTRAINT_NOT_SATISFIED: 4,
+  OVERCONSTRAINED: 5,
+  NOT_FOUND: 6,
+  ABORT: 7,
+  SOURCE_UNAVAILABLE: 8,
+  PERMISSION_DISMISSED: 9,
+  INVALID_STATE: 10,
+  DEVICES_NOT_FOUND: 11,
+  INVALID_SECURITY_ORIGIN: 12,
+  MAX: 12
+};
+
+/**
+ * UMA metrics.
+ * DO NOT change these enum values.
+ * @enum {string}
+ */
+var UmaMetrics = {
+  TRIGGER: 'Hotword.HotwordTrigger',
+  MEDIA_STREAM_RESULT: 'Hotword.HotwordMediaStreamResult',
+  NACL_PLUGIN_LOAD_RESULT: 'Hotword.HotwordNaClPluginLoadResult',
+  NACL_MESSAGE_TIMEOUT: 'Hotword.HotwordNaClMessageTimeout'
+};
+
+/**
+ * Message waited for by NaCl plugin, to be reported via UMA.
+ * DO NOT remove or renumber values in this enum. Only add new ones.
+ * @enum {number}
+ */
+var UmaNaClMessageTimeout = {
+  REQUEST_MODEL: 0,
+  MODEL_LOADED: 1,
+  READY_FOR_AUDIO: 2,
+  STOPPED: 3,
+  HOTWORD_DETECTED: 4,
+  MS_CONFIGURED: 5,
+  MAX: 5
+};
+
+/**
+ * NaCl plugin load success/errors to be reported via UMA.
+ * DO NOT remove or renumber values in this enum. Only add new ones.
+ * @enum {number}
+ */
+var UmaNaClPluginLoadResult = {
+  SUCCESS: 0,
+  UNKNOWN: 1,
+  CRASH: 2,
+  NO_MODULE_FOUND: 3,
+  MAX: 3
+};
+
+/**
  * The browser UI language.
  * @const {string}
  */
@@ -144,7 +206,11 @@ return {
   File: File,
   NaClPlugin: NaClPlugin,
   SessionSource: SessionSource,
-  TimeoutMs: TimeoutMs
+  TimeoutMs: TimeoutMs,
+  UmaMediaStreamOpenResult: UmaMediaStreamOpenResult,
+  UmaMetrics: UmaMetrics,
+  UmaNaClMessageTimeout: UmaNaClMessageTimeout,
+  UmaNaClPluginLoadResult: UmaNaClPluginLoadResult
 };
 
 });

@@ -77,6 +77,8 @@ NaClManager.ManagerState_ = {
 };
 var ManagerState_ = NaClManager.ManagerState_;
 var Error_ = hotword.constants.Error;
+var UmaNaClMessageTimeout_ = hotword.constants.UmaNaClMessageTimeout;
+var UmaNaClPluginLoadResult_ = hotword.constants.UmaNaClPluginLoadResult;
 
 NaClManager.prototype.__proto__ = cr.EventTarget.prototype;
 
@@ -89,6 +91,18 @@ NaClManager.prototype.handleError_ = function(error) {
   var event = new Event(hotword.constants.Event.ERROR);
   event.data = error;
   this.dispatchEvent(event);
+};
+
+/**
+ * Record the result of loading the NaCl plugin to UMA.
+ * @param {!hotword.constants.UmaNaClPluginLoadResult} error
+ * @private
+ */
+NaClManager.prototype.logPluginLoadResult_ = function(error) {
+  hotword.metrics.recordEnum(
+      hotword.constants.UmaMetrics.NACL_PLUGIN_LOAD_RESULT,
+      error,
+      UmaNaClPluginLoadResult_.MAX);
 };
 
 /**
@@ -250,11 +264,16 @@ NaClManager.prototype.initialize = function(naclArch, stream) {
                             false);
 
     plugin.addEventListener('crash',
-                            this.handleError_.bind(this, Error_.NACL_CRASH),
+                            function() {
+                              this.handleError_(Error_.NACL_CRASH);
+                              this.logPluginLoadResult_(
+                                  UmaNaClPluginLoadResult_.CRASH);
+                            }.bind(this),
                             false);
     return true;
   }
   this.recognizerState_ = ManagerState_.ERROR;
+  this.logPluginLoadResult_(UmaNaClPluginLoadResult_.NO_MODULE_FOUND);
   return false;
 };
 
@@ -297,6 +316,30 @@ NaClManager.prototype.waitForMessage_ = function(timeout, message) {
       function() {
         this.recognizerState_ = ManagerState_.ERROR;
         this.handleError_(Error_.TIMEOUT);
+        switch (this.expectingMessage_) {
+          case hotword.constants.NaClPlugin.REQUEST_MODEL:
+            var metricValue = UmaNaClMessageTimeout_.REQUEST_MODEL;
+            break;
+          case hotword.constants.NaClPlugin.MODEL_LOADED:
+            var metricValue = UmaNaClMessageTimeout_.MODEL_LOADED;
+            break;
+          case hotword.constants.NaClPlugin.READY_FOR_AUDIO:
+            var metricValue = UmaNaClMessageTimeout_.READY_FOR_AUDIO;
+            break;
+          case hotword.constants.NaClPlugin.STOPPED:
+            var metricValue = UmaNaClMessageTimeout_.STOPPED;
+            break;
+          case hotword.constants.NaClPlugin.HOTWORD_DETECTED:
+            var metricValue = UmaNaClMessageTimeout_.HOTWORD_DETECTED;
+            break;
+          case hotword.constants.NaClPlugin.MS_CONFIGURED:
+            var metricValue = UmaNaClMessageTimeout_.MS_CONFIGURED;
+            break;
+        }
+        hotword.metrics.recordEnum(
+            hotword.constants.UmaMetrics.NACL_MESSAGE_TIMEOUT,
+            metricValue,
+            UmaNaClMessageTimeout_.MAX);
       }.bind(this), timeout);
   this.expectingMessage_ = message;
 };
@@ -323,6 +366,7 @@ NaClManager.prototype.handleRequestModel_ = function() {
   if (this.recognizerState_ != ManagerState_.LOADING) {
     return;
   }
+  this.logPluginLoadResult_(UmaNaClPluginLoadResult_.SUCCESS);
   this.sendDataToPlugin_(
       hotword.constants.NaClPlugin.MODEL_PREFIX + this.modelUrl_);
   this.waitForMessage_(hotword.constants.TimeoutMs.LONG,

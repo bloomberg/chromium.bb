@@ -91,6 +91,7 @@
         <include name="IDR_HOTWORD_LAUNCHER_MANAGER_JS" file="hotword/launcher_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_LOGGING_JS" file="hotword/logging.js" type="BINDATA" />
         <include name="IDR_HOTWORD_MANAGER_JS" file="hotword/manager.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_METRICS_JS" file="hotword/metrics.js" type="BINDATA" />
         <include name="IDR_HOTWORD_NACL_MANAGER_JS" file="hotword/nacl_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_PAGE_AUDIO_MANAGER_JS" file="hotword/page_audio_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_STATE_MANAGER_JS" file="hotword/state_manager.js" type="BINDATA" />
