@@ -1,40 +1,40 @@
-UNKNOWN_TYPE | Body$BillingIsShippingCheckboxB | Enter billing information (as it appears on your statement) | on
-NAME_FIRST | Body$BillingAddress$_firstName | First Name | 
-NAME_LAST | Body$BillingAddress$_lastName | Last Name | 
-ADDRESS_HOME_LINE1 | Body$BillingAddress$_address1 | Address Line 1 | 
-ADDRESS_HOME_LINE2 | Body$BillingAddress$_address2 | Address Line 2(optional) | 
-ADDRESS_HOME_CITY | Body$BillingAddress$_city | City | 
-ADDRESS_HOME_STATE | Body$BillingAddress$_state | State |   
-ADDRESS_HOME_ZIP | Body$BillingAddress$_zipcode | Zip Code | 
-PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_PrimaryPhone | Primary Phone | 
-UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | H
-UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | M
-UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | W
-PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_Alt1Phone | Alternate Phone2(optional) | 
-UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | H
-UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | M
-UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | W
-UNKNOWN_TYPE | Body$MobileAlerts | Enter billing information (as it appears on your statement) | on
-EMAIL_ADDRESS | Body$NewEmailAddress2 | Email Address | 
-UNKNOWN_TYPE | Body$WeeklyNewsletterSignup12 | Email Address | on
-UNKNOWN_TYPE | Body$TSNewsletterSignup2 | Email Address | on
-NAME_FIRST | Body$ShippingAddress$_firstName | First Name | 
-NAME_LAST | Body$ShippingAddress$_lastName | Last Name | 
-ADDRESS_HOME_LINE1 | Body$ShippingAddress$_address1 | Address Line 1 | 
-ADDRESS_HOME_LINE2 | Body$ShippingAddress$_address2 | Address Line 2(optional) | 
-ADDRESS_HOME_CITY | Body$ShippingAddress$_city | City | 
-ADDRESS_HOME_STATE | Body$ShippingAddress$_state | State |   
-ADDRESS_HOME_ZIP | Body$ShippingAddress$_zipcode | Zip Code | 
-PHONE_HOME_WHOLE_NUMBER | Body$ShippingAddress$_telephone | Phone Number | 
-UNKNOWN_TYPE | PaymentTypeSelection |  | 0
-CREDIT_CARD_NUMBER | Body$CCNumber | Card Number | 
-CREDIT_CARD_EXP_MONTH | Body$CCExpirationDateMonth | Expiration Date | 0
-CREDIT_CARD_EXP_4_DIGIT_YEAR | Body$CCExpirationDateYear | Expiration Date | 0
-CREDIT_CARD_NAME | Body$CCNameOnCard | Name on Card | 
-UNKNOWN_TYPE | IsDebitCard | Is this a Debit Card? | 1
-UNKNOWN_TYPE | IsDebitCard | Yes | 0
-UNKNOWN_TYPE | Body$SaveCC4Later | Is this a Debit Card? | on
-UNKNOWN_TYPE | PaymentTypeSelection | OR | 1
-UNKNOWN_TYPE | Body$NewPassword | Create Password (optional) | 
-UNKNOWN_TYPE | Body$RepeatNewPassword | Repeat Password (optional) | 
-UNKNOWN_TYPE | Body$NewPasswordHint | Password Hint (optional) | 
+UNKNOWN_TYPE | Body$BillingIsShippingCheckboxB | Enter billing information (as it appears on your statement) | on | Body$BillingIsShippingCheckboxB_1-default
+NAME_FIRST | Body$BillingAddress$_firstName | First Name |  | Body$BillingIsShippingCheckboxB_1-default
+NAME_LAST | Body$BillingAddress$_lastName | Last Name |  | Body$BillingIsShippingCheckboxB_1-default
+ADDRESS_HOME_LINE1 | Body$BillingAddress$_address1 | Address Line 1 |  | Body$BillingIsShippingCheckboxB_1-default
+ADDRESS_HOME_LINE2 | Body$BillingAddress$_address2 | Address Line 2(optional) |  | Body$BillingIsShippingCheckboxB_1-default
+ADDRESS_HOME_CITY | Body$BillingAddress$_city | City |  | Body$BillingIsShippingCheckboxB_1-default
+ADDRESS_HOME_STATE | Body$BillingAddress$_state | State |    | Body$BillingIsShippingCheckboxB_1-default
+ADDRESS_HOME_ZIP | Body$BillingAddress$_zipcode | Zip Code |  | Body$BillingIsShippingCheckboxB_1-default
+PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_PrimaryPhone | Primary Phone |  | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | H | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | M | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | W | Body$BillingIsShippingCheckboxB_1-default
+PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_Alt1Phone | Alternate Phone2(optional) |  | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | H | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | M | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | W | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$MobileAlerts | Enter billing information (as it appears on your statement) | on | Body$BillingIsShippingCheckboxB_1-default
+EMAIL_ADDRESS | Body$NewEmailAddress2 | Email Address |  | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$WeeklyNewsletterSignup12 | Email Address | on | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$TSNewsletterSignup2 | Email Address | on | Body$BillingIsShippingCheckboxB_1-default
+NAME_FIRST | Body$ShippingAddress$_firstName | First Name |  | Body$ShippingAddress$_firstName_1-default
+NAME_LAST | Body$ShippingAddress$_lastName | Last Name |  | Body$ShippingAddress$_firstName_1-default
+ADDRESS_HOME_LINE1 | Body$ShippingAddress$_address1 | Address Line 1 |  | Body$ShippingAddress$_firstName_1-default
+ADDRESS_HOME_LINE2 | Body$ShippingAddress$_address2 | Address Line 2(optional) |  | Body$ShippingAddress$_firstName_1-default
+ADDRESS_HOME_CITY | Body$ShippingAddress$_city | City |  | Body$ShippingAddress$_firstName_1-default
+ADDRESS_HOME_STATE | Body$ShippingAddress$_state | State |    | Body$ShippingAddress$_firstName_1-default
+ADDRESS_HOME_ZIP | Body$ShippingAddress$_zipcode | Zip Code |  | Body$ShippingAddress$_firstName_1-default
+PHONE_HOME_WHOLE_NUMBER | Body$ShippingAddress$_telephone | Phone Number |  | Body$ShippingAddress$_firstName_1-default
+UNKNOWN_TYPE | PaymentTypeSelection |  | 0 | Body$ShippingAddress$_firstName_1-default
+CREDIT_CARD_NUMBER | Body$CCNumber | Card Number |  | Body$ShippingAddress$_firstName_1-cc
+CREDIT_CARD_EXP_MONTH | Body$CCExpirationDateMonth | Expiration Date | 0 | Body$ShippingAddress$_firstName_1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | Body$CCExpirationDateYear | Expiration Date | 0 | Body$ShippingAddress$_firstName_1-cc
+CREDIT_CARD_NAME | Body$CCNameOnCard | Name on Card |  | Body$ShippingAddress$_firstName_1-cc
+UNKNOWN_TYPE | IsDebitCard | Is this a Debit Card? | 1 | Body$ShippingAddress$_firstName_1-default
+UNKNOWN_TYPE | IsDebitCard | Yes | 0 | Body$ShippingAddress$_firstName_1-default
+UNKNOWN_TYPE | Body$SaveCC4Later | Is this a Debit Card? | on | Body$ShippingAddress$_firstName_1-default
+UNKNOWN_TYPE | PaymentTypeSelection | OR | 1 | Body$ShippingAddress$_firstName_1-default
+UNKNOWN_TYPE | Body$NewPassword | Create Password (optional) |  | Body$ShippingAddress$_firstName_1-default
+UNKNOWN_TYPE | Body$RepeatNewPassword | Repeat Password (optional) |  | Body$ShippingAddress$_firstName_1-default
+UNKNOWN_TYPE | Body$NewPasswordHint | Password Hint (optional) |  | Body$ShippingAddress$_firstName_1-default

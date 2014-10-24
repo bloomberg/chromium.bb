@@ -1,15 +1,15 @@
-NAME_FIRST | user[billing][firstname] | First Name | 
-NAME_LAST | user[billing][lastname] | Last Name | 
-ADDRESS_HOME_LINE1 | user[billing][address_first] | Billing Address | 
-ADDRESS_HOME_LINE2 | user[billing][address_second] | Billing Suite/Apt # | 
-ADDRESS_HOME_CITY | user[billing][city] | Billing City | 
-ADDRESS_HOME_STATE | user[billing][state] | State/Province | CA
-ADDRESS_HOME_ZIP | user[billing][zip] | Billing Postal Code | 94043
-ADDRESS_HOME_COUNTRY | user[billing][country] | Billing Country | US
-PHONE_HOME_WHOLE_NUMBER | user[phone_first] | Phone Number | 
-EMAIL_ADDRESS | user[email] | Email Address | 
-EMAIL_ADDRESS | user[email_confirm] | Confirm Email Address | 
-CREDIT_CARD_NUMBER | payment[cc_number] | Credit Card Number | 
-CREDIT_CARD_EXP_MONTH | payment[cc_expmo] | Expiration Month | 
-CREDIT_CARD_EXP_4_DIGIT_YEAR | payment[cc_expyr] | Expiration Year | 
-CREDIT_CARD_VERIFICATION_CODE | payment[sigpanel] | CVV2/Panel Code | 
+NAME_FIRST | user[billing][firstname] | First Name |  | user[billing][firstname]_1-default
+NAME_LAST | user[billing][lastname] | Last Name |  | user[billing][firstname]_1-default
+ADDRESS_HOME_LINE1 | user[billing][address_first] | Billing Address |  | user[billing][firstname]_1-default
+ADDRESS_HOME_LINE2 | user[billing][address_second] | Billing Suite/Apt # |  | user[billing][firstname]_1-default
+ADDRESS_HOME_CITY | user[billing][city] | Billing City |  | user[billing][firstname]_1-default
+ADDRESS_HOME_STATE | user[billing][state] | State/Province | CA | user[billing][firstname]_1-default
+ADDRESS_HOME_ZIP | user[billing][zip] | Billing Postal Code | 94043 | user[billing][firstname]_1-default
+ADDRESS_HOME_COUNTRY | user[billing][country] | Billing Country | US | user[billing][firstname]_1-default
+PHONE_HOME_WHOLE_NUMBER | user[phone_first] | Phone Number |  | user[billing][firstname]_1-default
+EMAIL_ADDRESS | user[email] | Email Address |  | user[billing][firstname]_1-default
+EMAIL_ADDRESS | user[email_confirm] | Confirm Email Address |  | user[billing][firstname]_1-default
+CREDIT_CARD_NUMBER | payment[cc_number] | Credit Card Number |  | user[billing][firstname]_1-cc
+CREDIT_CARD_EXP_MONTH | payment[cc_expmo] | Expiration Month |  | user[billing][firstname]_1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | payment[cc_expyr] | Expiration Year |  | user[billing][firstname]_1-cc
+CREDIT_CARD_VERIFICATION_CODE | payment[sigpanel] | CVV2/Panel Code |  | user[billing][firstname]_1-cc

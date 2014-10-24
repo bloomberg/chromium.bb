@@ -76,24 +76,19 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   AutofillManager* autofill_manager = autofill_driver->autofill_manager();
   ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
   std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();
-  *output = FormStructureBrowserTest::FormStructuresToString(forms);
+  *output = FormStructuresToString(forms);
 }
 
 std::string FormStructureBrowserTest::FormStructuresToString(
     const std::vector<FormStructure*>& forms) {
   std::string forms_string;
-  for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
-       iter != forms.end();
-       ++iter) {
-
-    for (std::vector<AutofillField*>::const_iterator field_iter =
-            (*iter)->begin();
-         field_iter != (*iter)->end();
-         ++field_iter) {
-      forms_string += (*field_iter)->Type().ToString();
-      forms_string += " | " + base::UTF16ToUTF8((*field_iter)->name);
-      forms_string += " | " + base::UTF16ToUTF8((*field_iter)->label);
-      forms_string += " | " + base::UTF16ToUTF8((*field_iter)->value);
+  for (const FormStructure* form : forms) {
+    for (const AutofillField* field : *form) {
+      forms_string += field->Type().ToString();
+      forms_string += " | " + base::UTF16ToUTF8(field->name);
+      forms_string += " | " + base::UTF16ToUTF8(field->label);
+      forms_string += " | " + base::UTF16ToUTF8(field->value);
+      forms_string += " | " + field->section();
       forms_string += "\n";
     }
   }

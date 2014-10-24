@@ -1,17 +1,17 @@
-UNKNOWN_TYPE | accountType | Account TypeWhat's this? | 2
-UNKNOWN_TYPE | accountType | Personal | 7
-UNKNOWN_TYPE | accountType | Musician | 15
-UNKNOWN_TYPE | accountType | Comedian | 9
-NAME_FIRST | tbxFirstName | First Name | 
-NAME_LAST | tbxLastName | Last Name | 
-UNKNOWN_TYPE | tbxMusicianName | Artist Name | 
-UNKNOWN_TYPE | ddlGenre | Genre | 
-UNKNOWN_TYPE | ddlLabel | Label Type | 
-EMAIL_ADDRESS | tbxEmail | Email | 
-UNKNOWN_TYPE | tbxPassword | Password | 
-UNKNOWN_TYPE | tbxPassword1 | Confirm Password | 
-UNKNOWN_TYPE | ddlMonth | Birthday | 
-UNKNOWN_TYPE | ddlDay |  | 
-UNKNOWN_TYPE | ddlYear |  | 
-UNKNOWN_TYPE | rblGender | Gender | M
-UNKNOWN_TYPE | rblGender | Male | F
+UNKNOWN_TYPE | accountType | Account TypeWhat's this? | 2 | accountType_1-default
+UNKNOWN_TYPE | accountType | Personal | 7 | accountType_1-default
+UNKNOWN_TYPE | accountType | Musician | 15 | accountType_1-default
+UNKNOWN_TYPE | accountType | Comedian | 9 | accountType_1-default
+NAME_FIRST | tbxFirstName | First Name |  | accountType_1-default
+NAME_LAST | tbxLastName | Last Name |  | accountType_1-default
+UNKNOWN_TYPE | tbxMusicianName | Artist Name |  | accountType_1-default
+UNKNOWN_TYPE | ddlGenre | Genre |  | accountType_1-default
+UNKNOWN_TYPE | ddlLabel | Label Type |  | accountType_1-default
+EMAIL_ADDRESS | tbxEmail | Email |  | accountType_1-default
+UNKNOWN_TYPE | tbxPassword | Password |  | accountType_1-default
+UNKNOWN_TYPE | tbxPassword1 | Confirm Password |  | accountType_1-default
+UNKNOWN_TYPE | ddlMonth | Birthday |  | accountType_1-default
+UNKNOWN_TYPE | ddlDay |  |  | accountType_1-default
+UNKNOWN_TYPE | ddlYear |  |  | accountType_1-default
+UNKNOWN_TYPE | rblGender | Gender | M | accountType_1-default
+UNKNOWN_TYPE | rblGender | Male | F | accountType_1-default

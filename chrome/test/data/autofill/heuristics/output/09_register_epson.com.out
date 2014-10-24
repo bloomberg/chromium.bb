@@ -1,6 +1,6 @@
-NAME_FIRST | fname | * First Name | 
-NAME_LAST | lname | * Last Name | 
-EMAIL_ADDRESS | emLogin | * E-mail address | 
-UNKNOWN_TYPE | pw | * Password | 
-UNKNOWN_TYPE | verifypw | * Re-Confirm Password | 
-UNKNOWN_TYPE | wantMsg |  | on
+NAME_FIRST | fname | * First Name |  | fname_1-default
+NAME_LAST | lname | * Last Name |  | fname_1-default
+EMAIL_ADDRESS | emLogin | * E-mail address |  | fname_1-default
+UNKNOWN_TYPE | pw | * Password |  | fname_1-default
+UNKNOWN_TYPE | verifypw | * Re-Confirm Password |  | fname_1-default
+UNKNOWN_TYPE | wantMsg |  | on | fname_1-default

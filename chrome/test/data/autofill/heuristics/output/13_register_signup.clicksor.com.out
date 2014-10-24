@@ -1,16 +1,16 @@
-EMAIL_ADDRESS | email1 | Email: | 
-EMAIL_ADDRESS | email2 | Confirm                           email: | 
-UNKNOWN_TYPE | website | Website: | 
-PHONE_HOME_WHOLE_NUMBER | phone | Phone: | 
-UNKNOWN_TYPE | timezone | Time Zone: | 1
-UNKNOWN_TYPE | password | Password: | 
-UNKNOWN_TYPE | RePassword | Confirm                           password: | 
-NAME_FULL | name | Name: | 
-COMPANY_NAME | company | Company: | 
-ADDRESS_HOME_LINE1 | address | Address: | 
-ADDRESS_HOME_CITY | city | City: | 
-ADDRESS_HOME_STATE | province | State: | 
-ADDRESS_HOME_ZIP | zipCode | Zip                           code: | 
-ADDRESS_HOME_COUNTRY | country | Country: | US
-UNKNOWN_TYPE | termcheck | Country: | ON
-UNKNOWN_TYPE | securityCode | Enter                           the security code shown below: | 
+EMAIL_ADDRESS | email1 | Email: |  | email1_1-default
+EMAIL_ADDRESS | email2 | Confirm                           email: |  | email1_1-default
+UNKNOWN_TYPE | website | Website: |  | email1_1-default
+PHONE_HOME_WHOLE_NUMBER | phone | Phone: |  | email1_1-default
+UNKNOWN_TYPE | timezone | Time Zone: | 1 | email1_1-default
+UNKNOWN_TYPE | password | Password: |  | email1_1-default
+UNKNOWN_TYPE | RePassword | Confirm                           password: |  | email1_1-default
+NAME_FULL | name | Name: |  | email1_1-default
+COMPANY_NAME | company | Company: |  | email1_1-default
+ADDRESS_HOME_LINE1 | address | Address: |  | email1_1-default
+ADDRESS_HOME_CITY | city | City: |  | email1_1-default
+ADDRESS_HOME_STATE | province | State: |  | email1_1-default
+ADDRESS_HOME_ZIP | zipCode | Zip                           code: |  | email1_1-default
+ADDRESS_HOME_COUNTRY | country | Country: | US | email1_1-default
+UNKNOWN_TYPE | termcheck | Country: | ON | email1_1-default
+UNKNOWN_TYPE | securityCode | Enter                           the security code shown below: |  | email1_1-default

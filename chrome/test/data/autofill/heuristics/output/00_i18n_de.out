@@ -1,14 +1,14 @@
-NAME_FIRST | fn | Vorname: | 
-NAME_LAST | ln | Nachname: | 
-COMPANY_NAME | cm | Firmenname: | 
-ADDRESS_HOME_LINE1 | a1 | Straße und Hausnummer: | 
-ADDRESS_HOME_LINE2 | a2 | Adresszusatz: | 
-ADDRESS_HOME_CITY | ct | Stadt: | 
-ADDRESS_HOME_ZIP | zc | Postleitzahl: | 
-ADDRESS_HOME_STATE | st | Land: | 
-EMAIL_ADDRESS | em | E-Mail-Adresse: | 
-PHONE_HOME_WHOLE_NUMBER | ph | Telefonnummer: | 
-CREDIT_CARD_NAME | c1 | Karteninhaber: | 
-CREDIT_CARD_NUMBER | c2 | Kartennummer: | 
-CREDIT_CARD_EXP_MONTH | c3 | gültig bis monat: | 
-CREDIT_CARD_EXP_4_DIGIT_YEAR | c4 | gültig bis jahr: | 
+NAME_FIRST | fn | Vorname: |  | fn_1-default
+NAME_LAST | ln | Nachname: |  | fn_1-default
+COMPANY_NAME | cm | Firmenname: |  | fn_1-default
+ADDRESS_HOME_LINE1 | a1 | Straße und Hausnummer: |  | fn_1-default
+ADDRESS_HOME_LINE2 | a2 | Adresszusatz: |  | fn_1-default
+ADDRESS_HOME_CITY | ct | Stadt: |  | fn_1-default
+ADDRESS_HOME_ZIP | zc | Postleitzahl: |  | fn_1-default
+ADDRESS_HOME_STATE | st | Land: |  | fn_1-default
+EMAIL_ADDRESS | em | E-Mail-Adresse: |  | fn_1-default
+PHONE_HOME_WHOLE_NUMBER | ph | Telefonnummer: |  | fn_1-default
+CREDIT_CARD_NAME | c1 | Karteninhaber: |  | fn_1-cc
+CREDIT_CARD_NUMBER | c2 | Kartennummer: |  | fn_1-cc
+CREDIT_CARD_EXP_MONTH | c3 | gültig bis monat: |  | fn_1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | c4 | gültig bis jahr: |  | fn_1-cc

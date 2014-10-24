@@ -1,24 +1,24 @@
-EMAIL_ADDRESS | E1 | Email Address * | 
-NAME_FIRST | F1 | First Name * | 
-NAME_LAST | L1 | Last Name * | 
-ADDRESS_HOME_LINE1 | S1 | Address Line 1 * | 
-ADDRESS_HOME_LINE2 | R1 | Address Line 2 | 
-ADDRESS_HOME_CITY | C2 | City * | 
-ADDRESS_HOME_STATE | S2 | State * | 
-ADDRESS_HOME_COUNTRY | C3 | Country * | 0000
-ADDRESS_HOME_ZIP | Z1 | Zip Code * | 
-PHONE_HOME_WHOLE_NUMBER | P2 | Day Phone * | 
-PHONE_HOME_WHOLE_NUMBER | P3 | Evening Phone | 
-UNKNOWN_TYPE | P1 | Create Password * | 
-UNKNOWN_TYPE | PasswordConfirm | Confirm Password * | 
-NAME_FIRST | SF1 | First Name * | 
-NAME_LAST | SL1 | Last Name * | 
-ADDRESS_HOME_LINE1 | SS1 | Address Line 1 * | 
-ADDRESS_HOME_LINE2 | SR1 | Address Line 2 | 
-ADDRESS_HOME_CITY | SC2 | City * | 
-ADDRESS_HOME_STATE | SS2 | State * | 
-ADDRESS_HOME_COUNTRY | SC3 | Country * | 0000
-ADDRESS_HOME_ZIP | SZ1 | Zip Code * | 
-PHONE_HOME_WHOLE_NUMBER | SP2 | Day Phone * | 
-PHONE_HOME_WHOLE_NUMBER | SP3 | Evening Phone | 
-UNKNOWN_TYPE | sameAsBilling | Email Address * First Name * Last Name Address Line 1 First Name Last Name | on
+EMAIL_ADDRESS | E1 | Email Address * |  | E1_1-default
+NAME_FIRST | F1 | First Name * |  | E1_1-default
+NAME_LAST | L1 | Last Name * |  | E1_1-default
+ADDRESS_HOME_LINE1 | S1 | Address Line 1 * |  | E1_1-default
+ADDRESS_HOME_LINE2 | R1 | Address Line 2 |  | E1_1-default
+ADDRESS_HOME_CITY | C2 | City * |  | E1_1-default
+ADDRESS_HOME_STATE | S2 | State * |  | E1_1-default
+ADDRESS_HOME_COUNTRY | C3 | Country * | 0000 | E1_1-default
+ADDRESS_HOME_ZIP | Z1 | Zip Code * |  | E1_1-default
+PHONE_HOME_WHOLE_NUMBER | P2 | Day Phone * |  | E1_1-default
+PHONE_HOME_WHOLE_NUMBER | P3 | Evening Phone |  | E1_1-default
+UNKNOWN_TYPE | P1 | Create Password * |  | E1_1-default
+UNKNOWN_TYPE | PasswordConfirm | Confirm Password * |  | E1_1-default
+NAME_FIRST | SF1 | First Name * |  | SF1_1-default
+NAME_LAST | SL1 | Last Name * |  | SF1_1-default
+ADDRESS_HOME_LINE1 | SS1 | Address Line 1 * |  | SF1_1-default
+ADDRESS_HOME_LINE2 | SR1 | Address Line 2 |  | SF1_1-default
+ADDRESS_HOME_CITY | SC2 | City * |  | SF1_1-default
+ADDRESS_HOME_STATE | SS2 | State * |  | SF1_1-default
+ADDRESS_HOME_COUNTRY | SC3 | Country * | 0000 | SF1_1-default
+ADDRESS_HOME_ZIP | SZ1 | Zip Code * |  | SF1_1-default
+PHONE_HOME_WHOLE_NUMBER | SP2 | Day Phone * |  | SF1_1-default
+PHONE_HOME_WHOLE_NUMBER | SP3 | Evening Phone |  | SF1_1-default
+UNKNOWN_TYPE | sameAsBilling | Email Address * First Name * Last Name Address Line 1 First Name Last Name | on | SF1_1-default

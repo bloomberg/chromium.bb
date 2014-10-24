@@ -1,53 +1,53 @@
-HTML_TYPE_NAME | na |  | 
-UNKNOWN_TYPE | np |  | 
-HTML_TYPE_GIVEN_NAME | ng |  | 
-HTML_TYPE_ADDITIONAL_NAME | nm |  | 
-HTML_TYPE_ADDITIONAL_NAME_INITIAL | n1 |  | 
-HTML_TYPE_FAMILY_NAME | nf |  | 
-UNKNOWN_TYPE | ns |  | 
-UNKNOWN_TYPE | nn |  | 
-UNKNOWN_TYPE | no |  | 
-HTML_TYPE_ORGANIZATION | ao |  | 
-HTML_TYPE_STREET_ADDRESS | af |  | 
-HTML_TYPE_ADDRESS_LINE1 | a1 |  | 
-HTML_TYPE_ADDRESS_LINE2 | a2 |  | 
-HTML_TYPE_ADDRESS_LINE3 | a3 |  | 
-HTML_TYPE_ADDRESS_LEVEL1 | al1 |  | 
-HTML_TYPE_ADDRESS_LEVEL2 | al2 |  | 
-HTML_TYPE_ADDRESS_LEVEL3 | al3 |  | 
-UNKNOWN_TYPE | al4 |  | 
-HTML_TYPE_COUNTRY_CODE | ac |  | 
-HTML_TYPE_COUNTRY_NAME | an |  | 
-HTML_TYPE_POSTAL_CODE | ap |  | 
-HTML_TYPE_CREDIT_CARD_NAME | cn |  | 
-UNKNOWN_TYPE | cg |  | 
-UNKNOWN_TYPE | ca |  | 
-UNKNOWN_TYPE | cf |  | 
-HTML_TYPE_CREDIT_CARD_NUMBER | cc |  | 
-HTML_TYPE_CREDIT_CARD_EXP | ce |  | 
-HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR | c5 |  | 
-HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | c7 |  | 
-HTML_TYPE_CREDIT_CARD_EXP_MONTH | cm |  | 
-HTML_TYPE_CREDIT_CARD_EXP_YEAR | cy |  | 
-HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR | c2 |  | 
-HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR | c4 |  | 
-HTML_TYPE_CREDIT_CARD_VERIFICATION_CODE | cs |  | 
-HTML_TYPE_CREDIT_CARD_TYPE | ct |  | 
-UNKNOWN_TYPE | xl |  | 
-UNKNOWN_TYPE | xb |  | 
-UNKNOWN_TYPE | xd |  | 
-UNKNOWN_TYPE | xm |  | 
-UNKNOWN_TYPE | xy |  | 
-UNKNOWN_TYPE | xs |  | 
-UNKNOWN_TYPE | xu |  | 
-UNKNOWN_TYPE | xp |  | 
-HTML_TYPE_EMAIL | em |  | 
-UNKNOWN_TYPE | im |  | 
-HTML_TYPE_TEL | tt |  | 
-HTML_TYPE_TEL_COUNTRY_CODE | tc |  | 
-HTML_TYPE_TEL_NATIONAL | tn |  | 
-HTML_TYPE_TEL_AREA_CODE | ta |  | 
-HTML_TYPE_TEL_LOCAL | tl |  | 
-HTML_TYPE_TEL_LOCAL_PREFIX | tp |  | 
-HTML_TYPE_TEL_LOCAL_SUFFIX | ts |  | 
-UNKNOWN_TYPE | te |  | 
+HTML_TYPE_NAME | na |  |  | na_1-default
+UNKNOWN_TYPE | np |  |  | na_1-default
+HTML_TYPE_GIVEN_NAME | ng |  |  | na_1-default
+HTML_TYPE_ADDITIONAL_NAME | nm |  |  | na_1-default
+HTML_TYPE_ADDITIONAL_NAME_INITIAL | n1 |  |  | na_1-default
+HTML_TYPE_FAMILY_NAME | nf |  |  | na_1-default
+UNKNOWN_TYPE | ns |  |  | na_1-default
+UNKNOWN_TYPE | nn |  |  | na_1-default
+UNKNOWN_TYPE | no |  |  | na_1-default
+HTML_TYPE_ORGANIZATION | ao |  |  | na_1-default
+HTML_TYPE_STREET_ADDRESS | af |  |  | na_1-default
+HTML_TYPE_ADDRESS_LINE1 | a1 |  |  | na_1-default
+HTML_TYPE_ADDRESS_LINE2 | a2 |  |  | na_1-default
+HTML_TYPE_ADDRESS_LINE3 | a3 |  |  | na_1-default
+HTML_TYPE_ADDRESS_LEVEL1 | al1 |  |  | na_1-default
+HTML_TYPE_ADDRESS_LEVEL2 | al2 |  |  | na_1-default
+HTML_TYPE_ADDRESS_LEVEL3 | al3 |  |  | na_1-default
+UNKNOWN_TYPE | al4 |  |  | na_1-default
+HTML_TYPE_COUNTRY_CODE | ac |  |  | na_1-default
+HTML_TYPE_COUNTRY_NAME | an |  |  | na_1-default
+HTML_TYPE_POSTAL_CODE | ap |  |  | na_1-default
+HTML_TYPE_CREDIT_CARD_NAME | cn |  |  | na_1-cc
+UNKNOWN_TYPE | cg |  |  | na_1-default
+UNKNOWN_TYPE | ca |  |  | na_1-default
+UNKNOWN_TYPE | cf |  |  | na_1-default
+HTML_TYPE_CREDIT_CARD_NUMBER | cc |  |  | na_1-cc
+HTML_TYPE_CREDIT_CARD_EXP | ce |  |  | na_1-cc
+HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR | c5 |  |  | na_1-cc
+HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | c7 |  |  | c7_1-cc
+HTML_TYPE_CREDIT_CARD_EXP_MONTH | cm |  |  | c7_1-cc
+HTML_TYPE_CREDIT_CARD_EXP_YEAR | cy |  |  | c7_1-cc
+HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR | c2 |  |  | c7_1-cc
+HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR | c4 |  |  | c4_1-cc
+HTML_TYPE_CREDIT_CARD_VERIFICATION_CODE | cs |  |  | c4_1-cc
+HTML_TYPE_CREDIT_CARD_TYPE | ct |  |  | c4_1-cc
+UNKNOWN_TYPE | xl |  |  | c4_1-default
+UNKNOWN_TYPE | xb |  |  | c4_1-default
+UNKNOWN_TYPE | xd |  |  | c4_1-default
+UNKNOWN_TYPE | xm |  |  | c4_1-default
+UNKNOWN_TYPE | xy |  |  | c4_1-default
+UNKNOWN_TYPE | xs |  |  | c4_1-default
+UNKNOWN_TYPE | xu |  |  | c4_1-default
+UNKNOWN_TYPE | xp |  |  | c4_1-default
+HTML_TYPE_EMAIL | em |  |  | c4_1-default
+UNKNOWN_TYPE | im |  |  | c4_1-default
+HTML_TYPE_TEL | tt |  |  | c4_1-default
+HTML_TYPE_TEL_COUNTRY_CODE | tc |  |  | c4_1-default
+HTML_TYPE_TEL_NATIONAL | tn |  |  | c4_1-default
+HTML_TYPE_TEL_AREA_CODE | ta |  |  | c4_1-default
+HTML_TYPE_TEL_LOCAL | tl |  |  | c4_1-default
+HTML_TYPE_TEL_LOCAL_PREFIX | tp |  |  | c4_1-default
+HTML_TYPE_TEL_LOCAL_SUFFIX | ts |  |  | c4_1-default
+UNKNOWN_TYPE | te |  |  | c4_1-default

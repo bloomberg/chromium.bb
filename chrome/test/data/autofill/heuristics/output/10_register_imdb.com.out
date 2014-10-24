@@ -1,9 +1,9 @@
-EMAIL_ADDRESS | email1 | E-mail: | 
-EMAIL_ADDRESS | email2 | Confirm E-mail: | 
-UNKNOWN_TYPE | gender | Sex: | M
-UNKNOWN_TYPE | gender | Male | F
-UNKNOWN_TYPE | year | Year of Birth: | 
-ADDRESS_HOME_ZIP | postal | ZIP/Postal Code: | 
-ADDRESS_HOME_COUNTRY | country | Country: | US
-UNKNOWN_TYPE | pass1 | Select a password: | 
-UNKNOWN_TYPE | pass2 | Confirm password: | 
+EMAIL_ADDRESS | email1 | E-mail: |  | email1_1-default
+EMAIL_ADDRESS | email2 | Confirm E-mail: |  | email1_1-default
+UNKNOWN_TYPE | gender | Sex: | M | email1_1-default
+UNKNOWN_TYPE | gender | Male | F | email1_1-default
+UNKNOWN_TYPE | year | Year of Birth: |  | email1_1-default
+ADDRESS_HOME_ZIP | postal | ZIP/Postal Code: |  | email1_1-default
+ADDRESS_HOME_COUNTRY | country | Country: | US | email1_1-default
+UNKNOWN_TYPE | pass1 | Select a password: |  | email1_1-default
+UNKNOWN_TYPE | pass2 | Confirm password: |  | email1_1-default
