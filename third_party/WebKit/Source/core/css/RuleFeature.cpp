@@ -118,6 +118,8 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoScrollbarThumb:
     case CSSSelector::PseudoScrollbarTrack:
     case CSSSelector::PseudoScrollbarTrackPiece:
+    case CSSSelector::PseudoWindowInactive:
+    case CSSSelector::PseudoSelection:
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
     case CSSSelector::PseudoUnresolved:
@@ -155,7 +157,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoFirstLetter:
     case CSSSelector::PseudoFullPageMedia:
     case CSSSelector::PseudoResizer:
-    case CSSSelector::PseudoWindowInactive:
     case CSSSelector::PseudoCornerPresent:
     case CSSSelector::PseudoDecrement:
     case CSSSelector::PseudoIncrement:
@@ -166,7 +167,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoDoubleButton:
     case CSSSelector::PseudoSingleButton:
     case CSSSelector::PseudoNoButton:
-    case CSSSelector::PseudoSelection:
     case CSSSelector::PseudoFullScreen:
     case CSSSelector::PseudoFullScreenDocument:
     case CSSSelector::PseudoFullScreenAncestor:
