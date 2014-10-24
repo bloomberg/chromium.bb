@@ -111,17 +111,18 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
     }
   }
 
-  for (std::vector<std::string>::const_iterator it =
-           removed_profile_paths.begin();
-       it != removed_profile_paths.end(); ++it) {
-    RemoveProfile(*it);
+  for (const std::string& profile_path : removed_profile_paths) {
+    RemoveProfile(profile_path);
+    // Also stop pending creations of this profile.
+    pending_profile_creations_.erase(profile_path);
   }
 
   for (std::vector<std::string>::const_iterator it = new_profile_paths.begin();
        it != new_profile_paths.end(); ++it) {
     // Skip known profiles. The associated userhash should never change.
-    if (GetProfileForPath(*it))
+    if (GetProfileForPath(*it) || pending_profile_creations_.count(*it) > 0)
       continue;
+    pending_profile_creations_.insert(*it);
 
     VLOG(2) << "Requesting properties of profile path " << *it << ".";
     DBusThreadManager::Get()->GetShillProfileClient()->GetProperties(
@@ -136,6 +137,14 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
 void NetworkProfileHandler::GetProfilePropertiesCallback(
     const std::string& profile_path,
     const base::DictionaryValue& properties) {
+  if (pending_profile_creations_.erase(profile_path) == 0) {
+    VLOG(1) << "Ignore received properties, profile was removed.";
+    return;
+  }
+  if (GetProfileForPath(profile_path)) {
+    VLOG(1) << "Ignore received properties, profile is already created.";
+    return;
+  }
   std::string userhash;
   properties.GetStringWithoutPathExpansion(shill::kUserHashProperty, &userhash);
 

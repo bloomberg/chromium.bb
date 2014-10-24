@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_PROFILE_HANDLER_H_
 #define CHROMEOS_NETWORK_NETWORK_PROFILE_HANDLER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -73,6 +74,11 @@ class CHROMEOS_EXPORT NetworkProfileHandler
 
  private:
   ProfileList profiles_;
+
+  // Contains the profile paths for which properties were requested. Once the
+  // properties are retrieved and the path is still in this set, a new profile
+  // object is created.
+  std::set<std::string> pending_profile_creations_;
   ObserverList<NetworkProfileObserver> observers_;
 
   // For Shill client callbacks
