@@ -127,6 +127,19 @@ TEST_F(DeviceInfoDataTypeControllerTest, StartModelsDelayedByLocalDevice) {
   EXPECT_TRUE(LoadResult());
 }
 
+// Tests that DeviceInfoDataTypeControllerTest handles the situation
+// when everything stops before the start gets a chance to finish.
+TEST_F(DeviceInfoDataTypeControllerTest, DestructionWithDelayedStart) {
+  local_device_->SetInitialized(false);
+  Start();
+
+  controller_->Stop();
+  // Destroy |local_device_| and |controller_| out of order
+  // to verify that the controller doesn't crash in the destructor.
+  local_device_.reset();
+  controller_ = NULL;
+}
+
 }  // namespace
 
 }  // namespace sync_driver

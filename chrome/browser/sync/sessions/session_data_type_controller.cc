@@ -72,6 +72,7 @@ bool SessionDataTypeController::StartModels() {
 }
 
 void SessionDataTypeController::StopModels() {
+  subscription_.reset();
   notification_registrar_.RemoveAll();
 }
 

@@ -25,6 +25,7 @@ class DeviceInfoDataTypeController : public UIDataTypeController {
 
   // UIDataTypeController implementations.
   bool StartModels() override;
+  void StopModels() override;
 
   // Called by LocalDeviceInfoProvider when the local device into becomes
   // available.

@@ -37,6 +37,10 @@ bool DeviceInfoDataTypeController::StartModels() {
   return false;
 }
 
+void DeviceInfoDataTypeController::StopModels() {
+  subscription_.reset();
+}
+
 void DeviceInfoDataTypeController::OnLocalDeviceInfoLoaded() {
   DCHECK_EQ(state_, MODEL_STARTING);
   DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
