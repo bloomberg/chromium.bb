@@ -1,0 +1,10 @@
+ADDRESS_HOME_LINE1 | sFirstName | Step 1. SHIP TO ADDRESS INFO Edit |  | sFirstName_1-default
+ADDRESS_HOME_LINE2 | sLastName | Step 1. SHIP TO ADDRESS INFO Edit |  | sFirstName_1-default
+COMPANY_NAME | sCompany | Step 1. SHIP TO ADDRESS INFO Edit |  | sFirstName_1-default
+ADDRESS_HOME_LINE1 | sAddress1 | Step 1. SHIP TO ADDRESS INFO Edit |  | sAddress1_1-default
+ADDRESS_HOME_LINE2 | sAddress2 | Step 1. SHIP TO ADDRESS INFO Edit |  | sAddress1_1-default
+ADDRESS_HOME_CITY | sCity | Step 1. SHIP TO ADDRESS INFO Edit |  | sAddress1_1-default
+ADDRESS_HOME_STATE | sState | Step 1. SHIP TO ADDRESS INFO Edit |  | sAddress1_1-default
+ADDRESS_HOME_ZIP | sZipCode | Step 1. SHIP TO ADDRESS INFO Edit |  | sAddress1_1-default
+PHONE_HOME_WHOLE_NUMBER | sPhone | We will contact you by phone only about your order and deliveries |  | sAddress1_1-default
+UNKNOWN_TYPE | sPhoneExt | We will contact you by phone only about your order and deliveries |  | sAddress1_1-default
