@@ -658,12 +658,12 @@ class DepotDirectoryRegistry(object):
       # The working directory of each depot is just the path to the depot, but
       # since we're already in 'src', we can skip that part.
       path_in_src = bisect_utils.DEPOT_DEPS_NAME[depot]['src'][4:]
-      self.AddDepot(depot, os.path.join(src_cwd, path_in_src))
+      self.SetDepotDir(depot, os.path.join(src_cwd, path_in_src))
 
-    self.AddDepot('chromium', src_cwd)
-    self.AddDepot('cros', os.path.join(src_cwd, 'tools', 'cros'))
+    self.SetDepotDir('chromium', src_cwd)
+    self.SetDepotDir('cros', os.path.join(src_cwd, 'tools', 'cros'))
 
-  def AddDepot(self, depot_name, depot_dir):
+  def SetDepotDir(self, depot_name, depot_dir):
     self.depot_cwd[depot_name] = depot_dir
 
   def GetDepotDir(self, depot_name):
@@ -955,7 +955,7 @@ class BisectPerformanceMetrics(object):
           depot_data_src = depot_data.get('src') or depot_data.get('src_old')
           src_dir = deps_data.get(depot_data_src)
           if src_dir:
-            self.depot_registry.AddDepot(depot_name, os.path.join(
+            self.depot_registry.SetDepotDir(depot_name, os.path.join(
                 self.src_cwd, depot_data_src[4:]))
             re_results = rxp.search(src_dir)
             if re_results:
@@ -2029,9 +2029,10 @@ class BisectPerformanceMetrics(object):
       self.cleanup_commands.append(['mv', 'v8', 'v8_bleeding_edge'])
       self.cleanup_commands.append(['mv', 'v8.bak', 'v8'])
 
-      self.depot_registry.AddDepot('v8_bleeding_edge',
+      self.depot_registry.SetDepotDir('v8_bleeding_edge',
                                   os.path.join(self.src_cwd, 'v8'))
-      self.depot_registry.AddDepot('v8', os.path.join(self.src_cwd, 'v8.bak'))
+      self.depot_registry.SetDepotDir('v8', os.path.join(self.src_cwd,
+                                                         'v8.bak'))
 
       self.depot_registry.ChangeToDepotDir(current_depot)
 
