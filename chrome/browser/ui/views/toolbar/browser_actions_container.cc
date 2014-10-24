@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/feature_switch.h"
@@ -755,13 +756,8 @@ int BrowserActionsContainer::IconHeight() {
 
 void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
                                                     int index) {
-#if defined(DEBUG)
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    DCHECK(browser_action_views_[i]->extension() != extension) <<
-           "Asked to add a browser action view for an extension that already "
-           "exists.";
-  }
-#endif
+  DCHECK(!GetViewForExtension(extension)) <<
+      "Asked to add a browser action view for an extension that already exists";
   if (chevron_)
     chevron_->CloseMenu();
 
@@ -1006,19 +1002,22 @@ size_t BrowserActionsContainer::GetIconCount() const {
   size_t absolute_model_visible_size = model_visible_size == -1 ?
       model_->toolbar_items().size() : model_visible_size;
 
-#if defined(DEBUG)
+#if !defined(NDEBUG)
   // Good time for some sanity checks: We should never try to display more
   // icons than we have, and we should always have a view per item in the model.
   // (The only exception is if this is in initialization.)
   if (initialized_) {
     size_t num_extension_actions = 0u;
-    for (const BrowserActionView* view : browser_action_views_) {
-      num_extension_actions +=
-          view->view_controller()->GetType() ==
-              ToolbarActionViewController::TYPE_EXTENSION_ACTION ? 1 : 0;
+    for (BrowserActionView* view : browser_action_views_) {
+      // No component action should ever have a valid extension id, so we can
+      // use this to check the extension amount.
+      // TODO(devlin): Fix this to just check model size when the model also
+      // includes component actions.
+      if (crx_file::id_util::IdIsValid(view->view_controller()->GetId()))
+        ++num_extension_actions;
     }
-    DCHECK_LE(absolute_model_visible_size, browser_action_views_.size());
-    DCHECK_EQ(model_->toolbar_items().size(), browser_action_views_.size());
+    DCHECK_LE(absolute_model_visible_size, num_extension_actions);
+    DCHECK_EQ(model_->toolbar_items().size(), num_extension_actions);
   }
 #endif
 

@@ -816,12 +816,12 @@ void WrenchMenu::Init(ui::MenuModel* model) {
                                // so we get the taller menu style.
   PopulateMenu(root_, model);
 
-#if defined(DEBUG)
+#if !defined(NDEBUG)
   // Verify that the reserved command ID's for bookmarks menu are not used.
-  for (int i = WrenchMenuModel:kMinBookmarkCommandId;
+  for (int i = WrenchMenuModel::kMinBookmarkCommandId;
        i <= WrenchMenuModel::kMaxBookmarkCommandId; ++i)
     DCHECK(command_id_to_entry_.find(i) == command_id_to_entry_.end());
-#endif  // defined(DEBUG)
+#endif  // !defined(NDEBUG)
 
   int32 types = views::MenuRunner::HAS_MNEMONICS;
   if (for_drop()) {
