@@ -113,7 +113,7 @@ ScrollTopLeftInterop status=experimental
 // window.showModalDialog is deprecated and slated for removal. crbug.com/345831
 ShowModalDialog status=deprecated
 ServiceWorker status=stable
-ServiceWorkerCache status=experimental
+ServiceWorkerCache status=stable
 ServiceWorkerOnFetch status=stable
 SessionStorage status=stable
 SharedWorker status=stable
