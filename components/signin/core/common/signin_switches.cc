@@ -35,6 +35,9 @@ const char kEnableNewProfileManagement[] = "new-profile-management";
 // settings page.
 const char kEnableWebBasedSignin[] = "enable-web-based-signin";
 
+// Enables the webview-based flow for sign in.
+const char kEnableWebviewBasedSignin[] = "enable-webview-based-signin";
+
 // Enables multiple account versions of chrome.identity APIs.
 const char kExtensionsMultiAccount[] = "extensions-multi-account";
 

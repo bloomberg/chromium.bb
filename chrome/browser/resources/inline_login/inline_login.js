@@ -6,14 +6,12 @@
  * @fileoverview Inline login UI.
  */
 
-<include src="../gaia_auth_host/gaia_auth_host.js">
-
 cr.define('inline.login', function() {
   'use strict';
 
   /**
    * The auth extension host instance.
-   * @type {Object}
+   * @type {cr.login.GaiaAuthHost}
    */
   var authExtHost;
 
@@ -21,6 +19,34 @@ cr.define('inline.login', function() {
    * Whether the auth ready event has been fired, for testing purpose.
    */
   var authReadyFired;
+
+  /**
+   * A listener class for authentication events from GaiaAuthHost.
+   * @constructor
+   * @implements {cr.login.GaiaAuthHost.Listener}
+   */
+  function GaiaAuthHostListener() {}
+
+  /** @override */
+  GaiaAuthHostListener.prototype.onSuccess = function(credentials) {
+    onAuthCompleted(credentials);
+  };
+
+  /** @override */
+  GaiaAuthHostListener.prototype.onReady = function(e) {
+    onAuthReady();
+  };
+
+  /** @override */
+  GaiaAuthHostListener.prototype.onResize = function(url) {
+    chrome.send('switchToFullTab', url);
+  };
+
+  /** @override */
+  GaiaAuthHostListener.prototype.onNewWindow = function(e) {
+    window.open(e.targetUrl, '_blank');
+    e.window.discard();
+  };
 
   /**
    * Handler of auth host 'ready' event.
@@ -43,7 +69,8 @@ cr.define('inline.login', function() {
    * Initialize the UI.
    */
   function initialize() {
-    authExtHost = new cr.login.GaiaAuthHost('signin-frame');
+    authExtHost = new cr.login.GaiaAuthHost(
+        'signin-frame', new GaiaAuthHostListener());
     authExtHost.addEventListener('ready', onAuthReady);
 
     chrome.send('initialize');

@@ -1467,6 +1467,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableWebBasedSignin)
   },
   {
+    "enable-webview-based-signin",
+    IDS_FLAGS_ENABLE_WEBVIEW_BASED_SIGNIN_NAME,
+    IDS_FLAGS_ENABLE_WEBVIEW_BASED_SIGNIN_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kEnableWebviewBasedSignin)
+  },
+  {
     "enable-google-profile-info",
     IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME,
     IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION,

@@ -384,10 +384,12 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   about_signin_internals->OnAuthenticationResultReceived(
       "GAIA Auth Successful");
 
+  GURL partition_url(switches::IsEnableWebviewBasedSignin() ?
+      "chrome-guest://chrome-signin/?" :
+      chrome::kChromeUIChromeSigninURL);
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(
-          contents->GetBrowserContext(),
-          GURL(chrome::kChromeUIChromeSigninURL));
+          contents->GetBrowserContext(), partition_url);
 
   SigninClient* signin_client =
       ChromeSigninClientFactory::GetForProfile(Profile::FromWebUI(web_ui()));

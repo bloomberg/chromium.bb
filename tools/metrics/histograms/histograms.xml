@@ -46491,6 +46491,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1876881908"
       label="disable-infobar-for-protected-media-identifier"/>
   <int value="-1874908826" label="enable-instant-search-clicks"/>
+  <int value="-1872989945" label="enable-webview-based-signin"/>
   <int value="-1870961970" label="enable-filemanager-mtp"/>
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1838482444" label="disable-settings-window"/>

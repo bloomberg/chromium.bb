@@ -126,7 +126,13 @@ bool IsEnableAccountConsistency() {
 
 bool IsEnableWebBasedSignin() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebBasedSignin) && !IsNewProfileManagement();
+      switches::kEnableWebBasedSignin) && !IsNewProfileManagement() &&
+      !IsEnableWebviewBasedSignin();
+}
+
+bool IsEnableWebviewBasedSignin() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebviewBasedSignin);
 }
 
 bool IsExtensionsMultiAccount() {
