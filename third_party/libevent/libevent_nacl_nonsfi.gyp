@@ -7,7 +7,7 @@
     '../../build/common_untrusted.gypi',
   ],
   'conditions': [
-    ['disable_nacl==0', {
+    ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
           'target_name': 'event_nacl_nonsfi',
@@ -28,11 +28,10 @@
           'defines': [
             'HAVE_CONFIG_H',
           ],
+          'include_dirs': [
+            'nacl_nonsfi',
+          ],
           'variables': {
-            'include_dirs': [
-              'nacl_nonsfi',
-              '<(DEPTH)/native_client/src/public/linux_syscalls',
-            ],
             'nacl_untrusted_build': 1,
             'nlib_target': 'libevent_nacl_nonsfi.a',
             'build_glibc': 0,
@@ -42,7 +41,7 @@
             'build_nonsfi_helper': 1,
           },
           'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+            '../../native_client/tools.gyp:prep_toolchain',
           ],
         },
       ],
