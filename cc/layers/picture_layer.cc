@@ -41,12 +41,11 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
     // Using layer_impl because either bounds() or paint_properties().bounds
     // may disagree and either one could have been pushed to layer_impl.
     pile_->SetEmptyBounds();
-  } else if (update_source_frame_number_ ==
-             layer_tree_host()->source_frame_number()) {
-    // TODO(ernstm): This DCHECK is only valid as long as the pile's tiling_rect
-    // is identical to the layer_rect.
+  } else {
     // If update called, then pile size must match bounds pushed to impl layer.
-    DCHECK_EQ(layer_impl->bounds().ToString(), pile_->tiling_size().ToString());
+    DCHECK_IMPLIES(
+        update_source_frame_number_ == layer_tree_host()->source_frame_number(),
+        layer_impl->bounds().ToString() == pile_->tiling_size().ToString());
   }
 
   // Unlike other properties, invalidation must always be set on layer_impl.
