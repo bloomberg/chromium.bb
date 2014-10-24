@@ -170,7 +170,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoFullScreen:
     case CSSSelector::PseudoFullScreenDocument:
     case CSSSelector::PseudoFullScreenAncestor:
-    case CSSSelector::PseudoUserAgentCustomElement:
     case CSSSelector::PseudoWebKitCustomElement:
     case CSSSelector::PseudoCue:
     case CSSSelector::PseudoFutureCue:

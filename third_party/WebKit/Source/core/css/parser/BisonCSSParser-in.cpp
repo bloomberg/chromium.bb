@@ -923,9 +923,6 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementName(const Atomic
 
 CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
 {
-    if (m_context.useCounter() && specifiers->pseudoType() == CSSSelector::PseudoUserAgentCustomElement)
-        m_context.useCounter()->count(UseCounter::CSSPseudoElementUserAgentCustomPseudo);
-
     CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {

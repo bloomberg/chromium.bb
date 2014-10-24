@@ -242,7 +242,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoRightPage:
     case PseudoInRange:
     case PseudoOutOfRange:
-    case PseudoUserAgentCustomElement:
     case PseudoWebKitCustomElement:
     case PseudoCue:
     case PseudoFutureCue:
@@ -443,8 +442,6 @@ CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name, b
 
     if (name.startsWith("-webkit-"))
         return PseudoWebKitCustomElement;
-    if (name.startsWith("cue"))
-        return PseudoUserAgentCustomElement;
 
     return PseudoUnknown;
 }
@@ -476,7 +473,6 @@ void CSSSelector::extractPseudoType() const
     case PseudoScrollbarTrack:
     case PseudoScrollbarTrackPiece:
     case PseudoSelection:
-    case PseudoUserAgentCustomElement:
     case PseudoWebKitCustomElement:
     case PseudoContent:
     case PseudoShadow:

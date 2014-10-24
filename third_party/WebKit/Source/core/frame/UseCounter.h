@@ -134,7 +134,6 @@ public:
         SubFrameBeforeUnloadFired = 98,
         TextReplaceWholeText = 100,
         ConsoleMarkTimeline = 102,
-        CSSPseudoElementUserAgentCustomPseudo = 103,
         ElementGetAttributeNode = 107, // Removed from DOM4.
         ElementSetAttributeNode = 108, // Removed from DOM4.
         ElementRemoveAttributeNode = 109, // Removed from DOM4.

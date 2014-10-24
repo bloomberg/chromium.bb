@@ -205,7 +205,6 @@ namespace blink {
             PseudoFullScreenAncestor,
             PseudoInRange,
             PseudoOutOfRange,
-            PseudoUserAgentCustomElement,
             PseudoWebKitCustomElement,
             PseudoCue,
             PseudoFutureCue,
@@ -405,7 +404,7 @@ inline bool CSSSelector::matchesPseudoElement() const
 
 inline bool CSSSelector::isCustomPseudoElement() const
 {
-    return m_match == PseudoElement && (m_pseudoType == PseudoUserAgentCustomElement || m_pseudoType == PseudoWebKitCustomElement);
+    return m_match == PseudoElement && m_pseudoType == PseudoWebKitCustomElement;
 }
 
 inline bool CSSSelector::isHostPseudoClass() const
