@@ -154,11 +154,15 @@ cache_test(function(cache) {
   }, 'Cache.put called twice with same Request and different Responses');
 
 cache_test(function(cache) {
-    return assert_promise_rejects(
-      cache.put('http://example.com/foo', new_test_response()),
-      new TypeError(),
-      'Cache.put should only accept a Request object as the request.');
-  }, 'Cache.put with an invalid request');
+    var url = 'http://example.com/foo';
+    return cache.put(url, new_test_response('some body'))
+      .then(function() { return cache.match(url); })
+      .then(function(response) { return response.text(); })
+      .then(function(body) {
+          assert_equals(body, 'some body',
+                        'Cache.put should accept a string as request.');
+      });
+  }, 'Cache.put with an string request');
 
 cache_test(function(cache) {
     return assert_promise_rejects(
