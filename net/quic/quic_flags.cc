@@ -45,7 +45,7 @@ bool FLAGS_quic_timeouts_only_from_alarms = true;
 
 // If true, then QUIC connections will set both idle and overall timeouts in a
 // single method.
-bool FLAGS_quic_unified_timeouts = false;
+bool FLAGS_quic_unified_timeouts = true;
 
 // If true, store any CachedNetworkParams that are provided in the STK from the
 // CHLO.
