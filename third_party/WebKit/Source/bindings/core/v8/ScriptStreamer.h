@@ -5,7 +5,6 @@
 #ifndef ScriptStreamer_h
 #define ScriptStreamer_h
 
-#include "bindings/core/v8/ScriptStreamingMode.h"
 #include "core/dom/PendingScript.h"
 #include "wtf/RefCounted.h"
 
@@ -83,7 +82,7 @@ public:
 
     // Called by ScriptStreamingTask when it has streamed all data to V8 and V8
     // has processed it.
-    void streamingCompleteOnBackgroundThread();
+    void streamingComplete();
 
     static void setSmallScriptThresholdForTesting(size_t threshold)
     {
@@ -97,15 +96,9 @@ private:
     // streamed. Non-const for testing.
     static size_t kSmallScriptThreshold;
 
-    ScriptStreamer(ScriptResource*, v8::ScriptCompiler::StreamedSource::Encoding, PendingScript::Type, ScriptStreamingMode);
+    ScriptStreamer(ScriptResource*, v8::ScriptCompiler::StreamedSource::Encoding, PendingScript::Type);
 
-    void streamingComplete();
     void notifyFinishedToClient();
-
-    bool shouldBlockMainThread() const
-    {
-        return m_scriptStreamingMode == ScriptStreamingModeAllPlusBlockParsingBlocking && m_scriptType == PendingScript::ParsingBlocking;
-    }
 
     static const char* startedStreamingHistogramName(PendingScript::Type);
 
@@ -125,9 +118,7 @@ private:
     ScriptResourceClient* m_client;
     WTF::OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> m_task;
     bool m_loadingFinished; // Whether loading from the network is done.
-    // Whether the V8 side processing is done. Will be used by the main thread
-    // and the streamer thread; guarded by m_mutex.
-    bool m_parsingFinished;
+    bool m_parsingFinished; // Whether the V8 side processing is done.
     // Whether we have received enough data to start the streaming.
     bool m_haveEnoughDataForStreaming;
 
@@ -140,13 +131,6 @@ private:
 
     // For recording metrics for different types of scripts separately.
     PendingScript::Type m_scriptType;
-
-    // Streaming mode defines whether the main thread should block and wait for
-    // the parsing to complete after the load has finished. See
-    // ScriptStreamer::notifyFinished for more information.
-    ScriptStreamingMode m_scriptStreamingMode;
-    Mutex m_mutex;
-    ThreadCondition m_parsingFinishedCondition;
 };
 
 } // namespace blink

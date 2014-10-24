@@ -8,7 +8,6 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptStreamerThread.h"
-#include "bindings/core/v8/ScriptStreamingMode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/PendingScript.h"
@@ -59,9 +58,7 @@ private:
     PendingScript m_pendingScript;
 };
 
-// The bool param for ScriptStreamingTest controls whether to make the main
-// thread block and wait for parsing.
-class ScriptStreamingTest : public testing::TestWithParam<bool> {
+class ScriptStreamingTest : public testing::Test {
 public:
     ScriptStreamingTest()
         : m_scope(v8::Isolate::GetCurrent())
@@ -71,8 +68,6 @@ public:
         , m_pendingScript(PendingScriptWrapper::create(0, m_resource)) // Takes ownership of m_resource.
     {
         m_settings->setV8ScriptStreamingEnabled(true);
-        if (GetParam())
-            m_settings->setV8ScriptStreamingMode(ScriptStreamingModeAllPlusBlockParsingBlocking);
         m_resource->setLoading(true);
         ScriptStreamer::setSmallScriptThresholdForTesting(0);
     }
@@ -145,7 +140,7 @@ private:
     bool m_finished;
 };
 
-TEST_P(ScriptStreamingTest, CompilingStreamedScript)
+TEST_F(ScriptStreamingTest, CompilingStreamedScript)
 {
     // Test that we can successfully compile a streamed script.
     ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState(), PendingScript::ParsingBlocking);
@@ -174,7 +169,7 @@ TEST_P(ScriptStreamingTest, CompilingStreamedScript)
     EXPECT_FALSE(tryCatch.HasCaught());
 }
 
-TEST_P(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
+TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
 {
     // Test that scripts with parse errors are handled properly. In those cases,
     // the V8 side typically finished before loading finishes: make sure we
@@ -207,7 +202,7 @@ TEST_P(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
     EXPECT_TRUE(tryCatch.HasCaught());
 }
 
-TEST_P(ScriptStreamingTest, CancellingStreaming)
+TEST_F(ScriptStreamingTest, CancellingStreaming)
 {
     // Test that the upper layers (PendingScript and up) can be ramped down
     // while streaming is ongoing, and ScriptStreamer handles it gracefully.
@@ -234,7 +229,7 @@ TEST_P(ScriptStreamingTest, CancellingStreaming)
     EXPECT_FALSE(client.finished());
 }
 
-TEST_P(ScriptStreamingTest, SuppressingStreaming)
+TEST_F(ScriptStreamingTest, SuppressingStreaming)
 {
     // If we notice during streaming that there is a code cache, streaming
     // is suppressed (V8 doesn't parse while the script is loading), and the
@@ -262,7 +257,7 @@ TEST_P(ScriptStreamingTest, SuppressingStreaming)
     EXPECT_FALSE(sourceCode.streamer());
 }
 
-TEST_P(ScriptStreamingTest, EmptyScripts)
+TEST_F(ScriptStreamingTest, EmptyScripts)
 {
     // Empty scripts should also be streamed properly, that is, the upper layer
     // (ScriptResourceClient) should be notified when an empty script has been
@@ -283,7 +278,7 @@ TEST_P(ScriptStreamingTest, EmptyScripts)
     EXPECT_FALSE(sourceCode.streamer());
 }
 
-TEST_P(ScriptStreamingTest, SmallScripts)
+TEST_F(ScriptStreamingTest, SmallScripts)
 {
     // Small scripts shouldn't be streamed.
     ScriptStreamer::setSmallScriptThresholdForTesting(100);
@@ -306,7 +301,7 @@ TEST_P(ScriptStreamingTest, SmallScripts)
     EXPECT_FALSE(sourceCode.streamer());
 }
 
-TEST_P(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
+TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
 {
     // If a script is long enough, if should be streamed, even if the first data
     // chunk is small.
@@ -335,8 +330,6 @@ TEST_P(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
     EXPECT_FALSE(script.IsEmpty());
     EXPECT_FALSE(tryCatch.HasCaught());
 }
-
-INSTANTIATE_TEST_CASE_P(ScriptStreamingInstantiation, ScriptStreamingTest, ::testing::Values(false, true));
 
 } // namespace
 

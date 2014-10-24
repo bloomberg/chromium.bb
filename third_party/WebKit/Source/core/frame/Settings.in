@@ -281,7 +281,6 @@ fullscreenSupported initial=true
 v8CacheOptions type=V8CacheOptions, initial=V8CacheOptionsOff
 
 v8ScriptStreamingEnabled initial=false
-v8ScriptStreamingMode type=ScriptStreamingMode, initial=ScriptStreamingModeAll
 
 # These values are bit fields for the properties of available pointing devices
 # and may take on multiple values (e.g. laptop with touchpad and touchscreen
