@@ -16,6 +16,10 @@ const char kAllowHTTPBackgroundPage[] = "allow-http-background-page";
 const char kAllowLegacyExtensionManifests[] =
     "allow-legacy-extension-manifests";
 
+// Disables the App Info dialog from being launched from the chrome://extensions
+// page (reverts to the old-style permissions dialog instead).
+const char kDisableExtensionInfoDialog[] = "disable-extension-info-dialog";
+
 // Enables extension options to be embedded in chrome://extensions rather than
 // a new tab.
 const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
@@ -41,9 +45,6 @@ const char kEnableExperimentalExtensionApis[] =
 // kEnableScriptsRequireAction.
 const char kEnableExtensionActionRedesign[] =
     "enable-extension-action-redesign";
-
-// Enables the App Info dialog to be launched from the chrome://extensions page.
-const char kEnableExtensionInfoDialog[] = "enable-extension-info-dialog";
 
 // Hack so that feature switch can work with about_flags. See
 // kEnableScriptsRequireAction.
