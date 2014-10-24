@@ -6,7 +6,7 @@
 var worker_url = 'resources/empty-worker.js';
 
 async_test(function(t) {
-    var scope = 'scope/re-register-resolves-to-new-value';
+    var scope = 'resources/scope/re-register-resolves-to-new-value';
     var iframe;
     var registration;
 
@@ -33,7 +33,7 @@ async_test(function(t) {
   }, 'Unregister then register resolves to a new value');
 
 async_test(function(t) {
-    var scope = 'scope/re-register-while-old-registration-in-use';
+    var scope = 'resources/scope/re-register-while-old-registration-in-use';
     var registration;
 
     service_worker_unregister_and_register(t, worker_url, scope)
@@ -63,7 +63,7 @@ async_test(function(t) {
          'registration is in use.');
 
 async_test(function(t) {
-    var scope = 'scope/re-register-does-not-affect-existing-controllee';
+    var scope = 'resources/scope/re-register-does-not-affect-existing-controllee';
     var iframe;
     var registration;
     var controller;
@@ -101,7 +101,7 @@ async_test(function(t) {
   }, 'Unregister then register does not affect existing controllee');
 
 async_test(function(t) {
-    var scope = 'scope/resurrection';
+    var scope = 'resources/scope/resurrection';
     var iframe;
     var registration;
 

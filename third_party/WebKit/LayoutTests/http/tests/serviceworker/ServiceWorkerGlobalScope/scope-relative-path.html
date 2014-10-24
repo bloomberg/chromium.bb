@@ -6,6 +6,7 @@
 <script src="resources/scope.js"></script>
 <script>
 async_test(function(t) {
-    scope_test(t, 'resources/scope-worker.js', '/a/b/c/');
+    scope_test(t, 'resources/scope-worker.js',
+               base_path() + 'resources/relative_path/');
   }, 'Verify the scope property: relative path');
 </script>

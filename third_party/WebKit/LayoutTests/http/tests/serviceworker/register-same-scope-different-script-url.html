@@ -8,7 +8,7 @@ var script2 = normalizeURL('resources/empty-worker.js?new');
 
 // FIXME: The spec is in flux, this test's asserts may not be as per-spec.
 async_test(function(t) {
-    var scope = 'scope/register-new-script-concurrently';
+    var scope = 'resources/scope/register-new-script-concurrently';
     var registration;
     var register_promise1;
     var register_promise2;
@@ -54,7 +54,7 @@ async_test(function(t) {
   }, 'Register different scripts concurrently');
 
 async_test(function(t) {
-    var scope = 'scope/register-then-register-new-script';
+    var scope = 'resources/scope/register-then-register-new-script';
     var registration;
 
     service_worker_unregister_and_register(t, script1, scope)
@@ -104,7 +104,7 @@ async_test(function(t) {
   }, 'Register then register new script URL');
 
 async_test(function(t) {
-    var scope = 'scope/register-then-register-new-script-404';
+    var scope = 'resources/scope/register-then-register-new-script-404';
     var registration;
 
     service_worker_unregister_and_register(t, script1, scope)
@@ -143,7 +143,7 @@ async_test(function(t) {
   }, 'Register then register new script URL that 404s');
 
 async_test(function(t) {
-    var scope = 'scope/register-then-register-new-script-reject-install';
+    var scope = 'resources/scope/register-then-register-new-script-reject-install';
     var reject_script = normalizeURL('resources/reject-install-worker.js');
     var registration;
 
@@ -194,7 +194,7 @@ async_test(function(t) {
   }, 'Register then register new script that does not install');
 
 async_test(function(t) {
-    var scope = 'scope/register-new-script-controller';
+    var scope = 'resources/scope/register-new-script-controller';
     var iframe;
     var registration;
 

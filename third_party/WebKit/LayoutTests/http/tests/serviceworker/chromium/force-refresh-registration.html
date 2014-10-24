@@ -7,7 +7,7 @@
 <script>
 
 async_test(function(t) {
-    var scope = '/force-refresh-register';
+    var scope = base_path() + '../resources/force-refresh-register';
     with_iframe('../resources/blank.html')
       .then(t.step_func(function(frame) {
           var p = new Promise(function(resolve) {

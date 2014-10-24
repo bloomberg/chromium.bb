@@ -6,7 +6,7 @@
 var worker_url = 'resources/empty-worker.js';
 
 async_test(function(t) {
-  var scope = 'scope/subsequent-register-from-same-window';
+  var scope = 'resources/scope/subsequent-register-from-same-window';
   var registration;
 
   service_worker_unregister_and_register(t, worker_url, scope)
@@ -31,7 +31,7 @@ async_test(function(t) {
 }, 'Subsequent registrations resolve to the same registration object');
 
 async_test(function(t) {
-  var scope = 'scope/subsequent-register-from-different-iframe';
+  var scope = 'resources/scope/subsequent-register-from-different-iframe';
   var frame;
   var registration;
 
@@ -89,7 +89,7 @@ async_test(function(t) {
        'registration and workers');
 
 async_test(function(t) {
-  var scope = 'scope/concurrent-register';
+  var scope = 'resources/scope/concurrent-register';
 
   service_worker_unregister(t, scope)
     .then(function() {

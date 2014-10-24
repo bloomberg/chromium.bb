@@ -8,7 +8,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
 } else {
     async_test(function() {
-        var scope = '/registration/';
+        var scope = 'resources/registration/';
         navigator.serviceWorker.register(
             'resources/registration-worker.js',
             {scope: scope}

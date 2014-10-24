@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <script src="/js-test-resources/js-test.js"></script>
+<script src="../resources/test-helpers.js"></script>
 <script>
 window.jsTestIsAsync = true;
 description('Test that ServiceWorker and ServiceWorkerRegistration are not garbage collected prematurely');
 var registrationObservation = null;
 var swObservation = null;
-var scope = 'gc';
+var scope = base_path() + '../resources/gc';
 
 if (!window.internals) {
     testFailed('This test requires internals.observeGC');

@@ -33,7 +33,7 @@ function syncWorker(test, worker, obj) {
 
 async_test(function(t) {
     // Passing scope as the test switch for worker script.
-    var scope = 'install-fulfilled';
+    var scope = 'resources/install-fulfilled';
     var onRegister = function(worker) {
         var obj = {};
         wait_for_state(t, worker, 'installed')
@@ -51,7 +51,7 @@ async_test(function(t) {
   }, 'Test install event waitUntil fulfilled', properties);
 
 async_test(function(t) {
-    var scope = 'activate-fulfilled';
+    var scope = 'resources/activate-fulfilled';
     var onRegister = function(worker) {
         var obj = {};
         wait_for_state(t, worker, 'activating')
@@ -72,7 +72,7 @@ async_test(function(t) {
   }, 'Test activate event waitUntil fulfilled', properties);
 
 async_test(function(t) {
-    var scope = 'install-rejected';
+    var scope = 'resources/install-rejected';
     var onRegister = function(worker) {
         wait_for_state(t, worker, 'redundant')
           .then(function() {
@@ -84,7 +84,7 @@ async_test(function(t) {
   }, 'Test install event waitUntil rejected', properties);
 
 async_test(function(t) {
-    var scope = 'activate-rejected';
+    var scope = 'resources/activate-rejected';
     var onRegister = function(worker) {
         wait_for_state(t, worker, 'redundant')
           .then(function() {
@@ -96,7 +96,7 @@ async_test(function(t) {
   }, 'Test activate event waitUntil rejected.', properties);
 
 async_test(function(t) {
-    var scope = 'activate-multiple-fulfilled';
+    var scope = 'resources/activate-multiple-fulfilled';
     var onRegister = function(worker) {
         var obj1 = {};
         var obj2 = {};
@@ -119,7 +119,7 @@ async_test(function(t) {
   }, 'Test ExtendableEvent multiple waitUntil fulfilled.', properties);
 
 async_test(function(t) {
-    var scope = 'activate-reject-precedence';
+    var scope = 'resources/activate-reject-precedence';
     var onRegister = function(worker) {
         wait_for_state(t, worker, 'redundant')
           .then(function() {

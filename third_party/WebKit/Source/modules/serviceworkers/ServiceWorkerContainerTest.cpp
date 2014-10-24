@@ -228,6 +228,15 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScopeIsRejected)
         ExpectDOMException("SecurityError", "The scope must match the current origin."));
 }
 
+TEST_F(ServiceWorkerContainerTest, Register_DifferentDirectoryThanScript)
+{
+    setPageURL("https://www.example.com/");
+    testRegisterRejected(
+        "https://www.example.com/js/worker.js",
+        "https://www.example.com/",
+        ExpectDOMException("SecurityError", "The scope must be under the directory of the script URL."));
+}
+
 TEST_F(ServiceWorkerContainerTest, GetRegistration_NonSecureOriginIsRejected)
 {
     setPageURL("http://www.example.com/");
@@ -320,11 +329,11 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
         ScriptState::Scope scriptScope(scriptState());
         RegistrationOptions options;
         options.setScope("y/");
-        container->registerServiceWorker(scriptState(), "/z/worker.js", options);
+        container->registerServiceWorker(scriptState(), "/x/y/worker.js", options);
 
         EXPECT_EQ(1ul, stubProvider.registerCallCount());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")), stubProvider.registerScope());
-        EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/z/worker.js")), stubProvider.registerScriptURL());
+        EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/worker.js")), stubProvider.registerScriptURL());
     }
 
     container->willBeDetachedFromFrame();

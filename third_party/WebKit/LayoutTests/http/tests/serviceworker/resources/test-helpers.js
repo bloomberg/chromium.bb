@@ -199,9 +199,9 @@ function wait_for_activated(test, registration) {
   };
 
   function service_worker_test(url, description) {
-    var scope = window.location.origin + '/service-worker-scope' +
+    var scope = new URL('./', new URL(url, window.location)) +
+      'resources/service-worker-scope' +
       window.location.pathname;
-
     var test = async_test(description);
     var registration;
     service_worker_unregister_and_register(test, url, scope)
