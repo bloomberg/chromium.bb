@@ -57,7 +57,7 @@ UsbEndpointDirection GetDirection(
 
 UsbSynchronizationType GetSynchronizationType(
     const libusb_endpoint_descriptor* descriptor) {
-  switch (descriptor->bmAttributes & LIBUSB_ISO_SYNC_TYPE_MASK) {
+  switch ((descriptor->bmAttributes & LIBUSB_ISO_SYNC_TYPE_MASK) >> 2) {
     case LIBUSB_ISO_SYNC_TYPE_NONE:
       return USB_SYNCHRONIZATION_NONE;
     case LIBUSB_ISO_SYNC_TYPE_ASYNC:
@@ -89,7 +89,7 @@ UsbTransferType GetTransferType(const libusb_endpoint_descriptor* descriptor) {
 }
 
 UsbUsageType GetUsageType(const libusb_endpoint_descriptor* descriptor) {
-  switch (descriptor->bmAttributes & LIBUSB_ISO_USAGE_TYPE_MASK) {
+  switch ((descriptor->bmAttributes & LIBUSB_ISO_USAGE_TYPE_MASK) >> 4) {
     case LIBUSB_ISO_USAGE_TYPE_DATA:
       return USB_USAGE_DATA;
     case LIBUSB_ISO_USAGE_TYPE_FEEDBACK:
