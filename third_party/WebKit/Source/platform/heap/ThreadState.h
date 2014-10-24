@@ -189,7 +189,10 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 // To create a new typed heap add a H(<ClassName>) to the
 // FOR_EACH_TYPED_HEAP macro below.
 #define FOR_EACH_TYPED_HEAP(H)  \
-    H(Node)
+    H(Node) \
+    H(RenderObject) \
+    H(CSSValue)
+
 
 #define TypedHeapEnumName(Type) Type##Heap,
 #define TypedHeapEnumNameNonFinalized(Type) Type##HeapNonFinalized,
