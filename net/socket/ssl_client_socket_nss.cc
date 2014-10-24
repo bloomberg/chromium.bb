@@ -1794,6 +1794,11 @@ int SSLClientSocketNSS::Core::DoWriteLoop(int result) {
 }
 
 int SSLClientSocketNSS::Core::DoHandshake() {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketNSS::Core::DoHandshake"));
+
   DCHECK(OnNSSTaskRunner());
 
   int net_error = OK;
@@ -1845,6 +1850,11 @@ int SSLClientSocketNSS::Core::DoHandshake() {
 }
 
 int SSLClientSocketNSS::Core::DoGetDBCertComplete(int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketNSS::Core::DoGetDBCertComplete"));
+
   SECStatus rv;
   PostOrRunCallback(
       FROM_HERE,
@@ -2029,6 +2039,11 @@ int SSLClientSocketNSS::Core::DoPayloadWrite() {
 // transport socket. Return true if some I/O performed, false
 // otherwise (error or ERR_IO_PENDING).
 bool SSLClientSocketNSS::Core::DoTransportIO() {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketNSS::Core::DoTransportIO"));
+
   DCHECK(OnNSSTaskRunner());
 
   bool network_moved = false;
