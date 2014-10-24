@@ -8,7 +8,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pending_task.h"
 #include "base/single_thread_task_runner.h"
@@ -18,8 +17,7 @@
 
 namespace content {
 namespace internal {
-class TaskRunner;
-struct TaskQueue;
+class TaskQueue;
 }
 class TaskQueueSelector;
 
@@ -69,15 +67,14 @@ class CONTENT_EXPORT TaskQueueManager {
   // Returns true if there no tasks in either the work or incoming task queue
   // identified by |queue_index|. Note that this function involves taking a
   // lock, so calling it has some overhead.
-  bool IsQueueEmpty(size_t queue_index);
+  bool IsQueueEmpty(size_t queue_index) const;
 
  private:
-  friend class internal::TaskRunner;
+  friend class internal::TaskQueue;
 
-  // Adds a task at the end of the incoming task queue for |queue_index| and
-  // schedules a call to DoWork() if the incoming queue was empty and automatic
-  // pumping is enabled. Can be called on an arbitrary thread.
-  void EnqueueTask(size_t queue_index, const base::PendingTask& pending_task);
+  // Called by the task queue to register a new pending task and allocate a
+  // sequence number for it.
+  void DidQueueTask(base::PendingTask* pending_task);
 
   // Post a task to call DoWork() on the main task runner.
   void PostDoWorkOnMainRunner();
@@ -94,18 +91,15 @@ class CONTENT_EXPORT TaskQueueManager {
   void RunTaskFromWorkQueue(size_t queue_index);
 
   bool RunsTasksOnCurrentThread() const;
-  bool PostDelayedTask(size_t queue_index,
-                       const tracked_objects::Location& from_here,
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay);
-  bool PostNonNestableDelayedTask(size_t queue_index,
-                                  const tracked_objects::Location& from_here,
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay);
   internal::TaskQueue* Queue(size_t queue_index) const;
-  void PumpQueueLocked(internal::TaskQueue* queue);
 
-  ScopedVector<internal::TaskQueue> queues_;
+  std::vector<scoped_refptr<internal::TaskQueue>> queues_;
   base::AtomicSequenceNumber task_sequence_num_;
   base::debug::TaskAnnotator task_annotator_;
 
@@ -113,6 +107,7 @@ class CONTENT_EXPORT TaskQueueManager {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   TaskQueueSelector* selector_;
 
+  base::WeakPtr<TaskQueueManager> task_queue_manager_weak_ptr_;
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);

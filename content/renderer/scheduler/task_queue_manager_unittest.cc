@@ -5,6 +5,7 @@
 #include "content/renderer/scheduler/task_queue_manager.h"
 
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread.h"
 #include "content/renderer/scheduler/task_queue_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -325,6 +326,32 @@ TEST_F(TaskQueueManagerTest, NoTasksAfterShutdown) {
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
+}
+
+void PostTaskToRunner(scoped_refptr<base::SingleThreadTaskRunner> runner,
+                      std::vector<int>* run_order) {
+  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 1, run_order));
+}
+
+TEST_F(TaskQueueManagerTest, PostFromThread) {
+  base::MessageLoop message_loop;
+  selector_ = make_scoped_ptr(new SelectorForTest);
+  manager_ = make_scoped_ptr(
+      new TaskQueueManager(1u, message_loop.task_runner(), selector_.get()));
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      manager_->TaskRunnerForQueue(0);
+
+  base::Thread thread("TestThread");
+  thread.Start();
+  thread.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&PostTaskToRunner, runner, &run_order));
+  thread.Stop();
+
+  selector_->AppendQueueToService(0);
+  message_loop.RunUntilIdle();
+  EXPECT_EQ(1, run_order[0]);
 }
 
 }  // namespace
