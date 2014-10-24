@@ -18,14 +18,14 @@ class Leb128Decoder {
       : encoding_(encoding), cursor_(0) { }
 
   size_t Dequeue() {
-    uint32_t value = 0;
+    size_t value = 0;
 
     size_t shift = 0;
     uint8_t byte;
 
     do {
       byte = encoding_[cursor_++];
-      value |= static_cast<uint32_t>(byte & 127) << shift;
+      value |= static_cast<size_t>(byte & 127) << shift;
       shift += 7;
     } while (byte & 128);
 

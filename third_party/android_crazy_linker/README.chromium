@@ -49,3 +49,5 @@ Local Modifications:
 - Add an error message for failures where no shared RELRO pages are swapped.
 
 - Remove excess newline from the message added above.
+
+- Avoid mixing size_t and uint32_t in Leb128Decoder::Dequeue().
