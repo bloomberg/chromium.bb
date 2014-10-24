@@ -31,6 +31,7 @@ class QuotaManagerProxy;
 namespace content {
 
 class ServiceWorkerCacheQuotaClient;
+class ServiceWorkerCacheStorageManagerTest;
 
 // Keeps track of a ServiceWorkerCacheStorage per origin. There is one
 // ServiceWorkerCacheStorageManager per ServiceWorkerContextCore.
@@ -79,6 +80,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
 
  private:
   friend class ServiceWorkerCacheQuotaClient;
+  friend class ServiceWorkerCacheStorageManagerTest;
 
   typedef std::map<GURL, ServiceWorkerCacheStorage*>
       ServiceWorkerCacheStorageMap;

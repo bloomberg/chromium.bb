@@ -185,8 +185,20 @@ void ServiceWorkerCacheStorageManager::GetOriginUsage(
     const storage::QuotaClient::GetUsageCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(jkarlin): Get the actual disk usage for the origin.
-  callback.Run(0);
+  if (IsMemoryBacked()) {
+    int64 sum = 0;
+    for (const auto& key_value : cache_storage_map_)
+      sum += key_value.second->MemoryBackedSize();
+    callback.Run(sum);
+    return;
+  }
+
+  PostTaskAndReplyWithResult(
+      cache_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(base::ComputeDirectorySize,
+                 ConstructOriginPath(root_path_, origin_url)),
+      base::Bind(callback));
 }
 
 void ServiceWorkerCacheStorageManager::GetOrigins(

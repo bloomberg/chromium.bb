@@ -42,6 +42,10 @@ const int kMaxCacheBytes = 512 * 1024 * 1024;
 // Buffer size for cache and blob reading/writing.
 const int kBufferSize = 1024 * 512;
 
+void NotReachedCompletionCallback(int rv) {
+  NOTREACHED();
+}
+
 blink::WebServiceWorkerResponseType ProtoResponseTypeToWebResponseType(
     ServiceWorkerRequestResponseHeaders_ResponseType response_type) {
   switch (response_type) {
@@ -966,6 +970,34 @@ void ServiceWorkerCache::Close() {
   backend_.reset();
 }
 
+int64 ServiceWorkerCache::MemoryBackedSize() const {
+  if (!backend_ || !memory_only_)
+    return 0;
+
+  scoped_ptr<disk_cache::Backend::Iterator> backend_iter =
+      backend_->CreateIterator();
+  disk_cache::Entry* entry = nullptr;
+
+  int64 sum = 0;
+
+  std::vector<disk_cache::Entry*> entries;
+  int rv = net::OK;
+  while ((rv = backend_iter->OpenNextEntry(
+              &entry, base::Bind(NotReachedCompletionCallback))) == net::OK) {
+    entries.push_back(entry);  // Open the entries without mutating them.
+  }
+  DCHECK(rv !=
+         net::ERR_IO_PENDING);  // Expect all memory ops to be synchronous.
+
+  for (disk_cache::Entry* entry : entries) {
+    sum += entry->GetDataSize(INDEX_HEADERS) +
+           entry->GetDataSize(INDEX_RESPONSE_BODY);
+    entry->Close();
+  }
+
+  return sum;
+}
+
 ServiceWorkerCache::ServiceWorkerCache(
     const GURL& origin,
     const base::FilePath& path,
@@ -978,6 +1010,7 @@ ServiceWorkerCache::ServiceWorkerCache(
       quota_manager_proxy_(quota_manager_proxy),
       blob_storage_context_(blob_context),
       initialized_(false),
+      memory_only_(path.empty()),
       weak_ptr_factory_(this) {
 }
 
@@ -1112,8 +1145,7 @@ void ServiceWorkerCache::CreateBackend(const ErrorCallback& callback) {
   DCHECK(!backend_);
 
   // Use APP_CACHE as opposed to DISK_CACHE to prevent cache eviction.
-  net::CacheType cache_type =
-      path_.empty() ? net::MEMORY_CACHE : net::APP_CACHE;
+  net::CacheType cache_type = memory_only_ ? net::MEMORY_CACHE : net::APP_CACHE;
 
   scoped_ptr<ScopedBackendPtr> backend_ptr(new ScopedBackendPtr());
 

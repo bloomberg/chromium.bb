@@ -85,6 +85,10 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
 
   void CloseAllCaches();
 
+  // The size of all of the origin's contents in memory. Returns 0 if the cache
+  // backend is not a memory backend.
+  int64 MemoryBackedSize() const;
+
  private:
   class MemoryLoader;
   class SimpleCacheLoader;

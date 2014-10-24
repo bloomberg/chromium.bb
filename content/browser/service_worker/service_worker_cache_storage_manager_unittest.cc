@@ -210,6 +210,10 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     return !error;
   }
 
+  ServiceWorkerCacheStorage* CacheStorageForOrigin(const GURL& origin) {
+    return cache_manager_->FindOrCreateServiceWorkerCacheManager(origin);
+  }
+
  protected:
   TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -438,6 +442,32 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {
   EXPECT_TRUE(callback_cache_->AsWeakPtr());
 }
 
+TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, MemoryBackedSize) {
+  ServiceWorkerCacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
+
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  scoped_refptr<ServiceWorkerCache> foo_cache = callback_cache_;
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  scoped_refptr<ServiceWorkerCache> bar_cache = callback_cache_;
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
+
+  EXPECT_TRUE(CachePut(foo_cache, GURL("http://example.com/foo")));
+  EXPECT_LT(0, cache_storage->MemoryBackedSize());
+  int64 foo_size = cache_storage->MemoryBackedSize();
+
+  EXPECT_TRUE(CachePut(bar_cache, GURL("http://example.com/foo")));
+  EXPECT_EQ(foo_size * 2, cache_storage->MemoryBackedSize());
+}
+
+TEST_F(ServiceWorkerCacheStorageManagerTest, MemoryBackedSizePersistent) {
+  ServiceWorkerCacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
+}
+
 class ServiceWorkerCacheQuotaClientTest
     : public ServiceWorkerCacheStorageManagerTest {
  protected:
@@ -539,8 +569,7 @@ TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginUsage) {
   EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  // TODO(jkarlin): Once usage is working properly update this value.
-  EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
+  EXPECT_LT(0, QuotaGetOriginUsage(origin1_));
 }
 
 TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForType) {

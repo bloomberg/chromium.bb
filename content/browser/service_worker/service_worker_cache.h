@@ -90,6 +90,10 @@ class CONTENT_EXPORT ServiceWorkerCache
   // Prevent further operations on this object and delete the backend.
   void Close();
 
+  // The size of the cache contents in memory. Returns 0 if the cache backend is
+  // not a memory cache backend.
+  int64 MemoryBackedSize() const;
+
   void set_backend(scoped_ptr<disk_cache::Backend> backend) {
     backend_ = backend.Pass();
   }
@@ -145,6 +149,9 @@ class CONTENT_EXPORT ServiceWorkerCache
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   bool initialized_;
   std::vector<base::Closure> init_callbacks_;
+
+  // Whether or not to store data in disk or memory.
+  bool memory_only_;
 
   base::WeakPtrFactory<ServiceWorkerCache> weak_ptr_factory_;
 

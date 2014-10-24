@@ -300,6 +300,12 @@ class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
   bool MemoryOnly() override { return !GetParam(); }
 };
 
+class ServiceWorkerCacheMemoryOnlyTest
+    : public ServiceWorkerCacheTest,
+      public testing::WithParamInterface<bool> {
+  bool MemoryOnly() override { return true; }
+};
+
 TEST_P(ServiceWorkerCacheTestP, PutNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(callback_response_);
@@ -563,6 +569,28 @@ TEST_P(ServiceWorkerCacheTestP, QuotaManagerModified) {
   sum_delta += quota_manager_proxy_->last_notified_delta();
 
   EXPECT_EQ(0, sum_delta);
+}
+
+TEST_F(ServiceWorkerCacheMemoryOnlyTest, MemoryBackedSize) {
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_LT(0, cache_->MemoryBackedSize());
+  int64 no_body_size = cache_->MemoryBackedSize();
+
+  EXPECT_TRUE(Delete(no_body_request_));
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
+
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_LT(no_body_size, cache_->MemoryBackedSize());
+
+  EXPECT_TRUE(Delete(body_request_));
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
+}
+
+TEST_F(ServiceWorkerCacheTest, MemoryBackedSizePersistent) {
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
 }
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheTest,

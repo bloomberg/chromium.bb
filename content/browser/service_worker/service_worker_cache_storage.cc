@@ -500,6 +500,20 @@ void ServiceWorkerCacheStorage::CloseAllCaches() {
   }
 }
 
+int64 ServiceWorkerCacheStorage::MemoryBackedSize() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!initialized_ || !memory_only_)
+    return 0;
+
+  int64 sum = 0;
+  for (auto& key_value : cache_map_) {
+    if (key_value.second)
+      sum += key_value.second->MemoryBackedSize();
+  }
+  return sum;
+}
+
 // Init is run lazily so that it is called on the proper MessageLoop.
 void ServiceWorkerCacheStorage::LazyInit(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
