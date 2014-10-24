@@ -1240,6 +1240,12 @@ chrome.automation.AutomationNode.prototype.attributes;
 
 
 /**
+ * @type {!chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationNode.prototype.root;
+
+
+/**
  * @return {chrome.automation.AutomationNode}
  */
 chrome.automation.AutomationNode.prototype.firstChild = function() {};
@@ -1297,6 +1303,9 @@ chrome.automation.AutomationNode.prototype.addEventListener =
  */
 chrome.automation.AutomationNode.prototype.removeEventListener =
     function(eventType, callback, capture) {};
+
+
+chrome.automation.AutomationNode.prototype.focus = function() {};
 
 
 /**

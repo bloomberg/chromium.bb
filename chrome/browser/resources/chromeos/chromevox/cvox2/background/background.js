@@ -16,9 +16,9 @@ goog.require('cursors.Cursor');
 goog.require('cvox.TabsApiHandler');
 
 goog.scope(function() {
+var AutomationNode = chrome.automation.AutomationNode;
 var Dir = AutomationUtil.Dir;
 var EventType = chrome.automation.EventType;
-var AutomationNode = chrome.automation.AutomationNode;
 
 /** Classic Chrome accessibility API. */
 global.accessibility =
@@ -46,10 +46,10 @@ Background = function() {
                                               cvox.ChromeVox.earcons);
 
   /**
-   * @type {chrome.automation.AutomationNode}
+   * @type {cursors.Range}
    * @private
    */
-  this.currentNode_ = null;
+  this.currentRange_ = null;
 
   /**
    * Whether ChromeVox Next is active.
@@ -129,12 +129,10 @@ Background.prototype = {
       return;
     }
 
-    if (!this.active_ || !this.current_)
+    if (!this.active_ || !this.currentRange_)
       return;
 
-    var previous = this.current_;
-    var current = this.current_;
-
+    var current = this.currentRange_;
     var dir = Dir.FORWARD;
     var pred = null;
     switch (command) {
@@ -147,12 +145,10 @@ Background.prototype = {
         pred = AutomationPredicate.heading;
         break;
       case 'nextLine':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.inlineTextBox;
+        current = current.move(cursors.Unit.LINE, Dir.FORWARD);
         break;
       case 'previousLine':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.inlineTextBox;
+        current = current.move(cursors.Unit.LINE, Dir.BACKWARD);
         break;
       case 'nextLink':
         dir = Dir.FORWARD;
@@ -163,40 +159,42 @@ Background.prototype = {
         pred = AutomationPredicate.link;
         break;
       case 'nextElement':
-        current = current.role == chrome.automation.RoleType.inlineTextBox ?
-            current.parent() : current;
-        current = AutomationUtil.findNextNode(current,
-            Dir.FORWARD,
-            AutomationPredicate.inlineTextBox);
-        current = current ? current.parent() : current;
+        current = current.move(cursors.Unit.NODE, Dir.FORWARD);
         break;
       case 'previousElement':
-        current = current.role == chrome.automation.RoleType.inlineTextBox ?
-            current.parent() : current;
-        current = AutomationUtil.findNextNode(current,
-            Dir.BACKWARD,
-            AutomationPredicate.inlineTextBox);
-        current = current ? current.parent() : current;
+        current = current.move(cursors.Unit.NODE, Dir.BACKWARD);
         break;
       case 'goToBeginning':
-        current = AutomationUtil.findNodePost(current.root,
+      var node = AutomationUtil.findNodePost(current.getStart().getNode().root,
             Dir.FORWARD,
-            AutomationPredicate.inlineTextBox);
+            AutomationPredicate.leaf);
+      if (node)
+        current = cursors.Range.fromNode(node);
         break;
       case 'goToEnd':
-        current = AutomationUtil.findNodePost(current.root,
+      var node =
+          AutomationUtil.findNodePost(current.getStart().getNode().root,
             Dir.BACKWARD,
-            AutomationPredicate.inlineTextBox);
+            AutomationPredicate.leaf);
+      if (node)
+        current = cursors.Range.fromNode(node);
         break;
     }
 
-    if (pred)
-      current = AutomationUtil.findNextNode(current, dir, pred);
+    if (pred) {
+      var node = AutomationUtil.findNextNode(
+          current.getBound(dir).getNode(), dir, pred);
+
+      if (node)
+        current = cursors.Range.fromNode(node);
+    }
 
     if (current) {
-      current.focus();
+      // TODO(dtseng): Figure out what it means to focus a range.
+      current.getStart().getNode().focus();
 
-      this.onFocus({target: current});
+      this.currentRange_ = current;
+      this.handleOutput(this.currentRange_);
     }
   },
 
@@ -209,20 +207,8 @@ Background.prototype = {
     if (!node)
       return;
 
-    this.current_ = node;
-    var container = node;
-    while (container &&
-        (container.role == chrome.automation.RoleType.inlineTextBox ||
-        container.role == chrome.automation.RoleType.staticText))
-      container = container.parent();
-
-    var role = container ? container.role : node.role;
-
-    var output =
-        [node.attributes.name, node.attributes.value, role].join(', ');
-    cvox.ChromeVox.tts.speak(output, cvox.QueueMode.FLUSH);
-    cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
-    chrome.accessibilityPrivate.setFocusRing([evt.target.location]);
+    this.currentRange_ = cursors.Range.fromNode(node);
+    this.handleOutput(this.currentRange_);
   },
 
   /**
@@ -230,13 +216,17 @@ Background.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
-    if (this.current_)
+    if (this.currentRange_)
       return;
 
-    this.current_ = AutomationUtil.findNodePost(evt.target,
+    var node = AutomationUtil.findNodePost(evt.target,
         Dir.FORWARD,
-        AutomationPredicate.inlineTextBox);
-    this.onFocus({target: this.current_});
+        AutomationPredicate.leaf);
+    if (node)
+      this.currentRange_ = cursors.Range.fromNode(node);
+
+    if (this.currentRange_)
+      this.handleOutput(this.currentRange_);
   },
 
   /**
@@ -278,7 +268,7 @@ Background.prototype = {
     } else {
       if (this.active_) {
         for (var eventType in this.listeners_) {
-          this.current_.root.removeEventListener(
+          this.currentRange_.getStart().getNode().root.removeEventListener(
               eventType, this.listeners_[eventType], true);
         }
       }
@@ -294,6 +284,43 @@ Background.prototype = {
         }.bind(this));
       }
     }.bind(this));
+  },
+
+  /**
+   * Handles output of a Range.
+   * @param {!cursors.Range} range Current location.
+   */
+  handleOutput: function(range) {
+    // TODO(dtseng): This is just placeholder logic for generating descriptions
+    // pending further design discussion.
+    function getCursorDesc(cursor) {
+      var node = cursor.getNode();
+      var container = node;
+      while (container &&
+          (container.role == chrome.automation.RoleType.inlineTextBox ||
+          container.role == chrome.automation.RoleType.staticText))
+        container = container.parent();
+
+      var role = container ? container.role : node.role;
+      return [node.attributes.name, node.attributes.value, role].join(', ');
+    }
+
+    // Walk the range and collect descriptions.
+    var output = '';
+    var cursor = range.getStart();
+    var nodeLocations = [];
+    while (cursor.getNode() != range.getEnd().getNode()) {
+      output += getCursorDesc(cursor);
+      nodeLocations.push(cursor.getNode().location);
+      cursor = cursor.move(
+          cursors.Unit.NODE, cursors.Movement.DIRECTIONAL, Dir.FORWARD);
+    }
+    output += getCursorDesc(range.getEnd());
+    nodeLocations.push(range.getEnd().getNode().location);
+
+    cvox.ChromeVox.tts.speak(output, cvox.QueueMode.FLUSH);
+    cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(output));
+    chrome.accessibilityPrivate.setFocusRing(nodeLocations);
   }
 };
 

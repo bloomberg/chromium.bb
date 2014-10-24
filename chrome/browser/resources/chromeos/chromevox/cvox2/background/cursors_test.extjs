@@ -15,6 +15,12 @@ function CursorsTest() {}
 CursorsTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
+  /** Test cursors.Cursor. @const {string} */
+  CURSOR: 'cursor',
+
+  /** Test cursors.Range. @const {string} */
+  RANGE: 'range',
+
   /** @override */
   setUp: function() {
     // Various aliases.
@@ -38,107 +44,227 @@ CursorsTest.prototype = {
    *     moves An array of arrays. Each inner array contains 4 items: unit,
    *     movement, direction, and assertions object. See example below.
    */
-  moveAndAssert: function(cursor, moves) {
+  cursorMoveAndAssert: function(cursor, moves) {
     var move = null;
     while (move = moves.shift()) {
-      cursor.move(move[0], move[1], move[2]);
+      cursor = cursor.move(move[0], move[1], move[2]);
       var expected = move[3];
-      if (expected.index)
-        assertEquals(expected.index, cursor.index);
-      if (expected.value)
-        assertEquals(expected.value, cursor.node.attributes.value);
+      this.makeCursorAssertion(expected, cursor);
     }
-  }
-};
+  },
 
-/** Tests basic text movement. */
-TEST_F('CursorsTest', 'BasicMovement', function() {
-  this.runWithDocument(function() {/*!
+  /**
+   * Performs a series of operations on a range and asserts the result.
+   * @param {cursors.Range} range The starting range.
+   * @param {!Array.<Array.<
+   *          cursors.Unit|
+   *          cursors.Movement|
+   *          automationUtil.Dir|
+   *          Object>>}
+   *     moves An array of arrays. Each inner array contains 4 items: unit,
+   *     direction, start and end assertions objects. See example below.
+   */
+  rangeMoveAndAssert: function(range, moves) {
+    var move = null;
+    while (move = moves.shift()) {
+      range = range.move(move[0], move[1]);
+      var expectedStart = move[2];
+      var expectedEnd = move[3];
+      this.makeCursorAssertion(expectedStart, range.getStart());
+      this.makeCursorAssertion(expectedEnd, range.getEnd());
+    }
+  },
+
+  /**
+   * Makes assertions about the given |cursor|.
+   * @param {Object} expected
+   * @param {Cursor} cursor
+   */
+  makeCursorAssertion: function(expected, cursor) {
+    if (goog.isDef(expected.index))
+      assertEquals(expected.index, cursor.getIndex());
+    if (goog.isDef(expected.value))
+      assertEquals(expected.value, cursor.getNode().attributes.value);
+  },
+
+  /**
+   * Runs the specified moves on the |doc| and asserts expectations.
+   * @param {function} doc
+   * @param {string=} opt_testType Either CURSOR or RANGE.
+   */
+  runCursorMovesOnDocument: function(doc, moves, opt_testType) {
+    this.runWithDocument(doc,
+    function() {
+      chrome.automation.getTree(function(root) {
+        var start = null;
+
+        // This occurs as a result of a load complete.
+        var start = AutomationUtil.findNodePost(root,
+            FORWARD,
+            AutomationPredicate.leaf);
+
+        var cursor = new cursors.Cursor(start, 0);
+        if (!opt_testType || opt_testType == this.CURSOR) {
+          var cursor = new cursors.Cursor(start, 0);
+          this.cursorMoveAndAssert(cursor, moves);
+          testDone();
+        } else if (opt_testType == this.RANGE) {
+          var range = new cursors.Range(cursor, cursor);
+          this.rangeMoveAndAssert(range, moves);
+          testDone();
+        }
+      }.bind(this));
+    }.bind(this));
+  },
+
+simpleDoc: function() {/*!
     <p>start <span>same line</span>
     <p>end
-  */},
-  function() {
-    chrome.automation.getTree(function(root) {
-      // This occurs as a result of a load complete.
-      var leftmost = AutomationUtil.findNodePost(root,
-          FORWARD,
-          AutomationPredicate.leaf);
-      assertEquals('start ', leftmost.attributes.value);
+  */}
+};
 
-      // Construct a cursor and make all possible movements.
-      var cursor = new cursors.Cursor(leftmost, 0);
+TEST_F('CursorsTest', 'CharacterCursor', function() {
+  this.runCursorMovesOnDocument(this.simpleDoc, [
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
 
-      this.moveAndAssert(cursor, [
-          // Line (BOUND).
-          [LINE, BOUND, FORWARD, {value: 'same line'}],
-          [LINE, BOUND, FORWARD, {value: 'same line'}],
-          [LINE, BOUND, BACKWARD, {value: 'start '}],
-          [LINE, BOUND, BACKWARD, {value: 'start '}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 2, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 3, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 4, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 5, value: 'start '}],
 
-          // Line (DIRECTIONAL).
-          [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
-          [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
-          [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
-          [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
-          [LINE, BOUND, FORWARD, {value: 'same line'}],
-          [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 0, value: 'same line'}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'same line'}],
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
 
-          // Character.
-          [CHARACTER, DIRECTIONAL, FORWARD, {index: 1}],
-          [CHARACTER, DIRECTIONAL, FORWARD, {index: 2}],
-          [CHARACTER, DIRECTIONAL, FORWARD, {index: 2}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 1}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0}],
-
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 8, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 8, value: 'same line'}],
-                    
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 7, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 6, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 3, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 2, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'start '}],
-
-          // Word (BOUND).
-          [WORD, BOUND, BACKWARD, {index: 0, value: 'start '}],
-          [WORD, BOUND, BACKWARD, {index: 0, value: 'start '}],
-          [WORD, BOUND, FORWARD, {index: 5, value: 'start '}],
-          [WORD, BOUND, FORWARD, {index: 5, value: 'start '}],
-
-          // Word (DIRECTIONAL).
-          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'same line'}],
-          [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
-
-          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
-          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
-
-          [WORD, DIRECTIONAL, BACKWARD, {index: 5, value: 'same line'}],
-          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
-
-          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
-          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
-
-          // Characters and words.
-          [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
-
-          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'same line'}],
-          [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'same line'}],
-          [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, FORWARD, {index: 6, value: 'same line'}],
-          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'start '}],
-          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'start '}],
-          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
-]);
-
-      testDone();
-    }.bind(this));
-  }.bind(this));
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'start '}],]);
 });
+
+TEST_F('CursorsTest', 'WordCursor', function() {
+  this.runCursorMovesOnDocument(this.simpleDoc, [
+    // Word (BOUND).
+    [WORD, BOUND, BACKWARD, {index: 0, value: 'start '}],
+    [WORD, BOUND, BACKWARD, {index: 0, value: 'start '}],
+    [WORD, BOUND, FORWARD, {index: 5, value: 'start '}],
+    [WORD, BOUND, FORWARD, {index: 5, value: 'start '}],
+
+    // Word (DIRECTIONAL).
+    [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'same line'}],
+    [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
+
+    [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
+    [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
+
+    [WORD, DIRECTIONAL, BACKWARD, {index: 5, value: 'same line'}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
+
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}]]);
+});
+
+TEST_F('CursorsTest', 'CharacterWordCursor', function() {
+  this.runCursorMovesOnDocument(this.simpleDoc, [
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
+
+    [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'same line'}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'same line'}],
+    [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'same line'}],
+    [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 6, value: 'same line'}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'start '}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}]]);
+});
+
+TEST_F('CursorsTest', 'LineCursor', function() {
+  this.runCursorMovesOnDocument(this.simpleDoc, [
+    // Line (BOUND).
+    [LINE, BOUND, FORWARD, {value: 'same line'}],
+    [LINE, BOUND, FORWARD, {value: 'same line'}],
+    [LINE, BOUND, BACKWARD, {value: 'start '}],
+    [LINE, BOUND, BACKWARD, {value: 'start '}],
+
+    // Line (DIRECTIONAL).
+    [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
+    [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
+    [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
+    [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
+    [LINE, BOUND, FORWARD, {value: 'same line'}],
+    [LINE, DIRECTIONAL, FORWARD, {value: 'end'}]]);
+});
+
+TEST_F('CursorsTest', 'CharacterRange', function() {
+  this.runCursorMovesOnDocument(this.simpleDoc, [
+      [CHARACTER, FORWARD,
+          {value: 'start ', index: 1}, {value: 'start ', index: 2}],
+      [CHARACTER, FORWARD,
+          {value: 'start ', index: 2}, {value: 'start ', index: 3}],
+      [CHARACTER, FORWARD,
+          {value: 'start ', index: 3}, {value: 'start ', index: 4}],
+      [CHARACTER, FORWARD,
+          {value: 'start ', index: 4}, {value: 'start ', index: 5}],
+      [CHARACTER, FORWARD,
+          {value: 'start ', index: 5}, {value: 'start ', index: 5}],
+
+      [CHARACTER, FORWARD,
+          {value: 'same line', index: 0}, {value: 'same line', index: 1}],
+
+      [CHARACTER, BACKWARD,
+          {value: 'start ', index: 5}, {value: 'start ', index: 5}],
+      [CHARACTER, BACKWARD,
+          {value: 'start ', index: 4}, {value: 'start ', index: 5}],
+      [CHARACTER, BACKWARD,
+          {value: 'start ', index: 3}, {value: 'start ', index: 4}],
+      [CHARACTER, BACKWARD,
+          {value: 'start ', index: 2}, {value: 'start ', index: 3}],
+      [CHARACTER, BACKWARD,
+          {value: 'start ', index: 1}, {value: 'start ', index: 2}],
+      [CHARACTER, BACKWARD,
+          {value: 'start ', index: 0}, {value: 'start ', index: 1}],
+      [CHARACTER, BACKWARD,
+          {value: 'start ', index: 0}, {value: 'start ', index: 1}],
+  ], this.RANGE);
+});
+
+TEST_F('CursorsTest', 'WordRange', function() {
+  this.runCursorMovesOnDocument(this.simpleDoc, [
+      [WORD, FORWARD,
+          {value: 'same line', index: 0}, {value: 'same line', index: 4}],
+      [WORD, FORWARD,
+          {value: 'same line', index: 5}, {value: 'same line', index: 9}],
+
+      [WORD, FORWARD,
+          {value: 'end', index: 0}, {value: 'end', index: 3}],
+      [WORD, FORWARD,
+          {value: 'end', index: 0}, {value: 'end', index: 3}],
+
+      [WORD, BACKWARD,
+          {value: 'same line', index: 5}, {value: 'same line', index: 9}],
+      [WORD, BACKWARD,
+          {value: 'same line', index: 0}, {value: 'same line', index: 4}],
+
+      [WORD, BACKWARD,
+          {value: 'start ', index: 0}, {value: 'start ', index: 5}],
+      [WORD, BACKWARD,
+          {value: 'start ', index: 0}, {value: 'start ', index: 5}],
+  ], this.RANGE);
+});
+      
+     
+TEST_F('CursorsTest', 'LineRange', function() {
+  this.runCursorMovesOnDocument(this.simpleDoc, [
+      [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 2}],
+      [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 2}],
+
+      [LINE, BACKWARD,
+          {value: 'start ', index: 0}, {value: 'same line', index: 8}],
+
+      [LINE, BACKWARD,
+          {value: 'start ', index: 0}, {value: 'same line', index: 8}],
+  ], this.RANGE);
+});
+      

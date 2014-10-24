@@ -30,15 +30,16 @@ AutomationUtil.Dir = {
 
 
 goog.scope(function() {
+var AutomationNode = chrome.automation.AutomationNode;
 var Dir = AutomationUtil.Dir;
 
 /**
  * Find a node in subtree of |cur| satisfying |pred| using pre-order traversal.
- * @param {chrome.automation.AutomationNode} cur Node to begin the search from.
+ * @param {AutomationNode} cur Node to begin the search from.
  * @param {Dir} dir
  * @param {AutomationPredicate.Unary} pred A predicate to apply
  *     to a candidate node.
- * @return {chrome.automation.AutomationNode}
+ * @return {AutomationNode}
  */
 AutomationUtil.findNodePre = function(cur, dir, pred) {
   if (pred(cur))
@@ -56,11 +57,11 @@ AutomationUtil.findNodePre = function(cur, dir, pred) {
 
 /**
  * Find a node in subtree of |cur| satisfying |pred| using post-order traversal.
- * @param {chrome.automation.AutomationNode} cur Node to begin the search from.
+ * @param {AutomationNode} cur Node to begin the search from.
  * @param {Dir} dir
  * @param {AutomationPredicate.Unary} pred A predicate to apply
  *     to a candidate node.
- * @return {chrome.automation.AutomationNode}
+ * @return {AutomationNode}
  */
 AutomationUtil.findNodePost = function(cur, dir, pred) {
   var child = dir == Dir.BACKWARD ? cur.lastChild() : cur.firstChild();
@@ -79,9 +80,9 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
 /**
  * Find the next node in the given direction that is either an immediate sibling
  * or a sibling of an ancestor.
- * @param {chrome.automation.AutomationNode} cur Node to start search from.
+ * @param {AutomationNode} cur Node to start search from.
  * @param {Dir} dir
- * @return {chrome.automation.AutomationNode}
+ * @return {AutomationNode}
  */
 AutomationUtil.findNextSubtree = function(cur, dir) {
   while (cur) {
@@ -95,11 +96,11 @@ AutomationUtil.findNextSubtree = function(cur, dir) {
 
 /**
  * Find the next node in the given direction in depth first order.
- * @param {chrome.automation.AutomationNode} cur Node to begin the search from.
+ * @param {AutomationNode} cur Node to begin the search from.
  * @param {Dir} dir
  * @param {AutomationPredicate.Unary} pred A predicate to apply
  *     to a candidate node.
- * @return {chrome.automation.AutomationNode}
+ * @return {AutomationNode}
  */
 AutomationUtil.findNextNode = function(cur, dir, pred) {
   var next = cur;
@@ -116,7 +117,7 @@ AutomationUtil.findNextNode = function(cur, dir, pred) {
  * Given nodes a_1, ..., a_n starting at |cur| in pre order traversal, apply
  * |pred| to a_i and a_(i - 1) until |pred| is satisfied.  Returns a_(i - 1) or
  * a_i (depending on opt_options.before) or null if no match was found.
- * @param {chrome.automation.AutomationNode} cur
+ * @param {AutomationNode} cur
  * @param {Dir} dir
  * @param {AutomationPredicate.Binary} pred
  * @param {{filter: (AutomationPredicate.Unary|undefined),
@@ -125,7 +126,7 @@ AutomationUtil.findNextNode = function(cur, dir, pred) {
  *         consider. Defaults to leaf nodes only.
  *     before - True to return a_(i -
  *     1); a_i otherwise. Defaults to false.
- * @return {chrome.automation.AutomationNode}
+ * @return {AutomationNode}
  */
 AutomationUtil.findNodeUntil = function(cur, dir, pred, opt_options) {
   opt_options =
