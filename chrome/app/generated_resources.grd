@@ -1225,6 +1225,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
             Pin this Page to Start Screen...
           </message>
+          <message name="IDS_EDIT2" desc="In Title Case: The text label before the cut/copy/paste buttons in the merged menu">
+            Edit
+          </message>
           <message name="IDS_CUT" desc="In Title Case: The text label of the Cut menu item">
             Cu&amp;t
           </message>
@@ -1254,6 +1257,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
             &amp;Zoom
+          </message>
+          <message name="IDS_ZOOM_MENU2" desc="In Title Case: The text label of the Zoom menu in the merged menu">
+            Zoom
           </message>
           <message name="IDS_ZOOM_PLUS" desc="In Title Case: The text label of the Make Text Larger menu item">
             &amp;Larger
@@ -1438,9 +1444,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_FULLSCREEN" desc="Switches into fullscreen mode">
           &amp;Full screen
-        </message>
-        <message name="IDS_ACCNAME_FULLSCREEN" desc="The accessible name of the fullscreen button in the new merged menu">
-          Full screen
         </message>
         <message name="IDS_CLEAR_BROWSING_DATA" desc="The text label for the menu item for clearing of browsing data">
           &amp;Clear browsing data...
@@ -7352,6 +7355,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_FORWARD" desc="The accessible name for the forward button.">
         Forward
+      </message>
+      <message name="IDS_ACCNAME_FULLSCREEN" desc="The accessible name of the fullscreen button in the new merged menu">
+        Full screen
       </message>
       <message name="IDS_ACCNAME_HOME" desc="The accessible name for the home button">
         Home

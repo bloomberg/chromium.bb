@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_H_
-#define CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
@@ -22,4 +22,4 @@
 @property(assign, nonatomic) CGFloat dividerOpacity;
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_VIEW_COCOA_H_

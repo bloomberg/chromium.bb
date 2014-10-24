@@ -133,7 +133,7 @@ class NotificationBridge;
 // Called to update the loading state. Handles updating the go/stop
 // button state.  |force| is set if the update is due to changing
 // tabs, as opposed to the page-load finishing.  See comment in
-// reload_button.h.
+// reload_button_cocoa.h.
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force;
 
 // Allow turning off the toolbar (but we may keep the location bar without a

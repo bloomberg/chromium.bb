@@ -270,7 +270,7 @@ class Command;
 
 // Called to tell the selected tab to update its loading state.
 // |force| is set if the update is due to changing tabs, as opposed to
-// the page-load finishing.  See comment in reload_button.h.
+// the page-load finishing.  See comment in reload_button_cocoa.h.
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force;
 
 // Brings this controller's window to the front.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/toolbar/reload_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/reload_button_cocoa.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"

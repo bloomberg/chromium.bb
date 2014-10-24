@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_button_cocoa.h"
 
 // This a button which displays a user-provided menu "attached" below it upon
 // being clicked or dragged (or clicked and held). It expects a

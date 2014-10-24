@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/toolbar/reload_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/reload_button_cocoa.h"
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
