@@ -2165,7 +2165,7 @@ size_t SpdyFramer::ProcessDataFramePaddingLength(const char* data, size_t len) {
   size_t original_len = len;
   if (current_frame_flags_ & DATA_FLAG_PADDED) {
     if (len != 0) {
-      if (remaining_data_length_ < 1) {
+      if (remaining_data_length_ < kPadLengthFieldSize) {
         set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
         return 0;
       }
