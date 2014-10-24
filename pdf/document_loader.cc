@@ -298,6 +298,15 @@ void DocumentLoader::DidOpen(int32_t result) {
     return;
   }
 
+  int32_t http_code = loader_.GetResponseInfo().GetStatusCode();
+  if (http_code >= 400 && http_code < 500) {
+    // Error accessing resource. 4xx error indicate subsequent requests
+    // will fail too.
+    // E.g. resource has been removed from the server while loading it.
+    // https://code.google.com/p/chromium/issues/detail?id=414827
+    return;
+  }
+
   is_multipart_ = false;
   current_chunk_size_ = 0;
   current_chunk_read_ = 0;
