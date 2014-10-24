@@ -30,7 +30,7 @@ class Widget;
 
 namespace athena {
 class SplitViewControllerTest;
-class WindowListProvider;
+class WindowListProviderImpl;
 
 // Responsible for entering split view mode, exiting from split view mode, and
 // laying out the windows in split view mode.
@@ -40,7 +40,7 @@ class ATHENA_EXPORT SplitViewController
       public WindowManagerObserver {
  public:
   SplitViewController(aura::Window* container,
-                      WindowListProvider* window_list_provider);
+                      WindowListProviderImpl* window_list_provider);
 
   ~SplitViewController() override;
 
@@ -137,7 +137,7 @@ class ATHENA_EXPORT SplitViewController
   aura::Window* container_;
 
   // Provider of the list of windows to cycle through. Not owned.
-  WindowListProvider* window_list_provider_;
+  WindowListProviderImpl* window_list_provider_;
 
   // Windows for the left and right activities shown in SCROLLING and ACTIVE
   // states. In INACTIVE state these are nullptr.

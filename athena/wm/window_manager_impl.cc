@@ -106,25 +106,6 @@ void AthenaContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     wm::TransientWindowManager::Get(child)
         ->set_parent_controls_visibility(true);
   }
-
-  if (!instance->window_list_provider_->IsValidWindow(child))
-    return;
-
-  if (instance->split_view_controller_->IsSplitViewModeActive() &&
-      !instance->IsOverviewModeActive()) {
-    instance->split_view_controller_->ReplaceWindow(
-        instance->split_view_controller_->left_window(), child);
-  } else {
-    gfx::Size size =
-        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
-    child->SetBounds(gfx::Rect(size));
-  }
-
-  if (instance->IsOverviewModeActive()) {
-    // TODO(pkotwicz|oshima). Creating a new window should only exit overview
-    // mode if the new window is activated. crbug.com/415266
-    instance->OnSelectWindow(child);
-  }
 }
 
 void AthenaContainerLayoutManager::OnWillRemoveWindowFromLayout(
@@ -156,6 +137,7 @@ WindowManagerImpl::WindowManagerImpl() {
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
   window_list_provider_.reset(new WindowListProviderImpl(container_.get()));
+  window_list_provider_->AddObserver(this);
   bezel_controller_.reset(new BezelController(container_.get()));
   split_view_controller_.reset(
       new SplitViewController(container_.get(), window_list_provider_.get()));
@@ -174,6 +156,7 @@ WindowManagerImpl::WindowManagerImpl() {
 }
 
 WindowManagerImpl::~WindowManagerImpl() {
+  window_list_provider_->RemoveObserver(this);
   overview_.reset();
   RemoveObserver(split_view_controller_.get());
   split_view_controller_.reset();
@@ -334,6 +317,31 @@ void WindowManagerImpl::OnSelectSplitViewWindow(aura::Window* left,
   ExitOverviewNoActivate();
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeEnter());
   split_view_controller_->ActivateSplitMode(left, right, to_activate);
+}
+
+void WindowManagerImpl::OnWindowStackingChangedInList() {
+}
+
+void WindowManagerImpl::OnWindowAddedToList(aura::Window* child) {
+  if (instance->split_view_controller_->IsSplitViewModeActive() &&
+      !instance->IsOverviewModeActive()) {
+    instance->split_view_controller_->ReplaceWindow(
+        instance->split_view_controller_->left_window(), child);
+  } else {
+    gfx::Size size =
+        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
+    child->SetBounds(gfx::Rect(size));
+  }
+
+  if (instance->IsOverviewModeActive()) {
+    // TODO(pkotwicz|oshima). Creating a new window should only exit overview
+    // mode if the new window is activated. crbug.com/415266
+    instance->OnSelectWindow(child);
+  }
+}
+
+void WindowManagerImpl::OnWindowRemovedFromList(aura::Window* removed_window,
+                                                int index) {
 }
 
 void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {

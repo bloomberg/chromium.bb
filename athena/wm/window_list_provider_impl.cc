@@ -66,8 +66,8 @@ const aura::Window::Windows& WindowListProviderImpl::GetWindowList() const {
 }
 
 bool WindowListProviderImpl::IsWindowInList(aura::Window* window) const {
-  // TODO(oshima): Use kManagedKey specify which windows are managed.
-  return window->parent() == container_ && IsValidWindow(window);
+  return std::find(window_list_.begin(), window_list_.end(), window) !=
+         window_list_.end();
 }
 
 void WindowListProviderImpl::StackWindowFrontOf(
@@ -97,13 +97,16 @@ void WindowListProviderImpl::RecreateWindowList() {
 }
 
 void WindowListProviderImpl::OnWindowAdded(aura::Window* window) {
-  if (!IsValidWindow(window) || window->parent() != container_)
+  DCHECK_EQ(window->parent(), container_);
+  if (!IsValidWindow(window))
     return;
 
   window->SetProperty(kManagedKey, true);
   RecreateWindowList();
   DCHECK(IsWindowInList(window));
   window->AddObserver(this);
+  FOR_EACH_OBSERVER(
+      WindowListProviderObserver, observers_, OnWindowAddedToList(window));
 }
 
 void WindowListProviderImpl::OnWillRemoveWindow(aura::Window* window) {
@@ -117,8 +120,9 @@ void WindowListProviderImpl::OnWillRemoveWindow(aura::Window* window) {
   int index = find - window_list_.begin();
   window_list_.erase(find);
   window->RemoveObserver(this);
-  FOR_EACH_OBSERVER(
-      WindowListProviderObserver, observers_, OnWindowRemoved(window, index));
+  FOR_EACH_OBSERVER(WindowListProviderObserver,
+                    observers_,
+                    OnWindowRemovedFromList(window, index));
 }
 
 void WindowListProviderImpl::OnWindowStackingChanged(aura::Window* window) {
@@ -127,9 +131,8 @@ void WindowListProviderImpl::OnWindowStackingChanged(aura::Window* window) {
   DCHECK(IsWindowInList(window));
   RecreateWindowList();
   // Inform our listeners that the stacking has been changed.
-  FOR_EACH_OBSERVER(WindowListProviderObserver,
-                    observers_,
-                    OnWindowStackingChanged());
+  FOR_EACH_OBSERVER(
+      WindowListProviderObserver, observers_, OnWindowStackingChangedInList());
 }
 
 }  // namespace athena

@@ -21,6 +21,7 @@ class ATHENA_EXPORT WindowListProviderImpl : public WindowListProvider,
   explicit WindowListProviderImpl(aura::Window* container);
   ~WindowListProviderImpl() override;
 
+  // TODO(oshima): Remove this method. This should live outside.
   bool IsValidWindow(aura::Window* window) const;
 
   // WindowListProvider:

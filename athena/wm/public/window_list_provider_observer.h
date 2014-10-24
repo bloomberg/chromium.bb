@@ -19,12 +19,15 @@ class ATHENA_EXPORT WindowListProviderObserver {
   virtual ~WindowListProviderObserver() {}
 
   // The Window stacking has changed.
-  virtual void OnWindowStackingChanged() = 0;
+  virtual void OnWindowStackingChangedInList() = 0;
+
+  // A valid window has added to the list.
+  virtual void OnWindowAddedToList(aura::Window* window) = 0;
 
   // The specified Window has been removed from the list. At the time of
   // removal, |removed_window| was at the |index| position in the window list.
-  virtual void OnWindowRemoved(aura::Window* removed_window,
-                               int index) = 0;
+  virtual void OnWindowRemovedFromList(aura::Window* removed_window,
+                                       int index) = 0;
 };
 
 }  // namespace athena

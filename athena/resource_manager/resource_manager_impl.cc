@@ -73,9 +73,10 @@ class ResourceManagerImpl : public ResourceManager,
   virtual ResourceManagerDelegate* GetDelegate() override;
 
   // WindowListProviderObserver:
-  virtual void OnWindowStackingChanged() override;
-  virtual void OnWindowRemoved(aura::Window* removed_window,
-                               int index) override;
+  virtual void OnWindowStackingChangedInList() override;
+  virtual void OnWindowAddedToList(aura::Window* added_window) override {}
+  virtual void OnWindowRemovedFromList(aura::Window* removed_window,
+                                       int index) override {}
 
  private:
   // Manage the resources for our activities.
@@ -234,7 +235,7 @@ void ResourceManagerImpl::OnSplitViewModeExit() {
   in_split_view_mode_ = false;
 }
 
-void ResourceManagerImpl::OnWindowStackingChanged() {
+void ResourceManagerImpl::OnWindowStackingChangedInList() {
   activity_order_changed_ = true;
   if (pause_) {
     queued_command_ = true;
@@ -251,10 +252,6 @@ void ResourceManagerImpl::OnWindowStackingChanged() {
 
   // Manage the resources of each activity.
   ManageResource();
-}
-
-void ResourceManagerImpl::OnWindowRemoved(aura::Window* removed_window,
-                                          int index) {
 }
 
 void ResourceManagerImpl::OnMemoryPressure(MemoryPressure pressure) {

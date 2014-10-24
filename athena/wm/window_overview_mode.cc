@@ -789,14 +789,17 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   // WindowListProviderObserver:
-  void OnWindowStackingChanged() override {
+  void OnWindowStackingChangedInList() override {
     // Recompute the states of all windows. There isn't enough information at
     // this point to do anything more clever.
     ComputeTerminalStatesForAllWindows();
     SetInitialWindowStates();
   }
 
-  void OnWindowRemoved(aura::Window* removed_window, int index) override {
+  void OnWindowAddedToList(aura::Window* removed_window) override {}
+
+  void OnWindowRemovedFromList(aura::Window* removed_window,
+                               int index) override {
     const aura::Window::Windows& windows =
         window_list_provider_->GetWindowList();
     if (windows.empty())

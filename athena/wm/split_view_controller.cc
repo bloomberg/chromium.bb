@@ -7,8 +7,8 @@
 #include <cmath>
 
 #include "athena/screen/public/screen_manager.h"
-#include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
+#include "athena/wm/window_list_provider_impl.h"
 #include "base/bind.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
@@ -163,7 +163,7 @@ bool IsLandscapeOrientation(gfx::Display::Rotation rotation) {
 
 SplitViewController::SplitViewController(
     aura::Window* container,
-    WindowListProvider* window_list_provider)
+    WindowListProviderImpl* window_list_provider)
     : state_(INACTIVE),
       container_(container),
       window_list_provider_(window_list_provider),
@@ -259,7 +259,7 @@ void SplitViewController::ReplaceWindow(aura::Window* window,
   CHECK(replace_with);
   CHECK(window == left_window_ || window == right_window_);
   CHECK(replace_with != left_window_ && replace_with != right_window_);
-  DCHECK(window_list_provider_->IsWindowInList(replace_with));
+  DCHECK(window_list_provider_->IsValidWindow(replace_with));
 
   aura::Window* not_replaced = nullptr;
   if (window == left_window_) {

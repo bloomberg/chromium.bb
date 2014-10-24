@@ -61,24 +61,34 @@ std::string GetWindowOrder(const aura::Window::Windows& original,
 class WindowListObserver : public WindowListProviderObserver {
  public:
   explicit WindowListObserver(WindowListProvider* provider)
-      : calls_(0), window_removal_calls_(0), provider_(provider) {
+      : calls_(0),
+        window_add_calls_(0),
+        window_removal_calls_(0),
+        provider_(provider) {
     provider_->AddObserver(this);
   }
   ~WindowListObserver() override { provider_->RemoveObserver(this); }
 
   int calls() const { return calls_; }
+  int window_add_calls() const { return window_add_calls_; }
   int window_removal_calls() const { return window_removal_calls_; }
 
   // WindowListProviderObserver:
-  void OnWindowStackingChanged() override { calls_++; }
+  void OnWindowStackingChangedInList() override { calls_++; }
 
-  void OnWindowRemoved(aura::Window* removed_window, int index) override {
+  void OnWindowAddedToList(aura::Window* removed_window) override {
+    window_add_calls_++;
+  }
+
+  void OnWindowRemovedFromList(aura::Window* removed_window,
+                               int index) override {
     window_removal_calls_++;
   }
 
  private:
   // The number of calls to the observer.
   int calls_;
+  int window_add_calls_;
   int window_removal_calls_;
 
   // The associated WindowListProvider which is observed.
@@ -241,7 +251,7 @@ TEST_F(WindowListProviderImplTest, TestWindowOrderingFunctions) {
   EXPECT_EQ(4, observer->calls());
 }
 
-TEST_F(WindowListProviderImplTest, TestWindowRemovalNotification) {
+TEST_F(WindowListProviderImplTest, TestWindowAddRemoveNotification) {
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> container(new aura::Window(&delegate));
   scoped_ptr<WindowListProvider> list_provider(
@@ -257,10 +267,13 @@ TEST_F(WindowListProviderImplTest, TestWindowRemovalNotification) {
       CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   scoped_ptr<aura::Window> window4 =
       CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_POPUP);
+  // The popup-window (window4) should not be added tot he list.
+  EXPECT_EQ(3, observer->window_add_calls());
 
-  // The popup-window (window4) should not be included in the window-list.
+  // The popup-window should not be included in the window-list.
   ASSERT_EQ(3U, list_provider->GetWindowList().size());
   EXPECT_EQ(0, observer->window_removal_calls());
+  EXPECT_EQ(3, observer->window_add_calls());
   EXPECT_FALSE(list_provider->IsWindowInList(window4.get()));
 
   // Destroying the popup window should not trigger the remove notification.

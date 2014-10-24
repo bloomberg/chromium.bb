@@ -7,6 +7,7 @@
 
 #include "athena/athena_export.h"
 #include "athena/input/public/accelerator_manager.h"
+#include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/public/window_manager.h"
 #include "athena/wm/title_drag_controller.h"
 #include "athena/wm/window_overview_mode.h"
@@ -32,6 +33,7 @@ class WindowManagerObserver;
 
 class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
                                         public WindowOverviewModeDelegate,
+                                        public WindowListProviderObserver,
                                         public aura::WindowObserver,
                                         public AcceleratorHandler,
                                         public TitleDragControllerDelegate {
@@ -80,6 +82,12 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
   void OnSelectSplitViewWindow(aura::Window* left,
                                aura::Window* right,
                                aura::Window* to_activate) override;
+
+  // WindowListProviderObserver:
+  void OnWindowStackingChangedInList() override;
+  void OnWindowAddedToList(aura::Window* window) override;
+  void OnWindowRemovedFromList(aura::Window* removed_window,
+                               int index) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
