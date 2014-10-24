@@ -5109,19 +5109,19 @@ Battery full
     Kiosk application launch canceled.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_IN_PROGRESS" desc="Message shown on screen when the system is updating kiosk apps from usb stick.">
-    Kiosk applications are being updated from usb stick, please wait. Do not remove the usb stick.
+    Please wait....Kiosk app is in the process of being updated. Do not remove the USB stick.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_NO_UPDATES" desc="Error message for no external extensions to update.">
-    No kiosk apps with newer version are found on the usb stick, nothing to update. Please remove the usb stick.
+    No Kiosk apps with newer version found. Nothing to update. Please remove the USB stick.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_INVALID_MANIFEST" desc="Error message for invalid external update manifest file from usb stick.">
-    Found invalid kiosk external update manifest file on the usb stick, failed to update kiosk apps. Please remove the usb stick.
+    Invalid Kiosk external update manifest file found. Failed to update Kiosk app. Please remove the USB stick.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_COMPLETE" desc="Message shown on screen when the system completes updating kiosk apps from usb stick.">
-    Kiosk app updating from usb stick is completed. Please remove the usb stick from the device.
+    Kiosk app has been updated. Please remove the USB stick.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_SUCCESSFUL_UPDATED_APPS" desc="Message shown for successfully updated kiosk apps.">
-    The following kiosk apps have been updated, please reboot the device to complete the update process: <ph name="updated_apps">$1<ex>PrintApp</ex></ph>.
+    The following kiosk apps "<ph name="updated_apps">$1<ex>PrintApp</ex></ph>" have been updated. Please reboot the device to complete the update process.
   </message>
   <message name="IDS_KIOSK_EXTERNAL_UPDATE_FAILED_UPDATED_APPS" desc="Message shown for failed updated kiosk apps.">
     The following kiosk apps have been failed for updating:
