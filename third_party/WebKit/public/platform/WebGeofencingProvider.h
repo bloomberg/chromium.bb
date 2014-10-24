@@ -25,17 +25,14 @@ public:
 
     // Registers a region.
     // Ownership of the WebGeofencingCallbacks is transferred to the client.
-    virtual void registerRegion(const WebString& regionId, const WebCircularGeofencingRegion&, WebGeofencingCallbacks*) { }
     virtual void registerRegion(const WebString& regionId, const WebCircularGeofencingRegion&, WebServiceWorkerRegistration*, WebGeofencingCallbacks*) { }
 
     // Unregisters a region.
     // Ownership of the WebGeofencingCallbacks is transferred to the client.
-    virtual void unregisterRegion(const WebString& regionId, WebGeofencingCallbacks*) { }
     virtual void unregisterRegion(const WebString& regionId, WebServiceWorkerRegistration*, WebGeofencingCallbacks*) { }
 
     // Returns all the currently registered regions.
     // Ownership of the WebGeofencingRegionsCallbacks is transferred to the client.
-    virtual void getRegisteredRegions(WebGeofencingRegionsCallbacks*) { }
     virtual void getRegisteredRegions(WebServiceWorkerRegistration*, WebGeofencingRegionsCallbacks*) { }
 };
 

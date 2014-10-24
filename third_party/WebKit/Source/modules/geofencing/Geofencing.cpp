@@ -61,8 +61,6 @@ ScriptPromise Geofencing::registerRegion(ScriptState* scriptState, GeofencingReg
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     WebGeofencingCallbacks* callbacks = new CallbackPromiseAdapter<void, GeofencingError>(resolver);
-    // FIXME: remove this call once chromium is updated to implement the other registerRegion.
-    provider->registerRegion(region->id(), toCircularGeofencingRegion(region)->webRegion(), callbacks);
     WebServiceWorkerRegistration* serviceWorkerRegistration = nullptr;
     if (m_registration)
         serviceWorkerRegistration = m_registration->webRegistration();
@@ -79,8 +77,6 @@ ScriptPromise Geofencing::unregisterRegion(ScriptState* scriptState, const Strin
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     WebGeofencingCallbacks* callbacks = new CallbackPromiseAdapter<void, GeofencingError>(resolver);
-    // FIXME: remove this call once chromium is updated to implement the other unregisterRegion.
-    provider->unregisterRegion(regionId, callbacks);
     WebServiceWorkerRegistration* serviceWorkerRegistration = nullptr;
     if (m_registration)
         serviceWorkerRegistration = m_registration->webRegistration();
@@ -97,8 +93,6 @@ ScriptPromise Geofencing::getRegisteredRegions(ScriptState* scriptState) const
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     WebGeofencingRegionsCallbacks* callbacks = new CallbackPromiseAdapter<RegionArray, GeofencingError>(resolver);
-    // FIXME: remove this call once chromium is updated to implement the other getRegisteredRegions.
-    provider->getRegisteredRegions(callbacks);
     WebServiceWorkerRegistration* serviceWorkerRegistration = nullptr;
     if (m_registration)
         serviceWorkerRegistration = m_registration->webRegistration();
