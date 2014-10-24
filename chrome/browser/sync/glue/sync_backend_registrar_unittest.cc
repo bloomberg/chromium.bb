@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 
+#include "base/run_loop.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/change_processor_mock.h"
@@ -254,6 +255,96 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
 
   // Should do nothing.
   TriggerChanges(registrar_.get(), AUTOFILL);
+}
+
+class SyncBackendRegistrarShutdownTest : public testing::Test {
+ public:
+  void BlockDBThread() {
+    EXPECT_FALSE(db_thread_lock_.Try());
+
+    db_thread_blocked_.Signal();
+    base::AutoLock l(db_thread_lock_);
+  }
+
+ protected:
+  friend class TestRegistrar;
+
+  SyncBackendRegistrarShutdownTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
+                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        db_thread_blocked_(false, false) {
+    quit_closure_ = run_loop_.QuitClosure();
+  }
+
+  virtual ~SyncBackendRegistrarShutdownTest() {}
+
+  void PostQuitOnUIMessageLoop() {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure_);
+  }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
+  base::WaitableEvent db_thread_blocked_;
+  base::Lock db_thread_lock_;
+  base::RunLoop run_loop_;
+  base::Closure quit_closure_;
+};
+
+// Wrap SyncBackendRegistrar so that we can monitor its lifetime.
+class TestRegistrar : public SyncBackendRegistrar {
+ public:
+  explicit TestRegistrar(Profile* profile,
+                         SyncBackendRegistrarShutdownTest* test)
+      : SyncBackendRegistrar("test", profile, scoped_ptr<base::Thread>()),
+        test_(test) {}
+
+  ~TestRegistrar() override { test_->PostQuitOnUIMessageLoop(); }
+
+ private:
+  SyncBackendRegistrarShutdownTest* test_;
+};
+
+TEST_F(SyncBackendRegistrarShutdownTest, BlockingShutdown) {
+  // Take ownership of |db_thread_lock_| so that the DB thread can't acquire it.
+  db_thread_lock_.Acquire();
+
+  // This will block the DB thread by waiting on |db_thread_lock_|.
+  BrowserThread::PostTask(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&SyncBackendRegistrarShutdownTest::BlockDBThread,
+                 base::Unretained(this)));
+
+  scoped_ptr<TestRegistrar> registrar(new TestRegistrar(&profile_, this));
+  base::Thread* sync_thread = registrar->sync_thread();
+
+  // Stop here until the DB thread gets a chance to run and block on the lock.
+  // Please note that since the task above didn't finish, the task to
+  // initialize the worker on the DB thread hasn't had a chance to run yet too.
+  // Which means ModelSafeWorker::SetWorkingLoopToCurrent hasn't been called
+  // for the DB worker.
+  db_thread_blocked_.Wait();
+
+  registrar->SetInitialTypes(ModelTypeSet());
+
+  // Start the shutdown.
+  registrar->RequestWorkerStopOnUIThread();
+
+  sync_thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncBackendRegistrar::Shutdown,
+                 base::Unretained(registrar.release())));
+
+  // The test verifies that the sync thread doesn't block because
+  // of the blocked DB thread and can finish the shutdown.
+  sync_thread->message_loop()->RunUntilIdle();
+
+  db_thread_lock_.Release();
+
+  // Run the main thread loop until all workers have been removed and the
+  // registrar destroyed.
+  run_loop_.Run();
 }
 
 }  // namespace

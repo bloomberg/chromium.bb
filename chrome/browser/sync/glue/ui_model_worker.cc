@@ -47,7 +47,6 @@ UIModelWorker::UIModelWorker(syncer::WorkerLoopDestructionObserver* observer)
 
 void UIModelWorker::RegisterForLoopDestruction() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::MessageLoop::current()->AddDestructionObserver(this);
   SetWorkingLoopToCurrent();
 }
 

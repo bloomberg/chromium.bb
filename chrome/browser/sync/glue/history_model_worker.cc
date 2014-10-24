@@ -100,7 +100,6 @@ void HistoryModelWorker::RegisterForLoopDestruction() {
 }
 
 void HistoryModelWorker::RegisterOnDBThread() {
-  base::MessageLoop::current()->AddDestructionObserver(this);
   SetWorkingLoopToCurrent();
 }
 

@@ -50,7 +50,6 @@ BrowserThreadModelWorker::~BrowserThreadModelWorker() {}
 
 void BrowserThreadModelWorker::RegisterForLoopDestruction() {
   if (BrowserThread::CurrentlyOn(thread_)) {
-    base::MessageLoop::current()->AddDestructionObserver(this);
     SetWorkingLoopToCurrent();
   } else {
     BrowserThread::PostTask(

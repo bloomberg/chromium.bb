@@ -75,8 +75,8 @@ ModelSafeWorker::ModelSafeWorker(WorkerLoopDestructionObserver* observer)
     : stopped_(false),
       work_done_or_stopped_(false, false),
       observer_(observer),
-      working_loop_(NULL),
-      working_loop_set_wait_(true, false) {}
+      working_loop_(NULL) {
+}
 
 ModelSafeWorker::~ModelSafeWorker() {}
 
@@ -133,28 +133,53 @@ void ModelSafeWorker::WillDestroyCurrentMessageLoop() {
 }
 
 void ModelSafeWorker::SetWorkingLoopToCurrent() {
-  base::AutoLock l(working_loop_lock_);
-  DCHECK(!working_loop_);
-  working_loop_ = base::MessageLoop::current();
-  working_loop_set_wait_.Signal();
+  base::Callback<void(ModelSafeGroup)> unregister_done_callback;
+
+  {
+    base::AutoLock l(working_loop_lock_);
+    DCHECK(!working_loop_);
+
+    if (unregister_done_callback_.is_null()) {
+      // Expected case - UnregisterForLoopDestruction hasn't been called yet.
+      base::MessageLoop::current()->AddDestructionObserver(this);
+      working_loop_ = base::MessageLoop::current();
+    } else {
+      // Rare case which is possible when the model type thread remains
+      // blocked for the entire session and UnregisterForLoopDestruction ends
+      // up being called before this method. This method is posted unlike
+      // UnregisterForLoopDestruction - that's why they can end up being called
+      // out of order.
+      // In this case we skip the destruction observer registration
+      // and just invoke the callback stored at UnregisterForLoopDestruction.
+      DCHECK(stopped_);
+      unregister_done_callback = unregister_done_callback_;
+      unregister_done_callback_.Reset();
+    }
+  }
+
+  if (!unregister_done_callback.is_null()) {
+    unregister_done_callback.Run(GetModelSafeGroup());
+  }
 }
 
 void ModelSafeWorker::UnregisterForLoopDestruction(
     base::Callback<void(ModelSafeGroup)> unregister_done_callback) {
-  // Ok to wait until |working_loop_| is set because this is called on sync
-  // loop.
-  working_loop_set_wait_.Wait();
-
-  {
-    base::AutoLock l(working_loop_lock_);
-    if (working_loop_ != NULL) {
-      // Should be called on sync loop.
-      DCHECK_NE(base::MessageLoop::current(), working_loop_);
-      working_loop_->PostTask(
-          FROM_HERE,
-          base::Bind(&ModelSafeWorker::UnregisterForLoopDestructionAsync,
-                     this, unregister_done_callback));
-    }
+  base::AutoLock l(working_loop_lock_);
+  if (working_loop_ != NULL) {
+    // Normal case - observer registration has been already done.
+    // Delegate to the sync thread to do the actual unregistration in
+    // UnregisterForLoopDestructionAsync.
+    DCHECK_NE(base::MessageLoop::current(), working_loop_);
+    working_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ModelSafeWorker::UnregisterForLoopDestructionAsync,
+                   this,
+                   unregister_done_callback));
+  } else {
+    // The working loop is still unknown, probably because the model type
+    // thread is blocked. Store the callback to be called from
+    // SetWorkingLoopToCurrent.
+    unregister_done_callback_ = unregister_done_callback;
   }
 }
 
