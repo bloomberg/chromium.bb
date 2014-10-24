@@ -3598,6 +3598,7 @@
             'rendering/TextPainterTest.cpp',
             'rendering/shapes/BoxShapeTest.cpp',
             'rendering/style/OutlineValueTest.cpp',
+            'rendering/style/RenderStyleTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
             'streams/ReadableStreamTest.cpp',
             'testing/UnitTestHelpers.cpp',

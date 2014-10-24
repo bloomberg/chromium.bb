@@ -86,6 +86,8 @@ public:
     bool reflectionDataEquivalent(const StyleRareNonInheritedData&) const;
     bool animationDataEquivalent(const StyleRareNonInheritedData&) const;
     bool transitionDataEquivalent(const StyleRareNonInheritedData&) const;
+    bool shapeOutsideDataEquivalent(const StyleRareNonInheritedData&) const;
+    bool clipPathDataEquivalent(const StyleRareNonInheritedData&) const;
     bool hasFilters() const;
     bool hasOpacity() const { return opacity < 1; }
 

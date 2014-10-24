@@ -204,10 +204,10 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_mask == o.m_mask
         && m_maskBoxImage == o.m_maskBoxImage
         && m_pageSize == o.m_pageSize
-        && m_shapeOutside == o.m_shapeOutside
+        && shapeOutsideDataEquivalent(o)
         && m_shapeMargin == o.m_shapeMargin
         && m_shapeImageThreshold == o.m_shapeImageThreshold
-        && m_clipPath == o.m_clipPath
+        && clipPathDataEquivalent(o)
         && m_textDecorationColor == o.m_textDecorationColor
         && m_visitedLinkTextDecorationColor == o.m_visitedLinkTextDecorationColor
         && m_visitedLinkBackgroundColor == o.m_visitedLinkBackgroundColor
@@ -304,6 +304,16 @@ bool StyleRareNonInheritedData::transitionDataEquivalent(const StyleRareNonInher
 bool StyleRareNonInheritedData::hasFilters() const
 {
     return m_filter.get() && !m_filter->m_operations.isEmpty();
+}
+
+bool StyleRareNonInheritedData::shapeOutsideDataEquivalent(const StyleRareNonInheritedData& o) const
+{
+    return dataEquivalent(m_shapeOutside, o.m_shapeOutside);
+}
+
+bool StyleRareNonInheritedData::clipPathDataEquivalent(const StyleRareNonInheritedData& o) const
+{
+    return dataEquivalent(m_clipPath, o.m_clipPath);
 }
 
 } // namespace blink

@@ -668,8 +668,8 @@ bool RenderStyle::diffNeedsPaintInvalidationObject(const RenderStyle& other) con
             || rareNonInheritedData->m_objectFit != other.rareNonInheritedData->m_objectFit
             || rareNonInheritedData->m_objectPosition != other.rareNonInheritedData->m_objectPosition
             || !rareNonInheritedData->shadowDataEquivalent(*other.rareNonInheritedData.get())
-            || !dataEquivalent(rareNonInheritedData->m_shapeOutside, other.rareNonInheritedData->m_shapeOutside)
-            || !dataEquivalent(rareNonInheritedData->m_clipPath, other.rareNonInheritedData->m_clipPath))
+            || !rareNonInheritedData->shapeOutsideDataEquivalent(*other.rareNonInheritedData.get())
+            || !rareNonInheritedData->clipPathDataEquivalent(*other.rareNonInheritedData.get()))
             return true;
     }
 
