@@ -325,7 +325,7 @@ class CC_EXPORT LayerTreeHostImpl
   void QueueSwapPromiseForMainThreadScrollUpdate(
       scoped_ptr<SwapPromise> swap_promise);
 
-  bool IsCurrentlyScrolling() const;
+  bool IsActivelyScrolling() const;
 
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }

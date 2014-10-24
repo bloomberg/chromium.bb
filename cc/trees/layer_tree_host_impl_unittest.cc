@@ -512,6 +512,20 @@ TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
   EXPECT_TRUE(did_request_commit_);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollActiveOnlyAfterScrollMovement) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+  EXPECT_FALSE(host_impl_->IsActivelyScrolling());
+  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  EXPECT_TRUE(host_impl_->IsActivelyScrolling());
+  host_impl_->ScrollEnd();
+  EXPECT_FALSE(host_impl_->IsActivelyScrolling());
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollWithoutRootLayer) {
   // We should not crash when trying to scroll an empty layer tree.
   EXPECT_EQ(InputHandler::ScrollIgnored,

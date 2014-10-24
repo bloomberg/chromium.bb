@@ -1586,7 +1586,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
 
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     bool disable_picture_quad_image_filtering =
-        IsCurrentlyScrolling() || needs_animate_layers();
+        IsActivelyScrolling() || needs_animate_layers();
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_, output_surface_.get(), NULL);
@@ -1768,8 +1768,8 @@ LayerImpl* LayerTreeHostImpl::CurrentlyScrollingLayer() const {
   return active_tree_->CurrentlyScrollingLayer();
 }
 
-bool LayerTreeHostImpl::IsCurrentlyScrolling() const {
-  return CurrentlyScrollingLayer() ||
+bool LayerTreeHostImpl::IsActivelyScrolling() const {
+  return (did_lock_scrolling_layer_ && CurrentlyScrollingLayer()) ||
          (InnerViewportScrollLayer() &&
           InnerViewportScrollLayer()->IsExternalFlingActive()) ||
          (OuterViewportScrollLayer() &&
