@@ -5,6 +5,9 @@
 <script>
     if (window.testRunner)
         testRunner.dumpAsText();
+    
+    if (internals)
+        internals.evictAllResources();
 
     function updateSrc() {
         var img = document.getElementById("foo");
@@ -16,12 +19,16 @@
     }
 
     addEventListener("DOMContentLoaded", function() {
-        if (window.testRunner && sessionStorage.pageReloaded)
-            testRunner.dumpResourceRequestCallbacks();
         updateSrc();
     }, false);
     addEventListener("load", function() {
         shouldBe('currentSrcFileName("foo")', '"image-set-4x.png"');
+        if (internals) {
+            shouldBeTrue('internals.isLoadingFromMemoryCache("resources/image-set-4x.png")');
+            shouldBeFalse('internals.isLoadingFromMemoryCache("../../hidpi/resources/image-set-2x.png")');
+            shouldBeFalse('internals.isLoadingFromMemoryCache("../../hidpi/resources/image-set-1x.png")');
+            shouldBeFalse('internals.isLoadingFromMemoryCache("resources/blue-100-px-square.png")');
+        }
     }, false);
 </script>
 <img id="foo">
