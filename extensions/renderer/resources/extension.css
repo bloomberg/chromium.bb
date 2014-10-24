@@ -4,21 +4,18 @@
  * found in the LICENSE file.
  *
  * This stylesheet is used to apply Chrome styles to extension pages that opt in
- * to using them. These styles have been copied from
- * ui/webui/resources/css/chrome_shared.css and
- * ui/webui/resources/css/widgets.css. This is to prevent WebUI changes from
- * breaking extensions, however please keep the files in sync if possible.
+ * to using them.
+ *
+ * These styles have been copied from ui/webui/resources/css/chrome_shared.css
+ * and ui/webui/resources/css/widgets.css *with CSS class logic removed*, so
+ * that it's as close to a user-agent stylesheet as possible.
+ *
+ * For example, extensions shouldn't be able to set a .link-button class and
+ * have it do anything.
+ *
+ * Other than that, keep this file and chrome_shared.css/widgets.cc in sync as
+ * much as possible.
  */
-
-/* Prevent CSS from overriding the hidden property. */
-[hidden] {
-  display: none !important;
-}
-
-html.loading * {
-  -webkit-transition-delay: 0 !important;
-  -webkit-transition-duration: 0 !important;
-}
 
 body {
   cursor: default;
@@ -62,54 +59,11 @@ a:active {
   color: rgb(5, 37, 119);
 }
 
-/* Elements that need to be LTR even in an RTL context, but should align
- * right. (Namely, URLs, search engine names, etc.)
- */
-html[dir='rtl'] .weakrtl {
-  direction: ltr;
-  text-align: right;
-}
-
-/* Input fields in search engine table need to be weak-rtl. Since those input
- * fields are generated for all cr.ListItem elements (and we only want weakrtl
- * on some), the class needs to be on the enclosing div.
- */
-html[dir='rtl'] div.weakrtl input {
-  direction: ltr;
-  text-align: right;
-}
-
-html[dir='rtl'] .favicon-cell.weakrtl {
-  -webkit-padding-end: 22px;
-  -webkit-padding-start: 0;
-}
-
-/* weakrtl for selection drop downs needs to account for the fact that
- * Webkit does not honor the text-align attribute for the select element.
- * (See Webkit bug #40216)
- */
-html[dir='rtl'] select.weakrtl {
-  direction: rtl;
-}
-
-html[dir='rtl'] select.weakrtl option {
-  direction: ltr;
-}
-
-/* WebKit does not honor alignment for text specified via placeholder attribute.
- * This CSS is a workaround. Please remove once WebKit bug is fixed.
- * https://bugs.webkit.org/show_bug.cgi?id=63367
- */
-html[dir='rtl'] input.weakrtl::-webkit-input-placeholder,
-html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
-  direction: rtl;
-}
-
 /* Default state **************************************************************/
 
 :-webkit-any(button,
              input[type='button'],
-             input[type='submit']):not(.custom-appearance):not(.link-button),
+             input[type='submit']),
 select,
 input[type='checkbox'],
 input[type='radio'] {
@@ -129,7 +83,7 @@ input[type='radio'] {
 
 :-webkit-any(button,
              input[type='button'],
-             input[type='submit']):not(.custom-appearance):not(.link-button),
+             input[type='submit']),
 select {
   min-height: 2em;
   min-width: 4em;
@@ -143,7 +97,7 @@ select {
 
 :-webkit-any(button,
              input[type='button'],
-             input[type='submit']):not(.custom-appearance):not(.link-button) {
+             input[type='submit']) {
   -webkit-padding-end: 10px;
   -webkit-padding-start: 10px;
 }
@@ -251,7 +205,7 @@ input[type='radio']:checked::before {
     :-webkit-any(
         button,
         input[type='button'],
-        input[type='submit']):not(.custom-appearance):not(.link-button)) {
+        input[type='submit'])) {
   background-image: linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
   border-color: rgba(0, 0, 0, 0.3);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
@@ -274,7 +228,7 @@ input[type='radio']:checked::before {
     :-webkit-any(
         button,
         input[type='button'],
-        input[type='submit']):not(.custom-appearance):not(.link-button)) {
+        input[type='submit'])) {
   background-image: linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
   box-shadow: none;
   text-shadow: none;
@@ -291,7 +245,7 @@ input[type='radio']:checked::before {
 :disabled:-webkit-any(
     button,
     input[type='button'],
-    input[type='submit']):not(.custom-appearance):not(.link-button),
+    input[type='submit']),
 select:disabled {
   background-image: linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
   border-color: rgba(80, 80, 80, 0.2);
@@ -334,75 +288,11 @@ input:disabled:-webkit-any([type='password'],
     :-webkit-any(
          button,
          input[type='button'],
-         input[type='submit']):not(.custom-appearance):not(.link-button)) {
+         input[type='submit'])) {
   /* OVERRIDE */
   -webkit-transition: border-color 200ms;
   /* We use border color because it follows the border radius (unlike outline).
    * This is particularly noticeable on mac. */
   border-color: rgb(77, 144, 254);
   outline: none;
-}
-
-/* Link buttons ***************************************************************/
-
-.link-button {
-  box-shadow: none;
-  background: transparent none;
-  border: none;
-  color: rgb(17, 85, 204);
-  cursor: pointer;
-  /* Input elements have -webkit-small-control which can override the body font.
-   * Resolve this by using 'inherit'. */
-  font: inherit;
-  margin: 0;
-  padding: 0 4px;
-}
-
-.link-button:hover {
-  text-decoration: underline;
-}
-
-.link-button:active {
-  color: rgb(5, 37, 119);
-  text-decoration: underline;
-}
-
-.link-button[disabled] {
-  color: #999;
-  cursor: default;
-  text-decoration: none;
-}
-
-/* Checkbox/radio helpers ******************************************************
- *
- * .checkbox and .radio classes wrap labels. Checkboxes and radios should use
- * these classes with the markup structure:
- *
- *   <div class="checkbox">
- *     <label>
- *       <input type="checkbox"></input>
- *       <span>
- *     </label>
- *   </div>
- */
-
-:-webkit-any(.checkbox, .radio) label {
-  /* Don't expand horizontally: <http://crbug.com/112091>. */
-  display: inline-flex;
-  padding-bottom: 7px;
-  padding-top: 7px;
-}
-
-:-webkit-any(.checkbox, .radio) label input ~ span {
-  -webkit-margin-start: 0.6em;
-  /* Make sure long spans wrap at the same horizontal position they start. */
-  display: block;
-}
-
-:-webkit-any(.checkbox, .radio) label:hover {
-  color: black;
-}
-
-label > input:disabled:-webkit-any([type='checkbox'], [type='radio']) ~ span {
-  color: #999;
 }
