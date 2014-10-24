@@ -36,9 +36,6 @@ namespace app_list {
 
 namespace {
 
-// Border padding space around the bubble contents.
-const int kPadding = 1;
-
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
 
@@ -113,9 +110,11 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate)
       contents_view_(NULL),
       contents_switcher_view_(NULL),
       weak_ptr_factory_(this) {
-  SetBorder(
-      views::Border::CreateEmptyBorder(kPadding, kPadding, kPadding, kPadding));
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           0,
+                           0,
+                           switches::IsExperimentalAppListEnabled() ? 0 : 1));
 
   search_box_view_ = new SearchBoxView(this, delegate);
   views::View* container = new SearchBoxContainerView(this, search_box_view_);

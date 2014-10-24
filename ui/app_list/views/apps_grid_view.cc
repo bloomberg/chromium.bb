@@ -60,8 +60,9 @@ namespace {
 const int kDragBufferPx = 20;
 
 // Padding space in pixels for fixed layout.
-const int kLeftRightPadding = 23;
 const int kTopPadding = 1;
+const int kBottomPadding = 1;
+const int kLeftRightPadding = 24;
 
 // Padding space in pixels between pages.
 const int kPagePadding = 40;
@@ -71,7 +72,7 @@ const int kPreferredTileWidth = 88;
 const int kPreferredTileHeight = 98;
 
 const int kExperimentalPreferredTileWidth = 90;
-const int kExperimentalPrefferedTileHeight = 90;
+const int kExperimentalPreferredTileHeight = 90;
 
 // Padding on each side of a tile.
 const int kExperimentalTileLeftRightPadding = 15;
@@ -106,7 +107,7 @@ const int kFolderDroppingCircleRadius = 39;
 gfx::Size GetTileViewSize() {
   return switches::IsExperimentalAppListEnabled()
              ? gfx::Size(kExperimentalPreferredTileWidth,
-                         kExperimentalPrefferedTileHeight)
+                         kExperimentalPreferredTileHeight)
              : gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
 }
 
@@ -424,11 +425,15 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
   cols_ = cols;
   rows_per_page_ = rows_per_page;
 
-  SetBorder(views::Border::CreateEmptyBorder(
-      switches::IsExperimentalAppListEnabled() ? 0 : kTopPadding,
-      kLeftRightPadding,
-      0,
-      kLeftRightPadding));
+  if (switches::IsExperimentalAppListEnabled()) {
+    SetBorder(views::Border::CreateEmptyBorder(0,
+                                               kExperimentalWindowPadding,
+                                               kBottomPadding,
+                                               kExperimentalWindowPadding));
+  } else {
+    SetBorder(views::Border::CreateEmptyBorder(
+        kTopPadding, kLeftRightPadding, kBottomPadding, kLeftRightPadding));
+  }
 }
 
 void AppsGridView::ResetForShowApps() {

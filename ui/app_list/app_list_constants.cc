@@ -80,7 +80,7 @@ const int kExperimentalPreferredRows = 4;
 const int kReorderDroppingCircleRadius = 35;
 
 // The padding around the outside of the experimental app list (top and sides).
-const int kExperimentalWindowPadding = 23;
+const int kExperimentalWindowPadding = 24;
 
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;
