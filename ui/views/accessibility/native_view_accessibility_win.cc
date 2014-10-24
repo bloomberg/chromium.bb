@@ -1491,13 +1491,11 @@ void NativeViewAccessibilityWin::PopulateChildWidgetVector(
     return;
 
   std::set<Widget*> child_widgets;
-  Widget::GetAllChildWidgets(widget->GetNativeView(), &child_widgets);
   Widget::GetAllOwnedWidgets(widget->GetNativeView(), &child_widgets);
   for (std::set<Widget*>::const_iterator iter = child_widgets.begin();
            iter != child_widgets.end(); ++iter) {
     Widget* child_widget = *iter;
-    if (child_widget == widget)
-      continue;
+    DCHECK_NE(widget, child_widget);
 
     if (!child_widget->IsVisible())
       continue;

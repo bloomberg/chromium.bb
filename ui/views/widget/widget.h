@@ -318,7 +318,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   static void GetAllChildWidgets(gfx::NativeView native_view,
                                  Widgets* children);
 
-  // Returns all non-child Widgets owned by |native_view|.
+  // Returns all Widgets owned by |native_view| (including child widgets, but
+  // not including itself).
   static void GetAllOwnedWidgets(gfx::NativeView native_view,
                                  Widgets* owned);
 
