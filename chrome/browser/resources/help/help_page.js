@@ -157,6 +157,12 @@ cr.define('help', function() {
         };
       }
 
+      var logo = $('product-logo');
+      logo.onclick = function(e) {
+        logo.classList.remove('spin');
+        setTimeout(function() { logo.classList.add('spin'); });
+      };
+
       // Attempt to update.
       chrome.send('onPageLoaded');
     },

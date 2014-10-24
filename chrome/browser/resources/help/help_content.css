@@ -13,6 +13,14 @@
   -webkit-margin-start: 10px;
 }
 
+@-webkit-keyframes spin {
+  to { transform: rotate(-10turn); }
+}
+
+#product-logo.spin {
+  -webkit-animation: spin 500ms cubic-bezier(1, 0, 0, 1) forwards;
+}
+
 #version-container {
   margin-top: 30px;
 }
