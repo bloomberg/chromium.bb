@@ -11,7 +11,6 @@
 #include "base/memory/discardable_memory_ashmem.h"
 #include "base/memory/discardable_memory_ashmem_allocator.h"
 #include "base/memory/discardable_memory_emulated.h"
-#include "base/memory/discardable_memory_shmem.h"
 #include "base/sys_info.h"
 
 namespace base {
@@ -44,11 +43,6 @@ LazyInstance<SharedState>::Leaky g_shared_state = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 // static
-void DiscardableMemory::ReleaseFreeMemory() {
-  internal::DiscardableMemoryShmem::ReleaseFreeMemory();
-}
-
-// static
 bool DiscardableMemory::ReduceMemoryUsage() {
   return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
 }
@@ -58,8 +52,7 @@ void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
     DISCARDABLE_MEMORY_TYPE_ASHMEM,
-    DISCARDABLE_MEMORY_TYPE_EMULATED,
-    DISCARDABLE_MEMORY_TYPE_SHMEM
+    DISCARDABLE_MEMORY_TYPE_EMULATED
   };
   types->assign(supported_types, supported_types + arraysize(supported_types));
 }
@@ -86,14 +79,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 
       return memory.Pass();
     }
-    case DISCARDABLE_MEMORY_TYPE_SHMEM: {
-      scoped_ptr<internal::DiscardableMemoryShmem> memory(
-          new internal::DiscardableMemoryShmem(size));
-      if (!memory->Initialize())
-        return nullptr;
-
-      return memory.Pass();
-    }
     case DISCARDABLE_MEMORY_TYPE_NONE:
     case DISCARDABLE_MEMORY_TYPE_MACH:
       NOTREACHED();
@@ -108,7 +93,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 void DiscardableMemory::PurgeForTesting() {
   g_shared_state.Pointer()->manager.PurgeAll();
   internal::DiscardableMemoryEmulated::PurgeForTesting();
-  internal::DiscardableMemoryShmem::PurgeForTesting();
 }
 
 }  // namespace base

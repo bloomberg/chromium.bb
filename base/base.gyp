@@ -522,7 +522,6 @@
         'memory/aligned_memory_unittest.cc',
         'memory/discardable_memory_manager_unittest.cc',
         'memory/discardable_memory_unittest.cc',
-        'memory/discardable_shared_memory_unittest.cc',
         'memory/linked_ptr_unittest.cc',
         'memory/ref_counted_memory_unittest.cc',
         'memory/ref_counted_unittest.cc',

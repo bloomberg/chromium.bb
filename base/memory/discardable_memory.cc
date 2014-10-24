@@ -16,8 +16,7 @@ const struct TypeNamePair {
 } kTypeNamePairs[] = {
   { DISCARDABLE_MEMORY_TYPE_ASHMEM, "ashmem" },
   { DISCARDABLE_MEMORY_TYPE_MACH, "mach" },
-  { DISCARDABLE_MEMORY_TYPE_EMULATED, "emulated" },
-  { DISCARDABLE_MEMORY_TYPE_SHMEM, "shmem" }
+  { DISCARDABLE_MEMORY_TYPE_EMULATED, "emulated" }
 };
 
 DiscardableMemoryType g_preferred_type = DISCARDABLE_MEMORY_TYPE_NONE;

@@ -33,7 +33,6 @@ class DiscardableMemoryMach
   bool AllocateAndAcquireLock() override;
   void ReleaseLock() override;
   void Purge() override;
-  bool IsMemoryResident() const override;
 
  private:
   mac::ScopedMachVM memory_;

@@ -154,9 +154,5 @@ void DiscardableMemoryMach::Purge() {
   memory_.reset();
 }
 
-bool DiscardableMemoryMach::IsMemoryResident() const {
-  return true;
-}
-
 }  // namespace internal
 }  // namespace base

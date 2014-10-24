@@ -6,14 +6,8 @@
 
 #include "base/logging.h"
 #include "base/memory/discardable_memory_emulated.h"
-#include "base/memory/discardable_memory_shmem.h"
 
 namespace base {
-
-// static
-void DiscardableMemory::ReleaseFreeMemory() {
-  internal::DiscardableMemoryShmem::ReleaseFreeMemory();
-}
 
 // static
 bool DiscardableMemory::ReduceMemoryUsage() {
@@ -24,8 +18,7 @@ bool DiscardableMemory::ReduceMemoryUsage() {
 void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
-    DISCARDABLE_MEMORY_TYPE_EMULATED,
-    DISCARDABLE_MEMORY_TYPE_SHMEM
+    DISCARDABLE_MEMORY_TYPE_EMULATED
   };
   types->assign(supported_types, supported_types + arraysize(supported_types));
 }
@@ -37,14 +30,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
     case DISCARDABLE_MEMORY_TYPE_EMULATED: {
       scoped_ptr<internal::DiscardableMemoryEmulated> memory(
           new internal::DiscardableMemoryEmulated(size));
-      if (!memory->Initialize())
-        return nullptr;
-
-      return memory.Pass();
-    }
-    case DISCARDABLE_MEMORY_TYPE_SHMEM: {
-      scoped_ptr<internal::DiscardableMemoryShmem> memory(
-          new internal::DiscardableMemoryShmem(size));
       if (!memory->Initialize())
         return nullptr;
 
@@ -64,7 +49,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 // static
 void DiscardableMemory::PurgeForTesting() {
   internal::DiscardableMemoryEmulated::PurgeForTesting();
-  internal::DiscardableMemoryShmem::PurgeForTesting();
 }
 
 }  // namespace base

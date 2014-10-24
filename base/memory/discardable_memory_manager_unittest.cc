@@ -33,10 +33,6 @@ class TestAllocationImpl : public internal::DiscardableMemoryManagerAllocation {
     DCHECK(is_allocated_);
     is_allocated_ = false;
   }
-  virtual bool IsMemoryResident() const override {
-    DCHECK(is_allocated_);
-    return true;
-  }
 
   bool is_locked() const { return is_locked_; }
 
