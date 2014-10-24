@@ -40,6 +40,14 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 }
 
 // static
+bool HotwordServiceFactory::IsHotwordHardwareAvailable() {
+  // TODO(rlp, dgreid): return has_hotword_hardware()
+  // Fill in once the hardware has the correct interface implemented.
+  // In the meantime, this function can be used to get other parts moving.
+  return true;
+}
+
+// static
 int HotwordServiceFactory::GetCurrentError(BrowserContext* context) {
   HotwordService* hotword_service = GetForProfile(context);
   if (!hotword_service)

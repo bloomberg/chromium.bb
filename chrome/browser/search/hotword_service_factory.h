@@ -27,6 +27,9 @@ class HotwordServiceFactory : public MediaCaptureDevicesDispatcher::Observer,
   // Returns true if hotwording is allowed for |context|.
   static bool IsHotwordAllowed(content::BrowserContext* context);
 
+  // Returns whether specialized hotword hardware exists.
+  static bool IsHotwordHardwareAvailable();
+
   // Returns the current error message for the service for |context|.
   // A value of 0 indicates no error.
   static int GetCurrentError(content::BrowserContext* context);
