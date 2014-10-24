@@ -11,6 +11,15 @@ if (cpu_arch == "arm") {
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && printing_mode != 0
 
+# The list of Skia defines that are to be set for blink.
+gypi_blink_skia_defines = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("//third_party/WebKit/public/blink_skia_config.gypi"),
+      "--replace=<(skia_include_path)=//third_party/skia/include",
+      "--replace=<(skia_src_path)=//third_party/skia/src" ],
+    "scope",
+    [ "//third_party/WebKit/public/blink_skia_config.gypi" ])
+
 # The list of Skia defines that are to be set for chromium.
 gypi_skia_defines = exec_script(
     "//build/gypi_to_gn.py",
@@ -98,7 +107,8 @@ config("skia_config") {
     "//third_party/skia/src/lazy",
   ]
 
-  defines = gypi_skia_defines.skia_for_chromium_defines
+  defines = gypi_blink_skia_defines.blink_skia_defines
+  defines += gypi_skia_defines.skia_for_chromium_defines
 
   defines += [
     "SK_ENABLE_INST_COUNT=0",

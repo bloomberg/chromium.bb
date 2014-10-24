@@ -205,14 +205,6 @@
       ],
     }],
 
-    [ 'OS != "ios"', {
-      'dependencies': [
-        '../third_party/WebKit/public/blink_skia_config.gyp:blink_skia_config',
-      ],
-      'export_dependent_settings': [
-        '../third_party/WebKit/public/blink_skia_config.gyp:blink_skia_config',
-      ],
-    }],
     [ 'OS != "mac"', {
       'sources/': [
         ['exclude', '/mac/']

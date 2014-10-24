@@ -6,6 +6,9 @@
 # Skia build.
 {
   'includes': [
+    # blink_skia_config.gypi defines blink_skia_defines
+    '../third_party/WebKit/public/blink_skia_config.gypi',
+
     # skia_for_chromium_defines.gypi defines skia_for_chromium_defines
     '../third_party/skia/gyp/skia_for_chromium_defines.gypi',
   ],
@@ -155,6 +158,10 @@
       'SK_ATTR_DEPRECATED=SK_NOTHING_ARG1',
       'GR_GL_IGNORE_ES3_MSAA=0',
       'SK_WILL_NEVER_DRAW_PERSPECTIVE_TEXT',
+
+      # This variable contains additional defines, specified in blink's
+      # blink_skia_config.gypi file.
+      '<@(blink_skia_defines)',
 
       # This variable contains additional defines, specified in skia's
       # skia_for_chromium_defines.gypi file.
