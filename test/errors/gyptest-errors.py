@@ -47,19 +47,6 @@ stderr = (".*file_cycle0.*file_cycle1.*file_cycle0.*")
 test.run_gyp('file_cycle0.gyp', status=1, stderr=stderr,
              match=TestCmd.match_re_dotall)
 
-stderr = 'gyp: Duplicate basenames in sources section, see list above\n'
-test.run_gyp('duplicate_basenames.gyp', status=1, stderr=stderr)
-
-# Check if '--no-duplicate-basename-check' works.
-if ((test.format == 'make' and sys.platform == 'darwin') or
-    (test.format == 'msvs' and
-        int(os.environ.get('GYP_MSVS_VERSION', 2010)) < 2010)):
-  stderr = 'gyp: Duplicate basenames in sources section, see list above\n'
-  test.run_gyp('duplicate_basenames.gyp', '--no-duplicate-basename-check',
-               status=1, stderr=stderr)
-else:
-  test.run_gyp('duplicate_basenames.gyp', '--no-duplicate-basename-check')
-
 stderr = ("gyp: Dependency '.*missing_dep.gyp:missing.gyp#target' not found "
           "while trying to load target .*missing_dep.gyp:foo#target\n")
 test.run_gyp('missing_dep.gyp', status=1, stderr=stderr,
