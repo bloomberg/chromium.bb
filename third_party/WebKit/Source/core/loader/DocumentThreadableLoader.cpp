@@ -153,6 +153,10 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         return;
     }
 
+    // We use isSimpleOrForbiddenRequest() here since |request| may have been
+    // modified in the process of loading (not from the user's input). For
+    // example, referrer. We need to accept them. For security, we must reject
+    // forbidden headers/methods at the point we accept user's input. Not here.
     if ((m_options.preflightPolicy == ConsiderPreflight && FetchUtils::isSimpleOrForbiddenRequest(request.httpMethod(), request.httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight) {
         ResourceRequest crossOriginRequest(request);
         ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
