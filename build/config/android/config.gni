@@ -5,12 +5,25 @@
 # This file contains common system config stuff for the Android build.
 
 if (is_android) {
+  has_chrome_android_internal = exec_script("//build/dir_exists.py",
+          [ rebase_path("//clank", root_build_dir) ],
+          "string") == "True"
+
+  if (has_chrome_android_internal) {
+    import("//clank/config.gni")
+  } else {
+    default_android_sdk_root = "//third_party/android_tools/sdk"
+    default_android_sdk_version = "21"
+    default_android_sdk_build_tools_version = "21.0.0"
+  }
+
   declare_args() {
     # Absolute directory containing the Android source code.
     android_src = ""
 
-    android_sdk_root = "//third_party/android_tools/sdk"
-    android_sdk_version = "21"
+    android_sdk_root = default_android_sdk_root
+    android_sdk_version = default_android_sdk_version
+    android_sdk_build_tools_version = default_android_sdk_build_tools_version
 
     # This is set when building the Android WebView inside the Android build
     # system, using the 'android' gyp backend. The WebView code is still built
@@ -31,7 +44,6 @@ if (is_android) {
     assert(android_src != "",
            "You must specify android_src for an Android WebView build.")
   }
-
 
   # Host stuff -----------------------------------------------------------------
 
@@ -68,7 +80,7 @@ if (is_android) {
   android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
 
   android_sdk_tools = "${android_sdk_root}/tools"
-  android_sdk_build_tools = "${android_sdk_root}/build-tools/21.0.0"
+  android_sdk_build_tools = "${android_sdk_root}/build-tools/$android_sdk_build_tools_version"
 
   # Path to the SDK's android.jar
   android_sdk_jar = "$android_sdk/android.jar"

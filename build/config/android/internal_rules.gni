@@ -253,8 +253,8 @@ template("create_apk") {
     _asset_location = invoker.asset_location
   }
 
-  _version_code = "1"
-  _version_name = "Developer Build"
+  _version_code = invoker.version_code
+  _version_name = invoker.version_name
 
   _base_apk_path = _base_path + ".apk_intermediates"
 
@@ -557,7 +557,7 @@ template("android_java_library") {
   if (defined(invoker.testonly)) { testonly = invoker.testonly }
 
   assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir)
-      || defined(invoker.srcjars))
+      || defined(invoker.srcjars) || defined(invoker.srcjar_deps))
   assert(defined(invoker.build_config))
   assert(defined(invoker.jar_path))
   assert(defined(invoker.dex_path))

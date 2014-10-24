@@ -1,0 +1,27 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_android)
+
+import("//build/config/android/rules.gni")
+
+# TODO(GYP): should be java_library
+# GYP: //testing/android/junit_test.gyp:junit_test_support
+android_library("junit_test_support") {
+  DEPRECATED_java_in_dir = "java/src"
+  deps = [
+    "//third_party/junit"
+  ]
+}
+
+# TODO(GYP): should be java_library
+# GYP: //testing/android/junit_test.gyp:junit_unit_tests
+android_library("junit_unittests") {
+  deps = [
+    ":junit_test_support",
+    "//third_party/junit",
+  ]
+#main_class = "org.chromium.testing.local.JuniTestMain"
+  DEPRECATED_java_in_dir = "javatests/src"
+}

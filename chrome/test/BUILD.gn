@@ -134,6 +134,13 @@ source_set("test_support") {
     ]
   }
 
+  if (enable_extensions) {
+    deps += [
+      "//chrome/common/extensions/api",
+      "//extensions:test_support",
+    ]
+  }
+
   if (is_linux) {
     deps += [ "//crypto:platform" ]
   }

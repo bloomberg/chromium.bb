@@ -165,6 +165,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN: //third_party/libaddressinput:android_addressinput_widget_java
           'target_name': 'android_addressinput_widget',
           'type': 'none',
           'variables': {

@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //third_party/junit:hamcrest
       'target_name': 'hamcrest_jar',
       'type': 'none',
       'variables': {
@@ -15,6 +16,7 @@
       ]
     },
     {
+      # GN: //third_party/junit:junit
       'target_name': 'junit_jar',
       'type': 'none',
       'dependencies': [

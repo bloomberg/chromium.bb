@@ -420,6 +420,8 @@ template("jinja_template_resources") {
   _build_config = _base_path + ".build_config"
 
   write_build_config("${target_name}__build_config") {
+    build_config = _build_config
+    resources_zip = _resources_zip
     type = "android_resources"
   }
 
@@ -679,7 +681,7 @@ template("android_library") {
   if (defined(invoker.testonly)) { testonly = invoker.testonly }
 
   assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir)
-      || defined(invoker.srcjars))
+      || defined(invoker.srcjars) || defined(invoker.srcjar_deps))
   _base_path = "$target_gen_dir/$target_name"
   _build_config = _base_path + ".build_config"
   _jar_path = _base_path + ".jar"
@@ -989,6 +991,12 @@ template("android_apk") {
         "$root_build_dir/lib.stripped/libchromium_android_linker.so"
       ]
     }
+
+    _enable_relocation_packing = false
+    if (_use_chromium_linker && defined(invoker.enable_relocation_packing) &&
+        invoker.enable_relocation_packing) {
+      _enable_relocation_packing = true
+    }
   }
 
   _rebased_build_config = rebase_path(build_config, root_build_dir)
@@ -1156,6 +1164,16 @@ template("android_apk") {
     resources_zip = all_resources_zip_path
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
+
+    version_code = "1"
+    if (defined(invoker.version_code)) {
+      version_code = invoker.version_code
+    }
+
+    version_name = "Developer Build"
+    if (defined(invoker.version_name)) {
+      version_name = invoker.version_name
+    }
 
     if (defined(invoker.asset_location)) {
       asset_location = invoker.asset_location

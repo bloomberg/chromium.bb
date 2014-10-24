@@ -330,6 +330,10 @@ template("grit") {
     deps = [ ":$grit_custom_target" ]
     public_configs = [ ":$grit_config" ]
 
+    if (defined(invoker.public_configs)) {
+      public_configs += invoker.public_configs
+    }
+
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
     }

@@ -9,6 +9,9 @@
 # file to your new one or GN won't know about it.
 
 import("//build/config/ui.gni")
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
 
 declare_args() {
   # A list of extra dependencies to add to the root target. This allows a
@@ -187,6 +190,12 @@ group("root") {
       "//third_party/android_tools:android_support_v7_mediarouter_java",
       "//third_party/eyesfree:eyesfree_java",
     ]
+
+    if (has_chrome_android_internal) {
+      deps += [
+        "//clank",
+      ]
+    }
 
     deps -= [
       "//apps",  # Needs testing.

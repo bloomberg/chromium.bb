@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //testing/android/junit:junit_test_support
       'target_name': 'junit_test_support',
       'type': 'none',
       'dependencies': [
@@ -20,6 +21,7 @@
       ],
     },
     {
+      # GN: //testing/android/junit:junit_unittests
       'target_name': 'junit_unit_tests',
       'type': 'none',
       'dependencies': [

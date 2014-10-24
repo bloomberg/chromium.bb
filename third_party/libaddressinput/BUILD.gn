@@ -125,82 +125,95 @@ static_library("util") {
   ]
 }
 
-if (!is_android) {
+if (is_android) {
+  import("//build/config/android/rules.gni")
 
-# The list of files in libaddressinput.gypi.
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("src/cpp/libaddressinput.gypi") ],
-    "scope",
-    [ "src/cpp/libaddressinput.gypi" ])
+  android_resources("android_addressinput_widget_resources") {
+    custom_package = "com.android.i18n.addressinput"
+    resource_dirs = [ "src/java/res" ]
+    v14_verify_only = true
+  }
+
+  # GYP: //third_party/libaddressinput/libaddressinput.gyp:android_addressinput_widget
+  android_library("android_addressinput_widget_java") {
+    DEPRECATED_java_in_dir = "src/java/src"
+    deps = [ ":android_addressinput_widget_resources" ]
+  }
+} else {
+  # The list of files in libaddressinput.gypi.
+  gypi_values = exec_script(
+      "//build/gypi_to_gn.py",
+      [ rebase_path("src/cpp/libaddressinput.gypi") ],
+      "scope",
+      [ "src/cpp/libaddressinput.gypi" ])
 
 
-# This target provides more complicated functionality like pinging servers
-# for validation rules.
-# GYP version: third_party/libaddressinput/libaddressinput.gyp:libaddressinput
-static_library("libaddressinput") {
-  sources = rebase_path(gypi_values.libaddressinput_files, ".", "src/cpp")
-  sources += [
-    "chromium/chrome_address_validator.cc",
-    "chromium/chrome_metadata_source.cc",
-    "chromium/chrome_storage_impl.cc",
-    "chromium/fallback_data_store.cc",
-    "chromium/input_suggester.cc",
-    "chromium/string_compare.cc",
-    "chromium/trie.cc",
-  ]
-  sources -= libaddressinput_util_files
-  sources -= [
-    "src/cpp/src/util/string_compare.cc",
-  ]
+  # This target provides more complicated functionality like pinging servers
+  # for validation rules.
+  # GYP version: third_party/libaddressinput/libaddressinput.gyp:libaddressinput
+  static_library("libaddressinput") {
+    sources = rebase_path(gypi_values.libaddressinput_files, ".", "src/cpp")
+    sources += [
+      "chromium/chrome_address_validator.cc",
+      "chromium/chrome_metadata_source.cc",
+      "chromium/chrome_storage_impl.cc",
+      "chromium/fallback_data_store.cc",
+      "chromium/input_suggester.cc",
+      "chromium/string_compare.cc",
+      "chromium/trie.cc",
+    ]
+    sources -= libaddressinput_util_files
+    sources -= [
+      "src/cpp/src/util/string_compare.cc",
+    ]
 
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  public_configs = [ ":libaddressinput_config" ]
+    public_configs = [ ":libaddressinput_config" ]
 
-  deps = [
-    ":strings",
-    ":util",
-    "//base",
-    "//base:i18n",
-    "//third_party/icu",
-    "//third_party/re2",
-  ]
+    deps = [
+      ":strings",
+      ":util",
+      "//base",
+      "//base:i18n",
+      "//third_party/icu",
+      "//third_party/re2",
+    ]
+  }
+
+  test("libaddressinput_unittests") {
+    sources = rebase_path(
+        gypi_values.libaddressinput_test_files, ".", "src/cpp")
+    sources += [
+      "chromium/addressinput_util_unittest.cc",
+      "chromium/chrome_address_validator_unittest.cc",
+      "chromium/chrome_metadata_source_unittest.cc",
+      "chromium/chrome_storage_impl_unittest.cc",
+      "chromium/fallback_data_store_unittest.cc",
+      "chromium/storage_test_runner.cc",
+      "chromium/string_compare_unittest.cc",
+      "chromium/trie_unittest.cc",
+    ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    defines = [
+      "TEST_DATA_DIR=\"third_party/libaddressinput/src/testdata\"",
+    ]
+
+    include_dirs = [
+      "src/cpp/src",
+    ]
+
+    deps = [
+      ":libaddressinput",
+      ":strings",
+      "//base:prefs",
+      "//base/test:run_all_unittests",
+      "//net:test_support",
+      "//testing/gtest",
+    ]
+  }
 }
-
-test("libaddressinput_unittests") {
-  sources = rebase_path(gypi_values.libaddressinput_test_files, ".", "src/cpp")
-  sources += [
-    "chromium/addressinput_util_unittest.cc",
-    "chromium/chrome_address_validator_unittest.cc",
-    "chromium/chrome_metadata_source_unittest.cc",
-    "chromium/chrome_storage_impl_unittest.cc",
-    "chromium/fallback_data_store_unittest.cc",
-    "chromium/storage_test_runner.cc",
-    "chromium/string_compare_unittest.cc",
-    "chromium/trie_unittest.cc",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  defines = [
-    "TEST_DATA_DIR=\"third_party/libaddressinput/src/testdata\"",
-  ]
-
-  include_dirs = [
-    "src/cpp/src",
-  ]
-
-  deps = [
-    ":libaddressinput",
-    ":strings",
-    "//base:prefs",
-    "//base/test:run_all_unittests",
-    "//net:test_support",
-    "//testing/gtest",
-  ]
-}
-
-}  # !is_android
