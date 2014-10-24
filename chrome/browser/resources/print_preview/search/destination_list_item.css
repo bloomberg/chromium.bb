@@ -5,14 +5,22 @@
 .destination-list-item {
   -webkit-padding-end: 2px;
   -webkit-padding-start: 18px;
-  -webkit-transition: background-color 150ms;
   cursor: default;
   padding-bottom: 3px;
   padding-top: 3px;
 }
 
-.destination-list-item:hover {
+:not(.moving).destination-list-item {
+  -webkit-transition: background-color 150ms;
+}
+
+.destination-list-item:hover,
+.destination-list-item:focus {
   background-color: rgb(228, 236, 247);
+}
+
+.destination-list-item:focus {
+  outline: none;
 }
 
 .destination-list-item.stale {

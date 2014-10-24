@@ -17,7 +17,9 @@ cr.define('print_preview', function() {
     print_preview.DestinationList.call(
         this,
         eventTarget,
-        loadTimeData.getString('recentDestinationsTitle'));
+        loadTimeData.getString('recentDestinationsTitle'),
+        null /*actionLinkLabel*/,
+        true /*opt_showAll*/);
   };
 
   RecentDestinationList.prototype = {
@@ -27,16 +29,6 @@ cr.define('print_preview', function() {
     updateShortListSize: function(size) {
       this.setShortListSizeInternal(
           Math.max(1, Math.min(size, this.getDestinationsCount())));
-    },
-
-    /** @override */
-    renderListInternal: function(destinations) {
-      setIsVisible(this.getChildElement('.no-destinations-message'),
-                   destinations.length == 0);
-      setIsVisible(this.getChildElement('.destination-list > footer'), false);
-      var numItems = Math.min(destinations.length, this.shortListSize_);
-      for (var i = 0; i < numItems; i++)
-        this.renderListItemInternal(destinations[i]);
     }
   };
 

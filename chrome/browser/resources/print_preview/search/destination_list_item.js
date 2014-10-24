@@ -11,11 +11,11 @@ cr.define('print_preview', function() {
    *     events to.
    * @param {!print_preview.Destination} destination Destination data object to
    *     render.
-   * @param {RegExp=} opt_query Active filter query.
+   * @param {RegExp} query Active filter query.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function DestinationListItem(eventTarget, destination, opt_query) {
+  function DestinationListItem(eventTarget, destination, query) {
     print_preview.Component.call(this);
 
     /**
@@ -37,7 +37,7 @@ cr.define('print_preview', function() {
      * @type {RegExp}
      * @private
      */
-    this.query_ = opt_query || null;
+    this.query_ = query;
 
     /**
      * FedEx terms-of-service widget or {@code null} if this list item does not
@@ -59,17 +59,6 @@ cr.define('print_preview', function() {
         'print_preview.DestinationListItem.REGISTER_PROMO_CLICKED'
   };
 
-  /**
-   * CSS classes used by the destination list item.
-   * @enum {string}
-   * @private
-   */
-  DestinationListItem.Classes_ = {
-    ICON: 'destination-list-item-icon',
-    NAME: 'destination-list-item-name',
-    STALE: 'stale'
-  };
-
   DestinationListItem.prototype = {
     __proto__: print_preview.Component.prototype,
 
@@ -77,16 +66,48 @@ cr.define('print_preview', function() {
     createDom: function() {
       this.setElementInternal(this.cloneTemplateInternal(
           'destination-list-item-template'));
+      this.updateUi_();
+    },
 
-      var iconImg = this.getElement().getElementsByClassName(
-          print_preview.DestinationListItem.Classes_.ICON)[0];
+    /** @override */
+    enterDocument: function() {
+      print_preview.Component.prototype.enterDocument.call(this);
+      this.tracker.add(this.getElement(), 'click', this.onActivate_.bind(this));
+      this.tracker.add(
+          this.getElement(), 'keydown', this.onKeyDown_.bind(this));
+      this.tracker.add(
+          this.getChildElement('.register-promo-button'),
+          'click',
+          this.onRegisterPromoClicked_.bind(this));
+    },
+
+    /** @return {!print_preiew.Destination} */
+    get destination() {
+      return this.destination_;
+    },
+
+    /**
+     * Updates the list item UI state.
+     * @param {RegExp} query Active filter query.
+     */
+    update: function(query) {
+      this.query_ = query;
+      this.updateUi_();
+    },
+
+    /**
+     * Initializes the element with destination's info.
+     * @private
+     */
+    updateUi_: function() {
+      var iconImg = this.getChildElement('.destination-list-item-icon');
       iconImg.src = this.destination_.iconUrl;
 
-      var nameEl = this.getElement().getElementsByClassName(
-          DestinationListItem.Classes_.NAME)[0];
+      var nameEl = this.getChildElement('.destination-list-item-name');
       var textContent = this.destination_.displayName;
       if (this.query_) {
-        // When search query is specified, make it obvious why the particular
+        nameEl.textContent = '';
+        // When search query is specified, make it obvious why this particular
         // printer made it to the list. Display name is always visible, even if
         // it does not match the search query.
         this.addTextWithHighlight_(nameEl, textContent);
@@ -108,43 +129,17 @@ cr.define('print_preview', function() {
       }
       nameEl.title = textContent;
 
-      this.initializeOfflineStatusElement_();
-      this.initializeRegistrationPromoElement_();
-    },
+      // Initialize the element which renders the destination's offline status.
+      this.getElement().classList.toggle('stale', this.destination_.isOffline);
+      var offlineStatusEl = this.getChildElement('.offline-status');
+      offlineStatusEl.textContent = this.destination_.offlineStatusText;
+      setIsVisible(offlineStatusEl, this.destination_.isOffline);
 
-    /** @override */
-    enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
-      this.tracker.add(this.getElement(), 'click', this.onActivate_.bind(this));
-    },
-
-    /**
-     * Initializes the element which renders the print destination's
-     * offline status.
-     * @private
-     */
-    initializeOfflineStatusElement_: function() {
-      if (this.destination_.isOffline) {
-        this.getElement().classList.add(DestinationListItem.Classes_.STALE);
-        var offlineStatusEl = this.getChildElement('.offline-status');
-        offlineStatusEl.textContent = this.destination_.offlineStatusText;
-        setIsVisible(offlineStatusEl, true);
-      }
-    },
-
-    /**
-     * Initialize registration promo element for Privet unregistered printers.
-     */
-    initializeRegistrationPromoElement_: function() {
-      if (this.destination_.connectionStatus ==
-          print_preview.Destination.ConnectionStatus.UNREGISTERED) {
-        var registerBtnEl = this.getChildElement('.register-promo-button');
-        registerBtnEl.addEventListener('click',
-                                       this.onRegisterPromoClicked_.bind(this));
-
-        var registerPromoEl = this.getChildElement('.register-promo');
-        setIsVisible(registerPromoEl, true);
-      }
+      // Initialize registration promo element for Privet unregistered printers.
+      setIsVisible(
+          this.getChildElement('.register-promo'),
+          this.destination_.connectionStatus ==
+              print_preview.Destination.ConnectionStatus.UNREGISTERED);
     },
 
     /**
@@ -191,6 +186,26 @@ cr.define('print_preview', function() {
         var selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
+      }
+    },
+
+    /**
+     * Called when the key is pressed on the destination item. Dispatches a
+     * SELECT event when Enter is pressed.
+     * @param {KeyboardEvent} e Keyboard event to process.
+     * @private
+     */
+    onKeyDown_: function(e) {
+      if (!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (e.keyCode == 13) {
+          var activeElementTag = document.activeElement ?
+              document.activeElement.tagName.toUpperCase() : '';
+          if (activeElementTag == 'LI') {
+            e.stopPropagation();
+            e.preventDefault();
+            this.onActivate_();
+          }
+        }
       }
     },
 
