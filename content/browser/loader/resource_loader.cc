@@ -159,8 +159,7 @@ void ResourceLoader::ReportUploadProgress() {
   bool too_much_time_passed = time_since_last > kOneSecond;
 
   if (is_finished || enough_new_progress || too_much_time_passed) {
-    ResourceRequestInfoImpl* info = GetRequestInfo();
-    if (info->is_upload_progress_enabled()) {
+    if (request_->load_flags() & net::LOAD_ENABLE_UPLOAD_PROGRESS) {
       handler_->OnUploadProgress(progress.position(), progress.size());
       waiting_for_upload_progress_ack_ = true;
     }

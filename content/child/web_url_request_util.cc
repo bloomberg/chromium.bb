@@ -197,6 +197,8 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
       NOTREACHED();
   }
 
+  if (request.reportUploadProgress())
+    load_flags |= net::LOAD_ENABLE_UPLOAD_PROGRESS;
   if (request.reportRawHeaders())
     load_flags |= net::LOAD_REPORT_RAW_HEADERS;
 

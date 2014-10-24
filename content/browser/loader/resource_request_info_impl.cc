@@ -49,7 +49,6 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           true,                              // allow_download
           false,                             // has_user_gesture
           false,                             // enable load timing
-          false,                             // enable upload progress
           blink::WebReferrerPolicyDefault,   // referrer_policy
           blink::WebPageVisibilityStateVisible,  // visibility_state
           context,                           // context
@@ -105,7 +104,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool allow_download,
     bool has_user_gesture,
     bool enable_load_timing,
-    bool enable_upload_progress,
     blink::WebReferrerPolicy referrer_policy,
     blink::WebPageVisibilityState visibility_state,
     ResourceContext* context,
