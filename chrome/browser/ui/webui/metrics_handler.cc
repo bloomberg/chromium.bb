@@ -10,12 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "chrome/common/ntp_logging_events.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -94,8 +91,6 @@ void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {
 
   base::TimeDelta duration =
       base::TimeTicks::Now() - core_tab_helper->new_tab_start_time();
-  MetricEventDurationDetails details(event_name,
-      static_cast<int>(duration.InMilliseconds()));
 
   if (event_name == "Tab.NewTabScriptStart") {
     UMA_HISTOGRAM_TIMES("Tab.NewTabScriptStart", duration);
@@ -109,10 +104,6 @@ void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {
   } else {
     NOTREACHED();
   }
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_METRIC_EVENT_DURATION,
-      content::Source<WebContents>(tab),
-      content::Details<MetricEventDurationDetails>(&details));
 }
 
 void MetricsHandler::HandleLogMouseover(const base::ListValue* args) {

@@ -679,7 +679,6 @@
       'browser/metrics/field_trial_synchronizer.h',
       'browser/metrics/google_update_metrics_provider_win.cc',
       'browser/metrics/google_update_metrics_provider_win.h',
-      'browser/metrics/metric_event_duration_details.h',
       'browser/metrics/metrics_reporting_state.cc',
       'browser/metrics/metrics_reporting_state.h',
       'browser/metrics/metrics_service_accessor.cc',

@@ -136,12 +136,6 @@ enum NotificationType {
   // Details<InfoBar::RemovedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
 
-  // Used to fire notifications about how long various events took to
-  // complete.  E.g., this is used to get more fine grained timings from the
-  // new tab page.  The source is a WebContents and the details is a
-  // MetricEventDurationDetails.
-  NOTIFICATION_METRIC_EVENT_DURATION,
-
 #if defined(ENABLE_EXTENSIONS)
   // This notification is sent when extensions::TabHelper::SetExtensionApp is
   // invoked. The source is the extensions::TabHelper SetExtensionApp was
