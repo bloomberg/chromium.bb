@@ -3199,6 +3199,12 @@ blink::WebString RenderFrameImpl::userAgentOverride(blink::WebLocalFrame* frame,
     return blink::WebString();
   }
 
+  // TODO(nasko): When the top-level frame is remote, there is no WebDataSource
+  // associated with it, so the checks below are not valid. Temporarily
+  // return early and fix properly as part of https://crbug.com/426555.
+  if (render_view_->webview()->mainFrame()->isWebRemoteFrame())
+    return blink::WebString();
+
   // If we're in the middle of committing a load, the data source we need
   // will still be provisional.
   WebFrame* main_frame = render_view_->webview()->mainFrame();
