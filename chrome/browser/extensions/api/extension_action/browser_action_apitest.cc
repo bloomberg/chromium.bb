@@ -357,16 +357,16 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
   // Simulate a click on the browser action and verify the size of the resulting
   // popup.  The first one tries to be 0x0, so it should be the min values.
   ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(minSize, actions_bar.GetPopupBounds().size());
+  EXPECT_EQ(minSize, actions_bar.GetPopupSize());
   EXPECT_TRUE(actions_bar.HidePopup());
 
   ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(middleSize, actions_bar.GetPopupBounds().size());
+  EXPECT_EQ(middleSize, actions_bar.GetPopupSize());
   EXPECT_TRUE(actions_bar.HidePopup());
 
   // One more time, but this time it should be constrained by the max values.
   ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(maxSize, actions_bar.GetPopupBounds().size());
+  EXPECT_EQ(maxSize, actions_bar.GetPopupSize());
   EXPECT_TRUE(actions_bar.HidePopup());
 }
 

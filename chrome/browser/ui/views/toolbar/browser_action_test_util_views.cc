@@ -19,6 +19,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -80,8 +81,10 @@ bool BrowserActionTestUtil::HasPopup() {
   return GetContainer(browser_)->TestGetPopup() != NULL;
 }
 
-gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
-  return GetContainer(browser_)->TestGetPopup()->bounds();
+gfx::Size BrowserActionTestUtil::GetPopupSize() {
+  gfx::NativeView popup = GetContainer(browser_)->TestGetPopup();
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(popup);
+  return widget->GetWindowBoundsInScreen().size();
 }
 
 bool BrowserActionTestUtil::HidePopup() {

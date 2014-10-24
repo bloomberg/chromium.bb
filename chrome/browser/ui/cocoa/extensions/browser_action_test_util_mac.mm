@@ -80,9 +80,9 @@ bool BrowserActionTestUtil::HasPopup() {
   return [ExtensionPopupController popup] != nil;
 }
 
-gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
+gfx::Size BrowserActionTestUtil::GetPopupSize() {
   NSRect bounds = [[[ExtensionPopupController popup] view] bounds];
-  return gfx::Rect(NSRectToCGRect(bounds));
+  return gfx::Size(NSSizeToCGSize(bounds.size));
 }
 
 bool BrowserActionTestUtil::HidePopup() {

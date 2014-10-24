@@ -54,8 +54,8 @@ class BrowserActionTestUtil {
   // Returns whether a browser action popup is being shown currently.
   bool HasPopup();
 
-  // Returns the bounds of the current browser action popup.
-  gfx::Rect GetPopupBounds();
+  // Returns the size of the current browser action popup.
+  gfx::Size GetPopupSize();
 
   // Hides the given popup and returns whether the hide was successful.
   bool HidePopup();
