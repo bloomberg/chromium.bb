@@ -66,9 +66,10 @@ function toggleDebuggingInfo() {
 function setupEvents() {
   var overridable = loadTimeData.getBoolean('overridable');
   var ssl = loadTimeData.getString('type') === 'SSL';
+  var badClock = ssl && loadTimeData.getBoolean('bad_clock');
 
   if (ssl) {
-    $('body').classList.add('ssl');
+    $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
     $('error-code').textContent = loadTimeData.getString('errorCode');
     $('error-code').classList.remove('hidden');
   } else {
@@ -78,6 +79,8 @@ function setupEvents() {
   $('primary-button').addEventListener('click', function() {
     if (!ssl)
       sendCommand(SB_CMD_TAKE_ME_BACK);
+    else if (badClock)
+      sendCommand(SSL_CMD_CLOCK);
     else if (overridable)
       sendCommand(SSL_CMD_DONT_PROCEED);
     else
@@ -106,21 +109,19 @@ function setupEvents() {
     });
   }
 
-  if (ssl && $('clock-link')) {
-    $('clock-link').addEventListener('click', function(event) {
-      sendCommand(SSL_CMD_CLOCK);
-    });
-  }
-
   $('details-button').addEventListener('click', function(event) {
-    var hiddenDetails = $('details').classList.toggle('hidden');
-    $('details-button').innerText = hiddenDetails ?
-        loadTimeData.getString('openDetails') :
-        loadTimeData.getString('closeDetails');
-    if (!expandedDetails) {
-      // Record a histogram entry only the first time that details is opened.
-      sendCommand(ssl ? SSL_CMD_MORE : SB_CMD_EXPANDED_SEE_MORE);
-      expandedDetails = true;
+    if (badClock) {
+      sendCommand(SSL_CMD_RELOAD);
+    } else {
+      var hiddenDetails = $('details').classList.toggle('hidden');
+      $('details-button').innerText = hiddenDetails ?
+          loadTimeData.getString('openDetails') :
+          loadTimeData.getString('closeDetails');
+      if (!expandedDetails) {
+        // Record a histogram entry only the first time that details is opened.
+        sendCommand(ssl ? SSL_CMD_MORE : SB_CMD_EXPANDED_SEE_MORE);
+        expandedDetails = true;
+      }
     }
   });
 

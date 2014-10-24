@@ -102,9 +102,15 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
-  // Could the user successfully override the error?
-  // overridable_ will be set to false if strict_enforcement_ is true.
+  // There are two ways for the user to override an interstitial:
+  //
+  // overridable_) By clicking on "Advanced" and then "Proceed".
+  //   - This corresponds to "the user can override using the UI".
+  // danger_overridable_) By typing the word "danger".
+  //   - This is an undocumented workaround.
+  //   - This can be set to "false" dynamically to prevent the behaviour.
   const bool overridable_;
+  bool danger_overridable_;
   // Has the site requested strict enforcement of certificate errors?
   const bool strict_enforcement_;
   content::InterstitialPage* interstitial_page_;  // Owns us.
