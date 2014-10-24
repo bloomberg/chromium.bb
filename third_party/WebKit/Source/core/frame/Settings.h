@@ -27,7 +27,6 @@
 #ifndef Settings_h
 #define Settings_h
 
-#include "bindings/core/v8/ScriptStreamingMode.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/SettingsMacros.h"
 #include "core/css/PointerProperties.h"

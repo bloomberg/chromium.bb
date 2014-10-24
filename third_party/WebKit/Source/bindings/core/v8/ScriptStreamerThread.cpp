@@ -67,7 +67,9 @@ void ScriptStreamingTask::run()
     // Running the task can and will block: SourceStream::GetSomeData will get
     // called and it will block and wait for data from the network.
     m_v8Task->Run();
-    m_streamer->streamingCompleteOnBackgroundThread();
+    // Post a task to the main thread to signal that V8 has completed the
+    // streaming.
+    callOnMainThread(WTF::bind(&ScriptStreamer::streamingComplete, m_streamer));
     ScriptStreamerThread::shared()->taskDone();
 }
 
