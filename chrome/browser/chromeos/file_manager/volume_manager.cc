@@ -179,13 +179,11 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
         base::FilePath(disk->system_path_prefix());
     volume_info.is_parent = disk->is_parent();
     volume_info.is_read_only = disk->is_read_only();
-    volume_info.has_media = disk->has_media();
   } else {
     volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
     volume_info.is_parent = false;
     volume_info.is_read_only =
         (mount_point.mount_type == chromeos::MOUNT_TYPE_ARCHIVE);
-    volume_info.has_media = false;
   }
   volume_info.volume_id = GenerateVolumeId(volume_info);
 

@@ -12,7 +12,6 @@ var expectedVolume1 = {
   devicePath: 'system_path_prefix1',
   isParentDevice: false,
   isReadOnly: false,
-  hasMedia: false,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}
 };
 
@@ -25,7 +24,6 @@ var expectedVolume2 = {
   devicePath: 'system_path_prefix2',
   isParentDevice: true,
   isReadOnly: true,
-  hasMedia: true,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}
 };
 
@@ -38,7 +36,6 @@ var expectedVolume3 = {
   devicePath: 'system_path_prefix3',
   isParentDevice: true,
   isReadOnly: false,
-  hasMedia: false,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}
 };
 
@@ -47,7 +44,6 @@ var expectedDownloadsVolume = {
   volumeLabel: '',
   volumeType: 'downloads',
   isReadOnly: false,
-  hasMedia: true,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}
 };
 
@@ -57,7 +53,6 @@ var expectedDriveVolume = {
   sourcePath: /^\/special\/drive[^\/]*$/,
   volumeType: 'drive',
   isReadOnly: false,
-  hasMedia: true,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}
 };
 
@@ -67,7 +62,6 @@ var expectedArchiveVolume = {
   sourcePath: /removable\/mount_path3\/archive.zip$/,
   volumeType: 'archive',
   isReadOnly: true,
-  hasMedia: false,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}
 };
 
