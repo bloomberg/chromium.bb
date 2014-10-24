@@ -24,7 +24,8 @@ MediaDecoderJob::MediaDecoderJob(
     const scoped_refptr<base::SingleThreadTaskRunner>& decoder_task_runner,
     const base::Closure& request_data_cb,
     const base::Closure& config_changed_cb)
-    : ui_task_runner_(base::MessageLoopProxy::current()),
+    : need_to_reconfig_decoder_job_(false),
+      ui_task_runner_(base::MessageLoopProxy::current()),
       decoder_task_runner_(decoder_task_runner),
       needs_flush_(false),
       input_eos_encountered_(false),
@@ -421,20 +422,31 @@ void MediaDecoderJob::DecodeInternal(
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
       kMediaCodecTimeoutInMilliseconds);
 
-  MediaCodecStatus status =
-      media_codec_bridge_->DequeueOutputBuffer(timeout,
-                                               &buffer_index,
-                                               &offset,
-                                               &size,
-                                               &presentation_timestamp,
-                                               &output_eos_encountered_,
-                                               NULL);
-
-  if (status != MEDIA_CODEC_OK) {
+  MediaCodecStatus status = MEDIA_CODEC_OK;
+  bool has_format_change = false;
+  // Dequeue the output buffer until a MEDIA_CODEC_OK, MEDIA_CODEC_ERROR or
+  // MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER is received.
+  do {
+    status = media_codec_bridge_->DequeueOutputBuffer(
+        timeout,
+        &buffer_index,
+        &offset,
+        &size,
+        &presentation_timestamp,
+        &output_eos_encountered_,
+        NULL);
     if (status == MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED &&
         !media_codec_bridge_->GetOutputBuffers()) {
       status = MEDIA_CODEC_ERROR;
+    } else if (status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED) {
+      // TODO(qinmin): instead of waiting for the next output buffer to be
+      // dequeued, post a task on the UI thread to signal the format change.
+      has_format_change = true;
     }
+  } while (status != MEDIA_CODEC_OK && status != MEDIA_CODEC_ERROR &&
+           status != MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER);
+
+  if (status != MEDIA_CODEC_OK) {
     callback.Run(status, kNoTimestamp(), kNoTimestamp());
     return;
   }
@@ -442,6 +454,8 @@ void MediaDecoderJob::DecodeInternal(
   // TODO(xhwang/qinmin): This logic is correct but strange. Clean it up.
   if (output_eos_encountered_)
     status = MEDIA_CODEC_OUTPUT_END_OF_STREAM;
+  else if (has_format_change)
+    status = MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;
 
   bool render_output  = presentation_timestamp >= preroll_timestamp_ &&
       (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u);
@@ -510,7 +524,6 @@ void MediaDecoderJob::OnDecodeCompleted(
   switch (status) {
     case MEDIA_CODEC_OK:
     case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
-    case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
     case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED:
     case MEDIA_CODEC_OUTPUT_END_OF_STREAM:
       if (!input_eos_encountered_) {
@@ -527,6 +540,10 @@ void MediaDecoderJob::OnDecodeCompleted(
     case MEDIA_CODEC_ERROR:
       // Do nothing.
       break;
+
+    case MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
+      DCHECK(false) << "Invalid output status";
+      break;
   };
 
   if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM && drain_decoder_) {
@@ -534,8 +551,11 @@ void MediaDecoderJob::OnDecodeCompleted(
     status = MEDIA_CODEC_OK;
   }
 
-  if (status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED && UpdateOutputFormat())
-    config_changed_cb_.Run();
+  if (status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED) {
+    if (UpdateOutputFormat())
+      config_changed_cb_.Run();
+    status = MEDIA_CODEC_OK;
+  }
 
   if (release_resources_pending_) {
     ReleaseMediaCodecBridge();
