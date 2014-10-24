@@ -241,11 +241,7 @@ void UContextReader::FillCPUContext(RawContextCPU *out, const ucontext *uc) {
   out->cause = 0;  // Not reported in signal context.
 
   for (int i = 0; i < MD_FLOATINGSAVEAREA_MIPS_FPR_COUNT; ++i)
-#if defined (__ANDROID__)
-    out->float_save.regs[i] = uc->uc_mcontext.fpregs[i];
-#else
     out->float_save.regs[i] = uc->uc_mcontext.fpregs.fp_r.fp_dregs[i];
-#endif
 
   out->float_save.fpcsr = uc->uc_mcontext.fpc_csr;
   out->float_save.fir = uc->uc_mcontext.fpc_eir;  // Unused.
