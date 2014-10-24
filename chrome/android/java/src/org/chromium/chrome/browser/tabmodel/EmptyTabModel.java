@@ -58,6 +58,10 @@ public class EmptyTabModel implements TabModel {
     }
 
     @Override
+    public void closeAllTabs(boolean allowDelegation) {
+    }
+
+    @Override
     public int getCount() {
         // We must return 0 to be consistent with getTab(i)
         return 0;

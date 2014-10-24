@@ -84,6 +84,14 @@ public interface TabModel extends TabList {
     public void closeAllTabs();
 
     /**
+     * Close all tabs on this model. If allowDelegation is true, the model has the option
+     * of not closing all tabs and delegating the closure to another class.
+     * @param allowDelegation true iff the model may delegate the close all request.
+     *                        false iff the model must close all tabs.
+     */
+    public void closeAllTabs(boolean allowDelegation);
+
+    /**
      * @return Whether or not this model supports pending closures.
      */
     public boolean supportsPendingClosures();

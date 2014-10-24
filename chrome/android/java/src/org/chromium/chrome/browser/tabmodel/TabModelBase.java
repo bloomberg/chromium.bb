@@ -323,6 +323,11 @@ public abstract class TabModelBase extends TabModelJniBridge {
 
     @Override
     public void closeAllTabs() {
+        closeAllTabs(true);
+    }
+
+    @Override
+    public void closeAllTabs(boolean allowDelegation) {
         commitAllTabClosures();
 
         while (getCount() > 0) {
