@@ -103,6 +103,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
     if (m_imageBuffer) {
         m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
         m_imageBuffer->context()->resetCanvas(m_fallbackSurface->canvas());
+        m_imageBuffer->context()->setAccelerated(m_fallbackSurface->isAccelerated());
     }
 }
 
