@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_desktop_controller.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -160,7 +161,7 @@ class AppsFocusRules : public wm::BaseFocusRules {
 }  // namespace
 
 ShellDesktopController::ShellDesktopController()
-    : app_window_client_(new ShellAppWindowClient), app_window_(NULL) {
+    : app_window_client_(new ShellAppWindowClient) {
   extensions::AppWindowClient::Set(app_window_client_.get());
 
 #if defined(OS_CHROMEOS)
@@ -191,8 +192,9 @@ aura::WindowTreeHost* ShellDesktopController::GetHost() {
 AppWindow* ShellDesktopController::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {
-  app_window_ = new AppWindow(context, new ShellAppDelegate, extension);
-  return app_window_;
+  app_windows_.push_back(
+      new AppWindow(context, new ShellAppDelegate, extension));
+  return app_windows_.back();
 }
 
 void ShellDesktopController::AddAppWindow(aura::Window* window) {
@@ -200,11 +202,20 @@ void ShellDesktopController::AddAppWindow(aura::Window* window) {
   root_window->AddChild(window);
 }
 
+void ShellDesktopController::RemoveAppWindow(AppWindow* window) {
+  auto iter = std::find(app_windows_.begin(), app_windows_.end(), window);
+  DCHECK(iter != app_windows_.end());
+  app_windows_.erase(iter);
+}
+
 void ShellDesktopController::CloseAppWindows() {
-  if (app_window_) {
-    app_window_->GetBaseWindow()->Close();  // Close() deletes |app_window_|.
-    app_window_ = NULL;
-  }
+  // Create a copy of the window vector, because closing the windows will
+  // trigger RemoveAppWindow, which will invalidate the iterator.
+  // This vector should be small enough that this should not be an issue.
+  std::vector<AppWindow*> app_windows(app_windows_);
+  for (AppWindow* app_window : app_windows)
+    app_window->GetBaseWindow()->Close();  // Close() deletes |app_window|.
+  app_windows_.clear();
 }
 
 aura::Window* ShellDesktopController::GetDefaultParent(

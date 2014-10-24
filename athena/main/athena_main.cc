@@ -69,6 +69,8 @@ class AthenaDesktopController : public extensions::DesktopController {
     NOTIMPLEMENTED();
   }
 
+  virtual void RemoveAppWindow(extensions::AppWindow* window) override {}
+
   // Closes and destroys the app windows.
   virtual void CloseAppWindows() override {}
 

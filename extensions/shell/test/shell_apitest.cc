@@ -24,11 +24,11 @@ bool ShellApiTest::RunAppTest(const std::string& app_dir) {
   test_data_dir = test_data_dir.AppendASCII(app_dir);
   ResultCatcher catcher;
 
-  bool loaded = extension_system_->LoadApp(test_data_dir);
-  if (!loaded)
+  const Extension* extension = extension_system_->LoadApp(test_data_dir);
+  if (!extension)
     return false;
 
-  extension_system_->LaunchApp();
+  extension_system_->LaunchApp(extension->id());
 
   if (!catcher.GetNextResult()) {
     message_ = catcher.message();

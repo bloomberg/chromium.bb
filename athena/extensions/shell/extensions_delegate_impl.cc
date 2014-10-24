@@ -6,6 +6,7 @@
 
 #include "athena/extensions/shell/athena_shell_app_window_client.h"
 #include "base/macros.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/shell/browser/shell_extension_system.h"
@@ -32,13 +33,10 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
     return context_;
   }
   virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
-    shell_extensions_.Clear();
-    if (extension_system_->extension().get())
-      shell_extensions_.Insert(extension_system_->extension());
-    return shell_extensions_;
+    return extensions::ExtensionRegistry::Get(context_)->enabled_extensions();
   }
   virtual bool LaunchApp(const std::string& app_id) override {
-    extension_system_->LaunchApp();
+    extension_system_->LaunchApp(app_id);
     return true;
   }
 
@@ -51,7 +49,6 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
 
   content::BrowserContext* context_;
   extensions::ShellExtensionSystem* extension_system_;
-  extensions::ExtensionSet shell_extensions_;
 
   AthenaShellAppWindowClient app_window_client_;
 

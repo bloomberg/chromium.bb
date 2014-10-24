@@ -140,8 +140,9 @@ void WebViewAPITest::LaunchApp(const std::string& app_location) {
 
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
-  ASSERT_TRUE(extension_system_->LoadApp(test_data_dir));
-  extension_system_->LaunchApp();
+  const Extension* extension = extension_system_->LoadApp(test_data_dir);
+  ASSERT_TRUE(extension);
+  extension_system_->LaunchApp(extension->id());
 
   ExtensionTestMessageListener launch_listener("LAUNCHED", false);
   ASSERT_TRUE(launch_listener.WaitUntilSatisfied());

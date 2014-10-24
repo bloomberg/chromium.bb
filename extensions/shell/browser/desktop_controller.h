@@ -46,6 +46,9 @@ class DesktopController {
   // Attaches the window to our window hierarchy.
   virtual void AddAppWindow(aura::Window* window) = 0;
 
+  // Removes the window from the desktop.
+  virtual void RemoveAppWindow(AppWindow* window) = 0;
+
   // Closes and destroys the app windows.
   virtual void CloseAppWindows() = 0;
 };

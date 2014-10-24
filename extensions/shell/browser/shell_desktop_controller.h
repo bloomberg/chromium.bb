@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -69,6 +71,7 @@ class ShellDesktopController : public DesktopController,
   virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
                                      const Extension* extension) override;
   virtual void AddAppWindow(aura::Window* window) override;
+  virtual void RemoveAppWindow(AppWindow* window) override;
   virtual void CloseAppWindows() override;
 
   // aura::client::WindowTreeClient overrides:
@@ -131,8 +134,8 @@ class ShellDesktopController : public DesktopController,
 
   scoped_ptr<AppWindowClient> app_window_client_;
 
-  // The desktop supports a single app window.
-  AppWindow* app_window_;  // NativeAppWindow::Close() deletes this.
+  // NativeAppWindow::Close() deletes the AppWindow.
+  std::vector<AppWindow*> app_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDesktopController);
 };
