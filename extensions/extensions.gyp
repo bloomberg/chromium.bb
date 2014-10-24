@@ -252,8 +252,8 @@
         'common/view_type.h',
         '<(SHARED_INTERMEDIATE_DIR)/extensions/common/mojo/keep_alive.mojom.cc',
         '<(SHARED_INTERMEDIATE_DIR)/extensions/common/mojo/keep_alive.mojom.h',
-        '<(SHARED_INTERMEDIATE_DIR)/extensions/common/stash.mojom.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/extensions/common/stash.mojom.h',
+        '<(SHARED_INTERMEDIATE_DIR)/extensions/common/mojo/stash.mojom.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/extensions/common/mojo/stash.mojom.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
