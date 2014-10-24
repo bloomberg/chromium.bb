@@ -122,7 +122,7 @@ def GetBotStepMap():
   emma_coverage_tests = [x for x in std_host_tests if x is not 'findbugs']
   std_build_steps = ['compile', 'zip_build']
   std_test_steps = ['extract_build']
-  std_tests = ['ui', 'unit', 'mojo']
+  std_tests = ['ui', 'unit']
   telemetry_tests = ['telemetry_perf_unittests']
   flakiness_server = (
       '--flakiness-server=%s' % constants.UPSTREAM_FLAKINESS_SERVER)
