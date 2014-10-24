@@ -6,8 +6,8 @@
 
 var binding = require('binding').Binding.create('app.runtime');
 
-var AppViewInternal =
-    require('binding').Binding.create('appViewInternal').generate();
+var AppViewGuestInternal =
+    require('binding').Binding.create('appViewGuestInternal').generate();
 var eventBindings = require('event_bindings');
 var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
@@ -23,11 +23,11 @@ eventBindings.registerArgumentMassager('app.runtime.onEmbedRequested',
   var id = appEmbeddingRequest.guestInstanceId;
   delete appEmbeddingRequest.guestInstanceId;
   appEmbeddingRequest.allow = function(url) {
-    AppViewInternal.attachFrame(url, id);
+    AppViewGuestInternal.attachFrame(url, id);
   };
 
   appEmbeddingRequest.deny = function() {
-    AppViewInternal.denyRequest(id);
+    AppViewGuestInternal.denyRequest(id);
   };
 
   dispatch([appEmbeddingRequest]);

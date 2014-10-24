@@ -76,8 +76,7 @@
     "contexts": ["blessed_extension"],
     "dependencies": ["permission:appview"]
   },
-  // TODO(fsamuel,kalman): Rename this appViewGuestInternal.
-  "appViewInternal": {
+  "appViewGuestInternal": {
     "internal": true,
     "channel": "dev",
     "contexts": ["blessed_extension"]
