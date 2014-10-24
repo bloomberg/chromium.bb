@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/heartbeat_manager.h"
 
+#include "base/timer/timer.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/network_change_notifier.h"
 
@@ -18,12 +19,11 @@ const int64 kWifiHeartbeatDefaultMs = 1000 * 60 * 15;  // 15 minutes.
 const int64 kHeartbeatAckDefaultMs = 1000 * 60 * 1;  // 1 minute.
 }  // namespace
 
-HeartbeatManager::HeartbeatManager()
+HeartbeatManager::HeartbeatManager(scoped_ptr<base::Timer> heartbeat_timer)
     : waiting_for_ack_(false),
       heartbeat_interval_ms_(0),
       server_interval_ms_(0),
-      heartbeat_timer_(true  /* retain user task */,
-                       false  /* not repeating */),
+      heartbeat_timer_(heartbeat_timer.Pass()),
       weak_ptr_factory_(this) {}
 
 HeartbeatManager::~HeartbeatManager() {}
@@ -42,12 +42,12 @@ void HeartbeatManager::Start(
 }
 
 void HeartbeatManager::Stop() {
-  heartbeat_timer_.Stop();
+  heartbeat_timer_->Stop();
   waiting_for_ack_ = false;
 }
 
 void HeartbeatManager::OnHeartbeatAcked() {
-  if (!heartbeat_timer_.IsRunning())
+  if (!heartbeat_timer_->IsRunning())
     return;
 
   DCHECK(!send_heartbeat_callback_.is_null());
@@ -68,8 +68,8 @@ void HeartbeatManager::UpdateHeartbeatConfig(
 }
 
 base::TimeTicks HeartbeatManager::GetNextHeartbeatTime() const {
-  if (heartbeat_timer_.IsRunning())
-    return heartbeat_timer_.desired_run_time();
+  if (heartbeat_timer_->IsRunning())
+    return heartbeat_timer_->desired_run_time();
   else
     return base::TimeTicks();
 }
@@ -109,7 +109,7 @@ void HeartbeatManager::RestartTimer() {
     DVLOG(1) << "Resetting timer for ack with "
              << heartbeat_interval_ms_ << " ms interval.";
   }
-  heartbeat_timer_.Start(FROM_HERE,
+  heartbeat_timer_->Start(FROM_HERE,
                          base::TimeDelta::FromMilliseconds(
                              heartbeat_interval_ms_),
                          base::Bind(&HeartbeatManager::OnHeartbeatTriggered,

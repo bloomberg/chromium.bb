@@ -91,6 +91,7 @@
     ['chromeos == 1', {
       'includes': [
         'pairing.gypi',
+        'timers.gypi',
       ],
     }],
     ['OS == "win" or OS == "mac"', {

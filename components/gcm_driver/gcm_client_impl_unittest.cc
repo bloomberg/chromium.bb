@@ -6,10 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
+#include "base/timer/timer.h"
 #include "google_apis/gcm/base/fake_encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -114,7 +116,8 @@ FakeMCSClient::FakeMCSClient(base::Clock* clock,
                              ConnectionFactory* connection_factory,
                              GCMStore* gcm_store,
                              GCMStatsRecorder* recorder)
-    : MCSClient("", clock, connection_factory, gcm_store, recorder),
+    : MCSClient("", clock, connection_factory, gcm_store, recorder,
+                make_scoped_ptr(new base::Timer(true, false))),
       last_android_id_(0u),
       last_security_token_(0u),
       last_message_tag_(kNumProtoTypes) {

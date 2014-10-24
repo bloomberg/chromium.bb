@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/base/mcs_message.h"
@@ -21,6 +22,7 @@
 
 namespace base {
 class Clock;
+class Timer;
 }  // namespace base
 
 namespace google {
@@ -98,7 +100,8 @@ class GCM_EXPORT MCSClient {
             base::Clock* clock,
             ConnectionFactory* connection_factory,
             GCMStore* gcm_store,
-            GCMStatsRecorder* recorder);
+            GCMStatsRecorder* recorder,
+            scoped_ptr<base::Timer> heartbeat_timer);
   virtual ~MCSClient();
 
   // Initialize the client. Will load any previous id/token information as well

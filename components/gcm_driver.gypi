@@ -90,6 +90,11 @@
             'gcm_driver/proto/gcm_channel_status.proto',
           ],
         }],
+        ['chromeos == 1', {
+          'dependencies': [
+            'timers',
+          ],
+        }],
       ],
     },
     {

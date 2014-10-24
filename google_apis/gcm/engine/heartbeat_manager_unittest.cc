@@ -4,8 +4,11 @@
 
 #include "google_apis/gcm/engine/heartbeat_manager.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +24,10 @@ mcs_proto::HeartbeatConfig BuildHeartbeatConfig(int interval_ms) {
 
 class TestHeartbeatManager : public HeartbeatManager {
  public:
-  TestHeartbeatManager() {}
+  TestHeartbeatManager()
+      : HeartbeatManager(make_scoped_ptr(
+            new base::Timer(true, /* retain user task */
+                            false /* non repeating */))) {}
   virtual ~TestHeartbeatManager() {}
 
   // Bypass the heartbeat timer, and send the heartbeat now.

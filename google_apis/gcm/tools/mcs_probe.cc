@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/default_clock.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "google_apis/gcm/base/fake_encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
@@ -304,7 +305,9 @@ void MCSProbe::Start() {
                                   &clock_,
                                   connection_factory_.get(),
                                   gcm_store_.get(),
-                                  &recorder_));
+                                  &recorder_,
+                                  make_scoped_ptr(new base::Timer(true,
+                                                                  false))));
   run_loop_.reset(new base::RunLoop());
   gcm_store_->Load(base::Bind(&MCSProbe::LoadCallback,
                               base::Unretained(this)));

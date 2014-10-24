@@ -1,6 +1,7 @@
 include_rules = [
   "+components/os_crypt",
   "+components/pref_registry",
+  "+components/timers",  # Only used for Chrome OS builds.
   # TODO(johnme): Fix this layering violation.
   "!content/public/android/java",
   "+google_apis/gaia",

@@ -7,9 +7,13 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "google_apis/gcm/base/gcm_export.h"
+
+namespace base {
+class Timer;
+}
 
 namespace mcs_proto {
 class HeartbeatConfig;
@@ -21,7 +25,7 @@ namespace gcm {
 // receipt/failures and triggering reconnection as necessary.
 class GCM_EXPORT HeartbeatManager {
  public:
-  HeartbeatManager();
+  explicit HeartbeatManager(scoped_ptr<base::Timer> heartbeat_timer);
   ~HeartbeatManager();
 
   // Start the heartbeat logic.
@@ -66,7 +70,7 @@ class GCM_EXPORT HeartbeatManager {
   int server_interval_ms_;
 
   // Timer for triggering heartbeats.
-  base::Timer heartbeat_timer_;
+  scoped_ptr<base::Timer> heartbeat_timer_;
 
   // Callbacks for interacting with the the connection.
   base::Closure send_heartbeat_callback_;

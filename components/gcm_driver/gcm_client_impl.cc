@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
+#include "components/timers/alarm_timer.h"
 #include "google_apis/gcm/base/encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -192,12 +193,17 @@ scoped_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
     ConnectionFactory* connection_factory,
     GCMStore* gcm_store,
     GCMStatsRecorder* recorder) {
-  return make_scoped_ptr<MCSClient>(
-      new MCSClient(version,
-                    clock,
-                    connection_factory,
-                    gcm_store,
-                    recorder));
+#if defined(OS_CHROMEOS)
+  return scoped_ptr<MCSClient>(new MCSClient(
+      version, clock, connection_factory, gcm_store, recorder,
+      make_scoped_ptr(new timers::AlarmTimer(true, /* retain user task */
+                                             false /* non-repeating */))));
+#else
+  return scoped_ptr<MCSClient>(new MCSClient(
+      version, clock, connection_factory, gcm_store, recorder,
+      make_scoped_ptr(new base::Timer(true, /* retain user task */
+                                      false /* non-repeating */))));
+#endif  // defined(OS_CHROMEOS)
 }
 
 scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(

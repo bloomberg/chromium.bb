@@ -111,8 +111,14 @@ class BASE_EXPORT Timer {
                    TimeDelta delay,
                    const base::Closure& user_task);
 
+  void set_user_task(const Closure& task) { user_task_ = task; }
+  void set_desired_run_time(TimeTicks desired) { desired_run_time_ = desired; }
+  void set_is_running(bool running) { is_running_ = running; }
+
+  const tracked_objects::Location& posted_from() const { return posted_from_; }
   bool retain_user_task() const { return retain_user_task_; }
   bool is_repeating() const { return is_repeating_; }
+  bool is_running() const { return is_running_; }
 
  private:
   friend class BaseTimerTaskInternal;

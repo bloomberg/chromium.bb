@@ -711,6 +711,7 @@
             ['chromeos==1', {
               'sources': [
                 'pairing/message_buffer_unittest.cc',
+                'timers/alarm_timer_unittest.cc',
               ],
               'sources!': [
                 'storage_monitor/storage_monitor_linux_unittest.cc',

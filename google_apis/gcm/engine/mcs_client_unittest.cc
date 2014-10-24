@@ -4,12 +4,16 @@
 
 #include "google_apis/gcm/engine/mcs_client.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "base/timer/timer.h"
 #include "google_apis/gcm/base/fake_encryptor.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
@@ -70,7 +74,8 @@ class TestMCSClient : public MCSClient {
                 ConnectionFactory* connection_factory,
                 GCMStore* gcm_store,
                 gcm::GCMStatsRecorder* recorder)
-    : MCSClient("", clock, connection_factory, gcm_store, recorder),
+    : MCSClient("", clock, connection_factory, gcm_store, recorder,
+                make_scoped_ptr(new base::Timer(true, false))),
       next_id_(0) {
   }
 
