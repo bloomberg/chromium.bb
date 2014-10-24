@@ -13,13 +13,13 @@ namespace switches {
 
 extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowLegacyExtensionManifests[];
+extern const char kDisableExtensionInfoDialog[];
 extern const char kEmbeddedExtensionOptions[];
 extern const char kEnableAppsShowOnFirstPaint[];
 extern const char kEnableAppWindowControls[];
 extern const char kEnableEmbeddedExtensionOptions[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActionRedesign[];
-extern const char kEnableExtensionInfoDialog[];
 extern const char kEnableMimeHandlerView[];
 extern const char kEnableOverrideBookmarksUI[];
 extern const char kEnableRemoteAssistance[];
