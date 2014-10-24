@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/address_family.h"
@@ -257,6 +258,20 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // "clientInfo" key is required for some NetLogLogger log readers.
   // Provide a default empty value for compatibility.
   constants_dict->Set("clientInfo", new base::DictionaryValue());
+
+  // Add a list of active field experiments.
+  {
+    base::FieldTrial::ActiveGroups active_groups;
+    base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+    base::ListValue* field_trial_groups = new base::ListValue();
+    for (base::FieldTrial::ActiveGroups::const_iterator it =
+             active_groups.begin();
+         it != active_groups.end(); ++it) {
+      field_trial_groups->AppendString(it->trial_name + ":" +
+                                       it->group_name);
+    }
+    constants_dict->Set("activeFieldTrialGroups", field_trial_groups);
+  }
 
   return constants_dict;
 }
