@@ -431,6 +431,10 @@ void WebKitTestRunner::ClearWebNotificationPermissions() {
   Send(new ShellViewHostMsg_ClearWebNotificationPermissions(routing_id()));
 }
 
+void WebKitTestRunner::SimulateWebNotificationClick(const std::string& title) {
+  Send(new ShellViewHostMsg_SimulateWebNotificationClick(routing_id(), title));
+}
+
 void WebKitTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
 }

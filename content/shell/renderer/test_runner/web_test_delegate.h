@@ -141,6 +141,7 @@ class WebTestDelegate {
   virtual void GrantWebNotificationPermission(const GURL& origin,
                                               bool permission_granted) = 0;
   virtual void ClearWebNotificationPermissions() = 0;
+  virtual void SimulateWebNotificationClick(const std::string& title) = 0;
 
   // Controls the device scale factor of the main WebView for hidpi tests.
   virtual void SetDeviceScaleFactor(float factor) = 0;

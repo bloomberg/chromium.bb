@@ -33,6 +33,11 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       const GURL& source_url,
       ResourceContext* context,
       int render_process_id) override;
+  void ShowDesktopNotification(
+      const ShowDesktopNotificationHostMsgParams& params,
+      RenderFrameHost* render_frame_host,
+      scoped_ptr<DesktopNotificationDelegate> delegate,
+      base::Closure* cancel_callback) override;
 
  private:
   scoped_ptr<LayoutTestNotificationManager> layout_test_notification_manager_;

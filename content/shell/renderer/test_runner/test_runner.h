@@ -526,7 +526,7 @@ class TestRunner : public WebTestRunner,
   void ClearWebNotificationPermissions();
 
   // Simulates a click on a desktop notification.
-  bool SimulateWebNotificationClick(const std::string& value);
+  void SimulateWebNotificationClick(const std::string& title);
 
   // Speech recognition related functions.
   void AddMockSpeechRecognitionResult(const std::string& transcript,

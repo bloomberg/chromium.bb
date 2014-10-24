@@ -273,7 +273,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMIDISysexPermission(bool value);
   void GrantWebNotificationPermission(gin::Arguments* args);
   void ClearWebNotificationPermissions();
-  bool SimulateWebNotificationClick(const std::string& value);
+  void SimulateWebNotificationClick(const std::string& title);
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);
   void SetMockSpeechRecognitionError(const std::string& error,
@@ -1307,11 +1307,10 @@ void TestRunnerBindings::ClearWebNotificationPermissions() {
     runner_->ClearWebNotificationPermissions();
 }
 
-bool TestRunnerBindings::SimulateWebNotificationClick(
-    const std::string& value) {
+void TestRunnerBindings::SimulateWebNotificationClick(
+    const std::string& title) {
   if (runner_)
-    return runner_->SimulateWebNotificationClick(value);
-  return false;
+    runner_->SimulateWebNotificationClick(title);
 }
 
 void TestRunnerBindings::AddMockSpeechRecognitionResult(
@@ -2753,8 +2752,12 @@ void TestRunner::ClearWebNotificationPermissions() {
   delegate_->ClearWebNotificationPermissions();
 }
 
-bool TestRunner::SimulateWebNotificationClick(const std::string& value) {
-  return notification_presenter_->SimulateClick(value);
+void TestRunner::SimulateWebNotificationClick(const std::string& title) {
+  delegate_->SimulateWebNotificationClick(title);
+
+  // TODO(peter): Remove this call once Web Notifications switch away from the
+  // WebFrame-based code path.
+  notification_presenter_->SimulateClick(title);
 }
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,

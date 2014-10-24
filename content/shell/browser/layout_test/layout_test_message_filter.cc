@@ -42,6 +42,8 @@ void LayoutTestMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   if (message.type() == ShellViewHostMsg_ClearAllDatabases::ID)
     *thread = BrowserThread::FILE;
+  if (message.type() == ShellViewHostMsg_SimulateWebNotificationClick::ID)
+    *thread = BrowserThread::UI;
 }
 
 bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -58,6 +60,8 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnGrantWebNotificationPermission)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearWebNotificationPermissions,
                         OnClearWebNotificationPermissions)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SimulateWebNotificationClick,
+                        OnSimulateWebNotificationClick)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_AcceptAllCookies, OnAcceptAllCookies)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -126,6 +130,14 @@ void LayoutTestMessageFilter::OnClearWebNotificationPermissions() {
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
     manager->ClearPermissions();
+}
+
+void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
+    const std::string& title) {
+  LayoutTestNotificationManager* manager =
+      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
+  if (manager)
+    manager->SimulateClick(title);
 }
 
 void LayoutTestMessageFilter::OnAcceptAllCookies(bool accept) {

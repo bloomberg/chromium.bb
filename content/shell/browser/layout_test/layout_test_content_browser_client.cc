@@ -35,6 +35,10 @@ void RequestDesktopNotificationPermissionOnIO(
 
 LayoutTestContentBrowserClient::LayoutTestContentBrowserClient() {
   DCHECK(!g_layout_test_browser_client);
+
+  layout_test_notification_manager_.reset(
+      new LayoutTestNotificationManager());
+
   g_layout_test_browser_client = this;
 }
 
@@ -48,12 +52,6 @@ LayoutTestContentBrowserClient* LayoutTestContentBrowserClient::Get() {
 
 LayoutTestNotificationManager*
 LayoutTestContentBrowserClient::GetLayoutTestNotificationManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!layout_test_notification_manager_) {
-    layout_test_notification_manager_.reset(
-        new LayoutTestNotificationManager());
-  }
-
   return layout_test_notification_manager_.get();
 }
 
@@ -95,6 +93,15 @@ LayoutTestContentBrowserClient::CheckDesktopNotificationPermission(
     return manager->CheckPermission(source_url);
 
   return blink::WebNotificationPermissionAllowed;
+}
+
+void LayoutTestContentBrowserClient::ShowDesktopNotification(
+    const ShowDesktopNotificationHostMsgParams& params,
+    RenderFrameHost* render_frame_host,
+    scoped_ptr<DesktopNotificationDelegate> delegate,
+    base::Closure* cancel_callback) {
+  if (auto* manager = GetLayoutTestNotificationManager())
+    manager->Show(params, delegate.Pass(), cancel_callback);
 }
 
 }  // namespace content

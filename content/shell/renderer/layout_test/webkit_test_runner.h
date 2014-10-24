@@ -93,6 +93,7 @@ class WebKitTestRunner : public RenderViewObserver,
   void GrantWebNotificationPermission(const GURL& origin,
                                       bool permission_granted) override;
   void ClearWebNotificationPermissions() override;
+  void SimulateWebNotificationClick(const std::string& title) override;
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorProfile(const std::string& name) override;
   void SetFocus(WebTestProxyBase* proxy, bool focus) override;

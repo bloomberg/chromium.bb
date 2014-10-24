@@ -105,6 +105,8 @@ IPC_MESSAGE_ROUTED2(ShellViewHostMsg_GrantWebNotificationPermission,
                     GURL /* origin */,
                     bool /* permission_granted */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ClearWebNotificationPermissions)
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SimulateWebNotificationClick,
+                    std::string /* title */)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_AcceptAllCookies,
                     bool /* accept */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DeleteAllCookies)
