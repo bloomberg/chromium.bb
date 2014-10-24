@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/memory/ref_counted.h"
@@ -20,18 +19,12 @@
 #include "content/common/content_export.h"
 
 namespace BASE_HASH_NAMESPACE {
-#if defined(COMPILER_GCC)
 template <>
 struct hash<cc::SharedBitmapId> {
   size_t operator()(const cc::SharedBitmapId& id) const {
     return base::Hash(reinterpret_cast<const char*>(id.name), sizeof(id.name));
   }
 };
-#elif defined(COMPILER_MSVC)
-inline std::size_t hash_value(const cc::SharedBitmapId& id) {
-  return base::Hash(reinterpret_cast<const char*>(id.name), sizeof(id.name));
-}
-#endif  // COMPILER
 }  // namespace BASE_HASH_NAMESPACE
 
 namespace content {

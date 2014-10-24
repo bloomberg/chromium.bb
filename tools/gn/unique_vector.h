@@ -63,14 +63,8 @@ class UniquifyRef {
 
  private:
   void FillHashValue() {
-#if defined(COMPILER_GCC)
     BASE_HASH_NAMESPACE::hash<T> h;
     hash_val_ = h(value());
-#elif defined(COMPILER_MSVC)
-    hash_val_ = BASE_HASH_NAMESPACE::hash_value(value());
-#else
-    #error write me
-#endif  // COMPILER...
   }
 
   // When non-null, points to the object.
@@ -97,18 +91,11 @@ template<typename T> inline bool operator<(const UniquifyRef<T>& a,
 
 namespace BASE_HASH_NAMESPACE {
 
-#if defined(COMPILER_GCC)
 template<typename T> struct hash< internal::UniquifyRef<T> > {
   std::size_t operator()(const internal::UniquifyRef<T>& v) const {
     return v.hash_val();
   }
 };
-#elif defined(COMPILER_MSVC)
-template<typename T>
-inline size_t hash_value(const internal::UniquifyRef<T>& v) {
-  return v.hash_val();
-}
-#endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
 

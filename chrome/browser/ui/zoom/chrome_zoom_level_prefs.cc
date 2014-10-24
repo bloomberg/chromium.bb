@@ -25,11 +25,7 @@ namespace {
 std::string GetHash(
     const base::FilePath& relative_path) {
   size_t int_key =
-#if defined(COMPILER_MSVC)
-      BASE_HASH_NAMESPACE::hash_value(relative_path);
-#else
       BASE_HASH_NAMESPACE::hash<base::FilePath>()(relative_path);
-#endif  // COMPILER
   return base::SizeTToString(int_key);
 }
 

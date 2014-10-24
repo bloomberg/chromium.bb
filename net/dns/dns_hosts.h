@@ -22,7 +22,6 @@ namespace net {
 };
 
 namespace BASE_HASH_NAMESPACE {
-#if defined(COMPILER_GCC)
 
 template<>
 struct hash<net::DnsHostsKey> {
@@ -31,14 +30,6 @@ struct hash<net::DnsHostsKey> {
     return string_piece_hash(key.first) + key.second;
   }
 };
-
-#elif defined(COMPILER_MSVC)
-
-inline size_t hash_value(const net::DnsHostsKey& key) {
-  return hash_value(key.first) + key.second;
-}
-
-#endif  // COMPILER
 
 }  // namespace BASE_HASH_NAMESPACE
 

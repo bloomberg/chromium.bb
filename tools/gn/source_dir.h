@@ -104,18 +104,12 @@ class SourceDir {
 
 namespace BASE_HASH_NAMESPACE {
 
-#if defined(COMPILER_GCC)
 template<> struct hash<SourceDir> {
   std::size_t operator()(const SourceDir& v) const {
     hash<std::string> h;
     return h(v.value());
   }
 };
-#elif defined(COMPILER_MSVC)
-inline size_t hash_value(const SourceDir& v) {
-  return hash_value(v.value());
-}
-#endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
 

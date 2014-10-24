@@ -133,20 +133,12 @@ class CC_EXPORT RenderPass {
 }  // namespace cc
 
 namespace BASE_HASH_NAMESPACE {
-#if defined(COMPILER_MSVC)
-inline size_t hash_value(const cc::RenderPassId& key) {
-  return base::HashPair(key.layer_id, key.index);
-}
-#elif defined(COMPILER_GCC)
 template <>
 struct hash<cc::RenderPassId> {
   size_t operator()(cc::RenderPassId key) const {
     return base::HashPair(key.layer_id, key.index);
   }
 };
-#else
-#error define a hash function for your compiler
-#endif  // COMPILER
 }  // namespace BASE_HASH_NAMESPACE
 
 namespace cc {

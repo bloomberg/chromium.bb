@@ -47,18 +47,12 @@ class OutputFile {
 
 namespace BASE_HASH_NAMESPACE {
 
-#if defined(COMPILER_GCC)
 template<> struct hash<OutputFile> {
   std::size_t operator()(const OutputFile& v) const {
     hash<std::string> h;
     return h(v.value());
   }
 };
-#elif defined(COMPILER_MSVC)
-inline size_t hash_value(const OutputFile& v) {
-  return hash_value(v.value());
-}
-#endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
 

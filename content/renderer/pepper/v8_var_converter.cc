@@ -47,21 +47,16 @@ struct HashedHandle {
   HashedHandle(v8::Handle<v8::Object> h) : handle(h) {}
   size_t hash() const { return handle->GetIdentityHash(); }
   bool operator==(const HashedHandle& h) const { return handle == h.handle; }
-  bool operator<(const HashedHandle& h) const { return hash() < h.hash(); }
   v8::Handle<v8::Object> handle;
 };
 
 }  // namespace
 
 namespace BASE_HASH_NAMESPACE {
-#if defined(COMPILER_GCC)
 template <>
 struct hash<HashedHandle> {
   size_t operator()(const HashedHandle& handle) const { return handle.hash(); }
 };
-#elif defined(COMPILER_MSVC)
-inline size_t hash_value(const HashedHandle& handle) { return handle.hash(); }
-#endif
 }  // namespace BASE_HASH_NAMESPACE
 
 namespace content {

@@ -29,19 +29,12 @@ class ServiceMetadata;
 
 namespace BASE_HASH_NAMESPACE {
 
-#if defined(COMPILER_GCC)
 template<> struct hash<sync_file_system::drive_backend::ParentIDAndTitle> {
   std::size_t operator()(
       const sync_file_system::drive_backend::ParentIDAndTitle& v) const {
     return base::HashInts64(v.parent_id, hash<std::string>()(v.title));
   }
 };
-#elif defined(COMPILER_MSVC)
-inline size_t hash_value(
-    const sync_file_system::drive_backend::ParentIDAndTitle& v) {
-  return base::HashInts64(v.parent_id, hash_value(v.title));
-}
-#endif  // COMPILER
 
 }  // namespace BASE_HASH_NAMESPACE
 

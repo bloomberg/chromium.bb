@@ -105,19 +105,12 @@ template<typename T> inline bool operator<(const LabelPtrPair<T>& a,
 
 namespace BASE_HASH_NAMESPACE {
 
-#if defined(COMPILER_GCC)
 template<typename T> struct hash< LabelPtrPair<T> > {
   std::size_t operator()(const LabelPtrPair<T>& v) const {
     BASE_HASH_NAMESPACE::hash<Label> h;
     return h(v.label);
   }
 };
-#elif defined(COMPILER_MSVC)
-template<typename T>
-inline size_t hash_value(const LabelPtrPair<T>& v) {
-  return BASE_HASH_NAMESPACE::hash_value(v.label);
-}
-#endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
 

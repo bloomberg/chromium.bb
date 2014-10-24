@@ -414,9 +414,8 @@ namespace {
 
 class hash_map_add_item : public hash_map<int, int> {
  public:
-  hash_map_add_item() : hash_map<int, int>() {}
-  explicit hash_map_add_item(const std::pair<int, int>& item)
-      : hash_map<int, int>() {
+  hash_map_add_item() {}
+  explicit hash_map_add_item(const std::pair<int, int>& item) {
     insert(item);
   }
 };

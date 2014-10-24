@@ -13,7 +13,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
@@ -133,10 +132,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RemoteChannelEndpointIdGenerator {
 // Define "hash" functions for |ChannelEndpointId|s, so they can be used in hash
 // tables.
 // TODO(vtl): Once we can use |std::unordered_{map,set}|, update this (and
-// remove the base/containers/hash_tables.h and build/build_config.h includes).
+// remove the base/containers/hash_tables.h include).
 namespace BASE_HASH_NAMESPACE {
-
-#if defined(COMPILER_GCC)
 
 template <>
 struct hash<mojo::system::ChannelEndpointId> {
@@ -144,13 +141,6 @@ struct hash<mojo::system::ChannelEndpointId> {
     return static_cast<size_t>(channel_endpoint_id.value());
   }
 };
-
-#elif defined(COMPILER_MSVC)
-
-inline size_t hash_value(mojo::system::ChannelEndpointId channel_endpoint_id) {
-  return static_cast<size_t>(channel_endpoint_id.value());
-}
-#endif
 
 }  // namespace BASE_HASH_NAMESPACE
 

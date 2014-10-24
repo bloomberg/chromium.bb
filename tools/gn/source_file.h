@@ -90,18 +90,12 @@ class SourceFile {
 
 namespace BASE_HASH_NAMESPACE {
 
-#if defined(COMPILER_GCC)
 template<> struct hash<SourceFile> {
   std::size_t operator()(const SourceFile& v) const {
     hash<std::string> h;
     return h(v.value());
   }
 };
-#elif defined(COMPILER_MSVC)
-inline size_t hash_value(const SourceFile& v) {
-  return hash_value(v.value());
-}
-#endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
 

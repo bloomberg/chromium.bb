@@ -6,7 +6,6 @@
 #define TOOLS_GN_LABEL_H_
 
 #include "base/containers/hash_tables.h"
-#include "build/build_config.h"
 #include "tools/gn/source_dir.h"
 
 class Err;
@@ -107,7 +106,6 @@ class Label {
 
 namespace BASE_HASH_NAMESPACE {
 
-#if defined(COMPILER_GCC)
 template<> struct hash<Label> {
   std::size_t operator()(const Label& v) const {
     hash<std::string> stringhash;
@@ -117,14 +115,6 @@ template<> struct hash<Label> {
            stringhash(v.toolchain_name());
   }
 };
-#elif defined(COMPILER_MSVC)
-inline size_t hash_value(const Label& v) {
-  return ((hash_value(v.dir().value()) * 131 +
-           hash_value(v.name())) * 131 +
-          hash_value(v.toolchain_dir().value())) * 131 +
-         hash_value(v.toolchain_name());
-}
-#endif  // COMPILER...
 
 }  // namespace BASE_HASH_NAMESPACE
 
