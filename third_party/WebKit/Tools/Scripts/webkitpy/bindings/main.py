@@ -41,7 +41,7 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
 sys.path.append(source_path)  # for Source/bindings imports
 
 import bindings.scripts.compute_interfaces_info_individual
-from bindings.scripts.compute_interfaces_info_individual import compute_info_individual, info_individual
+from bindings.scripts.compute_interfaces_info_individual import InterfaceInfoCollector
 import bindings.scripts.compute_interfaces_info_overall
 from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
@@ -106,6 +106,14 @@ def generate_interface_dependencies(output_directory):
                              for filename in fnmatch.filter(files, '*.idl'))
         return idl_paths
 
+    def collect_blink_idl_paths():
+        """Returns IDL file paths which blink actually uses."""
+        idl_paths = []
+        for component in COMPONENT_DIRECTORY:
+            directory = os.path.join(source_path, component)
+            idl_paths.extend(idl_paths_recursive(directory))
+        return idl_paths
+
     # We compute interfaces info for *all* IDL files, not just test IDL
     # files, as code generator output depends on inheritance (both ancestor
     # chain and inherited extended attributes), and some real interfaces
@@ -116,14 +124,8 @@ def generate_interface_dependencies(output_directory):
     # since this is also special-cased and Node inherits from EventTarget,
     # but this inheritance information requires computing dependencies for
     # the real Node.idl file.
-    non_test_idl_paths = []
-    test_idl_paths = []
-    test_idl_dir = test_input_directory + os.sep
-    for idl_path in idl_paths_recursive(source_path):
-        if idl_path.startswith(test_idl_dir):
-            test_idl_paths.append(idl_path)
-        else:
-            non_test_idl_paths.append(idl_path)
+    non_test_idl_paths = collect_blink_idl_paths()
+    test_idl_paths = idl_paths_recursive(test_input_directory)
     # 2-stage computation: individual, then overall
     #
     # Properly should compute separately by component (currently test
@@ -134,13 +136,14 @@ def generate_interface_dependencies(output_directory):
     # In order to allow test IDL files to override the production IDL files if
     # they have the same interface name, process the test IDL files after the
     # non-test IDL files.
-    reader = IdlReader()
+    info_individuals = []
+    info_collector = InterfaceInfoCollector()
     for idl_path_list in (non_test_idl_paths, test_idl_paths):
         for idl_path in idl_path_list:
             if os.path.basename(idl_path) in NON_BLINK_IDL_FILES:
                 continue
-            compute_info_individual(idl_path, reader)
-    info_individuals = [info_individual()]
+            info_collector.collect_info(idl_path)
+        info_individuals.append(info_collector.get_info_as_dict())
     # TestDictionary.{h,cpp} are placed under Source/bindings/tests/idls/core.
     # However, IdlCompiler generates TestDictionary.{h,cpp} by using relative_dir.
     # So the files will be generated under output_dir/core/bindings/tests/idls/core.
