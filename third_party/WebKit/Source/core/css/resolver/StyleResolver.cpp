@@ -81,7 +81,6 @@
 #include "core/rendering/style/KeyframeList.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGFontFaceElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 
@@ -147,14 +146,6 @@ StyleResolver::StyleResolver(Document& document)
     }
 
     initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
-
-#if ENABLE(SVG_FONTS)
-    if (document.svgExtensions()) {
-        const WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> >& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
-        for (const auto& element : svgFontFaceElements)
-            addFontFaceRule(&document, document.styleEngine()->fontSelector(), element->fontFaceRule());
-    }
-#endif
 }
 
 void StyleResolver::initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedSelectors)

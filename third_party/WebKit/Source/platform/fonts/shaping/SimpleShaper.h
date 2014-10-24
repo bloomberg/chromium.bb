@@ -24,7 +24,6 @@
 #define SimpleShaper_h
 
 #include "platform/PlatformExport.h"
-#include "platform/fonts/SVGGlyph.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -65,10 +64,6 @@ public:
     float runWidthSoFar() const { return m_runWidthSoFar; }
     unsigned currentOffset() { return m_currentCharacter; }
 
-#if ENABLE(SVG_FONTS)
-    Vector<SVGGlyph::ArabicForm>& arabicForms() { return m_arabicForms; }
-#endif
-
 private:
     const Font* m_font;
     const TextRun& m_run;
@@ -78,9 +73,6 @@ private:
     float m_expansionPerOpportunity;
     bool m_isAfterExpansion;
 
-#if ENABLE(SVG_FONTS)
-    Vector<SVGGlyph::ArabicForm> m_arabicForms;
-#endif
     struct CharacterData {
         UChar32 character;
         unsigned clusterLength;

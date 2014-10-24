@@ -77,19 +77,15 @@ static bool isSupportedSVG10Feature(const String& feature, const String& version
     static bool initialized = false;
     DEFINE_STATIC_LOCAL(FeatureSet, svgFeatures, ());
     if (!initialized) {
-#if ENABLE(SVG_FONTS)
         addString(svgFeatures, "svg");
         addString(svgFeatures, "svg.static");
-#endif
 //      addString(svgFeatures, "svg.animation");
 //      addString(svgFeatures, "svg.dynamic");
 //      addString(svgFeatures, "svg.dom.animation");
 //      addString(svgFeatures, "svg.dom.dynamic");
-#if ENABLE(SVG_FONTS)
         addString(svgFeatures, "dom");
         addString(svgFeatures, "dom.svg");
         addString(svgFeatures, "dom.svg.static");
-#endif
 //      addString(svgFeatures, "svg.all");
 //      addString(svgFeatures, "dom.svg.all");
         initialized = true;
@@ -109,12 +105,10 @@ static bool isSupportedSVG11Feature(const String& feature, const String& version
         // Sadly, we cannot claim to implement any of the SVG 1.1 generic feature sets
         // lack of Font and Filter support.
         // http://bugs.webkit.org/show_bug.cgi?id=15480
-#if ENABLE(SVG_FONTS)
         addString(svgFeatures, "SVG");
         addString(svgFeatures, "SVGDOM");
         addString(svgFeatures, "SVG-static");
         addString(svgFeatures, "SVGDOM-static");
-#endif
         addString(svgFeatures, "SVG-animation");
         addString(svgFeatures, "SVGDOM-animation");
 //      addString(svgFeatures, "SVG-dynamic);
@@ -153,10 +147,6 @@ static bool isSupportedSVG11Feature(const String& feature, const String& version
         addString(svgFeatures, "View");
         addString(svgFeatures, "Script");
         addString(svgFeatures, "Animation");
-#if ENABLE(SVG_FONTS)
-        addString(svgFeatures, "Font");
-        addString(svgFeatures, "BasicFont");
-#endif
         addString(svgFeatures, "Extensibility");
         initialized = true;
     }

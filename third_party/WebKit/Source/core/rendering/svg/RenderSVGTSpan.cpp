@@ -23,9 +23,7 @@
 #include "config.h"
 
 #include "core/rendering/svg/RenderSVGTSpan.h"
-
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/svg/SVGAltGlyphElement.h"
 
 namespace blink {
 
@@ -39,13 +37,6 @@ bool RenderSVGTSpan::isChildAllowed(RenderObject* child, RenderStyle*) const
     // Always allow text (except empty textnodes and <br>).
     if (child->isText())
         return SVGRenderSupport::isRenderableTextNode(child);
-
-#if ENABLE(SVG_FONTS)
-    // Only allow other types of  children if this is not an 'altGlyph'.
-    ASSERT(node());
-    if (isSVGAltGlyphElement(*node()))
-        return false;
-#endif
 
     return child->isSVGInline() && !child->isSVGTextPath();
 }

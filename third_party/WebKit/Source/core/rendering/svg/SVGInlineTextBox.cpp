@@ -34,7 +34,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/FloatConversion.h"
 #include "platform/fonts/FontCache.h"
 
@@ -199,9 +198,6 @@ TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFrag
         else
             run.setText(text->characters16() + fragment.characterOffset, fragment.length);
     }
-
-    if (textRunNeedsRenderingContext(style->font()))
-        run.setRenderingContext(SVGTextRunRenderingContext::create(text));
 
     // We handle letter & word spacing ourselves.
     run.disableSpacing();

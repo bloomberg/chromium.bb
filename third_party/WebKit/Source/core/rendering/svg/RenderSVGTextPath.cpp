@@ -38,13 +38,6 @@ bool RenderSVGTextPath::isChildAllowed(RenderObject* child, RenderStyle*) const
     if (child->isText())
         return SVGRenderSupport::isRenderableTextNode(child);
 
-#if ENABLE(SVG_FONTS)
-    // 'altGlyph' is supported by the content model for 'textPath', but...
-    ASSERT(child->node());
-    if (isSVGAltGlyphElement(*child->node()))
-        return false;
-#endif
-
     return child->isSVGInline() && !child->isSVGTextPath();
 }
 

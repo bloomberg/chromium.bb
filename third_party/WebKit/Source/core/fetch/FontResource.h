@@ -38,7 +38,6 @@ namespace blink {
 class Document;
 class ResourceFetcher;
 class FontPlatformData;
-class SVGFontElement;
 class FontCustomPlatformData;
 
 class FontResource final : public Resource {
@@ -47,7 +46,6 @@ public:
 
     FontResource(const ResourceRequest&);
     virtual ~FontResource();
-    virtual void trace(Visitor*) override;
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
 
@@ -68,11 +66,6 @@ public:
     bool ensureCustomFontData();
     FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
 
-#if ENABLE(SVG_FONTS)
-    bool ensureSVGFontData();
-    SVGFontElement* getSVGFontById(const String&) const;
-#endif
-
 protected:
     virtual bool isSafeToUnlock() const override;
 
@@ -87,10 +80,6 @@ private:
     bool m_exceedsFontLoadWaitLimit;
     bool m_corsFailed;
     Timer<FontResource> m_fontLoadWaitLimitTimer;
-
-#if ENABLE(SVG_FONTS)
-    RefPtrWillBeMember<Document> m_externalSVGDocument;
-#endif
 
     friend class MemoryCache;
 };

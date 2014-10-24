@@ -264,9 +264,6 @@ Rect
 ReferenceError
 RegExp
 SVGAElement
-SVGAltGlyphDefElement
-SVGAltGlyphElement
-SVGAltGlyphItemElement
 SVGAngle
 SVGAnimateElement
 SVGAnimateMotionElement
@@ -319,20 +316,11 @@ SVGFESpotLightElement
 SVGFETileElement
 SVGFETurbulenceElement
 SVGFilterElement
-SVGFontElement
-SVGFontFaceElement
-SVGFontFaceFormatElement
-SVGFontFaceNameElement
-SVGFontFaceSrcElement
-SVGFontFaceUriElement
 SVGForeignObjectElement
 SVGGElement
 SVGGeometryElement
-SVGGlyphElement
-SVGGlyphRefElement
 SVGGradientElement
 SVGGraphicsElement
-SVGHKernElement
 SVGImageElement
 SVGLength
 SVGLengthList
@@ -343,7 +331,6 @@ SVGMarkerElement
 SVGMaskElement
 SVGMatrix
 SVGMetadataElement
-SVGMissingGlyphElement
 SVGNumber
 SVGNumberList
 SVGPathElement
@@ -396,7 +383,6 @@ SVGTransform
 SVGTransformList
 SVGUnitTypes
 SVGUseElement
-SVGVKernElement
 SVGViewElement
 SVGViewSpec
 SVGZoomEvent

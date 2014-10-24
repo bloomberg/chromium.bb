@@ -46,7 +46,6 @@ public:
     virtual bool shouldSkipDrawing() const { return false; }
     virtual void clearFontFaceSource() { }
 
-    virtual bool isSVGFont() const { return false; }
     virtual void initializeFontData(SimpleFontData*, float) { }
     virtual float widthForSVGGlyph(Glyph, float) const { return 0.0f; }
     virtual bool fillSVGGlyphPage(GlyphPage*, unsigned, unsigned, UChar*, unsigned, const SimpleFontData*) const { return false; }

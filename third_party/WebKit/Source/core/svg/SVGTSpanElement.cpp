@@ -43,9 +43,6 @@ bool SVGTSpanElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (parentNode()
         && (isSVGAElement(*parentNode())
-#if ENABLE(SVG_FONTS)
-            || isSVGAltGlyphElement(*parentNode())
-#endif
             || isSVGTextElement(*parentNode())
             || isSVGTextPathElement(*parentNode())
             || isSVGTSpanElement(*parentNode())))

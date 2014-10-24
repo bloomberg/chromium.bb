@@ -33,19 +33,11 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/svg/SVGFontFaceElement.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
-
-#if ENABLE(SVG_FONTS)
-bool CSSFontFaceSrcValue::isSVGFontFaceSrc() const
-{
-    return equalIgnoringCase(m_format, "svg");
-}
-#endif
 
 bool CSSFontFaceSrcValue::isSupportedFormat() const
 {
@@ -61,16 +53,6 @@ bool CSSFontFaceSrcValue::isSupportedFormat() const
     if (FontCustomPlatformData::supportsFormat(m_format))
         return true;
 
-    // We have removed SVG font support on non-gdi platforms. For details, see:
-    // https://groups.google.com/a/chromium.org/d/msg/blink-dev/pYbbUcYvlYY/LQvFvM8KZZEJ
-#if ENABLE(SVG_FONTS)
-    if (RuntimeEnabledFeatures::svgFontsOnNonGDIPlatformsEnabled()
-#if OS(WIN)
-        || !FontCache::useDirectWrite()
-#endif
-        )
-        return isSVGFontFaceSrc();
-#endif
     return false;
 }
 

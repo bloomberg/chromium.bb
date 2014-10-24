@@ -36,7 +36,6 @@ namespace blink {
 
 class FontResource;
 class Document;
-class SVGFontFaceElement;
 
 class CSSFontFaceSrcValue : public CSSValue {
 public:
@@ -58,13 +57,6 @@ public:
 
     bool isSupportedFormat() const;
 
-#if ENABLE(SVG_FONTS)
-    bool isSVGFontFaceSrc() const;
-
-    SVGFontFaceElement* svgFontFaceElement() const { return m_svgFontFaceElement; }
-    void setSVGFontFaceElement(SVGFontFaceElement* element) { m_svgFontFaceElement = element; }
-#endif
-
     String customCSSText() const;
 
     bool hasFailedOrCanceledSubresources() const;
@@ -80,9 +72,6 @@ private:
         : CSSValue(FontFaceSrcClass)
         , m_resource(resource)
         , m_isLocal(local)
-#if ENABLE(SVG_FONTS)
-        , m_svgFontFaceElement(0)
-#endif
     {
     }
 
@@ -95,12 +84,6 @@ private:
     bool m_isLocal;
 
     ResourcePtr<FontResource> m_fetched;
-
-#if ENABLE(SVG_FONTS)
-    // FIXME: Oilpan: Changing this to a member leaks Document.
-    // Figure out the retaining path. See https://codereview.chromium.org/337703004
-    SVGFontFaceElement* m_svgFontFaceElement;
-#endif
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, isFontFaceSrcValue());

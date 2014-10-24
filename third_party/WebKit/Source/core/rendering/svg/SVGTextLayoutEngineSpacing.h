@@ -32,17 +32,12 @@ class SVGTextLayoutEngineSpacing {
 public:
     SVGTextLayoutEngineSpacing(const Font&, float effectiveZoom);
 
-    float calculateSVGKerning(bool isVerticalText, Glyph currentGlyph);
     float calculateCSSSpacing(UChar currentCharacter);
 
 private:
     const Font& m_font;
     UChar m_lastCharacter;
     float m_effectiveZoom;
-
-#if ENABLE(SVG_FONTS)
-    Glyph m_lastGlyph;
-#endif
 };
 
 } // namespace blink

@@ -33,7 +33,6 @@
 
 #include "core/rendering/RenderText.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {
@@ -45,9 +44,6 @@ static inline TextRun constructTextRunInternal(RenderObject* context, const Font
 
     bool directionalOverride = style->rtlOrdering() == VisualOrder;
     TextRun run(characters, length, 0, 0, expansion, direction, directionalOverride);
-    if (textRunNeedsRenderingContext(font))
-        run.setRenderingContext(SVGTextRunRenderingContext::create(context));
-
     return run;
 }
 
@@ -66,9 +62,6 @@ static inline TextRun constructTextRunInternal(RenderObject* context, const Font
     }
 
     TextRun run(characters, length, 0, 0, expansion, textDirection, directionalOverride);
-    if (textRunNeedsRenderingContext(font))
-        run.setRenderingContext(SVGTextRunRenderingContext::create(context));
-
     return run;
 }
 

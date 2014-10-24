@@ -131,7 +131,6 @@ public:
     void determinePitch();
     Pitch pitch() const { return m_treatAsFixedPitch ? FixedPitch : VariablePitch; }
 
-    bool isSVGFont() const { return m_customFontData && m_customFontData->isSVGFont(); }
     virtual bool isCustomFont() const override { return m_customFontData; }
     virtual bool isLoading() const override { return m_customFontData ? m_customFontData->isLoading() : false; }
     virtual bool isLoadingFallback() const override { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
@@ -242,13 +241,11 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
     if (width != cGlyphSizeUnknown)
         return width;
 
-    if (isSVGFont())
-        width = m_customFontData->widthForSVGGlyph(glyph, m_platformData.size());
 #if ENABLE(OPENTYPE_VERTICAL)
-    else if (m_verticalData)
+    if (m_verticalData)
         width = m_verticalData->advanceHeight(this, glyph);
-#endif
     else
+#endif
         width = platformWidthForGlyph(glyph);
 
     m_glyphToWidthMap.setMetricsForGlyph(glyph, width);

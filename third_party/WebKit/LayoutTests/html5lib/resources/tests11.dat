@@ -275,7 +275,7 @@
 |       zoomandpan=""
 
 #data
-<!DOCTYPE html><body><svg><altGlyph /><altGlyphDef /><altGlyphItem /><animateColor /><animateMotion /><animateTransform /><clipPath /><feBlend /><feColorMatrix /><feComponentTransfer /><feComposite /><feConvolveMatrix /><feDiffuseLighting /><feDisplacementMap /><feDistantLight /><feFlood /><feFuncA /><feFuncB /><feFuncG /><feFuncR /><feGaussianBlur /><feImage /><feMerge /><feMergeNode /><feMorphology /><feOffset /><fePointLight /><feSpecularLighting /><feSpotLight /><feTile /><feTurbulence /><foreignObject /><glyphRef /><linearGradient /><radialGradient /><textPath /></svg>
+<!DOCTYPE html><body><svg><animateColor /><animateMotion /><animateTransform /><clipPath /><feBlend /><feColorMatrix /><feComponentTransfer /><feComposite /><feConvolveMatrix /><feDiffuseLighting /><feDisplacementMap /><feDistantLight /><feFlood /><feFuncA /><feFuncB /><feFuncG /><feFuncR /><feGaussianBlur /><feImage /><feMerge /><feMergeNode /><feMorphology /><feOffset /><fePointLight /><feSpecularLighting /><feSpotLight /><feTile /><feTurbulence /><foreignObject /><linearGradient /><radialGradient /><textPath /></svg>
 #errors
 #document
 | <!DOCTYPE html>
@@ -283,9 +283,6 @@
 |   <head>
 |   <body>
 |     <svg svg>
-|       <svg altGlyph>
-|       <svg altGlyphDef>
-|       <svg altGlyphItem>
 |       <svg animateColor>
 |       <svg animateMotion>
 |       <svg animateTransform>
@@ -315,13 +312,12 @@
 |       <svg feTile>
 |       <svg feTurbulence>
 |       <svg foreignObject>
-|       <svg glyphRef>
 |       <svg linearGradient>
 |       <svg radialGradient>
 |       <svg textPath>
 
 #data
-<!DOCTYPE html><body><svg><altglyph /><altglyphdef /><altglyphitem /><animatecolor /><animatemotion /><animatetransform /><clippath /><feblend /><fecolormatrix /><fecomponenttransfer /><fecomposite /><feconvolvematrix /><fediffuselighting /><fedisplacementmap /><fedistantlight /><feflood /><fefunca /><fefuncb /><fefuncg /><fefuncr /><fegaussianblur /><feimage /><femerge /><femergenode /><femorphology /><feoffset /><fepointlight /><fespecularlighting /><fespotlight /><fetile /><feturbulence /><foreignobject /><glyphref /><lineargradient /><radialgradient /><textpath /></svg>
+<!DOCTYPE html><body><svg><animatecolor /><animatemotion /><animatetransform /><clippath /><feblend /><fecolormatrix /><fecomponenttransfer /><fecomposite /><feconvolvematrix /><fediffuselighting /><fedisplacementmap /><fedistantlight /><feflood /><fefunca /><fefuncb /><fefuncg /><fefuncr /><fegaussianblur /><feimage /><femerge /><femergenode /><femorphology /><feoffset /><fepointlight /><fespecularlighting /><fespotlight /><fetile /><feturbulence /><foreignobject /><lineargradient /><radialgradient /><textpath /></svg>
 #errors
 #document
 | <!DOCTYPE html>
@@ -329,9 +325,6 @@
 |   <head>
 |   <body>
 |     <svg svg>
-|       <svg altGlyph>
-|       <svg altGlyphDef>
-|       <svg altGlyphItem>
 |       <svg animateColor>
 |       <svg animateMotion>
 |       <svg animateTransform>
@@ -361,13 +354,12 @@
 |       <svg feTile>
 |       <svg feTurbulence>
 |       <svg foreignObject>
-|       <svg glyphRef>
 |       <svg linearGradient>
 |       <svg radialGradient>
 |       <svg textPath>
 
 #data
-<!DOCTYPE html><BODY><SVG><ALTGLYPH /><ALTGLYPHDEF /><ALTGLYPHITEM /><ANIMATECOLOR /><ANIMATEMOTION /><ANIMATETRANSFORM /><CLIPPATH /><FEBLEND /><FECOLORMATRIX /><FECOMPONENTTRANSFER /><FECOMPOSITE /><FECONVOLVEMATRIX /><FEDIFFUSELIGHTING /><FEDISPLACEMENTMAP /><FEDISTANTLIGHT /><FEFLOOD /><FEFUNCA /><FEFUNCB /><FEFUNCG /><FEFUNCR /><FEGAUSSIANBLUR /><FEIMAGE /><FEMERGE /><FEMERGENODE /><FEMORPHOLOGY /><FEOFFSET /><FEPOINTLIGHT /><FESPECULARLIGHTING /><FESPOTLIGHT /><FETILE /><FETURBULENCE /><FOREIGNOBJECT /><GLYPHREF /><LINEARGRADIENT /><RADIALGRADIENT /><TEXTPATH /></SVG>
+<!DOCTYPE html><BODY><SVG><ANIMATECOLOR /><ANIMATEMOTION /><ANIMATETRANSFORM /><CLIPPATH /><FEBLEND /><FECOLORMATRIX /><FECOMPONENTTRANSFER /><FECOMPOSITE /><FECONVOLVEMATRIX /><FEDIFFUSELIGHTING /><FEDISPLACEMENTMAP /><FEDISTANTLIGHT /><FEFLOOD /><FEFUNCA /><FEFUNCB /><FEFUNCG /><FEFUNCR /><FEGAUSSIANBLUR /><FEIMAGE /><FEMERGE /><FEMERGENODE /><FEMORPHOLOGY /><FEOFFSET /><FEPOINTLIGHT /><FESPECULARLIGHTING /><FESPOTLIGHT /><FETILE /><FETURBULENCE /><FOREIGNOBJECT /><LINEARGRADIENT /><RADIALGRADIENT /><TEXTPATH /></SVG>
 #errors
 #document
 | <!DOCTYPE html>
@@ -375,9 +367,6 @@
 |   <head>
 |   <body>
 |     <svg svg>
-|       <svg altGlyph>
-|       <svg altGlyphDef>
-|       <svg altGlyphItem>
 |       <svg animateColor>
 |       <svg animateMotion>
 |       <svg animateTransform>
@@ -407,13 +396,12 @@
 |       <svg feTile>
 |       <svg feTurbulence>
 |       <svg foreignObject>
-|       <svg glyphRef>
 |       <svg linearGradient>
 |       <svg radialGradient>
 |       <svg textPath>
 
 #data
-<!DOCTYPE html><body><math><altGlyph /><altGlyphDef /><altGlyphItem /><animateColor /><animateMotion /><animateTransform /><clipPath /><feBlend /><feColorMatrix /><feComponentTransfer /><feComposite /><feConvolveMatrix /><feDiffuseLighting /><feDisplacementMap /><feDistantLight /><feFlood /><feFuncA /><feFuncB /><feFuncG /><feFuncR /><feGaussianBlur /><feImage /><feMerge /><feMergeNode /><feMorphology /><feOffset /><fePointLight /><feSpecularLighting /><feSpotLight /><feTile /><feTurbulence /><foreignObject /><glyphRef /><linearGradient /><radialGradient /><textPath /></math>
+<!DOCTYPE html><body><math><animateColor /><animateMotion /><animateTransform /><clipPath /><feBlend /><feColorMatrix /><feComponentTransfer /><feComposite /><feConvolveMatrix /><feDiffuseLighting /><feDisplacementMap /><feDistantLight /><feFlood /><feFuncA /><feFuncB /><feFuncG /><feFuncR /><feGaussianBlur /><feImage /><feMerge /><feMergeNode /><feMorphology /><feOffset /><fePointLight /><feSpecularLighting /><feSpotLight /><feTile /><feTurbulence /><foreignObject /><linearGradient /><radialGradient /><textPath /></math>
 #errors
 #document
 | <!DOCTYPE html>
@@ -421,9 +409,6 @@
 |   <head>
 |   <body>
 |     <math math>
-|       <math altglyph>
-|       <math altglyphdef>
-|       <math altglyphitem>
 |       <math animatecolor>
 |       <math animatemotion>
 |       <math animatetransform>
@@ -453,7 +438,6 @@
 |       <math fetile>
 |       <math feturbulence>
 |       <math foreignobject>
-|       <math glyphref>
 |       <math lineargradient>
 |       <math radialgradient>
 |       <math textpath>

@@ -157,7 +157,6 @@ private:
     FloatRect selectionRectForComplexText(const TextRun&, const FloatPoint&, int h, int from, int to) const;
 
     friend struct SimpleShaper;
-    friend class SVGTextRunRenderingContext;
 
 public:
     FontSelector* fontSelector() const;

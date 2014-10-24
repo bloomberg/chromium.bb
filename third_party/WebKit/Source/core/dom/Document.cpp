@@ -178,7 +178,6 @@
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
@@ -1821,11 +1820,6 @@ void Document::updateRenderTree(StyleRecalcChange change)
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
         clearFocusedElementSoon();
-
-#if ENABLE(SVG_FONTS)
-    if (svgExtensions())
-        accessSVGExtensions().removePendingSVGFontFaceElementsForRemoval();
-#endif
 
     ASSERT(!m_timeline->hasOutdatedAnimationPlayer());
 

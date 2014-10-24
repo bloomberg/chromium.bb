@@ -120,10 +120,6 @@ void GlyphPageTreeNode::pruneTreeFontData(const SimpleFontData* fontData)
 
 static bool fill(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData* fontData)
 {
-#if ENABLE(SVG_FONTS)
-    if (fontData->isSVGFont())
-        return fontData->customFontData()->fillSVGGlyphPage(pageToFill, offset, length, buffer, bufferLength, fontData);
-#endif
     bool hasGlyphs = fontData->fillGlyphPage(pageToFill, offset, length, buffer, bufferLength);
 #if ENABLE(OPENTYPE_VERTICAL)
     if (hasGlyphs && fontData->verticalData())

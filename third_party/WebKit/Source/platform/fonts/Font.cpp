@@ -261,11 +261,6 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
 
 float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
 {
-#if ENABLE(SVG_FONTS)
-    if (TextRun::RenderingContext* renderingContext = run.renderingContext())
-        return renderingContext->floatWidthUsingSVGFont(*this, run, charsConsumed, glyphId);
-#endif
-
     charsConsumed = run.length();
     glyphId = 0;
     return width(run);
@@ -284,10 +279,6 @@ bool buildTextBlobInternal(const GlyphBuffer& glyphBuffer, SkScalar initialAdvan
 
         // FIXME: Handle vertical text.
         if (fontData->platformData().orientation() == Vertical)
-            return false;
-
-        // FIXME: Handle SVG fonts.
-        if (fontData->isSVGFont())
             return false;
 
         // FIXME: FontPlatformData makes some decisions on the device scale
@@ -380,11 +371,6 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
 
     if (fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != run.length()))
         return ComplexPath;
-
-#if ENABLE(SVG_FONTS)
-    if (run.renderingContext())
-        return SimplePath;
-#endif
 
     if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0 && m_fontDescription.letterSpacing() == 0)
         return ComplexPath;
@@ -544,7 +530,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, 
     ASSERT(isMainThread());
 
     if (variant == AutoVariant) {
-        if (m_fontDescription.variant() == FontVariantSmallCaps && !primaryFont()->isSVGFont()) {
+        if (m_fontDescription.variant() == FontVariantSmallCaps) {
             UChar32 upperC = toUpper(c);
             if (upperC != c) {
                 c = upperC;
@@ -974,20 +960,12 @@ float Font::drawGlyphBuffer(GraphicsContext* context,
     float advanceSoFar = 0;
     unsigned lastFrom = 0;
     unsigned nextGlyph = 0;
-#if ENABLE(SVG_FONTS)
-    TextRun::RenderingContext* renderingContext = runInfo.run.renderingContext();
-#endif
 
     while (nextGlyph < glyphBuffer.size()) {
         const SimpleFontData* nextFontData = glyphBuffer.fontDataAt(nextGlyph);
 
         if (nextFontData != fontData) {
-#if ENABLE(SVG_FONTS)
-            if (renderingContext && fontData->isSVGFont())
-                renderingContext->drawSVGGlyphs(context, runInfo.run, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint);
-            else
-#endif
-                drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint, runInfo.bounds);
+            drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint, runInfo.bounds);
 
             lastFrom = nextGlyph;
             fontData = nextFontData;
@@ -998,13 +976,7 @@ float Font::drawGlyphBuffer(GraphicsContext* context,
         nextGlyph++;
     }
 
-#if ENABLE(SVG_FONTS)
-    if (renderingContext && fontData->isSVGFont())
-        renderingContext->drawSVGGlyphs(context, runInfo.run, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint);
-    else
-#endif
-        drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint, runInfo.bounds);
-
+    drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint, runInfo.bounds);
     startPoint += FloatSize(advanceSoFar, 0);
     return startPoint.x() - point.x();
 }

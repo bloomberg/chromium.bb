@@ -25,62 +25,14 @@
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 
-#if ENABLE(SVG_FONTS)
-#include "core/svg/SVGFontData.h"
-#include "core/svg/SVGFontElement.h"
-#include "core/svg/SVGFontFaceElement.h"
-#endif
-
 namespace blink {
 
 SVGTextLayoutEngineSpacing::SVGTextLayoutEngineSpacing(const Font& font, float effectiveZoom)
     : m_font(font)
     , m_lastCharacter(0)
     , m_effectiveZoom(effectiveZoom)
-#if ENABLE(SVG_FONTS)
-    , m_lastGlyph(0)
-#endif
 {
     ASSERT(m_effectiveZoom);
-}
-
-float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, Glyph currentGlyph)
-{
-#if ENABLE(SVG_FONTS)
-    const SimpleFontData* fontData = m_font.primaryFont();
-    if (!fontData->isSVGFont()) {
-        m_lastGlyph = 0;
-        return 0;
-    }
-
-    ASSERT(fontData->isCustomFont());
-    ASSERT(fontData->isSVGFont());
-
-    RefPtr<CustomFontData> customFontData = fontData->customFontData();
-    SVGFontFaceElement* svgFontFace = toSVGFontData(customFontData)->svgFontFaceElement();
-    ASSERT(svgFontFace);
-
-    SVGFontElement* svgFont = svgFontFace->associatedFontElement();
-    if (!svgFont) {
-        m_lastGlyph = 0;
-        return 0;
-    }
-
-    float kerning = 0;
-    if (m_lastGlyph) {
-        if (isVerticalText)
-            kerning = svgFont->verticalKerningForPairOfGlyphs(m_lastGlyph, currentGlyph);
-        else
-            kerning = svgFont->horizontalKerningForPairOfGlyphs(m_lastGlyph, currentGlyph);
-
-        kerning *= m_font.fontDescription().computedSize() / m_font.fontMetrics().unitsPerEm();
-    }
-
-    m_lastGlyph = currentGlyph;
-    return kerning;
-#else
-    return 0;
-#endif
 }
 
 float SVGTextLayoutEngineSpacing::calculateCSSSpacing(UChar currentCharacter)

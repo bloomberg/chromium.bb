@@ -69,14 +69,6 @@ SimpleShaper::SimpleShaper(const Font* font, const TextRun& run,
 GlyphData SimpleShaper::glyphDataForCharacter(CharacterData& charData, bool normalizeSpace)
 {
     ASSERT(m_font);
-
-#if ENABLE(SVG_FONTS)
-    if (TextRun::RenderingContext* renderingContext = m_run.renderingContext()) {
-        return renderingContext->glyphDataForCharacter(*m_font, m_run, *this, charData.character,
-            m_run.rtl(), charData.characterOffset, charData.clusterLength);
-    }
-#endif
-
     return m_font->glyphDataForCharacter(charData.character, m_run.rtl(), normalizeSpace);
 }
 

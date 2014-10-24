@@ -378,14 +378,8 @@ SimpleFontData::DerivedFontData::~DerivedFontData()
 
 PassRefPtr<SimpleFontData> SimpleFontData::createScaledFontData(const FontDescription& fontDescription, float scaleFactor) const
 {
-    // FIXME: Support scaled SVG fonts. Given that SVG is scalable in general this should be achievable.
-    if (isSVGFont())
-        return nullptr;
-
     return platformCreateScaledFontData(fontDescription, scaleFactor);
 }
-
-
 
 PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const FontDescription& fontDescription, float scaleFactor) const
 {

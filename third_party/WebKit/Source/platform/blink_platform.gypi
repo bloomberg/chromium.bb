@@ -373,8 +373,6 @@
       'fonts/GlyphPageTreeNode.cpp',
       'fonts/GlyphPageTreeNode.h',
       'fonts/Latin1TextIterator.h',
-      'fonts/SVGGlyph.cpp',
-      'fonts/SVGGlyph.h',
       'fonts/SegmentedFontData.cpp',
       'fonts/SegmentedFontData.h',
       'fonts/SimpleFontData.cpp',

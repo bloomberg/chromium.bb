@@ -215,10 +215,6 @@ public:
     class RenderingContext : public RefCounted<RenderingContext> {
     public:
         virtual ~RenderingContext() { }
-
-        virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) = 0;
-        virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const = 0;
-        virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const = 0;
     };
 
     RenderingContext* renderingContext() const { return m_renderingContext.get(); }

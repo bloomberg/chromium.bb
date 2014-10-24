@@ -124,7 +124,6 @@ SlimmingPaint
 Stream status=experimental
 SubpixelFontScaling status=stable
 SubresourceIntegrity status=experimental
-SVGFontsOnNonGDIPlatforms
 TextBlob
 ThemeColor status=stable
 ThreadedParserDataReceiver status=experimental

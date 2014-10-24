@@ -26,10 +26,6 @@ public:
     void beginLoadIfNeeded() override;
     virtual bool ensureFontData();
 
-#if ENABLE(SVG_FONTS)
-    virtual bool isSVGFontFaceSource() const { return false; }
-#endif
-
     virtual void didStartFontLoad(FontResource*) override;
     virtual void fontLoaded(FontResource*) override;
     virtual void fontLoadWaitLimitExceeded(FontResource*) override;

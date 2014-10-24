@@ -827,8 +827,6 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
         unsigned runIndex = m_run.rtl() ? m_harfBuzzRuns.size() - i - 1 : i;
         HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
         const SimpleFontData* currentFontData = currentRun->fontData();
-        if (currentFontData->isSVGFont())
-            return false;
 
         FontPlatformData* platformData = const_cast<FontPlatformData*>(&currentFontData->platformData());
         HarfBuzzFace* face = platformData->harfBuzzFace();

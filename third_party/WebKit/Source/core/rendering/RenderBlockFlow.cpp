@@ -46,7 +46,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/line/LineWidth.h"
-#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {

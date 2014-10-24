@@ -28,7 +28,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElementRareData.h"
-#include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGViewSpec.h"
 #include "core/svg/SVGZoomAndPan.h"
@@ -338,30 +337,6 @@ void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(Subt
         (*it)->invalidateRelativeLengthClients(scope);
 }
 
-#if ENABLE(SVG_FONTS)
-void SVGDocumentExtensions::registerSVGFontFaceElement(SVGFontFaceElement* element)
-{
-    m_svgFontFaceElements.add(element);
-}
-
-void SVGDocumentExtensions::unregisterSVGFontFaceElement(SVGFontFaceElement* element)
-{
-    ASSERT(m_svgFontFaceElements.contains(element));
-    m_svgFontFaceElements.remove(element);
-}
-
-void SVGDocumentExtensions::registerPendingSVGFontFaceElementsForRemoval(PassRefPtrWillBeRawPtr<SVGFontFaceElement> font)
-{
-    m_pendingSVGFontFaceElementsForRemoval.add(font);
-}
-
-void SVGDocumentExtensions::removePendingSVGFontFaceElementsForRemoval()
-{
-    m_pendingSVGFontFaceElementsForRemoval.clear();
-}
-
-#endif
-
 bool SVGDocumentExtensions::zoomAndPanEnabled() const
 {
     if (SVGSVGElement* svg = rootElement(*m_document)) {
@@ -405,10 +380,6 @@ void SVGDocumentExtensions::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_timeContainers);
-#if ENABLE(SVG_FONTS)
-    visitor->trace(m_svgFontFaceElements);
-    visitor->trace(m_pendingSVGFontFaceElementsForRemoval);
-#endif
     visitor->trace(m_relativeLengthSVGRoots);
     visitor->trace(m_pendingResources);
     visitor->trace(m_pendingResourcesForRemoval);

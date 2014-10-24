@@ -46,7 +46,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/TextPainter.h"
 #include "core/rendering/style/ShadowList.h"
-#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
@@ -527,8 +526,6 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
     TextRun run(string, textPos(), expansion(), expansionBehavior(), direction(), dirOverride() || style->rtlOrdering() == VisualOrder, !renderer().canUseSimpleFontCodePath());
     run.setTabSize(!style->collapseWhiteSpace(), style->tabSize());
     run.setCharacterScanForCodePath(!renderer().canUseSimpleFontCodePath());
-    if (textRunNeedsRenderingContext(font))
-        run.setRenderingContext(SVGTextRunRenderingContext::create(&renderer()));
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
     run.setCharactersLength(maximumLength);

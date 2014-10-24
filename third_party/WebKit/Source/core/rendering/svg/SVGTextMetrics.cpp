@@ -22,7 +22,6 @@
 #include "core/rendering/svg/SVGTextMetrics.h"
 
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 namespace blink {
 
@@ -86,9 +85,6 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned pos
             run.setText(text->characters16() + position, length);
     }
 
-    if (textRunNeedsRenderingContext(style->font()))
-        run.setRenderingContext(SVGTextRunRenderingContext::create(text));
-
     // We handle letter & word spacing ourselves.
     run.disableSpacing();
 
@@ -114,13 +110,12 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* text, unsigned position, uns
 {
     ASSERT(text);
 
-    bool needsContext = textRunNeedsRenderingContext(text->style()->font());
     float scalingFactor = text->scalingFactor();
     ASSERT(scalingFactor);
 
     m_width = width / scalingFactor;
     m_height = text->scaledFont().fontMetrics().floatHeight() / scalingFactor;
-    m_glyph = needsContext ? glyphNameGlyphId : 0;
+    m_glyph = 0;
 
     m_length = length;
 }
