@@ -197,8 +197,6 @@ DeviceSettingsTestBase::DeviceSettingsTestBase()
     : user_manager_(new FakeUserManager()),
       user_manager_enabler_(user_manager_),
       owner_key_util_(new ownership::MockOwnerKeyUtil()) {
-  OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
-      &device_settings_service_);
   OwnerSettingsServiceChromeOSFactory::GetInstance()->SetOwnerKeyUtilForTesting(
       owner_key_util_);
 }
@@ -220,11 +218,13 @@ void DeviceSettingsTestBase::SetUp() {
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   device_settings_service_.SetSessionManager(&device_settings_test_helper_,
                                              owner_key_util_);
+  OwnerSettingsServiceChromeOS::SetDeviceSettingsServiceForTesting(
+      &device_settings_service_);
   profile_.reset(new TestingProfile());
 }
 
 void DeviceSettingsTestBase::TearDown() {
-  OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(NULL);
+  OwnerSettingsServiceChromeOS::SetDeviceSettingsServiceForTesting(NULL);
   FlushDeviceSettings();
   device_settings_service_.UnsetSessionManager();
   DBusThreadManager::Shutdown();

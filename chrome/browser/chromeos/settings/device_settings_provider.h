@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_PROVIDER_H_
 
+#include <deque>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -16,7 +18,6 @@
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/settings/cros_settings_provider.h"
-#include "components/ownership/owner_settings_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace base {
@@ -30,13 +31,8 @@ class ChromeDeviceSettingsProto;
 namespace chromeos {
 
 // CrosSettingsProvider implementation that works with device settings.
-//
-// Note that the write path is in the process of being migrated to
-// OwnerSettingsServiceChromeOS (crbug.com/230018).
-class DeviceSettingsProvider
-    : public CrosSettingsProvider,
-      public DeviceSettingsService::Observer,
-      public ownership::OwnerSettingsService::Observer {
+class DeviceSettingsProvider : public CrosSettingsProvider,
+                               public DeviceSettingsService::Observer {
  public:
   // The callback type that is called to get the device mode.
   typedef base::Callback<policy::DeviceMode(void)> GetDeviceModeCallback;
@@ -63,14 +59,15 @@ class DeviceSettingsProvider
   virtual void OwnershipStatusChanged() override;
   virtual void DeviceSettingsUpdated() override;
 
-  // ownership::OwnerSettingsService::Observer implementation:
-  virtual void OnTentativeChangesInPolicy(
-      const enterprise_management::PolicyData& policy_data) override;
-
   // Populates in-memory cache from the local_state cache that is used to store
   // device settings before the device is owned and to speed up policy
   // availability before the policy blob is fetched on boot.
   void RetrieveCachedData();
+
+  // Stores a value from the |pending_changes_| queue in the device settings.
+  // If the device is not owned yet the data ends up only in the local_state
+  // cache and is serialized once ownership is acquired.
+  void SetInPolicy();
 
   // Parses the policy data and fills in |values_cache_|.
   void UpdateValuesCache(
@@ -110,6 +107,10 @@ class DeviceSettingsProvider
   // if new settings have been loaded.
   bool UpdateFromService();
 
+  // Sends |device_settings_| to |device_settings_service_| for signing and
+  // storage in session_manager.
+  void StoreDeviceSettings();
+
   // Checks the current ownership status to see whether the device owner is
   // logged in and writes the data accumulated in |migration_values_| to proper
   // device settings.
@@ -124,18 +125,21 @@ class DeviceSettingsProvider
   TrustedStatus trusted_status_;
   DeviceSettingsService::OwnershipStatus ownership_status_;
 
-  // The device settings as currently reported through the
-  // CrosSettingsProvider interface. This may be different from the
-  // actual current device settings (which can be obtained from
-  // |device_settings_service_|) in case the device does not have an
-  // owner yet. As soon as ownership of the device will be taken,
-  // |device_settings_| will stored on disk and won't be used.
+  // The device settings as currently reported through the CrosSettingsProvider
+  // interface. This may be different from the actual current device settings
+  // (which can be obtained from |device_settings_service_|) in case the device
+  // does not have an owner yet or there are pending changes that have not yet
+  // been written to session_manager.
   enterprise_management::ChromeDeviceSettingsProto device_settings_;
 
   // A cache of values, indexed by the settings keys served through the
-  // CrosSettingsProvider interface. This is always kept in sync with the
-  // current device settings.
+  // CrosSettingsProvider interface. This is always kept in sync with the raw
+  // data found in |device_settings_|.
   PrefValueMap values_cache_;
+
+  // This is a queue for set requests, because those need to be sequential.
+  typedef std::pair<std::string, base::Value*> PendingQueueElement;
+  std::deque<PendingQueueElement> pending_changes_;
 
   // Weak pointer factory for creating store operation callbacks.
   base::WeakPtrFactory<DeviceSettingsProvider> store_callback_factory_;
