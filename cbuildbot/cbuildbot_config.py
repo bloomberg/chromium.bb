@@ -1434,6 +1434,7 @@ _arm_release_boards = frozenset([
   'peach_pit',
   'rush',
   'rush_ryu',
+  'veyron_jerry',
   'veyron_pinky',
 ])
 _arm_full_boards = _arm_release_boards | frozenset([
@@ -2762,6 +2763,13 @@ _AddGroupConfig('nyan', 'nyan', (
 _AddGroupConfig('auron', 'auron', (
     'auron_yuna',
     'auron_paine'),
+)
+
+# veyron-based boards
+_AddGroupConfig('veyron', 'veyron_pinky', (
+    'veyron_jerry',
+    ),
+    important=False,
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
