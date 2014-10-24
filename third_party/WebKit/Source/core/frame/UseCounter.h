@@ -543,6 +543,7 @@ public:
         QuotedAnimationName = 571,
         QuotedKeyframesRule = 572,
         SrcsetDroppedCandidate = 573,
+        RenderRuby = 574,
 
         WindowPostMessage = 574,
         WindowPostMessageWithLegacyTargetOriginArgument = 575,

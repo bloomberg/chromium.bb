@@ -32,6 +32,7 @@
 
 #include "core/rendering/RenderRuby.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/rendering/RenderRubyRun.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/RefPtr.h"
@@ -111,6 +112,7 @@ static inline RenderRubyRun* findRubyRunParent(RenderObject* child)
 RenderRubyAsInline::RenderRubyAsInline(Element* element)
     : RenderInline(element)
 {
+    UseCounter::count(document(), UseCounter::RenderRuby);
 }
 
 RenderRubyAsInline::~RenderRubyAsInline()
@@ -219,6 +221,7 @@ void RenderRubyAsInline::removeChild(RenderObject* child)
 RenderRubyAsBlock::RenderRubyAsBlock(Element* element)
     : RenderBlockFlow(element)
 {
+    UseCounter::count(document(), UseCounter::RenderRuby);
 }
 
 RenderRubyAsBlock::~RenderRubyAsBlock()
