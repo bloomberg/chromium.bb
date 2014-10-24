@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
 
-#include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal_dialogs/native_app_modal_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/text_elider.h"
 

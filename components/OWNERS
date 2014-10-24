@@ -3,6 +3,8 @@ caitkp@chromium.org
 erikwright@chromium.org
 jochen@chromium.org
 
+per-file app_modal_dialog*=avi@chromium.org
+
 # Can not match autofill* due to crbug.com/397984
 per-file autofill.gypi=estade@chromium.org
 per-file autofill.gypi=isherman@chromium.org

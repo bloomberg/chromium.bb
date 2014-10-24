@@ -9,8 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "components/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/javascript_message_type.h"

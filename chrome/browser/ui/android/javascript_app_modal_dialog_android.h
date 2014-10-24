@@ -8,7 +8,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal_dialogs/native_app_modal_dialog.h"
 
 class JavaScriptAppModalDialog;
 

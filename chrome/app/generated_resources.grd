@@ -7176,23 +7176,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         About Voice Search
       </message>
 
-      <!-- JavaScript Dialog Box strings -->
-      <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for JavaScript alert originating from a webpage if there is no hostname to display">
-        JavaScript Alert
-      </message>
-      <message name="IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage if there is no hostname to display">
-        JavaScript
-      </message>
-      <message name="IDS_JAVASCRIPT_ALERT_TITLE" desc="Title for JavaScript alert originating from a webpage">
-        The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
-      </message>
-      <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage">
-        The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
-      </message>
-      <message name="IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION" desc="Optional UI shown on the message box, in the form of a checkbox, allowing the user to suppress additional message boxes from the page.">
-        Prevent this page from creating additional dialogs.
-      </message>
-
       <!-- About box strings -->
       <if expr="is_win">
         <message name="IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK" desc="The error label for errors that occurred while checking for updates in the About box.">
@@ -7202,34 +7185,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Update check failed to start (error code <ph name="ERROR">$1<ex>0x80000005</ex></ph>).
         </message>
       </if>
-
-      <!-- "Before Unload" Dialog Box strings -->
-      <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
-        Confirm Navigation
-      </message>
-      <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER" desc="Text shown at the bottom of the dialog, after the message provided by the script.">
-        Are you sure you want to leave this page?
-      </message>
-      <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which navigates the user away from the page.">
-        Leave this Page
-      </message>
-      <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL" desc="The text on the button which cancels the navigation away from the page.">
-        Stay on this Page
-      </message>
-
-      <!-- "Before Reload" Dialog Box strings (same as "Before Unload" but when reloading rather than unloading the page -->
-      <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before reload' dialog.">
-        Confirm Reload
-      </message>
-      <message name="IDS_BEFORERELOAD_MESSAGEBOX_FOOTER" desc="Text shown at the bottom of the dialog, after the message provided by the script.">
-        Are you sure you want to reload this page?
-      </message>
-      <message name="IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which reloads the page.">
-        Reload this Page
-      </message>
-      <message name="IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL" desc="The text on the button which cancels the page reload.">
-        Don't Reload
-      </message>
 
       <!-- Omnibox -->
       <if expr="not use_titlecase">

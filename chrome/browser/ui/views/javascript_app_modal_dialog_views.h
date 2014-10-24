@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal_dialogs/native_app_modal_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class JavaScriptAppModalDialog;

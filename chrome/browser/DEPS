@@ -10,6 +10,7 @@ include_rules = [
   "+chrome_elf/create_file",
   "+chrome_elf/dll_hash",
   "+chromeos",
+  "+components/app_modal_dialogs",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",
   "+components/autofill/core/browser",

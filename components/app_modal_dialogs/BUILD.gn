@@ -1,0 +1,28 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+static_library("app_modal_dialogs") {
+  sources = [
+    "app_modal_dialog.cc",
+    "app_modal_dialog.h",
+    "app_modal_dialog_test_util.h",
+    "app_modal_dialog_queue.cc",
+    "app_modal_dialog_queue.h",
+    "javascript_app_modal_dialog.cc",
+    "javascript_app_modal_dialog.h",
+    "native_app_modal_dialog.h"
+  ]
+
+  deps = [
+    "//components/strings",
+    "//content/public/browser",
+    "//skia",
+  ]
+
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
+  }
+}

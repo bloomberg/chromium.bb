@@ -62,6 +62,7 @@
   'conditions': [
     ['OS != "ios"', {
       'includes': [
+        'app_modal_dialogs.gypi',
         'cdm.gypi',
         'copresence_sockets.gypi',
         'navigation_interception.gypi',

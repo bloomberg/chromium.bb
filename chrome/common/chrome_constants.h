@@ -109,11 +109,6 @@ extern const wchar_t kUserDataDirname[];
 
 extern const bool kRecordModeEnabled;
 
-// If a WebContents is impolite and displays a second JavaScript alert within
-// kJavaScriptMessageExpectedDelay of a previous JavaScript alert being
-// dismissed, display an option to suppress future alerts from this WebContents.
-extern const int kJavaScriptMessageExpectedDelay;
-
 // Are touch icons enabled? False by default.
 extern const bool kEnableTouchIcon;
 

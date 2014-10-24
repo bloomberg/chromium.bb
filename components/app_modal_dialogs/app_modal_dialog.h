@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
-#define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
+#ifndef COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
+#define COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
 
 #include <string>
 
@@ -89,4 +89,17 @@ class AppModalDialog {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialog);
 };
 
-#endif  // CHROME_BROWSER_UI_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_
+// An interface to observe that a modal dialog is shown.
+class AppModalDialogObserver {
+ public:
+  AppModalDialogObserver();
+  virtual ~AppModalDialogObserver();
+
+  // Called when the modal dialog is shown.
+  virtual void Notify(AppModalDialog* dialog) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppModalDialogObserver);
+};
+
+#endif  // COMPONENTS_APP_MODAL_DIALOGS_APP_MODAL_DIALOG_H_

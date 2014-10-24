@@ -2,17 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal_dialogs/app_modal_dialog.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "content/public/browser/notification_service.h"
+#include "base/run_loop.h"
+#include "components/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "components/app_modal_dialogs/native_app_modal_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::WebContents;
+
+namespace {
+
+AppModalDialogObserver* app_modal_dialog_observer = NULL;
+
+}  // namespace
+
+AppModalDialogObserver::AppModalDialogObserver() {
+  DCHECK(!app_modal_dialog_observer);
+  app_modal_dialog_observer = this;
+}
+
+AppModalDialogObserver::~AppModalDialogObserver() {
+  DCHECK(app_modal_dialog_observer);
+  app_modal_dialog_observer = NULL;
+}
 
 AppModalDialog::AppModalDialog(WebContents* web_contents,
                                const base::string16& title)
@@ -30,11 +45,8 @@ AppModalDialog::~AppModalDialog() {
 void AppModalDialog::ShowModalDialog() {
   web_contents_->GetDelegate()->ActivateContents(web_contents_);
   CreateAndShowDialog();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-      content::Source<AppModalDialog>(this),
-      content::NotificationService::NoDetails());
+  if (app_modal_dialog_observer)
+    app_modal_dialog_observer->Notify(this);
 }
 
 void AppModalDialog::CreateAndShowDialog() {

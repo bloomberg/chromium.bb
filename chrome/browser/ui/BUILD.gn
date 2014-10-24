@@ -46,6 +46,7 @@ static_library("ui") {
     "//chrome/browser/net:cert_logger_proto",
     "//chrome/common",
     "//chrome/common/net",
+    "//components/app_modal_dialogs",
     "//components/auto_login_parser",
     "//components/dom_distiller/webui",
     "//components/feedback/proto",

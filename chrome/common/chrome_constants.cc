@@ -214,8 +214,6 @@ const wchar_t kUserDataDirname[] = L"User Data";
 
 const bool kRecordModeEnabled = true;
 
-const int kJavaScriptMessageExpectedDelay = 1000;
-
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const bool kEnableTouchIcon = true;
 #else

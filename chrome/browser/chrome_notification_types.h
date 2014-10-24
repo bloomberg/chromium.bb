@@ -124,12 +124,6 @@ enum NotificationType {
   // handler.  Use APP_TERMINATING for such needs.
   NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
 
-  // Application-modal dialogs -----------------------------------------------
-
-  // Sent after an application-modal dialog has been shown. The source
-  // is the dialog.
-  NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-
   // This message is sent when a new InfoBar has been added to an
   // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
   // the InfoBarService the InfoBar was added to.  The details is a

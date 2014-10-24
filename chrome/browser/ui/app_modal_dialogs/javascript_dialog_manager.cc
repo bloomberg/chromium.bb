@@ -9,16 +9,14 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
-#include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "components/app_modal_dialogs/native_app_modal_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/javascript_message_type.h"
+#include "grit/components_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -171,11 +169,14 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
   base::TimeDelta time_since_last_message = base::TimeTicks::Now() -
       extra_data->last_javascript_message_dismissal_;
   bool display_suppress_checkbox = false;
-  // Show a checkbox offering to suppress further messages if this message is
-  // being displayed within kJavaScriptMessageExpectedDelay of the last one.
+  // If a WebContents is impolite and displays a second JavaScript
+  // alert within kJavaScriptMessageExpectedDelay of a previous
+  // JavaScript alert being dismissed, show a checkbox offering to
+  // suppress future alerts from this WebContents.
+  const int kJavaScriptMessageExpectedDelay = 1000;
+
   if (time_since_last_message <
-      base::TimeDelta::FromMilliseconds(
-          chrome::kJavaScriptMessageExpectedDelay)) {
+      base::TimeDelta::FromMilliseconds(kJavaScriptMessageExpectedDelay)) {
     display_suppress_checkbox = true;
   } else {
     display_suppress_checkbox = false;

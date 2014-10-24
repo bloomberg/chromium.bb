@@ -30,8 +30,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -48,6 +46,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/find_in_page_observer.h"
+#include "components/app_modal_dialogs/app_modal_dialog.h"
+#include "components/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/dom_operation_notification_details.h"
@@ -106,6 +106,38 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   }
   return new_browser;
 }
+
+class AppModalDialogWaiter : public AppModalDialogObserver {
+ public:
+  AppModalDialogWaiter()
+      : dialog_(NULL) {
+  }
+  ~AppModalDialogWaiter() override {
+  }
+
+  AppModalDialog* Wait() {
+    if (dialog_)
+      return dialog_;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    EXPECT_TRUE(dialog_);
+    return dialog_;
+  }
+
+  // AppModalDialogWaiter:
+  virtual void Notify(AppModalDialog* dialog) override {
+    DCHECK(!dialog_);
+    dialog_ = dialog;
+    if (message_loop_runner_.get() && message_loop_runner_->loop_running())
+      message_loop_runner_->Quit();
+  }
+
+ private:
+  AppModalDialog* dialog_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
+};
 
 }  // namespace
 
@@ -296,12 +328,8 @@ AppModalDialog* WaitForAppModalDialog() {
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
   if (dialog_queue->HasActiveDialog())
     return dialog_queue->active_dialog();
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-      content::NotificationService::AllSources());
-  observer.Wait();
-  return content::Source<AppModalDialog>(observer.source()).ptr();
+  AppModalDialogWaiter waiter;
+  return waiter.Wait();
 }
 
 int FindInPage(WebContents* tab,
