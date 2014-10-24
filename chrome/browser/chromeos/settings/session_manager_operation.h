@@ -189,7 +189,8 @@ class SignAndStoreSettingsOperation : public SessionManagerOperation {
   void StartSigning(bool has_private_key);
 
   // Stores the signed device settings blob.
-  void StoreDeviceSettingsBlob(std::string device_settings_blob);
+  void StoreDeviceSettings(
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response);
 
   // Handles the result of the store operation and triggers the load.
   void HandleStoreResult(bool success);

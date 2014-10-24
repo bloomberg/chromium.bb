@@ -185,11 +185,11 @@ class DeviceSettingsTestBase : public testing::Test {
   // tested classes depend on implicitly.
   FakeUserManager* user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
   // Local DeviceSettingsService instance for tests. Avoid using in combination
   // with the global instance (DeviceSettingsService::Get()).
   DeviceSettingsService device_settings_service_;
+  scoped_ptr<TestingProfile> profile_;
 
   scoped_ptr<DBusThreadManagerSetter> dbus_setter_;
 

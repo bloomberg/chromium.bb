@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_paths.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -14,6 +15,19 @@
 #include "components/ownership/owner_key_util_impl.h"
 
 namespace chromeos {
+
+namespace {
+
+DeviceSettingsService* g_device_settings_service_for_testing_ = nullptr;
+
+DeviceSettingsService* GetDeviceSettingsService() {
+  if (g_device_settings_service_for_testing_)
+    return g_device_settings_service_for_testing_;
+  return DeviceSettingsService::IsInitialized() ? DeviceSettingsService::Get()
+                                                : nullptr;
+}
+
+}  // namespace
 
 OwnerSettingsServiceChromeOSFactory::OwnerSettingsServiceChromeOSFactory()
     : BrowserContextKeyedServiceFactory(
@@ -35,6 +49,12 @@ OwnerSettingsServiceChromeOSFactory::GetForProfile(Profile* profile) {
 OwnerSettingsServiceChromeOSFactory*
 OwnerSettingsServiceChromeOSFactory::GetInstance() {
   return Singleton<OwnerSettingsServiceChromeOSFactory>::get();
+}
+
+// static
+void OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
+    DeviceSettingsService* device_settings_service) {
+  g_device_settings_service_for_testing_ = device_settings_service;
 }
 
 scoped_refptr<ownership::OwnerKeyUtil>
@@ -59,8 +79,10 @@ KeyedService* OwnerSettingsServiceChromeOSFactory::BuildInstanceFor(
   Profile* profile = static_cast<Profile*>(browser_context);
   if (profile->IsGuestSession() || ProfileHelper::IsSigninProfile(profile))
     return NULL;
-  return new OwnerSettingsServiceChromeOS(profile,
-                                          GetInstance()->GetOwnerKeyUtil());
+  return new OwnerSettingsServiceChromeOS(
+      GetDeviceSettingsService(),
+      profile,
+      GetInstance()->GetOwnerKeyUtil());
 }
 
 bool OwnerSettingsServiceChromeOSFactory::ServiceIsCreatedWithBrowserContext()

@@ -20,6 +20,7 @@ class OwnerKeyUtil;
 
 namespace chromeos {
 
+class DeviceSettingsService;
 class OwnerSettingsServiceChromeOS;
 
 class OwnerSettingsServiceChromeOSFactory
@@ -28,6 +29,9 @@ class OwnerSettingsServiceChromeOSFactory
   static OwnerSettingsServiceChromeOS* GetForProfile(Profile* profile);
 
   static OwnerSettingsServiceChromeOSFactory* GetInstance();
+
+  static void SetDeviceSettingsServiceForTesting(
+      DeviceSettingsService* device_settings_service);
 
   scoped_refptr<ownership::OwnerKeyUtil> GetOwnerKeyUtil();
 
