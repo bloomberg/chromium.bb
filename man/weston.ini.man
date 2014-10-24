@@ -107,7 +107,6 @@ directory are:
 .fi
 .RE
 .TP 7
-.TP 7
 .BI "modules=" xwayland.so,cms-colord.so
 specifies the modules to load (string). Available modules in the
 .IR "__weston_modules_dir__"
@@ -120,7 +119,6 @@ directory are:
 .BR screen-share.so
 .fi
 .RE
-.TP 7
 .TP 7
 .BI "backend=" headless-backend.so
 overrides defaults backend. Available backend modules in the
@@ -138,6 +136,7 @@ directory are:
 .BR x11-backend.so
 .fi
 .RE
+.TP 7
 .BI "gbm-format="format
 sets the GBM format used for the framebuffer for the GBM backend. Can be
 .B xrgb8888,
