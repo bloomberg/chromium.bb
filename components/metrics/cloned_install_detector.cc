@@ -4,6 +4,8 @@
 
 #include "components/metrics/cloned_install_detector.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -11,7 +13,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
-#include "components/metrics/cloned_install_detector.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -21,7 +22,7 @@ namespace metrics {
 namespace {
 
 uint32 HashRawId(const std::string& value) {
-  uint64 hash = metrics::HashMetricName(value);
+  uint64 hash = HashMetricName(value);
 
   // Only use 24 bits from the 64-bit hash.
   return hash & ((1 << 24) - 1);
@@ -57,8 +58,8 @@ void ClonedInstallDetector::CheckForClonedInstall(
   base::PostTaskAndReplyWithResult(
       task_runner.get(),
       FROM_HERE,
-      base::Bind(&metrics::MachineIdProvider::GetMachineId, raw_id_provider_),
-      base::Bind(&metrics::ClonedInstallDetector::SaveMachineId,
+      base::Bind(&MachineIdProvider::GetMachineId, raw_id_provider_),
+      base::Bind(&ClonedInstallDetector::SaveMachineId,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_state));
 }

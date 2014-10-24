@@ -19,8 +19,7 @@ namespace metrics {
 CleanExitBeacon::CleanExitBeacon(const base::string16& backup_registry_key,
                                  PrefService* local_state)
     : local_state_(local_state),
-      initial_value_(
-          local_state->GetBoolean(metrics::prefs::kStabilityExitedCleanly)),
+      initial_value_(local_state->GetBoolean(prefs::kStabilityExitedCleanly)),
       backup_registry_key_(backup_registry_key) {
   DCHECK_NE(PrefService::INITIALIZATION_STATUS_WAITING,
             local_state_->GetInitializationStatus());
@@ -44,8 +43,8 @@ CleanExitBeacon::CleanExitBeacon(const base::string16& backup_registry_key,
                   backup_registry_key_.c_str(),
                   KEY_ALL_ACCESS) == ERROR_SUCCESS &&
       regkey.ReadValueDW(
-          base::ASCIIToUTF16(metrics::prefs::kStabilityExitedCleanly).c_str(),
-          &value) == ERROR_SUCCESS) {
+          base::ASCIIToUTF16(prefs::kStabilityExitedCleanly).c_str(), &value) ==
+          ERROR_SUCCESS) {
     if (value)
       consistency = initial_value_ ? CLEAN_CLEAN : CLEAN_DIRTY;
     else
@@ -63,7 +62,7 @@ CleanExitBeacon::~CleanExitBeacon() {
 }
 
 void CleanExitBeacon::WriteBeaconValue(bool value) {
-  local_state_->SetBoolean(metrics::prefs::kStabilityExitedCleanly, value);
+  local_state_->SetBoolean(prefs::kStabilityExitedCleanly, value);
 
 #if defined(OS_WIN)
   base::win::RegKey regkey;
@@ -71,7 +70,7 @@ void CleanExitBeacon::WriteBeaconValue(bool value) {
                     backup_registry_key_.c_str(),
                     KEY_ALL_ACCESS) == ERROR_SUCCESS) {
     regkey.WriteValue(
-        base::ASCIIToUTF16(metrics::prefs::kStabilityExitedCleanly).c_str(),
+        base::ASCIIToUTF16(prefs::kStabilityExitedCleanly).c_str(),
         value ? 1u : 0u);
   }
 #endif

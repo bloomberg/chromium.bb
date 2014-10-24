@@ -160,7 +160,7 @@ CastMetricsServiceClient::CastMetricsServiceClient(
           new ::metrics::GPUMetricsProvider));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(
-          new NetworkMetricsProvider(io_task_runner)));
+          new ::metrics::NetworkMetricsProvider(io_task_runner)));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(
           new ::metrics::ProfilerMetricsProvider));

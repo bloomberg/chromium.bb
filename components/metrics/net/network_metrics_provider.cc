@@ -15,9 +15,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/metrics/net/wifi_access_point_info_provider_chromeos.h"
-#endif // OS_CHROMEOS
+#endif  // OS_CHROMEOS
 
-using metrics::SystemProfileProto;
+namespace metrics {
 
 NetworkMetricsProvider::NetworkMetricsProvider(
     base::TaskRunner* io_task_runner)
@@ -62,7 +62,7 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
 #else
     wifi_access_point_info_provider_.reset(
         new WifiAccessPointInfoProvider());
-#endif // OS_CHROMEOS
+#endif  // OS_CHROMEOS
   }
 
   // Connected wifi access point information.
@@ -226,3 +226,5 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
       NOTREACHED();
   }
 }
+
+}  // namespace metrics

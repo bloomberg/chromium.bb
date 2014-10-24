@@ -8,6 +8,8 @@
 #include <string>
 #include "base/basictypes.h"
 
+namespace metrics {
+
 // Interface for accessing connected wireless access point information.
 class WifiAccessPointInfoProvider {
  public:
@@ -45,5 +47,7 @@ class WifiAccessPointInfoProvider {
  private:
   DISALLOW_COPY_AND_ASSIGN(WifiAccessPointInfoProvider);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_H_

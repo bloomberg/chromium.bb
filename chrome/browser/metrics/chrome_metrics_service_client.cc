@@ -294,7 +294,7 @@ void ChromeMetricsServiceClient::Initialize() {
           new ExtensionsMetricsProvider(metrics_state_manager_)));
 #endif
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new NetworkMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(new metrics::NetworkMetricsProvider(
           content::BrowserThread::GetBlockingPool())));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));

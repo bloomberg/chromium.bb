@@ -16,6 +16,8 @@
 using base::TimeTicks;
 using content::BrowserThread;
 
+namespace metrics {
+
 namespace {
 
 // Negative numbers are never used as sequence numbers.  We explicitly pick a
@@ -30,12 +32,9 @@ const int kNeverUsableSequenceNumber = -2;
 // calls. This object is created on the UI thread, and it is destroyed after
 // all the other threads have gone away. As a result, it is ok to call it
 // from the UI thread, or for about:profiler.
-static metrics::TrackingSynchronizer* g_tracking_synchronizer =
-    NULL;
+static TrackingSynchronizer* g_tracking_synchronizer = NULL;
 
-}  // anonymous namespace
-
-namespace metrics {
+}  // namespace
 
 // The "RequestContext" structure describes an individual request received
 // from the UI. All methods are accessible on UI thread.

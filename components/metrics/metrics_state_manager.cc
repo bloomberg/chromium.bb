@@ -231,7 +231,7 @@ void MetricsStateManager::BackUpCurrentClientInfo() {
 }
 
 scoped_ptr<ClientInfo> MetricsStateManager::LoadClientInfoAndMaybeMigrate() {
-  scoped_ptr<metrics::ClientInfo> client_info = load_client_info_.Run();
+  scoped_ptr<ClientInfo> client_info = load_client_info_.Run();
 
   // Prior to 2014-07, the client ID was stripped of its dashes before being
   // saved. Migrate back to a proper GUID if this is the case. This migration

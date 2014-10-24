@@ -31,7 +31,7 @@ scoped_ptr<ClientInfo> ReturnNoBackup() {
   return scoped_ptr<ClientInfo>();
 }
 
-class TestMetricsProvider : public metrics::MetricsProvider {
+class TestMetricsProvider : public MetricsProvider {
  public:
   explicit TestMetricsProvider(bool has_stability_metrics) :
       has_stability_metrics_(has_stability_metrics),
@@ -164,8 +164,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
       GetMetricsStateManager(), &client, GetLocalState());
 
   TestMetricsProvider* test_provider = new TestMetricsProvider(false);
-  service.RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(test_provider));
+  service.RegisterMetricsProvider(scoped_ptr<MetricsProvider>(test_provider));
 
   service.InitializeMetricsRecordingState();
   // No initial stability log should be generated.
@@ -184,7 +183,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   // saved from a previous session.
   TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client, GetLocalState());
-  log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
+  log.RecordEnvironment(std::vector<MetricsProvider*>(),
                         std::vector<variations::ActiveGroupId>(),
                         0);
 
@@ -278,10 +277,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(log_manager->has_staged_log());
 
   std::string uncompressed_log;
-  EXPECT_TRUE(metrics::GzipUncompress(log_manager->staged_log(),
-                                      &uncompressed_log));
+  EXPECT_TRUE(GzipUncompress(log_manager->staged_log(), &uncompressed_log));
 
-  metrics::ChromeUserMetricsExtension uma_log;
+  ChromeUserMetricsExtension uma_log;
   EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
 
   EXPECT_TRUE(uma_log.has_client_id());
@@ -297,16 +295,14 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 }
 
 TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
-  metrics::TestMetricsServiceClient client;
+  TestMetricsServiceClient client;
   MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
 
   // Add two synthetic trials and confirm that they show up in the list.
-  SyntheticTrialGroup trial1(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group1"));
+  SyntheticTrialGroup trial1(HashName("TestTrial1"), HashName("Group1"));
   service.RegisterSyntheticFieldTrial(trial1);
 
-  SyntheticTrialGroup trial2(metrics::HashName("TestTrial2"),
-                             metrics::HashName("Group2"));
+  SyntheticTrialGroup trial2(HashName("TestTrial2"), HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial2);
   // Ensure that time has advanced by at least a tick before proceeding.
   WaitUntilTimeChanges(base::TimeTicks::Now());
@@ -332,16 +328,14 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   WaitUntilTimeChanges(begin_log_time);
 
   // Change the group for the first trial after the log started.
-  SyntheticTrialGroup trial3(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group2"));
+  SyntheticTrialGroup trial3(HashName("TestTrial1"), HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial3);
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
 
   // Add a new trial after the log started and confirm that it doesn't show up.
-  SyntheticTrialGroup trial4(metrics::HashName("TestTrial3"),
-                             metrics::HashName("Group3"));
+  SyntheticTrialGroup trial4(HashName("TestTrial3"), HashName("Group3"));
   service.RegisterSyntheticFieldTrial(trial4);
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());

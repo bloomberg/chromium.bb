@@ -262,7 +262,7 @@ bool NewInitialMetricsTimingEnabled() {
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
   clean_exit_beacon->WriteBeaconValue(true);
-  local_state->SetInteger(metrics::prefs::kStabilityExecutionPhase,
+  local_state->SetInteger(prefs::kStabilityExecutionPhase,
                           MetricsService::SHUTDOWN_COMPLETE);
   // Start writing right away (write happens on a different thread).
   local_state->CommitPendingWrite();
@@ -289,32 +289,30 @@ MetricsService::ExecutionPhase MetricsService::execution_phase_ =
 // static
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
-  metrics::MetricsStateManager::RegisterPrefs(registry);
+  MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
 
-  registry->RegisterInt64Pref(metrics::prefs::kInstallDate, 0);
+  registry->RegisterInt64Pref(prefs::kInstallDate, 0);
 
-  registry->RegisterInt64Pref(metrics::prefs::kStabilityLaunchTimeSec, 0);
-  registry->RegisterInt64Pref(metrics::prefs::kStabilityLastTimestampSec, 0);
-  registry->RegisterStringPref(metrics::prefs::kStabilityStatsVersion,
-                               std::string());
-  registry->RegisterInt64Pref(metrics::prefs::kStabilityStatsBuildTime, 0);
-  registry->RegisterBooleanPref(metrics::prefs::kStabilityExitedCleanly, true);
-  registry->RegisterIntegerPref(metrics::prefs::kStabilityExecutionPhase,
+  registry->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
+  registry->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
+  registry->RegisterStringPref(prefs::kStabilityStatsVersion, std::string());
+  registry->RegisterInt64Pref(prefs::kStabilityStatsBuildTime, 0);
+  registry->RegisterBooleanPref(prefs::kStabilityExitedCleanly, true);
+  registry->RegisterIntegerPref(prefs::kStabilityExecutionPhase,
                                 UNINITIALIZED_PHASE);
-  registry->RegisterBooleanPref(metrics::prefs::kStabilitySessionEndCompleted,
-                                true);
-  registry->RegisterIntegerPref(metrics::prefs::kMetricsSessionID, -1);
+  registry->RegisterBooleanPref(prefs::kStabilitySessionEndCompleted, true);
+  registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
 
-  registry->RegisterListPref(metrics::prefs::kMetricsInitialLogs);
-  registry->RegisterListPref(metrics::prefs::kMetricsOngoingLogs);
+  registry->RegisterListPref(prefs::kMetricsInitialLogs);
+  registry->RegisterListPref(prefs::kMetricsOngoingLogs);
 
-  registry->RegisterInt64Pref(metrics::prefs::kUninstallLaunchCount, 0);
-  registry->RegisterInt64Pref(metrics::prefs::kUninstallMetricsUptimeSec, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
+  registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
 }
 
-MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
-                               metrics::MetricsServiceClient* client,
+MetricsService::MetricsService(MetricsStateManager* state_manager,
+                               MetricsServiceClient* client,
                                PrefService* local_state)
     : log_manager_(local_state, kUploadLogAvoidRetransmitSize),
       histogram_snapshot_manager_(this),
@@ -338,11 +336,9 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
   DCHECK(local_state_);
 
   // Set the install date if this is our first run.
-  int64 install_date = local_state_->GetInt64(metrics::prefs::kInstallDate);
-  if (install_date == 0) {
-    local_state_->SetInt64(metrics::prefs::kInstallDate,
-                           base::Time::Now().ToTimeT());
-  }
+  int64 install_date = local_state_->GetInt64(prefs::kInstallDate);
+  if (install_date == 0)
+    local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
 }
 
 MetricsService::~MetricsService() {
@@ -398,7 +394,7 @@ std::string MetricsService::GetClientId() {
 }
 
 int64 MetricsService::GetInstallDate() {
-  return local_state_->GetInt64(metrics::prefs::kInstallDate);
+  return local_state_->GetInt64(prefs::kInstallDate);
 }
 
 scoped_ptr<const base::FieldTrial::EntropyProvider>
@@ -493,12 +489,12 @@ void MetricsService::OnApplicationNotIdle() {
 
 void MetricsService::RecordStartOfSessionEnd() {
   LogCleanShutdown();
-  RecordBooleanPrefValue(metrics::prefs::kStabilitySessionEndCompleted, false);
+  RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, false);
 }
 
 void MetricsService::RecordCompletedSessionEnd() {
   LogCleanShutdown();
-  RecordBooleanPrefValue(metrics::prefs::kStabilitySessionEndCompleted, true);
+  RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, true);
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -536,22 +532,21 @@ void MetricsService::LogNeedForCleanShutdown() {
 void MetricsService::SetExecutionPhase(ExecutionPhase execution_phase,
                                        PrefService* local_state) {
   execution_phase_ = execution_phase;
-  local_state->SetInteger(metrics::prefs::kStabilityExecutionPhase,
-                          execution_phase_);
+  local_state->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
 }
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
   if (!success)
-    IncrementPrefValue(metrics::prefs::kStabilityBreakpadRegistrationFail);
+    IncrementPrefValue(prefs::kStabilityBreakpadRegistrationFail);
   else
-    IncrementPrefValue(metrics::prefs::kStabilityBreakpadRegistrationSuccess);
+    IncrementPrefValue(prefs::kStabilityBreakpadRegistrationSuccess);
 }
 
 void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
   if (!has_debugger)
-    IncrementPrefValue(metrics::prefs::kStabilityDebuggerNotPresent);
+    IncrementPrefValue(prefs::kStabilityDebuggerNotPresent);
   else
-    IncrementPrefValue(metrics::prefs::kStabilityDebuggerPresent);
+    IncrementPrefValue(prefs::kStabilityDebuggerPresent);
 }
 
 //------------------------------------------------------------------------------
@@ -568,17 +563,17 @@ void MetricsService::InitializeMetricsState() {
   bool version_changed = false;
   if (local_state_->GetInt64(prefs::kStabilityStatsBuildTime) != buildtime ||
       local_state_->GetString(prefs::kStabilityStatsVersion) != version) {
-    local_state_->SetString(metrics::prefs::kStabilityStatsVersion, version);
-    local_state_->SetInt64(metrics::prefs::kStabilityStatsBuildTime, buildtime);
+    local_state_->SetString(prefs::kStabilityStatsVersion, version);
+    local_state_->SetInt64(prefs::kStabilityStatsBuildTime, buildtime);
     version_changed = true;
   }
 
   log_manager_.LoadPersistedUnsentLogs();
 
-  session_id_ = local_state_->GetInteger(metrics::prefs::kMetricsSessionID);
+  session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
 
   if (!clean_exit_beacon_.exited_cleanly()) {
-    IncrementPrefValue(metrics::prefs::kStabilityCrashCount);
+    IncrementPrefValue(prefs::kStabilityCrashCount);
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     clean_exit_beacon_.WriteBeaconValue(true);
@@ -588,7 +583,7 @@ void MetricsService::InitializeMetricsState() {
     // TODO(rtenneti): On windows, consider saving/getting execution_phase from
     // the registry.
     int execution_phase =
-        local_state_->GetInteger(metrics::prefs::kStabilityExecutionPhase);
+        local_state_->GetInteger(prefs::kStabilityExecutionPhase);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
                                 execution_phase);
 
@@ -620,20 +615,18 @@ void MetricsService::InitializeMetricsState() {
 
   // Update session ID.
   ++session_id_;
-  local_state_->SetInteger(metrics::prefs::kMetricsSessionID, session_id_);
+  local_state_->SetInteger(prefs::kMetricsSessionID, session_id_);
 
   // Stability bookkeeping
-  IncrementPrefValue(metrics::prefs::kStabilityLaunchCount);
+  IncrementPrefValue(prefs::kStabilityLaunchCount);
 
   DCHECK_EQ(UNINITIALIZED_PHASE, execution_phase_);
   SetExecutionPhase(START_METRICS_RECORDING, local_state_);
 
-  if (!local_state_->GetBoolean(
-          metrics::prefs::kStabilitySessionEndCompleted)) {
-    IncrementPrefValue(metrics::prefs::kStabilityIncompleteSessionEndCount);
+  if (!local_state_->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
+    IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);
     // This is marked false when we get a WM_ENDSESSION.
-    local_state_->SetBoolean(metrics::prefs::kStabilitySessionEndCompleted,
-                             true);
+    local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
   }
 
   // Call GetUptimes() for the first time, thus allowing all later calls
@@ -643,13 +636,13 @@ void MetricsService::InitializeMetricsState() {
   GetUptimes(local_state_, &startup_uptime, &ignored_uptime_parameter);
   DCHECK_EQ(0, startup_uptime.InMicroseconds());
   // For backwards compatibility, leave this intact in case Omaha is checking
-  // them.  metrics::prefs::kStabilityLastTimestampSec may also be useless now.
+  // them.  prefs::kStabilityLastTimestampSec may also be useless now.
   // TODO(jar): Delete these if they have no uses.
-  local_state_->SetInt64(metrics::prefs::kStabilityLaunchTimeSec,
+  local_state_->SetInt64(prefs::kStabilityLaunchTimeSec,
                          base::Time::Now().ToTimeT());
 
   // Bookkeeping for the uninstall metrics.
-  IncrementLongPrefsValue(metrics::prefs::kUninstallLaunchCount);
+  IncrementLongPrefsValue(prefs::kUninstallLaunchCount);
 
   // Kick off the process of saving the state (so the uptime numbers keep
   // getting updated) every n minutes.
@@ -693,10 +686,9 @@ void MetricsService::GetUptimes(PrefService* pref,
 
   const int64 incremental_time_secs = incremental_uptime->InSeconds();
   if (incremental_time_secs > 0) {
-    int64 metrics_uptime =
-        pref->GetInt64(metrics::prefs::kUninstallMetricsUptimeSec);
+    int64 metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
     metrics_uptime += incremental_time_secs;
-    pref->SetInt64(metrics::prefs::kUninstallMetricsUptimeSec, metrics_uptime);
+    pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
   }
 }
 
@@ -1164,7 +1156,7 @@ void MetricsService::RegisterSyntheticFieldTrial(
 }
 
 void MetricsService::RegisterMetricsProvider(
-    scoped_ptr<metrics::MetricsProvider> provider) {
+    scoped_ptr<MetricsProvider> provider) {
   DCHECK_EQ(INITIALIZED, state_);
   metrics_providers_.push_back(provider.release());
 }
@@ -1224,7 +1216,7 @@ void MetricsService::LogCleanShutdown() {
 
   clean_exit_beacon_.WriteBeaconValue(true);
   RecordCurrentState(local_state_);
-  local_state_->SetInteger(metrics::prefs::kStabilityExecutionPhase,
+  local_state_->SetInteger(prefs::kStabilityExecutionPhase,
                            MetricsService::SHUTDOWN_COMPLETE);
 }
 
@@ -1242,7 +1234,7 @@ void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
 }
 
 void MetricsService::RecordCurrentState(PrefService* pref) {
-  pref->SetInt64(metrics::prefs::kStabilityLastTimestampSec,
+  pref->SetInt64(prefs::kStabilityLastTimestampSec,
                  base::Time::Now().ToTimeT());
 }
 

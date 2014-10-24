@@ -38,8 +38,7 @@ class DailyEventTest : public testing::Test {
   DailyEventTest() : event_(&prefs_, kTestPrefName, kTestMetricName) {
     DailyEvent::RegisterPref(prefs_.registry(), kTestPrefName);
     observer_ = new TestDailyObserver();
-    scoped_ptr<metrics::DailyEvent::Observer> p(observer_);
-    event_.AddObserver(p.Pass());
+    event_.AddObserver(make_scoped_ptr(observer_));
   }
 
  protected:

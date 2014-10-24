@@ -56,7 +56,7 @@ bool ReadMessage(int fd, std::string* message) {
 
   // kMessageMaxLength applies to the entire message: the 4-byte
   // length field and the content.
-  if (message_size > metrics::SerializationUtils::kMessageMaxLength) {
+  if (message_size > SerializationUtils::kMessageMaxLength) {
     DLOG(ERROR) << "message too long : " << message_size;
     if (HANDLE_EINTR(lseek(fd, message_size - 4, SEEK_CUR)) == -1) {
       DLOG(ERROR) << "error while skipping message. abort";
@@ -69,7 +69,7 @@ bool ReadMessage(int fd, std::string* message) {
   }
 
   message_size -= sizeof(message_size);  // The message size includes itself.
-  char buffer[metrics::SerializationUtils::kMessageMaxLength];
+  char buffer[SerializationUtils::kMessageMaxLength];
   if (!base::ReadFromFD(fd, buffer, message_size)) {
     DPLOG(ERROR) << "reading metrics message body";
     return false;

@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_
 #define COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/metrics/net/wifi_access_point_info_provider.h"
+
+namespace metrics {
 
 // WifiAccessPointInfoProviderChromeos provides the connected wifi
 // acccess point information for chromeos.
@@ -21,11 +25,11 @@ class WifiAccessPointInfoProviderChromeos
   WifiAccessPointInfoProviderChromeos();
   virtual ~WifiAccessPointInfoProviderChromeos();
 
-  // WifiAccessPointInfoProvider
-  virtual bool GetInfo(WifiAccessPointInfo* info) override;
+  // WifiAccessPointInfoProvider:
+  bool GetInfo(WifiAccessPointInfo* info) override;
 
-  // NetworkStateHandlerObserver overrides.
-  virtual void DefaultNetworkChanged(
+  // NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(
       const chromeos::NetworkState* default_network) override;
 
  private:
@@ -38,5 +42,7 @@ class WifiAccessPointInfoProviderChromeos
 
   DISALLOW_COPY_AND_ASSIGN(WifiAccessPointInfoProviderChromeos);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_CHROMEOS_H_

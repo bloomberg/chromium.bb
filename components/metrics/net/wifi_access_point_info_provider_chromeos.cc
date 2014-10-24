@@ -16,6 +16,8 @@
 
 using chromeos::NetworkHandler;
 
+namespace metrics {
+
 WifiAccessPointInfoProviderChromeos::WifiAccessPointInfoProviderChromeos() {
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 
@@ -116,3 +118,5 @@ void WifiAccessPointInfoProviderChromeos::ParseInfo(
   vendor_dict->GetStringWithoutPathExpansion(shill::kVendorOUIListProperty,
                                              &wifi_access_point_info_.oui_list);
 }
+
+}  // namespace metrics

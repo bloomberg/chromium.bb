@@ -14,10 +14,12 @@
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 
+namespace metrics {
+
 // Registers as observer with net::NetworkChangeNotifier and keeps track of
 // the network environment.
 class NetworkMetricsProvider
-    : public metrics::MetricsProvider,
+    : public MetricsProvider,
       public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Creates a NetworkMetricsProvider, where |io_task_runner| is used to post
@@ -26,19 +28,17 @@ class NetworkMetricsProvider
   ~NetworkMetricsProvider() override;
 
  private:
-  // metrics::MetricsProvider:
+  // MetricsProvider:
   void OnDidCreateMetricsLog() override;
-  void ProvideSystemProfileMetrics(
-      metrics::SystemProfileProto* system_profile) override;
+  void ProvideSystemProfileMetrics(SystemProfileProto* system_profile) override;
 
   // ConnectionTypeObserver:
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
-  metrics::SystemProfileProto::Network::ConnectionType
-  GetConnectionType() const;
-  metrics::SystemProfileProto::Network::WifiPHYLayerProtocol
-  GetWifiPHYLayerProtocol() const;
+  SystemProfileProto::Network::ConnectionType GetConnectionType() const;
+  SystemProfileProto::Network::WifiPHYLayerProtocol GetWifiPHYLayerProtocol()
+      const;
 
   // Posts a call to net::GetWifiPHYLayerProtocol on the blocking pool.
   void ProbeWifiPHYLayerProtocol();
@@ -50,7 +50,7 @@ class NetworkMetricsProvider
   // connected to.
   void WriteWifiAccessPointProto(
       const WifiAccessPointInfoProvider::WifiAccessPointInfo& info,
-      metrics::SystemProfileProto::Network* network_proto);
+      SystemProfileProto::Network* network_proto);
 
   // Task runner used for blocking file I/O.
   base::TaskRunner* io_task_runner_;
@@ -73,5 +73,7 @@ class NetworkMetricsProvider
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMetricsProvider);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_NET_NETWORK_METRICS_PROVIDER_H_
