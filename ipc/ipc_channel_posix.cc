@@ -10,11 +10,14 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/un.h>
 #include <unistd.h>
 
 #if defined(OS_OPENBSD)
 #include <sys/uio.h>
+#endif
+
+#if !defined(__native_client_nonsfi__)
+#include <sys/un.h>
 #endif
 
 #include <map>
@@ -255,6 +258,10 @@ bool ChannelPosix::CreatePipe(
     }
 #endif   // IPC_USES_READWRITE
   } else if (mode_ & MODE_NAMED_FLAG) {
+#if defined(__native_client_nonsfi__)
+    LOG(FATAL)
+        << "IPC channels in nacl_helper_nonsfi should not be in NAMED mode.";
+#else
     // Case 2 from comment above.
     int local_pipe_fd = -1;
 
@@ -276,6 +283,7 @@ bool ChannelPosix::CreatePipe(
     }
 
     local_pipe.reset(local_pipe_fd);
+#endif  // !defined(__native_client_nonsfi__)
   } else {
     local_pipe.reset(PipeMap::GetInstance()->Lookup(pipe_name_));
     if (mode_ & MODE_CLIENT_FLAG) {
@@ -336,10 +344,16 @@ bool ChannelPosix::CreatePipe(
   }
 #endif  // IPC_USES_READWRITE
 
-  if ((mode_ & MODE_SERVER_FLAG) && (mode_ & MODE_NAMED_FLAG))
+  if ((mode_ & MODE_SERVER_FLAG) && (mode_ & MODE_NAMED_FLAG)) {
+#if defined(__native_client_nonsfi__)
+    LOG(FATAL) << "IPC channels in nacl_helper_nonsfi "
+               << "should not be in NAMED or SERVER mode.";
+#else
     server_listen_pipe_.reset(local_pipe.release());
-  else
+#endif
+  } else {
     pipe_.reset(local_pipe.release());
+  }
   return true;
 }
 
@@ -351,6 +365,10 @@ bool ChannelPosix::Connect() {
 
   bool did_connect = true;
   if (server_listen_pipe_.is_valid()) {
+#if defined(__native_client_nonsfi__)
+    LOG(FATAL) << "IPC channels in nacl_helper_nonsfi "
+               << "should always be in client mode.";
+#else
     // Watch the pipe for connections, and turn any connections into
     // active sockets.
     base::MessageLoopForIO::current()->WatchFileDescriptor(
@@ -359,6 +377,7 @@ bool ChannelPosix::Connect() {
         base::MessageLoopForIO::WATCH_READ,
         &server_listen_connection_watcher_,
         this);
+#endif
   } else {
     did_connect = AcceptConnection();
   }
@@ -581,10 +600,13 @@ bool ChannelPosix::HasAcceptedConnection() const {
   return AcceptsConnections() && pipe_.is_valid();
 }
 
+#if !defined(__native_client_nonsfi__)
+// GetPeerEuid is not supported in nacl_helper_nonsfi.
 bool ChannelPosix::GetPeerEuid(uid_t* peer_euid) const {
   DCHECK(!(mode_ & MODE_SERVER) || HasAcceptedConnection());
   return IPC::GetPeerEuid(pipe_.get(), peer_euid);
 }
+#endif
 
 void ChannelPosix::ResetToAcceptingConnectionState() {
   // Unregister libevent for the unix domain socket and close it.
@@ -633,6 +655,10 @@ void ChannelPosix::SetGlobalPid(int pid) {
 // Called by libevent when we can read from the pipe without blocking.
 void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   if (fd == server_listen_pipe_.get()) {
+#if defined(__native_client_nonsfi__)
+    LOG(FATAL)
+        << "IPC channels in nacl_helper_nonsfi should not be SERVER mode.";
+#else
     int new_pipe = 0;
     if (!ServerAcceptConnection(server_listen_pipe_.get(), &new_pipe) ||
         new_pipe < 0) {
@@ -671,6 +697,7 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
       NOTREACHED() << "AcceptConnection should not fail on server";
     }
     waiting_connect_ = false;
+#endif
   } else if (fd == pipe_) {
     if (waiting_connect_ && (mode_ & MODE_SERVER_FLAG)) {
       waiting_connect_ = false;
@@ -923,11 +950,15 @@ bool ChannelPosix::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
                         file_descriptors,
                         file_descriptors + num_file_descriptors);
 
+#if !defined(__native_client_nonsfi__)
+      // The PNaCl toolchain for Non-SFI binary build does not support
+      // MSG_CTRUNC.
       // Check this after adding the FDs so we don't leak them.
       if (msg->msg_flags & MSG_CTRUNC) {
         ClearInputFDs();
         return false;
       }
+#endif
 
       return true;
     }
@@ -1032,9 +1063,14 @@ void ChannelPosix::Close() {
   }
 
   if (server_listen_pipe_.is_valid()) {
+#if defined(__native_client_nonsfi__)
+    LOG(FATAL)
+        << "IPC channels in nacl_helper_nonsfi should not be SERVER mode.";
+#else
     server_listen_pipe_.reset();
     // Unregister libevent for the listening socket and close it.
     server_listen_connection_watcher_.StopWatchingFileDescriptor();
+#endif
   }
 
   CloseClientFileDescriptor();

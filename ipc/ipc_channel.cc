@@ -10,14 +10,12 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 
-#if !defined(OS_NACL)
 namespace {
 
 // Global atomic used to guarantee channel IDs are unique.
 base::StaticAtomicSequenceNumber g_last_id;
 
 }  // namespace
-#endif
 
 namespace IPC {
 
@@ -39,4 +37,3 @@ std::string Channel::GenerateUniqueRandomChannelID() {
 }
 
 }  // namespace IPC
-

@@ -13,6 +13,20 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
+          # nacl_helper_nonsfi is similar to nacl_helper (built in nacl.gyp)
+          # but for the NaCl plugin in Non-SFI mode.
+          # This binary is built using the PNaCl toolchain, but it is native
+          # linux binary and will run on Linux directly.
+          # Most library code can be shared with the one for untrusted build
+          # (i.e. the one for irt.nexe built by the NaCl/PNaCl toolchain), but
+          # as nacl_helper_nonsfi runs on Linux, there are some differences,
+          # such as MessageLoopForIO (which is based on libevent in Non-SFI
+          # mode) or ipc_channel implementation.
+          # Because of the toolchain, in both builds, OS_NACL macro (derived
+          # from __native_client__ macro) is defined. Code can test whether
+          # __native_client_nonsfi__ is #defined in order to determine
+          # whether it is being compiled for SFI mode or Non-SFI mode.
+          #
           # Currently, nacl_helper_nonsfi is under development and the binary
           # does nothing (i.e. it has only empty main(), now).
           # TODO(crbug.com/358465): Implement it then switch nacl_helper in
@@ -48,6 +62,7 @@
                   '>(tc_lib_dir_nonsfi_helper32)/libgles2_implementation_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libgles2_utils_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libgpu_ipc_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libipc_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libshared_memory_support_nacl.a',
                 ],
               }],
@@ -55,6 +70,7 @@
           },
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
             '../native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
             '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
             '../native_client/tools.gyp:prep_toolchain',
