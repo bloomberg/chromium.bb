@@ -45,6 +45,11 @@ _RETRIES = 10
 # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
 _SLEEP_TIME = 60
 
+# The length of time (in seconds) that Portage should wait before refetching
+# binpkgs from the same binhost. We don't ever modify binhosts, so this should
+# be something big.
+_BINPKG_TTL = 60 * 60 * 24 * 365
+
 _HOST_PACKAGES_PATH = 'chroot/var/lib/portage/pkgs'
 _CATEGORIES_PATH = 'chroot/etc/portage/categories'
 _PYM_PATH = 'chroot/usr/lib/portage/pym'
@@ -420,6 +425,7 @@ class PrebuiltUploader(object):
       cros_build_lib.Warning('unable to match packages: %r' % unmatched_pkgs)
 
     # Write Packages file.
+    pkg_index.header['TTL'] = _BINPKG_TTL
     tmp_packages_file = pkg_index.WriteToNamedTemporaryFile()
 
     remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
