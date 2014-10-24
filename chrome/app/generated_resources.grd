@@ -2199,20 +2199,8 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="Text displayed before the app or extension's version in the details section of the dialog.">
           Version:
         </message>
-        <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="Heading above the current retained files for the app or extension, which are files the app or extension has permanent access to (the app can read and write to these files).">
-          Files
-        </message>
-        <message name="IDS_APPLICATION_INFO_REVOKE_RETAINED_FILE_PERMISSIONS_BUTTON_TEXT" desc="Text displayed in the button to remove the app or extension's file permissions. After pressing this button, the app or extension no longer has access to the files.">
-          Revoke file access
-        </message>
-        <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="Text for the button that opens the dialog to create shortcuts for the app or extension.">
+        <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="Text for the button that opens the dialog to create shortcuts for the app.">
           Create shortcuts
-        </message>
-        <message name="IDS_APPLICATION_INFO_RETAINED_DEVICE_PERMISSIONS_TEXT" desc="Heading above the current retained devices for the app or extension, which are devices the app or extension has permanent access to.">
-          Devices
-        </message>
-        <message name="IDS_APPLICATION_INFO_REVOKE_DEVICE_PERMISSIONS_BUTTON_TEXT" desc="Text displayed in the button to remove the app or extension's device permissions. After pressing this button, the app or extension no longer has access to the devices.">
-          Revoke device access
         </message>
       </if>
       <if expr="use_titlecase">
@@ -2240,20 +2228,8 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_VERSION_LABEL" desc="In Title Case: Text displayed before the app or extension's version in the details section of the dialog.">
           Version:
         </message>
-        <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current retained files for the app or extension, which are files the app or extension has permanent access to.">
-          Files
-        </message>
-        <message name="IDS_APPLICATION_INFO_REVOKE_RETAINED_FILE_PERMISSIONS_BUTTON_TEXT" desc="In Title Case: Text displayed in the button to remove the app or extension's file permissions. After pressing this button, the app or extension no longer has access to the files.">
-          Revoke File Access
-        </message>
-        <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that opens the dialog to create shortcuts for the app or extension.">
+        <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that opens the dialog to create shortcuts for the app.">
           Create Shortcuts
-        </message>
-        <message name="IDS_APPLICATION_INFO_RETAINED_DEVICES_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current retained devices for tha pp, which are devices the app or extension has permanent access to.">
-          Devices
-        </message>
-        <message name="IDS_APPLICATION_INFO_REVOKE_DEVICE_PERMISSIONS_BUTTON_TEXT" desc="In Title Case: Text displayed in the button to remove the app or extension's device permissions. After pressing this button, the app or extension no longer has access to the devices.">
-          Revoke Device Access
         </message>
       </if>
       <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app or extension's size on disk in the details section of the dialog while the size is being calculated.">
@@ -2268,6 +2244,115 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_APPLICATION_INFO_EXTENSION_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the dialog if the extension has no permissions.">
         This extension requires no special permissions.
       </message>
+
+      <message name="IDS_APPLICATION_INFO_RETAINED_FILES_DEFAULT" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing the number of files. This is shown when an app has persistent access to files. This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_OF_FILES is 11 .. 19.">
+        Access <ph name="NUMBER_OF_FILES">#<ex>5</ex></ph> files stored on your computer
+      </message>
+      <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
+        <message name="IDS_APPLICATION_INFO_RETAINED_FILE_SINGULAR" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing the number of files. This is shown when an app has persistent access to files. NUMBER_OF_FILES is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+          Access <ph name="NUMBER_OF_FILES">#<ex>1</ex></ph> file stored on your computer
+        </message>
+      </if>
+      <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_FILE_SINGULAR" desc="">
+          NA
+        </message>
+      </if>
+      <if expr="lang in ['ar', 'ro', 'lv']">
+        <message name="IDS_APPLICATION_INFO_RETAINED_FILES_ZERO" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing the number of files. This is shown when an app has persistent access to files. NUMBER_OF_FILES is 0 (Arabic, Latvian) or 0, 2..19, 101..119, ... (Romanian). For other languages, do NOT translate.">
+          Access <ph name="NUMBER_OF_FILES">#<ex>0</ex></ph> files stored on your computer
+        </message>
+      </if>
+      <if expr="lang not in ['ar', 'ro', 'lv']">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_FILES_ZERO" desc="">
+          NA
+        </message>
+      </if>
+      <if expr="lang in ['ga', 'sl', 'ar']">
+        <message name="IDS_APPLICATION_INFO_RETAINED_FILES_TWO" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing the number of files. This is shown when an app has persistent access to files. NUMBER_OF_FILES is two or two-like/dual numbers :  2 (Arabic and Irish) or  2, 102, 202 ... (Slovenian). For other languages, do NOT translated.">
+          Access <ph name="NUMBER_OF_FILES">#<ex>2</ex></ph> files stored on your computer
+        </message>
+      </if>
+        <if expr="lang not in ['ga', 'sl', 'ar']">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_FILES_TWO" desc="">
+          NA
+        </message>
+      </if>
+      <if expr="lang  in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
+        <message name="IDS_APPLICATION_INFO_RETAINED_FILES_FEW" desc="A line of explanatory text that precedes the list of files the app has permanent access to, the number of files. This is shown when an app has persistent access to files. NUMBER_OF_FILES is few or few-like numbers in Arabic, Russian, Polish, Croatian, Serbian, Ukrainian, Czech, Slovak, Slovenian, Latvian. For other languages, do NOT translate.">
+          Access <ph name="NUMBER_OF_FILES">#<ex>3</ex></ph> files stored on your computer
+        </message>
+      </if>
+      <if expr="lang not in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_FILES_FEW" desc="">
+          NA
+        </message>
+      </if>
+      <if expr="lang == 'ar'">
+        <message name="IDS_APPLICATION_INFO_RETAINED_FILES_MANY" desc="A line of explanatory text that precedes the list of files the app has permanent access to, showing the number of files. This is shown when an app has persistent access to files. NUMBER_OF_FILES is 11 through 99 in Arabic. For all other languages, do NOT translate.">
+          Access <ph name="NUMBER_OF_FILES">#<ex>23</ex></ph> files stored on your computer
+        </message>
+      </if>
+      <if expr="lang != 'ar'">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_FILES_MANY" desc="">
+          NA
+        </message>
+      </if>
+
+      <message name="IDS_APPLICATION_INFO_RETAINED_DEVICES_DEFAULT" desc="A line of explanatory text that precedes the list of USB devices the app has permanent access to, showing the number of USB devices. This is shown when an app has persistent access to USB devices. This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_OF_DEVICES is 11 .. 19.">
+        Communicate with <ph name="NUMBER_OF_DEVICES">#<ex>5</ex></ph> USB devices
+      </message>
+
+      <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
+      <message name="IDS_APPLICATION_INFO_RETAINED_DEVICE_SINGULAR" desc="A line of explanatory text that precedes the list of USB devices the app has permanent access to, showing the number of USB devices. This is shown when an app has persistent access to USB devices. NUMBER_OF_DEVICES is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+        Communicate with <ph name="NUMBER_OF_DEVICES">#<ex>1</ex></ph> USB device
+      </message>
+      </if>
+      <if expr="lang in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
+      <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_DEVICE_SINGULAR" desc="">
+        NA
+      </message>
+      </if>
+      <if expr="lang in ['ar', 'ro', 'lv']">
+        <message name="IDS_APPLICATION_INFO_RETAINED_DEVICES_ZERO" desc="A line of explanatory text that precedes the list of USB devices the app has permanent access to, showing the number of USB devices. This is shown when an app has persistent access to USB devices. NUMBER_OF_DEVICES is 0 (Arabic, Latvian) or 0, 2..19, 101..119, ... (Romanian). For other languages, do NOT translate.">
+          Communicate with <ph name="NUMBER_OF_DEVICES">#<ex>0</ex></ph> USB devices
+        </message>
+      </if>
+      <if expr="lang not in ['ar', 'ro', 'lv']">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_DEVICES_ZERO" desc="">
+          NA
+        </message>
+      </if>
+      <if expr="lang in ['ga', 'sl', 'ar']">
+        <message name="IDS_APPLICATION_INFO_RETAINED_DEVICES_TWO" desc="A line of explanatory text that precedes the list of USB devices the app has permanent access to, showing the number of USB devices. This is shown when an app has persistent access to USB devices. NUMBER_OF_DEVICES is two or two-like/dual numbers :  2 (Arabic and Irish) or 2, 102, 202 ... (Slovenian). For other languages, do NOT translated.">
+          Communicate with <ph name="NUMBER_OF_DEVICES">#<ex>2</ex></ph> USB devices
+        </message>
+      </if>
+      <if expr="lang not in ['ga', 'sl', 'ar']">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_DEVICES_TWO" desc="">
+          NA
+        </message>
+      </if>
+      <if expr="lang  in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
+        <message name="IDS_APPLICATION_INFO_RETAINED_DEVICES_FEW" desc="A line of explanatory text that precedes the list of USB devices the app has permanent access to, showing the number of USB devices. This is shown when an app has persistent access to USB devices. NUMBER_OF_DEVICES is few or few-like numbers in Arabic, Russian, Polish, Croatian, Serbian, Ukrainian, Czech, Slovak, Slovenian, Latvian. For other languages, do NOT translate.">
+          Communicate with <ph name="NUMBER_OF_DEVICES">#<ex>3</ex></ph> USB devices
+        </message>
+      </if>
+      <if expr="lang not in ['ru', 'lt', 'hr', 'uk', 'cs', 'sk', 'pl', 'sl', 'ar']">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_DEVICES_FEW" desc="">
+          NA
+        </message>
+      </if>
+      <if expr="lang == 'ar'">
+        <message name="IDS_APPLICATION_INFO_RETAINED_DEVICES_MANY" desc="A line of explanatory text that precedes the list of USB devices the app has permanent access to, showing the number of USB devices. This is shown when an app has persistent access to USB devices. NUMBER_OF_DEVICES is 11 through 99 in Arabic. For all other languages, do NOT translate.">
+          Communicate with <ph name="NUMBER_OF_DEVICES">#<ex>23</ex></ph> USB devices
+        </message>
+      </if>
+      <if expr="lang != 'ar'">
+        <message translateable="false" name="IDS_APPLICATION_INFO_RETAINED_DEVICES_MANY" desc="">
+          NA
+        </message>
+      </if>
 
       <!-- "Create application shortcuts" dialog -->
       <if expr="not use_titlecase">

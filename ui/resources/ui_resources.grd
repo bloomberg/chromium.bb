@@ -168,6 +168,10 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG" file="close_dialog.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_H" file="close_dialog_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_P" file="close_dialog_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_DISABLE" file="disable.png" />
+      <structure type="chrome_scaled_image" name="IDR_DISABLE_H" file="disable_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_DISABLE_P" file="disable_pressed.png" />
+
       <if expr="desktop_linux">
         <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="linux/linux_close_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_P" file="linux/linux_close_pressed.png" />

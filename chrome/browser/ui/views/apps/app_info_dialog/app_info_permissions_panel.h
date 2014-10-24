@@ -9,7 +9,6 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/controls/button/button.h"
 
 class Profile;
 
@@ -22,15 +21,13 @@ class Event;
 }
 
 namespace views {
-class Label;
-class LabelButton;
+class GridLayout;
 class View;
 }
 
 // The summary panel of the app info dialog, which provides basic information
 // and controls related to the app.
-class AppInfoPermissionsPanel : public AppInfoPanel,
-                                public views::ButtonListener {
+class AppInfoPermissionsPanel : public AppInfoPanel {
  public:
   AppInfoPermissionsPanel(Profile* profile, const extensions::Extension* app);
 
@@ -46,44 +43,24 @@ class AppInfoPermissionsPanel : public AppInfoPanel,
   FRIEND_TEST_ALL_PREFIXES(AppInfoPermissionsPanelTest,
                            RetainedFilePermissionsObtainedCorrectly);
 
-  // Given a list of strings, returns a view containing a list of these strings
-  // as bulleted items with the given |elide_behavior|. If |allow_multiline| is
-  // true, allow multi-lined bulleted items and ignore the |elide_behavior|.
-  views::View* CreateBulletedListView(
-      const std::vector<base::string16>& messages,
-      bool allow_multiline,
-      gfx::ElideBehavior elide_behavior);
+  // Called in this order, these methods set-up, add permissions to, and layout
+  // the list of permissions.
+  void CreatePermissionsList();
+  void FillPermissionsList();
+  void LayoutPermissionsList();
 
-  // Internal initialisation methods.
-  void CreateActivePermissionsControl();
-  void CreateRetainedFilesControl();
-  void CreateRetainedDevicesControl();
-
-  void LayoutActivePermissionsControl();
-  void LayoutRetainedFilesControl();
-  void LayoutRetainedDevicesControl();
-
-  // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
-
+  bool HasActivePermissionMessages() const;
   const std::vector<base::string16> GetActivePermissionMessages() const;
+
+  int GetRetainedFileCount() const;
+  base::string16 GetRetainedFileHeading() const;
   const std::vector<base::string16> GetRetainedFilePaths() const;
   void RevokeFilePermissions();
+
+  int GetRetainedDeviceCount() const;
+  base::string16 GetRetainedDeviceHeading() const;
   const std::vector<base::string16> GetRetainedDevices() const;
   void RevokeDevicePermissions();
-
-  // UI elements on the dialog.
-  views::Label* permissions_heading_;
-  views::View* permissions_list_;
-
-  views::Label* retained_files_heading_;
-  views::View* retained_files_list_;
-  views::LabelButton* revoke_file_permissions_button_;
-
-  views::Label* retained_devices_heading_;
-  views::View* retained_devices_list_;
-  views::LabelButton* revoke_device_permissions_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInfoPermissionsPanel);
 };
