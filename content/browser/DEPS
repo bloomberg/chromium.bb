@@ -15,6 +15,10 @@ include_rules = [
   # above.
   "+components/tracing",
 
+  # In general, //content shouldn't depend on //device.
+  # This is the an exception.
+  "+device/udev_linux",  # For udev utility and wrapper library.
+
   # Other libraries.
   "+third_party/iaccessible2",
   "+third_party/isimpledom",

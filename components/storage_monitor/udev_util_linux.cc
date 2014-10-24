@@ -5,11 +5,11 @@
 #include "components/storage_monitor/udev_util_linux.h"
 
 #include "base/files/file_path.h"
-#include "device/udev_linux/udev.h"
+#include "device/udev_linux/scoped_udev.h"
 
 namespace storage_monitor {
 
-std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
+std::string GetUdevDevicePropertyValue(udev_device* udev_device,
                                        const char* key) {
   const char* value = udev_device_get_property_value(udev_device, key);
   return value ? value : std::string();

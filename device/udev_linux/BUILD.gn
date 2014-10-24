@@ -7,8 +7,7 @@ import("//build/config/features.gni")
 if (use_udev) {
   source_set("udev_linux") {
     sources = [
-      "udev.cc",
-      "udev.h",
+      "scoped_udev.h",
     ]
 
     deps = [

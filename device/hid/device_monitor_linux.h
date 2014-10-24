@@ -14,7 +14,7 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "device/udev_linux/udev.h"
+#include "device/udev_linux/scoped_udev.h"
 
 struct udev_device;
 

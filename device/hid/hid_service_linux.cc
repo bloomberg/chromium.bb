@@ -20,7 +20,7 @@
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_report_descriptor.h"
-#include "device/udev_linux/udev.h"
+#include "device/udev_linux/scoped_udev.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
@@ -146,7 +146,7 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   uint32_t int_property = 0;
   const char* str_property = NULL;
 
-  udev_device *parent = udev_device_get_parent(device);
+  udev_device* parent = udev_device_get_parent(device);
   if (!parent) {
     return;
   }

@@ -20,8 +20,7 @@
             '../..',
           ],
           'sources': [
-            'udev.cc',
-            'udev.h',
+            'scoped_udev.h',
           ],
         },
       ],

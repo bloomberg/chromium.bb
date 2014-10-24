@@ -19,19 +19,7 @@ const char kVendorIDKey[] = "ID_VENDOR_ID";
 const char kProductIDKey[] = "ID_MODEL_ID";
 const char kProductNameKey[] = "ID_MODEL";
 
-struct UdevEnumerateDeleter {
-  void operator()(udev_enumerate* enumerate) {
-    udev_enumerate_unref(enumerate);
-  }
-};
-
-struct UdevDeviceDeleter {
-  void operator()(udev_device* device) { udev_device_unref(device); }
-};
-
-typedef scoped_ptr<udev_enumerate, UdevEnumerateDeleter> ScopedUdevEnumeratePtr;
-typedef scoped_ptr<udev_device, UdevDeviceDeleter> ScopedUdevDevicePtr;
-}
+}  // namespace
 
 // static
 scoped_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
@@ -98,10 +86,6 @@ mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
     }
   }
   return devices.Pass();
-}
-
-void SerialDeviceEnumeratorLinux::UdevDeleter::operator()(udev* handle) {
-  udev_unref(handle);
 }
 
 }  // namespace device

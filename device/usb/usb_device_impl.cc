@@ -26,7 +26,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_UDEV)
-#include "device/udev_linux/udev.h"
+#include "device/udev_linux/scoped_udev.h"
 #endif  // defined(USE_UDEV)
 
 namespace device {

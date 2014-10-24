@@ -42,6 +42,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_pump_libevent.h"
+#include "device/udev_linux/scoped_udev.h"
 
 extern "C" {
 struct udev;
@@ -83,8 +84,8 @@ class UdevLinux : public base::MessagePumpLibevent::Watcher {
 
   // libudev-related items, the main context, and the monitoring context to be
   // notified about changes to device states.
-  udev* udev_;
-  udev_monitor* monitor_;
+  device::ScopedUdevPtr udev_;
+  device::ScopedUdevMonitorPtr monitor_;
   int monitor_fd_;
   base::MessagePumpLibevent::FileDescriptorWatcher monitor_watcher_;
   UdevNotificationCallback callback_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_UDEV_LINUX_UDEV_H_
-#define DEVICE_UDEV_LINUX_UDEV_H_
+#ifndef DEVICE_UDEV_LINUX_SCOPED_UDEV_H_
+#define DEVICE_UDEV_LINUX_SCOPED_UDEV_H_
 
 #include <libudev.h>
 
@@ -16,16 +16,24 @@
 namespace device {
 
 struct UdevDeleter {
-  void operator()(udev* dev) const;
+  void operator()(udev* dev) const {
+    udev_unref(dev);
+  }
 };
 struct UdevEnumerateDeleter {
-  void operator()(udev_enumerate* enumerate) const;
+  void operator()(udev_enumerate* enumerate) const {
+    udev_enumerate_unref(enumerate);
+  }
 };
 struct UdevDeviceDeleter {
-  void operator()(udev_device* device) const;
+  void operator()(udev_device* device) const {
+    udev_device_unref(device);
+  }
 };
 struct UdevMonitorDeleter {
-  void operator()(udev_monitor* monitor) const;
+  void operator()(udev_monitor* monitor) const {
+    udev_monitor_unref(monitor);
+  }
 };
 
 typedef scoped_ptr<udev, UdevDeleter> ScopedUdevPtr;
@@ -35,4 +43,4 @@ typedef scoped_ptr<udev_monitor, UdevMonitorDeleter> ScopedUdevMonitorPtr;
 
 }  // namespace device
 
-#endif  // DEVICE_UDEV_LINUX_UDEV_H_
+#endif  // DEVICE_UDEV_LINUX_SCOPED_UDEV_H_

@@ -8,13 +8,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/udev_linux/scoped_udev.h"
 
 namespace extensions {
 // TODO(haven): Udev code may be duplicated in the Chrome codebase.
 // https://code.google.com/p/chromium/issues/detail?id=284898
 
 // Returns the integer contained in |attr|.  Returns 0 on error.
-static uint64 get_int_attr(const char* attr){
+static uint64 get_int_attr(const char* attr) {
   uint64 result = 0;
   // In error cases, StringToInt will set result to 0
   base::StringToUint64(attr, &result);
@@ -26,8 +27,8 @@ static int get_device_blk_size(const std::string& path) {
   std::string device = file_path.BaseName().value();
 
   base::FilePath info_file_path = base::FilePath("/sys/block")
-                                  .Append(device)
-                                  .Append("queue/logical_block_size");
+                                      .Append(device)
+                                      .Append("queue/logical_block_size");
 
   std::string file_contents;
   int blk_size;
@@ -43,35 +44,34 @@ static int get_device_blk_size(const std::string& path) {
 
 bool RemovableStorageProvider::PopulateDeviceList(
     scoped_refptr<StorageDeviceList> device_list) {
-  struct udev* udev;
-  struct udev_enumerate* enumerate;
-  struct udev_list_entry* devices, *dev_list_entry;
-  struct udev_device* dev, *parent;
-
-  udev = udev_new();
+  device::ScopedUdevPtr udev(udev_new());
   if (!udev) {
     DLOG(ERROR) << "Can't create udev";
     return false;
   }
 
   /* Create a list of the devices in the 'block' subsystem. */
-  enumerate = udev_enumerate_new(udev);
+  device::ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev.get()));
 
-  udev_enumerate_add_match_subsystem(enumerate, "block");
-  udev_enumerate_scan_devices(enumerate);
-  devices = udev_enumerate_get_list_entry(enumerate);
+  udev_enumerate_add_match_subsystem(enumerate.get(), "block");
+  udev_enumerate_scan_devices(enumerate.get());
+  udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
 
+  udev_list_entry* dev_list_entry;
   udev_list_entry_foreach(dev_list_entry, devices) {
     const char* path = udev_list_entry_get_name(dev_list_entry);
-    dev = udev_device_new_from_syspath(udev, path);
+    device::ScopedUdevDevicePtr cur_device(
+        udev_device_new_from_syspath(udev.get(), path));
 
-    const char* partition = udev_device_get_sysattr_value(dev, "partition");
-    if (partition && get_int_attr(partition)){
+    const char* partition =
+        udev_device_get_sysattr_value(cur_device.get(), "partition");
+    if (partition && get_int_attr(partition)) {
       // This is a partition of a device, not the device itself
       continue;
     }
 
-    const char* removable = udev_device_get_sysattr_value(dev, "removable");
+    const char* removable =
+        udev_device_get_sysattr_value(cur_device.get(), "removable");
     if (!removable || !get_int_attr(removable)) {
       // This is not a removable storage device.
       continue;
@@ -80,34 +80,29 @@ bool RemovableStorageProvider::PopulateDeviceList(
     /* Get the parent SCSI device that contains the model
        and manufacturer.  You can look at the hierarchy with
        udevadm info -a -n /dev/<device> */
-    parent = udev_device_get_parent_with_subsystem_devtype(
-           dev,
-           "scsi",
-           NULL);
-    if (!parent) {
+    udev_device* parent_device = udev_device_get_parent_with_subsystem_devtype(
+        cur_device.get(), "scsi", NULL);
+    if (!parent_device) {
       // this is not a usb device
       continue;
     }
 
-    linked_ptr<api::image_writer_private::RemovableStorageDevice> device(
-      new api::image_writer_private::RemovableStorageDevice());
-    device->vendor = udev_device_get_sysattr_value(parent, "vendor");
-    device->model = udev_device_get_sysattr_value(parent, "model");
+    linked_ptr<api::image_writer_private::RemovableStorageDevice> device_item(
+        new api::image_writer_private::RemovableStorageDevice());
+    device_item->vendor =
+        udev_device_get_sysattr_value(parent_device, "vendor");
+    device_item->model = udev_device_get_sysattr_value(parent_device, "model");
     // TODO (smaskell): Don't expose raw device path
-    device->storage_unit_id = udev_device_get_devnode(dev);
-    device->capacity = get_int_attr(udev_device_get_sysattr_value(dev, "size"))
-      * get_device_blk_size(device->storage_unit_id);
-    device->removable = removable;
+    device_item->storage_unit_id = udev_device_get_devnode(cur_device.get());
+    device_item->capacity =
+        get_int_attr(udev_device_get_sysattr_value(cur_device.get(), "size")) *
+        get_device_blk_size(device_item->storage_unit_id);
+    device_item->removable = removable;
 
-    device_list->data.push_back(device);
-
-    udev_device_unref(dev);
+    device_list->data.push_back(device_item);
   }
-  /* Free the enumerator object */
-  udev_enumerate_unref(enumerate);
-  udev_unref(udev);
 
   return true;
 }
 
-} // namespace extensions
+}  // namespace extensions

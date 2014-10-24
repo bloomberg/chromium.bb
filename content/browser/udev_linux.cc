@@ -13,23 +13,21 @@ namespace content {
 UdevLinux::UdevLinux(const std::vector<UdevMonitorFilter>& filters,
                      const UdevNotificationCallback& callback)
     : udev_(udev_new()),
-      monitor_(NULL),
+      monitor_(udev_monitor_new_from_netlink(udev_.get(), "udev")),
       monitor_fd_(-1),
       callback_(callback) {
   CHECK(udev_);
-
-  monitor_ = udev_monitor_new_from_netlink(udev_, "udev");
   CHECK(monitor_);
 
   for (size_t i = 0; i < filters.size(); ++i) {
     int ret = udev_monitor_filter_add_match_subsystem_devtype(
-        monitor_, filters[i].subsystem, filters[i].devtype);
+        monitor_.get(), filters[i].subsystem, filters[i].devtype);
     CHECK_EQ(0, ret);
   }
 
-  int ret = udev_monitor_enable_receiving(monitor_);
+  int ret = udev_monitor_enable_receiving(monitor_.get());
   CHECK_EQ(0, ret);
-  monitor_fd_ = udev_monitor_get_fd(monitor_);
+  monitor_fd_ = udev_monitor_get_fd(monitor_.get());
   CHECK_GE(monitor_fd_, 0);
 
   bool success = base::MessageLoopForIO::current()->WatchFileDescriptor(
@@ -43,12 +41,10 @@ UdevLinux::UdevLinux(const std::vector<UdevMonitorFilter>& filters,
 
 UdevLinux::~UdevLinux() {
   monitor_watcher_.StopWatchingFileDescriptor();
-  udev_monitor_unref(monitor_);
-  udev_unref(udev_);
 }
 
 udev* UdevLinux::udev_handle() {
-  return udev_;
+  return udev_.get();
 }
 
 void UdevLinux::OnFileCanReadWithoutBlocking(int fd) {
@@ -56,12 +52,12 @@ void UdevLinux::OnFileCanReadWithoutBlocking(int fd) {
   // change state. udev_monitor_receive_device() will return a device object
   // representing the device which changed and what type of change occured.
   DCHECK_EQ(monitor_fd_, fd);
-  udev_device* dev = udev_monitor_receive_device(monitor_);
+  device::ScopedUdevDevicePtr dev(
+      udev_monitor_receive_device(monitor_.get()));
   if (!dev)
     return;
 
-  callback_.Run(dev);
-  udev_device_unref(dev);
+  callback_.Run(dev.get());
 }
 
 void UdevLinux::OnFileCanWriteWithoutBlocking(int fd) {
