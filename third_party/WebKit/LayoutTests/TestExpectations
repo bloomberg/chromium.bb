@@ -1479,7 +1479,6 @@ crbug.com/425537 fast/notifications/notifications-constructor-request-permission
 
 crbug.com/426041 fast/dom/HTMLImageElement/image-sizes-js-change.html [ Pass Failure ]
 
-#crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
-crbug.com/426047 http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
+crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
 
 crbug.com/426078 [ Win7 ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Pass Timeout ]
