@@ -825,7 +825,10 @@ class ShellUtilRegistryTest : public testing::Test {
 
   static base::CommandLine OpenCommand() {
     base::FilePath open_command_path(kTestOpenCommand);
-    return base::CommandLine(open_command_path);
+    base::CommandLine open_command(open_command_path);
+    // The "%1" should automatically be quoted.
+    open_command.AppendArg("%1");
+    return open_command;
   }
 
   static std::set<base::string16> FileExtensions() {
@@ -868,7 +871,7 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
                      L"Software\\Classes\\TestApp\\shell\\open\\command",
                      KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
-  EXPECT_EQ(L"\"C:\\test.exe\"", value);
+  EXPECT_EQ(L"\"C:\\test.exe\" \"%1\"", value);
 
   // .test1 should be default-associated with our test app.
   ASSERT_EQ(

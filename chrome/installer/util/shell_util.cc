@@ -2445,7 +2445,7 @@ bool ShellUtil::AddFileAssociations(
   app_info.file_type_name = file_type_name;
   app_info.file_type_icon_path = icon_path.value();
   app_info.file_type_icon_index = 0;
-  app_info.command_line = command_line.GetCommandLineString();
+  app_info.command_line = command_line.GetCommandLineStringWithPlaceholders();
   RegistryEntry::GetProgIdEntries(app_info, &entries);
 
   // Associate each extension that the app can handle with the class. Set this
