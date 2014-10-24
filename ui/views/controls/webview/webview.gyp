@@ -33,6 +33,7 @@
         'unhandled_keyboard_event_handler.cc',
         'unhandled_keyboard_event_handler.h',
         'unhandled_keyboard_event_handler_linux.cc',
+        'unhandled_keyboard_event_handler_mac.mm',
         'unhandled_keyboard_event_handler_win.cc',
         'web_dialog_view.cc',
         'web_dialog_view.h',

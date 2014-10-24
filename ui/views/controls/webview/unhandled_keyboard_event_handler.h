@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_WEBVIEW_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
 
 #include "base/basictypes.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/webview/webview_export.h"
 
 namespace content {
@@ -26,6 +27,10 @@ class WEBVIEW_EXPORT UnhandledKeyboardEventHandler {
                            FocusManager* focus_manager);
 
  private:
+  // Platform specific handling for unhandled keyboard events.
+  static void HandleNativeKeyboardEvent(gfx::NativeEvent event,
+                                        FocusManager* focus_manager);
+
   // Whether to ignore the next Char keyboard event.
   // If a RawKeyDown event was handled as a shortcut key, then we're done
   // handling it and should eat any Char event that the translate phase may
