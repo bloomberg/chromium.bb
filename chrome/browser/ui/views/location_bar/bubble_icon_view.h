@@ -19,7 +19,7 @@ class BubbleIconView : public views::ImageView {
   };
 
   explicit BubbleIconView(CommandUpdater* command_updater, int command_id);
-  virtual ~BubbleIconView();
+  ~BubbleIconView() override;
 
   // Returns true if a related bubble is showing.
   virtual bool IsBubbleShowing() const = 0;
@@ -28,17 +28,20 @@ class BubbleIconView : public views::ImageView {
   virtual void OnExecuting(ExecuteSource execute_source) = 0;
 
   // views::ImageView:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual bool GetTooltipText(const gfx::Point& p, base::string16* tooltip)
-      const override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  bool GetTooltipText(const gfx::Point& p, base::string16* tooltip) const
+      override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
+  // Calls OnExecuting and runs |command_id_| with a valid |command_updater_|.
+  void ExecuteCommand(ExecuteSource source);
+
   // The CommandUpdater for the Browser object that owns the location bar.
   CommandUpdater* command_updater_;
 

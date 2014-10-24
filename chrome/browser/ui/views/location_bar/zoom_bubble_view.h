@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ZOOM_BUBBLE_VIEW_H_
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -50,6 +51,8 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   static const ZoomBubbleView* GetZoomBubbleForTest();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ZoomBubbleBrowserTest, ImmersiveFullscreen);
+
   // Stores information about the extension that initiated the zoom change, if
   // any.
   struct ZoomBubbleExtensionInfo {

@@ -112,8 +112,9 @@ void ZoomBubbleView::CloseBubble() {
 
 // static
 bool ZoomBubbleView::IsShowing() {
-  // The bubble may be in the process of closing.
-  return zoom_bubble_ != NULL && zoom_bubble_->GetWidget()->IsVisible();
+  // The bubble is considered showing while closing.
+  return zoom_bubble_ != NULL && (zoom_bubble_->GetWidget()->IsVisible() ||
+                                  zoom_bubble_->GetWidget()->IsClosed());
 }
 
 // static

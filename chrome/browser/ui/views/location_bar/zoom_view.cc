@@ -16,8 +16,8 @@
 #include "ui/gfx/size.h"
 
 ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate)
-    : location_bar_delegate_(location_bar_delegate) {
-  SetAccessibilityFocusable(true);
+    : BubbleIconView(nullptr, 0),
+      location_bar_delegate_(location_bar_delegate) {
   Update(NULL);
 }
 
@@ -39,44 +39,15 @@ void ZoomView::Update(ZoomController* zoom_controller) {
   SetVisible(true);
 }
 
-void ZoomView::GetAccessibleState(ui::AXViewState* state) {
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM);
-  state->role = ui::AX_ROLE_BUTTON;
+bool ZoomView::IsBubbleShowing() const {
+  return ZoomBubbleView::IsShowing();
 }
 
-bool ZoomView::GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const {
-  // Don't show tooltip if the zoom bubble is displayed.
-  return !ZoomBubbleView::IsShowing() && ImageView::GetTooltipText(p, tooltip);
-}
-
-bool ZoomView::OnMousePressed(const ui::MouseEvent& event) {
-  // Do nothing until mouse is released.
-  return true;
-}
-
-void ZoomView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
-    ActivateBubble();
-}
-
-bool ZoomView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() != ui::VKEY_SPACE &&
-      event.key_code() != ui::VKEY_RETURN) {
-    return false;
-  }
-
-  ActivateBubble();
-  return true;
-}
-
-void ZoomView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
-    ActivateBubble();
-    event->SetHandled();
-  }
-}
-
-void ZoomView::ActivateBubble() {
+void ZoomView::OnExecuting(BubbleIconView::ExecuteSource source) {
   ZoomBubbleView::ShowBubble(location_bar_delegate_->GetWebContents(), false);
+}
+
+void ZoomView::GetAccessibleState(ui::AXViewState* state) {
+  BubbleIconView::GetAccessibleState(state);
+  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM);
 }

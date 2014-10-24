@@ -49,17 +49,14 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
     return;
   }
 
-  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
-    OnExecuting(EXECUTE_SOURCE_MOUSE);
-    command_updater_->ExecuteCommand(command_id_);
-  }
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
+    ExecuteCommand(EXECUTE_SOURCE_MOUSE);
 }
 
 bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
-    OnExecuting(EXECUTE_SOURCE_KEYBOARD);
-    command_updater_->ExecuteCommand(command_id_);
+    ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);
     return true;
   }
   return false;
@@ -67,8 +64,13 @@ bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    OnExecuting(EXECUTE_SOURCE_GESTURE);
-    command_updater_->ExecuteCommand(command_id_);
+    ExecuteCommand(EXECUTE_SOURCE_GESTURE);
     event->SetHandled();
   }
+}
+
+void BubbleIconView::ExecuteCommand(ExecuteSource source) {
+  OnExecuting(source);
+  if (command_updater_)
+    command_updater_->ExecuteCommand(command_id_);
 }

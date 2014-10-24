@@ -5,44 +5,33 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ZOOM_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ZOOM_VIEW_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/views/controls/image_view.h"
 
 class ZoomController;
 
 // View for the zoom icon in the Omnibox.
-class ZoomView : public views::ImageView {
+class ZoomView : public BubbleIconView {
  public:
   // Clicking on the ZoomView shows a ZoomBubbleView, which requires the current
   // WebContents. Because the current WebContents changes as the user switches
-  // tabs, it cannot be provided in the constructor. Instead, a
-  // LocationBarView::Delegate is passed here so that it can be queried for the
-  // current WebContents as needed.
+  // tabs, a LocationBarView::Delegate is supplied to queried for the current
+  // WebContents when needed.
   explicit ZoomView(LocationBarView::Delegate* location_bar_delegate);
-  virtual ~ZoomView();
+  ~ZoomView() override;
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
   // as needed.
   void Update(ZoomController* zoom_controller);
 
+ protected:
+  // BubbleIconView:
+  bool IsBubbleShowing() const override;
+  void OnExecuting(BubbleIconView::ExecuteSource source) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+
  private:
-  // views::ImageView:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-
-  // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Helper method to show and focus the zoom bubble associated with this
-  // widget.
-  void ActivateBubble();
-
   // The delegate used to get the currently visible WebContents.
   LocationBarView::Delegate* location_bar_delegate_;
 

@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
       immersive_controller->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_NO));
   ASSERT_TRUE(immersive_controller->IsRevealed());
-  EXPECT_FALSE(ZoomBubbleView::IsShowing());
+  EXPECT_TRUE(ZoomBubbleView::zoom_bubble_->GetWidget()->IsClosed());
 
   // The zoom bubble should be anchored when it is shown in immersive fullscreen
   // and the top-of-window views are revealed.
