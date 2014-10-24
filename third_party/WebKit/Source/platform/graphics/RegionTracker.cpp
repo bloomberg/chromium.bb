@@ -53,13 +53,15 @@ void RegionTracker::reset()
 IntRect RegionTracker::asRect() const
 {
     // Returns the largest enclosed rect.
-    // TODO: actually, this logic looks like its returning the smallest.
-    //       to return largest, shouldn't we take floor of left/top
-    //       and the ceil of right/bottom?
-    int left = SkScalarCeilToInt(m_opaqueRect.fLeft);
-    int top = SkScalarCeilToInt(m_opaqueRect.fTop);
-    int right = SkScalarFloorToInt(m_opaqueRect.fRight);
-    int bottom = SkScalarFloorToInt(m_opaqueRect.fBottom);
+
+    // epsilon is large enough to accommodate machine precision issues and
+    // small enough to have a negligible effect on rendered results.
+    const SkScalar epsilon = 1.0f / 512.0f;
+
+    int left = SkScalarCeilToInt(m_opaqueRect.fLeft - epsilon);
+    int top = SkScalarCeilToInt(m_opaqueRect.fTop - epsilon);
+    int right = SkScalarFloorToInt(m_opaqueRect.fRight + epsilon);
+    int bottom = SkScalarFloorToInt(m_opaqueRect.fBottom + epsilon);
     return IntRect(left, top, right-left, bottom-top);
 }
 
