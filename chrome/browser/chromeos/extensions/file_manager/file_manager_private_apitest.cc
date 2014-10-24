@@ -66,6 +66,7 @@ TestDiskInfo kTestDisks[] = {
     false,
     false,
     false,
+    false,
     false
   },
   {
@@ -85,6 +86,7 @@ TestDiskInfo kTestDisks[] = {
     true,
     true,
     true,
+    false,
     false
   },
   {
@@ -104,6 +106,7 @@ TestDiskInfo kTestDisks[] = {
     false,
     false,
     true,
+    false,
     false
   }
 };

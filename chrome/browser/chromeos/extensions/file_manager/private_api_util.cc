@@ -260,6 +260,7 @@ void VolumeInfoToVolumeMetadata(
   }
 
   volume_metadata->is_read_only = volume_info.is_read_only;
+  volume_metadata->has_media = volume_info.has_media;
 
   switch (volume_info.mount_condition) {
     case chromeos::disks::MOUNT_CONDITION_NONE:
