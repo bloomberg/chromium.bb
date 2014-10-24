@@ -216,7 +216,7 @@
             ],
           },
         }],
-        ['OS != "win" and (OS != "ios" or _toolset == "host")', {
+        ['OS != "win" and OS != "ios"', {
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
         },],
         ['component=="shared_library"', {
@@ -265,7 +265,6 @@
     },
     {
       'target_name': 'base_i18n',
-      'toolsets': ['host', 'target'],
       'type': '<(component)',
       'variables': {
         'enable_wexit_time_destructors': 1,
@@ -856,7 +855,6 @@
     {
       # GN: //base/test:test_support
       'target_name': 'test_support_base',
-      'toolsets': ['host', 'target'],
       'type': 'static_library',
       'dependencies': [
         'base',
@@ -987,18 +985,9 @@
             # by file name rules).
             ['include', '^test/test_file_util_mac\\.cc$'],
           ],
-        }],
-        ['OS == "ios" and _toolset == "target"', {
           'sources!': [
             # iOS uses its own unit test launcher.
             'test/launcher/unit_test_launcher.cc',
-          ],
-        }],
-        ['OS == "ios" and _toolset == "host"', {
-          'sources!': [
-            'test/launcher/unit_test_launcher_ios.cc',
-            'test/test_support_ios.h',
-            'test/test_support_ios.mm',
           ],
         }],
       ],  # target_conditions
@@ -1022,21 +1011,6 @@
     },
   ],
   'conditions': [
-    ['OS=="ios" and "<(GENERATOR)"=="ninja"', {
-      'targets': [
-        {
-          'target_name': 'test_launcher',
-          'toolsets': ['host'],
-          'type': 'executable',
-          'dependencies': [
-            'test_support_base',
-          ],
-          'sources': [
-            'test/launcher/test_launcher_ios.cc',
-          ],
-        },
-      ],
-    }],
     ['OS!="ios"', {
       'targets': [
         {
@@ -1306,7 +1280,6 @@
         {
           # GN: //base:base_jni_headers
           'target_name': 'base_jni_headers',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'sources': [
             'android/java/src/org/chromium/base/ApplicationStatus.java',
@@ -1338,7 +1311,6 @@
         {
           # TODO(GN)
           'target_name': 'base_unittests_jni_headers',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'sources': [
             'test/android/java/src/org/chromium/base/ContentUriTestUtils.java',
@@ -1351,7 +1323,6 @@
         {
           # GN: //base:base_native_libraries_gen
           'target_name': 'base_native_libraries_gen',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'sources': [
             'android/java/templates/NativeLibraries.template',
@@ -1365,7 +1336,6 @@
         {
           # GN: //base:base_java
           'target_name': 'base_java',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'variables': {
             'java_in_dir': '../base/android/java',
@@ -1388,7 +1358,6 @@
         {
           # GN: //base:base_java_unittest_support
           'target_name': 'base_java_unittest_support',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'dependencies': [
             'base_java',
@@ -1401,7 +1370,6 @@
         {
           # GN: //base:base_android_java_enums_srcjar
           'target_name': 'base_java_application_state',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'variables': {
             'source_file': 'android/application_status_listener.h',
@@ -1411,7 +1379,6 @@
         {
           # GN: //base:base_android_java_enums_srcjar
           'target_name': 'base_java_memory_pressure_level',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'variables': {
             'source_file': 'memory/memory_pressure_listener.h',

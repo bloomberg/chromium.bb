@@ -6,7 +6,6 @@
   'targets': [
     {
       'target_name': 'android_exports',
-      'toolsets': ['host', 'target'],
       'type': 'none',
       'inputs': [
         '<(DEPTH)/build/android/android_exports.lst',
