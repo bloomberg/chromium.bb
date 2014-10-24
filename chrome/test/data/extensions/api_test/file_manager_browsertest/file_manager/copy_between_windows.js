@@ -221,7 +221,6 @@ testcase.copyBetweenWindowsUsbToDrive = function() {
     },
     // Add a file to USB.
     function(result) {
-      chrome.test.assertTrue(JSON.parse(result));
       addEntries(['usb'], [ENTRIES.hello], this.next);
     },
     // Wait for the mount.
@@ -259,7 +258,6 @@ testcase.copyBetweenWindowsUsbToLocal = function() {
     },
     // Add a file to USB.
     function(result) {
-      chrome.test.assertTrue(JSON.parse(result));
       addEntries(['usb'], [ENTRIES.hello], this.next);
     },
     // Wait for the mount.
@@ -282,4 +280,3 @@ testcase.copyBetweenWindowsUsbToLocal = function() {
     }
   ]);
 };
-

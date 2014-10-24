@@ -109,9 +109,6 @@ function addEntries(volumeNames, entries, opt_callback) {
       name: 'addEntries',
       volume: volume,
       entries: entries
-    }).then(function(result) {
-      if (result !== "onEntryAdded")
-        return Promise.reject('Failed to add entries to ' + volume + '.');
     });
   });
   var resultPromise = Promise.all(volumeResultPromises);

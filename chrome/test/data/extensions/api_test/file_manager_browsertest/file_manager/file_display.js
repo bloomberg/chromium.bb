@@ -69,7 +69,6 @@ testcase.fileDisplayMtp = function() {
     },
     // Wait for the mount.
     function(result) {
-      chrome.test.assertTrue(JSON.parse(result));
       remoteCall.waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
     },
     // Click the MTP volume.

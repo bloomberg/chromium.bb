@@ -545,8 +545,9 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   }
   virtual GuestMode GetGuestModeParam() const = 0;
   virtual const char* GetTestCaseNameParam() const = 0;
-  virtual std::string OnMessage(const std::string& name,
-                                const base::Value* value);
+  virtual void OnMessage(const std::string& name,
+                         const base::Value& value,
+                         std::string* output);
 
   scoped_ptr<LocalTestVolume> local_volume_;
   linked_ptr<DriveTestVolume> drive_volume_;
@@ -642,16 +643,24 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
         !message_dictionary->GetString("name", &name))
       continue;
 
-    entry.function->Reply(OnMessage(name, value.get()));
+    std::string output;
+    OnMessage(name, *value.get(), &output);
+    if (HasFatalFailure())
+      break;
+    entry.function->Reply(output);
   }
 }
 
-std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
-                                                  const base::Value* value) {
+void FileManagerBrowserTestBase::OnMessage(const std::string& name,
+                                           const base::Value& value,
+                                           std::string* output) {
   if (name == "getTestName") {
     // Pass the test case name.
-    return GetTestCaseNameParam();
-  } else if (name == "getRootPaths") {
+    *output = GetTestCaseNameParam();
+    return;
+  }
+
+  if (name == "getRootPaths") {
     // Pass the root paths.
     const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
     res->SetString("downloads",
@@ -659,13 +668,17 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
     res->SetString("drive",
         "/" + drive::util::GetDriveMountPointPath(profile()
             ).BaseName().AsUTF8Unsafe() + "/root");
-    std::string jsonString;
-    base::JSONWriter::Write(res.get(), &jsonString);
-    return jsonString;
-  } else if (name == "isInGuestMode") {
+    base::JSONWriter::Write(res.get(), output);
+    return;
+  }
+
+  if (name == "isInGuestMode") {
     // Obtain whether the test is in guest mode or not.
-    return GetGuestModeParam() != NOT_IN_GUEST_MODE ? "true" : "false";
-  } else if (name == "getCwsWidgetContainerMockUrl") {
+    *output = GetGuestModeParam() != NOT_IN_GUEST_MODE ? "true" : "false";
+    return;
+  }
+
+  if (name == "getCwsWidgetContainerMockUrl") {
     // Obtain whether the test is in guest mode or not.
     const GURL url = embedded_test_server()->GetURL(
           "/chromeos/file_manager/cws_container_mock/index.html");
@@ -678,15 +691,16 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
     const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
     res->SetString("url", url.spec());
     res->SetString("origin", origin);
-    std::string jsonString;
-    base::JSONWriter::Write(res.get(), &jsonString);
-    return jsonString;
-  } else if (name == "addEntries") {
+    base::JSONWriter::Write(res.get(), output);
+    return;
+  }
+
+  if (name == "addEntries") {
     // Add entries to the specified volume.
     base::JSONValueConverter<AddEntriesMessage> add_entries_message_converter;
     AddEntriesMessage message;
-    if (!add_entries_message_converter.Convert(*value, &message))
-      return "onError";
+    ASSERT_TRUE(add_entries_message_converter.Convert(value, &message));
+
     for (size_t i = 0; i < message.entries.size(); ++i) {
       switch (message.volume) {
         case LOCAL_VOLUME:
@@ -705,23 +719,29 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
           break;
       }
     }
-    return "onEntryAdded";
-  } else if (name == "mountFakeUsb") {
+
+    return;
+  }
+
+  if (name == "mountFakeUsb") {
     usb_volume_.reset(new FakeTestVolume("fake-usb",
                                          VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
                                          chromeos::DEVICE_TYPE_USB));
     usb_volume_->Mount(profile());
-    return "true";
-  } else if (name == "mountFakeMtp") {
+    return;
+  }
+
+  if (name == "mountFakeMtp") {
     mtp_volume_.reset(new FakeTestVolume("fake-mtp",
                                          VOLUME_TYPE_MTP,
                                          chromeos::DEVICE_TYPE_UNKNOWN));
-    if (!mtp_volume_->PrepareTestEntries(profile()))
-      return "false";
+    ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
+
     mtp_volume_->Mount(profile());
-    return "true";
+    return;
   }
-  return "unknownMessage";
+
+  FAIL() << "Unknown test message: " << name;
 }
 
 drive::DriveIntegrationService*
@@ -1145,29 +1165,6 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     return test_case_name_.c_str();
   }
 
-  virtual std::string OnMessage(const std::string& name,
-                                const base::Value* value) override {
-    if (name == "addAllUsers") {
-      AddAllUsers();
-      return "true";
-    } else if (name == "getWindowOwnerId") {
-      chrome::MultiUserWindowManager* const window_manager =
-          chrome::MultiUserWindowManager::GetInstance();
-      extensions::AppWindowRegistry* const app_window_registry =
-          extensions::AppWindowRegistry::Get(profile());
-      DCHECK(window_manager);
-      DCHECK(app_window_registry);
-
-      const extensions::AppWindowRegistry::AppWindowList& list =
-          app_window_registry->GetAppWindowsForApp(
-              file_manager::kFileManagerAppId);
-      return list.size() == 1u ?
-          window_manager->GetUserPresentingWindow(
-              list.front()->GetNativeWindow()) : "";
-    }
-    return FileManagerBrowserTestBase::OnMessage(name, value);
-  }
-
   std::string test_case_name_;
 };
 
@@ -1229,8 +1226,9 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
     FileManagerBrowserTestBase::SetUp();
   }
 
-  virtual std::string OnMessage(const std::string& name,
-                                const base::Value* value) override;
+  virtual void OnMessage(const std::string& name,
+                         const base::Value& value,
+                         std::string* output) override;
 
   virtual const char* GetTestManifestName() const override {
     return "gallery_test_manifest.json";
@@ -1250,15 +1248,17 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
   std::string test_case_name_;
 };
 
-template<GuestMode M>
-std::string GalleryBrowserTestBase<M>::OnMessage(const std::string& name,
-                                                 const base::Value* value) {
+template <GuestMode M>
+void GalleryBrowserTestBase<M>::OnMessage(const std::string& name,
+                                          const base::Value& value,
+                                          std::string* output) {
   if (name == "getScripts") {
     std::string jsonString;
-    base::JSONWriter::Write(&scripts_, &jsonString);
-    return jsonString;
+    base::JSONWriter::Write(&scripts_, output);
+    return;
   }
-  return FileManagerBrowserTestBase::OnMessage(name, value);
+
+  FileManagerBrowserTestBase::OnMessage(name, value, output);
 }
 
 typedef GalleryBrowserTestBase<NOT_IN_GUEST_MODE> GalleryBrowserTest;
@@ -1437,8 +1437,9 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
   }
 
-  virtual std::string OnMessage(const std::string& name,
-                                const base::Value* value) override;
+  virtual void OnMessage(const std::string& name,
+                         const base::Value& value,
+                         std::string* output) override;
 
   virtual const char* GetTestManifestName() const override {
     return "video_player_test_manifest.json";
@@ -1458,15 +1459,17 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
   std::string test_case_name_;
 };
 
-template<GuestMode M>
-std::string VideoPlayerBrowserTestBase<M>::OnMessage(const std::string& name,
-                                                     const base::Value* value) {
+template <GuestMode M>
+void VideoPlayerBrowserTestBase<M>::OnMessage(const std::string& name,
+                                              const base::Value& value,
+                                              std::string* output) {
   if (name == "getScripts") {
     std::string jsonString;
-    base::JSONWriter::Write(&scripts_, &jsonString);
-    return jsonString;
+    base::JSONWriter::Write(&scripts_, output);
+    return;
   }
-  return FileManagerBrowserTestBase::OnMessage(name, value);
+
+  FileManagerBrowserTestBase::OnMessage(name, value, output);
 }
 
 typedef VideoPlayerBrowserTestBase<NOT_IN_GUEST_MODE> VideoPlayerBrowserTest;
