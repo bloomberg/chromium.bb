@@ -562,6 +562,13 @@ namespace dom_distiller {
               goto error;
             }
           }
+          if (dict->HasKey("9")) {
+            std::string field_value;
+            if (!dict->GetString("9", &field_value)) {
+              goto error;
+            }
+            message->set_text_direction(field_value);
+          }
           return true;
 
         error:
@@ -607,6 +614,9 @@ namespace dom_distiller {
             scoped_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::StatisticsInfo::WriteToValue(message.statistics_info());
             dict->Set("8", inner_message_value.release());
+          }
+          if (message.has_text_direction()) {
+            dict->SetString("9", message.text_direction());
           }
           return dict.Pass();
         }
