@@ -27,7 +27,7 @@ class QuotaManagerProxy;
 
 namespace content {
 class ChromeBlobStorageContext;
-class ServiceWorkerRequestResponseHeaders;
+class ServiceWorkerCacheMetadata;
 
 // TODO(jkarlin): Unload cache backend from memory once the cache object is no
 // longer referenced in javascript.
@@ -127,10 +127,10 @@ class CONTENT_EXPORT ServiceWorkerCache
                                    int rv);
   static void KeysProcessNextEntry(scoped_ptr<KeysContext> keys_context,
                                    const Entries::iterator& iter);
-  static void KeysDidReadHeaders(
+  static void KeysDidReadMetadata(
       scoped_ptr<KeysContext> keys_context,
       const Entries::iterator& iter,
-      scoped_ptr<ServiceWorkerRequestResponseHeaders> headers);
+      scoped_ptr<ServiceWorkerCacheMetadata> metadata);
 
   // Loads the backend and calls the callback with the result (true for
   // success). The callback will always be called.

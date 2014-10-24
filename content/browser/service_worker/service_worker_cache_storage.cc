@@ -248,7 +248,6 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     for (size_t i = 0u, max = cache_names.size(); i < max; ++i) {
       ServiceWorkerCacheStorageIndex::Cache* index_cache = index.add_cache();
       index_cache->set_name(cache_names[i]);
-      index_cache->set_size(0);  // TODO(jkarlin): Make this real.
     }
 
     std::string serialized;

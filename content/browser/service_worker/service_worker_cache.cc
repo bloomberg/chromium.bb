@@ -30,8 +30,8 @@ typedef scoped_ptr<disk_cache::Backend> ScopedBackendPtr;
 typedef base::Callback<void(bool)> BoolCallback;
 typedef base::Callback<void(disk_cache::ScopedEntryPtr, bool)>
     EntryBoolCallback;
-typedef base::Callback<void(scoped_ptr<ServiceWorkerRequestResponseHeaders>)>
-    HeadersCallback;
+typedef base::Callback<void(scoped_ptr<ServiceWorkerCacheMetadata>)>
+    MetadataCallback;
 
 enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY };
 
@@ -47,40 +47,39 @@ void NotReachedCompletionCallback(int rv) {
 }
 
 blink::WebServiceWorkerResponseType ProtoResponseTypeToWebResponseType(
-    ServiceWorkerRequestResponseHeaders_ResponseType response_type) {
+    ServiceWorkerCacheResponse::ResponseType response_type) {
   switch (response_type) {
-    case ServiceWorkerRequestResponseHeaders_ResponseType_BASIC_TYPE:
+    case ServiceWorkerCacheResponse::BASIC_TYPE:
       return blink::WebServiceWorkerResponseTypeBasic;
-    case ServiceWorkerRequestResponseHeaders_ResponseType_CORS_TYPE:
+    case ServiceWorkerCacheResponse::CORS_TYPE:
       return blink::WebServiceWorkerResponseTypeCORS;
-    case ServiceWorkerRequestResponseHeaders_ResponseType_DEFAULT_TYPE:
+    case ServiceWorkerCacheResponse::DEFAULT_TYPE:
       return blink::WebServiceWorkerResponseTypeDefault;
-    case ServiceWorkerRequestResponseHeaders_ResponseType_ERROR_TYPE:
+    case ServiceWorkerCacheResponse::ERROR_TYPE:
       return blink::WebServiceWorkerResponseTypeError;
-    case ServiceWorkerRequestResponseHeaders_ResponseType_OPAQUE_TYPE:
+    case ServiceWorkerCacheResponse::OPAQUE_TYPE:
       return blink::WebServiceWorkerResponseTypeOpaque;
   }
   NOTREACHED();
   return blink::WebServiceWorkerResponseTypeOpaque;
 }
 
-ServiceWorkerRequestResponseHeaders_ResponseType
-WebResponseTypeToProtoResponseType(
+ServiceWorkerCacheResponse::ResponseType WebResponseTypeToProtoResponseType(
     blink::WebServiceWorkerResponseType response_type) {
   switch (response_type) {
     case blink::WebServiceWorkerResponseTypeBasic:
-      return ServiceWorkerRequestResponseHeaders_ResponseType_BASIC_TYPE;
+      return ServiceWorkerCacheResponse::BASIC_TYPE;
     case blink::WebServiceWorkerResponseTypeCORS:
-      return ServiceWorkerRequestResponseHeaders_ResponseType_CORS_TYPE;
+      return ServiceWorkerCacheResponse::CORS_TYPE;
     case blink::WebServiceWorkerResponseTypeDefault:
-      return ServiceWorkerRequestResponseHeaders_ResponseType_DEFAULT_TYPE;
+      return ServiceWorkerCacheResponse::DEFAULT_TYPE;
     case blink::WebServiceWorkerResponseTypeError:
-      return ServiceWorkerRequestResponseHeaders_ResponseType_ERROR_TYPE;
+      return ServiceWorkerCacheResponse::ERROR_TYPE;
     case blink::WebServiceWorkerResponseTypeOpaque:
-      return ServiceWorkerRequestResponseHeaders_ResponseType_OPAQUE_TYPE;
+      return ServiceWorkerCacheResponse::OPAQUE_TYPE;
   }
   NOTREACHED();
-  return ServiceWorkerRequestResponseHeaders_ResponseType_OPAQUE_TYPE;
+  return ServiceWorkerCacheResponse::OPAQUE_TYPE;
 }
 
 struct ResponseReadContext {
@@ -262,12 +261,12 @@ void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
                        base::WeakPtr<storage::BlobStorageContext> blob_storage,
                        scoped_ptr<disk_cache::Entry*> entryptr,
                        int rv);
-void MatchDidReadHeaderData(
+void MatchDidReadMetadata(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
-    scoped_ptr<ServiceWorkerRequestResponseHeaders> headers);
+    scoped_ptr<ServiceWorkerCacheMetadata> headers);
 void MatchDidReadResponseBodyData(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
@@ -293,10 +292,10 @@ void DeleteDidOpenEntry(
 
 // Copy headers out of a cache entry and into a protobuf. The callback is
 // guaranteed to be run.
-void ReadHeaders(disk_cache::Entry* entry, const HeadersCallback& callback);
-void ReadHeadersDidReadHeaderData(
+void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback);
+void ReadMetadataDidReadMetadata(
     disk_cache::Entry* entry,
-    const HeadersCallback& callback,
+    const MetadataCallback& callback,
     const scoped_refptr<net::IOBufferWithSize>& buffer,
     int rv);
 
@@ -316,34 +315,34 @@ void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv) {
 
   DCHECK(put_context->cache_entry);
 
-  ServiceWorkerRequestResponseHeaders headers;
-  headers.set_method(put_context->request->method);
-  headers.set_status_code(put_context->response->status_code);
-  headers.set_status_text(put_context->response->status_text);
-  headers.set_response_type(
-      WebResponseTypeToProtoResponseType(put_context->response->response_type));
+  ServiceWorkerCacheMetadata metadata;
+  ServiceWorkerCacheRequest* request_metadata = metadata.mutable_request();
+  request_metadata->set_method(put_context->request->method);
   for (ServiceWorkerHeaderMap::const_iterator it =
            put_context->request->headers.begin();
        it != put_context->request->headers.end();
        ++it) {
-    ServiceWorkerRequestResponseHeaders::HeaderMap* header_map =
-        headers.add_request_headers();
+    ServiceWorkerCacheHeaderMap* header_map = request_metadata->add_headers();
     header_map->set_name(it->first);
     header_map->set_value(it->second);
   }
 
+  ServiceWorkerCacheResponse* response_metadata = metadata.mutable_response();
+  response_metadata->set_status_code(put_context->response->status_code);
+  response_metadata->set_status_text(put_context->response->status_text);
+  response_metadata->set_response_type(
+      WebResponseTypeToProtoResponseType(put_context->response->response_type));
   for (ServiceWorkerHeaderMap::const_iterator it =
            put_context->response->headers.begin();
        it != put_context->response->headers.end();
        ++it) {
-    ServiceWorkerRequestResponseHeaders::HeaderMap* header_map =
-        headers.add_response_headers();
+    ServiceWorkerCacheHeaderMap* header_map = response_metadata->add_headers();
     header_map->set_name(it->first);
     header_map->set_value(it->second);
   }
 
   scoped_ptr<std::string> serialized(new std::string());
-  if (!headers.SerializeToString(serialized.get())) {
+  if (!metadata.SerializeToString(serialized.get())) {
     put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage,
                               scoped_ptr<ServiceWorkerResponse>(),
                               scoped_ptr<storage::BlobDataHandle>());
@@ -466,13 +465,13 @@ void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
   // Copy the entry pointer before passing it in base::Bind.
   disk_cache::Entry* tmp_entry_ptr = entry.get();
 
-  HeadersCallback headers_callback = base::Bind(MatchDidReadHeaderData,
-                                                base::Passed(request.Pass()),
-                                                callback,
-                                                blob_storage,
-                                                base::Passed(entry.Pass()));
+  MetadataCallback headers_callback = base::Bind(MatchDidReadMetadata,
+                                                 base::Passed(request.Pass()),
+                                                 callback,
+                                                 blob_storage,
+                                                 base::Passed(entry.Pass()));
 
-  ReadHeaders(tmp_entry_ptr, headers_callback);
+  ReadMetadata(tmp_entry_ptr, headers_callback);
 }
 
 bool VaryMatches(const ServiceWorkerHeaderMap& request,
@@ -511,13 +510,13 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
   return true;
 }
 
-void MatchDidReadHeaderData(
+void MatchDidReadMetadata(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
-    scoped_ptr<ServiceWorkerRequestResponseHeaders> headers) {
-  if (!headers) {
+    scoped_ptr<ServiceWorkerCacheMetadata> metadata) {
+  if (!metadata) {
     callback.Run(ServiceWorkerCache::ErrorTypeStorage,
                  scoped_ptr<ServiceWorkerResponse>(),
                  scoped_ptr<storage::BlobDataHandle>());
@@ -526,23 +525,21 @@ void MatchDidReadHeaderData(
 
   scoped_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse(
       request->url,
-      headers->status_code(),
-      headers->status_text(),
-      ProtoResponseTypeToWebResponseType(headers->response_type()),
+      metadata->response().status_code(),
+      metadata->response().status_text(),
+      ProtoResponseTypeToWebResponseType(metadata->response().response_type()),
       ServiceWorkerHeaderMap(),
       "",
       0));
 
-  for (int i = 0; i < headers->response_headers_size(); ++i) {
-    const ServiceWorkerRequestResponseHeaders::HeaderMap header =
-        headers->response_headers(i);
+  for (int i = 0; i < metadata->response().headers_size(); ++i) {
+    const ServiceWorkerCacheHeaderMap header = metadata->response().headers(i);
     response->headers.insert(std::make_pair(header.name(), header.value()));
   }
 
   ServiceWorkerHeaderMap cached_request_headers;
-  for (int i = 0; i < headers->request_headers_size(); ++i) {
-    const ServiceWorkerRequestResponseHeaders::HeaderMap header =
-        headers->request_headers(i);
+  for (int i = 0; i < metadata->request().headers_size(); ++i) {
+    const ServiceWorkerCacheHeaderMap header = metadata->request().headers(i);
     cached_request_headers[header.name()] = header.value();
   }
 
@@ -705,14 +702,14 @@ void DeleteDidOpenEntry(
   callback.Run(ServiceWorkerCache::ErrorTypeOK);
 }
 
-void ReadHeaders(disk_cache::Entry* entry, const HeadersCallback& callback) {
+void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback) {
   DCHECK(entry);
 
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(entry->GetDataSize(INDEX_HEADERS)));
 
   net::CompletionCallback read_header_callback =
-      base::Bind(ReadHeadersDidReadHeaderData, entry, callback, buffer);
+      base::Bind(ReadMetadataDidReadMetadata, entry, callback, buffer);
 
   int read_rv = entry->ReadData(
       INDEX_HEADERS, 0, buffer.get(), buffer->size(), read_header_callback);
@@ -721,25 +718,25 @@ void ReadHeaders(disk_cache::Entry* entry, const HeadersCallback& callback) {
     read_header_callback.Run(read_rv);
 }
 
-void ReadHeadersDidReadHeaderData(
+void ReadMetadataDidReadMetadata(
     disk_cache::Entry* entry,
-    const HeadersCallback& callback,
+    const MetadataCallback& callback,
     const scoped_refptr<net::IOBufferWithSize>& buffer,
     int rv) {
   if (rv != buffer->size()) {
-    callback.Run(scoped_ptr<ServiceWorkerRequestResponseHeaders>());
+    callback.Run(scoped_ptr<ServiceWorkerCacheMetadata>());
     return;
   }
 
-  scoped_ptr<ServiceWorkerRequestResponseHeaders> headers(
-      new ServiceWorkerRequestResponseHeaders());
+  scoped_ptr<ServiceWorkerCacheMetadata> metadata(
+      new ServiceWorkerCacheMetadata());
 
-  if (!headers->ParseFromArray(buffer->data(), buffer->size())) {
-    callback.Run(scoped_ptr<ServiceWorkerRequestResponseHeaders>());
+  if (!metadata->ParseFromArray(buffer->data(), buffer->size())) {
+    callback.Run(scoped_ptr<ServiceWorkerCacheMetadata>());
     return;
   }
 
-  callback.Run(headers.Pass());
+  callback.Run(metadata.Pass());
 }
 
 void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
@@ -1106,22 +1103,22 @@ void ServiceWorkerCache::KeysProcessNextEntry(
     return;
   }
 
-  ReadHeaders(
+  ReadMetadata(
       *iter,
-      base::Bind(KeysDidReadHeaders, base::Passed(keys_context.Pass()), iter));
+      base::Bind(KeysDidReadMetadata, base::Passed(keys_context.Pass()), iter));
 }
 
 // static
-void ServiceWorkerCache::KeysDidReadHeaders(
+void ServiceWorkerCache::KeysDidReadMetadata(
     scoped_ptr<KeysContext> keys_context,
     const Entries::iterator& iter,
-    scoped_ptr<ServiceWorkerRequestResponseHeaders> headers) {
+    scoped_ptr<ServiceWorkerCacheMetadata> metadata) {
   disk_cache::Entry* entry = *iter;
 
-  if (headers) {
+  if (metadata) {
     keys_context->out_keys->push_back(
         ServiceWorkerFetchRequest(GURL(entry->GetKey()),
-                                  headers->method(),
+                                  metadata->request().method(),
                                   ServiceWorkerHeaderMap(),
                                   GURL(),
                                   false));
@@ -1129,9 +1126,8 @@ void ServiceWorkerCache::KeysDidReadHeaders(
     ServiceWorkerHeaderMap& req_headers =
         keys_context->out_keys->back().headers;
 
-    for (int i = 0; i < headers->request_headers_size(); ++i) {
-      const ServiceWorkerRequestResponseHeaders::HeaderMap header =
-          headers->request_headers(i);
+    for (int i = 0; i < metadata->request().headers_size(); ++i) {
+      const ServiceWorkerCacheHeaderMap header = metadata->request().headers(i);
       req_headers.insert(std::make_pair(header.name(), header.value()));
     }
   } else {
