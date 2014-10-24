@@ -89,7 +89,7 @@ def main(args):
       help='Directory for stripped libraries')
   parser.add_option('--packed-libraries-dir',
       help='Directory for packed libraries')
-  parser.add_option('--libraries',
+  parser.add_option('--libraries', action='append',
       help='List of libraries')
   parser.add_option('--stamp', help='Path to touch on success')
 
@@ -99,7 +99,9 @@ def main(args):
   has_relocations_with_addends = (options.has_relocations_with_addends == '1')
   exclude_packing_set = set(shlex.split(options.exclude_packing_list))
 
-  libraries = build_utils.ParseGypList(options.libraries)
+  libraries = []
+  for libs_arg in options.libraries:
+    libraries += build_utils.ParseGypList(libs_arg)
 
   if options.clear_dir:
     build_utils.DeleteDirectory(options.packed_libraries_dir)
