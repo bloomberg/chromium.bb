@@ -11,9 +11,6 @@ namespace content {
 
 namespace webcrypto {
 
-class PublicKeyNss;
-class PrivateKeyNss;
-
 // Base class for an RSA algorithm whose keys additionaly have a hash parameter
 // bound to them. Provides functionality for generating, importing, and
 // exporting keys.
