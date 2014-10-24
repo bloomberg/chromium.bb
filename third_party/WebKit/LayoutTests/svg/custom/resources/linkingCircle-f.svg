@@ -4,7 +4,7 @@
 <!-- linkingCircle-f.svg                                                     -->
 <!-- Auxiliary file for linking tests.                                     -->
 <!-- ====================================================================== -->
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="linkingCircle-f.svg" width="480" height="360" onload="report()">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="linkingCircle-f.svg" width="480" height="360" onload="setTimeout(report, 0);">
 <script>
 function report() {
 if (window.testRunner)

@@ -7,6 +7,16 @@
   <link rel="stylesheet" type="text/css" href="resources/test-scalable-background-image1.css"/>
 </head>
 <body>
+  <script src="../../resources/run-after-display.js"></script>
+  <script>
+  if (window.testRunner)
+      testRunner.waitUntilDone();
+
+  runAfterDisplay(function() {
+      if (window.testRunner)
+          testRunner.notifyDone();
+  });
+  </script>
   <h1>scalable CSS background</h1>
   <h4>WICD Core 1.0 #11</h4>
   <p>

@@ -23,6 +23,12 @@ var xhr = new XMLHttpRequest;
 function sendXHR()
 {
     xhr.open("GET", "", true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState != 4)
+            return;
+        if (window.testRunner)
+            testRunner.notifyDone();
+    };
     xhr.send();
 }
 window.addEventListener("DOMSubtreeModified", sendXHR);

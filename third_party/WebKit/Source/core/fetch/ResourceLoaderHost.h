@@ -47,10 +47,10 @@ class ResourceLoaderHost : public WillBeGarbageCollectedMixin {
 public:
     virtual void incrementRequestCount(const Resource*) = 0;
     virtual void decrementRequestCount(const Resource*) = 0;
-    virtual void didLoadResource(Resource*) = 0;
+    virtual void didLoadResource() = 0;
     virtual void redirectReceived(Resource*, const ResourceResponse&) = 0;
 
-    virtual void didFinishLoading(const Resource*, double finishTime, int64_t encodedDataLength) = 0;
+    virtual void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength) = 0;
     virtual void didChangeLoadingPriority(const Resource*, ResourceLoadPriority, int intraPriorityValue) = 0;
     virtual void didFailLoading(const Resource*, const ResourceError&) = 0;
 
