@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_emulated.h"
+#include "base/memory/discardable_memory_shmem_allocator.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -35,6 +36,7 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
+#include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/content_child_helpers.h"
@@ -565,6 +567,9 @@ void RenderThreadImpl::Init() {
     cc::RasterWorkerPool::SetNumRasterThreads(num_raster_threads);
   }
 
+  base::DiscardableMemoryShmemAllocator::SetInstance(
+      ChildThread::discardable_shared_memory_manager());
+
   service_registry()->AddService<RenderFrameSetup>(
       base::Bind(CreateRenderFrameSetup));
 
@@ -1011,6 +1016,7 @@ void RenderThreadImpl::IdleHandler() {
   }
 
   base::allocator::ReleaseFreeMemory();
+  base::DiscardableMemory::ReleaseFreeMemory();
 
   // Continue the idle timer if the webkit shared timer is not suspended or
   // something is left to do.

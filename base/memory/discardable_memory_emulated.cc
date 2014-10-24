@@ -113,5 +113,9 @@ void DiscardableMemoryEmulated::Purge() {
   memory_.reset();
 }
 
+bool DiscardableMemoryEmulated::IsMemoryResident() const {
+  return true;
+}
+
 }  // namespace internal
 }  // namespace base

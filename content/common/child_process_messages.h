@@ -201,3 +201,10 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
 IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
                      gfx::GpuMemoryBufferType,
                      gfx::GpuMemoryBufferId)
+
+// Asks the browser to create a block of discardable shared memory for the
+// child process.
+IPC_SYNC_MESSAGE_CONTROL1_1(
+    ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
+    uint32 /* size */,
+    base::SharedMemoryHandle)

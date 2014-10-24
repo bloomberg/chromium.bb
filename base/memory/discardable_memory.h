@@ -19,7 +19,8 @@ enum DiscardableMemoryType {
   DISCARDABLE_MEMORY_TYPE_NONE,
   DISCARDABLE_MEMORY_TYPE_ASHMEM,
   DISCARDABLE_MEMORY_TYPE_MACH,
-  DISCARDABLE_MEMORY_TYPE_EMULATED
+  DISCARDABLE_MEMORY_TYPE_EMULATED,
+  DISCARDABLE_MEMORY_TYPE_SHMEM
 };
 
 enum DiscardableMemoryLockStatus {
@@ -87,6 +88,10 @@ class BASE_EXPORT DiscardableMemory {
 
   // Create a DiscardableMemory instance with preferred type and |size|.
   static scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size);
+
+  // Discardable memory implementations might use this to release memory
+  // or resources assigned to instances that have been purged.
+  static void ReleaseFreeMemory();
 
   // Discardable memory implementations might allow an elevated usage level
   // while in frequent use. Call this to have the usage reduced to the base
