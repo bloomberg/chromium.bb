@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 
 class PrefRegistrySimple;
@@ -54,7 +55,9 @@ class UserImageScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public ScreenObserver, public ScreenManager {
+class WizardController : public ScreenObserver,
+                         public ScreenManager,
+                         public EulaScreen::Delegate {
  public:
   // Observes screen changes.
   class Observer {
@@ -239,8 +242,6 @@ class WizardController : public ScreenObserver, public ScreenManager {
   virtual void ShowCurrentScreen() override;
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password) override;
-  virtual void SetUsageStatisticsReporting(bool val) override;
-  virtual bool GetUsageStatisticsReporting() const override;
   virtual void SetHostConfiguration() override;
   virtual void ConfigureHost(bool accepted_eula,
                              const std::string& lang,
@@ -250,6 +251,10 @@ class WizardController : public ScreenObserver, public ScreenManager {
   virtual ErrorScreen* GetErrorScreen() override;
   virtual void ShowErrorScreen() override;
   virtual void HideErrorScreen(BaseScreen* parent_screen) override;
+
+  // Overridden from EulaScreen::Delegate:
+  virtual void SetUsageStatisticsReporting(bool val) override;
+  virtual bool GetUsageStatisticsReporting() const override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(

@@ -64,10 +64,6 @@ class ScreenObserver {
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password) = 0;
 
-  // Whether usage statistics reporting is enabled on EULA screen.
-  virtual void SetUsageStatisticsReporting(bool val) = 0;
-  virtual bool GetUsageStatisticsReporting() const = 0;
-
   // Set remora configuration from shark.
   virtual void SetHostConfiguration() = 0;
   virtual void ConfigureHost(bool accepted_eula,

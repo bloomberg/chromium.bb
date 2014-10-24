@@ -47,8 +47,6 @@ class DeviceDisabledScreenTest : public testing::Test, public ScreenObserver {
   void ShowCurrentScreen() override;
   void OnSetUserNamePassword(const std::string& username,
                              const std::string& password) override;
-  void SetUsageStatisticsReporting(bool val) override;
-  bool GetUsageStatisticsReporting() const override;
   void SetHostConfiguration() override;
   void ConfigureHost(bool accepted_eula,
                      const std::string& lang,
@@ -102,13 +100,6 @@ void DeviceDisabledScreenTest::ShowCurrentScreen() {
 void DeviceDisabledScreenTest::OnSetUserNamePassword(
     const std::string& username,
     const std::string& password) {
-}
-
-void DeviceDisabledScreenTest::SetUsageStatisticsReporting(bool val) {
-}
-
-bool DeviceDisabledScreenTest::GetUsageStatisticsReporting() const {
-  return false;
 }
 
 void DeviceDisabledScreenTest::SetHostConfiguration() {

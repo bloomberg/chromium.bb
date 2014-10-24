@@ -27,6 +27,11 @@ EulaScreen::~EulaScreen() {
     actor_->SetDelegate(NULL);
 }
 
+void EulaScreen::SetDelegate(Delegate* delegate) {
+  DCHECK(delegate);
+  delegate_ = delegate;
+}
+
 void EulaScreen::PrepareToShow() {
   if (actor_)
     actor_->PrepareToShow();
@@ -68,7 +73,8 @@ GURL EulaScreen::GetOemEulaUrl() const {
 }
 
 void EulaScreen::OnExit(bool accepted, bool usage_stats_enabled) {
-  get_screen_observer()->SetUsageStatisticsReporting(usage_stats_enabled);
+  if (delegate_)
+    delegate_->SetUsageStatisticsReporting(usage_stats_enabled);
   get_screen_observer()->OnExit(accepted
                    ? ScreenObserver::EULA_ACCEPTED
                    : ScreenObserver::EULA_BACK);
@@ -90,7 +96,7 @@ void EulaScreen::OnPasswordFetched(const std::string& tpm_password) {
 }
 
 bool EulaScreen::IsUsageStatsEnabled() const {
-  return get_screen_observer()->GetUsageStatisticsReporting();
+  return delegate_ && delegate_->GetUsageStatisticsReporting();
 }
 
 void EulaScreen::OnActorDestroyed(EulaScreenActor* actor) {

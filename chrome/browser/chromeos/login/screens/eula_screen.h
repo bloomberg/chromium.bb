@@ -21,8 +21,19 @@ class EulaScreen : public BaseScreen,
                    public EulaScreenActor::Delegate,
                    public TpmPasswordFetcherDelegate {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Whether usage statistics reporting is enabled on EULA screen.
+    virtual void SetUsageStatisticsReporting(bool val) = 0;
+    virtual bool GetUsageStatisticsReporting() const = 0;
+  };
+
   EulaScreen(ScreenObserver* observer, EulaScreenActor* actor);
   virtual ~EulaScreen();
+
+  void SetDelegate(Delegate* delegate);
 
   // BaseScreen implementation:
   virtual void PrepareToShow() override;
@@ -52,6 +63,8 @@ class EulaScreen : public BaseScreen,
   std::string tpm_password_;
 
   EulaScreenActor* actor_;
+
+  Delegate* delegate_;
 
   TpmPasswordFetcher password_fetcher_;
 

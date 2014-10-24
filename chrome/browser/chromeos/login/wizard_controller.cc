@@ -304,7 +304,10 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new chromeos::UserImageScreen(
         this, oobe_display_->GetUserImageScreenActor());
   } else if (screen_name == kEulaScreenName) {
-    return new chromeos::EulaScreen(this, oobe_display_->GetEulaScreenActor());
+    scoped_ptr<chromeos::EulaScreen> screen(
+        new chromeos::EulaScreen(this, oobe_display_->GetEulaScreenActor()));
+    screen->SetDelegate(this);
+    return screen.release();
   } else if (screen_name == kEnrollmentScreenName) {
     return new chromeos::EnrollmentScreen(
         this, oobe_display_->GetEnrollmentScreenActor());
@@ -1022,14 +1025,6 @@ void WizardController::OnSetUserNamePassword(const std::string& username,
   password_ = password;
 }
 
-void WizardController::SetUsageStatisticsReporting(bool val) {
-  usage_statistics_reporting_ = val;
-}
-
-bool WizardController::GetUsageStatisticsReporting() const {
-  return usage_statistics_reporting_;
-}
-
 void WizardController::ShowErrorScreen() {
   VLOG(1) << "Showing error screen.";
   SetCurrentScreen(GetScreen(kErrorScreenName));
@@ -1039,6 +1034,14 @@ void WizardController::HideErrorScreen(BaseScreen* parent_screen) {
   DCHECK(parent_screen);
   VLOG(1) << "Hiding error screen.";
   SetCurrentScreen(parent_screen);
+}
+
+void WizardController::SetUsageStatisticsReporting(bool val) {
+  usage_statistics_reporting_ = val;
+}
+
+bool WizardController::GetUsageStatisticsReporting() const {
+  return usage_statistics_reporting_;
 }
 
 void WizardController::OnAccessibilityStatusChanged(
