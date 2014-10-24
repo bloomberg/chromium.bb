@@ -1881,6 +1881,14 @@ const Experiment kExperiments[] = {
         data_reduction_proxy::switches::kEnableDataReductionProxyDev,
         data_reduction_proxy::switches::kDisableDataReductionProxyDev)
   },
+  {
+    "enable-data-reduction-proxy-alt",
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_NAME,
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(
+        data_reduction_proxy::switches::kEnableDataReductionProxyAlt)
+  },
 #endif
   {
     "enable-experimental-hotwording",
@@ -1954,14 +1962,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnPackets)
   },
 #endif  // OS_CHROMEOS
-  {
-    "enable-data-reduction-proxy-alt",
-    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_NAME,
-    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_DESCRIPTION,
-    kOsAndroid,
-    SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
-                          kEnableDataReductionProxyAlt)
-  },
 #if defined(USE_AURA)
   {
     "enable-tab-audio-muting",
@@ -2127,6 +2127,11 @@ bool SkipConditionalExperiment(const Experiment& experiment,
   // enable-data-reduction-proxy-dev is only available for the Dev/Beta channel.
   if (!strcmp("enable-data-reduction-proxy-dev", experiment.internal_name) &&
       chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_BETA &&
+      chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV) {
+    return true;
+  }
+  // enable-data-reduction-proxy-alt is only available for the Dev channel.
+  if (!strcmp("enable-data-reduction-proxy-alt", experiment.internal_name) &&
       chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_DEV) {
     return true;
   }
