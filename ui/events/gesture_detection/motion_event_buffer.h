@@ -13,6 +13,7 @@
 namespace ui {
 
 class MotionEvent;
+class MotionEventGeneric;
 
 // Allows event forwarding and flush requests from a |MotionEventBuffer|.
 class MotionEventBufferClient {
@@ -52,8 +53,10 @@ class GESTURE_DETECTION_EXPORT MotionEventBuffer {
   void Flush(base::TimeTicks frame_time);
 
  private:
-  typedef ScopedVector<MotionEvent> MotionEventVector;
+  typedef ScopedVector<MotionEventGeneric> MotionEventVector;
 
+  void FlushWithResampling(MotionEventVector events,
+                           base::TimeTicks resample_time);
   void FlushWithoutResampling(MotionEventVector events);
 
   MotionEventBufferClient* const client_;
@@ -61,7 +64,7 @@ class GESTURE_DETECTION_EXPORT MotionEventBuffer {
 
   // Time of the most recently extrapolated event. This will be 0 if the
   // last sent event was not extrapolated. Used internally to guard against
-  // conflicts between events received from the platfrom that may have an
+  // conflicts between events received from the platform that may have an
   // earlier timestamp than that synthesized at the latest resample.
   base::TimeTicks last_extrapolated_event_time_;
 

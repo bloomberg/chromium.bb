@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gesture_detection/gesture_event_data_packet.h"
-#include "ui/events/test/mock_motion_event.h"
+#include "ui/events/test/motion_event_test_utils.h"
 
 using ui::test::MockMotionEvent;
 

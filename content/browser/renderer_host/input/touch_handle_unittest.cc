@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/input/touch_handle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/test/mock_motion_event.h"
+#include "ui/events/test/motion_event_test_utils.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using ui::test::MockMotionEvent;

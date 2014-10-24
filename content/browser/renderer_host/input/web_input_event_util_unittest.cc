@@ -24,13 +24,12 @@ using ui::MotionEventGeneric;
 namespace content {
 
 TEST(WebInputEventUtilTest, MotionEventConversion) {
-  ui::PointerProperties pointer(5, 10);
+  ui::PointerProperties pointer(5, 10, 40);
   pointer.id = 15;
   pointer.raw_x = 20;
   pointer.raw_y = 25;
   pointer.pressure = 30;
   pointer.touch_minor = 35;
-  pointer.touch_major = 40;
   pointer.orientation = static_cast<float>(-M_PI / 2);
   MotionEventGeneric event(
       MotionEvent::ACTION_DOWN, base::TimeTicks::Now(), pointer);

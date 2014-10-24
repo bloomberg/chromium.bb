@@ -87,7 +87,7 @@ struct BitSet32 {
     return n;
   }
 
-  // Gets the inde of the specified bit in the set, which is the number of
+  // Gets the index of the specified bit in the set, which is the number of
   // marked bits that appear before the specified bit.
   inline uint32_t get_index_of_bit(uint32_t n) const {
     DCHECK_LE(n, 31U);

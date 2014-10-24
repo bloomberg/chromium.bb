@@ -155,26 +155,11 @@ ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
 }
 
 int MotionEventWeb::GetButtonState() const {
-  NOTIMPLEMENTED();
   return 0;
 }
 
 int MotionEventWeb::GetFlags() const {
   return WebEventModifiersToEventFlags(event_.modifiers);
-}
-
-scoped_ptr<ui::MotionEvent> MotionEventWeb::Clone() const {
-  return scoped_ptr<MotionEvent>(new MotionEventWeb(event_));
-}
-
-scoped_ptr<ui::MotionEvent> MotionEventWeb::Cancel() const {
-  WebTouchEvent cancel_event(event_);
-  WebTouchEventTraits::ResetTypeAndTouchStates(
-      blink::WebInputEvent::TouchCancel,
-      // TODO(rbyers): Shouldn't we use a fresh timestamp?
-      event_.timeStampSeconds,
-      &cancel_event);
-  return scoped_ptr<MotionEvent>(new MotionEventWeb(cancel_event));
 }
 
 }  // namespace content

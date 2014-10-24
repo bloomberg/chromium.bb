@@ -6,7 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gesture_detection/touch_disposition_gesture_filter.h"
-#include "ui/events/test/mock_motion_event.h"
+#include "ui/events/test/motion_event_test_utils.h"
 
 using ui::test::MockMotionEvent;
 

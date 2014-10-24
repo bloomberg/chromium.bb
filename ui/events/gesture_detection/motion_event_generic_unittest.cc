@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
+#include "ui/events/test/motion_event_test_utils.h"
 
 namespace ui {
 
@@ -16,12 +17,12 @@ TEST(MotionEventGenericTest, Basic) {
   EXPECT_EQ(0U, event.GetHistorySize());
   EXPECT_EQ(event_time, event.GetEventTime());
 
-  event.PushPointer(PointerProperties(8.3f, 4.7f));
+  event.PushPointer(PointerProperties(8.3f, 4.7f, 0.9f));
   ASSERT_EQ(2U, event.GetPointerCount());
   EXPECT_EQ(8.3f, event.GetX(1));
   EXPECT_EQ(4.7f, event.GetY(1));
 
-  event.PushPointer(PointerProperties(2.3f, -3.7f));
+  event.PushPointer(PointerProperties(2.3f, -3.7f, 5.8f));
   ASSERT_EQ(3U, event.GetPointerCount());
   EXPECT_EQ(2.3f, event.GetX(2));
   EXPECT_EQ(-3.7f, event.GetY(2));
@@ -44,31 +45,78 @@ TEST(MotionEventGenericTest, Basic) {
 
   event.set_action_index(1);
   EXPECT_EQ(1, event.GetActionIndex());
+
+  event.set_action(MotionEvent::ACTION_MOVE);
+  EXPECT_EQ(MotionEvent::ACTION_MOVE, event.GetAction());
+
+  PointerProperties historical_pointer0(1.2f, 2.4f, 1.f);
+  PointerProperties historical_pointer1(2.4f, 4.8f, 2.f);
+  PointerProperties historical_pointer2(4.8f, 9.6f, 3.f);
+  MotionEventGeneric historical_event(
+      MotionEvent::ACTION_MOVE,
+      event_time - base::TimeDelta::FromMilliseconds(5),
+      historical_pointer0);
+  historical_event.PushPointer(historical_pointer1);
+  historical_event.PushPointer(historical_pointer2);
+
+  event.PushHistoricalEvent(historical_event.Clone());
+  EXPECT_EQ(1U, event.GetHistorySize());
+  EXPECT_EQ(event_time - base::TimeDelta::FromMilliseconds(5),
+            event.GetHistoricalEventTime(0));
+  EXPECT_EQ(1.2f, event.GetHistoricalX(0, 0));
+  EXPECT_EQ(2.4f, event.GetHistoricalY(0, 0));
+  EXPECT_EQ(1.f, event.GetHistoricalTouchMajor(0, 0));
+  EXPECT_EQ(2.4f, event.GetHistoricalX(1, 0));
+  EXPECT_EQ(4.8f, event.GetHistoricalY(1, 0));
+  EXPECT_EQ(2.f, event.GetHistoricalTouchMajor(1, 0));
+  EXPECT_EQ(4.8f, event.GetHistoricalX(2, 0));
+  EXPECT_EQ(9.6f, event.GetHistoricalY(2, 0));
+  EXPECT_EQ(3.f, event.GetHistoricalTouchMajor(2, 0));
 }
 
 TEST(MotionEventGenericTest, Clone) {
   MotionEventGeneric event(MotionEvent::ACTION_DOWN,
                            base::TimeTicks::Now(),
-                           PointerProperties(8.3f, 4.7f));
+                           PointerProperties(8.3f, 4.7f, 2.f));
   event.set_id(1);
   event.set_button_state(MotionEvent::BUTTON_PRIMARY);
 
   scoped_ptr<MotionEvent> clone = event.Clone();
   ASSERT_TRUE(clone);
-  EXPECT_EQ(event, *clone);
+  EXPECT_EQ(test::ToString(event), test::ToString(*clone));
+}
+
+TEST(MotionEventGenericTest, CloneWithHistory) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  base::TimeTicks historical_event_time =
+      event_time - base::TimeDelta::FromMilliseconds(5);
+
+  PointerProperties pointer(8.3f, 4.7f, 10.1f);
+  MotionEventGeneric event(MotionEvent::ACTION_MOVE, event_time, pointer);
+
+  PointerProperties historical_pointer(3.4f, -4.3f, 11.5);
+  scoped_ptr<MotionEvent> historical_event(new MotionEventGeneric(
+      MotionEvent::ACTION_MOVE, historical_event_time, historical_pointer));
+
+  event.PushHistoricalEvent(historical_event.Pass());
+  EXPECT_EQ(1U, event.GetHistorySize());
+
+  scoped_ptr<MotionEvent> clone = event.Clone();
+  ASSERT_TRUE(clone);
+  EXPECT_EQ(test::ToString(event), test::ToString(*clone));
 }
 
 TEST(MotionEventGenericTest, Cancel) {
   MotionEventGeneric event(MotionEvent::ACTION_UP,
                            base::TimeTicks::Now(),
-                           PointerProperties(8.7f, 4.3f));
+                           PointerProperties(8.7f, 4.3f, 1.f));
   event.set_id(2);
   event.set_button_state(MotionEvent::BUTTON_SECONDARY);
 
   scoped_ptr<MotionEvent> cancel = event.Cancel();
   event.set_action(MotionEvent::ACTION_CANCEL);
   ASSERT_TRUE(cancel);
-  EXPECT_EQ(event, *cancel);
+  EXPECT_EQ(test::ToString(event), test::ToString(*cancel));
 }
 
 TEST(MotionEventGenericTest, FindPointerIndexOfId) {
@@ -96,6 +144,53 @@ TEST(MotionEventGenericTest, FindPointerIndexOfId) {
   EXPECT_EQ(2, event2.FindPointerIndexOfId(3));
   EXPECT_EQ(-1, event2.FindPointerIndexOfId(1));
   EXPECT_EQ(-1, event2.FindPointerIndexOfId(2));
+}
+
+TEST(MotionEventGenericTest, ToString) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  base::TimeTicks historical_event_time0 =
+      event_time - base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks historical_event_time1 =
+      event_time - base::TimeDelta::FromMilliseconds(5);
+
+  PointerProperties pointer0(1, 2, 3);
+  pointer0.id = 7;
+  pointer0.pressure = 10;
+  pointer0.touch_minor = 15;
+  pointer0.touch_major = 20;
+  pointer0.orientation = 1;
+
+  PointerProperties pointer1(4, 5, 6);
+  pointer1.id = 3;
+  pointer0.pressure = 25;
+  pointer0.touch_minor = 30;
+  pointer0.touch_major = 35;
+  pointer0.orientation = -1;
+
+  MotionEventGeneric event(MotionEvent::ACTION_MOVE, event_time, pointer0);
+  event.PushPointer(pointer1);
+
+  pointer0.x += 50;
+  pointer1.x -= 50;
+  scoped_ptr<MotionEventGeneric> historical_event0(new MotionEventGeneric(
+      MotionEvent::ACTION_MOVE, historical_event_time0, pointer0));
+  historical_event0->PushPointer(pointer1);
+
+  pointer0.x += 100;
+  pointer1.x -= 100;
+  scoped_ptr<MotionEventGeneric> historical_event1(new MotionEventGeneric(
+      MotionEvent::ACTION_MOVE, historical_event_time1, pointer0));
+  historical_event1->PushPointer(pointer1);
+
+  event.PushHistoricalEvent(historical_event0.Pass());
+  event.PushHistoricalEvent(historical_event1.Pass());
+  ASSERT_EQ(2U, event.GetHistorySize());
+  ASSERT_EQ(2U, event.GetPointerCount());
+
+  // Do a basic smoke exercise of event stringification to ensure things don't
+  // explode in the process.
+  std::string event_string = test::ToString(event);
+  EXPECT_FALSE(event_string.empty());
 }
 
 }  // namespace ui

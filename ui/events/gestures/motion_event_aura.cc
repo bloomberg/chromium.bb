@@ -173,7 +173,6 @@ MotionEvent::ToolType MotionEventAura::GetToolType(size_t pointer_index) const {
 }
 
 int MotionEventAura::GetButtonState() const {
-  NOTIMPLEMENTED();
   return 0;
 }
 
@@ -185,26 +184,15 @@ base::TimeTicks MotionEventAura::GetEventTime() const {
   return last_touch_time_;
 }
 
-scoped_ptr<MotionEvent> MotionEventAura::Clone() const {
-  return scoped_ptr<MotionEvent>(new MotionEventAura(pointer_count_,
-                                                     last_touch_time_,
-                                                     cached_action_,
-                                                     cached_action_index_,
-                                                     flags_,
-                                                     active_touches_));
-}
-scoped_ptr<MotionEvent> MotionEventAura::Cancel() const {
-  return scoped_ptr<MotionEvent>(new MotionEventAura(
-      pointer_count_, last_touch_time_, ACTION_CANCEL, -1, 0, active_touches_));
-}
-
 void MotionEventAura::CleanupRemovedTouchPoints(const TouchEvent& event) {
   if (event.type() != ET_TOUCH_RELEASED &&
       event.type() != ET_TOUCH_CANCELLED) {
     return;
   }
 
-  int index_to_delete = static_cast<int>(GetIndexFromId(event.touch_id()));
+  DCHECK(pointer_count_);
+  int index_to_delete = GetIndexFromId(event.touch_id());
+  cached_action_index_ = 0;
   pointer_count_--;
   active_touches_[index_to_delete] = active_touches_[pointer_count_];
 }
@@ -249,8 +237,7 @@ void MotionEventAura::UpdateCachedAction(const TouchEvent& touch) {
         cached_action_ = ACTION_DOWN;
       } else {
         cached_action_ = ACTION_POINTER_DOWN;
-        cached_action_index_ =
-            static_cast<int>(GetIndexFromId(touch.touch_id()));
+        cached_action_index_ = GetIndexFromId(touch.touch_id());
       }
       break;
     case ET_TOUCH_RELEASED:
@@ -258,9 +245,7 @@ void MotionEventAura::UpdateCachedAction(const TouchEvent& touch) {
         cached_action_ = ACTION_UP;
       } else {
         cached_action_ = ACTION_POINTER_UP;
-        cached_action_index_ =
-            static_cast<int>(GetIndexFromId(touch.touch_id()));
-        DCHECK_LT(cached_action_index_, static_cast<int>(pointer_count_));
+        cached_action_index_ = GetIndexFromId(touch.touch_id());
       }
       break;
     case ET_TOUCH_CANCELLED:
@@ -275,13 +260,11 @@ void MotionEventAura::UpdateCachedAction(const TouchEvent& touch) {
   }
 }
 
-size_t MotionEventAura::GetIndexFromId(int id) const {
-  for (size_t i = 0; i < pointer_count_; ++i) {
-    if (active_touches_[i].touch_id == id)
-      return i;
-  }
-  NOTREACHED();
-  return 0;
+int MotionEventAura::GetIndexFromId(int id) const {
+  int index = FindPointerIndexOfId(id);
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, static_cast<int>(pointer_count_));
+  return index;
 }
 
 }  // namespace ui

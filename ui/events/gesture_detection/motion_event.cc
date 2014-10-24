@@ -5,6 +5,7 @@
 #include "ui/events/gesture_detection/motion_event.h"
 
 #include "base/logging.h"
+#include "ui/events/gesture_detection/motion_event_generic.h"
 
 namespace ui {
 
@@ -45,49 +46,12 @@ int MotionEvent::FindPointerIndexOfId(int id) const {
   return -1;
 }
 
-bool operator==(const MotionEvent& lhs, const MotionEvent& rhs) {
-  if (lhs.GetId() != rhs.GetId() || lhs.GetAction() != rhs.GetAction() ||
-      lhs.GetActionIndex() != rhs.GetActionIndex() ||
-      lhs.GetPointerCount() != rhs.GetPointerCount() ||
-      lhs.GetButtonState() != rhs.GetButtonState() ||
-      lhs.GetEventTime() != rhs.GetEventTime() ||
-      lhs.GetHistorySize() != rhs.GetHistorySize())
-    return false;
-
-  for (size_t i = 0; i < lhs.GetPointerCount(); ++i) {
-    int rhsi = rhs.FindPointerIndexOfId(lhs.GetPointerId(i));
-    if (rhsi == -1)
-      return false;
-
-    if (lhs.GetX(i) != rhs.GetX(rhsi) || lhs.GetY(i) != rhs.GetY(rhsi) ||
-        lhs.GetRawX(i) != rhs.GetRawX(rhsi) ||
-        lhs.GetRawY(i) != rhs.GetRawY(rhsi) ||
-        lhs.GetTouchMajor(i) != rhs.GetTouchMajor(rhsi) ||
-        lhs.GetTouchMinor(i) != rhs.GetTouchMinor(rhsi) ||
-        lhs.GetOrientation(i) != rhs.GetOrientation(rhsi) ||
-        lhs.GetPressure(i) != rhs.GetPressure(rhsi) ||
-        lhs.GetToolType(i) != rhs.GetToolType(rhsi))
-      return false;
-
-    for (size_t h = 0; h < lhs.GetHistorySize(); ++h) {
-      if (lhs.GetHistoricalX(i, h) != rhs.GetHistoricalX(rhsi, h) ||
-          lhs.GetHistoricalY(i, h) != rhs.GetHistoricalY(rhsi, h) ||
-          lhs.GetHistoricalTouchMajor(i, h) !=
-              rhs.GetHistoricalTouchMajor(rhsi, h))
-        return false;
-    }
-  }
-
-  for (size_t h = 0; h < lhs.GetHistorySize(); ++h) {
-    if (lhs.GetHistoricalEventTime(h) != rhs.GetHistoricalEventTime(h))
-      return false;
-  }
-
-  return true;
+scoped_ptr<MotionEvent> MotionEvent::Clone() const {
+  return MotionEventGeneric::CloneEvent(*this);
 }
 
-bool operator!=(const MotionEvent& lhs, const MotionEvent& rhs) {
-  return !(lhs == rhs);
+scoped_ptr<MotionEvent> MotionEvent::Cancel() const {
+  return MotionEventGeneric::CancelEvent(*this);
 }
 
 }  // namespace ui

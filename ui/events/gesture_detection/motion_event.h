@@ -76,9 +76,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual float GetHistoricalY(size_t pointer_index,
                                size_t historical_index) const;
 
-  virtual scoped_ptr<MotionEvent> Clone() const = 0;
-  virtual scoped_ptr<MotionEvent> Cancel() const = 0;
-
+  // Utility accessor methods for convenience.
   float GetX() const { return GetX(0); }
   float GetY() const { return GetY(0); }
   float GetRawX() const { return GetRawX(0); }
@@ -98,12 +96,14 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
 
   // O(N) search of pointers (use sparingly!). Returns -1 if |id| nonexistent.
   int FindPointerIndexOfId(int id) const;
-};
 
-GESTURE_DETECTION_EXPORT bool operator==(const MotionEvent& lhs,
-                                         const MotionEvent& rhs);
-GESTURE_DETECTION_EXPORT bool operator!=(const MotionEvent& lhs,
-                                         const MotionEvent& rhs);
+  // Note that these methods perform shallow copies of the originating events.
+  // They guarantee only that the returned type will reflect the same
+  // data exposed by the MotionEvent interface; no guarantees are made that the
+  // underlying implementation is identical to the source implementation.
+  scoped_ptr<MotionEvent> Clone() const;
+  scoped_ptr<MotionEvent> Cancel() const;
+};
 
 }  // namespace ui
 

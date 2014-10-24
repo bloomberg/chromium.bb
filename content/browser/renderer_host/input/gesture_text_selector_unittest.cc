@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/motion_event.h"
-#include "ui/events/test/mock_motion_event.h"
+#include "ui/events/test/motion_event_test_utils.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using ui::MotionEvent;

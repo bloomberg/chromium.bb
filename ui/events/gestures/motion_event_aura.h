@@ -42,9 +42,6 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   virtual int GetFlags() const override;
   virtual base::TimeTicks GetEventTime() const override;
 
-  virtual scoped_ptr<MotionEvent> Clone() const override;
-  virtual scoped_ptr<MotionEvent> Cancel() const override;
-
   int GetSourceDeviceId(size_t pointer_index) const;
 
   // We can't cleanup removed touch points immediately upon receipt of a
@@ -81,7 +78,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   void AddTouch(const TouchEvent& touch);
   void UpdateTouch(const TouchEvent& touch);
   void UpdateCachedAction(const TouchEvent& touch);
-  size_t GetIndexFromId(int id) const;
+  int GetIndexFromId(int id) const;
 
   size_t pointer_count_;
   base::TimeTicks last_touch_time_;

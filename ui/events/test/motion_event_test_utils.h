@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_EVENTS_TEST_MOTION_EVENT_TEST_UTILS_H_
+#define UI_EVENTS_TEST_MOTION_EVENT_TEST_UTILS_H_
+
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -39,10 +43,6 @@ struct MockMotionEvent : public MotionEventGeneric {
 
   ~MockMotionEvent() override;
 
-  // MotionEvent methods.
-  scoped_ptr<MotionEvent> Clone() const override;
-  scoped_ptr<MotionEvent> Cancel() const override;
-
   // Utility methods.
   void PressPoint(float x, float y);
   void MovePoint(size_t index, float x, float y);
@@ -57,5 +57,9 @@ struct MockMotionEvent : public MotionEventGeneric {
   void ResolvePointers();
 };
 
+std::string ToString(const MotionEvent& event);
+
 }  // namespace test
 }  // namespace ui
+
+#endif  // UI_EVENTS_TEST_MOTION_EVENT_TEST_UTILS_H_

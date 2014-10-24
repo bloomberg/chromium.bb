@@ -17,26 +17,6 @@ using namespace JNI_MotionEvent;
 namespace content {
 namespace {
 
-int ToAndroidAction(MotionEventAndroid::Action action) {
-  switch (action) {
-    case MotionEventAndroid::ACTION_DOWN:
-      return ACTION_DOWN;
-    case MotionEventAndroid::ACTION_UP:
-      return ACTION_UP;
-    case MotionEventAndroid::ACTION_MOVE:
-      return ACTION_MOVE;
-    case MotionEventAndroid::ACTION_CANCEL:
-      return ACTION_CANCEL;
-    case MotionEventAndroid::ACTION_POINTER_DOWN:
-      return ACTION_POINTER_DOWN;
-    case MotionEventAndroid::ACTION_POINTER_UP:
-      return ACTION_POINTER_UP;
-  };
-  NOTREACHED() << "Invalid Android MotionEvent type for gesture detection: "
-               << action;
-  return ACTION_CANCEL;
-}
-
 MotionEventAndroid::Action FromAndroidAction(int android_action) {
   switch (android_action) {
     case ACTION_DOWN:
@@ -107,10 +87,6 @@ int FromAndroidMetaState(int meta_state) {
   return flags;
 }
 
-int64 ToAndroidTime(base::TimeTicks time) {
-  return (time - base::TimeTicks()).InMilliseconds();
-}
-
 base::TimeTicks FromAndroidTime(int64 time_ms) {
   return base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_ms);
 }
@@ -130,6 +106,30 @@ float ToValidFloat(float x) {
 
 }  // namespace
 
+MotionEventAndroid::Pointer::Pointer(jint id,
+                                     jfloat pos_x_pixels,
+                                     jfloat pos_y_pixels,
+                                     jfloat touch_major_pixels,
+                                     jfloat touch_minor_pixels,
+                                     jfloat orientation_rad,
+                                     jint tool_type)
+    : id(id),
+      pos_x_pixels(pos_x_pixels),
+      pos_y_pixels(pos_y_pixels),
+      touch_major_pixels(touch_major_pixels),
+      touch_minor_pixels(touch_minor_pixels),
+      orientation_rad(orientation_rad),
+      tool_type(tool_type) {
+}
+
+MotionEventAndroid::CachedPointer::CachedPointer()
+    : id(0),
+      touch_major(0),
+      touch_minor(0),
+      orientation(0),
+      tool_type(TOOL_TYPE_UNKNOWN) {
+}
+
 MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
                                        JNIEnv* env,
                                        jobject event,
@@ -138,129 +138,34 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
                                        jint pointer_count,
                                        jint history_size,
                                        jint action_index,
-                                       jfloat pos_x_0_pixels,
-                                       jfloat pos_y_0_pixels,
-                                       jfloat pos_x_1_pixels,
-                                       jfloat pos_y_1_pixels,
-                                       jint pointer_id_0,
-                                       jint pointer_id_1,
-                                       jfloat touch_major_0_pixels,
-                                       jfloat touch_major_1_pixels,
-                                       jfloat touch_minor_0_pixels,
-                                       jfloat touch_minor_1_pixels,
-                                       jfloat orientation_0_rad,
-                                       jfloat orientation_1_rad,
-                                       jfloat raw_pos_x_pixels,
-                                       jfloat raw_pos_y_pixels,
-                                       jint android_tool_type_0,
-                                       jint android_tool_type_1,
                                        jint android_button_state,
-                                       jint meta_state)
-    : cached_time_(FromAndroidTime(time_ms)),
+                                       jint meta_state,
+                                       jfloat raw_offset_x_pixels,
+                                       jfloat raw_offset_y_pixels,
+                                       const Pointer& pointer0,
+                                       const Pointer& pointer1)
+    : pix_to_dip_(pix_to_dip),
+      cached_time_(FromAndroidTime(time_ms)),
       cached_action_(FromAndroidAction(android_action)),
       cached_pointer_count_(pointer_count),
       cached_history_size_(history_size),
       cached_action_index_(action_index),
       cached_button_state_(FromAndroidButtonState(android_button_state)),
       cached_flags_(FromAndroidMetaState(meta_state)),
-      pix_to_dip_(pix_to_dip),
-      should_recycle_(false) {
+      cached_raw_position_offset_(ToDips(raw_offset_x_pixels),
+                                  ToDips(raw_offset_y_pixels)) {
   DCHECK_GT(pointer_count, 0);
   DCHECK_GE(history_size, 0);
 
   event_.Reset(env, event);
-  DCHECK(event_.obj());
+  if (cached_pointer_count_ > MAX_POINTERS_TO_CACHE || history_size > 0)
+    DCHECK(event_.obj());
 
-  cached_positions_[0] = ToDips(gfx::PointF(pos_x_0_pixels, pos_y_0_pixels));
-  cached_positions_[1] = ToDips(gfx::PointF(pos_x_1_pixels, pos_y_1_pixels));
-  cached_pointer_ids_[0] = pointer_id_0;
-  cached_pointer_ids_[1] = pointer_id_1;
-  cached_touch_majors_[0] = ToDips(touch_major_0_pixels);
-  cached_touch_majors_[1] = ToDips(touch_major_1_pixels);
-  cached_touch_minors_[0] = ToDips(touch_minor_0_pixels);
-  cached_touch_minors_[1] = ToDips(touch_minor_1_pixels);
-  cached_orientations_[0] = ToValidFloat(orientation_0_rad);
-  cached_orientations_[1] = ToValidFloat(orientation_1_rad);
-  cached_raw_position_offset_ =
-      ToDips(gfx::PointF(raw_pos_x_pixels, raw_pos_y_pixels)) -
-      cached_positions_[0];
-  cached_tool_types_[0] = FromAndroidToolType(android_tool_type_0);
-  cached_tool_types_[1] = FromAndroidToolType(android_tool_type_1);
-}
-
-MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
-                                       JNIEnv* env,
-                                       jobject event)
-    : cached_time_(FromAndroidTime(Java_MotionEvent_getEventTime(env, event))),
-      cached_action_(
-          FromAndroidAction(Java_MotionEvent_getActionMasked(env, event))),
-      cached_pointer_count_(Java_MotionEvent_getPointerCount(env, event)),
-      cached_history_size_(Java_MotionEvent_getHistorySize(env, event)),
-      cached_action_index_(Java_MotionEvent_getActionIndex(env, event)),
-      cached_button_state_(
-          FromAndroidButtonState(Java_MotionEvent_getButtonState(env, event))),
-      cached_flags_(
-          FromAndroidMetaState(Java_MotionEvent_getMetaState(env, event))),
-      pix_to_dip_(pix_to_dip),
-      should_recycle_(true) {
-  event_.Reset(env, event);
-  DCHECK(event_.obj());
-
-  for (size_t i = 0; i < MAX_POINTERS_TO_CACHE; ++i) {
-    if (i < cached_pointer_count_) {
-      cached_positions_[i] =
-          ToDips(gfx::PointF(Java_MotionEvent_getXF_I(env, event, i),
-                             Java_MotionEvent_getYF_I(env, event, i)));
-      cached_pointer_ids_[i] = Java_MotionEvent_getPointerId(env, event, i);
-      cached_touch_majors_[i] =
-          ToDips(Java_MotionEvent_getTouchMajorF_I(env, event, i));
-      cached_touch_minors_[i] =
-          ToDips(Java_MotionEvent_getTouchMinorF_I(env, event, i));
-      cached_orientations_[i] =
-          ToValidFloat(Java_MotionEvent_getOrientationF_I(env, event, i));
-      cached_tool_types_[i] =
-          FromAndroidToolType(Java_MotionEvent_getToolType(env, event, i));
-    } else {
-      cached_pointer_ids_[i] = 0;
-      cached_touch_majors_[i] = 0.f;
-      cached_touch_minors_[i] = 0.f;
-      cached_orientations_[i] = 0.f;
-      cached_tool_types_[i] = MotionEvent::TOOL_TYPE_UNKNOWN;
-    }
-  }
-
-  cached_raw_position_offset_ =
-      ToDips(gfx::PointF(Java_MotionEvent_getRawX(env, event),
-                         Java_MotionEvent_getRawY(env, event))) -
-      cached_positions_[0];
-}
-
-MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& other)
-    : event_(Obtain(other)),
-      cached_time_(other.cached_time_),
-      cached_action_(other.cached_action_),
-      cached_pointer_count_(other.cached_pointer_count_),
-      cached_history_size_(other.cached_history_size_),
-      cached_action_index_(other.cached_action_index_),
-      cached_raw_position_offset_(other.cached_raw_position_offset_),
-      cached_button_state_(other.cached_button_state_),
-      cached_flags_(other.cached_flags_),
-      pix_to_dip_(other.pix_to_dip_),
-      should_recycle_(true) {
-  DCHECK(event_.obj());
-  for (size_t i = 0; i < MAX_POINTERS_TO_CACHE; ++i) {
-    cached_positions_[i] = other.cached_positions_[i];
-    cached_pointer_ids_[i] = other.cached_pointer_ids_[i];
-    cached_touch_majors_[i] = other.cached_touch_majors_[i];
-    cached_touch_minors_[i] = other.cached_touch_minors_[i];
-    cached_orientations_[i] = other.cached_orientations_[i];
-    cached_tool_types_[i] = other.cached_tool_types_[i];
-  }
+  cached_pointers_[0] = FromAndroidPointer(pointer0);
+  cached_pointers_[1] = FromAndroidPointer(pointer1);
 }
 
 MotionEventAndroid::~MotionEventAndroid() {
-  if (should_recycle_)
-    Java_MotionEvent_recycle(AttachCurrentThread(), event_.obj());
 }
 
 int MotionEventAndroid::GetId() const {
@@ -282,7 +187,7 @@ size_t MotionEventAndroid::GetPointerCount() const {
 int MotionEventAndroid::GetPointerId(size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
   if (pointer_index < MAX_POINTERS_TO_CACHE)
-    return cached_pointer_ids_[pointer_index];
+    return cached_pointers_[pointer_index].id;
   return Java_MotionEvent_getPointerId(
       AttachCurrentThread(), event_.obj(), pointer_index);
 }
@@ -290,7 +195,7 @@ int MotionEventAndroid::GetPointerId(size_t pointer_index) const {
 float MotionEventAndroid::GetX(size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
   if (pointer_index < MAX_POINTERS_TO_CACHE)
-    return cached_positions_[pointer_index].x();
+    return cached_pointers_[pointer_index].position.x();
   return ToDips(Java_MotionEvent_getXF_I(
       AttachCurrentThread(), event_.obj(), pointer_index));
 }
@@ -298,7 +203,7 @@ float MotionEventAndroid::GetX(size_t pointer_index) const {
 float MotionEventAndroid::GetY(size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
   if (pointer_index < MAX_POINTERS_TO_CACHE)
-    return cached_positions_[pointer_index].y();
+    return cached_pointers_[pointer_index].position.y();
   return ToDips(Java_MotionEvent_getYF_I(
       AttachCurrentThread(), event_.obj(), pointer_index));
 }
@@ -314,7 +219,7 @@ float MotionEventAndroid::GetRawY(size_t pointer_index) const {
 float MotionEventAndroid::GetTouchMajor(size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
   if (pointer_index < MAX_POINTERS_TO_CACHE)
-    return cached_touch_majors_[pointer_index];
+    return cached_pointers_[pointer_index].touch_major;
   return ToDips(Java_MotionEvent_getTouchMajorF_I(
       AttachCurrentThread(), event_.obj(), pointer_index));
 }
@@ -322,21 +227,26 @@ float MotionEventAndroid::GetTouchMajor(size_t pointer_index) const {
 float MotionEventAndroid::GetTouchMinor(size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
   if (pointer_index < MAX_POINTERS_TO_CACHE)
-    return cached_touch_minors_[pointer_index];
-  return ToDips(Java_MotionEvent_getTouchMinorF_I(AttachCurrentThread(),
-    event_.obj(), pointer_index));
+    return cached_pointers_[pointer_index].touch_minor;
+  return ToDips(Java_MotionEvent_getTouchMinorF_I(
+      AttachCurrentThread(), event_.obj(), pointer_index));
 }
 
 float MotionEventAndroid::GetOrientation(size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
   if (pointer_index < MAX_POINTERS_TO_CACHE)
-    return cached_orientations_[pointer_index];
+    return cached_pointers_[pointer_index].orientation;
   return ToValidFloat(Java_MotionEvent_getOrientationF_I(
       AttachCurrentThread(), event_.obj(), pointer_index));
 }
 
 float MotionEventAndroid::GetPressure(size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
+  // Note that this early return is a special case exercised only in testing, as
+  // caching the pressure values is not a worthwhile optimization (they're
+  // accessed at most once per event instance).
+  if (!event_.obj())
+    return 0.f;
   return Java_MotionEvent_getPressureF_I(
       AttachCurrentThread(), event_.obj(), pointer_index);
 }
@@ -378,7 +288,7 @@ ui::MotionEvent::ToolType MotionEventAndroid::GetToolType(
     size_t pointer_index) const {
   DCHECK_LT(pointer_index, cached_pointer_count_);
   if (pointer_index < MAX_POINTERS_TO_CACHE)
-    return cached_tool_types_[pointer_index];
+    return cached_pointers_[pointer_index].tool_type;
   return FromAndroidToolType(Java_MotionEvent_getToolType(
       AttachCurrentThread(), event_.obj(), pointer_index));
 }
@@ -391,64 +301,26 @@ int MotionEventAndroid::GetFlags() const {
   return cached_flags_;
 }
 
-scoped_ptr<ui::MotionEvent> MotionEventAndroid::Clone() const {
-  return scoped_ptr<MotionEvent>(new MotionEventAndroid(*this));
-}
-
-scoped_ptr<ui::MotionEvent> MotionEventAndroid::Cancel() const {
-  // The input coordinates to |MotionEventAndroid| are always in device pixels,
-  // but the cached coordinates are in DIPs.
-  const gfx::PointF position_pixels =
-      gfx::ScalePoint(cached_positions_[0], 1.f / pix_to_dip_);
-  return scoped_ptr<MotionEvent>(
-      new MotionEventAndroid(pix_to_dip_,
-                             AttachCurrentThread(),
-                             Obtain(GetDownTime(),
-                                    GetEventTime(),
-                                    MotionEventAndroid::ACTION_CANCEL,
-                                    position_pixels.x(),
-                                    position_pixels.y()).obj()));
-}
-
-base::TimeTicks MotionEventAndroid::GetDownTime() const {
-  return FromAndroidTime(
-      Java_MotionEvent_getDownTime(AttachCurrentThread(), event_.obj()));
-}
-
 float MotionEventAndroid::ToDips(float pixels) const {
   return pixels * pix_to_dip_;
 }
 
-gfx::PointF MotionEventAndroid::ToDips(const gfx::PointF& point_pixels) const {
-  return gfx::ScalePoint(point_pixels, pix_to_dip_);
+MotionEventAndroid::CachedPointer MotionEventAndroid::FromAndroidPointer(
+    const Pointer& pointer) const {
+  CachedPointer result;
+  result.id = pointer.id;
+  result.position =
+      gfx::PointF(ToDips(pointer.pos_x_pixels), ToDips(pointer.pos_y_pixels));
+  result.touch_major = ToDips(pointer.touch_major_pixels);
+  result.touch_minor = ToDips(pointer.touch_minor_pixels);
+  result.orientation = ToValidFloat(pointer.orientation_rad);
+  result.tool_type = FromAndroidToolType(pointer.tool_type);
+  return result;
 }
 
 // static
 bool MotionEventAndroid::RegisterMotionEventAndroid(JNIEnv* env) {
   return JNI_MotionEvent::RegisterNativesImpl(env);
-}
-
-// static
-base::android::ScopedJavaLocalRef<jobject> MotionEventAndroid::Obtain(
-    const MotionEventAndroid& event) {
-  return Java_MotionEvent_obtainAVME_AVME(AttachCurrentThread(),
-                                          event.event_.obj());
-}
-
-// static
-base::android::ScopedJavaLocalRef<jobject> MotionEventAndroid::Obtain(
-    base::TimeTicks down_time,
-    base::TimeTicks event_time,
-    Action action,
-    float x_pixels,
-    float y_pixels) {
-  return Java_MotionEvent_obtainAVME_J_J_I_F_F_I(AttachCurrentThread(),
-                                                 ToAndroidTime(down_time),
-                                                 ToAndroidTime(event_time),
-                                                 ToAndroidAction(action),
-                                                 x_pixels,
-                                                 y_pixels,
-                                                 0);
 }
 
 }  // namespace content

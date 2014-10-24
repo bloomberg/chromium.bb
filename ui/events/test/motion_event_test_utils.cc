@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/test/mock_motion_event.h"
+#include "ui/events/test/motion_event_test_utils.h"
+
+#include <sstream>
 
 #include "base/logging.h"
+#include "ui/events/gesture_detection/bitset_32.h"
+#include "ui/events/gesture_detection/motion_event.h"
 
 using base::TimeTicks;
 
@@ -19,12 +23,10 @@ PointerProperties CreatePointer() {
 }
 
 PointerProperties CreatePointer(float x, float y, int id) {
-  PointerProperties pointer(x, y);
-  pointer.touch_major = MockMotionEvent::TOUCH_MAJOR;
+  PointerProperties pointer(x, y, MockMotionEvent::TOUCH_MAJOR);
   pointer.id = id;
   return pointer;
 }
-
 
 }  // namespace
 
@@ -85,16 +87,7 @@ MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
     : MotionEventGeneric(other) {
 }
 
-MockMotionEvent::~MockMotionEvent() {}
-
-scoped_ptr<MotionEvent> MockMotionEvent::Clone() const {
-  return scoped_ptr<MotionEvent>(new MockMotionEvent(*this));
-}
-
-scoped_ptr<MotionEvent> MockMotionEvent::Cancel() const {
-  scoped_ptr<MockMotionEvent> event(new MockMotionEvent(*this));
-  event->set_action(MotionEvent::ACTION_CANCEL);
-  return event.Pass();
+MockMotionEvent::~MockMotionEvent() {
 }
 
 void MockMotionEvent::PressPoint(float x, float y) {
@@ -171,6 +164,55 @@ void MockMotionEvent::ResolvePointers() {
     default:
       break;
   }
+}
+
+std::string ToString(const MotionEvent& event) {
+  std::stringstream ss;
+  ss << "MotionEvent {"
+     << "\n ID: " << event.GetId() << "\n Action: " << event.GetAction()
+     << "\n ActionIndex: " << event.GetActionIndex()
+     << "\n Flags: " << event.GetFlags()
+     << "\n ButtonState: " << event.GetButtonState() << "\n Pointers: [";
+  const size_t pointer_count = event.GetPointerCount();
+  const size_t history_size = event.GetHistorySize();
+
+  BitSet32 pointer_ids;
+  for (size_t i = 0; i < pointer_count; ++i) {
+    pointer_ids.mark_bit(event.GetPointerId(i));
+
+    // Print the pointers sorted by id.
+    while (!pointer_ids.is_empty()) {
+      int pi = event.FindPointerIndexOfId(pointer_ids.first_marked_bit());
+      DCHECK_GE(pi, 0);
+      pointer_ids.clear_first_marked_bit();
+      ss << "{"
+         << "\n  Pos: (" << event.GetX(pi) << ", " << event.GetY(pi) << ")"
+         << "\n  RawPos: (" << event.GetX(pi) << ", " << event.GetY(pi) << ")"
+         << "\n  Size: (" << event.GetTouchMajor(pi) << ", "
+         << event.GetTouchMinor(pi) << ")"
+         << "\n  Orientation: " << event.GetOrientation(pi)
+         << "\n  Pressure: " << event.GetOrientation(pi)
+         << "\n  Tool: " << event.GetToolType(pi);
+      if (history_size) {
+        ss << "\n  History: [";
+        for (size_t h = 0; h < history_size; ++h) {
+          ss << "\n   { " << event.GetHistoricalX(pi, h) << ", "
+             << event.GetHistoricalY(pi, h) << ", "
+             << event.GetHistoricalTouchMajor(pi, h) << ", "
+             << event.GetHistoricalEventTime(pi).ToInternalValue() << " }";
+          if (h + 1 < history_size)
+            ss << ",";
+        }
+        ss << "\n  ]";
+      }
+      ss << "\n }";
+      if (i + 1 < pointer_count)
+        ss << ", ";
+    }
+    ss << "]\n}";
+  }
+
+  return ss.str();
 }
 
 }  // namespace test

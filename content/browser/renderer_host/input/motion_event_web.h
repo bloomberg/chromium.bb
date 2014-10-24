@@ -34,8 +34,6 @@ class MotionEventWeb : public ui::MotionEvent {
   ToolType GetToolType(size_t pointer_index) const override;
   int GetButtonState() const override;
   int GetFlags() const override;
-  scoped_ptr<MotionEvent> Clone() const override;
-  scoped_ptr<MotionEvent> Cancel() const override;
 
  private:
   blink::WebTouchEvent event_;

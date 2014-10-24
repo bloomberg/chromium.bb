@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/motion_event_aura.h"
+#include "ui/events/test/motion_event_test_utils.h"
 
 namespace {
 
@@ -112,6 +113,7 @@ TEST(MotionEventAuraTest, PointerCountAndIds) {
   EXPECT_EQ(2U, clone->GetPointerCount());
   EXPECT_EQ(ids[0], clone->GetPointerId(0));
   EXPECT_EQ(ids[2], clone->GetPointerId(1));
+  EXPECT_EQ(test::ToString(event), test::ToString(*clone));
 
   TouchEvent release0 = TouchWithType(ET_TOUCH_RELEASED, ids[0]);
   event.OnTouch(release0);
@@ -138,20 +140,22 @@ TEST(MotionEventAuraTest, GetActionIndexAfterRemoval) {
   event.OnTouch(press0);
   TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
   event.OnTouch(press1);
+  EXPECT_EQ(1, event.GetActionIndex());
   TouchEvent press2 = TouchWithType(ET_TOUCH_PRESSED, ids[2]);
   event.OnTouch(press2);
+  EXPECT_EQ(2, event.GetActionIndex());
   EXPECT_EQ(3U, event.GetPointerCount());
 
   TouchEvent release1 = TouchWithType(ET_TOUCH_RELEASED, ids[1]);
   event.OnTouch(release1);
-  event.CleanupRemovedTouchPoints(release1);
   EXPECT_EQ(1, event.GetActionIndex());
+  event.CleanupRemovedTouchPoints(release1);
   EXPECT_EQ(2U, event.GetPointerCount());
 
   TouchEvent release2 = TouchWithType(ET_TOUCH_RELEASED, ids[0]);
   event.OnTouch(release2);
-  event.CleanupRemovedTouchPoints(release2);
   EXPECT_EQ(0, event.GetActionIndex());
+  event.CleanupRemovedTouchPoints(release2);
   EXPECT_EQ(1U, event.GetPointerCount());
 
   TouchEvent release0 = TouchWithType(ET_TOUCH_RELEASED, ids[2]);
@@ -204,13 +208,12 @@ TEST(MotionEventAuraTest, PointerLocations) {
   // Test cloning of pointer location information.
   scoped_ptr<MotionEvent> clone = event.Clone();
   {
-    const MotionEventAura* raw_clone_aura =
-        static_cast<MotionEventAura*>(clone.get());
-    EXPECT_EQ(2U, raw_clone_aura->GetPointerCount());
-    EXPECT_FLOAT_EQ(x, raw_clone_aura->GetX(1));
-    EXPECT_FLOAT_EQ(y, raw_clone_aura->GetY(1));
-    EXPECT_FLOAT_EQ(raw_x, raw_clone_aura->GetRawX(1));
-    EXPECT_FLOAT_EQ(raw_y, raw_clone_aura->GetRawY(1));
+    EXPECT_EQ(test::ToString(event), test::ToString(*clone));
+    EXPECT_EQ(2U, clone->GetPointerCount());
+    EXPECT_FLOAT_EQ(x, clone->GetX(1));
+    EXPECT_FLOAT_EQ(y, clone->GetY(1));
+    EXPECT_FLOAT_EQ(raw_x, clone->GetRawX(1));
+    EXPECT_FLOAT_EQ(raw_y, clone->GetRawY(1));
   }
 
   x = 27.9f;
@@ -282,14 +285,12 @@ TEST(MotionEventAuraTest, TapParams) {
   // Test cloning of tap params
   scoped_ptr<MotionEvent> clone = event.Clone();
   {
-    const MotionEventAura* raw_clone_aura =
-        static_cast<MotionEventAura*>(clone.get());
-    EXPECT_EQ(2U, raw_clone_aura->GetPointerCount());
-    EXPECT_FLOAT_EQ(radius_y, raw_clone_aura->GetTouchMajor(1) / 2);
-    EXPECT_FLOAT_EQ(radius_x, raw_clone_aura->GetTouchMinor(1) / 2);
-    EXPECT_FLOAT_EQ(
-        rotation_angle, raw_clone_aura->GetOrientation(1) * 180 / M_PI);
-    EXPECT_FLOAT_EQ(pressure, raw_clone_aura->GetPressure(1));
+    EXPECT_EQ(test::ToString(event), test::ToString(*clone));
+    EXPECT_EQ(2U, clone->GetPointerCount());
+    EXPECT_FLOAT_EQ(radius_y, clone->GetTouchMajor(1) / 2);
+    EXPECT_FLOAT_EQ(radius_x, clone->GetTouchMinor(1) / 2);
+    EXPECT_FLOAT_EQ(rotation_angle, clone->GetOrientation(1) * 180 / M_PI);
+    EXPECT_FLOAT_EQ(pressure, clone->GetPressure(1));
   }
 
   radius_x = 76.98f;
@@ -391,7 +392,7 @@ TEST(MotionEventAuraTest, Cancel) {
 
   scoped_ptr<MotionEvent> cancel = event.Cancel();
   EXPECT_EQ(MotionEvent::ACTION_CANCEL, cancel->GetAction());
-  EXPECT_EQ(2U, static_cast<MotionEventAura*>(cancel.get())->GetPointerCount());
+  EXPECT_EQ(2U, cancel->GetPointerCount());
 }
 
 TEST(MotionEventAuraTest, ToolType) {

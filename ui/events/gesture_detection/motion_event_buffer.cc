@@ -5,7 +5,6 @@
 #include "ui/events/gesture_detection/motion_event_buffer.h"
 
 #include "base/debug/trace_event.h"
-#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
 
 namespace ui {
@@ -24,7 +23,7 @@ const int kResampleMinDeltaMs = 2;
 // the last time delta.
 const int kResampleMaxPredictionMs = 8;
 
-typedef ScopedVector<MotionEvent> MotionEventVector;
+typedef ScopedVector<MotionEventGeneric> MotionEventVector;
 
 float Lerp(float a, float b, float alpha) {
   return a + alpha * (b - a);
@@ -86,22 +85,8 @@ MotionEventVector ConsumeSamplesNoLaterThan(MotionEventVector* batch,
   return unconsumed_batch.Pass();
 }
 
-PointerProperties PointerFromMotionEvent(const MotionEvent& event,
-                                         size_t pointer_index) {
-  PointerProperties result;
-  result.id = event.GetPointerId(pointer_index);
-  result.tool_type = event.GetToolType(pointer_index);
-  result.x = event.GetX(pointer_index);
-  result.y = event.GetY(pointer_index);
-  result.raw_x = event.GetRawX(pointer_index);
-  result.raw_y = event.GetRawY(pointer_index);
-  result.pressure = event.GetPressure(pointer_index);
-  result.touch_major = event.GetTouchMajor(pointer_index);
-  result.touch_minor = event.GetTouchMinor(pointer_index);
-  result.orientation = event.GetOrientation(pointer_index);
-  return result;
-}
-
+// Linearly interpolate the pointer position between two MotionEvent samples.
+// Only pointers of finger or unknown type will be resampled.
 PointerProperties ResamplePointer(const MotionEvent& event0,
                                   const MotionEvent& event1,
                                   size_t event0_pointer_index,
@@ -113,12 +98,12 @@ PointerProperties ResamplePointer(const MotionEvent& event0,
   // horizon (i.e., the event no later than the time interpolated by alpha).
   if (!ShouldResampleTool(event0.GetToolType(event0_pointer_index))) {
     if (alpha > 1)
-      return PointerFromMotionEvent(event1, event1_pointer_index);
+      return PointerProperties(event1, event1_pointer_index);
     else
-      return PointerFromMotionEvent(event0, event0_pointer_index);
+      return PointerProperties(event0, event0_pointer_index);
   }
 
-  PointerProperties p(PointerFromMotionEvent(event0, event0_pointer_index));
+  PointerProperties p(event0, event0_pointer_index);
   p.x = Lerp(p.x, event1.GetX(event1_pointer_index), alpha);
   p.y = Lerp(p.y, event1.GetY(event1_pointer_index), alpha);
   p.raw_x = Lerp(p.raw_x, event1.GetRawX(event1_pointer_index), alpha);
@@ -126,9 +111,12 @@ PointerProperties ResamplePointer(const MotionEvent& event0,
   return p;
 }
 
-scoped_ptr<MotionEvent> ResampleMotionEvent(const MotionEvent& event0,
-                                            const MotionEvent& event1,
-                                            base::TimeTicks resample_time) {
+// Linearly interpolate the pointers between two event samples using the
+// provided |resample_time|.
+scoped_ptr<MotionEventGeneric> ResampleMotionEvent(
+    const MotionEvent& event0,
+    const MotionEvent& event1,
+    base::TimeTicks resample_time) {
   DCHECK_EQ(MotionEvent::ACTION_MOVE, event0.GetAction());
   DCHECK_EQ(event0.GetPointerCount(), event1.GetPointerCount());
 
@@ -161,184 +149,88 @@ scoped_ptr<MotionEvent> ResampleMotionEvent(const MotionEvent& event0,
   event->set_id(event0.GetId());
   event->set_action_index(event0.GetActionIndex());
   event->set_button_state(event0.GetButtonState());
-
   return event.Pass();
 }
 
-// MotionEvent implementation for storing multiple events, with the most
-// recent event used as the base event, and prior events used as the history.
-class CompoundMotionEvent : public ui::MotionEvent {
- public:
-  explicit CompoundMotionEvent(MotionEventVector events)
-      : events_(events.Pass()) {
-    DCHECK_GE(events_.size(), 1U);
-  }
-  ~CompoundMotionEvent() override {}
+// Synthesize a compound MotionEventGeneric event from a sequence of events.
+// Events must be in non-decreasing (time) order.
+scoped_ptr<MotionEventGeneric> ConsumeSamples(MotionEventVector events) {
+  DCHECK(!events.empty());
+  scoped_ptr<MotionEventGeneric> event(events.back());
+  for (size_t i = 0; i + 1 < events.size(); ++i)
+    event->PushHistoricalEvent(scoped_ptr<MotionEvent>(events[i]));
+  events.weak_clear();
+  return event.Pass();
+}
 
-  int GetId() const override { return latest().GetId(); }
+// Consume a series of event samples, attempting to synthesize a new, synthetic
+// event if the samples and sample time meet certain interpolation/extrapolation
+// conditions. If such conditions are met, the provided samples will be added
+// to the synthetic event's history, otherwise, the samples will be used to
+// generate a basic, compound event.
+// TODO(jdduke): Revisit resampling to handle cases where alternating frames
+// are resampled or resampling is otherwise inconsistent, e.g., a 90hz input
+// and 60hz frame signal could phase-align such that even frames yield an
+// extrapolated event and odd frames are not resampled, crbug.com/399381.
+scoped_ptr<MotionEventGeneric> ConsumeSamplesAndTryResampling(
+    base::TimeTicks resample_time,
+    MotionEventVector events,
+    const MotionEvent* next) {
+  const ui::MotionEvent* event0 = nullptr;
+  const ui::MotionEvent* event1 = nullptr;
+  if (next) {
+    DCHECK(resample_time < next->GetEventTime());
+    // Interpolate between current sample and future sample.
+    event0 = events.back();
+    event1 = next;
+  } else if (events.size() >= 2) {
+    // Extrapolate future sample using current sample and past sample.
+    event0 = events[events.size() - 2];
+    event1 = events[events.size() - 1];
 
-  Action GetAction() const override { return latest().GetAction(); }
-
-  int GetActionIndex() const override { return latest().GetActionIndex(); }
-
-  size_t GetPointerCount() const override { return latest().GetPointerCount(); }
-
-  int GetPointerId(size_t pointer_index) const override {
-    return latest().GetPointerId(pointer_index);
-  }
-
-  float GetX(size_t pointer_index) const override {
-    return latest().GetX(pointer_index);
-  }
-
-  float GetY(size_t pointer_index) const override {
-    return latest().GetY(pointer_index);
-  }
-
-  float GetRawX(size_t pointer_index) const override {
-    return latest().GetRawX(pointer_index);
-  }
-
-  float GetRawY(size_t pointer_index) const override {
-    return latest().GetRawY(pointer_index);
-  }
-
-  float GetTouchMajor(size_t pointer_index) const override {
-    return latest().GetTouchMajor(pointer_index);
-  }
-
-  float GetTouchMinor(size_t pointer_index) const override {
-    return latest().GetTouchMinor(pointer_index);
-  }
-
-  float GetOrientation(size_t pointer_index) const override {
-    return latest().GetOrientation(pointer_index);
-  }
-
-  float GetPressure(size_t pointer_index) const override {
-    return latest().GetPressure(pointer_index);
-  }
-
-  ToolType GetToolType(size_t pointer_index) const override {
-    return latest().GetToolType(pointer_index);
-  }
-
-  int GetButtonState() const override { return latest().GetButtonState(); }
-
-  int GetFlags() const override { return latest().GetFlags(); }
-
-  base::TimeTicks GetEventTime() const override {
-    return latest().GetEventTime();
-  }
-
-  size_t GetHistorySize() const override { return events_.size() - 1; }
-
-  base::TimeTicks GetHistoricalEventTime(
-      size_t historical_index) const override {
-    DCHECK_LT(historical_index, GetHistorySize());
-    return events_[historical_index]->GetEventTime();
-  }
-
-  float GetHistoricalTouchMajor(size_t pointer_index,
-                                size_t historical_index) const override {
-    DCHECK_LT(historical_index, GetHistorySize());
-    return events_[historical_index]->GetTouchMajor();
-  }
-
-  float GetHistoricalX(size_t pointer_index,
-                       size_t historical_index) const override {
-    DCHECK_LT(historical_index, GetHistorySize());
-    return events_[historical_index]->GetX(pointer_index);
-  }
-
-  float GetHistoricalY(size_t pointer_index,
-                       size_t historical_index) const override {
-    DCHECK_LT(historical_index, GetHistorySize());
-    return events_[historical_index]->GetY(pointer_index);
-  }
-
-  scoped_ptr<MotionEvent> Clone() const override {
-    MotionEventVector cloned_events;
-    cloned_events.reserve(events_.size());
-    for (size_t i = 0; i < events_.size(); ++i)
-      cloned_events.push_back(events_[i]->Clone().release());
-    return scoped_ptr<MotionEvent>(
-        new CompoundMotionEvent(cloned_events.Pass()));
-  }
-
-  scoped_ptr<MotionEvent> Cancel() const override { return latest().Cancel(); }
-
-  // Returns the new, resampled event, or NULL if none was created.
-  // TODO(jdduke): Revisit resampling to handle cases where alternating frames
-  // are resampled or resampling is otherwise inconsistent, e.g., a 90hz input
-  // and 60hz frame signal could phase-align such that even frames yield an
-  // extrapolated event and odd frames are not resampled, crbug.com/399381.
-  const MotionEvent* TryResample(base::TimeTicks resample_time,
-                                 const ui::MotionEvent* next) {
-    DCHECK_EQ(GetAction(), ACTION_MOVE);
-    const ui::MotionEvent* event0 = NULL;
-    const ui::MotionEvent* event1 = NULL;
-    if (next) {
-      DCHECK(resample_time < next->GetEventTime());
-      // Interpolate between current sample and future sample.
-      event0 = events_.back();
-      event1 = next;
-    } else if (events_.size() >= 2) {
-      // Extrapolate future sample using current sample and past sample.
-      event0 = events_[events_.size() - 2];
-      event1 = events_[events_.size() - 1];
-
-      const base::TimeTicks time1 = event1->GetEventTime();
-      base::TimeTicks max_predict =
-          time1 +
-          std::min((event1->GetEventTime() - event0->GetEventTime()) / 2,
-                   base::TimeDelta::FromMilliseconds(kResampleMaxPredictionMs));
-      if (resample_time > max_predict) {
-        TRACE_EVENT_INSTANT2("input",
-                             "MotionEventBuffer::TryResample prediction adjust",
-                             TRACE_EVENT_SCOPE_THREAD,
-                             "original(ms)",
-                             (resample_time - time1).InMilliseconds(),
-                             "adjusted(ms)",
-                             (max_predict - time1).InMilliseconds());
-        resample_time = max_predict;
-      }
-    } else {
-      TRACE_EVENT_INSTANT0("input",
-                           "MotionEventBuffer::TryResample insufficient data",
-                           TRACE_EVENT_SCOPE_THREAD);
-      return NULL;
-    }
-
-    DCHECK(event0);
-    DCHECK(event1);
-    const base::TimeTicks time0 = event0->GetEventTime();
     const base::TimeTicks time1 = event1->GetEventTime();
-    base::TimeDelta delta = time1 - time0;
-    if (delta < base::TimeDelta::FromMilliseconds(kResampleMinDeltaMs)) {
-      TRACE_EVENT_INSTANT1("input",
-                           "MotionEventBuffer::TryResample failure",
+    base::TimeTicks max_predict =
+        time1 +
+        std::min((event1->GetEventTime() - event0->GetEventTime()) / 2,
+                 base::TimeDelta::FromMilliseconds(kResampleMaxPredictionMs));
+    if (resample_time > max_predict) {
+      TRACE_EVENT_INSTANT2("input",
+                           "MotionEventBuffer::TryResample prediction adjust",
                            TRACE_EVENT_SCOPE_THREAD,
-                           "event_delta_too_small(ms)",
-                           delta.InMilliseconds());
-      return NULL;
+                           "original(ms)",
+                           (resample_time - time1).InMilliseconds(),
+                           "adjusted(ms)",
+                           (max_predict - time1).InMilliseconds());
+      resample_time = max_predict;
     }
-
-    events_.push_back(
-        ResampleMotionEvent(*event0, *event1, resample_time).release());
-    return events_.back();
+  } else {
+    TRACE_EVENT_INSTANT0("input",
+                         "MotionEventBuffer::TryResample insufficient data",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return ConsumeSamples(events.Pass());
   }
 
-  size_t samples() const { return events_.size(); }
+  DCHECK(event0);
+  DCHECK(event1);
+  const base::TimeTicks time0 = event0->GetEventTime();
+  const base::TimeTicks time1 = event1->GetEventTime();
+  base::TimeDelta delta = time1 - time0;
+  if (delta < base::TimeDelta::FromMilliseconds(kResampleMinDeltaMs)) {
+    TRACE_EVENT_INSTANT1("input",
+                         "MotionEventBuffer::TryResample failure",
+                         TRACE_EVENT_SCOPE_THREAD,
+                         "event_delta_too_small(ms)",
+                         delta.InMilliseconds());
+    return ConsumeSamples(events.Pass());
+  }
 
- private:
-  const MotionEvent& latest() const { return *events_.back(); }
-
-  // Events are in order from oldest to newest.
-  MotionEventVector events_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompoundMotionEvent);
-};
+  scoped_ptr<MotionEventGeneric> resampled_event =
+      ResampleMotionEvent(*event0, *event1, resample_time);
+  for (size_t i = 0; i < events.size(); ++i)
+    resampled_event->PushHistoricalEvent(scoped_ptr<MotionEvent>(events[i]));
+  events.weak_clear();
+  return resampled_event.Pass();
+}
 
 }  // namespace
 
@@ -351,6 +243,7 @@ MotionEventBuffer::~MotionEventBuffer() {
 }
 
 void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
+  DCHECK_EQ(0U, event.GetHistorySize());
   if (event.GetAction() != MotionEvent::ACTION_MOVE) {
     last_extrapolated_event_time_ = base::TimeTicks();
     if (!buffered_events_.empty())
@@ -368,7 +261,7 @@ void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
     last_extrapolated_event_time_ = base::TimeTicks();
   }
 
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  scoped_ptr<MotionEventGeneric> clone = MotionEventGeneric::CloneEvent(event);
   if (buffered_events_.empty()) {
     buffered_events_.push_back(clone.release());
     client_->SetNeedsFlush();
@@ -411,26 +304,29 @@ void MotionEventBuffer::Flush(base::TimeTicks frame_time) {
     return;
   }
 
-  CompoundMotionEvent resampled_event(events.Pass());
-  base::TimeTicks original_event_time = resampled_event.GetEventTime();
-  const MotionEvent* next_event =
-      !buffered_events_.empty() ? buffered_events_.front() : NULL;
+  FlushWithResampling(events.Pass(), frame_time);
+}
 
-  // Try to interpolate/extrapolate a new event at |frame_time|. Note that
-  // |new_event|, if non-NULL, is owned by |resampled_event_|.
-  const MotionEvent* new_event =
-      resampled_event.TryResample(frame_time, next_event);
+void MotionEventBuffer::FlushWithResampling(MotionEventVector events,
+                                            base::TimeTicks resample_time) {
+  DCHECK(!events.empty());
+  base::TimeTicks original_event_time = events.back()->GetEventTime();
+  const MotionEvent* next_event =
+      !buffered_events_.empty() ? buffered_events_.front() : nullptr;
+
+  scoped_ptr<MotionEventGeneric> resampled_event =
+      ConsumeSamplesAndTryResampling(resample_time, events.Pass(), next_event);
+  DCHECK(resampled_event);
 
   // Log the extrapolated event time, guarding against subsequently queued
   // events that might have an earlier timestamp.
-  if (!next_event && new_event &&
-      new_event->GetEventTime() > original_event_time) {
-    last_extrapolated_event_time_ = new_event->GetEventTime();
+  if (!next_event && resampled_event->GetEventTime() > original_event_time) {
+    last_extrapolated_event_time_ = resampled_event->GetEventTime();
   } else {
     last_extrapolated_event_time_ = base::TimeTicks();
   }
 
-  client_->ForwardMotionEvent(resampled_event);
+  client_->ForwardMotionEvent(*resampled_event);
   if (!buffered_events_.empty())
     client_->SetNeedsFlush();
 }
@@ -440,16 +336,7 @@ void MotionEventBuffer::FlushWithoutResampling(MotionEventVector events) {
   if (events.empty())
     return;
 
-  if (events.size() == 1) {
-    // Avoid CompoundEvent creation to prevent unnecessary allocations.
-    scoped_ptr<MotionEvent> event(events.front());
-    events.weak_clear();
-    client_->ForwardMotionEvent(*event);
-    return;
-  }
-
-  CompoundMotionEvent compound_event(events.Pass());
-  client_->ForwardMotionEvent(compound_event);
+  client_->ForwardMotionEvent(*ConsumeSamples(events.Pass()));
 }
 
 }  // namespace ui

@@ -866,6 +866,20 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
   if (!rwhv)
     return false;
 
+  MotionEventAndroid::Pointer pointer0(pointer_id_0,
+                                       pos_x_0,
+                                       pos_y_0,
+                                       touch_major_0,
+                                       touch_minor_0,
+                                       orientation_0,
+                                       android_tool_type_0);
+  MotionEventAndroid::Pointer pointer1(pointer_id_1,
+                                       pos_x_1,
+                                       pos_y_1,
+                                       touch_major_1,
+                                       touch_minor_1,
+                                       orientation_1,
+                                       android_tool_type_1);
   MotionEventAndroid event(1.f / dpi_scale(),
                            env,
                            motion_event,
@@ -874,24 +888,12 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                            pointer_count,
                            history_size,
                            action_index,
-                           pos_x_0,
-                           pos_y_0,
-                           pos_x_1,
-                           pos_y_1,
-                           pointer_id_0,
-                           pointer_id_1,
-                           touch_major_0,
-                           touch_major_1,
-                           touch_minor_0,
-                           touch_minor_1,
-                           orientation_0,
-                           orientation_1,
-                           raw_pos_x,
-                           raw_pos_y,
-                           android_tool_type_0,
-                           android_tool_type_1,
                            android_button_state,
-                           android_meta_state);
+                           android_meta_state,
+                           raw_pos_x - pos_x_0,
+                           raw_pos_y - pos_y_0,
+                           pointer0,
+                           pointer1);
 
   return is_touch_handle_event ? rwhv->OnTouchHandleEvent(event)
                                : rwhv->OnTouchEvent(event);
