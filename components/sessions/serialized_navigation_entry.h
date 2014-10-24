@@ -109,6 +109,8 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   friend class ContentSerializedNavigationBuilder;
   friend class ContentSerializedNavigationDriver;
   friend class SerializedNavigationEntryTestHelper;
+  friend class IOSSerializedNavigationBuilder;
+  friend class IOSSerializedNavigationDriver;
 
   // Index in the NavigationController.
   int index_;

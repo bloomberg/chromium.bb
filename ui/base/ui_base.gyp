@@ -405,6 +405,7 @@
             ['include', '(^|/)ios/'],
             ['include', '^l10n/'],
             ['include', '^layout'],
+            ['include', '^page_transition_type'],
             ['include', '^resource/'],
             ['include', '^ui_base_'],
           ],

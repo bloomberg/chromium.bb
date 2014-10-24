@@ -33,26 +33,6 @@ source_set("sessions_core") {
   }
 }
 
-component("sessions_content") {
-  sources = [
-    "content/content_serialized_navigation_builder.cc",
-    "content/content_serialized_navigation_builder.h",
-    "content/content_serialized_navigation_driver.cc",
-    "content/content_serialized_navigation_driver.h",
-  ]
-
-  defines = [ "SESSIONS_IMPLEMENTATION" ]
-
-  deps = [
-    ":sessions_core",
-    "//base",
-    "//base/third_party/dynamic_annotations",
-    "//content/public/browser",
-    "//ui/base",
-    "//url",
-  ]
-}
-
 static_library("test_support") {
   testonly = true
   sources = [
@@ -67,5 +47,27 @@ static_library("test_support") {
 
   if (!is_android || !is_android_webview_build) {
     deps += [ "//sync" ]
+  }
+}
+
+if (!is_ios) {
+  component("sessions_content") {
+    sources = [
+      "content/content_serialized_navigation_builder.cc",
+      "content/content_serialized_navigation_builder.h",
+      "content/content_serialized_navigation_driver.cc",
+      "content/content_serialized_navigation_driver.h",
+    ]
+
+    defines = [ "SESSIONS_IMPLEMENTATION" ]
+
+    deps = [
+      ":sessions_core",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+      "//content/public/browser",
+      "//ui/base",
+      "//url",
+    ]
   }
 }

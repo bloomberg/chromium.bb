@@ -207,6 +207,8 @@
             'search_provider_logos/logo_tracker_unittest.cc',
             'sessions/content/content_serialized_navigation_builder_unittest.cc',
             'sessions/content/content_serialized_navigation_driver_unittest.cc',
+            'sessions/ios/ios_serialized_navigation_builder_unittest.cc',
+            'sessions/ios/ios_serialized_navigation_driver_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'signin/core/browser/account_tracker_service_unittest.cc',
             'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
@@ -431,6 +433,10 @@
             # Dependencies of search_provider_logos
             'components.gyp:search_provider_logos',
 
+            # Dependencies of sessions
+            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+            'components.gyp:sessions_test_support',
+
             # Dependencies of signin
             'components.gyp:signin_core_browser',
             'components.gyp:signin_core_browser_test_support',
@@ -501,9 +507,7 @@
                 'components.gyp:power',
 
                 # Dependencies of sessions
-                '../third_party/protobuf/protobuf.gyp:protobuf_lite',
                 'components.gyp:sessions_content',
-                'components.gyp:sessions_test_support',
 
                 # Dependencies of storage monitor
                 'components.gyp:storage_monitor',
@@ -553,7 +557,8 @@
                 ['include', '^search/'],
                 ['include', '^search_engines/'],
                 ['include', '^search_provider_logos/'],
-                ['include', '^signin/'],
+                ['include', '^sessions/ios/'],
+                ['include', '^sessions/serialized_navigation_entry_unittest\\.cc$'],
                 ['exclude', '^signin/core/browser/mutable_profile_oauth2_token_service_unittest\\.cc$'],
                 ['include', '^suggestions/'],
                 ['include', '^sync_driver/'],
@@ -562,6 +567,9 @@
                 ['include', '^variations/'],
               ],
               'dependencies': [
+                # Dependencies of sessions
+                'components.gyp:sessions_ios',
+
                 # Dependencies of signin
                 'components.gyp:signin_ios_browser',
                 '../ios/ios_tests.gyp:test_support_ios',
