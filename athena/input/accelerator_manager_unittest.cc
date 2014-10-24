@@ -16,7 +16,7 @@ const int kInvalidCommandId = -1;
 class TestHandler : public AcceleratorHandler {
  public:
   TestHandler() : fired_command_id_(kInvalidCommandId), enabled_(true) {}
-  virtual ~TestHandler() {}
+  ~TestHandler() override {}
 
   void set_enabled(bool enabled) { enabled_ = enabled; }
 

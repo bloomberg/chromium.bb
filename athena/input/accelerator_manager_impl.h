@@ -41,7 +41,7 @@ class AcceleratorManagerImpl : public AcceleratorManager,
   static scoped_ptr<AcceleratorManager> CreateForFocusManager(
       views::FocusManager* focus_manager);
 
-  virtual ~AcceleratorManagerImpl();
+  ~AcceleratorManagerImpl() override;
 
   void Init();
 

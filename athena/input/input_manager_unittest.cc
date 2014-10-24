@@ -17,7 +17,7 @@ class TestPowerButtonObserver : public PowerButtonObserver {
   TestPowerButtonObserver() : count_(0), state_(RELEASED) {
     InputManager::Get()->AddPowerButtonObserver(this);
   }
-  virtual ~TestPowerButtonObserver() {
+  ~TestPowerButtonObserver() override {
     InputManager::Get()->RemovePowerButtonObserver(this);
   }
 

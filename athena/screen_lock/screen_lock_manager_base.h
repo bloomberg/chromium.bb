@@ -18,7 +18,7 @@ class ScreenLockManagerBase : public ScreenLockManager {
   ScreenLockManagerBase();
 
  protected:
-  virtual ~ScreenLockManagerBase();
+  ~ScreenLockManagerBase() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenLockManagerBase);

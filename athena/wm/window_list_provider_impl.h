@@ -19,27 +19,27 @@ class ATHENA_EXPORT WindowListProviderImpl : public WindowListProvider,
                                              public aura::WindowObserver {
  public:
   explicit WindowListProviderImpl(aura::Window* container);
-  virtual ~WindowListProviderImpl();
+  ~WindowListProviderImpl() override;
 
   bool IsValidWindow(aura::Window* window) const;
 
   // WindowListProvider:
-  virtual void AddObserver(WindowListProviderObserver* observer) override;
-  virtual void RemoveObserver(WindowListProviderObserver* observer) override;
-  virtual const aura::Window::Windows& GetWindowList() const override;
-  virtual bool IsWindowInList(aura::Window* window) const override;
-  virtual void StackWindowFrontOf(aura::Window* window,
-                                  aura::Window*reference_window) override;
-  virtual void StackWindowBehindTo(aura::Window* window,
-                                   aura::Window*reference_window) override;
+  void AddObserver(WindowListProviderObserver* observer) override;
+  void RemoveObserver(WindowListProviderObserver* observer) override;
+  const aura::Window::Windows& GetWindowList() const override;
+  bool IsWindowInList(aura::Window* window) const override;
+  void StackWindowFrontOf(aura::Window* window,
+                          aura::Window* reference_window) override;
+  void StackWindowBehindTo(aura::Window* window,
+                           aura::Window* reference_window) override;
 
  private:
   void RecreateWindowList();
 
   // aura::WindowObserver:
-  virtual void OnWindowAdded(aura::Window* new_window) override;
-  virtual void OnWillRemoveWindow(aura::Window* old_window) override;
-  virtual void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowAdded(aura::Window* new_window) override;
+  void OnWillRemoveWindow(aura::Window* old_window) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
 
   aura::Window* container_;
   aura::Window::Windows window_list_;

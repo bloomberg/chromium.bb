@@ -46,7 +46,7 @@ const char kDefaultAppPath[] =
 class AthenaDesktopController : public extensions::DesktopController {
  public:
   AthenaDesktopController() {}
-  virtual ~AthenaDesktopController() {}
+  ~AthenaDesktopController() override {}
 
  private:
   // extensions::DesktopController:
@@ -80,7 +80,7 @@ class AthenaDesktopController : public extensions::DesktopController {
 class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
  public:
   AthenaBrowserMainDelegate() {}
-  virtual ~AthenaBrowserMainDelegate() {}
+  ~AthenaBrowserMainDelegate() override {}
 
   // extensions::ShellBrowserMainDelegate:
   virtual void Start(content::BrowserContext* context) override {
@@ -126,7 +126,7 @@ class AthenaContentBrowserClient
   AthenaContentBrowserClient()
       : extensions::ShellContentBrowserClient(new AthenaBrowserMainDelegate()) {
   }
-  virtual ~AthenaContentBrowserClient() {}
+  ~AthenaContentBrowserClient() override {}
 
   // content::ContentBrowserClient:
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
@@ -142,7 +142,7 @@ class AthenaContentRendererClient
     : public extensions::ShellContentRendererClient {
  public:
   AthenaContentRendererClient() {}
-  virtual ~AthenaContentRendererClient() {}
+  ~AthenaContentRendererClient() override {}
 
   // content::ContentRendererClient:
   virtual void RenderFrameCreated(content::RenderFrame* render_frame) override {
@@ -162,7 +162,7 @@ class AthenaContentRendererClient
 class AthenaMainDelegate : public extensions::ShellMainDelegate {
  public:
   AthenaMainDelegate() {}
-  virtual ~AthenaMainDelegate() {}
+  ~AthenaMainDelegate() override {}
 
  private:
   // extensions::ShellMainDelegate:

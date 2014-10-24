@@ -21,43 +21,42 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
   AppListViewDelegate(AppModelBuilder* model_builder,
                       SearchControllerFactory* search_factory);
-  virtual ~AppListViewDelegate();
+  ~AppListViewDelegate() override;
 
  private:
   // Overridden from app_list::AppListViewDelegate:
-  virtual bool ForceNativeDesktop() const override;
-  virtual void SetProfileByPath(const base::FilePath& profile_path) override;
-  virtual app_list::AppListModel* GetModel() override;
-  virtual app_list::SpeechUIModel* GetSpeechUI() override;
-  virtual void GetShortcutPathForApp(
+  bool ForceNativeDesktop() const override;
+  void SetProfileByPath(const base::FilePath& profile_path) override;
+  app_list::AppListModel* GetModel() override;
+  app_list::SpeechUIModel* GetSpeechUI() override;
+  void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) override;
-  virtual void StartSearch() override;
-  virtual void StopSearch() override;
-  virtual void OpenSearchResult(app_list::SearchResult* result,
-                                bool auto_launch,
+  void StartSearch() override;
+  void StopSearch() override;
+  void OpenSearchResult(app_list::SearchResult* result,
+                        bool auto_launch,
+                        int event_flags) override;
+  void InvokeSearchResultAction(app_list::SearchResult* result,
+                                int action_index,
                                 int event_flags) override;
-  virtual void InvokeSearchResultAction(app_list::SearchResult* result,
-                                        int action_index,
-                                        int event_flags) override;
-  virtual base::TimeDelta GetAutoLaunchTimeout() override;
-  virtual void AutoLaunchCanceled() override;
-  virtual void ViewInitialized() override;
-  virtual void Dismiss() override;
-  virtual void ViewClosing() override;
-  virtual gfx::ImageSkia GetWindowIcon() override;
-  virtual void OpenSettings() override;
-  virtual void OpenHelp() override;
-  virtual void OpenFeedback() override;
-  virtual void ToggleSpeechRecognition() override;
-  virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) override;
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override;
-  virtual std::vector<views::View*> CreateCustomPageWebViews(
+  base::TimeDelta GetAutoLaunchTimeout() override;
+  void AutoLaunchCanceled() override;
+  void ViewInitialized() override;
+  void Dismiss() override;
+  void ViewClosing() override;
+  gfx::ImageSkia GetWindowIcon() override;
+  void OpenSettings() override;
+  void OpenHelp() override;
+  void OpenFeedback() override;
+  void ToggleSpeechRecognition() override;
+  void ShowForProfileByPath(const base::FilePath& profile_path) override;
+  views::View* CreateStartPageWebView(const gfx::Size& size) override;
+  std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) override;
-  virtual bool IsSpeechRecognitionEnabled() override;
-  virtual const Users& GetUsers() const override;
-  virtual bool ShouldCenterWindow() const override;
+  bool IsSpeechRecognitionEnabled() override;
+  const Users& GetUsers() const override;
+  bool ShouldCenterWindow() const override;
 
   scoped_ptr<app_list::AppListModel> model_;
   scoped_ptr<app_list::SpeechUIModel> speech_ui_;

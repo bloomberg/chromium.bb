@@ -13,10 +13,10 @@ namespace athena {
 class TestAppModelBuilder : public AppModelBuilder {
  public:
   TestAppModelBuilder();
-  virtual ~TestAppModelBuilder();
+  ~TestAppModelBuilder() override;
 
   // Overridden from AppModelBuilder:
-  virtual void RegisterAppListModel(app_list::AppListModel* model) override;
+  void RegisterAppListModel(app_list::AppListModel* model) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppModelBuilder);

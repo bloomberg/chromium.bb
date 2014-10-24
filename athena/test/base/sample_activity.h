@@ -21,28 +21,28 @@ class SampleActivity : public Activity,
   SampleActivity(SkColor color,
                  SkColor contents_color,
                  const base::string16& title);
-  virtual ~SampleActivity();
+  ~SampleActivity() override;
 
   // athena::Activity:
-  virtual athena::ActivityViewModel* GetActivityViewModel() override;
-  virtual void SetCurrentState(Activity::ActivityState state) override;
-  virtual ActivityState GetCurrentState() override;
-  virtual bool IsVisible() override;
-  virtual ActivityMediaState GetMediaState() override;
-  virtual aura::Window* GetWindow() override;
-  virtual content::WebContents* GetWebContents() override;
+  athena::ActivityViewModel* GetActivityViewModel() override;
+  void SetCurrentState(Activity::ActivityState state) override;
+  ActivityState GetCurrentState() override;
+  bool IsVisible() override;
+  ActivityMediaState GetMediaState() override;
+  aura::Window* GetWindow() override;
+  content::WebContents* GetWebContents() override;
 
   // athena::ActivityViewModel:
-  virtual void Init() override;
-  virtual SkColor GetRepresentativeColor() const override;
-  virtual base::string16 GetTitle() const override;
-  virtual gfx::ImageSkia GetIcon() const override;
-  virtual bool UsesFrame() const override;
-  virtual views::View* GetContentsView() override;
-  virtual views::Widget* CreateWidget() override;
-  virtual gfx::ImageSkia GetOverviewModeImage() override;
-  virtual void PrepareContentsForOverview() override;
-  virtual void ResetContentsView() override;
+  void Init() override;
+  SkColor GetRepresentativeColor() const override;
+  base::string16 GetTitle() const override;
+  gfx::ImageSkia GetIcon() const override;
+  bool UsesFrame() const override;
+  views::View* GetContentsView() override;
+  views::Widget* CreateWidget() override;
+  gfx::ImageSkia GetOverviewModeImage() override;
+  void PrepareContentsForOverview() override;
+  void ResetContentsView() override;
 
  private:
   SkColor color_;

@@ -171,7 +171,7 @@ class ScreenManagerTargeterTest
  public:
   ScreenManagerTargeterTest()
       : targeter_(GetParam() ? nullptr : new aura::WindowTargeter) {}
-  virtual ~ScreenManagerTargeterTest() {}
+  ~ScreenManagerTargeterTest() override {}
 
  protected:
   scoped_ptr<ui::EventTargeter> targeter_;

@@ -32,7 +32,7 @@ class BasicKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
   BasicKeyboardControllerProxy(content::BrowserContext* context,
                                aura::Window* root_window)
       : browser_context_(context), root_window_(root_window) {}
-  virtual ~BasicKeyboardControllerProxy() {}
+  ~BasicKeyboardControllerProxy() override {}
 
   // keyboard::KeyboardControllerProxy:
   virtual ui::InputMethod* GetInputMethod() override {
@@ -68,7 +68,7 @@ class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
     Init();
   }
 
-  virtual ~VirtualKeyboardManagerImpl() {
+  ~VirtualKeyboardManagerImpl() override {
     CHECK_EQ(this, instance);
     instance = nullptr;
 

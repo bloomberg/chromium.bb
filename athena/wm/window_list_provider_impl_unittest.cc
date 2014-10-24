@@ -64,20 +64,15 @@ class WindowListObserver : public WindowListProviderObserver {
       : calls_(0), window_removal_calls_(0), provider_(provider) {
     provider_->AddObserver(this);
   }
-  virtual ~WindowListObserver() {
-    provider_->RemoveObserver(this);
-  }
+  ~WindowListObserver() override { provider_->RemoveObserver(this); }
 
   int calls() const { return calls_; }
   int window_removal_calls() const { return window_removal_calls_; }
 
   // WindowListProviderObserver:
-  virtual void OnWindowStackingChanged() override {
-    calls_++;
-  }
+  void OnWindowStackingChanged() override { calls_++; }
 
-  virtual void OnWindowRemoved(aura::Window* removed_window,
-                               int index) override {
+  void OnWindowRemoved(aura::Window* removed_window, int index) override {
     window_removal_calls_++;
   }
 

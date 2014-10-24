@@ -14,10 +14,10 @@ namespace athena {
 class AthenaShellSchemeClassifier : public AutocompleteSchemeClassifier {
  public:
   AthenaShellSchemeClassifier();
-  virtual ~AthenaShellSchemeClassifier();
+  ~AthenaShellSchemeClassifier() override;
 
   // AutocompleteSchemeClassifier:
-  virtual metrics::OmniboxInputType::Type GetInputTypeForScheme(
+  metrics::OmniboxInputType::Type GetInputTypeForScheme(
       const std::string& scheme) const override;
 
  private:

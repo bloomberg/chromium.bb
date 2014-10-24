@@ -36,10 +36,10 @@ class AthenaAppDelegateBase::NewActivityContentsDelegate
     : public content::WebContentsDelegate {
  public:
   NewActivityContentsDelegate() {}
-  virtual ~NewActivityContentsDelegate() {}
+  ~NewActivityContentsDelegate() override {}
 
   // content::WebContentsDelegate:
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override {
     if (!source)

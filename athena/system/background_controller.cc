@@ -21,7 +21,7 @@ class BackgroundView : public views::View {
         SystemUI::Get()->CreateSystemInfoView(SystemUI::COLOR_SCHEME_LIGHT);
     AddChildView(system_info_view_);
   }
-  virtual ~BackgroundView() {}
+  ~BackgroundView() override {}
 
   void SetImage(const gfx::ImageSkia& image) {
     image_ = image;

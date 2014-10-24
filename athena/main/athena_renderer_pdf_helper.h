@@ -12,7 +12,7 @@ namespace athena {
 class AthenaRendererPDFHelper : public content::RenderFrameObserver {
  public:
   explicit AthenaRendererPDFHelper(content::RenderFrame* frame);
-  virtual ~AthenaRendererPDFHelper();
+  ~AthenaRendererPDFHelper() override;
 
  private:
   // RenderFrameObserver:

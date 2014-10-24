@@ -31,7 +31,7 @@ class ResourceManagerImpl : public ResourceManager,
                             public WindowListProviderObserver {
  public:
   ResourceManagerImpl(ResourceManagerDelegate* delegate);
-  virtual ~ResourceManagerImpl();
+  ~ResourceManagerImpl() override;
 
   // ResourceManager:
   virtual void SetMemoryPressureAndStopMonitoring(

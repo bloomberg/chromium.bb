@@ -31,7 +31,7 @@ class ATHENA_EXPORT AppActivityRegistry {
  public:
   AppActivityRegistry(const std::string& app_id,
                       content::BrowserContext* browser_context);
-  virtual ~AppActivityRegistry();
+  ~AppActivityRegistry();
 
   // Register an |AppActivity| with this application.
   void RegisterAppActivity(AppActivity* app_activity);

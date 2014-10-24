@@ -28,7 +28,7 @@ class ModalWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit ModalWidgetDelegate(views::View* contents_view)
       : contents_view_(contents_view) {}
-  virtual ~ModalWidgetDelegate() {}
+  ~ModalWidgetDelegate() override {}
 
   // Overridden from WidgetDelegate:
   virtual views::Widget* GetWidget() override {

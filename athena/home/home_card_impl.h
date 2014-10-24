@@ -41,7 +41,7 @@ class ATHENA_EXPORT HomeCardImpl : public HomeCard,
  public:
   HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
                scoped_ptr<SearchControllerFactory> search_factory);
-  virtual ~HomeCardImpl();
+  ~HomeCardImpl() override;
 
   void Init();
 
@@ -54,29 +54,26 @@ class ATHENA_EXPORT HomeCardImpl : public HomeCard,
   void InstallAccelerators();
 
   // Overridden from HomeCard:
-  virtual void SetState(HomeCard::State state) override;
-  virtual State GetState() override;
-  virtual void UpdateVirtualKeyboardBounds(
-      const gfx::Rect& bounds) override;
+  void SetState(HomeCard::State state) override;
+  State GetState() override;
+  void UpdateVirtualKeyboardBounds(const gfx::Rect& bounds) override;
 
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const override;
-  virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) override;
+  bool IsCommandEnabled(int command_id) const override;
+  bool OnAcceleratorFired(int command_id,
+                          const ui::Accelerator& accelerator) override;
 
   // HomeCardGestureManager::Delegate:
-  virtual void OnGestureEnded(HomeCard::State final_state,
-                              bool is_fling) override;
-  virtual void OnGestureProgressed(
-      HomeCard::State from_state,
-      HomeCard::State to_state,
-      float progress) override;
+  void OnGestureEnded(HomeCard::State final_state, bool is_fling) override;
+  void OnGestureProgressed(HomeCard::State from_state,
+                           HomeCard::State to_state,
+                           float progress) override;
 
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() override;
-  virtual void OnOverviewModeExit() override;
-  virtual void OnSplitViewModeEnter() override;
-  virtual void OnSplitViewModeExit() override;
+  void OnOverviewModeEnter() override;
+  void OnOverviewModeExit() override;
+  void OnSplitViewModeEnter() override;
+  void OnSplitViewModeExit() override;
 
   scoped_ptr<AppModelBuilder> model_builder_;
   scoped_ptr<SearchControllerFactory> search_factory_;

@@ -25,12 +25,12 @@ class MessageDialogDelegate : public views::DialogDelegateView {
   explicit MessageDialogDelegate(const base::string16& message)
       : message_(message) {}
 
-  virtual ~MessageDialogDelegate() {}
+  ~MessageDialogDelegate() override {}
 
   // views::DialogDelegateView:
-  virtual base::string16 GetWindowTitle() const override { return message_; }
+  base::string16 GetWindowTitle() const override { return message_; }
 
-  virtual int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
 
  private:
   base::string16 message_;

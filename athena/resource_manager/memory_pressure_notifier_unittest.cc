@@ -15,7 +15,7 @@ namespace {
 class TestResourceManagerDelegate : public ResourceManagerDelegate {
  public:
   TestResourceManagerDelegate() : memory_fill_level_percent_(0) {}
-  virtual ~TestResourceManagerDelegate() {}
+  ~TestResourceManagerDelegate() override {}
 
   virtual int GetUsedMemoryInPercent() override {
     timer_called_++;
@@ -50,7 +50,7 @@ class TestMemoryPressureObserver : public MemoryPressureObserver {
       : delegate_(delegate),
         number_of_calls_(0),
         pressure_(ResourceManager::MEMORY_PRESSURE_UNKNOWN) {}
-  virtual ~TestMemoryPressureObserver() {}
+  ~TestMemoryPressureObserver() override {}
 
   // The observer.
   virtual void OnMemoryPressure(
@@ -84,7 +84,7 @@ class TestMemoryPressureObserver : public MemoryPressureObserver {
 class MemoryPressureTest : public AthenaTestBase {
  public:
   MemoryPressureTest() : test_resource_manager_delegate_(nullptr) {}
-  virtual ~MemoryPressureTest() {}
+  ~MemoryPressureTest() override {}
 
   // AthenaTestBase:
   virtual void SetUp() override {

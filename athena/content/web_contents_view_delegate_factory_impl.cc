@@ -24,15 +24,15 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
  public:
   explicit WebContentsViewDelegateImpl(content::WebContents* web_contents)
       : web_contents_(web_contents) {}
-  virtual ~WebContentsViewDelegateImpl() {}
+  ~WebContentsViewDelegateImpl() override {}
 
-  virtual content::WebDragDestDelegate* GetDragDestDelegate() override {
+  content::WebDragDestDelegate* GetDragDestDelegate() override {
     // TODO(oshima): crbug.com/401610
     NOTIMPLEMENTED();
     return nullptr;
   }
 
-  virtual bool Focus() override {
+  bool Focus() override {
     web_modal::PopupManager* popup_manager =
         web_modal::PopupManager::FromWebContents(web_contents_);
     if (popup_manager)
@@ -40,19 +40,18 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
     return false;
   }
 
-  virtual void ShowContextMenu(
-      content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) override {
+  void ShowContextMenu(content::RenderFrameHost* render_frame_host,
+                       const content::ContextMenuParams& params) override {
     ShowMenu(BuildMenu(
         content::WebContents::FromRenderFrameHost(render_frame_host), params));
   }
 
-  virtual void SizeChanged(const gfx::Size& size) override {
+  void SizeChanged(const gfx::Size& size) override {
     // TODO(oshima|sadrul): Implement this when sad_tab is componentized.
     // See c/b/ui/views/tab_contents/chrome_web_contents_view_delegate_views.cc
   }
 
-  virtual void ShowDisambiguationPopup(
+  void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap,
       const gfx::NativeView content,
@@ -61,7 +60,7 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
     NOTIMPLEMENTED();
   }
 
-  virtual void HideDisambiguationPopup() override { NOTIMPLEMENTED(); }
+  void HideDisambiguationPopup() override { NOTIMPLEMENTED(); }
 
   scoped_ptr<RenderViewContextMenuImpl> BuildMenu(
       content::WebContents* web_contents,

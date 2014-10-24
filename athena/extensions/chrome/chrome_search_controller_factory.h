@@ -18,9 +18,9 @@ class ChromeSearchControllerFactory : public SearchControllerFactory {
  public:
   explicit ChromeSearchControllerFactory(
       content::BrowserContext* browser_context);
-  virtual ~ChromeSearchControllerFactory();
+  ~ChromeSearchControllerFactory() override;
 
-  virtual scoped_ptr<app_list::SearchController> Create(
+  scoped_ptr<app_list::SearchController> Create(
       app_list::SearchBoxModel* search_box,
       app_list::AppListModel::SearchResults* results) override;
 

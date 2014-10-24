@@ -23,26 +23,27 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
     extensions::AppWindowClient::Set(&app_window_client_);
   }
 
-  virtual ~ShellExtensionsDelegate() {
+  ~ShellExtensionsDelegate() override {
     extensions::AppWindowClient::Set(nullptr);
   }
 
  private:
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const override {
+  content::BrowserContext* GetBrowserContext() const override {
     return context_;
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
+
+  const extensions::ExtensionSet& GetInstalledExtensions() override {
     return extensions::ExtensionRegistry::Get(context_)->enabled_extensions();
   }
-  virtual bool LaunchApp(const std::string& app_id) override {
+  bool LaunchApp(const std::string& app_id) override {
     extension_system_->LaunchApp(app_id);
     return true;
   }
 
-  virtual bool UnloadApp(const std::string& app_id) override { return false; }
+  bool UnloadApp(const std::string& app_id) override { return false; }
 
-  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+  scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
       override {
     return scoped_ptr<extensions::ExtensionInstallUI>();
   }

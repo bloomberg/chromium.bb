@@ -74,7 +74,7 @@ class VirtualKeyboardObserver : public keyboard::KeyboardControllerObserver {
     keyboard::KeyboardController::GetInstance()->AddObserver(this);
   }
 
-  virtual ~VirtualKeyboardObserver() {
+  ~VirtualKeyboardObserver() override {
     keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
   }
 

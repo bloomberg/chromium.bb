@@ -16,11 +16,11 @@ namespace athena {
 class AthenaBrowserTest : public InProcessBrowserTest {
  public:
   AthenaBrowserTest();
-  virtual ~AthenaBrowserTest();
+  ~AthenaBrowserTest() override;
 
  protected:
   // BrowserTestBase:
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AthenaBrowserTest);

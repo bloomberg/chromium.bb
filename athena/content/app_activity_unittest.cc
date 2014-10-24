@@ -40,7 +40,7 @@ class TestAppActivity : public AppActivity {
         AppRegistry::Get()->GetAppActivityRegistry(app_id, nullptr);
     app_activity_registry_->RegisterAppActivity(this);
   }
-  virtual ~TestAppActivity() {
+  ~TestAppActivity() override {
     app_activity_registry_->UnregisterAppActivity(this);
   }
 
@@ -49,37 +49,29 @@ class TestAppActivity : public AppActivity {
   }
 
   // Activity:
-  virtual ActivityViewModel* GetActivityViewModel() override {
-    return this;
-  }
-  virtual void SetCurrentState(Activity::ActivityState state) override {
+  ActivityViewModel* GetActivityViewModel() override { return this; }
+  void SetCurrentState(Activity::ActivityState state) override {
     current_state_ = state;
     if (state == ACTIVITY_UNLOADED)
       app_activity_registry_->Unload();
   }
-  virtual ActivityState GetCurrentState() override {
-    return current_state_;
-  }
-  virtual bool IsVisible() override {
-    return true;
-  }
-  virtual ActivityMediaState GetMediaState() override {
+  ActivityState GetCurrentState() override { return current_state_; }
+  bool IsVisible() override { return true; }
+  ActivityMediaState GetMediaState() override {
     return Activity::ACTIVITY_MEDIA_STATE_NONE;
   }
-  virtual aura::Window* GetWindow() override {
+  aura::Window* GetWindow() override {
     return view_->GetWidget()->GetNativeWindow();
   }
 
   // ActivityViewModel:
-  virtual void Init() override {}
-  virtual SkColor GetRepresentativeColor() const override { return 0; }
-  virtual base::string16 GetTitle() const override { return title_; }
-  virtual bool UsesFrame() const override { return true; }
-  virtual views::View* GetContentsView() override { return view_; }
-  virtual views::Widget* CreateWidget() override { return nullptr; }
-  virtual gfx::ImageSkia GetOverviewModeImage() override {
-    return gfx::ImageSkia();
-  }
+  void Init() override {}
+  SkColor GetRepresentativeColor() const override { return 0; }
+  base::string16 GetTitle() const override { return title_; }
+  bool UsesFrame() const override { return true; }
+  views::View* GetContentsView() override { return view_; }
+  views::Widget* CreateWidget() override { return nullptr; }
+  gfx::ImageSkia GetOverviewModeImage() override { return gfx::ImageSkia(); }
 
  private:
   // If known the registry which holds all activities for the associated app.
@@ -101,30 +93,30 @@ class TestAppActivity : public AppActivity {
 class TestExtensionsDelegate : public ExtensionsDelegate {
  public:
   TestExtensionsDelegate() : unload_called_(0), restart_called_(0) {}
-  virtual ~TestExtensionsDelegate() {}
+  ~TestExtensionsDelegate() override {}
 
   int unload_called() const { return unload_called_; }
   int restart_called() const { return restart_called_; }
 
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const override {
+  content::BrowserContext* GetBrowserContext() const override {
     return nullptr;
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
+  const extensions::ExtensionSet& GetInstalledExtensions() override {
     return extension_set_;
   }
   // Unload an application. Returns true when unloaded.
-  virtual bool UnloadApp(const std::string& app_id) override {
+  bool UnloadApp(const std::string& app_id) override {
     unload_called_++;
     // Since we did not close anything we let the framework clean up.
     return false;
   }
   // Restarts an application. Returns true when the restart was initiated.
-  virtual bool LaunchApp(const std::string& app_id) override {
+  bool LaunchApp(const std::string& app_id) override {
     restart_called_++;
     return true;
   }
-  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+  scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
       override {
     return scoped_ptr<extensions::ExtensionInstallUI>();
   }
@@ -144,10 +136,10 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
 class AppActivityTest : public AthenaTestBase {
  public:
   AppActivityTest() : test_extensions_delegate_(nullptr) {}
-  virtual ~AppActivityTest() {}
+  ~AppActivityTest() override {}
 
   // AthenaTestBase:
-  virtual void SetUp() override {
+  void SetUp() override {
     AthenaTestBase::SetUp();
     // Create and install our TestAppContentDelegate with instrumentation.
     ExtensionsDelegate::Shutdown();

@@ -12,29 +12,27 @@ namespace athena {
 class AthenaShellAppDelegate : public AthenaAppDelegateBase {
  public:
   AthenaShellAppDelegate();
-  virtual ~AthenaShellAppDelegate();
+  ~AthenaShellAppDelegate() override;
 
  private:
   // extensions::AppDelegate:
-  virtual void InitWebContents(content::WebContents* web_contents) override;
-  virtual content::ColorChooser* ShowColorChooser(
-      content::WebContents* web_contents,
-      SkColor initial_color) override;
-  virtual void RunFileChooser(
-      content::WebContents* tab,
-      const content::FileChooserParams& params) override;
-  virtual void RequestMediaAccessPermission(
+  void InitWebContents(content::WebContents* web_contents) override;
+  content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
+                                          SkColor initial_color) override;
+  void RunFileChooser(content::WebContents* tab,
+                      const content::FileChooserParams& params) override;
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension) override;
-  virtual bool CheckMediaAccessPermission(
+  bool CheckMediaAccessPermission(
       content::WebContents* web_contents,
       const GURL& security_origin,
       content::MediaStreamType type,
       const extensions::Extension* extension) override;
-  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) override;
+  void SetWebContentsBlocked(content::WebContents* web_contents,
+                             bool blocked) override;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaShellAppDelegate);
 };

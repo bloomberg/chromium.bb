@@ -45,18 +45,18 @@ void SetWindowState(aura::Window* window,
 class AthenaContainerLayoutManager : public aura::LayoutManager {
  public:
   AthenaContainerLayoutManager();
-  virtual ~AthenaContainerLayoutManager();
+  ~AthenaContainerLayoutManager() override;
 
  private:
   // aura::LayoutManager:
-  virtual void OnWindowResized() override;
-  virtual void OnWindowAddedToLayout(aura::Window* child) override;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) override;
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override;
+  void OnWindowResized() override;
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override;
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaContainerLayoutManager);
 };

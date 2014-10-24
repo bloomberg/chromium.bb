@@ -25,14 +25,14 @@ class UrlSearchProvider : public app_list::SearchProvider,
                           public AutocompleteProviderListener {
  public:
   UrlSearchProvider(content::BrowserContext* browser_context);
-  virtual ~UrlSearchProvider();
+  ~UrlSearchProvider() override;
 
   // Overridden from app_list::SearchProvider
-  virtual void Start(const base::string16& query) override;
-  virtual void Stop() override;
+  void Start(const base::string16& query) override;
+  void Stop() override;
 
   // Overridden from AutocompleteProviderListener
-  virtual void OnProviderUpdate(bool updated_matches) override;
+  void OnProviderUpdate(bool updated_matches) override;
 
  private:
   content::BrowserContext* browser_context_;

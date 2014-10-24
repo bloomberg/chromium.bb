@@ -52,7 +52,7 @@ class AppItem : public app_list::AppListItem {
 
  private:
   // Overridden from app_list::AppListItem:
-  virtual void Activate(int event_flags) override {
+  void Activate(int event_flags) override {
     ExtensionsDelegate::Get(browser_context_)->LaunchApp(extension_->id());
   }
 

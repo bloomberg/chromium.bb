@@ -24,7 +24,7 @@ class OrientationController
     : public chromeos::AccelerometerReader::Delegate {
  public:
   OrientationController();
-  virtual ~OrientationController();
+  ~OrientationController() override;
 
   void InitWith(scoped_refptr<base::TaskRunner> blocking_task_runner);
   void Shutdown();

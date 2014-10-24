@@ -16,7 +16,7 @@ namespace athena {
 class TimeView : public views::Label {
  public:
   explicit TimeView(SystemUI::ColorScheme color_scheme);
-  virtual ~TimeView();
+  ~TimeView() override;
 
  private:
   // Starts |timer_| to schedule the next update.

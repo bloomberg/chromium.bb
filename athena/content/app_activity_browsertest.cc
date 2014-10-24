@@ -23,15 +23,15 @@ const char kTestUrl[] = "chrome:about";
 class AppActivityBrowserTest : public AthenaAppBrowserTest {
  public:
   AppActivityBrowserTest() {}
-  virtual ~AppActivityBrowserTest() {}
+  ~AppActivityBrowserTest() override {}
 
   // AthenaAppBrowserTest:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     tracker_.reset(new ActivityLifetimeTracker);
     AthenaAppBrowserTest::SetUpOnMainThread();
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     tracker_.reset();
     AthenaAppBrowserTest::TearDownOnMainThread();
   }

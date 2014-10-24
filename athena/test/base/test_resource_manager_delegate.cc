@@ -22,14 +22,12 @@ const int kMemoryPressureIntervalMs = 60000;
 class ResourceManagerDelegateImpl : public ResourceManagerDelegate {
  public:
   ResourceManagerDelegateImpl() {}
-  virtual ~ResourceManagerDelegateImpl() {}
+  ~ResourceManagerDelegateImpl() override {}
 
  private:
-  virtual int GetUsedMemoryInPercent() override {
-    return 0;
-  }
+  int GetUsedMemoryInPercent() override { return 0; }
 
-  virtual int MemoryPressureIntervalInMS() override {
+  int MemoryPressureIntervalInMS() override {
     return kMemoryPressureIntervalMs;
   }
   DISALLOW_COPY_AND_ASSIGN(ResourceManagerDelegateImpl);

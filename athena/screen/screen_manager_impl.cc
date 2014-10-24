@@ -80,7 +80,7 @@ aura::Window* GetContainer(aura::Window* window) {
 class AthenaFocusRules : public wm::BaseFocusRules {
  public:
   AthenaFocusRules() {}
-  virtual ~AthenaFocusRules() {}
+  ~AthenaFocusRules() override {}
 
   // wm::BaseFocusRules:
   virtual bool SupportsChildActivation(aura::Window* window) const override {
@@ -124,8 +124,7 @@ class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
  public:
   AthenaScreenPositionClient() {
   }
-  virtual ~AthenaScreenPositionClient() {
-  }
+  ~AthenaScreenPositionClient() override {}
 
  private:
   // aura::client::ScreenPositionClient:
@@ -161,7 +160,7 @@ class AthenaWindowTargeter : public aura::WindowTargeter {
   explicit AthenaWindowTargeter(aura::Window* root_window)
       : root_window_(root_window) {}
 
-  virtual ~AthenaWindowTargeter() {}
+  ~AthenaWindowTargeter() override {}
 
  private:
   // aura::WindowTargeter:

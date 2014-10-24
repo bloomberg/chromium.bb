@@ -12,7 +12,7 @@ namespace athena {
 class AthenaContentClient : public extensions::ShellContentClient {
  public:
   AthenaContentClient();
-  virtual ~AthenaContentClient();
+  ~AthenaContentClient() override;
 
  private:
   // extensions::ShellContentClient:

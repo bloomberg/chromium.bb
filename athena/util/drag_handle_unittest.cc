@@ -19,7 +19,7 @@ class DragHandleDelegateTest : public DragHandleScrollDelegate {
         got_scroll_end_(false),
         update_delta_(0) {}
 
-  virtual ~DragHandleDelegateTest() {}
+  ~DragHandleDelegateTest() override {}
 
   void Reset() {
     begin_delta_ = 0;

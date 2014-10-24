@@ -13,7 +13,7 @@ namespace athena {
 class ATHENA_EXPORT FillLayoutManager : public aura::LayoutManager {
  public:
   explicit FillLayoutManager(aura::Window* container);
-  virtual ~FillLayoutManager();
+  ~FillLayoutManager() override;
 
   // aura::LayoutManager:
   virtual void OnWindowResized() override;

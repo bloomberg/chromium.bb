@@ -34,8 +34,7 @@ class SystemInfoView : public views::View {
     AddChildView(status_icon_view_);
   }
 
-  virtual ~SystemInfoView() {
-  }
+  ~SystemInfoView() override {}
 
   // views::View:
   virtual gfx::Size GetPreferredSize() const override {
@@ -78,7 +77,7 @@ class SystemUIImpl : public SystemUI {
     orientation_controller_->InitWith(blocking_task_runner);
   }
 
-  virtual ~SystemUIImpl() {
+  ~SystemUIImpl() override {
     // Stops file watching now if exists. Waiting until message loop shutdon
     // leads to FilePathWatcher crash.
     orientation_controller_->Shutdown();

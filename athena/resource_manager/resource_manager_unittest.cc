@@ -27,7 +27,7 @@ class TestActivity : public SampleActivity {
       : SampleActivity(0, 0, base::UTF8ToUTF16(title)),
         media_state_(ACTIVITY_MEDIA_STATE_NONE),
         is_visible_(false) {}
-  virtual ~TestActivity() {}
+  ~TestActivity() override {}
 
   void set_media_state(ActivityMediaState media_state) {
     media_state_ = media_state;
@@ -54,7 +54,7 @@ class TestActivity : public SampleActivity {
 class ResourceManagerTest : public AthenaTestBase {
  public:
   ResourceManagerTest() {}
-  virtual ~ResourceManagerTest() {}
+  ~ResourceManagerTest() override {}
 
   virtual void SetUp() override {
     AthenaTestBase::SetUp();

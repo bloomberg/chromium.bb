@@ -13,7 +13,7 @@ class AthenaNativeAppWindowViews
     : public native_app_window::NativeAppWindowViews {
  public:
   AthenaNativeAppWindowViews() {}
-  virtual ~AthenaNativeAppWindowViews() {}
+  ~AthenaNativeAppWindowViews() override {}
 
   views::WebView* GetWebView();
 

@@ -25,21 +25,20 @@ class ATHENA_EXPORT ExtensionAppModelBuilder
       public extensions::ExtensionRegistryObserver {
  public:
   explicit ExtensionAppModelBuilder(content::BrowserContext* browser_context);
-  virtual ~ExtensionAppModelBuilder();
+  ~ExtensionAppModelBuilder() override;
 
-  virtual void RegisterAppListModel(app_list::AppListModel* model) override;
+  void RegisterAppListModel(app_list::AppListModel* model) override;
 
  private:
   void AddItem(scoped_refptr<const extensions::Extension> extension);
 
   // extensions::ExtensionRegistryObserver:
-  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const extensions::Extension* extension,
-                                    bool is_update) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   content::BrowserContext* browser_context_;
 

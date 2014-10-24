@@ -22,11 +22,11 @@ namespace athena {
 class AthenaTestViewDelegate : public app_list::test::AppListTestViewDelegate {
  public:
   AthenaTestViewDelegate() {}
-  virtual ~AthenaTestViewDelegate() {}
+  ~AthenaTestViewDelegate() override {}
 
  private:
   // app_list::AppListViewDelegate:
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override {
+  views::View* CreateStartPageWebView(const gfx::Size& size) override {
     return new views::View();
   }
 
@@ -36,10 +36,10 @@ class AthenaTestViewDelegate : public app_list::test::AppListTestViewDelegate {
 class AthenaStartPageViewTest : public test::AthenaTestBase {
  public:
   AthenaStartPageViewTest() {}
-  virtual ~AthenaStartPageViewTest() {}
+  ~AthenaStartPageViewTest() override {}
 
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AthenaTestBase::SetUp();
     for (size_t i = 0; i < GetMaxIconNum(); ++i)
       AddTestItem(i);
@@ -47,7 +47,7 @@ class AthenaStartPageViewTest : public test::AthenaTestBase {
     view_.reset(new AthenaStartPageView(&view_delegate_));
     SetSize(gfx::Size(1280, 800));
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     view_.reset();
     test::AthenaTestBase::TearDown();
   }

@@ -43,20 +43,18 @@ class AthenaSearchTermsData : public SearchTermsData {
 class AthenaTemplateURLServiceClient : public TemplateURLServiceClient {
  public:
   AthenaTemplateURLServiceClient() {}
-  virtual ~AthenaTemplateURLServiceClient() {}
+  ~AthenaTemplateURLServiceClient() override {}
 
  private:
   // TemplateURLServiceClient:
-  virtual void Shutdown() override {}
-  virtual void SetOwner(TemplateURLService* owner) override {}
-  virtual void DeleteAllSearchTermsForKeyword(TemplateURLID id) override {}
-  virtual void SetKeywordSearchTermsForURL(
-      const GURL& url,
-      TemplateURLID id,
-      const base::string16& term) override {}
-  virtual void AddKeywordGeneratedVisit(const GURL& url) override {}
-  virtual void RestoreExtensionInfoIfNecessary(
-      TemplateURL* template_url) override {}
+  void Shutdown() override {}
+  void SetOwner(TemplateURLService* owner) override {}
+  void DeleteAllSearchTermsForKeyword(TemplateURLID id) override {}
+  void SetKeywordSearchTermsForURL(const GURL& url,
+                                   TemplateURLID id,
+                                   const base::string16& term) override {}
+  void AddKeywordGeneratedVisit(const GURL& url) override {}
+  void RestoreExtensionInfoIfNecessary(TemplateURL* template_url) override {}
 
   DISALLOW_COPY_AND_ASSIGN(AthenaTemplateURLServiceClient);
 };
@@ -67,36 +65,34 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
   explicit AthenaAutocompleteProviderClient(
       content::BrowserContext* browser_context)
       : browser_context_(browser_context) {}
-  virtual ~AthenaAutocompleteProviderClient() {}
+  ~AthenaAutocompleteProviderClient() override {}
 
-  virtual net::URLRequestContextGetter* RequestContext() override {
+  net::URLRequestContextGetter* RequestContext() override {
     return browser_context_->GetRequestContext();
   }
-  virtual bool IsOffTheRecord() override {
-    return browser_context_->IsOffTheRecord();
-  }
-  virtual std::string AcceptLanguages() override {
+  bool IsOffTheRecord() override { return browser_context_->IsOffTheRecord(); }
+  std::string AcceptLanguages() override {
     // TODO(hashimoto): Return the value stored in the prefs.
     return "en-US";
   }
-  virtual bool SearchSuggestEnabled() override { return true; }
-  virtual bool ShowBookmarkBar() override { return false; }
-  virtual const AutocompleteSchemeClassifier& SchemeClassifier() override {
+  bool SearchSuggestEnabled() override { return true; }
+  bool ShowBookmarkBar() override { return false; }
+  const AutocompleteSchemeClassifier& SchemeClassifier() override {
     return scheme_classifier_;
   }
-  virtual void Classify(
+  void Classify(
       const base::string16& text,
       bool prefer_keyword,
       bool allow_exact_keyword_match,
       metrics::OmniboxEventProto::PageClassification page_classification,
       AutocompleteMatch* match,
       GURL* alternate_nav_url) override {}
-  virtual history::URLDatabase* InMemoryDatabase() override { return nullptr; }
-  virtual void DeleteMatchingURLsForKeywordFromHistory(
+  history::URLDatabase* InMemoryDatabase() override { return nullptr; }
+  void DeleteMatchingURLsForKeywordFromHistory(
       history::KeywordID keyword_id,
       const base::string16& term) override {}
-  virtual bool TabSyncEnabledAndUnencrypted() override { return false; }
-  virtual void PrefetchImage(const GURL& url) override {}
+  bool TabSyncEnabledAndUnencrypted() override { return false; }
+  void PrefetchImage(const GURL& url) override {}
 
  private:
   content::BrowserContext* browser_context_;
@@ -163,15 +159,15 @@ class UrlSearchResult : public app_list::SearchResult {
     UpdateTitleAndDetails();
   }
 
-  virtual ~UrlSearchResult() {}
+  ~UrlSearchResult() override {}
 
  private:
   // Overridden from app_list::SearchResult:
-  virtual scoped_ptr<app_list::SearchResult> Duplicate() override {
+  scoped_ptr<app_list::SearchResult> Duplicate() override {
     return make_scoped_ptr(new UrlSearchResult(browser_context_, match_));
   }
 
-  virtual void Open(int event_flags) override {
+  void Open(int event_flags) override {
     Activity* activity = ActivityFactory::Get()->CreateWebActivity(
         browser_context_, base::string16(), match_.destination_url);
     Activity::Show(activity);

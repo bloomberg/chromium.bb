@@ -25,10 +25,10 @@ class HomeCardGestureManagerTest : public test::AthenaTestBase,
         last_y_(0),
         progress_count_(0),
         end_count_(0) {}
-  virtual ~HomeCardGestureManagerTest() {}
+  ~HomeCardGestureManagerTest() override {}
 
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AthenaTestBase::SetUp();
     gesture_manager_.reset(new HomeCardGestureManager(this, screen_bounds()));
   }
@@ -96,16 +96,15 @@ class HomeCardGestureManagerTest : public test::AthenaTestBase,
   }
 
   // HomeCardGestureManager::Delegate:
-  virtual void OnGestureEnded(HomeCard::State final_state,
-                              bool is_fling) override {
+  void OnGestureEnded(HomeCard::State final_state, bool is_fling) override {
     final_state_ = final_state;
     was_fling_ = is_fling;
     ++end_count_;
   }
 
-  virtual void OnGestureProgressed(HomeCard::State from_state,
-                                   HomeCard::State to_state,
-                                   float progress) override {
+  void OnGestureProgressed(HomeCard::State from_state,
+                           HomeCard::State to_state,
+                           float progress) override {
     last_from_state_ = from_state;
     last_to_state_ = to_state;
     last_progress_ = progress;

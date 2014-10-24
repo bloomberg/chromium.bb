@@ -15,7 +15,7 @@ namespace athena {
 class StatusIconContainerView : public views::View {
  public:
   StatusIconContainerView(SystemUI::ColorScheme color_scheme);
-  virtual ~StatusIconContainerView();
+  ~StatusIconContainerView() override;
 
  private:
   // views::View:

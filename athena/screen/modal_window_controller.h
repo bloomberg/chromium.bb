@@ -19,7 +19,7 @@ class ATHENA_EXPORT ModalWindowController : public aura::WindowObserver {
   static ModalWindowController* Get(aura::Window* container);
 
   explicit ModalWindowController(int container_priority);
-  virtual ~ModalWindowController();
+  ~ModalWindowController() override;
 
   aura::Window* modal_container() { return modal_container_; }
 

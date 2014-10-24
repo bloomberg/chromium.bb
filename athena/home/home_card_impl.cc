@@ -69,7 +69,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
  public:
   HomeCardLayoutManager() : home_card_(nullptr), minimized_layer_(nullptr) {}
 
-  virtual ~HomeCardLayoutManager() {}
+  ~HomeCardLayoutManager() override {}
 
   void Layout(bool animate, gfx::Tween::Type tween_type) {
     // |home_card| could be detached from the root window (e.g. when it is being
@@ -102,29 +102,28 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   }
 
   // aura::LayoutManager:
-  virtual void OnWindowResized() override {
+  void OnWindowResized() override {
     Layout(false, gfx::Tween::LINEAR);
     UpdateMinimizedHomeBounds();
   }
-  virtual void OnWindowAddedToLayout(aura::Window* child) override {
+  void OnWindowAddedToLayout(aura::Window* child) override {
     if (!home_card_) {
       home_card_ = child;
       Layout(false, gfx::Tween::LINEAR);
     }
   }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {
     if (home_card_ == child)
       home_card_ = nullptr;
   }
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override {
-  }
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) override {
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {
     if (home_card_ == child)
       Layout(false, gfx::Tween::LINEAR);
   }
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override {
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, requested_bounds);
   }
 
@@ -152,7 +151,7 @@ class HomeCardView : public views::WidgetDelegateView,
     AddChildView(main_view_);
   }
 
-  virtual ~HomeCardView() { main_view_->RemoveObserver(this); }
+  ~HomeCardView() override { main_view_->RemoveObserver(this); }
 
   void SetStateProgress(HomeCard::State from_state,
                         HomeCard::State to_state,
@@ -183,7 +182,7 @@ class HomeCardView : public views::WidgetDelegateView,
   }
 
   // views::View:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
+  void OnGestureEvent(ui::GestureEvent* event) override {
     if (!gesture_manager_ &&
         event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       gesture_manager_.reset(new HomeCardGestureManager(
@@ -194,7 +193,7 @@ class HomeCardView : public views::WidgetDelegateView,
     if (gesture_manager_)
       gesture_manager_->ProcessGestureEvent(event);
   }
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
+  bool OnMousePressed(const ui::MouseEvent& event) override {
     if (HomeCard::Get()->GetState() == HomeCard::VISIBLE_MINIMIZED &&
         event.IsLeftMouseButton() && event.GetClickCount() == 1) {
       athena::WindowManager::Get()->EnterOverview();
@@ -211,12 +210,10 @@ class HomeCardView : public views::WidgetDelegateView,
   }
 
   // views::WidgetDelegate:
-  virtual views::View* GetContentsView() override {
-    return this;
-  }
+  views::View* GetContentsView() override { return this; }
 
   // AthenaStartPageView::Observer:
-  virtual void OnLayoutStateChanged(float new_state) override {
+  void OnLayoutStateChanged(float new_state) override {
     if (new_state == 1.0f)
       HomeCard::Get()->SetState(HomeCard::VISIBLE_CENTERED);
   }

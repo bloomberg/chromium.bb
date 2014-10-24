@@ -22,11 +22,11 @@ namespace test {
 class AthenaTestBase : public testing::Test {
  public:
   AthenaTestBase();
-  virtual ~AthenaTestBase();
+  ~AthenaTestBase() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   void RunAllPendingInMessageLoop();

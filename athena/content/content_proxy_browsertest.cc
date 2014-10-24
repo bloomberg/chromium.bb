@@ -25,10 +25,10 @@ const char kTestUrl[] = "chrome:about";
 class ContentProxyBrowserTest : public AthenaBrowserTest {
  public:
   ContentProxyBrowserTest() {}
-  virtual ~ContentProxyBrowserTest() {}
+  ~ContentProxyBrowserTest() override {}
 
   // AthenaBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     // Make sure that we draw the output - it's required for this test.
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
     AthenaBrowserTest::SetUpCommandLine(command_line);

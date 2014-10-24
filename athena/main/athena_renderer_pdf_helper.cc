@@ -19,7 +19,7 @@ class PDFRendererHostFactory : public ppapi::host::HostFactory {
  public:
   explicit PDFRendererHostFactory(content::RendererPpapiHost* host)
       : host_(host) {}
-  virtual ~PDFRendererHostFactory() {}
+  ~PDFRendererHostFactory() override {}
 
  private:
   // ppapi::host::HostFactory:

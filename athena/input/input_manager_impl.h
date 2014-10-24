@@ -24,7 +24,7 @@ class ATHENA_EXPORT InputManagerImpl : public InputManager,
                                        public aura::client::EventClient {
  public:
   InputManagerImpl();
-  virtual ~InputManagerImpl();
+  ~InputManagerImpl() override;
 
   void Init();
   void Shutdown();

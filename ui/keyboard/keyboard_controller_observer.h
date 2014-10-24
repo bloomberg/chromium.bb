@@ -17,6 +17,8 @@ namespace keyboard {
 // occur with the keyboard, such as the bounds or visiility changing.
 class KEYBOARD_EXPORT KeyboardControllerObserver {
  public:
+  virtual ~KeyboardControllerObserver() {}
+
   // Called when the keyboard bounds or visibility are about to change.
   virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) = 0;
 };

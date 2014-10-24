@@ -28,19 +28,19 @@ class ChromeScreenLockManager : public ScreenLockManagerBase,
   void Init();
 
  protected:
-  virtual ~ChromeScreenLockManager();
+  ~ChromeScreenLockManager() override;
 
  private:
   // ScreenLockManager:
-  virtual void LockScreen() override;
+  void LockScreen() override;
 
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const override;
-  virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) override;
+  bool IsCommandEnabled(int command_id) const override;
+  bool OnAcceleratorFired(int command_id,
+                          const ui::Accelerator& accelerator) override;
 
   // PowerButtonObserver:
-  virtual void OnPowerButtonStateChanged(State state) override;
+  void OnPowerButtonStateChanged(State state) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeScreenLockManager);
 };

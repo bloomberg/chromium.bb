@@ -25,7 +25,7 @@ namespace athena {
 class WindowManagerTest : public test::AthenaTestBase {
  public:
   WindowManagerTest() {}
-  virtual ~WindowManagerTest() {}
+  ~WindowManagerTest() override {}
 
   scoped_ptr<aura::Window> CreateAndActivateWindow(
       aura::WindowDelegate* delegate) {

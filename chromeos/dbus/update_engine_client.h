@@ -63,6 +63,8 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
   // Interface for observing changes from the update engine.
   class Observer {
    public:
+    virtual ~Observer() {}
+
     // Called when the status is updated.
     virtual void UpdateStatusChanged(const Status& status) {}
   };

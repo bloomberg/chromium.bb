@@ -12,17 +12,16 @@ namespace athena {
 class AppRegistryImpl : public AppRegistry {
  public:
   AppRegistryImpl();
-  virtual ~AppRegistryImpl();
+  ~AppRegistryImpl() override;
 
   // AppRegistry:
-  virtual AppActivityRegistry* GetAppActivityRegistry(
+  AppActivityRegistry* GetAppActivityRegistry(
       const std::string& app_id,
       content::BrowserContext* browser_context) override;
-  virtual int NumberOfApplications() const override { return app_list_.size(); }
+  int NumberOfApplications() const override { return app_list_.size(); }
 
  private:
-  virtual void RemoveAppActivityRegistry(
-      AppActivityRegistry* registry) override;
+  void RemoveAppActivityRegistry(AppActivityRegistry* registry) override;
 
   std::vector<AppActivityRegistry*> app_list_;
 

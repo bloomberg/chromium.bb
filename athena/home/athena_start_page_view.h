@@ -33,7 +33,7 @@ class ATHENA_EXPORT AthenaStartPageView
   };
 
   explicit AthenaStartPageView(app_list::AppListViewDelegate* delegate);
-  virtual ~AthenaStartPageView();
+  ~AthenaStartPageView() override;
 
   // Requests the focus on the search box in the start page view.
   void RequestFocusOnSearchBox();
@@ -85,20 +85,18 @@ class ATHENA_EXPORT AthenaStartPageView
   void OnSearchResultLayoutAnimationCompleted(bool should_show_search_results);
 
   // views::View:
-  virtual void Layout() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& key_event) override;
+  void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& key_event) override;
 
   // app_list::SearchBoxViewDelegate:
-  virtual void QueryChanged(app_list::SearchBoxView* sender) override;
+  void QueryChanged(app_list::SearchBoxView* sender) override;
 
   // app_list::AppListItemListObserver:
-  virtual void OnListItemAdded(size_t index,
-                               app_list::AppListItem* item) override;
-  virtual void OnListItemRemoved(size_t index,
-                                 app_list::AppListItem* item) override;
-  virtual void OnListItemMoved(size_t from_index,
-                               size_t to_index,
-                               app_list::AppListItem* item) override;
+  void OnListItemAdded(size_t index, app_list::AppListItem* item) override;
+  void OnListItemRemoved(size_t index, app_list::AppListItem* item) override;
+  void OnListItemMoved(size_t from_index,
+                       size_t to_index,
+                       app_list::AppListItem* item) override;
 
   // Not owned.
   app_list::AppListViewDelegate* delegate_;

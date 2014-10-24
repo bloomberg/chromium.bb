@@ -59,7 +59,7 @@ class StatusIconContainerView::PowerStatus
         ->RequestStatusUpdate();
   }
 
-  virtual ~PowerStatus() {
+  ~PowerStatus() override {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
         this);
   }
@@ -120,7 +120,7 @@ class StatusIconContainerView::NetworkStatus
     handler->AddObserver(this, FROM_HERE);
   }
 
-  virtual ~NetworkStatus() {
+  ~NetworkStatus() override {
     chromeos::NetworkStateHandler* handler =
         chromeos::NetworkHandler::Get()->network_state_handler();
     handler->RemoveObserver(this, FROM_HERE);
@@ -181,7 +181,7 @@ class StatusIconContainerView::UpdateStatus
         RequestUpdateCheck(base::Bind(StartUpdateCallback));
   }
 
-  virtual ~UpdateStatus() {
+  ~UpdateStatus() override {
     chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(
         this);
   }

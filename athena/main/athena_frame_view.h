@@ -21,7 +21,7 @@ class AthenaFrameView : public views::NonClientFrameView {
   static const char kViewClassName[];
 
   explicit AthenaFrameView(views::Widget* frame);
-  virtual ~AthenaFrameView();
+  ~AthenaFrameView() override;
 
   // views::NonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForClientView() const override;

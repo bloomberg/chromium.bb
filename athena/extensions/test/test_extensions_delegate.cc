@@ -14,20 +14,20 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
  public:
   TestExtensionsDelegate() {}
 
-  virtual ~TestExtensionsDelegate() {}
+  ~TestExtensionsDelegate() override {}
 
  private:
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const override {
+  content::BrowserContext* GetBrowserContext() const override {
     return nullptr;
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
+  const extensions::ExtensionSet& GetInstalledExtensions() override {
     return shell_extensions_;
   }
-  virtual bool LaunchApp(const std::string& app_id) override { return true; }
-  virtual bool UnloadApp(const std::string& app_id) override { return false; }
+  bool LaunchApp(const std::string& app_id) override { return true; }
+  bool UnloadApp(const std::string& app_id) override { return false; }
 
-  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+  scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
       override {
     return scoped_ptr<extensions::ExtensionInstallUI>();
   }

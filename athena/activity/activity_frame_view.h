@@ -27,32 +27,31 @@ class ActivityFrameView : public views::NonClientFrameView,
   static const char kViewClassName[];
 
   ActivityFrameView(views::Widget* frame, ActivityViewModel* view_model);
-  virtual ~ActivityFrameView();
+  ~ActivityFrameView() override;
 
   // views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const override;
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
+  gfx::Rect GetBoundsForClientView() const override;
+  gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
-  virtual int NonClientHitTest(const gfx::Point& point) override;
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) override;
-  virtual void ResetWindowControls() override;
-  virtual void UpdateWindowIcon() override;
-  virtual void UpdateWindowTitle() override;
-  virtual void SizeConstraintsChanged() override;
+  int NonClientHitTest(const gfx::Point& point) override;
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
+  void ResetWindowControls() override;
+  void UpdateWindowIcon() override;
+  void UpdateWindowTitle() override;
+  void SizeConstraintsChanged() override;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual const char* GetClassName() const override;
-  virtual void Layout() override;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  void Layout() override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
 
  private:
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() override;
-  virtual void OnOverviewModeExit() override;
-  virtual void OnSplitViewModeEnter() override;
-  virtual void OnSplitViewModeExit() override;
+  void OnOverviewModeEnter() override;
+  void OnOverviewModeExit() override;
+  void OnSplitViewModeEnter() override;
+  void OnSplitViewModeExit() override;
 
   gfx::Insets NonClientBorderInsets() const;
   int NonClientBorderThickness() const;

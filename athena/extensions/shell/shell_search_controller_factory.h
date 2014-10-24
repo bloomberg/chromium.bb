@@ -17,9 +17,9 @@ class ShellSearchControllerFactory : public SearchControllerFactory {
  public:
   explicit ShellSearchControllerFactory(
       content::BrowserContext* browser_context);
-  virtual ~ShellSearchControllerFactory();
+  ~ShellSearchControllerFactory() override;
 
-  virtual scoped_ptr<app_list::SearchController> Create(
+  scoped_ptr<app_list::SearchController> Create(
       app_list::SearchBoxModel* search_box,
       app_list::AppListModel::SearchResults* results) override;
 

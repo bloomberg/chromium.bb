@@ -21,7 +21,7 @@ class RenderViewContextMenuImpl : public RenderViewContextMenuBase {
  public:
   RenderViewContextMenuImpl(content::RenderFrameHost* render_frame_host,
                             const content::ContextMenuParams& params);
-  virtual ~RenderViewContextMenuImpl();
+  ~RenderViewContextMenuImpl() override;
 
   void RunMenuAt(views::Widget* parent,
                  const gfx::Point& point,
@@ -29,23 +29,22 @@ class RenderViewContextMenuImpl : public RenderViewContextMenuBase {
 
  private:
   // RenderViewContextMenuBase:
-  virtual void InitMenu() override;
-  virtual void RecordShownItem(int id) override;
-  virtual void RecordUsedItem(int id) override;
+  void InitMenu() override;
+  void RecordShownItem(int id) override;
+  void RecordUsedItem(int id) override;
 #if defined(ENABLE_PLUGINS)
-  virtual void HandleAuthorizeAllPlugins() override;
+  void HandleAuthorizeAllPlugins() override;
 #endif
-  virtual void NotifyMenuShown() override;
-  virtual void NotifyURLOpened(const GURL& url,
-                               content::WebContents* new_contents) override;
+  void NotifyMenuShown() override;
+  void NotifyURLOpened(const GURL& url,
+                       content::WebContents* new_contents) override;
 
   // ui::SimpleMenuModel:
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuImpl);
 };

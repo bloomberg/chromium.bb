@@ -17,7 +17,7 @@ class Activity;
 class AthenaAppBrowserTest : public extensions::PlatformAppBrowserTest {
  public:
   AthenaAppBrowserTest();
-  virtual ~AthenaAppBrowserTest();
+  ~AthenaAppBrowserTest() override;
 
  protected:
   // Creates an app activity and returns after app is fully loaded.
@@ -27,7 +27,7 @@ class AthenaAppBrowserTest : public extensions::PlatformAppBrowserTest {
   const std::string& GetTestAppID();
 
   // BrowserTestBase:
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
  private:
   // Our created app id - after it got created and installed.

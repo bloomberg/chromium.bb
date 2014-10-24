@@ -24,7 +24,7 @@ namespace athena {
 class ShutdownDialog : public PowerButtonObserver {
  public:
   explicit ShutdownDialog();
-  virtual ~ShutdownDialog();
+  ~ShutdownDialog() override;
 
  private:
   enum State {
@@ -48,8 +48,7 @@ class ShutdownDialog : public PowerButtonObserver {
   void Shutdown();
 
   // PowerButtonObserver:
-  virtual void OnPowerButtonStateChanged(
-      PowerButtonObserver::State state) override;
+  void OnPowerButtonStateChanged(PowerButtonObserver::State state) override;
 
   // |shutdown_warning_message_|'s parent container.
   aura::Window* warning_message_container_;

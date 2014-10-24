@@ -97,7 +97,7 @@ class PasswordView : public views::View, public views::ButtonListener {
     AddChildView(container);
   }
 
-  virtual ~PasswordView() {}
+  ~PasswordView() override {}
 
  private:
   void CloseDialog(bool successful) { callback_.Run(successful); }
@@ -204,7 +204,7 @@ class NetworkRow : public views::View {
     Update(network);
   }
 
-  virtual ~NetworkRow() {}
+  ~NetworkRow() override {}
 
   void Update(const ui::NetworkInfo& network) {
     network_ = network;
@@ -326,7 +326,7 @@ class NetworkSelector : public ui::NetworkListDelegate,
                                                                 FROM_HERE);
   }
 
-  virtual ~NetworkSelector() {
+  ~NetworkSelector() override {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
   }

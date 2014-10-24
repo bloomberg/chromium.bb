@@ -25,7 +25,7 @@ class PowerButtonObserver {
     LONG_PRESSED,
     RELEASED,
   };
-
+  virtual ~PowerButtonObserver() {}
   virtual void OnPowerButtonStateChanged(State state) = 0;
 };
 

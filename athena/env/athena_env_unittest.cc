@@ -108,7 +108,7 @@ namespace {
 class AthenaShutdownTest : public test::AthenaTestBase {
  public:
   AthenaShutdownTest() {}
-  virtual ~AthenaShutdownTest() {}
+  ~AthenaShutdownTest() override {}
 
   virtual void TearDown() {
     test::AthenaTestBase::TearDown();

@@ -22,11 +22,11 @@ class MinimizedHomePainter : public ui::LayerDelegate,
     layer->set_delegate(this);
     SetLayer(layer);
   }
-  virtual ~MinimizedHomePainter() {}
+  ~MinimizedHomePainter() override {}
 
  private:
   // ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     gfx::Rect bounds(layer()->GetTargetBounds().size());
     canvas->FillRect(bounds, SK_ColorBLACK);
     canvas->FillRect(gfx::Rect((bounds.width() - kDragHandleWidth) / 2,
@@ -36,14 +36,11 @@ class MinimizedHomePainter : public ui::LayerDelegate,
                      SK_ColorWHITE);
   }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {
-  }
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-  }
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 

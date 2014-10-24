@@ -28,7 +28,7 @@ class ATHENA_EXPORT ScreenManagerImpl : public ScreenManager,
                                         public aura::client::WindowTreeClient {
  public:
   explicit ScreenManagerImpl(aura::Window* root_window);
-  virtual ~ScreenManagerImpl();
+  ~ScreenManagerImpl() override;
 
   void Init();
 

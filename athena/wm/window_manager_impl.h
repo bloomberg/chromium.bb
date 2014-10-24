@@ -37,15 +37,15 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
                                         public TitleDragControllerDelegate {
  public:
   WindowManagerImpl();
-  virtual ~WindowManagerImpl();
+  ~WindowManagerImpl() override;
 
   void ToggleSplitView();
 
   // WindowManager:
-  virtual void EnterOverview() override;
+  void EnterOverview() override;
   // Exits overview and activates the previously active activity
-  virtual void ExitOverview() override;
-  virtual bool IsOverviewModeActive() override;
+  void ExitOverview() override;
+  bool IsOverviewModeActive() override;
 
  private:
   friend class test::WindowManagerImplTestApi;
@@ -70,30 +70,30 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
   void InstallAccelerators();
 
   // WindowManager:
-  virtual void AddObserver(WindowManagerObserver* observer) override;
-  virtual void RemoveObserver(WindowManagerObserver* observer) override;
-  virtual void ToggleSplitViewForTest() override;
-  virtual WindowListProvider* GetWindowListProvider() override;
+  void AddObserver(WindowManagerObserver* observer) override;
+  void RemoveObserver(WindowManagerObserver* observer) override;
+  void ToggleSplitViewForTest() override;
+  WindowListProvider* GetWindowListProvider() override;
 
   // WindowOverviewModeDelegate:
-  virtual void OnSelectWindow(aura::Window* window) override;
-  virtual void OnSelectSplitViewWindow(aura::Window* left,
-                                       aura::Window* right,
-                                       aura::Window* to_activate) override;
+  void OnSelectWindow(aura::Window* window) override;
+  void OnSelectSplitViewWindow(aura::Window* left,
+                               aura::Window* right,
+                               aura::Window* to_activate) override;
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const override;
-  virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) override;
+  bool IsCommandEnabled(int command_id) const override;
+  bool OnAcceleratorFired(int command_id,
+                          const ui::Accelerator& accelerator) override;
 
   // TitleDragControllerDelegate:
-  virtual aura::Window* GetWindowBehind(aura::Window* window) override;
-  virtual void OnTitleDragStarted(aura::Window* window) override;
-  virtual void OnTitleDragCompleted(aura::Window* window) override;
-  virtual void OnTitleDragCanceled(aura::Window* window) override;
+  aura::Window* GetWindowBehind(aura::Window* window) override;
+  void OnTitleDragStarted(aura::Window* window) override;
+  void OnTitleDragCompleted(aura::Window* window) override;
+  void OnTitleDragCanceled(aura::Window* window) override;
 
   scoped_ptr<aura::Window> container_;
   scoped_ptr<WindowListProviderImpl> window_list_provider_;

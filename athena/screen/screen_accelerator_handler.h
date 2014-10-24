@@ -20,7 +20,7 @@ class ScreenAcceleratorHandler : public AcceleratorHandler {
   explicit ScreenAcceleratorHandler(aura::Window* root_window);
 
  private:
-  virtual ~ScreenAcceleratorHandler();
+  ~ScreenAcceleratorHandler() override;
 
   // AcceleratorHandler:
   virtual bool IsCommandEnabled(int command_id) const override;

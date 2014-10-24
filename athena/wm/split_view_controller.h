@@ -42,7 +42,7 @@ class ATHENA_EXPORT SplitViewController
   SplitViewController(aura::Window* container,
                       WindowListProvider* window_list_provider);
 
-  virtual ~SplitViewController();
+  ~SplitViewController() override;
 
   bool CanActivateSplitViewMode() const;
   bool IsSplitViewModeActive() const;
@@ -116,22 +116,21 @@ class ATHENA_EXPORT SplitViewController
   float GetMinFlingVelocityForTest() const;
 
   // BezelController::ScrollDelegate:
-  virtual void BezelScrollBegin(BezelController::Bezel bezel,
-                                float delta) override;
-  virtual void BezelScrollEnd(float velocity) override;
-  virtual void BezelScrollUpdate(float delta) override;
-  virtual bool BezelCanScroll() override;
+  void BezelScrollBegin(BezelController::Bezel bezel, float delta) override;
+  void BezelScrollEnd(float velocity) override;
+  void BezelScrollUpdate(float delta) override;
+  bool BezelCanScroll() override;
 
   // DragHandleScrollDelegate:
-  virtual void HandleScrollBegin(float delta) override;
-  virtual void HandleScrollEnd(float velocity) override;
-  virtual void HandleScrollUpdate(float delta) override;
+  void HandleScrollBegin(float delta) override;
+  void HandleScrollEnd(float velocity) override;
+  void HandleScrollUpdate(float delta) override;
 
   // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() override;
-  virtual void OnOverviewModeExit() override;
-  virtual void OnSplitViewModeEnter() override;
-  virtual void OnSplitViewModeExit() override;
+  void OnOverviewModeEnter() override;
+  void OnOverviewModeExit() override;
+  void OnSplitViewModeEnter() override;
+  void OnSplitViewModeExit() override;
 
   State state_;
 

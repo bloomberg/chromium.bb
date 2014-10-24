@@ -52,7 +52,7 @@ class WebActivityController : public AcceleratorHandler {
       : owner_activity_(owner_activity),
         web_view_(web_view),
         reserved_accelerator_enabled_(true) {}
-  virtual ~WebActivityController() {}
+  ~WebActivityController() override {}
 
   // Installs accelerators for web activity.
   void InstallAccelerators() {
@@ -105,7 +105,7 @@ class WebActivityController : public AcceleratorHandler {
 
  private:
   // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const override {
+  bool IsCommandEnabled(int command_id) const override {
     switch (command_id) {
       case CMD_RELOAD:
       case CMD_RELOAD_IGNORE_CACHE:
@@ -123,8 +123,8 @@ class WebActivityController : public AcceleratorHandler {
     return false;
   }
 
-  virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) override {
+  bool OnAcceleratorFired(int command_id,
+                          const ui::Accelerator& accelerator) override {
     switch (command_id) {
       case CMD_RELOAD:
         web_view_->GetWebContents()->GetController().Reload(false);
@@ -189,7 +189,7 @@ class AthenaWebView : public views::WebView {
         SwapWebContents(scoped_ptr<content::WebContents>(web_contents)));
   }
 
-  virtual ~AthenaWebView() {}
+  ~AthenaWebView() override {}
 
   void InstallAccelerators() { controller_->InstallAccelerators(); }
 
@@ -233,7 +233,7 @@ class AthenaWebView : public views::WebView {
   const bool IsContentEvicted() { return !!evicted_web_contents_.get(); }
 
   // content::WebContentsDelegate:
-  virtual content::WebContents* OpenURLFromTab(
+  content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override {
     switch(params.disposition) {
@@ -269,13 +269,13 @@ class AthenaWebView : public views::WebView {
     return nullptr;
   }
 
-  virtual bool CanOverscrollContent() const override {
+  bool CanOverscrollContent() const override {
     const std::string value = CommandLine::ForCurrentProcess()->
         GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
     return value != "0";
   }
 
-  virtual void OverscrollUpdate(float delta_y) override {
+  void OverscrollUpdate(float delta_y) override {
     overscroll_y_ = delta_y;
     if (overscroll_y_ > kDistanceShowReloadMessage) {
       if (!reload_message_)
@@ -292,7 +292,7 @@ class AthenaWebView : public views::WebView {
     }
   }
 
-  virtual void OverscrollComplete() override {
+  void OverscrollComplete() override {
     if (overscroll_y_ >= kDistanceReload)
       GetWebContents()->GetController().Reload(false);
     if (reload_message_)
@@ -300,50 +300,49 @@ class AthenaWebView : public views::WebView {
     overscroll_y_ = 0;
   }
 
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override {
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override {
     Activity* activity =
         ActivityFactory::Get()->CreateWebActivity(new_contents);
     Activity::Show(activity);
   }
 
-  virtual bool PreHandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) override {
+  bool PreHandleKeyboardEvent(content::WebContents* source,
+                              const content::NativeWebKeyboardEvent& event,
+                              bool* is_keyboard_shortcut) override {
     return controller_->PreHandleKeyboardEvent(
         source, event, is_keyboard_shortcut);
   }
 
-  virtual void HandleKeyboardEvent(
+  void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override {
     controller_->HandleKeyboardEvent(source, event);
   }
 
-  virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
-                                          bool enter_fullscreen) override {
+  void ToggleFullscreenModeForTab(content::WebContents* web_contents,
+                                  bool enter_fullscreen) override {
     fullscreen_ = enter_fullscreen;
     GetWidget()->SetFullscreen(fullscreen_);
   }
 
-  virtual bool IsFullscreenForTabOrPending(
+  bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const override {
     return fullscreen_;
   }
 
-  virtual void LoadingStateChanged(content::WebContents* source,
-                                   bool to_different_document) override {
+  void LoadingStateChanged(content::WebContents* source,
+                           bool to_different_document) override {
     bool has_stopped = source == nullptr || !source->IsLoading();
     LoadProgressChanged(source, has_stopped ? 1 : 0);
   }
 
-  virtual void LoadProgressChanged(content::WebContents* source,
-                                   double progress) override {
+  void LoadProgressChanged(content::WebContents* source,
+                           double progress) override {
     if (!progress)
       return;
 
@@ -364,13 +363,12 @@ class AthenaWebView : public views::WebView {
     layer->SetOpacity(0.f);
   }
 
-  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
-      override {
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager() override {
     NOTIMPLEMENTED();
     return nullptr;
   }
 
-  virtual content::ColorChooser* OpenColorChooser(
+  content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<content::ColorSuggestion>& suggestions) override {
@@ -378,13 +376,12 @@ class AthenaWebView : public views::WebView {
   }
 
   // Called when a file selection is to be done.
-  virtual void RunFileChooser(
-      content::WebContents* web_contents,
-      const content::FileChooserParams& params) override {
+  void RunFileChooser(content::WebContents* web_contents,
+                      const content::FileChooserParams& params) override {
     return athena::OpenFileChooser(web_contents, params);
   }
 
-  virtual void CloseContents(content::WebContents* contents) override {
+  void CloseContents(content::WebContents* contents) override {
     Activity::Delete(owner_activity_);
   }
 

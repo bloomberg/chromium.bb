@@ -17,7 +17,7 @@ class PowerButtonController : public chromeos::PowerManagerClient::Observer,
                               public AcceleratorHandler {
  public:
   PowerButtonController();
-  virtual ~PowerButtonController();
+  ~PowerButtonController() override;
 
   void AddPowerButtonObserver(PowerButtonObserver* observer);
   void RemovePowerButtonObserver(PowerButtonObserver* observer);

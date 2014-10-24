@@ -47,6 +47,8 @@ class CHROMEOS_EXPORT AccelerometerReader {
   // An interface to receive data from the AccelerometerReader.
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     virtual void HandleAccelerometerUpdate(
         const ui::AccelerometerUpdate& update) = 0;
   };

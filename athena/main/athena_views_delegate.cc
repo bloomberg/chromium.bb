@@ -17,8 +17,7 @@ class AthenaViewsDelegate: public views::ViewsDelegate {
   AthenaViewsDelegate() {
   }
 
-  virtual ~AthenaViewsDelegate() {
-  }
+  ~AthenaViewsDelegate() override {}
 
   virtual void OnBeforeWidgetInit(
       views::Widget::InitParams* params,

@@ -39,7 +39,7 @@ class ActionButton : public ui::LayerDelegate {
     layer_->SetOpacity(0);
   }
 
-  virtual ~ActionButton() {}
+  ~ActionButton() override {}
 
   static void DestroyAfterFadeout(scoped_ptr<ActionButton> button) {
     ui::Layer* layer = button->layer();
@@ -64,7 +64,7 @@ class ActionButton : public ui::LayerDelegate {
   }
 
   // ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     canvas->DrawImageInt(*bundle.GetImageSkiaNamed(resource_id_), 0, 0);
     gfx::ShadowValues shadow;
@@ -82,11 +82,10 @@ class ActionButton : public ui::LayerDelegate {
                                       shadow);
   }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 

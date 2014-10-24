@@ -42,8 +42,7 @@ class ProxyImageData : public base::RefCountedThreadSafe<ProxyImageData> {
 
  private:
   friend class base::RefCountedThreadSafe<ProxyImageData>;
-  virtual ~ProxyImageData() {
-  }
+  ~ProxyImageData() {}
 
   void EncodeOnWorker(const SkBitmap& bitmap) {
     DCHECK_EQ(bitmap.colorType(), kAlpha_8_SkColorType);

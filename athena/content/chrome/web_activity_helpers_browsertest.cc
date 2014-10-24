@@ -28,8 +28,7 @@ class HelpersCreatedChecker : public content::NotificationObserver {
                    content::NotificationService::AllSources());
   }
 
-  virtual ~HelpersCreatedChecker() {
-  }
+  ~HelpersCreatedChecker() override {}
 
   // Returns true if WebActivity helpers were attached to the WebContents prior
   // to the RenderView being created for the WebContents.
@@ -39,9 +38,9 @@ class HelpersCreatedChecker : public content::NotificationObserver {
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
               type);
 

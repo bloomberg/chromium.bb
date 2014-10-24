@@ -21,15 +21,15 @@ namespace athena {
 class SplitViewControllerTest : public test::AthenaTestBase {
  public:
   SplitViewControllerTest() {}
-  virtual ~SplitViewControllerTest() {}
+  ~SplitViewControllerTest() override {}
 
   // test::AthenaTestBase:
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AthenaTestBase::SetUp();
     api_.reset(new test::WindowManagerImplTestApi);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     api_.reset();
     test::AthenaTestBase::TearDown();
   }

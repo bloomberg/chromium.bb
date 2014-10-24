@@ -20,7 +20,7 @@ class DragHandleView : public views::View {
                  DragHandleScrollDelegate* delegate,
                  int preferred_width,
                  int preferred_height);
-  virtual ~DragHandleView();
+  ~DragHandleView() override;
 
  private:
   void SetColor(SkColor color);

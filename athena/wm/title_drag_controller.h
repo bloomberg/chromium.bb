@@ -41,14 +41,14 @@ class TitleDragController : public ui::EventHandler {
  public:
   TitleDragController(aura::Window* container,
                       TitleDragControllerDelegate* delegate);
-  virtual ~TitleDragController();
+  ~TitleDragController() override;
 
  private:
   void EndTransition(aura::Window* window, bool complete);
   void OnTransitionEnd(aura::Window* window, bool complete);
 
   // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) override;
+  void OnGestureEvent(ui::GestureEvent* gesture) override;
 
   aura::Window* container_;
   TitleDragControllerDelegate* delegate_;

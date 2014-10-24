@@ -16,16 +16,16 @@ class ActivityViewModel;
 class ActivityWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit ActivityWidgetDelegate(ActivityViewModel* view_model);
-  virtual ~ActivityWidgetDelegate();
+  ~ActivityWidgetDelegate() override;
 
   // views::WidgetDelegate:
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void DeleteDelegate() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
-  virtual views::View* GetContentsView() override;
-  virtual views::ClientView* CreateClientView(views::Widget* widget) override;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  base::string16 GetWindowTitle() const override;
+  void DeleteDelegate() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  views::View* GetContentsView() override;
+  views::ClientView* CreateClientView(views::Widget* widget) override;
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
 
  private:

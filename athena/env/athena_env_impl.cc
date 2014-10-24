@@ -56,36 +56,30 @@ class ScreenForShutdown : public gfx::Screen {
       : primary_display_(primary_display) {}
 
   // gfx::Screen overrides:
-  virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-  virtual gfx::NativeWindow GetWindowUnderCursor() override { return nullptr; }
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) override {
+  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+  gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return nullptr;
   }
-  virtual int GetNumDisplays() const override { return 1; }
-  virtual std::vector<gfx::Display> GetAllDisplays() const override {
+  int GetNumDisplays() const override { return 1; }
+  std::vector<gfx::Display> GetAllDisplays() const override {
     std::vector<gfx::Display> displays(1, primary_display_);
     return displays;
   }
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const override {
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
     return primary_display_;
   }
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override {
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     return primary_display_;
   }
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override {
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     return primary_display_;
   }
-  virtual gfx::Display GetPrimaryDisplay() const override {
-    return primary_display_;
-  }
-  virtual void AddObserver(gfx::DisplayObserver* observer) override {
+  gfx::Display GetPrimaryDisplay() const override { return primary_display_; }
+  void AddObserver(gfx::DisplayObserver* observer) override {
     NOTREACHED() << "Observer should not be added during shutdown";
   }
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {}
+  void RemoveObserver(gfx::DisplayObserver* observer) override {}
 
   const gfx::Display primary_display_;
 
@@ -98,17 +92,17 @@ class AthenaNativeCursorManager : public wm::NativeCursorManager {
  public:
   explicit AthenaNativeCursorManager(aura::WindowTreeHost* host)
       : host_(host), image_cursors_(new ui::ImageCursors) {}
-  virtual ~AthenaNativeCursorManager() {}
+  ~AthenaNativeCursorManager() override {}
 
   // wm::NativeCursorManager overrides.
-  virtual void SetDisplay(const gfx::Display& display,
-                          wm::NativeCursorManagerDelegate* delegate) override {
+  void SetDisplay(const gfx::Display& display,
+                  wm::NativeCursorManagerDelegate* delegate) override {
     if (image_cursors_->SetDisplay(display, display.device_scale_factor()))
       SetCursor(delegate->GetCursor(), delegate);
   }
 
-  virtual void SetCursor(gfx::NativeCursor cursor,
-                         wm::NativeCursorManagerDelegate* delegate) override {
+  void SetCursor(gfx::NativeCursor cursor,
+                 wm::NativeCursorManagerDelegate* delegate) override {
     image_cursors_->SetPlatformCursor(&cursor);
     cursor.set_device_scale_factor(image_cursors_->GetScale());
     delegate->CommitCursor(cursor);
@@ -117,9 +111,8 @@ class AthenaNativeCursorManager : public wm::NativeCursorManager {
       ApplyCursor(cursor);
   }
 
-  virtual void SetVisibility(
-      bool visible,
-      wm::NativeCursorManagerDelegate* delegate) override {
+  void SetVisibility(bool visible,
+                     wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitVisibility(visible);
 
     if (visible) {
@@ -131,16 +124,15 @@ class AthenaNativeCursorManager : public wm::NativeCursorManager {
     }
   }
 
-  virtual void SetCursorSet(
-      ui::CursorSetType cursor_set,
-      wm::NativeCursorManagerDelegate* delegate) override {
+  void SetCursorSet(ui::CursorSetType cursor_set,
+                    wm::NativeCursorManagerDelegate* delegate) override {
     image_cursors_->SetCursorSet(cursor_set);
     delegate->CommitCursorSet(cursor_set);
     if (delegate->IsCursorVisible())
       SetCursor(delegate->GetCursor(), delegate);
   }
 
-  virtual void SetMouseEventsEnabled(
+  void SetMouseEventsEnabled(
       bool enabled,
       wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitMouseEventsEnabled(enabled);
@@ -218,7 +210,7 @@ class AthenaEnvImpl : public AthenaEnv,
     instance = this;
   }
 
-  virtual ~AthenaEnvImpl() {
+  ~AthenaEnvImpl() override {
     instance = nullptr;
 
     host_->RemoveObserver(this);
@@ -256,13 +248,13 @@ class AthenaEnvImpl : public AthenaEnv,
   };
 
   // AthenaEnv:
-  virtual aura::WindowTreeHost* GetHost() override { return host_.get(); }
+  aura::WindowTreeHost* GetHost() override { return host_.get(); }
 
-  virtual void SetDisplayWorkAreaInsets(const gfx::Insets& insets) override {
+  void SetDisplayWorkAreaInsets(const gfx::Insets& insets) override {
     screen_->SetWorkAreaInsets(insets);
   }
 
-  virtual void AddTerminatingCallback(const base::Closure& closure) override {
+  void AddTerminatingCallback(const base::Closure& closure) override {
     if (closure.is_null())
       return;
     DCHECK(terminating_callbacks_.end() ==
@@ -272,8 +264,7 @@ class AthenaEnvImpl : public AthenaEnv,
     terminating_callbacks_.push_back(closure);
   }
 
-  virtual void RemoveTerminatingCallback(
-      const base::Closure& closure) override {
+  void RemoveTerminatingCallback(const base::Closure& closure) override {
     std::vector<base::Closure>::iterator iter =
         std::find_if(terminating_callbacks_.begin(),
                      terminating_callbacks_.end(),
@@ -282,7 +273,7 @@ class AthenaEnvImpl : public AthenaEnv,
       terminating_callbacks_.erase(iter);
   }
 
-  virtual void OnTerminating() override {
+  void OnTerminating() override {
     for (std::vector<base::Closure>::iterator iter =
              terminating_callbacks_.begin();
          iter != terminating_callbacks_.end();
@@ -292,15 +283,16 @@ class AthenaEnvImpl : public AthenaEnv,
   }
 
   // ui::DisplayConfigurator::Observer:
-  virtual void OnDisplayModeChanged(const std::vector<
-      ui::DisplayConfigurator::DisplayState>& displays) override {
+  void OnDisplayModeChanged(
+      const std::vector<ui::DisplayConfigurator::DisplayState>& displays)
+      override {
     gfx::Size size = GetPrimaryDisplaySize();
     if (!size.IsEmpty())
       host_->UpdateRootWindowSize(size);
   }
 
   // aura::WindowTreeHostObserver:
-  virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) override {
+  void OnHostCloseRequested(const aura::WindowTreeHost* host) override {
     base::MessageLoopForUI::current()->PostTask(
         FROM_HERE, base::MessageLoop::QuitClosure());
   }

@@ -49,12 +49,11 @@ class NestedAcceleratorDelegate : public wm::NestedAcceleratorDelegate {
   explicit NestedAcceleratorDelegate(
       AcceleratorManagerImpl* accelerator_manager)
       : accelerator_manager_(accelerator_manager) {}
-  virtual ~NestedAcceleratorDelegate() {}
+  ~NestedAcceleratorDelegate() override {}
 
  private:
   // wm::NestedAcceleratorDelegate:
-  virtual Result ProcessAccelerator(
-      const ui::Accelerator& accelerator) override {
+  Result ProcessAccelerator(const ui::Accelerator& accelerator) override {
     return accelerator_manager_->Process(accelerator) ? RESULT_PROCESSED
                                                       : RESULT_NOT_PROCESSED;
   }
@@ -68,13 +67,13 @@ class AcceleratorDelegate : public wm::AcceleratorDelegate {
  public:
   explicit AcceleratorDelegate(AcceleratorManagerImpl* accelerator_manager)
       : accelerator_manager_(accelerator_manager) {}
-  virtual ~AcceleratorDelegate() {}
+  ~AcceleratorDelegate() override {}
 
  private:
   // wm::AcceleratorDelegate:
-  virtual bool ProcessAccelerator(const ui::KeyEvent& event,
-                                  const ui::Accelerator& accelerator,
-                                  KeyType key_type) override {
+  bool ProcessAccelerator(const ui::KeyEvent& event,
+                          const ui::Accelerator& accelerator,
+                          KeyType key_type) override {
     aura::Window* target = static_cast<aura::Window*>(event.target());
     if (!target->IsRootWindow() &&
         !accelerator_manager_->IsRegistered(accelerator, AF_RESERVED)) {
@@ -92,13 +91,13 @@ class FocusManagerDelegate : public views::FocusManagerDelegate {
  public:
   explicit FocusManagerDelegate(AcceleratorManagerImpl* accelerator_manager)
       : accelerator_manager_(accelerator_manager) {}
-  virtual ~FocusManagerDelegate() {}
+  ~FocusManagerDelegate() override {}
 
-  virtual bool ProcessAccelerator(const ui::Accelerator& accelerator) override {
+  bool ProcessAccelerator(const ui::Accelerator& accelerator) override {
     return accelerator_manager_->Process(accelerator);
   }
 
-  virtual ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
+  ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
       const ui::Accelerator& accelerator) const override {
     return accelerator_manager_->IsRegistered(accelerator, AF_NONE)
                ? accelerator_manager_
@@ -119,11 +118,10 @@ class FocusManagerFactory : public views::FocusManagerFactory {
  public:
   explicit FocusManagerFactory(AcceleratorManagerImpl* accelerator_manager)
       : accelerator_manager_(accelerator_manager) {}
-  virtual ~FocusManagerFactory() {}
+  ~FocusManagerFactory() override {}
 
-  virtual views::FocusManager* CreateFocusManager(
-      views::Widget* widget,
-      bool desktop_widget) override {
+  views::FocusManager* CreateFocusManager(views::Widget* widget,
+                                          bool desktop_widget) override {
     return new views::FocusManager(
         widget,
         desktop_widget ? nullptr
@@ -141,7 +139,7 @@ class UIAcceleratorManagerWrapper
  public:
   UIAcceleratorManagerWrapper()
       : ui_accelerator_manager_(new ui::AcceleratorManager) {}
-  virtual ~UIAcceleratorManagerWrapper() {}
+  ~UIAcceleratorManagerWrapper() override {}
 
   virtual void Register(const ui::Accelerator& accelerator,
                         ui::AcceleratorTarget* target) override {
@@ -173,7 +171,7 @@ class FocusManagerWrapper : public AcceleratorManagerImpl::AcceleratorWrapper {
  public:
   explicit FocusManagerWrapper(views::FocusManager* focus_manager)
       : focus_manager_(focus_manager) {}
-  virtual ~FocusManagerWrapper() {}
+  ~FocusManagerWrapper() override {}
 
   virtual void Register(const ui::Accelerator& accelerator,
                         ui::AcceleratorTarget* target) override {

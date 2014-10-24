@@ -31,19 +31,19 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
     extensions::AppWindowClient::Set(&app_window_client_);
   }
 
-  virtual ~ChromeExtensionsDelegate() {
+  ~ChromeExtensionsDelegate() override {
     extensions::AppWindowClient::Set(nullptr);
   }
 
  private:
   // ExtensionsDelegate:
-  virtual content::BrowserContext* GetBrowserContext() const override {
+  content::BrowserContext* GetBrowserContext() const override {
     return extension_service_->GetBrowserContext();
   }
-  virtual const extensions::ExtensionSet& GetInstalledExtensions() override {
+  const extensions::ExtensionSet& GetInstalledExtensions() override {
     return *extension_service_->extensions();
   }
-  virtual bool LaunchApp(const std::string& app_id) override {
+  bool LaunchApp(const std::string& app_id) override {
     // Check Running apps
     content::BrowserContext* context = GetBrowserContext();
     const extensions::Extension* extension =
@@ -79,12 +79,12 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
     return true;
   }
 
-  virtual bool UnloadApp(const std::string& app_id) override {
+  bool UnloadApp(const std::string& app_id) override {
     // TODO(skuhne): Implement using extension service.
     return false;
   }
 
-  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+  scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
       override {
     return scoped_ptr<extensions::ExtensionInstallUI>(
         new AthenaExtensionInstallUI());
