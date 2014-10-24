@@ -29,7 +29,7 @@ void MenuConfig::Init(const NativeTheme* theme) {
 
   arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 
-  NONCLIENTMETRICS metrics;
+  NONCLIENTMETRICS_XP metrics;
   base::win::GetNonClientMetrics(&metrics);
   l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
   {

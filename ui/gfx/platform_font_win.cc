@@ -228,7 +228,7 @@ void PlatformFontWin::InitWithFontNameAndSize(const std::string& font_name,
 // static
 PlatformFontWin::HFontRef* PlatformFontWin::GetBaseFontRef() {
   if (base_font_ref_ == NULL) {
-    NONCLIENTMETRICS metrics;
+    NONCLIENTMETRICS_XP metrics;
     base::win::GetNonClientMetrics(&metrics);
 
     if (adjust_font_callback)

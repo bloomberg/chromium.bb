@@ -1174,7 +1174,7 @@ bool NativeWidgetPrivate::IsMouseButtonDown() {
 // static
 gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 #if defined(OS_WIN)
-  NONCLIENTMETRICS ncm;
+  NONCLIENTMETRICS_XP ncm;
   base::win::GetNonClientMetrics(&ncm);
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));

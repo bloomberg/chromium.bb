@@ -119,19 +119,14 @@ namespace win {
 
 static bool g_crash_on_process_detach = false;
 
-#define NONCLIENTMETRICS_SIZE_PRE_VISTA \
-    SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
-
-void GetNonClientMetrics(NONCLIENTMETRICS* metrics) {
+void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics) {
   DCHECK(metrics);
-
-  static const UINT SIZEOF_NONCLIENTMETRICS =
-      (base::win::GetVersion() >= base::win::VERSION_VISTA) ?
-      sizeof(NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
-  metrics->cbSize = SIZEOF_NONCLIENTMETRICS;
-  const bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
-                                              SIZEOF_NONCLIENTMETRICS, metrics,
-                                              0);
+  metrics->cbSize = sizeof(*metrics);
+  const bool success = !!SystemParametersInfo(
+      SPI_GETNONCLIENTMETRICS,
+      metrics->cbSize,
+      reinterpret_cast<NONCLIENTMETRICS*>(metrics),
+      0);
   DCHECK(success);
 }
 

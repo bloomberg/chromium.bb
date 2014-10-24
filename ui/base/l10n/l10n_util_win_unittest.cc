@@ -15,7 +15,7 @@ typedef PlatformTest L10nUtilWinTest;
 
 TEST_F(L10nUtilWinTest, TestDPIScaling) {
   // Baseline font for comparison.
-  NONCLIENTMETRICS metrics;
+  NONCLIENTMETRICS_XP metrics;
   base::win::GetNonClientMetrics(&metrics);
   LOGFONT lf = metrics.lfMessageFont;
   l10n_util::AdjustUIFont(&lf);

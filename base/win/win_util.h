@@ -33,10 +33,30 @@ struct IPropertyStore;
 struct _tagpropertykey;
 typedef _tagpropertykey PROPERTYKEY;
 
+// This is the same as NONCLIENTMETRICS except that the
+// unused member |iPaddedBorderWidth| has been removed.
+struct NONCLIENTMETRICS_XP {
+    UINT    cbSize;
+    int     iBorderWidth;
+    int     iScrollWidth;
+    int     iScrollHeight;
+    int     iCaptionWidth;
+    int     iCaptionHeight;
+    LOGFONTW lfCaptionFont;
+    int     iSmCaptionWidth;
+    int     iSmCaptionHeight;
+    LOGFONTW lfSmCaptionFont;
+    int     iMenuWidth;
+    int     iMenuHeight;
+    LOGFONTW lfMenuFont;
+    LOGFONTW lfStatusFont;
+    LOGFONTW lfMessageFont;
+};
+
 namespace base {
 namespace win {
 
-BASE_EXPORT void GetNonClientMetrics(NONCLIENTMETRICS* metrics);
+BASE_EXPORT void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics);
 
 // Returns the string representing the current user sid.
 BASE_EXPORT bool GetUserSidString(std::wstring* user_sid);
