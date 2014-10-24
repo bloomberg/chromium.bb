@@ -68,11 +68,10 @@ void BrowserViewRenderer::CalculateTileMemoryPolicy() {
 
 BrowserViewRenderer::BrowserViewRenderer(
     BrowserViewRendererClient* client,
-    SharedRendererState* shared_renderer_state,
     content::WebContents* web_contents,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : client_(client),
-      shared_renderer_state_(shared_renderer_state),
+      shared_renderer_state_(ui_task_runner, this),
       web_contents_(web_contents),
       ui_task_runner_(ui_task_runner),
       compositor_(NULL),
@@ -102,6 +101,15 @@ BrowserViewRenderer::~BrowserViewRenderer() {
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, NULL);
   // OnDetachedFromWindow should be called before the destructor, so the memory
   // policy should have already been updated.
+}
+
+SharedRendererState* BrowserViewRenderer::GetSharedRendererState() {
+  return &shared_renderer_state_;
+}
+
+bool BrowserViewRenderer::RequestDrawGL(jobject canvas,
+                                        bool wait_for_completion) {
+  return client_->RequestDrawGL(canvas, wait_for_completion);
 }
 
 // This function updates the resource allocation in GlobalTileManager.
@@ -212,7 +220,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   if (!compositor_)
     return false;
 
-  shared_renderer_state_->SetScrollOffset(last_on_draw_scroll_offset_);
+  shared_renderer_state_.SetScrollOffsetOnUI(last_on_draw_scroll_offset_);
 
   if (!hardware_enabled_) {
     hardware_enabled_ = compositor_->InitializeHwDraw();
@@ -228,12 +236,12 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_EmptyVisibleRect",
                          TRACE_EVENT_SCOPE_THREAD);
-    shared_renderer_state_->SetForceInvalidateOnNextDrawGL(true);
+    shared_renderer_state_.SetForceInvalidateOnNextDrawGLOnUI(true);
     return client_->RequestDrawGL(java_canvas, false);
   }
 
   ReturnResourceFromParent();
-  if (shared_renderer_state_->HasCompositorFrame()) {
+  if (shared_renderer_state_.HasCompositorFrameOnUI()) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_PreviousFrameUnconsumed",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -245,7 +253,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   if (!frame.get())
     return false;
 
-  shared_renderer_state_->SetCompositorFrame(frame.Pass(), false);
+  shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), false);
   GlobalTileManager::GetInstance()->DidUse(tile_manager_key_);
   return client_->RequestDrawGL(java_canvas, false);
 }
@@ -255,7 +263,8 @@ scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
   RequestMemoryPolicy(new_policy);
   compositor_->SetMemoryPolicy(memory_policy_);
 
-  parent_draw_constraints_ = shared_renderer_state_->ParentDrawConstraints();
+  parent_draw_constraints_ =
+      shared_renderer_state_.GetParentDrawConstraintsOnUI();
   gfx::Size surface_size(width_, height_);
   gfx::Rect viewport(surface_size);
   gfx::Rect clip = viewport;
@@ -289,11 +298,11 @@ void BrowserViewRenderer::UpdateParentDrawConstraints() {
   // Post an invalidate if the parent draw constraints are stale and there is
   // no pending invalidate.
   bool needs_force_invalidate =
-      shared_renderer_state_->NeedsForceInvalidateOnNextDrawGL();
+      shared_renderer_state_.NeedsForceInvalidateOnNextDrawGLOnUI();
   if (needs_force_invalidate ||
       !parent_draw_constraints_.Equals(
-          shared_renderer_state_->ParentDrawConstraints())) {
-    shared_renderer_state_->SetForceInvalidateOnNextDrawGL(false);
+          shared_renderer_state_.GetParentDrawConstraintsOnUI())) {
+    shared_renderer_state_.SetForceInvalidateOnNextDrawGLOnUI(false);
     EnsureContinuousInvalidation(true, needs_force_invalidate);
   }
 }
@@ -312,7 +321,7 @@ void BrowserViewRenderer::ReturnUnusedResource(
 
 void BrowserViewRenderer::ReturnResourceFromParent() {
   cc::CompositorFrameAck frame_ack;
-  shared_renderer_state_->SwapReturnedResources(&frame_ack.resources);
+  shared_renderer_state_.SwapReturnedResourcesOnUI(&frame_ack.resources);
   if (compositor_ && !frame_ack.resources.empty()) {
     compositor_->ReturnResources(frame_ack);
   }
@@ -445,9 +454,11 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
 
 void BrowserViewRenderer::ReleaseHardware() {
   DCHECK(hardware_enabled_);
-  ReturnUnusedResource(shared_renderer_state_->PassCompositorFrame());
+  // TODO(hush): do this in somewhere else. Either in hardware render or in
+  // shared renderer state.
+  ReturnUnusedResource(shared_renderer_state_.PassCompositorFrame());
   ReturnResourceFromParent();
-  DCHECK(shared_renderer_state_->ReturnedResourcesEmpty());
+  DCHECK(shared_renderer_state_.ReturnedResourcesEmpty());
 
   if (compositor_) {
     compositor_->ReleaseHwDraw();
@@ -744,10 +755,10 @@ void BrowserViewRenderer::FallbackTickFired() {
   if (compositor_needs_continuous_invalidate_ && compositor_) {
     if (hardware_enabled_) {
       ReturnResourceFromParent();
-      ReturnUnusedResource(shared_renderer_state_->PassCompositorFrame());
+      ReturnUnusedResource(shared_renderer_state_.PassCompositorFrame());
       scoped_ptr<cc::CompositorFrame> frame = CompositeHw();
       if (frame.get()) {
-        shared_renderer_state_->SetCompositorFrame(frame.Pass(), true);
+        shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), true);
       }
     } else {
       ForceFakeCompositeSW();

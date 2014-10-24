@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/shared_renderer_state.h"
 
-#include "android_webview/browser/browser_view_renderer_client.h"
+#include "android_webview/browser/browser_view_renderer.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -16,7 +16,7 @@ namespace internal {
 class RequestDrawGLTracker {
  public:
   RequestDrawGLTracker();
-  bool ShouldRequestOnNoneUiThread(SharedRendererState* state);
+  bool ShouldRequestOnNonUiThread(SharedRendererState* state);
   bool ShouldRequestOnUiThread(SharedRendererState* state);
   void DidRequestOnUiThread();
   void ResetPending();
@@ -31,7 +31,7 @@ RequestDrawGLTracker::RequestDrawGLTracker()
     : pending_ui_(NULL), pending_non_ui_(NULL) {
 }
 
-bool RequestDrawGLTracker::ShouldRequestOnNoneUiThread(
+bool RequestDrawGLTracker::ShouldRequestOnNonUiThread(
     SharedRendererState* state) {
   base::AutoLock lock(lock_);
   if (pending_ui_ || pending_non_ui_)
@@ -68,16 +68,16 @@ base::LazyInstance<internal::RequestDrawGLTracker> g_request_draw_gl_tracker =
 }
 
 SharedRendererState::SharedRendererState(
-    scoped_refptr<base::MessageLoopProxy> ui_loop,
-    BrowserViewRendererClient* client)
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop,
+    BrowserViewRenderer* browser_view_renderer)
     : ui_loop_(ui_loop),
-      client_on_ui_(client),
+      browser_view_renderer_(browser_view_renderer),
       force_commit_(false),
       inside_hardware_release_(false),
       needs_force_invalidate_on_next_draw_gl_(false),
       weak_factory_on_ui_thread_(this) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  DCHECK(client_on_ui_);
+  DCHECK(browser_view_renderer_);
   ui_thread_weak_ptr_ = weak_factory_on_ui_thread_.GetWeakPtr();
   ResetRequestDrawGLCallback();
 }
@@ -92,7 +92,7 @@ void SharedRendererState::ClientRequestDrawGL() {
       return;
     ClientRequestDrawGLOnUIThread();
   } else {
-    if (!g_request_draw_gl_tracker.Get().ShouldRequestOnNoneUiThread(this))
+    if (!g_request_draw_gl_tracker.Get().ShouldRequestOnNonUiThread(this))
       return;
     base::Closure callback;
     {
@@ -119,7 +119,7 @@ void SharedRendererState::ResetRequestDrawGLCallback() {
 void SharedRendererState::ClientRequestDrawGLOnUIThread() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   ResetRequestDrawGLCallback();
-  if (!client_on_ui_->RequestDrawGL(NULL, false)) {
+  if (!browser_view_renderer_->RequestDrawGL(NULL, false)) {
     g_request_draw_gl_tracker.Get().ResetPending();
     LOG(ERROR) << "Failed to request GL process. Deadlock likely";
   }
@@ -127,26 +127,27 @@ void SharedRendererState::ClientRequestDrawGLOnUIThread() {
 
 void SharedRendererState::UpdateParentDrawConstraintsOnUIThread() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  client_on_ui_->UpdateParentDrawConstraints();
+  browser_view_renderer_->UpdateParentDrawConstraints();
 }
 
-void SharedRendererState::SetScrollOffset(gfx::Vector2d scroll_offset) {
+void SharedRendererState::SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) {
   base::AutoLock lock(lock_);
   scroll_offset_ = scroll_offset;
 }
 
-gfx::Vector2d SharedRendererState::GetScrollOffset() {
+gfx::Vector2d SharedRendererState::GetScrollOffsetOnRT() {
   base::AutoLock lock(lock_);
   return scroll_offset_;
 }
 
-bool SharedRendererState::HasCompositorFrame() const {
+bool SharedRendererState::HasCompositorFrameOnUI() const {
   base::AutoLock lock(lock_);
   return compositor_frame_.get();
 }
 
-void SharedRendererState::SetCompositorFrame(
-    scoped_ptr<cc::CompositorFrame> frame, bool force_commit) {
+void SharedRendererState::SetCompositorFrameOnUI(
+    scoped_ptr<cc::CompositorFrame> frame,
+    bool force_commit) {
   base::AutoLock lock(lock_);
   DCHECK(!compositor_frame_.get());
   compositor_frame_ = frame.Pass();
@@ -158,12 +159,12 @@ scoped_ptr<cc::CompositorFrame> SharedRendererState::PassCompositorFrame() {
   return compositor_frame_.Pass();
 }
 
-bool SharedRendererState::ForceCommit() const {
+bool SharedRendererState::ForceCommitOnRT() const {
   base::AutoLock lock(lock_);
   return force_commit_;
 }
 
-bool SharedRendererState::UpdateDrawConstraints(
+bool SharedRendererState::UpdateDrawConstraintsOnRT(
     const ParentCompositorDrawConstraints& parent_draw_constraints) {
   base::AutoLock lock(lock_);
   if (needs_force_invalidate_on_next_draw_gl_ ||
@@ -175,9 +176,9 @@ bool SharedRendererState::UpdateDrawConstraints(
   return false;
 }
 
-void SharedRendererState::PostExternalDrawConstraintsToChildCompositor(
+void SharedRendererState::PostExternalDrawConstraintsToChildCompositorOnRT(
     const ParentCompositorDrawConstraints& parent_draw_constraints) {
-  if (UpdateDrawConstraints(parent_draw_constraints)) {
+  if (UpdateDrawConstraintsOnRT(parent_draw_constraints)) {
     // No need to hold the lock_ during the post task.
     ui_loop_->PostTask(
         FROM_HERE,
@@ -186,32 +187,31 @@ void SharedRendererState::PostExternalDrawConstraintsToChildCompositor(
   }
 }
 
-void SharedRendererState::DidSkipCommitFrame() {
-  ui_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&SharedRendererState::DidSkipCommitFrameOnUIThread,
-                 ui_thread_weak_ptr_));
+void SharedRendererState::DidSkipCommitFrameOnRT() {
+  ui_loop_->PostTask(FROM_HERE,
+                     base::Bind(&SharedRendererState::DidSkipCommitFrameOnUI,
+                                ui_thread_weak_ptr_));
 }
 
-void SharedRendererState::DidSkipCommitFrameOnUIThread() {
+void SharedRendererState::DidSkipCommitFrameOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  client_on_ui_->DidSkipCommitFrame();
+  browser_view_renderer_->DidSkipCommitFrame();
 }
 
-const ParentCompositorDrawConstraints
-SharedRendererState::ParentDrawConstraints() const {
+ParentCompositorDrawConstraints
+SharedRendererState::GetParentDrawConstraintsOnUI() const {
   base::AutoLock lock(lock_);
   return parent_draw_constraints_;
 }
 
-void SharedRendererState::SetForceInvalidateOnNextDrawGL(
+void SharedRendererState::SetForceInvalidateOnNextDrawGLOnUI(
     bool needs_force_invalidate_on_next_draw_gl) {
   base::AutoLock lock(lock_);
   needs_force_invalidate_on_next_draw_gl_ =
       needs_force_invalidate_on_next_draw_gl;
 }
 
-bool SharedRendererState::NeedsForceInvalidateOnNextDrawGL() const {
+bool SharedRendererState::NeedsForceInvalidateOnNextDrawGLOnUI() const {
   base::AutoLock lock(lock_);
   return needs_force_invalidate_on_next_draw_gl_;
 }
@@ -226,14 +226,14 @@ bool SharedRendererState::IsInsideHardwareRelease() const {
   return inside_hardware_release_;
 }
 
-void SharedRendererState::InsertReturnedResources(
+void SharedRendererState::InsertReturnedResourcesOnRT(
     const cc::ReturnedResourceArray& resources) {
   base::AutoLock lock(lock_);
   returned_resources_.insert(
       returned_resources_.end(), resources.begin(), resources.end());
 }
 
-void SharedRendererState::SwapReturnedResources(
+void SharedRendererState::SwapReturnedResourcesOnUI(
     cc::ReturnedResourceArray* resources) {
   DCHECK(resources->empty());
   base::AutoLock lock(lock_);

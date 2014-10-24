@@ -125,7 +125,7 @@ HardwareRenderer::~HardwareRenderer() {
   resource_collection_->SetClient(NULL);
 
   // Reset draw constraints.
-  shared_renderer_state_->UpdateDrawConstraints(
+  shared_renderer_state_->UpdateDrawConstraintsOnRT(
       ParentCompositorDrawConstraints());
 }
 
@@ -139,12 +139,12 @@ void HardwareRenderer::DidBeginMainFrame() {
 }
 
 void HardwareRenderer::CommitFrame() {
-  scroll_offset_ = shared_renderer_state_->GetScrollOffset();
+  scroll_offset_ = shared_renderer_state_->GetScrollOffsetOnRT();
   if (committed_frame_.get()) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_PreviousFrameUnconsumed",
                          TRACE_EVENT_SCOPE_THREAD);
-    shared_renderer_state_->DidSkipCommitFrame();
+    shared_renderer_state_->DidSkipCommitFrameOnRT();
     return;
   }
 
@@ -207,7 +207,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     DLOG(WARNING) << "EGLContextChanged";
 
   SetFrameData();
-  if (shared_renderer_state_->ForceCommit()) {
+  if (shared_renderer_state_->ForceCommitOnRT()) {
     CommitFrame();
     SetFrameData();
   }
@@ -223,7 +223,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
       draw_info->is_layer, transform, gfx::Rect(viewport_));
 
   draw_constraints_ = draw_constraints;
-  shared_renderer_state_->PostExternalDrawConstraintsToChildCompositor(
+  shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
       draw_constraints);
 
   if (!delegated_layer_.get())
@@ -265,7 +265,7 @@ void HardwareRenderer::UnusedResourcesAreAvailable() {
   cc::ReturnedResourceArray returned_resources;
   resource_collection_->TakeUnusedResourcesForChildCompositor(
       &returned_resources);
-  shared_renderer_state_->InsertReturnedResources(returned_resources);
+  shared_renderer_state_->InsertReturnedResourcesOnRT(returned_resources);
 }
 
 }  // namespace android_webview

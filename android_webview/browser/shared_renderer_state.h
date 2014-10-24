@@ -8,7 +8,7 @@
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
@@ -21,44 +21,48 @@ namespace internal {
 class RequestDrawGLTracker;
 }
 
-class BrowserViewRendererClient;
+class BrowserViewRenderer;
 class InsideHardwareReleaseReset;
 
 // This class is used to pass data between UI thread and RenderThread.
+// TODO(hush): this class should own HardwareRenderer.
 class SharedRendererState {
  public:
-  SharedRendererState(scoped_refptr<base::MessageLoopProxy> ui_loop,
-                      BrowserViewRendererClient* client);
+  SharedRendererState(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop,
+      BrowserViewRenderer* browser_view_renderer);
   ~SharedRendererState();
 
   void ClientRequestDrawGL();
   void DidDrawGLProcess();
 
-  void SetScrollOffset(gfx::Vector2d scroll_offset);
-  gfx::Vector2d GetScrollOffset();
+  void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset);
+  gfx::Vector2d GetScrollOffsetOnRT();
 
-  bool HasCompositorFrame() const;
-  void SetCompositorFrame(scoped_ptr<cc::CompositorFrame> frame,
-                          bool force_commit);
+  bool HasCompositorFrameOnUI() const;
+  void SetCompositorFrameOnUI(scoped_ptr<cc::CompositorFrame> frame,
+                              bool force_commit);
+  // Right now this method is called on both UI and RT.
+  // TODO(hush): Make it only called from RT.
   scoped_ptr<cc::CompositorFrame> PassCompositorFrame();
-  bool ForceCommit() const;
+  bool ForceCommitOnRT() const;
 
+  // TODO(hush): this will be private after DrawGL moves to this class.
   bool IsInsideHardwareRelease() const;
   // Returns true if the draw constraints are updated.
-  bool UpdateDrawConstraints(
+  bool UpdateDrawConstraintsOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
-  void PostExternalDrawConstraintsToChildCompositor(
+  void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
-  void DidSkipCommitFrame();
+  ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const;
 
-  const ParentCompositorDrawConstraints ParentDrawConstraints() const;
-
-  void SetForceInvalidateOnNextDrawGL(
+  void DidSkipCommitFrameOnRT();
+  void SetForceInvalidateOnNextDrawGLOnUI(
       bool needs_force_invalidate_on_next_draw_gl);
-  bool NeedsForceInvalidateOnNextDrawGL() const;
+  bool NeedsForceInvalidateOnNextDrawGLOnUI() const;
 
-  void InsertReturnedResources(const cc::ReturnedResourceArray& resources);
-  void SwapReturnedResources(cc::ReturnedResourceArray* resources);
+  void InsertReturnedResourcesOnRT(const cc::ReturnedResourceArray& resources);
+  void SwapReturnedResourcesOnUI(cc::ReturnedResourceArray* resources);
   bool ReturnedResourcesEmpty() const;
 
  private:
@@ -68,11 +72,11 @@ class SharedRendererState {
   void ResetRequestDrawGLCallback();
   void ClientRequestDrawGLOnUIThread();
   void UpdateParentDrawConstraintsOnUIThread();
-  void DidSkipCommitFrameOnUIThread();
+  void DidSkipCommitFrameOnUI();
   void SetInsideHardwareRelease(bool inside);
 
-  scoped_refptr<base::MessageLoopProxy> ui_loop_;
-  BrowserViewRendererClient* client_on_ui_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_loop_;
+  BrowserViewRenderer* browser_view_renderer_;
   base::WeakPtr<SharedRendererState> ui_thread_weak_ptr_;
   base::CancelableClosure request_draw_gl_cancelable_closure_;
 

@@ -160,14 +160,11 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)
     : web_contents_(web_contents.Pass()),
-      shared_renderer_state_(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          this),
       browser_view_renderer_(
           this,
-          &shared_renderer_state_,
           web_contents_.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+      shared_renderer_state_(browser_view_renderer_.GetSharedRendererState()),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
@@ -343,6 +340,7 @@ jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
   return reinterpret_cast<intptr_t>(this);
 }
 
+// TODO(hush): move this function to SharedRendererState.
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
   if (draw_info->mode == AwDrawGLInfo::kModeSync) {
     if (hardware_renderer_)
@@ -375,10 +373,10 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
   // corruption.
   if (draw_info->mode == AwDrawGLInfo::kModeProcess ||
       draw_info->mode == AwDrawGLInfo::kModeProcessNoContext) {
-    shared_renderer_state_.DidDrawGLProcess();
+    shared_renderer_state_->DidDrawGLProcess();
   }
 
-  if (shared_renderer_state_.IsInsideHardwareRelease()) {
+  if (shared_renderer_state_->IsInsideHardwareRelease()) {
     hardware_renderer_.reset();
     // Flush the idle queue in tear down.
     DeferredGpuCommandService::GetInstance()->PerformAllIdleWork();
@@ -393,7 +391,7 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   if (!hardware_renderer_) {
-    hardware_renderer_.reset(new HardwareRenderer(&shared_renderer_state_));
+    hardware_renderer_.reset(new HardwareRenderer(shared_renderer_state_));
     hardware_renderer_->CommitFrame();
   }
 
@@ -888,7 +886,7 @@ void AwContents::InitializeHardwareDrawIfNeeded() {
 
   base::AutoLock lock(render_thread_lock_);
   if (renderer_manager_key_ == manager->NullKey()) {
-    renderer_manager_key_ = manager->PushBack(&shared_renderer_state_);
+    renderer_manager_key_ = manager->PushBack(shared_renderer_state_);
     DeferredGpuCommandService::SetInstance();
   }
 }
@@ -900,7 +898,7 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
 }
 
 void AwContents::ReleaseHardwareDrawIfNeeded() {
-  InsideHardwareReleaseReset inside_reset(&shared_renderer_state_);
+  InsideHardwareReleaseReset inside_reset(shared_renderer_state_);
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

@@ -239,8 +239,12 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<AwContents> pending_contents_;
-  SharedRendererState shared_renderer_state_;
   BrowserViewRenderer browser_view_renderer_;
+  // SharedRendererState is owned by BrowserViewRenderer.
+  // So keep a raw pointer here.
+  SharedRendererState* shared_renderer_state_;
+  // TODO(hush): hardware renderer will be owned by SharedRendererState,
+  // after DrawGL is moved to SharedRendererState.
   scoped_ptr<HardwareRenderer> hardware_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
   scoped_ptr<PermissionRequestHandler> permission_request_handler_;

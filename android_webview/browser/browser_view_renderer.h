@@ -61,11 +61,13 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   BrowserViewRenderer(
       BrowserViewRendererClient* client,
-      SharedRendererState* shared_renderer_state,
       content::WebContents* web_contents,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   virtual ~BrowserViewRenderer();
+
+  SharedRendererState* GetSharedRendererState();
+  bool RequestDrawGL(jobject canvas, bool wait_for_completion);
 
   // Main handler for view drawing: performs a SW draw immediately, or sets up
   // a subsequent GL Draw (via BrowserViewRendererClient::RequestDrawGL) and
@@ -188,7 +190,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   std::string ToString() const;
 
   BrowserViewRendererClient* client_;
-  SharedRendererState* shared_renderer_state_;
+  SharedRendererState shared_renderer_state_;
   content::WebContents* web_contents_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
