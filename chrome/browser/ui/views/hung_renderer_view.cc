@@ -14,10 +14,10 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -232,7 +232,7 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(contents);
     if (browser) {
       ChromeWebModalDialogManagerDelegate* manager = browser;
-      UpdateBrowserModalDialogPosition(
+      UpdateWidgetModalDialogPosition(
           GetWidget(), manager->GetWebContentsModalDialogHost());
     }
 

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
+#ifndef COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_
+#define COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -22,13 +23,19 @@ class ModalDialogHost;
 class WebContentsModalDialogHost;
 }
 
+class ConstrainedWindowViewsClient;
+
+// Sets the ConstrainedWindowClient impl.
+void SetConstrainedWindowViewsClient(
+    scoped_ptr<ConstrainedWindowViewsClient> client);
+
 // Update the position of dialog |widget| against |dialog_host|. This is used to
 // reposition widgets e.g. when the host dimensions change.
 void UpdateWebContentsModalDialogPosition(
     views::Widget* widget,
     web_modal::WebContentsModalDialogHost* dialog_host);
 
-void UpdateBrowserModalDialogPosition(
+void UpdateWidgetModalDialogPosition(
     views::Widget* widget,
     web_modal::ModalDialogHost* dialog_host);
 
@@ -46,4 +53,4 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent);
 
-#endif  // CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_VIEWS_H_
+#endif  // COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_

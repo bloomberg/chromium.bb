@@ -1,0 +1,6 @@
+include_rules = [
+  "+components/web_modal",
+  "+ui/base",
+  "+ui/gfx",
+  "+ui/views",
+]

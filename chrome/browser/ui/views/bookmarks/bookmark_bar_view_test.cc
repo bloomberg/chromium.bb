@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -30,6 +31,7 @@
 #include "chrome/test/base/view_event_test_base.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
@@ -260,6 +262,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     views::MenuController::TurnOffMenuSelectionHoldForTest();
     BookmarkBarView::DisableAnimationsForTesting(true);
+    SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
@@ -318,6 +321,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     ViewEventTestBase::TearDown();
     BookmarkBarView::DisableAnimationsForTesting(false);
+    SetConstrainedWindowViewsClient(scoped_ptr<ConstrainedWindowViewsClient>());
 
     browser_content_client_.reset();
     content_client_.reset();

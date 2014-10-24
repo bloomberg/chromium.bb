@@ -465,7 +465,12 @@
             ['toolkit_views == 1', {
               'sources': [
                 'bookmarks/browser/bookmark_node_data_unittest.cc',
+                'constrained_window/constrained_window_views_unittest.cc',
               ],
+              'dependencies': [
+                '<(DEPTH)/ui/views/views.gyp:views_test_support',
+                'components.gyp:constrained_window',
+              ]
             }],
             ['OS != "ios"', {
               'sources': [

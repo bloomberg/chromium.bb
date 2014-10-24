@@ -30,6 +30,8 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "ui/views/test/test_views_delegate.h"
 #endif
 
@@ -77,9 +79,13 @@ void BrowserWithTestWindowTest::SetUp() {
   aura_test_helper_->SetUp(context_factory);
   new wm::DefaultActivationClient(aura_test_helper_->root_window());
 #endif  // USE_AURA
-#if !defined(OS_CHROMEOS) && defined(TOOLKIT_VIEWS)
+
+#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_CHROMEOS)
   views_delegate_.reset(CreateViewsDelegate());
-#endif
+#endif // !OS_CHROMEOS
+  SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
+#endif  // TOOLKIT_VIEWS
 
   // Subclasses can provide their own Profile.
   profile_ = CreateProfile();
@@ -116,6 +122,7 @@ void BrowserWithTestWindowTest::TearDown() {
   base::MessageLoop::current()->Run();
 
 #if defined(TOOLKIT_VIEWS)
+  SetConstrainedWindowViewsClient(scoped_ptr<ConstrainedWindowViewsClient>());
   views_delegate_.reset(NULL);
 #endif
 }

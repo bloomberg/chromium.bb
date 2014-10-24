@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 
+#include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "components/constrained_window/constrained_window_views.h"
 
 #if defined(USE_AURA)
 #include "ui/wm/core/wm_state.h"
@@ -14,6 +16,7 @@ ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
 
 ChromeBrowserMainExtraPartsViews::~ChromeBrowserMainExtraPartsViews() {
+  SetConstrainedWindowViewsClient(scoped_ptr<ConstrainedWindowViewsClient>());
 }
 
 void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
@@ -21,6 +24,8 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   // display the correct icon.
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
+
+  SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
 #if defined(USE_AURA)
   wm_state_.reset(new wm::WMState);

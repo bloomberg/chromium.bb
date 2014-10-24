@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/constrained_window/constrained_window_views.h"
 
 #include <algorithm>
 
-#include "chrome/browser/ui/browser_finder.h"
+#include "components/constrained_window/constrained_window_views_client.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -19,19 +18,22 @@ using web_modal::ModalDialogHost;
 using web_modal::ModalDialogHostObserver;
 
 namespace {
+
+ConstrainedWindowViewsClient* constrained_window_views_client = NULL;
+
 // The name of a key to store on the window handle to associate
-// BrowserModalDialogHostObserverViews with the Widget.
-const char* const kBrowserModalDialogHostObserverViewsKey =
-    "__BROWSER_MODAL_DIALOG_HOST_OBSERVER_VIEWS__";
+// WidgetModalDialogHostObserverViews with the Widget.
+const char* const kWidgetModalDialogHostObserverViewsKey =
+    "__WIDGET_MODAL_DIALOG_HOST_OBSERVER_VIEWS__";
 
 // Applies positioning changes from the ModalDialogHost to the Widget.
-class BrowserModalDialogHostObserverViews
+class WidgetModalDialogHostObserverViews
     : public views::WidgetObserver,
       public ModalDialogHostObserver {
  public:
-  BrowserModalDialogHostObserverViews(ModalDialogHost* host,
-                                      views::Widget* target_widget,
-                                      const char *const native_window_property)
+  WidgetModalDialogHostObserverViews(ModalDialogHost* host,
+                                     views::Widget* target_widget,
+                                     const char *const native_window_property)
       : host_(host),
         target_widget_(target_widget),
         native_window_property_(native_window_property) {
@@ -41,7 +43,7 @@ class BrowserModalDialogHostObserverViews
     target_widget_->AddObserver(this);
   }
 
-  virtual ~BrowserModalDialogHostObserverViews() {
+  virtual ~WidgetModalDialogHostObserverViews() {
     if (host_)
       host_->RemoveObserver(this);
     target_widget_->RemoveObserver(this);
@@ -55,7 +57,7 @@ class BrowserModalDialogHostObserverViews
 
   // WebContentsModalDialogHostObserver overrides
   virtual void OnPositionRequiresUpdate() override {
-    UpdateBrowserModalDialogPosition(target_widget_, host_);
+    UpdateWidgetModalDialogPosition(target_widget_, host_);
   }
 
   virtual void OnHostDestroying() override {
@@ -68,7 +70,7 @@ class BrowserModalDialogHostObserverViews
   views::Widget* target_widget_;
   const char* const native_window_property_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserModalDialogHostObserverViews);
+  DISALLOW_COPY_AND_ASSIGN(WidgetModalDialogHostObserverViews);
 };
 
 void UpdateModalDialogPosition(views::Widget* widget,
@@ -98,6 +100,13 @@ void UpdateModalDialogPosition(views::Widget* widget,
 
 }  // namespace
 
+// static
+void SetConstrainedWindowViewsClient(
+    scoped_ptr<ConstrainedWindowViewsClient> new_client) {
+  delete constrained_window_views_client;
+  constrained_window_views_client = new_client.release();
+}
+
 void UpdateWebContentsModalDialogPosition(
     views::Widget* widget,
     web_modal::WebContentsModalDialogHost* dialog_host) {
@@ -114,8 +123,8 @@ void UpdateWebContentsModalDialogPosition(
   UpdateModalDialogPosition(widget, dialog_host, size);
 }
 
-void UpdateBrowserModalDialogPosition(views::Widget* widget,
-                                      web_modal::ModalDialogHost* dialog_host) {
+void UpdateWidgetModalDialogPosition(views::Widget* widget,
+                                     web_modal::ModalDialogHost* dialog_host) {
   UpdateModalDialogPosition(widget, dialog_host,
                             widget->GetRootView()->GetPreferredSize());
 }
@@ -123,13 +132,11 @@ void UpdateBrowserModalDialogPosition(views::Widget* widget,
 views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents) {
-  extensions::GuestViewBase* guest_view =
-      extensions::GuestViewBase::FromWebContents(initiator_web_contents);
+  DCHECK(constrained_window_views_client);
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
-  content::WebContents* web_contents =
-      guest_view && guest_view->embedder_web_contents() ?
-          guest_view->embedder_web_contents() : initiator_web_contents;
+  content::WebContents* web_contents = constrained_window_views_client->
+      GetEmbedderWebContents(initiator_web_contents);
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
   web_modal::PopupManager* popup_manager =
       web_modal::PopupManager::FromWebContents(web_contents);
@@ -153,16 +160,14 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
       views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
   if (!dialog->UseNewStyleForThisDialog())
     return widget;
-
-  // Get the browser dialog management and hosting components from |parent|.
-  Browser* browser = chrome::FindBrowserWithWindow(parent);
-  if (browser) {
-    ChromeWebModalDialogManagerDelegate* manager = browser;
-    ModalDialogHost* host = manager->GetWebContentsModalDialogHost();
+  DCHECK(constrained_window_views_client);
+  ModalDialogHost* host = constrained_window_views_client->
+      GetModalDialogHost(parent);
+  if (host) {
     DCHECK_EQ(parent, host->GetHostView());
     ModalDialogHostObserver* dialog_host_observer =
-        new BrowserModalDialogHostObserverViews(
-            host, widget, kBrowserModalDialogHostObserverViewsKey);
+        new WidgetModalDialogHostObserverViews(
+            host, widget, kWidgetModalDialogHostObserverViewsKey);
     dialog_host_observer->OnPositionRequiresUpdate();
   }
   return widget;

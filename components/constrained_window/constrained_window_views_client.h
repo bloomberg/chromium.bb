@@ -1,0 +1,32 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_
+#define COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_
+
+#include "ui/gfx/native_widget_types.h"
+
+namespace content {
+class WebContents;
+}
+
+namespace web_modal {
+class ModalDialogHost;
+}
+
+class ConstrainedWindowViewsClient {
+ public:
+  virtual ~ConstrainedWindowViewsClient() {}
+
+  // Returns the web contents that a constrained window should be modal to
+  // in the embedder's context.
+  virtual content::WebContents* GetEmbedderWebContents(
+      content::WebContents* initiator_web_contents) = 0;
+
+  // Returns the modal window host for the |parent| native window.
+  virtual web_modal::ModalDialogHost* GetModalDialogHost(
+      gfx::NativeWindow parent) = 0;
+};
+
+#endif  // COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_

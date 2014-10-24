@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"

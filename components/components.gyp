@@ -105,6 +105,11 @@
         'user_manager.gypi',
       ],
     }],
+    ['toolkit_views==1', {
+      'includes': [
+        'constrained_window.gypi',
+      ],
+    }],
     ['android_webview_build == 0', {
       # Android WebView fails to build if a dependency on these targets is
       # introduced.

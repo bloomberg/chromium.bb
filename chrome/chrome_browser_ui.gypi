@@ -1914,6 +1914,8 @@
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.cc',
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.h',
       'browser/ui/views/certificate_viewer_win.cc',
+      'browser/ui/views/chrome_constrained_window_views_client.cc',
+      'browser/ui/views/chrome_constrained_window_views_client.h',
       'browser/ui/views/chrome_views_delegate_chromeos.cc',
       'browser/ui/views/chrome_web_dialog_view.cc',
       'browser/ui/views/collected_cookies_views.cc',
@@ -1926,8 +1928,6 @@
       'browser/ui/views/conflicting_module_view_win.cc',
       'browser/ui/views/conflicting_module_view_win.h',
       'browser/ui/views/constrained_web_dialog_delegate_views.cc',
-      'browser/ui/views/constrained_window_views.cc',
-      'browser/ui/views/constrained_window_views.h',
       'browser/ui/views/content_setting_bubble_contents.cc',
       'browser/ui/views/content_setting_bubble_contents.h',
       'browser/ui/views/cookie_info_view.cc',
@@ -2771,6 +2771,7 @@
             ['OS!="mac"', {
               'sources': [ '<@(chrome_browser_ui_views_non_mac_sources)' ],
               'dependencies': [
+                '<(DEPTH)/components/components.gyp:constrained_window',
                 '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
               ],
             }],

@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/popup_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"

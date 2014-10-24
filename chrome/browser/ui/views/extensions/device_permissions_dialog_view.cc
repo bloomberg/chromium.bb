@@ -6,8 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/usb/usb_device.h"
 #include "extensions/common/extension.h"

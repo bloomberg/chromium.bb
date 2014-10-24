@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/constrained_window/constrained_window_views.h"
 
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "ui/gfx/native_widget_types.h"
@@ -90,38 +90,38 @@ class ConstrainedWindowViewsTest : public ViewsTestBase {
 // Make sure a dialog that increases its preferred size grows on the next
 // position update.
 TEST_F(ConstrainedWindowViewsTest, GrowModalDialogSize) {
-  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   gfx::Size expected_size = GetDialogSize();
   gfx::Size preferred_size = contents()->GetPreferredSize();
   expected_size.Enlarge(50, 50);
   preferred_size.Enlarge(50, 50);
   contents()->set_preferred_size(preferred_size);
-  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
 }
 
 // Make sure a dialog that reduces its preferred size shrinks on the next
 // position update.
 TEST_F(ConstrainedWindowViewsTest, ShrinkModalDialogSize) {
-  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   gfx::Size expected_size = GetDialogSize();
   gfx::Size preferred_size = contents()->GetPreferredSize();
   expected_size.Enlarge(-50, -50);
   preferred_size.Enlarge(-50, -50);
   contents()->set_preferred_size(preferred_size);
-  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
 }
 
 // Make sure browser modal dialogs are not affected by restrictions on web
 // content modal dialog maximum sizes.
 TEST_F(ConstrainedWindowViewsTest, MaximumBrowserDialogSize) {
-  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   gfx::Size dialog_size = GetDialogSize();
   gfx::Size max_dialog_size = dialog_size;
   max_dialog_size.Enlarge(-50, -50);
   dialog_host()->set_max_dialog_size(max_dialog_size);
-  UpdateBrowserModalDialogPosition(dialog(), dialog_host());
+  UpdateWidgetModalDialogPosition(dialog(), dialog_host());
   EXPECT_EQ(dialog_size.ToString(), GetDialogSize().ToString());
 }
 

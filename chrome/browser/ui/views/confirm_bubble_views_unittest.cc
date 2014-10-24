@@ -6,7 +6,8 @@
 
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/test/test_confirm_bubble_model.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -16,6 +17,8 @@ using views::Widget;
 typedef views::ViewsTestBase ConfirmBubbleViewsTest;
 
 TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
+  SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
+
   // Create parent widget, as confirm bubble must have an owner.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -35,4 +38,6 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   bubble->GetWidget()->CloseNow();
   parent_widget->CloseNow();
   EXPECT_TRUE(model_deleted);
+
+  SetConstrainedWindowViewsClient(scoped_ptr<ConstrainedWindowViewsClient>());
 }

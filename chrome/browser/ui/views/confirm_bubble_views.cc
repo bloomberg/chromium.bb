@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"

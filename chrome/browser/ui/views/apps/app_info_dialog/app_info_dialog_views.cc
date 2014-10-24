@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
