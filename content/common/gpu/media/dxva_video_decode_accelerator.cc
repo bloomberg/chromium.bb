@@ -456,10 +456,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 
   // TODO(ananta)
   // H264PROFILE_HIGH video decoding is janky at times. Needs more
-  // investigation.
+  // investigation. http://crbug.com/426707
   if (profile != media::H264PROFILE_BASELINE &&
-      profile != media::H264PROFILE_MAIN &&
-      profile != media::H264PROFILE_HIGH) {
+      profile != media::H264PROFILE_MAIN) {
     RETURN_AND_NOTIFY_ON_FAILURE(false,
         "Unsupported h264 profile", PLATFORM_FAILURE, false);
   }
