@@ -4,16 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
-#include "chrome/browser/ui/host_desktop.h"
-#include "ui/aura/window.h"
-
-gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
-    const gfx::Point& screen_point,
-    const std::set<gfx::NativeWindow>& ignore);
-
 gfx::NativeWindow GetLocalProcessWindowAtPoint(
     chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
-  return GetLocalProcessWindowAtPointAsh(screen_point, ignore);
+  NOTIMPLEMENTED();
+  return NULL;
 }

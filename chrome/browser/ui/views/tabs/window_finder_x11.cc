@@ -7,15 +7,15 @@
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
 #if defined(USE_ASH)
-aura::Window* GetLocalProcessWindowAtPointAsh(
+gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
     const gfx::Point& screen_point,
-    const std::set<aura::Window*>& ignore);
+    const std::set<gfx::NativeWindow>& ignore);
 #endif
 
-aura::Window* GetLocalProcessWindowAtPoint(
+gfx::NativeWindow GetLocalProcessWindowAtPoint(
     chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
-    const std::set<aura::Window*>& ignore) {
+    const std::set<gfx::NativeWindow>& ignore) {
 #if defined(USE_ASH)
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
     return GetLocalProcessWindowAtPointAsh(screen_point, ignore);

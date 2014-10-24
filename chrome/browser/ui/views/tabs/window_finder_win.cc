@@ -13,9 +13,9 @@
 #include "ui/views/win/hwnd_util.h"
 
 #if defined(USE_ASH)
-aura::Window* GetLocalProcessWindowAtPointAsh(
+gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
     const gfx::Point& screen_point,
-    const std::set<aura::Window*>& ignore);
+    const std::set<gfx::NativeWindow>& ignore);
 #endif
 
 namespace {
@@ -218,10 +218,10 @@ std::set<HWND> RemapIgnoreSet(const std::set<gfx::NativeView>& ignore) {
 
 }  // namespace
 
-aura::Window* GetLocalProcessWindowAtPoint(
+gfx::NativeWindow GetLocalProcessWindowAtPoint(
     chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
-    const std::set<aura::Window*>& ignore) {
+    const std::set<gfx::NativeWindow>& ignore) {
 #if defined(USE_ASH)
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
     return GetLocalProcessWindowAtPointAsh(screen_point, ignore);

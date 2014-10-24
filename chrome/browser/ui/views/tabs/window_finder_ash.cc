@@ -11,10 +11,10 @@
 
 namespace {
 
-aura::Window* GetLocalProcessWindowAtPointImpl(
+gfx::NativeWindow GetLocalProcessWindowAtPointImpl(
     const gfx::Point& screen_point,
-    const std::set<gfx::NativeView>& ignore,
-    aura::Window* window) {
+    const std::set<gfx::NativeWindow>& ignore,
+    gfx::NativeWindow window) {
   if (ignore.find(window) != ignore.end())
     return NULL;
 
@@ -31,7 +31,7 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
 
   for (aura::Window::Windows::const_reverse_iterator i =
            window->children().rbegin(); i != window->children().rend(); ++i) {
-    aura::Window* result =
+    gfx::NativeWindow result =
         GetLocalProcessWindowAtPointImpl(screen_point, ignore, *i);
     if (result)
       return result;
@@ -41,9 +41,9 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
 
 }  // namespace
 
-aura::Window* GetLocalProcessWindowAtPointAsh(
+gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
     const gfx::Point& screen_point,
-    const std::set<aura::Window*>& ignore) {
+    const std::set<gfx::NativeWindow>& ignore) {
   return GetLocalProcessWindowAtPointImpl(
       screen_point, ignore, ::ash::wm::GetRootWindowAt(screen_point));
 }

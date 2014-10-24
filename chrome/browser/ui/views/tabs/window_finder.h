@@ -18,9 +18,9 @@ class Point;
 }
 
 // Returns the Window at the specified point, ignoring the windows in |ignore|.
-aura::Window* GetLocalProcessWindowAtPoint(
+gfx::NativeWindow GetLocalProcessWindowAtPoint(
     chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
-    const std::set<aura::Window*>& ignore);
+    const std::set<gfx::NativeWindow>& ignore);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_WINDOW_FINDER_H_
