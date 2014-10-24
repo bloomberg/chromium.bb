@@ -171,28 +171,18 @@ const char* MenuButton::GetClassName() const {
 
 bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
   RequestFocus();
-  if (state() != STATE_DISABLED) {
-    // If we're draggable (GetDragOperations returns a non-zero value), then
-    // don't pop on press, instead wait for release.
-    if (event.IsOnlyLeftMouseButton() &&
-        HitTestPoint(event.location()) &&
-        GetDragOperations(event.location()) == ui::DragDropTypes::DRAG_NONE) {
-      TimeDelta delta = TimeTicks::Now() - menu_closed_time_;
-      if (delta.InMilliseconds() > kMinimumMsBetweenButtonClicks)
-        return Activate();
-    }
+  if (state() != STATE_DISABLED && ShouldEnterPushedState(event) &&
+      HitTestPoint(event.location())) {
+    TimeDelta delta = TimeTicks::Now() - menu_closed_time_;
+    if (delta.InMilliseconds() > kMinimumMsBetweenButtonClicks)
+      return Activate();
   }
   return true;
 }
 
 void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
-  // Explicitly test for left mouse button to show the menu. If we tested for
-  // !IsTriggerableEvent it could lead to a situation where we end up showing
-  // the menu and context menu (this would happen if the right button is not
-  // triggerable and there's a context menu).
-  if (GetDragOperations(event.location()) != ui::DragDropTypes::DRAG_NONE &&
-      state() != STATE_DISABLED && !InDrag() && event.IsOnlyLeftMouseButton() &&
-      HitTestPoint(event.location())) {
+  if (state() != STATE_DISABLED && ShouldEnterPushedState(event) &&
+      HitTestPoint(event.location()) && !InDrag()) {
     Activate();
   } else {
     LabelButton::OnMouseReleased(event);
@@ -201,21 +191,21 @@ void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
 
 void MenuButton::OnMouseEntered(const ui::MouseEvent& event) {
   if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
-    CustomButton::OnMouseEntered(event);
+    LabelButton::OnMouseEntered(event);
 }
 
 void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
   if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
-    CustomButton::OnMouseExited(event);
+    LabelButton::OnMouseExited(event);
 }
 
 void MenuButton::OnMouseMoved(const ui::MouseEvent& event) {
   if (pressed_lock_count_ == 0)  // Ignore mouse movement if state is locked.
-    CustomButton::OnMouseMoved(event);
+    LabelButton::OnMouseMoved(event);
 }
 
 void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (state() != STATE_DISABLED && event->type() == ui::ET_GESTURE_TAP &&
+  if (state() != STATE_DISABLED && ShouldEnterPushedState(*event) &&
       !Activate()) {
     // When |Activate()| returns |false|, it means that a menu is shown and
     // has handled the gesture event. So, there is no need to further process
@@ -285,6 +275,25 @@ gfx::Rect MenuButton::GetChildAreaBounds() {
   }
 
   return gfx::Rect(s);
+}
+
+bool MenuButton::ShouldEnterPushedState(const ui::Event& event) {
+  if (event.IsMouseEvent()) {
+    const ui::MouseEvent& mouseev = static_cast<const ui::MouseEvent&>(event);
+    // Active on left mouse button only, to prevent a menu from being activated
+    // when a right-click would also activate a context menu.
+    if (!mouseev.IsOnlyLeftMouseButton())
+      return false;
+    // If dragging is supported activate on release, otherwise activate on
+    // pressed.
+    ui::EventType active_on =
+        GetDragOperations(mouseev.location()) == ui::DragDropTypes::DRAG_NONE
+            ? ui::ET_MOUSE_PRESSED
+            : ui::ET_MOUSE_RELEASED;
+    return event.type() == active_on;
+  }
+
+  return event.type() == ui::ET_GESTURE_TAP;
 }
 
 void MenuButton::IncrementPressedLocked() {

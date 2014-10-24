@@ -6,9 +6,17 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/drag_controller.h"
 #include "ui/views/test/views_test_base.h"
+
+#if defined(USE_AURA)
+#include "ui/events/event.h"
+#include "ui/events/event_handler.h"
+#include "ui/wm/public/drag_drop_client.h"
+#endif
 
 using base::ASCIIToUTF16;
 
@@ -16,10 +24,10 @@ namespace views {
 
 class MenuButtonTest : public ViewsTestBase {
  public:
-  MenuButtonTest() : widget_(NULL), button_(NULL) {}
+  MenuButtonTest() : widget_(nullptr), button_(nullptr) {}
   virtual ~MenuButtonTest() {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (widget_ && !widget_->IsClosed())
       widget_->Close();
 
@@ -31,14 +39,12 @@ class MenuButtonTest : public ViewsTestBase {
 
  protected:
   // Creates a MenuButton with no button listener.
-  void CreateMenuButtonWithNoListener() {
-    CreateMenuButton(NULL, NULL);
-  }
+  void CreateMenuButtonWithNoListener() { CreateMenuButton(nullptr, nullptr); }
 
   // Creates a MenuButton with a ButtonListener. In this case, the MenuButton
   // acts like a regular button.
   void CreateMenuButtonWithButtonListener(ButtonListener* button_listener) {
-    CreateMenuButton(button_listener, NULL);
+    CreateMenuButton(button_listener, nullptr);
   }
 
   // Creates a MenuButton with a MenuButtonListener. In this case, when the
@@ -46,7 +52,7 @@ class MenuButtonTest : public ViewsTestBase {
   // drop-down menu.
   void CreateMenuButtonWithMenuButtonListener(
       MenuButtonListener* menu_button_listener) {
-    CreateMenuButton(NULL, menu_button_listener);
+    CreateMenuButton(nullptr, menu_button_listener);
   }
 
  private:
@@ -80,12 +86,12 @@ class MenuButtonTest : public ViewsTestBase {
 class TestButtonListener : public ButtonListener {
  public:
   TestButtonListener()
-      : last_sender_(NULL),
+      : last_sender_(nullptr),
         last_sender_state_(Button::STATE_NORMAL),
         last_event_type_(ui::ET_UNKNOWN) {}
   virtual ~TestButtonListener() {}
 
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override {
+  void ButtonPressed(Button* sender, const ui::Event& event) override {
     last_sender_ = sender;
     CustomButton* custom_button = CustomButton::AsCustomButton(sender);
     DCHECK(custom_button);
@@ -107,11 +113,11 @@ class TestButtonListener : public ButtonListener {
 
 class TestMenuButtonListener : public MenuButtonListener {
  public:
-  TestMenuButtonListener() {}
+  TestMenuButtonListener()
+      : last_source_(nullptr), last_source_state_(Button::STATE_NORMAL) {}
   virtual ~TestMenuButtonListener() {}
 
-  virtual void OnMenuButtonClicked(View* source,
-                                   const gfx::Point& /*point*/) override {
+  void OnMenuButtonClicked(View* source, const gfx::Point& /*point*/) override {
     last_source_ = source;
     CustomButton* custom_button = CustomButton::AsCustomButton(source);
     DCHECK(custom_button);
@@ -126,11 +132,127 @@ class TestMenuButtonListener : public MenuButtonListener {
   Button::ButtonState last_source_state_;
 };
 
+// Basic implementation of a DragController, to test input behaviour for
+// MenuButtons that can be dragged.
+class TestDragController : public DragController {
+ public:
+  TestDragController() {}
+  virtual ~TestDragController() {}
+
+  void WriteDragDataForView(View* sender,
+                            const gfx::Point& press_pt,
+                            ui::OSExchangeData* data) override {}
+
+  int GetDragOperationsForView(View* sender, const gfx::Point& p) override {
+    return ui::DragDropTypes::DRAG_MOVE;
+  }
+
+  bool CanStartDragForView(View* sender,
+                           const gfx::Point& press_pt,
+                           const gfx::Point& p) override {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestDragController);
+};
+
+#if defined(USE_AURA)
+// Basic implementation of a DragDropClient, tracking the state of the drag
+// operation. While dragging addition mouse events are consumed, preventing the
+// target view from receiving them.
+class TestDragDropClient : public aura::client::DragDropClient,
+                           public ui::EventHandler {
+ public:
+  TestDragDropClient();
+  virtual ~TestDragDropClient();
+
+  // aura::client::DragDropClient:
+  int StartDragAndDrop(const ui::OSExchangeData& data,
+                       aura::Window* root_window,
+                       aura::Window* source_window,
+                       const gfx::Point& root_location,
+                       int operation,
+                       ui::DragDropTypes::DragEventSource source) override;
+  void DragUpdate(aura::Window* target, const ui::LocatedEvent& event) override;
+  void Drop(aura::Window* target, const ui::LocatedEvent& event) override;
+  void DragCancel() override;
+  bool IsDragDropInProgress() override;
+
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+
+ private:
+  // True while receiving ui::LocatedEvents for drag operations.
+  bool drag_in_progress_;
+
+  // Target window where drag operations are occuring.
+  aura::Window* target_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
+};
+
+TestDragDropClient::TestDragDropClient()
+    : drag_in_progress_(false), target_(nullptr) {
+}
+
+TestDragDropClient::~TestDragDropClient() {
+}
+
+int TestDragDropClient::StartDragAndDrop(
+    const ui::OSExchangeData& data,
+    aura::Window* root_window,
+    aura::Window* source_window,
+    const gfx::Point& root_location,
+    int operation,
+    ui::DragDropTypes::DragEventSource source) {
+  if (IsDragDropInProgress())
+    return ui::DragDropTypes::DRAG_NONE;
+  drag_in_progress_ = true;
+  target_ = root_window;
+  return operation;
+}
+
+void TestDragDropClient::DragUpdate(aura::Window* target,
+                                    const ui::LocatedEvent& event) {
+}
+
+void TestDragDropClient::Drop(aura::Window* target,
+                              const ui::LocatedEvent& event) {
+  drag_in_progress_ = false;
+}
+
+void TestDragDropClient::DragCancel() {
+  drag_in_progress_ = false;
+}
+
+bool TestDragDropClient::IsDragDropInProgress() {
+  return drag_in_progress_;
+}
+
+void TestDragDropClient::OnMouseEvent(ui::MouseEvent* event) {
+  if (!IsDragDropInProgress())
+    return;
+  switch (event->type()) {
+    case ui::ET_MOUSE_DRAGGED:
+      DragUpdate(target_, *event);
+      event->StopPropagation();
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      Drop(target_, *event);
+      event->StopPropagation();
+      break;
+    default:
+      break;
+  }
+}
+#endif  // defined(USE_AURA)
+
 // Tests if the listener is notified correctly, when a mouse click happens on a
 // MenuButton that has a regular ButtonListener.
 TEST_F(MenuButtonTest, ActivateNonDropDownOnMouseClick) {
-  scoped_ptr<TestButtonListener> button_listener(new TestButtonListener);
-  CreateMenuButtonWithButtonListener(button_listener.get());
+  TestButtonListener button_listener;
+  CreateMenuButtonWithButtonListener(&button_listener);
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
 
@@ -139,33 +261,32 @@ TEST_F(MenuButtonTest, ActivateNonDropDownOnMouseClick) {
 
   // Check that MenuButton has notified the listener on mouse-released event,
   // while it was in hovered state.
-  EXPECT_EQ(button(), button_listener->last_sender());
-  EXPECT_EQ(ui::ET_MOUSE_RELEASED, button_listener->last_event_type());
-  EXPECT_EQ(Button::STATE_HOVERED, button_listener->last_sender_state());
+  EXPECT_EQ(button(), button_listener.last_sender());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, button_listener.last_event_type());
+  EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
 }
 
 // Tests if the listener is notified correctly when a gesture tap happens on a
 // MenuButton that has a regular ButtonListener.
 TEST_F(MenuButtonTest, ActivateNonDropDownOnGestureTap) {
-  scoped_ptr<TestButtonListener> button_listener(new TestButtonListener);
-  CreateMenuButtonWithButtonListener(button_listener.get());
+  TestButtonListener button_listener;
+  CreateMenuButtonWithButtonListener(&button_listener);
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
   generator.GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener on gesture tap event, while
   // it was in hovered state.
-  EXPECT_EQ(button(), button_listener->last_sender());
-  EXPECT_EQ(ui::ET_GESTURE_TAP, button_listener->last_event_type());
-  EXPECT_EQ(Button::STATE_HOVERED, button_listener->last_sender_state());
+  EXPECT_EQ(button(), button_listener.last_sender());
+  EXPECT_EQ(ui::ET_GESTURE_TAP, button_listener.last_event_type());
+  EXPECT_EQ(Button::STATE_HOVERED, button_listener.last_sender_state());
 }
 
 // Tests if the listener is notified correctly when a mouse click happens on a
 // MenuButton that has a MenuButtonListener.
 TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
-  scoped_ptr<TestMenuButtonListener> menu_button_listener(
-      new TestMenuButtonListener);
-  CreateMenuButtonWithMenuButtonListener(menu_button_listener.get());
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
 
@@ -174,24 +295,23 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
 
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
-  EXPECT_EQ(button(), menu_button_listener->last_source());
-  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener->last_source_state());
+  EXPECT_EQ(button(), menu_button_listener.last_source());
+  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
 }
 
 // Tests if the listener is notified correctly when a gesture tap happens on a
 // MenuButton that has a MenuButtonListener.
 TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
-  scoped_ptr<TestMenuButtonListener> menu_button_listener(
-      new TestMenuButtonListener);
-  CreateMenuButtonWithMenuButtonListener(menu_button_listener.get());
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
   generator.GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
-  EXPECT_EQ(button(), menu_button_listener->last_source());
-  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener->last_source_state());
+  EXPECT_EQ(button(), menu_button_listener.last_source());
+  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
 }
 
 // Test that the MenuButton stays pressed while there are any PressedLocks.
@@ -229,5 +349,45 @@ TEST_F(MenuButtonTest, MenuButtonPressedLock) {
   generator.MoveMouseTo(gfx::Point(10, 10));
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 }
+
+// Test that the MenuButton does not become pressed if it can be dragged, until
+// a release occurs.
+TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  TestDragController drag_controller;
+  button()->set_drag_controller(&drag_controller);
+
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+
+  generator.set_current_location(gfx::Point(10, 10));
+  generator.PressLeftButton();
+  EXPECT_EQ(nullptr, menu_button_listener.last_source());
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(button(), menu_button_listener.last_source());
+  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+}
+
+#if defined(USE_AURA)
+// Tests that the MenuButton does not become pressed if it can be dragged, and a
+// DragDropClient is processing the events.
+TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  TestDragController drag_controller;
+  button()->set_drag_controller(&drag_controller);
+
+  TestDragDropClient drag_client;
+  SetDragDropClient(GetContext(), &drag_client);
+  button()->PrependPreTargetHandler(&drag_client);
+
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  generator.set_current_location(gfx::Point(10, 10));
+  generator.DragMouseBy(10, 0);
+  EXPECT_EQ(nullptr, menu_button_listener.last_source());
+  EXPECT_EQ(Button::STATE_NORMAL, menu_button_listener.last_source_state());
+}
+#endif
 
 }  // namespace views
