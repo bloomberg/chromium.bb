@@ -49,8 +49,6 @@
       'public/renderer/context_menu_client.h',
       'public/renderer/document_state.cc',
       'public/renderer/document_state.h',
-      'public/renderer/key_system_info.cc',
-      'public/renderer/key_system_info.h',
       'public/renderer/navigation_state.cc',
       'public/renderer/navigation_state.h',
       'public/renderer/pepper_plugin_instance.h',

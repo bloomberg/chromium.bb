@@ -7,24 +7,24 @@
 
 #include <vector>
 
-#include "content/public/common/eme_constants.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/eme_constants.h"
 
 #define IPC_MESSAGE_START EncryptedMediaMsgStart
 
 IPC_STRUCT_BEGIN(SupportedKeySystemRequest)
   IPC_STRUCT_MEMBER(std::string, key_system)
-  IPC_STRUCT_MEMBER(content::SupportedCodecs, codecs, content::EME_CODEC_NONE)
+  IPC_STRUCT_MEMBER(media::SupportedCodecs, codecs, media::EME_CODEC_NONE)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(SupportedKeySystemResponse)
   IPC_STRUCT_MEMBER(std::string, key_system)
-  IPC_STRUCT_MEMBER(content::SupportedCodecs,
+  IPC_STRUCT_MEMBER(media::SupportedCodecs,
                     compositing_codecs,
-                    content::EME_CODEC_NONE)
-  IPC_STRUCT_MEMBER(content::SupportedCodecs,
+                    media::EME_CODEC_NONE)
+  IPC_STRUCT_MEMBER(media::SupportedCodecs,
                     non_compositing_codecs,
-                    content::EME_CODEC_NONE)
+                    media::EME_CODEC_NONE)
 IPC_STRUCT_END()
 
 // Messages sent from the renderer to the browser.

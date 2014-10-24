@@ -7,17 +7,17 @@
 
 #include <vector>
 
-#include "content/public/renderer/key_system_info.h"
+#include "media/base/key_system_info.h"
 
 namespace cdm {
 
 void AddAndroidWidevine(
-    std::vector<content::KeySystemInfo>* concrete_key_systems);
+    std::vector<media::KeySystemInfo>* concrete_key_systems);
 
 // Add platform-supported key systems which are not explicitly handled
 // by Chrome.
 void AddAndroidPlatformKeySystems(
-    std::vector<content::KeySystemInfo>* concrete_key_systems);
+    std::vector<media::KeySystemInfo>* concrete_key_systems);
 
 }  // namespace cdm
 

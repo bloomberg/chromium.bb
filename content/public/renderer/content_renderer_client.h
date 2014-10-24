@@ -49,13 +49,16 @@ struct WebPluginParams;
 struct WebURLError;
 }
 
+namespace media {
+struct KeySystemInfo;
+}
+
 namespace content {
 class BrowserPluginDelegate;
 class DocumentState;
 class RenderFrame;
 class RenderView;
 class SynchronousCompositor;
-struct KeySystemInfo;
 struct WebPluginInfo;
 
 // Embedder API for participating in renderer logic.
@@ -243,7 +246,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Gives the embedder a chance to register the key system(s) it supports by
   // populating |key_systems|.
-  virtual void AddKeySystems(std::vector<KeySystemInfo>* key_systems);
+  virtual void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems);
 
   // Returns true if we should report a detailed message (including a stack
   // trace) for console [logs|errors|exceptions]. |source| is the WebKit-

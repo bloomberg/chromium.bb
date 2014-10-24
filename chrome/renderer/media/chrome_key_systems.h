@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "content/public/renderer/key_system_info.h"
+#include "media/base/key_system_info.h"
 
-void AddChromeKeySystems(std::vector<content::KeySystemInfo>* key_systems_info);
+void AddChromeKeySystems(std::vector<media::KeySystemInfo>* key_systems_info);
 
 #endif  // CHROME_RENDERER_MEDIA_CHROME_KEY_SYSTEMS_H_

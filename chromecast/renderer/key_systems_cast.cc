@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "components/cdm/renderer/widevine_key_systems.h"
-#include "content/public/common/eme_constants.h"
+#include "media/base/eme_constants.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -19,17 +19,17 @@ namespace shell {
 
 void AddKeySystemWithCodecs(
     const std::string& key_system_name,
-    std::vector<content::KeySystemInfo>* concrete_key_systems) {
-  content::KeySystemInfo info(key_system_name);
-  info.supported_codecs = content::EME_CODEC_MP4_ALL;
+    std::vector<media::KeySystemInfo>* concrete_key_systems) {
+  media::KeySystemInfo info(key_system_name);
+  info.supported_codecs = media::EME_CODEC_MP4_ALL;
   concrete_key_systems->push_back(info);
 }
 
 void AddChromecastKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems_info) {
+    std::vector<media::KeySystemInfo>* key_systems_info) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
   AddWidevineWithCodecs(cdm::WIDEVINE,
-                        content::EME_CODEC_MP4_ALL,
+                        media::EME_CODEC_MP4_ALL,
                         key_systems_info);
 #endif
 

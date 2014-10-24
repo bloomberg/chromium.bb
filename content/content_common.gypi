@@ -57,7 +57,6 @@
       'public/common/context_menu_params.h',
       'public/common/drop_data.cc',
       'public/common/drop_data.h',
-      'public/common/eme_constants.h',
       'public/common/favicon_url.cc',
       'public/common/favicon_url.h',
       'public/common/file_chooser_file_info.cc',

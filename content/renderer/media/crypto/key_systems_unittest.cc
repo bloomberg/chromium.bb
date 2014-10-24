@@ -6,11 +6,11 @@
 #include <vector>
 
 #include "content/public/common/content_client.h"
-#include "content/public/common/eme_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/key_system_info.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "content/test/test_content_client.h"
+#include "media/base/eme_constants.h"
+#include "media/base/key_system_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -37,6 +37,7 @@
 namespace content {
 
 using blink::WebString;
+using media::KeySystemInfo;
 
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.
@@ -65,8 +66,9 @@ enum TestCodec {
   TEST_CODEC_FOO_ALL = TEST_CODEC_FOO_AUDIO_ALL | TEST_CODEC_FOO_VIDEO_ALL
 };
 
-COMPILE_ASSERT((TEST_CODEC_FOO_ALL & EME_CODEC_ALL) == EME_CODEC_NONE,
-                test_codec_masks_should_only_use_invalid_codec_masks);
+COMPILE_ASSERT((TEST_CODEC_FOO_ALL & media::EME_CODEC_ALL) ==
+                   media::EME_CODEC_NONE,
+               test_codec_masks_should_only_use_invalid_codec_masks);
 
 // Adds test container and codec masks.
 // This function must be called after SetContentClient() is called.
@@ -92,22 +94,22 @@ static void AddContainerAndCodecMasksForTest() {
 }
 
 class TestContentRendererClient : public ContentRendererClient {
-  void AddKeySystems(std::vector<content::KeySystemInfo>* key_systems) override;
+  void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
 };
 
 void TestContentRendererClient::AddKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems) {
+    std::vector<media::KeySystemInfo>* key_systems) {
   KeySystemInfo aes(kUsesAes);
-  aes.supported_codecs = EME_CODEC_WEBM_ALL;
+  aes.supported_codecs = media::EME_CODEC_WEBM_ALL;
   aes.supported_codecs |= TEST_CODEC_FOO_ALL;
-  aes.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  aes.supported_init_data_types = media::EME_INIT_DATA_TYPE_WEBM;
   aes.use_aes_decryptor = true;
   key_systems->push_back(aes);
 
   KeySystemInfo ext(kExternal);
-  ext.supported_codecs = EME_CODEC_WEBM_ALL;
+  ext.supported_codecs = media::EME_CODEC_WEBM_ALL;
   ext.supported_codecs |= TEST_CODEC_FOO_ALL;
-  ext.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  ext.supported_init_data_types = media::EME_INIT_DATA_TYPE_WEBM;
   ext.parent_key_system = kExternalParent;
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";

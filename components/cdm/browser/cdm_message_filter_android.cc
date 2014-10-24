@@ -13,9 +13,9 @@
 #include "media/base/android/media_drm_bridge.h"
 
 using content::BrowserThread;
-using content::SupportedCodecs;
 using media::MediaCodecBridge;
 using media::MediaDrmBridge;
+using media::SupportedCodecs;
 
 namespace cdm {
 
@@ -34,12 +34,12 @@ struct CodecInfo {
 };
 
 const CodecInfo kCodecsToQuery[] = {
-  {content::EME_CODEC_WEBM_VORBIS, CODEC_AUDIO, "vorbis", "video/webm"},
-  {content::EME_CODEC_WEBM_VP8, CODEC_VIDEO, "vp8", "video/webm"},
-  {content::EME_CODEC_WEBM_VP9, CODEC_VIDEO, "vp9", "video/webm"},
+  {media::EME_CODEC_WEBM_VORBIS, CODEC_AUDIO, "vorbis", "video/webm"},
+  {media::EME_CODEC_WEBM_VP8, CODEC_VIDEO, "vp8", "video/webm"},
+  {media::EME_CODEC_WEBM_VP9, CODEC_VIDEO, "vp9", "video/webm"},
 #if defined(USE_PROPRIETARY_CODECS)
-  {content::EME_CODEC_MP4_AAC, CODEC_AUDIO, "mp4a", "video/mp4"},
-  {content::EME_CODEC_MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"}
+  {media::EME_CODEC_MP4_AAC, CODEC_AUDIO, "mp4a", "video/mp4"},
+  {media::EME_CODEC_MP4_AVC1, CODEC_VIDEO, "avc1", "video/mp4"}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
@@ -47,7 +47,7 @@ static SupportedCodecs GetSupportedCodecs(
     const SupportedKeySystemRequest& request,
     bool video_must_be_compositable) {
   const std::string& key_system = request.key_system;
-  SupportedCodecs supported_codecs = content::EME_CODEC_NONE;
+  SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
   for (size_t i = 0; i < arraysize(kCodecsToQuery); ++i) {
     const CodecInfo& info = kCodecsToQuery[i];
@@ -106,7 +106,7 @@ void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
   if (!MediaDrmBridge::IsKeySystemSupported(request.key_system))
     return;
 
-  DCHECK(request.codecs & content::EME_CODEC_ALL) << "unrecognized codec";
+  DCHECK(request.codecs & media::EME_CODEC_ALL) << "unrecognized codec";
   response->key_system = request.key_system;
   // TODO(qinmin): check composition is supported or not.
   response->compositing_codecs = GetSupportedCodecs(request, true);

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "content/public/renderer/key_system_info.h"
+#include "media/base/key_system_info.h"
 
 namespace chromecast {
 namespace shell {
@@ -15,14 +15,14 @@ namespace shell {
 // Adds a single key system by name.
 void AddKeySystemWithCodecs(
     const std::string& key_system_name,
-    std::vector<content::KeySystemInfo>* concrete_key_systems);
+    std::vector<media::KeySystemInfo>* concrete_key_systems);
 
 void AddChromecastKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems_info);
+    std::vector<media::KeySystemInfo>* key_systems_info);
 
 // TODO(gunsch): Remove when prefixed EME is removed.
 void AddChromecastPlatformKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems_info);
+    std::vector<media::KeySystemInfo>* key_systems_info);
 
 }  // namespace shell
 }  // namespace chromecast

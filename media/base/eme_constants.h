@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_EME_CONSTANTS_H_
-#define CONTENT_PUBLIC_COMMON_EME_CONSTANTS_H_
+#ifndef MEDIA_BASE_EME_CONSTANTS_H_
+#define MEDIA_BASE_EME_CONSTANTS_H_
 
 #include <stdint.h>
 
-namespace content {
+namespace media {
 
 // Defines bitmask values that specify registered initialization data types used
 // in Encrypted Media Extensions (EME).
@@ -48,6 +48,6 @@ enum EmeCodec {
 typedef uint32_t SupportedInitDataTypes;
 typedef uint32_t SupportedCodecs;
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_PUBLIC_COMMON_EME_CONSTANTS_H_
+#endif  // MEDIA_BASE_EME_CONSTANTS_H_

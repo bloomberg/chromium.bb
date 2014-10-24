@@ -155,7 +155,7 @@ bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) {
 }
 
 void ContentRendererClient::AddKeySystems(
-    std::vector<KeySystemInfo>* key_systems) {
+    std::vector<media::KeySystemInfo>* key_systems) {
 }
 
 bool ContentRendererClient::ShouldReportDetailedMessageForSource(

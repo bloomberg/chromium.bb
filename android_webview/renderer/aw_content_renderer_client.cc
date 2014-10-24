@@ -193,7 +193,7 @@ bool AwContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
 }
 
 void AwContentRendererClient::AddKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems) {
+    std::vector<media::KeySystemInfo>* key_systems) {
   AwAddKeySystems(key_systems);
 }
 

@@ -8,14 +8,14 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "content/public/common/eme_constants.h"
+#include "media/base/eme_constants.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 
-using content::KeySystemInfo;
-using content::SupportedCodecs;
+using media::KeySystemInfo;
+using media::SupportedCodecs;
 
 namespace cdm {
 
@@ -53,11 +53,11 @@ void AddWidevineWithCodecs(WidevineCdmType widevine_cdm_type,
   // Here we assume that support for a container imples support for the
   // associated initialization data type. KeySystems handles validating
   // |init_data_type| x |container| pairings.
-  if (supported_codecs & content::EME_CODEC_WEBM_ALL)
-    info.supported_init_data_types |= content::EME_INIT_DATA_TYPE_WEBM;
+  if (supported_codecs & media::EME_CODEC_WEBM_ALL)
+    info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_WEBM;
 #if defined(USE_PROPRIETARY_CODECS)
-  if (supported_codecs & content::EME_CODEC_MP4_ALL)
-    info.supported_init_data_types |= content::EME_INIT_DATA_TYPE_CENC;
+  if (supported_codecs & media::EME_CODEC_MP4_ALL)
+    info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(ENABLE_PEPPER_CDMS)

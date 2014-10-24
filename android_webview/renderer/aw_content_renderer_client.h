@@ -38,7 +38,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
                                              size_t length) override;
   virtual bool IsLinkVisited(unsigned long long link_hash) override;
   virtual void AddKeySystems(
-      std::vector<content::KeySystemInfo>* key_systems) override;
+      std::vector<media::KeySystemInfo>* key_systems) override;
 
   virtual bool HandleNavigation(content::RenderFrame* render_frame,
                                 content::DocumentState* document_state,

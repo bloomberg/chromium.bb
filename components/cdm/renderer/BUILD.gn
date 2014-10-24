@@ -18,8 +18,8 @@ static_library("renderer") {
   deps = [
     "//base",
     "//components/cdm/common",
-    "//content/public/common",
     "//content/public/renderer",
+    "//media/base",
     "//third_party/widevine/cdm:version_h",
   ]
 }

@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_KEY_SYSTEM_INFO_H_
-#define CONTENT_PUBLIC_RENDERER_KEY_SYSTEM_INFO_H_
+#ifndef MEDIA_BASE_KEY_SYSTEM_INFO_H_
+#define MEDIA_BASE_KEY_SYSTEM_INFO_H_
 
-#include <map>
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/containers/hash_tables.h"
-#include "content/common/content_export.h"
-#include "content/public/common/eme_constants.h"
+#include "media/base/eme_constants.h"
+#include "media/base/media_export.h"
 
 // Definitions:
 // * Key system
@@ -28,11 +25,11 @@
 //    be an abstract key system.
 //    As an example, "com.example" is the parent of "com.example.foo".
 
-namespace content {
+namespace media {
 
 // Contains information about an EME key system as well as how to instantiate
 // the corresponding CDM.
-struct CONTENT_EXPORT KeySystemInfo {
+struct MEDIA_EXPORT KeySystemInfo {
   explicit KeySystemInfo(const std::string& key_system);
   ~KeySystemInfo();
 
@@ -56,6 +53,6 @@ struct CONTENT_EXPORT KeySystemInfo {
 #endif
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_PUBLIC_RENDERER_KEY_SYSTEM_INFO_H_
+#endif  // MEDIA_BASE_KEY_SYSTEM_INFO_H_

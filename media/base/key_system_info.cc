@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/renderer/key_system_info.h"
+#include "media/base/key_system_info.h"
 
-namespace content {
+namespace media {
 
 KeySystemInfo::KeySystemInfo(const std::string& key_system)
     : key_system(key_system),
@@ -16,4 +16,4 @@ KeySystemInfo::KeySystemInfo(const std::string& key_system)
 KeySystemInfo::~KeySystemInfo() {
 }
 
-}  // namespace content
+}  // namespace media

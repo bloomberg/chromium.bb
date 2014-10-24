@@ -26,7 +26,6 @@
       'dependencies': [
         'cdm_common',
         '../base/base.gyp:base',
-        '../content/content.gyp:content_common',
         '../content/content.gyp:content_renderer',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
@@ -43,8 +42,8 @@
           'sources': [
             'cdm/renderer/android_key_systems.cc',
             'cdm/renderer/android_key_systems.h',
-	  ],
-	}],
+          ],
+        }],
       ],
     },
   ],

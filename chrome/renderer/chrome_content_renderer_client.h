@@ -134,7 +134,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       content::RenderFrame* render_frame,
       blink::WebFrame* frame) override;
   bool AllowPepperMediaStreamAPI(const GURL& url) override;
-  void AddKeySystems(std::vector<content::KeySystemInfo>* key_systems) override;
+  void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
   bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) override;

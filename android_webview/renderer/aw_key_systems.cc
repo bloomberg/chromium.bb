@@ -8,7 +8,7 @@
 namespace android_webview {
 
 void AwAddKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems_info) {
+    std::vector<media::KeySystemInfo>* key_systems_info) {
   cdm::AddAndroidWidevine(key_systems_info);
   cdm::AddAndroidPlatformKeySystems(key_systems_info);
 }

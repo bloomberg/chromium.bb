@@ -13,10 +13,10 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/eme_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/key_system_info.h"
 #include "content/renderer/media/crypto/key_systems_support_uma.h"
+#include "media/base/eme_constants.h"
+#include "media/base/key_system_info.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_bridge.h"
@@ -25,6 +25,12 @@
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
 namespace content {
+
+using media::EmeCodec;
+using media::EmeInitDataType;
+using media::KeySystemInfo;
+using media::SupportedInitDataTypes;
+using media::SupportedCodecs;
 
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kPrefixedClearKeyKeySystem[] = "webkit-org.w3.clearkey";
@@ -38,9 +44,9 @@ struct NamedInitDataType {
 // Mapping between initialization data types names and enum values. When adding
 // entries, make sure to update IsSaneInitDataTypeWithContainer().
 static NamedInitDataType kInitDataTypeNames[] = {
-    {"webm", EME_INIT_DATA_TYPE_WEBM},
+    {"webm", media::EME_INIT_DATA_TYPE_WEBM},
 #if defined(USE_PROPRIETARY_CODECS)
-    {"cenc", EME_INIT_DATA_TYPE_CENC}
+    {"cenc", media::EME_INIT_DATA_TYPE_CENC}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
@@ -53,25 +59,25 @@ struct NamedCodec {
 // Only audio codec can belong to a "audio/*" container. Both audio and video
 // codecs can belong to a "video/*" container.
 static NamedCodec kContainerToCodecMasks[] = {
-    {"audio/webm", EME_CODEC_WEBM_AUDIO_ALL},
-    {"video/webm", EME_CODEC_WEBM_ALL},
+    {"audio/webm", media::EME_CODEC_WEBM_AUDIO_ALL},
+    {"video/webm", media::EME_CODEC_WEBM_ALL},
 #if defined(USE_PROPRIETARY_CODECS)
-    {"audio/mp4", EME_CODEC_MP4_AUDIO_ALL},
-    {"video/mp4", EME_CODEC_MP4_ALL}
+    {"audio/mp4", media::EME_CODEC_MP4_AUDIO_ALL},
+    {"video/mp4", media::EME_CODEC_MP4_ALL}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
 // Mapping between codec names and enum values.
 static NamedCodec kCodecStrings[] = {
-    {"vorbis", EME_CODEC_WEBM_VORBIS},
-    {"vp8", EME_CODEC_WEBM_VP8},
-    {"vp8.0", EME_CODEC_WEBM_VP8},
-    {"vp9", EME_CODEC_WEBM_VP9},
-    {"vp9.0", EME_CODEC_WEBM_VP9},
+    {"vorbis", media::EME_CODEC_WEBM_VORBIS},
+    {"vp8", media::EME_CODEC_WEBM_VP8},
+    {"vp8.0", media::EME_CODEC_WEBM_VP8},
+    {"vp9", media::EME_CODEC_WEBM_VP9},
+    {"vp9.0", media::EME_CODEC_WEBM_VP9},
 #if defined(USE_PROPRIETARY_CODECS)
-    {"mp4a", EME_CODEC_MP4_AAC},
-    {"avc1", EME_CODEC_MP4_AVC1},
-    {"avc3", EME_CODEC_MP4_AVC1}
+    {"mp4a", media::EME_CODEC_MP4_AAC},
+    {"avc1", media::EME_CODEC_MP4_AVC1},
+    {"avc3", media::EME_CODEC_MP4_AVC1}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
@@ -82,18 +88,18 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   // http://developer.android.com/guide/appendix/media-formats.html
   // VP9 support is device dependent.
 
-  info.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
-  info.supported_codecs = EME_CODEC_WEBM_ALL;
+  info.supported_init_data_types = media::EME_INIT_DATA_TYPE_WEBM;
+  info.supported_codecs = media::EME_CODEC_WEBM_ALL;
 
 #if defined(OS_ANDROID)
   // Temporarily disable VP9 support for Android.
   // TODO(xhwang): Use mime_util.h to query VP9 support on Android.
-  info.supported_codecs &= ~EME_CODEC_WEBM_VP9;
+  info.supported_codecs &= ~media::EME_CODEC_WEBM_VP9;
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_init_data_types |= EME_INIT_DATA_TYPE_CENC;
-  info.supported_codecs |= EME_CODEC_MP4_ALL;
+  info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
+  info.supported_codecs |= media::EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
   info.use_aes_decryptor = true;
@@ -149,7 +155,7 @@ class KeySystems {
 
   struct KeySystemProperties {
     KeySystemProperties()
-        : use_aes_decryptor(false), supported_codecs(EME_CODEC_NONE) {}
+        : use_aes_decryptor(false), supported_codecs(media::EME_CODEC_NONE) {}
 
     bool use_aes_decryptor;
 #if defined(ENABLE_PEPPER_CDMS)
@@ -164,7 +170,7 @@ class KeySystems {
   typedef base::hash_map<std::string, std::string> ParentKeySystemMap;
   typedef base::hash_map<std::string, SupportedCodecs> ContainerCodecsMap;
   typedef base::hash_map<std::string, EmeCodec> CodecsMap;
-  typedef base::hash_map<std::string, EmeInitDataType> InitDataTypesMap;
+  typedef base::hash_map<std::string, media::EmeInitDataType> InitDataTypesMap;
 
   KeySystems();
   ~KeySystems() {}
@@ -255,7 +261,7 @@ EmeInitDataType KeySystems::GetInitDataTypeForName(
       init_data_type_name_map_.find(init_data_type);
   if (iter != init_data_type_name_map_.end())
     return iter->second;
-  return EME_INIT_DATA_TYPE_NONE;
+  return media::EME_INIT_DATA_TYPE_NONE;
 }
 
 SupportedCodecs KeySystems::GetCodecMaskForContainer(
@@ -264,14 +270,14 @@ SupportedCodecs KeySystems::GetCodecMaskForContainer(
       container_to_codec_mask_map_.find(container);
   if (iter != container_to_codec_mask_map_.end())
     return iter->second;
-  return EME_CODEC_NONE;
+  return media::EME_CODEC_NONE;
 }
 
 EmeCodec KeySystems::GetCodecForString(const std::string& codec) const {
   CodecsMap::const_iterator iter = codec_string_map_.find(codec);
   if (iter != codec_string_map_.end())
     return iter->second;
-  return EME_CODEC_NONE;
+  return media::EME_CODEC_NONE;
 }
 
 const std::string& KeySystems::GetConcreteKeySystemName(
