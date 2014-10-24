@@ -1554,13 +1554,16 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
     Platform::current()->decrementStatsCounter(webFrameActiveCount);
     frameCount--;
 
+#if !ENABLE(OILPAN)
     cancelPendingScopingEffort();
+#endif
 }
 
 #if ENABLE(OILPAN)
 void WebLocalFrameImpl::trace(Visitor* visitor)
 {
     visitor->trace(m_frame);
+    visitor->trace(m_textFinder);
     visitor->trace(m_printContext);
     visitor->trace(m_geolocationClientProxy);
     visitor->registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);

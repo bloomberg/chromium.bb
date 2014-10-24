@@ -50,9 +50,9 @@ class WebLocalFrameImpl;
 
 template <typename T> class WebVector;
 
-class TextFinder {
+class TextFinder final : public NoBaseWillBeGarbageCollectedFinalized<TextFinder> {
 public:
-    static PassOwnPtr<TextFinder> create(WebLocalFrameImpl& ownerFrame);
+    static PassOwnPtrWillBeRawPtr<TextFinder> create(WebLocalFrameImpl& ownerFrame);
 
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
@@ -91,6 +91,10 @@ public:
     class FindMatch {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
+        FindMatch(PassRefPtrWillBeRawPtr<Range>, int ordinal);
+
+        void trace(Visitor*);
+
         RefPtrWillBeMember<Range> m_range;
 
         // 1-based index within this frame.
@@ -99,11 +103,9 @@ public:
         // In find-in-page coordinates.
         // Lazily calculated by updateFindMatchRects.
         FloatRect m_rect;
-
-        FindMatch(PassRefPtrWillBeRawPtr<Range>, int ordinal);
-
-        void trace(Visitor*);
     };
+
+    void trace(Visitor*);
 
 private:
     class DeferredScopeStringMatches;
@@ -185,17 +187,23 @@ private:
 
     void decrementFramesScopingCount(int identifier);
 
+    WebLocalFrameImpl& ownerFrame() const
+    {
+        ASSERT(m_ownerFrame);
+        return *m_ownerFrame;
+    }
+
     // Returns the ordinal of the first match in the owner frame.
     int ordinalOfFirstMatch() const;
 
-    WebLocalFrameImpl& m_ownerFrame;
+    RawPtrWillBeMember<WebLocalFrameImpl> m_ownerFrame;
 
     // A way for the main frame to keep track of which frame has an active
     // match. Should be 0 for all other frames.
-    WebLocalFrameImpl* m_currentActiveMatchFrame;
+    RawPtrWillBeMember<WebLocalFrameImpl> m_currentActiveMatchFrame;
 
     // The range of the active match for the current frame.
-    RefPtrWillBePersistent<Range> m_activeMatch;
+    RefPtrWillBeMember<Range> m_activeMatch;
 
     // The index of the active match for the current frame.
     int m_activeMatchIndexInCurrentFrame;
@@ -205,7 +213,7 @@ private:
     //
     // This range is collapsed to the end position of the last successful
     // search; the new search should start from this position.
-    RefPtrWillBePersistent<Range> m_resumeScopingFromRange;
+    RefPtrWillBeMember<Range> m_resumeScopingFromRange;
 
     // Keeps track of the last string this frame searched for. This is used for
     // short-circuiting searches in the following scenarios: When a frame has
@@ -237,14 +245,14 @@ private:
     int m_nextInvalidateAfter;
 
     // A list of all of the pending calls to scopeStringMatches.
-    Vector<DeferredScopeStringMatches*> m_deferredScopingWork;
+    WillBeHeapVector<OwnPtrWillBeMember<DeferredScopeStringMatches> > m_deferredScopingWork;
 
     // Version number incremented on the main frame only whenever the document
     // find-in-page match markers change. It should be 0 for all other frames.
     int m_findMatchMarkersVersion;
 
     // Local cache of the find match markers currently displayed for this frame.
-    WillBePersistentHeapVector<FindMatch> m_findMatchesCache;
+    WillBeHeapVector<FindMatch> m_findMatchesCache;
 
     // Contents size when find-in-page match rects were last computed for this
     // frame's cache.
@@ -271,4 +279,4 @@ private:
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::TextFinder::FindMatch);
 
-#endif
+#endif // TextFinder_h

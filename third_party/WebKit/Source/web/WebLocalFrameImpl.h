@@ -343,7 +343,7 @@ private:
     OwnPtr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
 
     // Will be initialized after first call to find() or scopeStringMatches().
-    OwnPtr<TextFinder> m_textFinder;
+    OwnPtrWillBeMember<TextFinder> m_textFinder;
 
     // Valid between calls to BeginPrint() and EndPrint(). Containts the print
     // information. Is used by PrintPage().
