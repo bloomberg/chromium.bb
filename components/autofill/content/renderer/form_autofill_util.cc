@@ -274,6 +274,16 @@ base::string16 InferLabelFromPrevious(const WebFormControlElement& element) {
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
+// placeholder text,
+base::string16 InferLabelFromPlaceholder(const WebFormControlElement& element) {
+  CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
+  if (element.hasAttribute(kPlaceholder))
+    return element.getAttribute(kPlaceholder);
+
+  return base::string16();
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
 // enclosing list item,
 // e.g. <li>Some Text<input ...><input ...><input ...></tr>
 base::string16 InferLabelFromListItem(const WebFormControlElement& element) {
@@ -418,6 +428,11 @@ base::string16 InferLabelFromDefinitionList(
 // e.g. the contents of the preceding <p> tag or text element.
 base::string16 InferLabelForElement(const WebFormControlElement& element) {
   base::string16 inferred_label = InferLabelFromPrevious(element);
+  if (!inferred_label.empty())
+    return inferred_label;
+
+  // If we didn't find a label, check for placeholder text.
+  inferred_label = InferLabelFromPlaceholder(element);
   if (!inferred_label.empty())
     return inferred_label;
 
