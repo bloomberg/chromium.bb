@@ -1082,6 +1082,7 @@
             'content_shell_lib',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
+            '../ui/accessibility/accessibility.gyp:ax_gen',
           ],
           'sources': [
             'test/content_test_launcher.cc',
