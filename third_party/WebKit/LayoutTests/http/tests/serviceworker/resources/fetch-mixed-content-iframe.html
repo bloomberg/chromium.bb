@@ -24,7 +24,11 @@ navigator.serviceWorker.getRegistration(SCOPE)
     })
   .then(function(worker) {
       worker.addEventListener('statechange', on_state_change);
-    });
+    })
+  .catch(function(reason) {
+      window.parent.postMessage({results: 'FAILURE: ' + reason.message},
+                                host_info['HTTP_ORIGIN']);
+     });
 
 function on_state_change(event) {
   if (event.target.state != 'activated')
@@ -42,6 +46,10 @@ function on_message(e) {
       })
     .then(function() {
       window.parent.postMessage(e.data, host_info['HTTP_ORIGIN']);
-    });
+    })
+    .catch(function(reason) {
+        window.parent.postMessage({results: 'FAILURE: ' + reason.message},
+                                  host_info['HTTP_ORIGIN']);
+     });
 }
 </script>
