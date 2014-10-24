@@ -115,6 +115,8 @@ bool WebViewInternalExecuteCodeFunction::CanExecuteScriptOnPage() {
 
 extensions::ScriptExecutor*
 WebViewInternalExecuteCodeFunction::GetScriptExecutor() {
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return NULL;
   WebViewGuest* guest = WebViewGuest::From(
       render_view_host()->GetProcess()->GetID(), guest_instance_id_);
   if (!guest)
