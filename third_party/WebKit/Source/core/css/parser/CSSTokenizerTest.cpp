@@ -157,6 +157,9 @@ TEST(CSSTokenizerTest, Escapes)
     TEST_TOKENS("te\\s\\t", ident("test"));
     TEST_TOKENS("spaces\\ in\\\tident", ident("spaces in\tident"));
     TEST_TOKENS("\\.\\,\\:\\!", ident(".,:!"));
+    TEST_TOKENS("\\\r", delim('\\'), whitespace);
+    TEST_TOKENS("\\\f", delim('\\'), whitespace);
+    TEST_TOKENS("\\\r\n", delim('\\'), whitespace);
     // FIXME: We don't correctly return replacement characters
     // String replacement = fromUChar32(0xFFFD);
     // TEST_TOKENS("null\\0", ident("null" + replacement));
@@ -168,10 +171,6 @@ TEST(CSSTokenizerTest, Escapes)
     // FIXME: We don't correctly return supplementary plane characters
     // TEST_TOKENS("\\10fFfF", ident(fromUChar32(0x10ffff) + "0"));
     // TEST_TOKENS("\\10000000", ident(fromUChar32(0x100000) + "000"));
-    // FIXME: We don't correctly match newlines (normally handled in preprocessing)
-    // TEST_TOKENS("\\\r", delim('\\'), whitespace);
-    // TEST_TOKENS("\\\f", delim('\\'), whitespace);
-    // TEST_TOKENS("\\\r\n", delim('\\'), whitespace);
 }
 
 TEST(CSSTokenizerTest, IdentToken)
@@ -218,14 +217,13 @@ TEST(CSSTokenizerTest, StringToken)
     TEST_TOKENS("'esca\\\nped'", string("escaped"));
     TEST_TOKENS("\"esc\\\faped\"", string("escaped"));
     TEST_TOKENS("'new\\\rline'", string("newline"));
+    TEST_TOKENS("\"new\\\r\nline\"", string("newline"));
     TEST_TOKENS("'bad\nstring", badString, whitespace, ident("string"));
     TEST_TOKENS("'bad\rstring", badString, whitespace, ident("string"));
     TEST_TOKENS("'bad\r\nstring", badString, whitespace, ident("string"));
     TEST_TOKENS("'bad\fstring", badString, whitespace, ident("string"));
     // FIXME: Preprocessing is supposed to replace U+0000 with U+FFFD
     // TEST_TOKENS("'\0'", string(fromUChar32(0xFFFD)));
-    // FIXME: We don't correctly match newlines (normally handled in preprocessing)
-    // TEST_TOKENS("\"new\\\r\nline\"", string("newline"));
 }
 
 TEST(CSSTokenizerTest, NumberToken)

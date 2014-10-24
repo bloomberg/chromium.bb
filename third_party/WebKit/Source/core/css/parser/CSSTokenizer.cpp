@@ -31,10 +31,16 @@ static bool isNameChar(UChar c)
     return isNameStart(c) || isASCIIDigit(c) || c == '-';
 }
 
+static bool isNewLine(UChar cc)
+{
+    // We check \r and \f here, since we have no preprocessing stage
+    return (cc == '\r' || cc == '\n' || cc == '\f');
+}
+
 // http://dev.w3.org/csswg/css-syntax/#check-if-two-code-points-are-a-valid-escape
 static bool twoCharsAreValidEscape(UChar first, UChar second)
 {
-    return ((first == '\\') && (second != '\n') && (second != kEndOfFileMarker));
+    return first == '\\' && !isNewLine(second) && second != kEndOfFileMarker;
 }
 
 CSSTokenizer::CSSTokenizer(CSSTokenizerInputStream& inputStream)
@@ -353,12 +359,6 @@ CSSParserToken CSSTokenizer::consumeIdentLikeToken()
     return CSSParserToken(IdentToken, name);
 }
 
-static bool isNewLine(UChar cc)
-{
-    // We check \r and \f here, since we have no preprocessing stage
-    return (cc == '\r' || cc == '\n' || cc == '\f');
-}
-
 // http://dev.w3.org/csswg/css-syntax/#consume-a-string-token
 CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
 {
@@ -379,7 +379,7 @@ CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
             if (m_input.nextInputChar() == kEndOfFileMarker)
                 continue;
             if (isNewLine(m_input.nextInputChar()))
-                consume();
+                consumeSingleWhitespaceIfNext(); // This handles \r\n for us
             else
                 output.append(consumeEscape());
         } else {
@@ -456,7 +456,7 @@ String CSSTokenizer::consumeName()
 UChar CSSTokenizer::consumeEscape()
 {
     UChar cc = consume();
-    ASSERT(cc != '\n');
+    ASSERT(!isNewLine(cc));
     if (isASCIIHexDigit(cc)) {
         unsigned consumedHexDigits = 1;
         StringBuilder hexChars;
