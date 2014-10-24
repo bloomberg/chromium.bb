@@ -94,9 +94,6 @@ void HotwordServiceFactory::UpdateMicrophoneState() {
 
 void HotwordServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
-                             false,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // Although this is default true, users will not send back information to
   // Google unless they have opted-in to Hotwording at which point they must
   // also confirm that they wish this preference to be true or opt out of it.
@@ -106,9 +103,13 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterStringPref(prefs::kHotwordPreviousLanguage,
                             std::string(),
                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // Per-device settings (do not sync).
+  prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
+                             false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnSearchEnabled,
                              false,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 KeyedService* HotwordServiceFactory::BuildServiceInstanceFor(
