@@ -27,7 +27,7 @@ class SymKeyNss;
 class KeyNss : public blink::WebCryptoKeyHandle {
  public:
   explicit KeyNss(const CryptoData& serialized_key_data);
-  virtual ~KeyNss();
+  ~KeyNss() override;
 
   virtual SymKeyNss* AsSymKey();
   virtual PublicKeyNss* AsPublicKey();
@@ -43,13 +43,13 @@ class KeyNss : public blink::WebCryptoKeyHandle {
 
 class SymKeyNss : public KeyNss {
  public:
-  virtual ~SymKeyNss();
+  ~SymKeyNss() override;
   SymKeyNss(crypto::ScopedPK11SymKey key, const CryptoData& raw_key_data);
 
   static SymKeyNss* Cast(const blink::WebCryptoKey& key);
 
   PK11SymKey* key() { return key_.get(); }
-  virtual SymKeyNss* AsSymKey() override;
+  SymKeyNss* AsSymKey() override;
 
   const std::vector<uint8_t>& raw_key_data() const {
     return serialized_key_data();
@@ -63,13 +63,13 @@ class SymKeyNss : public KeyNss {
 
 class PublicKeyNss : public KeyNss {
  public:
-  virtual ~PublicKeyNss();
+  ~PublicKeyNss() override;
   PublicKeyNss(crypto::ScopedSECKEYPublicKey key, const CryptoData& spki_data);
 
   static PublicKeyNss* Cast(const blink::WebCryptoKey& key);
 
   SECKEYPublicKey* key() { return key_.get(); }
-  virtual PublicKeyNss* AsPublicKey() override;
+  PublicKeyNss* AsPublicKey() override;
 
   const std::vector<uint8_t>& spki_data() const {
     return serialized_key_data();
@@ -83,14 +83,14 @@ class PublicKeyNss : public KeyNss {
 
 class PrivateKeyNss : public KeyNss {
  public:
-  virtual ~PrivateKeyNss();
+  ~PrivateKeyNss() override;
   PrivateKeyNss(crypto::ScopedSECKEYPrivateKey key,
                 const CryptoData& pkcs8_data);
 
   static PrivateKeyNss* Cast(const blink::WebCryptoKey& key);
 
   SECKEYPrivateKey* key() { return key_.get(); }
-  virtual PrivateKeyNss* AsPrivateKey() override;
+  PrivateKeyNss* AsPrivateKey() override;
 
   const std::vector<uint8_t>& pkcs8_data() const {
     return serialized_key_data();

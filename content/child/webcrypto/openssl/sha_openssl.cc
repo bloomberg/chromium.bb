@@ -33,7 +33,7 @@ class DigestorOpenSsl : public blink::WebCryptoDigestor {
         digest_context_(EVP_MD_CTX_create()),
         algorithm_id_(algorithm_id) {}
 
-  virtual bool consume(const unsigned char* data, unsigned int size) {
+  bool consume(const unsigned char* data, unsigned int size) override {
     return ConsumeWithStatus(data, size).IsSuccess();
   }
 
@@ -49,8 +49,8 @@ class DigestorOpenSsl : public blink::WebCryptoDigestor {
     return Status::Success();
   }
 
-  virtual bool finish(unsigned char*& result_data,
-                      unsigned int& result_data_size) {
+  bool finish(unsigned char*& result_data,
+              unsigned int& result_data_size) override {
     Status error = FinishInternal(result_, &result_data_size);
     if (!error.IsSuccess())
       return false;

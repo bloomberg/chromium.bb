@@ -23,6 +23,9 @@ class WebCryptoImpl : public blink::WebCrypto {
  public:
   WebCryptoImpl();
 
+  // TODO(eroman): Once Blink and Chromium repositories are merged, use
+  //               "override" in place of virtual.
+
   virtual ~WebCryptoImpl();
 
   virtual void encrypt(const blink::WebCryptoAlgorithm& algorithm,

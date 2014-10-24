@@ -102,17 +102,17 @@ class AesCbcImplementation : public AesAlgorithm {
  public:
   AesCbcImplementation() : AesAlgorithm(CKM_AES_CBC, "CBC") {}
 
-  virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
-                         const blink::WebCryptoKey& key,
-                         const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const override {
+  Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
+                 const blink::WebCryptoKey& key,
+                 const CryptoData& data,
+                 std::vector<uint8_t>* buffer) const override {
     return AesCbcEncryptDecrypt(ENCRYPT, algorithm, key, data, buffer);
   }
 
-  virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
-                         const blink::WebCryptoKey& key,
-                         const CryptoData& data,
-                         std::vector<uint8_t>* buffer) const override {
+  Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
+                 const blink::WebCryptoKey& key,
+                 const CryptoData& data,
+                 std::vector<uint8_t>* buffer) const override {
     return AesCbcEncryptDecrypt(DECRYPT, algorithm, key, data, buffer);
   }
 };

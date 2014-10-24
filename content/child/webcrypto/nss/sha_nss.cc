@@ -46,7 +46,7 @@ class DigestorNSS : public blink::WebCryptoDigestor {
   explicit DigestorNSS(blink::WebCryptoAlgorithmId algorithm_id)
       : hash_context_(NULL), algorithm_id_(algorithm_id) {}
 
-  virtual ~DigestorNSS() {
+  ~DigestorNSS() override {
     if (!hash_context_)
       return;
 
@@ -54,7 +54,7 @@ class DigestorNSS : public blink::WebCryptoDigestor {
     hash_context_ = NULL;
   }
 
-  virtual bool consume(const unsigned char* data, unsigned int size) {
+  bool consume(const unsigned char* data, unsigned int size) override {
     return ConsumeWithStatus(data, size).IsSuccess();
   }
 
@@ -71,8 +71,8 @@ class DigestorNSS : public blink::WebCryptoDigestor {
     return Status::Success();
   }
 
-  virtual bool finish(unsigned char*& result_data,
-                      unsigned int& result_data_size) {
+  bool finish(unsigned char*& result_data,
+              unsigned int& result_data_size) override {
     Status error = FinishInternal(result_, &result_data_size);
     if (!error.IsSuccess())
       return false;
@@ -131,9 +131,9 @@ class DigestorNSS : public blink::WebCryptoDigestor {
 
 class ShaImplementation : public AlgorithmImplementation {
  public:
-  virtual Status Digest(const blink::WebCryptoAlgorithm& algorithm,
-                        const CryptoData& data,
-                        std::vector<uint8_t>* buffer) const override {
+  Status Digest(const blink::WebCryptoAlgorithm& algorithm,
+                const CryptoData& data,
+                std::vector<uint8_t>* buffer) const override {
     DigestorNSS digestor(algorithm.id());
     Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
     // http://crbug.com/366427: the spec does not define any other failures for
