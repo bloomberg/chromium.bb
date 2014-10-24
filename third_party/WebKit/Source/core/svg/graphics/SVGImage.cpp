@@ -49,6 +49,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
@@ -219,38 +220,42 @@ PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
     return buffer->copyImage(CopyBackingStore)->nativeImageForCurrentFrame();
 }
 
-void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& srcRect,
-    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, blink::WebBlendMode blendMode, const IntSize& repeatSpacing)
+void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,
+    float zoom, const FloatRect& srcRect, const FloatSize& tileScale, const FloatPoint& phase,
+    CompositeOperator compositeOp, const FloatRect& dstRect, blink::WebBlendMode blendMode,
+    const IntSize& repeatSpacing)
 {
-    FloatRect zoomedContainerRect = FloatRect(FloatPoint(), containerSize);
-    zoomedContainerRect.scale(zoom);
+    // Tile adjusted for scaling/stretch.
+    FloatRect tile(srcRect);
+    tile.scale(tileScale.width(), tileScale.height());
 
-    // The ImageBuffer size needs to be scaled to match the final resolution.
-    // FIXME: No need to get the full CTM here, we just need the scale.
-    // FIXME: See crbug.com/382491. This scale does not reflect compositor applied
-    // scale factors, such a High DPI or device zoom.
-    AffineTransform transform = context->getCTM();
-    FloatSize imageBufferScale = FloatSize(transform.xScale(), transform.yScale());
-    ASSERT(imageBufferScale.width());
-    ASSERT(imageBufferScale.height());
+    // Expand the tile to account for repeat spacing.
+    FloatRect spacedTile(tile);
+    spacedTile.expand(repeatSpacing);
 
-    FloatSize scaleWithoutCTM(scale.width() / imageBufferScale.width(), scale.height() / imageBufferScale.height());
+    // Record using a dedicated GC, to avoid inheriting unwanted state (pending color filters
+    // for example must be applied atomically during the final fill/composite phase).
+    GraphicsContext recordingContext(0);
+    recordingContext.beginRecording(spacedTile);
+    // When generating an expanded tile, make sure we don't draw into the spacing area.
+    if (tile != spacedTile)
+        recordingContext.clipRect(tile);
+    drawForContainer(&recordingContext, containerSize, zoom, tile, srcRect, CompositeSourceOver,
+        blink::WebBlendModeNormal);
+    RefPtr<DisplayList> tileDisplayList = recordingContext.endRecording();
 
-    FloatRect imageBufferSize = zoomedContainerRect;
-    imageBufferSize.scale(imageBufferScale.width(), imageBufferScale.height());
+    SkMatrix patternTransform;
+    patternTransform.setTranslate(phase.x() + tile.x(), phase.y() + tile.y());
+    SkRect tileRect = SkRect::MakeWH(spacedTile.width(), spacedTile.height());
+    RefPtr<SkShader> patternShader = adoptRef(SkShader::CreatePictureShader(
+        tileDisplayList->picture(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+        &patternTransform, &tileRect));
 
-    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(expandedIntSize(imageBufferSize.size()));
-    if (!buffer) // Failed to allocate buffer.
-        return;
-
-    drawForContainer(buffer->context(), containerSize, zoom, imageBufferSize, zoomedContainerRect, CompositeSourceOver, blink::WebBlendModeNormal);
-    RefPtr<Image> image = buffer->copyImage(DontCopyBackingStore, Unscaled);
-
-    // Adjust the source rect and transform due to the image buffer's scaling.
-    FloatRect scaledSrcRect = srcRect;
-    scaledSrcRect.scale(imageBufferScale.width(), imageBufferScale.height());
-
-    image->drawPattern(context, scaledSrcRect, scaleWithoutCTM, phase, compositeOp, dstRect, blendMode, repeatSpacing);
+    SkPaint paint;
+    paint.setShader(patternShader.get());
+    paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+    paint.setColorFilter(context->colorFilter());
+    context->drawRect(dstRect, paint);
 }
 
 void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
