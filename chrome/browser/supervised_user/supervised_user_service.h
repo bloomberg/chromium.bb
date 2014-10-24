@@ -79,10 +79,10 @@ class SupervisedUserService : public KeyedService,
     virtual bool SetActive(bool active) = 0;
     // Returns the path to a blacklist file to load, or an empty path to
     // indicate "none".
-    virtual base::FilePath GetBlacklistPath() const = 0;
+    virtual base::FilePath GetBlacklistPath() const;
     // Returns the URL from which to download a blacklist if no local one exists
     // yet. The blacklist file will be stored at |GetBlacklistPath()|.
-    virtual GURL GetBlacklistURL() const = 0;
+    virtual GURL GetBlacklistURL() const;
   };
 
   ~SupervisedUserService() override;

@@ -70,6 +70,14 @@ using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
 
+base::FilePath SupervisedUserService::Delegate::GetBlacklistPath() const {
+  return base::FilePath();
+}
+
+GURL SupervisedUserService::Delegate::GetBlacklistURL() const {
+  return GURL();
+}
+
 SupervisedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new SupervisedUserURLFilter),
       io_url_filter_(new SupervisedUserURLFilter) {}
