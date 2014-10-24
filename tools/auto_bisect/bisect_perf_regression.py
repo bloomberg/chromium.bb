@@ -839,89 +839,6 @@ class BisectPerformanceMetrics(object):
 
     return revision_work_list
 
-  def _GetV8BleedingEdgeFromV8TrunkIfMappable(self, revision):
-    commit_position = source_control.GetCommitPosition(revision)
-
-    if bisect_utils.IsStringInt(commit_position):
-      # V8 is tricky to bisect, in that there are only a few instances when
-      # we can dive into bleeding_edge and get back a meaningful result.
-      # Try to detect a V8 "business as usual" case, which is when:
-      #  1. trunk revision N has description "Version X.Y.Z"
-      #  2. bleeding_edge revision (N-1) has description "Prepare push to
-      #     trunk. Now working on X.Y.(Z+1)."
-      #
-      # As of 01/24/2014, V8 trunk descriptions are formatted:
-      # "Version 3.X.Y (based on bleeding_edge revision rZ)"
-      # So we can just try parsing that out first and fall back to the old way.
-      v8_dir = self.depot_registry.GetDepotDir('v8')
-      v8_bleeding_edge_dir = self.depot_registry.GetDepotDir('v8_bleeding_edge')
-
-      revision_info = source_control.QueryRevisionInfo(revision, cwd=v8_dir)
-
-      version_re = re.compile("Version (?P<values>[0-9,.]+)")
-
-      regex_results = version_re.search(revision_info['subject'])
-
-      if regex_results:
-        git_revision = None
-
-        # Look for "based on bleeding_edge" and parse out revision
-        if 'based on bleeding_edge' in revision_info['subject']:
-          try:
-            bleeding_edge_revision = revision_info['subject'].split(
-                'bleeding_edge revision r')[1]
-            bleeding_edge_revision = int(bleeding_edge_revision.split(')')[0])
-            git_revision = source_control.ResolveToRevision(
-                bleeding_edge_revision, 'v8_bleeding_edge',
-                bisect_utils.DEPOT_DEPS_NAME, 1, cwd=v8_bleeding_edge_dir)
-            return git_revision
-          except (IndexError, ValueError):
-            pass
-
-        if not git_revision:
-          # Wasn't successful, try the old way of looking for "Prepare push to"
-          git_revision = source_control.ResolveToRevision(
-              int(commit_position) - 1, 'v8_bleeding_edge',
-              bisect_utils.DEPOT_DEPS_NAME, -1, cwd=v8_bleeding_edge_dir)
-
-          if git_revision:
-            revision_info = source_control.QueryRevisionInfo(git_revision,
-                cwd=v8_bleeding_edge_dir)
-
-            if 'Prepare push to trunk' in revision_info['subject']:
-              return git_revision
-    return None
-
-  def _GetNearestV8BleedingEdgeFromTrunk(self, revision, search_forward=True):
-    cwd = self.depot_registry.GetDepotDir('v8')
-    cmd = ['log', '--format=%ct', '-1', revision]
-    output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
-    commit_time = int(output)
-    commits = []
-
-    if search_forward:
-      cmd = ['log', '--format=%H', '-10', '--after=%d' % commit_time,
-          'origin/master']
-      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
-      output = output.split()
-      commits = output
-      commits = reversed(commits)
-    else:
-      cmd = ['log', '--format=%H', '-10', '--before=%d' % commit_time,
-          'origin/master']
-      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
-      output = output.split()
-      commits = output
-
-    bleeding_edge_revision = None
-
-    for c in commits:
-      bleeding_edge_revision = self._GetV8BleedingEdgeFromV8TrunkIfMappable(c)
-      if bleeding_edge_revision:
-        break
-
-    return bleeding_edge_revision
-
   def _ParseRevisionsFromDEPSFile(self, depot):
     """Parses the local DEPS file to determine blink/skia/v8 revisions which may
     be needed if the bisect recurses into those depots later.
@@ -1931,18 +1848,156 @@ class BisectPerformanceMetrics(object):
 
     return dist_to_good_value < dist_to_bad_value
 
+  def _GetV8BleedingEdgeFromV8TrunkIfMappable(
+      self, revision, bleeding_edge_branch):
+    """Gets v8 bleeding edge revision mapped to v8 revision in trunk.
+
+    Args:
+      revision: A trunk V8 revision mapped to bleeding edge revision.
+      bleeding_edge_branch: Branch used to perform lookup of bleeding edge
+                            revision.
+    Return:
+      A mapped bleeding edge revision if found, otherwise None.
+    """
+    commit_position = source_control.GetCommitPosition(revision)
+
+    if bisect_utils.IsStringInt(commit_position):
+      # V8 is tricky to bisect, in that there are only a few instances when
+      # we can dive into bleeding_edge and get back a meaningful result.
+      # Try to detect a V8 "business as usual" case, which is when:
+      #  1. trunk revision N has description "Version X.Y.Z"
+      #  2. bleeding_edge revision (N-1) has description "Prepare push to
+      #     trunk. Now working on X.Y.(Z+1)."
+      #
+      # As of 01/24/2014, V8 trunk descriptions are formatted:
+      # "Version 3.X.Y (based on bleeding_edge revision rZ)"
+      # So we can just try parsing that out first and fall back to the old way.
+      v8_dir = self.depot_registry.GetDepotDir('v8')
+      v8_bleeding_edge_dir = self.depot_registry.GetDepotDir('v8_bleeding_edge')
+
+      revision_info = source_control.QueryRevisionInfo(revision, cwd=v8_dir)
+      version_re = re.compile("Version (?P<values>[0-9,.]+)")
+      regex_results = version_re.search(revision_info['subject'])
+      if regex_results:
+        git_revision = None
+        # TODO (prasadv): Support the v8 git migration based subject
+        # "based on <githash>"
+        # Look for "based on bleeding_edge" and parse out revision
+        if 'based on bleeding_edge' in revision_info['subject']:
+          try:
+            bleeding_edge_revision = revision_info['subject'].split(
+                'bleeding_edge revision r')[1]
+            bleeding_edge_revision = int(bleeding_edge_revision.split(')')[0])
+            bleeding_edge_url = ('https://v8.googlecode.com/svn/branches/'
+                                 'bleeding_edge@%s' % bleeding_edge_revision)
+            cmd = ['log',
+                   '--format=%H',
+                   '--grep',
+                   bleeding_edge_url,
+                   '-1',
+                   bleeding_edge_branch]
+            output = bisect_utils.CheckRunGit(cmd, cwd=v8_dir)
+            if output:
+              git_revision = output.strip()
+            return git_revision
+          except (IndexError, ValueError):
+            pass
+        if not git_revision:
+          # Wasn't successful, try the old way of looking for "Prepare push to"
+          git_revision = source_control.ResolveToRevision(
+              int(commit_position) - 1, 'v8_bleeding_edge',
+              bisect_utils.DEPOT_DEPS_NAME, -1, cwd=v8_bleeding_edge_dir)
+
+          if git_revision:
+            revision_info = source_control.QueryRevisionInfo(git_revision,
+                cwd=v8_bleeding_edge_dir)
+
+            if 'Prepare push to trunk' in revision_info['subject']:
+              return git_revision
+    return None
+
+  def _GetNearestV8BleedingEdgeFromTrunk(
+      self, revision, v8_branch, bleeding_edge_branch, search_forward=True):
+    """Gets the nearest V8 roll and maps to bleeding edge revision.
+
+    V8 is a bit tricky to bisect since it isn't just rolled out like blink.
+    Each revision on trunk might just be whatever was in bleeding edge, rolled
+    directly out. Or it could be some mixture of previous v8 trunk versions,
+    with bits and pieces cherry picked out from bleeding edge. In order to
+    bisect, we need both the before/after versions on trunk v8 to be just pushes
+    from bleeding edge. With the V8 git migration, the branches got switched.
+    a) master (external/v8) == candidates (v8/v8)
+    b) bleeding_edge (external/v8) == master (v8/v8)
+
+    Args:
+      revision: A V8 revision to get its nearest bleeding edge revision
+      search_forward: Searches forward if True, otherwise search backward.
+
+    Return:
+      A mapped bleeding edge revision if found, otherwise None.
+    """
+    cwd = self.depot_registry.GetDepotDir('v8')
+    cmd = ['log', '--format=%ct', '-1', revision]
+    output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
+    commit_time = int(output)
+    commits = []
+    if search_forward:
+      cmd = ['log',
+             '--format=%H',
+             '--after=%d' % commit_time,
+             v8_branch,
+             '--reverse']
+      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
+      output = output.split()
+      commits = output
+      #Get 10 git hashes immediately after the given commit.
+      commits = commits[:10]
+    else:
+      cmd = ['log',
+             '--format=%H',
+             '-10',
+             '--before=%d' % commit_time,
+             v8_branch]
+      output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
+      output = output.split()
+      commits = output
+
+    bleeding_edge_revision = None
+
+    for c in commits:
+      bleeding_edge_revision = self._GetV8BleedingEdgeFromV8TrunkIfMappable(
+          c, bleeding_edge_branch)
+      if bleeding_edge_revision:
+        break
+
+    return bleeding_edge_revision
+
   def _FillInV8BleedingEdgeInfo(self, min_revision_state, max_revision_state):
+    cwd = self.depot_registry.GetDepotDir('v8')
+    # when "remote.origin.url" is https://chromium.googlesource.com/v8/v8.git
+    v8_branch = 'origin/candidates'
+    bleeding_edge_branch = 'origin/master'
+
+    # Support for the chromium revisions with external V8 repo.
+    # ie https://chromium.googlesource.com/external/v8.git
+    cmd = ['config', '--get', 'remote.origin.url']
+    v8_repo_url = bisect_utils.CheckRunGit(cmd, cwd=cwd)
+
+    if 'external/v8.git' in v8_repo_url:
+      v8_branch = 'origin/master'
+      bleeding_edge_branch = 'origin/bleeding_edge'
+
     r1 = self._GetNearestV8BleedingEdgeFromTrunk(min_revision_state.revision,
-        search_forward=True)
+        v8_branch, bleeding_edge_branch, search_forward=True)
     r2 = self._GetNearestV8BleedingEdgeFromTrunk(max_revision_state.revision,
-        search_forward=False)
+        v8_branch, bleeding_edge_branch, search_forward=False)
     min_revision_state.external['v8_bleeding_edge'] = r1
     max_revision_state.external['v8_bleeding_edge'] = r2
 
     if (not self._GetV8BleedingEdgeFromV8TrunkIfMappable(
-            min_revision_state.revision)
+            min_revision_state.revision, bleeding_edge_branch)
         or not self._GetV8BleedingEdgeFromV8TrunkIfMappable(
-            max_revision_state.revision)):
+            max_revision_state.revision, bleeding_edge_branch)):
       self.warnings.append(
           'Trunk revisions in V8 did not map directly to bleeding_edge. '
           'Attempted to expand the range to find V8 rolls which did map '
