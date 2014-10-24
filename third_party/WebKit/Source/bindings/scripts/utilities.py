@@ -116,7 +116,7 @@ def write_pickle_file(pickle_filename, data, only_if_changed):
             try:
                 if pickle.load(pickle_file) == data:
                     return
-            except (EOFError, pickle.UnpicklingError):
+            except Exception:
                 # If trouble unpickling, overwrite
                 pass
     with open(pickle_filename, 'w') as pickle_file:
