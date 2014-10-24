@@ -316,6 +316,17 @@ std::string SupervisedUserService::GetCustodianName() const {
   return name.empty() ? GetCustodianEmailAddress() : name;
 }
 
+std::string SupervisedUserService::GetSecondCustodianEmailAddress() const {
+  return profile_->GetPrefs()->GetString(
+      prefs::kSupervisedUserSecondCustodianEmail);
+}
+
+std::string SupervisedUserService::GetSecondCustodianName() const {
+  std::string name = profile_->GetPrefs()->GetString(
+      prefs::kSupervisedUserSecondCustodianName);
+  return name.empty() ? GetSecondCustodianEmailAddress() : name;
+}
+
 void SupervisedUserService::AddNavigationBlockedCallback(
     const NavigationBlockedCallback& callback) {
   navigation_blocked_callbacks_.push_back(callback);

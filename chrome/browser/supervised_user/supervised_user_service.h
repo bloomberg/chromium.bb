@@ -125,6 +125,14 @@ class SupervisedUserService : public KeyedService,
   // empty.
   std::string GetCustodianName() const;
 
+  // Returns the email address of the second custodian, or the empty string
+  // if there is no second custodian.
+  std::string GetSecondCustodianEmailAddress() const;
+
+  // Returns the name of the second custodian, or the email address if the name
+  // is empty, or the empty string is there is no second custodian.
+  std::string GetSecondCustodianName() const;
+
   // Initializes this object. This method does nothing if the profile is not
   // supervised.
   void Init();
