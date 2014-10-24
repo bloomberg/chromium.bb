@@ -9,10 +9,13 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.h"
 #include "chrome/browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.h"
+#include "chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/common/chrome_version_info.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
+#include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/enhanced_bookmarks/metadata_accessor.h"
 #include "jni/EnhancedBookmarksBridge_jni.h"
 
@@ -27,6 +30,8 @@ EnhancedBookmarksBridge::EnhancedBookmarksBridge(JNIEnv* env,
     Profile* profile) : weak_java_ref_(env, obj) {
   profile_ = profile;
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
+  EnhancedBookmarkModelFactory::GetForBrowserContext(profile_)->
+      SetVersionSuffix(chrome::VersionInfo().OSType());
   cluster_service_ =
       ChromeBookmarkServerClusterServiceFactory::GetForBrowserContext(profile_);
   cluster_service_->AddObserver(this);
