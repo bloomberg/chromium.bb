@@ -15,8 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info_internal.h"
 
-// TODO(rmcilroy): Update API level when 'L' gets an official API level.
-#if (__ANDROID_API__ >= 9999 /* 'L' */)
+#if (__ANDROID_API__ >= 21 /* 5.0 - Lollipop */)
 
 namespace {
 
