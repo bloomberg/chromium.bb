@@ -99,7 +99,6 @@ class WebPeerConnection00HandlerClient;
 class WebMouseEvent;
 class WebPeerConnectionHandler;
 class WebPeerConnectionHandlerClient;
-class WebSocketStreamHandle;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
 class WebTouchEvent;

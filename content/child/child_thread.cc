@@ -40,7 +40,6 @@
 #include "content/child/quota_message_filter.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/service_worker/service_worker_message_filter.h"
-#include "content/child/socket_stream_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/websocket_dispatcher.h"
 #include "content/common/child_process_messages.h"
@@ -274,7 +273,6 @@ void ChildThread::Init(const Options& options) {
       base::MessageLoopProxy::current().get(), sync_message_filter_.get());
 
   resource_dispatcher_.reset(new ResourceDispatcher(this));
-  socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
   websocket_dispatcher_.reset(new WebSocketDispatcher);
   file_system_dispatcher_.reset(new FileSystemDispatcher());
 
@@ -463,8 +461,6 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
 
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))
-    return true;
-  if (socket_stream_dispatcher_->OnMessageReceived(msg))
     return true;
   if (websocket_dispatcher_->OnMessageReceived(msg))
     return true;

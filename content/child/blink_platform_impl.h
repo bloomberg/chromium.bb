@@ -75,7 +75,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       size_t bytes);
   virtual size_t maxDecodedImageBytes() override;
   virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebSocketStreamHandle* createSocketStreamHandle();
   virtual blink::WebSocketHandle* createWebSocketHandle() override;
   virtual blink::WebString userAgent();
   virtual blink::WebData parseDataURL(

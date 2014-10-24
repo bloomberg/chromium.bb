@@ -35,7 +35,6 @@
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_gesture_curve_impl.h"
-#include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/websocket_bridge.h"
 #include "content/child/webthread_impl.h"
@@ -62,7 +61,6 @@ using blink::WebData;
 using blink::WebFallbackThemeEngine;
 using blink::WebLocalizedString;
 using blink::WebString;
-using blink::WebSocketStreamHandle;
 using blink::WebThemeEngine;
 using blink::WebURL;
 using blink::WebURLError;
@@ -439,10 +437,6 @@ WebURLLoader* BlinkPlatformImpl::createURLLoader() {
   // data URLs to bypass the ResourceDispatcher.
   return new WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL);
-}
-
-WebSocketStreamHandle* BlinkPlatformImpl::createSocketStreamHandle() {
-  return new WebSocketStreamHandleImpl;
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {

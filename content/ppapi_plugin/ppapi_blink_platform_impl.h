@@ -39,7 +39,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual blink::WebString defaultLocale();
   virtual blink::WebThemeEngine* themeEngine();
   virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebSocketStreamHandle* createSocketStreamHandle();
   virtual void getPluginList(bool refresh, blink::WebPluginListBuilder*);
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebStorageNamespace* createLocalStorageNamespace();

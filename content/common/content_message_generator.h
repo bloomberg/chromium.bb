@@ -57,7 +57,6 @@
 #include "content/common/screen_orientation_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/socket_stream_messages.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/text_input_client_messages.h"
 #include "content/common/utility_messages.h"

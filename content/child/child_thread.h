@@ -46,7 +46,6 @@ class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
 class QuotaMessageFilter;
 class ResourceDispatcher;
-class SocketStreamDispatcher;
 class ThreadSafeSender;
 class WebSocketDispatcher;
 struct RequestInfo;
@@ -104,10 +103,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   ResourceDispatcher* resource_dispatcher() const {
     return resource_dispatcher_.get();
-  }
-
-  SocketStreamDispatcher* socket_stream_dispatcher() const {
-    return socket_stream_dispatcher_.get();
   }
 
   WebSocketDispatcher* websocket_dispatcher() const {
@@ -221,9 +216,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   // Handles resource loads for this process.
   scoped_ptr<ResourceDispatcher> resource_dispatcher_;
-
-  // Handles SocketStream for this process.
-  scoped_ptr<SocketStreamDispatcher> socket_stream_dispatcher_;
 
   scoped_ptr<WebSocketDispatcher> websocket_dispatcher_;
 

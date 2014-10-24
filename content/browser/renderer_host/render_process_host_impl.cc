@@ -92,7 +92,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/renderer_host/websocket_dispatcher_host.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
@@ -798,16 +797,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   browser_cdm_manager_ = new BrowserCdmManager(GetID(), NULL);
   AddFilter(browser_cdm_manager_.get());
 #endif
-
-  SocketStreamDispatcherHost::GetRequestContextCallback
-      request_context_callback(
-          base::Bind(&GetRequestContext, request_context,
-                     media_request_context));
-
-  SocketStreamDispatcherHost* socket_stream_dispatcher_host =
-      new SocketStreamDispatcherHost(
-          GetID(), request_context_callback, resource_context);
-  AddFilter(socket_stream_dispatcher_host);
 
   WebSocketDispatcherHost::GetRequestContextCallback
       websocket_request_context_callback(

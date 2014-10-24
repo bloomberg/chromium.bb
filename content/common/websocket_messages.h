@@ -5,10 +5,7 @@
 // Multiply-included message file, hence no include guard.
 
 // This file defines the IPCs for the browser-side implementation of
-// WebSockets. For the legacy renderer-side implementation, see
-// socket_stream_messages.h.
-// TODO(ricea): Fix this comment when the legacy implementation has been
-// removed.
+// WebSockets.
 //
 // This IPC interface is based on the WebSocket multiplexing draft spec,
 // http://tools.ietf.org/html/draft-ietf-hybi-websocket-multiplexing-09

@@ -220,12 +220,6 @@ blink::WebURLLoader* PpapiBlinkPlatformImpl::createURLLoader() {
   return NULL;
 }
 
-blink::WebSocketStreamHandle*
-PpapiBlinkPlatformImpl::createSocketStreamHandle() {
-  NOTREACHED();
-  return NULL;
-}
-
 void PpapiBlinkPlatformImpl::getPluginList(
     bool refresh,
     blink::WebPluginListBuilder* builder) {
