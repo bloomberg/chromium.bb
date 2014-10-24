@@ -68,12 +68,6 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   void OnExtensionPreferenceChanged() override;
   bool CompareForTest(const AppListItem* other) const override;
 
-  // Calculates the top item icons' bounds inside |folder_icon_bounds|.
-  // Returns the bounds of top item icons in sequence of top left, top right,
-  // bottom left, bottom right.
-  static std::vector<gfx::Rect> GetTopIconsBounds(
-      const gfx::Rect& folder_icon_bounds);
-
   // Returns an id for a new folder.
   static std::string GenerateId();
 
