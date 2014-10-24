@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">ப்ராக்ஸி...</translation>
 <translation id="938582441709398163">விசைப்பலகை மேல்தோற்றம்</translation>
 <translation id="4387004326333427325">அங்கீகரிப்புச் சான்றிதழ் தொலைநிலையில் நிராகரிக்கப்பட்டது</translation>
+<translation id="6047696787498798094">நீங்கள் வேறொரு பயனருக்கு மாறும்போது, திரைப் பகிர்வு நிறுத்தப்படும். தொடர விருப்பமா?</translation>
 <translation id="6979158407327259162">Google இயக்ககம்</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> தெளிவுத்திறன் <ph name="RESOLUTION"/> க்கு மாற்றப்பட்டது</translation>
 <translation id="6943836128787782965">HTTP தோல்வியடைந்தது</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">உங்கள் Chromebook இயக்கத்தில் இருக்கும்போது சார்ஜ் செய்ய முடியாது. அதிகாரப்பூர்வ சார்ஜரைப் பயன்படுத்தவும்.</translation>
 <translation id="4430019312045809116">அளவு</translation>
 <translation id="4442424173763614572">DNS தேடுதல் தோல்வி</translation>
+<translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="2204305834655267233">பிணைய தகவல்</translation>
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT"/> இல் பேட்டரி காலியாகிவிடும்</translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> இல் தானாகவே வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="252373100621549798">அறியாதது</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> ஐப் பிரதிபலிக்கிறது</translation>
+<translation id="5777841717266010279">திரைப் பகிர்வதை நிறுத்தவா?</translation>
 <translation id="2727977024730340865">குறைந்த சக்தியிலான சார்ஜர் செருகப்பட்டுள்ளது. பேட்டரி சார்ஜிங் நம்பகமானதாக இல்லாமல் இருக்கலாம்.</translation>
 <translation id="2761704814324807722">நிலைத் தட்டு, நேரம் <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">பூட்டு</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> ஆனது <ph name="DOMAIN"/> ஆல் நிர்வகிக்கப்படும் பொது அமர்வாகும்</translation>
 <translation id="9044646465488564462">பிணையத்துடன் இணைப்பதில் தோல்வி: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">அமர்விலிருந்து வெளியேறவும்</translation>
+<translation id="479989351350248267">Search</translation>
 <translation id="4872237917498892622">Alt+Search அல்லது Shift</translation>
 <translation id="2429753432712299108">புளூடூத் சாதனம் &quot;<ph name="DEVICE_NAME"/>&quot;, இணைப்பதற்கான அனுமதியை விரும்புகிறது. ஏற்றுக்கொள்வதற்கு முன்னர், இந்தக் கடவுச்சொல் அந்தச் சாதனத்தில் காண்பிக்கப்பட்டது என்பதை உறுதிப்படுத்தவும்: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">பேட்டரி <ph name="PERCENTAGE"/>% நிரம்பியது.</translation>
@@ -224,7 +228,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> உள்ளது</translation>
 <translation id="3009178788565917040">வெளியீடு</translation>
 <translation id="520760366042891468">Hangouts மூலமாக உங்கள் திரையின் கட்டுப்பாட்டைப் பகிர்கிறது.</translation>
-<translation id="4015692727874266537">இன்னொரு கணக்கில் உள்நுழைக...</translation>
 <translation id="6911468394164995108">மற்றொன்றில் சேர்...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">வாழ்த்துகள்! உங்கள் '<ph name="NAME"/>' தரவு சேவை செயல்படுத்தப்பட்டது, அது பயன்படுத்துவதற்கு தயாராக உள்ளது.</translation>

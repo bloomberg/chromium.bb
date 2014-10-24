@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Проксі-сервер...</translation>
 <translation id="938582441709398163">Розкладка клавіатури</translation>
 <translation id="4387004326333427325">Сертифікат автентифікації відхилений дистанційно</translation>
+<translation id="6047696787498798094">Якщо змінити користувача, спільний доступ до екрана буде скасовано. Продовжити?</translation>
 <translation id="6979158407327259162">Диск Google</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/>: установлено роздільну здатність <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Помилка HTTP</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">Ваш Chromebook може не заряджатися, якщо ввімкнений. Спробуйте скористатися офіційним зарядним пристроєм.</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="4442424173763614572">Помилка пошуку DNS</translation>
+<translation id="544691375626129091">Усіх доступних користувачів уже додано до цього сеансу.</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="2204305834655267233">Інформація про мережу</translation>
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">Ви автоматично вийдете за <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Невідомий дисплей</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Скасувати спільний доступ до екрана?</translation>
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
 <translation id="2761704814324807722">Панель статусу, час: <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Заблокувати</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> – загальнодоступний сеанс, керований доменом <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Помилка під’єднання до мережі: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
+<translation id="479989351350248267">пошук</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
 <translation id="2429753432712299108">Пристрою Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; потрібен дозвіл на підключення. Перш ніж надати його, підтвердьте, що на пристрої відображається цей ключ доступу: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Акумулятор заряджений на <ph name="PERCENTAGE"/>%.</translation>
@@ -224,7 +228,6 @@
 <translation id="5102001756192215136">Залишилося <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Вихід</translation>
 <translation id="520760366042891468">Спільний доступ до екрана через Hangouts.</translation>
-<translation id="4015692727874266537">Увійти в інший обліковий запис…</translation>
 <translation id="6911468394164995108">Під’єднатися до іншої...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Вітаємо! Вашу службу передавання даних &quot;<ph name="NAME"/>&quot; активовано. Нею можна користуватися.</translation>

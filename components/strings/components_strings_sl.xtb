@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Departma</translation>
 <translation id="4258748452823770588">Napačen podpis</translation>
 <translation id="3024663005179499861">Napačna vrsta pravilnika</translation>
+<translation id="2030481566774242610">Ali ste mislili <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Datum poteka: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX"/>«: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Država</translation>
 <translation id="5031870354684148875">Google Prevajalnik – vizitka</translation>
+<translation id="1152921474424827756">Odprite <ph name="BEGIN_LINK"/>predpomnjeno kopijo<ph name="END_LINK"/> strani na naslovu <ph name="URL"/></translation>
 <translation id="6891596781022320156">Raven pravilnika ni podprta.</translation>
 <translation id="2025186561304664664">Strežnik proxy je nastavljen na samodejno konfiguriranje.</translation>
 <translation id="1853748787962613237">Članka ni bilo mogoče prikazati.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
 <translation id="6965978654500191972">Naprava</translation>
 <translation id="8249320324621329438">Nazadnje preneseno:</translation>
+<translation id="194030505837763158">Pojdite na <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="1344588688991793829">Nastavitve samodejnega izpolnjevanja v Chromiumu …</translation>
 <translation id="6282194474023008486">Poštna številka</translation>

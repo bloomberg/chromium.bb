@@ -376,7 +376,7 @@
       Hvis politikken ikke er angivet eller angivet til falsk, rapporteres placeringen ikke.</translation>
 <translation id="4899708173828500852">Aktiver Beskyttet browsing</translation>
 <translation id="4442582539341804154">Aktivér låsen, hvis enheden bliver inaktiv eller suspenderes</translation>
-<translation id="7719251660743813569">Kontrollerer, om brugsdata rapporteres tilbage til Google. Hvis den er indstillet til sand, vil <ph name="PRODUCT_OS_NAME"/> rapportere brugsdata. Hvis den ikke er konfigureret eller er angivet til falsk, deaktiveres datarapportering. </translation>
+<translation id="7719251660743813569">Kontrollerer, om metrics over brug rapporteres tilbage til Google. Hvis den er indstillet til sand, vil <ph name="PRODUCT_OS_NAME"/> rapportere metrics over brug. Hvis den ikke er konfigureret eller er angivet til falsk, deaktiveres metrics-rapportering.</translation>
 <translation id="2372547058085956601">Forsinkelse for automatisk login på offentlige sessioner.
 
       Hvis politikken |DeviceLocalAccountAutoLoginId| ikke er angivet, har den ingen effekt. Derudover:
@@ -1238,7 +1238,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME"/> tillade br
 
           Hvis denne politik ikke angives, deaktiveres høj kontrast, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere Høj kontrast, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
-<translation id="3030000825273123558">Aktivér datarapportering</translation>
+<translation id="3030000825273123558">Aktivér metrics-rapportering</translation>
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="6559057113164934677">Tillad ikke, at websites får adgang til kameraet og mikrofonen</translation>
 <translation id="7273823081800296768">Hvis denne indstilling er aktiveret eller ikke konfigureret, kan brugerne fravælge at parre klienter og hosts på forbindelsestidspunktet, hvilket fjerner behovet for at indtaste en pinkode hver gang.

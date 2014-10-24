@@ -8,6 +8,7 @@
 <translation id="123620459398936149">O SO Chrome não conseguiu sincronizar os dados. Atualize a sua frase de acesso de sincronização.</translation>
 <translation id="5430073640787465221">O ficheiro de preferências está danificado ou não é válido. O Google Chrome não consegue recuperar as suas definições.</translation>
 <translation id="6676384891291319759">Aceder à Internet</translation>
+<translation id="573759479754913123">Acerca do SO &amp;Chrome</translation>
 <translation id="345171907106878721">Adicionar-se ao Chrome</translation>
 <translation id="4921569541910214635">Partilha um computador? Agora pode configurar o Chrome exatamente como pretende.</translation>
 <translation id="6236285698028833233">O Google Chrome já não se atualiza nem suporta mais esta versão do seu sistema operativo.</translation>
@@ -19,6 +20,7 @@
 <translation id="3784527566857328444">Remover do Chrome</translation>
 <translation id="1225016890511909183">O Chrome armazenará as suas informações em segurança para que não necessite de as introduzir novamente, mas continuará a ser necessário confirmar o código de segurança do seu cartão para futuros pagamentos.</translation>
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
+<translation id="7400722733683201933">Acerca do Google Chrome</translation>
 <translation id="8838365799985821335">Uma extensão alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="1065672644894730302">Não é possível ler as suas preferências. Algumas funcionalidades poderão estar indisponíveis e as alterações efetuadas às preferências não serão guardadas.</translation>
@@ -28,6 +30,8 @@
 <translation id="110877069173485804">Este é o seu Chrome</translation>
 <translation id="8406086379114794905">Ajude a melhorar o Chrome</translation>
 <translation id="2896252579017640304">Iniciar aplicações do Chrome</translation>
+<translation id="4121281502786319101">O Chrome não consegue estabelecer uma ligação privada a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. É provável que a data do seu dispositivo esteja configurada incorretamente (a data do dispositivo está configurada como <ph name="DATE"/>). Deverá atualizar esta página depois de <ph name="BEGIN_LINK"/>atualizar a data e a hora do dispositivo<ph name="END_LINK"/>.</translation>
+<translation id="5620765574781326016">Saiba mais acerca de tópicos em Websites sem sair da página.</translation>
 <translation id="2721687379934343312">No Mac, as palavras-passe são guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta OS X.</translation>
 <translation id="683440813066116847">Regra de importação para o Google Chrome Canary permitir o tráfego mDNS.</translation>
 <translation id="4953650215774548573">Definir o Google Chrome como o navegador predefinido</translation>
@@ -52,16 +56,20 @@
 <translation id="7060865993964054389">Iniciador de Aplicações do Google Chrome</translation>
 <translation id="1682634494516646069">O Google Chrome não consegue ler e escrever no respetivo diretório de dados: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="127345590676626841">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chrome irá reiniciar e o processo estará terminado.</translation>
+<translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="8227755444512189073">O Google Chrome precisa de executar uma aplicação externa para processar links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Ups! O Google Chrome falhou. Reiniciar agora?</translation>
 <translation id="1480489203462860648">Experimente, já está instalado</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK"/> do Google Chrome</translation>
+<translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="1393853151966637042">Obter ajuda para utilizar o Chrome</translation>
 <translation id="7398801000654795464">Iniciou sessão no Chrome com a conta <ph name="USER_EMAIL_ADDRESS"/>. Utilize a mesma conta para iniciar sessão novamente.</translation>
+<translation id="5338943029751206389">O Website está a utilizar definições de segurança desatualizadas, que poderão impedir que versões futuras do Chrome acedam ao mesmo em segurança.</translation>
 <translation id="4513711165509885787">Os seus detalhes de faturação foram guardados no Chrome.</translation>
 <translation id="5253588388888612165">Se partilha este computador com <ph name="PROFILE_NAME"/>, adicione-se ao Chrome para navegar em separado. Caso contrário, desassocie a Conta Google do outro utilizador.</translation>
 <translation id="7098166902387133879">O Google Chrome está a utilizar o microfone.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
+<translation id="4315766637075282876">O Chrome guardará esta palavra-passe nas |palavras-passe Google guardadas| e preencherá a informação automaticamente para que não tenha de a memorizar.</translation>
 <translation id="5298539825145851748">Remover do Chrome</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8286862437124483331">O Google Chrome está a tentar mostrar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
@@ -86,6 +94,7 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">O Chrome Está Desatualizado</translation>
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o Chrome não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
+<translation id="6722021951952731012">Para estabelecer uma ligação segura à rede, o relógio do seu computador tem de estar certo, isto porque os certificados de identificação utilizados pelos Websites ao estabelecer ligações seguras são válidos apenas durante um período de tempo específico. Uma vez que o relógio do seu computador não está certo, o Chrome não pode verificar os certificados adequadamente.</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="1195935957447623558">O Google Chrome não foi encerrado corretamente. Para abrir novamente as páginas que estavam abertas, clique em Restaurar.</translation>
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
@@ -121,8 +130,10 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Aviso:<ph name="END_BOLD"/> o Google Chrome não consegue impedir que as extensões gravem o seu histórico de navegação. Para desativar esta extensão no modo de navegação anónima, desmarque esta opção.</translation>
 <translation id="7808348361785373670">Remover do Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="2664962310688259219">Licenças de código aberto do SO Chrome</translation>
 <translation id="2290014774651636340">As chaves da API do Google estão em falta. Algumas funcionalidades do Google Chrome serão desativadas.</translation>
+<translation id="2397416548179033562">Mostrar menu do Chrome</translation>
 <translation id="4794050651896644714">Guardar os detalhes no Chrome</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="5855036575689098185">O software em execução no seu computador é incompatível com o Google Chrome.</translation>
@@ -140,6 +151,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2290095356545025170">Tem a certeza de que pretende desinstalar o Google Chrome?</translation>
 <translation id="7062966102157262887">A transferência está atualmente em curso. Pretende sair do Google Chrome e cancelar a transferência?</translation>
 <translation id="4273752058983339720">O Google Chrome está configurado para ser iniciado automaticamente quando liga o computador.</translation>
+<translation id="415994390253732730">O Chrome está a comportar-se de forma estranha?</translation>
 <translation id="1104959162601287462">Acerca do SO &amp;Chrome</translation>
 <translation id="5328989068199000832">Binários do Google Chrome</translation>
 <translation id="5941830788786076944">Tornar o Google Chrome no browser padrão.</translation>
@@ -149,6 +161,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="8568392309447938879">Tem de ter sessão iniciada no Chrome para utilizar aplicações. Deste modo, o Chrome pode sincronizar as aplicações, os marcadores, o histórico, as palavras-passe e outras definições entre dispositivos.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
+<translation id="2705287621619748344">O Chrome não consegue estabelecer uma ligação privada a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. É provável que a data do seu computador esteja configurada incorretamente (a data do computador está configurada como <ph name="DATE"/>). Deverá atualizar esta página depois de <ph name="BEGIN_LINK"/>atualizar a data e a hora do computador<ph name="END_LINK"/>.</translation>
 <translation id="5788838254726722945">Desinstalar Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
 <translation id="2665296953892887393">Ajudar a melhorar o Google Chrome ao enviar relatórios de falhas e <ph name="UMA_LINK"/> à Google</translation>
@@ -163,6 +176,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
         Se isso não resolver o problema, recomendamos que selecione esta opção
         novamente para obter um desempenho melhorado.</translation>
 <translation id="6235018212288296708">Regra de importação para o Google Chrome permitir o tráfego mDNS.</translation>
+<translation id="3281987435599047980">envia uma palavra e o contexto à Pesquisa Google, devolvendo definições, imagens, resultados de pesquisa e outras informações.</translation>
 <translation id="61852838583753520">Atualizar o SO &amp;Chrome</translation>
 <translation id="5028489144783860647">O Google Chrome não conseguiu sincronizar os dados. Atualize a frase de acesso da Sincronização.</translation>
 <translation id="9026991721384951619">O SO Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
@@ -192,6 +206,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="629218512217695915">Utilizar palavra-passe gerada pelo Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">O Chrome está ainda melhor</translation>
+<translation id="4367618624832907428">O Google Chrome não consegue apresentar a página, porque o seu computador não está ligado à Internet.</translation>
 <translation id="174539241580958092">O Google Chrome não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
 <translation id="8255190535488645436">O Google Chrome está a utilizar a câmara e o microfone.</translation>
 <translation id="7396375882099008034">Permita que o Chrome aceda à rede nas definições da sua firewall ou antivírus.</translation>
@@ -199,6 +214,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3170677364322086041">Este site utiliza o plug-in Google Chrome Frame descontinuado, que deixou de receber atualizações de segurança e estabilidade. Desinstale-o e atualize para um navegador moderno.</translation>
 <translation id="8205111949707227942">Opcional: Ajude a melhorar o Chrome OS ao enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="7253415505590551024">As transferências estão atualmente em curso. Pretende sair do Google Chrome e cancelar as transferências?</translation>
+<translation id="487887346205285304">O Chrome está a comportar-se de forma estranha?</translation>
 <translation id="3622797965165704966">Agora é mais fácil utilizar o Chrome com a sua Conta Google e em computadores partilhados.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador predefinido.</translation>
@@ -217,6 +233,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="7825851276765848807">Ocorreu uma falha na instalação devido a um erro não especificado. Transfira novamente o Google Chrome.</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="4458285410772214805">Termine sessão e volte a iniciar sessão para que esta alteração tenha efeito.</translation>
+<translation id="5489213858994471184">O Chrome detetou a possível alteração das definições do seu navegador por um programa no seu computador, sem o seu conhecimento. Pode utilizar a Software Removal Tool da Google para remover esse programa.</translation>
 <translation id="8679801911857917785">Também controla a página apresentada quando inicia o Chrome.</translation>
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="4407807842708586359">SO do Google Chrome</translation>
@@ -242,6 +259,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="853189717709780425">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições ficarão permanentemente associados a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google mas não poderá associar estes dados a outra conta.</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome neste sistema, disponível para todos os utilizadores. O Google Chrome ao nível do sistema substituirá a instalação ao nível do utilizador.</translation>
 <translation id="1818142563254268765">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de atualizar o Chrome.</translation>
+<translation id="4821676311965554623">Para estabelecer uma ligação segura à rede, o relógio do seu dispositivo tem de estar certo, isto porque os certificados de identificação utilizados pelos Websites ao estabelecer ligações seguras são válidos apenas durante um período de tempo específico. Uma vez que o relógio do seu dispositivo não está certo, o Chrome não pode verificar os certificados adequadamente.</translation>
 <translation id="7408085963519505752">Termos do SO Chrome</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Está quase atualizado! Reinicie o Google Chrome para concluir a atualização.</translation>

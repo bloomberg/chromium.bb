@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="6676384891291319759">Accesați internetul</translation>
+<translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="6373523479360886564">Sigur doriți să dezinstalați Chromium?</translation>
 <translation id="5065199687811594072">Doriți ca Chromium să salveze informațiile privind cardul de credit pentru completarea formularelor web?</translation>
@@ -11,7 +11,7 @@
 <translation id="1550579416447684632">Lansați aplicații Chromium</translation>
 <translation id="2732467638532545152">Computerul rulează o versiune veche de Microsoft Windows care nu poate procesa certificatul de securitate al acestui site. Din cauza acestei probleme, Chromium nu poate stabili dacă certificatul a provenit de la <ph name="SITE"/> sau de la o entitate din rețeaua ta care pretinde că este <ph name="SITE"/>. Actualizează computerul cu o versiune mai recentă de Windows.</translation>
 <translation id="4267347018362241535">Lansatorul de aplicații Chromium este o platformă autonomă pentru aplicațiile Chromium.</translation>
-<translation id="2770231113462710648">Schimbați browserul prestabilit la:</translation>
+<translation id="2770231113462710648">Schimbă browserul prestabilit la:</translation>
 <translation id="6613594504749178791">Modificările dvs. vor intra în vigoare următoarea dată când reporniți Chromium.</translation>
 <translation id="9089354809943900324">Chromium nu este actualizat</translation>
 <translation id="59625444380784159">Detaliile din agendă vă pot ajuta să completați mai rapid formularele în Chromium.</translation>
@@ -20,8 +20,10 @@
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="4423735387467980091">Personalizați și controlați Chromium</translation>
 <translation id="1881322772814446296">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Chromium. Datele Chromium, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chromium existente. <ph name="LEARN_MORE"/></translation>
+<translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
 <translation id="731644333568559921">Actualizați sistemul de operare &amp;Chromium</translation>
 <translation id="7421823331379285070">Chromium necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcții să nu fie disponibile.</translation>
+<translation id="1185134272377778587">Despre Chromium</translation>
 <translation id="7023267510504981715">Pentru a utiliza Google Wallet, trebuie să faceți upgrade pentru Chromium [<ph name="ERROR_CODE"/>].</translation>
 <translation id="1444754455097148408">Licențe open source Chromium</translation>
 <translation id="7419987137528340081">Dacă preferați să păstrați separat datele Chromium existente, puteți crea un utilizator Chromium nou pentru <ph name="USER_NAME"/>.</translation>
@@ -31,6 +33,7 @@
 <translation id="3549345495227188780">Noțiuni introductive despre sistemul de operare Chromium</translation>
 <translation id="1668054258064581266">După ce eliminați contul din Chromium, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
 <translation id="6953661834318318668">Bara de instrumente Chromium</translation>
+<translation id="6764700151360706293">Chromium nu poate să stabilească o conexiune privată la &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Cauza probabilă este setarea incorectă a datei pe dispozitiv. (Dispozitivul are data setată la <ph name="DATE"/>.) <ph name="BEGIN_LINK"/>Actualizează data și ora dispozitivului<ph name="END_LINK"/>, apoi reîmprospătează pagina.</translation>
 <translation id="4285930937574705105">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideți-l și încercați din nou.</translation>
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
 <translation id="8987477933582888019">Browser web</translation>
@@ -45,6 +48,7 @@
           și asigurați-vă că aveți configurația setată la „fără proxy” sau „direct”.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
+<translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3103660991484857065">Programul de instalare nu a putut decomprima arhiva. Descărcați din nou Chromium.</translation>
 <translation id="7064610482057367130">Nu s-a găsit nicio versiune instalată de Chromium pentru a fi actualizată.</translation>
 <translation id="872034308864968620">Permiteți Chromium să ruleze în fundal</translation>
@@ -59,6 +63,7 @@
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium nu include vizualizatorul PDF care este necesar pentru funcționarea Previzualizării înainte de printare.</translation>
 <translation id="7138853919861947730">Chromium poate utiliza servicii web pentru îmbunătățirea experienței de navigare.</translation>
+<translation id="4743926867934016338">Acceptă și caută</translation>
 <translation id="3849925841547750267">Ne pare rău, setările dvs. Mozilla Firefox nu sunt disponibile cât timp browserul respectiv rulează. Pentru a importa aceste setări în Chromium, salvați ceea ce lucrați și închideți toate ferestrele Firefox. Apoi faceți clic pe Continuați.</translation>
 <translation id="7027298027173928763">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să reinstalați Chromium manual.</translation>
 <translation id="8897323336392112261">Stabilește și ce pagină se afișează când porniți Chromium sau când dați clic pe butonul Pagină de pornire.</translation>
@@ -68,6 +73,7 @@
 <translation id="3068515742935458733">Contribuiți la îmbunătățirea proiectului Chromium trimițând rapoarte de eroare și <ph name="UMA_LINK"/> la Google</translation>
 <translation id="734373864078049451">Experiența web personalizată, marcajele și celelalte date Chromium chiar aici.</translation>
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
+<translation id="3065280201209294872">Acest site utilizează setări de securitate expirate care pot împiedica viitoarele versiuni de Chromium să poată să îl acceseze în siguranță.</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniți dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="8353224596138547809">Doriți ca parola pentru acest site să fie salvată de Chromium?</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
@@ -88,13 +94,14 @@
 <translation id="3509308970982693815">Închideți toate ferestrele Chromium și încercați din nou.</translation>
 <translation id="4077262827416206768">Închideți toate ferestrele Chromium și reporniți sistemul de operare pentru ca această modificare să aibă efect.</translation>
 <translation id="6475912303565314141">Stabilește și ce pagină se afișează când porniți Chromium.</translation>
+<translation id="126227967341954494">Pentru a stabili o conexiune securizată la rețea, ora trebuie să fie setată corect pe dispozitiv. Aceasta deoarece certificatele pe care site-urile le utilizează pentru a se identifica la stabilirea unei conexiuni securizate sunt valide numai pentru un anumit interval de timp. Deoarece ora de pe dispozitiv este incorectă, Chromium nu poate verifica certificatele în mod corect.</translation>
 <translation id="1725059042853530269">Fișierul <ph name="FILE_NAME"/> poate afecta experiența de navigare. De aceea, Chromium l-a blocat.</translation>
 <translation id="750717762378961310">Acest fișier este rău-intenționat și a fost blocat de Chromium.</translation>
 <translation id="6944967875980567883">Module încărcate în Chromium</translation>
 <translation id="6899795326977034905">Pe Mac, parolele sunt salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chromium care utilizează același cont OS X.</translation>
 <translation id="3046695367536568084">Trebuie să vă conectați la Chromium pentru a folosi aplicațiile. Astfel, Chromium vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="3296368748942286671">Rulați în continuare aplicații de fundal când Chromium este închis</translation>
-<translation id="473775607612524610">Actualizați</translation>
+<translation id="473775607612524610">Actualizează</translation>
 <translation id="5466153949126434691">Chromium se actualizează automat, deci ai întotdeauna cea mai recentă versiune. După această descărcare, Chromium va reporni și va fi gata de utilizare.</translation>
 <translation id="7707841053049645517">Acest site utilizează pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalați-l și faceți upgrade la un browser modern.</translation>
 <translation id="3656661827369545115">Chromium se lansează automat la pornirea computerului</translation>
@@ -106,23 +113,26 @@
 <translation id="5405650547142096840">Eliminați din Chromium</translation>
 <translation id="4994636714258228724">Adăugați-vă la Chromium</translation>
 <translation id="7066436765290594559">Sistemul de operare Chromium nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
-<translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verificați dacă există suficient spațiu liber și dacă aveți drepturile necesare pentru a instala software-ul.</translation>
+<translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>
 <translation id="3258596308407688501">Chromium nu poate citi și scrie în directorul propriu de date:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="1869480248812203386">Puteți contribui la un produs Chromium mai sigur și mai ușor de folosit raportând automat la Google detaliile eventualelor incidente privind securitatea.</translation>
 <translation id="5094747076828555589">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; Chromium nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
-<translation id="2485422356828889247">Dezinstalați</translation>
+<translation id="2485422356828889247">Dezinstalează</translation>
 <translation id="85843667276690461">Obțineți ajutor în legătură cu utilizarea Chromium</translation>
+<translation id="7731057871445607139">Chromium se comportă ciudat?</translation>
 <translation id="5358375970380395591">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Chromium. Datele Chromium, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Lansatorul de aplicații Chromium</translation>
+<translation id="5563479599352954471">Caută cu o atingere</translation>
+<translation id="1525296040716062026">Chromium o va stoca în |parolele Google salvate| și o va completa automat ca să nu mai fie necesar să o ții minte.</translation>
 <translation id="8493179195440786826">Chromium nu este actualizat</translation>
-<translation id="911206726377975832">Ștergeți și datele de navigare?</translation>
+<translation id="911206726377975832">Ștergi și datele de navigare?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> necesită să citiți și să acceptați Termenii și condițiile următoare înainte de a utiliza acest dispozitiv. Acești termeni nu extind, nu modifică și nu limitează Termenii pentru sistemul de operare Chromium.</translation>
 <translation id="1699664235656412242">Închideți toate ferestrele Chromium (inclusiv pe cele în modul Windows 8) și încercați din nou.</translation>
 <translation id="6734080038664603509">Actualizați &amp;Chromium</translation>
-<translation id="8862326446509486874">Nu aveți drepturile adecvate pentru instalarea la nivel de sistem. Încercați să rulați din nou programul de instalare ca Administrator.</translation>
+<translation id="8862326446509486874">Nu ai drepturile adecvate pentru instalarea la nivel de sistem. Încearcă să rulezi din nou programul de instalare ca Administrator.</translation>
 <translation id="2535480412977113886">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="8697124171261953979">Stabilește și ce pagină se afișează când porniți Chromium sau când căutați din caseta polivalentă.</translation>
 <translation id="894903460958736500">Software-ul care rulează pe computer este incompatibil cu Chromium.</translation>
@@ -134,12 +144,14 @@
 <translation id="2216475571518225820">Acest site utilizează pluginul Chromium Frame, care nu va mai fi acceptat în curând. Dezinstalați-l și descărcați un browser compatibil.</translation>
 <translation id="3487263810738775861">O extensie a modificat ce pagină se afișează când porniți Chromium.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
+<translation id="7549178288319965365">Despre sistemul de operare Chromium</translation>
 <translation id="6248213926982192922">Setați Chromium ca browser prestabilit</translation>
 <translation id="4943838377383847465">Chromium este în modul fundal.</translation>
 <translation id="6309712487085796862">Chromium utilizează camera foto.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="5820394555380036790">Sistemul de operare Chromium</translation>
 <translation id="6757767188268205357">Nu mă mai întreba</translation>
+<translation id="3736987306260231966">Chromium nu poate afișa pagina web, deoarece computerul nu este conectat la internet.</translation>
 <translation id="1745962126679160932">Chromium va stoca în siguranță informațiile dvs., astfel încât să nu trebuiască să le introduceți din nou, dar va trebui în continuare să confirmați codul de securitate al cardului pentru viitoarele plăți.</translation>
 <translation id="275588974610408078">Raportarea blocărilor nu este disponibilă în Chromium.</translation>
 <translation id="5909170354645388250">Nu se utilizează în Chromium. Substituent pentru a păstra hărțile cu resurse sincronizate. Este necesar un singur argument: $1.</translation>
@@ -155,6 +167,7 @@
 <translation id="2648074677641340862">S-a produs o eroare de sistem de operare în timpul instalării. Descărcați din nou Chromium.</translation>
 <translation id="5942520288919337908">Extensia <ph name="EXTENSION_NAME"/> a fost adăugată la Chromium.</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
+<translation id="3281987435599047980">trimite un cuvânt și contextul aferent către Căutarea Google, returnând definiții, imagini, rezultate ale căutării și alte detalii.</translation>
 <translation id="4559775032954821361">Accesați
           meniul Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -172,11 +185,13 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="8907580949721785412">Chromium încearcă să afișeze parolele. Pentru a permite acest lucru, introduceți parola pentru Windows.</translation>
 <translation id="1174473354587728743">Folosești un computer în comun? Acum poți să configurezi Chromium exact cum îți place.</translation>
 <translation id="9013087743919948559">Adăugați la Chromium</translation>
+<translation id="2525993619214772747">Chromium se comportă ciudat?</translation>
 <translation id="6334986366598267305">Acum este mai ușor să folosiți Chromium cu Contul Google și pe computerele utilizate în comun.</translation>
 <translation id="6212496753309875659">Acest computer are deja o versiune mai recentă de Chromium. Dacă software-ul nu funcționează, dezinstalați Chromium și încercați din nou.</translation>
 <translation id="1115445892567829615">Chromium nu a putut sincroniza datele. Actualizați expresia de acces pentru sincronizare.</translation>
 <translation id="1298199220304005244">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chromium</translation>
 <translation id="331951419404882060">Sistemul de operare Chromium nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
+<translation id="957661023718540197">Chromium nu poate să stabilească o conexiune privată la &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Cauza probabilă este setarea incorectă a datei pe computer. (Computerul are data setată la <ph name="DATE"/>.) <ph name="BEGIN_LINK"/>Actualizează data și ora computerului<ph name="END_LINK"/>, apoi reîmprospătează pagina.</translation>
 <translation id="8187289872471304532">Accesați
           Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
           și debifați toate serverele proxy selectate.</translation>
@@ -205,6 +220,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="7196020411877309443">De ce văd acest lucru?</translation>
 <translation id="457845228957001925">Informații importante cu privire la datele dvs. Chromium</translation>
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS"/>. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
+<translation id="6429869149766938">Chromium a detectat că este posibil ca setările browserului să fi fost modificate de un program de pe computer fără știrea ta. Poți utiliza Instrumentul pentru eliminare de software de la Google pentru a elimina programul respectiv.</translation>
 <translation id="7483335560992089831">Nu se poate instala aceeași versiune de Chromium care rulează în prezent. Închideți Chromium și încercați din nou.</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="7641113255207688324">Chromium nu este browserul dvs. prestabilit.</translation>
@@ -214,6 +230,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="805745970029938373">Aici puteți vedea toate notificările de la aplicațiile, extensiile și site-urile web Chromium.</translation>
 <translation id="2119636228670142020">Despre sistemul de operare &amp;Chromium</translation>
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă și mai sigură.</translation>
+<translation id="3800866064403932345">Pentru a stabili o conexiune securizată la rețea, ora trebuie să fie setată corect pe computer. Aceasta deoarece certificatele pe care site-urile le utilizează pentru a se identifica la stabilirea unei conexiuni securizate sunt valide numai pentru un anumit interval de timp. Deoarece ora de pe computer nu este corectă, Chromium nu poate verifica certificatele în mod corect.</translation>
 <translation id="378917192836375108">Chromium vă permite să faceți clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="8724049448828509830">O descărcare este în desfășurare. Doriți să ieșiți din Chromium și să anulați descărcarea?</translation>
 <translation id="608189560609172163">Chromium nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
@@ -227,6 +244,7 @@ Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istori
 <translation id="9013262824292842194">Chromium necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
 <translation id="1967743265616885482">Despre un modul cu același nume se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="7962572577636132072">Chromium se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune.</translation>
+<translation id="722928257909516027">Afișează meniul Chromium</translation>
 <translation id="8704119203788522458">Acesta este browserul dvs. Chromium</translation>
 <translation id="8269379391216269538">Să îmbunătățim Chromium</translation>
 <translation id="4224199872375172890">Chromium este actualizat.</translation>

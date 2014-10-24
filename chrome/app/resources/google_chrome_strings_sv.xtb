@@ -10,6 +10,7 @@
 
 Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
+<translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="345171907106878721">Lägg till dig själv i Chrome</translation>
 <translation id="4921569541910214635">Delar du dator? Nu kan du konfigurera Chrome precis som du vill.</translation>
 <translation id="6236285698028833233">Google Chrome uppdateras inte längre och har inte längre stöd för den här versionen av ditt operativsystem.</translation>
@@ -21,6 +22,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="3784527566857328444">Ta bort från Chrome …</translation>
 <translation id="1225016890511909183">Chrome lagrar din information på ett säkert sätt så att du inte behöver ange den igen, men du måste fortfarande bekräfta kortets säkerhetskod för framtida betalningar.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
+<translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="8838365799985821335">Ett tillägg har ändrat vilken sida som visas när du startar Chrome.</translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="1065672644894730302">Det går inte att läsa inställningarna.
@@ -32,6 +34,8 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="110877069173485804">Det här är Chrome</translation>
 <translation id="8406086379114794905">Hjälp till att göra Chrome bättre</translation>
 <translation id="2896252579017640304">Starta Chrome-appar</translation>
+<translation id="4121281502786319101">Chrome kan inte upprätta en privat anslutning till &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Detta beror antagligen på att enhetens datum är felaktigt inställt (enhetens datum är inställt på <ph name="DATE"/>). Uppdatera sidan när du har <ph name="BEGIN_LINK"/>uppdaterat enhetens datum och tid<ph name="END_LINK"/>.</translation>
+<translation id="5620765574781326016">Läs mer om vilka ämnen som webbplatser handlar om utan att lämna sidan.</translation>
 <translation id="2721687379934343312">På Mac sparas lösenord på nyckelringen. Andra Chrome-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
 <translation id="683440813066116847">Regel som tillåter inkommande mDNS-trafik för Google Chrome Canary.</translation>
 <translation id="4953650215774548573">Ange Google Chrome som standardwebbläsare</translation>
@@ -58,16 +62,20 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="127345590676626841">Chrome uppdateras automatiskt så att du alltid har den senaste versionen. När den här hämtningen är klar startas Chrome om och sedan är du igång.</translation>
+<translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="8227755444512189073">Google Chrome måste starta ett externt program för att hantera <ph name="SCHEME"/>-länkar. Den begärda länken är <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hoppsan! Google Chrome har kraschat. Vill du starta om nu?</translation>
 <translation id="1480489203462860648">Testa, webbläsaren är redan installerad</translation>
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK"/>användarvillkor<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="4743926867934016338">Acceptera och sök</translation>
 <translation id="1393853151966637042">Få hjälp med att använda Chrome</translation>
 <translation id="7398801000654795464">Du var inloggad i Chrome som <ph name="USER_EMAIL_ADDRESS"/>. Använd samma konto när du loggar in igen.</translation>
+<translation id="5338943029751206389">På den här webbplatsen används föråldrade säkerhetsinställningar som kan förhindra att framtida versioner av Chrome kan besöka den säkert.</translation>
 <translation id="4513711165509885787">Dina faktureringsuppgifter har sparats i Chrome.</translation>
 <translation id="5253588388888612165">Om du delar den här datorn med <ph name="PROFILE_NAME"/> lägger du till dig själv i Chrome så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
 <translation id="7098166902387133879">Google Chrome använder din mikrofon.</translation>
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
+<translation id="4315766637075282876">Chrome sparar detta i dina |sparade lösenord för Google| och fyller i det så att du inte behöver komma ihåg det själv.</translation>
 <translation id="5298539825145851748">Ta bort från Chrome</translation>
 <translation id="3197823471738295152">Enheten är uppdaterad.</translation>
 <translation id="8286862437124483331">Skriv ditt Windows-lösenord om du vill tillåta att lösenord visas i Google Chrome.</translation>
@@ -92,6 +100,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Den här versionen av Chrome är inaktuell</translation>
 <translation id="4424024547088906515">Servern kunde inte bevisa att den är <ph name="DOMAIN"/> eftersom Chrome inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
+<translation id="6722021951952731012">Datorn måste ha en klocka som går rätt för att kunna upprätta en säker nätverksanslutning. Detta beror på att de certifikat som webbplatser identifieras med när en säker anslutning upprättas bara gäller under en viss tid. Eftersom klockan i datorn går fel kan inte Chrome kontrollera certifikaten ordentligt.</translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="1195935957447623558">Google Chrome stängdes inte av på rätt sätt. Klicka på Återställ om du åter vill öppna de tidigare öppna sidorna.</translation>
 <translation id="2576431527583832481">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
@@ -129,8 +138,10 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Varning!<ph name="END_BOLD"/> Google Chrome kan inte förhindra tillägg från att registrera din webbhistorik. Om du vill inaktivera det här tillägget i inkognitoläge avmarkerar du detta tillval.</translation>
 <translation id="7808348361785373670">Ta bort från Chrome …</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5563479599352954471">Sök med en tryckning</translation>
 <translation id="2664962310688259219">Licenser för öppen källkod för Chrome OS</translation>
 <translation id="2290014774651636340">Googles API-nycklar saknas. Vissa funktioner i Google Chrome kommer att vara inaktiverade.</translation>
+<translation id="2397416548179033562">Visa Chrome-menyn</translation>
 <translation id="4794050651896644714">Spara information i Chrome</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="5855036575689098185">Programmet som körs på datorn är inte kompatibelt med Google Chrome.</translation>
@@ -148,6 +159,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
 <translation id="7062966102157262887">En hämtning pågår. Vill du avsluta Google Chrome och avbryta hämtningen?</translation>
 <translation id="4273752058983339720">Google Chrome är konfigurerad för att starta automatiskt när du startar datorn.</translation>
+<translation id="415994390253732730">Fungerar Chrome konstigt?</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
@@ -157,6 +169,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="8568392309447938879">Du måste logga in i Chrome om du vill använda appar. När du gör det synkroniseras appar, bokmärken, historik, lösenord och andra inställningar på de enheter där Chrome används.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
+<translation id="2705287621619748344">Chrome kan inte upprätta en privat anslutning till &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Detta beror antagligen på att datorns datum är felaktigt inställt (datorns datum är inställt på <ph name="DATE"/>). Uppdatera den här sidan när du har <ph name="BEGIN_LINK"/>uppdaterat datorns datum och tid<ph name="END_LINK"/>.</translation>
 <translation id="5788838254726722945">Avinstallera Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK"/> till Google.</translation>
@@ -171,6 +184,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
         Om detta inte avhjälper problemet rekommenderar vi att du markerar det 
         här alternativet igen så att funktionaliteten förbättras.</translation>
 <translation id="6235018212288296708">Regel som tillåter inkommande mDNS-trafik för Google Chrome.</translation>
+<translation id="3281987435599047980">skickar ett ord med omgivande sammanhang till Google Sök och returnerar definitioner, bilder, sökresultat och annan information.</translation>
 <translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Google Chrome kunde inte synkronisera data. Uppdatera lösenfrasen för synkroniseringen.</translation>
 <translation id="9026991721384951619">Det gick inte att synkronisera data med Chrome OS eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
@@ -202,6 +216,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="629218512217695915">Använd lösenordet som genererats av Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Vi har gjort Chrome ännu bättre</translation>
+<translation id="4367618624832907428">Det går inte att visa webbsidan i Google Chrome eftersom datorn inte är ansluten till internet.</translation>
 <translation id="174539241580958092">Google Chrome kunde inte synkronisera data på grund av ett fel vid inloggningen.</translation>
 <translation id="8255190535488645436">Google Chrome använder din kamera och mikrofon.</translation>
 <translation id="7396375882099008034">Tillåt att Chrome får åtkomst till nätverket i inställningarna för brandväggen eller
@@ -210,6 +225,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3170677364322086041">Den här webbplatsen använder Chrome Frame. Denna plugin är inaktuell och inga nya säkerhets- eller stabilitetsuppdateringar släpps. Du bör avinstallera den och uppgradera till en modern webbläsare.</translation>
 <translation id="8205111949707227942">Valfritt: Hjälp till att göra Chrome bättre genom att automatiskt skicka användningsstatistik och kraschrapporter till Google.</translation>
 <translation id="7253415505590551024">Hämtningar pågår. Vill du avsluta Google Chrome och avbryta hämtningarna?</translation>
+<translation id="487887346205285304">Fungerar Chrome konstigt?</translation>
 <translation id="3622797965165704966">Nu är det enklare att använda Chrome med ditt Google-konto och på delade datorer.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
@@ -228,6 +244,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Hämta Google Chrome igen.</translation>
 <translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN"/> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
+<translation id="5489213858994471184">Chrome har identifierat att dina webbläsarinställningar kan ha ändrats av ett program i datorn utan att du märkte det. Du kan ta bort programmet med Googles verktyg för programborttagning.</translation>
 <translation id="8679801911857917785">Det styr också vilken sida som visas när du startar Chrome.</translation>
 <translation id="5334545119300433702">Den här modulen har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
@@ -253,6 +270,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="853189717709780425">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din profil i Google Chrome. Dina uppgifter i Chrome, till exempel appar, bokmärken, historik, lösenord och andra inställningar, kopplas permanent till <ph name="USER_NAME"/>. Du kan ta bort dessa uppgifter i översikten för ditt Google-konto, men du kan inte koppla dem till något annat konto.</translation>
 <translation id="6049075767726609708">En administratör har installerat Google Chrome på systemet så att det är tillgängligt för alla användare. Systemnivåversionen av Google Chrome ersätter nu installationen på användarnivå.</translation>
 <translation id="1818142563254268765">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste uppdatera Chrome.</translation>
+<translation id="4821676311965554623">Du måste ha en klocka som går rätt i enheten för att kunna upprätta en säker nätverksanslutning. Detta beror på att certifikaten som används på webbplatser för att upprätta säkra anslutningar bara gäller under en viss tid. Eftersom enhetens klocka går fel kan inte Chrome kontrollera certifikaten ordentligt.</translation>
 <translation id="7408085963519505752">Villkor för Chrome OS</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Nästan klart! Slutför uppdateringen genom att starta om Google Chrome.</translation>

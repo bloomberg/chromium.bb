@@ -73,6 +73,7 @@
 <translation id="2096368010154057602">বিভাগ</translation>
 <translation id="4258748452823770588">ত্রুটিপূর্ণ স্বাক্ষর</translation>
 <translation id="3024663005179499861">নীতির ভুল প্রকার</translation>
+<translation id="2030481566774242610">আপনি কি <ph name="LINK"/> বোঝাতে চেয়েছিলেন?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, মেপুঃ: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">আমেরিকান এক্সপ্রেস</translation>
@@ -94,6 +95,7 @@
 <translation id="3010559122411665027">তালিকার এন্ট্রি &quot; <ph name="ENTRY_INDEX"/> &quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="5031870354684148875">Google অনুবাদ সম্বন্ধে</translation>
+<translation id="1152921474424827756"><ph name="URL"/> এর <ph name="BEGIN_LINK"/>ক্যাশে করা অনুলিপি<ph name="END_LINK"/> অ্যাক্সেস করুন</translation>
 <translation id="6891596781022320156">নীতি স্তর সমর্থিত নয়।</translation>
 <translation id="2025186561304664664">স্বতঃ কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
 <translation id="1853748787962613237">নিবন্ধ প্রদর্শন করতে ব্যর্থ হয়েছে৷</translation>
@@ -140,6 +142,7 @@
 <translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="6965978654500191972">ডিভাইস</translation>
 <translation id="8249320324621329438">সর্বশেষ প্রাপ্ত করেছে:</translation>
+<translation id="194030505837763158"><ph name="LINK"/> এ যান</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="1344588688991793829">Chromium স্বতঃপূর্ণ সেটিংস...</translation>
 <translation id="6282194474023008486">পোস্টাল কোড</translation>

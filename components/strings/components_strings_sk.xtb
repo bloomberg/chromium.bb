@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Správna oblasť</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="3024663005179499861">Chybný typ pravidla</translation>
+<translation id="2030481566774242610">Mysleli ste stránku <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, platí do <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Položka zoznamu „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="5031870354684148875">O službe Prekladač Google</translation>
+<translation id="1152921474424827756">Prístup ku <ph name="BEGIN_LINK"/>kópii vo vyrovnávacej pamäti<ph name="END_LINK"/> stránky <ph name="URL"/></translation>
 <translation id="6891596781022320156">Úroveň pravidla nie je podporovaná.</translation>
 <translation id="2025186561304664664">Proxy je nastavené na automatickú konfiguráciu.</translation>
 <translation id="1853748787962613237">Článok sa nepodarilo zobraziť.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Panel so záložkami</translation>
 <translation id="6965978654500191972">Zariadenie</translation>
 <translation id="8249320324621329438">Naposledy načítané:</translation>
+<translation id="194030505837763158">Prejdite na stránku <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="1344588688991793829">Nastavenia Automatického dopĺňania prehliadača Chromium...</translation>
 <translation id="6282194474023008486">Poštový kód</translation>

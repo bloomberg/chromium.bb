@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="8588878054171169263">चित्र सहेजें</translation>
-<translation id="7998918019931843664">बंद टैब पुनः खोलें</translation>
+<translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
 <translation id="4996978546172906250">इसके द्वारा साझा करें</translation>
 <translation id="346339498574870680">चित्र URL की प्रतिलिपि बनाएं</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
@@ -16,37 +16,51 @@
 <translation id="5763382633136178763">गुप्त टैब</translation>
 <translation id="5210365745912300556">टैब बंद करें</translation>
 <translation id="7658239707568436148">रहने दें</translation>
+<translation id="2154710561487035718">URL की प्रतिलिपि बनाएं</translation>
 <translation id="6458785801851713928">आपके डोमेन के लिए समन्‍वयन उपलब्‍ध नहीं है.</translation>
 <translation id="2731700343119398978">कृपया प्रतीक्षा करें...</translation>
 <translation id="6846298663435243399">लोड हो रहा है...</translation>
 <translation id="7378627244592794276">नहीं</translation>
+<translation id="9206873250291191720">A</translation>
 <translation id="3358663646935160692">यह खाता <ph name="DOMAIN_NAME"/> द्वारा प्रबंधित है.
 
 आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपनी Chrome प्रोफ़ाइल को इसका व्यवस्थापक नियंत्रण दे रहे हैं. आपका Chrome डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. इस खाते से डिस्कनेक्ट करने से स्थानीय Chrome डेटा हट जाएगा.</translation>
 <translation id="1966710179511230534">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
 <translation id="1623104350909869708">इस पृष्ठ को अतिरिक्त डॉयलॉग बनाने से रोकें</translation>
 <translation id="1426410128494586442">हां</translation>
-<translation id="8218346974737627104">प्रवेश की पुष्टि करें</translation>
+<translation id="8218346974737627104">प्रवेश की दुबारा पूछें</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, टैब</translation>
 <translation id="624558823898732418">अनुवाद की भाषा: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">प्रमाणीकरण के लिए प्रमाणपत्र चुनें</translation>
+<translation id="7791543448312431591">जोड़ें</translation>
 <translation id="3896036286668839683">प्रमाणपत्र व्यूअर</translation>
+<translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="8583805026567836021">खाते का डेटा साफ़ हो रहा है</translation>
 <translation id="4250680216510889253">नहीं</translation>
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
 <translation id="552553974213252141">क्या लेख सही तरीके से निकाला गया था?</translation>
+<translation id="2414886740292270097">गहरा</translation>
+<translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="8627706565932943526">समन्वयन त्रुटि</translation>
-<translation id="8374821112118309944">आपको TalkBack को अधिक नए संस्करण से अपडेट करना होगा.</translation>
+<translation id="1807246157184219062">हल्का</translation>
+<translation id="7053983685419859001">अवरोधित करें</translation>
+<translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
+<translation id="2593272815202181319">मोनोस्पेस</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> का हमेशा अनुवाद करें</translation>
+<translation id="2748463065602559597">आप एक सुरक्षि‍त Google Chrome पृष्‍ठ देख रहे हैं.</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
+<translation id="4543661749405994812">ईमेल पते की प्रतिलिपि बनाएं</translation>
 <translation id="5684874026226664614">ओह. इस पृष्ठ का अनुवाद नहीं किया जा सका.</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
+<translation id="2532336938189706096">वेब दृश्य</translation>
 <translation id="4619298195800598081">मूल चित्र नए टैब में खोलें</translation>
+<translation id="4002066346123236978">शीर्षक</translation>
 <translation id="3254409185687681395">इस पृष्ठ को बुकमार्क करें</translation>
 <translation id="907015151729920253">स्मार्ट कार्ड</translation>
+<translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="7267430310003164111">Google Play स्टोर से ऐप्स प्राप्त करने का संकेत.  ऐप्स नाम: <ph name="APP_NAME"/>.  ऐप्स औसत रेटिंग: <ph name="APP_RATING"/>.</translation>
@@ -59,7 +73,7 @@
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8909135823018751308">साझा करें…</translation>
 <translation id="4269820728363426813">लिंक पते की प्रतिलिपि बनाएं</translation>
-<translation id="4510973599275542560">पुनः लोड न करें</translation>
+<translation id="4510973599275542560">फिर से लोड न करें</translation>
 <translation id="1206892813135768548">लिंक लेख की प्रतिलिपि बनाएं</translation>
 <translation id="9154176715500758432">इस पृष्ठ पर बनें रहें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
@@ -77,9 +91,12 @@
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="969096075394517431">भाषाएं बदलें</translation>
 <translation id="5032574515228824816">शीघ्र</translation>
+<translation id="7961015016161918242">कभी नहीं</translation>
 <translation id="497421865427891073">आगे जाएं</translation>
+<translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">मानक टैब</translation>
-<translation id="6277522088822131679">पृष्ठ को प्रिंट करने में समस्या थी. कृपया पुनः प्रयास करें.</translation>
+<translation id="6277522088822131679">पृष्ठ को प्रिंट करने में समस्या थी. कृपया फिर से प्रयास करें.</translation>
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE"/> में अनुवाद किया गया.</translation>
 <translation id="6965382102122355670">ठीक</translation>
+<translation id="7561196759112975576">हमेशा</translation>
 </translationbundle>

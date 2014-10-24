@@ -31,7 +31,6 @@ Chromoting</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7782471917492991422">Zkontrolujte prosím nastavení řízení spotřeby svého počítače a ujistěte se, zda není nastaven na přechod do režimu spánku při nečinnosti.</translation>
 <translation id="7665369617277396874">Přidat účet</translation>
-<translation id="4939475390270873744">• Oprava selhání při spuštění</translation>
 <translation id="2707879711568641861">Některé součásti potřebné pro Vzdálenou plochu Chrome chybí. Zkontrolujte, zda je nainstalována nejnovější verze, a zkuste to znovu.</translation>
 <translation id="1779766957982586368">Zavřít okno</translation>
 <translation id="2499160551253595098">Pomozte nám Vzdálenou plochu Chrome vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
@@ -80,6 +79,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (zastaralé)</translation>
 <translation id="3884839335308961732">K povolení přístupu prostřednictvím Vzdálené plochy Chrome je třeba potvrdit účet a kód PIN níže.</translation>
 <translation id="327263477022142889">Chcete pomoci vylepšit funkci Vzdálená plocha Chrome? <ph name="LINK_BEGIN"/>Vyplňte dotazník.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Odeslat akci Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Připojeno:</translation>
 <translation id="8509907436388546015">Proces integrace plochy</translation>
 <translation id="4736223761657662401">Historie připojení</translation>
@@ -107,10 +107,10 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="5908809458024685848">Nejste přihlášeni do aplikace Chromoting. Přihlaste se prosím a zkuste to znovu.</translation>
 <translation id="7401733114166276557">Vzdálená plocha Chrome</translation>
 <translation id="3362124771485993931">Ověření kódu PIN</translation>
+<translation id="1760808606374294203">• Opravy pro platformu Android Lollipop.</translation>
 <translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="8172070902751707422">Ověření selhalo. Přihlaste se prosím ke Vzdálené ploše Chrome znovu.</translation>
-<translation id="6146986332407778716">Ctrl + Alt + Del</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, relace Vzdálené plochy Chrome bude ukončena.</translation>
 <translation id="173559734173571936">Chcete-li používat Vzdálenou plochu Chrome, je třeba udělit rozšířená oprávnění k přístupu do vašeho počítače. Tato oprávnění je třeba udělit pouze jednou.</translation>
 <translation id="9032136467203159543">Některé součásti potřebné pro Chromoting chybí. Zkontrolujte, zda je nainstalována nejnovější verze, a zkuste to znovu.</translation>
@@ -125,6 +125,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="3020807351229499221">Aktualizace kódu PIN se nezdařila. Zkuste to prosím později.</translation>
 <translation id="2647232381348739934">Služba funkce Chromoting</translation>
 <translation id="579702532610384533">Znovu připojit</translation>
+<translation id="4867841927763172006">Odeslat akci PrtScn</translation>
 <translation id="4211066471404647515">Některé součásti potřebné pro Chromoting chybí. Zkontrolujte, zda používáte nejnovější verzi prohlížeče Chrome, a zkuste to znovu.</translation>
 <translation id="5773590752998175013">Datum spárování</translation>
 <translation id="5265129178187621741">(Tato funkce zatím pro Chromebooky není k dispozici, ale brzy bude.)</translation>
@@ -185,16 +186,16 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="4573676252416618192">Hostitel Vzdálené
 plochy Chrome</translation>
 <translation id="4703799847237267011">Relace funkce Chromoting byla ukončena.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Sdílení obrazovky mezi uživateli je ideální pro vzdálenou technickou podporu.</translation>
 <translation id="652218476070540101">Aktualizace kódu PIN pro tento počítač…</translation>
 <translation id="4563926062592110512">Klient odpojen: <ph name="CLIENT_USERNAME"/>.</translation>
-<translation id="5308380583665731573">Připojit</translation>
+<translation id="5308380583665731573">Připojení</translation>
 <translation id="7319983568955948908">Ukončit sdílení</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="6668065415969892472">Váš kód PIN byl aktualizován.</translation>
 <translation id="4513946894732546136">Zpětná vazba</translation>
 <translation id="4277736576214464567">Přístupový kód je neplatný. Zkuste to prosím znovu.</translation>
+<translation id="6550675742724504774">Možnosti</translation>
 <translation id="979100198331752041">Vzdálená plocha Chrome v počítači <ph name="HOSTNAME"/> je zastaralá a potřebuje aktualizovat.</translation>
 <translation id="7729639150174291243">Nejste přihlášeni ke Vzdálené ploše Chrome. Přihlaste se prosím a zkuste to znovu.</translation>
 <translation id="2841013758207633010">Čas</translation>
@@ -205,6 +206,7 @@ plochy Chrome</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurován tak, aby jednomu nebo více klientům umožnil připojení bez zadávání kódu PIN.</translation>
 <translation id="837021510621780684">Z tohoto počítače</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Přijmout</translation>
 <translation id="7215059001581613786">Zadejte kód PIN obsahující 6 nebo více číslic.</translation>
 <translation id="8383794970363966105">Chcete-li používat Chromoting, budete do zařízení muset přidat účet Google.</translation>
 <translation id="1546934824884762070">Došlo k neočekávané chybě. Nahlaste prosím tento problém vývojářům.</translation>

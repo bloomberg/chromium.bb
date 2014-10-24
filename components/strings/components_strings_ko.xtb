@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">자치구</translation>
 <translation id="4258748452823770588">잘못된 서명</translation>
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
+<translation id="2030481566774242610"><ph name="LINK"/>을(를) 찾으셨나요?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, 만료일: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX"/>': <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="5031870354684148875">Google 번역 정보</translation>
+<translation id="1152921474424827756"><ph name="URL"/>의 <ph name="BEGIN_LINK"/>캐시된 사본<ph name="END_LINK"/>에 액세스</translation>
 <translation id="6891596781022320156">정책 수준이 지원되지 않습니다.</translation>
 <translation id="2025186561304664664">프록시가 자동 설정되도록 지정됩니다.</translation>
 <translation id="1853748787962613237">글을 표시하지 못했습니다.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="6965978654500191972">기기</translation>
 <translation id="8249320324621329438">마지막으로 가져온 시간:</translation>
+<translation id="194030505837763158"><ph name="LINK"/>(으)로 이동</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="1344588688991793829">Chromium 자동완성 설정...</translation>
 <translation id="6282194474023008486">우편번호</translation>

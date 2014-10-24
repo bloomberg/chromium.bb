@@ -30,7 +30,6 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7782471917492991422">請檢查電腦的電源管理設定，確認電腦在閒置時不會進入休眠狀態。</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
-<translation id="4939475390270873744">• 修正啟動時當機的問題。</translation>
 <translation id="2707879711568641861">找不到 Chrome 遠端桌面所需的部分元件。請確認您已安裝最新版本，然後再試一次。</translation>
 <translation id="1779766957982586368">關閉視窗</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
@@ -79,6 +78,7 @@
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (版本過舊)</translation>
 <translation id="3884839335308961732">請在下方確認您的帳戶和 PIN，以便授予 Chrome 遠端桌面存取權限。</translation>
 <translation id="327263477022142889">想要協助改善 Chrome 遠端桌面嗎？<ph name="LINK_BEGIN"/>請填寫我們的問卷調查<ph name="LINK_END"/>。</translation>
+<translation id="6612717000975622067">傳送 Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">已連線的電腦：</translation>
 <translation id="8509907436388546015">桌面整合處理序</translation>
 <translation id="4736223761657662401">連線紀錄</translation>
@@ -106,10 +106,10 @@
 <translation id="5908809458024685848">您尚未登入 Chromoting。請登入並再試一次。</translation>
 <translation id="7401733114166276557">Chrome 遠端桌面</translation>
 <translation id="3362124771485993931">重新輸入 PIN</translation>
+<translation id="1760808606374294203">• 針對 Android Lollipop 版本修正錯誤。</translation>
 <translation id="154040539590487450">無法啟動遠端存取服務。</translation>
 <translation id="7948001860594368197">螢幕選項</translation>
 <translation id="8172070902751707422">驗證失敗。請重新登入 Chrome 遠端桌面。</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">如果離開這個頁面，您的 Chrome 遠端桌面工作階段也會結束。</translation>
 <translation id="173559734173571936">如要使用 Chrome 遠端桌面，您必須將電腦的延伸存取權限授予該應用程式，這個步驟只需執行一次。</translation>
 <translation id="9032136467203159543">找不到 Chromoting 所需的部分元件。請確認您已安裝最新版本，然後再試一次。</translation>
@@ -124,6 +124,7 @@
 <translation id="3020807351229499221">無法更新 PIN，請稍後再試。</translation>
 <translation id="2647232381348739934">Chromoting 服務</translation>
 <translation id="579702532610384533">重新連線</translation>
+<translation id="4867841927763172006">傳送 PrtScn</translation>
 <translation id="4211066471404647515">找不到 Chromoting 所需的部分元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>
 <translation id="5773590752998175013">配對日期</translation>
 <translation id="5265129178187621741">(Chromebook 目前暫不支援這項功能，請密切注意)</translation>
@@ -184,7 +185,6 @@
 <translation id="4573676252416618192">Chrome 遠端
 桌面主機</translation>
 <translation id="4703799847237267011">您的 Chromoting 工作階段已結束。</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">讓兩端的使用者都能看到同一個螢幕畫面，是遠端技術支援作業的利器。</translation>
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="4563926062592110512">已中斷連線至用戶端：<ph name="CLIENT_USERNAME"/>。</translation>
@@ -194,6 +194,7 @@
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4513946894732546136">意見回饋</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>
+<translation id="6550675742724504774">選項</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME"/> 上的 Chrome 遠端桌面版本過舊，必須更新。</translation>
 <translation id="7729639150174291243">您尚未登入 Chrome 遠端桌面。請登入並再試一次。</translation>
 <translation id="2841013758207633010">時間</translation>
@@ -204,6 +205,7 @@
 <translation id="4277463233460010382">這台電腦已設為允許一或多個用戶端可不輸入 PIN 進行連線。</translation>
 <translation id="837021510621780684">從這台電腦</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">接受</translation>
 <translation id="7215059001581613786">請輸入一個至少 6 位數的 PIN。</translation>
 <translation id="8383794970363966105">您必須在裝置上新增 Google 帳戶，才能使用 Chromoting。</translation>
 <translation id="1546934824884762070">發生未預期的錯誤，請向開發人員回報這個問題。</translation>

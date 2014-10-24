@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="4258748452823770588">Assinatura incorreta</translation>
 <translation id="3024663005179499861">Tipo de política incorreto</translation>
+<translation id="2030481566774242610">Será que quis dizer <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Exp: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Entrada da lista &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="5031870354684148875">Acerca do Google Tradutor</translation>
+<translation id="1152921474424827756">Aceda a uma <ph name="BEGIN_LINK"/>cópia em cache<ph name="END_LINK"/> de <ph name="URL"/></translation>
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
 <translation id="2025186561304664664">O proxy está definido para configuração automática.</translation>
 <translation id="1853748787962613237">Falha ao apresentar o artigo.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="8249320324621329438">Última obtenção:</translation>
+<translation id="194030505837763158">Aceder a <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1344588688991793829">Definições de preenchimento automático do Chromium…</translation>
 <translation id="6282194474023008486">Código postal</translation>

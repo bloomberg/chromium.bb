@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Sobreposição do teclado</translation>
 <translation id="4387004326333427325">Certificado de autenticação rejeitado remotamente</translation>
+<translation id="6047696787498798094">O compartilhamento de tela será interrompido quando você alternar para outro usuário. Deseja continuar?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">A resolução de <ph name="DISPLAY_NAME"/> foi alterada para <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP falhou</translation>
@@ -110,6 +111,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="2614835198358683673">Seu Chromebook pode não carregar enquanto estiver ligado. Considere usar o carregador oficial.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4442424173763614572">A busca de DNS falhou</translation>
+<translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="2204305834655267233">Informações de rede</translation>
 <translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Exibição desconhecida</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Interromper compartilhamento de tela?</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Bloquear</translation>
@@ -174,6 +177,7 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> é uma sessão pública gerenciada por <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Falha na conexão à rede: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
+<translation id="479989351350248267">pesquisar</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE"/>% carregada.</translation>
@@ -223,7 +227,6 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> restantes</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="520760366042891468">Compartilhando o controle de sua tela por meio do Hangouts.</translation>
-<translation id="4015692727874266537">Fazer login em outra conta...</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Parabéns! Seu serviço de dados &quot;<ph name="NAME"/>&quot; foi ativado e está pronto para ser usado.</translation>

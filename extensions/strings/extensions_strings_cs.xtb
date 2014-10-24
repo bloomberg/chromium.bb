@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="3624204664103857160">Stránku spouštěče <ph name="PAGE"/> nelze načíst.</translation>
 <translation id="8804398419035066391">Komunikovat se spolupracujícími weby</translation>
 <translation id="7809034755304591547">Rozšíření <ph name="EXTENSION_NAME"/> (ID rozšíření <ph name="EXTENSION_ID"/>) je blokováno administrátorem.</translation>
 <translation id="1005274289863221750">Používat mikrofon a fotoaparát</translation>
@@ -9,6 +10,9 @@
 <translation id="6384275966486438344">Změňte nastavení vyhledávání na: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Toto rozšíření zpomaluje prohlížeč <ph name="PRODUCT_NAME"/>. Chcete-li výkon prohlížeče <ph name="PRODUCT_NAME"/> obnovit, měli byste rozšíření zakázat.</translation>
 <translation id="1033780634303702874">Přistupovat k zařízením připojeným pomocí sériového portu</translation>
+<translation id="288042212351694283">Přístup k zařízením s univerzálním druhým faktorem</translation>
+<translation id="5971037678316050792">Ovládání stavu a párování adaptéru Bluetooth</translation>
+<translation id="677806580227005219">Obslužná rutina typu MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Přístup k informacím o zařízeních Bluetooth spárovaných s vaším systémem a objevování zařízení Bluetooth v okolí</translation>
 <translation id="5911798608827489036">Výměna dat s libovolným počítačem v lokální síti nebo internetu</translation>
 <translation id="4719685943208231314">Přístup k zařízení USB od dodavatele <ph name="VENDOR_NAME"/></translation>
@@ -22,6 +26,7 @@
 <translation id="8058376558882514200">Přístup k zařízení USB <ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">Nelze načíst ikonu rozšíření <ph name="ICON"/>.</translation>
 <translation id="8825366169884721447">Tomuto rozšíření se nepodařilo změnit záhlaví <ph name="HEADER_NAME"/> síťového požadavku, protože změna byla v konfliktu s jiným rozšířením (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="4233778200880751280">Načtení stránky s informacemi <ph name="ABOUT_PAGE"/> se nezdařilo.</translation>
 <translation id="388442998277590542">Nelze načíst stránku možností „<ph name="OPTIONS_PAGE"/>“.</translation>
 <translation id="6344170822609224263">Zobrazení seznamu síťových připojení</translation>
 <translation id="2616366145935564096">Čtení a úprava dat na webu <ph name="WEBSITE_1"/></translation>
@@ -33,6 +38,7 @@
 <translation id="8670869118777164560">Tomuto rozšíření se nepodařilo přesměrovat požadavek sítě do umístění <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, protože jej jiné rozšíření (<ph name="EXTENSION_NAME"/>) přesměrovalo do umístění <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Toto rozšíření se obnovovalo příliš často.</translation>
 <translation id="8047248493720652249">Tomuto rozšíření se nepodařilo pojmenovat stahovaný soubor „<ph name="ATTEMPTED_FILENAME"/>“, protože jiné rozšíření (<ph name="EXTENSION_NAME"/>) vybralo jiný název souboru „<ph name="ACTUAL_FILENAME"/>“.</translation>
+<translation id="2732710576072980201">Produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_NAME"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Výměna dat s libovolným počítačem v následujících doménách: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">všechny weby <ph name="WEBSITE_1"/></translation>
@@ -43,12 +49,16 @@
 <translation id="4883436287898674711">Všechny weby <ph name="WEBSITE_1"/></translation>
 <translation id="9111791539553342076">Tomuto rozšíření se nepodařilo změnit záhlaví odpovědi <ph name="HEADER_NAME"/> síťového požadavku, protože změna byla v konfliktu s jiným rozšířením (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Používat fotoaparát</translation>
+<translation id="5356315618422219272">Zobrazení aplikace: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="8341840687457896278">Tomuto rozšíření se nepodařilo poskytnout pověření síťovému požadavku, protože jiné rozšíření (<ph name="EXTENSION_NAME"/>) poskytlo odlišná pověření.</translation>
 <translation id="5627523580512561598">rozšíření <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Přistupovat k fotografiím, hudbě a dalším médiím z vašeho počítače</translation>
 <translation id="4761104368405085019">Používat mikrofon</translation>
 <translation id="7217838517480956708">Správce tohoto počítače vyžaduje instalaci rozšíření <ph name="EXTENSION_NAME"/>. Nelze je odebrat ani upravit.</translation>
+<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_NAME"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Změnit úvodní stránku na: <ph name="START_PAGE"/></translation>
+<translation id="6758203075041033901">Produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_ID"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Čtení a úprava dat na webu <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Nelze načíst stránku pozadí „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 </translationbundle>

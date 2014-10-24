@@ -30,7 +30,6 @@ Host</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7782471917492991422">โปรดตรวจสอบการตั้งค่าการจัดการพลังงานของคอมพิวเตอร์ที่ใช้ และตรวจสอบให้แน่ใจว่าไม่ได้กำหนดค่าให้เข้าสู่โหมดสลีปเมื่อไม่มีการใช้งาน</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
-<translation id="4939475390270873744">• แก้ไขข้อขัดข้องเมื่อเริ่มต้นใช้งาน</translation>
 <translation id="2707879711568641861">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chrome Remote Desktop ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณติดตั้งเวอร์ชันล่าสุดแล้วและลองอีกครั้ง</translation>
 <translation id="1779766957982586368">ปิดหน้าต่าง</translation>
 <translation id="2499160551253595098">ช่วยเราปรับปรุง Chrome Remote Desktop ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
@@ -79,6 +78,7 @@ Host</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (ล้าสมัย)</translation>
 <translation id="3884839335308961732">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่ออนุญาตให้ Chrome Remote Desktop สามารถเข้าถึง</translation>
 <translation id="327263477022142889">หากต้องการช่วยปรับปรุง Chrome Remote Desktop โปรด<ph name="LINK_BEGIN"/>ตอบแบบสำรวจ<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">ส่ง Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">เชื่อมต่อแล้ว:</translation>
 <translation id="8509907436388546015">Desktop Integration Process</translation>
 <translation id="4736223761657662401">ประวัติการเชื่อมต่อ</translation>
@@ -106,10 +106,10 @@ Host</translation>
 <translation id="5908809458024685848">คุณยังไม่ได้ลงชื่อเข้าใช้ Chromoting โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">พิมพ์ PIN ซ้ำอีกครั้ง</translation>
+<translation id="1760808606374294203">• การแก้ไขสำหรับ Android Lollipop</translation>
 <translation id="154040539590487450">ไม่สามารถเริ่มบริการเข้าถึงระยะไกล</translation>
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>
 <translation id="8172070902751707422">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chrome Remote Desktop อีกครั้ง</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
 <translation id="173559734173571936">ในการใช้ Chrome Remote Desktop คุณต้องให้สิทธิ์การเข้าถึงเพิ่มเติมสำหรับคอมพิวเตอร์ของคุณ คุณจะต้องทำเช่นนี้เพียงครั้งเดียว</translation>
 <translation id="9032136467203159543">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chromoting ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณติดตั้งเวอร์ชันล่าสุดแล้วและลองอีกครั้ง</translation>
@@ -124,6 +124,7 @@ Host</translation>
 <translation id="3020807351229499221">ไม่สามารถอัปเดต PIN โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
 <translation id="579702532610384533">เชื่อมต่อใหม่</translation>
+<translation id="4867841927763172006">ส่ง PrtScn</translation>
 <translation id="4211066471404647515">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chromoting ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณใช้ Chrome เวอร์ชันล่าสุดแล้วและลองอีกครั้ง</translation>
 <translation id="5773590752998175013">วันที่จับคู่</translation>
 <translation id="5265129178187621741">(คุณลักษณะนี้ยังไม่มีให้ใช้งานใน Chromebook... โปรดคอยติดตาม)</translation>
@@ -184,7 +185,6 @@ Host</translation>
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
 <translation id="4703799847237267011">เซสชัน Chromoting ของคุณได้สิ้นสุดลงแล้ว</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">การแชร์หน้าจอระหว่างผู้ใช้กับผู้ใช้ เหมาะสำหรับการสนับสนุนทางเทคนิคจากระยะไกล</translation>
 <translation id="652218476070540101">กำลังอัปเดต PIN สำหรับคอมพิวเตอร์เครื่องนี้…</translation>
 <translation id="4563926062592110512">ไคลเอ็นต์ที่ยกเลิกการเชื่อมต่อ: <ph name="CLIENT_USERNAME"/></translation>
@@ -194,6 +194,7 @@ Desktop Host</translation>
 <translation id="6668065415969892472">PIN ของคุณได้รับการอัปเดตแล้ว</translation>
 <translation id="4513946894732546136">ความคิดเห็น</translation>
 <translation id="4277736576214464567">รหัสการเข้าถึงไม่ถูกต้อง โปรดลองอีกครั้ง</translation>
+<translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="979100198331752041">Chrome Remote Desktop บน <ph name="HOSTNAME"/> เก่าเกินไปและต้องมีการอัปเดต</translation>
 <translation id="7729639150174291243">คุณยังไม่ได้ลงชื่อเข้าใช้ Chrome Remote Desktop โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
 <translation id="2841013758207633010">เวลา</translation>
@@ -204,6 +205,7 @@ Desktop Host</translation>
 <translation id="4277463233460010382">คอมพิวเตอร์เครื่องนี้ได้รับการกำหนดค่าให้อนุญาตไคลเอ็นต์หนึ่งหรือมากกว่าสามารถเชื่อมต่อโดยไม่ต้องป้อน PIN</translation>
 <translation id="837021510621780684">จากคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="7215059001581613786">โปรดป้อน PIN ที่ประกอบด้วยตัวเลขอย่างน้อยหกหลัก</translation>
 <translation id="8383794970363966105">ในการใช้ Chromoting คุณจะต้องเพิ่มบัญชี Google ลงในอุปกรณ์ของคุณ</translation>
 <translation id="1546934824884762070">เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดรายงานปัญหานี้ให้นักพัฒนาซอฟต์แวร์ทราบ</translation>

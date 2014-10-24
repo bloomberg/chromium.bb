@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Departamentas</translation>
 <translation id="4258748452823770588">Netinkamas parašas</translation>
 <translation id="3024663005179499861">Netinkamas politikos tipas</translation>
+<translation id="2030481566774242610">Ar turėjote omenyje <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, galioja iki: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Sąrašo įrašas „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Šalis</translation>
 <translation id="5031870354684148875">Apie „Google“ vertėją</translation>
+<translation id="1152921474424827756">Pasiekite <ph name="BEGIN_LINK"/>talpykloje saugomą <ph name="URL"/> kopiją<ph name="END_LINK"/></translation>
 <translation id="6891596781022320156">Politikos lygis nepalaikomas.</translation>
 <translation id="2025186561304664664">Nustatytas automatinis įgaliotojo serverio konfigūravimas.</translation>
 <translation id="1853748787962613237">Nepavyko parodyti straipsnio.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="6965978654500191972">Įrenginys</translation>
 <translation id="8249320324621329438">Paskutinį kartą gauta:</translation>
+<translation id="194030505837763158">Apsilankykite <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="1344588688991793829">„Chromium“ automatinio pildymo nustatymai...</translation>
 <translation id="6282194474023008486">Pašto kodas</translation>

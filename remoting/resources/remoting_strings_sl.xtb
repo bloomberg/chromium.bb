@@ -30,7 +30,6 @@ povezovanje s Chromom</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7782471917492991422">Preverite nastavitve računalnika za upravljanje porabe in zagotovite, da za čas nedejavnosti ni določeno stanje pripravljenosti.</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
-<translation id="4939475390270873744">• Odpravljena zrušitev ob zagonu.</translation>
 <translation id="2707879711568641861">Ni nekaterih delov, ki so zahtevani za Oddaljeno namizje za Chrome. Preverite, ali imate najnovejšo različico Google Chroma in poskusite znova.</translation>
 <translation id="1779766957982586368">Zapre okno</translation>
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
@@ -79,6 +78,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (zastarelo)</translation>
 <translation id="3884839335308961732">Če želite dovoliti dostop prek Oddaljenega namizja za Chrome, spodaj potrdite račun in PIN.</translation>
 <translation id="327263477022142889">Želite pomagati izboljšati oddaljeno namizje za Chrome? <ph name="LINK_BEGIN"/>Sodelujte v anketi.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Pošlji Ctrl + Alt + Del</translation>
 <translation id="5702987232842159181">Povezava vzpostavljena:</translation>
 <translation id="8509907436388546015">Postopek vključitve namizja</translation>
 <translation id="4736223761657662401">Zgodovina povezav</translation>
@@ -106,10 +106,10 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="5908809458024685848">Niste prijavljeni v Oddaljeno povezovanje s Chromom. Prijavite se in poskusite znova.</translation>
 <translation id="7401733114166276557">Oddaljeno namizje za Chrome</translation>
 <translation id="3362124771485993931">Znova vnesite PIN</translation>
+<translation id="1760808606374294203">• Popravki za Android Lollipop.</translation>
 <translation id="154040539590487450">Storitve oddaljenega dostopa ni bilo mogoče zagnati.</translation>
 <translation id="7948001860594368197">Možnosti zaslona</translation>
 <translation id="8172070902751707422">Preverjanje pristnosti ni uspelo. Še enkrat se prijavite v Oddaljeno namizje za Chrome.</translation>
-<translation id="6146986332407778716">Ctrl + Alt + Del</translation>
 <translation id="5254120496627797685">Če zapustite to stran, se bo seja Oddaljenega namizja za Chrome končala.</translation>
 <translation id="173559734173571936">Če želite uporabljati Oddaljeno namizje za Chrome, morate odobriti razširjena dovoljenja za dostop do računalnika. To morate storiti samo enkrat.</translation>
 <translation id="9032136467203159543">Ni nekaterih delov, ki so zahtevani za Oddaljeno povezovanje s Chromom. Preverite, ali imate najnovejšo različico Google Chroma in poskusite znova.</translation>
@@ -124,6 +124,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="3020807351229499221">Kode PIN ni bilo mogoče posodobiti. Poskusite znova pozneje.</translation>
 <translation id="2647232381348739934">Storitev Oddaljeno povezovanje s Chromom</translation>
 <translation id="579702532610384533">Znova poveži</translation>
+<translation id="4867841927763172006">Pošlji PrtScn</translation>
 <translation id="4211066471404647515">Ni nekaterih delov, ki so zahtevani za Oddaljeno povezovanje s Chromom. Preverite, ali imate najnovejšo različico Google Chroma in poskusite znova.</translation>
 <translation id="5773590752998175013">Datum seznanjenja</translation>
 <translation id="5265129178187621741">(ta funkcija še ni na voljo za računalnike Chromebook … preverite pozneje)</translation>
@@ -184,16 +185,16 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="4573676252416618192">Gostitelj za Oddaljeno
 namizje za Chrome</translation>
 <translation id="4703799847237267011">Seja Oddaljenega povezovanja s Chromom je končana.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Skupna raba zaslona je odlična rešitev za oddaljeno tehnično pomoč.</translation>
 <translation id="652218476070540101">PIN za ta računalnik se posodablja ...</translation>
 <translation id="4563926062592110512">Povezava z odjemalcem prekinjena: <ph name="CLIENT_USERNAME"/>.</translation>
-<translation id="5308380583665731573">Vzpostavi povezavo</translation>
+<translation id="5308380583665731573">Povezovanje</translation>
 <translation id="7319983568955948908">Prekliči skupno rabo</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Vse pravice pridržane.</translation>
 <translation id="6668065415969892472">PIN je posodobljen.</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>
 <translation id="4277736576214464567">Koda za dostop je neveljavna. Poskusite znova.</translation>
+<translation id="6550675742724504774">Možnosti</translation>
 <translation id="979100198331752041">Oddaljeno namizje za Chrome pri gostitelju <ph name="HOSTNAME"/> je zastarelo in ga je treba posodobiti.</translation>
 <translation id="7729639150174291243">Niste prijavljeni v Oddaljeno namizje za Chrome. Prijavite se in poskusite znova.</translation>
 <translation id="2841013758207633010">Čas</translation>
@@ -204,6 +205,7 @@ namizje za Chrome</translation>
 <translation id="4277463233460010382">Ta računalnik je nastavljen tako, da enemu ali več odjemalcem dovoli povezovanje brez vnosa kode PIN.</translation>
 <translation id="837021510621780684">Iz tega računalnika</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Sprejmi</translation>
 <translation id="7215059001581613786">Vnesite kodo PIN, ki mora biti vsaj šestmestna.</translation>
 <translation id="8383794970363966105">Če želite uporabljati Oddaljeno povezovanje s Chromom, morate v napravo dodati Google Račun.</translation>
 <translation id="1546934824884762070">Nepričakovana napaka. O tem obvestite razvijalce.</translation>

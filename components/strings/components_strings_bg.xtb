@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="4258748452823770588">Невалиден подпис</translation>
 <translation id="3024663005179499861">Грешен тип на правилото</translation>
+<translation id="2030481566774242610">Може би имахте предвид <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Изтича: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Списъчен запис „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Държава</translation>
 <translation id="5031870354684148875">Всичко за Google Преводач</translation>
+<translation id="1152921474424827756">Вижте <ph name="BEGIN_LINK"/>кеширано копие<ph name="END_LINK"/> на <ph name="URL"/></translation>
 <translation id="6891596781022320156">Нивото на правилото не се поддържа.</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
 <translation id="1853748787962613237">Показването на статията не бе успешно.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Лента на отметките</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="8249320324621329438">Последно извличане:</translation>
+<translation id="194030505837763158">Към <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="1344588688991793829">Настройки за Автоматично попълване в Chromium...</translation>
 <translation id="6282194474023008486">Пощенски код</translation>

@@ -42,7 +42,7 @@
 <translation id="1871208020102129563">Выбрано использование фиксированных прокси-серверов, а не URL PAC-скрипта.</translation>
 <translation id="8940229512486821554">Выполнить команду расширения <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
 <translation id="3380365263193509176">Неизвестная ошибка</translation>
-<translation id="112840717907525620">В кэше политики ошибок не найдено</translation>
+<translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
 <translation id="3452404311384756672">Выберите интервал:</translation>
 <translation id="7441627299479586546">Неверный субъект политики</translation>
 <translation id="3885155851504623709">Округ</translation>
@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Округ</translation>
 <translation id="4258748452823770588">Подпись недействительна</translation>
 <translation id="3024663005179499861">Неверный тип политики</translation>
+<translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK"/>.</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, срок действия: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Элемент списка &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Страна</translation>
 <translation id="5031870354684148875">О Переводчике Google</translation>
+<translation id="1152921474424827756">Открыть <ph name="BEGIN_LINK"/>кешированную версию<ph name="END_LINK"/> страницы <ph name="URL"/></translation>
 <translation id="6891596781022320156">Значение правила не поддерживается.</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
 <translation id="1853748787962613237">Не удалось показать статью</translation>
@@ -119,7 +121,7 @@
 <translation id="7752995774971033316">Не управляется</translation>
 <translation id="3712624925041724820">Недостаточно лицензий</translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
-<translation id="7542995811387359312">Автоматический ввод данных о кредитных картах отключен, потому что для этой формы не используется безопасное соединение.</translation>
+<translation id="7542995811387359312">Автозаполнение данных банковской карты отключено, так как на сайте используется незащищенное соединение.</translation>
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE"/>? Сообщите об ошибке</translation>
 <translation id="8088680233425245692">Не удалось показать статью</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="8249320324621329438">Время последней загрузки:</translation>
+<translation id="194030505837763158">Перейдите по ссылке: <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="1344588688991793829">Настройки автозаполнения в Chromium...</translation>
 <translation id="6282194474023008486">Почтовый индекс</translation>
@@ -170,7 +173,7 @@
 <translation id="6154808779448689242">Возвращенный токен не соответствует имеющемуся</translation>
 <translation id="7961015016161918242">еще нет</translation>
 <translation id="2835170189407361413">Очистить форму</translation>
-<translation id="6550675742724504774">Настройки</translation>
+<translation id="6550675742724504774">Параметры</translation>
 <translation id="8804164990146287819">Политика конфиденциальности</translation>
 <translation id="5337776961545044340">Google Кошелек не поддерживает карты этого типа для данного продавца. Выберите другую карту.</translation>
 <translation id="7182878459783632708">Правила не заданы</translation>

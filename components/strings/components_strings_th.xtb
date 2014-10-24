@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">จังหวัด</translation>
 <translation id="4258748452823770588">ลายเซ็นไม่เหมาะสม</translation>
 <translation id="3024663005179499861">ประเภทนโยบายไม่ถูกต้อง</translation>
+<translation id="2030481566774242610">หรือคุณหมายถึง <ph name="LINK"/></translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, หมดอายุ:<ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">รายการที่เข้ามา &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">ประเทศ</translation>
 <translation id="5031870354684148875">เกี่ยวกับ Google แปลภาษา</translation>
+<translation id="1152921474424827756">เข้าถึง<ph name="BEGIN_LINK"/>สำเนาแคช<ph name="END_LINK"/>ของ <ph name="URL"/></translation>
 <translation id="6891596781022320156">ระดับนโยบายไม่ได้รับการสนับสนุน</translation>
 <translation id="2025186561304664664">พร็อกซีถูกตั้งค่าให้ทำการกำหนดค่าโดยอัตโนมัติ</translation>
 <translation id="1853748787962613237">การแสดงบทความล้มเหลว</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">แถบบุ๊กมาร์ก</translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
 <translation id="8249320324621329438">เรียกดูครั้งสุดท้ายเมื่อ:</translation>
+<translation id="194030505837763158">ไปที่ <ph name="LINK"/></translation>
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
 <translation id="1344588688991793829">การตั้งค่าป้อนข้อความอัตโนมัติของ Chromium...</translation>
 <translation id="6282194474023008486">รหัสไปรษณีย์</translation>

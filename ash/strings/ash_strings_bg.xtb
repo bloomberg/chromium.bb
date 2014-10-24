@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Прокси сървър...</translation>
 <translation id="938582441709398163">Наслагване върху клавиатурата</translation>
 <translation id="4387004326333427325">Сертификатът за удостоверяване бе отхвърлен отдалечено</translation>
+<translation id="6047696787498798094">Споделянето на екрана ще спре, когато превключите към друг потребител. Искате ли да продължите?</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="3683428399328702079">Променихте разделителната способност на „<ph name="DISPLAY_NAME"/>“ на <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Получаването на HTTP не бе успешно</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">Възможно е вашият Chromebook да не се зарежда, докато е включен. Помислете за използване на официалното зарядно устройство.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4442424173763614572">Търсенето в DNS не бе успешно</translation>
+<translation id="544691375626129091">Всички налични потребители вече са добавени към тази сесия.</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="2204305834655267233">Информация за мрежата</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Неизвестен дисплей</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME"/>“</translation>
+<translation id="5777841717266010279">Да се спре ли споделянето на екрана?</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Заключване</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416">„<ph name="DISPLAY_NAME"/>“ е обществена сесия, управлявана от <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Свързването с мрежата не бе успешно: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME"/>“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE"/>% пълна.</translation>
@@ -224,7 +228,6 @@
 <translation id="5102001756192215136">Остава/т <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Изход</translation>
 <translation id="520760366042891468">Контролът върху екрана ви се споделя чрез Hangouts.</translation>
-<translation id="4015692727874266537">Вход в друг профил...</translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Поздравления! Услугата ви за данни „<ph name="NAME"/>“ е активирана и е готова за работа.</translation>

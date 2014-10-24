@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Proxy ...</translation>
 <translation id="938582441709398163">Tangentbordsöverlägg</translation>
 <translation id="4387004326333427325">Autentiseringscertifikatet godkändes inte av fjärrvärden</translation>
+<translation id="6047696787498798094">Skärmdelningen avbryts när du byter till en annan användare. Vill du fortsätta?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Upplösningen för <ph name="DISPLAY_NAME"/> ändrades till <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP GET misslyckades</translation>
@@ -35,7 +36,7 @@
 <translation id="40400351611212369">Fel vid nätverksaktivering</translation>
 <translation id="4237016987259239829">Fel vid nätverksanslutning</translation>
 <translation id="2946640296642327832">Aktivera Bluetooth</translation>
-<translation id="6459472438155181876">Utöka skärmen till <ph name="DISPLAY_NAME"/></translation>
+<translation id="6459472438155181876">Utökar skärmen till <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adress</translation>
 <translation id="4508265954913339219">Aktiveringen misslyckades</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">Din Chromebook kanske inte laddas medan den är på. Överväg att använda den officiella laddaren.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4442424173763614572">DNS-sökning misslyckades</translation>
+<translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="2204305834655267233">Nätverksinformation</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">Du loggas ut automatiskt om <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Okänd visning</translation>
 <translation id="1882897271359938046">Spegling av <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Vill du avbryta skärmdelningen?</translation>
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
 <translation id="2761704814324807722">Statusfältet, tid <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Lås</translation>
@@ -174,6 +177,7 @@ Meddelande från servern: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> är en offentlig session som hanteras av <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Det gick inte att ansluta till nätverket: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Avsluta session</translation>
+<translation id="479989351350248267">sök</translation>
 <translation id="4872237917498892622">Alt + Sök eller Skift</translation>
 <translation id="2429753432712299108">Bluetooth-enheten <ph name="DEVICE_NAME"/> har begärt tillstånd för koppling. Innan du godkänner bekräftar du att den här lösenordsnyckeln visas på den enheten: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Batteriet är fullt till <ph name="PERCENTAGE"/> %.</translation>
@@ -222,7 +226,6 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> kvar</translation>
 <translation id="3009178788565917040">Utgång</translation>
 <translation id="520760366042891468">Delar kontrollen över din skärm via Hangouts.</translation>
-<translation id="4015692727874266537">Logga in på ett annat konto …</translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Grattis! Datatjänsten <ph name="NAME"/> har aktiverats och är klar att använda.</translation>

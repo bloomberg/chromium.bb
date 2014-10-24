@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">پراکسی...</translation>
 <translation id="938582441709398163">هم پوشانی صفحه‌کلید</translation>
 <translation id="4387004326333427325">گواهینامه تأیید اعتبار، از راه دور، رد شد</translation>
+<translation id="6047696787498798094">زمانی که به یک کاربر دیگر جابه‌جا می‌شوید، اشتراک‌گذاری صفحه نمایش متوقف می‌شود. می‌خواهید ادامه دهید؟</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">وضوح <ph name="DISPLAY_NAME"/> به <ph name="RESOLUTION"/> تغییر یافت</translation>
 <translation id="6943836128787782965">‏HTTP با خطا مواجه شد</translation>
@@ -108,6 +109,7 @@
 <translation id="2614835198358683673">‏وقتی Chromebook روشن است ممکن است شارژ نشود. از شارژر مخصوص دستگاه استفاده کنید.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4442424173763614572">‏جستجوی DNS انجام نشد</translation>
+<translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="2204305834655267233">اطلاعات شبکه</translation>
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT"/></translation>
@@ -136,6 +138,7 @@
 <translation id="6062360702481658777">به صورت خودکار در عرض <ph name="LOGOUT_TIME_LEFT"/> از سیستم خارج می‌شوید.</translation>
 <translation id="252373100621549798">نمایش ناشناخته</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">اشتراک‌گذاری صفحه نمایش متوقف شود؟</translation>
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME"/>، ‏<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">قفل</translation>
@@ -172,6 +175,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> یک جلسه عمومی مدیریت‌شده توسط <ph name="DOMAIN"/> است</translation>
 <translation id="9044646465488564462">اتصال به شبکه انجام نشد: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">خروج از جلسه</translation>
+<translation id="479989351350248267">جستجو</translation>
 <translation id="4872237917498892622">‏Alt+جستجو یا Shift</translation>
 <translation id="2429753432712299108">دستگاه بلوتوث «<ph name="DEVICE_NAME"/>» برای مرتبط‌سازی به مجوز نیاز دارد. قبل از پذیرش، لطفاً تأیید کنید که این کلید عبور در آن دستگاه نشان داده شده است: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE"/> درصد پر است.</translation>
@@ -222,7 +226,6 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> باقیمانده است</translation>
 <translation id="3009178788565917040">خروجی</translation>
 <translation id="520760366042891468">‏اشتراک‌گذاری کنترل صفحه نمایش شما از طریق Hangouts.</translation>
-<translation id="4015692727874266537">ورود به سیستم با حسابی دیگر...</translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">تبریک می‌گوییم! خدمات داده «<ph name="NAME"/>» شما فعال شده است و آماده استفاده است.</translation>

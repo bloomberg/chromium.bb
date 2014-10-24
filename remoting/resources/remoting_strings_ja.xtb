@@ -30,7 +30,6 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7782471917492991422">お使いのパソコンの電源管理設定で、アイドル状態のときにスリープにならないように設定されていることをご確認ください。</translation>
 <translation id="7665369617277396874">アカウントを追加</translation>
-<translation id="4939475390270873744">• 起動時のクラッシュを修正しました。</translation>
 <translation id="2707879711568641861">Chrome リモート デスクトップに必要なコンポーネントが見つかりません。最新のバージョンがインストールされていることを確認して、もう一度お試しください。</translation>
 <translation id="1779766957982586368">ウィンドウを閉じる</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
@@ -79,6 +78,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6204583485351780592"><ph name="HOSTNAME"/>（最新ではありません）</translation>
 <translation id="3884839335308961732">Chrome リモート デスクトップによるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
 <translation id="327263477022142889">Chrome リモート デスクトップの品質向上にご協力ください。<ph name="LINK_BEGIN"/>アンケートに回答する<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Ctrl-Alt-Del を送信</translation>
 <translation id="5702987232842159181">接続済み:</translation>
 <translation id="8509907436388546015">デスクトップ統合プロセス</translation>
 <translation id="4736223761657662401">接続履歴</translation>
@@ -106,10 +106,10 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="5908809458024685848">Chromoting にログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="7401733114166276557">Chrome リモート デスクトップ</translation>
 <translation id="3362124771485993931">PIN を再入力</translation>
+<translation id="1760808606374294203">• Android Lollipopに修正を加えました。</translation>
 <translation id="154040539590487450">リモート アクセス サービスを開始できませんでした。</translation>
 <translation id="7948001860594368197">画面のオプション</translation>
 <translation id="8172070902751707422">認証に失敗しました。Chrome リモート デスクトップにもう一度ログインしてください。</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
 <translation id="173559734173571936">Chrome リモート デスクトップを使用するには、このパソコンに拡張アクセス許可を付与する必要があります。この作業は 1 回だけ必要です。</translation>
 <translation id="9032136467203159543">Chromoting に必要なコンポーネントが見つかりません。最新のバージョンがインストールされていることを確認して、もう一度お試しください。</translation>
@@ -124,6 +124,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3020807351229499221">PIN を更新できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="2647232381348739934">Chromoting サービス</translation>
 <translation id="579702532610384533">再接続</translation>
+<translation id="4867841927763172006">PrtScn を送信</translation>
 <translation id="4211066471404647515">Chromoting に必要なコンポーネントが見つかりません。実行している Chrome のバージョンが最新であることを確認して、もう一度お試しください。</translation>
 <translation id="5773590752998175013">ペア設定された日付</translation>
 <translation id="5265129178187621741">（この機能は現在 Chromebook に対応していません。対応までしばらくお待ちください。）</translation>
@@ -184,7 +185,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4573676252416618192">Chrome リモート
 デスクトップ ホスト</translation>
 <translation id="4703799847237267011">Chromoting セッションが終了しました。</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">リモート テクニカル サポートに最適な、ユーザー同士の画面共有。</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="4563926062592110512">次のクライアントが切断しました: <ph name="CLIENT_USERNAME"/>。</translation>
@@ -194,6 +194,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6668065415969892472">PIN を更新しました。</translation>
 <translation id="4513946894732546136">フィードバック</translation>
 <translation id="4277736576214464567">アクセス コードが無効です。もう一度入力してください。</translation>
+<translation id="6550675742724504774">オプション</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME"/> の Chrome リモート デスクトップは最新ではないため、更新する必要があります。</translation>
 <translation id="7729639150174291243">Chrome リモート デスクトップにログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="2841013758207633010">時間</translation>
@@ -204,6 +205,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4277463233460010382">このパソコンは、1 つ以上のクライアントが PIN の入力なしで接続できるように設定されています。</translation>
 <translation id="837021510621780684">このパソコンからの接続</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">承諾</translation>
 <translation id="7215059001581613786">PIN は 6 桁以上で入力してください。</translation>
 <translation id="8383794970363966105">Chromoting を使用するには、お使いのデバイスに Google アカウントを追加する必要があります。</translation>
 <translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>

@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">省</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
+<translation id="2030481566774242610">您要找的是 <ph name="LINK"/> 嗎？</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>，到期日：<ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX"/>」：<ph name="ERROR"/></translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
+<translation id="1152921474424827756">存取 <ph name="URL"/> 的<ph name="BEGIN_LINK"/>頁庫存檔副本<ph name="END_LINK"/></translation>
 <translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
 <translation id="2025186561304664664">Proxy 已設為自動設定。</translation>
 <translation id="1853748787962613237">無法顯示文章。</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="6965978654500191972">裝置</translation>
 <translation id="8249320324621329438">上次擷取時間：</translation>
+<translation id="194030505837763158">前往 <ph name="LINK"/></translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1344588688991793829">Chromium 自動填入設定...</translation>
 <translation id="6282194474023008486">郵遞區號</translation>

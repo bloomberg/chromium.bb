@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">프록시...</translation>
 <translation id="938582441709398163">키보드 오버레이</translation>
 <translation id="4387004326333427325">인증서가 원격으로 거부됨</translation>
+<translation id="6047696787498798094">다른 사용자로 전환하면 화면 공유가 중단됩니다. 계속하시겠습니까?</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> 해상도가 <ph name="RESOLUTION"/>(으)로 변경되었습니다.</translation>
 <translation id="6943836128787782965">HTTP 실패</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다. 공식 충전기를 사용해보세요.</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4442424173763614572">DNS 조회 실패</translation>
+<translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="2204305834655267233">네트워크 정보</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT"/>입니다.</translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> 후 자동으로 로그아웃됩니다.</translation>
 <translation id="252373100621549798">알 수 없는 디스플레이</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/>에 미러링</translation>
+<translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">잠금</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/>은(는) <ph name="DOMAIN"/>에서 관리하는 공개 세션입니다.</translation>
 <translation id="9044646465488564462">네트워크 연결 실패: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">세션 종료</translation>
+<translation id="479989351350248267">검색</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME"/>'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE"/>% 남았습니다.</translation>
@@ -224,7 +228,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>
 <translation id="3009178788565917040">출력</translation>
 <translation id="520760366042891468">행아웃을 통해 화면 제어 권한 공유 중</translation>
-<translation id="4015692727874266537">다른 계정에 로그인...</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">축하합니다. '<ph name="NAME"/>' 데이터 서비스가 활성화되어 사용할 수 있습니다.</translation>

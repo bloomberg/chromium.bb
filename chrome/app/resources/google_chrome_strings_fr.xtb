@@ -10,6 +10,7 @@
 
 Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
+<translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
 <translation id="4921569541910214635">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chrome selon vos besoins.</translation>
 <translation id="6236285698028833233">Google Chrome n'est plus mis à jour et n'est plus compatible avec la version actuelle de votre système d'exploitation.</translation>
@@ -21,6 +22,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="3784527566857328444">Supprimer de Chrome</translation>
 <translation id="1225016890511909183">Chrome va stocker les informations vous concernant de manière sécurisée. Vous n'aurez donc pas besoin de les saisir à nouveau. En revanche, vous devrez valider le code de sécurité de votre carte lors de vos prochains paiements.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
+<translation id="7400722733683201933">À propos de Google Chrome</translation>
 <translation id="8838365799985821335">Une extension a modifié la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="1065672644894730302">Impossible de lire vos préférences.
@@ -31,6 +33,8 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="110877069173485804">Voici votre Chrome</translation>
 <translation id="8406086379114794905">Aidez-nous à améliorer Chrome</translation>
 <translation id="2896252579017640304">Lancer des applications Google Chrome</translation>
+<translation id="4121281502786319101">Il est impossible d'établir une connexion privée avec le domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Cela est probablement dû au fait que la date de votre appareil est définie de façon incorrecte. Votre appareil est réglé à la date du <ph name="DATE"/>. Vous devez actualiser cette page après avoir effectué la <ph name="BEGIN_LINK"/>mise à jour de la date et de l'heure de votre appareil<ph name="END_LINK"/>.</translation>
+<translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
 <translation id="2721687379934343312">Sur Mac, les mots de passe sont sauvegardés dans votre trousseau. D'autres utilisateurs de Google Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
 <translation id="4953650215774548573">Définir Google Chrome en tant que navigateur par défaut</translation>
@@ -57,16 +61,20 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="127345590676626841">Chrome est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version. Une fois le téléchargement terminé, Chrome redémarre et vous pouvez de nouveau l'utiliser.</translation>
+<translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="8227755444512189073">Chrome va devoir lancer une application tierce pour gérer les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Google Chrome est bloqué. Voulez-vous le relancer maintenant ?</translation>
 <translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Conditions d'utilisation<ph name="END_TERMS_OF_SERVICE_LINK"/> de Google Chrome</translation>
+<translation id="4743926867934016338">Accepter et rechercher</translation>
 <translation id="1393853151966637042">Obtenir de l'aide sur l'utilisation de Google Chrome</translation>
 <translation id="7398801000654795464">Vous étiez connecté à Google Chrome en tant que <ph name="USER_EMAIL_ADDRESS"/>. Veuillez utiliser le même compte pour vous reconnecter.</translation>
+<translation id="5338943029751206389">En raison des paramètres de sécurité obsolètes de ce site, il se peut que les versions futures de Chrome ne puissent pas y accéder en toute sécurité.</translation>
 <translation id="4513711165509885787">Vos informations de facturation ont été enregistrées dans Chrome.</translation>
 <translation id="5253588388888612165">Si vous partagez cet ordinateur avec <ph name="PROFILE_NAME"/>, ajoutez-vous en tant qu'utilisateur à Chrome pour naviguer indépendamment. Sinon, déconnectez le compte Google de cette personne.</translation>
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
+<translation id="4315766637075282876">Ces renseignements vont être stockés dans vos |mots de passe Google enregistrés| et ils seront saisis automatiquement pour que vous n'ayez pas à les retenir.</translation>
 <translation id="5298539825145851748">Supprimer de Chrome</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
@@ -92,6 +100,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 </translation>
 <translation id="8823341990149967727">Version de Chrome obsolète</translation>
 <translation id="4424024547088906515">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN"/>, car son certificat de sécurité n'est pas considéré comme fiable par Chrome. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
+<translation id="6722021951952731012">Pour établir une connexion réseau sécurisée, l'horloge de votre ordinateur doit être configurée correctement. En effet, les certificats utilisés par les sites Web pour s'identifier lors de l'établissement d'une connexion sécurisée sont valides uniquement pendant une durée spécifique. Étant donné que l'horloge de votre ordinateur est incorrecte, il est impossible de vérifier correctement les certificats dans Chrome.</translation>
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="1195935957447623558">Google Chrome ne s'est pas arrêté correctement. Pour rouvrir les pages précédemment ouvertes, cliquez sur Restaurer.</translation>
 <translation id="2576431527583832481">Google Chrome s'est amélioré ! Une nouvelle version est désormais disponible.</translation>
@@ -129,8 +138,10 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Avertissement<ph name="END_BOLD"/> : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>
 <translation id="7808348361785373670">Supprimer de Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5563479599352954471">Rechercher en appuyant une seul fois</translation>
 <translation id="2664962310688259219">Licences Chrome OS Open Source</translation>
 <translation id="2290014774651636340">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Google Chrome vont être désactivées.</translation>
+<translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="4794050651896644714">Enregistrer les détails dans Google Chrome</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="5855036575689098185">Le logiciel exécuté sur votre ordinateur n'est pas compatible avec Google Chrome.</translation>
@@ -148,6 +159,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2290095356545025170">Voulez-vous vraiment désinstaller Google Chrome ?</translation>
 <translation id="7062966102157262887">Un téléchargement est actuellement en cours. Voulez-vous quitter Google Chrome et annuler le téléchargement ?</translation>
 <translation id="4273752058983339720">Google Chrome est configuré de façon à être lancé automatiquement lorsque vous démarrez votre ordinateur.</translation>
+<translation id="415994390253732730">Le fonctionnement de Chrome vous semble étrange ?</translation>
 <translation id="1104959162601287462">À propos de &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
@@ -157,6 +169,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="8568392309447938879">Vous devez être connecté à Chrome pour utiliser les applications. Cela permet de synchroniser vos applications, vos favoris, votre historique, vos mots de passe et d'autres paramètres dans Chrome sur tous vos appareils.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Avec Google Chrome, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
+<translation id="2705287621619748344">Il est impossible d'établir une connexion privée avec le domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Cela est probablement dû au fait que la date de votre ordinateur est définie de façon incorrecte. Votre ordinateur est réglé à la date du <ph name="DATE"/>. Vous devez actualiser cette page après avoir effectué la <ph name="BEGIN_LINK"/>mise à jour de la date et de l'heure de votre ordinateur<ph name="END_LINK"/>.</translation>
 <translation id="5788838254726722945">Désinstaller le lanceur d'applications Google Chrome</translation>
 <translation id="3612333635265770873">Nous avons constaté qu'un module du même nom crée des conflits avec Google Chrome.</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK"/>.</translation>
@@ -171,6 +184,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
         Si le problème persiste, nous vous conseillons de sélectionner
         à nouveau cette option pour améliorer les performances.</translation>
 <translation id="6235018212288296708">Règle de trafic entrant pour Google Chrome autorisant le trafic mDNS</translation>
+<translation id="3281987435599047980">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos, des résultats de recherche et d'autres détails.</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Impossible de synchroniser vos données dans Google Chrome. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="9026991721384951619">Impossible de synchroniser vos données dans Chrome OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
@@ -202,6 +216,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="629218512217695915">Utiliser le mot de passe généré par Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome s'est amélioré</translation>
+<translation id="4367618624832907428">Cette page Web ne peut pas s'afficher dans Google Chrome, car votre ordinateur n'est pas connecté à Internet.</translation>
 <translation id="174539241580958092">Impossible de synchroniser vos données dans Google Chrome, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="8255190535488645436">Votre webcam et votre micro sont en cours d'utilisation dans Google Chrome.</translation>
 <translation id="7396375882099008034">Autoriser Chrome à accéder au réseau dans les paramètres de votre pare-feu ou
@@ -210,6 +225,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3170677364322086041">Ce site utilise le plug-in Chrome Frame, qui ne bénéficie plus des mises à jour de sécurité et de stabilité. Veuillez le désinstaller et utiliser un navigateur récent.</translation>
 <translation id="8205111949707227942">Facultatif : Aidez-nous à améliorer Google Chrome OS en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="7253415505590551024">Des téléchargements sont actuellement en cours. Voulez-vous quitter Google Chrome et annuler les téléchargements ?</translation>
+<translation id="487887346205285304">Le fonctionnement de Chrome vous semble étrange ?</translation>
 <translation id="3622797965165704966">Il est désormais plus facile d'utiliser Chrome avec votre compte Google et sur des ordinateurs partagés.</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
 <translation id="2769762047821873045">Google Chrome n'est pas votre navigateur par défaut.</translation>
@@ -228,6 +244,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
 <translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN"/>, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
+<translation id="5489213858994471184">Nous avons détecté que les paramètres de votre navigateur ont pu être modifiés à votre insu par un programme sur votre ordinateur. Vous pouvez utiliser l'outil de suppression de logiciels de Google pour le supprimer.</translation>
 <translation id="8679801911857917785">Elle contrôle également la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="5334545119300433702">Ce module entraîne un conflit avec Google Chrome.</translation>
 <translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
@@ -253,6 +270,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="853189717709780425">Vous vous connectez à un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Google Chrome (applications, favoris, historique, mots de passe et d'autres paramètres) seront définitivement liées à <ph name="USER_NAME"/>. Vous pourrez supprimer ces données via le tableau de bord Comptes Google, mais vous ne pourrez pas les associer à un autre compte.</translation>
 <translation id="6049075767726609708">Un administrateur a installé Google Chrome pour tous les utilisateurs de ce système. Votre version utilisateur de Google Chrome va être remplacée par la version système.</translation>
 <translation id="1818142563254268765">La mise à jour de Chrome a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez mettre Chrome à jour.</translation>
+<translation id="4821676311965554623">Pour établir une connexion réseau sécurisée, l'horloge de votre ordinateur doit être configurée correctement. En effet, les certificats utilisés par les sites Web pour s'identifier lors de l'établissement d'une connexion sécurisée sont valides uniquement pendant une durée spécifique. Étant donné que l'horloge de votre appareil est incorrecte, les certificats ne peuvent pas être vérifiés correctement dans Chrome.</translation>
 <translation id="7408085963519505752">Conditions d'utilisation de Chrome OS</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">Mise à jour presque terminée. Relancez Google Chrome pour terminer la mise à jour.</translation>

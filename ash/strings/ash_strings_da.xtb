@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Tastaturoverlejring</translation>
 <translation id="4387004326333427325">Godkendelsescertifikatet blev afvist eksternt</translation>
+<translation id="6047696787498798094">Skærmdeling ophører, når du skifter til en anden bruger. Vil du fortsætte?</translation>
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="3683428399328702079">Opløsningen for <ph name="DISPLAY_NAME"/> er ændret til <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Det lykkedes ikke at hente HTTP</translation>
@@ -110,6 +111,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2614835198358683673">Din Chromebook oplades muligvis ikke, når den er tændt. Anvend eventuelt den officielle oplader.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4442424173763614572">DNS-opslag mislykkedes</translation>
+<translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="2204305834655267233">Netværksoplysninger</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="2761704814324807722">Statusbakke, tid <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Lås</translation>
@@ -174,6 +177,7 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Det var ikke muligt at oprette forbindelse til netværket: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Afslut session</translation>
+<translation id="479989351350248267">søg</translation>
 <translation id="4872237917498892622">Alt+Søg eller Shift</translation>
 <translation id="2429753432712299108">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
@@ -224,7 +228,6 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="520760366042891468">Deler kontrollen over din skærm via Hangouts.</translation>
-<translation id="4015692727874266537">Log ind på en anden konto...</translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Datatjenesten &quot;<ph name="NAME"/>&quot; er blevet aktiveret og er klar til brug.</translation>

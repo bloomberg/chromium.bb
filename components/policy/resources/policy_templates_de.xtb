@@ -560,7 +560,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
           So installiert <ph name="EXTENSION_POLICY_EXAMPLE"/> beispielsweise die Erweiterung <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> über die standardmäßige Update-URL des Chrome Web Stores. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
-          Nutzer können die von dieser Richtlinie festgelegten Erweiterungen nicht deinstallieren. Wenn Sie eine Erweiterung aus dieser Liste entfernen, wird diese automatisch von <ph name="PRODUCT_NAME"/> deinstalliert. Die in dieser Liste aufgeführten Erweiterungen werden zudem automatisch in die Whitelist für die Installation aufgenommen. Die &quot;ExtensionsInstallBlacklist&quot; hat auf sie keinen Einfluss.
+          Nutzer können die von dieser Richtlinie festgelegten Erweiterungen nicht deinstallieren. Wenn Sie eine Erweiterung aus dieser Liste entfernen, wird diese automatisch von <ph name="PRODUCT_NAME"/> deinstalliert. Die in dieser Liste aufgeführten Erweiterungen werden zudem automatisch in die weiße Liste für die Installation aufgenommen. Die &quot;ExtensionsInstallBlacklist&quot; hat auf sie keinen Einfluss.
 
           Bleibt diese Richtlinie unkonfiguriert, kann der Nutzer jede Erweiterung in <ph name="PRODUCT_NAME"/> deinstallieren.</translation>
 <translation id="6899705656741990703">Proxy-Einstellungen automatisch erkennen</translation>
@@ -708,7 +708,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       Mithilfe dieser Richtlinie können Ausnahmen von restriktiven schwarzen Listen geöffnet werden. So können beispielsweise mit &quot;*&quot; alle Anfragen blockiert werden, während mit dieser Richtlinie der Zugriff auf eine eingeschränkte Liste von URLs erlaubt werden kann. Hiermit können Ausnahmen von bestimmten Schemata, Sub-Domains anderer Domains, Ports oder bestimmten Pfaden geöffnet werden.
 
-      Der spezifischste Filter bestimmt, ob eine URL blockiert oder erlaubt ist. Die Whitelist hat Vorrang vor der schwarzen Liste.
+      Der spezifischste Filter bestimmt, ob eine URL blockiert oder erlaubt ist. Die weiße Liste hat Vorrang vor der schwarzen Liste.
 
       Diese Richtlinie ist auf 1000 Einträge beschränkt. Alle weiteren Einträge werden ignoriert.
 
@@ -997,7 +997,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       Wird diese Richtlinie nicht festgelegt, wird die Standardgröße verwendet und der Nutzer kann diese mit dem Parameter &quot;--disk-cache-size&quot; überschreiben.</translation>
 <translation id="5475361623548884387">Drucken aktivieren</translation>
-<translation id="7287359148642300270">Hiermit legen Sie fest, welche Server auf die Whitelist für integrierte Authentifizierung gesetzt werden. Integrierte Authentifizierung ist nur möglich, wenn <ph name="PRODUCT_NAME"/> eine Authentifizierungsanfrage von einem Proxy oder einem anderen Server erhält, der in dieser Liste erlaubter Server enthalten ist.
+<translation id="7287359148642300270">Hiermit legen Sie fest, welche Server auf die weiße Liste für integrierte Authentifizierung gesetzt werden. Integrierte Authentifizierung ist nur möglich, wenn <ph name="PRODUCT_NAME"/> eine Authentifizierungsanfrage von einem Proxy oder einem anderen Server erhält, der in dieser Liste erlaubter Server enthalten ist.
 
           Fügen Sie zwischen den verschiedenen Servernamen ein Komma als Trennzeichen ein. Platzhalter (*) sind zulässig.
 

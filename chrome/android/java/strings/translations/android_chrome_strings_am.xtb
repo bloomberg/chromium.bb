@@ -16,10 +16,12 @@
 <translation id="5763382633136178763">ማንነት የማያሳውቁ ትሮች</translation>
 <translation id="5210365745912300556">ትር ዝጋ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
+<translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="6458785801851713928">ማመሳሰል ለእርስዎ ጎራ አይገኝም።</translation>
 <translation id="2731700343119398978">እባክዎ ይጠብቁ...</translation>
 <translation id="6846298663435243399">በመጫን ላይ…</translation>
 <translation id="7378627244592794276">አይ</translation>
+<translation id="9206873250291191720">አ</translation>
 <translation id="3358663646935160692">ይህ መለያ የሚቀናበረው በ<ph name="DOMAIN_NAME"/> ነው።
 
 በሚቀናበር መለያ እየገቡ ነው፣ ይህም የChrome መገለጫዎ ቁጥጥር ለአስተዳዳሪው ይሰጠዋል። የእርስዎ Chrome ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር የተሳሰረ ይሆናል። ከዚህ መለያ ማላቀቅ አካባቢያዊውን የChrome ውሂብ ይሰርዘዋል።</translation>
@@ -30,23 +32,35 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>፣ ትር</translation>
 <translation id="624558823898732418">የትርጉም ቋንቋ፦ <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">የማረጋገጫ የእውቅና ማረጋገጫ ይምረጡ</translation>
+<translation id="7791543448312431591">አክል</translation>
 <translation id="3896036286668839683">የእውቅና ማረጋገጫ መመልከቻ</translation>
+<translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="8583805026567836021">የመለያ ውሂብን በማጽዳት ላይ</translation>
 <translation id="4250680216510889253">አይ</translation>
 <translation id="8073388330009372546">ምስሉን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="552553974213252141">ጽሑፉ በትክክል ነው የወጣው?</translation>
+<translation id="2414886740292270097">ጨለማ</translation>
+<translation id="3927692899758076493">ሳንስ ሰሪፍ</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
 <translation id="4170011742729630528">አገልግሎቱ አይገኝም፤ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="473775607612524610">አዘምን</translation>
 <translation id="8627706565932943526">የማመሳሰል ስህተት</translation>
+<translation id="1807246157184219062">ብርሃን</translation>
+<translation id="7053983685419859001">አግድ</translation>
 <translation id="8374821112118309944">TalkBackን ወደ አዲስ ስሪት ማዘመን አለብዎት።</translation>
+<translation id="2593272815202181319">ሞኖስፔስ</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/>ን ሁልጊዜ መተርጎም</translation>
+<translation id="2748463065602559597">ደህንነቱ የተጠበቀ የGoogle Chrome ገጽ እያዩ ነው።</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
+<translation id="4543661749405994812">የኢሜይል አድራሻ ቅዳ</translation>
 <translation id="5684874026226664614">ውይ። ይህ ገጽ ሊተረጎም አይችልም።</translation>
 <translation id="8503813439785031346">የተጣቃሚ ስም</translation>
+<translation id="2532336938189706096">የድር ዕይታ</translation>
 <translation id="4619298195800598081">ኦሪጂናል ምስሉን በአዲስ ትር ክፈት</translation>
+<translation id="4002066346123236978">ርዕስ</translation>
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
 <translation id="907015151729920253">ስማርት ካርድ</translation>
+<translation id="5016205925109358554">ሰሪፍ</translation>
 <translation id="3063601790762993062">ቪዲዮ አስቀምጥ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="7267430310003164111">መተግበሪያ ከGoogle Play መደብር እንዲያገኙ የሚጠይቅ። የመተግበሪያ ስም፦ <ph name="APP_NAME"/>።  መተግበሪያ የተሰጠው አማካኝ ደረጃ፦ <ph name="APP_RATING"/>።</translation>
@@ -77,9 +91,12 @@
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="969096075394517431">ቋንቋዎችን ይቀይሩ</translation>
 <translation id="5032574515228824816">ጠይቅ</translation>
+<translation id="7961015016161918242">በፍጹም</translation>
 <translation id="497421865427891073">ወደ ፊት ሂድ</translation>
+<translation id="4056223980640387499">ቀይ ቡናማ</translation>
 <translation id="8310344678080805313">መደበኛ ትሮች</translation>
 <translation id="6277522088822131679">ገጹን ማተም ላይ ችግር ነበር። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="1742134235943978220">ወደ <ph name="TARGET_LANGUAGE"/> ተተርጉሟል።</translation>
 <translation id="6965382102122355670">ይሁን</translation>
+<translation id="7561196759112975576">ሁልጊዜ</translation>
 </translationbundle>

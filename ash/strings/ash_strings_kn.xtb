@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">ಪ್ರಾಕ್ಸಿ...</translation>
 <translation id="938582441709398163">ಕೀಬೋರ್ಡ್ ಒವರ್‌ಲೇ</translation>
 <translation id="4387004326333427325">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ರಿಮೋಟ್ ಆಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
+<translation id="6047696787498798094">ನೀವು ಬೇರೊಬ್ಬ ಬಳಕೆದಾರರಿಗೆ ಬದಲಾಯಿಸಿದಾಗ ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆಯು ನಿಲ್ಲುತ್ತದೆ. ನೀವು ಮುಂದುವರಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> ರೆಸಲ್ಯೂಷನ್ ಅನ್ನು <ph name="RESOLUTION"/> ಗೆ ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="6943836128787782965">HTTP ವಿಫಲವಾಗಿದೆ</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಿ.</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
 <translation id="4442424173763614572">DNS ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
+<translation id="544691375626129091">ಈ ಸೆಷನ್‌ಗೆ ಎಲ್ಲಾ ಲಭ್ಯವಿರುವ ಬಳಕೆದಾರರನ್ನು ಈಗಾಗಲೇ ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="2204305834655267233">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ</translation>
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> ನಲ್ಲಿ ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್‌ಔಟ್‌ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="252373100621549798">ಅಜ್ಞಾತ ಪ್ರದರ್ಶನ</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> ಗೆ ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿದೆ</translation>
+<translation id="5777841717266010279">ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ನಿಲ್ಲಿಸುವುದೇ?</translation>
 <translation id="2727977024730340865">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್‌ಗೆ ಪ್ಲಗ್ ಮಾಡಲಾಗಿದೆ. ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲದಿರಬಹುದು.</translation>
 <translation id="2761704814324807722">ಸ್ಥಿತಿ ಟ್ರೇ, ಸಮಯ <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">ಲಾಕ್ ಮಾಡಿ</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DOMAIN"/> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಸಾರ್ವಜನಿಕ ಸೆಶನ್ <ph name="DISPLAY_NAME"/> ಆಗಿದೆ</translation>
 <translation id="9044646465488564462">ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="2429753432712299108">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು &quot;<ph name="DEVICE_NAME"/>&quot; ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಸಮ್ಮತಿಸುವುದಕ್ಕೂ ಮೊದಲು, ದಯವಿಟ್ಟು ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತರಿಪಡಿಸಿಕೊಳ್ಳಿ: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE"/>% ಪೂರ್ಣವಾಗಿದೆ.</translation>
@@ -223,7 +227,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ಉಳಿದಿದೆ</translation>
 <translation id="3009178788565917040">ಔಟ್‌ಪುಟ್</translation>
 <translation id="520760366042891468">Hangouts ಮೂಲಕ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
-<translation id="4015692727874266537">ಮತ್ತೊಂದು ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ...</translation>
 <translation id="6911468394164995108">ಇತರರನ್ನು ಸೇರಿ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">ಅಭಿನಂದನೆಗಳು! ನಿಮ್ಮ '<ph name="NAME"/>' ಡೇಟಾ ಸೇವೆಯನ್ನು ಕ್ರಿಯಾತ್ಮಕಗೊಳಿಸಲಾಗಿದೆ ಮತ್ತು ಮುಂದುವರೆಯಲು ಸಿದ್ಧವಾಗಿದೆ.</translation>

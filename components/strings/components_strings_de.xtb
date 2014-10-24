@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Verwaltungsbezirk</translation>
 <translation id="4258748452823770588">Fehlerhafte Signatur</translation>
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
+<translation id="2030481566774242610">Meinten Sie <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, gültig bis: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Listeneintrag &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="5031870354684148875">Über Google Übersetzer</translation>
+<translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK"/>im Cache gespeicherte Kopie<ph name="END_LINK"/> von <ph name="URL"/> auf.</translation>
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
 <translation id="1853748787962613237">Der Artikel kann nicht angezeigt werden.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="6965978654500191972">Gerät</translation>
 <translation id="8249320324621329438">Letzter Abruf:</translation>
+<translation id="194030505837763158">Besuchen Sie die Seite <ph name="LINK"/>.</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1344588688991793829">AutoFill-Einstellungen für Chromium...</translation>
 <translation id="6282194474023008486">Postleitzahl</translation>

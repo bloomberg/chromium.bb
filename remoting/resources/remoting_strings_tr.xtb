@@ -30,7 +30,6 @@ Ana Makinesi</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7782471917492991422">Lütfen bilgisayarınızın güç yönetimi ayarlarını kontrol edin ve boşta kaldığında uyku moduna geçecek şekilde ayarlanmadığından emin olun.</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
-<translation id="4939475390270873744">• Açılıştaki bir kilitlenme düzeltildi.</translation>
 <translation id="2707879711568641861">Chrome Uzaktan Masaüstü için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="1779766957982586368">Pencereyi kapat</translation>
 <translation id="2499160551253595098">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
@@ -79,6 +78,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (eski)</translation>
 <translation id="3884839335308961732">Chrome Uzaktan Masaüstü tarafından erişime izin vermek için lütfen aşağıda hesabınızı ve PIN kodunuzu onaylayın.</translation>
 <translation id="327263477022142889">Chrome Uzaktan Masaüstü'nü daha iyi hale getirmeye yardımcı olmak ister misiniz? <ph name="LINK_BEGIN"/>Ankete katılın.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Ctrl-Alt-Del Gönder</translation>
 <translation id="5702987232842159181">Bağlı:</translation>
 <translation id="8509907436388546015">Masaüstü Entegrasyon İşlemi</translation>
 <translation id="4736223761657662401">Bağlantı Geçmişi</translation>
@@ -106,10 +106,10 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="5908809458024685848">Chromoting'de oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
 <translation id="7401733114166276557">Chrome Uzaktan Masaüstü</translation>
 <translation id="3362124771485993931">PIN'i yeniden yazın</translation>
+<translation id="1760808606374294203">• Android Lollipop için düzeltmeler</translation>
 <translation id="154040539590487450">Uzaktan erişim hizmeti başlatılamadı.</translation>
 <translation id="7948001860594368197">Ekran seçenekleri</translation>
 <translation id="8172070902751707422">Kimlik doğrulama başarısız oldu. Lütfen Chrome Uzaktan Masaüstü'nde tekrar oturum açın.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">Bu sayfadan ayrılırsanız Chrome Uzaktan Masaüstü oturumunuz sonlanır.</translation>
 <translation id="173559734173571936">Chrome Uzaktan Masaüstü uygulamasını kullanabilmek için öncelikle, bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız gerekir.</translation>
 <translation id="9032136467203159543">Chromoting için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
@@ -124,6 +124,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="3020807351229499221">PIN güncellenemedi. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="2647232381348739934">Chromoting Hizmeti</translation>
 <translation id="579702532610384533">Yeniden bağlan</translation>
+<translation id="4867841927763172006">PrtScn Gönder</translation>
 <translation id="4211066471404647515">Chromoting için gereken bazı bileşenler eksik. Lütfen Google Chrome'un son sürümünü çalıştırdığınızdan emin olun ve tekrar deneyin.</translation>
 <translation id="5773590752998175013">Eşleme tarihi</translation>
 <translation id="5265129178187621741">(bu özellik henüz Chromebook'larda kullanılmıyor... bizi izlemeye devam edin)</translation>
@@ -184,7 +185,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="4573676252416618192">Chrome Uzaktan
 Masaüstü Ana Makinesi</translation>
 <translation id="4703799847237267011">Chromoting oturumunuz sonlandırıldı.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Kullanıcılar arası ekran paylaşımı, uzaktan teknik destek için mükemmeldir.</translation>
 <translation id="652218476070540101">Bu bilgisayarın PIN'i güncelleniyor…</translation>
 <translation id="4563926062592110512">İstemcinin bağlantısı kesildi: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -194,6 +194,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="6668065415969892472">PIN'iniz güncellendi.</translation>
 <translation id="4513946894732546136">Geri Bildirim</translation>
 <translation id="4277736576214464567">Erişim kodu geçersiz. Lütfen tekrar deneyin.</translation>
+<translation id="6550675742724504774">Seçenekler</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME"/> üzerindeki Chrome Uzaktan Masaüstü eski ve güncellenmesi gerekiyor.</translation>
 <translation id="7729639150174291243">Chrome Uzaktan Masaüstü'nde oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
 <translation id="2841013758207633010">Zaman</translation>
@@ -204,6 +205,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="4277463233460010382">Bu bilgisayar PIN girmeden bir veya daha fazla istemcinin bağlanmasına izin verecek şekilde yapılandırılmıştır.</translation>
 <translation id="837021510621780684">Bu bilgisayardan</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Kabul et</translation>
 <translation id="7215059001581613786">Lütfen altı veya daha fazla basamaklı bir PIN kodu girin.</translation>
 <translation id="8383794970363966105">Chromoting'i kullanmak için cihazınıza Google Hesabı eklemeniz gerekir.</translation>
 <translation id="1546934824884762070">Beklenmeyen bir hata oluştu. Lütfen bu sorunu geliştiricilere bildirin.</translation>

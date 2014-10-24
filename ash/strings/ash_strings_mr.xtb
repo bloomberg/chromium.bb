@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">प्रॉक्सी...</translation>
 <translation id="938582441709398163">कीबोर्ड आच्छादन</translation>
 <translation id="4387004326333427325">प्रमाणीकरण प्रमाणपत्र दूरस्थपणे नाकारले</translation>
+<translation id="6047696787498798094">आपण दुसर्‍या वापरकर्त्यावर स्‍विच करता तेव्‍हा स्क्रीन सामायिकरण थांबेल. आपण सुरु ठेवू इच्छिता?</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> रिजोल्यूशन <ph name="RESOLUTION"/> वर बदलले होते</translation>
 <translation id="6943836128787782965">HTTP अयशस्वी झाले</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">आपले Chromebook चालू असताना ते चार्ज होऊ शकत नाही. अधिकृत चार्जर वापरण्याचा विचार करा.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4442424173763614572">DNS लुकअप अयश्सवी</translation>
+<translation id="544691375626129091">सर्व उपलब्‍ध वापरकर्ते आधीपासून या सत्रावर जोडले गेले आहेत.</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="2204305834655267233">नेटवर्क माहिती</translation>
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">आपल्याला <ph name="LOGOUT_TIME_LEFT"/> मधून स्वयंचलितपणे साइन आउट केले जाईल.</translation>
 <translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> वर मिरर करत आहे</translation>
+<translation id="5777841717266010279">स्क्रीन सामायिकरण थांबवायचे?</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">लॉक करा</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> हे <ph name="DOMAIN"/> द्वारे व्यवस्थापित कलेले एक सावर्जनिक सत्र आहे</translation>
 <translation id="9044646465488564462">नेटवर्कशी कनेक्ट करण्यात अयशस्वी: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
 <translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शविली असल्याची पुष्टी करा: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">बॅटरी <ph name="PERCENTAGE"/>% भरली आहे.</translation>
@@ -223,7 +227,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> शिल्‍लक</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="520760366042891468">Hangouts द्वारे आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
-<translation id="4015692727874266537">दुसऱ्या खात्यात साइन इन करा...</translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">अभिनंदन! आपली '<ph name="NAME"/>' डेटा सेवा सक्रिय केली गेली आहे आणि वापरण्यास  सज्ज आहे.</translation>

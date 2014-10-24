@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Lớp phủ bàn phím</translation>
 <translation id="4387004326333427325">Chứng chỉ xác thực bị từ chối từ xa</translation>
+<translation id="6047696787498798094">Chia sẻ màn hình sẽ dừng khi bạn chuyển sang người dùng khác. Bạn có muốn tiếp tục không?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Độ phân giải <ph name="DISPLAY_NAME"/> đã được chuyển thành <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP gặp lỗi</translation>
@@ -110,6 +111,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2614835198358683673">Chromebook của bạn có thể không sạc khi đang bật. Hãy xem xét sử dụng bộ sạc chính thức.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4442424173763614572">Tìm kiếm DNS không thành công</translation>
+<translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="2204305834655267233">Thông tin mạng</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6062360702481658777">Bạn sẽ tự động được đăng xuất sau <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Màn hình không xác định</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Bạn muốn dừng chia sẻ màn hình?</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Khóa</translation>
@@ -174,6 +177,7 @@ Thông báo máy chủ: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> là phiên công khai được quản lý bởi <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Không kết nối được với mạng: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE"/>%.</translation>
@@ -224,7 +228,6 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="5102001756192215136">Còn lại <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Thiết bị ra</translation>
 <translation id="520760366042891468">Chia sẻ quyền kiểm soát màn hình của bạn qua Hangouts.</translation>
-<translation id="4015692727874266537">Đăng nhập tài khoản khác...</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Xin chúc mừng! Dịch vụ dữ liệu '<ph name="NAME"/>' của bạn đã được kích hoạt và sẵn sàng sử dụng.</translation>

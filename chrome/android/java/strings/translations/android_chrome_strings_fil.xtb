@@ -16,10 +16,12 @@
 <translation id="5763382633136178763">Mga tab na incognito</translation>
 <translation id="5210365745912300556">Isara ang tab</translation>
 <translation id="7658239707568436148">Ikansela</translation>
+<translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="6458785801851713928">Hindi available ang pag-sync para sa iyong domain.</translation>
 <translation id="2731700343119398978">Mangyaring maghintay...</translation>
 <translation id="6846298663435243399">Naglo-load…</translation>
 <translation id="7378627244592794276">Hindi</translation>
+<translation id="9206873250291191720">A</translation>
 <translation id="3358663646935160692">Pinamamahalaan ang account na ito ng <ph name="DOMAIN_NAME"/>.
 
 Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chrome. Permanenteng mauugnay ang iyong data ng Chrome sa account na ito. Ang pagdiskonekta mula sa account na ito ay magtatanggal sa lokal na data ng Chrome.</translation>
@@ -30,23 +32,35 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, tab</translation>
 <translation id="624558823898732418">Wika ng Pagsasalin: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Piliin ang certificate para sa pagpapatotoo</translation>
+<translation id="7791543448312431591">Magdagdag</translation>
 <translation id="3896036286668839683">Viewer ng Certificate</translation>
+<translation id="5039804452771397117">Payagan</translation>
 <translation id="8583805026567836021">Kini-clear ang data ng account</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="8073388330009372546">Buksan ang larawan sa bagong tab</translation>
 <translation id="552553974213252141">Nakuha ba nang tama ang text?</translation>
+<translation id="2414886740292270097">Madilim</translation>
+<translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">Tapos na</translation>
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
 <translation id="473775607612524610">Mag-update</translation>
 <translation id="8627706565932943526">Error sa pag-sync</translation>
+<translation id="1807246157184219062">Maliwanag</translation>
+<translation id="7053983685419859001">Harangan</translation>
 <translation id="8374821112118309944">Kailangan mong i-update ang TalkBack sa isang mas bagong bersyon.</translation>
+<translation id="2593272815202181319">Monospace</translation>
 <translation id="656628257199996201">Palaging isalin ang <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="2748463065602559597">Tumitingin ka sa isang secure na pahina ng Google Chrome.</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
+<translation id="4543661749405994812">Kopyahin ang email address</translation>
 <translation id="5684874026226664614">Oops. Hindi maisalin ang pahinang ito.</translation>
 <translation id="8503813439785031346">Username</translation>
+<translation id="2532336938189706096">View ng Web</translation>
 <translation id="4619298195800598081">Buksan ang orihinal na larawan sa bagong tab</translation>
+<translation id="4002066346123236978">Pamagat</translation>
 <translation id="3254409185687681395">Mag-bookmark sa pahinang ito</translation>
 <translation id="907015151729920253">Smart card</translation>
+<translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">I-save ang video</translation>
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="7267430310003164111">I-prompt na kunin ang app mula sa Google Play Store.  Pangalan ng app: <ph name="APP_NAME"/>.  Average na rating ng app: <ph name="APP_RATING"/>.</translation>
@@ -77,9 +91,12 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="6040143037577758943">Isara</translation>
 <translation id="969096075394517431">Palitan ang mga wika</translation>
 <translation id="5032574515228824816">I-prompt</translation>
+<translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="497421865427891073">Sumulong</translation>
+<translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Mga karaniwang tab</translation>
 <translation id="6277522088822131679">Nagkaproblema sa pag-print sa pahina. Pakisubukang muli.</translation>
 <translation id="1742134235943978220">Isinalin sa <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7561196759112975576">Palagi</translation>
 </translationbundle>

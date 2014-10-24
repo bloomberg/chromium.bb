@@ -30,7 +30,6 @@ Vert</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7782471917492991422">Kontrollér datamaskinens strøminnstillinger og sørg for at den ikke er konfigurert til å gå i dvale når den ikke er i bruk.</translation>
 <translation id="7665369617277396874">Legg til konto</translation>
-<translation id="4939475390270873744">• Fikset en krasj ved oppstart.</translation>
 <translation id="2707879711568641861">Du mangler noen komponenter som kreves for Chrome Eksternt skrivebord. Kontrollér at du har installert den nyeste versjonen, og prøv på nytt.</translation>
 <translation id="1779766957982586368">Lukk vindu</translation>
 <translation id="2499160551253595098">Hjelp oss med å forbedre Chrome Eksternt skrivebord ved å gi oss tillatelse til å samle bruksstatistikk og programstopprapporter.</translation>
@@ -79,6 +78,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (utdatert)</translation>
 <translation id="3884839335308961732">Bekreft kontoen og PIN-koden din nedenfor for å tillate tilgang via Chrome Eksternt skrivebord.</translation>
 <translation id="327263477022142889">Vil du være med på å forbedre Chrome Eksternt skrivebord? <ph name="LINK_BEGIN"/>Delta i spørreundersøkelsen.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Send Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Tilkoblet:</translation>
 <translation id="8509907436388546015">Integrasjonsprosess for skrivebord</translation>
 <translation id="4736223761657662401">Tilkoblingslogg</translation>
@@ -106,10 +106,10 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="5908809458024685848">Du er ikke logget på Chromoting. Logg på, og prøv på nytt.</translation>
 <translation id="7401733114166276557">Chrome Eksternt skrivebord</translation>
 <translation id="3362124771485993931">Tast inn PIN-koden på nytt</translation>
+<translation id="1760808606374294203">•  Feilrettinger for Android Lollipop.</translation>
 <translation id="154040539590487450">Kunne ikke starte tjenesten for ekstern tilgang.</translation>
 <translation id="7948001860594368197">Skjermalternativer</translation>
 <translation id="8172070902751707422">Autentiseringen mislyktes. Logg på Chrome Eksternt skrivebord på nytt.</translation>
-<translation id="6146986332407778716">Ctrl+Alt+Del</translation>
 <translation id="5254120496627797685">Hvis du forlater denne siden, avsluttes Chrome Eksternt skrivebord-økten.</translation>
 <translation id="173559734173571936">For å bruke Chrome Eksternt skrivebord må du gi utvidede tilgangstillatelser til datamaskinen din. Du trenger bare å gjøre dette én gang.</translation>
 <translation id="9032136467203159543">Du mangler noen komponenter som kreves for Chromoting. Sørg for at du har installert den nyeste versjonen, og prøv på nytt.</translation>
@@ -124,6 +124,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="3020807351229499221">Kunne ikke oppdatere PIN-koden. Prøv på nytt senere.</translation>
 <translation id="2647232381348739934">Chromoting-tjeneste</translation>
 <translation id="579702532610384533">Koble til på nytt</translation>
+<translation id="4867841927763172006">Send PrtScn</translation>
 <translation id="4211066471404647515">Noen komponenter som kreves for Chromoting mangler. Sørg for at du kjører den nyeste versjonen av Chrome, og prøv på nytt.</translation>
 <translation id="5773590752998175013">Tilknytningsdato</translation>
 <translation id="5265129178187621741">(denne funksjonen er ikke tilgjengelig for Chromebook ennå … følg med)</translation>
@@ -184,7 +185,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="4573676252416618192">Chrome Eksternt
 skrivebord-vert</translation>
 <translation id="4703799847237267011">Chromoting-økten er avsluttet.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Skjermdeling bruker-til-bruker, perfekt for ekstern teknisk støttte.</translation>
 <translation id="652218476070540101">PIN-koden for denne datamaskinen oppdateres …</translation>
 <translation id="4563926062592110512">Klienten koblet fra: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -194,6 +194,7 @@ skrivebord-vert</translation>
 <translation id="6668065415969892472">PIN-koden din er oppdatert.</translation>
 <translation id="4513946894732546136">Google Feedback</translation>
 <translation id="4277736576214464567">Tilgangskoden er ugyldig. Prøv på nytt.</translation>
+<translation id="6550675742724504774">Alternativer</translation>
 <translation id="979100198331752041">Chrome Eksternt skrivebord på <ph name="HOSTNAME"/> er utdatert og må oppdateres.</translation>
 <translation id="7729639150174291243">Du er ikke logget på Chrome Eksternt skrivebord. Logg på og prøv på nytt.</translation>
 <translation id="2841013758207633010">Klokkeslett</translation>
@@ -204,6 +205,7 @@ skrivebord-vert</translation>
 <translation id="4277463233460010382">Denne datamaskinen er konfigurer for å la én eller flere klienter koble til uten å skrive inn noen PIN-kode.</translation>
 <translation id="837021510621780684">Fra denne datamaskinen</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Godta</translation>
 <translation id="7215059001581613786">Skriv inn en PIN-kode på seks sifre eller fler.</translation>
 <translation id="8383794970363966105">Hvis du vil bruke Chromoting, må du legge til en Google-konto på enheten din.</translation>
 <translation id="1546934824884762070">Det oppsto en uventet feil. Rapportér dette problemet til utviklerne.</translation>

@@ -30,7 +30,6 @@ Chromoting</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7782471917492991422">Sprawdź ustawienia zarządzania zasilaniem komputera i upewnij się, że nie jest on skonfigurowany do przechodzenia podczas bezczynności w tryb uśpienia.</translation>
 <translation id="7665369617277396874">Dodaj konto</translation>
-<translation id="4939475390270873744">• Naprawiono awarię przy uruchamianiu.</translation>
 <translation id="2707879711568641861">Brak niektórych elementów wymaganych przez Pulpit zdalny Chrome. Upewnij się, że masz zainstalowaną najnowszą wersję i spróbuj ponownie.</translation>
 <translation id="1779766957982586368">Zamknij okno</translation>
 <translation id="2499160551253595098">Pomóż nam udoskonalić Pulpit zdalny Chrome, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
@@ -79,6 +78,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (nieaktualne)</translation>
 <translation id="3884839335308961732">Potwierdź poniżej swoje konto i kod PIN, by pozwolić na dostęp przez Pulpit zdalny Chrome.</translation>
 <translation id="327263477022142889">Chcesz pomóc w ulepszeniu Pulpitu zdalnego Chrome? <ph name="LINK_BEGIN"/>Wypełnij ankietę<ph name="LINK_END"/>.</translation>
+<translation id="6612717000975622067">Wyślij Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Połączono:</translation>
 <translation id="8509907436388546015">Proces integracji pulpitu</translation>
 <translation id="4736223761657662401">Historia połączeń</translation>
@@ -106,10 +106,10 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="5908809458024685848">Nie jesteś zalogowany do Chromoting. Zaloguj się i spróbuj ponownie.</translation>
 <translation id="7401733114166276557">Pulpit zdalny Chrome</translation>
 <translation id="3362124771485993931">Ponownie wpisz PIN</translation>
+<translation id="1760808606374294203">• Poprawki dla Androida Lollipop.</translation>
 <translation id="154040539590487450">Nie udało się uruchomić usługi dostępu zdalnego.</translation>
 <translation id="7948001860594368197">Opcje ekranu</translation>
 <translation id="8172070902751707422">Uwierzytelnianie nie powiodło się. Zaloguj się ponownie do Pulpitu zdalnego Chrome.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">Jeśli opuścisz tę stronę, sesja Pulpitu zdalnego Chrome zostanie zakończona.</translation>
 <translation id="173559734173571936">Aby korzystać z Pulpitu zdalnego Chrome, musisz przyznać rozszerzone uprawnienia dostępu do swojego komputera. Trzeba to zrobić tylko raz.</translation>
 <translation id="9032136467203159543">Brak niektórych elementów wymaganych przez Chromoting. Upewnij się, że masz zainstalowaną najnowszą wersję i spróbuj ponownie.</translation>
@@ -124,6 +124,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3020807351229499221">Nie udało się zaktualizować PIN-u. Spróbuj ponownie później.</translation>
 <translation id="2647232381348739934">Usługa Chromoting</translation>
 <translation id="579702532610384533">Połącz ponownie</translation>
+<translation id="4867841927763172006">Wyślij PrtScn</translation>
 <translation id="4211066471404647515">Brak niektórych elementów wymaganych przez Chromoting. Upewnij się, że korzystasz z najnowszej wersji Chrome i spróbuj ponownie.</translation>
 <translation id="5773590752998175013">Data parowania</translation>
 <translation id="5265129178187621741">(Ta funkcja nie jest jeszcze dostępna dla Chromebooków – prosimy o cierpliwość)</translation>
@@ -184,16 +185,16 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="4573676252416618192">Host Pulpitu
 zdalnego Chrome</translation>
 <translation id="4703799847237267011">Sesja Chromoting została zakończona.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Dzielenie się ekranem z innym użytkownikiem – doskonałe do zdalnej pomocy technicznej.</translation>
 <translation id="652218476070540101">Aktualizuję PIN tego komputera…</translation>
 <translation id="4563926062592110512">Rozłączył się klient: <ph name="CLIENT_USERNAME"/>.</translation>
-<translation id="5308380583665731573">Połącz się</translation>
+<translation id="5308380583665731573">Połącz</translation>
 <translation id="7319983568955948908">Zatrzymaj udostępnianie</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="6668065415969892472">PIN został zaktualizowany.</translation>
 <translation id="4513946894732546136">Twoja opinia</translation>
 <translation id="4277736576214464567">Kod dostępu jest nieprawidłowy. Spróbuj ponownie.</translation>
+<translation id="6550675742724504774">Opcje</translation>
 <translation id="979100198331752041">Pulpit zdalny Chrome na komputerze <ph name="HOSTNAME"/> jest nieaktualny i wymaga aktualizacji.</translation>
 <translation id="7729639150174291243">Nie jesteś zalogowany do Pulpitu zdalnego Chrome. Zaloguj się i spróbuj ponownie.</translation>
 <translation id="2841013758207633010">Godzina</translation>
@@ -204,6 +205,7 @@ zdalnego Chrome</translation>
 <translation id="4277463233460010382">Ten komputer jest skonfigurowany do zezwalania jednemu lub wielu klientom na łączenie się bez podawania kodu PIN.</translation>
 <translation id="837021510621780684">Z tego komputera</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Akceptuj</translation>
 <translation id="7215059001581613786">Wpisz PIN złożony z co najmniej sześciu cyfr.</translation>
 <translation id="8383794970363966105">Aby użyć funkcji Chromoting, musisz dodać do urządzenia konto Google.</translation>
 <translation id="1546934824884762070">Wystąpił nieoczekiwany błąd. Zgłoś ten problem programistom.</translation>

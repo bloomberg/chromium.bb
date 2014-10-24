@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="3624204664103857160">Δεν ήταν δυνατή η φόρτωση της σελίδας εφαρμογής εκκίνησης '<ph name="PAGE"/>'.</translation>
 <translation id="8804398419035066391">Επικοινωνία με συνεργαζόμενους ιστότοπους</translation>
 <translation id="7809034755304591547">Το αναγνωριστικό <ph name="EXTENSION_NAME"/> (αναγνωριστικό επέκτασης &quot;<ph name="EXTENSION_ID"/>&quot;) έχει αποκλειστεί από τον διαχειριστή.</translation>
 <translation id="1005274289863221750">Χρήση του μικροφώνου και της κάμεράς σας</translation>
@@ -9,6 +10,9 @@
 <translation id="6384275966486438344">Αλλαγή των ρυθμίσεων αναζήτησης σε: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Αυτή η επέκταση επιβραδύνει το <ph name="PRODUCT_NAME"/>. Πρέπει να την απενεργοποιήσετε για να επαναφέρετε την απόδοση του <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
+<translation id="288042212351694283">Πρόσβαση στις συσκευές με Universal 2nd Factor</translation>
+<translation id="5971037678316050792">Έλεγχος κατάστασης προσαρμογέα Bluetooth και σύζευξη</translation>
+<translation id="677806580227005219">Χειρισμός mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Πρόσβαση σε πληροφορίες σχετικά με τις συσκευές Bluetooth που βρίσκονται σε ζεύξη με το σύστημά σας και εντοπισμός κοντινών συσκευών Bluetooth.</translation>
 <translation id="5911798608827489036">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στο τοπικό δίκτυο ή το Διαδίκτυο</translation>
 <translation id="4719685943208231314">Πρόσβαση στη συσκευή USB από <ph name="VENDOR_NAME"/></translation>
@@ -22,6 +26,7 @@
 <translation id="8058376558882514200">Πρόσβαση στη συσκευή USB <ph name="PRODUCT_NAME"/> από <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">Δεν ήταν δυνατή η φόρτωση του εικονιδίου επέκτασης &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="4233778200880751280">Δεν ήταν δυνατή η φόρτωση της σελίδας πληροφοριών &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">Δεν ήταν δυνατή η φόρτωση της σελίδας επιλογών &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
 <translation id="6344170822609224263">Λίστα πρόσβασης για συνδέσεις δικτύου</translation>
 <translation id="2616366145935564096">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/></translation>
@@ -33,6 +38,7 @@
 <translation id="8670869118777164560">Αυτή η επέκταση απέτυχε να ανακατευθύνει κάποιο αίτημα δικτύου στο <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) το ανακατεύθυνε στο <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Αυτή η επέκταση επαναφορτώνεται πολύ συχνά.</translation>
 <translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) καθόρισε ένα διαφορετικό όνομα &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
+<translation id="2732710576072980201">Προϊόν <ph name="PRODUCT_ID"/> από <ph name="VENDOR_NAME"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στους τομείς: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">όλους τους ιστότοπους <ph name="WEBSITE_1"/></translation>
@@ -43,12 +49,16 @@
 <translation id="4883436287898674711">Όλοι οι ιστότοποι <ph name="WEBSITE_1"/></translation>
 <translation id="9111791539553342076">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα απόκρισης &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Χρήση της κάμεράς σας</translation>
+<translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="8341840687457896278">Αυτή η επέκταση απέτυχε να παράσχει διαπιστευτήρια σε κάποιο αίτημα δικτύου επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>) παρέσχεσε διαφορετικά διαπιστευτήρια.</translation>
 <translation id="5627523580512561598">επέκταση <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Πρόσβασης στις φωτογραφίες, στη μουσική και στα άλλα μέσα από τον υπολογιστή σας</translation>
 <translation id="4761104368405085019">Χρήση του μικροφώνου σας</translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME"/>. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
+<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> από <ph name="VENDOR_NAME"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Αλλαγή της σελίδας έναρξης σε: <ph name="START_PAGE"/></translation>
+<translation id="6758203075041033901">Προϊόν <ph name="PRODUCT_ID"/> από τον Πωλητή <ph name="VENDOR_ID"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/> και το <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Δεν ήταν δυνατή η φόρτωση της σελίδας φόντου &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 </translationbundle>

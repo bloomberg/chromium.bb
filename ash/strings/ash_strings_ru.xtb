@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Прокси-сервер…</translation>
 <translation id="938582441709398163">Накладка на клавиатуру</translation>
 <translation id="4387004326333427325">Сертификат аутентификации отклонен удаленно</translation>
+<translation id="6047696787498798094">Если перейти к другому пользователю, доступ к экрану будет закрыт. Продолжить?</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/>: установлено разрешение <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Произошла ошибка запроса HTTP GET</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">Возможны проблемы при зарядке Chromebook. Рекомендуем использовать комплектное зарядное устройство.</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="4442424173763614572">Произошла ошибка при поиске сервера DNS</translation>
+<translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="2204305834655267233">Информация о сети</translation>
 <translation id="1621499497873603021">Оставшееся время работы от батареи: <ph name="TIME_LEFT"/>.</translation>
@@ -120,7 +122,7 @@
 <translation id="1346748346194534595">Вправо</translation>
 <translation id="1773212559869067373">Сертификат аутентификации отклонен локально</translation>
 <translation id="8528322925433439945">Мобильные сети…</translation>
-<translation id="8428213095426709021">Настройки ЦПО</translation>
+<translation id="8428213095426709021">Настройки</translation>
 <translation id="2372145515558759244">Синхронизация приложений…</translation>
 <translation id="7256405249507348194">Неопознанная ошибка: <ph name="DESC"/></translation>
 <translation id="1987317783729300807">Аккаунты</translation>
@@ -138,10 +140,11 @@
 <translation id="6062360702481658777">Выход из системы будет выполнен автоматически через <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Неизвестный дисплей</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Закрыть доступ к экрану?</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Заблокировать</translation>
-<translation id="2805756323405976993">Приложения</translation>
+<translation id="2805756323405976993">Сервисы</translation>
 <translation id="5097002363526479830">Не удалось подключиться к сети <ph name="NAME"/>: <ph name="DETAILS"/></translation>
 <translation id="2872961005593481000">Завершить работу</translation>
 <translation id="3433830597744061105">Настроить аккаунты</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416">Открытый сеанс <ph name="DISPLAY_NAME"/> выполняется в домене <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Не удалось подключиться к сети: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Завершить сеанс</translation>
+<translation id="479989351350248267">поиск</translation>
 <translation id="4872237917498892622">Alt + Search или Shift</translation>
 <translation id="2429753432712299108">Устройству <ph name="DEVICE_NAME"/> требуется разрешение на подключение через Bluetooth. Проверьте, отображается ли на нем код: <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">Батарея заряжена на <ph name="PERCENTAGE"/>%.</translation>
@@ -223,7 +227,6 @@
 <translation id="5102001756192215136">Осталось <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Выход</translation>
 <translation id="520760366042891468">Доступ к экрану в Hangouts.</translation>
-<translation id="4015692727874266537">Войти ещё в один аккаунт...</translation>
 <translation id="6911468394164995108">Подключиться к другой сети...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Поздравляем! Служба передачи данных &quot;<ph name="NAME"/>&quot; активирована и готова к работе.</translation>

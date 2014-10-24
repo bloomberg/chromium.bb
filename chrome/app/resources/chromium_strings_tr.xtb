@@ -20,8 +20,10 @@
 <translation id="1065672644894730302">Tercihleriniz okunamıyor. Bazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="4423735387467980091">Chromium'u özelleştirin ve kontrol edin</translation>
 <translation id="1881322772814446296">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chromium verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz. <ph name="LEARN_MORE"/></translation>
+<translation id="5620765574781326016">Sayfadan ayrılmadan web sitelerindeki konular hakkında bilgi edinin.</translation>
 <translation id="731644333568559921">&amp;Chromium OS'u güncelle</translation>
 <translation id="7421823331379285070">Chromium, Windows XP veya sonrasını gerektirir. Bazı özellikler çalışmayabilir.</translation>
+<translation id="1185134272377778587">Chromium hakkında</translation>
 <translation id="7023267510504981715">Google Cüzdan'ı kullanmak için Chromium'u yeni sürüme geçirmelisiniz [<ph name="ERROR_CODE"/>].</translation>
 <translation id="1444754455097148408">Chromium açık kaynak lisansları</translation>
 <translation id="7419987137528340081">Mevcut Chromium verilerinizi ayrı tutmayı tercih ederseniz, <ph name="USER_NAME"/> için yeni bir Chromium kullanıcısı oluşturabilirsiniz.</translation>
@@ -31,6 +33,7 @@
 <translation id="3549345495227188780">Chromium OS'yi Kullanmaya Başlayın</translation>
 <translation id="1668054258064581266">Hesabınızı Chromium'dan kaldırdıktan sonra, bu durumun etkili olması için açık sekmelerinizi yeniden yüklemeniz gerekebilir.</translation>
 <translation id="6953661834318318668">Chromium Araç Çubuğu</translation>
+<translation id="6764700151360706293">Chromium &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ile özel bir bağlantı oluşturamıyor. Bu durum büyük olasılıkla cihazınızın tarihinin yanlış ayarlanmış olmasından kaynaklanıyordur. (Cihazınızın tarihi <ph name="DATE"/> olarak ayarlanmış). <ph name="BEGIN_LINK"/>Cihazın tarih ve saatini güncelledikten<ph name="END_LINK"/> sonra bu sayfayı yenilemelisiniz.</translation>
 <translation id="4285930937574705105">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Chromium şu anda çalışır durumdaysa kapatıp yeniden deneyin.</translation>
 <translation id="1396446129537741364">Chromium, şifreleri göstermeye çalışıyor.</translation>
 <translation id="8987477933582888019">Web Tarayıcı</translation>
@@ -44,6 +47,7 @@
            öğesine gidin ve yapılandırmanızın &quot;proxy yok&quot; veya &quot;doğrudan&quot; olarak ayarlandığından emin olun.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="7729447699958282447">Senkronizasyon alan adınızda kullanılamadığından Chromium, verilerinizi senkronize edemedi.</translation>
+<translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3103660991484857065">Yükleyici sıkıştırılmış arşivi açamadı. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="7064610482057367130">Chromium'un güncellenecek yüklemesi bulunamadı.</translation>
 <translation id="872034308864968620">Chromium'un Arka Planda Çalışmasına İzin Ver</translation>
@@ -58,6 +62,7 @@
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium, Baskı Önizleme için gerekli olan PDF görüntüleyiciyi içermez.</translation>
 <translation id="7138853919861947730">Chromium, tarama deneyiminizi iyileştirmek için Web hizmetlerinden yararlanabilir.</translation>
+<translation id="4743926867934016338">Kabul Et ve Ara</translation>
 <translation id="3849925841547750267">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Chromium'a içe aktarmak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Sonra Devam'ı tıklatın.</translation>
 <translation id="7027298027173928763">Chromium en yeni sürüme güncellenemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chromium'u manuel olarak yeniden yüklemelisiniz.</translation>
 <translation id="8897323336392112261">Ayrıca Chromium'u başlattığınızda veya Ana Sayfa düğmesini tıkladığınızda gösterilecek sayfayı da denetler.</translation>
@@ -67,6 +72,7 @@
 <translation id="3068515742935458733">Kilitlenme raporlarını ve <ph name="UMA_LINK"/> bilgilerini Google'a göndererek, Chromium'u daha iyi hale getirmeye yardımcı olun</translation>
 <translation id="734373864078049451">Web, yer işaretleri ve diğer Chromium bilgileriniz burada bulunur.</translation>
 <translation id="3197823471738295152">Cihazınız güncel.</translation>
+<translation id="3065280201209294872">Sitede kullanılan güvenlik ayarları güncel değil ve gelecekteki Chromium sürümlerinin siteye güvenli şekilde erişmesini engelleyebilir.</translation>
 <translation id="8551886023433311834">Güncelleme neredeyse tamamlandı! Güncellemenin tamamlanması için cihazınızı yeniden başlatın.</translation>
 <translation id="8353224596138547809">Chromium'un bu site için şifrenizi kaydetmesini ister misiniz?</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
@@ -86,6 +92,7 @@
 <translation id="3509308970982693815">Lütfen tüm Chromium pencerelerini kapatıp tekrar deneyin.</translation>
 <translation id="4077262827416206768">Lütfen tüm Chromium pencerelerini kapatın ve bu değişikliğin geçerli olması için Chromium'u yeniden başlatın.</translation>
 <translation id="6475912303565314141">Ayrıca, Chromium'u başlattığınızda gösterilecek sayfayı da denetler.</translation>
+<translation id="126227967341954494">Güvenli bir bağlantı oluşturabilmek için cihazınızın saati doğru olmalıdır. Çünkü web sitelerinin güvenli bağlantı oluştururken kendilerini tanımlamak için kullandığı sertifikalar sadece belirli bir süre için geçerlidir. Cihazınızın saati yanlış olduğundan Chromium sertifikaları gerektiği gibi kontrol edemiyor.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME"/>, göz atma deneyiminize olumsuz etki yapabileceği için Chromium tarafından engellendi.</translation>
 <translation id="750717762378961310">Bu dosya kötü amaçlı ve Chromium tarafından engellendi.</translation>
 <translation id="6944967875980567883">Chromium'a yüklenen modüller</translation>
@@ -111,8 +118,11 @@
 <translation id="6970811910055250180">Cihazınız güncelleniyor...</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="85843667276690461">Chromium'u kullanma konusunda yardım alın</translation>
+<translation id="7731057871445607139">Chromium tuhaf biçimde mi çalışıyor?</translation>
 <translation id="5358375970380395591">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium Uygulama Başlatıcı</translation>
+<translation id="5563479599352954471">Tek dokunmayla ara</translation>
+<translation id="1525296040716062026">Chromium bunu |Google tarafından kaydedilen şifreler| bölümünüze depolayacak ve hatırlamak zorunda kalmamanız için gerektiğinde sizin yerinize otomatik olarak dolduracaktır.</translation>
 <translation id="8493179195440786826">Chromium Sürümü Eski</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/>, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
@@ -130,12 +140,14 @@
 <translation id="2216475571518225820">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Chromium Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve uyumlu bir tarayıcı indirin.</translation>
 <translation id="3487263810738775861">Bir uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
+<translation id="7549178288319965365">Chromium OS hakkında</translation>
 <translation id="6248213926982192922">Chromium varsayılan tarayıcı olsun</translation>
 <translation id="4943838377383847465">Chromium arka plan modunda.</translation>
 <translation id="6309712487085796862">Chromium kameranızı kullanıyor.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Beni rahatsız etmeyin</translation>
+<translation id="3736987306260231966">Bilgisayarınız İnternet'e bağlı olmadığından Chromium web sayfasını görüntüleyemiyor.</translation>
 <translation id="1745962126679160932">Chromium, bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız, ancak yine de bundan sonraki ödemeler için kartınızın güvenlik kodunu doğrulamanız gerekir.</translation>
 <translation id="275588974610408078">Chromium'da kilitlenmeyi raporlama özelliği yoktur.</translation>
 <translation id="5909170354645388250">Chromium'da kullanılmaz. Kaynak haritaları senkronize halde tutmak için yer tutucu. Bir bağımsız değişkenini beklemektedir: $ 1.</translation>
@@ -151,6 +163,7 @@
 <translation id="2648074677641340862">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> Chromium'a eklendi.</translation>
 <translation id="549669000822060376">Chromium en son sistem güncellemelerini yüklerken lütfen bekleyin.</translation>
+<translation id="3281987435599047980">bir kelimeyi ve onu çevreleyen bağlamı Google Arama'ya gönderir; tanımları, resimleri, arama sonuçlarını ve diğer ayrıntıları döndürür.</translation>
 <translation id="4559775032954821361">Chromium menüsü &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
@@ -167,11 +180,13 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8907580949721785412">Chromium şifreleri göstermeye çalışıyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
 <translation id="1174473354587728743">Bilgisayarı paylaşıyor musunuz? Artık Chromium'u tam olarak istediğiniz gibi kurabilirsiniz.</translation>
 <translation id="9013087743919948559">Chromium'a ekle</translation>
+<translation id="2525993619214772747">Chromium Tuhaf Biçimde mi Çalışıyor?</translation>
 <translation id="6334986366598267305">Chromium'u Google Hesabınızla ve paylaşılan bilgisayarlarda kullanmak artık daha kolay.</translation>
 <translation id="6212496753309875659">Bu bilgisayarda Chromium'un daha yeni bir sürümü de var. Yazılım çalışmıyorsa, Chromium'u kaldırın ve tekrar deneyin.</translation>
 <translation id="1115445892567829615">Chromium, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1298199220304005244">Chromium OS'u kullanma konusunda yardım alın</translation>
 <translation id="331951419404882060">Oturum açma sırasındaki bir hata nedeniyle Chromium OS, verilerinizi senkronize edemedi.</translation>
+<translation id="957661023718540197">Chromium &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ile özel bağlantı oluşturamıyor. Bu durum büyük olasılıkla bilgisayarınızın tarihinin yanlış ayarlanmış olmasından kaynaklanıyordur (bilgisayarınızın tarihi <ph name="DATE"/> olarak ayarlanmış). <ph name="BEGIN_LINK"/>Bilgisayarınızın tarih ve saatini güncelledikten<ph name="END_LINK"/> sonra bu sayfayı yenilemelisiniz.</translation>
 <translation id="8187289872471304532">Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
           öğesine gidin ve seçilmiş olabilecek proxy'lerin seçimini kaldırın.</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME"/> kötü amaçlı ve Chromium tarafından engellendi.</translation>
@@ -199,6 +214,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="457845228957001925">Chromium verilerinizle ilgili önemli bilgiler</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS"/> olarak oturum açtınız. Şimdi oturum açtığınız tüm cihazlarda yer işaretlerinize, geçmişinize ve diğer ayarlarınıza erişebilirsiniz.</translation>
+<translation id="6429869149766938">Chromium tarayıcı ayarlarınızın bilgisayarınızdaki bir program tarafından sizin bilginiz olmadan değiştirilmiş olabileceğini algıladı. Söz konusu programı kaldırmak için Google'ın Yazılım Kaldırma Aracı'nı kullanabilirsiniz.</translation>
 <translation id="7483335560992089831">Şu anda çalışan aynı Chromium sürümünü yükleyemezsiniz. Lütfen Chromium'u kapatın ve yeniden deneyin.</translation>
 <translation id="1150979032973867961">Bu sunucu <ph name="DOMAIN"/> olduğunu kanıtlayamadı. Bilgisayarınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="7641113255207688324">Chromium varsayılan tarayıcınız değil.</translation>
@@ -208,6 +224,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="805745970029938373">Chromium uygulamaları, uzantıları ve web sitelerinden gelen tüm bildirimlerinizi burada görebilirsiniz.</translation>
 <translation id="2119636228670142020">&amp;Chromium OS hakkında</translation>
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
+<translation id="3800866064403932345">Güvenli bir ağ bağlantısı oluşturmak için bilgisayarınızın saati doğru olmalıdır. Çünkü web sitelerinin güvenli bir bağlantı oluştururken kendilerini tanımlamak için kullandığı sertifikalar sadece belirli bir süre için geçerlidir. Bilgisayarınızın saati yanlış olduğundan Chromium sertifikaları gerektiği gibi kontrol edemiyor.</translation>
 <translation id="378917192836375108">Chromium Web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
 <translation id="8724049448828509830">Şu anda devam eden bir indirme işlemi var. Chromium'dan çıkmak ve indirme işlemini iptal etmek istiyor musunuz?</translation>
 <translation id="608189560609172163">Oturum açma sırasındaki bir hata nedeniyle Chromium, verilerinizi senkronize edemedi.</translation>
@@ -221,6 +238,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="9013262824292842194">Chromium; Windows Vista veya Windows XP SP2 ya da daha ileri bir sürümü gerektirir.</translation>
 <translation id="1967743265616885482">Aynı isme sahip bir modülün Chromium'la çakıştığı bilinmektedir.</translation>
 <translation id="7962572577636132072">Chromium otomatik olarak güncellenir, böylece her zaman en yeni sürüme sahip olursunuz.</translation>
+<translation id="722928257909516027">Chromium menüsünü göster</translation>
 <translation id="8704119203788522458">Bu sizin Chromium'unuz</translation>
 <translation id="8269379391216269538">Chromium'u daha iyi hale getirmeye yardımcı olun</translation>
 <translation id="4224199872375172890">Chromium güncel durumda.</translation>

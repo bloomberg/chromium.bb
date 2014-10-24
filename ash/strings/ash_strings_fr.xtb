@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Proxy…</translation>
 <translation id="938582441709398163">Clavier en superposition</translation>
 <translation id="4387004326333427325">Certificat d'authentification rejeté à distance.</translation>
+<translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">La résolution de l'écran &quot;<ph name="DISPLAY_NAME"/>&quot; est désormais définie sur <ph name="RESOLUTION"/>.</translation>
 <translation id="6943836128787782965">Échec de l'obtention HTTP.</translation>
@@ -110,6 +111,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2614835198358683673">Votre Chromebook risque de ne pas charger lorsqu'il est allumé. Utilisez plutôt le chargeur officiel.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4442424173763614572">Échec de la résolution DNS.</translation>
+<translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="2204305834655267233">Informations réseau</translation>
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT"/>.</translation>
@@ -138,6 +140,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6062360702481658777">Vous allez être déconnecté automatiquement dans <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Écran inconnu</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Arrêter le partage d'écran ?</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Verrouiller</translation>
@@ -174,6 +177,7 @@ Message du serveur : <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> est une session publique gérée par <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Échec de la connexion au réseau : <ph name="DETAILS"/>.</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
+<translation id="479989351350248267">rechercher</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">La batterie est chargée à <ph name="PERCENTAGE"/> %.</translation>
@@ -224,7 +228,6 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> d'autonomie</translation>
 <translation id="3009178788565917040">Sortie</translation>
 <translation id="520760366042891468">Partage du contrôle de votre écran via Hangouts</translation>
-<translation id="4015692727874266537">Connecter un autre compte…</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/> : <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Félicitations ! Votre service de données &quot;<ph name="NAME"/>&quot; a été activé et est prêt à être utilisé.</translation>

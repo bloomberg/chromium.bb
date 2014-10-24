@@ -30,7 +30,6 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7782471917492991422">请检查您的计算机电源管理设置，确保未将该设置配置为无操作时进入休眠模式。</translation>
 <translation id="7665369617277396874">添加帐户</translation>
-<translation id="4939475390270873744">• 修复了启动时崩溃的问题。</translation>
 <translation id="2707879711568641861">缺少 Chrome 远程桌面所需的某些组件。请确保您已安装最新版本，然后重试。</translation>
 <translation id="1779766957982586368">关闭窗口</translation>
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
@@ -79,6 +78,7 @@
 <translation id="6204583485351780592"><ph name="HOSTNAME"/>（已过期）</translation>
 <translation id="3884839335308961732">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
 <translation id="327263477022142889">愿意帮忙改进 Chrome 远程桌面吗？<ph name="LINK_BEGIN"/>请参与调查<ph name="LINK_END"/>。</translation>
+<translation id="6612717000975622067">发送Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">已连接：</translation>
 <translation id="8509907436388546015">桌面集成进程</translation>
 <translation id="4736223761657662401">连接历史记录</translation>
@@ -106,10 +106,10 @@
 <translation id="5908809458024685848">您目前并未登录到 Chrome 远程访问。请登录，然后重试。</translation>
 <translation id="7401733114166276557">Chrome 远程桌面</translation>
 <translation id="3362124771485993931">重新输入 PIN</translation>
+<translation id="1760808606374294203">• 针对 Android Lollipop 更正了一些错误。</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="8172070902751707422">身份验证失败。请重新登录 Chrome 远程桌面。</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
 <translation id="173559734173571936">要使用 Chrome 远程桌面，您必须向您的计算机授予更多访问权限。此操作只需执行一次。</translation>
 <translation id="9032136467203159543">缺少 Chrome 远程访问所需的某些组件。请确保您已安装最新版本，然后重试。</translation>
@@ -124,6 +124,7 @@
 <translation id="3020807351229499221">无法更新 PIN。请稍后重试。</translation>
 <translation id="2647232381348739934">Chrome 远程访问服务</translation>
 <translation id="579702532610384533">重新连接</translation>
+<translation id="4867841927763172006">发送PrtScn</translation>
 <translation id="4211066471404647515">缺少 Chrome 远程访问所需的某些组件。请确保您所运行的是 Chrome 的最新版本，然后重试。</translation>
 <translation id="5773590752998175013">配对日期</translation>
 <translation id="5265129178187621741">（Chromebook 尚不支持此功能…敬请期待）</translation>
@@ -184,7 +185,6 @@
 <translation id="4573676252416618192">Chrome 远程
 桌面主机</translation>
 <translation id="4703799847237267011">您的 Chrome 远程访问会话已结束。</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">用户对用户的屏幕共享功能，尤其适用于远程技术支持。</translation>
 <translation id="652218476070540101">正在更新此计算机的 PIN…</translation>
 <translation id="4563926062592110512">与下列客户端的连接已中断：<ph name="CLIENT_USERNAME"/>。</translation>
@@ -194,6 +194,7 @@
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4513946894732546136">反馈</translation>
 <translation id="4277736576214464567">访问代码无效，请重试。</translation>
+<translation id="6550675742724504774">选项</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME"/>上的 Chrome 远程桌面已过期，需要更新。</translation>
 <translation id="7729639150174291243">您目前并未登录到 Chrome 远程桌面。请登录，然后重试。</translation>
 <translation id="2841013758207633010">时间</translation>
@@ -204,6 +205,7 @@
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="837021510621780684">来自此计算机</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">接受</translation>
 <translation id="7215059001581613786">请输入至少包含 6 位数的 PIN。</translation>
 <translation id="8383794970363966105">要使用Chrome远程访问，您需要先为自己的设备添加一个Google帐户。</translation>
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>

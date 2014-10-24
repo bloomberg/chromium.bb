@@ -10,6 +10,7 @@
 
 Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
+<translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="345171907106878721">Chrome에 본인 추가</translation>
 <translation id="4921569541910214635">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="6236285698028833233">Chrome에서 업데이트를 중단했으며 이 버전의 운영체제를 더 이상 지원하지 않습니다.</translation>
@@ -21,6 +22,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3784527566857328444">Chrome에서 삭제...</translation>
 <translation id="1225016890511909183">Chromium은 사용자의 정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없지만 향후 결제 시 카드의 보안 코드는 확인해야 합니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
+<translation id="7400722733683201933">Chrome 정보</translation>
 <translation id="8838365799985821335">Chrome을 시작하면 표시되는 페이지가 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
@@ -32,6 +34,8 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="110877069173485804">나만의 Chrome</translation>
 <translation id="8406086379114794905">더 나은 Chrome을 만들 수 있도록 도와주세요.</translation>
 <translation id="2896252579017640304">Chrome 앱 실행</translation>
+<translation id="4121281502786319101">Chrome에서 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 비공개 연결을 구성할 수 없습니다. 기기의 날짜가 잘못 설정되었을 수도 있기 때문입니다(기기 날짜가 <ph name="DATE"/>(으)로 설정되어 있음). <ph name="BEGIN_LINK"/>기기의 날짜와 시간을 업데이트<ph name="END_LINK"/>한 후 이 페이지를 새로고침하세요.</translation>
+<translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
 <translation id="2721687379934343312">Mac에서는 비밀번호가 키체인에 저장되며 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="4953650215774548573">Chrome을 기본 브라우저로 설정</translation>
@@ -58,16 +62,20 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="127345590676626841">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chrome이 다시 시작되며 계속 작업할 수 있습니다.</translation>
+<translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/>SCHEME링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는PROTOLINK입니다 <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Chrome이 다운되었습니다. 다시 시작하시겠습니까?</translation>
 <translation id="1480489203462860648">사용해 보세요. 이미 설치되었습니다.</translation>
 <translation id="5204098752394657250">Chrome <ph name="TERMS_OF_SERVICE_LINK"/>서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="1393853151966637042">Chrome 사용에 대한 도움말</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS"/>(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
+<translation id="5338943029751206389">사이트에서 오래된 보안 설정을 사용하고 있으므로 향후 Chrome 버전에서 안전하게 액세스하지 못할 수 있습니다.</translation>
 <translation id="4513711165509885787">결제 세부정보가 Chrome에 저장되었습니다.</translation>
 <translation id="5253588388888612165"><ph name="PROFILE_NAME"/>님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chrome에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
 <translation id="7098166902387133879">Chrome에서 마이크를 사용 중입니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
+<translation id="4315766637075282876">Chrome에서 이 비밀번호를 |Google에 저장된 비밀번호|에 저장하며 사용자가 기억할 필요가 없도록 자동 입력합니다.</translation>
 <translation id="5298539825145851748">Chrome에서 삭제</translation>
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
 <translation id="8286862437124483331">Chrome에서 비밀번호를 표시하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
@@ -92,6 +100,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome이 이전 버전임</translation>
 <translation id="4424024547088906515">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
+<translation id="6722021951952731012">보안 네트워크 연결을 구성하려면 컴퓨터의 시계가 정확해야 합니다. 이는 보안 연결을 구성할 때 웹사이트에서 자신을 식별하는 데 사용하는 인증서가 특정 기간 동안만 유효하기 때문입니다. 컴퓨터 시계가 맞지 않으면 Chrome에서 인증서를 올바르게 확인할 수 없습니다.</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="1195935957447623558">Chrome이 제대로 종료되지 않았습니다. 사용 중이던 페이지를 다시 열려면 '복구'를 클릭하세요.</translation>
 <translation id="2576431527583832481">한층 개선된 Chrome의 최신 버전이 출시되었습니다.</translation>
@@ -128,8 +137,10 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>경고:<ph name="END_BOLD"/> Chrome에서는 확장 프로그램에 인터넷 사용기록이 저장될 수 있습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
 <translation id="7808348361785373670">Chrome에서 삭제...</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5563479599352954471">터치 한 번으로 검색</translation>
 <translation id="2664962310688259219">Chrome OS 오픈소스 라이선스</translation>
 <translation id="2290014774651636340">Google API 키가 누락되었습니다. Chrome의 일부 기능이 사용 중지됩니다.</translation>
+<translation id="2397416548179033562">Chrome 메뉴 표시</translation>
 <translation id="4794050651896644714">Chrome에 세부정보 저장</translation>
 <translation id="911206726377975832">인터넷 사용정보도 삭제하시겠습니까?</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>
@@ -147,6 +158,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
 <translation id="7062966102157262887">현재 한 개의 다운로드가 진행 중입니다. Chrome을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="4273752058983339720">컴퓨터를 시작하면 Chrome을 자동으로 실행하도록 설정됩니다.</translation>
+<translation id="415994390253732730">Chrome이 올바르게 작동하지 않습니까?</translation>
 <translation id="1104959162601287462">Chrome OS 정보(&amp;C)</translation>
 <translation id="5328989068199000832">Chrome 바이너리</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
@@ -156,6 +168,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8568392309447938879">앱을 사용하려면 Chrome에 로그인해야 합니다. 로그인하면 Chrome이 기기 간에 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정을 동기화할 수 있습니다.</translation>
 <translation id="4990567037958725628">Chrome 카나리아</translation>
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
+<translation id="2705287621619748344">Chrome에서 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 대한 비공개 연결을 구성할 수 없습니다. 기기의 날짜가  잘못 설정되었을 수도 있기 때문입니다(기기 날짜가 <ph name="DATE"/>(으)로 설정되어 있음). <ph name="BEGIN_LINK"/>컴퓨터의 날짜와 시간을 업데이트<ph name="END_LINK"/>한 후 이 페이지를 새로고침하세요.</translation>
 <translation id="5788838254726722945">Chrome 앱 실행기 제거</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="2665296953892887393">오류 보고서와 <ph name="UMA_LINK"/>을(를) Google로 전송하여 Chrome 개선에 참여합니다.</translation>
@@ -169,6 +182,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
         그래도 문제가 해결되지 않으면 이 옵션을 다시 선택하여
         성능을 개선해 보시기 바랍니다.</translation>
 <translation id="6235018212288296708">Chrome이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
+<translation id="3281987435599047980">단어 및 주변 내용을 Google 검색에 전송하며 정의, 사진, 검색결과, 기타 세부정보를 표시합니다.</translation>
 <translation id="61852838583753520">Chrome OS 업데이트(&amp;C)</translation>
 <translation id="5028489144783860647">Chrome에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>
 <translation id="9026991721384951619">계정의 로그인 세부정보가 오래되어 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
@@ -199,6 +213,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="629218512217695915">Chrome에서 생성한 비밀번호 사용</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
 <translation id="6113794647360055231">더욱 업그레이드된 Chrome</translation>
+<translation id="4367618624832907428">컴퓨터가 인터넷에 연결되어 있지 않아 Chrome에서 웹페이지를 표시할 수 없습니다.</translation>
 <translation id="174539241580958092">로그인 중 오류가 발생하여 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="8255190535488645436">Chrome에서 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="7396375882099008034">Chrome이 방화벽이나 바이러스 백신이 설정된
@@ -207,6 +222,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3170677364322086041">사이트에서 사용 중인 Chrome 프레임 플러그인의 보안 및 안정성 업데이트가 중단되었습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="8205111949707227942"/>
 <translation id="7253415505590551024">현재 여러 개의 다운로드가 진행 중입니다. Chrome을 종료하고 다운로드를 취소하시겠습니까?</translation>
+<translation id="487887346205285304">Chrome이 올바르게 작동하지 않습니까?</translation>
 <translation id="3622797965165704966">이제 Google 계정으로 공유 컴퓨터에서 Chrome을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="2769762047821873045">Chrome이 기본 브라우저로 설정되어 있지 않습니다.</translation>
@@ -224,6 +240,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
+<translation id="5489213858994471184">Chrome에서 브라우저 설정이 사용자가 모르는 사이에 컴퓨터의 특정 프로그램에 의해 변경된 것을 감지했습니다. Google의 소프트웨어 제거 도구를 사용하면 해당 프로그램을 제거할 수 있습니다.</translation>
 <translation id="8679801911857917785">또한 Chrome을 시작할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="5334545119300433702">이 모듈은 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="4407807842708586359">Chrome OS</translation>
@@ -249,6 +266,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="853189717709780425">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 이렇게 하면 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME"/>에 영구적으로 연결됩니다. Google 계정 대시보드를 통해 이 데이터를 삭제할 수 있지만 다른 계정에 연결할 수는 없습니다.</translation>
 <translation id="6049075767726609708">시스템에 모든 사용자용 Chrome이 설치되었습니다. 기존의 사용자 수준 Chrome 대신 설치된 시스템 수준 Chrome이 사용됩니다.</translation>
 <translation id="1818142563254268765">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 업데이트해야 합니다.</translation>
+<translation id="4821676311965554623">보안 네트워크 연결을 구성하려면 컴퓨터의 시계가 정확해야 합니다. 이는 보안 연결을 구성할 때 웹사이트에서 자신을 식별하는 데 사용하는 인증서가 특정 기간 동안만 유효하기 때문입니다. 컴퓨터 시계가 맞지 않으면 Chrome에서 인증서를 제대로 확인할 수 없습니다.</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">설치가 거의 완료되었습니다. 업데이트를 완료하려면 Chrome을 다시 시작하세요.</translation>

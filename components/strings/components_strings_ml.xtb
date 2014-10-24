@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">വകുപ്പ്</translation>
 <translation id="4258748452823770588">മോശം സിഗ്‌നേച്ചർ</translation>
 <translation id="3024663005179499861">തെറ്റായ നയ തരം</translation>
+<translation id="2030481566774242610">നിങ്ങൾ ഉദ്ദേശിച്ചത് <ph name="LINK"/> ആണോ?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, കാലഹരണപ്പെടല്‍‌: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">ലിസ്റ്റ് എൻട്രി &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">രാജ്യം</translation>
 <translation id="5031870354684148875">Google വിവര്‍ത്തനം എന്നതിനെക്കുറിച്ച് </translation>
+<translation id="1152921474424827756"><ph name="URL"/>-ന്റെ <ph name="BEGIN_LINK"/>കാഷെ ചെയ്‌ത പകർപ്പ്<ph name="END_LINK"/> ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="6891596781022320156">നയ നില പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="2025186561304664664">പ്രോക്സി യാന്ത്രികമായി കോൺഫിഗർ ചെയ്യാൻ സജ്ജമാക്കി.</translation>
 <translation id="1853748787962613237">ലേഖനം പ്രദർശിപ്പിക്കുന്നത് പരാജയപ്പെട്ടു.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ ബാര്‍‌</translation>
 <translation id="6965978654500191972">ഉപാധി</translation>
 <translation id="8249320324621329438">അവസാനം ലഭ്യമായത്:</translation>
+<translation id="194030505837763158"><ph name="LINK"/>-ലേക്ക് പോകുക</translation>
 <translation id="1285320974508926690">ഈ സൈറ്റ് ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
 <translation id="1344588688991793829">Chromium ഓട്ടോഫിൽ ക്രമീകരണങ്ങൾ...</translation>
 <translation id="6282194474023008486">തപാല്‍ കോഡ്</translation>

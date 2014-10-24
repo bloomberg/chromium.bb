@@ -30,7 +30,6 @@ Chromoting</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7782471917492991422">Моля, проверете настройките за управление на захранването на компютъра си и се уверете, че не е конфигуриран да преминава в спящ режим при неактивност.</translation>
 <translation id="7665369617277396874">Добавяне на профил</translation>
-<translation id="4939475390270873744">• Отстранена е грешка, причиняваща срив при стартиране.</translation>
 <translation id="2707879711568641861">Липсват някои компоненти, задължителни за отдалечения работен плот на Chrome. Моля, уверете се, че сте инсталирали най-новата версия и опитайте пак.</translation>
 <translation id="1779766957982586368">Затваряне на прозореца</translation>
 <translation id="2499160551253595098">Помогнете ни да подобрим отдалечения работен плот на Chrome, като ни разрешите да събираме статистически данни за употребата и сигнали за сривове.</translation>
@@ -79,6 +78,7 @@ Chromoting</translation>
 <translation id="6204583485351780592">„<ph name="HOSTNAME"/>“ (неактуална версия)</translation>
 <translation id="3884839335308961732">Моля, потвърдете профила и ПИН кода си по-долу, за да разрешите достъпа чрез отдалечения работен плот на Chrome.</translation>
 <translation id="327263477022142889">Искате ли да помогнете за подобряването на отдалечения работен плот на Chrome? <ph name="LINK_BEGIN"/>Участвайте в проучването.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Изпращане на Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Има връзка:</translation>
 <translation id="8509907436388546015">Процес на интегриране на работния плот</translation>
 <translation id="4736223761657662401">История на връзките</translation>
@@ -106,10 +106,10 @@ Chromoting</translation>
 <translation id="5908809458024685848">Не сте влезли в Chromoting. Моля, направете го и опитайте отново.</translation>
 <translation id="7401733114166276557">Отдалечен работен плот на Chrome</translation>
 <translation id="3362124771485993931">Въведете отново ПИН кода</translation>
+<translation id="1760808606374294203">• Поправки за Android (Lollipop).</translation>
 <translation id="154040539590487450">Стартирането на услугата за отдалечен достъп не бе успешно.</translation>
 <translation id="7948001860594368197">Опции за екрана</translation>
 <translation id="8172070902751707422">Удостоверяването не бе успешно. Моля, влезте отново в отдалечения работен плот на Chrome.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">Ако излезете от тази страница, сесията ви в отдалечения работен плот на Chrome ще приключи.</translation>
 <translation id="173559734173571936">За да използвате отдалечения работен плот на Chrome, е необходимо да предоставите разширени разрешения за достъп до компютъра си. Трябва да направите това само веднъж.</translation>
 <translation id="9032136467203159543">Липсват някои компоненти, задължителни за Chromoting. Моля, уверете се, че сте инсталирали най-новата версия, и опитайте пак.</translation>
@@ -124,6 +124,7 @@ Chromoting</translation>
 <translation id="3020807351229499221">Актуализирането на ПИН кода не бе успешно. Моля, опитайте отново по-късно.</translation>
 <translation id="2647232381348739934">Услуга за Chromoting</translation>
 <translation id="579702532610384533">Повторно свързване</translation>
+<translation id="4867841927763172006">Изпращане на PrtScn</translation>
 <translation id="4211066471404647515">Липсват някои компоненти, задължителни за Chromoting. Моля, уверете се, че използвате най-новата версия на Chrome, и опитайте пак.</translation>
 <translation id="5773590752998175013">Дата на сдвояване</translation>
 <translation id="5265129178187621741">(тази функция още не е налице за Chromebook – проверявайте за новости)</translation>
@@ -184,7 +185,6 @@ Chromoting</translation>
 <translation id="4573676252416618192">Хост на отдалечения
 работен плот на Chrome</translation>
 <translation id="4703799847237267011">Сесията ви в Chromoting приключи.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Споделяне на екран от потребител на потребител – идеално за отдалечена техническа поддръжка.</translation>
 <translation id="652218476070540101">ПИН кодът за този компютър се актуализира…</translation>
 <translation id="4563926062592110512">Връзката с клиентската програма е прекъсната: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -194,6 +194,7 @@ Chromoting</translation>
 <translation id="6668065415969892472">ПИН кодът ви е актуализиран.</translation>
 <translation id="4513946894732546136">Отзиви</translation>
 <translation id="4277736576214464567">Кодът за достъп е невалиден. Моля, опитайте отново.</translation>
+<translation id="6550675742724504774">Опции</translation>
 <translation id="979100198331752041">Версията на отдалечения работен плот на Chrome на „<ph name="HOSTNAME"/>“ не е актуална и трябва да се актуализира.</translation>
 <translation id="7729639150174291243">Не сте влезли в отдалечения работен плот на Chrome. Моля, направете го и опитайте отново.</translation>
 <translation id="2841013758207633010">Време</translation>
@@ -204,6 +205,7 @@ Chromoting</translation>
 <translation id="4277463233460010382">Този компютър е конфигуриран така, че една или повече клиентски програми да могат да установяват връзка, без да въвеждат ПИН код.</translation>
 <translation id="837021510621780684">От този компютър</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Приемам</translation>
 <translation id="7215059001581613786">Моля, въведете ПИН код, състоящ се от шест или повече цифри.</translation>
 <translation id="8383794970363966105">За да използвате Chromoting, ще се наложи да добавите профил в Google към устройството си.</translation>
 <translation id="1546934824884762070">Възникна неочаквана грешка. Моля, подайте сигнал за този проблем до програмистите.</translation>

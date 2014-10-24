@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">പ്രോക്‌സി...</translation>
 <translation id="938582441709398163">കീബോര്‍ഡ് ഓവര്‍ലേ</translation>
 <translation id="4387004326333427325">പ്രാമാണീകരണ സർട്ടിഫിക്കറ്റ് വിദൂരമായി നിരസിച്ചു</translation>
+<translation id="6047696787498798094">മറ്റൊരു ഉപയോക്താവിലേക്ക് മാറുമ്പോൾ സ്ക്രീൻ പങ്കിടൽ നിർത്തും. നിങ്ങൾക്ക് തുടരണോ?</translation>
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> മിഴിവ് <ph name="RESOLUTION"/> എന്നതിലേയ്‌ക്ക് മാറ്റി</translation>
 <translation id="6943836128787782965">HTTP പരാജയപ്പെട്ടു</translation>
@@ -109,6 +110,7 @@
 <translation id="2614835198358683673">ഓണായിരിക്കുമ്പോൾ നിങ്ങളുടെ Chromebook ചാർജ് ചെയ്യാനിടയില്ല. ഔദ്യോഗിക ചാർജ്ജർ ഉപയോഗിക്കുന്നത് പരിഗണിക്കുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
 <translation id="4442424173763614572">DNS തിരയല്‍ പരാജയപ്പെട്ടു</translation>
+<translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
 <translation id="2204305834655267233">നെറ്റ്‌വർക്ക് വിവരം</translation>
 <translation id="1621499497873603021">ബാറ്ററി ശൂന്യമാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_LEFT"/></translation>
@@ -137,6 +139,7 @@
 <translation id="6062360702481658777">നിങ്ങൾ <ph name="LOGOUT_TIME_LEFT"/>-നുള്ളിൽ യാന്ത്രികമായി സൈൻ ഔട്ട് ചെയ്യും.</translation>
 <translation id="252373100621549798">അജ്ഞാത പ്രദർശനം</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
+<translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
 <translation id="2761704814324807722">സ്‌റ്റാറ്റസ് ട്രേ, സമയം, <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">ലോക്കുചെയ്യുക</translation>
@@ -173,6 +176,7 @@
 <translation id="2999742336789313416"><ph name="DOMAIN"/> നിയന്ത്രിക്കുന്ന എല്ലാവർക്കുമുള്ള ഒരു സെഷനാണ് <ph name="DISPLAY_NAME"/></translation>
 <translation id="9044646465488564462">നെറ്റ്‌വര്‍‌ക്കിലേക്ക് കണക്റ്റുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+തിരയൽ അല്ലെങ്കിൽ Shift</translation>
 <translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. അനുമതി നൽകുന്നതിനുമുമ്പ്, ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ കാണിച്ചിരിക്കുന്നുവെന്ന് സ്ഥിരീകരിക്കുക: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ബാറ്ററി <ph name="PERCENTAGE"/>% നിറഞ്ഞു.</translation>
@@ -222,7 +226,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ശേഷിക്കുന്നു</translation>
 <translation id="3009178788565917040">ഔട്ട്പുട്ട്</translation>
 <translation id="520760366042891468">നിങ്ങളുടെ സ്‌ക്രീനിന്റെ നിയന്ത്രണം Hangouts വഴി പങ്കിടുന്നു.</translation>
-<translation id="4015692727874266537">മറ്റൊരു അക്കൗണ്ടിൽ സൈൻ ഇൻ ചെയ്യുക...</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">അഭിനന്ദനങ്ങൾ! നിങ്ങളുടെ '<ph name="NAME"/>' ഡാറ്റ സേവനം സജീവമായി, ഇത് പ്രവർത്തിക്കാൻ തയ്യാറാണ്.</translation>

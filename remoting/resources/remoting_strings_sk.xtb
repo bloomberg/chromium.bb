@@ -30,7 +30,6 @@ Hostiteľ</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7782471917492991422">Skontrolujte nastavenia správy napájania svojho počítača a uistite sa, že nie je nakonfigurovaný prechod do režimu spánku pri nečinnosti.</translation>
 <translation id="7665369617277396874">Pridať účet</translation>
-<translation id="4939475390270873744">• Oprava zlyhania pri spustení.</translation>
 <translation id="2707879711568641861">Niektoré komponenty potrebné pre Vzdialenú plochu Chrome chýbajú. Uistite sa, že ste nainštalovali najnovšiu verziu a skúste to znova.</translation>
 <translation id="1779766957982586368">Zavrieť okno</translation>
 <translation id="2499160551253595098">Pomôžte nám vylepšiť službu Vzdialená plocha Chrome tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>
@@ -79,6 +78,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (zastarané)</translation>
 <translation id="3884839335308961732">Ak chcete povoliť prístup k Vzdialenej ploche Chrome, potvrďte svoj účet a kód PIN nižšie.</translation>
 <translation id="327263477022142889">Chcete pomôcť vylepšiť funkciu Vzdialená plocha Chrome? <ph name="LINK_BEGIN"/>Zúčastnite sa prieskumu.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Odoslať akciu Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Pripojený:</translation>
 <translation id="8509907436388546015">Proces integrácie pracovnej plochy</translation>
 <translation id="4736223761657662401">História pripojení</translation>
@@ -106,10 +106,10 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="5908809458024685848">Nie ste prihlásený/-á do služby Chromoting. Prihláste sa a skúste to znova.</translation>
 <translation id="7401733114166276557">Vzdialená plocha Chrome</translation>
 <translation id="3362124771485993931">Znova zadajte kód PIN</translation>
+<translation id="1760808606374294203">• Opravy pre systém Android Lollipop</translation>
 <translation id="154040539590487450">Spustenie služby vzdialeného prístupu zlyhalo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="8172070902751707422">Overenie totožnosti zlyhalo. Prihláste sa do služby Vzdialená plocha Chrome znova.</translation>
-<translation id="6146986332407778716">Ctrl + Alt + Del</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
 <translation id="173559734173571936">Ak chcete používať Vzdialenú plochu Chrome, musíte najprv udeliť rozšírené povolenia na prístup k vášmu počítaču. Stačí to urobiť len raz.</translation>
 <translation id="9032136467203159543">Niektoré komponenty potrebné pre aplikáciu Chromoting chýbajú. Uistite sa, že ste nainštalovali najnovšiu verziu a skúste to znova.</translation>
@@ -124,6 +124,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="3020807351229499221">Aktualizácia kódu PIN sa nepodarila. Skúste to znova neskôr.</translation>
 <translation id="2647232381348739934">Služba Chromoting</translation>
 <translation id="579702532610384533">Znova pripojiť</translation>
+<translation id="4867841927763172006">Odoslať akciu PrtScn</translation>
 <translation id="4211066471404647515">Niektoré komponenty potrebné pre aplikáciu Chromoting chýbajú. Uistite sa, že používate najnovšiu verziu prehliadača Chrome a skúste to znova.</translation>
 <translation id="5773590752998175013">Dátum párovania</translation>
 <translation id="5265129178187621741">(táto funkcia zatiaľ nie je pre Chromebooky k dispozícii... sledujte nás aj naďalej)</translation>
@@ -184,16 +185,16 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="4573676252416618192">Vzdialená plocha Chrome
 Hostiteľ pracovnej plochy</translation>
 <translation id="4703799847237267011">Vaša relácia aplikácie Chromoting bola ukončená.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Zdieľanie obrazovky medzi používateľmi – ideálne pre vzdialenú technickú podporu.</translation>
 <translation id="652218476070540101">Prebieha aktualizácia kódu PIN pre tento počítač...</translation>
 <translation id="4563926062592110512">Klient bol odpojený: <ph name="CLIENT_USERNAME"/>.</translation>
-<translation id="5308380583665731573">Pripojiť</translation>
+<translation id="5308380583665731573">Pripojenie</translation>
 <translation id="7319983568955948908">Prestať zdieľať</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všetky práva vyhradené.</translation>
 <translation id="6668065415969892472">Váš kód PIN bol aktualizovaný.</translation>
 <translation id="4513946894732546136">Spätná väzba</translation>
 <translation id="4277736576214464567">Prístupový kód je neplatný. Skúste to znova.</translation>
+<translation id="6550675742724504774">Možnosti</translation>
 <translation id="979100198331752041">Vzdialená plocha Chrome na počítači <ph name="HOSTNAME"/> je zastaraná a vyžaduje aktualizáciu.</translation>
 <translation id="7729639150174291243">Nie ste prihlásený/-á do služby Vzdialená plocha Chrome. Prihláste sa a skúste to znova.</translation>
 <translation id="2841013758207633010">Čas</translation>
@@ -204,6 +205,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurovaný tak, aby povolil pripojenie jedného alebo viacerých klientov bez zadania kódu PIN.</translation>
 <translation id="837021510621780684">Z tohto počítača</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
+<translation id="4918086044614829423">Prijať</translation>
 <translation id="7215059001581613786">Zadajte kód PIN obsahujúci 6 alebo viac číslic.</translation>
 <translation id="8383794970363966105">Ak chcete používať funkciu Chromoting, musíte si na zariadení pridať účet Google.</translation>
 <translation id="1546934824884762070">Vyskytla sa neočakávaná chyba. Nahláste tento problém vývojárom.</translation>

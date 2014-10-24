@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">વિભાગ</translation>
 <translation id="4258748452823770588">ખરાબ હસ્તાક્ષર</translation>
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
+<translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK"/> છે?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, સમાપ્તિ: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">&quot;<ph name="ENTRY_INDEX"/>&quot; એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">દેશ</translation>
 <translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
+<translation id="1152921474424827756"><ph name="URL"/> ની <ph name="BEGIN_LINK"/>કેશ કરેલ કૉપિ<ph name="END_LINK"/> ઍક્સેસ કરો</translation>
 <translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="2025186561304664664">પ્રોક્સી સ્વતઃ ગોઠવાયેલી પર સેટ છે.</translation>
 <translation id="1853748787962613237">લેખ પ્રદર્શિત કરવામાં નિષ્ફળ થયાં.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="6965978654500191972">ઉપકરણ</translation>
 <translation id="8249320324621329438">છેલ્લું આનયન:</translation>
+<translation id="194030505837763158"><ph name="LINK"/> પર જાઓ</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="1344588688991793829">Chromium સ્વતઃભરણ સેટિંગ્સ...</translation>
 <translation id="6282194474023008486">પોસ્ટલ કોડ</translation>

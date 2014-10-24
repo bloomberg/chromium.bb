@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Hamparan Keyboard</translation>
 <translation id="4387004326333427325">Sertifikat atutentikasi ditolak dari jarak jauh</translation>
+<translation id="6047696787498798094">Berbagi layar akan berhenti saat Anda beralih ke pengguna lain. Ingin melanjutkan?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> resolusi diubah menjadi <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP gagal</translation>
@@ -110,6 +111,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="2614835198358683673">Chromebook Anda mungkin tidak mengisi daya saat sedang menyala. Pertimbangkan untuk menggunakan pengisi daya resmi.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4442424173763614572">Pencarian DNS gagal</translation>
+<translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="2204305834655267233">Info Jaringan</translation>
 <translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6062360702481658777">Anda akan dikeluarkan secara otomatis dalam <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Tampilan yang Tidak Diketahui</translation>
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Berhenti membagikan layar?</translation>
 <translation id="2727977024730340865">Dipasang ke pengisi daya rendah. Pengisian daya baterai mungkin tidak dapat diandalkan.</translation>
 <translation id="2761704814324807722">Baki status, waktu <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Kunci</translation>
@@ -174,6 +177,7 @@ Pesan server: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> adalah sesi publik yang dikelola oleh <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Gagal menyambung ke jaringan: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+Telusuri atau Shift</translation>
 <translation id="2429753432712299108">Perangkat Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; meminta izin untuk bersanding. Sebelum menerima, konfirmasikan bahwa kunci sandi ini ditampilkan pada perangkat tersebut: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Baterai terisi <ph name="PERCENTAGE"/>%.</translation>
@@ -224,7 +228,6 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="5102001756192215136">Sisa <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Keluaran</translation>
 <translation id="520760366042891468">Berbagi kontrol layar Anda melalui Hangouts.</translation>
-<translation id="4015692727874266537">Masuk ke akun lain...</translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Selamat! Layanan data '<ph name="NAME"/>' Anda telah diaktifkan dan siap digunakan.</translation>

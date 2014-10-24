@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Département</translation>
 <translation id="4258748452823770588">Signature incorrecte.</translation>
 <translation id="3024663005179499861">Type de règle incorrect.</translation>
+<translation id="2030481566774242610">Essayez avec <ph name="LINK"/></translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, expire le : <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Entrée de la liste &quot;<ph name="ENTRY_INDEX"/>&quot; : <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Pays</translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
+<translation id="1152921474424827756">Accédez à une <ph name="BEGIN_LINK"/>copie mise en cache<ph name="END_LINK"/> de <ph name="URL"/>.</translation>
 <translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
 <translation id="1853748787962613237">Échec de l'affichage de l'article.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="6965978654500191972">Périphérique</translation>
 <translation id="8249320324621329438">Dernière récupération :</translation>
+<translation id="194030505837763158">Accédez à <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1344588688991793829">Paramètres de saisie automatique de Chromium…</translation>
 <translation id="6282194474023008486">Code postal</translation>

@@ -30,7 +30,6 @@ Chromoting</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7782471917492991422">Verifique as definições de gestão de energia do computador e certifique-se de que não está configurado para suspender quando inativo.</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
-<translation id="4939475390270873744">• Foi corrigida uma falha no arranque.</translation>
 <translation id="2707879711568641861">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que instalou a versão mais recente e tente novamente.</translation>
 <translation id="1779766957982586368">Fechar janela</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
@@ -79,6 +78,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (desatualizado)</translation>
 <translation id="3884839335308961732">Confirme a sua conta e PIN abaixo para permitir o acesso do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="327263477022142889">Pretende ajudar a melhorar o Ambiente de Trabalho Remoto do Chrome? <ph name="LINK_BEGIN"/>Responda ao inquérito.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Enviar Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Ligado:</translation>
 <translation id="8509907436388546015">Processo de Integração do Ambiente de Trabalho</translation>
 <translation id="4736223761657662401">Histórico de Ligações</translation>
@@ -106,10 +106,10 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="5908809458024685848">Não tem sessão iniciada no Chromoting. Inicie sessão e tente novamente.</translation>
 <translation id="7401733114166276557">Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="3362124771485993931">Voltar a introduzir o PIN</translation>
+<translation id="1760808606374294203">• Correções para o Android Lollipop.</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="7948001860594368197">Opções de ecrã</translation>
 <translation id="8172070902751707422">Falha na autenticação. Inicie sessão novamente no Ambiente de Trabalho Remoto do Chrome.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">Se sair desta página, terminará a sessão do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="173559734173571936">Para utilizar o Ambiente de Trabalho Remoto do Chrome, é necessário conceder permissões de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
 <translation id="9032136467203159543">Faltam alguns componentes necessários ao Chromoting. Certifique-se de que instalou a versão mais recente e tente novamente.</translation>
@@ -124,6 +124,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
 <translation id="2647232381348739934">Serviço Chromoting</translation>
 <translation id="579702532610384533">Restabelecer ligação</translation>
+<translation id="4867841927763172006">Enviar PrtScn</translation>
 <translation id="4211066471404647515">Faltam alguns componentes necessários para o Chromoting. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
 <translation id="5773590752998175013">Data da sincronização</translation>
 <translation id="5265129178187621741">(esta funcionalidade ainda não está disponível para Chromebooks... fique atento)</translation>
@@ -184,7 +185,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="4573676252416618192">Anfitrião do Ambiente de Trabalho
 Remoto do Chrome</translation>
 <translation id="4703799847237267011">A sessão do Chromoting terminou.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">Partilha de ecrã entre utilizadores, ideal para suporte técnico remoto.</translation>
 <translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
 <translation id="4563926062592110512">Cliente desligado: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -194,6 +194,7 @@ Remoto do Chrome</translation>
 <translation id="6668065415969892472">O seu PIN foi atualizado.</translation>
 <translation id="4513946894732546136">Comentários</translation>
 <translation id="4277736576214464567">O código de acesso é inválido. Tente novamente.</translation>
+<translation id="6550675742724504774">Opções</translation>
 <translation id="979100198331752041">O Ambiente de Trabalho Remoto em <ph name="HOSTNAME"/> está desatualizado e necessita de atualização.</translation>
 <translation id="7729639150174291243">Não tem sessão iniciada no Ambiente de Trabalho Remoto do Chrome. Inicie sessão e tente de novo.</translation>
 <translation id="2841013758207633010">Tempo</translation>
@@ -204,6 +205,7 @@ Remoto do Chrome</translation>
 <translation id="4277463233460010382">Este computador está configurado para permitir que um ou mais clientes se liguem sem introduzir um PIN.</translation>
 <translation id="837021510621780684">A partir deste computador</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Aceitar</translation>
 <translation id="7215059001581613786">Introduza um PIN com seis ou mais dígitos.</translation>
 <translation id="8383794970363966105">Para utilizar o Chromoting, tem de adicionar uma Conta Google ao seu dispositivo.</translation>
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>

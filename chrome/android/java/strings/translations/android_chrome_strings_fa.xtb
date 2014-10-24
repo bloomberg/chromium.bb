@@ -5,7 +5,7 @@
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="346339498574870680">کپی کردن نشانی اینترنتی تصویر</translation>
-<translation id="6657585470893396449">رمز ورود</translation>
+<translation id="6657585470893396449">گذرواژه</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE"/> برای این تصویر</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="7644305409888602715">در حال ترجمه صفحه به <ph name="SOURCE_LANGUAGE"/>…</translation>
@@ -16,10 +16,12 @@
 <translation id="5763382633136178763">برگه‌های ناشناس</translation>
 <translation id="5210365745912300556">بستن برگه</translation>
 <translation id="7658239707568436148">لغو</translation>
+<translation id="2154710561487035718">‏کپی URL</translation>
 <translation id="6458785801851713928">همگام‌سازی برای دامنه شما در دسترس نیست.</translation>
 <translation id="2731700343119398978">لطفاً صبر کنید...</translation>
 <translation id="6846298663435243399">در حال بارگیری…</translation>
 <translation id="7378627244592794276">نه</translation>
+<translation id="9206873250291191720">A</translation>
 <translation id="3358663646935160692">‏این حساب توسط <ph name="DOMAIN_NAME"/> مدیریت می‌شود. شما با یک حساب مدیریت شده وارد سیستم شده‌اید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. اطلاعات Chrome شما به صورت دائم با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه اطلاعات Chrome شما در دستگاه حذف می‌شود.</translation>
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
@@ -28,23 +30,35 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>، برگه</translation>
 <translation id="624558823898732418">زبان ترجمه: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">انتخاب گواهی برای احراز هویت</translation>
+<translation id="7791543448312431591">افزودن</translation>
 <translation id="3896036286668839683">نظاره‌گر گواهی</translation>
+<translation id="5039804452771397117">مجاز بودن</translation>
 <translation id="8583805026567836021">پاکسازی اطلاعات حساب</translation>
 <translation id="4250680216510889253">خیر</translation>
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="552553974213252141">آیا نوشتار به درستی استخراج شده است؟</translation>
+<translation id="2414886740292270097">تاریک</translation>
+<translation id="3927692899758076493">Sans Serif</translation>
 <translation id="8730621377337864115">انجام شد</translation>
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="8627706565932943526">خطای همگام‌سازی</translation>
+<translation id="1807246157184219062">روشن</translation>
+<translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
+<translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> همیشه ترجمه شود</translation>
+<translation id="2748463065602559597">‏شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
+<translation id="4543661749405994812">کپی آدرس ایمیل</translation>
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
+<translation id="2532336938189706096">نمای وب</translation>
 <translation id="4619298195800598081">باز کردن تصویر اصلی در برگه جدید</translation>
+<translation id="4002066346123236978">عنوان</translation>
 <translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
 <translation id="907015151729920253">کارت هوشمند</translation>
+<translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="7267430310003164111">‏سؤال برای دریافت برنامه از فروشگاه Google Play. نام برنامه: <ph name="APP_NAME"/>. رتبه متوسط برنامه: <ph name="APP_RATING"/>.</translation>
@@ -75,9 +89,12 @@
 <translation id="6040143037577758943">بستن</translation>
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
 <translation id="5032574515228824816">فرمان</translation>
+<translation id="7961015016161918242">هرگز</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
+<translation id="4056223980640387499">سپیا</translation>
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="1742134235943978220">به <ph name="TARGET_LANGUAGE"/> ترجمه شد.</translation>
 <translation id="6965382102122355670">تأیید</translation>
+<translation id="7561196759112975576">همیشه</translation>
 </translationbundle>

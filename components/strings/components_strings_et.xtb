@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Osakond</translation>
 <translation id="4258748452823770588">Sobimatu allkiri</translation>
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
+<translation id="2030481566774242610">Kas mõtlesite aadressi <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, aegub: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Loendi kirje „<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Riik</translation>
 <translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
+<translation id="1152921474424827756">Hankige juurdepääs aadressi <ph name="URL"/> <ph name="BEGIN_LINK"/>vahemällu salvestatud koopiale<ph name="END_LINK"/></translation>
 <translation id="6891596781022320156">Reegli taset ei toetata.</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
 <translation id="1853748787962613237">Artikli kuvamine ebaõnnestus.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Järjehoidjariba</translation>
 <translation id="6965978654500191972">Seade</translation>
 <translation id="8249320324621329438">Viimati toodud:</translation>
+<translation id="194030505837763158">Avage <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
 <translation id="1344588688991793829">Chromiumi automaattäite seaded ...</translation>
 <translation id="6282194474023008486">Sihtnumber</translation>

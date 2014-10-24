@@ -30,7 +30,6 @@ Chromoting</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7782471917492991422">בדוק את הגדרות ניהול צריכת החשמל של המחשב כדי לוודא שאינו מוגדר לעבור למצב שינה בזמן חוסר פעילות.</translation>
 <translation id="7665369617277396874">הוסף חשבון</translation>
-<translation id="4939475390270873744">• תוקנה קריסה במהלך אתחול.</translation>
 <translation id="2707879711568641861">‏חלק מהרכיבים הדרושים עבור 'שולחן עבודה מרוחק של Chrome' חסרים. ודא שהתקנת את הגירסה העדכנית ביותר ונסה שוב.</translation>
 <translation id="1779766957982586368">סגור חלון</translation>
 <translation id="2499160551253595098">‏עזור לנו לשפר את 'שולחן עבודה מרוחק של Chrome' בכך שתאפשר לנו לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
@@ -79,6 +78,7 @@ Chromoting</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (לא עדכני)</translation>
 <translation id="3884839335308961732">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה כדי לאפשר גישה באמצעות שולחן העבודה המרוחק של Chrome.</translation>
 <translation id="327263477022142889">‏רוצה לעזור לשפר את שולחן העבודה המרוחק של Chrome‏? <ph name="LINK_BEGIN"/>השב על הסקר.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">‏שלח Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">מחובר:</translation>
 <translation id="8509907436388546015">תהליך השילוב של שולחנות עבודה</translation>
 <translation id="4736223761657662401">היסטוריית חיבורים</translation>
@@ -106,10 +106,10 @@ Chromoting</translation>
 <translation id="5908809458024685848">‏לא נכנסת ל-Chromoting. היכנס ונסה שוב.</translation>
 <translation id="7401733114166276557">‏שולחן עבודה מרוחק של Chrome</translation>
 <translation id="3362124771485993931">‏הקלד שוב את ה-PIN</translation>
+<translation id="1760808606374294203">‏• תיקונים עבור Android Lollipop.</translation>
 <translation id="154040539590487450">הפעלת שירות הגישה מרחוק נכשלה.</translation>
 <translation id="7948001860594368197">אפשרויות מסך</translation>
 <translation id="8172070902751707422">‏האימות נכשל. היכנס שוב ל'שולחן עבודה מרוחק של Chrome'.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="173559734173571936">‏כדי להשתמש ב'שולחן עבודה מרוחק של Chrome', עליך להעניק הרשאות גישה מורחבות למחשב שלך. יהיה עליך לעשות זאת פעם אחת בלבד.</translation>
 <translation id="9032136467203159543">‏חלק מהרכיבים הדרושים עבור Chromoting חסרים. ודא שהתקנת את הגירסה העדכנית ביותר ונסה שוב.</translation>
@@ -124,6 +124,7 @@ Chromoting</translation>
 <translation id="3020807351229499221">‏הניסיון לעדכן את ה-PIN נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="2647232381348739934">‏שירות Chromoting</translation>
 <translation id="579702532610384533">התחבר מחדש</translation>
+<translation id="4867841927763172006">‏שלח PrtScn</translation>
 <translation id="4211066471404647515">‏חלק מהרכיבים הדרושים עבור Chromoting חסרים. ודא שאתה משתמש בגירסה העדכנית ביותר של Chrome ונסה שוב.</translation>
 <translation id="5773590752998175013">תאריך ההתאמה</translation>
 <translation id="5265129178187621741">‏(תכונה זו עדיין אינה זמינה למחשבי Chromebook ... המשך לעקוב)</translation>
@@ -184,16 +185,16 @@ Chromoting</translation>
 <translation id="4573676252416618192">‏מארח שולחן העבודה
 המרוחק של Chrome</translation>
 <translation id="4703799847237267011">‏הפעילות של Chromoting הסתיימה.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">שיתוף מסך ממשתמש למשתמש, הפתרון המושלם לתמיכה טכנית מרחוק.</translation>
 <translation id="652218476070540101">‏ה-PIN של מחשב זה מתעדכן...</translation>
 <translation id="4563926062592110512">לקוח שהתנתק: <ph name="CLIENT_USERNAME"/>.</translation>
-<translation id="5308380583665731573">התחבר</translation>
+<translation id="5308380583665731573">התחברות</translation>
 <translation id="7319983568955948908">הפסק את השיתוף</translation>
 <translation id="6681800064886881394">‏Copyright © 2013 Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="6668065415969892472">‏ה-PIN שלך עודכן.</translation>
 <translation id="4513946894732546136">משוב</translation>
 <translation id="4277736576214464567">קוד הגישה אינו חוקי. נסה שוב.</translation>
+<translation id="6550675742724504774">אפשרויות</translation>
 <translation id="979100198331752041">‏שולחן העבודה המרוחק של Chrome ב-<ph name="HOSTNAME"/> אינו מעודכן ויש לעדכן אותו.</translation>
 <translation id="7729639150174291243">‏לא נכנסת ל'שולחן עבודה מרוחק של Chrome'. היכנס ונסה שוב.</translation>
 <translation id="2841013758207633010">שעה</translation>
@@ -204,6 +205,7 @@ Chromoting</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="837021510621780684">ממחשב זה</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">אשר</translation>
 <translation id="7215059001581613786">‏הזן PIN המורכב משש ספרות או יותר.</translation>
 <translation id="8383794970363966105">‏כדי להשתמש ב-Chromoting, עליך להוסיף חשבון Google למכשיר שלך.</translation>
 <translation id="1546934824884762070">אירעה שגיאה לא צפויה. דווח על בעיה זו למפתחים.</translation>

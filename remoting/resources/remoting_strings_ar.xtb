@@ -30,7 +30,6 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7782471917492991422">يرجى التحقق من إعدادات إدارة الطاقة في جهاز الكمبيوتر وضمان عدم تهيئتها على وضع السكون عند الخمول.</translation>
 <translation id="7665369617277396874">إضافة حساب</translation>
-<translation id="4939475390270873744">• يمكن إصلاح عطل بدء التشغيل.</translation>
 <translation id="2707879711568641861">‏بعض المكونات المطلوبة لسطح المكتب البعيد من Chrome مفقودة. الرجاء التأكد من تثبيت أحدث إصدار وإعادة المحاولة.</translation>
 <translation id="1779766957982586368">إغلاق النافذة</translation>
 <translation id="2499160551253595098">‏ساعدنا في تحسين سطح المكتب البعيد من Chrome من خلال السماح لنا بتجميع إحصاءات الاستخدام وتقارير الأعطال.</translation>
@@ -79,6 +78,7 @@
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (قديم)</translation>
 <translation id="3884839335308961732">‏يُرجى التأكيد على حسابك ورقم تعريفك الشخصي أدناه للسماح بالدخول من خلال سطح المكتب البعيد من Chrome.</translation>
 <translation id="327263477022142889">‏إذا كنت ترغب في المساعدة على تحسين ميزة سطح المكتب البعيد من Chrome، فيُمكنك <ph name="LINK_BEGIN"/>المشاركة في الاستبيان.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">‏إرسال Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">متصل:</translation>
 <translation id="8509907436388546015">عملية دمج سطح المكتب</translation>
 <translation id="4736223761657662401">سجل الاتصالات</translation>
@@ -106,10 +106,10 @@
 <translation id="5908809458024685848">‏أنت غير مسجل الدخول إلى تطبيق التوافق مع نظام التشغيل Chrome. الرجاء تسجيل الدخول وإعادة المحاولة.</translation>
 <translation id="7401733114166276557">‏سطح المكتب البعيد من Chrome</translation>
 <translation id="3362124771485993931">أعد كتابة رقم التعريف الشخصي</translation>
+<translation id="1760808606374294203">‏• إصلاحات لـ Android Lollipop.</translation>
 <translation id="154040539590487450">أخفق بدء خدمة الدخول عن بُعد.</translation>
 <translation id="7948001860594368197">خيارات الشاشة</translation>
 <translation id="8172070902751707422">‏أخفقت المصادقة. الرجاء تسجيل الدخول إلى سطح المكتب البعيد من Chrome مرة أخرى.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">‏ستؤدي مغادرة هذه الصفحة إلى إنهاء جلسة سطح المكتب البعيد من Chrome.</translation>
 <translation id="173559734173571936">‏لاستخدام سطح المكتب البعيد من Chrome، يجب أولاً منح أذونات موسّعة بالدخول إلى جهاز الكمبيوتر. لن يُطلب منك إجراء ذلك سوى مرة واحدة.</translation>
 <translation id="9032136467203159543">‏بعض المكونات المطلوبة للتوافق مع نظام التشغيل Chrome مفقودة. الرجاء التأكد من تثبيت أحدث إصدار وإعادة المحاولة.</translation>
@@ -124,6 +124,7 @@
 <translation id="3020807351229499221">أخفق تحديث رقم التعريف الشخصي. الرجاء إعادة المحاولة لاحقًا.</translation>
 <translation id="2647232381348739934">‏خدمة التوافق مع نظام التشغيل Chrome</translation>
 <translation id="579702532610384533">إعادة الاتصال</translation>
+<translation id="4867841927763172006">‏إرسال PrtScn</translation>
 <translation id="4211066471404647515">‏بعض المكونات المطلوبة لتطبيق التوافق مع نظام التشغيل Chrome مفقودة. الرجاء التأكد من تشغيل أحدث إصدار من Chrome وإعادة المحاولة.</translation>
 <translation id="5773590752998175013">تاريخ الإقران</translation>
 <translation id="5265129178187621741">‏(هذه الميزة غير متاحة بعد لأجهزة Chromebook… ترقبها قريبًا)</translation>
@@ -186,7 +187,6 @@
 <translation id="4573676252416618192">‏مضيف سطح المكتب
 البعيد من Chrome</translation>
 <translation id="4703799847237267011">‏انتهت جلسة تطبيق التوافق مع نظام التشغيل Chrome.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">تعد ميزة مشاركة الشاشة من مستخدم إلى مستخدم ميزة مثالية للدعم الفني عن بُعد.</translation>
 <translation id="652218476070540101">جارٍ تحديث رقم التعريف الشخصي لهذا الكمبيوتر...</translation>
 <translation id="4563926062592110512">تم إلغاء ربط العميل: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -196,6 +196,7 @@
 <translation id="6668065415969892472">تم تحديث رقم التعريف الشخصي.</translation>
 <translation id="4513946894732546136">تعليقات</translation>
 <translation id="4277736576214464567">رمز الدخول غير صالح، الرجاء إعادة المحاولة.</translation>
+<translation id="6550675742724504774">خيارات</translation>
 <translation id="979100198331752041">‏ميزة سطح المكتب البعيد من Chrome على <ph name="HOSTNAME"/> قديمة ويلزم تحديثها.</translation>
 <translation id="7729639150174291243">‏أنت غير مسجل الدخول إلى سطح المكتب البعيد من Chrome. الرجاء تسجيل الدخول وإعادة المحاولة.</translation>
 <translation id="2841013758207633010">الوقت</translation>
@@ -206,6 +207,7 @@
 <translation id="4277463233460010382">تمت تهيئة هذا الكمبيوتر بحيث يسمح لعميل واحد أو أكثر بالاتصال بدون إدخال رقم تعريف شخصي.</translation>
 <translation id="837021510621780684">من هذا الكمبيوتر</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
+<translation id="4918086044614829423">قبول</translation>
 <translation id="7215059001581613786">الرجاء إدخال رقم تعريف شخصي يتكون من ستة أرقام أو أكثر.</translation>
 <translation id="8383794970363966105">‏لاستخدام التوافق مع نظام التشغيل Chrome، يجب إضافة حساب في Google إلى جهازك.</translation>
 <translation id="1546934824884762070">حدث خطأ غير متوقع. الرجاء الإبلاغ عن هذه المشكلة إلى مطوري البرامج.</translation>

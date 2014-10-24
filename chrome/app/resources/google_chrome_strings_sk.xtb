@@ -10,6 +10,7 @@
 
 Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6676384891291319759">Prístup do siete Internet</translation>
+<translation id="573759479754913123">Informácie o systéme Chrome OS</translation>
 <translation id="345171907106878721">Pridajte si účet do prehliadača Chrome</translation>
 <translation id="4921569541910214635">Zdieľať počítač? Teraz si môžete prehliadač Chrome nastaviť podľa vlastných predstáv.</translation>
 <translation id="6236285698028833233">Prehliadač Google Chrome sa prestal aktualizovať a túto verziu vášho operačného systému už nepodporuje.</translation>
@@ -21,6 +22,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="3784527566857328444">Odstrániť z prehliadača Chrome...</translation>
 <translation id="1225016890511909183">Chrome vaše informácie bezpečne uloží, aby ste ich už nemuseli zadávať znova. V prípade budúcich platieb však budete musieť bezpečnostný kód svojej karty stále overiť.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
+<translation id="7400722733683201933">Informácie o prehliadači Google Chrome</translation>
 <translation id="8838365799985821335">Rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chrome.</translation>
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="1065672644894730302">Vaše predvoľby sa nedajú načítať.
@@ -32,6 +34,8 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="110877069173485804">Toto je váš prehliadač Chrome</translation>
 <translation id="8406086379114794905">Pomôžte nám prehliadač Chrome zlepšiť</translation>
 <translation id="2896252579017640304">Spustiť aplikácie Chrome</translation>
+<translation id="4121281502786319101">Prehliadač Chrome nedokáže nadviazať súkromné pripojenie k doméne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Dôvodom je pravdepodobne nesprávne nastavený dátum na zariadení. (Dátum na zariadení je <ph name="DATE"/>.) Mali by ste <ph name="BEGIN_LINK"/>aktualizovať dátum a čas zariadenia<ph name="END_LINK"/> a následne obnoviť túto stránku.</translation>
+<translation id="5620765574781326016">Získajte informácie o témach zmienených na stránke bez toho, aby ste danú stránku museli opustiť.</translation>
 <translation id="2721687379934343312">Na počítačoch Mac sú heslá uložené v aplikácii Keychain. Ostatní používatelia prehliadača Chrome, ktorí zdieľajú tento účet systému OS X, k nim preto budú môcť pristupovať a budú ich môcť synchronizovať.</translation>
 <translation id="683440813066116847">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome verzie Canary, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="4953650215774548573">Nastaviť Google Chrome ako predvolený prehliadač</translation>
@@ -56,16 +60,20 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="7060865993964054389">Spúšťač aplikácií Google Chrome</translation>
 <translation id="1682634494516646069">Prehliadač Google Chrome nemôže čítať ani zapisovať do adresára s údajmi: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="127345590676626841">Chrome sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu. Po dokončení sťahovania sa Chrome reštartujte a začnete používať aktuálnu verziu.</translation>
+<translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
 <translation id="8227755444512189073">Prehľadávač Google Chrome potrebuje spustiť externú aplikáciu na spracovanie odkazov <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Google Chrome zlyhal. Chcete ho spustiť znova?</translation>
 <translation id="1480489203462860648">Vyskúšať, prehliadač je už nainštalovaný</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK"/> prehliadača Google Chrome</translation>
+<translation id="4743926867934016338">Prijať a vyhľadať</translation>
 <translation id="1393853151966637042">Získajte pomoc pri používaní prehliadača Chrome</translation>
 <translation id="7398801000654795464">Do prehliadača Chrome ste boli prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS"/>. Ak sa chcete prihlásiť znova, použite rovnaký účet.</translation>
+<translation id="5338943029751206389">Tieto webové stránky používajú zastarané nastavenia zabezpečenia, ktoré môžu budúcim verziám prehliadača Chrome zabrániť v bezpečnom prístupe.</translation>
 <translation id="4513711165509885787">Vaše fakturačné údaje sa uložili do prehliadača Chrome.</translation>
 <translation id="5253588388888612165">Ak tento počítač zdieľate s používateľom <ph name="PROFILE_NAME"/>, pridajte sa do prehliadača Chrome, aby ste mohli samostatne prehliadať. V inom prípade odpojte účet Google daného používateľa.</translation>
 <translation id="7098166902387133879">Google Chrome používa váš mikrofón.</translation>
 <translation id="4053720452172726777">Prispôsobiť a ovládať prehliadač Google Chrome</translation>
+<translation id="4315766637075282876">Prehliadač Chrome ho uloží medzi |heslá uložené Googlom| a automaticky ho doplní, takže si ho nemusíte pamätať.</translation>
 <translation id="5298539825145851748">Odstrániť z prehliadača Chrome</translation>
 <translation id="3197823471738295152">Zariadenie bolo aktualizované.</translation>
 <translation id="8286862437124483331">Prehliadač Google Chrome sa pokúša zobraziť heslá. Ak to chcete povoliť, zadajte svoje heslo systému Windows.</translation>
@@ -90,6 +98,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Prehliadač Chrome je zastaraný</translation>
 <translation id="4424024547088906515">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN"/>, Chrome nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
+<translation id="6722021951952731012">Váš počítač potrebuje na nadviazanie zabezpečeného sieťového pripojenia správnu zámku, pretože certifikáty používané stránkami na identifikáciu pri nadväzovaní zabezpečeného pripojenia sú platné iba určité časové obdobie. Keďže hodiny vášho počítača nefungujú správne, prehliadač Chrome nemôže certifikáty správne skontrolovať.</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="1195935957447623558">Program Google Chrome sa neukončil správne. Ak chcete otvoriť naposledy otvorené stránky, kliknite na tlačidlo Obnoviť.</translation>
 <translation id="2576431527583832481">Prehliadač Chrome bol práve vylepšený. K dispozícii je nová verzia.</translation>
@@ -127,8 +136,10 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Upozornenie:<ph name="END_BOLD"/> Prehliadač Google Chrome nemôže zabrániť rozšíreniam v zaznamenávaní vašej histórie prehliadania. Ak chcete toto rozšírenie v režime inkognito zakázať, zrušte výber tejto možnosti.</translation>
 <translation id="7808348361785373670">Odstrániť z prehliadača Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5563479599352954471">Vyhľadávanie jediným klepnutím</translation>
 <translation id="2664962310688259219">Licencie otvoreného zdroja systému OS Chrome</translation>
 <translation id="2290014774651636340">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chrome budú zakázané.</translation>
+<translation id="2397416548179033562">Zobraziť Ponuku Chrome</translation>
 <translation id="4794050651896644714">Uložiť podrobnosti v prehliadači Chrome</translation>
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="5855036575689098185">Softvér spustený vo vašom počítači nie je kompatibilný s prehliadačom Google Chrome.</translation>
@@ -146,6 +157,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2290095356545025170">Naozaj chcete odinštalovať aplikáciu Google Chrome?</translation>
 <translation id="7062966102157262887">Prebieha sťahovanie. Chcete prehliadač Google Chrome ukončiť a sťahovanie zrušiť?</translation>
 <translation id="4273752058983339720">Prehliadač Google Chrome je nakonfigurovaný tak, aby sa automaticky spustil pri zapnutí počítača.</translation>
+<translation id="415994390253732730">Správa sa prehliadač Chrome zvláštne?</translation>
 <translation id="1104959162601287462">Informácie o systéme &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Nastaviť prehľadávač Google Chrome ako predvolený</translation>
@@ -155,6 +167,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="8568392309447938879">Aplikácie môžete používať až po prihlásení do prehliadača Chrome. Prehliadaču Chrome tým umožníte synchronizovať vaše aplikácie, záložky, históriu, heslá a ďalšie nastavenia na všetkých zariadeniach.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Prehliadač Google Chrome vám umožňuje vybrať telefónne číslo na webe a zavolať naň pomocou aplikácie Skype.</translation>
+<translation id="2705287621619748344">Prehliadač Chrome nedokáže nadviazať súkromné pripojenie k doméne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Dôvodom je pravdepodobne nesprávne nastavený dátum na počítači. (Dátum na počítači je <ph name="DATE"/>.) Mali by ste <ph name="BEGIN_LINK"/>aktualizovať dátum a čas počítača<ph name="END_LINK"/> a následne obnoviť túto stránku.</translation>
 <translation id="5788838254726722945">Odinštalovať platformu Google Chrome App Launcher</translation>
 <translation id="3612333635265770873">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s aplikáciou Google Chrome.</translation>
 <translation id="2665296953892887393">Pomôcť zlepšiť prehliadač Google Chrome odosielaním správ o zlyhaní a <ph name="UMA_LINK"/> spoločnosti Google</translation>
@@ -169,6 +182,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
          Ak to problém nevyrieši, odporúčame túto možnosť znova vybrať
         z dôvodu zlepšenia výkonnosti.</translation>
 <translation id="6235018212288296708">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome, ktoré povoľuje prenos dát mDNS.</translation>
+<translation id="3281987435599047980">odošle slovo a súvisiaci kontext do Vyhľadávania Google, pričom vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.</translation>
 <translation id="61852838583753520">Aktualizácia systému &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="9026991721384951619">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
@@ -200,6 +214,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="629218512217695915">Použite heslo generované prehliadačom Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Prehliadač Chrome bol práve vylepšený</translation>
+<translation id="4367618624832907428">Prehliadač Google Chrome nemôže zobraziť danú webstránku, pretože váš počítač nie je pripojený k internetu.</translation>
 <translation id="174539241580958092">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje z dôvodu chyby prihlásenia.</translation>
 <translation id="8255190535488645436">Google Chrome používa vašu kameru a mikrofón.</translation>
 <translation id="7396375882099008034">Prehliadaču Chrome povoľte prístup k sieti v nastaveniach brány firewall alebo antivírusového softvéru.</translation>
@@ -207,6 +222,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="3170677364322086041">Tieto stránky používajú vyradený doplnok Chrome Frame, ktorý už nedostáva aktualizácie zabezpečenia a stability. Odinštalujte ho a inovujte na modernejší prehliadač.</translation>
 <translation id="8205111949707227942">Voliteľné: Chcem pomôcť pri vylepšovaní služieb prehliadača Chrome tým, že bude automaticky odosielať spoločnosti Google štatistické údaje o jeho využívaní a správy o výpadkoch.</translation>
 <translation id="7253415505590551024">Prebieha sťahovanie. Chcete prehliadač Google Chrome ukončiť a sťahovanie zrušiť?</translation>
+<translation id="487887346205285304">Správa sa prehliadač Chrome zvláštne?</translation>
 <translation id="3622797965165704966">Teraz je používanie prehliadača Chrome s účtom Google a na zdieľaných počítačoch oveľa ľahšie.</translation>
 <translation id="7196020411877309443">Prečo sa zobrazila táto výzva?</translation>
 <translation id="2769762047821873045">Google Chrome nie je váš predvolený prehliadač.</translation>
@@ -225,6 +241,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="7825851276765848807">Inštalácia zlyhala kvôli neznámej chybe. Skúste aplikáciu Google Chrome stiahnuť znova.</translation>
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN"/>, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
+<translation id="5489213858994471184">Prehliadač Chrome zaznamenal, že nastavenia prehliadača mohli byť zmenené programom v počítači bez vášho vedomia. Tento program môžete odstrániť pomocou nástroja Software Removal Tool spoločnosti Google.</translation>
 <translation id="8679801911857917785">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chrome.</translation>
 <translation id="5334545119300433702">Tento modul zvykne spôsobovať konflikt s prehliadačom Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
@@ -250,6 +267,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="853189717709780425">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom prehliadača Chrome. Vaše údaje prehliadača Chrome, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME"/>. Tieto údaje budete môcť odstrániť len pomocou služby Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu.</translation>
 <translation id="6049075767726609708">Správca nainštaloval v tomto systéme prehliadač Google Chrome a je k dispozícii pre všetkých používateľov. Prehliadač Google Chrome na úrovni systému teraz nahradí vašu inštaláciu na úrovni používateľa.</translation>
 <translation id="1818142563254268765">Prehliadač Chrome sa nedokázal aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré skvelé nové funkcie a bezpečnostné opravy. Prehliadač Chrome je potrebné aktualizovať.</translation>
+<translation id="4821676311965554623">Vaše zariadenie potrebuje na nadviazanie zabezpečeného sieťového pripojenia správnu zámku, pretože certifikáty používané stránkami na identifikáciu pri nadväzovaní zabezpečeného pripojenia sú platné iba určité časové obdobie. Keďže hodiny vášho zariadenia nefungujú správne, prehliadač Chrome nemôže certifikáty správne skontrolovať.</translation>
 <translation id="7408085963519505752">Zmluvné podmienky systému OS Chrome</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
 <translation id="3836351788193713666">Prehliadač už je takmer aktualizovaný. Proces dokončíte reštartovaním prehliadača Google Chrome.</translation>

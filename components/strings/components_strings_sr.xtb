@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Департман</translation>
 <translation id="4258748452823770588">Неисправан потпис</translation>
 <translation id="3024663005179499861">Погрешан тип смерница</translation>
+<translation id="2030481566774242610">Да ли сте мислили <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, истиче: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Унос на листи „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Земља</translation>
 <translation id="5031870354684148875">О Google преводиоцу</translation>
+<translation id="1152921474424827756">Приступите <ph name="BEGIN_LINK"/>кешираној копији<ph name="END_LINK"/> странице <ph name="URL"/></translation>
 <translation id="6891596781022320156">Ниво смерница није подржан.</translation>
 <translation id="2025186561304664664">Прокси је подешен да буде аутоматски конфигурисан.</translation>
 <translation id="1853748787962613237">Приказивање чланка није успело.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Трака са обележивачима</translation>
 <translation id="6965978654500191972">Уређај</translation>
 <translation id="8249320324621329438">Последње учитано:</translation>
+<translation id="194030505837763158">Идите на <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Никад не преводи овај сајт</translation>
 <translation id="1344588688991793829">Подешавања Chromium аутоматског попуњавања...</translation>
 <translation id="6282194474023008486">Поштански број</translation>

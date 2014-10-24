@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="3624204664103857160">Није успело учитавање странице покретача „<ph name="PAGE"/>“.</translation>
 <translation id="8804398419035066391">Комуникација са веб-сајтовима за сарадњу</translation>
 <translation id="7809034755304591547">Администратор је блокирао <ph name="EXTENSION_NAME"/> (ИД додатка „<ph name="EXTENSION_ID"/>“).</translation>
 <translation id="1005274289863221750">Коришћење микрофона и камере</translation>
@@ -9,6 +10,9 @@
 <translation id="6384275966486438344">Промените подешавања претраге на: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Овај додатак успорава <ph name="PRODUCT_NAME"/>. Требало би да га онемогућите да би се учинак производа <ph name="PRODUCT_NAME"/> вратио.</translation>
 <translation id="1033780634303702874">Приступ серијским уређајима</translation>
+<translation id="288042212351694283">Приступ универзалним уређајима за 2. фактор</translation>
+<translation id="5971037678316050792">Контрола стања и упаривања Bluetooth адаптера</translation>
+<translation id="677806580227005219">Руковалац за MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Приступање информацијама о Bluetooth уређајима упареним са вашим системом и откривање оближњих Bluetooth уређаја.</translation>
 <translation id="5911798608827489036">Размена података са било којим рачунаром на локалној мрежи или интернету</translation>
 <translation id="4719685943208231314">Приступ USB уређају произвођача <ph name="VENDOR_NAME"/></translation>
@@ -22,6 +26,7 @@
 <translation id="8058376558882514200">Приступ USB уређају <ph name="PRODUCT_NAME"/> произвођача <ph name="VENDOR_NAME"/></translation>
 <translation id="149347756975725155">Није могуће учитати икону додатка „<ph name="ICON"/>“.</translation>
 <translation id="8825366169884721447">Овај додатак није успео да измени заглавље захтева „<ph name="HEADER_NAME"/>“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="4233778200880751280">Није могуће учитати страницу са основним подацима „<ph name="ABOUT_PAGE"/>“.</translation>
 <translation id="388442998277590542">Није могуће учитати страницу опција „<ph name="OPTIONS_PAGE"/>“.</translation>
 <translation id="6344170822609224263">Приступ листи мрежних веза</translation>
 <translation id="2616366145935564096">Читање и мењање података на <ph name="WEBSITE_1"/></translation>
@@ -33,6 +38,7 @@
 <translation id="8670869118777164560">Овај додатак није успео да преусмери захтев мреже на <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> пошто га је други додатак (<ph name="EXTENSION_NAME"/>) преусмерио на <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Овај додатак се сувише често поново учитавао.</translation>
 <translation id="8047248493720652249">Овај додатак није успео да преузетој датотеци дâ назив „<ph name="ATTEMPTED_FILENAME"/>“ зато што је један други додатак (<ph name="EXTENSION_NAME"/>) одредио другачији назив датотеке „<ph name="ACTUAL_FILENAME"/>“.</translation>
+<translation id="2732710576072980201">Производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_NAME"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Размена података са било којим рачунаром на доменима: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Веб-приказ: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">сви <ph name="WEBSITE_1"/> сајтови</translation>
@@ -43,12 +49,16 @@
 <translation id="4883436287898674711">Сви <ph name="WEBSITE_1"/> сајтови</translation>
 <translation id="9111791539553342076">Овај додатак није успео да измени заглавље одговора „<ph name="HEADER_NAME"/>“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Коришћење камере</translation>
+<translation id="5356315618422219272">Приказ апликације: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="8341840687457896278">Овај додатак није успео да достави акредитиве захтеву мреже јер је други додатак (<ph name="EXTENSION_NAME"/>) доставио друге акредитиве.</translation>
 <translation id="5627523580512561598">додатак <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">да приступа сликама, музици и другим медијима са рачунара</translation>
 <translation id="4761104368405085019">Коришћење микрофона</translation>
 <translation id="7217838517480956708">Администратор овог уређаја захтева да додатак <ph name="EXTENSION_NAME"/> буде инсталиран. Не можете да га уклоните или измените.</translation>
+<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> продавца <ph name="VENDOR_NAME"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Промените почетну страницу у: <ph name="START_PAGE"/></translation>
+<translation id="6758203075041033901">Производ <ph name="PRODUCT_ID"/> продавца <ph name="VENDOR_ID"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Читање и мењање података на <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Није могуће учитати страницу у позадини „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="7972881773422714442">Опције: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 </translationbundle>

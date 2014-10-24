@@ -8,6 +8,7 @@
 <translation id="123620459398936149">Chrome操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="5430073640787465221">您的偏好设置文件已损坏或无效。Google Chrome 浏览器无法恢复您的设置。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
+<translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="345171907106878721">将您自己添加到Chrome</translation>
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
 <translation id="6236285698028833233">Google Chrome 已停止更新，并且不再支持您的操作系统版本。</translation>
@@ -19,6 +20,7 @@
 <translation id="3784527566857328444">从Chrome中移除…</translation>
 <translation id="1225016890511909183">Chrome 会妥善地存储您的信息，这样您日后就不必重新输入了。不过，您将来付款时仍需验证信用卡的安全码。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
+<translation id="7400722733683201933">关于Google Chrome</translation>
 <translation id="8838365799985821335">某个扩展程序更改了Chrome启动后显示的页面。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
@@ -28,6 +30,8 @@
 <translation id="110877069173485804">这是您的专属Chrome</translation>
 <translation id="8406086379114794905">帮助我们改进Chrome</translation>
 <translation id="2896252579017640304">启动 Chrome 应用</translation>
+<translation id="4121281502786319101">Chrome 无法与 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 建立私密连接，这可能是因为设备的日期设置有误（其日期设置为 <ph name="DATE"/>）。请<ph name="BEGIN_LINK"/>更新设备的日期和时间<ph name="END_LINK"/>，然后刷新此页面。</translation>
+<translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
 <translation id="2721687379934343312">在苹果机上，密码会保存到您的钥匙串中，可供共用此 OS X 帐户的其他 Chrome 浏览器用户使用或同步。</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
@@ -52,16 +56,20 @@
 <translation id="7060865993964054389">Google Chrome 应用启动器</translation>
 <translation id="1682634494516646069">Google Chrome 无法对其数据目录 <ph name="USER_DATA_DIRECTORY"/> 执行读写操作</translation>
 <translation id="127345590676626841">Chrome会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chrome会重新启动，然后您就可以开始使用了。</translation>
+<translation id="3738139272394829648">触摸搜索</translation>
 <translation id="8227755444512189073">Google Chrome 浏览器必须启动外部应用才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
 <translation id="8290100596633877290">哎呀！Google Chrome 浏览器崩溃了。是否立即重新启动？</translation>
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
 <translation id="5204098752394657250">Google Chrome　<ph name="TERMS_OF_SERVICE_LINK"/>服务条款<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="4743926867934016338">接受并搜索</translation>
 <translation id="1393853151966637042">获取 Chrome 浏览器使用帮助</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐户为 <ph name="USER_EMAIL_ADDRESS"/>，请使用同一帐户再次登录。</translation>
+<translation id="5338943029751206389">该网站使用的安全设置已过期，这可能会导致日后的 Chrome 版本无法安全访问该网站。</translation>
 <translation id="4513711165509885787">您的帐单明细已保存在 Chrome 中。</translation>
 <translation id="5253588388888612165">如果您与<ph name="PROFILE_NAME"/>共用这台计算机，将您的帐户添加到Chrome，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
+<translation id="4315766637075282876">Chrome 会将此密码存储在 |Google 保存的密码|中，并会在需要时自动填充此密码，因此您不必记住它。</translation>
 <translation id="5298539825145851748">从Chrome中移除</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
 <translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
@@ -87,6 +95,7 @@
 </translation>
 <translation id="8823341990149967727">Chrome版本太旧</translation>
 <translation id="4424024547088906515">此服务器无法证明它是<ph name="DOMAIN"/>；Chrome不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
+<translation id="6722021951952731012">要建立安全的网络连接，计算机的时钟设置必须正确。这是因为，网站在建立安全连接时用于证明身份的证书仅在特定时间段有效。由于计算机的时钟设置不正确，因此 Chome 无法正常检查证书。</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="1195935957447623558">Google Chrome浏览器未正确关闭。要重新打开之前浏览的页面，请点击“恢复”。</translation>
 <translation id="2576431527583832481">Chrome 浏览器刚刚经过了改进！新版本已推出。</translation>
@@ -115,8 +124,10 @@
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Google Chrome 浏览器无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
 <translation id="7808348361785373670">从Chrome中移除…</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
 <translation id="2290014774651636340">缺少 Google API 密钥，因此 Google Chrome 的部分功能将无法使用。</translation>
+<translation id="2397416548179033562">显示 Chrome 菜单</translation>
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>
@@ -134,6 +145,7 @@
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
 <translation id="7062966102157262887">正在进行一项下载。您希望退出 Google Chrome 浏览器并取消该下载吗？</translation>
 <translation id="4273752058983339720">Google Chrome 浏览器已配置为在计算机启动时自动启动。</translation>
+<translation id="415994390253732730">Chrome 存在异常？</translation>
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
 <translation id="5328989068199000832">Google Chrome 二进制文件</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
@@ -143,6 +155,7 @@
 <translation id="8568392309447938879">您需要先登录Chrome，再使用各项应用。这样，Chrome就可以在各个设备上同步您的应用、书签、历史记录、密码和其他设置。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
+<translation id="2705287621619748344">Chrome 无法与 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 建立私密连接，这可能是因为计算机的日期设置有误（其日期设置为 <ph name="DATE"/>）。请<ph name="BEGIN_LINK"/>更新计算机的日期和时间<ph name="END_LINK"/>，然后刷新此页面。</translation>
 <translation id="5788838254726722945">卸载 Google Chrome 应用启动器</translation>
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK"/>发送给Google，帮助我们完善Google Chrome。</translation>
@@ -150,6 +163,7 @@
 <translation id="2669824781555328029"><ph name="FILE_NAME"/>会影响您的浏览体验，因此Chrome已将其阻止。</translation>
 <translation id="5875635642195358109">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”，然后取消选中“<ph name="NO_PREFETCH_DESCRIPTION"/>”。如果这样仍无法解决问题，建议您重新选中此选项以提高性能。</translation>
 <translation id="6235018212288296708">Google Chrome的入站规则，允许mDNS流量。</translation>
+<translation id="3281987435599047980">向 Google 搜索发送某个字词及其相关上下文，系统将返回相应的定义、图片、搜索结果和其他详细信息。</translation>
 <translation id="61852838583753520">更新 Chrome 操作系统(&amp;C)</translation>
 <translation id="5028489144783860647">Google Chrome无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="9026991721384951619">您的帐户登录详细信息已过期，Chrome操作系统无法同步您的数据。</translation>
@@ -179,6 +193,7 @@
 <translation id="629218512217695915">使用由Chrome生成的密码</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome现在更好用了</translation>
+<translation id="4367618624832907428">您的计算机未连接到互联网，因此 Google Chrome 无法显示该网页。</translation>
 <translation id="174539241580958092">由于在登录时出现错误，Google Chrome无法同步您的数据。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>
 <translation id="7396375882099008034">对防火墙或防病毒软件进行设置，以允许 Chrome 访问该网络。</translation>
@@ -186,6 +201,7 @@
 <translation id="3170677364322086041">该网站使用的Chrome内嵌框架插件已停止使用，并且不再接收安全性和稳定性更新。请将其卸载，然后升级到新式浏览器。</translation>
 <translation id="8205111949707227942">可选：将使用情况统计信息和崩溃报告自动发送给Google，帮助完善Chrome操作系统。</translation>
 <translation id="7253415505590551024">正在进行多项下载。您希望退出 Google Chrome 浏览器并取消这些下载吗？</translation>
+<translation id="487887346205285304">Chrome 存在异常？</translation>
 <translation id="3622797965165704966">现在，无论是通过Google帐户还是在共用的计算机上，您都可以更轻松地使用Chrome。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
@@ -195,6 +211,7 @@
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN"/>；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
+<translation id="5489213858994471184">Chrome 检测到您的浏览器设置可能在您不知情的情况下被计算机中的某个程序篡改了。您可以使用 Google 的软件清理工具清除该程序。</translation>
 <translation id="8679801911857917785">它还能够控制Chrome启动后显示的页面。</translation>
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
@@ -220,6 +237,7 @@
 <translation id="853189717709780425">您目前是以托管帐户登录，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永久绑定到 <ph name="USER_NAME"/>。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据关联到其他帐户。</translation>
 <translation id="6049075767726609708">管理员已为该系统安装了 Google Chrome 浏览器，并且所有用户均可使用它。因此，原来针对个别用户安装的浏览器现在可供系统上的所有用户使用。</translation>
 <translation id="1818142563254268765">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chrome。</translation>
+<translation id="4821676311965554623">要建立安全的网络连接，设备的时钟设置必须正确。这是因为，网站在建立安全连接时用于证明身份的证书仅在特定时间段有效。由于设备的时钟设置不正确，因此 Chome 无法正常检查证书。</translation>
 <translation id="7408085963519505752">Chrome操作系统条款</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3836351788193713666">即将更新到最新版本！重新启动 Google Chrome 以完成更新。</translation>

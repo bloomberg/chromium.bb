@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="3624204664103857160">துவக்கி பக்கமான '<ph name="PAGE"/>'ஐ ஏற்ற முடியவில்லை.</translation>
 <translation id="8804398419035066391">ஒன்றிணைந்து செயல்படும் இணையதளங்களுடன் தொடர்புகொள்</translation>
 <translation id="7809034755304591547">நிர்வாகியால் <ph name="EXTENSION_NAME"/> (நீட்டிப்பு ஐடி &quot;<ph name="EXTENSION_ID"/>&quot;) தடுக்கப்படுகிறது.</translation>
 <translation id="1005274289863221750">உங்கள் மைக்ரோஃபோன் மற்றும் கேமராவைப் பயன்படுத்தலாம்</translation>
@@ -10,6 +11,9 @@
 <translation id="1445572445564823378">இந்த நீட்டிப்பு, <ph name="PRODUCT_NAME"/> ஐ மந்தமாக்குகிறது. <ph name="PRODUCT_NAME"/> இன்
 செயல்திறனை மீட்டமைக்க, இதை நீங்கள் முடக்க வேண்டும்.</translation>
 <translation id="1033780634303702874">உங்கள் தொடர் சாதனங்களை அணுகலாம்</translation>
+<translation id="288042212351694283">உங்கள் யுனிவர்சல் 2ஆம் நிலை சாதனங்களை அணுகும்</translation>
+<translation id="5971037678316050792">புளூடூத் அடாப்டரின் நிலையையும், இணைத்தலையும் கட்டுப்படுத்துதல்</translation>
+<translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">உங்கள் கணினியுடன் இணைக்கப்பட்ட புளூடூத் சாதனங்கள் பற்றிய தகவலை அணுகுதல் மற்றும் அருகிலுள்ள புளூடூத் சாதனங்களைக் கண்டறிதல்.</translation>
 <translation id="5911798608827489036">அகப் பிணையம் அல்லது இணையத்தில் உள்ள எந்த கணினியுடனும் தரவைப் பரிமாறவும்</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> இலிருந்து USB சாதனத்தை அணுகுதல்</translation>
@@ -23,6 +27,7 @@
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> இலிருந்து USB சாதன <ph name="PRODUCT_NAME"/> ஐ அணுகுதல்</translation>
 <translation id="149347756975725155">நீட்டிப்புப் படவுரு '<ph name="ICON"/>' ஐ ஏற்ற முடியவில்லை.</translation>
 <translation id="8825366169884721447">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் &quot;<ph name="HEADER_NAME"/>&quot; கோரிக்கை மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
+<translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="388442998277590542">'<ph name="OPTIONS_PAGE"/>' என்ற விருப்பங்கள் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="6344170822609224263">பிணைய இணைப்புகளின் பட்டியலை அணுகு</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> இல் உங்கள் உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
@@ -34,6 +39,7 @@
 <translation id="8670869118777164560">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்பு <ph name="ACTUAL_REDIRECT_DESTINATION"/> க்குத் திசைத்திருப்பப்பட்டதால் பிணைய கோரிக்கையை <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> க்கு திசைத்திருப்புவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="6840444547062817500">இந்த நீட்டிப்பு அடிக்கடி தன்னைத்தானே ஏற்றுகிறது.</translation>
 <translation id="8047248493720652249">இந்த நீட்டிப்பு, பதிவிறக்கத்திற்கு &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; என்று பெயரிடுவதில் தோல்வி, ஏனெனில் மற்றொரு நீட்டிப்பு (<ph name="EXTENSION_NAME"/>) வேறொரு கோப்புப்பெயரை &quot;<ph name="ACTUAL_FILENAME"/>&quot; நிர்ணயித்து விட்டது.</translation>
+<translation id="2732710576072980201"><ph name="VENDOR_NAME"/> இடமிருந்து தயாரிப்பு <ph name="PRODUCT_ID"/> (வரிசை எண் <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">பின்வரும் களங்களிலுள்ள எந்த கணினியுடனும் தரவைப் பரிமாறவும்: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">இணையப்பார்வை: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">எல்லா <ph name="WEBSITE_1"/> தளங்களும்</translation>
@@ -44,12 +50,16 @@
 <translation id="4883436287898674711">எல்லா <ph name="WEBSITE_1"/> தளங்களும்</translation>
 <translation id="9111791539553342076">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் &quot;<ph name="HEADER_NAME"/>&quot; என்ற பிணைய கோரிக்கையின் பதில் மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="9150045010208374699">உங்கள் கேமராவைப் பயன்படுத்தலாம்</translation>
+<translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="8341840687457896278">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்பு வேறுபட்ட நற்சான்றிதழ்களை வழங்கியதன் காரணமாக பிணைய கோரிக்கைக்கு நற்சான்றிதழ்களை வழங்குவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME"/> நீட்டிப்பு</translation>
 <translation id="7893008570150657497">உங்கள் கணினியிலிருந்துப் புகைப்படங்கள், இசை, பிற மீடியாவை அணுகலாம்</translation>
 <translation id="4761104368405085019">உங்கள் மைக்ரோஃபோனைப் பயன்படுத்தலாம்</translation>
 <translation id="7217838517480956708">இந்தக் கணினியின் நிர்வாகிக்கு, <ph name="EXTENSION_NAME"/> ஐ நிறுவ வேண்டும். இதை அகற்றவோ மாற்றவோ முடியாது.</translation>
+<translation id="6580950983454333167"><ph name="VENDOR_NAME"/> இடமிருந்து <ph name="PRODUCT_NAME"/> (வரிசை எண் <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">உங்கள் தொடக்கப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="START_PAGE"/></translation>
+<translation id="6758203075041033901">விற்பனையாளர் <ph name="VENDOR_ID"/> இடமிருந்து தயாரிப்பு <ph name="PRODUCT_ID"/> (வரிசை எண் <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> மற்றும் <ph name="WEBSITE_2"/> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE"/>' என்ற பின்புலப் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
+<translation id="7972881773422714442">விருப்பங்கள்: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 </translationbundle>

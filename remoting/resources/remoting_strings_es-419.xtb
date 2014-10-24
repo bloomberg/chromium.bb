@@ -30,7 +30,6 @@ Chromoting</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7782471917492991422">Configura la administración de energía de tu computadora y asegúrate de que no se habilite el modo de hibernación cuando esté inactiva.</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
-<translation id="4939475390270873744">• Se corrigió un fallo en el inicio.</translation>
 <translation id="2707879711568641861">Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
 <translation id="1779766957982586368">Cerrar ventana</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
@@ -79,6 +78,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (desactualizado)</translation>
 <translation id="3884839335308961732">Confirma la cuenta y el PIN a continuación para permitir el acceso del Escritorio remoto de Chrome.</translation>
 <translation id="327263477022142889">¿Quieres ayudar a mejorar el Escritorio remoto de Chrome? <ph name="LINK_BEGIN"/>Realiza la encuesta<ph name="LINK_END"/>.</translation>
+<translation id="6612717000975622067">Enviar Ctrl-Alt-Supr</translation>
 <translation id="5702987232842159181">Conectado:</translation>
 <translation id="8509907436388546015">Proceso de integración de escritorio</translation>
 <translation id="4736223761657662401">Historial de conexiones</translation>
@@ -106,10 +106,10 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="5908809458024685848">No accediste a Chromoting. Accede y vuelve a intentarlo.</translation>
 <translation id="7401733114166276557">Escritorio remoto de Chrome</translation>
 <translation id="3362124771485993931">Vuelve a escribir el PIN.</translation>
+<translation id="1760808606374294203">• Se incluyen correcciones para Android Lollipop.</translation>
 <translation id="154040539590487450">No se pudo iniciar el servicio de acceso remoto.</translation>
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="8172070902751707422">Se produjo un error al realizar la autenticación. Vuelve a acceder al Escritorio remoto de Chrome.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Supr</translation>
 <translation id="5254120496627797685">Al abandonar esta página, se cerrará la sesión en el Escritorio remoto de Chrome.</translation>
 <translation id="173559734173571936">Para usar el Escritorio remoto de Chrome, debes extender los permisos de acceso a tu computadora. Solo tienes que hacer esto una vez.</translation>
 <translation id="9032136467203159543">Faltan algunos de los componentes necesarios para Chromoting. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
@@ -124,6 +124,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3020807351229499221">No se pudo actualizar el PIN. Vuelve a intentarlo más tarde.</translation>
 <translation id="2647232381348739934">Servicio de Chromoting</translation>
 <translation id="579702532610384533">Volver a conectar</translation>
+<translation id="4867841927763172006">Enviar Impr Pant</translation>
 <translation id="4211066471404647515">Faltan algunos de los componentes necesarios para Chromoting. Asegúrate de estar usando la última versión de Chrome y vuelve a intentarlo.</translation>
 <translation id="5773590752998175013">Fecha de sincronización</translation>
 <translation id="5265129178187621741">(Esta función todavía no está disponible para las Chromebooks. Pronto habrá novedades).</translation>
@@ -184,7 +185,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="4573676252416618192">Host del Escritorio
 remoto de Chrome</translation>
 <translation id="4703799847237267011">Se cerró tu sesión en Chromoting.</translation>
-<translation id="1369030621715708553">Impr Pant</translation>
 <translation id="8178433417677596899">Uso compartido de la pantalla entre usuarios, ideal para recibir asistencia técnica remota</translation>
 <translation id="652218476070540101">Se está actualizando el PIN para esta computadora…</translation>
 <translation id="4563926062592110512">Cliente desconectado: <ph name="CLIENT_USERNAME"/></translation>
@@ -194,6 +194,7 @@ remoto de Chrome</translation>
 <translation id="6668065415969892472">Se actualizó tu PIN.</translation>
 <translation id="4513946894732546136">Comentario</translation>
 <translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>
+<translation id="6550675742724504774">Opciones</translation>
 <translation id="979100198331752041">La aplicación Escritorio remoto de Chrome en <ph name="HOSTNAME"/> está desactualizada y debe actualizarse.</translation>
 <translation id="7729639150174291243">No accediste a Escritorio remoto de Chrome. Accede y vuelve a intentarlo.</translation>
 <translation id="2841013758207633010">Hora</translation>
@@ -204,6 +205,7 @@ remoto de Chrome</translation>
 <translation id="4277463233460010382">Esta computadora está configurada para permitir que uno o más clientes se conecten sin ingresar un PIN.</translation>
 <translation id="837021510621780684">Desde esta computadora</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Aceptar</translation>
 <translation id="7215059001581613786">Ingresa un PIN de al menos seis dígitos.</translation>
 <translation id="8383794970363966105">Para utilizar Chromoting, debes agregar una cuenta de Google en el dispositivo.</translation>
 <translation id="1546934824884762070">Se produjo un error inesperado. Informa este problema a los programadores.</translation>

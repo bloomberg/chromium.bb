@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">శాఖ</translation>
 <translation id="4258748452823770588">చెల్లని సంతకం</translation>
 <translation id="3024663005179499861">చెల్లని విధాన రకం</translation>
+<translation id="2030481566774242610">మీ ఉద్దేశ్యం <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">మాస్టర్‌కార్డ్</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, గడువు తేదీ: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">అమెరికన్ ఎక్స్‌ప్రెస్</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">జాబితా నమోదు &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">దేశం</translation>
 <translation id="5031870354684148875">Google అనువాదం గురించి</translation>
+<translation id="1152921474424827756"><ph name="URL"/> యొక్క <ph name="BEGIN_LINK"/>కాష్ చేయబడిన కాపీ<ph name="END_LINK"/>ని ప్రాప్యత చేయండి</translation>
 <translation id="6891596781022320156">విధానం స్థాయికి మద్దతు లేదు.</translation>
 <translation id="2025186561304664664">ప్రాక్సీ స్వయంచాలకంగా కాన్ఫిగర్ చేయబడేలా సెట్ చేయబడింది.</translation>
 <translation id="1853748787962613237">కథనాన్ని ప్రదర్శించడంలో విఫలమైంది.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">బుక్‌మార్క్‌ల బార్</translation>
 <translation id="6965978654500191972">పరికరం</translation>
 <translation id="8249320324621329438">చివరగా పొందబడినవి:</translation>
+<translation id="194030505837763158"><ph name="LINK"/>కి వెళ్లండి</translation>
 <translation id="1285320974508926690">ఈ సైట్‌ను అనువదించవద్దు</translation>
 <translation id="1344588688991793829">Chromium స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="6282194474023008486">పోస్టల్ కోడ్</translation>

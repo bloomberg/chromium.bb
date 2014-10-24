@@ -30,7 +30,6 @@ Host</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7782471917492991422">Bitte überprüfen Sie die Energieverwaltungseinstellungen Ihres Computers. Vergewissern Sie sich, dass er nicht so konfiguriert ist, dass er bei Inaktivität in den Energiesparmodus schaltet.</translation>
 <translation id="7665369617277396874">Konto hinzufügen</translation>
-<translation id="4939475390270873744">• Ein Fehler wurde behoben, der beim Start zum Absturz führte.</translation>
 <translation id="2707879711568641861">Es fehlen einige Komponenten, die für Chrome Remote Desktop erforderlich sind. Überprüfen Sie, ob die neueste Version installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="1779766957982586368">Fenster schließen</translation>
 <translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
@@ -79,6 +78,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (veraltet)</translation>
 <translation id="3884839335308961732">Bestätigen Sie unten Ihr Konto und Ihre PIN, um Zugriff über Chrome Remote Desktop zu gewähren.</translation>
 <translation id="327263477022142889">Möchten Sie uns helfen, Chrome Remote Desktop zu verbessern? <ph name="LINK_BEGIN"/>Nehmen Sie an der Umfrage teil.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Strg-Alt-Entf senden</translation>
 <translation id="5702987232842159181">Verbunden:</translation>
 <translation id="8509907436388546015">Desktop-Integrationsprozess</translation>
 <translation id="4736223761657662401">Verlauf &quot;Verbindungen&quot;</translation>
@@ -106,10 +106,10 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="5908809458024685848">Sie sind nicht in Chromoting angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">PIN erneut eingeben</translation>
+<translation id="1760808606374294203">• Fehlerkorrekturen für Android Lollipop</translation>
 <translation id="154040539590487450">Fehler beim Starten des Remote-Zugriffsdienstes</translation>
 <translation id="7948001860594368197">Optionen</translation>
 <translation id="8172070902751707422">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chrome Remote Desktop an.</translation>
-<translation id="6146986332407778716">Strg-Alt-Entf</translation>
 <translation id="5254120496627797685">Wenn Sie diese Seite verlassen, wird Ihre Chrome Remote Desktop-Sitzung beendet.</translation>
 <translation id="173559734173571936">Zur Verwendung von Chrome Remote Desktop müssen Sie erweiterte Zugriffsberechtigungen auf Ihren Computer gewähren. Dieser Schritt ist nur einmal erforderlich.</translation>
 <translation id="9032136467203159543">Es fehlen einige Komponenten, die für Chromoting erforderlich sind. Überprüfen Sie, ob die neueste Version installiert ist, und versuchen Sie es erneut.</translation>
@@ -124,6 +124,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3020807351229499221">Fehler beim Aktualisieren der PIN. Bitte versuchen Sie es später erneut.</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
 <translation id="579702532610384533">Erneut verbinden</translation>
+<translation id="4867841927763172006">Druck senden</translation>
 <translation id="4211066471404647515">Es fehlen einige Komponenten, die für Chromoting erforderlich sind. Überprüfen Sie, ob Sie die neueste Version von Chrome verwenden, und versuchen Sie es erneut.</translation>
 <translation id="5773590752998175013">Pairing-Datum</translation>
 <translation id="5265129178187621741">(Diese Funktion ist noch nicht für Chromebooks verfügbar… Bitte haben Sie noch etwas Geduld.)</translation>
@@ -184,7 +185,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
 <translation id="4703799847237267011">Ihre Chromoting-Sitzung wurde beendet.</translation>
-<translation id="1369030621715708553">Druck</translation>
 <translation id="8178433417677596899">Die Bildschirmfreigabe für Nutzer eignet sich besonders für technischen Support per Remote-Zugriff.</translation>
 <translation id="652218476070540101">Die PIN für diesen Computer wird aktualisiert…</translation>
 <translation id="4563926062592110512">Client getrennt: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -194,6 +194,7 @@ Desktop Host</translation>
 <translation id="6668065415969892472">Ihre PIN wurde aktualisiert.</translation>
 <translation id="4513946894732546136">Google Feedback</translation>
 <translation id="4277736576214464567">Der Zugriffscode ist ungültig. Bitte versuchen Sie es erneut.</translation>
+<translation id="6550675742724504774">Optionen</translation>
 <translation id="979100198331752041">Chrome Remote Desktop auf <ph name="HOSTNAME"/> ist veraltet und muss aktualisiert werden.</translation>
 <translation id="7729639150174291243">Sie sind nicht in Chrome Remote Desktop angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="2841013758207633010">Zeit</translation>
@@ -204,6 +205,7 @@ Desktop Host</translation>
 <translation id="4277463233460010382">Dieser Computer wird konfiguriert, um einem oder mehreren Clients das Herstellen einer Verbindung ohne Eingabe einer PIN zu ermöglichen.</translation>
 <translation id="837021510621780684">Von diesem Computer</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Annehmen</translation>
 <translation id="7215059001581613786">Die PIN muss aus mindestens 6 Ziffern bestehen.</translation>
 <translation id="8383794970363966105">Wenn Sie Chromoting verwenden möchten, fügen Sie ein Google-Konto zu Ihrem Gerät hinzu.</translation>
 <translation id="1546934824884762070">Ein unerwarteter Fehler ist aufgetreten. Bitte melden Sie dieses Problem den Entwicklern.</translation>

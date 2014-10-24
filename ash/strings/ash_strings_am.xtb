@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">ተኪ...</translation>
 <translation id="938582441709398163">የቁልፍ ሰሌዳ ተደራቢ</translation>
 <translation id="4387004326333427325">የማረጋገጫ ምስክር ወረቀት በርቀት ተቀባይነት አላገኘም</translation>
+<translation id="6047696787498798094">ወደ ሌላ ተጠቃሚ ሲቀይሩ ማያ ገጽ ማጋራት ይቆማል። መቀጠል ይፈልጋሉ?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> ጥራት ወደ <ph name="RESOLUTION"/> ተለውጧል</translation>
 <translation id="6943836128787782965">ኤችቲቲፒ ማግኘት አልተሳካም</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">የእርስዎ Chromebook በርቶ ሳለ ባትሪ ላይሞላ ይችላል። ዋናውን ባትሪ መሙያ መጠቀሙን ያስቡበት።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4442424173763614572">የዲ ኤን ኤስ ፍለጋ አልተሳካም</translation>
+<translation id="544691375626129091">ሁሉም የሚገኙ ተጤቃሚዎች አስቀድመው ወደዚህ ክፍለ-ጊዜ ታክለዋል።</translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
 <translation id="2204305834655267233">የአውታረ መረብ መረጃ</translation>
 <translation id="1621499497873603021">ባትሪ ባዶ እስኪሆን ድረስ የቀረው ጊዜ፣ <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">በ<ph name="LOGOUT_TIME_LEFT"/> ውስጥ በራስ-ሰር ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="252373100621549798">ያልታወቀ ማሳያ</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME"/> በማንጸባረቅ ላይ</translation>
+<translation id="5777841717266010279">ማያ ገጽ ማጋራት ይቁም?</translation>
 <translation id="2727977024730340865">አነስተኛ ኃይል ወዳለው ባትሪ መሙያ ተሰክቷል። የባትሪ መሙላት አስተማማኝ ላይሆን ይችላል።</translation>
 <translation id="2761704814324807722">የሁኔታ መሣቢያ፣ ሰዓት <ph name="TIME"/>፣ <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">ቆልፍ</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> በ<ph name="DOMAIN"/> የሚቀናበር ይፋዊ ክፍለ ጊዜ ነው</translation>
 <translation id="9044646465488564462">ከአውታረ መረብ ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">ከክፍለ-ጊዜ ውጣ</translation>
+<translation id="479989351350248267">ፈልግ</translation>
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
 <translation id="2429753432712299108">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME"/>» ለመጣመር ፍቃድ ይፈልጋል። ከመቀበልዎ በፊት እባክዎ ይህ የይለፍ ቃል በዚያ መሣሪያ ላይ የሚታይ መሆኑን ያረጋግጡ፦ <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE"/>% ሙሉ ነው።</translation>
@@ -224,7 +228,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ቀርቷል</translation>
 <translation id="3009178788565917040">ውጽዓት</translation>
 <translation id="520760366042891468">የማያ ገጽዎን ቁጥጥር በHangouts በኩል በማጋራት ላይ።</translation>
-<translation id="4015692727874266537">ሌላ መለያ ያስገቡ...</translation>
 <translation id="6911468394164995108">ሌላ ይቀላቀሉ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>፦ <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">እንኳን ደስ አለዎት! የእርስዎ «<ph name="NAME"/>» ውሂብ አገልግሎት ገባሪ ሆኖ ለመሄድ ዝግጁ ነው።</translation>

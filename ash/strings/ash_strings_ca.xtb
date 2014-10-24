@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Servidor intermediari...</translation>
 <translation id="938582441709398163">Superposició de teclat</translation>
 <translation id="4387004326333427325">S'ha rebutjat el certificat d'autenticació de manera remota</translation>
+<translation id="6047696787498798094">La pantalla es deixarà de compartir quan canvieu d'usuari. Voleu continuar?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">La resolució de <ph name="DISPLAY_NAME"/> ha canviat a <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">La sol·licitud HTTP ha fallat</translation>
@@ -110,6 +111,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2614835198358683673">És possible que el vostre Chromebook no es carregui mentre estigui encès. Proveu de fer servir un carregador oficial.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4442424173763614572">La cerca de DNS ha fallat</translation>
+<translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="2204305834655267233">Informació de la xarxa</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6062360702481658777">Es tancarà la sessió automàticament d'aquí a <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Voleu deixar de compartir la pantalla?</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
 <translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Bloqueja</translation>
@@ -174,6 +177,7 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> és una sessió pública gestionada per <ph name="DOMAIN"/>.</translation>
 <translation id="9044646465488564462">S'ha produït un error en connectar amb la xarxa: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
+<translation id="479989351350248267">cerca</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
 <translation id="2429753432712299108">El dispositiu Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY"/>.</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE"/>%.</translation>
@@ -224,7 +228,6 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="5102001756192215136">Temps d'autonomia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="520760366042891468">Compartiu el control de la pantalla mitjançant Hangouts.</translation>
-<translation id="4015692727874266537">Inicia la sessió amb un altre compte...</translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Enhorabona. El servei de dades &quot;<ph name="NAME"/>&quot; s'ha activat i ja es pot fer servir.</translation>

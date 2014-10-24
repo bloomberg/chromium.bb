@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Puhverserver ...</translation>
 <translation id="938582441709398163">Klaviatuuri ülekate</translation>
 <translation id="4387004326333427325">Autentimissertifikaat lükati kaugühenduse kaudu tagasi</translation>
+<translation id="6047696787498798094">Teisele kasutajale lülitumine peatab ekraani jagamise. Kas soovite jätkata?</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Ekraani <ph name="DISPLAY_NAME"/> eraldusvõimeks määrati <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP hankimine nurjus</translation>
@@ -110,6 +111,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2614835198358683673">Teie Chromebooki ei pruugita laadida, kui see on sisse lülitatud. Kaaluge ametliku laadija kasutamist.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4442424173763614572">DNS-i otsing nurjus</translation>
+<translation id="544691375626129091">Kõik saadaval kasutajad on sellesse seanssi juba lisatud.</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="2204305834655267233">Võrguteave</translation>
 <translation id="1621499497873603021">Aku tühjenemiseni on aega <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6062360702481658777">Teid logitakse automaatselt välja <ph name="LOGOUT_TIME_LEFT"/> pärast.</translation>
 <translation id="252373100621549798">Tundmatu ekraan</translation>
 <translation id="1882897271359938046">Peegeldamine asukohta <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Kas peatada ekraani jagamine?</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Lukusta</translation>
@@ -174,6 +177,7 @@ Serveri teade: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> on avalik seanss, mida haldab <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Võrguga ühenduse loomine ebaõnnestus: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Välju seansist</translation>
+<translation id="479989351350248267">otsing</translation>
 <translation id="4872237917498892622">Alt + otsinguklahv või tõstuklahv</translation>
 <translation id="2429753432712299108">Bluetoothi seade „<ph name="DEVICE_NAME"/>” küsib luba sidumiseks. Enne nõustumist veenduge, et selles seadmes oleks kuvatud see parool: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Aku on <ph name="PERCENTAGE"/>% täis.</translation>
@@ -224,7 +228,6 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> alles</translation>
 <translation id="3009178788565917040">Väljund</translation>
 <translation id="520760366042891468">Teie ekraani juhtimist jagatakse Hangoutsi kaudu.</translation>
-<translation id="4015692727874266537">Logige sisse teise kontoga ...</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Õnnitleme! Teie võrgu „<ph name="NAME"/>” andmeteenus on aktiveeritud ja kasutamiseks valmis.</translation>

@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">ప్రాక్సీ...</translation>
 <translation id="938582441709398163">కీబోర్డ్ అవలోకనం</translation>
 <translation id="4387004326333427325">ప్రామాణీకరణ ప్రమాణపత్రం రిమోట్‌లో తిరస్కరించబడింది</translation>
+<translation id="6047696787498798094">మీరు మరొక వినియోగదారుకు మారినప్పుడు స్క్రీన్ భాగస్వామ్యం ఆపివేయబడుతుంది. మీరు కొనసాగించాలనుకుంటున్నారా?</translation>
 <translation id="6979158407327259162">Google డిస్క్</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> రిజల్యూషన్ <ph name="RESOLUTION"/>కి మార్చబడింది</translation>
 <translation id="6943836128787782965">HTTP పొందడంలో విఫలమైంది</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">మీ Chromebook ప్రారంభించబడినప్పుడు ఛార్జ్ కాకపోవచ్చు. అధికారిక ఛార్జర్‌ను ఉపయోగించడానికి ప్రయత్నించండి.</translation>
 <translation id="4430019312045809116">వాల్యూమ్</translation>
 <translation id="4442424173763614572">DNS శోధన విఫలమైంది</translation>
+<translation id="544691375626129091">అందుబాటులో ఉన్న వినియోగదారులందరూ ఇప్పటికే ఈ సెషన్‌కు జోడించబడ్డారు.</translation>
 <translation id="1383876407941801731">శోధించు</translation>
 <translation id="2204305834655267233">నెట్‌వర్క్ సమాచారం</translation>
 <translation id="1621499497873603021">బ్యాటరీ ఖాళీ కావడానికి మిగిలి ఉన్న సమయం, <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">మీరు <ph name="LOGOUT_TIME_LEFT"/>లో స్వయంచాలకంగా సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="252373100621549798">తెలియని ప్రదర్శన</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/>కు దర్పణం చేస్తోంది</translation>
+<translation id="5777841717266010279">స్క్రీన్ భాగస్వామ్యాన్ని ఆపివేయాలా?</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2761704814324807722">స్థితి ట్రే, సమయం <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">లాక్ చేయి</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> అనేది <ph name="DOMAIN"/> ద్వారా నిర్వహించబడుతున్న పబ్లిక్ సెషన్</translation>
 <translation id="9044646465488564462">నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో విఫలమైంది: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+Search లేదా Shift</translation>
 <translation id="2429753432712299108">బ్లూటూత్ పరికరం &quot;<ph name="DEVICE_NAME"/>&quot; జత కావడానికి అనుమతి కోరుతోంది. ఆమోదించడానికి ముందు, దయచేసి ఆ పరికరంలో ఈ పాస్‌కీ చూపబడుతోందని నిర్ధారించుకోండి: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">బ్యాటరీ <ph name="PERCENTAGE"/>% నిండింది.</translation>
@@ -224,7 +228,6 @@
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> మిగిలి ఉంది</translation>
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
 <translation id="520760366042891468">మీ స్క్రీన్ యొక్క నియంత్రణ Hangouts ద్వారా భాగస్వామ్యం చేయబడుతోంది.</translation>
-<translation id="4015692727874266537">మరో ఖాతాతో సైన్ ఇన్ చేయి...</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">అభినందనలు! మీ '<ph name="NAME"/>' డేటా సేవ సక్రియం చేయబడింది మరియు పని చేయడానికి సిద్ధంగా ఉంది.</translation>

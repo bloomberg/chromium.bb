@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">鍵盤自訂快速鍵</translation>
 <translation id="4387004326333427325">遠端已拒絕驗證憑證</translation>
+<translation id="6047696787498798094">切換到另一個使用者會停止共用螢幕，您要繼續嗎？</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> 的解析度已變更為 <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">HTTP 擷取失敗</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">您的 Chromebook 可能無法在開機時充電。建議您使用官方提供的充電器。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4442424173763614572">DNS 查詢失敗</translation>
+<translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="2204305834655267233">網路資訊</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">您將於 <ph name="LOGOUT_TIME_LEFT"/>後自動登出。</translation>
 <translation id="252373100621549798">顯示器不明</translation>
 <translation id="1882897271359938046">正在建立 <ph name="DISPLAY_NAME"/> 鏡像</translation>
+<translation id="5777841717266010279">停止共用螢幕？</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME"/>，<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">鎖定</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> 是受 <ph name="DOMAIN"/> 管理的公開工作階段</translation>
 <translation id="9044646465488564462">無法連線至網路：<ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">結束工作階段</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
 <translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">電池電量為 <ph name="PERCENTAGE"/>%。</translation>
@@ -224,7 +228,6 @@
 <translation id="5102001756192215136">電量剩餘時間：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">輸出</translation>
 <translation id="520760366042891468">透過 Hangouts 分享螢幕控制權。</translation>
-<translation id="4015692727874266537">使用其他帳戶登入...</translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">恭喜您！您的「<ph name="NAME"/>」數據服務已啟用，隨時可供使用。</translation>

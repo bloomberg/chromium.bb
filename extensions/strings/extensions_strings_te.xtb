@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="3624204664103857160">లాంచర్ పేజీ '<ph name="PAGE"/>'ని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="8804398419035066391">సహకరిస్తున్న వెబ్‌సైట్‌లతో కమ్యూనికేట్ చేయండి</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (పొడిగింపు ID &quot;<ph name="EXTENSION_ID"/>&quot;)ని నిర్వాహకుడు బ్లాక్ చేసారు.</translation>
 <translation id="1005274289863221750">మీ మైక్రోఫోన్ మరియు కెమెరాను ఉపయోగించండి</translation>
@@ -9,6 +10,9 @@
 <translation id="6384275966486438344">మీ శోధన సెట్టింగ్‌లను దీనికి మార్చండి: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">ఈ పొడిగింపు <ph name="PRODUCT_NAME"/>ను మందగింప చేస్తోంది. <ph name="PRODUCT_NAME"/> యొక్క పనితీరును పునరుద్ధరించడానికి మీరు దీన్ని ఆపివేయాలి.</translation>
 <translation id="1033780634303702874">మీ క్రమానుసార పరికరాలను ప్రాప్యత చేయడం</translation>
+<translation id="288042212351694283">మీ సార్వత్రిక 2వ కారకం పరికరాలను ప్రాప్యత చేయండి</translation>
+<translation id="5971037678316050792">బ్లూటూత్ అడాప్టర్ స్థితిని మరియు జత చేసే విధానాన్ని నియంత్రించడానికి అనుమతి</translation>
+<translation id="677806580227005219">Mime హ్యాండ్లర్: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">మీ సిస్టమ్‌తో జత చేయబడిన బ్లూటూత్ పరికరాలకు సంబంధించిన సమాచారాన్ని ప్రాప్యత చేయడానికి మరియు సమీపంలోని బ్లూటూత్ పరికరాలను కనుగొనడానికి అనుమతి.</translation>
 <translation id="5911798608827489036">స్థానిక నెట్‌వర్క్ లేదా ఇంటర్నెట్‌లో ఏదైనా కంప్యూటర్‌తో డేటాను పరస్పరం మార్చుకోండి</translation>
 <translation id="4719685943208231314"><ph name="VENDOR_NAME"/> నుండి USB పరికరాన్ని ప్రాప్యత చేయండి</translation>
@@ -22,6 +26,7 @@
 <translation id="8058376558882514200"><ph name="VENDOR_NAME"/> నుండి USB పరికరం <ph name="PRODUCT_NAME"/>ని ప్రాప్యత చేయండి</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' పొడిగింపు చిహ్నాన్ని లోడ్ చేయలేకపోయింది.</translation>
 <translation id="8825366169884721447">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క &quot;<ph name="HEADER_NAME"/>&quot; అభ్యర్థన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
+<translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' పరిచయ పేజీని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="388442998277590542">ఎంపికల పేజీ '<ph name="OPTIONS_PAGE"/>'ని లోడ్ చెయ్యడం సాధ్యం కాలేదు.</translation>
 <translation id="6344170822609224263">నెట్‌వర్క్ కనెక్షన్‌ల జాబితాను ప్రాప్యత చేయండి</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/>లో ఉన్న మీ డేటాని చదవడం మరియు మార్చడం</translation>
@@ -33,6 +38,7 @@
 <translation id="8670869118777164560">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>) నెట్‌వర్క్ అభ్యర్థనను <ph name="ACTUAL_REDIRECT_DESTINATION"/>కు దారి మళ్లించినందున ఈ పొడిగింపు దీన్ని <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>కు దారి మళ్లించడంలో విఫలమైంది.</translation>
 <translation id="6840444547062817500">ఈ పొడిగింపు దానికదే చాలా తరచుగా రీలోడ్ అయ్యింది.</translation>
 <translation id="8047248493720652249">ఈ పొడిగింపు డౌన్‌లోడ్ యొక్క పేరును &quot;<ph name="ATTEMPTED_FILENAME"/>&quot;గా పేర్కొనడంలో విఫలమైంది ఎందుకంటే మరో పొడిగింపు (<ph name="EXTENSION_NAME"/>) &quot;<ph name="ACTUAL_FILENAME"/>&quot; అనే వేరే ఫైల్ పేరుని నిశ్చయించింది.</translation>
+<translation id="2732710576072980201"><ph name="VENDOR_NAME"/> నుండి ఉత్పత్తి <ph name="PRODUCT_ID"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">ఈ డొమైన్‌ల్లో ఏ కంప్యూటర్‌తో అయినా డేటాను పరస్పరం మార్చుకోండి: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">వెబ్ వీక్షణ: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">అన్ని <ph name="WEBSITE_1"/> వెబ్‌సైట్‌లు</translation>
@@ -43,12 +49,16 @@
 <translation id="4883436287898674711">అన్ని <ph name="WEBSITE_1"/> వెబ్‌సైట్‌లు</translation>
 <translation id="9111791539553342076">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క &quot;<ph name="HEADER_NAME"/>&quot; ప్రతిస్పందన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
 <translation id="9150045010208374699">మీ కెమెరాను ఉపయోగించండి</translation>
+<translation id="5356315618422219272">అనువర్తన వీక్షణ: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="8341840687457896278">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>) వేరే ఆధారాలను అందించినందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థనకు ఆధారాలను అందించడంలో విఫలమైంది.</translation>
 <translation id="5627523580512561598">పొడిగింపు <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">మీ కంప్యూటర్ నుండి ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను ప్రాప్యత చేయండి</translation>
 <translation id="4761104368405085019">మీ మైక్రోఫోన్‌ను ఉపయోగించండి</translation>
 <translation id="7217838517480956708">ఈ మెషీన్ యొక్క నిర్వాహకుడికి <ph name="EXTENSION_NAME"/> ఇన్‌స్టాల్ చేయబడి ఉండటం అవసరం. దీన్ని తీసివేయడం లేదా సవరించడం సాధ్యపడదు.</translation>
+<translation id="6580950983454333167"><ph name="VENDOR_NAME"/> నుండి <ph name="PRODUCT_NAME"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">మీ ప్రారంభ పేజీని దీనికి మార్చండి: <ph name="START_PAGE"/></translation>
+<translation id="6758203075041033901">విక్రయదారు <ph name="VENDOR_ID"/> నుండి ఉత్పత్తి <ph name="PRODUCT_ID"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> మరియు <ph name="WEBSITE_2"/>లో ఉన్న మీ డేటాను చదవడం మరియు మార్చడం</translation>
 <translation id="1803557475693955505">నేపథ్య పేజీ '<ph name="BACKGROUND_PAGE"/>' లోడ్ చేయబడలేదు.</translation>
+<translation id="7972881773422714442">ఎంపికలు: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 </translationbundle>

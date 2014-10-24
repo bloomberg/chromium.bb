@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Νομός</translation>
 <translation id="4258748452823770588">Εσφαλμένη υπογραφή</translation>
 <translation id="3024663005179499861">Λανθασμένος τύπος πολιτικής</translation>
+<translation id="2030481566774242610">Μήπως εννοείτε <ph name="LINK"/>;</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, Λήξη: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Καταχώριση λίστας &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Χώρα</translation>
 <translation id="5031870354684148875">Σχετικά με τη Google Μετάφραση</translation>
+<translation id="1152921474424827756">Πρόσβαση σε <ph name="BEGIN_LINK"/>προσωρινό αντίγραφο<ph name="END_LINK"/> της διεύθυνσης <ph name="URL"/></translation>
 <translation id="6891596781022320156">Το επίπεδο πολιτικής δεν υποστηρίζεται.</translation>
 <translation id="2025186561304664664">Ο διακομιστής μεσολάβησης έχει ρυθμιστεί σε αυτόματη διαμόρφωση.</translation>
 <translation id="1853748787962613237">Αποτυχία εμφάνισης άρθρου.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Γραμμή σελιδοδεικτών</translation>
 <translation id="6965978654500191972">Συσκευή</translation>
 <translation id="8249320324621329438">Τελευταία ανάκτηση:</translation>
+<translation id="194030505837763158">Μετάβαση στο σύνδεσμο <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
 <translation id="1344588688991793829">Ρυθμίσεις αυτόματης συμπλήρωσης Chromium…</translation>
 <translation id="6282194474023008486">Ταχυδρομικός κώδικας</translation>

@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">الخادم الوكيل...</translation>
 <translation id="938582441709398163">تراكب لوحة المفاتيح</translation>
 <translation id="4387004326333427325">تم رفض شهادة المصادقة عن بُعد</translation>
+<translation id="6047696787498798094">سيتم إيقاف مشاركة الشاشة عند التبديل إلى مستخدم آخر. هل تريد المتابعة؟</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">تم تغيير درجة دقة <ph name="DISPLAY_NAME"/> إلى <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">‏أخفق الحصول على HTTP</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">‏قد لا يستجيب جهاز Chromebook لعملية الشحن وهو قيد التشغيل. مع مراعاة استخدام الشاحن المخصص للجهاز.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="4442424173763614572">أخفق البحث في نظام أسماء النطاقات</translation>
+<translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="2204305834655267233">معلومات الشبكة</translation>
 <translation id="1621499497873603021">الوقت المتبقي حتى تصبح البطارية فارغة <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">سيتم تسجيل خروجك تلقائيًا في غضون <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">شاشة عرض غير معروفة</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">هل ترغب في إيقاف مشاركة الشاشة؟</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME"/>، و<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">قفل</translation>
@@ -173,6 +176,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> هي جلسة عامة يديرها <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">أخفق الاتصال بالشبكة: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">إنهاء الجلسة</translation>
+<translation id="479989351350248267">بحث</translation>
 <translation id="4872237917498892622">‏Alt+مفتاح البحث أو Shift</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث &quot;<ph name="DEVICE_NAME"/>&quot; الحصول على إذن للإقران. قبل القبول، الرجاء التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE"/>% من البطارية.</translation>
@@ -220,7 +224,6 @@
 <translation id="5102001756192215136">الوقت المتبقي: <ph name="HOUR"/>:<ph name="MINUTE"/> ‏</translation>
 <translation id="3009178788565917040">الإخراج</translation>
 <translation id="520760366042891468">‏مشاركة التحكم في الشاشة عبر Hangouts.</translation>
-<translation id="4015692727874266537">تسجيل الدخول لحساب آخر...</translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">تم تنشيط خدمة البيانات '<ph name="NAME"/>' وهي جاهزة للعمل.</translation>

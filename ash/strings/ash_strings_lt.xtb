@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Įgaliotasis serveris...</translation>
 <translation id="938582441709398163">Klaviatūros perdanga</translation>
 <translation id="4387004326333427325">Autentifikavimo sertifikatas atmestas nuotoliniu būdu</translation>
+<translation id="6047696787498798094">Perjungus naudotoją ekrano bendrinimas bus nutrauktas. Ar norite tęsti?</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> skyra pakeista į <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Įvyko HTTP klaida</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">„Chromebook“ gali nebūti įkraunamas, kai jis įjungtas. Apsvarstykite galimybę naudoti originalų įkroviklį.</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="4442424173763614572">Įvyko DNS paieškos klaida</translation>
+<translation id="544691375626129091">Prie šio seanso jau pridėti visi galimi naudotojai.</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="2204305834655267233">Tinklo informacija</translation>
 <translation id="1621499497873603021">Laikas, likęs iki akumuliatoriaus išsikrovimo: <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">Būsite automatiškai atjungti po <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Nežinoma pateiktis</translation>
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Nutraukti ekrano bendrinimą?</translation>
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Užrakinti</translation>
@@ -174,6 +177,7 @@ Serverio pranešimas: <ph name="SERVER_MSG"/></translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> yra vieša sesija, valdoma <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Nepavyko prisijungti prie tinklo: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Išeiti iš sesijos</translation>
+<translation id="479989351350248267">ieškoti</translation>
 <translation id="4872237917498892622">„Alt“ + paieškos arba antrojo lygio klavišas</translation>
 <translation id="2429753432712299108">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME"/>“ prašo leidimo susieti. Prieš sutikdami, patvirtinkite, kad šiame įrenginyje rodomas šis slaptasis raktas: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE"/> %.</translation>
@@ -224,7 +228,6 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="5102001756192215136">Liko <ph name="HOUR"/>.<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Išvestis</translation>
 <translation id="520760366042891468">Jūsų ekrano valdymas bendrinamas per „Hangout“.</translation>
-<translation id="4015692727874266537">Prisijungti prie kitos paskyros...</translation>
 <translation id="6911468394164995108">Prisijungti prie kito...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Sveikiname! Jūsų „<ph name="NAME"/>“ duomenų paslauga buvo suaktyvinta ir yra paruošta naudoti.</translation>

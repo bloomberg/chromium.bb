@@ -30,7 +30,6 @@ Host</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7782471917492991422">Please check your computer's power management settings and ensure that it is not configured to sleep when idle.</translation>
 <translation id="7665369617277396874">Add account</translation>
-<translation id="4939475390270873744">• Fixed a crash on start-up.</translation>
 <translation id="2707879711568641861">Some components required for Chrome Remote Desktop are missing. Please make sure you have installed the latest version and try again.</translation>
 <translation id="1779766957982586368">Close window</translation>
 <translation id="2499160551253595098">Help us to improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.</translation>
@@ -79,6 +78,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (out-of-date)</translation>
 <translation id="3884839335308961732">Please confirm your account and PIN below to allow access by Chrome Remote Desktop.</translation>
 <translation id="327263477022142889">Want to help improve Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Take the survey.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Send Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Connected:</translation>
 <translation id="8509907436388546015">Desktop Integration Process</translation>
 <translation id="4736223761657662401">Connection History</translation>
@@ -106,10 +106,10 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="5908809458024685848">You are not signed in to Chromoting. Please sign in and try again.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Re-type PIN</translation>
+<translation id="1760808606374294203">• Fixes for Android Lollipop.</translation>
 <translation id="154040539590487450">Failed to start remote access service.</translation>
 <translation id="7948001860594368197">Screen options</translation>
 <translation id="8172070902751707422">Authentication failed. Please sign in to Chrome Remote Desktop again.</translation>
-<translation id="6146986332407778716">Ctrl-Alt-Del</translation>
 <translation id="5254120496627797685">Leaving this page will end your Chrome Remote Desktop session.</translation>
 <translation id="173559734173571936">To use Chrome Remote Desktop you must grant extended access permissions to your computer. You only have to do this once.</translation>
 <translation id="9032136467203159543">Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.</translation>
@@ -124,6 +124,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="3020807351229499221">Failed to update the PIN. Please try again later.</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
 <translation id="579702532610384533">Reconnect</translation>
+<translation id="4867841927763172006">Send PrtScn</translation>
 <translation id="4211066471404647515">Some components required for Chromoting are missing. Please make sure you're running the latest version of Chrome and try again.</translation>
 <translation id="5773590752998175013">Pairing date</translation>
 <translation id="5265129178187621741">(this feature is not yet available for Chromebooks… stay tuned)</translation>
@@ -184,7 +185,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="4573676252416618192">Chrome Remote
 Desktop Host</translation>
 <translation id="4703799847237267011">Your Chromoting session has ended.</translation>
-<translation id="1369030621715708553">PrtScn</translation>
 <translation id="8178433417677596899">User-to-user screen sharing, perfect for remote technical support.</translation>
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="4563926062592110512">Client disconnected: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -194,6 +194,7 @@ Desktop Host</translation>
 <translation id="6668065415969892472">Your PIN has been updated.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4277736576214464567">The access code is invalid. Please try again.</translation>
+<translation id="6550675742724504774">Options</translation>
 <translation id="979100198331752041">Chrome Remote Desktop on <ph name="HOSTNAME"/> is out-of-date and needs to be updated.</translation>
 <translation id="7729639150174291243">You are not signed in to Chrome Remote Desktop. Please sign in and try again.</translation>
 <translation id="2841013758207633010">Time</translation>
@@ -204,6 +205,7 @@ Desktop Host</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="837021510621780684">From this computer</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="4918086044614829423">Accept</translation>
 <translation id="7215059001581613786">Please enter a PIN consisting of six or more digits.</translation>
 <translation id="8383794970363966105">To use Chromoting, you'll need to add a Google Account to your device.</translation>
 <translation id="1546934824884762070">An unexpected error occurred. Please report this problem to the developers.</translation>

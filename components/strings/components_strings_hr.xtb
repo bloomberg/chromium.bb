@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">Departman</translation>
 <translation id="4258748452823770588">Potpis nije valjan</translation>
 <translation id="3024663005179499861">Pogrešna vrsta pravila</translation>
+<translation id="2030481566774242610">Jeste li mislili <ph name="LINK"/>?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, istek: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">Unos popisa &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Zemlja</translation>
 <translation id="5031870354684148875">O Google Prevoditelju</translation>
+<translation id="1152921474424827756">Pristupite <ph name="BEGIN_LINK"/>predmemoriranoj kopiji<ph name="END_LINK"/> stranice <ph name="URL"/></translation>
 <translation id="6891596781022320156">Razina pravila nije podržana.</translation>
 <translation id="2025186561304664664">Proxy je postavljen na automatsko konfiguriranje.</translation>
 <translation id="1853748787962613237">Prikaz članka nije uspio.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="8249320324621329438">Zadnje dohvaćanje:</translation>
+<translation id="194030505837763158">Posjetite <ph name="LINK"/></translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="1344588688991793829">Postavke automatskog popunjavanja u Chromiumu...</translation>
 <translation id="6282194474023008486">Poštanski broj</translation>

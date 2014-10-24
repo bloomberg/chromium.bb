@@ -105,7 +105,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
       Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
 
       Pokud zásadu nenastavíte, uživatel bude moci sám zvolit, jaký obrázek avatara jej bude na přihlašovací obrazovce představovat.</translation>
-<translation id="2204753382813641270">Řídit automatické skrývání skladu</translation>
+<translation id="2204753382813641270">Řídit automatické skrývání poličky</translation>
 <translation id="3816312845600780067">Aktivovat nouzovou klávesovou zkratku pro automatické přihlášení</translation>
 <translation id="3214164532079860003">Je-li tato zásada aktivovaná, vynucuje import domovské stránky z aktuálního výchozího prohlížeče.
 
@@ -136,15 +136,15 @@ Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude
 
       Pokud tato zásada není nastavená, uživatelé budou moci změnit, zda bude použit integrovaný klient DNS, úpravou příznaku chrome://flags nebo zadáním příznaku příkazového řádku.</translation>
 <translation id="2908277604670530363">Maximální počet současných připojení k proxy serveru</translation>
-<translation id="556941986578702361">Řídí automatické skrývání skladu systému <ph name="PRODUCT_OS_NAME"/>.
+<translation id="556941986578702361">Řídí automatické skrývání poličky systému <ph name="PRODUCT_OS_NAME"/>.
 
-      Pokud je tato zásada nastavena na hodnotu AlwaysAutoHideShelf, sklad se vždy automaticky skryje.
+Pokud je tato zásada nastavena na hodnotu AlwaysAutoHideShelf, polička se vždy automaticky skryje.
 
-      Pokud je tato zásada nastavena na hodnotu NeverAutoHideShelf, sklad se nikdy automaticky skrývat nebude.
+Pokud je tato zásada nastavena na hodnotu NeverAutoHideShelf, polička se nikdy automaticky skrývat nebude.
 
-      Pokud nastavíte tuto zásadu, uživatelé ji nebudou moci změnit ani přepsat.
+Pokud nastavíte tuto zásadu, uživatelé ji nebudou moci změnit ani přepsat.
 
-      Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit automatické skrývání skladu sami.</translation>
+Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit automatické skrývání poličky sami.</translation>
 <translation id="4838572175671839397">Obsahuje regulární výraz určující uživatele, kteří se mohou přihlásit do prohlížeče <ph name="PRODUCT_NAME"/>.
 
       Pokud se uživatel pokusí přihlásit pomocí uživatelského jména, které se neshoduje s tímto vzorem, zobrazí se příslušná chybová zpráva.
@@ -671,7 +671,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována a už
             
             Pokud toto nastavení deaktivujete nebo nenastavíte, vygenerovaný hlavní název služby (SPN) protokolu Kerberos port v žádném případě obsahovat nebude.</translation>
 <translation id="3236046242843493070">Vzory adres URL, ze kterých je možné instalovat rozšíření, aplikace a uživatelské skripty</translation>
-<translation id="2498238926436517902">Vždy automaticky skrýt sklad</translation>
+<translation id="2498238926436517902">Vždy poličku automaticky skrýt</translation>
 <translation id="253135976343875019">Prodleva upozornění na nečinnost při napájení ze sítě</translation>
 <translation id="480987484799365700">Je-li tato zásada aktivována, vynucuje, aby se profil přepnul do dočasného režimu. Je-li tato zásada uvedena jako zásada operačního systému (např. GPO ve Windows), bude použita na všechny profily v systému. Je-li nastavena jako cloudová zásada, bude použita pouze na profil, do kterého je přihlášen klientský účet.
 
@@ -1735,7 +1735,7 @@ Pokud toto nastavení deaktivujete nebo ho ponecháte nenastavené, ve výchozí
 Až bude okamžité přihlašování podporovat všechny přihlašovací procesy SSO, toto experimentální nastavení bude odstraněno.</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
-<translation id="3973371701361892765">Nikdy automaticky neskrývat sklad</translation>
+<translation id="3973371701361892765">Nikdy poličku automaticky neskrývat</translation>
 <translation id="7635471475589566552">Slouží ke konfiguraci jazyka aplikace <ph name="PRODUCT_NAME"/> a brání uživatelům, aby nastavený jazyk změnili. 
 
       Pokud toto nastavení aktivujete, bude aplikace <ph name="PRODUCT_NAME"/> používat zvolený jazyk. Není-li nakonfigurovaný jazyk podporován, použije se místo něho nastavení „en-US“. 

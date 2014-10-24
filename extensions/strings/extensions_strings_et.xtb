@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="3624204664103857160">Käivitusprogrammi lehte <ph name="PAGE"/> ei saanud laadida.</translation>
 <translation id="8804398419035066391">Side koostööd tegevate veebisaitidega</translation>
 <translation id="7809034755304591547">Administraator blokeeris laienduse <ph name="EXTENSION_NAME"/> (laienduse ID „<ph name="EXTENSION_ID"/>”).</translation>
 <translation id="1005274289863221750">Mikrofoni ja kaamera kasutamine</translation>
@@ -9,6 +10,9 @@
 <translation id="6384275966486438344">Muutke oma otsinguseadeid: <ph name="SEARCH_HOST"/></translation>
 <translation id="1445572445564823378">Laiendus aeglustab rakendust <ph name="PRODUCT_NAME"/>. Peaksite selle keelama, et taastada rakenduse <ph name="PRODUCT_NAME"/> toimivus.</translation>
 <translation id="1033780634303702874">Juurdepääs jadaseadmetele</translation>
+<translation id="288042212351694283">Juurdepääs teie Universal 2nd Factori seadmetele</translation>
+<translation id="5971037678316050792">Bluetoothi adapteri oleku ja sidumise juhtimine</translation>
+<translation id="677806580227005219">Mime-töötleja: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Juurdepääs teie süsteemiga seotud Bluetoothi seadmete teabele ja läheduses olevate Bluetoothi seadmete tuvastamine.</translation>
 <translation id="5911798608827489036">Vaheta andmeid mis tahes arvutiga kohalikus võrgus või Internetis</translation>
 <translation id="4719685943208231314">Juurdepääs tootja <ph name="VENDOR_NAME"/> USB-seadmele</translation>
@@ -22,6 +26,7 @@
 <translation id="8058376558882514200">Juurdepääs tootja <ph name="VENDOR_NAME"/> USB-seadmele <ph name="PRODUCT_NAME"/></translation>
 <translation id="149347756975725155">Laienduse ikooni <ph name="ICON"/> ei õnnestunud laadida.</translation>
 <translation id="8825366169884721447">Laiendusel ei õnnestunud muuta võrgutaotluse päist „<ph name="HEADER_NAME"/>”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="4233778200880751280">Teabelehte „<ph name="ABOUT_PAGE"/>” ei õnnestunud laadida.</translation>
 <translation id="388442998277590542">Valikute lehte <ph name="OPTIONS_PAGE"/> ei õnnestunud laadida.</translation>
 <translation id="6344170822609224263">Juurdepääs võrguühenduste loendile</translation>
 <translation id="2616366145935564096">Andmete lugemine ja muutmine veebisaidil <ph name="WEBSITE_1"/></translation>
@@ -33,6 +38,7 @@
 <translation id="8670869118777164560">Laiendusel ei õnnestunud võrgutaotlust ümber suunata asukohta <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, kuna teine laiendus (<ph name="EXTENSION_NAME"/>) suunas selle asukohta <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">See laiendus laadis ennast liiga sageli uuesti.</translation>
 <translation id="8047248493720652249">Laiendus ei saanud määrata allalaaditavale failile nimeks „<ph name="ATTEMPTED_FILENAME"/>”, sest teine laiendus (<ph name="EXTENSION_NAME"/>) määras teise failinime „<ph name="ACTUAL_FILENAME"/>”.</translation>
+<translation id="2732710576072980201">Toode <ph name="PRODUCT_ID"/> tootjalt <ph name="VENDOR_NAME"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4968399700653439437">Vaheta andmeid mis tahes arvutiga nendes domeenides: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Veebivaade: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="8284279544186306258">kõik domeeni <ph name="WEBSITE_1"/> saidid</translation>
@@ -43,12 +49,16 @@
 <translation id="4883436287898674711">Kõik domeeni <ph name="WEBSITE_1"/> saidid</translation>
 <translation id="9111791539553342076">Laiendusel ei õnnestunud muuta võrgutaotluse vastuse päist „<ph name="HEADER_NAME"/>”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Kaamera kasutamine</translation>
+<translation id="5356315618422219272">Rakendusvaade: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="8341840687457896278">Laiendusel ei õnnestunud võrgutaotlusele mandaati esitada, kuna teine laiendus (<ph name="EXTENSION_NAME"/>) esitas teistsuguse mandaadi.</translation>
 <translation id="5627523580512561598">laiendus <ph name="EXTENSION_NAME"/></translation>
 <translation id="7893008570150657497">Pääseda juurde fotodele, muusikale ja muule meediale teie arvutist</translation>
 <translation id="4761104368405085019">Mikrofoni kasutamine</translation>
 <translation id="7217838517480956708">Seadme administraator nõuab, et <ph name="EXTENSION_NAME"/> oleks installitud. Seda ei saa eemaldada ega muuta.</translation>
+<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> tootjalt <ph name="VENDOR_NAME"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="7154130902455071009">Määrake avaleheks <ph name="START_PAGE"/></translation>
+<translation id="6758203075041033901">Toode <ph name="PRODUCT_ID"/> tootjalt <ph name="VENDOR_ID"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="6698810901424468597">Andmete lugemine ja muutmine veebisaidil <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="1803557475693955505">Tagaplaanilehte <ph name="BACKGROUND_PAGE"/> ei õnnestunud laadida.</translation>
+<translation id="7972881773422714442">Valikud: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 </translationbundle>

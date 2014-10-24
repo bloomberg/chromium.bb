@@ -30,7 +30,6 @@ priegloba</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7782471917492991422">Patikrinkite kompiuterio galios tvarkymo nustatymus ir įsitikinkite, kad jis nėra sukonfigūruotas užmigti neveikos būsenos.</translation>
 <translation id="7665369617277396874">Pridėti paskyrą</translation>
-<translation id="4939475390270873744">• Ištaisyta paleidžiant įvykdavusi triktis.</translation>
 <translation id="2707879711568641861">Trūksta kai kurių „Chrome“ nuotoliniam kompiuterio valdymui reikalingų komponentų. Įsitikinkite, kad įdiegėte naujausią versiją, ir bandykite dar kartą.</translation>
 <translation id="1779766957982586368">Uždaryti langą</translation>
 <translation id="2499160551253595098">Leidę mums kaupti naudojimo statistiką ir strigčių ataskaitas, padėsite tobulinti „Chrome“ nuotolinį kompiuterio valdymą.</translation>
@@ -79,6 +78,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (pasenusi)</translation>
 <translation id="3884839335308961732">Kad leistumėte prieigą naudojant „Chrome“ nuotolinį kompiuterio valdymą, toliau patvirtinkite savo paskyrą ir PIN kodą.</translation>
 <translation id="327263477022142889">Norite padėti tobulinti „Chrome“ nuotolinį kompiuterio valdymą? <ph name="LINK_BEGIN"/>Sudalyvaukite apklausoje.<ph name="LINK_END"/></translation>
+<translation id="6612717000975622067">Siųsti „Ctrl“ + „Alt“ + „Del“</translation>
 <translation id="5702987232842159181">Prisijungta:</translation>
 <translation id="8509907436388546015">Darbalaukio integravimo procesas</translation>
 <translation id="4736223761657662401">Ryšių istorija</translation>
@@ -106,10 +106,10 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="5908809458024685848">Nesate prisijungę prie „Chrome“ nuotolinio ryšio. Prisijunkite ir bandykite dar kartą.</translation>
 <translation id="7401733114166276557">„Chrome“ nuotolinis kompiuterio valdymas</translation>
 <translation id="3362124771485993931">Iš naujo įveskite PIN kodą</translation>
+<translation id="1760808606374294203">• Pataisymai, skirti „Lollipop“ versijos „Android“.</translation>
 <translation id="154040539590487450">Paleidžiant nuotolinės prieigos paslaugą įvyko klaida.</translation>
 <translation id="7948001860594368197">Ekrano parinktys</translation>
 <translation id="8172070902751707422">Nustatant tapatybę įvyko klaida. Bandykite prisijungti prie „Chrome“ nuotolinio kompiuterio valdymo dar kartą.</translation>
-<translation id="6146986332407778716">„Ctrl“ + „Alt“ + „Del“</translation>
 <translation id="5254120496627797685">Išėjus iš šio puslapio, baigsis „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
 <translation id="173559734173571936">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą, turite suteikti išplėstinės prieigos prie kompiuterio leidimus. Tai reikės atlikti tik vieną kartą.</translation>
 <translation id="9032136467203159543">Trūksta kai kurių „Chrome“ nuotoliniam ryšiui reikalingų komponentų. Įsitikinkite, kad įdiegėte naujausią versiją, ir bandykite dar kartą.</translation>
@@ -124,6 +124,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="3020807351229499221">Atnaujinant PIN kodą įvyko klaida. Bandykite dar kartą vėliau.</translation>
 <translation id="2647232381348739934">„Chrome“ nuotolinio ryšio paslauga</translation>
 <translation id="579702532610384533">Pakartotinai prijungti</translation>
+<translation id="4867841927763172006">Siųsti „PrtScn“</translation>
 <translation id="4211066471404647515">Trūksta kai kurių „Chrome“ nuotoliniam ryšiui reikalingų komponentų. Įsitikinkite, kad naudojate naujausios versijos „Chrome“, ir bandykite dar kartą.</translation>
 <translation id="5773590752998175013">Susiejimo data</translation>
 <translation id="5265129178187621741">(ši funkcija „Chromebook“ dar negalima… Sekite naujienas.)</translation>
@@ -184,7 +185,6 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="4573676252416618192">„Chrome“ nuotolinio kompiuterio
 valdymo priegloba</translation>
 <translation id="4703799847237267011">„Chrome“ nuotolinio ryšio sesija baigėsi.</translation>
-<translation id="1369030621715708553">„PrtScn“</translation>
 <translation id="8178433417677596899">Ekrano „naudotojas naudotojui“ bendrinimas, puikiai tinkantis nuotoliniam techniniam palaikymui vykdyti.</translation>
 <translation id="652218476070540101">Šio kompiuterio PIN kodas atnaujinamas…</translation>
 <translation id="4563926062592110512">Atjungtas klientas: <ph name="CLIENT_USERNAME"/>.</translation>
@@ -194,6 +194,7 @@ valdymo priegloba</translation>
 <translation id="6668065415969892472">PIN kodas atnaujintas.</translation>
 <translation id="4513946894732546136">Atsiliepimai</translation>
 <translation id="4277736576214464567">Netinkamas prieigos kodas. Bandykite dar kartą.</translation>
+<translation id="6550675742724504774">Parinktys</translation>
 <translation id="979100198331752041">„Chrome“ nuotolinis kompiuterio valdymas <ph name="HOSTNAME"/> yra pasenęs ir jį reikia atnaujinti.</translation>
 <translation id="7729639150174291243">Nesate prisijungę prie „Chrome“ nuotolinio kompiuterio valdymo. Prisijunkite ir bandykite dar kartą.</translation>
 <translation id="2841013758207633010">Laikas</translation>
@@ -204,6 +205,7 @@ valdymo priegloba</translation>
 <translation id="4277463233460010382">Šis kompiuteris sukonfigūruotas leisti vienam ar keliems klientams prisijungti neįvedus PIN kodo.</translation>
 <translation id="837021510621780684">Iš šio kompiuterio</translation>
 <translation id="3870154837782082782">„Google Inc.“</translation>
+<translation id="4918086044614829423">Priimti</translation>
 <translation id="7215059001581613786">Įveskite PIN kodą, sudarytą iš šešių ar daugiau skaitmenų.</translation>
 <translation id="8383794970363966105">Jei norite naudoti „Chrome“ nuotolinį ryšį, įrenginyje turite pridėti „Google“ paskyrą.</translation>
 <translation id="1546934824884762070">Įvyko netikėta klaida. Praneškite apie problemą kūrėjams.</translation>

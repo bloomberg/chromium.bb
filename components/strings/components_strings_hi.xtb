@@ -72,11 +72,12 @@
 <translation id="2096368010154057602">विभाग</translation>
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="3024663005179499861">गलत नीति प्रकार</translation>
+<translation id="2030481566774242610">क्या आप मतलब <ph name="LINK"/> से है?</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>, समाप्ति: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="225207911366869382">यह मान इस नीति के लिए हटा दिया गया है.</translation>
-<translation id="3145945101586104090">जवाब डीकोड करने में विफल</translation>
+<translation id="3145945101586104090">उत्तर डीकोड करने में विफल</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX"/> अनुक्रमणिका पर अमान्य बुकमार्क को अनदेखा किया गया</translation>
 <translation id="883848425547221593">अन्य बुकमार्क</translation>
 <translation id="2181821976797666341">नीतियां</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">सूची प्रविष्ट‍ि &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">देश</translation>
 <translation id="5031870354684148875">Google अनुवाद के बारे में</translation>
+<translation id="1152921474424827756"><ph name="URL"/> की <ph name="BEGIN_LINK"/>संचित प्रति<ph name="END_LINK"/> एक्सेस करें</translation>
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="2025186561304664664">प्रॉक्‍सी स्‍वत: कॉन्‍फ़‍िगर पर सेट है.</translation>
 <translation id="1853748787962613237">लेख प्रदर्शित करने में विफल रहा.</translation>
@@ -134,11 +136,12 @@
 <translation id="8812832766208874265"><ph name="CURRENT_GOOGLE_HOST"/> का उपयोग करना जारी रखें</translation>
 <translation id="3377188786107721145">नीति पार्स त्रुटि</translation>
 <translation id="2270192940992995399">लेख ढूंढने में विफल रहा.</translation>
-<translation id="4726672564094551039">नीतियां पुनः लोड करें</translation>
+<translation id="4726672564094551039">नीतियां फिर से लोड करें</translation>
 <translation id="2392959068659972793">कोई भी मान सेट नहीं की गई नीतियां दिखाएं</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="6965978654500191972">डिवाइस</translation>
 <translation id="8249320324621329438">पिछली बार प्राप्त किया गया:</translation>
+<translation id="194030505837763158"><ph name="LINK"/> पर जाएं</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
 <translation id="1344588688991793829">क्रोमियम स्वत: भरण सेटिंग...</translation>
 <translation id="6282194474023008486">डाक कोड</translation>

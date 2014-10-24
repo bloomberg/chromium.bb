@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">プロキシ...</translation>
 <translation id="938582441709398163">キーボード オーバーレイ</translation>
 <translation id="4387004326333427325">認証証明書がリモートで拒否されました</translation>
+<translation id="6047696787498798094">別のユーザーに切り替えると画面の共有は解除されます。続行してもよろしいですか？</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> の解像度を <ph name="RESOLUTION"/> に変更しました</translation>
 <translation id="6943836128787782965">HTTP を取得できませんでした</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">この充電器がオンになっている間は、Chromebook が充電されない可能性があります。正規の充電器の使用をご検討ください。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4442424173763614572">DNS を検索できませんでした</translation>
+<translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="2204305834655267233">ネットワーク情報</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">あと <ph name="LOGOUT_TIME_LEFT"/>で自動的にログアウトします。</translation>
 <translation id="252373100621549798">不明なディスプレイ</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> へミラーリング</translation>
+<translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME"/>、<ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">ロック</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> は <ph name="DOMAIN"/> が管理する公開セッションです</translation>
 <translation id="9044646465488564462">ネットワークに接続できませんでした: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">セッションを終了</translation>
+<translation id="479989351350248267">検索</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME"/>」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE"/>%。</translation>
@@ -224,7 +228,6 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="5102001756192215136">残り時間: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">出力</translation>
 <translation id="520760366042891468">ハングアウトを介して画面の制御を共有しています。</translation>
-<translation id="4015692727874266537">別のアカウントにログイン...</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">「<ph name="NAME"/>」データ サービスが有効になり、使用できるようになりました。</translation>

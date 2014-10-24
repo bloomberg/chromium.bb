@@ -72,6 +72,7 @@
 <translation id="2096368010154057602">حوزه</translation>
 <translation id="4258748452823770588">امضای نادرست</translation>
 <translation id="3024663005179499861">نوع خط مشی اشتباه است</translation>
+<translation id="2030481566774242610">منظورتان <ph name="LINK"/> بود؟</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="2107287771748948380"><ph name="OBFUSCATED_CC_NUMBER"/>، انقضا: <ph name="CC_EXPIRATION_DATE"/></translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -93,6 +94,7 @@
 <translation id="3010559122411665027">ورودی لیست &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">کشور</translation>
 <translation id="5031870354684148875">‏درباره Google Translate</translation>
+<translation id="1152921474424827756">دسترسی به یک <ph name="BEGIN_LINK"/>نسخه ذخیره شده در حافظه پنهان<ph name="END_LINK"/> از <ph name="URL"/></translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="2025186561304664664">پروکسی بر روی پیکربندی خودکار تنظیم شده است.</translation>
 <translation id="1853748787962613237">نمایش مقاله ناموفق بود.</translation>
@@ -139,6 +141,7 @@
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="8249320324621329438">آخرین واکشی شده:</translation>
+<translation id="194030505837763158">رفتن به <ph name="LINK"/></translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
 <translation id="6282194474023008486">کد پستی</translation>

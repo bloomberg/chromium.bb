@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">প্রক্সি...</translation>
 <translation id="938582441709398163">কীবোর্ড ওভারলে</translation>
 <translation id="4387004326333427325">দূরবর্তী অবস্থান থেকে প্রমাণীকরণ শংসাপত্র প্রত্যাখ্যান করা হয়েছে</translation>
+<translation id="6047696787498798094">যখন আপনি অন্য ব্যবহারকারীতে পাল্টাবেন তখন স্ক্রীন ভাগ করা বন্ধ হবে৷ আপনি কি চালিয়ে যেতে চান?</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> এর রেসুলিউশান বদল  করে <ph name="RESOLUTION"/> করা হয়েছে</translation>
 <translation id="6943836128787782965">HTTP ব্যর্থ হয়েছে</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">চালু থাকার সময় আপনার Chromebook চার্জ নাও হতে পারে৷ এটির নিজস্ব চার্জার ব্যবহার করার কথা বিবেচনা করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4442424173763614572">DNS খোঁজ ব্যর্থ হয়েছে</translation>
+<translation id="544691375626129091">সমস্ত উপলব্ধ ব্যবহারকারীকে ইতিমধ্যেই এই সেশনে যোগ করা হয়েছে৷</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
 <translation id="2204305834655267233">নেটওয়ার্ক তথ্য</translation>
 <translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT"/> সময় বাকি আছে</translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">আপনি <ph name="LOGOUT_TIME_LEFT"/> এর মধ্যে স্বয়ংক্রিয়ভাবে সাইন আউট হবেন৷</translation>
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> তে প্রতিবিম্বিত হচ্ছে</translation>
+<translation id="5777841717266010279">স্ক্রীন ভাগ করা থামাবেন?</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">লক করুন</translation>
@@ -174,6 +177,7 @@
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> হল <ph name="DOMAIN"/> এর দ্বারা পরিচালিত একটি সর্বজনীন সেশন</translation>
 <translation id="9044646465488564462">নেটওয়ার্কের সাথে সংযোগ করতে ব্যর্থ: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">সেশন থেকে প্রস্থান</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+Search অথবা Shift</translation>
 <translation id="2429753432712299108">Bluetooth ডিভাইস &quot;<ph name="DEVICE_NAME"/>&quot; যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">ব্যাটারি <ph name="PERCENTAGE"/>% পূর্ণ৷</translation>
@@ -223,7 +227,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> বাকি</translation>
 <translation id="3009178788565917040">আউটপুট</translation>
 <translation id="520760366042891468">Hangouts এর মাধ্যমে আপনার স্ক্রীন নিয়ন্ত্রণ ভাগ করা হচ্ছে৷</translation>
-<translation id="4015692727874266537">অন্য একটি অ্যাকাউন্টে সাইন ইন করুন...</translation>
 <translation id="6911468394164995108">অন্যান্য যোগদান ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">অভিনন্দন! আপনার '<ph name="NAME"/>' ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং ব্যবহার করার জন্য প্রস্তুত৷</translation>

@@ -26,6 +26,7 @@
 <translation id="5565793151875479467">Διακομιστής μεσολάβησης...</translation>
 <translation id="938582441709398163">Επικάλυψη πληκτρολογίου</translation>
 <translation id="4387004326333427325">Το πιστοποιητικό ελέγχου ταυτότητας απορρίφθηκε απομακρυσμένα</translation>
+<translation id="6047696787498798094">Η κοινή χρήση οθόνης θα διακοπεί κατά την εναλλαγή σε άλλον χρήστη. Θέλετε να συνεχίσετε;</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Η ανάλυση <ph name="DISPLAY_NAME"/> άλλαξε σε <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Η λήψη HTTP απέτυχε</translation>
@@ -110,6 +111,7 @@
 <translation id="2614835198358683673">Το Chromebook ενδέχεται να μη φορτίζει ενώ είναι ενεργοποιημένο. Χρησιμοποιήστε τον αυθεντικό φορτιστή.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4442424173763614572">Η αναζήτηση DNS απέτυχε</translation>
+<translation id="544691375626129091">Όλοι οι διαθέσιμοι χρήστες έχουν ήδη προστεθεί σε αυτήν την περίοδο σύνδεσης.</translation>
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="2204305834655267233">Πληροφορίες δικτύου</translation>
 <translation id="1621499497873603021">Χρόνος που απομένει μέχρι να αδειάσει η μπαταρία, <ph name="TIME_LEFT"/></translation>
@@ -138,6 +140,7 @@
 <translation id="6062360702481658777">Θα αποσυνδεθείτε αυτόματα σε <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Άγνωστη οθόνη</translation>
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME"/></translation>
+<translation id="5777841717266010279">Να διακοπεί η κοινή χρήση οθόνης;</translation>
 <translation id="2727977024730340865">Σύνδεση με φορτιστή χαμηλής ισχύος. Η φόρτιση της μπαταρίας ενδέχεται να μη γίνεται με αξιόπιστο τρόπο.</translation>
 <translation id="2761704814324807722">Δίσκος κατάστασης, ώρα <ph name="TIME"/>, <ph name="BATTERY"/></translation>
 <translation id="3784455785234192852">Κλείδωμα</translation>
@@ -173,6 +176,7 @@
 <translation id="2999742336789313416">Το <ph name="DISPLAY_NAME"/> είναι μια δημόσια περίοδος σύνδεσης που διαχειρίζεται το <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Η σύνδεση στο δίκτυο απέτυχε: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="4872237917498892622">Alt+Search ή Shift</translation>
 <translation id="2429753432712299108">Η συσκευή Bluetooth &quot;<ph name="DEVICE_NAME"/>&quot; ζητά δικαιώματα σύζευξης. Προτού αποδεχτείτε, επιβεβαιώστε ότι αυτό το κλειδί πρόσβασης εμφανίζεται στη συγκεκριμένη συσκευή: <ph name="PASSKEY"/></translation>
 <translation id="9201131092683066720">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE"/>%.</translation>
@@ -223,7 +227,6 @@
 <translation id="5102001756192215136">Απομένουν <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Έξοδος</translation>
 <translation id="520760366042891468">Γίνεται κοινή χρήση της οθόνης σας μέσω Hangouts.</translation>
-<translation id="4015692727874266537">Σύνδεση σε άλλο λογαριασμό…</translation>
 <translation id="6911468394164995108">Συμμετοχή σε άλλο…</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Συγχαρητήρια! Η υπηρεσία δεδομένων &quot;<ph name="NAME"/>&quot; έχει ενεργοποιηθεί και είναι έτοιμη για χρήση.</translation>
