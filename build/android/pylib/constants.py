@@ -182,6 +182,23 @@ UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
 DEVICE_LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
+PYTHON_UNIT_TEST_SUITES = {
+  'pylib_py_unittests': {
+    'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
+    'test_modules': [
+      'pylib.device.device_utils_test',
+    ]
+  },
+# TODO(mkosiba) Enable after fixing these tests.
+# 'gyp_py_unittests': {
+#   'path': os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android', 'gyp'),
+#   'test_modules': [
+#     'java_cpp_enum_tests'
+#   ]
+# },
+}
+
+
 def GetBuildType():
   try:
     return os.environ['BUILDTYPE']
