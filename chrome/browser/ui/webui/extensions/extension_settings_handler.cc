@@ -108,9 +108,22 @@ using content::RenderViewHost;
 using content::WebContents;
 
 namespace {
+
 const char kAppsDeveloperToolsExtensionId[] =
     "ohmmkhmmmpcnpikjeljgnaoabkaalbgc";
+
+// Returns true if the extensions page should display the new-style extension
+// info dialog. If false, display the old permissions dialog.
+bool ShouldDisplayExtensionInfoDialog() {
+#if defined(OS_MACOSX)
+  return false;
+#else
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      extensions::switches::kDisableExtensionInfoDialog);
+#endif
 }
+
+}  // namespace
 
 namespace extensions {
 
@@ -540,8 +553,7 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
   source->AddString("extensionSettingsOptions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionInfoDialog)) {
+  if (ShouldDisplayExtensionInfoDialog()) {
     source->AddString("extensionSettingsPermissions",
                       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INFO_LINK));
   } else {
@@ -1202,8 +1214,7 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(
 
   // Show the new-style extensions dialog when the flag is set. The flag cannot
   // be set on Mac platforms.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionInfoDialog)) {
+  if (ShouldDisplayExtensionInfoDialog()) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
                               AppInfoLaunchSource::FROM_EXTENSIONS_PAGE,
                               AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
