@@ -62,6 +62,13 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
             ->Contains(target)) {
       return false;
     }
+    // Don't process events that occurred inside the status area widget and
+    // a popup notification from message center.
+    if (root_controller &&
+        root_controller->GetContainer(kShellWindowId_StatusContainer)
+            ->Contains(target)) {
+      return false;
+    }
   }
 
   // Check the boundary for all wrappers, and do not handle the event if it
