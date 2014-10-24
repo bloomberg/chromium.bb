@@ -5,8 +5,9 @@
 import traceback
 
 from app_yaml_helper import AppYamlHelper
-from appengine_wrappers import IsDeadlineExceededError, logservice
+from appengine_wrappers import IsDeadlineExceededError, logservice, taskqueue
 from branch_utility import BranchUtility
+from commit_tracker import CommitTracker
 from compiled_file_system import CompiledFileSystem
 from custom_logger import CustomLogger
 from data_source_registry import CreateDataSource
@@ -17,10 +18,10 @@ from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
+from refresh_tracker import RefreshTracker
 from server_instance import ServerInstance
 from servlet import Servlet, Request, Response
 from timer import Timer, TimerClosure
-
 
 
 _log = CustomLogger('refresh')
@@ -86,6 +87,9 @@ class RefreshServlet(Servlet):
       commit = None
 
     server_instance = self._CreateServerInstance(commit)
+    commit_tracker = CommitTracker(server_instance.object_store_creator)
+    refresh_tracker = RefreshTracker(server_instance.object_store_creator)
+
     success = True
     try:
       if source_name == 'platform_bundle':
@@ -102,6 +106,16 @@ class RefreshServlet(Servlet):
       timer = Timer()
       try:
         refresh_future.Get()
+
+        # Mark this (commit, task) pair as completed and then see if this
+        # concludes the full cache refresh. The list of tasks required to
+        # complete a cache refresh is registered (and keyed on commit ID) by the
+        # CronServlet before kicking off all the refresh tasks.
+        (refresh_tracker.MarkTaskComplete(commit, path)
+          .Then(lambda _: refresh_tracker.GetRefreshComplete(commit))
+          .Then(lambda is_complete:
+                  commit_tracker.Set('master', commit) if is_complete else None)
+          .Get())
       except Exception as e:
         _log.error('%s: error %s' % (class_name, traceback.format_exc()))
         success = False

@@ -92,7 +92,7 @@ class AppYamlHelperTest(unittest.TestCase):
       self.assertEqual('master', branch)
       self.assertTrue(commit is not None)
       return MockFileSystem.Create(
-          TestFileSystem(test_data, relative_to=SERVER2), updates[:commit])
+          TestFileSystem(test_data, relative_to=SERVER2), updates[:int(commit)])
 
     object_store_creator = ObjectStoreCreator.ForTest()
     host_file_system_provider = HostFileSystemProvider(

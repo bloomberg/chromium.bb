@@ -160,12 +160,20 @@ class FileSystem(object):
 
   def GetIdentity(self):
     '''The identity of the file system, exposed for caching classes to
-    namespace their caches. this will usually depend on the configuration of
+    namespace their caches. This will usually depend on the configuration of
     that file system - e.g. a LocalFileSystem with a base path of /var is
     different to that of a SubversionFileSystem with a base path of /bar, is
     different to a LocalFileSystem with a base path of /usr.
     '''
     raise NotImplementedError(self.__class__)
+
+  def GetVersion(self):
+    '''The version of the file system, exposed for more granular caching.
+    This may be any serializable data, though generally it should be a revision
+    number or hash string. The default implementation returns None, indicating
+    that the FileSystem is not versioned.
+    '''
+    return None
 
   def Walk(self, root, depth=-1, file_lister=None):
     '''Recursively walk the directories in a file system, starting with root.

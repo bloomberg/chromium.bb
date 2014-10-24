@@ -233,11 +233,15 @@ class GitilesFileSystem(FileSystem):
     return self._ResolveFetchContent(path, fetch_future).Then(stat)
 
   def GetIdentity(self):
-    # NOTE: Do not use commit information to create the string identity.
-    # Doing so will mess up caching.
-    if self._commit is None and self._branch != 'master':
-      str_id = '%s/%s/%s/%s' % (
-          GITILES_BASE, GITILES_SRC_ROOT, GITILES_BRANCHES_PATH, self._branch)
+    if self._branch == 'master':
+      # A master FS always carries the same identity even if pinned to a commit.
+      str_id = 'master'
+    elif self._commit is not None:
+      str_id = self._commit
     else:
-      str_id = '%s/%s' % (GITILES_BASE, GITILES_SRC_ROOT)
-    return '@'.join((self.__class__.__name__, StringIdentity(str_id)))
+      str_id = '%s/%s' % (GITILES_BRANCHES_PATH, self._branch)
+    return '@'.join(self.__class__.__name__, StringIdentity(
+        '%s/%s/%s' % (GITILES_BASE, GITILES_SRC_ROOT, str_id)))
+
+  def GetVersion(self):
+    return self._commit

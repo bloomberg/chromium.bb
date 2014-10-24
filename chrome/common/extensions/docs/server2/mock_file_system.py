@@ -25,6 +25,7 @@ class MockFileSystem(FileSystem):
     self._read_count = 0
     self._read_resolve_count = 0
     self._stat_count = 0
+    self._version = None
 
   @staticmethod
   def Create(file_system, updates):
@@ -86,13 +87,16 @@ class MockFileSystem(FileSystem):
     return stat
 
   def GetCommitID(self):
-    return Future(value=self._stat_tracker.GetVersion(''))
+    return Future(value=str(self._stat_tracker.GetVersion('')))
 
   def GetPreviousCommitID(self):
-    return Future(value=self._stat_tracker.GetVersion('') - 1)
+    return Future(value=str(self._stat_tracker.GetVersion('') - 1))
 
   def GetIdentity(self):
     return self._file_system.GetIdentity()
+
+  def GetVersion(self):
+    return self._version
 
   def __str__(self):
     return repr(self)
@@ -136,3 +140,7 @@ class MockFileSystem(FileSystem):
       # derived from |_updates|.
       if not IsDirectory(path):
         self._stat_tracker.SetVersion(path, len(self._updates))
+
+  def SetVersion(self, version):
+    '''Override the reported FileSystem version (default None) for testing.'''
+    self._version = version

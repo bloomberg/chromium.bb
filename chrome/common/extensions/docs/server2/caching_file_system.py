@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import posixpath
 import sys
 
@@ -12,18 +13,30 @@ from third_party.json_schema_compiler.memoize import memoize
 
 
 class CachingFileSystem(FileSystem):
-  '''FileSystem which implements a caching layer on top of |file_system|. It's
-  smart, using Stat() to decided whether to skip Read()ing from |file_system|,
-  and only Stat()ing directories never files.
+  '''FileSystem which implements a caching layer on top of |file_system|. If
+  |fail_on_miss| is True then cache misses throw a FileNotFoundError rather than
+  falling back onto the underlying FileSystem.
+
+  If the underlying FileSystem is versioned (i.e., it implements GetVersion to
+  return something other than None), this will create a persistent stat cache
+  (keyed on the FileSystem instance's version) as an additional optimization.
   '''
-  def __init__(self, file_system, object_store_creator):
+  def __init__(self, file_system, object_store_creator, fail_on_miss=False):
     self._file_system = file_system
-    def create_object_store(category, **optargs):
+    self._fail_on_miss = fail_on_miss
+    def create_object_store(category, try_versioning=False, **optargs):
+      version = file_system.GetVersion()
+      versioned = try_versioning and version is not None
+      if versioned:
+        identity = '%s/%s' % (file_system.GetIdentity(), version)
+      else:
+        identity = file_system.GetIdentity()
+      optargs['start_empty'] = optargs.get('start_empty', not versioned)
       return object_store_creator.Create(
           CachingFileSystem,
-          category='%s/%s' % (file_system.GetIdentity(), category),
+          category='%s/%s' % (identity, category),
           **optargs)
-    self._stat_cache = create_object_store('stat')
+    self._stat_cache = create_object_store('stat', try_versioning=True)
     # The read caches can start populated (start_empty=False) because file
     # updates are picked up by the stat, so it doesn't need the force-refresh
     # which starting empty is designed for. Without this optimisation, cron
@@ -56,9 +69,16 @@ class CachingFileSystem(FileSystem):
                                 (path, dir_path, dir_stat.child_versions))
       return StatInfo(file_version)
 
+    def raise_cache_miss(path):
+      raise FileNotFoundError('Got cache miss when trying to stat %s' % path)
+
     dir_stat = self._stat_cache.Get(dir_path).Get()
     if dir_stat is not None:
       return Future(callback=lambda: make_stat_info(dir_stat))
+
+    if self._fail_on_miss:
+      logging.warning('Bailing on stat cache miss for %s' % dir_path)
+      return Future(callback=lambda: raise_cache_miss(dir_path))
 
     def next(dir_stat):
       assert dir_stat is not None  # should have raised a FileNotFoundError
@@ -169,14 +189,11 @@ class CachingFileSystem(FileSystem):
       return dirs, files
     return self._file_system.Walk(root, depth=depth, file_lister=file_lister)
 
-  def GetCommitID(self):
-    return self._file_system.GetCommitID()
-
-  def GetPreviousCommitID(self):
-    return self._file_system.GetPreviousCommitID()
-
   def GetIdentity(self):
     return self._file_system.GetIdentity()
+
+  def GetVersion(self):
+    return self._file_system.GetVersion()
 
   def __repr__(self):
     return '%s of <%s>' % (type(self).__name__, repr(self._file_system))

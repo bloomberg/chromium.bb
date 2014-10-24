@@ -292,5 +292,26 @@ class CachingFileSystemTest(unittest.TestCase):
     # TODO(ahernandez): Test with a new instance CachingFileSystem so a
     # different object store is utilized.
 
+  def testVersionedStat(self):
+    test_fs = TestFileSystem({
+      'bob': {
+        'bob0': 'bob/bob0 contents',
+        'bob1': 'bob/bob1 contents'
+      }
+    })
+
+    # Create a versioned FileSystem and verify that multiple CachingFileSystem
+    # instances wrapping it will share the same stat cache.
+    mock_fs = MockFileSystem(test_fs)
+    mock_fs.SetVersion('abcdefg')
+
+    def run_and_expect_stat_count(paths, stat_count=0):
+      file_system = self._CreateCachingFileSystem(mock_fs, start_empty=True)
+      [file_system.Stat(path) for path in paths]
+      self.assertTrue(*mock_fs.CheckAndReset(stat_count=stat_count))
+
+    run_and_expect_stat_count(['bob/', 'bob/bob0', 'bob/bob1'], stat_count=1)
+    run_and_expect_stat_count(['bob/', 'bob/bob0', 'bob/bob1'], stat_count=0)
+
 if __name__ == '__main__':
   unittest.main()

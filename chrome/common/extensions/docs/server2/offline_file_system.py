@@ -24,3 +24,6 @@ class OfflineFileSystem(FileSystem):
 
   def GetIdentity(self):
     return self._fs.GetIdentity()
+
+  def GetVersion(self):
+    return self._fs.GetVersion()

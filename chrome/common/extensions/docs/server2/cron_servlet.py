@@ -16,6 +16,7 @@ from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
+from refresh_tracker import RefreshTracker
 from render_refresher import RenderRefresher
 from server_instance import ServerInstance
 from servlet import Servlet, Request, Response
@@ -84,12 +85,18 @@ class CronServlet(Servlet):
 
     server_instance = self._GetSafeServerInstance()
     master_fs = server_instance.host_file_system_provider.GetMaster()
-    master_commit = master_fs.GetCommitID().Get()
+    if 'commit' in self._request.arguments:
+      master_commit = self._request.arguments['commit']
+    else:
+      master_commit = master_fs.GetCommitID().Get()
 
     # This is the guy that would be responsible for refreshing the cache of
     # examples. Here for posterity, hopefully it will be added to the targets
     # below someday.
     render_refresher = RenderRefresher(server_instance, self._request)
+
+    # Used to register a new refresh cycle keyed on |master_commit|.
+    refresh_tracker = RefreshTracker(server_instance.object_store_creator)
 
     # Get the default taskqueue
     queue = taskqueue.Queue()
@@ -109,11 +116,20 @@ class CronServlet(Servlet):
       title = 'initializing %s parallel targets' % len(targets)
       _log.info(title)
       timer = Timer()
+      tasks = []
       for name, target in targets:
         refresh_paths = target.GetRefreshPaths()
-        for path in refresh_paths:
-          queue.add(taskqueue.Task(url='/_refresh/%s/%s' % (name, path),
-                                   params={'commit': master_commit}))
+        tasks += [('%s/%s' % (name, path)).strip('/') for path in refresh_paths]
+
+      # Start a new refresh cycle. In order to detect the completion of a full
+      # cache refresh, the RefreshServlet (which handles individual refresh
+      # tasks) will mark each task complete and check the set of completed tasks
+      # against the set registered here.
+      refresh_tracker.StartRefresh(master_commit, tasks).Get()
+      for task in tasks:
+        queue.add(taskqueue.Task(url='/_refresh/%s' % task,
+                                 params={'commit': master_commit}))
+
       _log.info('%s took %s' % (title, timer.Stop().FormatElapsed()))
     except:
       # This should never actually happen (each cron step does its own

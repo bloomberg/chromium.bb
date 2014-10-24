@@ -21,7 +21,8 @@ class HostFileSystemProvider(object):
                pinned_commit=None,
                default_master_instance=None,
                offline=False,
-               constructor_for_test=None):
+               constructor_for_test=None,
+               cache_only=False):
     '''
     |object_store_creator|
       Provides caches for file systems that need one.
@@ -35,12 +36,16 @@ class HostFileSystemProvider(object):
       If True all provided file systems will be wrapped in an OfflineFileSystem.
     |constructor_for_test|
       Provides a custom constructor rather than creating GitilesFileSystems.
+    |cache_only|
+      If True, all provided file systems will be cache-only, meaning that cache
+      misses will result in errors rather than cache updates.
     '''
     self._object_store_creator = object_store_creator
     self._pinned_commit = pinned_commit
     self._default_master_instance = default_master_instance
     self._offline = offline
     self._constructor_for_test = constructor_for_test
+    self._cache_only = cache_only
 
   @memoize
   def GetMaster(self, commit=None):
@@ -59,10 +64,6 @@ class HostFileSystemProvider(object):
       if self._default_master_instance is not None:
         return self._default_master_instance
       return self._Create('master', commit=self._pinned_commit)
-    if self._pinned_commit is not None:
-      # XXX(ahernandez): THIS IS WRONG. Should be
-      # commit = Oldest(commit, self._pinned_commit).
-      commit = min(commit, self._pinned_commit)
     return self._Create('master', commit=commit)
 
   @memoize
@@ -91,7 +92,8 @@ class HostFileSystemProvider(object):
       file_system = GitilesFileSystem.Create(branch=branch, commit=commit)
     if self._offline:
       file_system = OfflineFileSystem(file_system)
-    return CachingFileSystem(file_system, self._object_store_creator)
+    return CachingFileSystem(file_system, self._object_store_creator,
+        fail_on_miss=self._cache_only)
 
   @staticmethod
   def ForLocal(object_store_creator, **optargs):
