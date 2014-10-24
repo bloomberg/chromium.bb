@@ -138,8 +138,7 @@ void LayerPainter::beginTransparencyLayers(GraphicsContext* context, const Rende
         if (m_renderLayer.paintsWithBlendMode())
             context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
 #ifdef REVEAL_TRANSPARENCY_LAYERS
-        context->setFillColor(Color(0.0f, 0.0f, 0.5f, 0.2f));
-        context->fillRect(clipRect);
+        context->fillRect(clipRect, Color(0.0f, 0.0f, 0.5f, 0.2f));
 #endif
     }
 }

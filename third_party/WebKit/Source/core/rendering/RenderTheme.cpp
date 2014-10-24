@@ -875,8 +875,6 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
         tickRegionWidth = trackBounds.height() - thumbSize.width();
     }
     RefPtrWillBeRawPtr<HTMLDataListOptionsCollection> options = dataList->options();
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    paintInfo.context->setFillColor(o->resolveColor(CSSPropertyColor));
     for (unsigned i = 0; HTMLOptionElement* optionElement = options->item(i); i++) {
         String value = optionElement->value();
         if (!input->isValidValue(value))
@@ -889,7 +887,7 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
             tickRect.setX(tickPosition);
         else
             tickRect.setY(tickPosition);
-        paintInfo.context->fillRect(tickRect);
+        paintInfo.context->fillRect(tickRect, o->resolveColor(CSSPropertyColor));
     }
 }
 

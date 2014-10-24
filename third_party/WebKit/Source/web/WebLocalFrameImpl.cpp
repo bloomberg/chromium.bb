@@ -353,8 +353,7 @@ public:
         int totalHeight = numPages * (pageSizeInPixels.height() + 1) - 1;
 
         // Fill the whole background by white.
-        graphicsContext.setFillColor(Color::white);
-        graphicsContext.fillRect(FloatRect(0, 0, pageWidth, totalHeight));
+        graphicsContext.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
 
         int currentHeight = 0;
         for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {

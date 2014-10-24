@@ -116,13 +116,11 @@ void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, Scroll
         // Calculate how far down (in pixels) the tick-mark should appear.
         const int yPos = rect.y() + (rect.height() * percent);
 
-        context->setFillColor(Color(0xCC, 0xAA, 0x00, 0xFF));
         FloatRect tickRect(rect.x(), yPos, rect.width(), 3);
-        context->fillRect(tickRect);
+        context->fillRect(tickRect, Color(0xCC, 0xAA, 0x00, 0xFF));
 
-        context->setFillColor(Color(0xFF, 0xDD, 0x00, 0xFF));
         FloatRect tickStroke(rect.x(), yPos + 1, rect.width(), 1);
-        context->fillRect(tickStroke);
+        context->fillRect(tickStroke, Color(0xFF, 0xDD, 0x00, 0xFF));
     }
 }
 

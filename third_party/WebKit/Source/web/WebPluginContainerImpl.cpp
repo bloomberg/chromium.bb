@@ -662,11 +662,9 @@ void WebPluginContainerImpl::willEndLiveResize()
 
 bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)
 {
-    context->save();
-    context->setFillColor(Color(0xCC, 0xCC, 0xCC));
-    context->fillRect(intersection(horizontalOverhangArea, dirtyRect));
-    context->fillRect(intersection(verticalOverhangArea, dirtyRect));
-    context->restore();
+    Color fillColor(0xCC, 0xCC, 0xCC);
+    context->fillRect(intersection(horizontalOverhangArea, dirtyRect), fillColor);
+    context->fillRect(intersection(verticalOverhangArea, dirtyRect), fillColor);
     return true;
 }
 
