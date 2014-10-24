@@ -40,8 +40,10 @@ function test()
                 InspectorTest.assertEquals(invalidations.length, 3);
                 InspectorTest.assertEquals(invalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
+                InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
                 InspectorTest.assertEquals(invalidations[1].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElement'");
+                InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
                 InspectorTest.assertEquals(invalidations[2].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[2].nodeName, "DIV id='testElement'");
                 InspectorTest.assertGreaterOrEqual(invalidations[2].stackTrace.length, 1);
@@ -64,6 +66,7 @@ function test()
                 InspectorTest.assertEquals(secondInvalidations.length, 3);
                 InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
+                InspectorTest.assertEquals(secondInvalidations[0].reason, "StyleSheetChange");
                 InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV");
                 InspectorTest.assertGreaterOrEqual(secondInvalidations[1].stackTrace.length, 1);

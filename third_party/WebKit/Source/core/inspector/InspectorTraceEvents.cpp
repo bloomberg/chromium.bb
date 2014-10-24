@@ -167,7 +167,7 @@ PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCom
     value->setString("frame", toHexString(element.document().frame()));
     setNodeInfo(value.get(), &element, "nodeId", "nodeName");
     value->setString("invalidationSet", descendantInvalidationSetToIdString(invalidationSet));
-    value->setString("InvalidatedSelectorId", invalidatedSelector);
+    value->setString("invalidatedSelectorId", invalidatedSelector);
     if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
         value->setArray("stackTrace", stackTrace->buildInspectorArray()->asArray());
     return value.release();
@@ -212,12 +212,12 @@ String descendantInvalidationSetToIdString(const DescendantInvalidationSet& set)
 }
 
 const char InspectorStyleInvalidatorInvalidateEvent::ElementHasPendingInvalidationList[] = "Element has pending invalidation list";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidateCustomPseudo[] = "Invalidate custom pseudo element.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedAttribute[] = "Invalidation set matched attribute.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedClass[] = "Invalidation set matched class.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedId[] = "Invalidation set matched id.";
-const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedTagName[] = "Invalidation set matched tagName.";
-const char InspectorStyleInvalidatorInvalidateEvent::PreventStyleSharingForParent[] = "Prevent style sharing for parent.";
+const char InspectorStyleInvalidatorInvalidateEvent::InvalidateCustomPseudo[] = "Invalidate custom pseudo element";
+const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedAttribute[] = "Invalidation set matched attribute";
+const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedClass[] = "Invalidation set matched class";
+const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedId[] = "Invalidation set matched id";
+const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedTagName[] = "Invalidation set matched tagName";
+const char InspectorStyleInvalidatorInvalidateEvent::PreventStyleSharingForParent[] = "Prevent style sharing for parent";
 
 PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::fillCommonPart(Element& element, const char* reason)
 {
@@ -488,12 +488,12 @@ static void localToPageQuad(const RenderObject& renderer, const LayoutRect& rect
     quad->setP4(view->contentsToRootView(roundedIntPoint(absolute.p4())));
 }
 
-const char InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated[] = "Squashing layer geometry was updated.";
-const char InspectorLayerInvalidationTrackingEvent::AddedToSquashingLayer[] = "The layer may have been added to an already-existing squashing layer.";
-const char InspectorLayerInvalidationTrackingEvent::RemovedFromSquashingLayer[] = "Removed the layer from a squashing layer.";
-const char InspectorLayerInvalidationTrackingEvent::ReflectionLayerChanged[] = "Reflection layer change.";
-const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assigned a new composited layer.";
-const char InspectorLayerInvalidationTrackingEvent::AncestorRequiresNewLayer[] = "A new composited layer is needed based on the RenderLayer's compositing ancestor's properties.";
+const char InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated[] = "Squashing layer geometry was updated";
+const char InspectorLayerInvalidationTrackingEvent::AddedToSquashingLayer[] = "The layer may have been added to an already-existing squashing layer";
+const char InspectorLayerInvalidationTrackingEvent::RemovedFromSquashingLayer[] = "Removed the layer from a squashing layer";
+const char InspectorLayerInvalidationTrackingEvent::ReflectionLayerChanged[] = "Reflection layer change";
+const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assigned a new composited layer";
+const char InspectorLayerInvalidationTrackingEvent::AncestorRequiresNewLayer[] = "A new composited layer is needed based on the RenderLayer's compositing ancestor's properties";
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrackingEvent::data(const RenderLayer* layer, const char* reason)
 {
