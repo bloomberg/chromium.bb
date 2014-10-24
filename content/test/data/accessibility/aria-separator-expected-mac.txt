@@ -1,0 +1,7 @@
+AXWebArea AXRoleDescription='HTML content'
+    AXGroup AXRoleDescription='group'
+        AXStaticText AXRoleDescription='text' AXValue='Before'
+    AXSplitter AXRoleDescription='splitter'
+        AXStaticText AXRoleDescription='text' AXValue='This is ARIA separator.'
+    AXGroup AXRoleDescription='group'
+        AXStaticText AXRoleDescription='text' AXValue='After'

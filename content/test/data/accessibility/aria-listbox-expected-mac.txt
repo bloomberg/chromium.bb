@@ -1,0 +1,4 @@
+AXWebArea AXRoleDescription='HTML content'
+    AXList AXRoleDescription='list'
+        AXStaticText AXRoleDescription='text' AXTitle='Item 1'
+        AXStaticText AXRoleDescription='text' AXTitle='Item 2'
