@@ -29,7 +29,7 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/net/variations_http_header_provider.h"
 #include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"

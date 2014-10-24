@@ -27,6 +27,7 @@ static_library("suggestions") {
     "//components/pref_registry",
     "//components/suggestions/proto",
     "//components/variations",
+    "//components/variations/net",
     "//net",
     "//ui/gfx",
     "//url",

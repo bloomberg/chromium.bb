@@ -1,5 +1,8 @@
+# This component is shared with the Chrome OS build, so it's important to limit
+# dependencies to a minimal set.
 include_rules = [
-  "+components/google",
-  "+net",
+  "-components",
+  "+components/variations",
+  "-net",
   "+third_party/mt19937ar",
 ]

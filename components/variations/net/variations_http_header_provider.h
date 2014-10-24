@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
-#define COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#ifndef COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#define COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADER_PROVIDER_H_
 
 #include <set>
 #include <string>
@@ -109,4 +109,4 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
 
 }  // namespace variations
 
-#endif  // COMPONENTS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#endif  // COMPONENTS_VARIATIONS_NET_VARIATIONS_HTTP_HEADER_PROVIDER_H_

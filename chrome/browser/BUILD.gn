@@ -113,6 +113,8 @@ static_library("browser") {
     "//components/translate/core/common",
     "//components/url_fixer",
     "//components/user_prefs",
+    "//components/variations",
+    "//components/variations/net",
     "//components/webdata/common",
     "//content/public/browser",
     "//content/public/common",

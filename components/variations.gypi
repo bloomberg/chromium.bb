@@ -62,7 +62,7 @@
       ],
     },
     {
-      # GN version: //components/variations_http_provider
+      # GN version: //components/variations/net/variations_http_provider
       'target_name': 'variations_http_provider',
       'type': 'static_library',
       'include_dirs': [
@@ -74,8 +74,8 @@
         'variations',
       ],
       'sources': [
-        'variations/variations_http_header_provider.cc',
-        'variations/variations_http_header_provider.h',
+        'variations/net/variations_http_header_provider.cc',
+        'variations/net/variations_http_header_provider.h',
       ],
     },
   ],

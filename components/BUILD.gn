@@ -226,9 +226,11 @@ test("components_unittests") {
     "//components/data_reduction_proxy/core/common:unit_tests",
     "//components/dom_distiller/core:unit_tests",
     "//components/domain_reliability:unit_tests",
+    "//components/metrics:unit_tests",
     "//components/omnibox:unit_tests",
     "//components/ownership:unit_tests",
     "//components/proximity_auth:unit_tests",
+    "//components/variations:unit_tests",
   ]
 
   # TODO(GYP) need this target.

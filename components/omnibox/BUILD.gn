@@ -45,6 +45,7 @@ static_library("omnibox") {
     "//components/strings",
     "//components/url_fixer",
     "//components/variations",
+    "//components/variations/net",
     "//net",
     "//ui/base",
     "//url",

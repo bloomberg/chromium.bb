@@ -1,0 +1,18 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("net") {
+  sources = [
+    "variations_http_header_provider.cc",
+    "variations_http_header_provider.h",
+  ]
+
+  public_deps = [ "//components/variations" ]
+  deps = [
+    "//base",
+    "//components/google/core/browser",
+    "//components/variations/proto",
+    "//net",
+  ]
+}
