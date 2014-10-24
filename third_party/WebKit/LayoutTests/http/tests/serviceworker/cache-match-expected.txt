@@ -16,7 +16,7 @@ FAIL Cache.matchAll with prefixMatch option Entry was not found.
 FAIL Cache.matchAll with responses containing "Vary" header Entry already exists.
 FAIL Cache.match with responses containing "Vary" header Entry was not found.
 FAIL Cache.matchAll with "ignoreVary" parameter Entry was not found.
-FAIL Cache.match with Request and Response objects with different URLs assert_equals: Cache.match should reutrn a Response object that has the same properties as the stored response. :[object].url expected "http://127.0.0.1:8000/serviceworker/resources/simple.txt" but got "http://example.com/"
+FAIL Cache.match with Request and Response objects with different URLs assert_equals: Cache.match should reutrn a Response object that has the same properties as the stored response.: Response.url expected "http://127.0.0.1:8000/serviceworker/resources/simple.txt" but got "http://example.com/"
 PASS Cache.match invoked multiple times for the same Request/Response 
 Harness: the test ran to completion.
 

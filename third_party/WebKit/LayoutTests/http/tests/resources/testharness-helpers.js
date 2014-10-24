@@ -103,8 +103,12 @@ self.assert_object_equals = function(actual, expected, description) {
     object_stack.pop();
   }
 
+  function _brand(object) {
+    return Object.prototype.toString.call(object).match(/^\[object (.*)\]$/)[1];
+  }
+
   _is_equal(actual, expected,
-            (description ? description + ' :' : '') + '[object]');
+            (description ? description + ': ' : '') + _brand(actual));
 };
 
 // Equivalent to assert_in_array, but uses a weaker equivalence relation
