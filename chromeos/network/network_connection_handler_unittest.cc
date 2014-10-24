@@ -23,7 +23,6 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "chromeos/tpm_token_loader.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
@@ -73,8 +72,6 @@ class NetworkConnectionHandlerTest : public testing::Test {
             user_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
     test_nssdb_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
-
-    TPMTokenLoader::InitializeForTest();
 
     CertLoader::Initialize();
     CertLoader* cert_loader = CertLoader::Get();
@@ -128,7 +125,6 @@ class NetworkConnectionHandlerTest : public testing::Test {
     network_config_handler_.reset();
     network_state_handler_.reset();
     CertLoader::Shutdown();
-    TPMTokenLoader::Shutdown();
     LoginState::Shutdown();
     DBusThreadManager::Shutdown();
   }
