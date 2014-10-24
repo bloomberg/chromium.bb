@@ -687,6 +687,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                  int pending_host_id,
                                  const ppapi::URLResponseInfoData& data);
 
+  // Peripheral content is cross-origin plugin content determined heuristically
+  // to be not the "main attraction" of the webpage.
+  bool IsPeripheralContent() const;
   void SetPluginThrottled(bool throttled);
 
   RenderFrameImpl* render_frame_;

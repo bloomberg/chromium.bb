@@ -583,13 +583,9 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       GetContentClient()->renderer()->IsExternalPepperPlugin(module->name()))
     external_document_load_ = true;
 
-  // TODO(tommycli): Insert heuristics to determine whether plugin content
-  // is peripheral here.
-  bool is_peripheral_content = true;
-  power_saver_enabled_ = is_peripheral_content &&
-      module->name() == kFlashPluginName &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePluginPowerSaver);
+  power_saver_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
+                             switches::kEnablePluginPowerSaver) &&
+                         IsPeripheralContent();
 
   if (power_saver_enabled_) {
     throttler_.reset(new PepperPluginInstanceThrottler(
@@ -3297,6 +3293,27 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
     dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
         ppapi::API_ID_PPP_INSTANCE, pp_instance(), pending_host_id, data));
   }
+}
+
+bool PepperPluginInstanceImpl::IsPeripheralContent() const {
+  if (module_->name() != kFlashPluginName)
+    return false;
+
+  // Peripheral plugin content is defined to be peripheral when the plugin
+  // content's origin differs from the top level frame's origin. For example:
+  //  - Peripheral:      a.com -> b.com/plugin.swf
+  //  - Peripheral:      a.com -> b.com/iframe.html -> b.com/plugin.swf
+  //  - NOT peripheral:  a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
+
+  // TODO(alexmos): Update this to use the origin of the RemoteFrame when 426512
+  // is fixed. For now, case 3 in the comment above doesn't work in
+  // --site-per-process mode.
+  WebFrame* main_frame = render_frame_->GetWebFrame()->view()->mainFrame();
+  if (main_frame->isWebRemoteFrame())
+     return true;
+
+  GURL main_frame_url = main_frame->document().url();
+  return plugin_url_.GetOrigin() != main_frame_url.GetOrigin();
 }
 
 void PepperPluginInstanceImpl::SetPluginThrottled(bool throttled) {
