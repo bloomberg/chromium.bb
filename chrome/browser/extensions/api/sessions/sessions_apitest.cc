@@ -257,7 +257,15 @@ testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
       EXPECT_FALSE(tab->HasKey("id"));  // sessions API does not give tab IDs
       EXPECT_EQ(static_cast<int>(j), utils::GetInteger(tab, "index"));
       EXPECT_EQ(0, utils::GetInteger(tab, "windowId"));
-      EXPECT_EQ(true, utils::GetBoolean(tab, "pinned"));
+      // Test setup code always sets tab 0 to selected (which means active in
+      // extension terminology).
+      EXPECT_EQ(j == 0, utils::GetBoolean(tab, "active"));
+      // While selected/highlighted are different to active, and should always
+      // be false.
+      EXPECT_FALSE(utils::GetBoolean(tab, "selected"));
+      EXPECT_FALSE(utils::GetBoolean(tab, "highlighted"));
+      EXPECT_FALSE(utils::GetBoolean(tab, "incognito"));
+      EXPECT_TRUE(utils::GetBoolean(tab, "pinned"));
       EXPECT_EQ("http://foo/1", utils::GetString(tab, "url"));
       EXPECT_EQ("MyTitle", utils::GetString(tab, "title"));
       EXPECT_EQ("http://foo/favicon.ico", utils::GetString(tab, "favIconUrl"));

@@ -97,13 +97,12 @@ scoped_ptr<tabs::Tab> CreateTabModelHelper(
   }
   tab_struct->index = index;
   tab_struct->pinned = pinned;
-  tab_struct->selected = index == selected_index;
-  tab_struct->active = false;
-  // TODO(kalman): Really? Docs say that selected is deprecated and to use
-  // highlighted instead, but here we're setting selected but not highlighted.
-  // Are they supposed to be the same or not?
-  tab_struct->highlighted = false;
-  tab_struct->incognito = false;
+  // Note: |selected_index| from the sync sessions model is what we call
+  // "active" in extensions terminology.  "selected" is deprecated because it's
+  // not clear whether it means "active" (user can see) or "highlighted" (user
+  // has highlighted, since you can select tabs without bringing them into the
+  // foreground).
+  tab_struct->active = index == selected_index;
   ExtensionTabUtil::ScrubTabForExtension(extension, tab_struct.get());
   return tab_struct.Pass();
 }
