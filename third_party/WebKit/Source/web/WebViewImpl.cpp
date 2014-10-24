@@ -2561,10 +2561,10 @@ void WebViewImpl::didHideCandidateWindow()
 
 bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const
 {
-    const LocalFrame* frame = toLocalFrame(focusedCoreFrame());
-    if (!frame)
+    const Frame* frame = focusedCoreFrame();
+    if (!frame || frame->isRemoteFrame())
         return false;
-    FrameSelection& selection = frame->selection();
+    FrameSelection& selection = toLocalFrame(frame)->selection();
     if (!selection.toNormalizedRange())
         return false;
     start = toWebTextDirection(selection.start().primaryDirection());
@@ -2574,9 +2574,10 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
 
 bool WebViewImpl::isSelectionAnchorFirst() const
 {
-    if (const LocalFrame* frame = toLocalFrame(focusedCoreFrame()))
-        return frame->selection().selection().isBaseFirst();
-    return false;
+    const Frame* frame = focusedCoreFrame();
+    if (!frame || frame->isRemoteFrame())
+        return false;
+    return toLocalFrame(frame)->selection().selection().isBaseFirst();
 }
 
 WebVector<WebCompositionUnderline> WebViewImpl::compositionUnderlines() const
