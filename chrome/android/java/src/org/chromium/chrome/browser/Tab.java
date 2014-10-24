@@ -338,7 +338,7 @@ public class Tab {
      * @param window    An instance of a {@link WindowAndroid}.
      */
     public Tab(int id, boolean incognito, Context context, WindowAndroid window) {
-        this(INVALID_TAB_ID, id, incognito, context, window);
+        this(id, INVALID_TAB_ID, incognito, context, window);
     }
 
     /**
