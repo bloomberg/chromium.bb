@@ -17,6 +17,14 @@
     'disable_newlib_untar%': 0,
     'disable_arm_untar%': 0,
     'disable_pnacl_untar%': 0,
+    'nacl_x86_newlib_toolchain%': "",
+    'nacl_x86_newlib_stamp%': "nacl_x86_newlib.json",
+    'nacl_arm_newlib_toolchain%': "",
+    'nacl_arm_newlib_stamp%': "nacl_arm_newlib.json",
+    'nacl_x86_glibc_toolchain%': "",
+    'nacl_x86_glibc_stamp%': "nacl_x86_glibc.json",
+    'pnacl_newlib_toolchain%': "",
+    'pnacl_newlib_stamp%': "pnacl_newlib.json",
     'conditions': [
       ['OS=="android"', {
         'TOOLCHAIN_OS': 'linux',
@@ -54,7 +62,7 @@
       'target_name': 'untar_toolchains',
       'type': 'none',
       'conditions': [
-        ['disable_newlib==0 and disable_newlib_untar==0', {
+        ['nacl_x86_newlib_toolchain=="" and disable_newlib==0 and disable_newlib_untar==0', {
           'actions': [
             {
               'action_name': 'Untar x86 newlib toolchain',
@@ -75,9 +83,32 @@
                 'extract',
               ],
             },
-          ]
+          ],
         }],
-        ['disable_glibc==0 and disable_glibc_untar==0', {
+        ['nacl_x86_newlib_toolchain!="" and disable_newlib==0 and disable_newlib_untar==0', {
+          'actions': [
+            {
+              'action_name': 'Copy x86 newlib toolchain',
+              'msvs_cygwin_shell': 0,
+              'description': 'Copy x86 newlib toolchain',
+              'inputs': [
+                 '<(DEPTH)/native_client/build/copy_directory.py',
+                 '<(nacl_x86_newlib_toolchain)/<(nacl_x86_newlib_stamp)',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/<(nacl_x86_newlib_stamp)'],
+              'action': [
+                'python',
+                '<(DEPTH)/native_client/build/copy_directory.py',
+                '--quiet',
+                '--stamp-arg', 'nacl_x86_newlib_stamp',
+                '--stamp-file', '<(nacl_x86_newlib_stamp)',
+                '<(nacl_x86_newlib_toolchain)',
+                '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib',
+              ],
+            },
+          ],
+        }],
+        ['nacl_x86_glibc_toolchain=="" and disable_glibc==0 and disable_glibc_untar==0', {
           'actions': [
             {
               'action_name': 'Untar x86 glibc toolchain',
@@ -98,9 +129,32 @@
                 'extract',
               ],
             },
-          ]
+          ],
         }],
-        ['disable_pnacl==0 and disable_pnacl_untar==0', {
+        ['nacl_x86_glibc_toolchain!="" and disable_newlib==0 and disable_newlib_untar==0', {
+          'actions': [
+            {
+              'action_name': 'Copy x86 glibc toolchain',
+              'msvs_cygwin_shell': 0,
+              'description': 'Copy x86 glibc toolchain',
+              'inputs': [
+                 '<(DEPTH)/native_client/build/copy_directory.py',
+                 '<(nacl_x86_glibc_toolchain)/<(nacl_x86_glibc_stamp)',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/<(nacl_x86_glibc_stamp)'],
+              'action': [
+                'python',
+                '<(DEPTH)/native_client/build/copy_directory.py',
+                '--quiet',
+                '--stamp-arg', 'nacl_x86_glibc_stamp',
+                '--stamp-file', '<(nacl_x86_glibc_stamp)',
+                '<(nacl_x86_glibc_toolchain)',
+                '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc',
+              ],
+            },
+          ],
+        }],
+        ['pnacl_newlib_toolchain=="" and disable_pnacl==0 and disable_pnacl_untar==0', {
           'actions': [
             {
               'action_name': 'Untar pnacl toolchain',
@@ -121,9 +175,32 @@
                 'extract',
               ],
             },
-          ]
+          ],
         }],
-        ['target_arch=="arm" and disable_arm==0 and disable_arm_untar==0', {
+        ['pnacl_newlib_toolchain!="" and disable_newlib==0 and disable_newlib_untar==0', {
+          'actions': [
+            {
+              'action_name': 'Copy pnacl toolchain',
+              'msvs_cygwin_shell': 0,
+              'description': 'Copy pnacl toolchain',
+              'inputs': [
+                 '<(DEPTH)/native_client/build/copy_directory.py',
+                 '<(pnacl_newlib_toolchain)/<(pnacl_newlib_stamp)',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/<(pnacl_newlib_stamp)'],
+              'action': [
+                'python',
+                '<(DEPTH)/native_client/build/copy_directory.py',
+                '--quiet',
+                '--stamp-arg', 'pnacl_newlib_stamp',
+                '--stamp-file', '<(pnacl_newlib_stamp)',
+                '<(pnacl_newlib_toolchain)',
+                '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib',
+              ],
+            },
+          ],
+        }],
+        ['nacl_arm_newlib_toolchain=="" and target_arch=="arm" and disable_arm==0 and disable_arm_untar==0', {
           'actions': [
             {
               'action_name': 'Untar arm toolchain',
@@ -144,7 +221,30 @@
                 'extract',
               ],
             },
-          ]
+          ],
+        }],
+        ['nacl_arm_newlib_toolchain!="" and disable_newlib==0 and disable_newlib_untar==0', {
+          'actions': [
+            {
+              'action_name': 'Copy arm toolchain',
+              'msvs_cygwin_shell': 0,
+              'description': 'Copy arm toolchain',
+              'inputs': [
+                 '<(DEPTH)/native_client/build/copy_directory.py',
+                 '<(nacl_arm_newlib_toolchain)/<(nacl_arm_newlib_stamp)',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/<(nacl_arm_newlib_stamp)'],
+              'action': [
+                'python',
+                '<(DEPTH)/native_client/build/copy_directory.py',
+                '--quiet',
+                '--stamp-arg', 'nacl_arm_newlib_stamp',
+                '--stamp-file', '<(nacl_arm_newlib_stamp)',
+                '<(nacl_arm_newlib_toolchain)',
+                '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib',
+              ],
+            },
+          ],
         }],
       ]
     },
@@ -168,7 +268,7 @@
               'msvs_cygwin_shell': 0,
               'description': 'Prep x86 newlib toolchain',
               'inputs': [
-                 '<(newlib_dir)/nacl_x86_newlib.json',
+                 '<(newlib_dir)/<(nacl_x86_newlib_stamp)',
                  '>!@pymod_do_main(prep_nacl_sdk --inputs --tool x86_newlib)',
               ],
               'outputs': ['<(newlib_dir)/stamp.prep'],
@@ -188,7 +288,7 @@
               'msvs_cygwin_shell': 0,
               'description': 'Prep x86 glibc toolchain',
               'inputs': [
-                 '<(glibc_dir)/nacl_x86_glibc.json',
+                 '<(glibc_dir)/<(nacl_x86_glibc_stamp)',
                  '>!@pymod_do_main(prep_nacl_sdk --inputs --tool x86_glibc)',
               ],
               'outputs': ['<(glibc_dir)/stamp.prep'],
@@ -208,7 +308,7 @@
               'msvs_cygwin_shell': 0,
               'description': 'Prep arm toolchain',
               'inputs': [
-                 '<(arm_dir)/nacl_arm_newlib.json',
+                 '<(arm_dir)/<(nacl_arm_newlib_stamp)',
                  '>!@pymod_do_main(prep_nacl_sdk --inputs --tool arm_newlib)',
               ],
               'outputs': ['<(arm_dir)/stamp.prep'],
@@ -228,7 +328,7 @@
               'msvs_cygwin_shell': 0,
               'description': 'Prep pnacl toolchain',
               'inputs': [
-                 '<(pnacl_dir)/pnacl_newlib.json',
+                 '<(pnacl_dir)/<(pnacl_newlib_stamp)',
                  '>!@pymod_do_main(prep_nacl_sdk --inputs --tool pnacl)',
               ],
               'outputs': ['<(pnacl_dir)/stamp.prep'],
