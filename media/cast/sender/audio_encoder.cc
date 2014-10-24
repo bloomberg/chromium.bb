@@ -22,17 +22,10 @@ namespace cast {
 
 namespace {
 
-// The fixed number of audio frames per second and, inversely, the duration of
-// one frame's worth of samples.
-const int kFramesPerSecond = 100;
-const int kFrameDurationMillis = 1000 / kFramesPerSecond;  // No remainder!
-
-// Threshold used to decide whether audio being delivered to the encoder is
-// coming in too slow with respect to the capture timestamps.
-const int kUnderrunThresholdMillis = 3 * kFrameDurationMillis;
+const int kUnderrunSkipThreshold = 3;
+const int kDefaultFramesPerSecond = 100;
 
 }  // namespace
-
 
 // Base class that handles the common problem of feeding one or more AudioBus'
 // data into a buffer and then, once the buffer is full, encoding the signal and
@@ -47,13 +40,17 @@ class AudioEncoder::ImplBase
            Codec codec,
            int num_channels,
            int sampling_rate,
+           int samples_per_frame,
            const FrameEncodedCallback& callback)
       : cast_environment_(cast_environment),
         codec_(codec),
         num_channels_(num_channels),
-        samples_per_frame_(sampling_rate / kFramesPerSecond),
+        samples_per_frame_(samples_per_frame),
         callback_(callback),
         cast_initialization_status_(STATUS_AUDIO_UNINITIALIZED),
+        frame_duration_(base::TimeDelta::FromMicroseconds(
+            base::Time::kMicrosecondsPerSecond * samples_per_frame_ /
+            sampling_rate)),
         buffer_fill_end_(0),
         frame_id_(0),
         frame_rtp_timestamp_(0),
@@ -61,7 +58,7 @@ class AudioEncoder::ImplBase
     // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
     const int kMaxSamplesTimesChannelsPerFrame = 48 * 2 * 100;
     if (num_channels_ <= 0 || samples_per_frame_ <= 0 ||
-        sampling_rate % kFramesPerSecond != 0 ||
+        frame_duration_ == base::TimeDelta() ||
         samples_per_frame_ * num_channels_ > kMaxSamplesTimesChannelsPerFrame) {
       cast_initialization_status_ = STATUS_INVALID_AUDIO_CONFIGURATION;
     }
@@ -75,6 +72,8 @@ class AudioEncoder::ImplBase
     return samples_per_frame_;
   }
 
+  base::TimeDelta frame_duration() const { return frame_duration_; }
+
   void EncodeAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time) {
     DCHECK_EQ(cast_initialization_status_, STATUS_AUDIO_INITIALIZED);
@@ -86,20 +85,16 @@ class AudioEncoder::ImplBase
     // frame's RTP timestamp by the estimated number of frames missed.  On the
     // other hand, don't attempt to resolve overruns: A receiver should
     // gracefully deal with an excess of audio data.
-    const base::TimeDelta frame_duration =
-        base::TimeDelta::FromMilliseconds(kFrameDurationMillis);
     base::TimeDelta buffer_fill_duration =
-        buffer_fill_end_ * frame_duration / samples_per_frame_;
+        buffer_fill_end_ * frame_duration_ / samples_per_frame_;
     if (!frame_capture_time_.is_null()) {
       const base::TimeDelta amount_ahead_by =
           recorded_time - (frame_capture_time_ + buffer_fill_duration);
-      if (amount_ahead_by >
-              base::TimeDelta::FromMilliseconds(kUnderrunThresholdMillis)) {
+      const int64 num_frames_missed = amount_ahead_by / frame_duration_;
+      if (num_frames_missed > kUnderrunSkipThreshold) {
         samples_dropped_from_buffer_ += buffer_fill_end_;
         buffer_fill_end_ = 0;
         buffer_fill_duration = base::TimeDelta();
-        const int64 num_frames_missed = amount_ahead_by /
-            base::TimeDelta::FromMilliseconds(kFrameDurationMillis);
         frame_rtp_timestamp_ +=
             static_cast<uint32>(num_frames_missed * samples_per_frame_);
         DVLOG(1) << "Skipping RTP timestamp ahead to account for "
@@ -145,7 +140,7 @@ class AudioEncoder::ImplBase
       buffer_fill_end_ = 0;
       ++frame_id_;
       frame_rtp_timestamp_ += samples_per_frame_;
-      frame_capture_time_ += frame_duration;
+      frame_capture_time_ += frame_duration_;
     }
   }
 
@@ -167,6 +162,10 @@ class AudioEncoder::ImplBase
 
   // Subclass' ctor is expected to set this to STATUS_AUDIO_INITIALIZED.
   CastInitializationStatus cast_initialization_status_;
+
+  // The duration of one frame of encoded audio samples. Derived from
+  // |samples_per_frame_| and the sampling rate.
+  const base::TimeDelta frame_duration_;
 
  private:
   // In the case where a call to EncodeAudio() cannot completely fill the
@@ -209,12 +208,16 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
                  CODEC_AUDIO_OPUS,
                  num_channels,
                  sampling_rate,
+                 sampling_rate / kDefaultFramesPerSecond, /* 10 ms frames */
                  callback),
         encoder_memory_(new uint8[opus_encoder_get_size(num_channels)]),
         opus_encoder_(reinterpret_cast<OpusEncoder*>(encoder_memory_.get())),
         buffer_(new float[num_channels * samples_per_frame_]) {
-    if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
+    if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED ||
+        sampling_rate % samples_per_frame_ != 0 ||
+        !IsValidFrameDuration(frame_duration_)) {
       return;
+    }
     if (opus_encoder_init(opus_encoder_,
                           sampling_rate,
                           num_channels,
@@ -274,6 +277,16 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
     }
   }
 
+  static bool IsValidFrameDuration(base::TimeDelta duration) {
+    // See https://tools.ietf.org/html/rfc6716#section-2.1.4
+    return duration == base::TimeDelta::FromMicroseconds(2500) ||
+           duration == base::TimeDelta::FromMilliseconds(5) ||
+           duration == base::TimeDelta::FromMilliseconds(10) ||
+           duration == base::TimeDelta::FromMilliseconds(20) ||
+           duration == base::TimeDelta::FromMilliseconds(40) ||
+           duration == base::TimeDelta::FromMilliseconds(60);
+  }
+
   const scoped_ptr<uint8[]> encoder_memory_;
   OpusEncoder* const opus_encoder_;
   const scoped_ptr<float[]> buffer_;
@@ -299,6 +312,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
                  CODEC_AUDIO_PCM16,
                  num_channels,
                  sampling_rate,
+                 sampling_rate / kDefaultFramesPerSecond, /* 10 ms frames */
                  callback),
         buffer_(new int16[num_channels * samples_per_frame_]) {
     if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
@@ -385,6 +399,15 @@ int AudioEncoder::GetSamplesPerFrame() const {
     return std::numeric_limits<int>::max();
   }
   return impl_->samples_per_frame();
+}
+
+base::TimeDelta AudioEncoder::GetFrameDuration() const {
+  DCHECK(insert_thread_checker_.CalledOnValidThread());
+  if (InitializationResult() != STATUS_AUDIO_INITIALIZED) {
+    NOTREACHED();
+    return base::TimeDelta();
+  }
+  return impl_->frame_duration();
 }
 
 void AudioEncoder::InsertAudio(scoped_ptr<AudioBus> audio_bus,

@@ -36,6 +36,7 @@ class AudioEncoder {
   CastInitializationStatus InitializationResult() const;
 
   int GetSamplesPerFrame() const;
+  base::TimeDelta GetFrameDuration() const;
 
   void InsertAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time);

@@ -39,6 +39,10 @@ class TestEncodedAudioFrameReceiver {
     upper_bound_ = upper_bound;
   }
 
+  void SetSamplesPerFrame(int samples_per_frame) {
+    samples_per_frame_ = samples_per_frame;
+  }
+
   void FrameEncoded(scoped_ptr<EncodedFrame> encoded_frame,
                     int samples_skipped) {
     EXPECT_EQ(encoded_frame->dependency, EncodedFrame::KEY);
@@ -49,9 +53,7 @@ class TestEncodedAudioFrameReceiver {
     // of the fixed frame size.
     EXPECT_LE(rtp_lower_bound_, encoded_frame->rtp_timestamp);
     rtp_lower_bound_ = encoded_frame->rtp_timestamp;
-    // Note: In audio_encoder.cc, 100 is the fixed audio frame rate.
-    const int kSamplesPerFrame = kDefaultAudioSamplingRate / 100;
-    EXPECT_EQ(0u, encoded_frame->rtp_timestamp % kSamplesPerFrame);
+    EXPECT_EQ(0u, encoded_frame->rtp_timestamp % samples_per_frame_);
     EXPECT_TRUE(!encoded_frame->data.empty());
 
     EXPECT_LE(lower_bound_, encoded_frame->reference_time);
@@ -65,6 +67,7 @@ class TestEncodedAudioFrameReceiver {
   const Codec codec_;
   int frames_received_;
   uint32 rtp_lower_bound_;
+  int samples_per_frame_;
   base::TimeTicks lower_bound_;
   base::TimeTicks upper_bound_;
 
@@ -116,9 +119,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
 
     CreateObjectsForCodec(codec);
 
-    // Note: In audio_encoder.cc, 10 ms is the fixed frame duration.
-    const base::TimeDelta frame_duration =
-        base::TimeDelta::FromMilliseconds(10);
+    const base::TimeDelta frame_duration = audio_encoder_->GetFrameDuration();
 
     for (size_t i = 0; i < scenario.num_durations; ++i) {
       const bool simulate_missing_data = scenario.durations_in_ms[i] < 0;
@@ -160,6 +161,8 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
         codec,
         base::Bind(&TestEncodedAudioFrameReceiver::FrameEncoded,
                    base::Unretained(receiver_.get()))));
+
+    receiver_->SetSamplesPerFrame(audio_encoder_->GetSamplesPerFrame());
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.

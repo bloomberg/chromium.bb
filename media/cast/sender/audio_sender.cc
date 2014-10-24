@@ -13,29 +13,20 @@
 
 namespace media {
 namespace cast {
-namespace {
-
-// TODO(miu): This should be specified in AudioSenderConfig, but currently it is
-// fixed to 100 FPS (i.e., 10 ms per frame), and AudioEncoder assumes this as
-// well.
-const int kAudioFrameRate = 100;
-
-}  // namespace
 
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
                          const AudioSenderConfig& audio_config,
                          CastTransportSender* const transport_sender)
-    : FrameSender(
-        cast_environment,
-        true,
-        transport_sender,
-        base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
-        audio_config.frequency,
-        audio_config.ssrc,
-        kAudioFrameRate,
-        audio_config.min_playout_delay,
-        audio_config.max_playout_delay,
-        NewFixedCongestionControl(audio_config.bitrate)),
+    : FrameSender(cast_environment,
+                  true,
+                  transport_sender,
+                  base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
+                  audio_config.frequency,
+                  audio_config.ssrc,
+                  0,  // |max_frame_rate_| is set after encoder initialization.
+                  audio_config.min_playout_delay,
+                  audio_config.max_playout_delay,
+                  NewFixedCongestionControl(audio_config.bitrate)),
       samples_in_encoder_(0),
       weak_factory_(this) {
   cast_initialization_status_ = STATUS_AUDIO_UNINITIALIZED;
@@ -55,6 +46,12 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
     NOTREACHED();  // No support for external audio encoding.
     cast_initialization_status_ = STATUS_AUDIO_UNINITIALIZED;
   }
+
+  // The number of samples per encoded audio frame depends on the codec and its
+  // initialization parameters. Now that we have an encoder, we can calculate
+  // the maximum frame rate.
+  max_frame_rate_ =
+      audio_config.frequency / audio_encoder_->GetSamplesPerFrame();
 
   media::cast::CastTransportRtpConfig transport_config;
   transport_config.ssrc = audio_config.ssrc;
