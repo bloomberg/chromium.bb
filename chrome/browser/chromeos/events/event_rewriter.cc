@@ -955,7 +955,7 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAdded(int device_id) {
     return kDeviceUnknown;
   }
 
-  DeviceType dev_type;
+  DeviceType dev_type = kDeviceUnknown;
   DCHECK_EQ(1, ndevices_return);
   for (int i = 0; i < ndevices_return; ++i) {
     // Get keyboard product and vendor id.
