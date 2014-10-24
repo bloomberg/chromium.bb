@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler_utils.h"
+#include "components/login/base_screen_handler_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/native_widget_types.h"
@@ -115,13 +115,15 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
 
   template<typename A1>
   void CallJS(const std::string& method, const A1& arg1) {
-    web_ui()->CallJavascriptFunction(FullMethodPath(method), MakeValue(arg1));
+    web_ui()->CallJavascriptFunction(FullMethodPath(method),
+                                     ::login::MakeValue(arg1));
   }
 
   template<typename A1, typename A2>
   void CallJS(const std::string& method, const A1& arg1, const A2& arg2) {
-    web_ui()->CallJavascriptFunction(FullMethodPath(method), MakeValue(arg1),
-                                     MakeValue(arg2));
+    web_ui()->CallJavascriptFunction(FullMethodPath(method),
+                                     ::login::MakeValue(arg1),
+                                     ::login::MakeValue(arg2));
   }
 
   template<typename A1, typename A2, typename A3>
@@ -130,9 +132,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
               const A2& arg2,
               const A3& arg3) {
     web_ui()->CallJavascriptFunction(FullMethodPath(method),
-                                     MakeValue(arg1),
-                                     MakeValue(arg2),
-                                     MakeValue(arg3));
+                                     ::login::MakeValue(arg1),
+                                     ::login::MakeValue(arg2),
+                                     ::login::MakeValue(arg3));
   }
 
   template<typename A1, typename A2, typename A3, typename A4>
@@ -142,10 +144,10 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
               const A3& arg3,
               const A4& arg4) {
     web_ui()->CallJavascriptFunction(FullMethodPath(method),
-                                     MakeValue(arg1),
-                                     MakeValue(arg2),
-                                     MakeValue(arg3),
-                                     MakeValue(arg4));
+                                     ::login::MakeValue(arg1),
+                                     ::login::MakeValue(arg2),
+                                     ::login::MakeValue(arg3),
+                                     ::login::MakeValue(arg4));
   }
 
   // Shortcut methods for adding WebUI callbacks.
@@ -162,7 +164,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
     base::Callback<void()> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(&CallbackWrapper0, callback));
+        name, base::Bind(&::login::CallbackWrapper0, callback));
   }
 
   template<typename T, typename A1>
@@ -170,7 +172,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
     base::Callback<void(A1)> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(&CallbackWrapper1<A1>, callback));
+        name, base::Bind(&::login::CallbackWrapper1<A1>, callback));
   }
 
   template<typename T, typename A1, typename A2>
@@ -179,7 +181,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
     base::Callback<void(A1, A2)> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(&CallbackWrapper2<A1, A2>, callback));
+        name, base::Bind(&::login::CallbackWrapper2<A1, A2>, callback));
   }
 
   template<typename T, typename A1, typename A2, typename A3>
@@ -188,7 +190,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
     base::Callback<void(A1, A2, A3)> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(&CallbackWrapper3<A1, A2, A3>, callback));
+        name, base::Bind(&::login::CallbackWrapper3<A1, A2, A3>, callback));
   }
 
   template<typename T, typename A1, typename A2, typename A3, typename A4>
@@ -197,7 +199,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
     base::Callback<void(A1, A2, A3, A4)> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(&CallbackWrapper4<A1, A2, A3, A4>, callback));
+        name, base::Bind(&::login::CallbackWrapper4<A1, A2, A3, A4>, callback));
   }
 
   template <typename Method>

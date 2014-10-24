@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_SCREEN_CONTEXT_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_SCREEN_CONTEXT_H_
+#ifndef COMPONENTS_LOGIN_SCREENS_SCREEN_CONTEXT_H_
+#define COMPONENTS_LOGIN_SCREENS_SCREEN_CONTEXT_H_
 
 #include <string>
 #include <vector>
@@ -15,9 +15,10 @@
 #include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler_utils.h"
+#include "components/login/base_screen_handler_utils.h"
+#include "components/login/login_export.h"
 
-namespace chromeos {
+namespace login {
 
 // ScreenContext is a key-value storage for values that are shared
 // between C++ and JS sides. Objects of this class should be used in
@@ -32,7 +33,7 @@ namespace chromeos {
 // ScreenContext memorizes changed key-value pairs and returns them
 // via GetChangesAndReset() method. After call to this method an
 // internal buffer of changes will be cleared.
-class ScreenContext : public base::NonThreadSafe {
+class LOGIN_EXPORT ScreenContext : public base::NonThreadSafe {
  public:
   typedef std::string KeyType;
   typedef base::Value ValueType;
@@ -121,6 +122,6 @@ class ScreenContext : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(ScreenContext);
 };
 
-}  // namespace chromeos
+}  // namespace login
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_SCREEN_CONTEXT_H_
+#endif  // COMPONENTS_LOGIN_SCREENS_SCREEN_CONTEXT_H_

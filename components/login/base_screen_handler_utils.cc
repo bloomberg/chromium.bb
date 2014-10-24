@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler_utils.h"
+#include "components/login/base_screen_handler_utils.h"
 
-namespace chromeos {
+namespace login {
 
 namespace {
 
@@ -83,4 +83,4 @@ void CallbackWrapper0(base::Callback<void()> callback,
   callback.Run();
 }
 
-}  // namespace chromeos
+}  // namespace login

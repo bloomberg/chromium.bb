@@ -14,9 +14,12 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace login {
+class ScreenContext;
+}
+
 namespace chromeos {
 
-class ScreenContext;
 class ScreenObserver;
 
 // Base class for the all OOBE/login/before-session screens.
@@ -50,7 +53,7 @@ class BaseScreen {
   // at this point. Screen can alter context, resulting context will be passed
   // to JS. This method will be called once per instance of the Screen object,
   // unless |IsPermanent()| returns |true|.
-  virtual void Initialize(ScreenContext* context);
+  virtual void Initialize(::login::ScreenContext* context);
 
   // Called when screen appears.
   virtual void OnShow();
@@ -99,7 +102,7 @@ class BaseScreen {
   friend class ScreenManager;
   friend class UpdateScreenTest;
 
-  void SetContext(ScreenContext* context);
+  void SetContext(::login::ScreenContext* context);
 
   ScreenObserver* screen_observer_;
 

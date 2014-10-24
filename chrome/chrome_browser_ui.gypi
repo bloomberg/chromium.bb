@@ -940,8 +940,6 @@
       'browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h',
       'browser/ui/webui/chromeos/login/base_screen_handler.cc',
       'browser/ui/webui/chromeos/login/base_screen_handler.h',
-      'browser/ui/webui/chromeos/login/base_screen_handler_utils.cc',
-      'browser/ui/webui/chromeos/login/base_screen_handler_utils.h',
       'browser/ui/webui/chromeos/login/controller_pairing_screen_handler.cc',
       'browser/ui/webui/chromeos/login/controller_pairing_screen_handler.h',
       'browser/ui/webui/chromeos/login/core_oobe_handler.cc',

@@ -75,7 +75,7 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
   switch (new_stage) {
     case ControllerPairingController::STAGE_DEVICES_DISCOVERY: {
       desired_page = kPageDevicesDiscovery;
-      context_.SetStringList(kContextKeyDevices, StringList());
+      context_.SetStringList(kContextKeyDevices, ::login::StringList());
       context_.SetString(kContextKeySelectedDevice, std::string());
       device_preselected_ = false;
       break;

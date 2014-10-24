@@ -146,6 +146,7 @@
             'keyed_service/core/dependency_graph_unittest.cc',
             'language_usage_metrics/language_usage_metrics_unittest.cc',
             'leveldb_proto/proto_database_impl_unittest.cc',
+            'login/screens/screen_context_unittest.cc',
             'metrics/compression_utils_unittest.cc',
             'metrics/daily_event_unittest.cc',
             'metrics/machine_id_provider_win_unittest.cc',
@@ -376,6 +377,9 @@
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             'components.gyp:leveldb_proto',
             'components.gyp:leveldb_proto_test_support',
+
+            # Dependencies of login
+            'components.gyp:login',
 
             # Dependencies of metrics
             'components.gyp:metrics',

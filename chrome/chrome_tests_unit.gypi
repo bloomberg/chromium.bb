@@ -205,7 +205,6 @@
       'browser/chromeos/login/profile_auth_data_unittest.cc',
       'browser/chromeos/login/saml/saml_offline_signin_limiter_unittest.cc',
       'browser/chromeos/login/screens/device_disabled_screen_unittest.cc',
-      'browser/chromeos/login/screens/screen_context_unittest.cc',
       'browser/chromeos/login/signin/merge_session_load_page_unittest.cc',
       'browser/chromeos/login/supervised/supervised_user_authentication_unittest.cc',
       'browser/chromeos/login/users/multi_profile_user_controller_unittest.cc',

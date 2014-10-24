@@ -6,22 +6,19 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/login/screens/screen_context.h"
+#include "components/login/screens/screen_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace login {
 
 class ScreenContextTest : public testing::Test {
  public:
   ScreenContextTest() {}
   virtual ~ScreenContextTest() {}
 
-  virtual void SetUp() {
-    context_.reset(new ScreenContext());
-  }
+  virtual void SetUp() { context_.reset(new ScreenContext()); }
 
-  virtual void TearDown() {
-  }
+  virtual void TearDown() {}
 
  protected:
   ScreenContext& context() { return *context_.get(); }
@@ -154,4 +151,4 @@ TEST_F(ScreenContextTest, ApplyChanges) {
   ASSERT_TRUE(context().GetBoolean("key2"));
 }
 
-}  // namespace chromeos
+}  // namespace login

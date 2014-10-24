@@ -34,6 +34,7 @@
     'keyed_service.gypi',
     'language_usage_metrics.gypi',
     'leveldb_proto.gypi',
+    'login.gypi',
     'metrics.gypi',
     'navigation_metrics.gypi',
     'network_time.gypi',

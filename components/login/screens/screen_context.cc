@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/screens/screen_context.h"
+#include "components/login/screens/screen_context.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace chromeos {
+namespace login {
 
 namespace {
 
@@ -174,4 +174,4 @@ bool ScreenContext::Set(const KeyType& key, base::Value* value) {
   return true;
 }
 
-}  // namespace chromeos
+}  // namespace login

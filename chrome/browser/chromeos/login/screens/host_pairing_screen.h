@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/screen_context.h"
+#include "components/login/screens/screen_context.h"
 #include "components/pairing/host_pairing_controller.h"
 
 namespace chromeos {
@@ -47,7 +47,7 @@ class HostPairingScreen
 
   // Context for sharing data between C++ and JS.
   // TODO(dzhioev): move to BaseScreen when possible.
-  ScreenContext context_;
+  ::login::ScreenContext context_;
 
   HostPairingScreenActor* actor_;
 

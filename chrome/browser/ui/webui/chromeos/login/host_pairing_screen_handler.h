@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/screen_context.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "components/login/screens/screen_context.h"
 
 namespace chromeos {
 
@@ -39,7 +39,7 @@ class HostPairingScreenHandler : public HostPairingScreenActor,
   bool js_context_ready_;
 
   // Caches context changes while JS part is not ready to receive messages.
-  ScreenContext context_cache_;
+  ::login::ScreenContext context_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(HostPairingScreenHandler);
 };
