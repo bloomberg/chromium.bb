@@ -73,7 +73,7 @@ int FakePictureLayerTilingClient::GetSkewportExtrapolationLimitInContentPixels()
   return skewport_extrapolation_limit_in_content_pixels_;
 }
 
-const Region* FakePictureLayerTilingClient::GetInvalidation() {
+const Region* FakePictureLayerTilingClient::GetPendingInvalidation() {
   return &invalidation_;
 }
 
