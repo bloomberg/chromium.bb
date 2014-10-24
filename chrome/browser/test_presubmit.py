@@ -594,7 +594,7 @@ blah /* hey! */
   }}
 
 @-webkit-keyframe blah {
-  from { height: 0; }
+  from { height: rotate(-10turn); }
   100% { height: 500px; }
 }
 
