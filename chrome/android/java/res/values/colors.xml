@@ -5,8 +5,10 @@
 -->
 
 <resources>
+    <!-- Common colors -->
+    <color name="default_text_color">#333</color>
+
     <!-- Infobar colors -->
-    <color name="infobar_text">#333</color>
     <color name="infobar_background">#fff</color>
     <color name="infobar_background_separator">#afafaf</color>
     <color name="infobar_accent_blue">#4285f4</color>

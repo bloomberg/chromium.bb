@@ -26,7 +26,7 @@ public class TranslateCheckBox extends CheckBox implements OnCheckedChangeListen
 
         setId(R.id.infobar_extra_check);
         setText(context.getString(R.string.translate_always_text, mOptions.sourceLanguage()));
-        setTextColor(context.getResources().getColor(R.color.infobar_text));
+        setTextColor(context.getResources().getColor(R.color.default_text_color));
         setTextSize(TEXT_SIZE_SP);
         setChecked(mOptions.alwaysTranslateLanguageState());
         setOnCheckedChangeListener(this);

@@ -15,4 +15,4 @@
     android:lineSpacingMultiplier="1.25"
     android:textDirection="locale"
     android:textSize="@dimen/infobar_text_size"
-    android:textColor="@color/infobar_text" />
+    android:textColor="@color/default_text_color" />
