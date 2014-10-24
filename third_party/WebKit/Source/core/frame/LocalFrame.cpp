@@ -273,6 +273,12 @@ void LocalFrame::detach()
     script().clearForClose();
     InspectorInstrumentation::frameDetachedFromParent(this);
     Frame::detach();
+#if ENABLE(OILPAN)
+    // Clear the FrameLoader right here rather than during
+    // finalization. Too late to access various heap objects at that
+    // stage.
+    loader().clear();
+#endif
 }
 
 void LocalFrame::disconnectOwnerElement()
@@ -286,12 +292,6 @@ void LocalFrame::disconnectOwnerElement()
         for (const auto& pluginElement : m_pluginElements)
             pluginElement->disconnectContentFrame();
         m_pluginElements.clear();
-
-        // Clear the FrameView and FrameLoader right here rather than
-        // during finalization. Too late to access various heap objects
-        // at that stage.
-        setView(nullptr);
-        loader().clear();
 #endif
     }
     Frame::disconnectOwnerElement();
