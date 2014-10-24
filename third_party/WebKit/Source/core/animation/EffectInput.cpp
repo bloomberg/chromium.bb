@@ -95,7 +95,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
         }
 
         Vector<String> keyframeProperties;
-        keyframeDictionaryVector[i].getOwnPropertyNames(keyframeProperties);
+        keyframeDictionaryVector[i].getPropertyNames(keyframeProperties);
         for (size_t j = 0; j < keyframeProperties.size(); ++j) {
             String property = keyframeProperties[j];
             CSSPropertyID id = AnimationInputHelpers::keyframeAttributeToCSSPropertyID(property);
