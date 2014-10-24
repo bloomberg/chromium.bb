@@ -147,6 +147,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gpu_switching_manager.h"
 #include "ui/native_theme/native_theme_switches.h"
 
 #if defined(OS_ANDROID)
@@ -519,7 +520,7 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   ChildProcessSecurityPolicyImpl::GetInstance()->Remove(GetID());
 
   if (gpu_observer_registered_) {
-    GpuDataManagerImpl::GetInstance()->RemoveObserver(this);
+    ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
     gpu_observer_registered_ = false;
   }
 
@@ -632,7 +633,7 @@ bool RenderProcessHostImpl::Init() {
 
   if (!gpu_observer_registered_) {
     gpu_observer_registered_ = true;
-    GpuDataManagerImpl::GetInstance()->AddObserver(this);
+    ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
   }
 
   power_monitor_broadcaster_.Init();
@@ -2127,7 +2128,7 @@ void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
   MHTMLGenerationManager::GetInstance()->MHTMLGenerated(job_id, data_size);
 }
 
-void RenderProcessHostImpl::OnGpuSwitching() {
+void RenderProcessHostImpl::OnGpuSwitched() {
   // We are updating all widgets including swapped out ones.
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHostImpl::GetAllRenderWidgetHosts());

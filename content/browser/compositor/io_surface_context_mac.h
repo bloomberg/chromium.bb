@@ -13,14 +13,14 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/gpu_data_manager_observer.h"
+#include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
 namespace content {
 
 class IOSurfaceContext
     : public base::RefCounted<IOSurfaceContext>,
-      public content::GpuDataManagerObserver {
+      public ui::GpuSwitchingObserver {
  public:
   enum Type {
     // The number used to look up the context used for async readback and for
@@ -45,7 +45,7 @@ class IOSurfaceContext
   CGLContextObj cgl_context() const { return cgl_context_; }
 
   // content::GpuDataManagerObserver implementation.
-  void OnGpuSwitching() override;
+  void OnGpuSwitched() override;
 
  private:
   friend class base::RefCounted<IOSurfaceContext>;
@@ -53,7 +53,7 @@ class IOSurfaceContext
   IOSurfaceContext(
       Type type,
       base::ScopedTypeRef<CGLContextObj> clg_context_strong);
-  ~IOSurfaceContext() override;
+  virtual ~IOSurfaceContext();
 
   Type type_;
   base::ScopedTypeRef<CGLContextObj> cgl_context_;

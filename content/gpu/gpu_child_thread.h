@@ -67,6 +67,7 @@ class GpuChildThread : public ChildThread {
   void OnCrash();
   void OnHang();
   void OnDisableWatchdog();
+  void OnGpuSwitched();
 
 #if defined(USE_TCMALLOC)
   void OnGetGpuTcmalloc();

@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -85,11 +84,11 @@ IOSurfaceContext::IOSurfaceContext(
   DCHECK(type_map()->find(type_) == type_map()->end());
   type_map()->insert(std::make_pair(type_, this));
 
-  GpuDataManager::GetInstance()->AddObserver(this);
+  ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
 
 IOSurfaceContext::~IOSurfaceContext() {
-  GpuDataManager::GetInstance()->RemoveObserver(this);
+  ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
   if (!poisoned_) {
     DCHECK(type_map()->find(type_) != type_map()->end());
@@ -102,7 +101,7 @@ IOSurfaceContext::~IOSurfaceContext() {
   }
 }
 
-void IOSurfaceContext::OnGpuSwitching() {
+void IOSurfaceContext::OnGpuSwitched() {
   // Recreate all browser-side GL contexts whenever the GPU switches. If this
   // is not done, performance will suffer.
   // http://crbug.com/361493

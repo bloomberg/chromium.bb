@@ -35,9 +35,6 @@ class CONTENT_EXPORT GpuDataManagerObserver {
   // Called for any observer when the GPU process crashed.
   virtual void OnGpuProcessCrashed(base::TerminationStatus exit_code) {}
 
-  // Called for any observer when the system switches to a different GPU.
-  virtual void OnGpuSwitching() {}
-
  protected:
   virtual ~GpuDataManagerObserver() {}
 };

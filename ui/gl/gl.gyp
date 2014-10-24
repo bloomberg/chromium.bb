@@ -113,6 +113,7 @@
         'gl_version_info.h',
         'gpu_switching_manager.cc',
         'gpu_switching_manager.h',
+        'gpu_switching_observer.h',
         'scoped_binders.cc',
         'scoped_binders.h',
         'scoped_make_current.cc',

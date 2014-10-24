@@ -102,6 +102,18 @@ void GpuSwitchingManager::SetGpuCount(size_t gpu_count) {
   gpu_count_ = gpu_count;
 }
 
+void GpuSwitchingManager::AddObserver(GpuSwitchingObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void GpuSwitchingManager::RemoveObserver(GpuSwitchingObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void GpuSwitchingManager::NotifyGpuSwitched() {
+  FOR_EACH_OBSERVER(GpuSwitchingObserver, observer_list_, OnGpuSwitched());
+}
+
 gfx::GpuPreference GpuSwitchingManager::AdjustGpuPreference(
     gfx::GpuPreference gpu_preference) {
   if (!gpu_switching_option_set_)

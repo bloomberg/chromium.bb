@@ -18,12 +18,12 @@
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/common/content_export.h"
 #include "content/common/mojo/service_registry_impl.h"
-#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gl/gpu_switching_observer.h"
 
 namespace base {
 class CommandLine;
@@ -82,7 +82,7 @@ typedef base::Thread* (*RendererMainThreadFactoryFunction)(
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
       public ChildProcessLauncher::Client,
-      public GpuDataManagerObserver {
+      public ui::GpuSwitchingObserver {
  public:
   RenderProcessHostImpl(BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
@@ -315,7 +315,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Handle termination of our process.
   void ProcessDied(bool already_dead);
 
-  void OnGpuSwitching() override;
+  // GpuSwitchingObserver implementation.
+  void OnGpuSwitched() override;
 
 #if defined(ENABLE_WEBRTC)
   void OnRegisterAecDumpConsumer(int id);

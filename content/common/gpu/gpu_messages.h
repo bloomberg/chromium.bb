@@ -308,6 +308,9 @@ IPC_MESSAGE_CONTROL0(GpuMsg_Hang)
 // Tells the GPU process to disable the watchdog thread.
 IPC_MESSAGE_CONTROL0(GpuMsg_DisableWatchdog)
 
+// Tells the GPU process that the browser has seen a GPU switch.
+IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
+
 //------------------------------------------------------------------------------
 // GPU Host Messages
 // These are messages to the browser.

@@ -34,6 +34,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "third_party/angle/src/common/version.h"
+#include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
@@ -239,7 +240,8 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
 class GpuMessageHandler
     : public WebUIMessageHandler,
       public base::SupportsWeakPtr<GpuMessageHandler>,
-      public GpuDataManagerObserver {
+      public GpuDataManagerObserver,
+      public ui::GpuSwitchingObserver {
  public:
   GpuMessageHandler();
   ~GpuMessageHandler() override;
@@ -249,7 +251,9 @@ class GpuMessageHandler
 
   // GpuDataManagerObserver implementation.
   void OnGpuInfoUpdate() override;
-  void OnGpuSwitching() override;
+
+  // ui::GpuSwitchingObserver implementation.
+  void OnGpuSwitched() override;
 
   // Messages
   void OnBrowserBridgeInitialized(const base::ListValue* list);
@@ -278,6 +282,7 @@ GpuMessageHandler::GpuMessageHandler()
 }
 
 GpuMessageHandler::~GpuMessageHandler() {
+  ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
   GpuDataManagerImpl::GetInstance()->RemoveObserver(this);
 }
 
@@ -345,8 +350,10 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Watch for changes in GPUInfo
-  if (!observing_)
+  if (!observing_) {
     GpuDataManagerImpl::GetInstance()->AddObserver(this);
+    ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+  }
   observing_ = true;
 
   // Tell GpuDataManager it should have full GpuInfo. If the
@@ -403,7 +410,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
       *(gpu_info_val.get()));
 }
 
-void GpuMessageHandler::OnGpuSwitching() {
+void GpuMessageHandler::OnGpuSwitched() {
   GpuDataManagerImpl::GetInstance()->RequestCompleteGpuInfoIfNeeded();
 }
 

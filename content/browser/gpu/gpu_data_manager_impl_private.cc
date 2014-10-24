@@ -806,7 +806,13 @@ base::ListValue* GpuDataManagerImplPrivate::GetLogMessages() const {
 
 void GpuDataManagerImplPrivate::HandleGpuSwitch() {
   GpuDataManagerImpl::UnlockedSession session(owner_);
-  observer_list_->Notify(&GpuDataManagerObserver::OnGpuSwitching);
+  // Notify observers in the browser process.
+  ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
+  // Pass the notification to the GPU process to notify observers there.
+  GpuProcessHost::SendOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_GpuSwitched);
 }
 
 bool GpuDataManagerImplPrivate::UpdateActiveGpu(

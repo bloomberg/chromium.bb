@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gpu_switching_manager.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/gpu_platform_support.h"
@@ -112,6 +113,7 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
     IPC_MESSAGE_HANDLER(GpuMsg_DisableWatchdog, OnDisableWatchdog)
+    IPC_MESSAGE_HANDLER(GpuMsg_GpuSwitched, OnGpuSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -263,6 +265,12 @@ void GpuChildThread::OnDisableWatchdog() {
     // Prevent rearming.
     watchdog_thread_->Stop();
   }
+}
+
+void GpuChildThread::OnGpuSwitched() {
+  VLOG(1) << "GPU: GPU has switched";
+  // Notify observers in the GPU process.
+  ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
 }
 
 }  // namespace content
