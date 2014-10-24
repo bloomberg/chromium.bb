@@ -21,6 +21,7 @@ def main_run(args):
         sys.executable,
         os.path.join(args.paths['build'], 'scripts', 'tools', 'runit.py'),
         '--show-path',
+        sys.executable,
         os.path.join(args.paths['build'], 'scripts', 'slave', 'runtest.py'),
         '--target', args.build_config_fs,
         '--xvfb',
