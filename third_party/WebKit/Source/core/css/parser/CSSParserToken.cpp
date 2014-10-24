@@ -67,41 +67,6 @@ void CSSParserToken::convertToPercentage()
     m_unit = CSSPrimitiveValue::CSS_PERCENTAGE;
 }
 
-// This function is used only for testing
-// FIXME - This doesn't cover all possible Token types, but it's enough for current testing.
-String CSSParserToken::textForUnitTests() const
-{
-    if (!m_value.isNull())
-        return m_value;
-    if (m_type == LeftParenthesisToken)
-        return "(";
-    if (m_type == RightParenthesisToken)
-        return ")";
-    if (m_type == ColonToken)
-        return ":";
-    if (m_type == WhitespaceToken)
-        return " ";
-    if (m_delimiter)
-        return String("'") + m_delimiter + '\'';
-
-    if (m_numericValue) {
-        String unit;
-        if (m_unit == CSSPrimitiveValue::CSS_PERCENTAGE)
-            unit = "%";
-        else if (m_unit == CSSPrimitiveValue::CSS_PX)
-            unit = "px";
-        else if (m_unit == CSSPrimitiveValue::CSS_EMS)
-            unit = "em";
-        else if (m_unit != CSSPrimitiveValue::CSS_NUMBER)
-            unit = "other";
-        if (m_numericValueType == IntegerValueType)
-            return String::number(static_cast<int>(m_numericValue)) + unit;
-        const unsigned fractionalDigits = 6;
-        return String::numberToStringFixedWidth(m_numericValue, fractionalDigits) + unit;
-    }
-    return String();
-}
-
 UChar CSSParserToken::delimiter() const
 {
     ASSERT(m_type == DelimiterToken);

@@ -60,7 +60,6 @@ public:
 
     CSSParserTokenType type() const { return m_type; }
     String value() const { return m_value; }
-    String textForUnitTests() const;
 
     UChar delimiter() const;
     NumericValueType numericValueType() const;
