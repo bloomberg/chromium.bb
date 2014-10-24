@@ -107,6 +107,8 @@ typedef struct internal_state {
     Byte  method;        /* STORED (for zip only) or DEFLATED */
     int   last_flush;    /* value of flush param for previous deflate call */
 
+    unsigned zalign(16) crc0[4 * 5];
+
                 /* used by deflate.c: */
 
     uInt  w_size;        /* LZ77 window size (32K by default) */
@@ -343,5 +345,15 @@ void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
 # define _tr_tally_dist(s, distance, length, flush) \
               flush = _tr_tally(s, distance, length)
 #endif
+
+/* Functions that are SIMD optimised on x86 */
+void ZLIB_INTERNAL crc_fold_init(deflate_state* const s);
+void ZLIB_INTERNAL crc_fold_copy(deflate_state* const s,
+                                 unsigned char* dst,
+                                 const unsigned char* src,
+                                 long len);
+unsigned ZLIB_INTERNAL crc_fold_512to32(deflate_state* const s);
+
+void ZLIB_INTERNAL fill_window_sse(deflate_state* s);
 
 #endif /* DEFLATE_H */
