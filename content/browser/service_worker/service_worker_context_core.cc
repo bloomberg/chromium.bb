@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -122,10 +123,10 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
                                             disk_cache_thread,
                                             quota_manager_proxy,
                                             special_storage_policy)),
-      cache_manager_(
-          ServiceWorkerCacheStorageManager::Create(path,
-                                                   cache_task_runner.get(),
-                                                   quota_manager_proxy)),
+      cache_manager_(ServiceWorkerCacheStorageManager::Create(
+          path,
+          cache_task_runner.get(),
+          make_scoped_refptr(quota_manager_proxy))),
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),

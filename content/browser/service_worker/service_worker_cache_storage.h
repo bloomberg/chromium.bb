@@ -56,6 +56,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
       net::URLRequestContext* request_context,
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       const GURL& origin);
 

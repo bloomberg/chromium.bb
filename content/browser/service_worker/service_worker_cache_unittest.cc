@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
@@ -20,6 +21,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/blob/blob_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,6 +55,9 @@ class ServiceWorkerCacheTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     blob_storage_context_ = blob_storage_context->context();
 
+    quota_manager_proxy_ = new MockQuotaManagerProxy(
+        nullptr, base::MessageLoopProxy::current().get());
+
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
     url_request_job_factory_->SetProtocolHandler(
         "blob", CreateMockBlobProtocolHandler(blob_storage_context->context()));
@@ -66,18 +71,23 @@ class ServiceWorkerCacheTest : public testing::Test {
 
     if (MemoryOnly()) {
       cache_ = ServiceWorkerCache::CreateMemoryCache(
+          GURL("http://example.com"),
           url_request_context,
+          quota_manager_proxy_,
           blob_storage_context->context()->AsWeakPtr());
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
       cache_ = ServiceWorkerCache::CreatePersistentCache(
+          GURL("http://example.com"),
           temp_dir_.path(),
           url_request_context,
+          quota_manager_proxy_,
           blob_storage_context->context()->AsWeakPtr());
     }
   }
 
   virtual void TearDown() override {
+    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -266,6 +276,7 @@ class ServiceWorkerCacheTest : public testing::Test {
   TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
+  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   storage::BlobStorageContext* blob_storage_context_;
 
   base::ScopedTempDir temp_dir_;
@@ -528,6 +539,30 @@ TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerFetchRequestHeaders) {
   request.headers["content-type"] = "foo";
   request.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", request.headers["content-type"]);
+}
+
+TEST_P(ServiceWorkerCacheTestP, QuotaManagerModified) {
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_modified_count());
+
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_modified_count());
+  EXPECT_LT(0, quota_manager_proxy_->last_notified_delta());
+  int64 sum_delta = quota_manager_proxy_->last_notified_delta();
+
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_EQ(2, quota_manager_proxy_->notify_storage_modified_count());
+  EXPECT_LT(sum_delta, quota_manager_proxy_->last_notified_delta());
+  sum_delta += quota_manager_proxy_->last_notified_delta();
+
+  EXPECT_TRUE(Delete(body_request_));
+  EXPECT_EQ(3, quota_manager_proxy_->notify_storage_modified_count());
+  sum_delta += quota_manager_proxy_->last_notified_delta();
+
+  EXPECT_TRUE(Delete(no_body_request_));
+  EXPECT_EQ(4, quota_manager_proxy_->notify_storage_modified_count());
+  sum_delta += quota_manager_proxy_->last_notified_delta();
+
+  EXPECT_EQ(0, sum_delta);
 }
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheTest,

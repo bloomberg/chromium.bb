@@ -22,6 +22,7 @@ namespace storage {
 class BlobData;
 class BlobDataHandle;
 class BlobStorageContext;
+class QuotaManagerProxy;
 }
 
 namespace content {
@@ -54,11 +55,15 @@ class CONTENT_EXPORT ServiceWorkerCache
       RequestsCallback;
 
   static scoped_refptr<ServiceWorkerCache> CreateMemoryCache(
+      const GURL& origin,
       net::URLRequestContext* request_context,
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
   static scoped_refptr<ServiceWorkerCache> CreatePersistentCache(
+      const GURL& origin,
       const base::FilePath& path,
       net::URLRequestContext* request_context,
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
   // Returns ErrorTypeNotFound if not found. The callback will always be called.
@@ -97,9 +102,12 @@ class CONTENT_EXPORT ServiceWorkerCache
   struct KeysContext;
   typedef std::vector<disk_cache::Entry*> Entries;
 
-  ServiceWorkerCache(const base::FilePath& path,
-                     net::URLRequestContext* request_context,
-                     base::WeakPtr<storage::BlobStorageContext> blob_context);
+  ServiceWorkerCache(
+      const GURL& origin,
+      const base::FilePath& path,
+      net::URLRequestContext* request_context,
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+      base::WeakPtr<storage::BlobStorageContext> blob_context);
 
   // Operations in progress will complete after the cache is deleted but pending
   // operations (those operations waiting for init to finish) won't.
@@ -130,8 +138,10 @@ class CONTENT_EXPORT ServiceWorkerCache
   // The backend can be deleted via the Close function at any time so always
   // check for its existence before use.
   scoped_ptr<disk_cache::Backend> backend_;
+  GURL origin_;
   base::FilePath path_;
   net::URLRequestContext* request_context_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   bool initialized_;
   std::vector<base::Closure> init_callbacks_;

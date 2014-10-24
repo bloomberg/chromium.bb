@@ -41,7 +41,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy);
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy);
 
   static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
       ServiceWorkerCacheStorageManager* old_manager);
@@ -86,7 +86,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   ServiceWorkerCacheStorageManager(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy);
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy);
 
   // The returned ServiceWorkerCacheStorage* is owned by
   // service_worker_cache_storages_.

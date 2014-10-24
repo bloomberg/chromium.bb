@@ -9,12 +9,14 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/browser/service_worker/service_worker_cache_quota_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -36,15 +38,22 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     // Wait for ChromeBlobStorageContext to finish initializing.
     base::RunLoop().RunUntilIdle();
 
+    quota_manager_proxy_ = new MockQuotaManagerProxy(
+        nullptr, base::MessageLoopProxy::current().get());
+
     net::URLRequestContext* url_request_context =
         browser_context_.GetRequestContext()->GetURLRequestContext();
     if (MemoryOnly()) {
       cache_manager_ = ServiceWorkerCacheStorageManager::Create(
-          base::FilePath(), base::MessageLoopProxy::current(), nullptr);
+          base::FilePath(),
+          base::MessageLoopProxy::current(),
+          quota_manager_proxy_);
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
       cache_manager_ = ServiceWorkerCacheStorageManager::Create(
-          temp_dir_.path(), base::MessageLoopProxy::current(), nullptr);
+          temp_dir_.path(),
+          base::MessageLoopProxy::current(),
+          quota_manager_proxy_);
     }
 
     cache_manager_->SetBlobParametersForCache(
@@ -52,6 +61,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   }
 
   virtual void TearDown() override {
+    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -205,6 +215,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   TestBrowserThreadBundle browser_thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
+  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<ServiceWorkerCacheStorageManager> cache_manager_;
 
   scoped_refptr<ServiceWorkerCache> callback_cache_;
@@ -350,6 +361,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {
   EXPECT_TRUE(Open(origin1_, "baz"));
   EXPECT_TRUE(Open(origin2_, "raz"));
   EXPECT_TRUE(Delete(origin1_, "bar"));
+  quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   cache_manager_ =
       ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
   EXPECT_TRUE(Keys(origin1_));
@@ -363,6 +375,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {
 TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, DataLostWhenMemoryOnly) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin2_, "baz"));
+  quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   cache_manager_ =
       ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
   EXPECT_TRUE(Keys(origin1_));

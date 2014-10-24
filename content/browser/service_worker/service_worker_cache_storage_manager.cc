@@ -88,7 +88,7 @@ scoped_ptr<ServiceWorkerCacheStorageManager>
 ServiceWorkerCacheStorageManager::Create(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy) {
+    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy) {
   base::FilePath root_path = path;
   if (!path.empty()) {
     root_path = path.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
@@ -260,15 +260,16 @@ void ServiceWorkerCacheStorageManager::DeleteOriginData(
 ServiceWorkerCacheStorageManager::ServiceWorkerCacheStorageManager(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy)
+    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy)
     : root_path_(path),
       cache_task_runner_(cache_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(NULL),
       weak_ptr_factory_(this) {
-  if (quota_manager_proxy_.get())
+  if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->RegisterClient(
         new ServiceWorkerCacheQuotaClient(weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 ServiceWorkerCacheStorage*
@@ -276,7 +277,6 @@ ServiceWorkerCacheStorageManager::FindOrCreateServiceWorkerCacheManager(
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(request_context_);
-
   ServiceWorkerCacheStorageMap::const_iterator it =
       cache_storage_map_.find(origin);
   if (it == cache_storage_map_.end()) {
@@ -285,6 +285,7 @@ ServiceWorkerCacheStorageManager::FindOrCreateServiceWorkerCacheManager(
                                       IsMemoryBacked(),
                                       cache_task_runner_.get(),
                                       request_context_,
+                                      quota_manager_proxy_,
                                       blob_context_,
                                       origin);
     // The map owns fetch_stores.

@@ -19,6 +19,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 
 namespace content {
@@ -93,19 +94,21 @@ struct ResponseReadContext {
 // Streams data from a blob and writes it to a given disk_cache::Entry.
 class BlobReader : public net::URLRequest::Delegate {
  public:
-  typedef base::Callback<void(bool)> BoolCallback;
+  typedef base::Callback<void(disk_cache::ScopedEntryPtr, bool)>
+      EntryAndBoolCallback;
 
-  BlobReader(disk_cache::ScopedEntryPtr entry)
+  BlobReader()
       : cache_entry_offset_(0),
         buffer_(new net::IOBufferWithSize(kBufferSize)),
-        weak_ptr_factory_(this) {
+        weak_ptr_factory_(this) {}
+
+  // |entry| is passed to the callback once complete.
+  void StreamBlobToCache(disk_cache::ScopedEntryPtr entry,
+                         net::URLRequestContext* request_context,
+                         scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+                         const EntryAndBoolCallback& callback) {
     DCHECK(entry);
     entry_ = entry.Pass();
-  }
-
-  void StreamBlobToCache(net::URLRequestContext* request_context,
-                         scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-                         const BoolCallback& callback) {
     callback_ = callback;
     blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
         blob_data_handle.Pass(), request_context, this);
@@ -138,7 +141,7 @@ class BlobReader : public net::URLRequest::Delegate {
 
   void OnResponseStarted(net::URLRequest* request) override {
     if (!request->status().is_success()) {
-      callback_.Run(false);
+      callback_.Run(entry_.Pass(), false);
       return;
     }
     ReadFromBlob();
@@ -154,12 +157,12 @@ class BlobReader : public net::URLRequest::Delegate {
 
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
     if (!request->status().is_success()) {
-      callback_.Run(false);
+      callback_.Run(entry_.Pass(), false);
       return;
     }
 
     if (bytes_read == 0) {
-      callback_.Run(true);
+      callback_.Run(entry_.Pass(), true);
       return;
     }
 
@@ -180,7 +183,7 @@ class BlobReader : public net::URLRequest::Delegate {
 
   void DidWriteDataToEntry(int expected_bytes, int rv) {
     if (rv != expected_bytes) {
-      callback_.Run(false);
+      callback_.Run(entry_.Pass(), false);
       return;
     }
 
@@ -192,23 +195,28 @@ class BlobReader : public net::URLRequest::Delegate {
   int cache_entry_offset_;
   disk_cache::ScopedEntryPtr entry_;
   scoped_ptr<net::URLRequest> blob_request_;
-  BoolCallback callback_;
+  EntryAndBoolCallback callback_;
   scoped_refptr<net::IOBufferWithSize> buffer_;
   base::WeakPtrFactory<BlobReader> weak_ptr_factory_;
 };
 
 // The state needed to pass between ServiceWorkerCache::Put callbacks.
 struct PutContext {
-  PutContext(scoped_ptr<ServiceWorkerFetchRequest> request,
-             scoped_ptr<ServiceWorkerResponse> response,
-             scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-             const ServiceWorkerCache::ResponseCallback& callback,
-             net::URLRequestContext* request_context)
-      : request(request.Pass()),
+  PutContext(
+      const GURL& origin,
+      scoped_ptr<ServiceWorkerFetchRequest> request,
+      scoped_ptr<ServiceWorkerResponse> response,
+      scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+      const ServiceWorkerCache::ResponseCallback& callback,
+      net::URLRequestContext* request_context,
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy)
+      : origin(origin),
+        request(request.Pass()),
         response(response.Pass()),
         blob_data_handle(blob_data_handle.Pass()),
         callback(callback),
         request_context(request_context),
+        quota_manager_proxy(quota_manager_proxy),
         cache_entry(NULL) {}
   ~PutContext() {
     if (cache_entry)
@@ -216,12 +224,13 @@ struct PutContext {
   }
 
   // Input parameters to the Put function.
+  GURL origin;
   scoped_ptr<ServiceWorkerFetchRequest> request;
   scoped_ptr<ServiceWorkerResponse> response;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
   ServiceWorkerCache::ResponseCallback callback;
-
   net::URLRequestContext* request_context;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy;
 
   // This isn't a scoped_ptr because the disk_cache needs an Entry** as input to
   // CreateEntry.
@@ -240,6 +249,7 @@ void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                         int rv);
 void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
                             scoped_ptr<BlobReader> blob_reader,
+                            disk_cache::ScopedEntryPtr entry,
                             bool success);
 
 // Match callbacks
@@ -269,10 +279,13 @@ void MatchDoneWithBody(scoped_ptr<ServiceWorkerFetchRequest> request,
                        scoped_ptr<ResponseReadContext> response_context);
 
 // Delete callbacks
-void DeleteDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
-                        const ServiceWorkerCache::ErrorCallback& callback,
-                        scoped_ptr<disk_cache::Entry*> entryptr,
-                        int rv);
+void DeleteDidOpenEntry(
+    const GURL& origin,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ErrorCallback& callback,
+    scoped_ptr<disk_cache::Entry*> entryptr,
+    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+    int rv);
 
 // Copy headers out of a cache entry and into a protobuf. The callback is
 // guaranteed to be run.
@@ -368,6 +381,14 @@ void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   // from the blob into the cache entry.
 
   if (put_context->response->blob_uuid.empty()) {
+    if (put_context->quota_manager_proxy.get()) {
+      put_context->quota_manager_proxy->NotifyStorageModified(
+          storage::QuotaClient::kServiceWorkerCache,
+          put_context->origin,
+          storage::kStorageTypeTemporary,
+          put_context->cache_entry->GetDataSize(INDEX_HEADERS));
+    }
+
     put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK,
                               put_context->response.Pass(),
                               scoped_ptr<storage::BlobDataHandle>());
@@ -378,8 +399,7 @@ void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
 
   disk_cache::ScopedEntryPtr entry(put_context->cache_entry);
   put_context->cache_entry = NULL;
-  scoped_ptr<BlobReader> reader(new BlobReader(entry.Pass()));
-
+  scoped_ptr<BlobReader> reader(new BlobReader());
   BlobReader* reader_ptr = reader.get();
 
   // Grab some pointers before passing put_context in Bind.
@@ -387,7 +407,8 @@ void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   scoped_ptr<storage::BlobDataHandle> blob_data_handle =
       put_context->blob_data_handle.Pass();
 
-  reader_ptr->StreamBlobToCache(request_context,
+  reader_ptr->StreamBlobToCache(entry.Pass(),
+                                request_context,
                                 blob_data_handle.Pass(),
                                 base::Bind(PutDidWriteBlobToCache,
                                            base::Passed(put_context.Pass()),
@@ -396,13 +417,26 @@ void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
 
 void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
                             scoped_ptr<BlobReader> blob_reader,
+                            disk_cache::ScopedEntryPtr entry,
                             bool success) {
+  DCHECK(entry);
+  put_context->cache_entry = entry.release();
+
   if (!success) {
     put_context->cache_entry->Doom();
     put_context->callback.Run(ServiceWorkerCache::ErrorTypeStorage,
                               scoped_ptr<ServiceWorkerResponse>(),
                               scoped_ptr<storage::BlobDataHandle>());
     return;
+  }
+
+  if (put_context->quota_manager_proxy.get()) {
+    put_context->quota_manager_proxy->NotifyStorageModified(
+        storage::QuotaClient::kServiceWorkerCache,
+        put_context->origin,
+        storage::kStorageTypeTemporary,
+        put_context->cache_entry->GetDataSize(INDEX_HEADERS) +
+            put_context->cache_entry->GetDataSize(INDEX_RESPONSE_BODY));
   }
 
   put_context->callback.Run(ServiceWorkerCache::ErrorTypeOK,
@@ -639,10 +673,13 @@ void MatchDoneWithBody(scoped_ptr<ServiceWorkerFetchRequest> request,
                blob_data_handle.Pass());
 }
 
-void DeleteDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
-                        const ServiceWorkerCache::ErrorCallback& callback,
-                        scoped_ptr<disk_cache::Entry*> entryptr,
-                        int rv) {
+void DeleteDidOpenEntry(
+    const GURL& origin,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ErrorCallback& callback,
+    scoped_ptr<disk_cache::Entry*> entryptr,
+    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+    int rv) {
   if (rv != net::OK) {
     callback.Run(ServiceWorkerCache::ErrorTypeNotFound);
     return;
@@ -650,6 +687,15 @@ void DeleteDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
 
   DCHECK(entryptr);
   disk_cache::ScopedEntryPtr entry(*entryptr);
+
+  if (quota_manager_proxy.get()) {
+    quota_manager_proxy->NotifyStorageModified(
+        storage::QuotaClient::kServiceWorkerCache,
+        origin,
+        storage::kStorageTypeTemporary,
+        -1 * (entry->GetDataSize(INDEX_HEADERS) +
+              entry->GetDataSize(INDEX_RESPONSE_BODY)));
+  }
 
   entry->Doom();
   callback.Run(ServiceWorkerCache::ErrorTypeOK);
@@ -744,19 +790,26 @@ struct ServiceWorkerCache::KeysContext {
 
 // static
 scoped_refptr<ServiceWorkerCache> ServiceWorkerCache::CreateMemoryCache(
+    const GURL& origin,
     net::URLRequestContext* request_context,
+    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_refptr(
-      new ServiceWorkerCache(base::FilePath(), request_context, blob_context));
+  return make_scoped_refptr(new ServiceWorkerCache(origin,
+                                                   base::FilePath(),
+                                                   request_context,
+                                                   quota_manager_proxy,
+                                                   blob_context));
 }
 
 // static
 scoped_refptr<ServiceWorkerCache> ServiceWorkerCache::CreatePersistentCache(
+    const GURL& origin,
     const base::FilePath& path,
     net::URLRequestContext* request_context,
+    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_refptr(
-      new ServiceWorkerCache(path, request_context, blob_context));
+  return make_scoped_refptr(new ServiceWorkerCache(
+      origin, path, request_context, quota_manager_proxy, blob_context));
 }
 
 ServiceWorkerCache::~ServiceWorkerCache() {
@@ -860,9 +913,11 @@ void ServiceWorkerCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
 
   net::CompletionCallback open_entry_callback =
       base::Bind(DeleteDidOpenEntry,
+                 origin_,
                  base::Passed(request.Pass()),
                  callback,
-                 base::Passed(entry.Pass()));
+                 base::Passed(entry.Pass()),
+                 quota_manager_proxy_);
 
   int rv = backend_->OpenEntry(
       request_ptr->url.spec(), entry_ptr, open_entry_callback);
@@ -912,11 +967,15 @@ void ServiceWorkerCache::Close() {
 }
 
 ServiceWorkerCache::ServiceWorkerCache(
+    const GURL& origin,
     const base::FilePath& path,
     net::URLRequestContext* request_context,
+    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context)
-    : path_(path),
+    : origin_(origin),
+      path_(path),
       request_context_(request_context),
+      quota_manager_proxy_(quota_manager_proxy),
       blob_storage_context_(blob_context),
       initialized_(false),
       weak_ptr_factory_(this) {
@@ -934,11 +993,13 @@ void ServiceWorkerCache::PutImpl(
     return;
   }
 
-  scoped_ptr<PutContext> put_context(new PutContext(request.Pass(),
+  scoped_ptr<PutContext> put_context(new PutContext(origin_,
+                                                    request.Pass(),
                                                     response.Pass(),
                                                     blob_data_handle.Pass(),
                                                     callback,
-                                                    request_context_));
+                                                    request_context_,
+                                                    quota_manager_proxy_));
 
   if (put_context->blob_data_handle) {
     // Grab another handle to the blob for the callback response.
