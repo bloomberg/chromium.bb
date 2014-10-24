@@ -162,6 +162,7 @@
   ],
 
   'include_dirs': [
+    '../third_party/skia/include/c',
     '../third_party/skia/include/core',
     '../third_party/skia/include/effects',
     '../third_party/skia/include/images',
