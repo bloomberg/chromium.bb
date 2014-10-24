@@ -145,8 +145,7 @@ cr.define('options', function() {
         if (this.controlledBy == 'hasRecommendation' && this.resetHandler_ &&
             !this.readOnly) {
           var container = document.createElement('div');
-          var action = document.createElement('button');
-          action.classList.add('link-button');
+          var action = document.createElement('a', 'action-link');
           action.classList.add('controlled-setting-bubble-action');
           action.textContent =
               loadTimeData.getString('controlledSettingFollowRecommendation');

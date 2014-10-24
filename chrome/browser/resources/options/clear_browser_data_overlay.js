@@ -108,22 +108,21 @@ cr.define('options', function() {
           loadTimeData.getString('contentSettingsAndSearchEnginesRemain')
                       .split(/([|#])/);
       for (var i = 0; i < footerFragments.length;) {
-        var buttonId = '';
+        var linkId = '';
         if (i + 2 < footerFragments.length) {
           if (footerFragments[i] == '|' && footerFragments[i + 2] == '|') {
-            buttonId = 'open-content-settings-from-clear-browsing-data';
+            linkId = 'open-content-settings-from-clear-browsing-data';
           } else if (footerFragments[i] == '#' &&
                      footerFragments[i + 2] == '#') {
-            buttonId = 'open-search-engines-from-clear-browsing-data';
+            linkId = 'open-search-engines-from-clear-browsing-data';
           }
         }
 
-        if (buttonId != '') {
-          var button = document.createElement('button');
-          button.id = buttonId;
-          button.className = 'link-button';
-          button.textContent = footerFragments[i + 1];
-          footer.appendChild(button);
+        if (linkId) {
+          var link = document.createElement('a', 'action-link');
+          link.id = linkId;
+          link.textContent = footerFragments[i + 1];
+          footer.appendChild(link);
           i += 3;
         } else {
           var span = document.createElement('span');

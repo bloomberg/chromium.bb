@@ -13,14 +13,6 @@ TEST_F('BaseDownloadsWebUITest', 'DeleteAllowed', function() {
   testDone();
 });
 
-// Test that clicking <a href=#> doesn't actually go to #.
-TEST_F('BaseDownloadsWebUITest', 'PoundLinkClicksDontChangeUrl', function() {
-  assertEquals(this.browsePreload, document.location.href);
-  document.querySelector('.clear-all-link').click();
-  assertEquals(this.browsePreload, document.location.href);
-  testDone();
-});
-
 /**
  * Fixture for Downloads WebUI testing when deletions are prohibited.
  * @extends {BaseDownloadsWebUITest}

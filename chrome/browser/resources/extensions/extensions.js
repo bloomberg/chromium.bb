@@ -195,8 +195,6 @@ cr.define('extensions', function() {
         if (overlayName == 'configureCommands')
           this.showExtensionCommandsConfigUi_();
       }
-
-      preventDefaultOnPoundLinkClicks();  // From webui/js/util.js.
     },
 
     /**

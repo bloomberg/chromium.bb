@@ -73,8 +73,8 @@
         <span id="home-page-ntp" class="home-page-label"
             i18n-content="homePageNtp"></span>
         <span id="home-page-url" class="home-page-label"></span>
-        <button id="change-home-page" class="link-button"
-            i18n-content="changeHomePage"></button>
+        <a is="action-link" id="change-home-page" i18n-content="changeHomePage">
+        </a>
         <div id="extension-controlled-container"></div>
       </div>
     </div>
@@ -394,8 +394,8 @@
         </label>
         <span id="metrics-reporting-reset-restart">
           <!-- Text filled by JavaScript -->
-          <span></span><button class=
-              "link-button standalone-link-button"></button><span></span>
+          <span></span><a is="action-link"
+              class="standalone-action-link"></a><span></span>
         </span>
 </if>
       </div>
@@ -479,9 +479,8 @@
           </span>
         </span>
       </label>
-      <button id="autofill-settings" class="link-button"
-          i18n-content="manageAutofillSettings">
-      </button>
+      <a is="action-link" id="autofill-settings"
+          i18n-content="manageAutofillSettings"></a>
     </div>
     <div class="checkbox controlled-setting-with-label">
       <label>
@@ -494,8 +493,8 @@
               pref="profile.password_manager_enabled"></span>
         </span>
       </label>
-      <button id="manage-passwords" class="link-button"
-          i18n-content="managePasswords"></button>
+      <a is="action-link" id="manage-passwords" i18n-content="managePasswords">
+      </a>
     </div>
 <if expr="is_macosx">
     <div id="mac-passwords-warning" i18n-content="macPasswordsWarning" hidden>
@@ -603,8 +602,8 @@
           </span>
         </span>
       </label>
-      <button id="manage-languages" class="link-button"
-          i18n-content="manageLanguages"></button>
+      <a is="action-link" id="manage-languages" i18n-content="manageLanguages">
+      </a>
     </div>
   </section>
   <section id="downloads-section">
@@ -929,8 +928,7 @@
   </div>  <!-- advanced-settings-container -->
   </div>  <!-- advanced-settings -->
   <footer>
-    <button id="advanced-settings-expander" class="link-button"
-        i18n-content="showAdvancedSettings">
-    </button>
+    <a is="action-link" id="advanced-settings-expander"
+        i18n-content="showAdvancedSettings"></a>
   </footer>
 </div>

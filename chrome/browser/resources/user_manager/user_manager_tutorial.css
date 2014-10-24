@@ -92,7 +92,7 @@ html[dir=rtl] #slide-not-you {
   width: 100%;
 }
 
-.slide-buttons .link-button {
+.slide-buttons [is='action-link'] {
   width: 100%;
 }
 

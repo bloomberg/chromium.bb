@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="search/destination_search.css">
   <link rel="stylesheet" href="search/fedex_tos.css">
 
+  <script src="chrome://resources/js/action_link.js"></script>
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/cr/event_target.js"></script>
   <script src="chrome://resources/js/cr/ui.js"></script>
@@ -68,20 +69,20 @@
       </div>
       <div id="link-container">
         <div>
-          <button id="system-dialog-link" class="link-button navbar-link"
-              i18n-content="systemDialogOption"></button>
+          <a is="action-link" id="system-dialog-link" class="navbar-link"
+              i18n-content="systemDialogOption"></a>
           <div id="system-dialog-throbber" hidden class="throbber"></div>
         </div>
 <if expr="is_macosx">
         <div>
-          <button id="open-pdf-in-preview-link" class="link-button navbar-link"
-              i18n-content="openPdfInPreviewOption"></button>
+          <a is="action-link" id="open-pdf-in-preview-link" class="navbar-link"
+              i18n-content="openPdfInPreviewOption"></a>
           <div id="open-preview-app-throbber" hidden class="throbber"></div>
         </div>
 </if>
         <div>
-          <button id="cloud-print-dialog-link" class="link-button navbar-link"
-              hidden i18n-content="cloudPrintDialogOption"></button>
+          <a is="action-link" id="cloud-print-dialog-link" class="navbar-link"
+              hidden i18n-content="cloudPrintDialogOption"></a>
           <div id="cloud-print-dialog-throbber" hidden class="throbber"></div>
         </div>
       </div>

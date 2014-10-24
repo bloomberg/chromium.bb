@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="chrome://resources/css/trash.css">
 <link rel="stylesheet" href="../uber/uber_shared.css">
 
+<script src="chrome://resources/js/action_link.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
@@ -115,10 +116,8 @@
     <a target="_blank" class="more-extensions-link"
         i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
         i18n-content="extensionSettingsGetMoreExtensions"></a>
-    <a target="_blank" hidden
-        class="extension-commands-config"
-        i18n-content="extensionSettingsCommandsLink"
-        href="#"></a>
+    <a is="action-link" class="extension-commands-config"
+        i18n-content="extensionSettingsCommandsLink" hidden></a>
   </div>
 </div>
 
@@ -137,18 +136,17 @@
            i18n-content="extensionSettingsCorruptInstall" hidden></p>
         <p class="extension-description"></p>
         <div class="action-links">
-          <button class="permissions-link link-button"
-                  i18n-content="extensionSettingsPermissions"></button>
-          <button class="options-button link-button"
-                  i18n-content="extensionSettingsOptions" hidden></button>
+          <a is="action-link" class="permissions-link"
+              i18n-content="extensionSettingsPermissions"></a>
+          <a is="action-link" class="options-button"
+              i18n-content="extensionSettingsOptions" hidden></a>
           <a class="options-link"
-             i18n-content="extensionSettingsOptions" hidden></a>
+              i18n-content="extensionSettingsOptions" hidden></a>
           <a class="site-link" target="_parent" hidden></a>
-          <button class="launch-link link-button"
-                  i18n-content="extensionSettingsLaunch" hidden></button>
-          <button class="reload-link link-button"
-                  i18n-content="extensionSettingsReloadUnpacked" hidden>
-          </button>
+          <a is="action-link" class="launch-link"
+              i18n-content="extensionSettingsLaunch" hidden></a>
+          <a is="action-link" class="reload-link"
+              i18n-content="extensionSettingsReloadUnpacked" hidden></a>
         </div>
         <div class="permanent-warnings">
           <div class="extension-warnings" hidden>
@@ -175,14 +173,14 @@
           </div>
           <div class="load-path" hidden>
             <span i18n-content="extensionSettingsExtensionPath"></span>
-            <a href="#"></a>
+            <a is="action-link"></a>
           </div>
           <div class="managed-message"
               i18n-content="extensionSettingsPolicyControlled" hidden>
           </div>
           <div class="active-views" hidden>
             <span i18n-content="extensionSettingsInspectViews"></span>
-            <a href="#"></a>
+            <a is="action-link"></a>
           </div>
           <div class="manifest-errors" hidden></div>
           <div class="runtime-errors" hidden></div>
@@ -225,10 +223,10 @@
         </div>
       </div>
       <div class="enable-controls">
-        <div class="terminated-reload-link link-button"
-            i18n-content="extensionSettingsReloadTerminated" hidden></div>
-        <div class="corrupted-repair-button link-button"
-            i18n-content="extensionSettingsRepairCorrupted" hidden></div>
+        <a is="action-link" class="terminated-reload-link"
+            i18n-content="extensionSettingsReloadTerminated" hidden></a>
+        <a is="action-link" class="corrupted-repair-button"
+            i18n-content="extensionSettingsRepairCorrupted" hidden></a>
         <div class="checkbox enable-checkbox" hidden><label>
           <input type="checkbox">
           <span class="enable-checkbox-text">

@@ -280,8 +280,8 @@ cr.define('print_preview', function() {
       this.cloudList_.render(this.getChildElement('.cloud-list'));
       this.getChildElement('.promo-text').innerHTML = loadTimeData.getStringF(
           'cloudPrintPromotion',
-          '<span class="sign-in link-button">',
-          '</span>');
+          '<a is="action-link" class="sign-in">',
+          '</a>');
       this.getChildElement('.account-select-label').textContent =
           loadTimeData.getString('accountSelectTitle');
     },

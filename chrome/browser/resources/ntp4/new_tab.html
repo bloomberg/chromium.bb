@@ -35,6 +35,7 @@
 <link rel="stylesheet" href="tile_page.css">
 <link id="themecss" rel="stylesheet">
 
+<script src="../../../../ui/webui/resources/js/action_link.js"></script>
 <script src="../../../../ui/webui/resources/js/event_tracker.js"></script>
 <script src="../../../../ui/webui/resources/js/parse_html_subset.js"></script>
 <script src="../../../../ui/webui/resources/js/util.js"></script>
@@ -162,8 +163,8 @@
   </div>
   <div class="login-status-row">
     <div id="login-status-advanced-container">
-      <a id="login-status-advanced"
-          i18n-content="login_status_advanced" href="#"></a>
+      <a is="action-link" id="login-status-advanced"
+          i18n-content="login_status_advanced"></a>
     </div>
     <button id="login-status-dismiss" i18n-content="login_status_dismiss">
     </button>

@@ -105,7 +105,7 @@ html[dir='rtl'] #notification-container {
           2x);
 }
 
-.link-button {
+[is='action-link'] {
   -webkit-margin-start: 0.5em;
 }
 

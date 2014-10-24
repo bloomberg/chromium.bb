@@ -1323,8 +1323,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   var siteDomain = siteDomainRow.appendChild(
       createElementWithClassName('div', 'site-domain'));
   var siteDomainLink = siteDomain.appendChild(
-      createElementWithClassName('button', 'link-button'));
-  siteDomainLink.addEventListener('click', function(e) { e.preventDefault(); });
+      document.createElement('a', 'action-link'));
   siteDomainLink.textContent = domain;
   var numberOfVisits = createElementWithClassName('span', 'number-visits');
   var domainElement = document.createElement('span');
@@ -1616,7 +1615,7 @@ var focusGridColumnSelector = [
   '.title a',
   '.drop-down',
   '.domain-checkbox',
-  '.link-button',
+  '[is="action-link"]',
 ].join(', ');
 
 /** @private */

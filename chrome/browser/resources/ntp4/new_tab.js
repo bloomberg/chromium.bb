@@ -299,7 +299,6 @@ cr.define('ntp', function() {
       startTime = Date.now();
     });
 
-    preventDefaultOnPoundLinkClicks();  // From webui/js/util.js.
     cr.ui.FocusManager.disableMouseFocusOnButtons();
   }
 
@@ -463,16 +462,13 @@ cr.define('ntp', function() {
     var linksBin = $('notificationLinks');
     linksBin.textContent = '';
     for (var i = 0; i < links.length; i++) {
-      var link = linksBin.ownerDocument.createElement('div');
+      var link = linksBin.ownerDocument.createElement('a', 'action-link');
       link.textContent = links[i].text;
       link.action = links[i].action;
       link.onclick = function() {
         this.action();
         hideNotification();
       };
-      link.setAttribute('role', 'button');
-      link.setAttribute('tabindex', 0);
-      link.className = 'link-button';
       linksBin.appendChild(link);
     }
 

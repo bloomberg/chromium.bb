@@ -13564,7 +13564,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Oops! The new supervised user couldn't be created. Please make sure you're signed in properly and try again.
       </message>
       <message name="IDS_PROFILES_CREATE_EXISTING_SUPERVISED_USER_ERROR" desc="Message shown when the user enters the name of a supervised user that can be imported.">
-        Looks like you're already managing a user by that name.<ph name="LINE_BREAK">&lt;br/&gt;</ph>Did you want to <ph name="BEGIN_LINK">&lt;button id="supervised-user-import-existing" class="link-button"&gt;</ph>import <ph name="PROFILE_NAME">$1<ex>John</ex></ph> to this device<ph name="END_LINK">&lt;/button&gt;</ph>?
+        Looks like you're already managing a user by that name.<ph name="LINE_BREAK">&lt;br/&gt;</ph>Did you want to <ph name="BEGIN_LINK">&lt;a is="action-link" id="supervised-user-import-existing"&gt;</ph>import <ph name="PROFILE_NAME">$1<ex>John</ex></ph> to this device<ph name="END_LINK">&lt;/a&gt;</ph>?
       </message>
       <message name="IDS_PROFILES_CREATE_SUPERVISED_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in.">
         Control and view the websites this person visits from <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
@@ -13577,7 +13577,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Creating your supervised user. This may take a few moments.
       </message>
       <message name="IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_HTML" desc="Label for the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in, containing a link to the sign in page.">
-        <ph name="BEGIN_SIGN_IN_LINK">&lt;button id="create-profile-supervised-sign-in-link" class="link-button"&gt;</ph>Sign in<ph name="END_SIGN_IN_LINK">&lt;/button&gt;</ph> to control and view the websites this person visits.
+        <ph name="BEGIN_SIGN_IN_LINK">&lt;a is="action-link" id="create-profile-supervised-sign-in-link"&gt;</ph>Sign in<ph name="END_SIGN_IN_LINK">&lt;/a&gt;</ph> to control and view the websites this person visits.
       </message>
       <message name="IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_LINK" desc="Text for the sign-in promo link, shown after the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in.">
         Sign in now

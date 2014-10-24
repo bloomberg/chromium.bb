@@ -443,3 +443,7 @@ html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled,
 html:not([enablePepperFlashSettings]) .pepper-flash-settings {
   display: none;
 }
+
+.standalone-action-link {
+  padding: 0;
+}

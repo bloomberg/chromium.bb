@@ -190,7 +190,3 @@
 #add-language-overlay-language-list {
   width: -webkit-calc(100% - 4px);
 }
-
-.standalone-link-button {
-  padding: 0;
-}

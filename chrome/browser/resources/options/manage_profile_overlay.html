@@ -103,13 +103,12 @@
             <span id="create-profile-supervised-account-details-out-of-date-label"
                 hidden>
             </span>
-            <button id="create-profile-supervised-signed-in-learn-more-link"
-                class="link-button" i18n-content="learnMore">
-            </button>
-            <button id="create-profile-supervised-sign-in-again-link"
-                class="link-button"
-                i18n-content="manageProfilesSupervisedSignInAgainLink" hidden>
-            </button>
+            <a id="create-profile-supervised-signed-in-learn-more-link"
+                is="action-link" i18n-content="learnMore"></a>
+            <a id="create-profile-supervised-sign-in-again-link"
+                is="action-link"
+                i18n-content="manageProfilesSupervisedSignInAgainLink"
+                hidden></a>
           </span>
           <span id="create-profile-supervised-not-signed-in"
               i18n-values=".innerHTML:manageProfilesSupervisedNotSignedIn"
@@ -124,9 +123,8 @@
     </div>
     <div class="action-area">
       <div id="create-profile-throbber" class="throbber"></div>
-      <button id="import-existing-supervised-user-link" class="link-button"
-          i18n-content="importExistingSupervisedUserLink" hidden>
-      </button>
+      <a is="action-link" id="import-existing-supervised-user-link"
+          i18n-content="importExistingSupervisedUserLink" hidden></a>
       <div class="button-strip">
         <button id="create-profile-cancel" i18n-content="cancel"></button>
         <button id="create-profile-ok" i18n-content="createProfileConfirm"

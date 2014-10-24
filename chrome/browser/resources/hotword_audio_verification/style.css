@@ -109,7 +109,7 @@ button.grayed-out {
   width: 16px;
 }
 
-a.link-button {
+a[is='action-link'] {
   display: inline-block;
   font-size: 14px;
   margin-top: 22px;

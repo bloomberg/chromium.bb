@@ -25,12 +25,12 @@ body {
 }
 
 #attribution,
-.link-button,
+[is='action-link'],
 .link-span {
   color: $21;  /* COLOR_NTP_TEXT_LIGHT */
 }
 
-.link-button:active {
+[is='action-link']:active {
   color: $8;  /* COLOR_NTP_TEXT */
 }
 

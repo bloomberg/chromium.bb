@@ -135,7 +135,7 @@ html[dir=rtl] #account-picture-wrapper {
   padding: 10px;
 }
 
-.sync-error .link-button {
+.sync-error [is='action-link'] {
   margin: 0 1ex;
   padding: 0;
 }

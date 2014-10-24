@@ -230,7 +230,7 @@ html[dir='rtl'] .extension-list-item {
   margin-bottom: 0.5em;
 }
 
-.action-links :-webkit-any(a, .link-button) {
+.action-links a {
   -webkit-margin-end: 1em;
   -webkit-margin-start: 0;
 }
@@ -256,10 +256,10 @@ html[dir='rtl'] .extension-list-item {
   position: relative;
 }
 
-/* We use x.link-button here so that we get higher specifity than the
- * link-button rules without resorting to the Dark Side (!IMPORTANT). */
-.terminated-reload-link.link-button,
-.corrupted-repair-button.link-button {
+/* We use x[is='action-link'] here so that we get higher specifity than the
+ * action link rules without resorting to the Dark Side (!IMPORTANT). */
+.terminated-reload-link[is='action-link'],
+.corrupted-repair-button[is='action-link'] {
   /* Matches width of trash. */
   -webkit-margin-end: 30px;
 }

@@ -353,6 +353,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_I18N_TEMPLATE_NO_PROCESS"
                  file="js/i18n_template_no_process.js"
                  type="chrome_html" />
+      <structure name="IDR_WEBUI_JS_ACTION_LINK"
+                 file="js/action_link.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_LOAD_TIME_DATA"
                  file="js/load_time_data.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_MEDIA_COMMON"

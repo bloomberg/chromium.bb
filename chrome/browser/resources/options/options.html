@@ -73,6 +73,7 @@
 <link rel="stylesheet" href="options_settings_app.css">
 </if>
 <script src="chrome://resources/css/tree.css.js"></script>
+<script src="chrome://resources/js/action_link.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/event_tracker.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
@@ -179,8 +180,8 @@
     <div class="controlled-setting-bubble-extension-name"></div>
   </div>
   <div class="controlled-setting-bubble-content-row">
-    <button class="controlled-setting-bubble-extension-manage-link link-button"
-        i18n-content="controlledSettingManageExtension"></button>
+    <a is="action-link" class="controlled-setting-bubble-extension-manage-link"
+        i18n-content="controlledSettingManageExtension"></a>
     <button class='controlled-setting-bubble-extension-disable-button'
         i18n-content="controlledSettingDisableExtension"></button>
   </div>

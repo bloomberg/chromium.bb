@@ -506,7 +506,7 @@ html .expand .site-domain-arrow {
 }
 
 .entry .title > a,
-.site-domain .link-button {
+.site-domain [is='action-link'] {
   color: rgb(48, 57, 66);
   margin: 2px;
   padding: 2px;

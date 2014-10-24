@@ -106,9 +106,9 @@
 <if expr="chromeos">
       <div i18n-content="switchInputMethodsHint"></div>
       <div i18n-content="selectPreviousInputMethodHint"></div>
-      <button id="edit-dictionary-button"
-          class="link-button standalone-link-button"
-          i18n-content="languageDictionaryOverlayTitle"></button>
+      <a is="action-link" id="edit-dictionary-button"
+          class="standalone-action-link"
+          i18n-content="languageDictionaryOverlayTitle"></a>
 </if>
 <if expr="not chromeos and not is_macosx">
       <div id="spell-check-option" class="checkbox">
@@ -117,8 +117,8 @@
               metric="Options_SpellCheck" type="checkbox">
           <span i18n-content="enableSpellCheck"></span>
         </label>
-        <button id="edit-dictionary-button" class="link-button"
-            i18n-content="languageDictionaryOverlayTitle" hidden></button>
+        <a is="action-link" id="edit-dictionary-button"
+            i18n-content="languageDictionaryOverlayTitle" hidden></a>
       </div>
       <div id="auto-spell-correction-option" class="checkbox" hidden>
         <label>

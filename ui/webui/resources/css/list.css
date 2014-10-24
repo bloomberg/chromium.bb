@@ -101,7 +101,7 @@ list :-webkit-any(
     button,
     input[type='button'],
     input[type='submit'],
-    select):not(.custom-appearance):not(.link-button) {
+    select):not(.custom-appearance) {
   line-height: normal;
   margin: 0;
   vertical-align: middle;

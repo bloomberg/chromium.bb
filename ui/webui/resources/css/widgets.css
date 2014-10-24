@@ -10,7 +10,7 @@
 
 :-webkit-any(button,
              input[type='button'],
-             input[type='submit']):not(.custom-appearance):not(.link-button),
+             input[type='submit']):not(.custom-appearance),
 select,
 input[type='checkbox'],
 input[type='radio'] {
@@ -30,7 +30,7 @@ input[type='radio'] {
 
 :-webkit-any(button,
              input[type='button'],
-             input[type='submit']):not(.custom-appearance):not(.link-button),
+             input[type='submit']):not(.custom-appearance),
 select {
   min-height: 2em;
   min-width: 4em;
@@ -44,7 +44,7 @@ select {
 
 :-webkit-any(button,
              input[type='button'],
-             input[type='submit']):not(.custom-appearance):not(.link-button) {
+             input[type='submit']):not(.custom-appearance) {
   -webkit-padding-end: 10px;
   -webkit-padding-start: 10px;
 }
@@ -157,7 +157,7 @@ input[type='radio']:checked::before {
     :-webkit-any(
         button,
         input[type='button'],
-        input[type='submit']):not(.custom-appearance):not(.link-button)) {
+        input[type='submit']):not(.custom-appearance)) {
   background-image: -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
   border-color: rgba(0, 0, 0, 0.3);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
@@ -180,7 +180,7 @@ input[type='radio']:checked::before {
     :-webkit-any(
         button,
         input[type='button'],
-        input[type='submit']):not(.custom-appearance):not(.link-button)) {
+        input[type='submit']):not(.custom-appearance)) {
   background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
   box-shadow: none;
   text-shadow: none;
@@ -197,7 +197,7 @@ input[type='radio']:checked::before {
 :disabled:-webkit-any(
     button,
     input[type='button'],
-    input[type='submit']):not(.custom-appearance):not(.link-button),
+    input[type='submit']):not(.custom-appearance),
 select:disabled {
   background-image: -webkit-linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
   border-color: rgba(80, 80, 80, 0.2);
@@ -240,7 +240,7 @@ input:disabled:-webkit-any([type='password'],
     :-webkit-any(
          button,
          input[type='button'],
-         input[type='submit']):not(.custom-appearance):not(.link-button)) {
+         input[type='submit']):not(.custom-appearance)) {
   /* OVERRIDE */
   -webkit-transition: border-color 200ms;
   /* We use border color because it follows the border radius (unlike outline).
@@ -249,31 +249,26 @@ input:disabled:-webkit-any([type='password'],
   outline: none;
 }
 
-/* Link buttons ***************************************************************/
+/* Action links ***************************************************************/
 
-.link-button {
-  -webkit-box-shadow: none;
-  background: transparent none;
-  border: none;
-  color: rgb(17, 85, 204);
+[is='action-link'] {
   cursor: pointer;
-  /* Input elements have -webkit-small-control which can override the body font.
-   * Resolve this by using 'inherit'. */
-  font: inherit;
-  margin: 0;
-  padding: 0;
 }
 
-.link-button:hover {
+[is='action-link'] {
+  text-decoration: none;
+}
+
+[is='action-link']:hover {
   text-decoration: underline;
 }
 
-.link-button:active {
+[is='action-link']:active {
   color: rgb(5, 37, 119);
   text-decoration: underline;
 }
 
-.link-button[disabled] {
+[is='action-link'][disabled] {
   color: #999;
   cursor: default;
   text-decoration: none;

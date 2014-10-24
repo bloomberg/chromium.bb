@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="other_devices.css">
 </if>
 
+<script src="chrome://resources/js/action_link.js"></script>
 <script src="chrome://resources/js/assert.js"></script>
 <script src="chrome://resources/js/event_tracker.js"></script>
 <script src="chrome://resources/js/util.js"></script>
@@ -122,13 +123,9 @@
       </span>
     </div>
     <div id="results-pagination">
-      <button id="newest-button" class="link-button" i18n-content="newest"
-          hidden>
-      </button>
-      <button id="newer-button" class="link-button" i18n-content="newer" hidden>
-      </button>
-      <button id="older-button" class="link-button" i18n-content="older" hidden>
-      </button>
+      <a is="action-link" id="newest-button" i18n-content="newest" hidden></a>
+      <a is="action-link" id="newer-button" i18n-content="newer" hidden></a>
+      <a is="action-link" id="older-button" i18n-content="older" hidden></a>
     </div>
   </div>
 </div>

@@ -107,7 +107,7 @@
   padding: 12px;
 }
 
-#destination-search .cloudprint-promo .sign-in.link-button {
+#destination-search .cloudprint-promo .sign-in[is='action-link'] {
   padding: inherit;
 }
 
