@@ -46,6 +46,8 @@ var whitelistedExtensionIds = [
   'ljclpkphhpbpinifbeabbhlfddcpfdde', // Hangouts Extension
   'nckgahadagoaajjgafhacjanaoiihapd', // Hangouts Extension
   'knipolnnllmklapflnccelgolnpehhpl', // Hangouts Extension
+  'dogkdgiahcdchbabhdmpbhlfoddjined', // GLS nightly
+  'khkjfddibboofomnlkndfedpoccieiee', // GLS stable
 ];
 
 /**
