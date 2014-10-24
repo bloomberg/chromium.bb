@@ -84,7 +84,7 @@ def main(argv):
   print 'Found upstream svn repo %s and path %s' % (svn_repo, svn_path)
 
   prefix = upstream.rsplit('/')[0]
-  run_git('svn', 'init', '--prefix=%s' % prefix, '-T', svn_path, svn_repo)
+  set_config('svn-remote.svn.url', svn_repo)
   set_config('svn-remote.svn.fetch',
              '%s:refs/remotes/%s' % (svn_path, upstream))
   print 'Configured metadata, running "git svn fetch". This may take some time.'
