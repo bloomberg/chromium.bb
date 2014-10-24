@@ -5,6 +5,8 @@
 #ifndef TraceLocation_h
 #define TraceLocation_h
 
+#include "public/platform/WebTraceLocation.h"
+
 // This is intentionally similar to base/location.h
 // that we could easily replace usage of TraceLocation
 // with base::Location after merging into Chromium.
@@ -13,7 +15,7 @@ namespace blink {
 
 class TraceLocation {
 public:
-    // Currenetly only store the bits used in Blink, base::Location stores more.
+    // Currently only store the bits used in Blink, base::Location stores more.
     // These char*s are not copied and must live for the duration of the program.
     TraceLocation(const char* functionName, const char* fileName)
         : m_functionName(functionName)
@@ -27,6 +29,11 @@ public:
 
     const char* functionName() const { return m_functionName; }
     const char* fileName() const { return m_fileName; }
+
+    WebTraceLocation toWebTraceLocation() const
+    {
+        return WebTraceLocation(m_functionName, m_fileName);
+    }
 
 private:
     const char* m_functionName;

@@ -148,7 +148,6 @@ void initializeWithoutV8(Platform* platform)
     WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction);
     WTF::initializeMainThread(callOnMainThreadFunction);
     Heap::init();
-    Scheduler::initializeOnMainThread();
 
     ThreadState::attachMainThread();
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.

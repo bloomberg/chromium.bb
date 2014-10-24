@@ -26,24 +26,23 @@
 #include "config.h"
 #include "platform/SharedTimer.h"
 
-#include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
 
 void setSharedTimerFiredFunction(void (*f)())
 {
-    Scheduler::shared()->setSharedTimerFiredFunction(f);
+    Platform::current()->setSharedTimerFiredFunction(f);
 }
 
 void setSharedTimerFireInterval(double fireTime)
 {
-    Scheduler::shared()->setSharedTimerFireInterval(fireTime);
+    Platform::current()->setSharedTimerFireInterval(fireTime);
 }
 
 void stopSharedTimer()
 {
-    Scheduler::shared()->stopSharedTimer();
+    Platform::current()->stopSharedTimer();
 }
 
 } // namespace blink

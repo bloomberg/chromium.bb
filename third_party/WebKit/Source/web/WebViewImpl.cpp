@@ -112,7 +112,6 @@
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/scheduler/Scheduler.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
@@ -1849,8 +1848,6 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!validFrameTime.lastFrameTimeMonotonic)
         validFrameTime.lastFrameTimeMonotonic = monotonicallyIncreasingTime();
 
-    Scheduler::shared()->willBeginFrame(validFrameTime.lastFrameTimeMonotonic + validFrameTime.interval);
-
     // Create synthetic wheel events as necessary for fling.
     if (m_gestureAnimation) {
         if (m_gestureAnimation->animate(validFrameTime.lastFrameTimeMonotonic))
@@ -1882,7 +1879,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 
 void WebViewImpl::didCommitFrameToCompositor()
 {
-    Scheduler::shared()->didCommitFrameToCompositor();
+    // TODO: Remove this function.
 }
 
 void WebViewImpl::layout()
