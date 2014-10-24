@@ -5,22 +5,6 @@
 {
   'targets': [
     {
-      'target_name' : 'zlib_x86_simd',
-      'type': 'static_library',
-      'conditions': [
-        # See http://crbug.com/420616 gyp on mac & ios doesn't apply cflags
-        ['OS!="ios" and OS!="mac" and (target_arch=="ia32" or target_arch=="x64")', {
-          'cflags' : ["-msse2", "-msse4.2", "-mpclmul"],
-          'sources' : [ 'crc_folding.c',
-                        'fill_window_sse.c']
-        }, {
-          'sources' : [ 'simd_stub.c' ],
-        }], ['OS=="android"', {
-          'toolsets': ['target', 'host'],
-        }],
-      ],
-    },
-    {
       'target_name': 'zlib',
       'type': 'static_library',
       'sources': [
@@ -47,14 +31,10 @@
         'trees.c',
         'trees.h',
         'uncompr.c',
-        'x86.h',
         'zconf.h',
         'zlib.h',
         'zutil.c',
         'zutil.h',
-      ],
-      'dependencies' : [
-        'zlib_x86_simd'
       ],
       'include_dirs': [
         '.',
@@ -65,9 +45,6 @@
         ],
       },
       'conditions': [
-        ['OS!="ios" and OS!="mac" and (target_arch=="ia32" or target_arch=="x64")', {
-          'sources' : [ 'x86.c', ],
-        }],
         ['OS!="win"', {
           'product_name': 'chrome_zlib',
         }], ['OS=="android"', {
