@@ -182,6 +182,10 @@ class TestingProfile : public Profile {
   // loading.
   void CreateTopSites();
 
+  // Allows to set a test implementation |top_sites|. Testing profile owns
+  // the reference and is responsible for releasing memory.
+  void SetTopSites(history::TopSites* top_sites);
+
   // Shuts down and nulls out the reference to TopSites.
   void DestroyTopSites();
 

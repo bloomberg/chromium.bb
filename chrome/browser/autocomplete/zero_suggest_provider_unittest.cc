@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -23,6 +24,93 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+class FakeEmptyTopSites : public history::TopSites {
+ public:
+  FakeEmptyTopSites() {
+  }
+
+  // history::TopSites:
+  bool SetPageThumbnail(const GURL& url, const gfx::Image& thumbnail,
+                        const ThumbnailScore& score) override {
+    return false;
+  }
+  bool SetPageThumbnailToJPEGBytes(const GURL& url,
+                                   const base::RefCountedMemory* memory,
+                                   const ThumbnailScore& score) override {
+    return false;
+  }
+  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
+                          bool include_forced_urls) override;
+  bool GetPageThumbnail(const GURL& url, bool prefix_match,
+                        scoped_refptr<base::RefCountedMemory>* bytes) override {
+    return false;
+  }
+  bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score) override {
+    return false;
+  }
+  bool GetTemporaryPageThumbnailScore(const GURL& url, ThumbnailScore* score)
+      override {
+    return false;
+  }
+  void SyncWithHistory() override {}
+  bool HasBlacklistedItems() const override {
+    return false;
+  }
+  void AddBlacklistedURL(const GURL& url) override {}
+  void RemoveBlacklistedURL(const GURL& url) override {}
+  bool IsBlacklisted(const GURL& url) override {
+    return false;
+  }
+  void ClearBlacklistedURLs() override {}
+  void Shutdown() override {}
+  base::CancelableTaskTracker::TaskId StartQueryForMostVisited() override {
+    return 0;
+  }
+  bool IsKnownURL(const GURL& url) override {
+    return false;
+  }
+  const std::string& GetCanonicalURLString(const GURL& url) const override {
+    CHECK(false);
+    return *(new std::string());
+  }
+  bool IsNonForcedFull() override {
+    return false;
+  }
+  bool IsForcedFull() override {
+    return false;
+  }
+  bool loaded() const override {
+    return false;
+  }
+  history::MostVisitedURLList GetPrepopulatePages() override {
+    return history::MostVisitedURLList();
+  }
+  bool AddForcedURL(const GURL& url, const base::Time& time) override {
+    return false;
+  }
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {}
+
+  // A test-specific field for controlling when most visited callback is run
+  // after top sites have been requested.
+  GetMostVisitedURLsCallback mv_callback;
+ protected:
+  virtual ~FakeEmptyTopSites() {
+  }
+};
+
+void FakeEmptyTopSites::GetMostVisitedURLs(
+    const GetMostVisitedURLsCallback& callback,
+    bool include_forced_urls)  {
+  mv_callback = callback;
+}
+
+} // namespace
+
 
 class ZeroSuggestProviderTest : public testing::Test,
                                 public AutocompleteProviderListener {
@@ -39,6 +127,7 @@ class ZeroSuggestProviderTest : public testing::Test,
   void ResetFieldTrialList();
 
   void CreatePersonalizedFieldTrial();
+  void CreateMostVisitedFieldTrial();
 
   // Set up threads for testing; this needs to be instantiated before
   // |profile_|.
@@ -86,6 +175,8 @@ void ZeroSuggestProviderTest::SetUp() {
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
+  profile_.SetTopSites(new FakeEmptyTopSites());
+
   provider_ = ZeroSuggestProvider::Create(this, turl_model, &profile_);
 }
 
@@ -117,6 +208,91 @@ void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 }
 
+void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
+  std::map<std::string, std::string> params;
+  params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
+  params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
+      "MostVisitedWithoutSERP";
+  variations::AssociateVariationParams(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+}
+
+TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
+  CreateMostVisitedFieldTrial();
+
+  std::string current_url("http://www.foxnews.com/");
+  std::string input_url("http://www.cnn.com/");
+  AutocompleteInput input(base::ASCIIToUTF16(input_url), base::string16::npos,
+                          std::string(), GURL(current_url),
+                          metrics::OmniboxEventProto::OTHER, false, false,
+                          true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
+  history::MostVisitedURLList urls;
+  history::MostVisitedURL url(GURL("http://foo.com/"),
+                              base::ASCIIToUTF16(std::string("Foo")));
+  urls.push_back(url);
+
+  provider_->Start(input, false);
+  EXPECT_TRUE(provider_->matches().empty());
+  static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
+      urls);
+  // Should have verbatim match + most visited url match.
+  EXPECT_EQ(2U, provider_->matches().size());
+  provider_->Stop(false);
+
+  provider_->Start(input, false);
+  provider_->Stop(false);
+  EXPECT_TRUE(provider_->matches().empty());
+  // Most visited results arriving after Stop() has been called, ensure they
+  // are not displayed.
+  static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
+      urls);
+  EXPECT_TRUE(provider_->matches().empty());
+}
+
+TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
+  CreateMostVisitedFieldTrial();
+
+  std::string current_url("http://www.foxnews.com/");
+  std::string input_url("http://www.cnn.com/");
+  AutocompleteInput input(base::ASCIIToUTF16(input_url), base::string16::npos,
+                          std::string(), GURL(current_url),
+                          metrics::OmniboxEventProto::OTHER, false, false,
+                          true, true,
+                          ChromeAutocompleteSchemeClassifier(&profile_));
+  history::MostVisitedURLList urls;
+  history::MostVisitedURL url(GURL("http://foo.com/"),
+                              base::ASCIIToUTF16(std::string("Foo")));
+  urls.push_back(url);
+
+  provider_->Start(input, false);
+  EXPECT_TRUE(provider_->matches().empty());
+  // Stop() doesn't always get called.
+
+  std::string search_url("https://www.google.com/?q=flowers");
+  AutocompleteInput srp_input(
+      base::ASCIIToUTF16(search_url),
+      base::string16::npos,
+      std::string(),
+      GURL(search_url),
+      metrics::OmniboxEventProto::
+          SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT,
+      false,
+      false,
+      true,
+      true,
+      ChromeAutocompleteSchemeClassifier(&profile_));
+
+  provider_->Start(srp_input, false);
+  EXPECT_TRUE(provider_->matches().empty());
+  // Most visited results arriving after a new request has been started.
+  static_cast<FakeEmptyTopSites*>(profile_.GetTopSites())->mv_callback.Run(
+      urls);
+  EXPECT_TRUE(provider_->matches().empty());
+}
+
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   CreatePersonalizedFieldTrial();
 
@@ -124,7 +300,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetString(prefs::kZeroSuggestCachedResults, std::string());
 
-  std::string url("http://www.cnn.com");
+  std::string url("http://www.cnn.com/");
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
                           std::string(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
@@ -154,7 +330,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   CreatePersonalizedFieldTrial();
 
-  std::string url("http://www.cnn.com");
+  std::string url("http://www.cnn.com/");
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
                           std::string(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,
@@ -201,7 +377,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   CreatePersonalizedFieldTrial();
 
-  std::string url("http://www.cnn.com");
+  std::string url("http://www.cnn.com/");
   AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
                           std::string(), GURL(url),
                           metrics::OmniboxEventProto::INVALID_SPEC, true, false,

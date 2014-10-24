@@ -119,10 +119,11 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // Returns the relevance score for the verbatim result.
   int GetVerbatimRelevance() const;
 
-  // Whether we can show zero suggest on |current_page_url| without
-  // sending |current_page_url| as a parameter to the server at |suggest_url|.
-  bool CanShowZeroSuggestWithoutSendingURL(const GURL& suggest_url,
-                                           const GURL& current_page_url) const;
+  // Whether we can show zero suggest without sending |current_page_url| to
+  // |suggest_url| search provider. Also checks that other conditions for
+  // non-contextual zero suggest are satisfied.
+  bool ShouldShowNonContextualZeroSuggest(const GURL& suggest_url,
+                                          const GURL& current_page_url) const;
 
   // Checks whether we have a set of zero suggest results cached, and if so
   // populates |matches_| with cached results.
@@ -155,6 +156,9 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   bool results_from_cache_;
 
   history::MostVisitedURLList most_visited_urls_;
+
+  // Whether we are waiting for a most visited visited urls callback to run.
+  bool waiting_for_most_visited_urls_request_;
 
   // For callbacks that may be run after destruction.
   base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_;

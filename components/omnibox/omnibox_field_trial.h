@@ -135,10 +135,15 @@ class OmniboxFieldTrial {
   // user clicks on the omnibox but has not typed anything yet.
   static bool InZeroSuggestFieldTrial();
 
-  // Returns whether the user is in a ZeroSuggest field trial, but should
-  // show most visited URL instead.  This is used to compare metrics of
-  // ZeroSuggest and most visited suggestions.
+  // Returns whether the user is in a ZeroSuggest field trial, which shows
+  // most visited URLs. This is true for both "MostVisited" and
+  // "MostVisitedWithoutSERP" trials.
   static bool InZeroSuggestMostVisitedFieldTrial();
+
+  // Returns whether the user is in ZeroSuggest field trial showing most
+  // visited URLs except it doesn't show suggestions on Google search result
+  // pages.
+  static bool InZeroSuggestMostVisitedWithoutSerpFieldTrial();
 
   // Returns whether the user is in a ZeroSuggest field trial and URL-based
   // suggestions can continue to appear after the user has started typing.

@@ -531,6 +531,11 @@ void TestingProfile::CreateTopSites() {
       this, GetPath().Append(chrome::kTopSitesFilename));
 }
 
+void TestingProfile::SetTopSites(history::TopSites* top_sites) {
+  DestroyTopSites();
+  top_sites_ = top_sites;
+}
+
 void TestingProfile::DestroyTopSites() {
   if (top_sites_.get()) {
     top_sites_->Shutdown();

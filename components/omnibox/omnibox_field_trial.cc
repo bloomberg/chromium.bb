@@ -175,9 +175,16 @@ bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
 }
 
 bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
-  return variations::GetVariationParamValue(
+  return InZeroSuggestMostVisitedWithoutSerpFieldTrial() ||
+      variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kZeroSuggestVariantRule) == "MostVisited";
+}
+
+bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kZeroSuggestVariantRule) == "MostVisitedWithoutSERP";
 }
 
 bool OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial() {
