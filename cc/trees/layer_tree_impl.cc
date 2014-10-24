@@ -51,7 +51,6 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
   // LayerScrollOffsetDelegate implementation.
   void SetTotalScrollOffset(const gfx::ScrollOffset& new_offset) override {
     last_set_scroll_offset_ = new_offset;
-    layer_tree_impl_->UpdateScrollOffsetDelegate();
   }
 
   gfx::ScrollOffset GetTotalScrollOffset() override {
@@ -60,6 +59,10 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
 
   bool IsExternalFlingActive() const override {
     return delegate_->IsExternalFlingActive();
+  }
+
+  void Update() const override {
+    layer_tree_impl_->UpdateScrollOffsetDelegate();
   }
 
  private:
@@ -923,6 +926,9 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
       outer_viewport_scroll_layer_->SetScrollOffsetDelegate(
           outer_viewport_scroll_delegate_proxy_.get());
     }
+
+    if (inner_viewport_scroll_layer_)
+      UpdateScrollOffsetDelegate();
   }
 }
 
@@ -938,6 +944,7 @@ void LayerTreeImpl::OnRootLayerDelegatedScrollOffsetChanged() {
 
 void LayerTreeImpl::UpdateScrollOffsetDelegate() {
   DCHECK(InnerViewportScrollLayer());
+  DCHECK(!OuterViewportScrollLayer() || outer_viewport_scroll_delegate_proxy_);
   DCHECK(root_layer_scroll_offset_delegate_);
 
   gfx::ScrollOffset offset =

@@ -1152,6 +1152,8 @@ void LayerImpl::SetScrollOffsetAndDelta(const gfx::ScrollOffset& scroll_offset,
   }
 
   if (changed) {
+    if (scroll_offset_delegate_)
+      scroll_offset_delegate_->Update();
     DidScroll();
   }
 }

@@ -502,6 +502,7 @@ class ScrollDelegateIgnore : public LayerImpl::ScrollOffsetDelegate {
     return gfx::ScrollOffset(fixed_offset_);
   }
   bool IsExternalFlingActive() const override { return false; }
+  void Update() const override { }
 
   void set_fixed_offset(const gfx::Vector2dF& fixed_offset) {
     fixed_offset_ = fixed_offset;
@@ -551,6 +552,7 @@ class ScrollDelegateAccept : public LayerImpl::ScrollOffsetDelegate {
   }
   gfx::ScrollOffset GetTotalScrollOffset() override { return current_offset_; }
   bool IsExternalFlingActive() const override { return false; }
+  void Update() const override { }
 
  private:
   gfx::ScrollOffset current_offset_;

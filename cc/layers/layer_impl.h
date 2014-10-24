@@ -82,6 +82,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     virtual void SetTotalScrollOffset(const gfx::ScrollOffset& new_value) = 0;
     virtual gfx::ScrollOffset GetTotalScrollOffset() = 0;
     virtual bool IsExternalFlingActive() const = 0;
+    virtual void Update() const = 0;
   };
 
   typedef LayerImplList RenderSurfaceListType;
