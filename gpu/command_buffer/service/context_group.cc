@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -52,7 +52,7 @@ ContextGroup::ContextGroup(
       draw_buffer_(GL_BACK) {
   {
     if (!mailbox_manager_.get())
-      mailbox_manager_ = new MailboxManager;
+      mailbox_manager_ = new MailboxManagerImpl;
     if (!feature_info.get())
       feature_info_ = new FeatureInfo;
     TransferBufferManager* manager = new TransferBufferManager();

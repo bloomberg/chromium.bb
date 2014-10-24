@@ -15,7 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "mojo/application_manager/application_loader.h"
 #include "mojo/application_manager/application_manager.h"
 #include "mojo/application_manager/background_shell_application_loader.h"
@@ -114,7 +114,7 @@ class Context::NativeViewportApplicationLoader
  public:
   NativeViewportApplicationLoader()
       : share_group_(new gfx::GLShareGroup),
-        mailbox_manager_(new gpu::gles2::MailboxManager) {}
+        mailbox_manager_(new gpu::gles2::MailboxManagerImpl) {}
   virtual ~NativeViewportApplicationLoader() {}
 
  private:

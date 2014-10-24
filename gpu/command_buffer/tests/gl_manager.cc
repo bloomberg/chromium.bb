@@ -24,7 +24,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -174,7 +174,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
   }
 
   mailbox_manager_ =
-      mailbox_manager ? mailbox_manager : new gles2::MailboxManager;
+      mailbox_manager ? mailbox_manager : new gles2::MailboxManagerImpl;
   share_group_ =
       share_group ? share_group : new gfx::GLShareGroup;
 

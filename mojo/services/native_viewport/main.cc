@@ -4,7 +4,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -26,7 +26,7 @@ class NativeViewportAppDelegate
  public:
   NativeViewportAppDelegate()
       : share_group_(new gfx::GLShareGroup),
-        mailbox_manager_(new gpu::gles2::MailboxManager),
+        mailbox_manager_(new gpu::gles2::MailboxManagerImpl),
         is_headless_(false) {}
   ~NativeViewportAppDelegate() override {}
 

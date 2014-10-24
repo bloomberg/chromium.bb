@@ -8,15 +8,9 @@
 #include <set>
 #include <utility>
 
-#include <GLES2/gl2.h>
-#ifndef GL_GLEXT_PROTOTYPES
-#define GL_GLEXT_PROTOTYPES 1
-#endif
-#include <GLES2/gl2ext.h>
-#include <GLES2/gl2extchromium.h>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -28,8 +22,10 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/image_manager.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/mailbox_manager_sync.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -185,8 +181,14 @@ InProcessCommandBuffer::Service::~Service() {}
 
 scoped_refptr<gles2::MailboxManager>
 InProcessCommandBuffer::Service::mailbox_manager() {
-  if (!mailbox_manager_.get())
-    mailbox_manager_ = new gles2::MailboxManager();
+  if (!mailbox_manager_.get()) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableThreadedTextureMailboxes)) {
+      mailbox_manager_ = new gles2::MailboxManagerSync();
+    } else {
+      mailbox_manager_ = new gles2::MailboxManagerImpl();
+    }
+  }
   return mailbox_manager_;
 }
 

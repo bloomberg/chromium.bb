@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -80,6 +81,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // WebRTC hardware decoding is not supported, internal bug 15075307
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
 
+  // This is needed for sharing textures across the different GL threads.
+  cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);
   return false;
 }
 

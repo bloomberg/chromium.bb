@@ -278,6 +278,17 @@ TextureDefinition::LevelInfo::LevelInfo(GLenum target,
 
 TextureDefinition::LevelInfo::~LevelInfo() {}
 
+TextureDefinition::TextureDefinition()
+    : version_(0),
+      target_(0),
+      min_filter_(0),
+      mag_filter_(0),
+      wrap_s_(0),
+      wrap_t_(0),
+      usage_(0),
+      immutable_(true) {
+}
+
 TextureDefinition::TextureDefinition(
     GLenum target,
     Texture* texture,

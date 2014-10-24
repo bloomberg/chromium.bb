@@ -56,6 +56,11 @@ const char kDisableGpuShaderDiskCache[]     = "disable-gpu-shader-disk-cache";
 const char kEnableShareGroupAsyncTextureUpload[] =
     "enable-share-group-async-texture-upload";
 
+// Simulates shared textures when share groups are not available. Not available
+// everywhere.
+const char kEnableThreadedTextureMailboxes[] =
+    "enable-threaded-texture-mailboxes";
+
 const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
   kDisableGLErrorLimit,

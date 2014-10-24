@@ -165,7 +165,8 @@ class GPU_EXPORT Texture {
   void OnDidModifyPixels();
 
  private:
-  friend class MailboxManager;
+  friend class MailboxManagerImpl;
+  friend class MailboxManagerSync;
   friend class MailboxManagerTest;
   friend class TextureDefinition;
   friend class TextureManager;

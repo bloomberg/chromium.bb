@@ -40,6 +40,7 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
 // the underlying image buffer(s).
 class TextureDefinition {
  public:
+  TextureDefinition();
   TextureDefinition(GLenum target,
                     Texture* texture,
                     unsigned int version,
@@ -55,7 +56,7 @@ class TextureDefinition {
   }
   bool Matches(const Texture* texture) const;
 
-  scoped_refptr<NativeImageBuffer> image() { return image_buffer_; }
+  scoped_refptr<NativeImageBuffer> image() const { return image_buffer_; }
 
  private:
   struct LevelInfo {

@@ -25,7 +25,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
@@ -405,7 +405,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       messages_processed_(0),
       client_id_(client_id),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
-      mailbox_manager_(mailbox ? mailbox : new gpu::gles2::MailboxManager),
+      mailbox_manager_(mailbox ? mailbox : new gpu::gles2::MailboxManagerImpl),
       watchdog_(watchdog),
       software_(software),
       handle_messages_scheduled_(false),
