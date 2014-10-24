@@ -21,14 +21,14 @@ namespace sandbox {
 struct Instruction;
 
 namespace bpf_dsl {
-class SandboxBPFDSLPolicy;
+class Policy;
 
 // PolicyCompiler implements the bpf_dsl compiler, allowing users to
 // transform bpf_dsl policies into BPF programs to be executed by the
 // Linux kernel.
 class SANDBOX_EXPORT PolicyCompiler {
  public:
-  PolicyCompiler(const SandboxBPFDSLPolicy* policy, TrapRegistry* registry);
+  PolicyCompiler(const Policy* policy, TrapRegistry* registry);
   ~PolicyCompiler();
 
   // Compile registers any trap handlers needed by the policy and
@@ -158,7 +158,7 @@ class SANDBOX_EXPORT PolicyCompiler {
   // MakeTrap is the common implementation for Trap and UnsafeTrap.
   ErrorCode MakeTrap(TrapRegistry::TrapFnc fnc, const void* aux, bool safe);
 
-  const SandboxBPFDSLPolicy* policy_;
+  const Policy* policy_;
   TrapRegistry* registry_;
 
   Conds conds_;

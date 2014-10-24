@@ -10,6 +10,7 @@
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
@@ -315,7 +316,7 @@ void Alu(State* state, const struct sock_filter& insn, const char** err) {
 
 bool Verifier::VerifyBPF(bpf_dsl::PolicyCompiler* compiler,
                          const std::vector<struct sock_filter>& program,
-                         const bpf_dsl::SandboxBPFDSLPolicy& policy,
+                         const bpf_dsl::Policy& policy,
                          const char** err) {
   *err = NULL;
   for (uint32_t sysnum : SyscallSet::All()) {

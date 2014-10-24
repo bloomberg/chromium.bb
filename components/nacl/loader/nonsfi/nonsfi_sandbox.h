@@ -6,7 +6,8 @@
 #define COMPONENTS_NACL_LOADER_NONSFI_NONSFI_SANDBOX_H_
 
 #include "base/basictypes.h"
-#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 
 namespace nacl {
 namespace nonsfi {
@@ -14,8 +15,7 @@ namespace nonsfi {
 // The seccomp sandbox policy for NaCl non-SFI mode. Note that this
 // policy must be as strong as possible, as non-SFI mode heavily
 // depends on seccomp sandbox.
-class NaClNonSfiBPFSandboxPolicy
-    : public sandbox::bpf_dsl::SandboxBPFDSLPolicy {
+class NaClNonSfiBPFSandboxPolicy : public sandbox::bpf_dsl::Policy {
  public:
   explicit NaClNonSfiBPFSandboxPolicy() {}
   virtual ~NaClNonSfiBPFSandboxPolicy() {}

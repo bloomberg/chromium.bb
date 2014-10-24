@@ -301,8 +301,8 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::InvalidSyscall() const {
 }
 
 bool InitializeBPFSandbox() {
-  bool sandbox_is_initialized = content::InitializeSandbox(
-      scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>(
+  bool sandbox_is_initialized =
+      content::InitializeSandbox(scoped_ptr<sandbox::bpf_dsl::Policy>(
           new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy()));
   if (!sandbox_is_initialized)
     return false;

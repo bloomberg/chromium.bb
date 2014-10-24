@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -22,7 +23,6 @@
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::ResultExpr;
-using sandbox::bpf_dsl::SandboxBPFDSLPolicy;
 
 namespace sandbox {
 
@@ -39,7 +39,7 @@ class FourtyTwo {
   DISALLOW_COPY_AND_ASSIGN(FourtyTwo);
 };
 
-class EmptyClassTakingPolicy : public SandboxBPFDSLPolicy {
+class EmptyClassTakingPolicy : public bpf_dsl::Policy {
  public:
   explicit EmptyClassTakingPolicy(FourtyTwo* fourty_two) {
     BPF_ASSERT(fourty_two);
@@ -80,7 +80,7 @@ TEST(BPFTest, BPFTesterCompatibilityDelegateLeakTest) {
   }
 }
 
-class EnosysPtracePolicy : public SandboxBPFDSLPolicy {
+class EnosysPtracePolicy : public bpf_dsl::Policy {
  public:
   EnosysPtracePolicy() {
     my_pid_ = syscall(__NR_getpid);
@@ -113,9 +113,8 @@ class BasicBPFTesterDelegate : public BPFTesterDelegate {
   BasicBPFTesterDelegate() {}
   virtual ~BasicBPFTesterDelegate() {}
 
-  virtual scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> GetSandboxBPFPolicy()
-      override {
-    return scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy>(new EnosysPtracePolicy());
+  virtual scoped_ptr<bpf_dsl::Policy> GetSandboxBPFPolicy() override {
+    return scoped_ptr<bpf_dsl::Policy>(new EnosysPtracePolicy());
   }
   virtual void RunTestFunction() override {
     errno = 0;

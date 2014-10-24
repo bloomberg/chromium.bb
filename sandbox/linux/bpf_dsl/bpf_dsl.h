@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/cons.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/sandbox_export.h"
@@ -29,7 +30,7 @@
 //
 //      using namespace sandbox::bpf_dsl;
 //
-//      class SillyPolicy : public SandboxBPFDSLPolicy {
+//      class SillyPolicy : public Policy {
 //       public:
 //        SillyPolicy() {}
 //        virtual ~SillyPolicy() {}
@@ -72,55 +73,11 @@
 namespace sandbox {
 namespace bpf_dsl {
 
-// Forward declarations of classes; see below for proper documentation.
-class Elser;
-template <typename T>
-class Caser;
-namespace internal {
-class ResultExprImpl;
-class BoolExprImpl;
-}
-
-}  // namespace bpf_dsl
-}  // namespace sandbox
-
-extern template class SANDBOX_EXPORT
-    scoped_refptr<const sandbox::bpf_dsl::internal::BoolExprImpl>;
-extern template class SANDBOX_EXPORT
-    scoped_refptr<const sandbox::bpf_dsl::internal::ResultExprImpl>;
-
-namespace sandbox {
-namespace bpf_dsl {
-
 // ResultExpr is an opaque reference to an immutable result expression tree.
 typedef scoped_refptr<const internal::ResultExprImpl> ResultExpr;
 
 // BoolExpr is an opaque reference to an immutable boolean expression tree.
 typedef scoped_refptr<const internal::BoolExprImpl> BoolExpr;
-
-// Interface to implement to define a BPF sandbox policy.
-// TODO(mdempsky): "sandbox::bpf_dsl::SandboxBPFDSLPolicy" is
-// tediously repetitive; rename to just "Policy".
-class SANDBOX_EXPORT SandboxBPFDSLPolicy {
- public:
-  SandboxBPFDSLPolicy() {}
-  virtual ~SandboxBPFDSLPolicy() {}
-
-  // User extension point for writing custom sandbox policies.
-  // The returned ResultExpr will control how the kernel responds to the
-  // specified system call number.
-  virtual ResultExpr EvaluateSyscall(int sysno) const = 0;
-
-  // Optional overload for specifying alternate behavior for invalid
-  // system calls.  The default is to return ENOSYS.
-  virtual ResultExpr InvalidSyscall() const;
-
-  // Helper method so policies can just write Trap(func, aux).
-  static ResultExpr Trap(TrapRegistry::TrapFnc trap_func, const void* aux);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SandboxBPFDSLPolicy);
-};
 
 // Allow specifies a result that the system call should be allowed to
 // execute normally.

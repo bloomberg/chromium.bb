@@ -4,8 +4,6 @@
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 
-#include <errno.h>
-
 #include <limits>
 
 #include "base/logging.h"
@@ -370,15 +368,6 @@ ResultExpr Elser::Else(const ResultExpr& else_result) const {
         new const IfThenResultExprImpl(clause.first, clause.second, expr));
   }
   return expr;
-}
-
-ResultExpr SandboxBPFDSLPolicy::InvalidSyscall() const {
-  return Error(ENOSYS);
-}
-
-ResultExpr SandboxBPFDSLPolicy::Trap(TrapRegistry::TrapFnc trap_func,
-                                     const void* aux) {
-  return bpf_dsl::Trap(trap_func, aux);
 }
 
 }  // namespace bpf_dsl

@@ -7,16 +7,17 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 
 namespace content {
 
 // The "baseline" BPF policy for content/. Any content/ seccomp-bpf policy
 // should inherit from it.
-// It implements the main SandboxBPFDSLPolicy interface. Due to its nature
+// It implements the main Policy interface. Due to its nature
 // as a "kernel attack surface reduction" layer, it's implementation-defined.
-class SandboxBPFBasePolicy : public sandbox::bpf_dsl::SandboxBPFDSLPolicy {
+class SandboxBPFBasePolicy : public sandbox::bpf_dsl::Policy {
  public:
   SandboxBPFBasePolicy();
   virtual ~SandboxBPFBasePolicy();

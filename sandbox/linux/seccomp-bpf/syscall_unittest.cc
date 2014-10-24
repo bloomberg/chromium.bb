@@ -17,6 +17,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -25,7 +26,6 @@
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::ResultExpr;
 using sandbox::bpf_dsl::Trap;
-using sandbox::bpf_dsl::SandboxBPFDSLPolicy;
 
 namespace sandbox {
 
@@ -105,7 +105,7 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
   return -ENOMEM;
 }
 
-class CopyAllArgsOnUnamePolicy : public SandboxBPFDSLPolicy {
+class CopyAllArgsOnUnamePolicy : public bpf_dsl::Policy {
  public:
   explicit CopyAllArgsOnUnamePolicy(std::vector<uint64_t>* aux) : aux_(aux) {}
   virtual ~CopyAllArgsOnUnamePolicy() {}

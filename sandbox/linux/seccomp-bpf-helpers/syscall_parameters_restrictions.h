@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include "build/build_config.h"
-#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/sandbox_export.h"
 
 // These are helpers to build seccomp-bpf policies, i.e. policies for a

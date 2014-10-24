@@ -25,9 +25,9 @@
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/common/set_process_title.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
-#include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/linux/services/broker_process.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
@@ -36,6 +36,7 @@ using sandbox::SyscallSets;
 using sandbox::arch_seccomp_data;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::ResultExpr;
+using sandbox::bpf_dsl::Trap;
 
 namespace content {
 
@@ -118,7 +119,7 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
 
 class GpuBrokerProcessPolicy : public GpuProcessPolicy {
  public:
-  static sandbox::bpf_dsl::SandboxBPFDSLPolicy* Create() {
+  static sandbox::bpf_dsl::Policy* Create() {
     return new GpuBrokerProcessPolicy();
   }
   virtual ~GpuBrokerProcessPolicy() {}
@@ -159,8 +160,8 @@ void UpdateProcessTypeToGpuBroker() {
   SetProcessTitleFromCommandLine(NULL);
 }
 
-bool UpdateProcessTypeAndEnableSandbox(sandbox::bpf_dsl::SandboxBPFDSLPolicy* (
-    *broker_sandboxer_allocator)(void)) {
+bool UpdateProcessTypeAndEnableSandbox(
+    sandbox::bpf_dsl::Policy* (*broker_sandboxer_allocator)(void)) {
   DCHECK(broker_sandboxer_allocator);
   UpdateProcessTypeToGpuBroker();
   return SandboxSeccompBPF::StartSandboxWithExternalPolicy(
@@ -255,7 +256,7 @@ bool GpuProcessPolicy::PreSandboxHook() {
 }
 
 void GpuProcessPolicy::InitGpuBrokerProcess(
-    sandbox::bpf_dsl::SandboxBPFDSLPolicy* (*broker_sandboxer_allocator)(void),
+    sandbox::bpf_dsl::Policy* (*broker_sandboxer_allocator)(void),
     const std::vector<std::string>& read_whitelist_extra,
     const std::vector<std::string>& write_whitelist_extra) {
   static const char kDriRcPath[] = "/etc/drirc";

@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -28,7 +28,7 @@ void SandboxBPFTestRunner::Run() {
   DCHECK(bpf_tester_delegate_);
   sandbox::Die::EnableSimpleExit();
 
-  scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> policy =
+  scoped_ptr<bpf_dsl::Policy> policy =
       bpf_tester_delegate_->GetSandboxBPFPolicy();
 
   if (sandbox::SandboxBPF::SupportsSeccompSandbox(-1) ==

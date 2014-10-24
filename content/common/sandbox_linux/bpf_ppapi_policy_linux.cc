@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/services/linux_syscalls.h"

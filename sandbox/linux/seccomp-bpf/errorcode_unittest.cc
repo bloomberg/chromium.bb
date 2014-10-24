@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
@@ -17,7 +18,7 @@ namespace sandbox {
 
 namespace {
 
-class DummyPolicy : public bpf_dsl::SandboxBPFDSLPolicy {
+class DummyPolicy : public bpf_dsl::Policy {
  public:
   DummyPolicy() {}
   virtual ~DummyPolicy() {}

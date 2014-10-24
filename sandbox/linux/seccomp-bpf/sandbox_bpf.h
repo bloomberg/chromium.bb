@@ -16,7 +16,7 @@
 namespace sandbox {
 struct arch_seccomp_data;
 namespace bpf_dsl {
-class SandboxBPFDSLPolicy;
+class Policy;
 }
 
 class SANDBOX_EXPORT SandboxBPF {
@@ -79,7 +79,7 @@ class SANDBOX_EXPORT SandboxBPF {
 
   // Set the BPF policy as |policy|. Ownership of |policy| is transfered here
   // to the sandbox object.
-  void SetSandboxPolicy(bpf_dsl::SandboxBPFDSLPolicy* policy);
+  void SetSandboxPolicy(bpf_dsl::Policy* policy);
 
   // UnsafeTraps require some syscalls to always be allowed.
   // This helper function returns true for these calls.
@@ -128,7 +128,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // policy. The caller has to make sure that "this" has not yet been
   // initialized with any other policies.
   bool RunFunctionInPolicy(void (*code_in_sandbox)(),
-                           scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> policy);
+                           scoped_ptr<bpf_dsl::Policy> policy);
 
   // Performs a couple of sanity checks to verify that the kernel supports the
   // features that we need for successful sandboxing.
@@ -150,7 +150,7 @@ class SANDBOX_EXPORT SandboxBPF {
   bool quiet_;
   int proc_fd_;
   bool sandbox_has_started_;
-  scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> policy_;
+  scoped_ptr<bpf_dsl::Policy> policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxBPF);
 };

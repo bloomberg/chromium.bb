@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
@@ -75,7 +76,7 @@ intptr_t BPFFailure(const struct arch_seccomp_data&, void* aux) {
   SANDBOX_DIE(static_cast<char*>(aux));
 }
 
-bool HasUnsafeTraps(const SandboxBPFDSLPolicy* policy) {
+bool HasUnsafeTraps(const Policy* policy) {
   for (uint32_t sysnum : SyscallSet::All()) {
     if (SyscallSet::IsValid(sysnum) &&
         policy->EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
@@ -93,8 +94,7 @@ struct PolicyCompiler::Range {
   ErrorCode err;
 };
 
-PolicyCompiler::PolicyCompiler(const SandboxBPFDSLPolicy* policy,
-                               TrapRegistry* registry)
+PolicyCompiler::PolicyCompiler(const Policy* policy, TrapRegistry* registry)
     : policy_(policy),
       registry_(registry),
       conds_(),

@@ -27,13 +27,12 @@ class BPFTesterCompatibilityDelegate : public BPFTesterDelegate {
 
   virtual ~BPFTesterCompatibilityDelegate() {}
 
-  virtual scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> GetSandboxBPFPolicy()
-      override {
+  virtual scoped_ptr<bpf_dsl::Policy> GetSandboxBPFPolicy() override {
     // The current method is guaranteed to only run in the child process
     // running the test. In this process, the current object is guaranteed
     // to live forever. So it's ok to pass aux_pointer_for_policy_ to
     // the policy, which could in turn pass it to the kernel via Trap().
-    return scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy>(new Policy(&aux_));
+    return scoped_ptr<bpf_dsl::Policy>(new Policy(&aux_));
   }
 
   virtual void RunTestFunction() override {

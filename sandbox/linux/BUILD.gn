@@ -140,8 +140,11 @@ component("seccomp_bpf") {
   sources = [
     "bpf_dsl/bpf_dsl.cc",
     "bpf_dsl/bpf_dsl.h",
+    "bpf_dsl/bpf_dsl_forward.h",
     "bpf_dsl/bpf_dsl_impl.h",
     "bpf_dsl/cons.h",
+    "bpf_dsl/policy.cc",
+    "bpf_dsl/policy.h",
     "bpf_dsl/policy_compiler.cc",
     "bpf_dsl/policy_compiler.h",
     "bpf_dsl/trap_registry.h",

@@ -32,6 +32,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
@@ -108,7 +109,7 @@ intptr_t IncreaseCounter(const struct arch_seccomp_data& args, void* aux) {
   return (*counter)++;
 }
 
-class VerboseAPITestingPolicy : public SandboxBPFDSLPolicy {
+class VerboseAPITestingPolicy : public Policy {
  public:
   explicit VerboseAPITestingPolicy(int* counter_ptr)
       : counter_ptr_(counter_ptr) {}
@@ -147,7 +148,7 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
 
 // A simple blacklist test
 
-class BlacklistNanosleepPolicy : public SandboxBPFDSLPolicy {
+class BlacklistNanosleepPolicy : public Policy {
  public:
   BlacklistNanosleepPolicy() {}
   virtual ~BlacklistNanosleepPolicy() {}
@@ -179,7 +180,7 @@ BPF_TEST_C(SandboxBPF, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
 
 // Now do a simple whitelist test
 
-class WhitelistGetpidPolicy : public SandboxBPFDSLPolicy {
+class WhitelistGetpidPolicy : public Policy {
  public:
   WhitelistGetpidPolicy() {}
   virtual ~WhitelistGetpidPolicy() {}
@@ -218,7 +219,7 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void* aux) {
   return -ENOMEM;
 }
 
-class BlacklistNanosleepTrapPolicy : public SandboxBPFDSLPolicy {
+class BlacklistNanosleepTrapPolicy : public Policy {
  public:
   explicit BlacklistNanosleepTrapPolicy(int* aux) : aux_(aux) {}
   virtual ~BlacklistNanosleepTrapPolicy() {}
@@ -260,7 +261,7 @@ BPF_TEST(SandboxBPF,
 
 // A simple test that verifies we can return arbitrary errno values.
 
-class ErrnoTestPolicy : public SandboxBPFDSLPolicy {
+class ErrnoTestPolicy : public Policy {
  public:
   ErrnoTestPolicy() {}
   virtual ~ErrnoTestPolicy() {}
@@ -342,7 +343,7 @@ BPF_TEST_C(SandboxBPF, ErrnoTest, ErrnoTestPolicy) {
 
 // Testing the stacking of two sandboxes
 
-class StackingPolicyPartOne : public SandboxBPFDSLPolicy {
+class StackingPolicyPartOne : public Policy {
  public:
   StackingPolicyPartOne() {}
   virtual ~StackingPolicyPartOne() {}
@@ -363,7 +364,7 @@ class StackingPolicyPartOne : public SandboxBPFDSLPolicy {
   DISALLOW_COPY_AND_ASSIGN(StackingPolicyPartOne);
 };
 
-class StackingPolicyPartTwo : public SandboxBPFDSLPolicy {
+class StackingPolicyPartTwo : public Policy {
  public:
   StackingPolicyPartTwo() {}
   virtual ~StackingPolicyPartTwo() {}
@@ -421,7 +422,7 @@ int SysnoToRandomErrno(int sysno) {
   return ((sysno & ~3) >> 2) % 29 + 1;
 }
 
-class SyntheticPolicy : public SandboxBPFDSLPolicy {
+class SyntheticPolicy : public Policy {
  public:
   SyntheticPolicy() {}
   virtual ~SyntheticPolicy() {}
@@ -474,7 +475,7 @@ int ArmPrivateSysnoToErrno(int sysno) {
   }
 }
 
-class ArmPrivatePolicy : public SandboxBPFDSLPolicy {
+class ArmPrivatePolicy : public Policy {
  public:
   ArmPrivatePolicy() {}
   virtual ~ArmPrivatePolicy() {}
@@ -518,7 +519,7 @@ intptr_t CountSyscalls(const struct arch_seccomp_data& args, void* aux) {
   return SandboxBPF::ForwardSyscall(args);
 }
 
-class GreyListedPolicy : public SandboxBPFDSLPolicy {
+class GreyListedPolicy : public Policy {
  public:
   explicit GreyListedPolicy(int* aux) : aux_(aux) {
     // Set the global environment for unsafe traps once.
@@ -587,7 +588,7 @@ intptr_t PrctlHandler(const struct arch_seccomp_data& args, void*) {
   }
 }
 
-class PrctlPolicy : public SandboxBPFDSLPolicy {
+class PrctlPolicy : public Policy {
  public:
   PrctlPolicy() {}
   virtual ~PrctlPolicy() {}
@@ -641,7 +642,7 @@ intptr_t AllowRedirectedSyscall(const struct arch_seccomp_data& args, void*) {
   return SandboxBPF::ForwardSyscall(args);
 }
 
-class RedirectAllSyscallsPolicy : public SandboxBPFDSLPolicy {
+class RedirectAllSyscallsPolicy : public Policy {
  public:
   RedirectAllSyscallsPolicy() {}
   virtual ~RedirectAllSyscallsPolicy() {}
@@ -805,7 +806,7 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
   }
 }
 
-class DenyOpenPolicy : public SandboxBPFDSLPolicy {
+class DenyOpenPolicy : public Policy {
  public:
   explicit DenyOpenPolicy(InitializedOpenBroker* iob) : iob_(iob) {}
   virtual ~DenyOpenPolicy() {}
@@ -885,7 +886,7 @@ BPF_TEST(SandboxBPF,
 
 // Simple test demonstrating how to use SandboxBPF::Cond()
 
-class SimpleCondTestPolicy : public SandboxBPFDSLPolicy {
+class SimpleCondTestPolicy : public Policy {
  public:
   SimpleCondTestPolicy() {}
   virtual ~SimpleCondTestPolicy() {}
@@ -1242,7 +1243,7 @@ class EqualityStressTest {
   static const int kMaxArgs = 6;
 };
 
-class EqualityStressTestPolicy : public SandboxBPFDSLPolicy {
+class EqualityStressTestPolicy : public Policy {
  public:
   explicit EqualityStressTestPolicy(EqualityStressTest* aux) : aux_(aux) {}
   virtual ~EqualityStressTestPolicy() {}
@@ -1264,7 +1265,7 @@ BPF_TEST(SandboxBPF,
   BPF_AUX->VerifyFilter();
 }
 
-class EqualityArgumentWidthPolicy : public SandboxBPFDSLPolicy {
+class EqualityArgumentWidthPolicy : public Policy {
  public:
   EqualityArgumentWidthPolicy() {}
   virtual ~EqualityArgumentWidthPolicy() {}
@@ -1317,7 +1318,7 @@ BPF_DEATH_TEST_C(SandboxBPF,
 }
 #endif
 
-class EqualityWithNegativeArgumentsPolicy : public SandboxBPFDSLPolicy {
+class EqualityWithNegativeArgumentsPolicy : public Policy {
  public:
   EqualityWithNegativeArgumentsPolicy() {}
   virtual ~EqualityWithNegativeArgumentsPolicy() {}
@@ -1358,7 +1359,7 @@ BPF_DEATH_TEST_C(SandboxBPF,
 }
 #endif
 
-class AllBitTestPolicy : public SandboxBPFDSLPolicy {
+class AllBitTestPolicy : public Policy {
  public:
   AllBitTestPolicy() {}
   virtual ~AllBitTestPolicy() {}
@@ -1544,7 +1545,7 @@ BPF_TEST_C(SandboxBPF, AllBitTests, AllBitTestPolicy) {
 #endif
 }
 
-class AnyBitTestPolicy : public SandboxBPFDSLPolicy {
+class AnyBitTestPolicy : public Policy {
  public:
   AnyBitTestPolicy() {}
   virtual ~AnyBitTestPolicy() {}
@@ -1708,7 +1709,7 @@ BPF_TEST_C(SandboxBPF, AnyBitTests, AnyBitTestPolicy) {
 #endif
 }
 
-class MaskedEqualTestPolicy : public SandboxBPFDSLPolicy {
+class MaskedEqualTestPolicy : public Policy {
  public:
   MaskedEqualTestPolicy() {}
   virtual ~MaskedEqualTestPolicy() {}
@@ -1835,7 +1836,7 @@ intptr_t PthreadTrapHandler(const struct arch_seccomp_data& args, void* aux) {
   return -EPERM;
 }
 
-class PthreadPolicyEquality : public SandboxBPFDSLPolicy {
+class PthreadPolicyEquality : public Policy {
  public:
   PthreadPolicyEquality() {}
   virtual ~PthreadPolicyEquality() {}
@@ -1879,7 +1880,7 @@ ResultExpr PthreadPolicyEquality::EvaluateSyscall(int sysno) const {
   return Allow();
 }
 
-class PthreadPolicyBitMask : public SandboxBPFDSLPolicy {
+class PthreadPolicyBitMask : public Policy {
  public:
   PthreadPolicyBitMask() {}
   virtual ~PthreadPolicyBitMask() {}
@@ -2050,7 +2051,7 @@ long SetSyscall(pid_t pid, regs_struct* regs, int syscall_number) {
 
 const uint16_t kTraceData = 0xcc;
 
-class TraceAllPolicy : public SandboxBPFDSLPolicy {
+class TraceAllPolicy : public Policy {
  public:
   TraceAllPolicy() {}
   virtual ~TraceAllPolicy() {}
@@ -2196,7 +2197,7 @@ bool FullPread64(int fd, char* buffer, size_t count, off64_t offset) {
 
 bool pread_64_was_forwarded = false;
 
-class TrapPread64Policy : public SandboxBPFDSLPolicy {
+class TrapPread64Policy : public Policy {
  public:
   TrapPread64Policy() {}
   virtual ~TrapPread64Policy() {}
@@ -2293,7 +2294,7 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
   BPF_ASSERT_EQ(0, pthread_join(thread, NULL));
 }
 
-class AllowAllPolicy : public SandboxBPFDSLPolicy {
+class AllowAllPolicy : public Policy {
  public:
   AllowAllPolicy() {}
   virtual ~AllowAllPolicy() {}
@@ -2337,7 +2338,7 @@ intptr_t NoOpHandler(const struct arch_seccomp_data& args, void*) {
   return -1;
 }
 
-class UnsafeTrapWithCondPolicy : public SandboxBPFDSLPolicy {
+class UnsafeTrapWithCondPolicy : public Policy {
  public:
   UnsafeTrapWithCondPolicy() {}
   virtual ~UnsafeTrapWithCondPolicy() {}

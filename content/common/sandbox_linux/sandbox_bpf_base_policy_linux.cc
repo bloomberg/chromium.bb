@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "base/logging.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 
 using sandbox::bpf_dsl::ResultExpr;

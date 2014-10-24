@@ -12,7 +12,7 @@
 
 namespace sandbox {
 namespace bpf_dsl {
-class SandboxBPFDSLPolicy;
+class Policy;
 }
 }
 
@@ -41,9 +41,9 @@ class SandboxSeccompBPF {
   // This is the API to enable a seccomp-bpf sandbox by using an
   // external policy.
   static bool StartSandboxWithExternalPolicy(
-      scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy> policy);
+      scoped_ptr<sandbox::bpf_dsl::Policy> policy);
   // The "baseline" policy can be a useful base to build a sandbox policy.
-  static scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy> GetBaselinePolicy();
+  static scoped_ptr<sandbox::bpf_dsl::Policy> GetBaselinePolicy();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxSeccompBPF);

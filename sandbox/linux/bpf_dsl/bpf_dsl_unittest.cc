@@ -15,6 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
@@ -60,7 +61,7 @@ class Stubs {
 #endif
 };
 
-class BasicPolicy : public SandboxBPFDSLPolicy {
+class BasicPolicy : public Policy {
  public:
   BasicPolicy() {}
   virtual ~BasicPolicy() {}
@@ -90,7 +91,7 @@ BPF_TEST_C(BPFDSL, Basic, BasicPolicy) {
 
 /* On IA-32, socketpair() is implemented via socketcall(). :-( */
 #if !defined(ARCH_CPU_X86)
-class BooleanLogicPolicy : public SandboxBPFDSLPolicy {
+class BooleanLogicPolicy : public Policy {
  public:
   BooleanLogicPolicy() {}
   virtual ~BooleanLogicPolicy() {}
@@ -128,7 +129,7 @@ BPF_TEST_C(BPFDSL, BooleanLogic, BooleanLogicPolicy) {
 }
 #endif  // !ARCH_CPU_X86
 
-class MoreBooleanLogicPolicy : public SandboxBPFDSLPolicy {
+class MoreBooleanLogicPolicy : public Policy {
  public:
   MoreBooleanLogicPolicy() {}
   virtual ~MoreBooleanLogicPolicy() {}
@@ -165,7 +166,7 @@ BPF_TEST_C(BPFDSL, MoreBooleanLogic, MoreBooleanLogicPolicy) {
 static const uintptr_t kDeadBeefAddr =
     static_cast<uintptr_t>(0xdeadbeefdeadbeefULL);
 
-class ArgSizePolicy : public SandboxBPFDSLPolicy {
+class ArgSizePolicy : public Policy {
  public:
   ArgSizePolicy() {}
   virtual ~ArgSizePolicy() {}
@@ -188,7 +189,7 @@ BPF_TEST_C(BPFDSL, ArgSizeTest, ArgSizePolicy) {
       -EPERM, uname, reinterpret_cast<struct utsname*>(kDeadBeefAddr));
 }
 
-class TrappingPolicy : public SandboxBPFDSLPolicy {
+class TrappingPolicy : public Policy {
  public:
   TrappingPolicy() {}
   virtual ~TrappingPolicy() {}
@@ -218,7 +219,7 @@ BPF_TEST_C(BPFDSL, TrapTest, TrappingPolicy) {
   ASSERT_SYSCALL_RESULT(3, uname, NULL);
 }
 
-class MaskingPolicy : public SandboxBPFDSLPolicy {
+class MaskingPolicy : public Policy {
  public:
   MaskingPolicy() {}
   virtual ~MaskingPolicy() {}
@@ -259,7 +260,7 @@ BPF_TEST_C(BPFDSL, MaskTest, MaskingPolicy) {
   }
 }
 
-class ElseIfPolicy : public SandboxBPFDSLPolicy {
+class ElseIfPolicy : public Policy {
  public:
   ElseIfPolicy() {}
   virtual ~ElseIfPolicy() {}
@@ -291,7 +292,7 @@ BPF_TEST_C(BPFDSL, ElseIfTest, ElseIfPolicy) {
   ASSERT_SYSCALL_RESULT(-EACCES, setuid, 0x0222);
 }
 
-class SwitchPolicy : public SandboxBPFDSLPolicy {
+class SwitchPolicy : public Policy {
  public:
   SwitchPolicy() {}
   virtual ~SwitchPolicy() {}

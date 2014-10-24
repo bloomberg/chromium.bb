@@ -36,8 +36,7 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   // names that should be whitelisted by the broker process, in addition to
   // the basic ones.
   void InitGpuBrokerProcess(
-      sandbox::bpf_dsl::SandboxBPFDSLPolicy* (*broker_sandboxer_allocator)(
-          void),
+      sandbox::bpf_dsl::Policy* (*broker_sandboxer_allocator)(void),
       const std::vector<std::string>& read_whitelist_extra,
       const std::vector<std::string>& write_whitelist_extra);
 
