@@ -40,9 +40,6 @@ Filter: document: false, stylesheet: false, image: false, media: false, script: 
 Toggled 'media' button.
 Filter: document: false, stylesheet: false, image: false, media: true, script: false, xhr: true, font: true, texttrack: false, websocket: true, other: false
 
-Toggled 'texttrack' button.
-Filter: document: false, stylesheet: false, image: false, media: true, script: false, xhr: true, font: true, texttrack: true, websocket: true, other: false
-
 Clicked 'all' button.
 Filter: document: true, stylesheet: true, image: true, media: true, script: true, xhr: true, font: true, texttrack: true, websocket: true, other: true
 
