@@ -42,8 +42,8 @@ NET_EXPORT std::string EscapeNonASCII(const std::string& input);
 
 // Escapes characters in text suitable for use as an external protocol handler
 // command.
-// We %XX everything except alphanumerics and %-_.!~*'() and the restricted
-// chracters (;/?:@&=+$,).
+// We %XX everything except alphanumerics and -_.!~*'() and the restricted
+// chracters (;/?:@&=+$,#[]) and a valid percent escape sequence (%XX).
 NET_EXPORT std::string EscapeExternalHandlerValue(const std::string& text);
 
 // Appends the given character to the output string, escaping the character if

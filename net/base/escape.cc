@@ -39,15 +39,21 @@ struct Charmap {
 // Given text to escape and a Charmap defining which values to escape,
 // return an escaped string.  If use_plus is true, spaces are converted
 // to +, otherwise, if spaces are in the charmap, they are converted to
-// %20.
-std::string Escape(const std::string& text, const Charmap& charmap,
-                   bool use_plus) {
+// %20. And if keep_escaped is true, %XX will be kept as it is, otherwise, if
+// '%' is in the charmap, it is converted to %25.
+std::string Escape(const std::string& text,
+                   const Charmap& charmap,
+                   bool use_plus,
+                   bool keep_escaped = false) {
   std::string escaped;
   escaped.reserve(text.length() * 3);
   for (unsigned int i = 0; i < text.length(); ++i) {
     unsigned char c = static_cast<unsigned char>(text[i]);
     if (use_plus && ' ' == c) {
       escaped.push_back('+');
+    } else if (keep_escaped && '%' == c && i + 2 < text.length() &&
+               IsHexDigit(text[i + 1]) && IsHexDigit(text[i + 2])) {
+      escaped.push_back('%');
     } else if (charmap.Contains(c)) {
       escaped.push_back('%');
       escaped.push_back(IntToHex(c >> 4));
@@ -325,9 +331,9 @@ static const Charmap kNonASCIICharmap = {{
 }};
 
 // Everything except alphanumerics, the reserved characters(;/?:@&=+$,) and
-// !'()*-._~%
+// !'()*-._~#[]
 static const Charmap kExternalHandlerCharmap = {{
-  0xffffffffL, 0x5000080dL, 0x68000000L, 0xb8000001L,
+  0xffffffffL, 0x50000025L, 0x50000000L, 0xb8000001L,
   0xffffffffL, 0xffffffffL, 0xffffffffL, 0xffffffffL
 }};
 
@@ -350,7 +356,7 @@ std::string EscapeNonASCII(const std::string& input) {
 }
 
 std::string EscapeExternalHandlerValue(const std::string& text) {
-  return Escape(text, kExternalHandlerCharmap, false);
+  return Escape(text, kExternalHandlerCharmap, false, true);
 }
 
 void AppendEscapedCharForHTML(char c, std::string* output) {

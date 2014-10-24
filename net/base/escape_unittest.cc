@@ -479,6 +479,43 @@ TEST(EscapeTest, UnescapeForHTML) {
   }
 }
 
+TEST(EscapeTest, EscapeExternalHandlerValue) {
+  ASSERT_EQ(
+      // Escaped
+      "%02%0A%1D%20!%22#$%25&'()*+,-./0123456789:;"
+      "%3C=%3E?@ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "[%5C]%5E_%60abcdefghijklmnopqrstuvwxyz"
+      "%7B%7C%7D~%7F%80%FF",
+      // Most of the character space we care about, un-escaped
+      EscapeExternalHandlerValue(
+          "\x02\n\x1d !\"#$%&'()*+,-./0123456789:;"
+          "<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+          "[\\]^_`abcdefghijklmnopqrstuvwxyz"
+          "{|}~\x7f\x80\xff"));
+
+  ASSERT_EQ(
+      "!#$&'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]_"
+      "abcdefghijklmnopqrstuvwxyz~",
+      EscapeExternalHandlerValue(
+          "!#$&'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]_"
+          "abcdefghijklmnopqrstuvwxyz~"));
+
+  ASSERT_EQ("%258k", EscapeExternalHandlerValue("%8k"));
+  ASSERT_EQ("a%25", EscapeExternalHandlerValue("a%"));
+  ASSERT_EQ("%25a", EscapeExternalHandlerValue("%a"));
+  ASSERT_EQ("a%258", EscapeExternalHandlerValue("a%8"));
+  ASSERT_EQ("%ab", EscapeExternalHandlerValue("%ab"));
+  ASSERT_EQ("%AB", EscapeExternalHandlerValue("%AB"));
+
+  ASSERT_EQ("http://example.com/path/sub?q=a%7Cb%7Cc&q=1%7C2%7C3#ref%7C",
+            EscapeExternalHandlerValue(
+                "http://example.com/path/sub?q=a|b|c&q=1|2|3#ref|"));
+  ASSERT_EQ("http://example.com/path/sub?q=a%7Cb%7Cc&q=1%7C2%7C3#ref%7C",
+            EscapeExternalHandlerValue(
+                "http://example.com/path/sub?q=a%7Cb%7Cc&q=1%7C2%7C3#ref%7C"));
+  ASSERT_EQ("http://[2001:db8:0:1]:80",
+            EscapeExternalHandlerValue("http://[2001:db8:0:1]:80"));
+}
 
 }  // namespace
 }  // namespace net
