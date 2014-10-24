@@ -49,6 +49,7 @@ class ScreenObserver {
     WRONG_HWID_WARNING_SKIPPED = 20,
     CONTROLLER_PAIRING_FINISHED = 21,
     HOST_PAIRING_FINISHED = 22,
+    DEVICE_NOT_DISABLED = 23,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 

@@ -209,11 +209,11 @@ class WizardController : public ScreenObserver, public ScreenManager {
   void OnKioskAutolaunchConfirmed();
   void OnKioskEnableCompleted();
   void OnWrongHWIDWarningSkipped();
-  void OnAutoEnrollmentCheckCompleted();
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
   void OnControllerPairingFinished();
   void OnHostPairingFinished();
+  void OnDeviceNotDisabled();
 
   // Callback function after setting MetricsReporting.
   void InitiateMetricsReportingChangeCallback(bool enabled);

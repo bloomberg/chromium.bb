@@ -410,6 +410,17 @@ bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
                  kDeviceStateRestoreMode,
                  !restore_mode.empty(),
                  new base::StringValue(restore_mode));
+
+      UpdateDict(dict.Get(),
+                 kDeviceStateDisabled,
+                 true /* set_or_clear */,
+                 new base::FundamentalValue(
+                     state_response.has_disabled_state()));
+      UpdateDict(dict.Get(),
+                 kDeviceStateDisabledMessage,
+                 state_response.has_disabled_state(),
+                 new base::StringValue(
+                     state_response.disabled_state().message()));
     }
     local_state_->CommitPendingWrite();
     device_state_available_ = true;

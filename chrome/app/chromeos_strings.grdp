@@ -5079,9 +5079,6 @@ Battery full
   <message name="IDS_DEVICE_DISABLED_HEADING" desc="Heading of the message shown to the user when the device has been disabled by its owner.">
     Locked
   </message>
-  <message name="IDS_DEVICE_DISABLED_DEFAULT_MESSAGE" desc="Messsage shown to the user when the device has been disabled by its owner.">
-    Please return this device to its owner.
-  </message>
   <message name="IDS_DEVICE_DISABLED_EXPLANATION" desc="Explanation shown to the user when the device has been disabled by its owner.">
     This device was locked by its owner. Only an approved administrator can unlock it. Take this device to Tech Support for assistance.
   </message>

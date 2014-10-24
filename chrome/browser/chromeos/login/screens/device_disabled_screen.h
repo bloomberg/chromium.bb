@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEVICE_DISABLED_SCREEN_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen_actor.h"
 
@@ -31,7 +32,16 @@ class DeviceDisabledScreen : public BaseScreen,
   void OnActorDestroyed(DeviceDisabledScreenActor* actor) override;
 
  private:
+  // Indicate to the observer that the screen was skipped because the device is
+  // not disabled.
+  void IndicateDeviceNotDisabled();
+
+  // Whether the screen is currently showing.
+  bool showing_;
+
   DeviceDisabledScreenActor* actor_;
+
+  base::WeakPtrFactory<DeviceDisabledScreen> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreen);
 };

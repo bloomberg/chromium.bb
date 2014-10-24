@@ -599,6 +599,11 @@ message DeviceStateKeyUpdateRequest {
   repeated bytes server_backed_state_key = 1;
 }
 
+message DisabledState {
+  // A message to the finder/thief that should be shown on the screen.
+  optional string message = 1;
+}
+
 // Server to client message carrying the device state response. Because the
 // request is not authenticated, the only protection against state extraction
 // from server is the unpredictability of the server-backed state ID. Thus, the
@@ -620,6 +625,9 @@ message DeviceStateRetrievalResponse {
 
   // Primary domain the device is associated with.
   optional string management_domain = 2;
+
+  // The device is disabled and no logins are possible when this is set.
+  optional DisabledState disabled_state = 3;
 }
 
 // Sent by the client to the server to pair the Host device with the Controller

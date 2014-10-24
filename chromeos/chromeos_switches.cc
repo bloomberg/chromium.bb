@@ -85,6 +85,9 @@ const char kEnableCloudBackup[] = "enable-cloud-backup";
 // locate the device.
 const char kEnableConsumerManagement[] = "enable-consumer-management";
 
+// If this switch is set, the device cannot be remotely disabled by its owner.
+const char kDisableDeviceDisabling[] = "disable-device-disabling";
+
 // If this switch is set, Chrome OS login screen uses |EmbeddedSignin| endpoint
 // of GAIA.
 const char kEnableEmbeddedSignin[] = "enable-embedded-signin";

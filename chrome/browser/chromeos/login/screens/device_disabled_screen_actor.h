@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEVICE_DISABLED_SCREEN_ACTOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEVICE_DISABLED_SCREEN_ACTOR_H_
 
+#include <string>
+
 namespace chromeos {
 
 // Interface between the device disabled screen and its representation.
@@ -24,7 +26,7 @@ class DeviceDisabledScreenActor {
   virtual ~DeviceDisabledScreenActor() {
   }
 
-  virtual void Show() = 0;
+  virtual void Show(const std::string& message) = 0;
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
 };

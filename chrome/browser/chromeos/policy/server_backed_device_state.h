@@ -10,6 +10,8 @@ namespace policy {
 // Dictionary key constants for prefs::kServerBackedDeviceState.
 extern const char kDeviceStateManagementDomain[];
 extern const char kDeviceStateRestoreMode[];
+extern const char kDeviceStateDisabled[];
+extern const char kDeviceStateDisabledMessage[];
 
 // Values for kDeviceStateRestoreMode.
 extern const char kDeviceStateRestoreModeReEnrollmentEnforced[];

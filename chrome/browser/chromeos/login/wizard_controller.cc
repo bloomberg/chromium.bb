@@ -534,7 +534,7 @@ void WizardController::SkipToLoginForTesting(
   VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
-  OnAutoEnrollmentCheckCompleted();
+  OnDeviceNotDisabled();
 }
 
 void WizardController::AddObserver(Observer* observer) {
@@ -731,15 +731,6 @@ void WizardController::OnAutoEnrollmentDone() {
   ResumeLoginScreen();
 }
 
-void WizardController::OnAutoEnrollmentCheckCompleted() {
-  if (ShouldAutoStartEnrollment() || enrollment_recovery_) {
-    ShowEnrollmentScreen();
-  } else {
-    PerformOOBECompletedActions();
-    ShowLoginScreen(LoginScreenContext());
-  }
-}
-
 void WizardController::OnTermsOfServiceDeclined() {
   // If the user declines the Terms of Service, end the session and return to
   // the login screen.
@@ -757,6 +748,17 @@ void WizardController::OnControllerPairingFinished() {
 
 void WizardController::OnHostPairingFinished() {
   InitiateOOBEUpdate();
+}
+
+void WizardController::OnDeviceNotDisabled() {
+  if (skip_update_enroll_after_eula_ ||
+      ShouldAutoStartEnrollment() ||
+      enrollment_recovery_) {
+    ShowEnrollmentScreen();
+  } else {
+    PerformOOBECompletedActions();
+    ShowLoginScreen(LoginScreenContext());
+  }
 }
 
 void WizardController::InitiateOOBEUpdate() {
@@ -968,10 +970,7 @@ void WizardController::OnExit(ExitCodes exit_code) {
       ShowNetworkScreen();
       break;
     case ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
-      if (skip_update_enroll_after_eula_)
-        ShowEnrollmentScreen();
-      else
-        OnAutoEnrollmentCheckCompleted();
+      ShowDeviceDisabledScreen();
       break;
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnrollmentDone();
@@ -1008,6 +1007,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case HOST_PAIRING_FINISHED:
       OnHostPairingFinished();
+      break;
+    case DEVICE_NOT_DISABLED:
+      OnDeviceNotDisabled();
       break;
     default:
       NOTREACHED();

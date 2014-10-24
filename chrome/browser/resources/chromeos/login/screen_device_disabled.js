@@ -20,14 +20,12 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
     },
 
     /**
-      * Sets the message to show to the user. If |message| is empty, a default
-      * message will be shown.
+      * Sets the message to show to the user.
       * @param {string} message The message to show to the user.
       * @private
       */
     setMessage: function(message) {
-      $('device-disabled-message').textContent =
-          message || loadTimeData.getString('deviceDisabledDefaultMessage');
+      $('device-disabled-message').textContent = message;
     }
   };
 });
