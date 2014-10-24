@@ -309,7 +309,7 @@
         '../components/components.gyp:keyed_service_content',
         '../components/components.gyp:keyed_service_core',
         '../components/components.gyp:pref_registry',
-        '../components/components.gyp:sessions',
+        '../components/components.gyp:sessions_content',
         '../components/components.gyp:storage_monitor',
         '../components/components.gyp:web_cache_browser',
         '../components/components.gyp:web_modal',

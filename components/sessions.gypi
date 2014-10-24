@@ -3,10 +3,28 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    # Core sources shared by sessions_content and sessions_ios.
+    #
+    # TODO(rohitrao): We are including these sources directly into each
+    # individual target in order to avoid the complications associated with
+    # making a separate sessions_core target.  The files in sessions/core
+    # declare a static function that they do not define, which means that a
+    # sessions_core target would not link as a shared_library.  It would also be
+    # unsuitable as a static_library because it would be linked into multiple
+    # shared libraries.  Revisit this setup if necessary.
+    'sessions_core_sources': [
+      'sessions/core/serialized_navigation_driver.h',
+      'sessions/serialized_navigation_entry.cc',
+      'sessions/serialized_navigation_entry.h',
+      'sessions/session_id.cc',
+      'sessions/session_id.h',
+    ],
+  },
   'targets': [
     {
-      # GN version: //components/sessions
-      'target_name': 'sessions',
+      # GN version: //components/sessions:sessions_content
+      'target_name': 'sessions_content',
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
@@ -25,18 +43,12 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        '<@(sessions_core_sources)',
 
-        # TODO(rohitrao): Split this target into three separate core, content,
-        # and web targets.
         'sessions/content/content_serialized_navigation_builder.cc',
         'sessions/content/content_serialized_navigation_builder.h',
         'sessions/content/content_serialized_navigation_driver.cc',
         'sessions/content/content_serialized_navigation_driver.h',
-        'sessions/core/serialized_navigation_driver.h',
-        'sessions/serialized_navigation_entry.cc',
-        'sessions/serialized_navigation_entry.h',
-        'sessions/session_id.cc',
-        'sessions/session_id.h',
       ],
       'conditions': [
         ['android_webview_build == 0', {

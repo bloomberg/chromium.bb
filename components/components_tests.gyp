@@ -498,7 +498,7 @@
 
                 # Dependencies of sessions
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-                'components.gyp:sessions',
+                'components.gyp:sessions_content',
                 'components.gyp:sessions_test_support',
 
                 # Dependencies of storage monitor

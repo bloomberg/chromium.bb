@@ -2921,7 +2921,7 @@
             '../components/components.gyp:password_manager_content_browser',
             '../components/components.gyp:power',
             '../components/components.gyp:precache_content',
-            '../components/components.gyp:sessions',
+            '../components/components.gyp:sessions_content',
             '../components/components.gyp:storage_monitor',
             '../components/components.gyp:translate_content_browser',
             '../components/components.gyp:url_matcher',
