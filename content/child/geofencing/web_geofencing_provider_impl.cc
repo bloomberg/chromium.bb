@@ -20,19 +20,24 @@ WebGeofencingProviderImpl::~WebGeofencingProviderImpl() {
 void WebGeofencingProviderImpl::registerRegion(
     const blink::WebString& regionId,
     const blink::WebCircularGeofencingRegion& region,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebGeofencingCallbacks* callbacks) {
-  GetDispatcher()->RegisterRegion(regionId, region, callbacks);
+  GetDispatcher()->RegisterRegion(
+      regionId, region, service_worker_registration, callbacks);
 }
 
 void WebGeofencingProviderImpl::unregisterRegion(
     const blink::WebString& regionId,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebGeofencingCallbacks* callbacks) {
-  GetDispatcher()->UnregisterRegion(regionId, callbacks);
+  GetDispatcher()->UnregisterRegion(
+      regionId, service_worker_registration, callbacks);
 }
 
 void WebGeofencingProviderImpl::getRegisteredRegions(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebGeofencingRegionsCallbacks* callbacks) {
-  GetDispatcher()->GetRegisteredRegions(callbacks);
+  GetDispatcher()->GetRegisteredRegions(service_worker_registration, callbacks);
 }
 
 GeofencingDispatcher* WebGeofencingProviderImpl::GetDispatcher() {

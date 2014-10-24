@@ -42,6 +42,7 @@ ServiceWorkerRegistrationHandle::GetObjectInfo() {
   ServiceWorkerRegistrationObjectInfo info;
   info.handle_id = handle_id_;
   info.scope = registration_->pattern();
+  info.registration_id = registration_->id();
   return info;
 }
 

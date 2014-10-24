@@ -33,6 +33,7 @@ class ServiceWorkerRegistrationHandleReference {
   const ServiceWorkerRegistrationObjectInfo& info() const { return info_; }
   int handle_id() const { return info_.handle_id; }
   GURL scope() const { return info_.scope; }
+  int64 registration_id() const { return info_.registration_id; }
 
  private:
   ServiceWorkerRegistrationHandleReference(

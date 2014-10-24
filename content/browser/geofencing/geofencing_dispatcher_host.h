@@ -15,6 +15,7 @@ struct WebCircularGeofencingRegion;
 namespace content {
 
 class GeofencingManager;
+class ServiceWorkerContextWrapper;
 
 class GeofencingDispatcherHost : public BrowserMessageFilter {
  public:
@@ -29,11 +30,15 @@ class GeofencingDispatcherHost : public BrowserMessageFilter {
   void OnRegisterRegion(int thread_id,
                         int request_id,
                         const std::string& region_id,
-                        const blink::WebCircularGeofencingRegion& region);
+                        const blink::WebCircularGeofencingRegion& region,
+                        int64 service_worker_registration_id);
   void OnUnregisterRegion(int thread_id,
                           int request_id,
-                          const std::string& region_id);
-  void OnGetRegisteredRegions(int thread_id, int request_id);
+                          const std::string& region_id,
+                          int64 service_worker_registration_id);
+  void OnGetRegisteredRegions(int thread_id,
+                              int request_id,
+                              int64 service_worker_registration_id);
 
   void RegisterRegionCompleted(int thread_id,
                                int request_id,

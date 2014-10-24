@@ -112,4 +112,8 @@ blink::WebURL WebServiceWorkerRegistrationImpl::scope() const {
   return handle_ref_->scope();
 }
 
+int64 WebServiceWorkerRegistrationImpl::registration_id() const {
+  return handle_ref_->registration_id();
+}
+
 }  // namespace content

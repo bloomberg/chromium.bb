@@ -156,6 +156,7 @@ struct ServiceWorkerRegistrationObjectInfo {
   ServiceWorkerRegistrationObjectInfo();
   int handle_id;
   GURL scope;
+  int64 registration_id;
 };
 
 struct ServiceWorkerVersionAttributes {

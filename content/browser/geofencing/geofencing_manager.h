@@ -116,6 +116,7 @@ class CONTENT_EXPORT GeofencingManager
   // object. Assumes no registration with the same IDs currently exists.
   Registration& AddRegistration(
       int64 service_worker_registration_id,
+      const GURL& service_worker_origin,
       const std::string& region_id,
       const blink::WebCircularGeofencingRegion& region,
       const StatusCallback& callback,

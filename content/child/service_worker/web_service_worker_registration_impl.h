@@ -39,6 +39,8 @@ class WebServiceWorkerRegistrationImpl
   virtual blink::WebServiceWorkerRegistrationProxy* proxy();
   virtual blink::WebURL scope() const;
 
+  int64 registration_id() const;
+
  private:
   enum QueuedTaskType {
     INSTALLING,

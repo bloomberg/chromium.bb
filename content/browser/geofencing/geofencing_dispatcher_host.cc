@@ -5,6 +5,9 @@
 #include "content/browser/geofencing/geofencing_dispatcher_host.h"
 
 #include "content/browser/geofencing/geofencing_manager.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/geofencing_messages.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
 
@@ -38,16 +41,17 @@ void GeofencingDispatcherHost::OnRegisterRegion(
     int thread_id,
     int request_id,
     const std::string& region_id,
-    const blink::WebCircularGeofencingRegion& region) {
+    const blink::WebCircularGeofencingRegion& region,
+    int64 service_worker_registration_id) {
   // Sanity check on region_id
   if (region_id.length() > kMaxRegionIdLength) {
     Send(new GeofencingMsg_RegisterRegionComplete(
         thread_id, request_id, GeofencingStatus::GEOFENCING_STATUS_ERROR));
     return;
   }
-  // TODO(mek): Actually pass service worker information to manager.
+
   manager_->RegisterRegion(
-      0, /* service_worker_registration_id */
+      service_worker_registration_id,
       region_id,
       region,
       base::Bind(&GeofencingDispatcherHost::RegisterRegionCompleted,
@@ -59,16 +63,17 @@ void GeofencingDispatcherHost::OnRegisterRegion(
 void GeofencingDispatcherHost::OnUnregisterRegion(
     int thread_id,
     int request_id,
-    const std::string& region_id) {
+    const std::string& region_id,
+    int64 service_worker_registration_id) {
   // Sanity check on region_id
   if (region_id.length() > kMaxRegionIdLength) {
     Send(new GeofencingMsg_UnregisterRegionComplete(
         thread_id, request_id, GeofencingStatus::GEOFENCING_STATUS_ERROR));
     return;
   }
-  // TODO(mek): Actually pass service worker information to manager.
+
   manager_->UnregisterRegion(
-      0, /* service_worker_registration_id */
+      service_worker_registration_id,
       region_id,
       base::Bind(&GeofencingDispatcherHost::UnregisterRegionCompleted,
                  weak_factory_.GetWeakPtr(),
@@ -76,13 +81,14 @@ void GeofencingDispatcherHost::OnUnregisterRegion(
                  request_id));
 }
 
-void GeofencingDispatcherHost::OnGetRegisteredRegions(int thread_id,
-                                                      int request_id) {
+void GeofencingDispatcherHost::OnGetRegisteredRegions(
+    int thread_id,
+    int request_id,
+    int64 service_worker_registration_id) {
   GeofencingRegistrations result;
-  // TODO(mek): Actually pass service worker information to manager.
+
   GeofencingStatus status =
-      manager_->GetRegisteredRegions(0, /* service_worker_registration_id */
-                                     &result);
+      manager_->GetRegisteredRegions(service_worker_registration_id, &result);
   Send(new GeofencingMsg_GetRegisteredRegionsComplete(
       thread_id, request_id, status, result));
 }

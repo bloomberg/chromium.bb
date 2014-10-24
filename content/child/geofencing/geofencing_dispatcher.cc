@@ -8,9 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/common/geofencing_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
 #include "third_party/WebKit/public/platform/WebGeofencingError.h"
 #include "third_party/WebKit/public/platform/WebGeofencingRegistration.h"
@@ -63,28 +65,60 @@ void GeofencingDispatcher::OnMessageReceived(const IPC::Message& msg) {
 void GeofencingDispatcher::RegisterRegion(
     const blink::WebString& region_id,
     const blink::WebCircularGeofencingRegion& region,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebGeofencingCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = region_registration_requests_.Add(callbacks);
-  Send(new GeofencingHostMsg_RegisterRegion(
-      CurrentWorkerId(), request_id, region_id.utf8(), region));
+  // TODO(mek): Immediately reject requests lacking a service worker
+  // registration, without bouncing through browser process.
+  int64 serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
+  if (service_worker_registration) {
+    serviceworker_registration_id =
+        static_cast<WebServiceWorkerRegistrationImpl*>(
+            service_worker_registration)->registration_id();
+  }
+  Send(new GeofencingHostMsg_RegisterRegion(CurrentWorkerId(),
+                                            request_id,
+                                            region_id.utf8(),
+                                            region,
+                                            serviceworker_registration_id));
 }
 
 void GeofencingDispatcher::UnregisterRegion(
     const blink::WebString& region_id,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebGeofencingCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = region_unregistration_requests_.Add(callbacks);
-  Send(new GeofencingHostMsg_UnregisterRegion(
-      CurrentWorkerId(), request_id, region_id.utf8()));
+  // TODO(mek): Immediately reject requests lacking a service worker
+  // registration, without bouncing through browser process.
+  int64 serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
+  if (service_worker_registration) {
+    serviceworker_registration_id =
+        static_cast<WebServiceWorkerRegistrationImpl*>(
+            service_worker_registration)->registration_id();
+  }
+  Send(new GeofencingHostMsg_UnregisterRegion(CurrentWorkerId(),
+                                              request_id,
+                                              region_id.utf8(),
+                                              serviceworker_registration_id));
 }
 
 void GeofencingDispatcher::GetRegisteredRegions(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebGeofencingRegionsCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = get_registered_regions_requests_.Add(callbacks);
-  Send(new GeofencingHostMsg_GetRegisteredRegions(CurrentWorkerId(),
-                                                  request_id));
+  // TODO(mek): Immediately reject requests lacking a service worker
+  // registration, without bouncing through browser process.
+  int64 serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
+  if (service_worker_registration) {
+    serviceworker_registration_id =
+        static_cast<WebServiceWorkerRegistrationImpl*>(
+            service_worker_registration)->registration_id();
+  }
+  Send(new GeofencingHostMsg_GetRegisteredRegions(
+      CurrentWorkerId(), request_id, serviceworker_registration_id));
 }
 
 GeofencingDispatcher* GeofencingDispatcher::GetOrCreateThreadSpecificInstance(

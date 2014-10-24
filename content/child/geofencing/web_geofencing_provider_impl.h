@@ -21,12 +21,17 @@ class WebGeofencingProviderImpl
 
  private:
   // WebGeofencingProvider implementation.
-  virtual void registerRegion(const blink::WebString& regionId,
-                              const blink::WebCircularGeofencingRegion& region,
-                              blink::WebGeofencingCallbacks* callbacks);
-  virtual void unregisterRegion(const blink::WebString& regionId,
-                                blink::WebGeofencingCallbacks* callbacks);
+  virtual void registerRegion(
+      const blink::WebString& regionId,
+      const blink::WebCircularGeofencingRegion& region,
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebGeofencingCallbacks* callbacks);
+  virtual void unregisterRegion(
+      const blink::WebString& regionId,
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebGeofencingCallbacks* callbacks);
   virtual void getRegisteredRegions(
+      blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebGeofencingRegionsCallbacks* callbacks);
 
   GeofencingDispatcher* GetDispatcher();

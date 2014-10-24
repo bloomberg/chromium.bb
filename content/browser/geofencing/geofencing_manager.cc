@@ -16,12 +16,14 @@ namespace content {
 
 struct GeofencingManager::Registration {
   Registration(int64 service_worker_registration_id,
+               const GURL& service_worker_origin,
                const std::string& region_id,
                const blink::WebCircularGeofencingRegion& region,
                const StatusCallback& callback,
                int64 geofencing_registration_id);
 
   int64 service_worker_registration_id;
+  GURL service_worker_origin;
   std::string region_id;
   blink::WebCircularGeofencingRegion region;
 
@@ -39,6 +41,7 @@ struct GeofencingManager::Registration {
 
 GeofencingManager::Registration::Registration(
     int64 service_worker_registration_id,
+    const GURL& service_worker_origin,
     const std::string& region_id,
     const blink::WebCircularGeofencingRegion& region,
     const GeofencingManager::StatusCallback& callback,
@@ -98,6 +101,21 @@ void GeofencingManager::RegisterRegion(
 
   // TODO(mek): Validate region_id and region.
 
+  // Look up service worker. In unit tests |service_worker_context_| might not
+  // be set.
+  GURL service_worker_origin;
+  if (service_worker_context_.get()) {
+    ServiceWorkerRegistration* service_worker_registration =
+        service_worker_context_->context()->GetLiveRegistration(
+            service_worker_registration_id);
+    if (!service_worker_registration) {
+      callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
+      return;
+    }
+
+    service_worker_origin = service_worker_registration->pattern().GetOrigin();
+  }
+
   if (!service_->IsServiceAvailable()) {
     callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE);
     return;
@@ -111,6 +129,7 @@ void GeofencingManager::RegisterRegion(
   }
 
   AddRegistration(service_worker_registration_id,
+                  service_worker_origin,
                   region_id,
                   region,
                   callback,
@@ -123,6 +142,18 @@ void GeofencingManager::UnregisterRegion(int64 service_worker_registration_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(mek): Validate region_id.
+
+  // Look up service worker. In unit tests |service_worker_context_| might not
+  // be set.
+  if (service_worker_context_.get()) {
+    ServiceWorkerRegistration* service_worker_registration =
+        service_worker_context_->context()->GetLiveRegistration(
+            service_worker_registration_id);
+    if (!service_worker_registration) {
+      callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
+      return;
+    }
+  }
 
   if (!service_->IsServiceAvailable()) {
     callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE);
@@ -153,6 +184,17 @@ GeofencingStatus GeofencingManager::GetRegisteredRegions(
     std::map<std::string, blink::WebCircularGeofencingRegion>* result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   CHECK(result);
+
+  // Look up service worker. In unit tests |service_worker_context_| might not
+  // be set.
+  if (service_worker_context_.get()) {
+    ServiceWorkerRegistration* service_worker_registration =
+        service_worker_context_->context()->GetLiveRegistration(
+            service_worker_registration_id);
+    if (!service_worker_registration) {
+      return GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER;
+    }
+  }
 
   if (!service_->IsServiceAvailable()) {
     return GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE;
@@ -212,6 +254,7 @@ GeofencingManager::Registration* GeofencingManager::FindRegistrationById(
 
 GeofencingManager::Registration& GeofencingManager::AddRegistration(
     int64 service_worker_registration_id,
+    const GURL& service_worker_origin,
     const std::string& region_id,
     const blink::WebCircularGeofencingRegion& region,
     const StatusCallback& callback,
@@ -222,6 +265,7 @@ GeofencingManager::Registration& GeofencingManager::AddRegistration(
       registrations_[service_worker_registration_id]
           .insert(std::make_pair(region_id,
                                  Registration(service_worker_registration_id,
+                                              service_worker_origin,
                                               region_id,
                                               region,
                                               callback,

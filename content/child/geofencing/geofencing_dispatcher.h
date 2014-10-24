@@ -33,12 +33,18 @@ class GeofencingDispatcher : public WorkerTaskRunner::Observer {
   void OnMessageReceived(const IPC::Message& msg);
 
   // Corresponding to WebGeofencingProvider methods.
-  void RegisterRegion(const blink::WebString& region_id,
-                      const blink::WebCircularGeofencingRegion& region,
-                      blink::WebGeofencingCallbacks* callbacks);
-  void UnregisterRegion(const blink::WebString& region_id,
-                        blink::WebGeofencingCallbacks* callbacks);
-  void GetRegisteredRegions(blink::WebGeofencingRegionsCallbacks* callbacks);
+  void RegisterRegion(
+      const blink::WebString& region_id,
+      const blink::WebCircularGeofencingRegion& region,
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebGeofencingCallbacks* callbacks);
+  void UnregisterRegion(
+      const blink::WebString& region_id,
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebGeofencingCallbacks* callbacks);
+  void GetRegisteredRegions(
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebGeofencingRegionsCallbacks* callbacks);
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.

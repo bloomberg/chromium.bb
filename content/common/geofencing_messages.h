@@ -30,20 +30,23 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebCircularGeofencingRegion)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the child process to the browser.
-IPC_MESSAGE_CONTROL4(GeofencingHostMsg_RegisterRegion,
+IPC_MESSAGE_CONTROL5(GeofencingHostMsg_RegisterRegion,
                      int /* thread_id */,
                      int /* request_id */,
                      std::string /* region_id */,
-                     blink::WebCircularGeofencingRegion /* region */)
+                     blink::WebCircularGeofencingRegion /* region */,
+                     int64 /* serviceworker_registration_id */)
 
-IPC_MESSAGE_CONTROL3(GeofencingHostMsg_UnregisterRegion,
+IPC_MESSAGE_CONTROL4(GeofencingHostMsg_UnregisterRegion,
                      int /* thread_id */,
                      int /* request_id */,
-                     std::string /* region_id */)
+                     std::string /* region_id */,
+                     int64 /* serviceworker_registration_id */)
 
-IPC_MESSAGE_CONTROL2(GeofencingHostMsg_GetRegisteredRegions,
+IPC_MESSAGE_CONTROL3(GeofencingHostMsg_GetRegisteredRegions,
                      int /* thread_id */,
-                     int /* request_id */)
+                     int /* request_id */,
+                     int64 /* serviceworker_registration_id */)
 
 // Messages sent from the browser to the child process.
 
