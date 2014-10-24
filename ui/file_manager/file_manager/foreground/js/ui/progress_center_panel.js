@@ -310,7 +310,9 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
   if (newItem) {
     if (!itemElement) {
       itemElement = new ProgressCenterItemElement(this.element_.ownerDocument);
-      this.openView_.insertBefore(itemElement, this.openView_.firstNode);
+      // Find quiet node and insert the item before the quiet node.
+      this.openView_.insertBefore(
+          itemElement, this.openView_.querySelector('.quiet'));
     }
     itemElement.update(newItem, targetGroup.isAnimated(item.id));
   } else {
