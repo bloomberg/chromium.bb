@@ -84,14 +84,14 @@ namespace fileSystem {
   };
 
   // Change to an entry within a tracked directory.
-  dictionary ChildChange {
+  [nodoc] dictionary ChildChange {
     [instanceOf=Entry] object entry;
     ChildChangeType type;
   };
 
   // Event notifying about a change in a file or a directory, including its
   // contents.
-  dictionary EntryChangedEvent {
+  [nodoc] dictionary EntryChangedEvent {
     // Tracked entry.
     [instanceOf=Entry] object target;
 
@@ -101,7 +101,7 @@ namespace fileSystem {
   };
 
   // Event notifying about a tracked file or a directory being removed.
-  dictionary EntryRemovedEvent {
+  [nodoc] dictionary EntryRemovedEvent {
     [instanceOf=Entry] object target;
   };
 
@@ -112,7 +112,7 @@ namespace fileSystem {
       [instanceOf=FileEntry] optional object[] fileEntries);
   callback IsWritableCallback = void (boolean isWritable);
   callback IsRestorableCallback = void (boolean isRestorable);
-  callback GetObservedEntriesCallback = void (
+  [nodoc] callback GetObservedEntriesCallback = void (
       [instanceOf=Entry] object[] entries);
 
   interface Functions {
