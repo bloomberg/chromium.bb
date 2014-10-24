@@ -168,7 +168,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     SolidColorLayerImpl::AppendSolidQuads(render_pass,
                                           occlusion_in_content_space,
                                           shared_quad_state,
-                                          content_bounds(),
+                                          visible_content_rect(),
                                           pile_->solid_color(),
                                           append_quads_data);
     return;

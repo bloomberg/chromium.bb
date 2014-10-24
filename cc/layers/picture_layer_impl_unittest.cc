@@ -1431,6 +1431,40 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
             render_pass->quad_list.front()->material);
 }
 
+TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+
+  gfx::Size tile_size(1000, 1000);
+  gfx::Size layer_bounds(1500, 1500);
+  gfx::Rect visible_rect(1000, 1000);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+
+  pending_pile->set_is_solid_color(true);
+  active_pile->set_is_solid_color(true);
+
+  SetupTrees(pending_pile, active_pile);
+
+  active_layer_->draw_properties().visible_content_rect = visible_rect;
+
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
+  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->DidDraw(nullptr);
+
+  Region remaining = visible_rect;
+  for (auto& quad : render_pass->quad_list) {
+    EXPECT_TRUE(visible_rect.Contains(quad.rect));
+    EXPECT_TRUE(remaining.Contains(quad.rect));
+    remaining.Subtract(quad.rect);
+  }
+
+  EXPECT_TRUE(remaining.IsEmpty());
+}
+
 TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -4389,12 +4423,12 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   SetupPendingTree(pending_pile);
   ActivateTree();
 
+  active_layer_->set_fixed_tile_size(tile_size);
+  host_impl_.active_tree()->UpdateDrawProperties();
   if (test_for_solid) {
     EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
   } else {
     ASSERT_TRUE(active_layer_->tilings());
-    active_layer_->set_fixed_tile_size(tile_size);
-    host_impl_.active_tree()->UpdateDrawProperties();
     ASSERT_GT(active_layer_->tilings()->num_tilings(), 0u);
     std::vector<Tile*> tiles =
         active_layer_->tilings()->tiling_at(0)->AllTilesForTesting();

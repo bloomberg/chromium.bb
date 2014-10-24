@@ -31,15 +31,17 @@ void SolidColorLayerImpl::AppendSolidQuads(
     RenderPass* render_pass,
     const Occlusion& occlusion_in_content_space,
     SharedQuadState* shared_quad_state,
-    const gfx::Size& content_bounds,
+    const gfx::Rect& visible_content_rect,
     SkColor color,
     AppendQuadsData* append_quads_data) {
   // We create a series of smaller quads instead of just one large one so that
   // the culler can reduce the total pixels drawn.
-  int width = content_bounds.width();
-  int height = content_bounds.height();
-  for (int x = 0; x < width; x += kSolidQuadTileSize) {
-    for (int y = 0; y < height; y += kSolidQuadTileSize) {
+  int width = visible_content_rect.width();
+  int height = visible_content_rect.height();
+  for (int x = visible_content_rect.x(); x < visible_content_rect.right();
+       x += kSolidQuadTileSize) {
+    for (int y = visible_content_rect.y(); y < visible_content_rect.bottom();
+         y += kSolidQuadTileSize) {
       gfx::Rect quad_rect(x,
                           y,
                           std::min(width - x, kSolidQuadTileSize),
@@ -71,10 +73,12 @@ void SolidColorLayerImpl::AppendQuads(
   AppendDebugBorderQuad(
       render_pass, content_bounds(), shared_quad_state, append_quads_data);
 
+  // TODO(hendrikw): We need to pass the visible content rect rather than
+  // |content_bounds()| here.
   AppendSolidQuads(render_pass,
                    occlusion_in_content_space,
                    shared_quad_state,
-                   content_bounds(),
+                   gfx::Rect(content_bounds()),
                    background_color(),
                    append_quads_data);
 }
