@@ -14,6 +14,26 @@
 
 namespace blink {
 
+void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
+{
+    SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(frame, worldID, sources, extensionGroup, userGesture, callback);
+    executor->run();
+}
+
+void SuspendableScriptExecutor::resume()
+{
+    executeAndDestroySelf();
+}
+
+void SuspendableScriptExecutor::contextDestroyed()
+{
+    // this method can only be called if the script was not called in run()
+    // and context remained suspend (method resume has never called)
+    ActiveDOMObject::contextDestroyed();
+    m_callback->completed(Vector<v8::Local<v8::Value> >());
+    delete this;
+}
+
 SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
     : ActiveDOMObject(frame->document())
     , m_frame(frame)
@@ -36,20 +56,6 @@ void SuspendableScriptExecutor::run()
     ASSERT(context);
     if (context && !context->activeDOMObjectsAreSuspended())
         executeAndDestroySelf();
-}
-
-void SuspendableScriptExecutor::resume()
-{
-    executeAndDestroySelf();
-}
-
-void SuspendableScriptExecutor::contextDestroyed()
-{
-    // this method can only be called if the script was not called in run()
-    // and context remained suspend (method resume has never called)
-    ActiveDOMObject::contextDestroyed();
-    m_callback->completed(Vector<v8::Local<v8::Value> >());
-    delete this;
 }
 
 void SuspendableScriptExecutor::executeAndDestroySelf()

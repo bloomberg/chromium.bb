@@ -17,17 +17,16 @@ class WebScriptExecutionCallback;
 
 class SuspendableScriptExecutor final : public ActiveDOMObject {
 public:
-    SuspendableScriptExecutor(LocalFrame*, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
-    virtual ~SuspendableScriptExecutor();
-
-    // this method must be called only once
-    void run();
+    static void createAndRun(LocalFrame*, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
 
     virtual void resume() override;
-
     virtual void contextDestroyed() override;
 
 private:
+    SuspendableScriptExecutor(LocalFrame*, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
+    virtual ~SuspendableScriptExecutor();
+
+    void run();
     void executeAndDestroySelf();
 
     LocalFrame* m_frame;

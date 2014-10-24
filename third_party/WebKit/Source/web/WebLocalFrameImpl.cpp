@@ -789,9 +789,7 @@ void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(const WebScriptSource
 {
     ASSERT(frame());
 
-    Vector<ScriptSourceCode> sources = createSourcesVector(&source, 1);
-    SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(frame(), 0, sources, 0, userGesture, callback);
-    executor->run();
+    SuspendableScriptExecutor::createAndRun(frame(), 0, createSourcesVector(&source, 1), 0, userGesture, callback);
 }
 
 void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value> >* results)
@@ -821,9 +819,7 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(int worldID, const W
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
-    Vector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
-    SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(frame(), worldID, sources, extensionGroup, userGesture, callback);
-    executor->run();
+    SuspendableScriptExecutor::createAndRun(frame(), worldID, createSourcesVector(sourcesIn, numSources), extensionGroup, userGesture, callback);
 }
 
 v8::Handle<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> argv[])
