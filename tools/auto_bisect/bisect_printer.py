@@ -30,7 +30,7 @@ Estimated Confidence: %(confidence).02f%%"""
 RESULTS_REVISION_INFO = """
 ===== SUSPECTED CL(s) =====
 Subject : %(subject)s
-Author  : %(author)s%(email_info)s%(commit_info)s
+Author  : %(author)s%(commit_info)s
 Commit  : %(cl)s
 Date    : %(cl_date)s"""
 
@@ -180,9 +180,6 @@ class BisectPrinter(object):
     return ''
 
   def _PrintRevisionInfo(self, cl, info, depot=None):
-    email_info = ''
-    if not info['email'].startswith(info['author']):
-      email_info = '\nEmail   : %s' % info['email']
     commit_link = self._GetViewVCLinkFromDepotAndHash(cl, depot)
     if commit_link:
       commit_info = '\nLink    : %s' % commit_link
@@ -191,8 +188,7 @@ class BisectPrinter(object):
                      info['body'])
     print RESULTS_REVISION_INFO % {
         'subject': info['subject'],
-        'author': info['author'],
-        'email_info': email_info,
+        'author': info['email'],
         'commit_info': commit_info,
         'cl': cl,
         'cl_date': info['date']
