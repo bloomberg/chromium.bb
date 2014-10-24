@@ -8,6 +8,15 @@ namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xFA, 0xFA, 0xFA);
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
+
+// In Windows, transparent background color will cause ugly text rendering,
+// therefore kContentsBackgroundColor should be used. See crbug.com/406989
+#if defined(OS_CHROMEOS)
+const SkColor kLabelBackgroundColor = SK_ColorTRANSPARENT;
+#else
+const SkColor kLabelBackgroundColor = kContentsBackgroundColor;
+#endif
+
 const SkColor kTopSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
 const SkColor kBottomSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
 

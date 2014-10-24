@@ -45,7 +45,7 @@ TileItemView::TileItemView()
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kGridTitleColor);
   title_->set_background(views::Background::CreateSolidBackground(
-      app_list::kContentsBackgroundColor));
+      kLabelBackgroundColor));
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
