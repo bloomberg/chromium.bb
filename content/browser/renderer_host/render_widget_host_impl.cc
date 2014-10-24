@@ -65,9 +65,9 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/gfx/vector2d_conversions.h"
 #include "ui/snapshot/snapshot.h"
 
 #if defined(OS_WIN)

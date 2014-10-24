@@ -21,7 +21,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "ui/gfx/vector2d_conversions.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 using content::SynchronousCompositorMemoryPolicy;
 

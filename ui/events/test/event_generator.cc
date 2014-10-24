@@ -14,7 +14,7 @@
 #include "ui/events/event_source.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
-#include "ui/gfx/vector2d_conversions.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
