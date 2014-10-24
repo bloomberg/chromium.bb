@@ -52,27 +52,6 @@ struct TextMarkerData {
     EAffinity affinity;
 };
 
-class AXComputedObjectAttributeCache {
-public:
-    static PassOwnPtr<AXComputedObjectAttributeCache> create() { return adoptPtr(new AXComputedObjectAttributeCache()); }
-
-    AXObjectInclusion getIgnored(AXID) const;
-    void setIgnored(AXID, AXObjectInclusion);
-
-    void clear();
-
-private:
-    AXComputedObjectAttributeCache() { }
-
-    struct CachedAXObjectAttributes {
-        CachedAXObjectAttributes() : ignored(DefaultBehavior) { }
-
-        AXObjectInclusion ignored;
-    };
-
-    HashMap<AXID, CachedAXObjectAttributes> m_idMapping;
-};
-
 enum PostType { PostSynchronously, PostAsynchronously };
 
 // This class should only be used from inside the accessibility directory.
@@ -174,7 +153,9 @@ public:
 
     bool nodeHasRole(Node*, const AtomicString& role);
 
-    AXComputedObjectAttributeCache* computedObjectAttributeCache() { return m_computedObjectAttributeCache.get(); }
+    // Counts the number of times the document has been modified. Some attribute values are cached
+    // as long as the modification count hasn't changed.
+    int modificationCount() const { return m_modificationCount; }
 
     void postNotification(RenderObject*, AXNotification, bool postToElement, PostType = PostAsynchronously);
     void postNotification(Node*, AXNotification, bool postToElement, PostType = PostAsynchronously);
@@ -198,7 +179,7 @@ private:
     HashMap<Node*, AXID> m_nodeObjectMapping;
     HashMap<AbstractInlineTextBox*, AXID> m_inlineTextBoxObjectMapping;
     HashSet<Node*> m_textMarkerNodes;
-    OwnPtr<AXComputedObjectAttributeCache> m_computedObjectAttributeCache;
+    int m_modificationCount;
 
     HashSet<AXID> m_idsInUse;
 

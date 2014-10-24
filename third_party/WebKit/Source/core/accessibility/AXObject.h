@@ -579,6 +579,14 @@ protected:
     unsigned getLengthForTextRange() const { return text().length(); }
 
     bool m_detached;
+
+private:
+    // The following cached attribute values (the ones starting with m_cached*)
+    // are only valid if m_lastModificationCount matches AXObjectCacheImpl::modificationCount().
+    mutable int m_lastModificationCount;
+    mutable bool m_cachedIsIgnored;
+
+    void updateCachedAttributeValuesIfNeeded() const;
 };
 
 #define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate) \

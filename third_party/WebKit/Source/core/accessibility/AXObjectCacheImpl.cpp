@@ -88,34 +88,11 @@ AXObjectCache* AXObjectCache::create(Document& document)
     return new AXObjectCacheImpl(document);
 }
 
-AXObjectInclusion AXComputedObjectAttributeCache::getIgnored(AXID id) const
-{
-    HashMap<AXID, CachedAXObjectAttributes>::const_iterator it = m_idMapping.find(id);
-    return it != m_idMapping.end() ? it->value.ignored : DefaultBehavior;
-}
-
-void AXComputedObjectAttributeCache::setIgnored(AXID id, AXObjectInclusion inclusion)
-{
-    HashMap<AXID, CachedAXObjectAttributes>::iterator it = m_idMapping.find(id);
-    if (it != m_idMapping.end()) {
-        it->value.ignored = inclusion;
-    } else {
-        CachedAXObjectAttributes attributes;
-        attributes.ignored = inclusion;
-        m_idMapping.set(id, attributes);
-    }
-}
-
-void AXComputedObjectAttributeCache::clear()
-{
-    m_idMapping.clear();
-}
-
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     : m_document(document)
+    , m_modificationCount(0)
     , m_notificationPostTimer(this, &AXObjectCacheImpl::notificationPostTimerFired)
 {
-    m_computedObjectAttributeCache = AXComputedObjectAttributeCache::create();
 }
 
 AXObjectCacheImpl::~AXObjectCacheImpl()
@@ -758,7 +735,7 @@ void AXObjectCacheImpl::postNotification(RenderObject* renderer, AXNotification 
     if (!renderer)
         return;
 
-    m_computedObjectAttributeCache->clear();
+    m_modificationCount++;
 
     // Get an accessibility object that already exists. One should not be created here
     // because a render update may be in progress and creating an AX object can re-trigger a layout
@@ -779,7 +756,7 @@ void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification
     if (!node)
         return;
 
-    m_computedObjectAttributeCache->clear();
+    m_modificationCount++;
 
     // Get an accessibility object that already exists. One should not be created here
     // because a render update may be in progress and creating an AX object can re-trigger a layout
@@ -797,7 +774,7 @@ void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification
 
 void AXObjectCacheImpl::postNotification(AXObject* object, Document* document, AXNotification notification, bool postToElement, PostType postType)
 {
-    m_computedObjectAttributeCache->clear();
+    m_modificationCount++;
 
     if (object && !postToElement)
         object = object->observableObject();
@@ -843,7 +820,7 @@ void AXObjectCacheImpl::handleScrollbarUpdate(FrameView* view)
 
     // We don't want to create a scroll view from this method, only update an existing one.
     if (AXObject* scrollViewObject = get(view)) {
-        m_computedObjectAttributeCache->clear();
+        m_modificationCount++;
         scrollViewObject->updateChildrenIfNecessary();
     }
 }
@@ -853,7 +830,7 @@ void AXObjectCacheImpl::handleLayoutComplete(RenderObject* renderer)
     if (!renderer)
         return;
 
-    m_computedObjectAttributeCache->clear();
+    m_modificationCount++;
 
     // Create the AXObject if it didn't yet exist - that's always safe at the end of a layout, and it
     // allows an AX notification to be sent when a page has its first layout, rather than when the
@@ -878,7 +855,7 @@ void AXObjectCacheImpl::handleAriaRoleChanged(Node* node)
 {
     if (AXObject* obj = getOrCreate(node)) {
         obj->updateAccessibilityRole();
-        m_computedObjectAttributeCache->clear();
+        m_modificationCount++;
         obj->notifyIfIgnoredValueChanged();
     }
 }

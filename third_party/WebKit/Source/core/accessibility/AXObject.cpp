@@ -134,6 +134,8 @@ AXObject::AXObject()
     , m_role(UnknownRole)
     , m_lastKnownIsIgnoredValue(DefaultBehavior)
     , m_detached(false)
+    , m_lastModificationCount(-1)
+    , m_cachedIsIgnored(false)
 {
 }
 
@@ -248,29 +250,21 @@ bool AXObject::isClickable() const
 
 bool AXObject::accessibilityIsIgnored() const
 {
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedIsIgnored;
+}
+
+void AXObject::updateCachedAttributeValuesIfNeeded() const
+{
     AXObjectCacheImpl* cache = axObjectCache();
     if (!cache)
-        return true;
+        return;
 
-    AXComputedObjectAttributeCache* attributeCache = cache->computedObjectAttributeCache();
-    if (attributeCache) {
-        AXObjectInclusion ignored = attributeCache->getIgnored(axObjectID());
-        switch (ignored) {
-        case IgnoreObject:
-            return true;
-        case IncludeObject:
-            return false;
-        case DefaultBehavior:
-            break;
-        }
-    }
+    if (cache->modificationCount() == m_lastModificationCount)
+        return;
 
-    bool result = computeAccessibilityIsIgnored();
-
-    if (attributeCache)
-        attributeCache->setIgnored(axObjectID(), result ? IgnoreObject : IncludeObject);
-
-    return result;
+    m_cachedIsIgnored = computeAccessibilityIsIgnored();
+    m_lastModificationCount = cache->modificationCount();
 }
 
 bool AXObject::accessibilityIsIgnoredByDefault() const
