@@ -21,6 +21,8 @@ namespace {
 
 const unsigned int kUsbLeftOsKey      = 0x0700e3;
 const unsigned int kUsbRightOsKey     = 0x0700e7;
+const unsigned int kUsbLeftAltKey     = 0x0700e2;
+const unsigned int kUsbRightAltKey    = 0x0700e6;
 
 const unsigned int kUsbFunctionKey    = 0x07003a;  // F1
 const unsigned int kUsbExtendedKey    = 0x070049;  // Insert
@@ -52,10 +54,22 @@ MATCHER_P2(EqualsMouseMoveEvent, x, y, "") {
   return arg.x() == x && arg.y() == y;
 }
 
+MATCHER_P2(EqualsMouseButtonEvent, button, button_down, "") {
+  return arg.button() == button && arg.button_down() == button_down;
+}
+
 static MouseEvent MakeMouseMoveEvent(int x, int y) {
   MouseEvent event;
   event.set_x(x);
   event.set_y(y);
+  return event;
+}
+
+static MouseEvent MakeMouseButtonEvent(MouseEvent::MouseButton button,
+                                       bool button_down) {
+  MouseEvent event;
+  event.set_button(button);
+  event.set_button_down(button_down);
   return event;
 }
 
@@ -208,6 +222,60 @@ TEST(NormalizingInputFilterCrosTest, MouseEvent) {
   processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
   processor->InjectMouseEvent(MakeMouseMoveEvent(0, 0));
   processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, false));
+}
+
+// Test left alt + right click is remapped to left alt + left click.
+TEST(NormalizingInputFilterCrosTest, LeftAltClick) {
+  MockInputStub stub;
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftAltKey, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(
+        EqualsMouseButtonEvent(MouseEvent::BUTTON_LEFT, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(
+        EqualsMouseButtonEvent(MouseEvent::BUTTON_LEFT, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftAltKey, false)));
+  }
+
+  // Hold the left alt key while left-clicking. ChromeOS will rewrite this as
+  // Alt+RightClick
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAltKey, true));
+  processor->InjectMouseEvent(
+      MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, true));
+  processor->InjectMouseEvent(
+      MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAltKey, false));
+}
+
+// Test that right alt + right click is unchanged.
+TEST(NormalizingInputFilterCrosTest, RightAltClick) {
+  MockInputStub stub;
+  scoped_ptr<protocol::InputFilter> processor(
+      new NormalizingInputFilterCros(&stub));
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbRightAltKey, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(
+        EqualsMouseButtonEvent(MouseEvent::BUTTON_RIGHT, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(
+        EqualsMouseButtonEvent(MouseEvent::BUTTON_RIGHT, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbRightAltKey, false)));
+  }
+
+  // Hold the right alt key while left-clicking. ChromeOS will rewrite this as
+  // Alt+RightClick
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightAltKey, true));
+  processor->InjectMouseEvent(
+      MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, true));
+  processor->InjectMouseEvent(
+      MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightAltKey, false));
 }
 
 }  // namespace remoting

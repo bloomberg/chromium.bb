@@ -48,6 +48,9 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
   // Stores the code of the OSKey while it is pressed for use as a Modifier.
   uint32 modifying_key_;
 
+  // True if the left Alt key is pressed.
+  bool left_alt_is_pressed_;
+
   DISALLOW_COPY_AND_ASSIGN(NormalizingInputFilterCros);
 };
 
