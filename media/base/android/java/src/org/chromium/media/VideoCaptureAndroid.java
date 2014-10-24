@@ -12,13 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class extends the VideoCapture base class for manipulating normal video
- * capture devices in Android, including receiving copies of preview frames via
- * Java-allocated buffers. It also includes class BuggyDeviceHack to deal with
- * troublesome devices.
+ * This class extends the VideoCaptureCamera base class for manipulating normal
+ * video capture devices in Android, including receiving copies of preview
+ * frames via Java-allocated buffers. It also includes class BuggyDeviceHack to
+ * deal with troublesome devices.
  **/
 @SuppressWarnings("deprecation")
-public class VideoCaptureAndroid extends VideoCapture {
+public class VideoCaptureAndroid extends VideoCaptureCamera {
 
     // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
     // newer OS. To work around the issues on those devices, we have to request
@@ -51,8 +51,8 @@ public class VideoCaptureAndroid extends VideoCapture {
         static void applyMinDimensions(CaptureFormat format) {
             // NOTE: this can discard requested aspect ratio considerations.
             for (IdAndSizes buggyDevice : CAPTURESIZE_BUGGY_DEVICE_LIST) {
-                if (buggyDevice.mModel.contentEquals(android.os.Build.MODEL) &&
-                        buggyDevice.mDevice.contentEquals(android.os.Build.DEVICE)) {
+                if (buggyDevice.mModel.contentEquals(android.os.Build.MODEL)
+                        && buggyDevice.mDevice.contentEquals(android.os.Build.DEVICE)) {
                     format.mWidth = (buggyDevice.mMinWidth > format.mWidth)
                             ? buggyDevice.mMinWidth : format.mWidth;
                     format.mHeight = (buggyDevice.mMinHeight > format.mHeight)
@@ -84,10 +84,10 @@ public class VideoCaptureAndroid extends VideoCapture {
     }
 
     static String getName(int id) {
-        android.hardware.Camera.CameraInfo cameraInfo = VideoCapture.getCameraInfo(id);
+        android.hardware.Camera.CameraInfo cameraInfo = VideoCaptureCamera.getCameraInfo(id);
         if (cameraInfo == null) return null;
-        return "camera " + id + ", facing " + (cameraInfo.facing ==
-                android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
+        return "camera " + id + ", facing " + (cameraInfo.facing
+                == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
     }
 
     static CaptureFormat[] getDeviceSupportedFormats(int id) {
@@ -172,8 +172,8 @@ public class VideoCaptureAndroid extends VideoCapture {
 
     @Override
     protected void allocateBuffers() {
-        mExpectedFrameSize = mCaptureFormat.mWidth * mCaptureFormat.mHeight *
-                ImageFormat.getBitsPerPixel(mCaptureFormat.mPixelFormat) / 8;
+        mExpectedFrameSize = mCaptureFormat.mWidth * mCaptureFormat.mHeight
+                * ImageFormat.getBitsPerPixel(mCaptureFormat.mPixelFormat) / 8;
         for (int i = 0; i < NUM_CAPTURE_BUFFERS; i++) {
             byte[] buffer = new byte[mExpectedFrameSize];
             mCamera.addCallbackBuffer(buffer);

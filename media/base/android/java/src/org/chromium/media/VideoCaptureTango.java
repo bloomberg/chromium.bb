@@ -20,9 +20,9 @@ import java.util.Arrays;
  * |s_CAM_PARAMS|; all devices |id| are index 0 towards the parent VideoCapture.
  **/
 @SuppressWarnings("deprecation")
-public class VideoCaptureTango extends VideoCapture {
+public class VideoCaptureTango extends VideoCaptureCamera {
 
-    static class CamParams {
+    private static class CamParams {
         final int mId;
         final String mName;
         final int mWidth;
@@ -161,8 +161,8 @@ public class VideoCaptureTango extends VideoCapture {
                     // them explicitly since they're filled to 128 on creation.
                     ByteBuffer.wrap(data, startY, sizeY).get(mFrameBuffer.array(), 0, sizeY);
                 } else if (mTangoCameraId == FOURMP_CAMERA_ID) {
-                    int startY = SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE +
-                                    SF_LINES_RESERVED + SF_LINES_DEPTH_PADDED);
+                    int startY = SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE
+                                    + SF_LINES_RESERVED + SF_LINES_DEPTH_PADDED);
                     int sizeY = SF_WIDTH * SF_LINES_BIGIMAGE;
 
                     // The spec is completely inaccurate on the location, sizes
