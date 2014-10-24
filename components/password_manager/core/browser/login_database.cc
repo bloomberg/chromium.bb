@@ -13,8 +13,10 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "sql/connection.h"
@@ -113,6 +115,30 @@ void BindAddStatement(const PasswordForm& form,
 void AddCallback(int err, sql::Statement* /*stmt*/) {
   if (err == 19 /*SQLITE_CONSTRAINT*/)
     DLOG(WARNING) << "LoginDatabase::AddLogin updated an existing form";
+}
+
+// UMA_* macros assume that the name never changes. This is a helper function
+// where this assumption doesn't hold.
+void LogDynamicUMAStat(const std::string& name,
+                       int sample,
+                       int min,
+                       int max,
+                       int bucket_size) {
+  base::HistogramBase* counter = base::Histogram::FactoryGet(
+      name,
+      min,
+      max,
+      bucket_size,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  counter->Add(sample);
+}
+
+void LogAccountStat(const std::string& name, int sample) {
+  LogDynamicUMAStat(name, sample, 0, 32, 6);
+}
+
+void LogTimesUsedStat(const std::string& name, int sample) {
+  LogDynamicUMAStat(name, sample, 0, 100, 10);
 }
 
 }  // namespace
@@ -281,7 +307,8 @@ bool LoginDatabase::InitLoginsTable() {
   return true;
 }
 
-void LoginDatabase::ReportMetrics(const std::string& sync_username) {
+void LoginDatabase::ReportMetrics(const std::string& sync_username,
+                                  bool custom_passphrase_sync_enabled) {
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT signon_realm, blacklisted_by_user, COUNT(username_value) "
@@ -289,6 +316,11 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username) {
 
   if (!s.is_valid())
     return;
+
+  std::string custom_passphrase = "WithoutCustomPassphrase";
+  if (custom_passphrase_sync_enabled) {
+    custom_passphrase = "WithCustomPassphrase";
+  }
 
   int total_accounts = 0;
   int blacklisted_sites = 0;
@@ -299,14 +331,17 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username) {
       ++blacklisted_sites;
     } else {
       total_accounts += accounts_per_site;
-      UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.AccountsPerSite",
-                                  accounts_per_site, 0, 32, 6);
+      LogAccountStat(base::StringPrintf("PasswordManager.AccountsPerSite.%s",
+                                        custom_passphrase.c_str()),
+                     accounts_per_site);
     }
   }
-  UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.TotalAccounts",
-                              total_accounts, 0, 32, 6);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("PasswordManager.BlacklistedSites",
-                              blacklisted_sites, 0, 32, 6);
+  LogAccountStat(base::StringPrintf("PasswordManager.TotalAccounts.%s",
+                                    custom_passphrase.c_str()),
+                 total_accounts);
+  LogAccountStat(base::StringPrintf("PasswordManager.BlacklistedSites.%s",
+                                    custom_passphrase.c_str()),
+                 blacklisted_sites);
 
   sql::Statement usage_statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
@@ -320,13 +355,15 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username) {
         usage_statement.ColumnInt(0));
 
     if (type == PasswordForm::TYPE_GENERATED) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "PasswordManager.TimesGeneratedPasswordUsed",
-          usage_statement.ColumnInt(1), 0, 100, 10);
+      LogTimesUsedStat(
+          base::StringPrintf("PasswordManager.TimesGeneratedPasswordUsed.%s",
+                             custom_passphrase.c_str()),
+          usage_statement.ColumnInt(1));
     } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "PasswordManager.TimesPasswordUsed",
-          usage_statement.ColumnInt(1), 0, 100, 10);
+      LogTimesUsedStat(
+          base::StringPrintf("PasswordManager.TimesPasswordUsed.%s",
+                             custom_passphrase.c_str()),
+          usage_statement.ColumnInt(1));
     }
   }
 

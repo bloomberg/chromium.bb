@@ -57,7 +57,8 @@ class TestPasswordStore : public PasswordStore {
   void WrapModificationTask(ModificationTask task) override;
 
   // Unused portions of PasswordStore interface
-  void ReportMetricsImpl(const std::string& sync_username) override {}
+  void ReportMetricsImpl(const std::string& sync_username,
+                         bool custom_passphrase_sync_enabled) override {}
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) override;

@@ -87,9 +87,7 @@ PasswordStore::PasswordStore(
       observers_(new ObserverListThreadSafe<Observer>()),
       shutdown_called_(false) {}
 
-bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
-                         const std::string& sync_username) {
-  ReportMetrics(sync_username);
+bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
   ScheduleTask(base::Bind(&PasswordStore::InitSyncableService, this, flare));
 #endif
@@ -174,9 +172,12 @@ void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
   Schedule(&PasswordStore::GetBlacklistLoginsImpl, consumer);
 }
 
-void PasswordStore::ReportMetrics(const std::string& sync_username) {
-  ScheduleTask(base::Bind(&PasswordStore::ReportMetricsImpl, this,
-                          sync_username));
+void PasswordStore::ReportMetrics(const std::string& sync_username,
+                                  bool custom_passphrase_sync_enabled) {
+  ScheduleTask(base::Bind(&PasswordStore::ReportMetricsImpl,
+                          this,
+                          sync_username,
+                          custom_passphrase_sync_enabled));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {

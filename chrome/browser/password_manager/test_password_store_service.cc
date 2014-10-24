@@ -11,8 +11,7 @@ KeyedService* TestPasswordStoreService::Build(
     content::BrowserContext* /*profile*/) {
   scoped_refptr<password_manager::PasswordStore> store(
       new password_manager::TestPasswordStore);
-  if (!store.get() ||
-      !store->Init(syncer::SyncableService::StartSyncFlare(), ""))
+  if (!store.get() || !store->Init(syncer::SyncableService::StartSyncFlare()))
     return NULL;
   return new TestPasswordStoreService(store);
 }

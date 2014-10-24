@@ -205,7 +205,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   done.Wait();
 
   store_ = CreatePasswordStore();
-  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), ""));
+  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
   MockPasswordStoreConsumer consumer;
 
@@ -258,7 +258,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
 // Crashy.  http://crbug.com/86558
 TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   store_ = CreatePasswordStore();
-  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), ""));
+  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
   PasswordFormData form_data = {
     PasswordForm::SCHEME_HTML,
@@ -301,7 +301,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   done.Wait();
 
   store_ = CreatePasswordStore();
-  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), ""));
+  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
   MockPasswordStoreConsumer password_consumer;
   // Make sure we quit the MessageLoop even if the test fails.
@@ -363,7 +363,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
 
 TEST_F(PasswordStoreWinTest, EmptyLogins) {
   store_ = CreatePasswordStore();
-  store_->Init(syncer::SyncableService::StartSyncFlare(), "");
+  store_->Init(syncer::SyncableService::StartSyncFlare());
 
   PasswordFormData form_data = {
     PasswordForm::SCHEME_HTML,
@@ -397,7 +397,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
 
 TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
   store_ = CreatePasswordStore();
-  store_->Init(syncer::SyncableService::StartSyncFlare(), "");
+  store_->Init(syncer::SyncableService::StartSyncFlare());
 
   MockPasswordStoreConsumer consumer;
 
@@ -418,7 +418,7 @@ TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
 
 TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
   store_ = CreatePasswordStore();
-  store_->Init(syncer::SyncableService::StartSyncFlare(), "");
+  store_->Init(syncer::SyncableService::StartSyncFlare());
 
   MockPasswordStoreConsumer consumer;
 

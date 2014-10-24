@@ -22098,7 +22098,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PasswordManager.AccountsPerSite">
-  <owner>dubroy@chromium.org</owner>
+  <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     The number of accounts stored per site in the password manager (one event
@@ -22145,7 +22145,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PasswordManager.BlacklistedSites">
-  <owner>dubroy@chromium.org</owner>
+  <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     The total number of sites that the user has blacklisted. Recorded by
@@ -22288,7 +22288,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PasswordManager.TimesGeneratedPasswordUsed">
-  <owner>dubroy@chromium.org</owner>
+  <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     The number of times each generated password has been used to log in.
@@ -22298,7 +22298,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PasswordManager.TimesPasswordUsed">
-  <owner>dubroy@chromium.org</owner>
+  <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     The number of times each saved password has been used to log in. Does not
@@ -22308,7 +22308,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PasswordManager.TotalAccounts">
-  <owner>dubroy@chromium.org</owner>
+  <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     The number of accounts stored in the password manager (across all sites)
@@ -56818,6 +56818,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   </affected-histogram>
   <affected-histogram name="Renderer4.BeginToFinish"/>
   <affected-histogram name="Renderer4.BeginToFinishDoc"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PasswordCustomPassphrase" separator=".">
+  <suffix name="WithCustomPassphrase"/>
+  <suffix name="WithoutCustomPassphrase"/>
+  <affected-histogram name="PasswordManager.AccountsPerSite"/>
+  <affected-histogram name="PasswordManager.BlacklistedSites"/>
+  <affected-histogram name="PasswordManager.TimesGeneratedPasswordUsed"/>
+  <affected-histogram name="PasswordManager.TimesPasswordUsed"/>
+  <affected-histogram name="PasswordManager.TotalAccounts"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PasswordManagerMonitor">

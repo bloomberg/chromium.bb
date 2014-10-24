@@ -147,7 +147,7 @@ class TestPasswordManager : public PasswordManager {
 
 class PasswordFormManagerTest : public testing::Test {
  public:
-  PasswordFormManagerTest() : client_(NULL /*password_store*/) {}
+  PasswordFormManagerTest() {}
 
   // Types of possible outcomes of simulated matching, see
   // SimulateMatchingPhase.
@@ -169,18 +169,14 @@ class PasswordFormManagerTest : public testing::Test {
     saved_match_.password_value = ASCIIToUTF16("test1");
     saved_match_.other_possible_usernames.push_back(
         ASCIIToUTF16("test2@gmail.com"));
+
+    mock_store_ = new NiceMock<MockPasswordStore>();
+    client_.reset(new TestPasswordManagerClient(mock_store_.get()));
   }
 
   virtual void TearDown() {
     if (mock_store_.get())
       mock_store_->Shutdown();
-  }
-
-  void InitializeMockStore() {
-    if (!mock_store_.get()) {
-      mock_store_ = new NiceMock<MockPasswordStore>();
-      ASSERT_TRUE(mock_store_.get());
-    }
   }
 
   MockPasswordStore* mock_store() const { return mock_store_.get(); }
@@ -233,7 +229,7 @@ class PasswordFormManagerTest : public testing::Test {
     return match;
   }
 
-  TestPasswordManagerClient* client() { return &client_; }
+  TestPasswordManagerClient* client() { return client_.get(); }
 
  private:
   // Necessary for callbacks, and for TestAutofillDriver.
@@ -242,7 +238,7 @@ class PasswordFormManagerTest : public testing::Test {
   PasswordForm observed_form_;
   PasswordForm saved_match_;
   scoped_refptr<NiceMock<MockPasswordStore>> mock_store_;
-  TestPasswordManagerClient client_;
+  scoped_ptr<TestPasswordManagerClient> client_;
 };
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
@@ -414,7 +410,6 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   // will verify in the end that this did not happen.
   saved_match()->submit_element.clear();
 
-  InitializeMockStore();
   TestPasswordManagerClient client_with_store(mock_store());
   PasswordFormManager manager(NULL,
                               &client_with_store,
@@ -534,7 +529,7 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
 
 TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   scoped_refptr<TestPasswordStore> password_store = new TestPasswordStore;
-  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare(), ""));
+  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare()));
 
   TestPasswordManagerClient client_with_store(password_store.get());
   TestPasswordManager password_manager(&client_with_store);
@@ -855,8 +850,6 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
-  InitializeMockStore();
-
   // We've found this form on a website:
   PasswordForm encountered_form;
   encountered_form.origin = GURL("http://accounts.google.com/LoginAuth");
@@ -1070,7 +1063,7 @@ TEST_F(PasswordFormManagerTest,
 
 TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   scoped_refptr<TestPasswordStore> password_store = new TestPasswordStore;
-  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare(), ""));
+  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare()));
 
   TestPasswordManagerClient client_with_store(password_store.get());
   TestPasswordManager password_manager(&client_with_store);
@@ -1134,7 +1127,6 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
 }
 
 TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
-  InitializeMockStore();
   TestPasswordManagerClient client_with_store(mock_store());
   TestPasswordManager password_manager(&client_with_store);
   EXPECT_CALL(*client_with_store.mock_driver(), IsOffTheRecord())
@@ -1194,7 +1186,6 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
 }
 
 TEST_F(PasswordFormManagerTest, UploadFormData_AccountCreationPassword) {
-  InitializeMockStore();
   TestPasswordManagerClient client_with_store(mock_store());
   TestPasswordManager password_manager(&client_with_store);
   EXPECT_CALL(*client_with_store.mock_driver(), IsOffTheRecord())
@@ -1255,7 +1246,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_AccountCreationPassword) {
 
 TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
   scoped_refptr<TestPasswordStore> password_store = new TestPasswordStore;
-  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare(), ""));
+  CHECK(password_store->Init(syncer::SyncableService::StartSyncFlare()));
 
   TestPasswordManagerClient client_with_store(password_store.get());
   TestPasswordManager password_manager(&client_with_store);

@@ -51,6 +51,7 @@ class SyncableService;
 
 namespace password_manager {
 
+class PasswordManagerClient;
 class PasswordStoreConsumer;
 class PasswordSyncableService;
 
@@ -127,9 +128,7 @@ class PasswordStore : protected PasswordStoreSync,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
   // Reimplement this to add custom initialization. Always call this too.
-  // |sync_username| is specified to aid in metrics reporting.
-  virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare,
-                    const std::string& sync_username);
+  virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare);
 
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const autofill::PasswordForm& form);
@@ -170,8 +169,11 @@ class PasswordStore : protected PasswordStoreSync,
   // consumer is destroyed.
   virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
-  // Reports usage metrics for the database.
-  virtual void ReportMetrics(const std::string& sync_username);
+  // Reports usage metrics for the database. |sync_username| and
+  // |custom_passphrase_sync_enabled| determine some of the UMA stats that
+  // may be reported.
+  virtual void ReportMetrics(const std::string& sync_username,
+                             bool custom_passphrase_sync_enabled);
 
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
@@ -205,7 +207,8 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Methods below will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.
-  virtual void ReportMetricsImpl(const std::string& sync_username) = 0;
+  virtual void ReportMetricsImpl(const std::string& sync_username,
+                                 bool custom_passphrase_sync_enabled) = 0;
 
   // Bring PasswordStoreSync methods to the scope of PasswordStore. Otherwise,
   // base::Bind can't be used with them because it fails to cast PasswordStore

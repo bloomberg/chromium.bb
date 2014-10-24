@@ -18,6 +18,11 @@ class PasswordFormManager;
 class PasswordManagerDriver;
 class PasswordStore;
 
+enum CustomPassphraseState {
+  WITHOUT_CUSTOM_PASSPHRASE,
+  ONLY_CUSTOM_PASSPHRASE
+};
+
 // An abstraction of operations that depend on the embedders (e.g. Chrome)
 // environment.
 class PasswordManagerClient {
@@ -38,6 +43,10 @@ class PasswordManagerClient {
   // Return true if |form| should not be available for autofill.
   virtual bool ShouldFilterAutofillResult(
       const autofill::PasswordForm& form) = 0;
+
+  // Return the username that the user is syncing with. Should return an empty
+  // string if sync is not enabled for passwords.
+  virtual std::string GetSyncUsername() const = 0;
 
   // Returns true if |username| and |origin| correspond to the account which is
   // syncing.
@@ -88,9 +97,10 @@ class PasswordManagerClient {
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
       const std::string& experiment_name);
 
-  // Returns true if password sync is enabled in the embedder. The default
-  // implementation returns false.
-  virtual bool IsPasswordSyncEnabled();
+  // Returns true if password sync is enabled in the embedder. Return value for
+  // custom passphrase users depends on |state|. The default implementation
+  // always returns false.
+  virtual bool IsPasswordSyncEnabled(CustomPassphraseState state);
 
   // Only for clients which registered with a LogRouter: If called with
   // |router_can_be_used| set to false, the client may no longer use the

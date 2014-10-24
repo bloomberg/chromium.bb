@@ -227,11 +227,9 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #else
   NOTIMPLEMENTED();
 #endif
-  std::string sync_username =
-      password_manager_sync_metrics::GetSyncUsername(profile);
   if (!ps.get() ||
-      !ps->Init(sync_start_util::GetFlareForSyncableService(profile->GetPath()),
-                sync_username)) {
+      !ps->Init(
+          sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
     NOTREACHED() << "Could not initialize password manager.";
     return NULL;
   }

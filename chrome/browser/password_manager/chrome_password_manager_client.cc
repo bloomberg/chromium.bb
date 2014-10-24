@@ -134,6 +134,10 @@ bool ChromePasswordManagerClient::ShouldFilterAutofillResult(
   return false;
 }
 
+std::string ChromePasswordManagerClient::GetSyncUsername() const {
+  return password_manager_sync_metrics::GetSyncUsername(profile_);
+}
+
 bool ChromePasswordManagerClient::IsSyncAccountCredential(
     const std::string& username, const std::string& origin) const {
   return password_manager_sync_metrics::IsSyncAccountCredential(
@@ -237,16 +241,18 @@ ChromePasswordManagerClient::GetProbabilityForExperiment(
   return enabled_probability;
 }
 
-bool ChromePasswordManagerClient::IsPasswordSyncEnabled() {
+bool ChromePasswordManagerClient::IsPasswordSyncEnabled(
+    password_manager::CustomPassphraseState state) {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  // Don't consider sync enabled if the user has a custom passphrase. See
-  // crbug.com/358998 for more details.
-  if (sync_service &&
-      sync_service->HasSyncSetupCompleted() &&
+  if (sync_service && sync_service->HasSyncSetupCompleted() &&
       sync_service->SyncActive() &&
-      !sync_service->IsUsingSecondaryPassphrase()) {
-    return sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS);
+      sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS)) {
+    if (sync_service->IsUsingSecondaryPassphrase()) {
+      return state == password_manager::ONLY_CUSTOM_PASSPHRASE;
+    } else {
+      return state == password_manager::WITHOUT_CUSTOM_PASSPHRASE;
+    }
   }
   return false;
 }

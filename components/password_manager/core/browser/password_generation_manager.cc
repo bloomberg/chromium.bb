@@ -49,8 +49,11 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
     return false;
   }
 
-  if (!client_->IsPasswordSyncEnabled()) {
-    DVLOG(2) << "Generation disabled because passwords are not being synced";
+  // Don't consider sync enabled if the user has a custom passphrase. See
+  // crbug.com/358998 for more details.
+  if (!client_->IsPasswordSyncEnabled(WITHOUT_CUSTOM_PASSPHRASE)) {
+    DVLOG(2) << "Generation disabled because passwords are not being synced or"
+             << " custom passphrase is used.";
     return false;
   }
 

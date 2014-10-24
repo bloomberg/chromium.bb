@@ -18,6 +18,8 @@
 
 namespace password_manager {
 
+class PasswordManagerClient;
+
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.
@@ -31,7 +33,8 @@ class LoginDatabase {
   bool Init(const base::FilePath& db_path);
 
   // Reports usage metrics to UMA.
-  void ReportMetrics(const std::string& sync_username);
+  void ReportMetrics(const std::string& sync_username,
+                     bool custom_passphrase_sync_enabled);
 
   // Adds |form| to the list of remembered password forms. Returns the list of
   // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}

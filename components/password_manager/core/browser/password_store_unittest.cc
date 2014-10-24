@@ -68,7 +68,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
       base::MessageLoopProxy::current(),
       base::MessageLoopProxy::current(),
       login_db_.release()));
-  store->Init(syncer::SyncableService::StartSyncFlare(), "");
+  store->Init(syncer::SyncableService::StartSyncFlare());
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
   // The passwords are all empty because PasswordStoreDefault doesn't store the
@@ -199,9 +199,8 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
       base::MessageLoopProxy::current(),
       login_db_.release()));
   StartSyncFlareMock mock;
-  store->Init(base::Bind(&StartSyncFlareMock::StartSyncFlare,
-                         base::Unretained(&mock)),
-              "");
+  store->Init(
+      base::Bind(&StartSyncFlareMock::StartSyncFlare, base::Unretained(&mock)));
   {
     PasswordForm form;
     EXPECT_CALL(mock, StartSyncFlare(syncer::PASSWORDS));

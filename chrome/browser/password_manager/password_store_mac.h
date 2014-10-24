@@ -37,8 +37,7 @@ class PasswordStoreMac : public password_manager::PasswordStore {
       password_manager::LoginDatabase* login_db);
 
   // Initializes |thread_|.
-  bool Init(const syncer::SyncableService::StartSyncFlare& flare,
-            const std::string& sync_username) override;
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
 
   // Stops |thread_|.
   void Shutdown() override;
@@ -50,7 +49,8 @@ class PasswordStoreMac : public password_manager::PasswordStore {
       override;
 
  private:
-  void ReportMetricsImpl(const std::string& sync_username) override;
+  void ReportMetricsImpl(const std::string& sync_username,
+                         bool custom_passphrase_sync_enabled) override;
   password_manager::PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) override;
   password_manager::PasswordStoreChangeList UpdateLoginImpl(

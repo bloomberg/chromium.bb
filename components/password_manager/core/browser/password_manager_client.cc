@@ -20,7 +20,9 @@ PasswordManagerClient::GetProbabilityForExperiment(
   return 0;
 }
 
-bool PasswordManagerClient::IsPasswordSyncEnabled() { return false; }
+bool PasswordManagerClient::IsPasswordSyncEnabled(CustomPassphraseState state) {
+  return false;
+}
 
 void PasswordManagerClient::OnLogRouterAvailabilityChanged(
     bool router_can_be_used) {

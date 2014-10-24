@@ -26,9 +26,11 @@ PasswordStoreDefault::PasswordStoreDefault(
 PasswordStoreDefault::~PasswordStoreDefault() {
 }
 
-void PasswordStoreDefault::ReportMetricsImpl(const std::string& sync_username) {
+void PasswordStoreDefault::ReportMetricsImpl(
+    const std::string& sync_username,
+    bool custom_passphrase_sync_enabled) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  login_db_->ReportMetrics(sync_username);
+  login_db_->ReportMetrics(sync_username, custom_passphrase_sync_enabled);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(

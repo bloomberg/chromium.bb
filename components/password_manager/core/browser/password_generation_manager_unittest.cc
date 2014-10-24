@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -70,12 +71,21 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
   TestPasswordManagerClient(scoped_ptr<PrefService> prefs)
-      : prefs_(prefs.Pass()), driver_(this), is_sync_enabled_(false) {}
+      : prefs_(prefs.Pass()),
+        store_(new TestPasswordStore),
+        driver_(this),
+        is_sync_enabled_(false) {}
 
-  PasswordStore* GetPasswordStore() override { return NULL; }
+  ~TestPasswordManagerClient() override {
+    store_->Shutdown();
+  }
+
+  PasswordStore* GetPasswordStore() override { return store_.get(); }
   PrefService* GetPrefs() override { return prefs_.get(); }
   PasswordManagerDriver* GetDriver() override { return &driver_; }
-  bool IsPasswordSyncEnabled() override { return is_sync_enabled_; }
+  bool IsPasswordSyncEnabled(CustomPassphraseState state) override {
+    return is_sync_enabled_;
+  }
 
   void set_is_password_sync_enabled(bool enabled) {
     is_sync_enabled_ = enabled;
@@ -83,6 +93,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
  private:
   scoped_ptr<PrefService> prefs_;
+  scoped_refptr<TestPasswordStore> store_;
   TestPasswordManagerDriver driver_;
   bool is_sync_enabled_;
 };

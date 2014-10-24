@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -25,6 +27,7 @@
 
 using content::BrowserContext;
 using content::WebContents;
+using testing::Return;
 
 namespace {
 
@@ -328,4 +331,58 @@ TEST_F(ChromePasswordManagerClientTest,
       GURL("https://other.site.com/ServiceLogin?continue="
            "https://passwords.google.com&rart=234"));
   EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+}
+
+TEST_F(ChromePasswordManagerClientTest, IsPasswordSyncEnabled) {
+  ChromePasswordManagerClient* client = GetClient();
+
+  ProfileSyncServiceMock* mock_sync_service =
+      static_cast<ProfileSyncServiceMock*>(
+          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              profile(), ProfileSyncServiceMock::BuildMockProfileSyncService));
+
+  syncer::ModelTypeSet active_types;
+  active_types.Put(syncer::PASSWORDS);
+  EXPECT_CALL(*mock_sync_service, HasSyncSetupCompleted())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_sync_service, SyncActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
+      .WillRepeatedly(Return(active_types));
+  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+
+  // Passwords are syncing and custom passphrase isn't used.
+  EXPECT_FALSE(
+      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
+  EXPECT_TRUE(client->IsPasswordSyncEnabled(
+      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+
+  // Again, using a custom passphrase.
+  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(true));
+
+  EXPECT_TRUE(
+      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
+  EXPECT_FALSE(client->IsPasswordSyncEnabled(
+      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+
+  // Always return false if we aren't syncing passwords.
+  active_types.Remove(syncer::PASSWORDS);
+  active_types.Put(syncer::BOOKMARKS);
+  EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
+      .WillRepeatedly(Return(active_types));
+
+  EXPECT_FALSE(
+      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
+  EXPECT_FALSE(client->IsPasswordSyncEnabled(
+      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+
+  // Again, without a custom passphrase.
+  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+
+  EXPECT_FALSE(
+      client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
+  EXPECT_FALSE(client->IsPasswordSyncEnabled(
+      password_manager::WITHOUT_CUSTOM_PASSPHRASE));
 }

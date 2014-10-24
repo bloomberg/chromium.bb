@@ -45,7 +45,8 @@ typedef autofill::SavePasswordProgressLogger Logger;
 // that this is only ever called from a single thread in order to
 // avoid needing to lock (a static boolean flag is then sufficient to
 // guarantee running only once).
-void ReportMetrics(bool password_manager_enabled) {
+void ReportMetrics(bool password_manager_enabled,
+                   PasswordManagerClient* client) {
   static base::PlatformThreadId initial_thread_id =
       base::PlatformThread::CurrentId();
   DCHECK(initial_thread_id == base::PlatformThread::CurrentId());
@@ -55,6 +56,14 @@ void ReportMetrics(bool password_manager_enabled) {
     return;
   ran_once = true;
 
+  PasswordStore* store = client->GetPasswordStore();
+  // May be NULL in tests.
+  if (store) {
+    store->ReportMetrics(
+        client->GetSyncUsername(),
+        client->IsPasswordSyncEnabled(
+            password_manager::ONLY_CUSTOM_PASSPHRASE));
+  }
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
 }
 
@@ -124,7 +133,7 @@ PasswordManager::PasswordManager(PasswordManagerClient* client)
   saving_passwords_enabled_.Init(prefs::kPasswordManagerSavingEnabled,
                                  client_->GetPrefs());
 
-  ReportMetrics(*saving_passwords_enabled_);
+  ReportMetrics(*saving_passwords_enabled_, client_);
 }
 
 PasswordManager::~PasswordManager() {
