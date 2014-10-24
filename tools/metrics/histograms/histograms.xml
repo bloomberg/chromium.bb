@@ -14780,6 +14780,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.AlternateProtocolUsage.1000Truncated"
     enum="AlternateProtocolUsage">
+  <obsolete>
+    Deprecated 10/2014.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     Breakdown of how requests which could potentially make use of an alternate
@@ -14790,6 +14793,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.AlternateProtocolUsage.200Truncated"
     enum="AlternateProtocolUsage">
+  <obsolete>
+    Deprecated 10/2014.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     Breakdown of how requests which could potentially make use of an alternate

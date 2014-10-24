@@ -120,12 +120,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // Returns all Alternate-Protocol mappings.
   const AlternateProtocolMap& alternate_protocol_map() const override;
 
-  void SetAlternateProtocolExperiment(
-      AlternateProtocolExperiment experiment) override;
-
   void SetAlternateProtocolProbabilityThreshold(double threshold) override;
-
-  AlternateProtocolExperiment GetAlternateProtocolExperiment() const override;
 
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.
@@ -189,7 +184,6 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       std::vector<std::string>* spdy_servers,
       SpdySettingsMap* spdy_settings_map,
       AlternateProtocolMap* alternate_protocol_map,
-      AlternateProtocolExperiment alternate_protocol_experiment,
       SupportsQuicMap* supports_quic_map,
       bool detected_corrupted_prefs);
 
