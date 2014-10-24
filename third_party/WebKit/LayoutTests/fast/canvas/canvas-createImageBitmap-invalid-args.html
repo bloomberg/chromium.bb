@@ -8,150 +8,130 @@
 description("Ensure correct behavior of createImageBitmap for invalid inputs.");
 window.jsTestIsAsync = true;
 
-var TypeError = "TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided.";
-var IndexSizeError = "IndexSizeError: Index or size was negative, or greater than the allowed value.";
+var reason;
 
-var image;
-var testBitmap; // an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
-var d;          // image.imageData
-var blob;
-var invalidBlob;
-var invalidBlobTestPassed = false;
-var invalidCanvasTestPassed = false;
-
-// Draw to an auxillary canvas.
-var aCanvas = document.createElement("canvas");
-aCanvas.setAttribute("width", "200");
-aCanvas.setAttribute("height", "200");
-var aCtx = aCanvas.getContext("2d");
-
-// Create a terapixel canvas to generate an invalid canvas through allocation failure
-var invalidCanvas = document.createElement("canvas");
-invalidCanvas.setAttribute("width", "1000000");
-invalidCanvas.setAttribute("height", "1000000");
-
-image = new Image();
-image.onload = imageLoaded;
-
-// Before image loads
-shouldThrow("createImageBitmap(image)");
-image.src = aCanvas.toDataURL();
-
-video = document.createElement("video");
-video.addEventListener("canplaythrough", videoLoaded, false);
-
-// Before video loads
-shouldThrow("createImageBitmap(video)");
-video.src = "../../compositing/resources/video.ogv";
-
-var imageLoaded = false;
-var videoLoaded = false;
-var imageBitmapLoaded = false;
-var blobLoaded = false;
-var invalidBlobLoaded = false;
-
-function imageLoaded() {
-    createImageBitmap(image).then(imageBitmapLoadedCallback, function() {
-        testFailed("Promise was rejected.");
-        finishJSTest();
+function shouldBeRejected(promise, message) {
+    return promise.then(function() {
+        testFailed('Resolved unexpectedly: ' + message);
+    }, function(e) {
+        reason = e;
+        testPassed('Rejected as expected: ' + message);
+        shouldBeTrue('reason instanceof Error');
+        debug(e);
     });
-    d = aCtx.getImageData(0, 0, 200, 200);
-    imageLoaded = true;
-    loaded();
 }
 
-function videoLoaded() {
-    videoLoaded = true;
-    loaded();
+function checkInvalidRange(source, message) {
+    return Promise.resolve().then(function() {
+        return shouldBeRejected(createImageBitmap(source, 0, 0, 10, 0), message + ' / invalid range');
+    }).then(function() {
+        return shouldBeRejected(createImageBitmap(source, 0, 0, 0, 10), message + ' / invalid range');
+    });
 }
 
-function imageBitmapLoadedCallback(imageBitmap) {
-    testBitmap = imageBitmap;
-    imageBitmapLoaded = true;
-    loaded();
+function createCanvas() {
+    return new Promise(function(resolve, reject) {
+        var canvas = document.createElement('canvas');
+        canvas.setAttribute('width', '200');
+        canvas.setAttribute('height', '200');
+        resolve(canvas);
+    });
 }
 
-var xhr = new XMLHttpRequest();
-xhr.open("GET", 'resources/pattern.png');
-xhr.responseType = 'blob';
-xhr.send();
-xhr.onload = function() {
-    blob = xhr.response;
-    blobLoaded = true;
-    loaded();
+function createInvalidCanvas() {
+    // Create a terapixel canvas to generate an invalid canvas through
+    // allocation failure
+    return new Promise(function(resolve, reject) {
+        var canvas = document.createElement('canvas');
+        canvas.setAttribute('width', '100000000');
+        canvas.setAttribute('height', '100000000');
+        resolve(canvas);
+    });
 }
 
-var xhr2 = new XMLHttpRequest();
-xhr2.open("GET", 'resources/shadow-offset.js');
-xhr2.responseType = 'blob';
-xhr2.send();
-xhr2.onload = function() {
-    invalidBlob = xhr2.response;
-    invalidBlobLoaded = true;
-    loaded();
+function createVideo() {
+    return new Promise(function(resolve, reject) {
+        var video = document.createElement('video');
+        video.addEventListener('canplaythrough', resolve.bind(undefined, video), false);
+        video.src = '../../compositing/resources/video.ogv';
+    });
 }
 
-var finishIfDoneCallsRemaining = 2;
-function finishIfDone() {
-    finishIfDoneCallsRemaining--;
-    if (!finishIfDoneCallsRemaining) {
-        // Because promise fulfillment is asynchonous, pass/fail messages
-        // must be handled here to ensure a deterministic message order.
-        if (invalidBlobTestPassed) {
-            testPassed("createImageBitmap(invalidBlob) was rejected.");
-        } else {
-            testFailed("Invalid blob fulfilled.");
-        }
-        if (invalidCanvasTestPassed) {
-            testPassed("createImageBitmap(invalidCanvas) was rejected.");
-        } else {
-            testFailed("Invalid canvas fulfilled.");
-        }
-        finishJSTest();
-    }
-}
-
-function loaded() {
-    if (imageLoaded && videoLoaded && imageBitmapLoaded && blobLoaded && invalidBlobLoaded) {
-        shouldThrow("createImageBitmap(undefined)", "TypeError");
-        shouldThrow("createImageBitmap(null)", "TypeError");
-
-        shouldThrow("createImageBitmap(image, 0, 0, 10, 0)");
-        shouldThrow("createImageBitmap(image, 0, 0, 0, 10)");
-
-        shouldThrow("createImageBitmap(video, 0, 0, 10, 0)");
-        shouldThrow("createImageBitmap(video, 0, 0, 0, 10)");
-
-        shouldThrow("createImageBitmap(aCanvas, 0, 0, 10, 0)");
-        shouldThrow("createImageBitmap(aCanvas, 0, 0, 0, 10)");
-
-        shouldThrow("createImageBitmap(d, 0, 0, 10, 0)");
-        shouldThrow("createImageBitmap(d, 0, 0, 0, 10)");
-
-        shouldThrow("createImageBitmap(aCtx, 0, 0, 10, 0)");
-        shouldThrow("createImageBitmap(aCtx, 0, 0, 0, 10)");
-
-        shouldThrow("createImageBitmap(testBitmap, 0, 0, 10, 0)");
-        shouldThrow("createImageBitmap(testBitmap, 0, 0, 0, 10)");
-
-        shouldThrow("createImageBitmap(blob, 0, 0, 10, 0)");
-        shouldThrow("createImageBitmap(blob, 0, 0, 0, 10)");
-
-        createImageBitmap(invalidBlob).then(function() {
-            finishIfDone();
-        }, function() {
-            invalidBlobTestPassed = true;
-            finishIfDone();
+function createImage() {
+    return createCanvas().then(function(canvas) {
+        var image = new Image();
+        var promise = new Promise(function(resolve, reject) {
+            image.onload = resolve.bind(undefined, image);
         });
-
-        createImageBitmap(invalidCanvas).then(function() {
-            finishIfDone();
-        }, function() {
-            invalidCanvasTestPassed = true;
-            finishIfDone();
-        });
-        }
+        image.src = canvas.toDataURL();
+        return promise;
+    });
 }
+
+function createBlob(url) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.onload = function() {
+            resolve(xhr.response);
+        };
+        xhr.onerror = reject;
+        xhr.send();
+    });
+}
+
+Promise.resolve().then(function() {
+    return shouldBeRejected(createImageBitmap(undefined), 'undefined');
+}).then(function() {
+    return shouldBeRejected(createImageBitmap(null), 'null');
+}).then(function() {
+    return shouldBeRejected(createImageBitmap(new Image), 'empty image');
+}).then(function() {
+    return shouldBeRejected(createImageBitmap(document.createElement('video')), 'empty video');
+}).then(function() {
+    return createImage().then(function(image) {
+        return checkInvalidRange(image, 'image');
+    });
+}).then(function() {
+    return createVideo().then(function(video) {
+        return checkInvalidRange(video, 'video');
+    });
+}).then(function() {
+    return createCanvas().then(function(canvas) {
+        return checkInvalidRange(canvas, 'canvas');
+    });
+}).then(function() {
+    return createCanvas().then(function(canvas) {
+        return checkInvalidRange(canvas.getContext('2d'), 'canvas context');
+    });
+}).then(function() {
+    return createCanvas().then(function(canvas) {
+        var imagedata = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+        return checkInvalidRange(imagedata, 'canvas imagedata')
+    });
+}).then(function() {
+    return createImage().then(function(image) {
+        return createImageBitmap(image);
+    }).then(function(bitmap) {
+        return checkInvalidRange(bitmap, 'image bitmap');
+    });
+}).then(function() {
+    return createBlob('resources/pattern.png').then(function(blob) {
+        return checkInvalidRange(blob, 'blob');
+    });
+}).then(function() {
+    return createBlob('resources/shadow-offset.js').then(function(blob) {
+        return shouldBeRejected(createImageBitmap(blob), 'invalid blob');
+    });
+}).then(function() {
+    return createInvalidCanvas().then(function(invalidCanvas) {
+        return shouldBeRejected(createImageBitmap(invalidCanvas), 'invalid canvas');
+    });
+}).catch(function(e) {
+    testFailed('Unexpected rejection: ' + e);
+}).then(finishJSTest, finishJSTest);
+
 </script>
 </body>
 </html>

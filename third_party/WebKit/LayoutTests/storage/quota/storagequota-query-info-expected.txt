@@ -10,9 +10,9 @@ PASS quota is >= usage
 PASS usage is >= 0
 PASS quota is >= usage
 * Querying about unknown storage.
-PASS navigator.storageQuota.queryInfo('unknown') threw exception TypeError: Failed to execute 'queryInfo' on 'StorageQuota': parameter 1 ('unknown') is not a valid enum value..
+PASS rejected as expected: TypeError: Failed to execute 'queryInfo' on 'StorageQuota': parameter 1 ('unknown') is not a valid enum value.
 * Querying with missing storage type.
-PASS navigator.storageQuota.queryInfo() threw exception TypeError: Failed to execute 'queryInfo' on 'StorageQuota': 1 argument required, but only 0 present..
+PASS rejected as expected: TypeError: Failed to execute 'queryInfo' on 'StorageQuota': 1 argument required, but only 0 present.
 Finished running tests.
 PASS successfullyParsed is true
 

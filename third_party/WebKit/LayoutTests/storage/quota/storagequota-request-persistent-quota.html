@@ -32,8 +32,11 @@ function runRequestQuotaTest() {
 
 function runRequestQuotaWithMisingArgumentTest() {
     debug("* Requesting persistent quota with missing argument.");
-    shouldThrow("navigator.storageQuota.requestPersistentQuota()");
-    runNextTest();
+    navigator.storageQuota.requestPersistentQuota().then(function() {
+        testFailed('resolved unexpectedly');
+    }, function(e) {
+        testPassed('rejected as expected: ' + e);
+    }).then(runNextTest);
 }
 
 function runRequestQuotaWithNegativeValueTest() {

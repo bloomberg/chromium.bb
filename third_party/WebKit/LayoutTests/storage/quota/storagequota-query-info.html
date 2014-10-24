@@ -46,14 +46,20 @@ function runQueryPersistentTest() {
 
 function runQueryUnknownTest() {
     debug("* Querying about unknown storage.");
-    shouldThrow("navigator.storageQuota.queryInfo('unknown')");
-    runNextTest();
+    navigator.storageQuota.queryInfo('unknown').then(function() {
+        testFailed('resolved unexpectedly');
+    }, function(e) {
+        testPassed('rejected as expected: ' + e);
+    }).then(runNextTest);
 }
 
 function runQueryWithMissingArgumentTest() {
     debug("* Querying with missing storage type.");
-    shouldThrow("navigator.storageQuota.queryInfo()");
-    runNextTest();
+    navigator.storageQuota.queryInfo().then(function() {
+        testFailed('resolved unexpectedly');
+    }, function(e) {
+        testPassed('rejected as expected: ' + e);
+    }).then(runNextTest);
 }
 
 // End of test body functions ---------------------------------------------
