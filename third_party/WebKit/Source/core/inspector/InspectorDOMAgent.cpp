@@ -984,6 +984,9 @@ static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWi
             const ShadowRoot* shadowRoot = toShadowRoot(node);
             if (shadowRoot->olderShadowRoot())
                 return shadowRoot->olderShadowRoot();
+            Node* host = shadowRoot->host();
+            if (host && host->hasChildren())
+                return host->firstChild();
         }
         if (node->nextSibling())
             return node->nextSibling();

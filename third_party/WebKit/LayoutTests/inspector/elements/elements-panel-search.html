@@ -157,7 +157,12 @@ function test()
                 InspectorTest.addResult("Searching UA shadow DOM with setting enabled:")
                 WebInspector.domModel.performSearch("inne" + "r-editor", true, searchCallback.bind(this, next));
             }
-        }
+        },
+
+        function testSearchShadowHostChildren(next)
+        {
+            WebInspector.domModel.performSearch("shadow-host-c" + "ontent", false, searchCallback.bind(this, next));
+        },
     ]);
 
 }
@@ -178,7 +183,7 @@ Tests that elements panel search is returning proper results.
 <span class="CASELESS"></span>
 <span data-camel="insenstive"></span>
 <div id="shadow-host">
-    <div id="shadow-root-content"></div>
+    <div id="shadow-host-content"></div>
 </div>
 <template id="shadow-dom-template">
   <div id="shadow-dom-outer">
