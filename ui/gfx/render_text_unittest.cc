@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/render_text_harfbuzz.h"
 
 #if defined(OS_WIN)
@@ -2287,7 +2288,8 @@ TEST_F(RenderTextTest, HarfBuzz_NonExistentFont) {
   render_text.EnsureLayout();
   ASSERT_EQ(1U, render_text.runs_.size());
   internal::TextRunHarfBuzz* run = render_text.runs_[0];
-  render_text.ShapeRunWithFont(run, "TheFontThatDoesntExist");
+  render_text.ShapeRunWithFont(
+      run, "TheFontThatDoesntExist", FontRenderParams());
 }
 
 // Ensure an empty run returns sane values to queries.

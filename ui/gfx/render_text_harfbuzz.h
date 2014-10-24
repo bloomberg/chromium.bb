@@ -60,6 +60,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
   std::vector<uint32> glyph_to_char;
   size_t glyph_count;
 
+  std::string family;
   skia::RefPtr<SkTypeface> skia_face;
   FontRenderParams render_params;
   int font_size;
@@ -127,10 +128,23 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // Break the text into logical runs and populate the visual <-> logical maps.
   void ItemizeText();
 
+  // Helper method for ShapeRun() that calls ShapeRunWithFont() with |run|,
+  // |family|, and |render_params|, returning true if the family provides all
+  // needed glyphs and false otherwise. Additionally updates |best_family|,
+  // |best_render_params|, and |best_missing_glyphs| if |family| has fewer than
+  // |best_missing_glyphs| missing glyphs.
+  bool CompareFamily(internal::TextRunHarfBuzz* run,
+                     const std::string& family,
+                     const gfx::FontRenderParams& render_params,
+                     std::string* best_family,
+                     gfx::FontRenderParams* best_render_params,
+                     size_t* best_missing_glyphs);
+
   // Shape the glyphs needed for the text |run|.
   void ShapeRun(internal::TextRunHarfBuzz* run);
   bool ShapeRunWithFont(internal::TextRunHarfBuzz* run,
-                        const std::string& font);
+                        const std::string& font_family,
+                        const FontRenderParams& params);
 
   // Text runs in logical order.
   ScopedVector<internal::TextRunHarfBuzz> runs_;
