@@ -2438,6 +2438,10 @@ void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
 }
 
 void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
+  // Note: This function may be called multiple times for a single connection
+  // if renegotiations occur.
+  nss_handshake_state_.ssl_connection_status = 0;
+
   SSLChannelInfo channel_info;
   SECStatus ok = SSL_GetChannelInfo(nss_fd_,
                                     &channel_info, sizeof(channel_info));
