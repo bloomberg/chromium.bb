@@ -11,6 +11,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
@@ -23,6 +24,14 @@ namespace {
 
 const int kTileSize = 90;
 const int kTileHorizontalPadding = 10;
+
+// In Windows, transparent background color will cause ugly text rendering,
+// therefore kContentsBackgroundColor should be used. See crbug.com/406989
+#if defined(OS_CHROMEOS)
+const SkColor kTitleBackgroundColor = SK_ColorTRANSPARENT;
+#else
+const SkColor kTitleBackgroundColor = app_list::kContentsBackgroundColor;
+#endif
 
 }  // namespace
 
@@ -45,7 +54,7 @@ TileItemView::TileItemView()
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kGridTitleColor);
   title_->set_background(views::Background::CreateSolidBackground(
-      app_list::kContentsBackgroundColor));
+      kTitleBackgroundColor));
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
