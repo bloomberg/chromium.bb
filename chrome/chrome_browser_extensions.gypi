@@ -555,8 +555,6 @@
       'browser/extensions/dev_mode_bubble_controller.h',
       'browser/extensions/devtools_util.cc',
       'browser/extensions/devtools_util.h',
-      'browser/extensions/display_info_provider_chromeos.cc',
-      'browser/extensions/display_info_provider_chromeos.h',
       'browser/extensions/display_info_provider_mac.cc',
       'browser/extensions/display_info_provider_mac.h',
       'browser/extensions/display_info_provider_win.cc',
@@ -870,10 +868,14 @@
     ],
     'chrome_browser_extensions_non_athena_sources': [
       'browser/extensions/api/tabs/tabs_api.cc',
+      'browser/extensions/display_info_provider_chromeos.cc',
+      'browser/extensions/display_info_provider_chromeos.h',
       'browser/extensions/extension_tab_util.cc',
     ],
     'chrome_browser_extensions_athena_sources': [
       'browser/extensions/api/tabs/tabs_api_athena.cc',
+      'browser/extensions/display_info_provider_athena.cc',
+      'browser/extensions/display_info_provider_athena.h',
       'browser/extensions/extension_tab_util_athena.cc',
     ],
   },
