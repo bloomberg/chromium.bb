@@ -13,8 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/rand_util.h"  // For PreRead experiment.
-#include "base/sha1.h"  // For PreRead experiment.
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -47,112 +45,6 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 base::LazyInstance<chrome::ChromeCrashReporterClient>::Leaky
     g_chrome_crash_client = LAZY_INSTANCE_INITIALIZER;
 
-// Returns true if the build date for this module precedes the expiry date
-// for the pre-read experiment.
-bool PreReadExperimentIsActive() {
-  const int kPreReadExpiryYear = 2014;
-  const int kPreReadExpiryMonth = 7;
-  const int kPreReadExpiryDay = 1;
-  const char kBuildTimeStr[] = __DATE__ " " __TIME__;
-
-  // Get the timestamp of the build.
-  base::Time build_time;
-  bool result = base::Time::FromString(kBuildTimeStr, &build_time);
-  DCHECK(result);
-
-  // Get the timestamp at which the experiment expires.
-  base::Time::Exploded exploded = {0};
-  exploded.year = kPreReadExpiryYear;
-  exploded.month = kPreReadExpiryMonth;
-  exploded.day_of_month = kPreReadExpiryDay;
-  base::Time expiration_time = base::Time::FromLocalExploded(exploded);
-
-  // Return true if the build time predates the expiration time..
-  return build_time < expiration_time;
-}
-
-// Get random unit values, i.e., in the range (0, 1), denoting a die-toss for
-// being in an experiment population and experimental group thereof.
-void GetPreReadPopulationAndGroup(double* population, double* group) {
-  // By default we use the metrics id for the user as stable pseudo-random
-  // input to a hash.
-  scoped_ptr<metrics::ClientInfo> client_info =
-      GoogleUpdateSettings::LoadMetricsClientInfo();
-
-  // If this user has no metrics id, we fall back to a purely random value per
-  // browser session.
-  const size_t kLength = 16;
-  std::string random_value(client_info ? client_info->client_id
-                                       : base::RandBytesAsString(kLength));
-
-  // To interpret the value as a random number we hash it and read the first 8
-  // bytes of the hash as a unit-interval representing a die-toss for being in
-  // the experiment population and the second 8 bytes as a die-toss for being
-  // in various experiment groups.
-  unsigned char sha1_hash[base::kSHA1Length];
-  base::SHA1HashBytes(
-      reinterpret_cast<const unsigned char*>(random_value.c_str()),
-      random_value.size() * sizeof(random_value[0]),
-      sha1_hash);
-  COMPILE_ASSERT(2 * sizeof(uint64) < sizeof(sha1_hash), need_more_data);
-  const uint64* random_bits = reinterpret_cast<uint64*>(&sha1_hash[0]);
-
-  // Convert the bits into unit-intervals and return.
-  *population = base::BitsToOpenEndedUnitInterval(random_bits[0]);
-  *group = base::BitsToOpenEndedUnitInterval(random_bits[1]);
-}
-
-// Gets the amount of pre-read to use as well as the experiment group in which
-// the user falls.
-size_t InitPreReadPercentage() {
-  // By default use the old behaviour: read 100%.
-  const int kDefaultPercentage = 100;
-  const char kDefaultFormatStr[] = "%d-pct-default";
-  const char kControlFormatStr[] = "%d-pct-control";
-  const char kGroupFormatStr[] = "%d-pct";
-
-  COMPILE_ASSERT(kDefaultPercentage <= 100, default_percentage_too_large);
-  COMPILE_ASSERT(kDefaultPercentage % 5 == 0, default_percentage_not_mult_5);
-
-  // Roll the dice to determine if this user is in the experiment and if so,
-  // in which experimental group.
-  double population = 0.0;
-  double group = 0.0;
-  GetPreReadPopulationAndGroup(&population, &group);
-
-  // We limit experiment populations to 1% of the Stable and 10% of each of
-  // the other channels.
-  const base::string16 channel(GoogleUpdateSettings::GetChromeChannel(
-      GoogleUpdateSettings::IsSystemInstall()));
-  double threshold = (channel == installer::kChromeChannelStable) ? 0.01 : 0.10;
-
-  // If the experiment has expired use the default pre-read level. Otherwise,
-  // those not in the experiment population also use the default pre-read level.
-  size_t value = kDefaultPercentage;
-  const char* format_str = kDefaultFormatStr;
-  if (PreReadExperimentIsActive() && (population <= threshold)) {
-    // We divide the experiment population into groups pre-reading at 5 percent
-    // increments in the range [0, 100].
-    value = static_cast<size_t>(group * 21.0) * 5;
-    DCHECK_LE(value, 100u);
-    DCHECK_EQ(0u, value % 5);
-    format_str =
-        (value == kDefaultPercentage) ? kControlFormatStr : kGroupFormatStr;
-  }
-
-  // Generate the group name corresponding to this percentage value.
-  std::string group_name;
-  base::SStringPrintf(&group_name, format_str, value);
-
-  // Persist the group name to the environment so that it can be used for
-  // reporting.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(chrome::kPreReadEnvironmentVariable, group_name);
-
-  // Return the percentage value to be used.
-  return value;
-}
-
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to determine if this path contains a valid dll.
@@ -167,8 +59,8 @@ HMODULE LoadModuleWithDirectory(base::string16* dir,
     // We pre-read the binary to warm the memory caches (fewer hard faults to
     // page parts of the binary in).
     const size_t kStepSize = 1024 * 1024;
-    size_t percentage = InitPreReadPercentage();
-    ImagePreReader::PartialPreReadImage(dir->c_str(), percentage, kStepSize);
+    size_t percent = 100;
+    ImagePreReader::PartialPreReadImage(dir->c_str(), percent, kStepSize);
 #endif
   }
 
