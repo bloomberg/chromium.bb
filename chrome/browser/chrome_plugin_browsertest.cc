@@ -256,7 +256,6 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
 #if defined(OS_CHROMEOS)
     "Google Talk Plugin",
     "Google Talk Plugin Video Accelerator",
-    "Netflix",
 #endif
   };
 
