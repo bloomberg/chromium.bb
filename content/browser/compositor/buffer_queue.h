@@ -20,6 +20,8 @@ class ContextProvider;
 
 namespace content {
 
+class GLHelper;
+
 // Provides a surface that manages its own buffers, backed by GpuMemoryBuffers
 // created using CHROMIUM_gpu_memory_buffer_image. Double/triple buffering is
 // implemented internally. Doublebuffering occurs if PageFlipComplete is called
@@ -27,7 +29,8 @@ namespace content {
 class CONTENT_EXPORT BufferQueue {
  public:
   BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
-              unsigned int internalformat);
+              unsigned int internalformat,
+              GLHelper* gl_helper);
   virtual ~BufferQueue();
 
   bool Initialize();
@@ -77,6 +80,7 @@ class CONTENT_EXPORT BufferQueue {
   AllocatedSurface current_surface_;  // This surface is currently bound.
   std::vector<AllocatedSurface> available_surfaces_;  // These are free for use.
   std::deque<AllocatedSurface> in_flight_surfaces_;
+  GLHelper* gl_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferQueue);
 };

@@ -15,11 +15,13 @@
 namespace content {
 
 BufferQueue::BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
-                         unsigned int internalformat)
+                         unsigned int internalformat,
+                         GLHelper* gl_helper)
     : context_provider_(context_provider),
       fbo_(0),
       allocated_count_(0),
-      internalformat_(internalformat) {
+      internalformat_(internalformat),
+      gl_helper_(gl_helper) {
 }
 
 BufferQueue::~BufferQueue() {
@@ -54,7 +56,7 @@ void BufferQueue::CopyBufferDamage(int texture,
                                    int source_texture,
                                    const gfx::Rect& new_damage,
                                    const gfx::Rect& old_damage) {
-  ImageTransportFactory::GetInstance()->GetGLHelper()->CopySubBufferDamage(
+  gl_helper_->CopySubBufferDamage(
       texture,
       source_texture,
       SkRegion(SkIRect::MakeXYWH(new_damage.x(),

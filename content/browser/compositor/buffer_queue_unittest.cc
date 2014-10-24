@@ -23,7 +23,7 @@ class MockBufferQueue : public BufferQueue {
  public:
   MockBufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
                   unsigned int internalformat)
-      : BufferQueue(context_provider, internalformat) {}
+      : BufferQueue(context_provider, internalformat, nullptr) {}
   MOCK_METHOD4(CopyBufferDamage,
                void(int, int, const gfx::Rect&, const gfx::Rect&));
 };
@@ -133,7 +133,7 @@ scoped_ptr<BufferQueue> CreateOutputSurfaceWithMock(MockedContext** context) {
           scoped_ptr<cc::TestWebGraphicsContext3D>(*context));
   context_provider->BindToCurrentThread();
   scoped_ptr<BufferQueue> buffer_queue(
-      new BufferQueue(context_provider, GL_RGBA));
+      new BufferQueue(context_provider, GL_RGBA, nullptr));
   buffer_queue->Initialize();
   return buffer_queue.Pass();
 }

@@ -233,7 +233,8 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
         &output_surface_map_,
         compositor->vsync_manager(),
         CreateOverlayCandidateValidator(compositor->widget()),
-        GL_RGB));
+        GL_RGB,
+        compositor_thread_ != nullptr));
   }
 #endif
   if (!surface)
