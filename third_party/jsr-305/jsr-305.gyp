@@ -6,6 +6,7 @@
   'targets': [
     {
       'target_name': 'jsr_305_javalib',
+      'toolsets': ['host', 'target'],
       'type': 'none',
       'variables': {
         # The sources are not located in a folder that is called src/, so we

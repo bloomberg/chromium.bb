@@ -53,6 +53,7 @@
       # trying to create these directories.
       # The build/java.gypi target depends on this target.
       'target_name': 'build_output_dirs',
+      'toolsets': ['host', 'target'],
       'type': 'none',
       'actions': [
         {

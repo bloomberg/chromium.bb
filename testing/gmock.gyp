@@ -6,6 +6,7 @@
   'targets': [
     {
       'target_name': 'gmock',
+      'toolsets': ['host', 'target'],
       'type': 'static_library',
       'dependencies': [
         'gtest.gyp:gtest',
