@@ -95,7 +95,7 @@ base::LazyInstance<MailboxManagerSync::TextureGroup::MailboxToGroupMap>
 
 // static
 MailboxManagerSync::TextureGroup*
-MailboxManagerSync::TextureGroup::CreateFromTexture(TargetName name,
+MailboxManagerSync::TextureGroup::CreateFromTexture(const Mailbox& name,
                                                     MailboxManagerSync* manager,
                                                     Texture* texture) {
   TextureGroup* group = new TextureGroup();
@@ -103,14 +103,14 @@ MailboxManagerSync::TextureGroup::CreateFromTexture(TargetName name,
   group->AddName(name);
   if (!SkipTextureWorkarounds(texture)) {
     group->definition_ =
-        TextureDefinition(name.first, texture, kNewTextureVersion, NULL);
+        TextureDefinition(texture, kNewTextureVersion, NULL);
   }
   return group;
 }
 
 // static
 MailboxManagerSync::TextureGroup* MailboxManagerSync::TextureGroup::FromName(
-    TargetName name) {
+    const Mailbox& name) {
   MailboxToGroupMap::iterator it = mailbox_to_group_.Get().find(name);
   if (it == mailbox_to_group_.Get().end())
     return NULL;
@@ -124,7 +124,7 @@ MailboxManagerSync::TextureGroup::TextureGroup() {
 MailboxManagerSync::TextureGroup::~TextureGroup() {
 }
 
-void MailboxManagerSync::TextureGroup::AddName(TargetName name) {
+void MailboxManagerSync::TextureGroup::AddName(const Mailbox& name) {
   g_lock.Get().AssertAcquired();
   DCHECK(std::find(names_.begin(), names_.end(), name) == names_.end());
   names_.push_back(name);
@@ -132,9 +132,9 @@ void MailboxManagerSync::TextureGroup::AddName(TargetName name) {
   mailbox_to_group_.Get()[name] = this;
 }
 
-void MailboxManagerSync::TextureGroup::RemoveName(TargetName name) {
+void MailboxManagerSync::TextureGroup::RemoveName(const Mailbox& name) {
   g_lock.Get().AssertAcquired();
-  std::vector<TargetName>::iterator names_it =
+  std::vector<Mailbox>::iterator names_it =
       std::find(names_.begin(), names_.end(), name);
   DCHECK(names_it != names_.end());
   names_.erase(names_it);
@@ -161,9 +161,9 @@ bool MailboxManagerSync::TextureGroup::RemoveTexture(
   if (textures_.size() == 1) {
     // This is the last texture so the group is going away.
     for (size_t n = 0; n < names_.size(); n++) {
-      const TargetName& target_name = names_[n];
+      const Mailbox& name = names_[n];
       MailboxToGroupMap::iterator mbox_it =
-          mailbox_to_group_.Get().find(target_name);
+          mailbox_to_group_.Get().find(name);
       DCHECK(mbox_it != mailbox_to_group_.Get().end());
       DCHECK(mbox_it->second.get() == this);
       mailbox_to_group_.Get().erase(mbox_it);
@@ -205,11 +205,9 @@ bool MailboxManagerSync::UsesSync() {
   return true;
 }
 
-Texture* MailboxManagerSync::ConsumeTexture(unsigned target,
-                                            const Mailbox& mailbox) {
+Texture* MailboxManagerSync::ConsumeTexture(const Mailbox& mailbox) {
   base::AutoLock lock(g_lock.Get());
-  TargetName target_name(target, mailbox);
-  TextureGroup* group = TextureGroup::FromName(target_name);
+  TextureGroup* group = TextureGroup::FromName(mailbox);
   if (!group)
     return NULL;
 
@@ -233,14 +231,12 @@ Texture* MailboxManagerSync::ConsumeTexture(unsigned target,
   return texture;
 }
 
-void MailboxManagerSync::ProduceTexture(unsigned target,
-                                        const Mailbox& mailbox,
+void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
                                         Texture* texture) {
   base::AutoLock lock(g_lock.Get());
-  TargetName target_name(target, mailbox);
 
   TextureToGroupMap::iterator tex_it = texture_to_group_.find(texture);
-  TextureGroup* group_for_mailbox = TextureGroup::FromName(target_name);
+  TextureGroup* group_for_mailbox = TextureGroup::FromName(mailbox);
   TextureGroup* group_for_texture = NULL;
 
   if (tex_it != texture_to_group_.end()) {
@@ -254,16 +250,16 @@ void MailboxManagerSync::ProduceTexture(unsigned target,
 
   if (group_for_mailbox) {
     // Unlink the mailbox from its current group.
-    group_for_mailbox->RemoveName(target_name);
+    group_for_mailbox->RemoveName(mailbox);
   }
 
   if (group_for_texture) {
-    group_for_texture->AddName(target_name);
+    group_for_texture->AddName(mailbox);
   } else {
     // This is a new texture, so create a new group.
     texture->SetMailboxManager(this);
     group_for_texture =
-        TextureGroup::CreateFromTexture(target_name, this, texture);
+        TextureGroup::CreateFromTexture(mailbox, this, texture);
     texture_to_group_.insert(std::make_pair(
         texture, TextureGroupRef(kNewTextureVersion, group_for_texture)));
   }
@@ -308,8 +304,7 @@ void MailboxManagerSync::UpdateDefinitionLocked(
     return;
   }
 
-  group->SetDefinition(TextureDefinition(texture->target(), texture,
-                                         ++group_ref->version,
+  group->SetDefinition(TextureDefinition(texture, ++group_ref->version,
                                          gl_image ? image_buffer : NULL));
 }
 

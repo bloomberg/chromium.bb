@@ -3580,7 +3580,7 @@ void GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
     UpdateParentTextureInfo();
   }
   mailbox_manager()->ProduceTexture(
-      GL_TEXTURE_2D, mailbox, offscreen_saved_color_texture_info_->texture());
+      mailbox, offscreen_saved_color_texture_info_->texture());
 }
 
 bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
@@ -10546,7 +10546,7 @@ void GLES2DecoderImpl::ProduceTextureRef(std::string func_name,
     return;
   }
 
-  group_->mailbox_manager()->ProduceTexture(target, mailbox, produced);
+  group_->mailbox_manager()->ProduceTexture(mailbox, produced);
 }
 
 void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
@@ -10574,7 +10574,7 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
         "glConsumeTextureCHROMIUM", "unknown texture for target");
     return;
   }
-  Texture* texture = group_->mailbox_manager()->ConsumeTexture(target, mailbox);
+  Texture* texture = group_->mailbox_manager()->ConsumeTexture(mailbox);
   if (!texture) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
@@ -10660,7 +10660,7 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM(GLenum target,
         "glCreateAndConsumeTextureCHROMIUM", "client id already in use");
     return;
   }
-  Texture* texture = group_->mailbox_manager()->ConsumeTexture(target, mailbox);
+  Texture* texture = group_->mailbox_manager()->ConsumeTexture(mailbox);
   if (!texture) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,

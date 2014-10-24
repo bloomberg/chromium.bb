@@ -23,22 +23,18 @@ bool MailboxManagerImpl::UsesSync() {
   return false;
 }
 
-Texture* MailboxManagerImpl::ConsumeTexture(unsigned target,
-                                        const Mailbox& mailbox) {
-  TargetName target_name(target, mailbox);
+Texture* MailboxManagerImpl::ConsumeTexture(const Mailbox& mailbox) {
   MailboxToTextureMap::iterator it =
-      mailbox_to_textures_.find(target_name);
+      mailbox_to_textures_.find(mailbox);
   if (it != mailbox_to_textures_.end())
     return it->second->first;
 
   return NULL;
 }
 
-void MailboxManagerImpl::ProduceTexture(unsigned target,
-                                    const Mailbox& mailbox,
-                                    Texture* texture) {
-  TargetName target_name(target, mailbox);
-  MailboxToTextureMap::iterator it = mailbox_to_textures_.find(target_name);
+void MailboxManagerImpl::ProduceTexture(const Mailbox& mailbox,
+                                        Texture* texture) {
+  MailboxToTextureMap::iterator it = mailbox_to_textures_.find(mailbox);
   if (it != mailbox_to_textures_.end()) {
     if (it->second->first == texture)
       return;
@@ -46,15 +42,15 @@ void MailboxManagerImpl::ProduceTexture(unsigned target,
     mailbox_to_textures_.erase(it);
     textures_to_mailboxes_.erase(texture_it);
   }
-  InsertTexture(target_name, texture);
+  InsertTexture(mailbox, texture);
 }
 
-void MailboxManagerImpl::InsertTexture(TargetName target_name,
+void MailboxManagerImpl::InsertTexture(const Mailbox& mailbox,
                                        Texture* texture) {
   texture->SetMailboxManager(this);
   TextureToMailboxMap::iterator texture_it =
-      textures_to_mailboxes_.insert(std::make_pair(texture, target_name));
-  mailbox_to_textures_.insert(std::make_pair(target_name, texture_it));
+      textures_to_mailboxes_.insert(std::make_pair(texture, mailbox));
+  mailbox_to_textures_.insert(std::make_pair(mailbox, texture_it));
   DCHECK_EQ(mailbox_to_textures_.size(), textures_to_mailboxes_.size());
 }
 

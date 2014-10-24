@@ -290,12 +290,11 @@ TextureDefinition::TextureDefinition()
 }
 
 TextureDefinition::TextureDefinition(
-    GLenum target,
     Texture* texture,
     unsigned int version,
     const scoped_refptr<NativeImageBuffer>& image_buffer)
     : version_(version),
-      target_(target),
+      target_(texture->target()),
       image_buffer_(image_buffer.get()
                         ? image_buffer
                         : NativeImageBuffer::Create(texture->service_id())),
@@ -317,7 +316,7 @@ TextureDefinition::TextureDefinition(
       new GLImageSync(image_buffer_,
                       gfx::Size(first_face.level_infos[0].width,
                                 first_face.level_infos[0].height)));
-  texture->SetLevelImage(NULL, target, 0, gl_image.get());
+  texture->SetLevelImage(NULL, target_, 0, gl_image.get());
 
   // TODO: all levels
   level_infos_.clear();

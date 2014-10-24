@@ -6,7 +6,6 @@
 #define GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_H_
 
 #include "base/memory/ref_counted.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
 
@@ -19,12 +18,10 @@ class Texture;
 class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
  public:
   // Look up the texture definition from the named mailbox.
-  virtual Texture* ConsumeTexture(unsigned target, const Mailbox& mailbox) = 0;
+  virtual Texture* ConsumeTexture(const Mailbox& mailbox) = 0;
 
   // Put the texture into the named mailbox.
-  virtual void ProduceTexture(unsigned target,
-                              const Mailbox& mailbox,
-                              Texture* texture) = 0;
+  virtual void ProduceTexture(const Mailbox& mailbox, Texture* texture) = 0;
 
   // If |true| then Pull/PushTextureUpdates() needs to be called.
   virtual bool UsesSync() = 0;
@@ -37,8 +34,6 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
   virtual void TextureDeleted(Texture* texture) = 0;
 
  protected:
-  typedef std::pair<unsigned, Mailbox> TargetName;
-
   MailboxManager() {}
   virtual ~MailboxManager() {}
 

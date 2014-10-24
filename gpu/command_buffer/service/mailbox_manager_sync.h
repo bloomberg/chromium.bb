@@ -30,10 +30,8 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
   MailboxManagerSync();
 
   // MailboxManager implementation:
-  Texture* ConsumeTexture(unsigned target, const Mailbox& mailbox) override;
-  void ProduceTexture(unsigned target,
-                      const Mailbox& mailbox,
-                      Texture* texture) override;
+  Texture* ConsumeTexture(const Mailbox& mailbox) override;
+  void ProduceTexture(const Mailbox& mailbox, Texture* texture) override;
   bool UsesSync() override;
   void PushTextureUpdates(uint32 sync_point) override;
   void PullTextureUpdates(uint32 sync_point) override;
@@ -46,13 +44,13 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
 
   class TextureGroup : public base::RefCounted<TextureGroup> {
    public:
-    static TextureGroup* CreateFromTexture(TargetName name,
+    static TextureGroup* CreateFromTexture(const Mailbox& name,
                                            MailboxManagerSync* manager,
                                            Texture* texture);
-    static TextureGroup* FromName(TargetName name);
+    static TextureGroup* FromName(const Mailbox& name);
 
-    void AddName(TargetName name);
-    void RemoveName(TargetName name);
+    void AddName(const Mailbox& name);
+    void RemoveName(const Mailbox& name);
 
     void AddTexture(MailboxManagerSync* manager, Texture* texture);
     // Returns true if there are other textures left in the group after removal.
@@ -70,11 +68,11 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
     ~TextureGroup();
 
     typedef std::vector<std::pair<MailboxManagerSync*, Texture*>> TextureList;
-    std::vector<TargetName> names_;
+    std::vector<Mailbox> names_;
     TextureList textures_;
     TextureDefinition definition_;
 
-    typedef std::map<TargetName, scoped_refptr<TextureGroup>>
+    typedef std::map<Mailbox, scoped_refptr<TextureGroup>>
         MailboxToGroupMap;
     static base::LazyInstance<MailboxToGroupMap> mailbox_to_group_;
   };

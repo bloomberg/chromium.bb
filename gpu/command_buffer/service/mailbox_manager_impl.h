@@ -27,10 +27,8 @@ class GPU_EXPORT MailboxManagerImpl : public MailboxManager {
   MailboxManagerImpl();
 
   // MailboxManager implementation:
-  Texture* ConsumeTexture(unsigned target, const Mailbox& mailbox) override;
-  void ProduceTexture(unsigned target,
-                      const Mailbox& mailbox,
-                      Texture* texture) override;
+  Texture* ConsumeTexture(const Mailbox& mailbox) override;
+  void ProduceTexture(const Mailbox& mailbox, Texture* texture) override;
   bool UsesSync() override;
   void PushTextureUpdates(uint32 sync_point) override {}
   void PullTextureUpdates(uint32 sync_point) override {}
@@ -42,14 +40,14 @@ class GPU_EXPORT MailboxManagerImpl : public MailboxManager {
  private:
   friend class base::RefCounted<MailboxManager>;
 
-  void InsertTexture(TargetName target_name, Texture* texture);
+  void InsertTexture(const Mailbox& mailbox, Texture* texture);
 
   // This is a bidirectional map between mailbox and textures. We can have
   // multiple mailboxes per texture, but one texture per mailbox. We keep an
   // iterator in the MailboxToTextureMap to be able to manage changes to
   // the TextureToMailboxMap efficiently.
-  typedef std::multimap<Texture*, TargetName> TextureToMailboxMap;
-  typedef std::map<TargetName, TextureToMailboxMap::iterator>
+  typedef std::multimap<Texture*, Mailbox> TextureToMailboxMap;
+  typedef std::map<Mailbox, TextureToMailboxMap::iterator>
       MailboxToTextureMap;
 
   MailboxToTextureMap mailbox_to_textures_;

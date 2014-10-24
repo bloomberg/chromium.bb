@@ -41,8 +41,7 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
 class TextureDefinition {
  public:
   TextureDefinition();
-  TextureDefinition(GLenum target,
-                    Texture* texture,
+  TextureDefinition(Texture* texture,
                     unsigned int version,
                     const scoped_refptr<NativeImageBuffer>& image);
   virtual ~TextureDefinition();
