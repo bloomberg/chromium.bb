@@ -38,13 +38,16 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebPushClient implementation.
+  // TODO(peter): Remove this signature of registerPushMessaging.
   virtual void registerPushMessaging(
       const blink::WebString& sender_id,
       blink::WebPushRegistrationCallbacks* callbacks,
       blink::WebServiceWorkerProvider* service_worker_provider);
+  virtual void registerPushMessaging(
+      blink::WebPushRegistrationCallbacks* callbacks,
+      blink::WebServiceWorkerProvider* service_worker_provider);
 
-  void DoRegister(const std::string& sender_id,
-                  blink::WebPushRegistrationCallbacks* callbacks,
+  void DoRegister(blink::WebPushRegistrationCallbacks* callbacks,
                   blink::WebServiceWorkerProvider* service_worker_provider,
                   const Manifest& manifest);
 

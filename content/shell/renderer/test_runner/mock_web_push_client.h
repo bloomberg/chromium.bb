@@ -37,9 +37,9 @@ class MockWebPushClient : public blink::WebPushClient {
   // WebPushClient implementation.
   virtual void registerPushMessaging(
       const blink::WebString& sender_id,
-      blink::WebPushRegistrationCallbacks* callbacks);
+      blink::WebPushRegistrationCallbacks* callbacks,
+      blink::WebServiceWorkerProvider* service_worker_provider);
   virtual void registerPushMessaging(
-      const blink::WebString& sender_id,
       blink::WebPushRegistrationCallbacks* callbacks,
       blink::WebServiceWorkerProvider* service_worker_provider);
 

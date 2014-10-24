@@ -122,7 +122,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   bool RegisterPush(std::string* result) {
-    return RunScript("registerPush('1234567890')", result);
+    return RunScript("registerPush()", result);
   }
 
   net::SpawnedTestServer* https_server() const { return https_server_.get(); }

@@ -36,12 +36,12 @@ void MockWebPushClient::SetMockErrorValues(const std::string& message) {
 
 void MockWebPushClient::registerPushMessaging(
     const WebString& sender_id,
-    blink::WebPushRegistrationCallbacks* callbacks) {
-  registerPushMessaging(sender_id, callbacks, NULL);
+    blink::WebPushRegistrationCallbacks* callbacks,
+    blink::WebServiceWorkerProvider* service_worker_provider) {
+  registerPushMessaging(callbacks, service_worker_provider);
 }
 
 void MockWebPushClient::registerPushMessaging(
-    const WebString& sender_id,
     blink::WebPushRegistrationCallbacks* callbacks,
     blink::WebServiceWorkerProvider* service_worker_provider) {
   DCHECK(callbacks);
