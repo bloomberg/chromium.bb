@@ -105,7 +105,7 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
 
         void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
         bool isAllowedRedirect(const KURL&) const;
-        bool isAllowedByPolicy(const KURL&) const;
+        bool isAllowedByContentSecurityPolicy(const KURL&) const;
         // Returns DoNotAllowStoredCredentials
         // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
         // returns allowCredentials value of m_resourceLoaderOptions.
