@@ -38,6 +38,11 @@ AndroidMetricsProvider::AndroidMetricsProvider(PrefService* local_state)
 AndroidMetricsProvider::~AndroidMetricsProvider() {
 }
 
+void AndroidMetricsProvider::ProvideStabilityMetrics(
+    metrics::SystemProfileProto* system_profile_proto) {
+  ConvertStabilityPrefsToHistograms();
+}
+
 void AndroidMetricsProvider::ProvideGeneralMetrics(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -46,9 +51,36 @@ void AndroidMetricsProvider::ProvideGeneralMetrics(
       chrome::android::RUNNING_MODE_MAX);
 }
 
-void AndroidMetricsProvider::ProvideStabilityMetrics(
-    metrics::SystemProfileProto* system_profile_proto) {
-  ConvertStabilityPrefsToHistograms();
+void AndroidMetricsProvider::OnForegroundActivityChanged(
+    ActivityTypeIds::Type type) {
+  DCHECK_LT(type, ActivityTypeIds::ACTIVITY_MAX_VALUE);
+
+  if (type == local_state_->GetInteger(prefs::kStabilityForegroundActivityType))
+    return;
+
+  // Record that the Activity is now in the foreground.
+  local_state_->SetInteger(prefs::kStabilityForegroundActivityType, type);
+
+  // Record that the Activity was launched this sesaion.
+  // The pref stores a set of flags ORed together, where each set flag
+  // corresponds to a launched Activity type.
+  int launched =
+      local_state_->GetInteger(prefs::kStabilityLaunchedActivityFlags);
+  if (type != ActivityTypeIds::ACTIVITY_NONE) {
+    launched |= GetActivityFlag(type);
+    local_state_->SetInteger(prefs::kStabilityLaunchedActivityFlags, launched);
+  }
+
+  local_state_->CommitPendingWrite();
+}
+
+// static
+void AndroidMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kStabilityForegroundActivityType,
+                                ActivityTypeIds::ACTIVITY_NONE);
+  registry->RegisterIntegerPref(prefs::kStabilityLaunchedActivityFlags, 0);
+  registry->RegisterListPref(prefs::kStabilityLaunchedActivityCounts);
+  registry->RegisterListPref(prefs::kStabilityCrashedActivityCounts);
 }
 
 void AndroidMetricsProvider::LogStabilityToPrefs() {
@@ -120,36 +152,4 @@ void AndroidMetricsProvider::ConvertStabilityPrefsToHistograms() {
 
   launch_counts->Clear();
   crash_counts->Clear();
-}
-
-void AndroidMetricsProvider::OnForegroundActivityChanged(
-    ActivityTypeIds::Type type) {
-  DCHECK_LT(type, ActivityTypeIds::ACTIVITY_MAX_VALUE);
-
-  if (type == local_state_->GetInteger(prefs::kStabilityForegroundActivityType))
-    return;
-
-  // Record that the Activity is now in the foreground.
-  local_state_->SetInteger(prefs::kStabilityForegroundActivityType, type);
-
-  // Record that the Activity was launched this sesaion.
-  // The pref stores a set of flags ORed together, where each set flag
-  // corresponds to a launched Activity type.
-  int launched =
-      local_state_->GetInteger(prefs::kStabilityLaunchedActivityFlags);
-  if (type != ActivityTypeIds::ACTIVITY_NONE) {
-    launched |= GetActivityFlag(type);
-    local_state_->SetInteger(prefs::kStabilityLaunchedActivityFlags, launched);
-  }
-
-  local_state_->CommitPendingWrite();
-}
-
-// static
-void AndroidMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kStabilityForegroundActivityType,
-                                ActivityTypeIds::ACTIVITY_NONE);
-  registry->RegisterIntegerPref(prefs::kStabilityLaunchedActivityFlags, 0);
-  registry->RegisterListPref(prefs::kStabilityLaunchedActivityCounts);
-  registry->RegisterListPref(prefs::kStabilityCrashedActivityCounts);
 }
