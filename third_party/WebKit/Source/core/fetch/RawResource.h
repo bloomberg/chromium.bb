@@ -40,19 +40,19 @@ public:
     // This can be fixed by splitting CORS preflighting out of DocumentThreacableLoader.
     void setDefersLoading(bool);
 
-    virtual bool canReuse(const ResourceRequest&) const override;
+    bool canReuse(const ResourceRequest&) const override;
 
 private:
-    virtual void didAddClient(ResourceClient*) override;
-    virtual void appendData(const char*, unsigned) override;
+    void didAddClient(ResourceClient*) override;
+    void appendData(const char*, unsigned) override;
 
-    virtual bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
+    bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
 
-    virtual void willSendRequest(ResourceRequest&, const ResourceResponse&) override;
-    virtual void updateRequest(const ResourceRequest&) override;
-    virtual void responseReceived(const ResourceResponse&) override;
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    virtual void didDownloadData(int) override;
+    void willFollowRedirect(ResourceRequest&, const ResourceResponse&) override;
+    void updateRequest(const ResourceRequest&) override;
+    void responseReceived(const ResourceResponse&) override;
+    void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+    void didDownloadData(int) override;
 };
 
 #if ENABLE(SECURITY_ASSERT)

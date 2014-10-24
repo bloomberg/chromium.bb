@@ -296,34 +296,34 @@ void ResourceLoader::cancel(const ResourceError& error)
         releaseResources();
 }
 
-void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest& passedRequest, const blink::WebURLResponse& passedRedirectResponse)
+void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest& passedNewRequest, const blink::WebURLResponse& passedRedirectResponse)
 {
     ASSERT(m_state != Terminated);
     RefPtrWillBeRawPtr<ResourceLoader> protect(this);
 
-    ResourceRequest& request(applyOptions(passedRequest.toMutableResourceRequest()));
+    ResourceRequest& newRequest(applyOptions(passedNewRequest.toMutableResourceRequest()));
 
-    ASSERT(!request.isNull());
+    ASSERT(!newRequest.isNull());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     ASSERT(!redirectResponse.isNull());
-    if (!m_host->canAccessRedirect(m_resource, request, redirectResponse, m_options)) {
+    if (!m_host->canAccessRedirect(m_resource, newRequest, redirectResponse, m_options)) {
         cancel();
         return;
     }
     ASSERT(m_state != Terminated);
 
-    applyOptions(request); // canAccessRedirect() can modify m_options so we should re-apply it.
+    applyOptions(newRequest); // canAccessRedirect() can modify m_options so we should re-apply it.
     m_host->redirectReceived(m_resource, redirectResponse);
     ASSERT(m_state != Terminated);
-    m_resource->willSendRequest(request, redirectResponse);
-    if (request.isNull() || m_state == Terminated)
+    m_resource->willFollowRedirect(newRequest, redirectResponse);
+    if (newRequest.isNull() || m_state == Terminated)
         return;
 
-    m_host->willSendRequest(m_resource->identifier(), request, redirectResponse, m_options.initiatorInfo);
+    m_host->willSendRequest(m_resource->identifier(), newRequest, redirectResponse, m_options.initiatorInfo);
     ASSERT(m_state != Terminated);
-    ASSERT(!request.isNull());
-    m_resource->updateRequest(request);
-    m_request = request;
+    ASSERT(!newRequest.isNull());
+    m_resource->updateRequest(newRequest);
+    m_request = newRequest;
 }
 
 void ResourceLoader::didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length)

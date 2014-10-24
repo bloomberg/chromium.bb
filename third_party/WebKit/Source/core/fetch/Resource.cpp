@@ -360,9 +360,9 @@ const ResourceRequest& Resource::lastResourceRequest() const
     return m_redirectChain.last().m_request;
 }
 
-void Resource::willSendRequest(ResourceRequest& request, const ResourceResponse& response)
+void Resource::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
-    m_redirectChain.append(RedirectPair(request, response));
+    m_redirectChain.append(RedirectPair(newRequest, redirectResponse));
     m_requestedFromNetworkingLayer = true;
 }
 

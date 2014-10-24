@@ -186,7 +186,7 @@ public:
     SharedBuffer* resourceBuffer() const { return m_data.get(); }
     void setResourceBuffer(PassRefPtr<SharedBuffer>);
 
-    virtual void willSendRequest(ResourceRequest&, const ResourceResponse&);
+    virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
 
     virtual void updateRequest(const ResourceRequest&) { }
     virtual void responseReceived(const ResourceResponse&);

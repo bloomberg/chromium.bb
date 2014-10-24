@@ -75,15 +75,15 @@ void RawResource::didAddClient(ResourceClient* c)
     Resource::didAddClient(client);
 }
 
-void RawResource::willSendRequest(ResourceRequest& request, const ResourceResponse& response)
+void RawResource::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
     ResourcePtr<RawResource> protect(this);
-    if (!response.isNull()) {
+    if (!redirectResponse.isNull()) {
         ResourceClientWalker<RawResourceClient> w(m_clients);
         while (RawResourceClient* c = w.next())
-            c->redirectReceived(this, request, response);
+            c->redirectReceived(this, newRequest, redirectResponse);
     }
-    Resource::willSendRequest(request, response);
+    Resource::willFollowRedirect(newRequest, redirectResponse);
 }
 
 void RawResource::updateRequest(const ResourceRequest& request)

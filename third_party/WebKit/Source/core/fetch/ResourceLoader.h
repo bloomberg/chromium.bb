@@ -73,14 +73,14 @@ public:
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
 
     // WebURLLoaderClient
-    virtual void willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse) override;
-    virtual void didSendData(blink::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) override;
-    virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int encodedDataLength) override;
-    virtual void didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length) override;
-    virtual void didFinishLoading(blink::WebURLLoader*, double finishTime, int64 encodedDataLength) override;
-    virtual void didFail(blink::WebURLLoader*, const blink::WebURLError&) override;
-    virtual void didDownloadData(blink::WebURLLoader*, int, int) override;
+    void willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse) override;
+    void didSendData(blink::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+    void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) override;
+    void didReceiveData(blink::WebURLLoader*, const char*, int, int encodedDataLength) override;
+    void didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length) override;
+    void didFinishLoading(blink::WebURLLoader*, double finishTime, int64 encodedDataLength) override;
+    void didFail(blink::WebURLLoader*, const blink::WebURLError&) override;
+    void didDownloadData(blink::WebURLLoader*, int, int) override;
 
     const KURL& url() const { return m_request.url(); }
     bool isLoadedBy(ResourceLoaderHost*) const;

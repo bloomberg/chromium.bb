@@ -395,7 +395,7 @@ TEST_F(CachingCorrectnessTest, FreshWithFreshRedirect)
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
-    firstResource->willSendRequest(redirectRequest, fresh301Response);
+    firstResource->willFollowRedirect(redirectRequest, fresh301Response);
 
     // Add the final response to our request.
     ResourceResponse fresh200Response;
@@ -429,7 +429,7 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
-    firstResource->willSendRequest(redirectRequest, stale301Response);
+    firstResource->willFollowRedirect(redirectRequest, stale301Response);
 
     // Add the final response to our request.
     ResourceResponse fresh200Response;
@@ -481,7 +481,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh)
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
-    firstResource->willSendRequest(redirectRequest, fresh302Response);
+    firstResource->willFollowRedirect(redirectRequest, fresh302Response);
 
     // Add the final response to our request.
     ResourceResponse fresh200Response;
@@ -516,7 +516,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge)
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
-    firstResource->willSendRequest(redirectRequest, fresh302Response);
+    firstResource->willFollowRedirect(redirectRequest, fresh302Response);
 
     // Add the final response to our request.
     ResourceResponse fresh200Response;
@@ -551,7 +551,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires)
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
-    firstResource->willSendRequest(redirectRequest, fresh302Response);
+    firstResource->willFollowRedirect(redirectRequest, fresh302Response);
 
     // Add the final response to our request.
     ResourceResponse fresh200Response;
