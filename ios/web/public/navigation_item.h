@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_NAVIGATION_ITEM_H_
 #define IOS_WEB_PUBLIC_NAVIGATION_ITEM_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/base/page_transition_types.h"
@@ -22,6 +23,9 @@ struct SSLStatus;
 class NavigationItem {
  public:
   virtual ~NavigationItem() {}
+
+  // Creates a new NavigationItem.
+  static scoped_ptr<NavigationItem> Create();
 
   // Page-related stuff --------------------------------------------------------
 
