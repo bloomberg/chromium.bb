@@ -188,7 +188,7 @@ void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
   // libyuv specifies fourcc/channel ordering the same as webrtc. That is why
   // the naming is reversed compared to PixelEndian and PP_ImageDataFormat which
   // describes the memory layout from the lowest address to the highest.
-  const auto* xxxxToI420 =
+  auto xxxxToI420 =
       (endian_ == AXXX) ? &libyuv::BGRAToI420 : &libyuv::ARGBToI420;
   xxxxToI420(data,
              stride,
