@@ -54,11 +54,9 @@ void ResourceBundle::LoadCommonResources() {
                         SCALE_FACTOR_200P);
   }
 
-  // TODO(rohitrao): Add a chrome_300_percent file and load it here.  For now,
-  // we are simply falling back to the 200P resources. http://crbug.com/413300.
   if (IsScaleFactorSupported(SCALE_FACTOR_300P)) {
-    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent", nil),
-                        SCALE_FACTOR_200P);
+    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_300_percent", nil),
+                        SCALE_FACTOR_300P);
   }
 }
 

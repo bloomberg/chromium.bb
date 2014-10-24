@@ -469,6 +469,7 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   for (size_t i = 0; i < data_packs_.size(); i++) {
     if ((data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_200P ||
+         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_300P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE) &&
         data_packs_[i]->GetStringPiece(static_cast<uint16>(resource_id),
                                        &data))
