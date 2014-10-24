@@ -10,5 +10,5 @@
 int main(int argc, char **argv) {
   const char *description = argc >= 2 ? argv[1] : "time";
   setlinebuf(stdout);
-  return BenchmarkSuite::Run(description);
+  return BenchmarkSuite::Run(description, NULL, NULL);
 }

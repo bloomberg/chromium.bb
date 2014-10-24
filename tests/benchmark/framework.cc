@@ -34,7 +34,8 @@ bool SortCompareFunction(Benchmark* a, Benchmark* b) {
 
 }  // namespace
 
-int BenchmarkSuite::Run(const char *description) {
+int BenchmarkSuite::Run(const char* description, BenchmarkCallback callback,
+    void* data) {
   int ret = EXIT_SUCCESS;
   printf("Running suite of %d benchmarks:\n", Benchmarks().size());
   std::sort(Benchmarks().begin(), Benchmarks().end(), SortCompareFunction);
@@ -67,6 +68,9 @@ int BenchmarkSuite::Run(const char *description) {
     printf("RESULT Benchmark%s: %s= {%.6f, %.6f} seconds\n",
         name.c_str(), description, median, range);
     printf("---------------------------------------------------------------\n");
+    // Invoke an optional callback on each benchmark.
+    if (callback)
+      callback(Benchmarks()[i], median, range, data);
   }
   printf("Done running benchmark suite.\n");
   return ret;

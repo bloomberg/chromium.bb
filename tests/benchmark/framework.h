@@ -30,6 +30,9 @@ class Benchmark {
   virtual int Run() = 0;
 };
 
+typedef void (*BenchmarkCallback)
+    (Benchmark* benchmark, double median, double range, void* data);
+
 // Base class BenchmarkSuite singleton.
 class BenchmarkSuite {
   typedef std::vector<Benchmark*> BenchmarkVector;
@@ -40,7 +43,9 @@ class BenchmarkSuite {
  protected:
   static void Add(Benchmark* benchmark) { Benchmarks().push_back(benchmark); }
  public:
-  static int Run(const char *description);
+  static int Run(const char* description,
+                 BenchmarkCallback callback,
+                 void* data);
 };
 
 // RegisterBenchmark will add an instance of a benchmark to the suite.
