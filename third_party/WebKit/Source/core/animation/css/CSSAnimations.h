@@ -167,6 +167,8 @@ class CSSAnimations final {
 public:
     CSSAnimations();
 
+    const AtomicString getAnimationNameForInspector(const AnimationPlayer&);
+
     // FIXME: This method is only used here and in the legacy animations
     // implementation. It should be made private or file-scope when the legacy
     // engine is removed.

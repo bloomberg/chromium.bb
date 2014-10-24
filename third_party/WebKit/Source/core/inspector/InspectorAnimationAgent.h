@@ -6,6 +6,7 @@
 #define InspectorAnimationAgent_h
 
 #include "core/InspectorFrontend.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -14,6 +15,7 @@ namespace blink {
 
 class AnimationNode;
 class AnimationPlayer;
+class Element;
 class InspectorDOMAgent;
 
 class InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent>, public InspectorBackendDispatcher::AnimationCommandHandler {
@@ -43,11 +45,6 @@ public:
 
 private:
     InspectorAnimationAgent(InspectorDOMAgent*);
-
-    String playerId(AnimationPlayer&);
-
-    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&);
-    PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimationNode(AnimationNode&);
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     InspectorFrontend::Animation* m_frontend;

@@ -218,6 +218,15 @@ CSSAnimations::CSSAnimations()
 {
 }
 
+const AtomicString CSSAnimations::getAnimationNameForInspector(const AnimationPlayer& player)
+{
+    for (const auto& it : m_animations) {
+        if (it.value->sequenceNumber() == player.sequenceNumber())
+            return it.key;
+    }
+    return nullAtom;
+}
+
 PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* animatingElement, Element& element, const RenderStyle& style, RenderStyle* parentStyle, StyleResolver* resolver)
 {
     OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = adoptPtrWillBeNoop(new CSSAnimationUpdate());
