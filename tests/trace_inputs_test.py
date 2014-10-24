@@ -477,6 +477,18 @@ if sys.platform != 'win32':
        }
       self.assertContext(lines, ROOT_DIR, expected, True)
 
+    def test_getcwd(self):
+      lines = [
+          (self._ROOT_PID, 'getcwd(0x7fffff0e13f0, 4096) = 52'),
+      ]
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
+
+    def test_lstat(self):
+      lines = [
+          (self._ROOT_PID, 'lstat(0x169a210, {...}) = 0'),
+      ]
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
+
     def test_open(self):
       lines = [
         (self._ROOT_PID,
@@ -484,6 +496,7 @@ if sys.platform != 'win32':
             '["../out/unittests"...], [/* 44 vars */])         = 0'),
         (self._ROOT_PID,
           'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND, 0666) = 8'),
+        (self._ROOT_PID, 'open(0x7f68d954bb10, O_RDONLY|O_CLOEXEC) = 3'),
       ]
       files = [
         {
@@ -530,6 +543,9 @@ if sys.platform != 'win32':
             '["../out/unittests"...], [/* 44 vars */])         = 0'),
         (self._ROOT_PID,
          'openat(AT_FDCWD, "/home/foo_bar_user/file", O_RDONLY) = 0'),
+        (self._ROOT_PID,
+         'openat(AT_FDCWD, 0xa23f60, '
+           'O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 4'),
       ]
       files = [
         {
@@ -564,6 +580,20 @@ if sys.platform != 'win32':
          },
        }
       self.assertContext(lines, ROOT_DIR, expected, True)
+
+    def test_readlink(self):
+      lines = [
+          (self._ROOT_PID, 'readlink(0x941e60, 0x7fff7a632d60, 4096) = 9'),
+      ]
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
+
+    def test_stat(self):
+      lines = [
+          (self._ROOT_PID,
+            'stat(0x941e60, {st_mode=S_IFREG|0644, st_size=25769, ...}) = 0'),
+          (self._ROOT_PID, 'stat(0x941e60, {...}) = 0'),
+      ]
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
 
     def test_rmdir(self):
       lines = [

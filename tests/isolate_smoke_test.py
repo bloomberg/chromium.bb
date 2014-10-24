@@ -23,8 +23,8 @@ import isolate
 import isolated_format
 from utils import file_path
 
+import test_utils
 
-VERBOSE = False
 
 ALGO = hashlib.sha1
 HASH_NULL = ALGO().hexdigest()
@@ -320,7 +320,7 @@ class IsolateTempdir(unittest.TestCase):
     if 'ISOLATE_DEBUG' in env:
       del env['ISOLATE_DEBUG']
 
-    if need_output or not VERBOSE:
+    if need_output:
       stdout = subprocess.PIPE
       stderr = subprocess.PIPE
     else:
@@ -637,7 +637,7 @@ class IsolateNoOutdir(IsolateTempdir):
     if 'ISOLATE_DEBUG' in env:
       del env['ISOLATE_DEBUG']
 
-    if need_output or not VERBOSE:
+    if need_output:
       stdout = subprocess.PIPE
       stderr = subprocess.STDOUT
     else:
@@ -766,8 +766,4 @@ class IsolateOther(IsolateTempdir):
 
 
 if __name__ == '__main__':
-  VERBOSE = '-v' in sys.argv
-  logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
-  if VERBOSE:
-    unittest.TestCase.maxDiff = None
-  unittest.main()
+  test_utils.main()

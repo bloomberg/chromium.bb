@@ -19,7 +19,7 @@ import isolated_format
 import run_isolated
 from utils import file_path
 
-VERBOSE = False
+import test_utils
 
 ALGO = hashlib.sha1
 
@@ -106,11 +106,7 @@ class RunIsolatedTest(unittest.TestCase):
   def _run(self, args):
     cmd = [sys.executable, self.run_isolated_zip]
     cmd.extend(args)
-    if VERBOSE:
-      cmd.extend(['-v'] * 2)
-      pipe = None
-    else:
-      pipe = subprocess.PIPE
+    pipe = subprocess.PIPE
     logging.debug(' '.join(cmd))
     proc = subprocess.Popen(
         cmd,
@@ -196,8 +192,7 @@ class RunIsolatedTest(unittest.TestCase):
     ]
     out, err, returncode = self._run(
         self._generate_args_with_isolated(isolated))
-    if not VERBOSE:
-      self.assertEqual('Success\n', out, (out, err))
+    self.assertEqual('Success\n', out, (out, err))
     self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(set(expected)), actual)
@@ -214,9 +209,8 @@ class RunIsolatedTest(unittest.TestCase):
     ]
 
     out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
-    if not VERBOSE:
-      self.assertEqual('', err)
-      self.assertEqual('Success\n', out, out)
+    self.assertEqual('', err)
+    self.assertEqual('Success\n', out, out)
     self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(set(expected)), actual)
@@ -228,9 +222,8 @@ class RunIsolatedTest(unittest.TestCase):
       result_hash,
     ]
     out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
-    if not VERBOSE:
-      self.assertEqual('', out)
-      self.assertIn('No command to run\n', err)
+    self.assertEqual('', out)
+    self.assertIn('No command to run\n', err)
     self.assertEqual(1, returncode)
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(expected), actual)
@@ -255,9 +248,8 @@ class RunIsolatedTest(unittest.TestCase):
       self._store('repeated_files.isolated'),
     ]
     out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
-    if not VERBOSE:
-      self.assertEqual('', err)
-      self.assertEqual('Success\n', out)
+    self.assertEqual('', err)
+    self.assertEqual('Success\n', out)
     self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(expected), actual)
@@ -274,9 +266,8 @@ class RunIsolatedTest(unittest.TestCase):
     ]
 
     out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
-    if not VERBOSE:
-      self.assertEqual('', err)
-      self.assertEqual('Success\n', out)
+    self.assertEqual('', err)
+    self.assertEqual('Success\n', out)
     self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(expected), actual)
@@ -290,15 +281,12 @@ class RunIsolatedTest(unittest.TestCase):
     # Note that <tempdir>/table/<file1_hash> has 640 mode.
 
     # Run the test once to generate the cache.
-    out, err, returncode = self._run(self._generate_args_with_isolated(
+    _out, _err, returncode = self._run(self._generate_args_with_isolated(
         isolated_file))
-    if VERBOSE:
-      print out
-      print err
     self.assertEqual(0, returncode)
     expected = {
-      '.': (040775, 040755, 040777),
-      'state.json': (0100664, 0100644, 0100666),
+      '.': (040707, 040707, 040777),
+      'state.json': (0100606, 0100606, 0100666),
       # The reason for 0100666 on Windows is that the file node had to be
       # modified to delete the hardlinked node. The read only bit is reset on
       # load.
@@ -321,11 +309,8 @@ class RunIsolatedTest(unittest.TestCase):
         os.stat(cached_file_path).st_size)
 
     # Rerun the test and make sure the cache contains the right file afterwards.
-    out, err, returncode = self._run(self._generate_args_with_isolated(
+    _out, _err, returncode = self._run(self._generate_args_with_isolated(
         isolated_file))
-    if VERBOSE:
-      print out
-      print err
     self.assertEqual(0, returncode)
     expected = {
       '.': (040700, 040700, 040777),
@@ -348,15 +333,12 @@ class RunIsolatedTest(unittest.TestCase):
     # Note that <tempdir>/table/<file1_hash> has 640 mode.
 
     # Run the test once to generate the cache.
-    out, err, returncode = self._run(self._generate_args_with_isolated(
+    _out, _err, returncode = self._run(self._generate_args_with_isolated(
         isolated_file))
-    if VERBOSE:
-      print out
-      print err
     self.assertEqual(0, returncode)
     expected = {
-      '.': (040775, 040755, 040777),
-      'state.json': (0100664, 0100644, 0100666),
+      '.': (040707, 040707, 040777),
+      'state.json': (0100606, 0100606, 0100666),
       file1_hash: (0100400, 0100400, 0100666),
       isolated_hash: (0100400, 0100400, 0100444),
     }
@@ -375,11 +357,8 @@ class RunIsolatedTest(unittest.TestCase):
         os.stat(cached_file_path).st_size)
 
     # Rerun the test and make sure the cache contains the right file afterwards.
-    out, err, returncode = self._run(self._generate_args_with_isolated(
+    _out, _err, returncode = self._run(self._generate_args_with_isolated(
         isolated_file))
-    if VERBOSE:
-      print out
-      print err
     self.assertEqual(0, returncode)
     expected = {
       '.': (040700, 040700, 040777),
@@ -397,6 +376,4 @@ class RunIsolatedTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  VERBOSE = '-v' in sys.argv
-  logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
-  unittest.main()
+  test_utils.main()

@@ -1094,57 +1094,72 @@ class Strace(ApiBase):
       def handle_futex(self, _args, _result):
         pass
 
-      @parse_args(r'^\"(.+?)\", (\d+)$', False)
+      @parse_args(r'^(\".+?\"|0x[a-f0-9]+), (\d+)$', False)
       def handle_getcwd(self, args, _result):
-        if os.path.isabs(args[0]):
-          logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
-          if not isinstance(self.cwd, unicode):
-            # Take the occasion to reset the path.
-            self.cwd = self._mangle(args[0])
-          else:
-            # It should always match.
-            assert self.cwd == Strace.load_filename(args[0]), (
-                self.cwd, args[0])
+        # TODO(maruel): Resolve file handle.
+        if not args[0].startswith('0x'):
+          filepath = args[0][1:-1]
+          if os.path.isabs(filepath):
+            logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
+            if not isinstance(self.cwd, unicode):
+              # Take the occasion to reset the path.
+              self.cwd = self._mangle(filepath)
+            else:
+              # It should always match.
+              assert self.cwd == Strace.load_filename(filepath), (
+                  self.cwd, filepath)
 
       @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
       def handle_link(self, args, _result):
         self._handle_file(args[0], Results.File.READ)
         self._handle_file(args[1], Results.File.WRITE)
 
-      @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
+      @parse_args(r'^(\".+?\"|0x[a-f0-9]+), \{(?:.+?, )?\.\.\.\}$', True)
       def handle_lstat(self, args, _result):
-        self._handle_file(args[0], Results.File.TOUCHED)
+        # TODO(maruel): Resolve file handle.
+        if not args[0].startswith('0x'):
+          self._handle_file(args[0][1:-1], Results.File.TOUCHED)
 
       def handle_mkdir(self, _args, _result):
         # We track content, not directories.
         pass
 
-      @parse_args(r'^\"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
+      @parse_args(r'^(\".*?\"|0x[a-f0-9]+), ([A-Z\_\|]+)(|, \d+)$', False)
       def handle_open(self, args, _result):
         if 'O_DIRECTORY' in args[1]:
           return
-        self._handle_file(
-            args[0],
-            Results.File.READ if 'O_RDONLY' in args[1] else Results.File.WRITE)
+        # TODO(maruel): Resolve file handle.
+        if not args[0].startswith('0x'):
+          t = Results.File.READ if 'O_RDONLY' in args[1] else Results.File.WRITE
+          self._handle_file(args[0][1:-1], t)
 
-      @parse_args(r'^(\d+|AT_FDCWD), \"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
+      @parse_args(
+          r'^(\d+|AT_FDCWD), (\".*?\"|0x[a-f0-9]+), ([A-Z\_\|]+)(|, \d+)$',
+          False)
       def handle_openat(self, args, _result):
         if 'O_DIRECTORY' in args[2]:
           return
         if args[0] == 'AT_FDCWD':
-          self._handle_file(
-              args[1],
-              Results.File.READ if 'O_RDONLY' in args[2]
+          # TODO(maruel): Resolve file handle.
+          if not args[1].startswith('0x'):
+            t = (
+                Results.File.READ if 'O_RDONLY' in args[2]
                 else Results.File.WRITE)
+          self._handle_file(args[1][1:-1], t)
         else:
           # TODO(maruel): Implement relative open if necessary instead of the
           # AT_FDCWD flag, let's hope not since this means tracking all active
           # directory handles.
           raise NotImplementedError('Relative open via openat not implemented.')
 
-      @parse_args(r'^\"(.+?)\", \".+?\"(\.\.\.)?, \d+$', False)
+      @parse_args(
+          r'^(\".+?\"|0x[a-f0-9]+), (?:\".+?\"(?:\.\.\.)?|0x[a-f0-9]+), '
+            '\d+$',
+          False)
       def handle_readlink(self, args, _result):
-        self._handle_file(args[0], Results.File.READ)
+        # TODO(maruel): Resolve file handle.
+        if not args[0].startswith('0x'):
+          self._handle_file(args[0][1:-1], Results.File.READ)
 
       @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
       def handle_rename(self, args, _result):
@@ -1159,9 +1174,11 @@ class Strace(ApiBase):
         # TODO(maruel): self._handle_file(args[0], Results.File.WRITE)
         pass
 
-      @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
+      @parse_args(r'^(\".+?\"|0x[a-f0-9]+), \{.+?\}$', True)
       def handle_stat(self, args, _result):
-        self._handle_file(args[0], Results.File.TOUCHED)
+        # TODO(maruel): Resolve file handle.
+        if not args[0].startswith('0x'):
+          self._handle_file(args[0][1:-1], Results.File.TOUCHED)
 
       @parse_args(r'^\"(.+?)\", \"(.+?)\"$', True)
       def handle_symlink(self, args, _result):

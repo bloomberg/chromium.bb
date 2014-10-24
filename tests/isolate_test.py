@@ -13,7 +13,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import unittest
 
 ROOT_DIR = unicode(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
@@ -27,7 +26,7 @@ import isolated_format
 import isolateserver
 from utils import file_path
 from utils import tools
-
+import test_utils
 
 ALGO = hashlib.sha1
 
@@ -1542,10 +1541,5 @@ def clear_env_vars():
 
 
 if __name__ == '__main__':
-  logging.basicConfig(
-      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
-      format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
-  if '-v' in sys.argv:
-    unittest.TestCase.maxDiff = None
   clear_env_vars()
-  unittest.main()
+  test_utils.main()

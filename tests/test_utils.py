@@ -2,7 +2,10 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import logging
 import os
+import sys
+import unittest
 
 _UMASK = None
 
@@ -33,3 +36,14 @@ def umask():
     _UMASK = os.umask(0777)
     os.umask(_UMASK)
   return _UMASK
+
+
+def main():
+  logging.basicConfig(
+      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
+      format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
+  if '-v' in sys.argv:
+    unittest.TestCase.maxDiff = None
+  # Use an unusual umask.
+  os.umask(0070)
+  unittest.main()
