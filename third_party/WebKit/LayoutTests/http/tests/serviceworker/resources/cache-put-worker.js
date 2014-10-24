@@ -192,14 +192,6 @@ cache_test(function(cache) {
   }, 'Cache.put with a relative URL');
 
 cache_test(function(cache) {
-    var request = new Request('http://example.com/foo', {method: 'get'});
-    return assert_promise_rejects(
-      cache.put(request, new_test_response()),
-      new TypeError(),
-      'Cache.put should throw a TypeError for non-GET requests.');
-  }, 'Cache.put with a non-GET request');
-
-cache_test(function(cache) {
     var request = new Request('http://example.com/foo', {method: 'HEAD'});
     return assert_promise_rejects(
       cache.put(request, new_test_response()),
