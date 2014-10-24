@@ -117,6 +117,7 @@ public:
     void resume();
 
     void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);
+    PassRefPtr<JSONObject> highlightJSONForNode(Node*);
 
     void willProcessTask();
     void didProcessTask();

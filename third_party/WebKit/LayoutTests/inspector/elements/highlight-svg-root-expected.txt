@@ -1,7 +1,27 @@
 This test verifies the position and size of the highlight rectangles overlayed on an SVG root element.
 
-margin rect is 160 x 160 at (0, 0)
-border rect is 150 x 150 at (5, 5)
-padding rect is 130 x 130 at (15, 15)
-content rect is 100 x 100 at (30, 30)
+svg-root: {
+  "paths": [
+    {
+      "path": ["M", 30, 30, "L", 130, 30, "L", 130, 130, "L", 30, 130, "Z"],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)"
+    },
+    {
+      "path": ["M", 15, 15, "L", 145, 15, "L", 145, 145, "L", 15, 145, "Z"],
+      "fillColor": "rgba(0, 255, 0, 0)"
+    },
+    {
+      "path": ["M", 5, 5, "L", 155, 5, "L", 155, 155, "L", 5, 155, "Z"],
+      "fillColor": "rgba(0, 0, 255, 0)"
+    },
+    {
+      "path": ["M", 0, 0, "L", 160, 0, "L", 160, 160, "L", 0, 160, "Z"],
+      "fillColor": "rgba(255, 255, 255, 0)"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true
+}
+
 

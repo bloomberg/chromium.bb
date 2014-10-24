@@ -22,12 +22,7 @@ body {
 
 function test()
 {
-    function nodeSelected(node)
-    {
-        InspectorTest.dumpInspectorHighlight(node, InspectorTest.completeTest.bind(InspectorTest));
-    }
-
-    InspectorTest.selectNodeWithId("svg-root", nodeSelected);
+    InspectorTest.dumpInspectorHighlightJSON("svg-root", InspectorTest.completeTest.bind(InspectorTest));
 }
 
 </script>

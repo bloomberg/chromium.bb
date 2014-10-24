@@ -451,6 +451,11 @@ void InspectorController::setResourcesDataSizeLimitsFromInternals(int maximumRes
         m_resourceAgent->setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
 }
 
+PassRefPtr<JSONObject> InspectorController::highlightJSONForNode(Node* node)
+{
+    return m_overlay->highlightJSONForNode(node);
+}
+
 void InspectorController::willProcessTask()
 {
     if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())

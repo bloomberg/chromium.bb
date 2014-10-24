@@ -101,6 +101,7 @@ public:
 
     Node* highlightedNode() const;
     bool getBoxModel(Node*, RefPtr<TypeBuilder::DOM::BoxModel>&);
+    PassRefPtr<JSONObject> highlightJSONForNode(Node*);
 
     void freePage();
 

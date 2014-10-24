@@ -1487,6 +1487,17 @@ void Internals::setInspectorResourcesDataSizeLimits(int maximumResourcesContentS
     page->inspectorController().setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
 }
 
+String Internals::inspectorHighlightJSON(Node* node, ExceptionState& exceptionState)
+{
+    Page* page = contextDocument()->frame()->page();
+    if (!page) {
+        exceptionState.throwDOMException(InvalidAccessError, "No page can be obtained from the current context document.");
+        return String();
+    }
+    RefPtr<JSONObject> json(page->inspectorController().highlightJSONForNode(node));
+    return json->toPrettyJSONString();
+}
+
 bool Internals::hasGrammarMarker(Document* document, int from, int length)
 {
     ASSERT(document);

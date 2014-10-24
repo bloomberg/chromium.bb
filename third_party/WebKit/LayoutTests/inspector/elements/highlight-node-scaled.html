@@ -31,21 +31,13 @@ function onload()
     
 function test()
 {
-    InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
-
-    function selectedNodeChanged(event)
-    {
-        var node = event.data;
-        if (node.getAttribute("id") == "div")
-            InspectorTest.dumpInspectorHighlight(node, InspectorTest.completeTest.bind(InspectorTest));
-    }
-    InspectorTest.evaluateInConsole("inspect(iframeDivElement)");
+    InspectorTest.dumpInspectorHighlightJSON("div", InspectorTest.completeTest.bind(InspectorTest), "scale-iframe");
 }
 
 </script>
 </head>
 
 <body onload="onload()">
-<iframe src="resources/highlight-node-scaled-iframe.html"></iframe>
+<iframe id="scale-iframe" src="resources/highlight-node-scaled-iframe.html"></iframe>
 </body>
 </html>

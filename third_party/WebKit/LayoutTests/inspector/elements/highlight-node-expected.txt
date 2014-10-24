@@ -1,7 +1,27 @@
 This test verifies the position and size of the highlight rectangles overlayed on an inspected div.
 
-margin rect is 260 x 260 at (0, 0)
-border rect is 250 x 250 at (5, 5)
-padding rect is 230 x 230 at (15, 15)
-content rect is 200 x 200 at (30, 30)
+inspectedElement: {
+  "paths": [
+    {
+      "path": ["M", 30, 30, "L", 230, 30, "L", 230, 230, "L", 30, 230, "Z"],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)"
+    },
+    {
+      "path": ["M", 15, 15, "L", 245, 15, "L", 245, 245, "L", 15, 245, "Z"],
+      "fillColor": "rgba(0, 255, 0, 0)"
+    },
+    {
+      "path": ["M", 5, 5, "L", 255, 5, "L", 255, 255, "L", 5, 255, "Z"],
+      "fillColor": "rgba(0, 0, 255, 0)"
+    },
+    {
+      "path": ["M", 0, 0, "L", 260, 0, "L", 260, 260, "L", 0, 260, "Z"],
+      "fillColor": "rgba(255, 255, 255, 0)"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true
+}
+
 

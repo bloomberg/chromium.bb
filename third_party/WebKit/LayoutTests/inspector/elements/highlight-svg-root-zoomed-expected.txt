@@ -1,7 +1,27 @@
 This test verifies the position and size of the highlight rectangles overlayed on an SVG root element when the page is zoomed.
 
-margin rect is 408 x 528 at (12, 24)
-border rect is 336 x 456 at (48, 60)
-padding rect is 240 x 360 at (96, 108)
-content rect is 120 x 240 at (156, 168)
+svg-root: {
+  "paths": [
+    {
+      "path": ["M", 156, 168, "L", 276, 168, "L", 276, 408, "L", 156, 408, "Z"],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)"
+    },
+    {
+      "path": ["M", 96, 108, "L", 336, 108, "L", 336, 468, "L", 96, 468, "Z"],
+      "fillColor": "rgba(0, 255, 0, 0)"
+    },
+    {
+      "path": ["M", 48, 60, "L", 384, 60, "L", 384, 516, "L", 48, 516, "Z"],
+      "fillColor": "rgba(0, 0, 255, 0)"
+    },
+    {
+      "path": ["M", 12, 24, "L", 420, 24, "L", 420, 552, "L", 12, 552, "Z"],
+      "fillColor": "rgba(255, 255, 255, 0)"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true
+}
+
 

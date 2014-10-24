@@ -1,3 +1,11 @@
+function getInspectorHighlightJSON(nodeId, opt_frameId)
+{
+    var doc = document;
+    if (opt_frameId)
+        doc = document.getElementById(opt_frameId).contentDocument;
+    return window.internals.inspectorHighlightJSON(doc.getElementById(nodeId));
+}
+
 var initialize_ElementTest = function() {
 
 InspectorTest.preloadPanel("elements");
@@ -769,24 +777,15 @@ function onBlankSection(selector, callback)
     InspectorTest.waitForSelectorCommitted(callback.bind(null, section));
 }
 
-InspectorTest.dumpInspectorHighlight = function(node, callback)
+InspectorTest.dumpInspectorHighlightJSON = function(nodeId, callback, opt_frameId)
 {
-    node.boxModel(function(boxModel) {
-        var rectNames = ["margin", "border", "padding", "content"];
-        for (var i = 0; i < rectNames.length; i++) {
-            var rect = boxModel[rectNames[i]];
-            InspectorTest.addResult(rectNames[i] + " rect is " + (rect[4] - rect[0]) + " x " + (rect[5] - rect[1]) + " at (" + rect[0] + ", " + rect[1] + ")");
-        }
+    function innerCallback(result)
+    {
+        InspectorTest.addResult(nodeId + ": " + result.description);
         callback();
-   });
-}
-
-InspectorTest.dumpInspectorHighlightShape = function(node, callback)
-{
-    node.boxModel(function(shapes) {
-        InspectorTest.addResult(JSON.stringify(shapes.shapeOutside.shape));
-        callback();
-    });
+    }
+    opt_frameId = opt_frameId || "";
+    InspectorTest.evaluateInPage("getInspectorHighlightJSON(\"" + nodeId + "\", \"" + opt_frameId + "\")", innerCallback);
 }
 
 };

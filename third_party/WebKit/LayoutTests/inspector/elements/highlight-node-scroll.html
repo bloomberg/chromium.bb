@@ -44,21 +44,11 @@ function onload()
 
 function test()
 {
-    InspectorTest.selectNodeWithId("inspectedElement1", nodeSelected1);
-
-    function nodeSelected1(node)
-    {
-        InspectorTest.dumpInspectorHighlight(node, testNode2);
-    }
+    InspectorTest.dumpInspectorHighlightJSON("inspectedElement1", testNode2);
 
     function testNode2()
     {
-        InspectorTest.selectNodeWithId("inspectedElement2", nodeSelected2);
-    }
-
-    function nodeSelected2(node)
-    {
-        InspectorTest.dumpInspectorHighlight(node, InspectorTest.completeTest.bind(InspectorTest));
+        InspectorTest.dumpInspectorHighlightJSON("inspectedElement2", InspectorTest.completeTest.bind(InspectorTest));
     }
 }
 

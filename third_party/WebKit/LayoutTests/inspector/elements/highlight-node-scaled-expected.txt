@@ -1,6 +1,26 @@
 
-margin rect is 83 x 94 at (96, 77)
-border rect is 69 x 80 at (103, 84)
-padding rect is 59 x 70 at (108, 89)
-content rect is 33 x 44 at (121, 102)
+div: {
+  "paths": [
+    {
+      "path": ["M", 121, 102, "L", 154, 102, "L", 154, 146, "L", 121, 146, "Z"],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)"
+    },
+    {
+      "path": ["M", 108, 89, "L", 167, 89, "L", 167, 159, "L", 108, 159, "Z"],
+      "fillColor": "rgba(0, 255, 0, 0)"
+    },
+    {
+      "path": ["M", 103, 84, "L", 172, 84, "L", 172, 164, "L", 103, 164, "Z"],
+      "fillColor": "rgba(0, 0, 255, 0)"
+    },
+    {
+      "path": ["M", 96, 77, "L", 179, 77, "L", 179, 171, "L", 96, 171, "Z"],
+      "fillColor": "rgba(255, 255, 255, 0)"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true
+}
+
 

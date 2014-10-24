@@ -65,15 +65,12 @@ function test()
 {
     var list = ["circle", "insetSimpleRound", "insetComplexRound", "ellipse", "contentBox", "polygon", "raster"];
     var index = 0;
-    function selectNode()
+    function nextNode()
     {
-        InspectorTest.selectNodeWithId(String(list[index++]), evaluate);
+        var nodeId = String(list[index++]);
+        InspectorTest.dumpInspectorHighlightJSON(nodeId, (index == list.length)  ? InspectorTest.completeTest.bind(InspectorTest): nextNode);
     }
-    function evaluate(node)
-    {
-        InspectorTest.dumpInspectorHighlightShape(node, (index == list.length)  ? InspectorTest.completeTest.bind(InspectorTest): selectNode);
-    }
-    selectNode();
+    nextNode();
 }
 
 </script>
