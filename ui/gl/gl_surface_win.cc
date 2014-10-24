@@ -84,18 +84,24 @@ class WinVSyncProvider : public VSyncProvider {
       HRESULT result = DwmGetCompositionTimingInfo(NULL, &timing_info);
       if (result == S_OK) {
         dwm_active = true;
-        // If FrameTime is not high resolution, we do not want to translate the
-        // QPC value provided by DWM into the low-resolution timebase, which
-        // would be error prone and jittery. As a fallback, we assume the
-        // timebase is zero.
         if (gfx::FrameTime::TimestampsAreHighRes()) {
+          // qpcRefreshPeriod is very accurate but noisy, and must be used with
+          // a high resolution timebase to avoid frequently missing Vsync.
           timebase = gfx::FrameTime::FromQPCValue(
               static_cast<LONGLONG>(timing_info.qpcVBlank));
-        }
-
-        // Swap the numerator/denominator to convert frequency to period.
-        if (timing_info.rateRefresh.uiDenominator > 0 &&
+          interval = base::TimeDelta::FromQPCValue(
+              static_cast<LONGLONG>(timing_info.qpcRefreshPeriod));
+        } else if (timing_info.rateRefresh.uiDenominator > 0 &&
             timing_info.rateRefresh.uiNumerator > 0) {
+          // If FrameTime is not high resolution, we do not want to translate
+          // the QPC value provided by DWM into the low-resolution timebase,
+          // which would be error prone and jittery. As a fallback, we assume
+          // the timebase is zero and use rateRefresh, which may be rounded but
+          // isn't noisy like qpcRefreshPeriod, instead. The fact that we don't
+          // have a timebase here may lead to brief periods of jank when our
+          // scheduling becomes offset from the hardware vsync.
+
+          // Swap the numerator/denominator to convert frequency to period.
           interval = base::TimeDelta::FromMicroseconds(
               timing_info.rateRefresh.uiDenominator *
               base::Time::kMicrosecondsPerSecond /
@@ -104,31 +110,26 @@ class WinVSyncProvider : public VSyncProvider {
       }
     }
 
-    // Double check DWM values against per-display refresh rates.
-    // When DWM compositing is active all displays are normalized to the
-    // refresh rate of the primary display, and won't composite any faster.
-    // If the display refresh rate is higher than the DWM reported value we will
-    // favor the DWM value because any additional frames produced will be
-    // discarded by the OS. If the display refresh rate is lower, however, we
-    // can use that to limit the frames we produce more intelligently.
-    // If DWM compositing is not active we will always use the display refresh.
-    HMONITOR monitor = MonitorFromWindow(window_, MONITOR_DEFAULTTONEAREST);
-    MONITORINFOEX monitor_info;
-    monitor_info.cbSize = sizeof(MONITORINFOEX);
-    BOOL result = GetMonitorInfo(monitor, &monitor_info);
-    if (result) {
-      DEVMODE display_info;
-      display_info.dmSize = sizeof(DEVMODE);
-      display_info.dmDriverExtra = 0;
-      result = EnumDisplaySettings(monitor_info.szDevice, ENUM_CURRENT_SETTINGS,
-          &display_info);
-      if (result && display_info.dmDisplayFrequency > 1) {
-        base::TimeDelta display_interval = base::TimeDelta::FromMicroseconds(
-            (1.0 / static_cast<double>(display_info.dmDisplayFrequency)) *
-            base::Time::kMicrosecondsPerSecond);
-
-        if (!dwm_active || display_interval > interval) {
-          interval = display_interval;
+    if (!dwm_active) {
+      // When DWM compositing is active all displays are normalized to the
+      // refresh rate of the primary display, and won't composite any faster.
+      // If DWM compositing is disabled, though, we can use the refresh rates
+      // reported by each display, which will help systems that have mis-matched
+      // displays that run at different frequencies.
+      HMONITOR monitor = MonitorFromWindow(window_, MONITOR_DEFAULTTONEAREST);
+      MONITORINFOEX monitor_info;
+      monitor_info.cbSize = sizeof(MONITORINFOEX);
+      BOOL result = GetMonitorInfo(monitor, &monitor_info);
+      if (result) {
+        DEVMODE display_info;
+        display_info.dmSize = sizeof(DEVMODE);
+        display_info.dmDriverExtra = 0;
+        result = EnumDisplaySettings(monitor_info.szDevice,
+            ENUM_CURRENT_SETTINGS, &display_info);
+        if (result && display_info.dmDisplayFrequency > 1) {
+          interval = base::TimeDelta::FromMicroseconds(
+              (1.0 / static_cast<double>(display_info.dmDisplayFrequency)) *
+              base::Time::kMicrosecondsPerSecond);
         }
       }
     }
