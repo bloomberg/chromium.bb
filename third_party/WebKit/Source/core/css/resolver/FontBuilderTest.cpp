@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "core/css/resolver/FontBuilder.h"
+#include "core/testing/DummyPageHolder.h"
 
 #include <gtest/gtest.h>
 
@@ -19,7 +20,8 @@ protected:
 
 TEST_F(FontBuilderTest, StylePointerInitialisation)
 {
-    FontBuilder builder;
+    OwnPtr<DummyPageHolder> dummy = DummyPageHolder::create(IntSize(800, 600));
+    FontBuilder builder(dummy->document());
     EXPECT_EQ(0, getStyle(builder));
 }
 

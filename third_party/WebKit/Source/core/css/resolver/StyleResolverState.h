@@ -60,7 +60,12 @@ public:
 
     const ElementResolveContext& elementContext() const { return m_elementContext; }
 
-    void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; m_cssToLengthConversionData.setStyle(m_style.get()); }
+    void setStyle(PassRefPtr<RenderStyle> style)
+    {
+        m_style = style;
+        m_cssToLengthConversionData.setStyle(m_style.get());
+        m_fontBuilder.setStyle(m_style.get());
+    }
     const RenderStyle* style() const { return m_style.get(); }
     RenderStyle* style() { return m_style.get(); }
     PassRefPtr<RenderStyle> takeStyle() { return m_style.release(); }

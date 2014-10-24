@@ -601,8 +601,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         }
     }
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style());
-
     if (element->isLink()) {
         state.style()->setIsLink(true);
         EInsideLink linkState = state.elementLinkState();
@@ -676,8 +674,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const 
     state.setStyle(RenderStyle::clone(&elementStyle));
     state.setLineHeightValue(0);
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style());
-
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
     // We also don't need to bother with animation properties since the only
@@ -714,7 +710,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
         style = RenderStyle::create();
     StyleResolverState state(element.document(), &element);
     state.setStyle(style);
-    state.fontBuilder().initForStyleResolve(state.document(), state.style());
     return createAnimatableValueSnapshot(state, property, value);
 }
 
@@ -788,7 +783,6 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     }
 
     state.style()->setStyleType(pseudoStyleRequest.pseudoId);
-    state.fontBuilder().initForStyleResolve(state.document(), state.style());
 
     // Since we don't use pseudo-elements in any of our quirk/print
     // user agent rules, don't waste time walking those rules.
@@ -865,8 +859,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     ASSERT(rootElementStyle);
     state.style()->inheritFrom(rootElementStyle);
 
-    state.fontBuilder().initForStyleResolve(state.document(), state.style());
-
     PageRuleCollector collector(rootElementStyle, pageIndex);
 
     collector.matchPageRules(CSSDefaultStyleSheets::instance().defaultPrintStyle());
@@ -920,7 +912,6 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     StyleResolverState state(document(), 0);
     state.setStyle(RenderStyle::create());
-    state.fontBuilder().initForStyleResolve(document(), state.style());
     state.style()->setLineHeight(RenderStyle::initialLineHeight());
     state.setLineHeightValue(0);
     state.fontBuilder().setInitial(state.style()->effectiveZoom());
@@ -1554,8 +1545,6 @@ void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, s
 {
     StyleResolverState state(document(), document().documentElement(), style);
     state.setStyle(style);
-
-    state.fontBuilder().initForStyleResolve(document(), style);
 
     for (size_t i = 0; i < count; ++i) {
         if (properties[i].value) {
