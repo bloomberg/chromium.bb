@@ -73,6 +73,8 @@ ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
       state(blink::WebServiceWorkerStateUnknown) {}
 
 ServiceWorkerRegistrationObjectInfo::ServiceWorkerRegistrationObjectInfo()
-    : handle_id(kInvalidServiceWorkerRegistrationHandleId) {}
+    : handle_id(kInvalidServiceWorkerRegistrationHandleId),
+      registration_id(kInvalidServiceWorkerRegistrationId) {
+}
 
 }  // namespace content
