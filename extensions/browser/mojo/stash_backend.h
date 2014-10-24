@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_STASH_BACKEND_H_
-#define EXTENSIONS_BROWSER_STASH_BACKEND_H_
+#ifndef EXTENSIONS_BROWSER_MOJO_STASH_BACKEND_H_
+#define EXTENSIONS_BROWSER_MOJO_STASH_BACKEND_H_
 
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/common/stash.mojom.h"
+#include "extensions/common/mojo/stash.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace extensions {
@@ -42,4 +42,4 @@ class StashBackend {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_STASH_BACKEND_H_
+#endif  // EXTENSIONS_BROWSER_MOJO_STASH_BACKEND_H_

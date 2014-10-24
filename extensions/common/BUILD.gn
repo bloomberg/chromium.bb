@@ -24,7 +24,7 @@ if (enable_extensions) {
 mojom("mojo") {
   sources = [
     "mojo/keep_alive.mojom",
-    "stash.mojom",
+    "mojo/stash.mojom",
   ]
 }
 
