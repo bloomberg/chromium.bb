@@ -219,27 +219,14 @@ void ExtensionLoaderHandler::HandleDisplayFailures(
 
 void ExtensionLoaderHandler::LoadUnpackedExtensionImpl(
     const base::FilePath& file_path) {
-  if (EndsWith(file_path.AsUTF16Unsafe(),
-               base::ASCIIToUTF16(".zip"),
-               false /* case insensitive */)) {
-    scoped_refptr<ZipFileInstaller> installer = ZipFileInstaller::Create(
-        ExtensionSystem::Get(profile_)->extension_service());
+  scoped_refptr<UnpackedInstaller> installer = UnpackedInstaller::Create(
+      ExtensionSystem::Get(profile_)->extension_service());
 
-    // We do our own error handling, so we don't want a load failure to trigger
-    // a dialog.
-    installer->set_be_noisy_on_failure(false);
+  // We do our own error handling, so we don't want a load failure to trigger
+  // a dialog.
+  installer->set_be_noisy_on_failure(false);
 
-    installer->LoadFromZipFile(file_path);
-  } else {
-    scoped_refptr<UnpackedInstaller> installer = UnpackedInstaller::Create(
-        ExtensionSystem::Get(profile_)->extension_service());
-
-    // We do our own error handling, so we don't want a load failure to trigger
-    // a dialog.
-    installer->set_be_noisy_on_failure(false);
-
-    installer->Load(file_path);
-  }
+  installer->Load(file_path);
 }
 
 void ExtensionLoaderHandler::OnLoadFailure(
