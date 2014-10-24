@@ -149,7 +149,7 @@ class InterfaceInfoCollector(object):
         """Reads an idl file and collects information which is required by the
         binding code generation."""
         definitions = self.reader.read_idl_file(idl_filename)
-        if len(definitions.interfaces) > 0:
+        if definitions.interfaces:
             definition = next(definitions.interfaces.itervalues())
             interface_info = {
                 'is_callback_interface': definition.is_callback,
@@ -163,7 +163,7 @@ class InterfaceInfoCollector(object):
                 # [PutForwards].
                 'referenced_interfaces': get_put_forward_interfaces_from_definition(definition),
             }
-        elif len(definitions.dictionaries) > 0:
+        elif definitions.dictionaries:
             definition = next(definitions.dictionaries.itervalues())
             interface_info = {
                 'is_callback_interface': False,
