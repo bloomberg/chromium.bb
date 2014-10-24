@@ -5,6 +5,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/profiler/scoped_profile.h"
@@ -447,4 +448,43 @@ void AccountTrackerService::LoadFromTokenService() {
        it != accounts.end(); ++it) {
     OnRefreshTokenAvailable(*it);
   }
+}
+
+std::string AccountTrackerService::PickAccountIdForAccount(
+    const std::string& gaia,
+    const std::string& email) {
+  return PickAccountIdForAccount(pref_service_, gaia, email);
+}
+
+// static
+std::string AccountTrackerService::PickAccountIdForAccount(
+    PrefService* pref_service,
+    const std::string& gaia,
+    const std::string& email) {
+  DCHECK(!gaia.empty());
+  DCHECK(!email.empty());
+  switch(GetMigrationState(pref_service)) {
+    case MIGRATION_NOT_STARTED:
+    case MIGRATION_IN_PROGRESS:
+      return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
+    case MIGRATION_DONE:
+      return gaia;
+    default:
+      NOTREACHED();
+      return email;
+  }
+}
+
+void AccountTrackerService::SeedAccountInfo(const std::string& gaia,
+                                            const std::string& email) {
+  DCHECK(!gaia.empty());
+  DCHECK(!email.empty());
+  const std::string account_id = PickAccountIdForAccount(gaia, email);
+  const bool already_exists = ContainsKey(accounts_, account_id);
+  StartTrackingAccount(account_id);
+  AccountState& state = accounts_[account_id];
+  DCHECK(!already_exists || state.info.gaia == gaia);
+  state.info.gaia = gaia;
+  state.info.email = email;
+  SaveToPrefs(state);
 }

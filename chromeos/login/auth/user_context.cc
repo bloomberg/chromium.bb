@@ -15,6 +15,7 @@ UserContext::UserContext()
 
 UserContext::UserContext(const UserContext& other)
     : user_id_(other.user_id_),
+      gaia_id_(other.gaia_id_),
       key_(other.key_),
       auth_code_(other.auth_code_),
       user_id_hash_(other.user_id_hash_),
@@ -48,6 +49,7 @@ UserContext::~UserContext() {
 
 bool UserContext::operator==(const UserContext& context) const {
   return context.user_id_ == user_id_ &&
+         context.gaia_id_ == gaia_id_ &&
          context.key_ == key_ &&
          context.auth_code_ == auth_code_ &&
          context.user_id_hash_ == user_id_hash_ &&
@@ -64,6 +66,10 @@ bool UserContext::operator!=(const UserContext& context) const {
 
 const std::string& UserContext::GetUserID() const {
   return user_id_;
+}
+
+const std::string& UserContext::GetGaiaID() const {
+  return gaia_id_;
 }
 
 const Key* UserContext::GetKey() const {
@@ -109,6 +115,10 @@ bool UserContext::HasCredentials() const {
 
 void UserContext::SetUserID(const std::string& user_id) {
   user_id_ = login::CanonicalizeUserID(user_id);
+}
+
+void UserContext::SetGaiaID(const std::string& gaia_id) {
+  gaia_id_ = gaia_id;
 }
 
 void UserContext::SetKey(const Key& key) {

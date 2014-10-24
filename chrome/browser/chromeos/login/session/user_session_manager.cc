@@ -56,6 +56,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -75,6 +76,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -745,6 +747,17 @@ void UserSessionManager::InitProfilePreferences(
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_sync_id);
   } else if (user_manager::UserManager::Get()->IsLoggedInAsRegularUser()) {
+    // Prime the account tracker with this combination of gaia id/display email.
+    // Don't do this unless both email and gaia_id are valid.  They may not
+    // be when simply unlocking the profile.
+    if (!user_context.GetGaiaID().empty() &&
+        !user_context.GetUserID().empty()) {
+      AccountTrackerService* account_tracker =
+          AccountTrackerServiceFactory::GetForProfile(profile);
+      account_tracker->SeedAccountInfo(user_context.GetGaiaID(),
+                                       user_context.GetUserID());
+    }
+
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).

@@ -119,6 +119,10 @@ BackgroundBridge.prototype = {
   // 'google-accounts-signin'.
   email_: null,
 
+  // Gaia Id of the newly authenticated user based on the gaia response
+  // header 'google-accounts-signin'.
+  gaiaId_: null,
+
   // Session index of the newly authenticated user based on the gaia response
   // header 'google-accounts-signin'.
   sessionIndex_: null,
@@ -204,7 +208,7 @@ BackgroundBridge.prototype = {
   onCompleted: function(details) {
     // Only monitors requests in the gaia frame whose parent frame ID must be
     // positive.
-    if (!this.isDesktopFlow_ || details.parentFrameId <= 0)
+    if (details.parentFrameId <= 0)
       return;
 
     if (details.url.lastIndexOf(backgroundBridgeManager.CONTINUE_URL_BASE, 0) ==
@@ -213,11 +217,12 @@ BackgroundBridge.prototype = {
       if (details.url.indexOf('ntp=1') >= 0)
         skipForNow = true;
 
-      // TOOD(guohui): Show password confirmation UI.
+      // TOOD(guohui): For desktop SAML flow, show password confirmation UI.
       var passwords = this.onGetScrapedPasswords_();
       var msg = {
         'name': 'completeLogin',
         'email': this.email_,
+        'gaiaId': this.gaiaId_,
         'password': passwords[0],
         'sessionIndex': this.sessionIndex_,
         'skipForNow': skipForNow
@@ -262,11 +267,7 @@ BackgroundBridge.prototype = {
   onHeadersReceived: function(details) {
     var headers = details.responseHeaders;
 
-    if (this.isDesktopFlow_ &&
-        this.gaiaUrl_ &&
-        details.url.lastIndexOf(this.gaiaUrl_) == 0) {
-      // TODO(xiyuan, guohui): CrOS should reuse the logic below for reading the
-      // email for SAML users and cut off the /ListAccount call.
+    if (this.gaiaUrl_ && details.url.lastIndexOf(this.gaiaUrl_) == 0) {
       for (var i = 0; headers && i < headers.length; ++i) {
         if (headers[i].name.toLowerCase() == 'google-accounts-signin') {
           var headerValues = headers[i].value.toLowerCase().split(',');
@@ -277,6 +278,7 @@ BackgroundBridge.prototype = {
           });
           // Remove "" around.
           this.email_ = signinDetails['email'].slice(1, -1);
+          this.gaiaId_ = signinDetails['obfuscatedid'].slice(1, -1);
           this.sessionIndex_ = signinDetails['sessionindex'];
           break;
         }

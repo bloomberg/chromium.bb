@@ -267,7 +267,8 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT);
 
   // Strings used by the SAML fatal error dialog.
-  builder->Add("fatalErrorMessageNoEmail", IDS_LOGIN_FATAL_ERROR_NO_EMAIL);
+  builder->Add("fatalErrorMessageNoAccountDetails",
+               IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS);
   builder->Add("fatalErrorMessageNoPassword",
                IDS_LOGIN_FATAL_ERROR_NO_PASSWORD);
   builder->Add("fatalErrorMessageVerificationFailed",
@@ -319,23 +320,29 @@ void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(
+    const std::string& gaia_id,
     const std::string& email,
     const std::string& password,
     const std::string& auth_code) {
   if (!Delegate())
     return;
+
+  DCHECK(!email.empty());
+  DCHECK(!gaia_id.empty());
   Delegate()->SetDisplayEmail(gaia::SanitizeEmail(email));
   UserContext user_context(email);
+  user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);
   Delegate()->CompleteLogin(user_context);
 }
 
-void GaiaScreenHandler::HandleCompleteLogin(const std::string& typed_email,
+void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
+                                            const std::string& typed_email,
                                             const std::string& password,
                                             bool using_saml) {
   if (!is_enrolling_consumer_management_) {
-    DoCompleteLogin(typed_email, password, using_saml);
+    DoCompleteLogin(gaia_id, typed_email, password, using_saml);
     return;
   }
 
@@ -354,6 +361,7 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& typed_email,
   consumer_management_->SetOwner(owner_email,
                                  base::Bind(&GaiaScreenHandler::OnSetOwnerDone,
                                             weak_factory_.GetWeakPtr(),
+                                            gaia_id,
                                             typed_email,
                                             password,
                                             using_saml));
@@ -417,7 +425,8 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     SubmitLoginFormForTest();
 }
 
-void GaiaScreenHandler::OnSetOwnerDone(const std::string& typed_email,
+void GaiaScreenHandler::OnSetOwnerDone(const std::string& gaia_id,
+                                       const std::string& typed_email,
                                        const std::string& password,
                                        bool using_saml,
                                        bool success) {
@@ -433,10 +442,11 @@ void GaiaScreenHandler::OnSetOwnerDone(const std::string& typed_email,
     // We should continue logging in the user, as there's not much we can do
     // here.
   }
-  DoCompleteLogin(typed_email, password, using_saml);
+  DoCompleteLogin(gaia_id, typed_email, password, using_saml);
 }
 
-void GaiaScreenHandler::DoCompleteLogin(const std::string& typed_email,
+void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
+                                        const std::string& typed_email,
                                         const std::string& password,
                                         bool using_saml) {
   if (!Delegate())
@@ -445,9 +455,12 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& typed_email,
   if (using_saml && !using_saml_api_)
     RecordSAMLScrapingVerificationResultInHistogram(true);
 
+  DCHECK(!typed_email.empty());
+  DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   Delegate()->SetDisplayEmail(sanitized_email);
   UserContext user_context(sanitized_email);
+  user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML

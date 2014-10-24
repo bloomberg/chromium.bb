@@ -263,7 +263,7 @@ cr.define('cr.ui', function() {
   Oobe.loginForTesting = function(username, password) {
     Oobe.disableSigninUI();
     chrome.send('skipToLoginForTesting', [username]);
-    chrome.send('completeLogin', [username, password, false]);
+    chrome.send('completeLogin', ['12345', username, password, false]);
   };
 
   /**

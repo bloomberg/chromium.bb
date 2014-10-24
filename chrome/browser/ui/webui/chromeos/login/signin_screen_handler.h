@@ -46,7 +46,6 @@ class ListValue;
 
 namespace chromeos {
 
-class AuthenticatedUserEmailRetriever;
 class CaptivePortalWindowProxy;
 class CoreOobeActor;
 class ErrorScreensHistogramHelper;
@@ -395,7 +394,6 @@ class SigninScreenHandler
   void HandleFocusPod(const std::string& user_id);
   void HandleHardlockPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id, bool diagnostic_mode);
-  void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
   void HandleGetPublicSessionKeyboardLayouts(const std::string& user_id,
                                              const std::string& locale);
   void HandleCancelConsumerManagementEnrollment();
@@ -519,9 +517,6 @@ class SigninScreenHandler
   // Non-owning ptr.
   // TODO(ygorshenin@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_;
-
-  // Helper that retrieves the authenticated user's e-mail address.
-  scoped_ptr<AuthenticatedUserEmailRetriever> email_retriever_;
 
   // Maximized mode controller delegate.
   scoped_ptr<TouchViewControllerDelegate> max_mode_delegate_;
