@@ -34,7 +34,7 @@ struct ResourceResponseInfo;
 class CONTENT_EXPORT RequestPeer {
  public:
   // Called as upload progress is made.
-  // note: only for requests with LOAD_ENABLE_UPLOAD_PROGRESS set
+  // note: only for requests with upload progress enabled.
   virtual void OnUploadProgress(uint64 position, uint64 size) = 0;
 
   // Called when a redirect occurs.  The implementation may return false to

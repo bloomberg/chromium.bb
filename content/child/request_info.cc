@@ -23,6 +23,7 @@ RequestInfo::RequestInfo()
       fetch_request_mode(FETCH_REQUEST_MODE_NO_CORS),
       fetch_credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
       enable_load_timing(false),
+      enable_upload_progress(false),
       extra_data(NULL) {
 }
 
