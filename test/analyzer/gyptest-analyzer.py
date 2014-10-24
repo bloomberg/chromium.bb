@@ -76,8 +76,8 @@ def EnsureContains(targets=set(), matched=False, build_targets=set()):
     print 'unexpected error', result.get('error')
     test.fail_test()
 
-  if result.get('warning', None):
-    print 'unexpected warning', result.get('warning')
+  if result.get('invalid_targets', None):
+    print 'unexpected invalid_targets', result.get('invalid_targets')
     test.fail_test()
 
   actual_targets = set(result['targets'])
@@ -105,8 +105,8 @@ def EnsureMatchedAll(targets):
     print 'unexpected error', result.get('error')
     test.fail_test()
 
-  if result.get('warning', None):
-    print 'unexpected warning', result.get('warning')
+  if result.get('invalid_targets', None):
+    print 'unexpected invalid_targets', result.get('invalid_targets')
     test.fail_test()
 
   if result['status'] != found_all:
@@ -135,12 +135,13 @@ def EnsureStdoutContains(expected_error_string):
     test.fail_test()
 
 
-def EnsureWarning(expected_warning_string):
-  """Verifies output contains the warning string."""
+def EnsureInvalidTargets(expected_invalid_targets):
+  """Verifies output contains invalid_targets."""
   result = _ReadOutputFileContents()
-  if result.get('warning', '').find(expected_warning_string) == -1:
-    print 'actual warning:', result.get('warning', ''), \
-        '\nexpected warning:', expected_warning_string
+  actual_invalid_targets = set(result['invalid_targets'])
+  if actual_invalid_targets != expected_invalid_targets:
+    print 'actual invalid_targets:', actual_invalid_targets, \
+        '\nexpected :', expected_invalid_targets
     test.fail_test()
 
 # Verifies config_path must be specified.
@@ -152,10 +153,10 @@ test.run_gyp('test.gyp', '-Gconfig_path=bogus_file',
              '-Ganalyzer_output_path=analyzer_output')
 EnsureError('Unable to open file bogus_file')
 
-# Verify get warning when bad target is specified.
+# Verify 'invalid_targets' is present when bad target is specified.
 _CreateConfigFile(['exe2.c'], ['bad_target'])
 run_analyzer()
-EnsureWarning('Unable to find all targets')
+EnsureInvalidTargets({'bad_target'})
 
 # Verifies config_path must point to a valid json file.
 _CreateBogusConfigFile()

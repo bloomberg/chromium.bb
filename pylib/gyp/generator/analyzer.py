@@ -11,7 +11,6 @@ targets: list of targets to search for. The target names are unqualified.
 
 The following is output:
 error: only supplied if there is an error.
-warning: only supplied if there is a warning.
 targets: the set of targets passed in via targets that either directly or
   indirectly depend upon the set of paths supplied in files.
 build_targets: minimal set of targets that directly depend on the changed
@@ -21,6 +20,7 @@ status: outputs one of three values: none of the supplied files were found,
   one of the include files changed so that it should be assumed everything
   changed (in this case targets and build_targets are not output) or at
   least one file was found.
+invalid_targets: list of supplied targets thare were not found.
 
 If the generator flag analyzer_output_path is specified, output is written
 there. Otherwise output is written to stdout.
@@ -444,6 +444,11 @@ def _WriteOutput(params, **values):
     print 'Supplied targets that depend on changed files:'
     for target in values['targets']:
       print '\t', target
+  if 'invalid_targets' in values:
+    values['invalid_targets'].sort()
+    print 'The following targets were not found:'
+    for target in values['invalid_targets']:
+      print '\t', target
   if 'build_targets' in values:
     values['build_targets'].sort()
     print 'Targets that require a build:'
@@ -531,12 +536,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
       data, target_list, target_dicts, toplevel_dir, frozenset(config.files),
       params['build_files'])
 
-    warning = None
     unqualified_mapping = _GetUnqualifiedToTargetMapping(all_targets,
                                                          config.targets)
+    invalid_targets = None
     if len(unqualified_mapping) != len(config.targets):
-      not_found = _NamesNotIn(config.targets, unqualified_mapping)
-      warning = 'Unable to find all targets: ' + str(not_found)
+      invalid_targets = _NamesNotIn(config.targets, unqualified_mapping)
 
     if matching_targets:
       search_targets = _LookupTargets(config.targets, unqualified_mapping)
@@ -557,8 +561,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
                     'status': found_dependency_string if matching_targets else
                               no_dependency_string,
                     'build_targets': build_targets}
-    if warning:
-      result_dict['warning'] = warning
+    if invalid_targets:
+      result_dict['invalid_targets'] = invalid_targets
     _WriteOutput(params, **result_dict)
 
   except Exception as e:
