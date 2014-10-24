@@ -21,9 +21,6 @@ class CookieOptions;
 namespace content_settings {
 
 // An abstraction of operations that depend on the embedder (e.g. Chrome).
-// For mock / testing implementation in tests you can inherit from
-// StubContentSettingsClient instead to avoid the need to stub unneeded pure
-// virtual methods.
 class ContentSettingsClient {
  public:
   enum AccessType { BLOCKED, ALLOWED };
