@@ -104,6 +104,7 @@ PassOwnPtr<Vector<char> > GraphicsContextSnapshot::replay(unsigned fromStep, uns
     int height = ceil(scale * m_picture->height());
     SkBitmap bitmap;
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
+    bitmap.eraseARGB(0, 0, 0, 0);
     {
         ReplayingCanvas canvas(bitmap, fromStep, toStep);
         canvas.scale(scale, scale);
