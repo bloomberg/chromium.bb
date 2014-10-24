@@ -5,6 +5,8 @@
 #include "media/cast/sender/audio_encoder.h"
 
 #include <algorithm>
+#include <limits>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,7 +17,14 @@
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+
+#if !defined(OS_IOS)
 #include "third_party/opus/src/include/opus.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include <AudioToolbox/AudioToolbox.h>
+#endif
 
 namespace media {
 namespace cast {
@@ -197,6 +206,7 @@ class AudioEncoder::ImplBase
   DISALLOW_COPY_AND_ASSIGN(ImplBase);
 };
 
+#if !defined(OS_IOS)
 class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
  public:
   OpusImpl(const scoped_refptr<CastEnvironment>& cast_environment,
@@ -301,6 +311,388 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
 
   DISALLOW_COPY_AND_ASSIGN(OpusImpl);
 };
+#endif
+
+#if defined(OS_MACOSX)
+class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
+  // AAC-LC has two access unit sizes (960 and 1024). The Apple encoder only
+  // supports the latter.
+  static const int kAccessUnitSamples = 1024;
+
+  // Size of an ADTS header (w/o checksum). See
+  // http://wiki.multimedia.cx/index.php?title=ADTS
+  static const int kAdtsHeaderSize = 7;
+
+ public:
+  AppleAacImpl(const scoped_refptr<CastEnvironment>& cast_environment,
+               int num_channels,
+               int sampling_rate,
+               int bitrate,
+               const FrameEncodedCallback& callback)
+      : ImplBase(cast_environment,
+                 CODEC_AUDIO_AAC,
+                 num_channels,
+                 sampling_rate,
+                 kAccessUnitSamples,
+                 callback),
+        input_buffer_(AudioBus::Create(num_channels, kAccessUnitSamples)),
+        input_bus_(AudioBus::CreateWrapper(num_channels)),
+        max_access_unit_size_(0),
+        output_buffer_(nullptr),
+        converter_(nullptr),
+        file_(nullptr),
+        num_access_units_(0),
+        can_resume_(true) {
+    if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED) {
+      return;
+    }
+    if (!Initialize(sampling_rate, bitrate)) {
+      ImplBase::cast_initialization_status_ =
+          STATUS_INVALID_AUDIO_CONFIGURATION;
+      return;
+    }
+    ImplBase::cast_initialization_status_ = STATUS_AUDIO_INITIALIZED;
+  }
+
+ private:
+  virtual ~AppleAacImpl() { Teardown(); }
+
+  // Destroys the existing audio converter and file, if any.
+  void Teardown() {
+    if (converter_) {
+      AudioConverterDispose(converter_);
+      converter_ = nullptr;
+    }
+    if (file_) {
+      AudioFileClose(file_);
+      file_ = nullptr;
+    }
+  }
+
+  // Initializes the audio converter and file. Calls Teardown to destroy any
+  // existing state. This is so that Initialize() may be called to setup another
+  // converter after a non-resumable interruption.
+  bool Initialize(int sampling_rate, int bitrate) {
+    // Teardown previous audio converter and file.
+    Teardown();
+
+    // Input data comes from AudioBus objects, which carry non-interleaved
+    // packed native-endian float samples. Note that in Core Audio, a frame is
+    // one sample across all channels at a given point in time. When describing
+    // a non-interleaved samples format, the "per frame" fields mean "per
+    // channel" or "per stream", with the exception of |mChannelsPerFrame|. For
+    // uncompressed formats, one packet contains one frame.
+    AudioStreamBasicDescription in_asbd;
+    in_asbd.mSampleRate = sampling_rate;
+    in_asbd.mFormatID = kAudioFormatLinearPCM;
+    in_asbd.mFormatFlags =
+        kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+    in_asbd.mChannelsPerFrame = num_channels_;
+    in_asbd.mBitsPerChannel = sizeof(float) * 8;
+    in_asbd.mFramesPerPacket = 1;
+    in_asbd.mBytesPerPacket = in_asbd.mBytesPerFrame = sizeof(float);
+    in_asbd.mReserved = 0;
+
+    // Request AAC-LC encoding, with no downmixing or downsampling.
+    AudioStreamBasicDescription out_asbd;
+    memset(&out_asbd, 0, sizeof(AudioStreamBasicDescription));
+    out_asbd.mSampleRate = sampling_rate;
+    out_asbd.mFormatID = kAudioFormatMPEG4AAC;
+    out_asbd.mChannelsPerFrame = num_channels_;
+    UInt32 prop_size = sizeof(out_asbd);
+    if (AudioFormatGetProperty(kAudioFormatProperty_FormatInfo,
+                               0,
+                               nullptr,
+                               &prop_size,
+                               &out_asbd) != noErr) {
+      return false;
+    }
+
+    if (AudioConverterNew(&in_asbd, &out_asbd, &converter_) != noErr) {
+      return false;
+    }
+
+    // The converter will fully specify the output format and update the
+    // relevant fields of the structure, which we can now query.
+    prop_size = sizeof(out_asbd);
+    if (AudioConverterGetProperty(converter_,
+                                  kAudioConverterCurrentOutputStreamDescription,
+                                  &prop_size,
+                                  &out_asbd) != noErr) {
+      return false;
+    }
+
+    // If bitrate is <= 0, allow the encoder to pick a suitable value.
+    // Otherwise, set the bitrate (which can fail if the value is not suitable
+    // or compatible with the output sampling rate or channels).
+    if (bitrate > 0) {
+      prop_size = sizeof(int);
+      if (AudioConverterSetProperty(
+              converter_, kAudioConverterEncodeBitRate, prop_size, &bitrate) !=
+          noErr) {
+        return false;
+      }
+    }
+
+#if defined(OS_IOS)
+    // See the comment next to |can_resume_| for details on resumption. Some
+    // converters can return kAudioConverterErr_PropertyNotSupported, in which
+    // case resumption is implicitly supported. This is the only location where
+    // the implementation modifies |can_resume_|.
+    uint32_t can_resume;
+    prop_size = sizeof(can_resume);
+    OSStatus oserr = AudioConverterGetProperty(
+        converter_,
+        kAudioConverterPropertyCanResumeFromInterruption,
+        &prop_size,
+        &can_resume);
+    if (oserr == noErr) {
+      const_cast<bool&>(can_resume_) = can_resume != 0;
+    }
+#endif
+
+    // Figure out the maximum size of an access unit that the encoder can
+    // produce. |mBytesPerPacket| will be 0 for variable size configurations,
+    // in which case we must query the value.
+    uint32_t max_access_unit_size = out_asbd.mBytesPerPacket;
+    if (max_access_unit_size == 0) {
+      prop_size = sizeof(max_access_unit_size);
+      if (AudioConverterGetProperty(
+              converter_,
+              kAudioConverterPropertyMaximumOutputPacketSize,
+              &prop_size,
+              &max_access_unit_size) != noErr) {
+        return false;
+      }
+    }
+
+    // This is the only location where the implementation modifies
+    // |max_access_unit_size_|.
+    const_cast<uint32_t&>(max_access_unit_size_) = max_access_unit_size;
+
+    // Allocate a buffer to store one access unit. This is the only location
+    // where the implementation modifies |access_unit_buffer_|.
+    const_cast<scoped_ptr<uint8[]>&>(access_unit_buffer_)
+        .reset(new uint8[max_access_unit_size]);
+
+    // Initialize the converter ABL. Note that the buffer size has to be set
+    // before every encode operation, since the field is modified to indicate
+    // the size of the output data (on input it indicates the buffer capacity).
+    converter_abl_.mNumberBuffers = 1;
+    converter_abl_.mBuffers[0].mNumberChannels = num_channels_;
+    converter_abl_.mBuffers[0].mData = access_unit_buffer_.get();
+
+    // The "magic cookie" is an encoder state vector required for decoding and
+    // packetization. It is queried now from |converter_| then set on |file_|
+    // after initialization.
+    UInt32 cookie_size;
+    if (AudioConverterGetPropertyInfo(converter_,
+                                      kAudioConverterCompressionMagicCookie,
+                                      &cookie_size,
+                                      nullptr) != noErr) {
+      return false;
+    }
+    scoped_ptr<uint8[]> cookie_data(new uint8[cookie_size]);
+    if (AudioConverterGetProperty(converter_,
+                                  kAudioConverterCompressionMagicCookie,
+                                  &cookie_size,
+                                  cookie_data.get()) != noErr) {
+      return false;
+    }
+
+    if (AudioFileInitializeWithCallbacks(this,
+                                         nullptr,
+                                         &FileWriteCallback,
+                                         nullptr,
+                                         nullptr,
+                                         kAudioFileAAC_ADTSType,
+                                         &out_asbd,
+                                         0,
+                                         &file_) != noErr) {
+      return false;
+    }
+
+    if (AudioFileSetProperty(file_,
+                             kAudioFilePropertyMagicCookieData,
+                             cookie_size,
+                             cookie_data.get()) != noErr) {
+      return false;
+    }
+
+    // Initially the input bus points to the input buffer. See the comment on
+    // |input_bus_| for more on this optimization.
+    input_bus_->set_frames(kAccessUnitSamples);
+    for (int ch = 0; ch < input_buffer_->channels(); ++ch) {
+      input_bus_->SetChannelData(ch, input_buffer_->channel(ch));
+    }
+
+    return true;
+  }
+
+  void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
+                                 int source_offset,
+                                 int buffer_fill_offset,
+                                 int num_samples) override {
+    DCHECK_EQ(audio_bus->channels(), input_buffer_->channels());
+
+    // See the comment on |input_bus_| for more on this optimization. Note that
+    // we cannot elide the copy if the source offset would result in an
+    // unaligned pointer.
+    if (num_samples == kAccessUnitSamples &&
+        source_offset * sizeof(float) % AudioBus::kChannelAlignment == 0) {
+      DCHECK_EQ(buffer_fill_offset, 0);
+      for (int ch = 0; ch < audio_bus->channels(); ++ch) {
+        auto samples = const_cast<float*>(audio_bus->channel(ch));
+        input_bus_->SetChannelData(ch, samples + source_offset);
+      }
+      return;
+    }
+
+    // Copy the samples into the input buffer.
+    DCHECK_EQ(input_bus_->channel(0), input_buffer_->channel(0));
+    audio_bus->CopyPartialFramesTo(
+        source_offset, num_samples, buffer_fill_offset, input_buffer_.get());
+  }
+
+  bool EncodeFromFilledBuffer(std::string* out) override {
+    // Reset the buffer size field to the buffer capacity.
+    converter_abl_.mBuffers[0].mDataByteSize = max_access_unit_size_;
+
+    // Encode the current input buffer. This is a sychronous call.
+    OSStatus oserr;
+    UInt32 io_num_packets = 1;
+    AudioStreamPacketDescription packet_description;
+    oserr = AudioConverterFillComplexBuffer(converter_,
+                                            &ConverterFillDataCallback,
+                                            this,
+                                            &io_num_packets,
+                                            &converter_abl_,
+                                            &packet_description);
+    if (oserr != noErr || io_num_packets == 0) {
+      return false;
+    }
+
+    // Reserve space in the output buffer to write the packet.
+    out->reserve(packet_description.mDataByteSize + kAdtsHeaderSize);
+
+    // Set the current output buffer and emit an ADTS-wrapped AAC access unit.
+    // This is a synchronous call. After it returns, reset the output buffer.
+    output_buffer_ = out;
+    oserr = AudioFileWritePackets(file_,
+                                  false,
+                                  converter_abl_.mBuffers[0].mDataByteSize,
+                                  &packet_description,
+                                  num_access_units_,
+                                  &io_num_packets,
+                                  converter_abl_.mBuffers[0].mData);
+    output_buffer_ = nullptr;
+    if (oserr != noErr || io_num_packets == 0) {
+      return false;
+    }
+    num_access_units_ += io_num_packets;
+    return true;
+  }
+
+  // The |AudioConverterFillComplexBuffer| input callback function. Configures
+  // the provided |AudioBufferList| to alias |input_bus_|. The implementation
+  // can only supply |kAccessUnitSamples| samples as a result of not copying
+  // samples or tracking read and write positions. Note that this function is
+  // called synchronously by |AudioConverterFillComplexBuffer|.
+  static OSStatus ConverterFillDataCallback(
+      AudioConverterRef in_converter,
+      UInt32* io_num_packets,
+      AudioBufferList* io_data,
+      AudioStreamPacketDescription** out_packet_desc,
+      void* in_encoder) {
+    DCHECK(in_encoder);
+    auto encoder = reinterpret_cast<AppleAacImpl*>(in_encoder);
+    auto input_buffer = encoder->input_buffer_.get();
+    auto input_bus = encoder->input_bus_.get();
+
+    DCHECK_EQ(static_cast<int>(*io_num_packets), kAccessUnitSamples);
+    DCHECK_EQ(io_data->mNumberBuffers,
+              static_cast<unsigned>(input_bus->channels()));
+    for (int i_buf = 0, end = io_data->mNumberBuffers; i_buf < end; ++i_buf) {
+      io_data->mBuffers[i_buf].mNumberChannels = 1;
+      io_data->mBuffers[i_buf].mDataByteSize = sizeof(float) * *io_num_packets;
+      io_data->mBuffers[i_buf].mData = input_bus->channel(i_buf);
+
+      // Reset the input bus back to the input buffer. See the comment on
+      // |input_bus_| for more on this optimization.
+      input_bus->SetChannelData(i_buf, input_buffer->channel(i_buf));
+    }
+    return noErr;
+  }
+
+  // The AudioFile write callback function. Appends the data to the encoder's
+  // current |output_buffer_|.
+  static OSStatus FileWriteCallback(void* in_encoder,
+                                    SInt64 in_position,
+                                    UInt32 in_size,
+                                    const void* in_buffer,
+                                    UInt32* out_size) {
+    DCHECK(in_encoder);
+    DCHECK(in_buffer);
+    auto encoder = reinterpret_cast<const AppleAacImpl*>(in_encoder);
+    auto buffer = reinterpret_cast<const std::string::value_type*>(in_buffer);
+
+    std::string* const output_buffer = encoder->output_buffer_;
+    DCHECK(output_buffer);
+
+    output_buffer->append(buffer, in_size);
+    *out_size = in_size;
+    return noErr;
+  }
+
+  // Buffer that holds one AAC access unit worth of samples. The input callback
+  // function provides samples from this buffer via |input_bus_| to the encoder.
+  const scoped_ptr<AudioBus> input_buffer_;
+
+  // Wrapper AudioBus used by the input callback function. Normally it wraps
+  // |input_buffer_|. However, as an optimization when the client submits a
+  // buffer containing exactly one access unit worth of samples, the bus is
+  // redirected to the client buffer temporarily. We know that the base
+  // implementation will call us right after to encode the buffer and thus we
+  // can eliminate the copy into |input_buffer_|.
+  const scoped_ptr<AudioBus> input_bus_;
+
+  // A buffer that holds one AAC access unit. Initialized in |Initialize| once
+  // the maximum access unit size is known.
+  const scoped_ptr<uint8[]> access_unit_buffer_;
+
+  // The maximum size of an access unit that the encoder can emit.
+  const uint32_t max_access_unit_size_;
+
+  // A temporary pointer to the current output buffer. Only non-null when
+  // writing an access unit. Accessed by the AudioFile write callback function.
+  std::string* output_buffer_;
+
+  // The |AudioConverter| is responsible for AAC encoding. This is a Core Audio
+  // object, not to be confused with |media::AudioConverter|.
+  AudioConverterRef converter_;
+
+  // The |AudioFile| is responsible for ADTS packetization.
+  AudioFileID file_;
+
+  // An |AudioBufferList| passed to the converter to store encoded samples.
+  AudioBufferList converter_abl_;
+
+  // The number of access units emitted so far by the encoder.
+  uint64_t num_access_units_;
+
+  // On iOS, audio codecs can be interrupted by other services (such as an
+  // audio alert or phone call). Depending on the underlying hardware and
+  // configuration, the codec may have to be thrown away and re-initialized
+  // after such an interruption. This flag tracks if we can resume or not from
+  // such an interruption. It is initialized to true, which is the only possible
+  // value on OS X and on most modern iOS hardware.
+  // TODO(jfroy): Implement encoder re-initialization after interruption.
+  //              https://crbug.com/424787
+  const bool can_resume_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppleAacImpl);
+};
+#endif  // defined(OS_MACOSX)
 
 class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
  public:
@@ -363,6 +755,7 @@ AudioEncoder::AudioEncoder(
   // as all calls to InsertAudio() are by the same thread.
   insert_thread_checker_.DetachFromThread();
   switch (codec) {
+#if !defined(OS_IOS)
     case CODEC_AUDIO_OPUS:
       impl_ = new OpusImpl(cast_environment,
                            num_channels,
@@ -370,6 +763,16 @@ AudioEncoder::AudioEncoder(
                            bitrate,
                            frame_encoded_callback);
       break;
+#endif
+#if defined(OS_MACOSX)
+    case CODEC_AUDIO_AAC:
+      impl_ = new AppleAacImpl(cast_environment,
+                               num_channels,
+                               sampling_rate,
+                               bitrate,
+                               frame_encoded_callback);
+      break;
+#endif  // defined(OS_MACOSX)
     case CODEC_AUDIO_PCM16:
       impl_ = new Pcm16Impl(cast_environment,
                             num_channels,

@@ -183,6 +183,12 @@ TEST_P(AudioEncoderTest, EncodePcm16) {
   RunTestForCodec(CODEC_AUDIO_PCM16);
 }
 
+#if defined(OS_MACOSX)
+TEST_P(AudioEncoderTest, EncodeAac) {
+  RunTestForCodec(CODEC_AUDIO_AAC);
+}
+#endif
+
 static const int64 kOneCall_3Millis[] = {3};
 static const int64 kOneCall_10Millis[] = {10};
 static const int64 kOneCall_13Millis[] = {13};

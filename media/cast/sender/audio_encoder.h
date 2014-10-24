@@ -45,6 +45,7 @@ class AudioEncoder {
   class ImplBase;
   class OpusImpl;
   class Pcm16Impl;
+  class AppleAacImpl;
 
   const scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<ImplBase> impl_;
