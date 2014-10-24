@@ -333,7 +333,9 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
     default:
       // We can't add an assertion here, that prevents us
       // from adding new role enums in Blink.
-      return static_cast<ui::AXRole>(-1);
+      LOG(WARNING) << "Warning: Blink WebAXRole " << role
+                   << " not handled by Chromium yet.";
+      return ui::AX_ROLE_UNKNOWN;
   }
 }
 
