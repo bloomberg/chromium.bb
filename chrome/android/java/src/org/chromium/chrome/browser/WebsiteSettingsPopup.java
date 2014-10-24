@@ -17,6 +17,7 @@ import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.Clipboard;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -71,6 +73,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             return name;
         }
     }
+
+    private static final int MAX_TABLET_DIALOG_WIDTH_DP = 400;
 
     private final Context mContext;
     private final WebContents mWebContents;
@@ -138,10 +142,12 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setCanceledOnTouchOutside(true);
 
-        // Place the dialog at the top of the screen, and remove its border.
-        Window window = mDialog.getWindow();
-        window.setGravity(Gravity.TOP);
-        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        // On smaller screens, place the dialog at the top of the screen, and remove its border.
+        if (!DeviceFormFactor.isTablet(mContext)) {
+            Window window = mDialog.getWindow();
+            window.setGravity(Gravity.TOP);
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
         // This needs to come after other member initialization.
         mNativeWebsiteSettingsPopup = nativeInit(this, webContents);
@@ -325,18 +331,38 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      */
     @CalledByNative
     private void showDialog() {
-        // Wrap the dialog in a ScrollView in case the content is too long.
-        ScrollView scrollView = new ScrollView(mContext);
-        scrollView.addView(mContainer);
-        mDialog.addContentView(scrollView, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT));
+        if (!DeviceFormFactor.isTablet(mContext)) {
+            // On smaller screens, make the dialog fill the width of the screen.
+            ScrollView scrollView = new ScrollView(mContext);
+            scrollView.addView(mContainer);
+            mDialog.addContentView(scrollView, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT));
 
-        // Make the dialog fill the width of the screen. This must be called after addContentView,
-        // or it won't fully fill to the edge.
-        Window window = mDialog.getWindow();
-        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+            // This must be called after addContentView, or it won't fully fill to the edge.
+            Window window = mDialog.getWindow();
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+        } else {
+            // On larger screens, make the dialog centered in the screen and have a maximum width.
+            ScrollView scrollView = new ScrollView(mContext) {
+                @Override
+                protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                    final int maxDialogWidthInPx = (int) (MAX_TABLET_DIALOG_WIDTH_DP
+                            * mContext.getResources().getDisplayMetrics().density);
+                    if (MeasureSpec.getSize(widthMeasureSpec) > maxDialogWidthInPx) {
+                        widthMeasureSpec = MeasureSpec.makeMeasureSpec(maxDialogWidthInPx,
+                                MeasureSpec.EXACTLY);
+                    }
+                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                }
+            };
+
+            scrollView.addView(mContainer);
+            mDialog.addContentView(scrollView, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT));
+        }
 
         mDialog.show();
     }
