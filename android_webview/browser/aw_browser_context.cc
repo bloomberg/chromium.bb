@@ -216,6 +216,7 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
     data_reduction_proxy_settings_->InitDataReductionProxySettings(
         user_pref_service_.get(),
         GetRequestContext());
+    data_reduction_proxy_settings_->MaybeActivateDataReductionProxy(true);
 
     SetDataReductionProxyEnabled(data_reduction_proxy_enabled_);
   }

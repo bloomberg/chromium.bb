@@ -181,6 +181,11 @@ class DataReductionProxySettings
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  // Configures data reduction proxy and makes a request to the probe URL to
+  // determine server availability. |at_startup| is true when this method is
+  // called in response to creating or loading a new profile.
+  void MaybeActivateDataReductionProxy(bool at_startup);
+
  protected:
   void InitPrefMembers();
 
@@ -275,8 +280,6 @@ class DataReductionProxySettings
   void OnProxyAlternativeEnabledPrefChange();
 
   void ResetDataReductionStatistics();
-
-  void MaybeActivateDataReductionProxy(bool at_startup);
 
   // Requests the proxy probe URL, if one is set.  If unable to do so, disables
   // the proxy, if enabled. Otherwise enables the proxy if disabled by a probe

@@ -137,9 +137,6 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
 
   AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
-
-  // We set or reset the proxy pref at startup.
-  MaybeActivateDataReductionProxy(true);
 }
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
@@ -382,6 +379,11 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
   PrefService* prefs = GetOriginalProfilePrefs();
+  // Do nothing if prefs have not been initialized. This allows unit testing
+  // of profile related code without having to initialize data reduction proxy
+  // related prefs.
+  if (!prefs)
+    return;
   // TODO(marq): Consider moving this so stats are wiped the first time the
   // proxy settings are actually (not maybe) turned on.
   if (spdy_proxy_auth_enabled_.GetValue() &&

@@ -275,11 +275,6 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
 void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
     bool enabled_at_startup) {
   base::MessageLoopForUI loop;
-  SetProbeResult(kProbeURLWithOKResponse,
-                 "OK",
-                 FetchResult(enabled_at_startup, true),
-                 true,
-                 enabled_at_startup ? 1 : 0);
   scoped_ptr<DataReductionProxyConfigurator> configurator(
       new TestDataReductionProxyConfig());
   settings_->SetProxyConfigurator(configurator.get());
@@ -295,7 +290,6 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
                  base::Unretained(this)));
 
   base::MessageLoop::current()->RunUntilIdle();
-  CheckProxyConfigs(enabled_at_startup, false, false);
   EXPECT_EQ(enabled_at_startup, proxy_enabled_);
 }
 

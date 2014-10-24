@@ -25,6 +25,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
@@ -1009,6 +1011,11 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // Start the deferred task runners once the profile is loaded.
   StartupTaskRunnerServiceFactory::GetForProfile(profile)->
       StartDeferredTaskRunners();
+
+  // Activate data reduction proxy. This creates a request context and makes a
+  // URL request to check if the data reduction proxy server is reachable.
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)->
+      MaybeActivateDataReductionProxy(true);
 
   AccountTrackerServiceFactory::GetForProfile(profile);
   AccountReconcilorFactory::GetForProfile(profile);

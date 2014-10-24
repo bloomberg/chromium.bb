@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_
 #define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_params.h"
