@@ -102,9 +102,9 @@ cache_test(function(cache) {
           return cache.match(test_url);
         })
       .then(function(result) {
-          assert_object_equals(result, response,
-                               'Cache.put should update the cache with ' +
-                               'new request and response.');
+          assert_equals(result.status, 200, 'Cache.put should store status.');
+          assert_equals(result.headers.get('Content-Type'), 'text/plain',
+                        'Cache.put should store headers.');
           return result.text();
         })
       .then(function(body) {
