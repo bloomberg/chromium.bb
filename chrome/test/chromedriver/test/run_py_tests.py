@@ -961,9 +961,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
             })
     driver.Load(self._http_server.GetUrl() + '/userAgentUseDeviceWidth')
     self.assertTrue(driver.capabilities['mobileEmulationEnabled'])
-    self.assertEqual(360, driver.ExecuteScript('return window.innerWidth'))
     self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
-    self.assertEqual(640, driver.ExecuteScript('return window.innerHeight'))
     self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
 
   def testUserAgent(self):
@@ -977,9 +975,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     driver = self.CreateDriver(
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
     driver.Load(self._http_server.GetUrl() + '/userAgentUseDeviceWidth')
-    self.assertEqual(360, driver.ExecuteScript('return window.innerWidth'))
     self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
-    self.assertEqual(640, driver.ExecuteScript('return window.innerHeight'))
     self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
     body_tag = driver.FindElement('tag name', 'body')
     self.assertEqual(
@@ -1006,6 +1002,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
   def testHoverOverElement(self):
     driver = self.CreateDriver(
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
+    driver.Load('about:blank')
     div = driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -1019,6 +1016,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
   def testClickElement(self):
     driver = self.CreateDriver(
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
+    driver.Load('about:blank')
     div = driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
@@ -1032,6 +1030,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
   def testSingleTapElement(self):
     driver = self.CreateDriver(
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
+    driver.Load('about:blank')
     div = driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'

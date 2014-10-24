@@ -67,5 +67,13 @@ Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
                     overridden_device_metrics_->text_autosizing);
   params.SetDouble("fontScaleFactor",
                    overridden_device_metrics_->font_scale_factor);
-  return client_->SendCommand("Page.setDeviceMetricsOverride", params);
+  Status status = client_->SendCommand("Page.setDeviceMetricsOverride", params);
+  if (status.IsError())
+    return status;
+
+  // Always emulate touch.
+  base::DictionaryValue emulate_touch_params;
+  emulate_touch_params.SetBoolean("enabled", true);
+  return client_->SendCommand(
+      "Page.setTouchEmulationEnabled", emulate_touch_params);
 }
