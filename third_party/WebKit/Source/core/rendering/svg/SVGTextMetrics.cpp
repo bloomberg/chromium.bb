@@ -29,7 +29,6 @@ SVGTextMetrics::SVGTextMetrics()
     : m_width(0)
     , m_height(0)
     , m_length(0)
-    , m_glyph(0)
 {
 }
 
@@ -37,7 +36,6 @@ SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
     : m_width(0)
     , m_height(0)
     , m_length(1)
-    , m_glyph(0)
 {
 }
 
@@ -49,14 +47,13 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* textRenderer, const TextRun&
     ASSERT(scalingFactor);
 
     const Font& scaledFont = textRenderer->scaledFont();
-    int length = 0;
 
     // Calculate width/height using the scaled font, divide this result by the scalingFactor afterwards.
-    m_width = scaledFont.width(run, length, m_glyph) / scalingFactor;
+    m_width = scaledFont.width(run) / scalingFactor;
     m_height = scaledFont.fontMetrics().floatHeight() / scalingFactor;
 
-    ASSERT(length >= 0);
-    m_length = static_cast<unsigned>(length);
+    ASSERT(run.length() >= 0);
+    m_length = static_cast<unsigned>(run.length());
 }
 
 TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length)
@@ -106,7 +103,7 @@ SVGTextMetrics SVGTextMetrics::measureCharacterRange(RenderSVGInlineText* text, 
     return SVGTextMetrics(text, constructTextRun(text, position, length));
 }
 
-SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* text, unsigned position, unsigned length, float width, Glyph glyphNameGlyphId)
+SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* text, unsigned position, unsigned length, float width)
 {
     ASSERT(text);
 
@@ -115,7 +112,6 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* text, unsigned position, uns
 
     m_width = width / scalingFactor;
     m_height = text->scaledFont().fontMetrics().floatHeight() / scalingFactor;
-    m_glyph = 0;
 
     m_length = length;
 }

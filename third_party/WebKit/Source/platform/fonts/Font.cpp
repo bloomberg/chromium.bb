@@ -259,13 +259,6 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return result;
 }
 
-float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
-{
-    charsConsumed = run.length();
-    glyphId = 0;
-    return width(run);
-}
-
 namespace {
 
 template <bool hasOffsets>

@@ -124,8 +124,7 @@ SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterSimple(unsign
     float currentWidth = m_simpleShaper->runWidthSoFar() - m_totalWidth;
     m_totalWidth = m_simpleShaper->runWidthSoFar();
 
-    Glyph glyphId = glyphBuffer.glyphAt(0);
-    return SVGTextMetrics(m_text, textPosition, metricsLength, currentWidth, glyphId);
+    return SVGTextMetrics(m_text, textPosition, metricsLength, currentWidth);
 }
 
 SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterComplex(unsigned textPosition)

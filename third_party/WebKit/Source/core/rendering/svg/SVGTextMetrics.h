@@ -20,9 +20,7 @@
 #ifndef SVGTextMetrics_h
 #define SVGTextMetrics_h
 
-#include "platform/fonts/Glyph.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -37,7 +35,7 @@ public:
 
     SVGTextMetrics();
     SVGTextMetrics(MetricsType);
-    SVGTextMetrics(RenderSVGInlineText*, unsigned position, unsigned length, float width, Glyph glyphNameGlyphId);
+    SVGTextMetrics(RenderSVGInlineText*, unsigned position, unsigned length, float width);
 
     // FIXME: Migrate away from these to the two below.
     static SVGTextMetrics measureCharacterRange(RenderSVGInlineText*, unsigned position, unsigned length);
@@ -54,16 +52,12 @@ public:
     float height() const { return m_height; }
     unsigned length() const { return m_length; }
 
-    // Only useful when measuring individual characters, to lookup ligatures.
-    Glyph glyph() const { return m_glyph; }
-
 private:
     SVGTextMetrics(RenderSVGInlineText*, const TextRun&);
 
     float m_width;
     float m_height;
     unsigned m_length;
-    Glyph m_glyph;
 };
 
 } // namespace blink

@@ -21,6 +21,8 @@
 #define SVGTextLayoutEngineSpacing_h
 
 #include "core/rendering/svg/SVGTextMetrics.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace blink {
 
