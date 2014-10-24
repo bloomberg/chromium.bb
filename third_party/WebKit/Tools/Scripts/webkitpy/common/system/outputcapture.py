@@ -36,12 +36,6 @@ from StringIO import StringIO
 
 
 class OutputCapture(object):
-    # By default we capture the output to a stream. Other modules may override
-    # this function in order to do things like pass through the output. See
-    # webkitpy.test.main for an example.
-    @staticmethod
-    def stream_wrapper(stream):
-        return StringIO()
 
     def __init__(self):
         self.saved_outputs = dict()
@@ -54,7 +48,7 @@ class OutputCapture(object):
 
     def _capture_output_with_name(self, output_name):
         stream = getattr(sys, output_name)
-        captured_output = self.stream_wrapper(stream)
+        captured_output = StringIO()
         self.saved_outputs[output_name] = stream
         setattr(sys, output_name, captured_output)
         return captured_output
