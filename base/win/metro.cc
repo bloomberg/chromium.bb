@@ -74,8 +74,8 @@ wchar_t* LocalAllocAndCopyString(const string16& src) {
 }
 
 bool IsParentalControlActivityLoggingOn() {
-  // Query this info on Windows Vista and above.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+  // Query this info on Windows 7 and above.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return false;
 
   static bool parental_control_logging_required = false;
