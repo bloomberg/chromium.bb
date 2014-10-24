@@ -42,7 +42,7 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual gfx::Size CalculateTileSize(
     const gfx::Size& content_bounds) const = 0;
   virtual const Region* GetInvalidation() = 0;
-  virtual const PictureLayerTiling* GetTwinTiling(
+  virtual const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const = 0;
   virtual PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) = 0;

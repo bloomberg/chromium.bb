@@ -66,13 +66,13 @@ class LayerTreeHostPictureTestTwinLayer
 
     if (!active_root_impl) {
       EXPECT_EQ(0, activates_);
-      EXPECT_EQ(NULL, pending_picture_impl->twin_layer());
+      EXPECT_EQ(nullptr, pending_picture_impl->GetPendingOrActiveTwinLayer());
       return;
     }
 
     if (active_root_impl->children().empty()) {
       EXPECT_EQ(3, activates_);
-      EXPECT_EQ(NULL, pending_picture_impl->twin_layer());
+      EXPECT_EQ(nullptr, pending_picture_impl->GetPendingOrActiveTwinLayer());
       return;
     }
 
@@ -84,20 +84,28 @@ class LayerTreeHostPictureTestTwinLayer
     // and the next commit will have a pending and active twin again.
     EXPECT_TRUE(activates_ == 1 || activates_ == 4);
 
-    EXPECT_EQ(pending_picture_impl, active_picture_impl->twin_layer());
-    EXPECT_EQ(active_picture_impl, pending_picture_impl->twin_layer());
+    EXPECT_EQ(pending_picture_impl,
+              active_picture_impl->GetPendingOrActiveTwinLayer());
+    EXPECT_EQ(active_picture_impl,
+              pending_picture_impl->GetPendingOrActiveTwinLayer());
+    EXPECT_EQ(nullptr, active_picture_impl->GetRecycledTwinLayer());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* active_root_impl = impl->active_tree()->root_layer();
+    LayerImpl* recycle_root_impl = impl->recycle_tree()->root_layer();
 
     if (active_root_impl->children().empty()) {
       EXPECT_EQ(2, activates_);
     } else {
       FakePictureLayerImpl* active_picture_impl =
           static_cast<FakePictureLayerImpl*>(active_root_impl->children()[0]);
+      FakePictureLayerImpl* recycle_picture_impl =
+          static_cast<FakePictureLayerImpl*>(recycle_root_impl->children()[0]);
 
-      EXPECT_EQ(NULL, active_picture_impl->twin_layer());
+      EXPECT_EQ(nullptr, active_picture_impl->GetPendingOrActiveTwinLayer());
+      EXPECT_EQ(recycle_picture_impl,
+                active_picture_impl->GetRecycledTwinLayer());
     }
 
     ++activates_;

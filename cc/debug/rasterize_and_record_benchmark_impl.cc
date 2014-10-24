@@ -109,9 +109,9 @@ class FixedInvalidationPictureLayerTilingClient
   // client.
   const Region* GetInvalidation() override { return &invalidation_; }
 
-  const PictureLayerTiling* GetTwinTiling(
+  const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const override {
-    return base_client_->GetTwinTiling(tiling);
+    return base_client_->GetPendingOrActiveTwinTiling(tiling);
   }
 
   PictureLayerTiling* GetRecycledTwinTiling(

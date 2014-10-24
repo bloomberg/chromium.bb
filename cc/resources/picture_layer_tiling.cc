@@ -148,7 +148,8 @@ Tile* PictureLayerTiling::CreateTile(int i,
 }
 
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
-  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
   bool include_borders = false;
   for (TilingData::Iterator iter(
            &tiling_data_, live_tiles_rect_, include_borders);
@@ -225,7 +226,8 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
 
     // If the layer grew, the live_tiles_rect_ is not changed, but a new row
     // and/or column of tiles may now exist inside the same live_tiles_rect_.
-    const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+    const PictureLayerTiling* twin_tiling =
+        client_->GetPendingOrActiveTwinTiling(this);
     if (after_right > before_right) {
       DCHECK_EQ(after_right, before_right + 1);
       for (int j = before_top; j <= after_bottom; ++j)
@@ -629,7 +631,8 @@ void PictureLayerTiling::SetLiveTilesRect(
     RemoveTileAt(iter.index_x(), iter.index_y(), recycled_twin);
   }
 
-  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
 
   // Iterate to allocate new tiles for all regions with newly exposed area.
   for (TilingData::DifferenceIterator iter(&tiling_data_,
@@ -717,7 +720,8 @@ bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
   if (client_->RequiresHighResToDraw())
     return true;
 
-  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
   if (!twin_tiling)
     return true;
 
@@ -740,7 +744,8 @@ bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
 void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
   UpdateTilePriority(tile);
 
-  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
   if (!tile->is_shared() || !twin_tiling) {
     WhichTree tree = client_->GetTree();
     WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
