@@ -57,6 +57,18 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=913
     'ChromeDriverTest.testChromeDriverReceiveAndSendLargeData',
 ]
+_VERSION_SPECIFIC_FILTER['37'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=954
+    'MobileEmulationCapabilityTest.testClickElement',
+    'MobileEmulationCapabilityTest.testHoverOverElement',
+    'MobileEmulationCapabilityTest.testSingleTapElement',
+]
+_VERSION_SPECIFIC_FILTER['36'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=954
+    'MobileEmulationCapabilityTest.testClickElement',
+    'MobileEmulationCapabilityTest.testHoverOverElement',
+    'MobileEmulationCapabilityTest.testSingleTapElement',
+]
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
