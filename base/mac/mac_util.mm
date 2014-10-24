@@ -225,19 +225,6 @@ void SetCursorVisibility(bool visible) {
     [NSCursor hide];
 }
 
-bool ShouldWindowsMiniaturizeOnDoubleClick() {
-  // We use an undocumented method in Cocoa; if it doesn't exist, default to
-  // |true|. If it ever goes away, we can do (using an undocumented pref key):
-  //   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  //   return ![defaults objectForKey:@"AppleMiniaturizeOnDoubleClick"] ||
-  //          [defaults boolForKey:@"AppleMiniaturizeOnDoubleClick"];
-  BOOL methodImplemented =
-      [NSWindow respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
-  DCHECK(methodImplemented);
-  return !methodImplemented ||
-      [NSWindow performSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
-}
-
 void ActivateProcess(pid_t pid) {
   ProcessSerialNumber process;
   OSStatus status = GetProcessForPID(pid, &process);

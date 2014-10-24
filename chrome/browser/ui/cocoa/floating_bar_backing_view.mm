@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 
-#include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
+#import "ui/base/cocoa/appkit_utils.h"
 
 @implementation FloatingBarBackingView
 
@@ -41,9 +41,8 @@
 - (void)mouseUp:(NSEvent*)event {
   // a double-click in the blank area should try to minimize, to be consistent
   // with double-clicks on the contiguous tab strip area. (It'll fail and beep.)
-  if ([event clickCount] == 2 &&
-      base::mac::ShouldWindowsMiniaturizeOnDoubleClick())
-    [[self window] performMiniaturize:self];
+  if ([event clickCount] == 2)
+    ui::WindowTitlebarReceivedDoubleClick([self window], self);
 }
 
 @end  // @implementation FloatingBarBackingView

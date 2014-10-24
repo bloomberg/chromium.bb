@@ -78,9 +78,6 @@ BASE_EXPORT void SwitchFullScreenModes(FullScreenMode from_mode,
 // Set the visibility of the cursor.
 BASE_EXPORT void SetCursorVisibility(bool visible);
 
-// Should windows miniaturize on a double-click (on the title bar)?
-BASE_EXPORT bool ShouldWindowsMiniaturizeOnDoubleClick();
-
 // Activates the process with the given PID.
 BASE_EXPORT void ActivateProcess(pid_t pid);
 

@@ -35,6 +35,13 @@ UI_BASE_EXPORT void DrawNinePartImage(NSRect frame,
                                       CGFloat alpha,
                                       BOOL flipped);
 
+// Minimizes or zooms the window, or does nothing, depending on OS version and
+// system configuration.
+// |window| is the receiver of the double click.
+// |sender| is the object that sends the action, if one is sent.
+UI_BASE_EXPORT void WindowTitlebarReceivedDoubleClick(NSWindow* window,
+                                                      id sender);
+
 }  // namespace ui
 
 #endif  // UI_BASE_COCOA_APPKIT_UTILS_H

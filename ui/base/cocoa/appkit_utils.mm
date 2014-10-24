@@ -4,6 +4,7 @@
 
 #import "ui/base/cocoa/appkit_utils.h"
 
+#include "base/mac/mac_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -12,6 +13,20 @@ namespace {
 NSImage* GetImage(int image_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(image_id)
       .ToNSImage();
+}
+
+// Whether windows should miniaturize on a double-click on the title bar.
+bool ShouldWindowsMiniaturizeOnDoubleClick() {
+  // We use an undocumented method in Cocoa; if it doesn't exist, default to
+  // |true|. If it ever goes away, we can do (using an undocumented pref key):
+  //   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  //   return ![defaults objectForKey:@"AppleMiniaturizeOnDoubleClick"] ||
+  //          [defaults boolForKey:@"AppleMiniaturizeOnDoubleClick"];
+  BOOL methodImplemented =
+      [NSWindow respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
+  DCHECK(methodImplemented);
+  return !methodImplemented ||
+         [NSWindow performSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
 }
 
 }  // namespace
@@ -36,6 +51,14 @@ void DrawNinePartImage(NSRect frame,
                       operation,
                       alpha,
                       flipped);
+}
+
+void WindowTitlebarReceivedDoubleClick(NSWindow* window, id sender) {
+  if (ShouldWindowsMiniaturizeOnDoubleClick()) {
+    [window performMiniaturize:sender];
+  } else if (base::mac::IsOSYosemiteOrLater()) {
+    [window performZoom:sender];
+  }
 }
 
 }  // namespace ui

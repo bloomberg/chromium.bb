@@ -7,7 +7,6 @@
 #include <cmath>  // floor
 
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -16,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -188,8 +188,7 @@
   // "short" as 0.8 seconds. (Measuring up-to-up isn't enough to properly
   // detect double-clicks, but we're actually using Cocoa for that.)
   if (clickCount == 2 && (timestamp - lastMouseUp_) < 0.8) {
-    if (base::mac::ShouldWindowsMiniaturizeOnDoubleClick())
-      [[self window] performMiniaturize:self];
+    ui::WindowTitlebarReceivedDoubleClick([self window], self);
   } else {
     [super mouseUp:event];
   }
