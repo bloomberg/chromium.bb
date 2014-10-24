@@ -30,7 +30,13 @@
 
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
+
+#ifndef XI_PROP_PRODUCT_ID
+#define XI_PROP_PRODUCT_ID "Device Product ID"
+#endif
+
 // Get rid of macros from Xlib.h that conflicts with other parts of the code.
 #undef RootWindow
 #undef Status
@@ -42,6 +48,12 @@
 namespace chromeos {
 
 namespace {
+
+// Hotrod controller vendor/product ids.
+const int kHotrodRemoteVendorId = 0x0471;
+const int kHotrodRemoteProductId = 0x21cc;
+const int kUnknownVendorId = -1;
+const int kUnknownProductId = -1;
 
 // Table of key properties of remappable keys and/or remapping targets.
 // This is searched in two distinct ways:
@@ -127,9 +139,20 @@ bool IsExtensionCommandRegistered(ui::KeyboardCode key_code, int flags) {
       ->IsRegistered(accelerator);
 }
 
-EventRewriter::DeviceType GetDeviceType(const std::string& device_name) {
+EventRewriter::DeviceType GetDeviceType(const std::string& device_name,
+                                        int vendor_id,
+                                        int product_id) {
+  if (vendor_id == kHotrodRemoteVendorId &&
+      product_id == kHotrodRemoteProductId) {
+    return EventRewriter::kDeviceHotrodRemote;
+  }
+
+  if (LowerCaseEqualsASCII(device_name, "virtual core keyboard"))
+    return EventRewriter::kDeviceVirtualCoreKeyboard;
+
   std::vector<std::string> tokens;
   Tokenize(device_name, " .", &tokens);
+
 
   // If the |device_name| contains the two words, "apple" and "keyboard", treat
   // it as an Apple keyboard.
@@ -165,7 +188,10 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedForTesting(
     const std::string& device_name) {
   // Tests must avoid XI2 reserved device IDs.
   DCHECK((device_id < 0) || (device_id > 1));
-  return KeyboardDeviceAddedInternal(device_id, device_name);
+  return KeyboardDeviceAddedInternal(device_id,
+                                     device_name,
+                                     kUnknownVendorId,
+                                     kUnknownProductId);
 }
 
 void EventRewriter::RewriteMouseButtonEventForTesting(
@@ -280,8 +306,20 @@ void EventRewriter::BuildRewrittenKeyEvent(
 }
 
 void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
-  if (!device_id_to_type_.count(device_id))
-    KeyboardDeviceAdded(device_id);
+  std::map<int, DeviceType>::const_iterator iter =
+        device_id_to_type_.find(device_id);
+  DeviceType type;
+  if (iter != device_id_to_type_.end())
+    type = iter->second;
+  else
+    type = KeyboardDeviceAdded(device_id);
+
+  // Ignore virtual Xorg keyboard (magic that generates key repeat
+  // events). Pretend that the previous real keyboard is the one that is still
+  // in use.
+  if (type == kDeviceVirtualCoreKeyboard)
+    return;
+
   last_keyboard_device_id_ = device_id;
 }
 
@@ -293,6 +331,14 @@ const PrefService* EventRewriter::GetPrefService() const {
 }
 
 bool EventRewriter::IsAppleKeyboard() const {
+  return IsLastKeyboardOfType(kDeviceAppleKeyboard);
+}
+
+bool EventRewriter::IsHotrodRemote() const {
+  return IsLastKeyboardOfType(kDeviceHotrodRemote);
+}
+
+bool EventRewriter::IsLastKeyboardOfType(DeviceType device_type) const {
   if (last_keyboard_device_id_ == ui::ED_UNKNOWN_DEVICE)
     return false;
 
@@ -305,7 +351,7 @@ bool EventRewriter::IsAppleKeyboard() const {
   }
 
   const DeviceType type = iter->second;
-  return type == kDeviceAppleKeyboard;
+  return type == device_type;
 }
 
 bool EventRewriter::TopRowKeysAreFunctionKeys(const ui::KeyEvent& event) const {
@@ -387,6 +433,14 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     return ui::EVENT_REWRITE_CONTINUE;
   if (key_event.source_device_id() != ui::ED_UNKNOWN_DEVICE)
     DeviceKeyPressedOrReleased(key_event.source_device_id());
+
+  // Drop repeated keys from Hotrod remote.
+  if ((key_event.flags() & ui::EF_IS_REPEAT) &&
+      (key_event.type() == ui::ET_KEY_PRESSED) &&
+      IsHotrodRemote() && key_event.key_code() != ui::VKEY_BACK) {
+    return ui::EVENT_REWRITE_DISCARD;
+  }
+
   MutableKeyState state = {key_event.flags(), key_event.key_code()};
   // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
   // crbug.com/136465.
@@ -394,6 +448,7 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     RewriteModifierKeys(key_event, &state);
     RewriteNumPadKeys(key_event, &state);
   }
+
   ui::EventRewriteStatus status = ui::EVENT_REWRITE_CONTINUE;
   bool is_sticky_key_extension_command = false;
   if (sticky_keys_controller_) {
@@ -854,10 +909,21 @@ int EventRewriter::RewriteModifierClick(const ui::MouseEvent& mouse_event,
 
 EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedInternal(
     int device_id,
-    const std::string& device_name) {
-  const DeviceType type = GetDeviceType(device_name);
+    const std::string& device_name,
+    int vendor_id,
+    int product_id) {
+  const DeviceType type = GetDeviceType(device_name, vendor_id, product_id);
   if (type == kDeviceAppleKeyboard) {
     VLOG(1) << "Apple keyboard '" << device_name << "' connected: "
+            << "id=" << device_id;
+  } else if (type == kDeviceHotrodRemote) {
+    VLOG(1) << "Hotrod remote '" << device_name << "' connected: "
+            << "id=" << device_id;
+  } else if (type == kDeviceVirtualCoreKeyboard) {
+    VLOG(1) << "Xorg virtual '" << device_name << "' connected: "
+            << "id=" << device_id;
+  } else {
+    VLOG(1) << "Unknown keyboard '" << device_name << "' connected: "
             << "id=" << device_id;
   }
   // Always overwrite the existing device_id since the X server may reuse a
@@ -866,14 +932,17 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedInternal(
   return type;
 }
 
-void EventRewriter::KeyboardDeviceAdded(int device_id) {
+EventRewriter::DeviceType EventRewriter::KeyboardDeviceAdded(int device_id) {
 #if defined(USE_X11)
   DCHECK_NE(XIAllDevices, device_id);
   DCHECK_NE(XIAllMasterDevices, device_id);
   if (device_id == XIAllDevices || device_id == XIAllMasterDevices) {
     LOG(ERROR) << "Unexpected device_id passed: " << device_id;
-    return;
+    return kDeviceUnknown;
   }
+
+  Atom product_id_atom =
+      XInternAtom(gfx::GetXDisplay(), XI_PROP_PRODUCT_ID, 1);
 
   int ndevices_return = 0;
   XIDeviceInfo* device_info =
@@ -883,19 +952,53 @@ void EventRewriter::KeyboardDeviceAdded(int device_id) {
   // the number of devices found should be either 0 (not found) or 1.
   if (!device_info) {
     LOG(ERROR) << "XIQueryDevice: Device ID " << device_id << " is unknown.";
-    return;
+    return kDeviceUnknown;
   }
 
+  DeviceType dev_type;
   DCHECK_EQ(1, ndevices_return);
   for (int i = 0; i < ndevices_return; ++i) {
+    // Get keyboard product and vendor id.
+    int vendor_id = kUnknownVendorId;
+    int product_id = kUnknownProductId;
+    uint32* product_info = NULL;
+    Atom type;
+    int format_return;
+    unsigned long num_items_return;
+    unsigned long bytes_after_return;
+    if (XIGetProperty(gfx::GetXDisplay(),
+                      device_info[i].deviceid,
+                      product_id_atom,
+                      0,
+                      2,
+                      0,
+                      XA_INTEGER,
+                      &type,
+                      &format_return,
+                      &num_items_return,
+                      &bytes_after_return,
+                      reinterpret_cast<unsigned char **>(&product_info)) == 0 &&
+        product_info) {
+      vendor_id = product_info[0];
+      product_id = product_info[1];
+    }
+
     DCHECK_EQ(device_id, device_info[i].deviceid);  // see the comment above.
     DCHECK(device_info[i].name);
-    KeyboardDeviceAddedInternal(device_info[i].deviceid, device_info[i].name);
+    dev_type = KeyboardDeviceAddedInternal(device_info[i].deviceid,
+                                           device_info[i].name,
+                                           vendor_id,
+                                           product_id);
   }
-
   XIFreeDeviceInfo(device_info);
+  return dev_type;
 #else
-  KeyboardDeviceAddedInternal(device_id, "keyboard");
+  // TODO(spang): Figure out where we can get keyboard vendor/product id from in
+  // Ozone/Freon version.
+  return KeyboardDeviceAddedInternal(device_id,
+                                     "keyboard",
+                                     kUnknownVendorId,
+                                     kUnknownProductId);
 #endif
 }
 

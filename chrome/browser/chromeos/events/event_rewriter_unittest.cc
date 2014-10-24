@@ -389,6 +389,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
 void EventRewriterTest::TestRewriteNumPadKeys() {
   TestingPrefServiceSyncable prefs;
   EventRewriter rewriter(NULL);
+  rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
   rewriter.set_pref_service_for_testing(&prefs);
 
