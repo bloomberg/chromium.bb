@@ -17,6 +17,8 @@ source_set("lib") {
   sources = [
     "media_type_converters.cc",
     "media_type_converters.h",
+    "mojo_demuxer_stream_adapter.cc",
+    "mojo_demuxer_stream_adapter.h",
   ]
 }
 
@@ -59,8 +61,6 @@ shared_library("renderer_app") {
   ]
 
   sources = [
-    "mojo_demuxer_stream_adapter.cc",
-    "mojo_demuxer_stream_adapter.h",
     "mojo_renderer_service.cc",
     "mojo_renderer_service.h",
   ]
