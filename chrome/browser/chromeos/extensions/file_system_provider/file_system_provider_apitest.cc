@@ -114,13 +114,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Truncate) {
       << message_;
 }
 
-// http://crbug.com/426549
-#if defined(OS_CHROMEOS)
-#define MAYBE_WriteFile DISABLED_WriteFile
-#else
-#define MAYBE_WriteFile WriteFile
-#endif
-IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MAYBE_WriteFile) {
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, WriteFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/write_file",
                                           kFlagLoadAsComponent))
       << message_;

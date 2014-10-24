@@ -49,15 +49,25 @@ var TESTING_BROKEN_TIRAMISU_FILE_NAME = 'broken-tiramisu.txt';
 var TESTING_CHOCOLATE_FILE_NAME = 'chocolate.txt';
 
 /**
+ * List of callbacks to be called when a file write is requested.
+ * @type {Array.<function(string)>}
+ */
+var writeFileRequestedCallbacks = [];
+
+/**
  * Requests writing contents to a file, previously opened with <code>
  * openRequestId</code>.
  *
  * @param {ReadFileRequestedOptions} options Options.
- * @param {function(} onSuccess Success callback.
+ * @param {function()} onSuccess Success callback.
  * @param {function(string)} onError Error callback.
  */
 function onWriteFileRequested(options, onSuccess, onError) {
   var filePath = test_util.openedFiles[options.openRequestId];
+  writeFileRequestedCallbacks.forEach(function(callback) {
+    callback(filePath);
+  });
+
   if (options.fileSystemId != test_util.FILE_SYSTEM_ID || !filePath) {
     onError('SECURITY');  // enum ProviderError.
     return;
@@ -350,12 +360,14 @@ function runTests() {
               fileWriter.onabort = function(e) {
                 hadAbort = true;
               };
+              writeFileRequestedCallbacks.push(
+                  function(filePath) {
+                    // Abort the operation after it's started.
+                    if (filePath == '/' + TESTING_CHOCOLATE_FILE_NAME)
+                      fileWriter.abort();
+                  });
               var blob = new Blob(['A lot of cherries.'], {type: 'text/plain'});
               fileWriter.write(blob);
-              setTimeout(function() {
-                // Abort the operation after it's started.
-                fileWriter.abort();
-              }, 0);
             },
             function(error) {
               chrome.test.fail();
