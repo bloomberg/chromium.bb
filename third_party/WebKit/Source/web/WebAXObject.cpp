@@ -761,6 +761,14 @@ void WebAXObject::setSelectedTextRange(int selectionStart, int selectionEnd) con
     m_private->setSelectedTextRange(AXObject::PlainTextRange(selectionStart, selectionEnd - selectionStart));
 }
 
+void WebAXObject::setValue(WebString value) const
+{
+    if (isDetached())
+        return;
+
+    m_private->setValue(value);
+}
+
 WebString WebAXObject::stringValue() const
 {
     if (isDetached())
