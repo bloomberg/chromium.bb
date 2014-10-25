@@ -508,9 +508,8 @@ void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFla
 
     if (!contextDisabled()) {
         FloatRect bounds = displayList->bounds();
-        IntSize recordingSize = enclosingIntRect(bounds).size();
         recorder = new SkPictureRecorder;
-        m_canvas = recorder->beginRecording(recordingSize.width(), recordingSize.height(), 0, recordFlags);
+        m_canvas = recorder->beginRecording(bounds.width(), bounds.height(), 0, recordFlags);
 
         // We want the bounds offset mapped to (0, 0), such that the display list content
         // is fully contained within the SkPictureRecord's bounds.
