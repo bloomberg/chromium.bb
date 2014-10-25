@@ -5,13 +5,24 @@
 #include "athena/test/chrome/athena_browsertest.h"
 
 #include "athena/test/chrome/test_util.h"
+#include "base/command_line.h"
 
 namespace athena {
+
+namespace {
+const char kNoNaclSandbox[] = "--no-sandbox";
+}
 
 AthenaBrowserTest::AthenaBrowserTest() {
 }
 
 AthenaBrowserTest::~AthenaBrowserTest() {
+}
+
+void AthenaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
+  // The NaCl sandbox won't work in our browser tests.
+  command_line->AppendSwitch(kNoNaclSandbox);
+  InProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
 void AthenaBrowserTest::SetUpOnMainThread() {

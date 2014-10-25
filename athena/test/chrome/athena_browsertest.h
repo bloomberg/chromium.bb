@@ -7,6 +7,10 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace athena {
 
 // Base class for athena tests which allows to use WebActivities.
@@ -20,6 +24,7 @@ class AthenaBrowserTest : public InProcessBrowserTest {
 
  protected:
   // BrowserTestBase:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
  private:

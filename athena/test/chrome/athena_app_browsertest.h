@@ -19,6 +19,9 @@ class AthenaAppBrowserTest : public extensions::PlatformAppBrowserTest {
   AthenaAppBrowserTest();
   ~AthenaAppBrowserTest() override;
 
+  // extensions::PlatformAppBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
  protected:
   // Creates an app activity and returns after app is fully loaded.
   Activity* CreateTestAppActivity(const std::string app_id);

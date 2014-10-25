@@ -12,10 +12,20 @@
 
 namespace athena {
 
+namespace {
+const char kNoNaclSandbox[] = "--no-sandbox";
+}
+
 AthenaAppBrowserTest::AthenaAppBrowserTest() {
 }
 
 AthenaAppBrowserTest::~AthenaAppBrowserTest() {
+}
+
+void AthenaAppBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
+  // The NaCl sandbox won't work in our browser tests.
+  command_line->AppendSwitch(kNoNaclSandbox);
+  extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
 }
 
 Activity* AthenaAppBrowserTest::CreateTestAppActivity(

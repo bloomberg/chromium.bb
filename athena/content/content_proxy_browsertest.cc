@@ -28,7 +28,7 @@ class ContentProxyBrowserTest : public AthenaBrowserTest {
   ~ContentProxyBrowserTest() override {}
 
   // AthenaBrowserTest:
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Make sure that we draw the output - it's required for this test.
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
     AthenaBrowserTest::SetUpCommandLine(command_line);
