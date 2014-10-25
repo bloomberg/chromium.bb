@@ -20,7 +20,6 @@
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/video_decoder_job.h"
 
-
 namespace media {
 
 MediaSourcePlayer::MediaSourcePlayer(
@@ -42,6 +41,7 @@ MediaSourcePlayer::MediaSourcePlayer(
       drm_bridge_(NULL),
       cdm_registration_id_(0),
       is_waiting_for_key_(false),
+      key_added_while_decode_pending_(false),
       is_waiting_for_audio_decoder_(false),
       is_waiting_for_video_decoder_(false),
       prerolling_(true),
@@ -223,10 +223,11 @@ void MediaSourcePlayer::StartInternal() {
   if (pending_event_ != NO_EVENT_PENDING)
     return;
 
-  // When we start, we'll have new demuxed data coming in. This new data could
-  // be clear (not encrypted) or encrypted with different keys. So
-  // |is_waiting_for_key_| condition may not be true anymore.
+  // When we start, we could have new demuxed data coming in. This new data
+  // could be clear (not encrypted) or encrypted with different keys. So key
+  // related info should all be cleared.
   is_waiting_for_key_ = false;
+  key_added_while_decode_pending_ = false;
   AttachListener(NULL);
 
   SetPendingEvent(PREFETCH_REQUEST_EVENT_PENDING);
@@ -502,9 +503,24 @@ void MediaSourcePlayer::MediaDecoderCallback(
   }
 
   if (status == MEDIA_CODEC_NO_KEY) {
-    is_waiting_for_key_ = true;
+    if (key_added_while_decode_pending_) {
+      DVLOG(2) << __FUNCTION__ << ": Key was added during decoding.";
+      ResumePlaybackAfterKeyAdded();
+    } else {
+      is_waiting_for_key_ = true;
+    }
     return;
   }
+
+  // If |key_added_while_decode_pending_| is true and both audio and video
+  // decoding succeeded, we should clear |key_added_while_decode_pending_| here.
+  // But that would add more complexity into this function. If we don't clear it
+  // here, the worst case would be we call ResumePlaybackAfterKeyAdded() when
+  // we don't really have a new key. This should rarely happen and the
+  // performance impact should be pretty small.
+  // TODO(qinmin/xhwang): This class is complicated because we handle both audio
+  // and video in one file. If we separate them, we should be able to remove a
+  // lot of duplication.
 
   // If the status is MEDIA_CODEC_STOPPED, stop decoding new data. The player is
   // in the middle of a seek or stop event and needs to wait for the IPCs to
@@ -755,10 +771,30 @@ void MediaSourcePlayer::RetryDecoderCreation(bool audio, bool video) {
 
 void MediaSourcePlayer::OnKeyAdded() {
   DVLOG(1) << __FUNCTION__;
-  if (!is_waiting_for_key_)
+
+  if (is_waiting_for_key_) {
+    ResumePlaybackAfterKeyAdded();
     return;
+  }
+
+  if ((audio_decoder_job_->is_content_encrypted() &&
+       audio_decoder_job_->is_decoding()) ||
+      (video_decoder_job_->is_content_encrypted() &&
+       video_decoder_job_->is_decoding())) {
+    DVLOG(1) << __FUNCTION__ << ": " << "Key added during pending decode.";
+    key_added_while_decode_pending_ = true;
+  }
+}
+
+void MediaSourcePlayer::ResumePlaybackAfterKeyAdded() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(is_waiting_for_key_ || key_added_while_decode_pending_);
 
   is_waiting_for_key_ = false;
+  key_added_while_decode_pending_ = false;
+
+  // StartInternal() will trigger a prefetch, where in most cases we'll just
+  // use previously received data.
   if (playing_)
     StartInternal();
 }

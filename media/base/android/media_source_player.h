@@ -162,6 +162,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Called when new decryption key becomes available.
   void OnKeyAdded();
 
+  // Called to resume playback after NO_KEY is received, but a new key is
+  // available.
+  void ResumePlaybackAfterKeyAdded();
+
   // Called when the CDM is detached.
   void OnCdmUnset();
 
@@ -249,6 +253,12 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // the player should pause. When a new key is added (OnKeyAdded()), we should
   // try to start playback again.
   bool is_waiting_for_key_;
+
+  // Indicates the situation where new key is added during pending decode
+  // (this variable can only be set when *_decoder_job_->is_decoding()). If this
+  // variable is true and MEDIA_CODEC_NO_KEY is returned then we need to try
+  // decoding again in case the newly added key is the correct decryption key.
+  bool key_added_while_decode_pending_;
 
   // Indicates whether the player is waiting for audio or video decoder to be
   // created. This could happen if video surface is not available or key is
