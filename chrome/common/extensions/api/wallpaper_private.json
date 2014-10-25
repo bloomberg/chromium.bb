@@ -38,25 +38,6 @@
         ]
       },
       {
-        "name": "getSyncSetting",
-        "type": "function",
-        "description": "Gets the sync themes(and wallpaper on ChromeOS) setting value.",
-        "nodoc": "true",
-        "parameters": [
-          {
-            "type": "function",
-            "name": "callback",
-            "parameters": [
-              {
-                "name": "result",
-                "type": "object",
-                "additionalProperties": {"type": "any"}
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "setWallpaperIfExists",
         "type": "function",
         "description": "Sets wallpaper if it exists in the local file system with specified layout",

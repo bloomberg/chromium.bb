@@ -66,9 +66,6 @@ var chrome = {
   wallpaperPrivate: {
     getStrings: function(callback) {
       callback({isExperimental: false});
-    },
-    getSyncSetting: function(callback) {
-      callback({syncThemes: true});
     }
   }
 };

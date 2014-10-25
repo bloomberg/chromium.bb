@@ -54,6 +54,7 @@ WallpaperUtil.storeWallpaperFromSyncFSToLocalFS = function(wallpaperFileEntry) {
   var storeDir = Constants.WallpaperDirNameEnum.ORIGINAL;
   if (filenName.indexOf(Constants.CustomWallpaperThumbnailSuffix) != -1)
     storeDir = Constants.WallpaperDirNameEnum.THUMBNAIL;
+  filenName = filenName.replace(Constants.CustomWallpaperThumbnailSuffix, '');
   wallpaperFileEntry.file(function(file) {
     var reader = new FileReader();
     reader.onloadend = function() {
@@ -88,7 +89,7 @@ WallpaperUtil.deleteWallpaperFromSyncFS = function(wallpaperFilename) {
 };
 
 /**
- * Executes callback if experimental flag is set to true.
+ * Run experimental features.
  * @param {function} callback The callback will be executed if 'isExperimental'
  *     flag is set to true.
  */
@@ -106,33 +107,19 @@ WallpaperUtil.enabledExperimentalFeatureCallback = function(callback) {
 };
 
 /**
- * Executes callback if sync theme is enabled.
- * @param {function} callback The callback will be executed if sync themes is
- *     enabled.
- */
-WallpaperUtil.enabledSyncThemesCallback = function(callback) {
-  chrome.wallpaperPrivate.getSyncSetting(function(setting) {
-    if (setting.syncThemes)
-      callback();
-  });
-};
-
-/**
  * Request a syncFileSystem handle and run callback on it.
  * @param {function} callback The callback to execute after syncFileSystem
  *     handler is available.
  */
 WallpaperUtil.requestSyncFS = function(callback) {
-  WallpaperUtil.enabledSyncThemesCallback(function() {
-    if (WallpaperUtil.syncFs) {
+  if (WallpaperUtil.syncFs) {
+    callback(WallpaperUtil.syncFs);
+  } else {
+    chrome.syncFileSystem.requestFileSystem(function(fs) {
+      WallpaperUtil.syncFs = fs;
       callback(WallpaperUtil.syncFs);
-    } else {
-      chrome.syncFileSystem.requestFileSystem(function(fs) {
-        WallpaperUtil.syncFs = fs;
-        callback(WallpaperUtil.syncFs);
-      });
-    }
-  });
+    });
+  }
 };
 
 /**
@@ -169,6 +156,7 @@ WallpaperUtil.onFileSystemError = function(e) {
  *     writing data.
  */
 WallpaperUtil.writeFile = function(fileEntry, wallpaperData, writeCallback) {
+  var uint8arr = new Uint8Array(wallpaperData);
   fileEntry.createWriter(function(fileWriter) {
     var blob = new Blob([new Int8Array(wallpaperData)]);
     fileWriter.write(blob);
@@ -288,9 +276,7 @@ WallpaperUtil.saveToStorage = function(key, value, sync, opt_callback) {
   var items = {};
   items[key] = value;
   if (sync)
-    WallpaperUtil.enabledSyncThemesCallback(function() {
-      Constants.WallpaperSyncStorage.set(items, opt_callback);
-    });
+    Constants.WallpaperSyncStorage.set(items, opt_callback);
   else
     Constants.WallpaperLocalStorage.set(items, opt_callback);
 };
