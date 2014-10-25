@@ -90,6 +90,7 @@ static const char* staticKeyIdentifiers(unsigned short keyCode)
         return "Down";
     case VKEY_END:
         return "End";
+    case 0x0A: // Carriage return
     case VKEY_RETURN:
         return "Enter";
     case VKEY_EXECUTE:
