@@ -384,12 +384,15 @@ void FrameView::setFrameRect(const IntRect& newRect)
     if (newRect.width() != oldRect.width() && m_frame->isMainFrame() && m_frame->settings()->textAutosizingEnabled())
         autosizerNeedsUpdating = true;
 
-    setFrameRectInternal(newRect);
+    Widget::setFrameRect(newRect);
+
+    updateScrollbars(scrollOffsetDouble());
+    frameRectsChanged();
 
     updateScrollableAreaSet();
 
     if (autosizerNeedsUpdating) {
-        // This needs to be after the call to setFrameRectInternal, because it reads the new width.
+        // This needs to be after the call to Widget::setFrameRect, because it reads the new width.
         if (TextAutosizer* textAutosizer = m_frame->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
     }
@@ -420,7 +423,23 @@ RenderView* FrameView::renderView() const
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
 {
     m_canHaveScrollbars = canHaveScrollbars;
-    setCanHaveScrollbarsInternal(canHaveScrollbars);
+
+    ScrollbarMode newHorizontalMode;
+    ScrollbarMode newVerticalMode;
+
+    scrollbarModes(newHorizontalMode, newVerticalMode);
+
+    if (canHaveScrollbars && newVerticalMode == ScrollbarAlwaysOff)
+        newVerticalMode = ScrollbarAuto;
+    else if (!canHaveScrollbars)
+        newVerticalMode = ScrollbarAlwaysOff;
+
+    if (canHaveScrollbars && newHorizontalMode == ScrollbarAlwaysOff)
+        newHorizontalMode = ScrollbarAuto;
+    else if (!canHaveScrollbars)
+        newHorizontalMode = ScrollbarAlwaysOff;
+
+    setScrollbarModes(newHorizontalMode, newVerticalMode);
 }
 
 bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame)
@@ -468,7 +487,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientatio
         return RenderScrollbar::createCustomScrollbar(this, orientation, customScrollbarElement, customScrollbarFrame);
 
     // Nobody set a custom style, so we just use a native scrollbar.
-    return createScrollbarInternal(orientation);
+    return Scrollbar::create(this, orientation, RegularScrollbar);
 }
 
 void FrameView::setContentsSize(const IntSize& size)
@@ -476,7 +495,9 @@ void FrameView::setContentsSize(const IntSize& size)
     if (size == contentsSize())
         return;
 
-    setContentsSizeInternal(size);
+    m_contentsSize = size;
+    updateScrollbars(scrollOffsetDouble());
+    updateOverhangAreas();
     ScrollableArea::contentsResized();
 
     Page* page = frame().page();
@@ -1355,7 +1376,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         }
     }
 
-    scrollContentsSlowPathInternal(updateRect);
+    hostWindow()->invalidateContentsForSlowScroll(updateRect);
 }
 
 void FrameView::restoreScrollbar()
@@ -1479,7 +1500,6 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
     m_maintainScrollPositionAnchor = nullptr;
 
     DoublePoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
-
     if (newScrollPosition == scrollPositionDouble())
         return;
 
@@ -1490,7 +1510,13 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
         else
             scrollBehavior = ScrollBehaviorInstant;
     }
-    setScrollPositionInternal(newScrollPosition, scrollBehavior);
+
+    if (scrollBehavior == ScrollBehaviorInstant) {
+        DoubleSize newOffset(newScrollPosition.x(), newScrollPosition.y());
+        updateScrollbars(newOffset);
+    } else {
+        programmaticallyScrollSmoothlyToOffset(toFloatPoint(newScrollPosition));
+    }
 }
 
 void FrameView::setScrollPositionNonProgrammatically(const IntPoint& scrollPoint)
@@ -1636,13 +1662,13 @@ HostWindow* FrameView::hostWindow() const
     return &page->chrome();
 }
 
-void FrameView::contentRectangleForPaintInvalidation(const IntRect& r)
+void FrameView::contentRectangleForPaintInvalidation(const IntRect& rect)
 {
     ASSERT(paintInvalidationIsAllowed());
     ASSERT(!m_frame->ownerRenderer());
 
     if (m_isTrackingPaintInvalidations) {
-        IntRect paintInvalidationRect = r;
+        IntRect paintInvalidationRect = rect;
         paintInvalidationRect.move(-scrollOffset());
         m_trackedPaintInvalidationRects.append(paintInvalidationRect);
         // FIXME: http://crbug.com/368518. Eventually, invalidateContentRectangleForPaint
@@ -1651,7 +1677,14 @@ void FrameView::contentRectangleForPaintInvalidation(const IntRect& r)
         RELEASE_ASSERT_NOT_REACHED();
     }
 
-    contentRectangleForPaintInvalidationInternal(r);
+    IntRect paintRect = rect;
+    if (clipsPaintInvalidations())
+        paintRect.intersect(visibleContentRect());
+    if (paintRect.isEmpty())
+        return;
+
+    if (HostWindow* window = hostWindow())
+        window->invalidateContentsAndRootView(contentsToWindow(paintRect));
 }
 
 void FrameView::contentsResized()
@@ -2140,12 +2173,18 @@ bool FrameView::isActive() const
 
 void FrameView::scrollTo(const DoublePoint& newPosition)
 {
-    DoublePoint position = scrollPositionDouble();
-    scrollToInternal(newPosition);
-    if (position != scrollPositionDouble()) {
-        updateLayersAndCompositingAfterScrollIfNeeded();
-        scrollPositionChanged();
-    }
+    DoublePoint oldPosition = m_scrollPosition;
+    DoubleSize scrollDelta = newPosition - oldPosition;
+    if (scrollDelta.isZero())
+        return;
+
+    m_scrollPosition = newPosition;
+
+    if (!scrollbarsSuppressed())
+        m_pendingScrollDelta += scrollDelta;
+
+    updateLayersAndCompositingAfterScrollIfNeeded();
+    scrollPositionChanged();
     frame().loader().client()->didChangeScrollOffset();
 }
 
@@ -2277,7 +2316,10 @@ void FrameView::scrollbarStyleChanged()
     // FIXME: Why does this only apply to the main frame?
     if (!m_frame->isMainFrame())
         return;
-    scrollbarStyleChangedInternal();
+    adjustScrollbarOpacity();
+    contentsResized();
+    updateScrollbars(scrollOffsetDouble());
+    positionScrollbarLayers();
 }
 
 void FrameView::notifyPageThatContentAreaWillPaint() const
@@ -2355,8 +2397,6 @@ void FrameView::updateScrollCorner()
         m_scrollCorner->destroy();
         m_scrollCorner = nullptr;
     }
-
-    updateScrollCornerInternal();
 }
 
 Color FrameView::documentBackgroundColor() const
@@ -2827,18 +2867,31 @@ void FrameView::removeScrollableArea(ScrollableArea* scrollableArea)
     m_scrollableAreas->remove(scrollableArea);
 }
 
-void FrameView::setParent(Widget* widget)
+void FrameView::setParent(Widget* parentView)
 {
-    setParentInternal(widget);
+    if (parentView == parent())
+        return;
+
+    if (m_scrollbarsAvoidingResizer && parent())
+        toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(-m_scrollbarsAvoidingResizer);
+
+    Widget::setParent(parentView);
+
+    if (m_scrollbarsAvoidingResizer && parent())
+        toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(m_scrollbarsAvoidingResizer);
+
     updateScrollableAreaSet();
 }
 
-void FrameView::removeChild(Widget* widget)
+void FrameView::removeChild(Widget* child)
 {
-    if (widget->isFrameView())
-        removeScrollableArea(toFrameView(widget));
+    ASSERT(child->parent() == this);
 
-    removeChildInternal(widget);
+    if (child->isFrameView())
+        removeScrollableArea(toFrameView(child));
+
+    child->setParent(0);
+    m_children.remove(child);
 }
 
 bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
@@ -2909,7 +2962,8 @@ void FrameView::frameRectsChanged()
     if (layoutSizeFixedToFrameSize())
         setLayoutSizeInternal(frameRect().size());
 
-    frameRectsChangedInternal();
+    for (const auto& child : m_children)
+        child->frameRectsChanged();
 }
 
 void FrameView::setLayoutSizeInternal(const IntSize& size)
@@ -2971,13 +3025,6 @@ void FrameView::addChild(PassRefPtrWillBeRawPtr<Widget> prpChild)
     m_children.add(prpChild);
 }
 
-void FrameView::removeChildInternal(Widget* child)
-{
-    ASSERT(child->parent() == this);
-    child->setParent(0);
-    m_children.remove(child);
-}
-
 void FrameView::setHasHorizontalScrollbar(bool hasBar)
 {
     if (hasBar && !m_horizontalScrollbar) {
@@ -3012,11 +3059,6 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
         removeChild(m_verticalScrollbar.get());
         m_verticalScrollbar = nullptr;
     }
-}
-
-PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbarInternal(ScrollbarOrientation orientation)
-{
-    return Scrollbar::create(this, orientation, RegularScrollbar);
 }
 
 void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode verticalMode,
@@ -3059,26 +3101,6 @@ void FrameView::scrollbarModes(ScrollbarMode& horizontalMode, ScrollbarMode& ver
     verticalMode = m_verticalScrollbarMode;
 }
 
-void FrameView::setCanHaveScrollbarsInternal(bool canScroll)
-{
-    ScrollbarMode newHorizontalMode;
-    ScrollbarMode newVerticalMode;
-
-    scrollbarModes(newHorizontalMode, newVerticalMode);
-
-    if (canScroll && newVerticalMode == ScrollbarAlwaysOff)
-        newVerticalMode = ScrollbarAuto;
-    else if (!canScroll)
-        newVerticalMode = ScrollbarAlwaysOff;
-
-    if (canScroll && newHorizontalMode == ScrollbarAlwaysOff)
-        newHorizontalMode = ScrollbarAuto;
-    else if (!canScroll)
-        newHorizontalMode = ScrollbarAlwaysOff;
-
-    setScrollbarModes(newHorizontalMode, newVerticalMode);
-}
-
 void FrameView::setClipsRepaints(bool clipsRepaints)
 {
     m_clipsRepaints = clipsRepaints;
@@ -3114,15 +3136,6 @@ IntRect FrameView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion)
 IntSize FrameView::contentsSize() const
 {
     return m_contentsSize;
-}
-
-void FrameView::setContentsSizeInternal(const IntSize& newSize)
-{
-    if (contentsSize() == newSize)
-        return;
-    m_contentsSize = newSize;
-    updateScrollbars(scrollOffsetDouble());
-    updateOverhangAreas();
 }
 
 IntPoint FrameView::minimumScrollPosition() const
@@ -3177,10 +3190,6 @@ int FrameView::scrollSize(ScrollbarOrientation orientation) const
     return scrollbar->totalSize() - scrollbar->visibleSize();
 }
 
-void FrameView::notifyPageThatContentAreaWillPaintInternal() const
-{
-}
-
 void FrameView::setScrollOffset(const IntPoint& offset)
 {
     scrollTo(DoublePoint(adjustScrollPositionWithinRange(offset)));
@@ -3189,38 +3198,6 @@ void FrameView::setScrollOffset(const IntPoint& offset)
 void FrameView::setScrollOffset(const DoublePoint& offset)
 {
     scrollTo(adjustScrollPositionWithinRange(offset));
-}
-
-void FrameView::scrollToInternal(const DoublePoint& newPosition)
-{
-    DoubleSize scrollDelta = newPosition - m_scrollPosition;
-    if (scrollDelta.isZero())
-        return;
-    m_scrollPosition = newPosition;
-
-    if (scrollbarsSuppressed())
-        return;
-
-    // FIXME: Change scrollContents() to take DoubleSize. crbug.com/414283.
-    if (isFrameView())
-        m_pendingScrollDelta += scrollDelta;
-    else
-        scrollContents(flooredIntSize(scrollDelta));
-}
-
-void FrameView::setScrollPositionInternal(const DoublePoint& scrollPoint, ScrollBehavior scrollBehavior)
-{
-    DoublePoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
-
-    if (newScrollPosition == scrollPositionDouble())
-        return;
-
-    if (scrollBehavior == ScrollBehaviorInstant) {
-        DoubleSize newOffset(newScrollPosition.x(), newScrollPosition.y());
-        updateScrollbars(newOffset);
-    } else {
-        programmaticallyScrollSmoothlyToOffset(toFloatPoint(newScrollPosition));
-    }
 }
 
 bool FrameView::scroll(ScrollDirection direction, ScrollGranularity granularity)
@@ -3528,11 +3505,6 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
     frameRectsChanged();
 }
 
-void FrameView::scrollContentsSlowPathInternal(const IntRect& updateRect)
-{
-    hostWindow()->invalidateContentsForSlowScroll(updateRect);
-}
-
 IntPoint FrameView::rootViewToContents(const IntPoint& rootViewPoint) const
 {
     IntPoint viewPoint = convertFromContainingWindow(rootViewPoint);
@@ -3620,20 +3592,6 @@ void FrameView::adjustScrollbarsAvoidingResizerCount(int overlapDelta)
     }
 }
 
-void FrameView::setParentInternal(Widget* parentView)
-{
-    if (parentView == parent())
-        return;
-
-    if (m_scrollbarsAvoidingResizer && parent())
-        toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(-m_scrollbarsAvoidingResizer);
-
-    Widget::setParent(parentView);
-
-    if (m_scrollbarsAvoidingResizer && parent())
-        toFrameView(parent())->adjustScrollbarsAvoidingResizerCount(m_scrollbarsAvoidingResizer);
-}
-
 void FrameView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppress)
 {
     if (suppressed == m_scrollbarsSuppressed)
@@ -3665,26 +3623,6 @@ Scrollbar* FrameView::scrollbarAtViewPoint(const IntPoint& viewPoint)
     if (m_verticalScrollbar && m_verticalScrollbar->shouldParticipateInHitTesting() && m_verticalScrollbar->frameRect().contains(viewPoint))
         return m_verticalScrollbar.get();
     return 0;
-}
-
-void FrameView::setFrameRectInternal(const IntRect& newRect)
-{
-    IntRect oldRect = frameRect();
-
-    if (newRect == oldRect)
-        return;
-
-    Widget::setFrameRect(newRect);
-
-    updateScrollbars(scrollOffsetDouble());
-
-    frameRectsChanged();
-}
-
-void FrameView::frameRectsChangedInternal()
-{
-    for (const auto& child : m_children)
-        child->frameRectsChanged();
 }
 
 static void positionScrollbarLayer(GraphicsLayer* graphicsLayer, Scrollbar* scrollbar)
@@ -3745,18 +3683,6 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const
     return false;
 }
 
-void FrameView::contentRectangleForPaintInvalidationInternal(const IntRect& rect)
-{
-    IntRect paintRect = rect;
-    if (clipsPaintInvalidations())
-        paintRect.intersect(visibleContentRect());
-    if (paintRect.isEmpty())
-        return;
-
-    if (HostWindow* window = hostWindow())
-        window->invalidateContentsAndRootView(contentsToWindow(paintRect));
-}
-
 IntRect FrameView::scrollCornerRect() const
 {
     IntRect cornerRect;
@@ -3784,18 +3710,6 @@ IntRect FrameView::scrollCornerRect() const
 bool FrameView::isScrollCornerVisible() const
 {
     return !scrollCornerRect().isEmpty();
-}
-
-void FrameView::scrollbarStyleChangedInternal()
-{
-    adjustScrollbarOpacity();
-    contentsResized();
-    updateScrollbars(scrollOffsetDouble());
-    positionScrollbarLayers();
-}
-
-void FrameView::updateScrollCornerInternal()
-{
 }
 
 void FrameView::invalidateScrollCornerRect(const IntRect& rect)

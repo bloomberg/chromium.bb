@@ -150,12 +150,12 @@ public:
 
     IntRect windowClipRectForFrameOwner(const HTMLFrameOwnerElement*) const;
 
-    IntRect windowResizerRect() const;
-
     float visibleContentScaleFactor() const { return m_visibleContentScaleFactor; }
     void setVisibleContentScaleFactor(float);
 
+    // Scale used to convert incoming input events. Usually the same as visibleContentScaleFactor(), unless specifically changed.
     float inputEventsScaleFactor() const;
+    // Offset used to convert incoming input events while emulating device metics.
     IntSize inputEventsOffsetForEmulation() const;
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
@@ -285,9 +285,6 @@ public:
     void removeResizerArea(RenderBox&);
     const ResizerAreaSet* resizerAreas() const { return m_resizerAreas.get(); }
 
-    virtual void setParent(Widget*) override;
-    void removeChild(Widget*);
-
     // This function exists for ports that need to handle wheel events manually.
     // On Mac WebKit1 the underlying NSScrollView just does the scrolling, but on most other platforms
     // we need this function in order to do the scroll ourselves.
@@ -340,9 +337,6 @@ public:
     virtual bool userInputScrollable(ScrollbarOrientation) const override;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
 
-    void scrollbarStyleChangedInternal();
-    void notifyPageThatContentAreaWillPaintInternal() const;
-
     // The window that hosts the FrameView. The FrameView will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
     HostWindow* hostWindow() const;
@@ -353,9 +347,10 @@ public:
     typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget> > ChildrenWidgetSet;
 
     // Functions for child manipulation and inspection.
-    const ChildrenWidgetSet* children() const { return &m_children; }
+    virtual void setParent(Widget*) override;
+    void removeChild(Widget*);
     void addChild(PassRefPtrWillBeRawPtr<Widget>);
-    void removeChildInternal(Widget*);
+    const ChildrenWidgetSet* children() const { return &m_children; }
 
     // If the scroll view does not use a native widget, then it will have cross-platform Scrollbars. These functions
     // can be used to obtain those scrollbars.
@@ -384,16 +379,12 @@ public:
 
     void setScrollingModesLock(bool lock = true) { m_horizontalScrollbarLock = m_verticalScrollbarLock = lock; }
 
-    void setCanHaveScrollbarsInternal(bool);
     bool canHaveScrollbars() const { return horizontalScrollbarMode() != ScrollbarAlwaysOff || verticalScrollbarMode() != ScrollbarAlwaysOff; }
 
     // By default, paint events are clipped to the visible area.  If set to
     // false, paint events are no longer clipped.
     bool clipsPaintInvalidations() const { return m_clipsRepaints; }
     void setClipsRepaints(bool);
-
-    // Overridden by FrameView to create custom CSS scrollbars if applicable.
-    PassRefPtrWillBeRawPtr<Scrollbar> createScrollbarInternal(ScrollbarOrientation);
 
     // The visible content rect has a location that is the scrolled offset of the document. The width and height are the viewport width
     // and height. By default the scrollbars themselves are excluded from this rectangle, but an optional boolean argument allows them to be
@@ -404,20 +395,12 @@ public:
     // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
     // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.
     IntSize unscaledVisibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
-    float visibleContentScaleFactorInternal() const { return 1; }
-
-    // Offset used to convert incoming input events while emulating device metics.
-    IntSize inputEventsOffsetForEmulationInternal() const { return IntSize(); }
-
-    // Scale used to convert incoming input events. Usually the same as visibleContentScaleFactor(), unless specifically changed.
-    float inputEventsScaleFactorInternal() const { return visibleContentScaleFactor(); }
 
     // Functions for getting/setting the size of the document contained inside the FrameView (as an IntSize or as individual width and height
     // values).
     virtual IntSize contentsSize() const override; // Always at least as big as the visibleWidth()/visibleHeight().
     int contentsWidth() const { return contentsSize().width(); }
     int contentsHeight() const { return contentsSize().height(); }
-    void setContentsSizeInternal(const IntSize&);
 
     // Functions for querying the current scrolled position (both as a point, a size, or as individual X and Y values).
     // FIXME: Remove the IntPoint version. crbug.com/414283.
@@ -440,7 +423,6 @@ public:
     DoublePoint cachedScrollPosition() const { return m_cachedScrollPosition; }
 
     // Functions for scrolling the view.
-    void setScrollPositionInternal(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant);
     void scrollBy(const DoubleSize& s, ScrollBehavior behavior = ScrollBehaviorInstant)
     {
         return setScrollPosition(scrollPositionDouble() + s, behavior);
@@ -474,20 +456,12 @@ public:
     // Functions for converting to screen coordinates.
     IntRect contentsToScreen(const IntRect&) const;
 
-    // These functions are used to enable scrollbars to avoid window resizer controls that overlap the scroll view. This happens on Mac
-    // for example.
-    IntRect windowResizerRectInternal() const { return IntRect(); }
+    // These functions are used to enable scrollbars to avoid window resizer controls that overlap the scroll view.
+    // This happens only on Mac OS X 10.6.
+    IntRect windowResizerRect() const;
     bool containsScrollbarsAvoidingResizer() const;
     void adjustScrollbarsAvoidingResizerCount(int overlapDelta);
     void windowResizerRectChanged();
-
-    void setParentInternal(Widget*); // Updates the overlapping scrollbar count.
-
-    // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
-    void frameRectsChangedInternal();
-
-    // Updates our scrollbars and notifies our contents of the resize.
-    void setFrameRectInternal(const IntRect&);
 
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
     Scrollbar* scrollbarAtWindowPoint(const IntPoint& windowPoint);
@@ -544,7 +518,10 @@ public:
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
 
 protected:
+    // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
+
+    // Scroll the content by invalidating everything.
     void scrollContentsSlowPath(const IntRect& updateRect);
 
     bool isVerticalDocument() const;
@@ -554,29 +531,15 @@ protected:
     // overlay scrollbars in the case of the pinch viewport.
     bool scrollbarsDisabled() const;
 
-    // NOTE: This should only be called by the overridden setScrollOffset from ScrollableArea.
-    void scrollToInternal(const DoublePoint& newPosition);
-
-    void contentRectangleForPaintInvalidationInternal(const IntRect&);
-
     // These functions are used to create/destroy scrollbars.
     void setHasHorizontalScrollbar(bool);
     void setHasVerticalScrollbar(bool);
 
-    void updateScrollCornerInternal();
     virtual void invalidateScrollCornerRect(const IntRect&) override;
 
     void scrollContentsIfNeeded();
-    // Scroll the content by via the compositor.
-    bool scrollContentsFastPathInternal(const IntSize& scrollDelta) { return true; }
-    // Scroll the content by invalidating everything.
-    void scrollContentsSlowPathInternal(const IntRect& updateRect);
 
     void setScrollOrigin(const IntPoint&, bool updatePositionAtAll, bool updatePositionSynchronously);
-
-    // Subclassed by FrameView to check the writing-mode of the document.
-    bool isVerticalDocumentInternal() const { return true; }
-    bool isFlippedDocumentInternal() const { return false; }
 
     enum ComputeScrollbarExistenceOption {
         FirstPass,
@@ -600,8 +563,6 @@ protected:
         TemporaryChange<bool> m_scope;
     };
 
-    bool scrollbarsDisabledInternal() const { return false; }
-
 private:
     explicit FrameView(LocalFrame*);
 
@@ -609,6 +570,7 @@ private:
     void reset();
     void init();
 
+    // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
     virtual void frameRectsChanged() override;
 
     friend class RenderPart;
