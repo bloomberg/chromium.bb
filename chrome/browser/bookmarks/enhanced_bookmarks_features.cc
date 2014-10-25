@@ -154,7 +154,7 @@ void UpdateBookmarksExperimentState(
 
 void InitBookmarksExperimentState(Profile* profile) {
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  bool is_signed_in = signin && !signin->IsAuthenticated();
+  bool is_signed_in = signin && signin->IsAuthenticated();
   UpdateBookmarksExperimentState(
       profile->GetPrefs(),
       g_browser_process->local_state(),
