@@ -45,3 +45,6 @@ crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pas
 
 # Allocation performance issue
 crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Timeout Pass ]
+
+# Times out on the Mac Debug Oilpan bot; widen expectations from [Pass Crash].
+crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
