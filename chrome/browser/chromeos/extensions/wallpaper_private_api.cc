@@ -24,6 +24,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -289,6 +291,17 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
   dict->SetBoolean("isExperimental", false);
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
+  return true;
+}
+
+bool WallpaperPrivateGetSyncSettingFunction::RunSync() {
+  Profile* profile =  Profile::FromBrowserContext(browser_context());
+  ProfileSyncService* sync =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  SetResult(dict);
+  dict->SetBoolean("syncThemes",
+                   sync->GetActiveDataTypes().Has(syncer::THEMES));
   return true;
 }
 
