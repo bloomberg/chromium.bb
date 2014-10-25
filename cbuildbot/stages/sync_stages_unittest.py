@@ -172,7 +172,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(BaseCQTestCase, self)._Prepare(bot_id, **kwargs)
-
+    self._run.config.overlays = constants.PUBLIC_OVERLAYS
     self.sync_stage = sync_stages.CommitQueueSyncStage(self._run)
 
   def PerformSync(self, remote='cros', committed=False, tree_open=True,
@@ -443,7 +443,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     """Test what happens when a trybot launch times out."""
     self.PatchObject(sync_stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      return_value=True)
-    self.runTrybotTest(launching=2, waiting=1, failed=1, runs=3)
+    self.runTrybotTest(launching=2, waiting=1, failed=0, runs=3)
 
   def testInflightTrybotTimesOutOnce(self):
     """Test what happens when an inflight trybot times out."""
@@ -451,7 +451,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     it = itertools.chain([True], itertools.repeat(False))
     self.PatchObject(sync_stages.PreCQLauncherStage, '_HasInflightTimedOut',
                      side_effect=it)
-    self.runTrybotTest(launching=1, waiting=0, failed=1, runs=1)
+    self.runTrybotTest(launching=1, waiting=0, failed=0, runs=1)
 
   def testSubmit(self):
     """Test submission of patches."""
