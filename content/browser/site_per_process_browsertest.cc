@@ -197,14 +197,9 @@ void SitePerProcessBrowserTest::SetUpOnMainThread() {
   SetupCrossSiteRedirector(embedded_test_server());
 }
 
-// It times out on Android, so disabled while investigating.
-// http://crbug.com/399775
-#if defined(OS_ANDROID)
-#define MAYBE_CrossSiteIframe DISABLED_CrossSiteIframe
-#else
-#define MAYBE_CrossSiteIframe CrossSiteIframe
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
+// Ensure that navigating subframes in --site-per-process mode works and the
+// correct documents are committed.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -305,14 +300,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 }
 
-// It times out on Android, so disabled while investigating.
-// http://crbug.com/399775
-#if defined(OS_ANDROID)
-#define MAYBE_NavigateRemoteFrame DISABLED_NavigateRemoteFrame
-#else
-#define MAYBE_NavigateRemoteFrame NavigateRemoteFrame
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NavigateRemoteFrame) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -650,11 +638,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Ensure that when navigating a frame cross-process RenderFrameProxyHosts are
 // created in the FrameTree skipping the subtree of the navigating frame.
-// TODO(nasko): Test is disabled on Android, because it times out. It should
-// be fixed together with CrossSiteIframe on that platform.
 //
 // Disabled on Mac due to flakiness on ASAN. http://crbug.com/425248
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #define MAYBE_ProxyCreationSkipsSubtree DISABLED_ProxyCreationSkipsSubtree
 #else
 #define MAYBE_ProxyCreationSkipsSubtree ProxyCreationSkipsSubtree
