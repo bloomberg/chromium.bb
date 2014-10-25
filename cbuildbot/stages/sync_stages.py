@@ -883,15 +883,18 @@ class PreCQLauncherStage(SyncStage):
   # The CL has passed the Pre-CQ and is ready to be submitted.
   STATUS_READY_TO_SUBMIT = constants.CL_STATUS_READY_TO_SUBMIT
 
+  # The number of minutes we wait before launching Pre-CQ jobs
+  LAUNCH_DELAY = 5
+
   # The number of minutes we allow before considering a launch attempt failed.
   # If this window isn't hit in a given launcher run, the window will start
   # again from scratch in the next run.
-  LAUNCH_DELAY = 90
+  LAUNCH_TIMEOUT = 90
 
   # The number of minutes we allow before considering an in-flight
   # job failed. If this window isn't hit in a given launcher run, the window
   # will start again from scratch in the next run.
-  INFLIGHT_DELAY = 180
+  INFLIGHT_TIMEOUT = 180
 
   # The maximum number of patches we will allow in a given trybot run. This is
   # needed because our trybot infrastructure can only handle so many patches at
@@ -919,7 +922,7 @@ class PreCQLauncherStage(SyncStage):
     Returns:
       True if the change has timed out. False otherwise.
     """
-    diff = datetime.timedelta(minutes=self.LAUNCH_DELAY)
+    diff = datetime.timedelta(minutes=self.LAUNCH_TIMEOUT)
     return datetime.datetime.now() - self.launching[change] > diff
 
   def _HasInflightTimedOut(self, change):
@@ -930,7 +933,7 @@ class PreCQLauncherStage(SyncStage):
     Returns:
       True if the change has timed out. False otherwise.
     """
-    diff = datetime.timedelta(minutes=self.INFLIGHT_DELAY)
+    diff = datetime.timedelta(minutes=self.INFLIGHT_TIMEOUT)
     return datetime.datetime.now() - self.inflight[change] > diff
 
   @staticmethod
@@ -1010,7 +1013,7 @@ class PreCQLauncherStage(SyncStage):
                  'to hang, or if there is some infrastructure issue. If your '
                  'change is not at fault you may mark your change as ready '
                  'again. If this problem occurs multiple times please notify '
-                 'the sheriff and file a bug.' % self.INFLIGHT_DELAY)
+                 'the sheriff and file a bug.' % self.INFLIGHT_TIMEOUT)
 
           pool.SendNotification(change, '%(details)s', details=msg)
           pool.RemoveCommitReady(change)
@@ -1040,7 +1043,7 @@ class PreCQLauncherStage(SyncStage):
       plan: The list of patches to test in the Pre-CQ run.
     """
     cmd = ['cbuildbot', '--remote', constants.PRE_CQ_GROUP_CONFIG,
-           '--timeout', str(self.INFLIGHT_DELAY * 60)]
+           '--timeout', str(self.INFLIGHT_TIMEOUT * 60)]
     if self._run.options.debug:
       cmd.append('--debug')
     for patch in plan:
@@ -1090,6 +1093,9 @@ class PreCQLauncherStage(SyncStage):
         if plan.difference(busy):
           logging.info('CLs waiting on verification of dependencies: %r',
               ' '.join(map(str, plan.difference(busy))))
+      elif any(x.approval_timestamp + self.LAUNCH_DELAY * 60 > time.time()
+               for x in plan):
+        logging.info('CLs waiting on launch delay: %r', plan)
       else:
         yield plan
 

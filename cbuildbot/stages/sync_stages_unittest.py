@@ -199,7 +199,8 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     Returns:
       A list of MockPatch objects which were created and used in PerformSync.
     """
-    kwargs.setdefault('approval_timestamp', time.time())
+    kwargs.setdefault('approval_timestamp',
+        time.time() - sync_stages.PreCQLauncherStage.LAUNCH_DELAY * 60)
     changes = [MockPatch(**kwargs)] * num_patches
     if pre_cq_status is not None:
       new_build_id = self.fake_db.InsertBuild('Pre cq group',
@@ -436,6 +437,14 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     change = self._testCommitManifestChange(pre_cq_status=None)[0]
 
     self.assertEqual(self._GetPreCQStatus(change), self.STATUS_LAUNCHING)
+
+  def testLaunchDelay(self):
+    """Test that we don't launch trybots if we're within the launch delay."""
+    change = self._testCommitManifestChange(approval_timestamp=time.time(),
+                                            pre_cq_status=None)[0]
+
+    action_history = self.fake_db.GetActionsForChanges([change])
+    self.assertEqual(clactions.GetCLPreCQStatus(change, action_history), None)
 
   def testLaunchTrybotWithAutolaunch(self):
     """Test launching a trybot with auto-launch."""
