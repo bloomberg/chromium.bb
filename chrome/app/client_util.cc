@@ -55,13 +55,11 @@ HMODULE LoadModuleWithDirectory(base::string16* dir,
   dir->append(dll_name);
 
   if (pre_read) {
-#if !defined(WIN_DISABLE_PREREAD)
     // We pre-read the binary to warm the memory caches (fewer hard faults to
     // page parts of the binary in).
     const size_t kStepSize = 1024 * 1024;
     size_t percent = 100;
     ImagePreReader::PartialPreReadImage(dir->c_str(), percent, kStepSize);
-#endif
   }
 
   return ::LoadLibraryExW(dir->c_str(), NULL,

@@ -222,9 +222,6 @@ const bool kEnableTouchIcon = false;
 
 const float kMaxShareOfExtensionProcesses = 0.30f;
 
-// This is used by the PreRead experiment.
-const char kPreReadEnvironmentVariable[] = "CHROME_PRE_READ_EXPERIMENT";
-
 #if defined(OS_LINUX)
 const int kLowestRendererOomScore = 300;
 const int kHighestRendererOomScore = 1000;

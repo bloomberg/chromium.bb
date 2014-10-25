@@ -119,9 +119,6 @@ extern const bool kEnableTouchIcon;
 // installed.
 extern const float kMaxShareOfExtensionProcesses;
 
-// This is used by the PreRead experiment.
-extern const char kPreReadEnvironmentVariable[];
-
 #if defined(OS_LINUX)
 // The highest and lowest assigned OOM score adjustment
 // (oom_score_adj) used by the OomPriority Manager.
