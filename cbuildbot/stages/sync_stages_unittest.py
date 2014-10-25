@@ -116,6 +116,7 @@ class MockPatch(mock.MagicMock):
   patch_dict = {
     'currentPatchSet': current_patch_set,
   }
+  remote = 'cros'
 
   def HasApproval(self, field, value):
     """Pretends the patch is good.
@@ -175,33 +176,31 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     self._run.config.overlays = constants.PUBLIC_OVERLAYS
     self.sync_stage = sync_stages.CommitQueueSyncStage(self._run)
 
-  def PerformSync(self, remote='cros', committed=False, tree_open=True,
-                  tree_throttled=False, tracking_branch='master',
-                  num_patches=1, runs=0):
+  def PerformSync(self, committed=False, num_patches=1, tree_open=True,
+                  tree_throttled=False, runs=0, **kwargs):
     """Helper to perform a basic sync for master commit queue.
 
     Args:
-      remote: Remote name to use for mock patches. Default: 'cros'.
       committed: Value to be returned by mock patches' IsChangeCommitted.
                  Default: False.
+      num_patches: The number of mock patches to create. Default: 1.
       tree_open: If True, behave as if tree is open. Default: True.
       tree_throttled: If True, behave as if tree is throttled
                       (overriding the tree_open arg). Default: False.
-      tracking_branch: Tracking branch name for mock patches.
-      num_patches: The number of mock patches to create. Default: 1.
       runs: The maximum number of times to allow validation_pool.AcquirePool
             to wait for additional changes. runs=0 means never wait for
             additional changes. Default: 0.
+      **kwargs: Additional arguments to pass to MockPatch when creating patches.
 
     Returns:
       A list of MockPatch objects which were created and used in PerformSync.
     """
-    p = MockPatch(remote=remote, tracking_branch=tracking_branch)
-    my_patches = [p] * num_patches
+    kwargs.setdefault('approval_timestamp', time.time())
+    changes = [MockPatch(**kwargs)] * num_patches
     self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
                      return_value=committed, autospec=True)
     self.PatchObject(gerrit.GerritHelper, 'Query',
-                     return_value=my_patches, autospec=True)
+                     return_value=changes, autospec=True)
     if tree_throttled:
       self.PatchObject(tree_status, 'WaitForTreeStatus',
                        return_value=constants.TREE_THROTTLED, autospec=True)
@@ -217,7 +216,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
                      side_effect=exit_it)
     self.sync_stage.PerformStage()
 
-    return my_patches
+    return changes
 
   def ReloadPool(self):
     """Save the pool to disk and reload it."""
@@ -262,10 +261,11 @@ class MasterCQSyncTestCase(BaseCQTestCase):
     """
     # Setting tracking_branch=foo makes this a non-manifest change.
     kwargs.setdefault('committed', True)
-    return self.PerformSync(tracking_branch='foo', **kwargs)
+    kwargs.setdefault('tracking_branch', 'foo')
+    return self.PerformSync(**kwargs)
 
   def _testFailedCommitOfNonManifestChange(self):
-    """Test that the commit of a non-manifest change fails.
+    """Test what happens when the commit of a non-manifest change fails.
 
     Returns:
       List of MockPatch objects that were used in PerformSync
@@ -296,25 +296,35 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
 
   def testCommitNonManifestChange(self):
     """See MasterCQSyncTestCase"""
-    return self._testCommitNonManifestChange()
+    changes = self._testCommitNonManifestChange()
+    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testFailedCommitOfNonManifestChange(self):
     """See MasterCQSyncTestCase"""
-    return self._testFailedCommitOfNonManifestChange()
+    changes = self._testFailedCommitOfNonManifestChange()
+    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testCommitManifestChange(self):
     """See MasterCQSyncTestCase"""
-    return self._testCommitManifestChange()
+    changes = self._testCommitManifestChange()
+    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testDefaultSync(self):
     """See MasterCQSyncTestCase"""
-    return self._testDefaultSync()
+    changes = self._testDefaultSync()
+    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testReload(self):
     """Test basic ability to sync and reload the patches from disk."""
-    # Use zero patches because MockPatches can't be pickled.
-    self.PerformSync(num_patches=0, runs=0)
+    # Use zero patches because mock patches can't be pickled.
+    changes = self.PerformSync(num_patches=0, runs=0)
     self.ReloadPool()
+    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
   def testTreeClosureBlocksCommit(self):
     """Test that tree closures block commits."""
@@ -323,10 +333,13 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
 
   def testTreeThrottleUsesAlternateGerritQuery(self):
     """Test that if the tree is throttled, we use an alternate gerrit query."""
-    self.PerformSync(tree_throttled=True)
+    changes = self.PerformSync(tree_throttled=True)
     gerrit.GerritHelper.Query.assert_called_with(
         mock.ANY, constants.THROTTLED_CQ_READY_QUERY,
         sort='lastUpdated')
+    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+
 
 class PreCQLauncherStageTest(MasterCQSyncTestCase):
   """Tests for the PreCQLauncherStage."""
@@ -427,10 +440,10 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
                constants.CL_ACTION_PRE_CQ_FAILED)
 
     for exp, action in zip(expected, actions):
+      cnt = validation_pool.ValidationPool.GetCLActionCount(
+          change, [constants.PRE_CQ_LAUNCHER_CONFIG], action)
       self.assertEqual(
-          exp,
-          validation_pool.ValidationPool.GetCLActionCount(
-              change, [constants.PRE_CQ_LAUNCHER_CONFIG], action))
+          exp, cnt, '%s != %s (action=%s)' % (exp, cnt, action))
 
   def testLaunchTrybotTimesOutOnce(self):
     """Test what happens when a trybot launch times out."""
