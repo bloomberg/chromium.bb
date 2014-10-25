@@ -196,21 +196,13 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner) {
   if (zip_)
     return false;
 
-  // Some sites use type="tel" for zip fields (to get a numerical input).
-  // http://crbug.com/426958
-  if (!ParseFieldSpecifics(scanner,
-                           UTF8ToUTF16(autofill::kZipCodeRe),
-                           MATCH_DEFAULT | MATCH_TELEPHONE,
-                           &zip_)) {
+  base::string16 pattern = UTF8ToUTF16(autofill::kZipCodeRe);
+  if (!ParseField(scanner, pattern, &zip_))
     return false;
-  }
 
   // Look for a zip+4, whose field name will also often contain
   // the substring "zip".
-  ParseFieldSpecifics(scanner,
-                      UTF8ToUTF16(autofill::kZip4Re),
-                      MATCH_DEFAULT | MATCH_TELEPHONE,
-                      &zip4_);
+  ParseField(scanner, UTF8ToUTF16(autofill::kZip4Re), &zip4_);
   return true;
 }
 
