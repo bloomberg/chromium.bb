@@ -78,7 +78,8 @@ public class DropdownPopupWindow extends ListPopupWindow {
 
     /**
      * Sets the location and the size of the anchor view that the DropdownPopupWindow will use to
-     * attach itself.
+     * attach itself. Calling this method can cause a layout change, so the adapter should not be
+     * null.
      * @param x X coordinate of the top left corner of the anchor view.
      * @param y Y coordinate of the top left corner of the anchor view.
      * @param width The width of the anchor view.
@@ -101,10 +102,14 @@ public class DropdownPopupWindow extends ListPopupWindow {
         super.setAdapter(adapter);
     }
 
+    /**
+     * Shows the popup. The adapter should be set before calling this method.
+     */
     @Override
     public void show() {
         // An ugly hack to keep the popup from expanding on top of the keyboard.
         setInputMethodMode(INPUT_METHOD_NEEDED);
+
         int contentWidth = measureContentWidth();
         float contentWidthInDip = contentWidth /
                 mContext.getResources().getDisplayMetrics().density;
@@ -154,17 +159,19 @@ public class DropdownPopupWindow extends ListPopupWindow {
     }
 
     /**
-     * Measures the width of the list content.
+     * Measures the width of the list content. The adapter should not be null.
      * @return The popup window width in pixels.
      */
     private int measureContentWidth() {
+        assert mAdapter != null : "Set the adapter before showing the popup.";
         int maxWidth = 0;
-        View itemView = null;
-        if (mAdapter == null) return 0;
+        View[] itemViews = new View[mAdapter.getViewTypeCount()];
         final int widthMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         final int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         for (int i = 0; i < mAdapter.getCount(); i++) {
-            itemView = mAdapter.getView(i, itemView, null);
+            int type = mAdapter.getItemViewType(i);
+            itemViews[type] = mAdapter.getView(i, itemViews[type], null);
+            View itemView = itemViews[type];
             LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT);

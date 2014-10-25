@@ -52,10 +52,10 @@ public class AutofillTest extends ChromeShellTestBase {
                 mAutofillPopup = new AutofillPopup(mWindowAndroid.getActivity().get(),
                         viewDelegate,
                         mMockAutofillCallback);
+                mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false);
                 mAutofillPopup.setAnchorRect(50, 500, 500, 50);
             }
         });
-
     }
 
     private static final long CALLBACK_TIMEOUT_MS = scaleTimeout(4000);
