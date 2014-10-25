@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

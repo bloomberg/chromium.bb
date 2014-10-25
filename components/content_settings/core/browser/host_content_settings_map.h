@@ -5,8 +5,8 @@
 // Maps hostnames to custom content settings.  Written on the UI thread and read
 // on any thread.  One instance per profile.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_HOST_CONTENT_SETTINGS_MAP_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_HOST_CONTENT_SETTINGS_MAP_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_
 
 #include <map>
 #include <string>
@@ -19,8 +19,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/tuple.h"
-#include "chrome/browser/content_settings/content_settings_override_provider.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/content_settings_override_provider.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -360,4 +360,4 @@ class HostContentSettingsMap
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_HOST_CONTENT_SETTINGS_MAP_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_

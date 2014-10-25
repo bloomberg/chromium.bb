@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 
 #include <utility>
 
@@ -13,25 +13,20 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/clock.h"
-#include "chrome/browser/content_settings/content_settings_default_provider.h"
-#include "chrome/browser/content_settings/content_settings_policy_provider.h"
-#include "chrome/browser/content_settings/content_settings_pref_provider.h"
-#include "chrome/browser/content_settings/content_settings_utils.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
+#include "components/content_settings/core/browser/content_settings_default_provider.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
+#include "components/content_settings/core/browser/content_settings_policy_provider.h"
+#include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
-
-#if defined(ENABLE_EXTENSIONS)
-#include "extensions/common/constants.h"
-#endif
 
 namespace {
 
@@ -48,6 +43,16 @@ const char* kProviderNames[] = {
   "preference",
   "default"
 };
+
+// These constants are copied from extensions/common/extension_constants.h and
+// content/public/common/url_constants.h to avoid complicated dependencies.
+// TODO(vabr): Get these constants through the ContentSettingsClient.
+const char kChromeDevToolsScheme[] = "chrome-devtools";
+const char kChromeUIScheme[] = "chrome";
+
+#if defined(ENABLE_EXTENSIONS)
+const char kExtensionScheme[] = "chrome-extension";
+#endif
 
 content_settings::SettingSource kProviderSourceMap[] = {
   content_settings::SETTING_SOURCE_EXTENSION,
@@ -630,13 +635,13 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
     return false;
   }
 #endif
-  if (secondary_url.SchemeIs(content::kChromeUIScheme) &&
+  if (secondary_url.SchemeIs(kChromeUIScheme) &&
       content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
       primary_url.SchemeIsSecure()) {
     return true;
   }
 #if defined(ENABLE_EXTENSIONS)
-  if (primary_url.SchemeIs(extensions::kExtensionScheme)) {
+  if (primary_url.SchemeIs(kExtensionScheme)) {
     switch (content_type) {
       case CONTENT_SETTINGS_TYPE_PLUGINS:
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
@@ -644,14 +649,14 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
         return false;
       case CONTENT_SETTINGS_TYPE_COOKIES:
-        return secondary_url.SchemeIs(extensions::kExtensionScheme);
+        return secondary_url.SchemeIs(kExtensionScheme);
       default:
         return true;
     }
   }
 #endif
-  return primary_url.SchemeIs(content::kChromeDevToolsScheme) ||
-         primary_url.SchemeIs(content::kChromeUIScheme);
+  return primary_url.SchemeIs(kChromeDevToolsScheme) ||
+         primary_url.SchemeIs(kChromeUIScheme);
 }
 
 scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(

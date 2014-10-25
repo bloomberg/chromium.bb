@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"

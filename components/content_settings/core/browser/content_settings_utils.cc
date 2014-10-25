@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/content_settings_utils.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 
 #include <vector>
 
@@ -12,10 +12,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "url/gurl.h"
 

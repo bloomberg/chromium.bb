@@ -5,9 +5,9 @@
 #include "chrome/test/ppapi/ppapi_test.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 
 //
 // Interface tests.

@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/power/origin_power_map.h"
 
 namespace options {

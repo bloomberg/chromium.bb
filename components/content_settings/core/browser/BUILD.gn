@@ -5,17 +5,29 @@
 static_library("browser") {
   sources = [
     "content_settings_client.h",
+    "content_settings_default_provider.cc",
+    "content_settings_default_provider.h",
     "content_settings_details.cc",
     "content_settings_details.h",
-    "content_settings_observer.h",
-    "content_settings_provider.h",
     "content_settings_observable_provider.cc",
     "content_settings_observable_provider.h",
+    "content_settings_observer.h",
+    "content_settings_override_provider.cc",
+    "content_settings_override_provider.h",
+    "content_settings_policy_provider.cc",
+    "content_settings_policy_provider.h",
+    "content_settings_pref_provider.cc",
+    "content_settings_pref_provider.h",
+    "content_settings_provider.h",
     "content_settings_origin_identifier_value_map.cc",
     "content_settings_origin_identifier_value_map.h",
     "content_settings_rule.cc",
     "content_settings_rule.h",
+    "content_settings_utils.cc",
+    "content_settings_utils.h",
     "local_shared_objects_counter.h",
+    "host_content_settings_map.cc",
+    "host_content_settings_map.h",
   ]
 
   deps = [
@@ -27,7 +39,11 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "content_settings_mock_provider.cc",
+    "content_settings_mock_provider.h",
+    "content_settings_provider_unittest.cc",
     "content_settings_rule_unittest.cc",
+    "content_settings_utils_unittest.cc",
   ]
 
   deps = [

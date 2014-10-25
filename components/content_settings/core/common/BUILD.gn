@@ -13,6 +13,8 @@ static_library("common") {
     "content_settings_types.h",
     "permission_request_id.h",
     "permission_request_id.cc",
+    "pref_names.h",
+    "pref_names.cc",
   ]
 
   deps = [

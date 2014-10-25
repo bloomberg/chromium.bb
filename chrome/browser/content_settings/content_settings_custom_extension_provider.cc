@@ -5,8 +5,8 @@
 #include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace content_settings {

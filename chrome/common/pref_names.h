@@ -13,6 +13,7 @@
 
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -322,10 +323,6 @@ extern const char kDefaultBrowserSettingEnabled[];
 extern const char kShowUpdatePromotionInfoBar[];
 #endif
 extern const char kUseCustomChromeFrame[];
-extern const char kDefaultContentSettings[];
-extern const char kOverrideContentSettings[];
-extern const char kContentSettingsVersion[];
-extern const char kContentSettingsPatternPairs[];
 extern const char kContentSettingsPluginWhitelist[];
 extern const char kBlockThirdPartyCookies[];
 extern const char kClearSiteDataOnExit[];
@@ -507,7 +504,6 @@ extern const char kSafeBrowsingClientKey[];
 extern const char kSafeBrowsingWrappedKey[];
 
 extern const char kOptionsWindowLastTabIndex[];
-extern const char kContentSettingsWindowLastTabIndex[];
 extern const char kCertificateManagerWindowLastTabIndex[];
 extern const char kShowFirstRunBubbleOption[];
 
@@ -616,30 +612,6 @@ extern const char kCloudPrintUserSettings[];
 
 extern const char kProxy[];
 extern const char kMaxConnectionsPerProxy[];
-
-extern const char kManagedDefaultCookiesSetting[];
-extern const char kManagedDefaultImagesSetting[];
-extern const char kManagedDefaultJavaScriptSetting[];
-extern const char kManagedDefaultPluginsSetting[];
-extern const char kManagedDefaultPopupsSetting[];
-extern const char kManagedDefaultGeolocationSetting[];
-extern const char kManagedDefaultNotificationsSetting[];
-extern const char kManagedDefaultMediaStreamSetting[];
-
-extern const char kManagedCookiesAllowedForUrls[];
-extern const char kManagedCookiesBlockedForUrls[];
-extern const char kManagedCookiesSessionOnlyForUrls[];
-extern const char kManagedImagesAllowedForUrls[];
-extern const char kManagedImagesBlockedForUrls[];
-extern const char kManagedJavaScriptAllowedForUrls[];
-extern const char kManagedJavaScriptBlockedForUrls[];
-extern const char kManagedPluginsAllowedForUrls[];
-extern const char kManagedPluginsBlockedForUrls[];
-extern const char kManagedPopupsAllowedForUrls[];
-extern const char kManagedPopupsBlockedForUrls[];
-extern const char kManagedNotificationsAllowedForUrls[];
-extern const char kManagedNotificationsBlockedForUrls[];
-extern const char kManagedAutoSelectCertificateForUrls[];
 
 extern const char kAudioCaptureAllowed[];
 extern const char kAudioCaptureAllowedUrls[];
