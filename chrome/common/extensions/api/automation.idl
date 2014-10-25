@@ -57,6 +57,7 @@
     application,
     article,
     banner,
+    blockquote,
     browser,
     busyIndicator,
     button,

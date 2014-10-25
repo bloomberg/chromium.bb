@@ -66,6 +66,7 @@
     application,
     article,
     banner,
+    blockquote,
     browser,
     busy_indicator,
     button,

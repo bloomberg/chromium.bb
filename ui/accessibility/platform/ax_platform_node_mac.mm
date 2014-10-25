@@ -27,6 +27,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_APPLICATION, NSAccessibilityGroupRole},
       {ui::AX_ROLE_ARTICLE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_BANNER, NSAccessibilityGroupRole},
+      {ui::AX_ROLE_BLOCKQUOTE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_BROWSER, NSAccessibilityBrowserRole},
       {ui::AX_ROLE_BUSY_INDICATOR, NSAccessibilityBusyIndicatorRole},
       {ui::AX_ROLE_BUTTON, NSAccessibilityButtonRole},

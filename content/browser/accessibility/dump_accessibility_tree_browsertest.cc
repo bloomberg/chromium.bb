@@ -550,6 +550,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBdo) {
   RunTest(FILE_PATH_LITERAL("bdo.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBlockquote) {
+  RunTest(FILE_PATH_LITERAL("blockquote.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBody) {
   RunTest(FILE_PATH_LITERAL("body.html"));
 }

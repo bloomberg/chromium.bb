@@ -3401,6 +3401,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_HEADER;
       break;
+    case ui::AX_ROLE_BLOCKQUOTE:
+      role_name_ = html_tag;
+      ia2_role_ = IA2_ROLE_SECTION;
+      break;
     case ui::AX_ROLE_BUSY_INDICATOR:
       ia_role_ = ROLE_SYSTEM_ANIMATION;
       ia_state_ |= STATE_SYSTEM_READONLY;

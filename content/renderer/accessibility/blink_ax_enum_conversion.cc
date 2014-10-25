@@ -94,6 +94,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_ARTICLE;
     case blink::WebAXRoleBanner:
       return ui::AX_ROLE_BANNER;
+    case blink::WebAXRoleBlockquote:
+      return ui::AX_ROLE_BLOCKQUOTE;
     case blink::WebAXRoleBrowser:
       return ui::AX_ROLE_BROWSER;
     case blink::WebAXRoleBusyIndicator:

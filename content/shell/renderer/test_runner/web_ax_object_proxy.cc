@@ -34,6 +34,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Article");
     case blink::WebAXRoleBanner:
       return result.append("Banner");
+    case blink::WebAXRoleBlockquote:
+      return result.append("Blockquote");
     case blink::WebAXRoleBrowser:
       return result.append("Browser");
     case blink::WebAXRoleBusyIndicator:
