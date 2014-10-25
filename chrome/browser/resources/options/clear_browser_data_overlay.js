@@ -119,7 +119,7 @@ cr.define('options', function() {
         }
 
         if (linkId) {
-          var link = document.createElement('a', 'action-link');
+          var link = new ActionLink;
           link.id = linkId;
           link.textContent = footerFragments[i + 1];
           footer.appendChild(link);

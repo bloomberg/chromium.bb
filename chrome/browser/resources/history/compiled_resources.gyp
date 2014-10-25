@@ -7,6 +7,7 @@
       'target_name': 'history',
       'variables': {
         'depends': [
+          '../../../../ui/webui/resources/js/action_link.js',
           '../../../../ui/webui/resources/js/assert.js',
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/cr/ui.js',

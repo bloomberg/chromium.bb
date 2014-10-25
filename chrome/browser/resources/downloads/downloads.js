@@ -56,7 +56,7 @@ function showInlineBlock(node, isShow) {
  * @return {!Element} The created link element.
  */
 function createActionLink(onclick, opt_text) {
-  var link = document.createElement('a', 'action-link');
+  var link = new ActionLink;
   link.onclick = onclick;
   if (opt_text) link.textContent = opt_text;
   return link;

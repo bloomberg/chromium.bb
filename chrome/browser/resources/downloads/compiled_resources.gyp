@@ -7,6 +7,7 @@
       'target_name': 'downloads',
       'variables': {
         'depends': [
+          '../../../../ui/webui/resources/js/action_link.js',
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../ui/webui/resources/js/util.js',

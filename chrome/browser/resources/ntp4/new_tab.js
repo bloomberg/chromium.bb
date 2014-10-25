@@ -462,7 +462,7 @@ cr.define('ntp', function() {
     var linksBin = $('notificationLinks');
     linksBin.textContent = '';
     for (var i = 0; i < links.length; i++) {
-      var link = linksBin.ownerDocument.createElement('a', 'action-link');
+      var link = new ActionLink;
       link.textContent = links[i].text;
       link.action = links[i].action;
       link.onclick = function() {

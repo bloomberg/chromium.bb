@@ -1322,8 +1322,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
       createElementWithClassName('div', 'site-domain-arrow'));
   var siteDomain = siteDomainRow.appendChild(
       createElementWithClassName('div', 'site-domain'));
-  var siteDomainLink = siteDomain.appendChild(
-      document.createElement('a', 'action-link'));
+  var siteDomainLink = siteDomain.appendChild(new ActionLink);
   siteDomainLink.textContent = domain;
   var numberOfVisits = createElementWithClassName('span', 'number-visits');
   var domainElement = document.createElement('span');

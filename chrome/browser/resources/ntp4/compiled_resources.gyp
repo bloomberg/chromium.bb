@@ -8,6 +8,7 @@
       'variables': {
         'depends': [
           '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
+          '../../../../ui/webui/resources/js/action_link.js',
           '../../../../ui/webui/resources/js/cr.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/load_time_data.js',

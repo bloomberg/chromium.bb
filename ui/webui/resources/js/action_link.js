@@ -35,6 +35,7 @@ var ActionLink = document.registerElement('action-link', {
   prototype: {
     __proto__: HTMLAnchorElement.prototype,
 
+    /** @this {ActionLink} */
     createdCallback: function() {
       // Links aren't tabble unless there's an [href] attribute set. Setting
       // this adds undesirable "Open link in new tab..." context menu handlers
