@@ -1033,7 +1033,9 @@ def CMDquery(parser, args):
   base_url = options.swarming + '/swarming/api/v1/client/' + args[0]
   url = base_url
   if options.limit:
-    url += '?limit=%d' % min(CHUNK_SIZE, options.limit)
+    # Check check, change if not working out.
+    merge_char = '&' if '?' in url else '?'
+    url += '%slimit=%d' % (merge_char, min(CHUNK_SIZE, options.limit))
   data = net.url_read_json(url)
   if data is None:
     print >> sys.stderr, 'Failed to access %s' % options.swarming
