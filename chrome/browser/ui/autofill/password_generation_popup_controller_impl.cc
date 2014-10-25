@@ -31,6 +31,10 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/text_utils.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chromium_application.h"
+#endif
+
 namespace autofill {
 
 base::WeakPtr<PasswordGenerationPopupControllerImpl>
@@ -214,9 +218,13 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 }
 
 void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
+#if defined(OS_ANDROID)
+  chrome::android::ChromiumApplication::ShowPasswordSettings();
+#else
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(controller_common_.web_contents()),
       chrome::kPasswordManagerSubPage);
+#endif
 }
 
 void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(

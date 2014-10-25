@@ -31,6 +31,9 @@ public abstract class ChromiumApplication extends ContentApplication {
     protected abstract void showAutofillSettings();
 
     @CalledByNative
+    protected abstract void showPasswordSettings();
+
+    @CalledByNative
     protected abstract void showTermsOfServiceDialog();
 
     /**

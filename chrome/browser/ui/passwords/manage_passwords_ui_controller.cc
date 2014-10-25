@@ -19,6 +19,10 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/notification_service.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chromium_application.h"
+#endif
+
 using autofill::PasswordFormMap;
 using password_manager::PasswordFormManager;
 
@@ -158,9 +162,9 @@ void ManagePasswordsUIController::OnLoginsChanged(
 
 void ManagePasswordsUIController::
     NavigateToPasswordManagerSettingsPage() {
-// TODO(mkwst): chrome_pages.h is compiled out of Android. Need to figure out
-// how this navigation should work there.
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  chrome::android::ChromiumApplication::ShowPasswordSettings();
+#else
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),
       chrome::kPasswordManagerSubPage);

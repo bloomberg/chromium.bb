@@ -26,6 +26,10 @@ public class ChromeNativeTestApplication extends ChromiumApplication {
     }
 
     @Override
+    protected void showPasswordSettings() {
+    }
+
+    @Override
     protected void showTermsOfServiceDialog() {
     }
 

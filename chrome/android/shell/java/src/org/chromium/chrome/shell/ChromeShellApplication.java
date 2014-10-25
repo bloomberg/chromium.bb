@@ -95,6 +95,10 @@ public class ChromeShellApplication extends ChromiumApplication {
     }
 
     @Override
+    protected void showPasswordSettings() {
+    }
+
+    @Override
     protected void showTermsOfServiceDialog() {
     }
 

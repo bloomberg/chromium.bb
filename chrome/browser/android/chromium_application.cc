@@ -35,6 +35,12 @@ void ChromiumApplication::ShowAutofillSettings() {
       base::android::GetApplicationContext());
 }
 
+void ChromiumApplication::ShowPasswordSettings() {
+  Java_ChromiumApplication_showPasswordSettings(
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext());
+}
+
 void ChromiumApplication::ShowTermsOfServiceDialog() {
   Java_ChromiumApplication_showTermsOfServiceDialog(
       base::android::AttachCurrentThread(),
