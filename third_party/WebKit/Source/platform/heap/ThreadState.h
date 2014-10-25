@@ -112,28 +112,6 @@ struct ThreadingTrait {
     static const ThreadAffinity Affinity = DefaultThreadingTrait<T>::Affinity;
 };
 
-// Marks the specified class as being used from multiple threads. When
-// a class is used from multiple threads we go through thread local
-// storage to get the heap in which to allocate an object of that type
-// and when allocating a Persistent handle for an object with that
-// type. Notice that marking the base class does not automatically
-// mark its descendants and they have to be explicitly marked.
-#define USED_FROM_MULTIPLE_THREADS(Class)                 \
-    class Class;                                          \
-    template<> struct ThreadingTrait<Class> {             \
-        static const ThreadAffinity Affinity = AnyThread; \
-    }
-
-#define USED_FROM_MULTIPLE_THREADS_NAMESPACE(Namespace, Class)          \
-    namespace Namespace {                                               \
-        class Class;                                                    \
-    }                                                                   \
-    namespace blink {                                                 \
-        template<> struct ThreadingTrait<Namespace::Class> {            \
-            static const ThreadAffinity Affinity = AnyThread;           \
-        };                                                              \
-    }
-
 template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { };
 
 // Declare that a class has a pre-finalizer function.  The function is called in

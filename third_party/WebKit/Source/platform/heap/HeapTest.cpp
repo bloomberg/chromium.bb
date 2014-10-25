@@ -73,8 +73,6 @@ private:
     int m_x;
 };
 
-USED_FROM_MULTIPLE_THREADS(IntWrapper);
-
 class ThreadMarker {
 public:
     ThreadMarker() : m_creatingThread(reinterpret_cast<ThreadState*>(0)), m_num(0) { }
