@@ -390,9 +390,6 @@ Screen
 ScreenOrientation
 ScriptProcessorNode
 Selection
-ServiceWorker
-ServiceWorkerContainer
-ServiceWorkerRegistration
 Set
 ShadowRoot
 SharedWorker
