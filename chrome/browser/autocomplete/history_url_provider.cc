@@ -756,20 +756,20 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   SortAndDedupMatches(&params->matches);
 
   // Try to create a shorter suggestion from the best match.
-  // We consider the what you typed match eligible for display when there's a
-  // reasonable chance the user actually cares:
-  // * Their input can be opened as a URL, and
-  // * We parsed the input as a URL, or it starts with an explicit "http:" or
-  // "https:".
-  // Otherwise, this is just low-quality noise.  In the cases where we've parsed
-  // as UNKNOWN, we'll still show an accidental search infobar if need be.
+  // We consider the what you typed match eligible for display when it's
+  // navigable and there's a reasonable chance the user intended to do
+  // something other than search.  We use a variety of heuristics to determine
+  // this, e.g. whether the user explicitly typed a scheme, or if omnibox
+  // searching has been disabled by policy. In the cases where we've parsed as
+  // UNKNOWN, we'll still show an accidental search infobar if need be.
   VisitClassifier classifier(this, params->input, db);
   params->have_what_you_typed_match =
       (params->input.type() != metrics::OmniboxInputType::QUERY) &&
       ((params->input.type() != metrics::OmniboxInputType::UNKNOWN) ||
        (classifier.type() == VisitClassifier::UNVISITED_INTRANET) ||
        !params->trim_http ||
-       (AutocompleteInput::NumNonHostComponents(params->input.parts()) > 0));
+       (AutocompleteInput::NumNonHostComponents(params->input.parts()) > 0) ||
+       !params->default_search_provider);
   const bool have_shorter_suggestion_suitable_for_inline_autocomplete =
       PromoteOrCreateShorterSuggestion(
           db, params->have_what_you_typed_match, params);

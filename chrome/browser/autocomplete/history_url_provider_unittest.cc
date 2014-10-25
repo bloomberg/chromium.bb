@@ -28,6 +28,7 @@
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/autocomplete_result.h"
+#include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -183,10 +184,10 @@ class HistoryURLProviderTest : public testing::Test,
   }
 
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(SetUpImpl(false));
   }
-  virtual void TearDown();
+  void TearDown() override;
 
   // Does the real setup.
   bool SetUpImpl(bool no_db) WARN_UNUSED_RESULT;
@@ -226,8 +227,21 @@ class HistoryURLProviderTest : public testing::Test,
 
 class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(SetUpImpl(true));
+  }
+};
+
+class HistoryURLProviderTestNoSearchProvider : public HistoryURLProviderTest {
+ protected:
+  void SetUp() override {
+    DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(true);
+    HistoryURLProviderTest::SetUp();
+  }
+
+  void TearDown() override {
+    HistoryURLProviderTest::TearDown();
+    DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(false);
   }
 };
 
@@ -478,6 +492,26 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   };
   RunTest(typing, std::string(), true, expected_results,
           arraysize(expected_results));
+}
+
+TEST_F(HistoryURLProviderTestNoSearchProvider, WhatYouTypedNoSearchProvider) {
+  // When no search provider is available, make sure we provide WYT matches
+  // for text that could be a URL.
+
+  const UrlAndLegalDefault results_1[] = {
+    { "http://wytmatch/", true }
+  };
+  RunTest(ASCIIToUTF16("wytmatch"), std::string(), false, results_1,
+          arraysize(results_1));
+
+  RunTest(ASCIIToUTF16("wytmatch foo bar"), std::string(), false, NULL, 0);
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar"), std::string(), false, NULL, 0);
+
+  const UrlAndLegalDefault results_2[] = {
+    { "http://wytmatch+foo+bar.com/", true }
+  };
+  RunTest(ASCIIToUTF16("wytmatch+foo+bar.com"), std::string(), false,
+          results_2, arraysize(results_2));
 }
 
 TEST_F(HistoryURLProviderTest, WhatYouTyped) {
