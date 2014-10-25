@@ -30,7 +30,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
@@ -60,7 +59,6 @@ namespace GetBrowserLogin = api::webstore_private::GetBrowserLogin;
 namespace GetIsLauncherEnabled = api::webstore_private::GetIsLauncherEnabled;
 namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
 namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
-namespace InstallBundle = api::webstore_private::InstallBundle;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
 namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
 namespace LaunchEphemeralAppResult = LaunchEphemeralApp::Results;
@@ -162,64 +160,6 @@ scoped_ptr<WebstoreInstaller::Approval>
 WebstorePrivateApi::PopApprovalForTesting(
     Profile* profile, const std::string& extension_id) {
   return g_pending_approvals.Get().PopApproval(profile, extension_id);
-}
-
-WebstorePrivateInstallBundleFunction::WebstorePrivateInstallBundleFunction() {}
-WebstorePrivateInstallBundleFunction::~WebstorePrivateInstallBundleFunction() {}
-
-bool WebstorePrivateInstallBundleFunction::RunAsync() {
-  scoped_ptr<InstallBundle::Params> params(
-      InstallBundle::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  BundleInstaller::ItemList items;
-  if (!ReadBundleInfo(*params, &items))
-    return false;
-
-  bundle_ = new BundleInstaller(GetCurrentBrowser(), items);
-
-  AddRef();  // Balanced in OnBundleInstallCompleted / OnBundleInstallCanceled.
-
-  bundle_->PromptForApproval(this);
-  return true;
-}
-
-bool WebstorePrivateInstallBundleFunction::
-    ReadBundleInfo(const InstallBundle::Params& params,
-    BundleInstaller::ItemList* items) {
-  for (size_t i = 0; i < params.details.size(); ++i) {
-    BundleInstaller::Item item;
-    item.id = params.details[i]->id;
-    item.manifest = params.details[i]->manifest;
-    item.localized_name = params.details[i]->localized_name;
-    items->push_back(item);
-  }
-
-  return true;
-}
-
-void WebstorePrivateInstallBundleFunction::OnBundleInstallApproved() {
-  bundle_->CompleteInstall(
-      dispatcher()->delegate()->GetAssociatedWebContents(),
-      this);
-}
-
-void WebstorePrivateInstallBundleFunction::OnBundleInstallCanceled(
-    bool user_initiated) {
-  if (user_initiated)
-    error_ = "user_canceled";
-  else
-    error_ = "unknown_error";
-
-  SendResponse(false);
-
-  Release();  // Balanced in RunAsync().
-}
-
-void WebstorePrivateInstallBundleFunction::OnBundleInstallCompleted() {
-  SendResponse(true);
-
-  Release();  // Balanced in RunAsync().
 }
 
 WebstorePrivateBeginInstallWithManifest3Function::

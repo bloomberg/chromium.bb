@@ -26,44 +26,6 @@
         ]
       },
       {
-        "name": "installBundle",
-        "description": "Initiates the install process for the given bundle of extensions.",
-        "parameters": [
-          {
-            "name": "details",
-            "description": "An array of extension details to be installed.",
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "The id of the extension to be installed.",
-                  "minLength": 32,
-                  "maxLength": 32
-                },
-                "manifest": {
-                  "type": "string",
-                  "description": "A string with the contents of the extension's manifest.json file. During the install process, the browser will check that the downloaded extension's manifest matches what was passed in here.",
-                  "minLength": 1
-                },
-                "localizedName": {
-                  "type": "string",
-                  "description": "A string to use instead of the raw value of the 'name' key from manifest.json."
-                }
-              }
-            }
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called when the install process completes. Upon failures, chrome.runtime.lastError will be set to 'user_canceled' or 'unknown_error'.",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "beginInstallWithManifest3",
         "description": "Initiates the install process for the given extension.",
         "parameters": [

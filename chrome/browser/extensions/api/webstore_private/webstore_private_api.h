@@ -8,7 +8,6 @@
 #include <string>
 
 #include "chrome/browser/extensions/active_install_data.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -42,35 +41,6 @@ class WebstorePrivateApi {
   // completeInstall. This should only be used for testing.
   static scoped_ptr<WebstoreInstaller::Approval> PopApprovalForTesting(
       Profile* profile, const std::string& extension_id);
-};
-
-class WebstorePrivateInstallBundleFunction
-    : public ChromeAsyncExtensionFunction,
-      public extensions::BundleInstaller::Delegate {
- public:
-  DECLARE_EXTENSION_FUNCTION("webstorePrivate.installBundle",
-                             WEBSTOREPRIVATE_INSTALLBUNDLE)
-
-  WebstorePrivateInstallBundleFunction();
-
-  // BundleInstaller::Delegate:
-  void OnBundleInstallApproved() override;
-  void OnBundleInstallCanceled(bool user_initiated) override;
-  void OnBundleInstallCompleted() override;
-
- protected:
-  ~WebstorePrivateInstallBundleFunction() override;
-
-  // ExtensionFunction:
-  bool RunAsync() override;
-
-  // Reads the extension |details| into |items|.
-  bool ReadBundleInfo(
-      const api::webstore_private::InstallBundle::Params& details,
-          extensions::BundleInstaller::ItemList* items);
-
- private:
-  scoped_refptr<extensions::BundleInstaller> bundle_;
 };
 
 class WebstorePrivateBeginInstallWithManifest3Function
