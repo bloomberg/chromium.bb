@@ -41,6 +41,7 @@ SingleThreadProxy::SingleThreadProxy(
       defer_commits_(false),
       commit_was_deferred_(false),
       commit_requested_(false),
+      inside_synchronous_composite_(false),
       output_surface_creation_requested_(false),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
@@ -134,6 +135,8 @@ void SingleThreadProxy::SetOutputSurface(
   if (success) {
     if (scheduler_on_impl_thread_)
       scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
+    else if (!inside_synchronous_composite_)
+      SetNeedsCommit();
   } else if (Proxy::MainThreadTaskRunner()) {
     ScheduleRequestNewOutputSurface();
   }
@@ -464,9 +467,17 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());
-  DCHECK(!layer_tree_host_->output_surface_lost());
   DCHECK(!layer_tree_host_impl_->settings().impl_side_painting)
       << "Impl-side painting and synchronous compositing are not supported.";
+  base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
+
+  if (layer_tree_host_->output_surface_lost()) {
+    RequestNewOutputSurface();
+    // RequestNewOutputSurface could have synchronously created an output
+    // surface, so check again before returning.
+    if (layer_tree_host_->output_surface_lost())
+      return;
+  }
 
   {
     BeginFrameArgs begin_frame_args(

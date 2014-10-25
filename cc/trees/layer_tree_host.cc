@@ -728,14 +728,6 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
 
   SetLayerTreeHostClientReady();
-  if (output_surface_lost_) {
-    proxy->RequestNewOutputSurface();
-    // RequestNewOutputSurface could have synchronously created an output
-    // surface, so check again before returning.
-    if (output_surface_lost_)
-      return;
-  }
-
   proxy->CompositeImmediately(frame_begin_time);
 }
 

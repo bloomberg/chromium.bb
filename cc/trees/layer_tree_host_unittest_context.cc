@@ -409,7 +409,7 @@ class MultipleCompositeDoesNotCreateOutputSurface
   int request_count_;
 };
 
-SINGLE_THREAD_TEST_F(MultipleCompositeDoesNotCreateOutputSurface);
+SINGLE_THREAD_NOIMPL_TEST_F(MultipleCompositeDoesNotCreateOutputSurface);
 
 class FailedCreateDoesNotCreateExtraOutputSurface
     : public LayerTreeHostContextTest {
@@ -447,7 +447,78 @@ class FailedCreateDoesNotCreateExtraOutputSurface
   int request_count_;
 };
 
-SINGLE_THREAD_TEST_F(FailedCreateDoesNotCreateExtraOutputSurface);
+SINGLE_THREAD_NOIMPL_TEST_F(FailedCreateDoesNotCreateExtraOutputSurface);
+
+class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
+    : public LayerTreeHostContextTest {
+ public:
+  LayerTreeHostContextTestCommitAfterDelayedOutputSurface()
+      : LayerTreeHostContextTest(), creating_output_(false) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->single_thread_proxy_scheduler = false;
+  }
+
+  void RequestNewOutputSurface(bool fallback) override {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostContextTestCommitAfterDelayedOutputSurface::
+                       CreateAndSetOutputSurface,
+                   base::Unretained(this),
+                   fallback));
+  }
+
+  void CreateAndSetOutputSurface(bool fallback) {
+    creating_output_ = true;
+    layer_tree_host()->SetOutputSurface(
+        LayerTreeHostContextTest::CreateOutputSurface(fallback));
+  }
+
+  void BeginTest() override { layer_tree_host()->Composite(base::TimeTicks()); }
+
+  void ScheduleComposite() override {
+    if (creating_output_)
+      EndTest();
+  }
+
+  void AfterTest() override {}
+
+  bool creating_output_;
+};
+
+SINGLE_THREAD_NOIMPL_TEST_F(
+    LayerTreeHostContextTestCommitAfterDelayedOutputSurface);
+
+class LayerTreeHostContextTestAvoidUnnecessaryComposite
+    : public LayerTreeHostContextTest {
+ public:
+  LayerTreeHostContextTestAvoidUnnecessaryComposite()
+      : LayerTreeHostContextTest(), in_composite_(false) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->single_thread_proxy_scheduler = false;
+  }
+
+  void RequestNewOutputSurface(bool fallback) override {
+    layer_tree_host()->SetOutputSurface(
+        LayerTreeHostContextTest::CreateOutputSurface(fallback));
+    EndTest();
+  }
+
+  void BeginTest() override {
+    in_composite_ = true;
+    layer_tree_host()->Composite(base::TimeTicks());
+    in_composite_ = false;
+  }
+
+  void ScheduleComposite() override { EXPECT_FALSE(in_composite_); }
+
+  void AfterTest() override {}
+
+  bool in_composite_;
+};
+
+SINGLE_THREAD_NOIMPL_TEST_F(LayerTreeHostContextTestAvoidUnnecessaryComposite);
 
 class LayerTreeHostContextTestLostContextSucceedsWithContent
     : public LayerTreeHostContextTestLostContextSucceeds {

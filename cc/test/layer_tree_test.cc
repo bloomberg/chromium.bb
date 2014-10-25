@@ -327,6 +327,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void DidPostSwapBuffers() override {}
   void DidAbortSwapBuffers() override {}
+  void ScheduleComposite() override { test_hooks_->ScheduleComposite(); }
 
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)

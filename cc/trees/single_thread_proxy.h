@@ -151,6 +151,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool defer_commits_;
   bool commit_was_deferred_;
   bool commit_requested_;
+  bool inside_synchronous_composite_;
 
   // True if a request to the LayerTreeHostClient to create an output surface
   // is still outstanding.
