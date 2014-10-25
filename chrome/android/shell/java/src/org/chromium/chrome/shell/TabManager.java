@@ -13,9 +13,14 @@ import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content.browser.ContentVideoViewClient;
-import org.chromium.content.browser.ContentViewClient;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -26,8 +31,6 @@ import org.chromium.ui.base.WindowAndroid;
 public class TabManager extends LinearLayout {
     private static final String DEFAULT_URL = "http://www.google.com";
 
-    private WindowAndroid mWindow;
-    private ContentVideoViewClient mContentVideoViewClient;
     private ViewGroup mContentViewHolder;
     private ContentViewRenderView mContentViewRenderView;
     private ChromeShellToolbar mToolbar;
@@ -35,7 +38,22 @@ public class TabManager extends LinearLayout {
     private ChromeShellTab mCurrentTab;
 
     private String mStartupUrl = DEFAULT_URL;
-    private View mCurrentView;
+
+    private ChromeShellTabModelSelector mTabModelSelector;
+
+    private final EmptyTabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
+        @Override
+        public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+            assert tab instanceof ChromeShellTab;
+            setCurrentTab((ChromeShellTab) tab);
+            mTabModelSelector.hideTabSwitcher();
+        }
+
+        @Override
+        public void willCloseTab(Tab tab, boolean animate) {
+            if (tab == mCurrentTab) setCurrentTab(null);
+        }
+    };
 
     /**
      * @param context The Context the view is running in.
@@ -45,11 +63,6 @@ public class TabManager extends LinearLayout {
         super(context, attrs);
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-    }
-
     /**
      * Initialize the components required for Tab creation.
      * @param window The window used to generate all ContentViews.
@@ -57,18 +70,23 @@ public class TabManager extends LinearLayout {
      */
     public void initialize(WindowAndroid window, ContentVideoViewClient videoViewClient) {
         assert window != null;
-        mWindow = window;
         assert videoViewClient != null;
-        mContentVideoViewClient = videoViewClient;
+
         mContentViewHolder = (ViewGroup) findViewById(R.id.content_container);
+
+        mTabModelSelector = new ChromeShellTabModelSelector(
+                window, videoViewClient, mContentViewHolder);
+        mTabModelSelector.getModel(false).addObserver(mTabModelObserver);
+
         mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
+        mToolbar.setTabManager(this);
         mContentViewRenderView = new ContentViewRenderView(getContext()) {
             @Override
             protected void onReadyToRender() {
-                if (mCurrentTab == null) createTab(mStartupUrl);
+                if (mCurrentTab == null) createTab(mStartupUrl, TabLaunchType.FROM_RESTORE);
             }
         };
-        mContentViewRenderView.onNativeLibraryLoaded(mWindow);
+        mContentViewRenderView.onNativeLibraryLoaded(window);
         mContentViewHolder.addView(mContentViewRenderView,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
@@ -99,26 +117,45 @@ public class TabManager extends LinearLayout {
     }
 
     /**
+     * Ensures that at least one tab exists, by opening a new one if necessary.
+     */
+    public void ensureTabExists() {
+        if (mTabModelSelector.getCurrentModel().getCount() == 0) {
+            createNewTab();
+        }
+    }
+
+    /**
+     * Opens a new blank tab.
+     */
+    public void createNewTab() {
+        createTab("about:blank", TabLaunchType.FROM_MENU_OR_OVERVIEW);
+    }
+
+    /**
+     * Closes all current tabs.
+     */
+    public void closeAllTabs() {
+        mTabModelSelector.getCurrentModel().closeAllTabs();
+    }
+
+    /**
      * Creates a {@link ChromeShellTab} with a URL specified by {@code url}.
      * @param url The URL the new {@link ChromeShellTab} should start with.
+     * @return The newly created tab, or null if the content view is uninitialized.
      */
-    public void createTab(String url) {
-        if (!isContentViewRenderViewInitialized()) return;
+    public Tab createTab(String url, TabLaunchType type) {
+        if (!isContentViewRenderViewInitialized()) return null;
 
-        ContentViewClient client = new ContentViewClient() {
-            @Override
-            public ContentVideoViewClient getContentVideoViewClient() {
-                return mContentVideoViewClient;
-            }
-        };
-        ChromeShellTab tab = new ChromeShellTab(getContext(), url, mWindow, client);
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        Tab tab = mTabModelSelector.openNewTab(loadUrlParams, type, null, false);
         tab.addObserver(new EmptyTabObserver() {
             @Override
             public void onToggleFullscreenMode(Tab tab, boolean enable) {
-                 mToolbar.setVisibility(enable ? GONE : VISIBLE);
+                mToolbar.setVisibility(enable ? GONE : VISIBLE);
             }
         });
-        setCurrentTab(tab);
+        return tab;
     }
 
     private boolean isContentViewRenderViewInitialized() {
@@ -128,29 +165,44 @@ public class TabManager extends LinearLayout {
     private void setCurrentTab(ChromeShellTab tab) {
         if (mCurrentTab != null) {
             mContentViewHolder.removeView(mCurrentTab.getView());
-            mCurrentTab.destroy();
         }
 
         mCurrentTab = tab;
-        mCurrentView = tab.getView();
-
-        mCurrentTab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onContentChanged(Tab tab) {
-                mContentViewHolder.removeView(mCurrentView);
-                mCurrentView = tab.getView();
-                setupContent(tab);
-            }
-        });
 
         mToolbar.showTab(mCurrentTab);
-        setupContent(mCurrentTab);
+
+        if (mCurrentTab != null) setupContent();
     }
 
-    private void setupContent(Tab tab) {
-        mContentViewHolder.addView(tab.getView());
-        mContentViewRenderView.setCurrentContentViewCore(tab.getContentViewCore());
-        tab.getView().requestFocus();
-        tab.getContentViewCore().onShow();
+    private void setupContent() {
+        View view = mCurrentTab.getView();
+        ContentViewCore contentViewCore = mCurrentTab.getContentViewCore();
+        mContentViewHolder.addView(view);
+        mContentViewRenderView.setCurrentContentViewCore(contentViewCore);
+        view.requestFocus();
+        contentViewCore.onShow();
+    }
+
+    /**
+     * Toggles the tab switcher visibility.
+     */
+    public void toggleTabSwitcher() {
+        mTabModelSelector.toggleTabSwitcher();
+    }
+
+    /**
+     * Opens a URL in the current tab if one exists, or in a new tab otherwise.
+     * @param url The URL to open.
+     * @return The tab used to open the provided URL.
+     */
+    public Tab openUrl(String url) {
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        loadUrlParams.setTransitionType(PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR);
+        Tab tab = mTabModelSelector.getCurrentTab();
+        if (tab != null) {
+            tab.loadUrl(loadUrlParams);
+            return tab;
+        }
+        return createTab(url, TabLaunchType.FROM_KEYBOARD);
     }
 }

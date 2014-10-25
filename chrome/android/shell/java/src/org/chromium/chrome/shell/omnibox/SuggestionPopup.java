@@ -171,6 +171,8 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
             mRequestSuggestions = new Runnable() {
                 @Override
                 public void run() {
+                    // TODO(aurimas): Create new tab if none exists.
+                    if (mToolbar.getCurrentTab() == null) return;
                     mRequestSuggestions = null;
                     mAutocomplete.start(
                             mToolbar.getCurrentTab().getProfile(),

@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.shell.sync.SyncController;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.app.ContentApplication;
@@ -280,7 +281,14 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
      */
     @VisibleForTesting
     public void createTab(String url) {
-        mTabManager.createTab(url);
+        mTabManager.createTab(url, TabLaunchType.FROM_EXTERNAL_APP);
+    }
+
+    /**
+     * Closes all current tabs.
+     */
+    public void closeAllTabs() {
+        mTabManager.closeAllTabs();
     }
 
     /**
@@ -337,6 +345,9 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
             if (activeTab != null && activeTab.canGoForward()) {
                 activeTab.goForward();
             }
+            return true;
+        } else if (id == R.id.new_tab_menu_id) {
+            mTabManager.createNewTab();
             return true;
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,

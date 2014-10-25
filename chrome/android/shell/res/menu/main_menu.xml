@@ -26,6 +26,9 @@
             </menu>
         </item>
         <item
+            android:id="@+id/new_tab_menu_id"
+            android:title="@string/accessibility_tabstrip_btn_new_tab"/>
+        <item
             android:id="@+id/signin"
             android:title="@string/signin_sign_in"/>
         <item

@@ -34,6 +34,13 @@
             android:hint="@string/url_hint"
             android:inputType="textUri"
             android:imeOptions="actionGo|flagNoExtractUi" />
+        <ImageButton android:id="@+id/tab_switcher"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:src="@drawable/tab_switcher"
+            android:background="?android:attr/selectableItemBackground"
+            android:scaleType="center"
+            android:contentDescription="@null" />
         <ImageButton android:id="@+id/menu_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
