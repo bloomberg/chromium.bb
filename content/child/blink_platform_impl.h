@@ -64,26 +64,26 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual size_t numberOfProcessors();
 
   virtual void startHeapProfiling(const blink::WebString& prefix);
-  virtual void stopHeapProfiling() override;
+  virtual void stopHeapProfiling();
   virtual void dumpHeapProfiling(const blink::WebString& reason);
-  virtual blink::WebString getHeapProfile() override;
+  virtual blink::WebString getHeapProfile();
 
   virtual bool processMemorySizesInBytes(size_t* private_bytes,
                                          size_t* shared_bytes);
   virtual bool memoryAllocatorWasteInBytes(size_t* size);
   virtual blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
       size_t bytes);
-  virtual size_t maxDecodedImageBytes() override;
+  virtual size_t maxDecodedImageBytes();
   virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebSocketHandle* createWebSocketHandle() override;
+  virtual blink::WebSocketHandle* createWebSocketHandle();
   virtual blink::WebString userAgent();
   virtual blink::WebData parseDataURL(
       const blink::WebURL& url, blink::WebString& mimetype,
       blink::WebString& charset);
   virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
   virtual bool isReservedIPAddress(
-      const blink::WebSecurityOrigin&) const override;
-  virtual bool isReservedIPAddress(const blink::WebURL&) const override;
+      const blink::WebSecurityOrigin&) const;
+  virtual bool isReservedIPAddress(const blink::WebURL&) const;
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
   virtual void yieldCurrentThread();
@@ -147,13 +147,13 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll) override;
+      const blink::WebSize& cumulative_scroll);
   virtual void didStartWorkerRunLoop(
-      const blink::WebWorkerRunLoop& runLoop) override;
+      const blink::WebWorkerRunLoop& runLoop);
   virtual void didStopWorkerRunLoop(
-      const blink::WebWorkerRunLoop& runLoop) override;
-  virtual blink::WebCrypto* crypto() override;
-  virtual blink::WebGeofencingProvider* geofencingProvider() override;
+      const blink::WebWorkerRunLoop& runLoop);
+  virtual blink::WebCrypto* crypto();
+  virtual blink::WebGeofencingProvider* geofencingProvider();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
