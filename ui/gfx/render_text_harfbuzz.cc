@@ -1097,10 +1097,11 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   FontRenderParams best_render_params;
   size_t best_missing_glyphs = std::numeric_limits<size_t>::max();
 
-  if (CompareFamily(run, primary_font.GetFontName(),
-                    primary_font.GetFontRenderParams(),
-                    &best_family, &best_render_params, &best_missing_glyphs))
-    return;
+  for (const Font& font : font_list().GetFonts()) {
+    if (CompareFamily(run, font.GetFontName(), font.GetFontRenderParams(),
+                      &best_family, &best_render_params, &best_missing_glyphs))
+      return;
+  }
 
 #if defined(OS_WIN)
   Font uniscribe_font;
