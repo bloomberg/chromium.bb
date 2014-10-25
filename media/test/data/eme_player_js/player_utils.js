@@ -79,11 +79,18 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   this.registerDefaultEventListeners(player);
   try {
     Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
-    MediaKeys.create(player.testConfig.keySystem).then(function(mediaKeys) {
-      player.video.setMediaKeys(mediaKeys);
-    }).catch(function(error) {
-      Utils.failTest(error, NOTSUPPORTEDERROR);
-    });
+    if (typeof navigator.requestMediaKeySystemAccess == 'function') {
+      navigator.requestMediaKeySystemAccess(player.testConfig.keySystem)
+          .then(function(access) { return access.createMediaKeys(); })
+          .then(function(mediaKeys) { player.video.setMediaKeys(mediaKeys); })
+          .catch(function(error) { Utils.failTest(error, NOTSUPPORTEDERROR); });
+    } else {
+      // TODO(jrummell): Remove this once the blink change for
+      // requestMediaKeySystemAccess lands.
+      MediaKeys.create(player.testConfig.keySystem)
+          .then(function(mediaKeys) { player.video.setMediaKeys(mediaKeys); })
+          .catch(function(error) { Utils.failTest(error, NOTSUPPORTEDERROR); });
+    }
   } catch (e) {
     Utils.failTest(e);
   }
