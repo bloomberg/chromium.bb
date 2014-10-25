@@ -670,6 +670,7 @@
         'common/dom_storage/dom_storage_map_unittest.cc',
         'common/fileapi/file_system_util_unittest.cc',
         'common/gpu/gpu_memory_manager_unittest.cc',
+        'common/host_discardable_shared_memory_manager_unittest.cc',
         'common/host_shared_bitmap_manager_unittest.cc',
         'common/indexed_db/indexed_db_key_unittest.cc',
         'common/input/gesture_event_stream_validator_unittest.cc',

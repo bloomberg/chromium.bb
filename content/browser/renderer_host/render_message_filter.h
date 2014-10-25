@@ -240,6 +240,11 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnDeletedSharedBitmap(const cc::SharedBitmapId& id);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
+  // Browser side discardable shared memory allocation.
+  void OnAllocateLockedDiscardableSharedMemory(
+      uint32 size,
+      base::SharedMemoryHandle* handle);
+
   // Browser side transport DIB allocation
   void OnAllocTransportDIB(uint32 size,
                            bool cache_in_browser,

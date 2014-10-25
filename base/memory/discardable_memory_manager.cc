@@ -51,6 +51,34 @@ void DiscardableMemoryManager::SetHardMemoryLimitExpirationTime(
   hard_memory_limit_expiration_time_ = hard_memory_limit_expiration_time;
 }
 
+void DiscardableMemoryManager::ReleaseFreeMemory() {
+  TRACE_EVENT0("base", "DiscardableMemoryManager::ReleaseFreeMemory");
+
+  AutoLock lock(lock_);
+  size_t bytes_allocated_before_releasing_memory = bytes_allocated_;
+  for (auto& entry : allocations_) {
+    Allocation* allocation = entry.first;
+    AllocationInfo* info = &entry.second;
+
+    if (!info->purgable)
+      continue;
+
+    // Skip if memory is still resident, otherwise purge and adjust
+    // |bytes_allocated_|.
+    if (allocation->IsMemoryResident())
+      continue;
+
+    size_t bytes_purgable = info->bytes;
+    DCHECK_LE(bytes_purgable, bytes_allocated_);
+    bytes_allocated_ -= bytes_purgable;
+    info->purgable = false;
+    allocation->Purge();
+  }
+
+  if (bytes_allocated_ != bytes_allocated_before_releasing_memory)
+    BytesAllocatedChanged(bytes_allocated_);
+}
+
 bool DiscardableMemoryManager::ReduceMemoryUsage() {
   return PurgeIfNotUsedSinceHardLimitCutoffUntilWithinSoftMemoryLimit();
 }

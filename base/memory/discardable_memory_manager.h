@@ -31,6 +31,10 @@ class DiscardableMemoryManagerAllocation {
   // is acquired on the allocation.
   virtual void Purge() = 0;
 
+  // Check if allocated memory is still resident. It is illegal to call this
+  // while a lock is acquired on the allocation.
+  virtual bool IsMemoryResident() const = 0;
+
  protected:
   virtual ~DiscardableMemoryManagerAllocation() {}
 };
@@ -67,6 +71,9 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
   // Sets the memory usage cutoff time for hard memory limit.
   void SetHardMemoryLimitExpirationTime(
       TimeDelta hard_memory_limit_expiration_time);
+
+  // This will make sure that all purged memory is released to the OS.
+  void ReleaseFreeMemory();
 
   // This will attempt to reduce memory footprint until within soft memory
   // limit. Returns true if there's no need to call this again until allocations

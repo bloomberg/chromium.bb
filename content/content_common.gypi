@@ -330,6 +330,8 @@
       'common/gpu/sync_point_manager.h',
       'common/handle_enumerator_win.cc',
       'common/handle_enumerator_win.h',
+      'common/host_discardable_shared_memory_manager.cc',
+      'common/host_discardable_shared_memory_manager.h',
       'common/host_shared_bitmap_manager.cc',
       'common/host_shared_bitmap_manager.h',
       'common/image_messages.h',

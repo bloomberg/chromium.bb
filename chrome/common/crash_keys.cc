@@ -145,6 +145,7 @@ size_t RegisterChromeCrashKeys() {
 
     // base/:
     { "dm-usage", kSmallSize },
+    { "total-dm-usage", kSmallSize },
     // content/:
     { kFontKeyName, kSmallSize},
     { "ppapi_path", kMediumSize },
