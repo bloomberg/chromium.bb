@@ -109,7 +109,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.
   void SetActive(bool active) override;
-  void SetTakesFocusOnlyOnMouseDown(bool flag) override;
   void SetWindowVisibility(bool visible) override;
   void WindowFrameChanged() override;
   void ShowDefinitionForSelection() override;

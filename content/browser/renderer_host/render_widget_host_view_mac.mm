@@ -1192,11 +1192,6 @@ void RenderWidgetHostViewMac::EndFrameSubscription() {
     delegated_frame_host_->EndFrameSubscription();
 }
 
-// Sets whether or not to accept first responder status.
-void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
-  [cocoa_view_ setTakesFocusOnlyOnMouseDown:flag];
-}
-
 void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
   if (render_widget_host_)
     render_widget_host_->ForwardMouseEvent(event);
@@ -1665,10 +1660,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
-    // TODO(miu): |takesFocusOnlyOnMouseDown_| is not used anymore and should be
-    // removed along with the exposed RWHV interface methods.
-    // http://crbug.com/424766
-    takesFocusOnlyOnMouseDown_ = NO;
     focusedPluginIdentifier_ = -1;
 
     // OpenGL support:
@@ -1753,10 +1744,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   return [self acceptsMouseEventsWhenInactive];
 }
 
-- (void)setTakesFocusOnlyOnMouseDown:(BOOL)b {
-  takesFocusOnlyOnMouseDown_ = b;
-}
-
 - (void)setCloseOnDeactivate:(BOOL)b {
   closeOnDeactivate_ = b;
 }
@@ -1836,16 +1823,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     }
   }
   mouseEventWasIgnored_ = NO;
-
-  // TODO(rohitrao): Probably need to handle other mouse down events here.
-  if ([theEvent type] == NSLeftMouseDown && takesFocusOnlyOnMouseDown_) {
-    if (renderWidgetHostView_->render_widget_host_)
-      renderWidgetHostView_->render_widget_host_->OnPointerEventActivate();
-
-    // Manually take focus after the click but before forwarding it to the
-    // renderer.
-    [[self window] makeFirstResponder:self];
-  }
 
   // Don't cancel child popups; killing them on a mouse click would prevent the
   // user from positioning the insertion point in the text field spawning the
@@ -2405,7 +2382,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (!renderWidgetHostView_->render_widget_host_)
     return NO;
 
-  return canBeKeyView_ && !takesFocusOnlyOnMouseDown_;
+  return canBeKeyView_;
 }
 
 - (BOOL)becomeFirstResponder {

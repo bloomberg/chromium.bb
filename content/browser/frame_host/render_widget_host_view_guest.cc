@@ -393,10 +393,6 @@ void RenderWidgetHostViewGuest::SetActive(bool active) {
   platform_view_->SetActive(active);
 }
 
-void RenderWidgetHostViewGuest::SetTakesFocusOnlyOnMouseDown(bool flag) {
-  platform_view_->SetTakesFocusOnlyOnMouseDown(flag);
-}
-
 void RenderWidgetHostViewGuest::SetWindowVisibility(bool visible) {
   platform_view_->SetWindowVisibility(visible);
 }

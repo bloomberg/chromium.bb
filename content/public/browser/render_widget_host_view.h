@@ -142,12 +142,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
 
-  // Tells the view whether or not to accept first responder status.  If |flag|
-  // is true, the view does not accept first responder status and instead
-  // manually becomes first responder when it receives a mouse down event.  If
-  // |flag| is false, the view participates in the key-view chain as normal.
-  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) = 0;
-
   // Notifies the view that its enclosing window has changed visibility
   // (minimized/unminimized, app hidden/unhidden, etc).
   // TODO(stuartmorgan): This is a temporary plugin-specific workaround for

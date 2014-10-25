@@ -222,34 +222,6 @@ TEST_F(RenderWidgetHostViewMacTest, Basic) {
 TEST_F(RenderWidgetHostViewMacTest, AcceptsFirstResponder) {
   // The RWHVCocoa should normally accept first responder status.
   EXPECT_TRUE([rwhv_cocoa_.get() acceptsFirstResponder]);
-
-  // Unless we tell it not to.
-  rwhv_mac_->SetTakesFocusOnlyOnMouseDown(true);
-  EXPECT_FALSE([rwhv_cocoa_.get() acceptsFirstResponder]);
-
-  // But we can set things back to the way they were originally.
-  rwhv_mac_->SetTakesFocusOnlyOnMouseDown(false);
-  EXPECT_TRUE([rwhv_cocoa_.get() acceptsFirstResponder]);
-}
-
-TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDown) {
-  base::scoped_nsobject<CocoaTestHelperWindow> window(
-      [[CocoaTestHelperWindow alloc] init]);
-  [[window contentView] addSubview:rwhv_cocoa_.get()];
-
-  // Even if the RWHVCocoa disallows first responder, clicking on it gives it
-  // focus.
-  [window setPretendIsKeyWindow:YES];
-  [window makeFirstResponder:nil];
-  ASSERT_NE(rwhv_cocoa_.get(), [window firstResponder]);
-
-  rwhv_mac_->SetTakesFocusOnlyOnMouseDown(true);
-  EXPECT_FALSE([rwhv_cocoa_.get() acceptsFirstResponder]);
-
-  std::pair<NSEvent*, NSEvent*> clicks =
-      cocoa_test_event_utils::MouseClickInView(rwhv_cocoa_.get(), 1);
-  [rwhv_cocoa_.get() mouseDown:clicks.first];
-  EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {

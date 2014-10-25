@@ -67,7 +67,6 @@ class Layer;
   base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
       responderDelegate_;
   BOOL canBeKeyView_;
-  BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
   scoped_ptr<content::RenderWidgetHostViewMacEditCommandHelper>
       editCommand_helper_;
@@ -160,7 +159,6 @@ class Layer;
 @property(nonatomic, readonly) BOOL suppressNextEscapeKeyUp;
 
 - (void)setCanBeKeyView:(BOOL)can;
-- (void)setTakesFocusOnlyOnMouseDown:(BOOL)b;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setToolTipAtMousePoint:(NSString *)string;
 // True for always-on-top special windows (e.g. Balloons and Panels).
@@ -245,7 +243,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::Rect GetViewBounds() const override;
   void SetShowingContextMenu(bool showing) override;
   void SetActive(bool active) override;
-  void SetTakesFocusOnlyOnMouseDown(bool flag) override;
   void SetWindowVisibility(bool visible) override;
   void WindowFrameChanged() override;
   void ShowDefinitionForSelection() override;

@@ -239,9 +239,6 @@ void RenderWidgetHostViewChildFrame::UnlockMouse() {
 void RenderWidgetHostViewChildFrame::SetActive(bool active) {
 }
 
-void RenderWidgetHostViewChildFrame::SetTakesFocusOnlyOnMouseDown(bool flag) {
-}
-
 void RenderWidgetHostViewChildFrame::SetWindowVisibility(bool visible) {
 }
 

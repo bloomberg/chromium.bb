@@ -72,7 +72,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   gfx::Rect GetViewBounds() const override;
 #if defined(OS_MACOSX)
   void SetActive(bool active) override;
-  void SetTakesFocusOnlyOnMouseDown(bool flag) override {}
   void SetWindowVisibility(bool visible) override {}
   void WindowFrameChanged() override {}
   void ShowDefinitionForSelection() override {}
