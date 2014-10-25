@@ -36,6 +36,10 @@ class ViewPrivate {
     view_->manager_ = manager;
   }
 
+  void set_properties(const std::map<std::string, std::vector<uint8_t>>& data) {
+    view_->properties_ = data;
+  }
+
   void LocalDestroy() {
     view_->LocalDestroy();
   }
@@ -48,8 +52,8 @@ class ViewPrivate {
   void LocalReorder(View* relative, OrderDirection direction) {
     view_->LocalReorder(relative, direction);
   }
-  void LocalSetBounds(const gfx::Rect& old_bounds,
-                      const gfx::Rect& new_bounds) {
+  void LocalSetBounds(const Rect& old_bounds,
+                      const Rect& new_bounds) {
     view_->LocalSetBounds(old_bounds, new_bounds);
   }
   void LocalSetDrawn(bool drawn) { view_->LocalSetDrawn(drawn); }

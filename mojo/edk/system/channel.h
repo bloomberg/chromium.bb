@@ -71,12 +71,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // may be called multiple times, or not at all.)
   void WillShutdownSoon();
 
-  // TODO(vtl): Remove these once |AttachAndRunEndpoint()| is fully implemented
-  // and everything is converted to use it.
-  ChannelEndpointId AttachEndpoint(scoped_refptr<ChannelEndpoint> endpoint);
-  void RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
-                   ChannelEndpointId remote_id);
-
   // Attaches the given endpoint to this channel and runs it. |is_bootstrap|
   // should be set if and only if it is the first endpoint on the channel. This
   // assigns the endpoint both local and remote IDs. If |is_bootstrap| is set,

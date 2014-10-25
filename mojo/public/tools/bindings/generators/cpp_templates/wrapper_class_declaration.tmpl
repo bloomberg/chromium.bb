@@ -19,6 +19,11 @@ class {{struct.name}} {
     return mojo::TypeConverter<{{struct.name}}Ptr, U>::Convert(u);
   }
 
+  template <typename U>
+  U To() const {
+    return mojo::TypeConverter<U, {{struct.name}}>::Convert(*this);
+  }
+
   {{struct.name}}();
   ~{{struct.name}}();
 

@@ -25,6 +25,7 @@
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -119,8 +120,9 @@ void HTMLDocumentView::OnEmbed(
   embedder_service_provider_ = embedder_service_provider.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
 
-  web_view_->resize(root_->bounds().size());
-  web_layer_tree_view_impl_->setViewportSize(root_->bounds().size());
+  blink::WebSize root_size(root_->bounds().width, root_->bounds().height);
+  web_view_->resize(root_size);
+  web_layer_tree_view_impl_->setViewportSize(root_size);
   web_layer_tree_view_impl_->set_view(root_);
   root_->AddObserver(this);
 }
@@ -239,10 +241,11 @@ void HTMLDocumentView::didNavigateWithinPage(
 }
 
 void HTMLDocumentView::OnViewBoundsChanged(View* view,
-                                           const gfx::Rect& old_bounds,
-                                           const gfx::Rect& new_bounds) {
+                                           const Rect& old_bounds,
+                                           const Rect& new_bounds) {
   DCHECK_EQ(view, root_);
-  web_view_->resize(view->bounds().size());
+  web_view_->resize(
+      blink::WebSize(view->bounds().width, view->bounds().height));
 }
 
 void HTMLDocumentView::OnViewDestroyed(View* view) {

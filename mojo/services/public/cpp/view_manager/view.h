@@ -12,9 +12,9 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
+#include "mojo/services/public/interfaces/geometry/geometry.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
 
@@ -42,12 +42,18 @@ class View {
   Id id() const { return id_; }
 
   // Geometric disposition.
-  const gfx::Rect& bounds() const { return bounds_; }
-  void SetBounds(const gfx::Rect& bounds);
+  const Rect& bounds() const { return bounds_; }
+  void SetBounds(const Rect& bounds);
 
   // Visibility (also see IsDrawn()).
   bool visible() const { return visible_; }
   void SetVisible(bool value);
+
+  const std::map<std::string, std::vector<uint8_t>>& properties() const {
+    return properties_;
+  }
+  // Sets a property. If |data| is null, this property is deleted.
+  void SetProperty(const std::string& name, const std::vector<uint8_t>* data);
 
   // A View is drawn if the View and all its ancestors are visible and the
   // View is attached to the root.
@@ -100,7 +106,7 @@ class View {
   void LocalRemoveChild(View* child);
   // Returns true if the order actually changed.
   bool LocalReorder(View* relative, OrderDirection direction);
-  void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
+  void LocalSetBounds(const Rect& old_bounds, const Rect& new_bounds);
   void LocalSetDrawn(bool drawn);
 
   ViewManager* manager_;
@@ -110,9 +116,11 @@ class View {
 
   ObserverList<ViewObserver> observers_;
 
-  gfx::Rect bounds_;
+  Rect bounds_;
 
   bool visible_;
+
+  std::map<std::string, std::vector<uint8_t>> properties_;
 
   // Drawn state is derived from the visible state and the parent's visible
   // state. This field is only used if the view has no parent (eg it's a root).

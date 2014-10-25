@@ -82,6 +82,9 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   // Application implementation.
   void Initialize(Array<String> args) override;
 
+  // Quits the main run loop for this application.
+  static void Terminate();
+
  private:
   class ShellPtrWatcher;
 
@@ -90,10 +93,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   void OnShellError() {
     ClearConnections();
     Terminate();
-  };
-
-  // Quits the main run loop for this application.
-  static void Terminate();
+  }
 
   // Application implementation.
   void AcceptConnection(const String& requestor_url,

@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -49,10 +48,13 @@ class ViewManagerClientImpl : public ViewManager,
   // Returns true if the specified view was created by this connection.
   bool OwnsView(Id id) const;
 
-  void SetBounds(Id view_id, const gfx::Rect& bounds);
+  void SetBounds(Id view_id, const Rect& bounds);
   void SetSurfaceId(Id view_id, SurfaceIdPtr surface_id);
   void SetFocus(Id view_id);
   void SetVisible(Id view_id, bool visible);
+  void SetProperty(Id view_id,
+                   const std::string& name,
+                   const std::vector<uint8_t>& data);
 
   void Embed(const String& url, Id view_id);
   void Embed(const String& url,
@@ -102,11 +104,14 @@ class ViewManagerClientImpl : public ViewManager,
   void OnViewDeleted(Id view_id) override;
   void OnViewVisibilityChanged(Id view_id, bool visible) override;
   void OnViewDrawnStateChanged(Id view_id, bool drawn) override;
+  void OnViewPropertyChanged(Id view_id,
+                             const String& name,
+                             Array<uint8_t> new_data) override;
   void OnViewInputEvent(Id view_id,
                         EventPtr event,
                         const Callback<void()>& callback) override;
 
-    // Overridden from WindowManagerClient2:
+  // Overridden from WindowManagerClient2:
   void OnWindowManagerReady() override;
   void OnCaptureChanged(Id old_capture_view_id,
                         Id new_capture_view_id) override;

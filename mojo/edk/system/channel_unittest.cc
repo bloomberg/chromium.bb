@@ -181,7 +181,7 @@ TEST_F(ChannelTest, InitFails) {
   *mutable_channel() = nullptr;
 }
 
-// ChannelTest.CloseBeforeRun --------------------------------------------------
+// ChannelTest.CloseBeforeAttachAndRun -----------------------------------------
 
 TEST_F(ChannelTest, CloseBeforeRun) {
   io_thread()->PostTaskAndWait(FROM_HERE,
@@ -198,18 +198,9 @@ TEST_F(ChannelTest, CloseBeforeRun) {
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  ChannelEndpointId local_id = channel()->AttachEndpoint(channel_endpoint);
-  EXPECT_EQ(ChannelEndpointId::GetBootstrap(), local_id);
-
   mp->Close(0);
 
-  // TODO(vtl): Currently, the |Close()| above won't detach (since it thinks
-  // we're still expecting a "run" message from the other side), so the
-  // |RunMessagePipeEndpoint()| below will return true. We need to refactor
-  // |AttachEndpoint()| to indicate whether |Run...()| will necessarily be
-  // called or not. (Then, in the case that it may not be called, this will
-  // return false.)
-  channel()->RunEndpoint(channel_endpoint, ChannelEndpointId::GetBootstrap());
+  channel()->AttachAndRunEndpoint(channel_endpoint, true);
 
   io_thread()->PostTaskAndWait(
       FROM_HERE,

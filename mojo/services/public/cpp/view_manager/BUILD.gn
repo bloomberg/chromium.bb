@@ -27,8 +27,6 @@ source_set("view_manager") {
   ]
   deps = [
     "//base",
-    "//mojo/converters/geometry",
-    "//mojo/converters/surfaces",
     "//mojo/public/c/gles2",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/interfaces/application",
@@ -38,7 +36,6 @@ source_set("view_manager") {
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/services/public/interfaces/window_manager",
     "//mojo/services/public/interfaces/window_manager2",
-    "//ui/gfx/geometry",
   ]
 }
 

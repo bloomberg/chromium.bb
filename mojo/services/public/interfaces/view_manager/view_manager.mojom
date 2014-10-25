@@ -14,6 +14,7 @@ struct ViewData {
   uint32 parent_id;
   uint32 view_id;
   mojo.Rect bounds;
+  map<string, array<uint8>> properties;
   // True if this view is visible. The view may not be drawn on screen (see
   // drawn for specifics).
   bool visible;
@@ -42,6 +43,9 @@ interface ViewManagerService {
   //   ERROR_CODE_VALUE_IN_USE: a view already exists with the specified id.
   //   ERROR_CODE_ILLEGAL_ARGUMENT: The connection part of |view_id| does not
   //     match the connection id of the client.
+  //
+  // TODO(erg): Once we have default values in mojo, make this take a map of
+  // properties.
   CreateView(uint32 view_id) => (ErrorCode error_code);
 
   // Deletes a view. This does not recurse. No hierarchy change notifications
@@ -56,6 +60,12 @@ interface ViewManagerService {
   // allowed to change the visibility of any view they have created, as well as
   // any of their roots.
   SetViewVisibility(uint32 view_id, bool visible) => (bool success);
+
+  // Sets an individual named property. Setting an individual property to null
+  // deletes the property.
+  SetViewProperty(uint32 view_id,
+                  string name,
+                  array<uint8>? value) => (bool success);
 
   // Reparents a view.
   // This fails for any of the following reasons:
@@ -170,6 +180,10 @@ interface ViewManagerClient {
   //
   // NOTE: This is not invoked if OnViewVisibilityChanged() is invoked.
   OnViewDrawnStateChanged(uint32 view, bool drawn);
+
+  // Invoked when a view property is changed. If this change is a removal,
+  // |new_data| is null.
+  OnViewPropertyChanged(uint32 view, string name, array<uint8>? new_data);
 
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();

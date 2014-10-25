@@ -86,44 +86,6 @@ void Channel::WillShutdownSoon() {
 // keeps the endpoint alive even after the lock is released. Otherwise, there's
 // the temptation to simply pass the result of |new ChannelEndpoint(...)|
 // directly to this function, which wouldn't be sufficient for safety.
-ChannelEndpointId Channel::AttachEndpoint(
-    scoped_refptr<ChannelEndpoint> endpoint) {
-  DCHECK(endpoint.get());
-
-  ChannelEndpointId local_id;
-  {
-    base::AutoLock locker(lock_);
-
-    DLOG_IF(WARNING, is_shutting_down_)
-        << "AttachEndpoint() while shutting down";
-
-    do {
-      local_id = local_id_generator_.GetNext();
-    } while (local_id_to_endpoint_map_.find(local_id) !=
-             local_id_to_endpoint_map_.end());
-    local_id_to_endpoint_map_[local_id] = endpoint;
-  }
-
-  endpoint->AttachToChannel(this, local_id);
-  return local_id;
-}
-
-// TODO(vtl): This function is currently slightly absurd, but we'll eventually
-// get rid of it and merge it with |AttachEndpoint()|.
-void Channel::RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
-                          ChannelEndpointId remote_id) {
-  {
-    base::AutoLock locker(lock_);
-
-    DLOG_IF(WARNING, is_shutting_down_)
-        << "RunMessagePipeEndpoint() while shutting down";
-  }
-
-  // TODO(vtl): FIXME -- We need to handle the case that message pipe is already
-  // running when we're here due to |kSubtypeChannelRunMessagePipeEndpoint|).
-  endpoint->Run(remote_id);
-}
-
 ChannelEndpointId Channel::AttachAndRunEndpoint(
     scoped_refptr<ChannelEndpoint> endpoint,
     bool is_bootstrap) {

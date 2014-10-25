@@ -57,7 +57,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpointId {
 
   bool is_valid() const { return !!value_; }
   bool is_remote() const { return !!(value_ & kRemoteFlag); }
-  uint32_t value() const { return value_; }
+  const uint32_t& value() const { return value_; }
 
   // Flag set in |value()| if this is a remote ID.
   static const uint32_t kRemoteFlag = 0x80000000u;

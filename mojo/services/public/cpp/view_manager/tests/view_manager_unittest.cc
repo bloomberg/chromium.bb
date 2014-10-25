@@ -23,6 +23,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
+
+// TODO(jam): move these somewhere else so they can be shared?
+
+inline bool operator==(const Rect& lhs, const Rect& rhs) {
+  return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width &&
+         lhs.height == lhs.height;
+}
+
+inline bool operator!=(const Rect& lhs, const Rect& rhs) {
+  return !(lhs == rhs);
+}
+
 namespace {
 
 const char kWindowManagerURL[] = "mojo:window_manager";
@@ -102,8 +114,8 @@ class BoundsChangeObserver : public ViewObserver {
  private:
   // Overridden from ViewObserver:
   void OnViewBoundsChanged(View* view,
-                           const gfx::Rect& old_bounds,
-                           const gfx::Rect& new_bounds) override {
+                           const Rect& old_bounds,
+                           const Rect& new_bounds) override {
     DCHECK_EQ(view, view_);
     QuitRunLoop();
   }
@@ -410,7 +422,9 @@ TEST_F(ViewManagerTest, DISABLED_SetBounds) {
   View* view_in_embedded = embedded->GetViewById(view->id());
   EXPECT_EQ(view->bounds(), view_in_embedded->bounds());
 
-  view->SetBounds(gfx::Rect(100, 100));
+  Rect rect;
+  rect.width = rect.height = 100;
+  view->SetBounds(rect);
   EXPECT_NE(view->bounds(), view_in_embedded->bounds());
   WaitForBoundsToChange(view_in_embedded);
   EXPECT_EQ(view->bounds(), view_in_embedded->bounds());
@@ -424,10 +438,15 @@ TEST_F(ViewManagerTest, DISABLED_SetBoundsSecurity) {
   ViewManager* embedded = Embed(window_manager(), view);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
-  view->SetBounds(gfx::Rect(800, 600));
+  Rect rect;
+  rect.width = 800;
+  rect.height = 600;
+  view->SetBounds(rect);
   WaitForBoundsToChange(view_in_embedded);
 
-  view_in_embedded->SetBounds(gfx::Rect(1024, 768));
+  rect.width = 1024;
+  rect.height = 768;
+  view_in_embedded->SetBounds(rect);
   // Bounds change should have been rejected.
   EXPECT_EQ(view->bounds(), view_in_embedded->bounds());
 }

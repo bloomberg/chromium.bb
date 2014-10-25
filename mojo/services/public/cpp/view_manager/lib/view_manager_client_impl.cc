@@ -36,8 +36,10 @@ View* AddViewToViewManager(ViewManagerClientImpl* client,
   private_view.set_id(view_data->view_id);
   private_view.set_visible(view_data->visible);
   private_view.set_drawn(view_data->drawn);
+  private_view.set_properties(
+      view_data->properties.To<std::map<std::string, std::vector<uint8_t>>>());
   client->AddView(view);
-  private_view.LocalSetBounds(gfx::Rect(), view_data->bounds.To<gfx::Rect>());
+  private_view.LocalSetBounds(Rect(), *view_data->bounds);
   if (parent)
     ViewPrivate(parent).LocalAddChild(view);
   return view;
@@ -154,10 +156,9 @@ bool ViewManagerClientImpl::OwnsView(Id id) const {
   return HiWord(id) == connection_id_;
 }
 
-void ViewManagerClientImpl::SetBounds(Id view_id, const gfx::Rect& bounds) {
+void ViewManagerClientImpl::SetBounds(Id view_id, const Rect& bounds) {
   DCHECK(connected_);
-  service_->SetViewBounds(view_id, Rect::From(bounds),
-                          ActionCompletedCallback());
+  service_->SetViewBounds(view_id, bounds.Clone(), ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
@@ -175,6 +176,17 @@ void ViewManagerClientImpl::SetFocus(Id view_id) {
 void ViewManagerClientImpl::SetVisible(Id view_id, bool visible) {
   DCHECK(connected_);
   service_->SetViewVisibility(view_id, visible, ActionCompletedCallback());
+}
+
+void ViewManagerClientImpl::SetProperty(
+    Id view_id,
+    const std::string& name,
+    const std::vector<uint8_t>& data) {
+  DCHECK(connected_);
+  service_->SetViewProperty(view_id,
+                            String(name),
+                            Array<uint8_t>::From(data),
+                            ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::Embed(const String& url, Id view_id) {
@@ -265,8 +277,7 @@ void ViewManagerClientImpl::OnViewBoundsChanged(Id view_id,
                                                 RectPtr old_bounds,
                                                 RectPtr new_bounds) {
   View* view = GetViewById(view_id);
-  ViewPrivate(view).LocalSetBounds(old_bounds.To<gfx::Rect>(),
-                                   new_bounds.To<gfx::Rect>());
+  ViewPrivate(view).LocalSetBounds(*old_bounds, *new_bounds);
 }
 
 void ViewManagerClientImpl::OnViewHierarchyChanged(
@@ -316,6 +327,23 @@ void ViewManagerClientImpl::OnViewDrawnStateChanged(Id view_id, bool drawn) {
   View* view = GetViewById(view_id);
   if (view)
     ViewPrivate(view).LocalSetDrawn(drawn);
+}
+
+void ViewManagerClientImpl::OnViewPropertyChanged(
+    Id view_id,
+    const String& name,
+    Array<uint8_t> new_data) {
+  View* view = GetViewById(view_id);
+  if (view) {
+    std::vector<uint8_t> data;
+    std::vector<uint8_t>* data_ptr = NULL;
+    if (!new_data.is_null()) {
+      data = new_data.To<std::vector<uint8_t>>();
+      data_ptr = &data;
+    }
+
+    view->SetProperty(name, data_ptr);
+  }
 }
 
 void ViewManagerClientImpl::OnViewInputEvent(

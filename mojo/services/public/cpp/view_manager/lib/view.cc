@@ -144,8 +144,8 @@ bool ReorderImpl(View::Children* children,
 class ScopedSetBoundsNotifier {
  public:
   ScopedSetBoundsNotifier(View* view,
-                          const gfx::Rect& old_bounds,
-                          const gfx::Rect& new_bounds)
+                          const Rect& old_bounds,
+                          const Rect& new_bounds)
       : view_(view),
         old_bounds_(old_bounds),
         new_bounds_(new_bounds) {
@@ -161,8 +161,8 @@ class ScopedSetBoundsNotifier {
 
  private:
   View* view_;
-  const gfx::Rect old_bounds_;
-  const gfx::Rect new_bounds_;
+  const Rect old_bounds_;
+  const Rect new_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsNotifier);
 };
@@ -205,7 +205,7 @@ void View::Destroy() {
   LocalDestroy();
 }
 
-void View::SetBounds(const gfx::Rect& bounds) {
+void View::SetBounds(const Rect& bounds) {
   if (!OwnsView(manager_, this))
     return;
 
@@ -223,6 +223,33 @@ void View::SetVisible(bool value) {
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanging(this));
   visible_ = value;
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanged(this));
+}
+
+void View::SetProperty(const std::string& name,
+                       const std::vector<uint8_t>* value) {
+  std::vector<uint8_t> old_value;
+  std::vector<uint8_t>* old_value_ptr = nullptr;
+  auto it = properties_.find(name);
+  if (it != properties_.end()) {
+    old_value = it->second;
+    old_value_ptr = &old_value;
+
+    if (value && old_value == *value)
+      return;
+  } else if (!value) {
+    // This property isn't set in |properties_| and |value| is NULL, so there's
+    // no change.
+    return;
+  }
+
+  if (value) {
+    properties_[name] = *value;
+  } else if (it != properties_.end()) {
+    properties_.erase(it);
+  }
+
+  FOR_EACH_OBSERVER(ViewObserver, observers_,
+                    OnViewPropertyChanged(this, name, old_value_ptr, value));
 }
 
 bool View::IsDrawn() const {
@@ -391,9 +418,12 @@ bool View::LocalReorder(View* relative, OrderDirection direction) {
   return ReorderImpl(&parent_->children_, this, relative, direction);
 }
 
-void View::LocalSetBounds(const gfx::Rect& old_bounds,
-                          const gfx::Rect& new_bounds) {
-  DCHECK(old_bounds == bounds_);
+void View::LocalSetBounds(const Rect& old_bounds,
+                          const Rect& new_bounds) {
+  DCHECK(old_bounds.x == bounds_.x);
+  DCHECK(old_bounds.y == bounds_.y);
+  DCHECK(old_bounds.width == bounds_.width);
+  DCHECK(old_bounds.height == bounds_.height);
   ScopedSetBoundsNotifier notifier(this, old_bounds, new_bounds);
   bounds_ = new_bounds;
 }

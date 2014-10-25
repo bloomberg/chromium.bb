@@ -103,7 +103,9 @@ class RouterTest : public testing::Test {
  public:
   RouterTest() {}
 
-  void SetUp() override { CreateMessagePipe(nullptr, &handle0_, &handle1_); }
+  void SetUp() override {
+    CreateMessagePipe(nullptr, &handle0_, &handle1_);
+  }
 
   void TearDown() override {}
 

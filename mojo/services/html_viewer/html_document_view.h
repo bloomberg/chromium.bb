@@ -94,8 +94,8 @@ class HTMLDocumentView : public blink::WebViewClient,
 
   // ViewObserver methods:
   void OnViewBoundsChanged(View* view,
-                           const gfx::Rect& old_bounds,
-                           const gfx::Rect& new_bounds) override;
+                           const Rect& old_bounds,
+                           const Rect& new_bounds) override;
   void OnViewDestroyed(View* view) override;
   void OnViewInputEvent(View* view, const EventPtr& event) override;
 
