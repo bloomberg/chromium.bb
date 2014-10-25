@@ -69,7 +69,11 @@ class SVN(SCM):
 
         executive = executive or Executive()
         svn_info_args = [cls.executable_name, 'info']
-        exit_code = executive.run_command(svn_info_args, cwd=path, return_exit_code=True)
+        try:
+            exit_code = executive.run_command(svn_info_args, cwd=path, return_exit_code=True)
+        except OSError, e:
+            # svn is not installed
+            return False
         return (exit_code == 0)
 
     def _find_uuid(self, path):
