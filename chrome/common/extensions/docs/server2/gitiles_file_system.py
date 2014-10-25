@@ -240,8 +240,8 @@ class GitilesFileSystem(FileSystem):
       str_id = self._commit
     else:
       str_id = '%s/%s' % (GITILES_BRANCHES_PATH, self._branch)
-    return '@'.join(self.__class__.__name__, StringIdentity(
-        '%s/%s/%s' % (GITILES_BASE, GITILES_SRC_ROOT, str_id)))
+    return '@'.join((self.__class__.__name__, StringIdentity(
+        '%s/%s/%s' % (GITILES_BASE, GITILES_SRC_ROOT, str_id))))
 
   def GetVersion(self):
     return self._commit
