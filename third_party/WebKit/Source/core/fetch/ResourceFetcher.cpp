@@ -1147,10 +1147,20 @@ void ResourceFetcher::redirectReceived(Resource* resource, const ResourceRespons
         it->value->addRedirect(redirectResponse);
 }
 
-void ResourceFetcher::didLoadResource()
+void ResourceFetcher::didLoadResource(Resource* resource)
 {
     RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
     RefPtrWillBeRawPtr<Document> protectDocument(m_document.get());
+
+    if (resource && resource->response().isHTTP() && ((!resource->errorOccurred() && !resource->wasCanceled()) || resource->response().httpStatusCode() == 304) && document()) {
+        ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
+        if (it != m_resourceTimingInfoMap.end()) {
+            RefPtr<ResourceTimingInfo> info = it->value;
+            m_resourceTimingInfoMap.remove(it);
+            populateResourceTiming(info.get(), resource, false);
+            reportResourceTiming(info.get(), document(), resource->type() == Resource::MainResource);
+        }
+    }
 
     if (frame())
         frame()->loader().loadDone();
@@ -1288,19 +1298,9 @@ void ResourceFetcher::clearPreloads()
     m_preloads.clear();
 }
 
-void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
+void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTime, int64_t encodedDataLength)
 {
     TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
-
-    if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400 && document()) {
-        ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
-        if (it != m_resourceTimingInfoMap.end()) {
-            RefPtr<ResourceTimingInfo> info = it->value;
-            m_resourceTimingInfoMap.remove(it);
-            populateResourceTiming(info.get(), resource, false);
-            reportResourceTiming(info.get(), document(), resource->type() == Resource::MainResource);
-        }
-    }
     context().dispatchDidFinishLoading(m_documentLoader, resource->identifier(), finishTime, encodedDataLength);
 }
 

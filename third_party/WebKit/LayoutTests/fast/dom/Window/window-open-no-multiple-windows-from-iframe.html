@@ -12,10 +12,8 @@ if (window.testRunner) {
 
 function opened(result) {
     // Called by the embedded iframe.
-    if (result == window) {
+    if (result == window)
         document.writeln("PASS");
-        document.close();
-    }
 
     if (window.testRunner)
         testRunner.notifyDone();

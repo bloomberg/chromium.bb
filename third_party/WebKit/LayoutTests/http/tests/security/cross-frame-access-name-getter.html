@@ -21,6 +21,9 @@ window.onload = function()
 
     // element by name
     shouldBeFalse("canGet('targetWindow.testimage')");
+
+    // Work around DRT bug that causes subsequent tests to fail.
+    window.stop();
 }
 </script>
 </body>

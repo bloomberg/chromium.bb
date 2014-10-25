@@ -20,6 +20,9 @@ window.onload = function()
     shouldBe("targetWindow.frames.length", 1);
     shouldBeTrue("canGet('targetWindow.frames[0]')");
     shouldBeTrue("canGet('targetWindow[0]')");
+
+    // Work around DRT bug that causes subsequent tests to fail.
+    window.stop();
 }
 </script>
 </body>

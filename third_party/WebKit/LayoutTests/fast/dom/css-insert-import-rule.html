@@ -8,10 +8,12 @@ div {
 </style>
 
 <script>
-document.styleSheets[0].insertRule('@import url("resources/css-insert-import-rule.css");', 0);
+function test() {
+  document.styleSheets[0].insertRule('@import url("resources/css-insert-import-rule.css");', 0);
+}
 </script>
 
 </head>
-<body>
+<body onload="test()";>
 <div></div>
 </body>

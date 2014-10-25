@@ -26,7 +26,6 @@
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
-#include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchRequest.h"
@@ -220,7 +219,6 @@ void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& bas
     ASSERT(m_isXSL);
     m_sheet = XSLStyleSheet::create(this, href, baseURL);
     RefPtrWillBeRawPtr<Document> protect(&document());
-    OwnPtr<IncrementLoadEventDelayCount> delay = IncrementLoadEventDelayCount::create(document());
     parseStyleSheet(sheet);
 }
 

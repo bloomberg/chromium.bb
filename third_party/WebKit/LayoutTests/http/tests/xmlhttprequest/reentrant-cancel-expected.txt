@@ -1,4 +1,6 @@
+CONSOLE ERROR: line 26: Uncaught InvalidStateError: Failed to execute 'send' on 'XMLHttpRequest': The object's state must be OPENED.
 insertedText
 This tests that when we re-entrantly create and cancel XHRs, we don't try to disconnect the same CachedResourceClient multiple times from its CachedResource. We pass if we don't crash.
 DOMContentLoadedload
+
 

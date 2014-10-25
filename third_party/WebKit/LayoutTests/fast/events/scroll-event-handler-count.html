@@ -123,7 +123,6 @@ debug('Test moving event listeners from an attached document to an unattached on
     nestedDocument.open('text/html', 'replace');
     nestedDocument.write('<!DOCTYPE html>\n<script>\ndocument.onscroll=function(){};\n' +
                          'window.onscroll=function(){};</' + 'script>\n');
-    nestedDocument.close();
 
     shouldBe('window.internals.scrollEventHandlerCount(document)', '3');
 
@@ -139,7 +138,6 @@ debug('Test moving a scroll event listener between documents belonging to the sa
     var nestedDocument = iframe.contentWindow.document;
     nestedDocument.open('text/html', 'replace');
     nestedDocument.write('<!DOCTYPE html><div id=foo></div>');
-    nestedDocument.close();
 
     var element = frames[0].document.getElementById('foo');
     var listener = function() { }

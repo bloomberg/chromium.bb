@@ -150,7 +150,7 @@ public:
 class ScheduledLocationChange final : public ScheduledURLNavigation {
 public:
     ScheduledLocationChange(Document* originDocument, const String& url, bool lockBackForwardList)
-        : ScheduledURLNavigation(0.0, originDocument, url, lockBackForwardList, !protocolIsJavaScript(url)) { }
+        : ScheduledURLNavigation(0.0, originDocument, url, lockBackForwardList, true) { }
 };
 
 class ScheduledReload final : public ScheduledNavigation {

@@ -5,6 +5,21 @@
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
+
+function testPassed(msg)
+{
+    document.write("<b><font color=green>PASS</font></b> " + msg + "<br>");
+}
+
+function testFailed(msg)
+{
+    document.write("<b><font color=red>FAIL</font></b> " + msg + "<br>");
+}
+
+function debug(a) 
+{ 
+    document.write("<p> " + a + "</p>"); 
+}
 </script>
    </head> 
 
