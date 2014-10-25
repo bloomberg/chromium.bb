@@ -97,8 +97,7 @@ void WindowListProviderImpl::RecreateWindowList() {
 }
 
 void WindowListProviderImpl::OnWindowAdded(aura::Window* window) {
-  DCHECK_EQ(window->parent(), container_);
-  if (!IsValidWindow(window))
+  if (!IsValidWindow(window) || window->parent() != container_)
     return;
 
   window->SetProperty(kManagedKey, true);
