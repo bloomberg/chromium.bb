@@ -14,12 +14,11 @@ namespace android_webview {
 
 class BrowserViewRendererClient {
  public:
-  // Request DrawGL be called. Passing null |canvas| implies the request
-  // will be of AwDrawGLInfo::kModeProcess type. |wait_for_completion|
-  // will cause the call to block until DrawGL has happened; it does not
-  // work when |canvas| is not NULL. The callback may never be made, and
-  // the mode may be promoted to kModeDraw.
-  virtual bool RequestDrawGL(jobject canvas, bool wait_for_completion) = 0;
+  // Request DrawGL to be in called AwDrawGLInfo::kModeProcess type.
+  // |wait_for_completion| will cause the call to block until DrawGL has
+  // happened. The callback may never be made, and the mode may be promoted to
+  // kModeDraw.
+  virtual bool RequestDrawGL(bool wait_for_completion) = 0;
 
   // Called when a new Picture is available. Needs to be enabled
   // via the EnableOnNewPicture method.

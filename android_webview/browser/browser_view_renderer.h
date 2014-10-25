@@ -67,7 +67,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   virtual ~BrowserViewRenderer();
 
   SharedRendererState* GetSharedRendererState();
-  bool RequestDrawGL(jobject canvas, bool wait_for_completion);
+  bool RequestDrawGL(bool wait_for_completion);
 
   // Main handler for view drawing: performs a SW draw immediately, or sets up
   // a subsequent GL Draw (via BrowserViewRendererClient::RequestDrawGL) and
@@ -162,7 +162,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       const gfx::Vector2dF& total_scroll_offset_dip,
       const gfx::SizeF& scrollable_size_dip);
 
-  bool OnDrawHardware(jobject java_canvas);
+  bool OnDrawHardware();
   scoped_ptr<cc::CompositorFrame> CompositeHw();
   void ReturnUnusedResource(scoped_ptr<cc::CompositorFrame> frame);
   void ReturnResourceFromParent();

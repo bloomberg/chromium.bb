@@ -748,15 +748,13 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
       env, obj.obj(), ConvertUTF8ToJavaString(env, url).obj(), precomposed);
 }
 
-bool AwContents::RequestDrawGL(jobject canvas, bool wait_for_completion) {
+bool AwContents::RequestDrawGL(bool wait_for_completion) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!canvas || !wait_for_completion);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_AwContents_requestDrawGL(
-      env, obj.obj(), canvas, wait_for_completion);
+  return Java_AwContents_requestDrawGL(env, obj.obj(), wait_for_completion);
 }
 
 void AwContents::PostInvalidate() {
@@ -907,7 +905,7 @@ void AwContents::ReleaseHardwareDrawIfNeeded() {
 
   bool hardware_initialized = browser_view_renderer_.hardware_enabled();
   if (hardware_initialized) {
-    bool draw_functor_succeeded = RequestDrawGL(NULL, true);
+    bool draw_functor_succeeded = RequestDrawGL(true);
     if (!draw_functor_succeeded) {
       LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
       // Calling release on wrong thread intentionally.
@@ -931,7 +929,7 @@ void AwContents::ReleaseHardwareDrawIfNeeded() {
 
   if (hardware_initialized) {
     // Flush any invoke functors that's caused by OnDetachedFromWindow.
-    RequestDrawGL(NULL, true);
+    RequestDrawGL(true);
   }
 }
 

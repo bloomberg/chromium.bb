@@ -189,7 +189,7 @@ class AwContents : public FindHelper::Listener,
       const gfx::Size& contents_size) override;
 
   // BrowserViewRendererClient implementation.
-  virtual bool RequestDrawGL(jobject canvas, bool wait_for_completion) override;
+  virtual bool RequestDrawGL(bool wait_for_completion) override;
   virtual void PostInvalidate() override;
   virtual void UpdateParentDrawConstraints() override;
   virtual void DidSkipCommitFrame() override;

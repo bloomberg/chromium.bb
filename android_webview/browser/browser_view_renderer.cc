@@ -107,9 +107,8 @@ SharedRendererState* BrowserViewRenderer::GetSharedRendererState() {
   return &shared_renderer_state_;
 }
 
-bool BrowserViewRenderer::RequestDrawGL(jobject canvas,
-                                        bool wait_for_completion) {
-  return client_->RequestDrawGL(canvas, wait_for_completion);
+bool BrowserViewRenderer::RequestDrawGL(bool wait_for_completion) {
+  return client_->RequestDrawGL(wait_for_completion);
 }
 
 // This function updates the resource allocation in GlobalTileManager.
@@ -208,14 +207,14 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
 
   if (is_hardware_canvas && attached_to_window_ &&
       !switches::ForceAuxiliaryBitmap()) {
-    return OnDrawHardware(java_canvas);
+    return OnDrawHardware();
   }
 
   // Perform a software draw
   return OnDrawSoftware(java_canvas);
 }
 
-bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
+bool BrowserViewRenderer::OnDrawHardware() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
   if (!compositor_)
     return false;
@@ -237,7 +236,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
                          "EarlyOut_EmptyVisibleRect",
                          TRACE_EVENT_SCOPE_THREAD);
     shared_renderer_state_.SetForceInvalidateOnNextDrawGLOnUI(true);
-    return client_->RequestDrawGL(java_canvas, false);
+    return true;
   }
 
   ReturnResourceFromParent();
@@ -246,7 +245,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
                          "EarlyOut_PreviousFrameUnconsumed",
                          TRACE_EVENT_SCOPE_THREAD);
     DidSkipCompositeInDraw();
-    return client_->RequestDrawGL(java_canvas, false);
+    return true;
   }
 
   scoped_ptr<cc::CompositorFrame> frame = CompositeHw();
@@ -255,7 +254,7 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
 
   shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), false);
   GlobalTileManager::GetInstance()->DidUse(tile_manager_key_);
-  return client_->RequestDrawGL(java_canvas, false);
+  return true;
 }
 
 scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {

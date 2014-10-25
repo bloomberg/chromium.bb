@@ -2070,8 +2070,8 @@ public class AwContents {
     }
 
     @CalledByNative
-    private boolean requestDrawGL(Canvas canvas, boolean waitForCompletion) {
-        return mNativeGLDelegate.requestDrawGL(canvas, waitForCompletion, mContainerView);
+    private boolean requestDrawGL(boolean waitForCompletion) {
+        return mNativeGLDelegate.requestDrawGL(null, waitForCompletion, mContainerView);
     }
 
     private static final boolean SUPPORTS_ON_ANIMATION =
@@ -2255,13 +2255,15 @@ public class AwContents {
 
             mScrollOffsetManager.syncScrollOffsetFromOnDraw();
             Rect globalVisibleRect = getGlobalVisibleRect();
-            if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
+            boolean did_draw = nativeOnDraw(
+                    mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
                     mContainerView.getScrollX(), mContainerView.getScrollY(),
                     globalVisibleRect.left, globalVisibleRect.top,
-                    globalVisibleRect.right, globalVisibleRect.bottom)) {
-                // Can happen during initialization when compositor is not set
-                // up. Or when clearView
-                // is in effect. Just draw background color instead.
+                    globalVisibleRect.right, globalVisibleRect.bottom);
+            if (did_draw && canvas.isHardwareAccelerated()) {
+                did_draw = mNativeGLDelegate.requestDrawGL(canvas, false, mContainerView);
+            }
+            if (!did_draw) {
                 canvas.drawColor(getEffectiveBackgroundColor());
             }
 

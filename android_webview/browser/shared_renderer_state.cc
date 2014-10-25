@@ -119,7 +119,7 @@ void SharedRendererState::ResetRequestDrawGLCallback() {
 void SharedRendererState::ClientRequestDrawGLOnUIThread() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   ResetRequestDrawGLCallback();
-  if (!browser_view_renderer_->RequestDrawGL(NULL, false)) {
+  if (!browser_view_renderer_->RequestDrawGL(false)) {
     g_request_draw_gl_tracker.Get().ResetPending();
     LOG(ERROR) << "Failed to request GL process. Deadlock likely";
   }
