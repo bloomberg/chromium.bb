@@ -129,7 +129,6 @@ ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element
         if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(&element)) {
             for (const auto& invalidationSet : *invalidationList)
                 recursionData.pushInvalidationSet(*invalidationSet);
-            // FIXME: It's really only necessary to clone the render style for this element, not full style recalc.
             if (UNLIKELY(*s_tracingEnabled)) {
                 TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
                     "StyleInvalidatorInvalidationTracking",
