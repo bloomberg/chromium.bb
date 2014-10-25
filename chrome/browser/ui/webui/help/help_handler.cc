@@ -48,6 +48,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/image_source.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 #include "chromeos/chromeos_switches.h"
@@ -292,6 +293,12 @@ void HelpHandler::RegisterMessages() {
 #if defined(OS_MACOSX)
   web_ui()->RegisterMessageCallback("promoteUpdater",
       base::Bind(&HelpHandler::PromoteUpdater, base::Unretained(this)));
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Handler for the product label image, which will be shown if available.
+  content::URLDataSource::Add(Profile::FromWebUI(web_ui()),
+                              new chromeos::ImageSource());
 #endif
 }
 

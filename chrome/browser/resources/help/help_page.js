@@ -155,6 +155,14 @@ cr.define('help', function() {
                                  $('help-container'),
                                  cr.ui.ArrowLocation.TOP_END);
         };
+
+        // Unhide the product label if/when the image loads.
+        var productLabel = $('product-label');
+        var show = function() { $('product-label-container').hidden = false; };
+        if (productLabel.naturalWidth)
+          show();
+        else
+          productLabel.onload = show;
       }
 
       var logo = $('product-logo');

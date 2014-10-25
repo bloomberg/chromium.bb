@@ -310,6 +310,9 @@ const char kOnlineEulaURLPath[] =
 
 const char kChromeOSCreditsPath[] =
     "/opt/google/chrome/resources/about_os_credits.html";
+
+const char kChromeUILocalImageHost[] = "local-image";
+const char kChromeUILocalImagePath[] = "/usr/share/chromeos-assets/images/";
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)

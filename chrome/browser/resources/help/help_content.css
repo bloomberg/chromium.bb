@@ -6,6 +6,9 @@
 #about-container {
   align-items: center;
   display: flex;
+}
+
+#page-container #about-container {
   margin-top: 10px;
 }
 
@@ -56,7 +59,7 @@
 }
 
 .overlay #product-container {
-  margin-top: 40px;
+  margin-top: 30px;
 }
 
 .help-page-icon,
@@ -146,4 +149,17 @@
   display: block;
   vertical-align: top;
   width: 240px;
+}
+
+#product-label-container {
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  margin-top: 4px;
+  padding: 10px;
+}
+
+#product-label {
+  display: block;
+  margin: 0 auto;
+  width: 330px;
 }
