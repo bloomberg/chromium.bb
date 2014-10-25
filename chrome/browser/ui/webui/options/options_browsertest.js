@@ -46,6 +46,9 @@ OptionsWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
   accessibilityIssuesAreErrors: true,
 
   /** @override */
@@ -380,6 +383,12 @@ OptionsWebUIExtendedTest.prototype = {
   isAsync: true,
 
   /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
+  /** @override */
   setUp: function() {
       // user-image-stream is a streaming video element used for capturing a
       // user image during OOBE.
@@ -708,7 +717,12 @@ TEST_F('OptionsWebUIExtendedTest', 'CloseOverlayWithHashes', function() {
       this.verifyHistory_(
           ['', 'search#1', 'languages#2', 'addLanguage#3', 'languages#2',
            'search#1'],
-          testDone);
+          function() {
+            document.addEventListener('webkitTransitionEnd', function f(e) {
+              document.removeEventListener('webkitTransitionEnd', f);
+              testDone();
+            });
+          });
     }.bind(this));
   }.bind(this));
 });
