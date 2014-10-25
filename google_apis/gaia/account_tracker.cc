@@ -164,6 +164,11 @@ void AccountTracker::NotifyAccountRemoved(const AccountState& account) {
 }
 
 void AccountTracker::NotifySignInChanged(const AccountState& account) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AccountTracker::NotifySignInChanged"));
+
   DCHECK(!account.ids.gaia.empty());
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
@@ -172,6 +177,10 @@ void AccountTracker::NotifySignInChanged(const AccountState& account) {
 
 void AccountTracker::UpdateSignInState(const std::string account_key,
                                        bool is_signed_in) {
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AccountTracker::UpdateSignInState"));
+
   StartTrackingAccount(account_key);
   AccountState& account = accounts_[account_key];
   bool needs_gaia_id = account.ids.gaia.empty();
@@ -186,6 +195,11 @@ void AccountTracker::UpdateSignInState(const std::string account_key,
 }
 
 void AccountTracker::StartTrackingAccount(const std::string account_key) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AccountTracker::StartTrackingAccount"));
+
   if (!ContainsKey(accounts_, account_key)) {
     DVLOG(1) << "StartTracking " << account_key;
     AccountState account_state;
@@ -217,6 +231,11 @@ void AccountTracker::StopTrackingAllAccounts() {
 }
 
 void AccountTracker::StartFetchingUserInfo(const std::string account_key) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AccountTracker::StartFetchingUserInfo"));
+
   if (ContainsKey(user_info_requests_, account_key))
     DeleteFetcher(user_info_requests_[account_key]);
 
