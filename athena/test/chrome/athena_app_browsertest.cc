@@ -8,13 +8,10 @@
 #include "athena/test/base/activity_lifetime_tracker.h"
 #include "athena/test/chrome/test_util.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 
 namespace athena {
-
-namespace {
-const char kNoNaclSandbox[] = "--no-sandbox";
-}
 
 AthenaAppBrowserTest::AthenaAppBrowserTest() {
 }
@@ -24,7 +21,7 @@ AthenaAppBrowserTest::~AthenaAppBrowserTest() {
 
 void AthenaAppBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // The NaCl sandbox won't work in our browser tests.
-  command_line->AppendSwitch(kNoNaclSandbox);
+  command_line->AppendSwitch(switches::kNoSandbox);
   extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
 }
 
