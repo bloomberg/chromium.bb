@@ -57,7 +57,7 @@ class AcceleratorManagerImpl : public AcceleratorManager,
  private:
   class InternalData;
 
-  explicit AcceleratorManagerImpl(AcceleratorWrapper* wrapper);
+  AcceleratorManagerImpl(AcceleratorWrapper* wrapper, bool global);
 
   // AcceleratorManager:
   virtual void RegisterAccelerators(const AcceleratorData accelerators[],
@@ -78,6 +78,7 @@ class AcceleratorManagerImpl : public AcceleratorManager,
   scoped_ptr<wm::AcceleratorFilter> accelerator_filter_;
   scoped_ptr<wm::NestedAcceleratorController> nested_accelerator_controller_;
   bool debug_accelerators_enabled_;
+  bool global_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorManagerImpl);
 };

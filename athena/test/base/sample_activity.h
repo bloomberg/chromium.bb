@@ -7,12 +7,15 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class ImageSkia;
 }
 
 namespace athena {
+class AcceleratorManager;
+
 namespace test {
 
 class SampleActivity : public Activity,
@@ -52,6 +55,9 @@ class SampleActivity : public Activity,
 
   // The current state for this activity.
   ActivityState current_state_;
+
+  // This is to emulate real implementation.
+  scoped_ptr<AcceleratorManager> accelerator_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SampleActivity);
 };

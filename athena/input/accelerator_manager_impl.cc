@@ -84,6 +84,7 @@ class AcceleratorDelegate : public wm::AcceleratorDelegate {
   }
 
   AcceleratorManagerImpl* accelerator_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(AcceleratorDelegate);
 };
 
@@ -230,14 +231,14 @@ class AcceleratorManagerImpl::InternalData {
 // static
 AcceleratorManagerImpl*
 AcceleratorManagerImpl::CreateGlobalAcceleratorManager() {
-  return new AcceleratorManagerImpl(new UIAcceleratorManagerWrapper());
+  return new AcceleratorManagerImpl(new UIAcceleratorManagerWrapper(), true);
 }
 
 scoped_ptr<AcceleratorManager> AcceleratorManagerImpl::CreateForFocusManager(
     views::FocusManager* focus_manager) {
   return scoped_ptr<AcceleratorManager>(
-             new AcceleratorManagerImpl(new FocusManagerWrapper(focus_manager)))
-      .Pass();
+             new AcceleratorManagerImpl(new FocusManagerWrapper(focus_manager),
+                                        false)).Pass();
 }
 
 AcceleratorManagerImpl::~AcceleratorManagerImpl() {
@@ -245,11 +246,13 @@ AcceleratorManagerImpl::~AcceleratorManagerImpl() {
   accelerator_filter_.reset();
   // Reset to use the default focus manager because the athena's
   // FocusManager has the reference to this object.
-  views::FocusManagerFactory::Install(nullptr);
+  if (global_)
+    views::FocusManagerFactory::Install(nullptr);
 }
 
 void AcceleratorManagerImpl::Init() {
-  views::FocusManagerFactory::Install(new FocusManagerFactory(this));
+  if (global_)
+    views::FocusManagerFactory::Install(new FocusManagerFactory(this));
 
   ui::EventTarget* toplevel = InputManager::Get()->GetTopmostEventTarget();
   nested_accelerator_controller_.reset(
@@ -283,9 +286,11 @@ bool AcceleratorManagerImpl::IsRegistered(const ui::Accelerator& accelerator,
 }
 
 AcceleratorManagerImpl::AcceleratorManagerImpl(
-    AcceleratorWrapper* accelerator_wrapper)
+    AcceleratorWrapper* accelerator_wrapper,
+    bool global)
     : accelerator_wrapper_(accelerator_wrapper),
-      debug_accelerators_enabled_(switches::IsDebugAcceleratorsEnabled()) {
+      debug_accelerators_enabled_(switches::IsDebugAcceleratorsEnabled()),
+      global_(global) {
 }
 
 void AcceleratorManagerImpl::RegisterAccelerators(

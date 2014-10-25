@@ -10,7 +10,12 @@ include_rules = [
 
 specific_include_rules = {
   # exported for test.
-  "input_manager_impl.h": [
+  "input_manager_impl\.h": [
     "+athena/athena_export.h",
+  ],
+  # allows for test.
+  ".*test\.cc": [
+    "+athena/activity/public",
+    "+athena/wm/public",
   ],
 }

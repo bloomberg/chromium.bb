@@ -4,6 +4,7 @@
 
 #include "athena/test/base/sample_activity.h"
 
+#include "athena/input/public/accelerator_manager.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
@@ -55,6 +56,8 @@ content::WebContents* SampleActivity::GetWebContents() {
 }
 
 void SampleActivity::Init() {
+  accelerator_manager_ = AcceleratorManager::CreateForFocusManager(
+      GetContentsView()->GetWidget()->GetFocusManager());
 }
 
 SkColor SampleActivity::GetRepresentativeColor() const {
