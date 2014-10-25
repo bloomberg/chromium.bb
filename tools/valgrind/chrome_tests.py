@@ -397,14 +397,8 @@ class ChromeTests:
   def TestMessageCenter(self):
     return self.SimpleTest("message_center", "message_center_unittests")
 
-  def TestMojoAppsJS(self):
-    return self.SimpleTest("mojo_apps_js", "mojo_apps_js_unittests")
-
   def TestMojoCommon(self):
     return self.SimpleTest("mojo_common", "mojo_common_unittests")
-
-  def TestMojoJS(self):
-    return self.SimpleTest("mojo_js", "mojo_js_unittests")
 
   def TestMojoPublicBindings(self):
     return self.SimpleTest("mojo_public_bindings",
@@ -426,15 +420,8 @@ class ChromeTests:
     return self.SimpleTest("mojo_public_utility",
                            "mojo_public_utility_unittests")
 
-  def TestMojoApplicationManager(self):
-    return self.SimpleTest("mojo_application_manager",
-                           "mojo_application_manager_unittests")
-
   def TestMojoSystem(self):
     return self.SimpleTest("mojo_system", "mojo_system_unittests")
-
-  def TestMojoViewManager(self):
-    return self.SimpleTest("mojo_view_manager", "mojo_view_manager_unittests")
 
   def TestNet(self):
     return self.SimpleTest("net", "net_unittests")
@@ -702,17 +689,12 @@ class ChromeTests:
     "media": TestMedia,          "media_unittests": TestMedia,
     "message_center": TestMessageCenter,
     "message_center_unittests" : TestMessageCenter,
-    "mojo_apps_js": TestMojoAppsJS,
     "mojo_common": TestMojoCommon,
-    "mojo_js": TestMojoJS,
-    "mojo_system": TestMojoSystem,
     "mojo_public_system": TestMojoPublicSystem,
     "mojo_public_utility": TestMojoPublicUtility,
     "mojo_public_bindings": TestMojoPublicBindings,
     "mojo_public_env": TestMojoPublicEnv,
     "mojo_public_sysperf": TestMojoPublicSysPerf,
-    "mojo_application_manager": TestMojoApplicationManager,
-    "mojo_view_manager": TestMojoViewManager,
     "net": TestNet,              "net_unittests": TestNet,
     "net_perf": TestNetPerf,     "net_perftests": TestNetPerf,
     "phonenumber": TestPhoneNumber,
