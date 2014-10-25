@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -453,10 +454,20 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
 base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedProfile tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422489 ResourceBundle::GetRawDataResourceForScale 1"));
+
   base::StringPiece data;
   if (delegate_ &&
       delegate_->GetRawDataResource(resource_id, scale_factor, &data))
     return data;
+
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedProfile tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422489 ResourceBundle::GetRawDataResourceForScale 2"));
 
   if (scale_factor != ui::SCALE_FACTOR_100P) {
     for (size_t i = 0; i < data_packs_.size(); i++) {
@@ -466,6 +477,11 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
         return data;
     }
   }
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedProfile tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422489 ResourceBundle::GetRawDataResourceForScale 3"));
+
   for (size_t i = 0; i < data_packs_.size(); i++) {
     if ((data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_200P ||
