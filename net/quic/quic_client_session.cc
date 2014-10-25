@@ -34,6 +34,9 @@ namespace {
 // before allowing the requests to possibly proceed over TCP.
 const int k0RttHandshakeTimeoutMs = 300;
 
+// IPv6 packets have an additional 20 bytes of overhead than IPv4 packets.
+const size_t kAdditionalOverheadForIPv6 = 20;
+
 // Histograms for tracking down the crashes from http://crbug.com/354669
 // Note: these values must be kept in sync with the corresponding values in:
 // tools/metrics/histograms/histograms.xml
@@ -170,6 +173,12 @@ QuicClientSession::QuicClientSession(
       going_away_(false),
       weak_factory_(this) {
   connection->set_debug_visitor(logger_);
+  IPEndPoint address;
+  if (socket && socket->GetLocalAddress(&address) == OK &&
+      address.GetFamily() == ADDRESS_FAMILY_IPV6) {
+    connection->set_max_packet_length(
+        connection->max_packet_length() - kAdditionalOverheadForIPv6);
+  }
 }
 
 void QuicClientSession::InitializeSession(
