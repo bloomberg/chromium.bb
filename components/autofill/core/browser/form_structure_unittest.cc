@@ -4,10 +4,12 @@
 
 #include "components/autofill/core/browser/form_structure.h"
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,6 +134,13 @@ TEST(FormStructureTest, AutofillCount) {
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_EQ(1U, form_structure->autofill_count());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kIgnoreAutocompleteOffForAutofill);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+  EXPECT_EQ(2U, form_structure->autofill_count());
 }
 
 TEST(FormStructureTest, SourceURL) {

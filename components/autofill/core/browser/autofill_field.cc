@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_field.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/state_names.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "grit/components_strings.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
@@ -470,7 +472,10 @@ std::string AutofillField::FieldSignature() const {
 }
 
 bool AutofillField::IsFieldFillable() const {
-  return should_autocomplete && !Type().IsUnknown();
+  return (should_autocomplete ||
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kIgnoreAutocompleteOffForAutofill)) &&
+         !Type().IsUnknown();
 }
 
 // static
