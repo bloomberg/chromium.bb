@@ -162,6 +162,11 @@ TEST(ExtensionCSPValidator, IsSecure) {
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' filesystem:http://example.com/XXX",
       Manifest::TYPE_EXTENSION));
+
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.googleapis.com", Manifest::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://x.googleapis.com", Manifest::TYPE_EXTENSION));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {

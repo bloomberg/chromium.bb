@@ -87,6 +87,11 @@ bool isNonWildcardTLD(const std::string& url,
   if (!is_wildcard_subdomain || !should_check_rcd)
     return true;
 
+  // Allow *.googleapis.com to be whitelisted for backwards-compatibility.
+  // (crbug.com/409952)
+  if (host == "googleapis.com")
+    return true;
+
   // Wildcards on subdomains of a TLD are not allowed.
   size_t registry_length = net::registry_controlled_domains::GetRegistryLength(
       host,
