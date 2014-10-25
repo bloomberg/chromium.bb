@@ -109,6 +109,23 @@
             "description": "New input method which is being used."
           }
         ]
+      }, {
+        "name": "onCompositionBoundsChanged",
+        "type": "function",
+        "description": "Fired when the composition bounds are changed.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "type": "object",
+            "description": "Composition bounds.",
+            "properties": {
+              "x": {"type": "integer"},
+              "y": {"type": "integer"},
+              "w": {"type": "integer"},
+              "h": {"type": "integer"}
+            }
+          }
+        ]
       }
     ]
   }

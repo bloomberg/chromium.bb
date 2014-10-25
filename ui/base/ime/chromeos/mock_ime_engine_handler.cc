@@ -69,4 +69,7 @@ void MockIMEEngineHandler::SetSurroundingText(const std::string& text,
   last_set_surrounding_anchor_pos_ = anchor_pos;
 }
 
+void MockIMEEngineHandler::SetCompositionBounds(const gfx::Rect& bounds) {
+}
+
 } // namespace chromeos

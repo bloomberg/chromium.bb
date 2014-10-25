@@ -90,6 +90,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) override;
   virtual void HideInputView() override;
+  virtual void SetCompositionBounds(const gfx::Rect& bounds) override;
 
   int GetCotextIdForTesting() { return context_id_; }
 

@@ -511,6 +511,10 @@ void InputMethodEngine::HideInputView() {
   }
 }
 
+void InputMethodEngine::SetCompositionBounds(const gfx::Rect& bounds) {
+  observer_->OnCompositionBoundsChanged(bounds);
+}
+
 void InputMethodEngine::EnableInputView() {
 #if defined(USE_ATHENA)
   // Athena does not currently support an extension-based VK. Blocking the

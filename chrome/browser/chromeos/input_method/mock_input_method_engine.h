@@ -32,7 +32,7 @@ struct KeyEventHandle;
 
 class MockInputMethodEngine : public InputMethodEngineInterface {
  public:
-  explicit MockInputMethodEngine();
+  MockInputMethodEngine();
   virtual ~MockInputMethodEngine();
 
   // InputMethodEngineInterface overrides.
@@ -81,6 +81,7 @@ class MockInputMethodEngine : public InputMethodEngineInterface {
   virtual void CandidateClicked(uint32 index) override;
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) override;
+  virtual void SetCompositionBounds(const gfx::Rect& bounds) override;
   virtual void HideInputView() override;
 
   std::string last_activated_property() const {

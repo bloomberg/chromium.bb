@@ -46,6 +46,8 @@ namespace {
 const char kErrorEngineNotAvailable[] = "Engine is not available";
 const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
 const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
+const char kOnCompositionBoundsChangedEventName[] =
+    "inputMethodPrivate.onCompositionBoundsChanged";
 
 void SetMenuItemToMenu(const input_ime::MenuItem& input,
                        InputMethodEngineInterface::MenuItem* out) {
@@ -105,7 +107,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   virtual ~ImeObserver() {}
 
   virtual void OnActivate(const std::string& component_id) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() ||
+        !HasListener(input_ime::OnActivate::kEventName))
       return;
 
     scoped_ptr<base::ListValue> args(input_ime::OnActivate::Create(
@@ -117,7 +120,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
   virtual void OnDeactivated(const std::string& component_id) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() ||
+        !HasListener(input_ime::OnDeactivated::kEventName))
       return;
 
     scoped_ptr<base::ListValue> args(
@@ -129,7 +133,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
   virtual void OnFocus(
       const InputMethodEngineInterface::InputContext& context) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() || !HasListener(input_ime::OnFocus::kEventName))
       return;
 
     input_ime::InputContext context_value;
@@ -146,7 +150,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
   virtual void OnBlur(int context_id) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() || !HasListener(input_ime::OnBlur::kEventName))
       return;
 
     scoped_ptr<base::ListValue> args(input_ime::OnBlur::Create(context_id));
@@ -157,7 +161,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
   virtual void OnInputContextUpdate(
       const InputMethodEngineInterface::InputContext& context) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() ||
+        !HasListener(input_ime::OnInputContextUpdate::kEventName))
       return;
 
     input_ime::InputContext context_value;
@@ -217,7 +222,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
       const std::string& component_id,
       int candidate_id,
       InputMethodEngineInterface::MouseButtonEvent button) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() ||
+        !HasListener(input_ime::OnCandidateClicked::kEventName))
       return;
 
     input_ime::OnCandidateClicked::Button button_enum =
@@ -247,7 +253,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
   virtual void OnMenuItemActivated(const std::string& component_id,
                                    const std::string& menu_id) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() ||
+        !HasListener(input_ime::OnMenuItemActivated::kEventName))
       return;
 
     scoped_ptr<base::ListValue> args(
@@ -261,7 +268,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                                         const std::string& text,
                                         int cursor_pos,
                                         int anchor_pos) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() ||
+        !HasListener(input_ime::OnSurroundingTextChanged::kEventName))
       return;
 
     input_ime::OnSurroundingTextChanged::SurroundingInfo info;
@@ -276,8 +284,27 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
                              args.Pass());
   }
 
+  virtual void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
+    if (extension_id_.empty() ||
+        !HasListener(kOnCompositionBoundsChangedEventName))
+      return;
+
+    // Note: this is a private API event.
+    scoped_ptr<base::ListValue> args(new base::ListValue());
+    base::DictionaryValue* bounds_value = new base::DictionaryValue();
+    bounds_value->SetInteger("x", bounds.x());
+    bounds_value->SetInteger("y", bounds.y());
+    bounds_value->SetInteger("w", bounds.width());
+    bounds_value->SetInteger("h", bounds.height());
+    args->Append(bounds_value);
+
+    DispatchEventToExtension(extension_id_,
+                             kOnCompositionBoundsChangedEventName,
+                             args.Pass());
+  }
+
   virtual void OnReset(const std::string& component_id) override {
-    if (extension_id_.empty())
+    if (extension_id_.empty() || !HasListener(input_ime::OnReset::kEventName))
       return;
 
     scoped_ptr<base::ListValue> args(input_ime::OnReset::Create(component_id));
@@ -307,6 +334,11 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         return true;
     }
     return false;
+  }
+
+  bool HasListener(const std::string& event_name) const {
+    return extensions::EventRouter::Get(
+        ProfileManager::GetActiveUserProfile())->HasEventListener(event_name);
   }
 
   // The component IME extensions need to know the current screen type (e.g.

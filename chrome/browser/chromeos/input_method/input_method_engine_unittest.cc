@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {
 
@@ -31,7 +32,8 @@ enum CallsBitmap {
   ACTIVATE = 1U,
   DEACTIVATED = 2U,
   ONFOCUS = 4U,
-  ONBLUR = 8U
+  ONBLUR = 8U,
+  ONCOMPOSITIONBOUNDSCHANGED = 16U
 };
 
 void InitInputMethod() {
@@ -97,6 +99,9 @@ class TestObserver : public InputMethodEngineInterface::Observer {
       const std::string& text,
       int cursor_pos,
       int anchor_pos) override {}
+  virtual void OnCompositionBoundsChanged(const gfx::Rect& bounds) override {
+    calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;
+  }
   virtual void OnReset(const std::string& engine_id) override {}
 
   unsigned char GetCallsBitmapAndReset() {
@@ -248,6 +253,14 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
   histograms.ExpectBucketCount("InputMethod.CommitLength", 5, 1);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 2, 1);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 7, 1);
+}
+
+TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
+  CreateEngine(true);
+  // Enable/disable with focus.
+  engine_->SetCompositionBounds(gfx::Rect());
+  EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED,
+            observer_->GetCallsBitmapAndReset());
 }
 
 }  // namespace input_method

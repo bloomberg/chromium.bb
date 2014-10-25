@@ -102,6 +102,9 @@ class UI_BASE_EXPORT IMEEngineHandlerInterface {
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) = 0;
 
+  // Called when the composition bounds changed.
+  virtual void SetCompositionBounds(const gfx::Rect& bounds) = 0;
+
  protected:
   IMEEngineHandlerInterface() {}
 };

@@ -184,12 +184,15 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     return;
 
   // The current text input type should not be NONE if |context_| is focused.
+  DCHECK(client == GetTextInputClient());
   DCHECK(!IsTextInputTypeNone());
-  const gfx::Rect rect = GetTextInputClient()->GetCaretBounds();
+  const gfx::Rect rect = client->GetCaretBounds();
 
   gfx::Rect composition_head;
-  if (!GetTextInputClient()->GetCompositionCharacterBounds(0,
-                                                           &composition_head)) {
+  if (client->GetCompositionCharacterBounds(0, &composition_head)) {
+    if (GetEngine())
+      GetEngine()->SetCompositionBounds(composition_head);
+  } else {
     composition_head = rect;
   }
 
@@ -202,9 +205,9 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   gfx::Range text_range;
   gfx::Range selection_range;
   base::string16 surrounding_text;
-  if (!GetTextInputClient()->GetTextRange(&text_range) ||
-      !GetTextInputClient()->GetTextFromRange(text_range, &surrounding_text) ||
-      !GetTextInputClient()->GetSelectionRange(&selection_range)) {
+  if (!client->GetTextRange(&text_range) ||
+      !client->GetTextFromRange(text_range, &surrounding_text) ||
+      !client->GetSelectionRange(&selection_range)) {
     previous_surrounding_text_.clear();
     previous_selection_range_ = gfx::Range::InvalidRange();
     return;
