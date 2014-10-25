@@ -404,6 +404,7 @@ source_set("sync_core") {
     "//third_party/leveldatabase",
     "//third_party/zlib",
     "//url",
+    "//sync/internal_api/attachments/proto",
     "//sync/protocol",
   ]
 
@@ -632,10 +633,11 @@ test("sync_unit_tests") {
     "//net",
     "//net:test_support",
     "//sql",
+    "//sync",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/leveldatabase",
     "//third_party/protobuf:protobuf_lite",
-    "//sync",
     ":test_support_sync_core",
     ":test_support_sync_internal_api",
   ]

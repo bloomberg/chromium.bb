@@ -47,7 +47,7 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
   Result OpenOrCreate(const base::FilePath& path);
 
  private:
-  std::string CreateDataKeyFromAttachmentId(const AttachmentId& attachment_id);
+  std::string MakeDataKeyFromAttachmentId(const AttachmentId& attachment_id);
 
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
   scoped_ptr<leveldb::DB> db_;

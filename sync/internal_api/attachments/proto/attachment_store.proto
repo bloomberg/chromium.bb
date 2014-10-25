@@ -1,0 +1,18 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package attachment_store_pb;
+
+// Metadata for leveldb attachment store database.
+message AttachmentStoreMetadata {
+  // |schema_version| indicates format in which data is written in attachment
+  // store. Needed for upgrade and to prevent newer data from being loaded by
+  // older code that doesn't understand it.
+  optional int32 schema_version = 1;
+}

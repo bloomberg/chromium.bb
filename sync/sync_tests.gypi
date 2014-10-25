@@ -249,6 +249,7 @@
         '../sql/sql.gyp:sql',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'sync',
         'test_support_sync_core',

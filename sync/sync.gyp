@@ -34,7 +34,7 @@
     {
       'target_name': 'sync_core',
       'type': '<(component)',
-      'variables': { 'enable_wexit_time_desctructors': 1, },
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'defines': [
         'SYNC_IMPLEMENTATION',
       ],
@@ -52,6 +52,7 @@
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_lib',
+        'attachment_store_proto',
         'sync_proto',
       ],
       'export_dependent_settings': [
@@ -508,7 +509,7 @@
         'protocol/unique_position.proto',
       ],
       'variables': {
-        'enable_wexit_time_desctructors': 1,
+        'enable_wexit_time_destructors': 1,
         'proto_in_dir': './protocol',
         'proto_out_dir': 'sync/protocol',
         'cc_generator_options': 'dllexport_decl=SYNC_PROTO_EXPORT:',
@@ -516,6 +517,33 @@
       },
       'includes': [
         '../build/protoc.gypi'
+      ],
+    },
+    {
+      # Contains attachment_store protobuf definitions.  Do not depend on this
+      # directly.
+      # Depend on the 'sync' target to get the relevant C++ code, too.
+      #
+      # GN version: //sync/internal_api/attachments/proto
+      'target_name': 'attachment_store_proto',
+      'type': 'static_library',
+      'sources': [
+        # NOTE: If you add a file to this list, also add it to
+        # sync/internal_api/attachments/proto/BUILD.gn
+        'internal_api/attachments/proto/attachment_store.proto',
+      ],
+      'variables': {
+        'enable_wexit_time_destructors': 1,
+        'proto_in_dir': 'internal_api/attachments/proto',
+        'proto_out_dir': 'sync/internal_api/attachments/proto',
+        'cc_generator_options': 'dllexport_decl=SYNC_EXPORT_PRIVATE:',
+        'cc_include': 'sync/base/sync_export.h',
+      },
+      'includes': [
+        '../build/protoc.gypi'
+      ],
+      'defines': [
+        'SYNC_IMPLEMENTATION'
       ],
     },
   ],
