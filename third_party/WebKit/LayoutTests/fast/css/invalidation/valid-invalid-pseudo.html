@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<style>
+input { background-color: transparent }
+#inputValid:valid,
+#inputInvalid:invalid,
+#formValid:valid,
+#formInvalid:invalid {
+    background-color: green
+}
+
+form + div,
+input + div {
+    color: pink
+}
+</style>
+<input id="inputValid" required></input>
+<div>
+    <div></div>
+    <div></div>
+</div>
+<input id="inputInvalid"></input>
+<div>
+    <div></div>
+    <div></div>
+</div>
+<form id="formValid">
+    <input id="inputInFormValid" type="text" required></input>
+    <input type="text"></input>
+    <input type="text"></input>
+</form>
+<div>
+    <div></div>
+    <div></div>
+</div>
+<form id="formInvalid">
+    <input id="inputInFormInvalid" type="text"></input>
+    <input type="text"></input>
+    <input type="text"></input>
+</form>
+<div>
+    <div></div>
+    <div></div>
+</div>
+
+<script>
+description("Use descendant invalidation sets for :valid and :invalid pseudo classes.")
+
+var transparent = "rgba(0, 0, 0, 0)";
+var green = "rgb(0, 128, 0)";
+
+shouldBe("getComputedStyle(inputValid, '').backgroundColor", "transparent");
+document.body.offsetTop; // Force recalc.
+inputValid.removeAttribute("required");
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
+shouldBe("getComputedStyle(inputValid, '').backgroundColor", "green");
+
+shouldBe("getComputedStyle(inputInvalid, '').backgroundColor", "transparent");
+document.body.offsetTop; // Force recalc.
+inputInvalid.setAttribute("required", "");
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
+shouldBe("getComputedStyle(inputInvalid, '').backgroundColor", "green");
+
+shouldBe("getComputedStyle(formInvalid, '').backgroundColor", "transparent");
+document.body.offsetTop; // Force recalc.
+inputInFormValid.removeAttribute("required");
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+shouldBe("getComputedStyle(formValid, '').backgroundColor", "green");
+
+shouldBe("getComputedStyle(formInvalid, '').backgroundColor", "transparent");
+document.body.offsetTop; // Force recalc.
+inputInFormInvalid.setAttribute("required", "");
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
+shouldBe("getComputedStyle(formInvalid, '').backgroundColor", "green");
+
+</script>

@@ -721,7 +721,8 @@ void HTMLFormElement::setNeedsValidityCheck()
     // For now unconditionally order style recalculation, which triggers
     // validity recalculation. In the near future, implement validity cache and
     // recalculate style only if it changed.
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
+    pseudoStateChanged(CSSSelector::PseudoValid);
+    pseudoStateChanged(CSSSelector::PseudoInvalid);
 }
 
 bool HTMLFormElement::checkValidity()

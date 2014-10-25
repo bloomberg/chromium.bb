@@ -57,7 +57,6 @@ extern const AtomicString& Active;
 extern const AtomicString& Disabled;
 extern const AtomicString& Focus;
 extern const AtomicString& Hover;
-extern const AtomicString& Invalid;
 extern const AtomicString& Unresolved;
 
 void init();

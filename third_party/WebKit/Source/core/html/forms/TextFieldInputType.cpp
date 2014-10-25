@@ -491,8 +491,8 @@ void TextFieldInputType::subtreeHasChanged()
     // sanitizeValue() is needed because IME input doesn't dispatch BeforeTextInsertedEvent.
     element().setValueFromRenderer(sanitizeValue(convertFromVisibleValue(element().innerEditorValue())));
     element().updatePlaceholderVisibility(false);
-    // Recalc for :invalid change.
-    element().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
+    element().pseudoStateChanged(CSSSelector::PseudoValid);
+    element().pseudoStateChanged(CSSSelector::PseudoInvalid);
 
     didSetValueByUserEdit(wasChanged ? ValueChangeStateChanged : ValueChangeStateNone);
 }

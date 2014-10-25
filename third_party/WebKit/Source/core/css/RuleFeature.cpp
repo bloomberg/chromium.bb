@@ -304,6 +304,10 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
         case CSSSelector::PseudoChecked:
         case CSSSelector::PseudoEnabled:
         case CSSSelector::PseudoDisabled:
+        case CSSSelector::PseudoOptional:
+        case CSSSelector::PseudoRequired:
+        case CSSSelector::PseudoValid:
+        case CSSSelector::PseudoInvalid:
         case CSSSelector::PseudoIndeterminate:
         case CSSSelector::PseudoTarget:
             return &ensurePseudoInvalidationSet(selector.pseudoType());

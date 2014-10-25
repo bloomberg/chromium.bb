@@ -81,10 +81,8 @@ void HTMLFieldSetElement::setNeedsValidityCheck()
     // For now unconditionally order style recalculation, which triggers
     // validity recalculation. In the near future, consider implement validity
     // cache and recalculate style only if it changed.
-    // If setNeedsStyleRecalc ends up being called conditionally here, then
-    // the caller will have to call setNeedsValidityCheck for all ancestor
-    // fieldsets, not only the furthest one.
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
+    pseudoStateChanged(CSSSelector::PseudoValid);
+    pseudoStateChanged(CSSSelector::PseudoInvalid);
 }
 
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)

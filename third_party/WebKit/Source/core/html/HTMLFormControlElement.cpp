@@ -185,9 +185,8 @@ void HTMLFormControlElement::disabledAttributeChanged()
 void HTMLFormControlElement::requiredAttributeChanged()
 {
     setNeedsValidityCheck();
-    // Style recalculation is needed because style selectors may include
-    // :required and :optional pseudo-classes.
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(requiredAttr));
+    pseudoStateChanged(CSSSelector::PseudoRequired);
+    pseudoStateChanged(CSSSelector::PseudoOptional);
 }
 
 bool HTMLFormControlElement::supportsAutofocus() const
@@ -291,14 +290,8 @@ void HTMLFormControlElement::fieldSetAncestorsSetNeedsValidityCheck(Node* node)
 {
     if (!node)
         return;
-    HTMLFieldSetElement* fieldSet = Traversal<HTMLFieldSetElement>::firstAncestorOrSelf(*node);
-    HTMLFieldSetElement* lastFieldSet = 0;
-    while (fieldSet) {
-        lastFieldSet = fieldSet;
-        fieldSet = Traversal<HTMLFieldSetElement>::firstAncestor(*fieldSet);
-    }
-    if (lastFieldSet)
-        lastFieldSet->setNeedsValidityCheck();
+    for (HTMLFieldSetElement* fieldSet = Traversal<HTMLFieldSetElement>::firstAncestorOrSelf(*node); fieldSet; fieldSet = Traversal<HTMLFieldSetElement>::firstAncestor(*fieldSet))
+        fieldSet->setNeedsValidityCheck();
 }
 
 void HTMLFormControlElement::setChangedSinceLastFormControlChangeEvent(bool changed)
@@ -568,7 +561,8 @@ void HTMLFormControlElement::setNeedsValidityCheck()
         formOwnerSetNeedsValidityCheck();
         fieldSetAncestorsSetNeedsValidityCheck(parentNode());
         // Update style for pseudo classes such as :valid :invalid.
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Invalid));
+        pseudoStateChanged(CSSSelector::PseudoValid);
+        pseudoStateChanged(CSSSelector::PseudoInvalid);
     }
     m_isValid = newIsValid;
 
