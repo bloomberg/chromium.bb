@@ -317,4 +317,9 @@ void Html5FsNode::Destroy() {
   Node::Destroy();
 }
 
+Error Html5FsNode::Fchmod(mode_t mode) {
+  // html5fs does not support any kinds of permissions or mode bits.
+  return 0;
+}
+
 }  // namespace nacl_io

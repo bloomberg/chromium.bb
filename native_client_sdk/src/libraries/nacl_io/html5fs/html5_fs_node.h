@@ -39,6 +39,7 @@ class Html5FsNode : public Node {
 
   virtual int GetType();
   virtual Error GetSize(off_t* out_size);
+  virtual Error Fchmod(mode_t mode);
 
  protected:
   Html5FsNode(Filesystem* filesystem, PP_Resource fileref);

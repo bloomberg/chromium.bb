@@ -456,6 +456,14 @@ TEST_F(Html5FsTest, FTruncate) {
   EXPECT_EQ(EISDIR, node->FTruncate(4));
 }
 
+TEST_F(Html5FsTest, Chmod) {
+  StringMap_t map;
+  ScopedRef<Html5FsForTesting> fs(new Html5FsForTesting(map, &ppapi_));
+  ScopedNode node;
+  ASSERT_EQ(0, fs->Open(Path("/"), O_RDONLY, &node));
+  ASSERT_EQ(0, node->Fchmod(0777));
+}
+
 TEST_F(Html5FsTest, GetDents) {
   const char contents[] = "contents";
   EXPECT_TRUE(
