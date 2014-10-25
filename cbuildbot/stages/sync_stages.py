@@ -11,6 +11,7 @@ import datetime
 import logging
 import os
 import sys
+import time
 from xml.etree import ElementTree
 from xml.dom import minidom
 
@@ -674,6 +675,10 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
   manifest, and apply the paches written in the manifest.
   """
 
+  # The amount of time we wait before assuming that the Pre-CQ is down and
+  # that we should start testing changes that haven't been tested by the Pre-CQ.
+  PRE_CQ_TIMEOUT = 2 * 60 * 60
+
   def __init__(self, builder_run, **kwargs):
     super(CommitQueueSyncStage, self).__init__(builder_run, **kwargs)
     # Figure out the builder's name from the buildbot waterfall.
@@ -709,11 +714,20 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       if status == constants.CL_STATUS_PASSED:
         changes_to_test.append(change)
 
-    # If we only see changes that weren't verified by Pre-CQ, try all of the
-    # changes. This ensures that the CQ continues to work even if the Pre-CQ is
-    # down.
+    # Allow Commit-Ready=+2 changes to bypass the Pre-CQ, if there are no other
+    # changes.
     if not changes_to_test:
-      changes_to_test = changes
+      changes_to_test = [x for x in changes if x.HasApproval('COMR', '2')]
+
+    # If we only see changes that weren't verified by Pre-CQ, and some of them
+    # are really old changes, try all of the changes. This ensures that the CQ
+    # continues to work (albeit slowly) even if the Pre-CQ is down.
+    if changes and not changes_to_test:
+      oldest = min(x.approval_timestamp for x in changes)
+      if time.time() > oldest + self.PRE_CQ_TIMEOUT:
+        # It's safest to try all changes here because some of the old changes
+        # might depend on newer changes (e.g. via CQ-DEPEND).
+        changes_to_test = changes
 
     return changes_to_test, non_manifest_changes
 

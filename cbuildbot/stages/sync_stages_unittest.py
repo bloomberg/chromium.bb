@@ -178,7 +178,9 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     self.sync_stage = sync_stages.CommitQueueSyncStage(self._run)
 
   def PerformSync(self, committed=False, num_patches=1, tree_open=True,
-                  tree_throttled=False, runs=0, **kwargs):
+                  tree_throttled=False,
+                  pre_cq_status=constants.CL_STATUS_PASSED,
+                  runs=0, **kwargs):
     """Helper to perform a basic sync for master commit queue.
 
     Args:
@@ -188,6 +190,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
       tree_open: If True, behave as if tree is open. Default: True.
       tree_throttled: If True, behave as if tree is throttled
                       (overriding the tree_open arg). Default: False.
+      pre_cq_status: PreCQ status for mock patches. Default: passed.
       runs: The maximum number of times to allow validation_pool.AcquirePool
             to wait for additional changes. runs=0 means never wait for
             additional changes. Default: 0.
@@ -198,6 +201,17 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     """
     kwargs.setdefault('approval_timestamp', time.time())
     changes = [MockPatch(**kwargs)] * num_patches
+    if pre_cq_status is not None:
+      new_build_id = self.fake_db.InsertBuild('Pre cq group',
+                                              constants.WATERFALL_TRYBOT,
+                                              1,
+                                              constants.PRE_CQ_GROUP_CONFIG,
+                                              'bot-hostname')
+      for change in changes:
+        action = clactions.TranslatePreCQStatusToAction(pre_cq_status)
+        self.fake_db.InsertCLActions(
+            new_build_id,
+            [clactions.CLAction.FromGerritPatchAndAction(change, action)])
     self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
                      return_value=committed, autospec=True)
     self.PatchObject(gerrit.GerritHelper, 'Query',
@@ -313,6 +327,19 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
     self.assertItemsEqual(self.sync_stage.pool.changes, changes)
     self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
 
+  def testCommitManifestChangeWithoutPreCQ(self):
+    """Changes get ignored if they aren't approved by pre-cq."""
+    self._testCommitManifestChange(pre_cq_status=None)
+    self.assertItemsEqual(self.sync_stage.pool.changes, [])
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+
+  def testCommitManifestChangeWithoutPreCQAndOldPatches(self):
+    """Changes get tested without pre-cq if the approval_timestamp is old."""
+    changes = self._testCommitManifestChange(pre_cq_status=None,
+                                             approval_timestamp=0)
+    self.assertItemsEqual(self.sync_stage.pool.changes, changes)
+    self.assertItemsEqual(self.sync_stage.pool.non_manifest_changes, [])
+
   def testDefaultSync(self):
     """See MasterCQSyncTestCase"""
     changes = self._testDefaultSync()
@@ -406,14 +433,14 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testLaunchTrybot(self):
     """Test launching a trybot."""
-    change = self._testCommitManifestChange()[0]
+    change = self._testCommitManifestChange(pre_cq_status=None)[0]
 
     self.assertEqual(self._GetPreCQStatus(change), self.STATUS_LAUNCHING)
 
   def testLaunchTrybotWithAutolaunch(self):
     """Test launching a trybot with auto-launch."""
     self._PrepareAutoLaunch()
-    change = self._testCommitManifestChange()[0]
+    change = self._testCommitManifestChange(pre_cq_status=None)[0]
 
     self.assertEqual(self._GetPreCQStatus(change), self.STATUS_INFLIGHT)
 
@@ -430,7 +457,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     LAUNCHING, WAITING, and FAILED |launching|, |waiting|, and |failed| times
     respectively.
     """
-    change = self._testCommitManifestChange(runs=runs)[0]
+    change = self._testCommitManifestChange(pre_cq_status=None, runs=runs)[0]
 
     # Count the number of recorded actions corresponding to launching, watiting,
     # and failed, and ensure they are correct.
