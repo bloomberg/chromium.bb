@@ -50,7 +50,7 @@ public:
     void setFirstLetter(RenderBoxModelObject* firstLetter) { m_firstLetter = firstLetter; }
     RenderText* firstRenderTextInFirstLetter() const;
 
-    StringImpl* contentString() const { return m_contentString.get(); }
+    void setContentString(StringImpl*);
     virtual PassRefPtr<StringImpl> originalText() const override;
 
     virtual void setText(PassRefPtr<StringImpl>, bool force = false) override;

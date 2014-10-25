@@ -33,6 +33,7 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str, int startOff
     : RenderText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
     , m_start(startOffset)
     , m_end(length)
+    , m_contentString(str)
     , m_firstLetter(nullptr)
 {
 }
@@ -65,10 +66,17 @@ RenderText* RenderTextFragment::firstRenderTextInFirstLetter() const
     return 0;
 }
 
+void RenderTextFragment::setContentString(StringImpl* str)
+{
+    m_contentString = str;
+    setText(str);
+}
+
 PassRefPtr<StringImpl> RenderTextFragment::originalText() const
 {
-    Node* e = node();
-    RefPtr<StringImpl> result = ((e && e->isTextNode()) ? toText(e)->dataImpl() : contentString());
+    RefPtr<StringImpl> result = RenderText::originalText();
+    if (!result)
+        result = m_contentString;
     if (!result)
         return nullptr;
     return result->substring(start(), end());
@@ -102,7 +110,6 @@ void RenderTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
         // layout. crbug.com/370458
         DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
 
-        ASSERT(!m_contentString);
         m_firstLetter->destroy();
         m_firstLetter = nullptr;
         if (Node* t = node()) {
@@ -122,8 +129,9 @@ void RenderTextFragment::transformText()
 UChar RenderTextFragment::previousCharacter() const
 {
     if (start()) {
-        Node* e = node();
-        StringImpl* original = ((e && e->isTextNode()) ? toText(e)->dataImpl() : contentString());
+        RefPtr<StringImpl> original = RenderText::originalText();
+        if (!original)
+            original =  m_contentString;
         if (original && start() <= original->length())
             return (*original)[start() - 1];
     }

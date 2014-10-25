@@ -53,6 +53,8 @@ private:
     void updateDepth();
     bool isAttached() { return m_attached; }
 
+    RenderTextFragment* findFragmentChild() const;
+
     QuoteType m_type;
     int m_depth;
     RawPtrWillBeMember<RenderQuote> m_next;

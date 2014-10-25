@@ -270,12 +270,27 @@ void RenderQuote::updateText()
 
     m_text = text;
 
-    while (RenderObject* child = lastChild())
-        child->destroy();
+    RenderTextFragment* fragment = findFragmentChild();
+    if (fragment) {
+        fragment->setStyle(style());
+        fragment->setContentString(m_text.impl());
+    } else {
+        fragment = new RenderTextFragment(&document(), m_text.impl());
+        fragment->setStyle(style());
+        addChild(fragment);
+    }
+}
 
-    RenderTextFragment* fragment = new RenderTextFragment(&document(), m_text.impl());
-    fragment->setStyle(style());
-    addChild(fragment);
+RenderTextFragment* RenderQuote::findFragmentChild() const
+{
+    // We walk from the end of the child list because, if we've had a first-letter
+    // renderer inserted then the remaining text will be at the end.
+    while (RenderObject* child = lastChild()) {
+        if (child->isText() && toRenderText(child)->isTextFragment())
+            return toRenderTextFragment(child);
+    }
+
+    return nullptr;
 }
 
 String RenderQuote::computeText() const
