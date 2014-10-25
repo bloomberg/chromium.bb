@@ -122,6 +122,11 @@ class WebContentsViewMac : public WebContentsView,
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
  private:
+  // Returns the fullscreen view, if one exists; otherwise, returns the content
+  // native view. This ensures that the view currently attached to a NSWindow is
+  // being used to query or set first responder state.
+  gfx::NativeView GetNativeViewForFocus() const;
+
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 

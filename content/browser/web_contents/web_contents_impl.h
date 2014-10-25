@@ -515,6 +515,7 @@ class CONTENT_EXPORT WebContentsImpl
   // RenderWidgetHostDelegate --------------------------------------------------
 
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
+  void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) override;
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;

@@ -1286,6 +1286,15 @@ void WebContentsImpl::RenderWidgetDeleted(
   }
 }
 
+void WebContentsImpl::RenderWidgetGotFocus(
+    RenderWidgetHostImpl* render_widget_host) {
+  // Notify the delegate if an embedded fullscreen widget was focused.
+  if (delegate_ && render_widget_host &&
+      delegate_->EmbedsFullscreenWidget() &&
+      render_widget_host->GetView() == GetFullscreenRenderWidgetHostView())
+    delegate_->WebContentsFocused(this);
+}
+
 bool WebContentsImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
@@ -2100,35 +2109,19 @@ DropData* WebContentsImpl::GetDropData() {
 }
 
 void WebContentsImpl::Focus() {
-  RenderWidgetHostView* const fullscreen_view =
-      GetFullscreenRenderWidgetHostView();
-  if (fullscreen_view)
-    fullscreen_view->Focus();
-  else
-    view_->Focus();
+  view_->Focus();
 }
 
 void WebContentsImpl::SetInitialFocus() {
-  RenderWidgetHostView* const fullscreen_view =
-      GetFullscreenRenderWidgetHostView();
-  if (fullscreen_view)
-    fullscreen_view->Focus();
-  else
-    view_->SetInitialFocus();
+  view_->SetInitialFocus();
 }
 
 void WebContentsImpl::StoreFocus() {
-  if (!GetFullscreenRenderWidgetHostView())
-    view_->StoreFocus();
+  view_->StoreFocus();
 }
 
 void WebContentsImpl::RestoreFocus() {
-  RenderWidgetHostView* const fullscreen_view =
-      GetFullscreenRenderWidgetHostView();
-  if (fullscreen_view)
-    fullscreen_view->Focus();
-  else
-    view_->RestoreFocus();
+  view_->RestoreFocus();
 }
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {

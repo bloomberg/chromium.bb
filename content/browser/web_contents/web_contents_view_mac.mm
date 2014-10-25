@@ -158,9 +158,18 @@ void WebContentsViewMac::SizeContents(const gfx::Size& size) {
   // previous implementation.
 }
 
+gfx::NativeView WebContentsViewMac::GetNativeViewForFocus() const {
+  RenderWidgetHostView* rwhv =
+      web_contents_->GetFullscreenRenderWidgetHostView();
+  if (!rwhv)
+    rwhv = web_contents_->GetRenderWidgetHostView();
+  return rwhv ? rwhv->GetNativeView() : nil;
+}
+
 void WebContentsViewMac::Focus() {
-  NSWindow* window = [cocoa_view_.get() window];
-  [window makeFirstResponder:GetContentNativeView()];
+  gfx::NativeView native_view = GetNativeViewForFocus();
+  NSWindow* window = [native_view window];
+  [window makeFirstResponder:native_view];
   if (![window isVisible])
     return;
   [window makeKeyAndOrderFront:nil];
@@ -170,21 +179,23 @@ void WebContentsViewMac::SetInitialFocus() {
   if (web_contents_->FocusLocationBarByDefault())
     web_contents_->SetFocusToLocationBar(false);
   else
-    [[cocoa_view_.get() window] makeFirstResponder:GetContentNativeView()];
+    Focus();
 }
 
 void WebContentsViewMac::StoreFocus() {
+  gfx::NativeView native_view = GetNativeViewForFocus();
   // We're explicitly being asked to store focus, so don't worry if there's
   // already a view saved.
   focus_tracker_.reset(
-      [[FocusTracker alloc] initWithWindow:[cocoa_view_ window]]);
+      [[FocusTracker alloc] initWithWindow:[native_view window]]);
 }
 
 void WebContentsViewMac::RestoreFocus() {
+  gfx::NativeView native_view = GetNativeViewForFocus();
   // TODO(avi): Could we be restoring a view that's no longer in the key view
   // chain?
   if (!(focus_tracker_.get() &&
-        [focus_tracker_ restoreFocusInWindow:[cocoa_view_ window]])) {
+        [focus_tracker_ restoreFocusInWindow:[native_view window]])) {
     // Fall back to the default focus behavior if we could not restore focus.
     // TODO(shess): If location-bar gets focus by default, this will
     // select-all in the field.  If there was a specific selection in

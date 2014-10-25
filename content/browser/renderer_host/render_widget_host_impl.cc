@@ -628,6 +628,8 @@ void RenderWidgetHostImpl::ResizeRectChanged(const gfx::Rect& new_rect) {
 
 void RenderWidgetHostImpl::GotFocus() {
   Focus();
+  if (delegate_)
+    delegate_->RenderWidgetGotFocus(this);
 }
 
 void RenderWidgetHostImpl::Focus() {

@@ -1033,7 +1033,10 @@ void WebContentsViewAura::Focus() {
   if (delegate_.get() && delegate_->Focus())
     return;
 
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv =
+      web_contents_->GetFullscreenRenderWidgetHostView();
+  if (!rwhv)
+    rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->Focus();
 }

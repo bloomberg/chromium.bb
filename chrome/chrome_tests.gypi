@@ -864,6 +864,7 @@
       'browser/ui/cocoa/apps/quit_with_apps_controller_mac_interactive_uitest.cc',
       'browser/ui/cocoa/panels/panel_cocoa_browsertest.mm',
       'browser/ui/find_bar/find_bar_host_interactive_uitest.cc',
+      'browser/ui/fullscreen/flash_fullscreen_interactive_browsertest.cc',
       'browser/ui/fullscreen/fullscreen_controller_interactive_browsertest.cc',
       'browser/ui/fullscreen/fullscreen_controller_state_interactive_browsertest.cc',
       'browser/ui/omnibox/omnibox_view_browsertest.cc',

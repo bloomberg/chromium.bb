@@ -554,6 +554,8 @@
       'tests/test_flash_file.h',
       'tests/test_flash_fullscreen.cc',
       'tests/test_flash_fullscreen.h',
+      'tests/test_flash_fullscreen_for_browser_ui.cc',
+      'tests/test_flash_fullscreen_for_browser_ui.h',
       'tests/test_flash_message_loop.cc',
       'tests/test_flash_message_loop.h',
       'tests/test_net_address_private.cc',
