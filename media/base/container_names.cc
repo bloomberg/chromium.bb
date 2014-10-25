@@ -954,7 +954,7 @@ static bool CheckMov(const uint8* buffer, int buffer_size) {
 
   int offset = 0;
   while (offset + 8 < buffer_size) {
-    int atomsize = Read32(buffer + offset);
+    uint32 atomsize = Read32(buffer + offset);
     uint32 atomtype = Read32(buffer + offset + 4);
     // Only need to check for ones that are valid at the top level.
     switch (atomtype) {
@@ -985,7 +985,7 @@ static bool CheckMov(const uint8* buffer, int buffer_size) {
         break;  // Offset is way past buffer size.
       atomsize = Read32(buffer + offset + 12);
     }
-    if (atomsize <= 0)
+    if (atomsize == 0 || atomsize > static_cast<size_t>(buffer_size))
       break;  // Indicates the last atom or length too big.
     offset += atomsize;
   }
