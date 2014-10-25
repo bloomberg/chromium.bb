@@ -1,0 +1,33 @@
+UNKNOWN_TYPE | selCreditCardType | Credit CardCard Type |  | selCreditCardType_1-default
+UNKNOWN_TYPE | cardNumber | Card Number |  | selCreditCardType_1-default
+UNKNOWN_TYPE | expirery-month | Credit CardCard Type |  | selCreditCardType_1-default
+UNKNOWN_TYPE | expirery-year | Credit CardCard Type |  | selCreditCardType_1-default
+UNKNOWN_TYPE | securityCode | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | TxtRzMembershipId | Member IDDon't Know it? |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCNumber | Card Number or Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.SVCCID | Security Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.rwzCertMemberNumbers | Member ID |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.rwzCertNumbers | Certificate Number Last 10 digits |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.digitalDiscountsIds | Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.digitalDiscountsIds | Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.digitalDiscountsIds | Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.digitalDiscountsIds | Code |  | selCreditCardType_1-default
+UNKNOWN_TYPE | /bestbuy/digiterra/commerce/order/formhandler/CheckoutPaymentFormHandler.digitalDiscountsIds | Code |  | selCreditCardType_1-default
