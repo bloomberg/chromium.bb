@@ -142,8 +142,8 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
     AXObjectCacheImpl* cache = axObjectCache();
     RefPtr<AXObject> child = m_children[optionIndex].get();
 
-    cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXFocusedUIElementChanged, true, PostSynchronously);
-    cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXMenuListItemSelected, true, PostSynchronously);
+    cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXFocusedUIElementChanged, true);
+    cache->postNotification(child.get(), document(), AXObjectCacheImpl::AXMenuListItemSelected, true);
 }
 
 } // namespace blink

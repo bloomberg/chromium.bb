@@ -52,8 +52,6 @@ struct TextMarkerData {
     EAffinity affinity;
 };
 
-enum PostType { PostSynchronously, PostAsynchronously };
-
 // This class should only be used from inside the accessibility directory.
 class AXObjectCacheImpl : public AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl); WTF_MAKE_FAST_ALLOCATED;
@@ -157,9 +155,9 @@ public:
     // as long as the modification count hasn't changed.
     int modificationCount() const { return m_modificationCount; }
 
-    void postNotification(RenderObject*, AXNotification, bool postToElement, PostType = PostAsynchronously);
-    void postNotification(Node*, AXNotification, bool postToElement, PostType = PostAsynchronously);
-    void postNotification(AXObject*, Document*, AXNotification, bool postToElement, PostType = PostAsynchronously);
+    void postNotification(RenderObject*, AXNotification, bool postToElement);
+    void postNotification(Node*, AXNotification, bool postToElement);
+    void postNotification(AXObject*, Document*, AXNotification, bool postToElement);
 
 protected:
     void postPlatformNotification(AXObject*, AXNotification);

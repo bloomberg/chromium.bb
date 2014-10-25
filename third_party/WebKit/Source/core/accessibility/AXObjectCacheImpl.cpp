@@ -730,7 +730,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
     m_notificationsToPost.clear();
 }
 
-void AXObjectCacheImpl::postNotification(RenderObject* renderer, AXNotification notification, bool postToElement, PostType postType)
+void AXObjectCacheImpl::postNotification(RenderObject* renderer, AXNotification notification, bool postToElement)
 {
     if (!renderer)
         return;
@@ -748,10 +748,10 @@ void AXObjectCacheImpl::postNotification(RenderObject* renderer, AXNotification 
     if (!renderer)
         return;
 
-    postNotification(object.get(), &renderer->document(), notification, postToElement, postType);
+    postNotification(object.get(), &renderer->document(), notification, postToElement);
 }
 
-void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification, bool postToElement, PostType postType)
+void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification, bool postToElement)
 {
     if (!node)
         return;
@@ -769,10 +769,10 @@ void AXObjectCacheImpl::postNotification(Node* node, AXNotification notification
     if (!node)
         return;
 
-    postNotification(object.get(), &node->document(), notification, postToElement, postType);
+    postNotification(object.get(), &node->document(), notification, postToElement);
 }
 
-void AXObjectCacheImpl::postNotification(AXObject* object, Document* document, AXNotification notification, bool postToElement, PostType postType)
+void AXObjectCacheImpl::postNotification(AXObject* object, Document* document, AXNotification notification, bool postToElement)
 {
     m_modificationCount++;
 
@@ -785,13 +785,9 @@ void AXObjectCacheImpl::postNotification(AXObject* object, Document* document, A
     if (!object)
         return;
 
-    if (postType == PostAsynchronously) {
-        m_notificationsToPost.append(std::make_pair(object, notification));
-        if (!m_notificationPostTimer.isActive())
-            m_notificationPostTimer.startOneShot(0, FROM_HERE);
-    } else {
-        postPlatformNotification(object, notification);
-    }
+    m_notificationsToPost.append(std::make_pair(object, notification));
+    if (!m_notificationPostTimer.isActive())
+        m_notificationPostTimer.startOneShot(0, FROM_HERE);
 }
 
 void AXObjectCacheImpl::checkedStateChanged(Node* node)
