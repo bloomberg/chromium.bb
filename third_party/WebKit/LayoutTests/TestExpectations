@@ -848,9 +848,6 @@ crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-imag
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash Timeout ]
 crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
 
-crbug.com/426451 svg/as-border-image/svg-as-border-image.html [ NeedsRebaseline ]
-crbug.com/426451 svg/as-background-image/background-repeat.html [ NeedsRebaseline ]
-
 crbug.com/356991 [ Linux Debug ] fast/canvas/canvas-createImageBitmap-drawImage-video.html [ Crash Pass ]
 crbug.com/356996 [ Debug ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356996 [ Mac Release ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
