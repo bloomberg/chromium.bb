@@ -147,14 +147,17 @@ static void appendServerMapMousePosition(StringBuilder& url, Event* event)
 
 void HTMLAnchorElement::defaultEventHandler(Event* event)
 {
-    if (isLink()) {
-        if (focused() && isEnterKeyKeydownEvent(event) && isLiveLink()) {
+    if (isLiveLink()) {
+        ASSERT(event->target());
+        Node* target = event->target()->toNode();
+        ASSERT(target);
+        if ((focused() || target->focused()) && isEnterKeyKeypressEvent(event)) {
             event->setDefaultHandled();
             dispatchSimulatedClick(event);
             return;
         }
 
-        if (isLinkClick(event) && isLiveLink()) {
+        if (isLinkClick(event)) {
             handleClick(event);
             return;
         }
@@ -357,9 +360,9 @@ void HTMLAnchorElement::handleClick(Event* event)
     }
 }
 
-bool isEnterKeyKeydownEvent(Event* event)
+bool isEnterKeyKeypressEvent(Event* event)
 {
-    return event->type() == EventTypeNames::keydown && event->isKeyboardEvent() && toKeyboardEvent(event)->keyIdentifier() == "Enter";
+    return event->type() == EventTypeNames::keypress && event->isKeyboardEvent() && toKeyboardEvent(event)->keyIdentifier() == "Enter";
 }
 
 bool isLinkClick(Event* event)

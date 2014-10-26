@@ -1444,6 +1444,10 @@ crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing [ Pass Failu
 
 crbug.com/421298 http/tests/security/subresourceIntegrity/subresource-integrity-style-blocked.html [ Pass Failure ]
 
+# Temporarily skipped until event_sender is changed not to set the keyIdentifier into an empty string
+crbug.com/423270 fast/events/press-enter-key-on-focused-element-inside-link.html [ Pass Failure ]
+crbug.com/423270 fast/dom/fragment-activation-focuses-target.html [ Pass Failure ]
+
 # These are experiencing assertions in harfbuzz.
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard Debug ] fast/dom/52776.html [ Pass Crash ]
