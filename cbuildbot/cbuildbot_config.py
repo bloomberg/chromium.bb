@@ -1810,6 +1810,17 @@ internal_paladin.add_config('link-tot-paladin',
   hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
 )
 
+# Sanity check builder, aspiring to replace 'link-tot-paladin' once it is
+# verified.
+internal_paladin.add_config('wolf-tot-paladin',
+  boards=['wolf'],
+  paladin_builder_name='wolf ToT paladin',
+  do_not_apply_cq_patches=True,
+  prebuilts=False,
+  hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
+  important=False,
+)
+
 internal_paladin.add_config('x86-mario-paladin',
   boards=['x86-mario'],
   paladin_builder_name='x86-mario paladin',
