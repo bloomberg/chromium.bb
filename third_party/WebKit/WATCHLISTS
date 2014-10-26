@@ -340,6 +340,7 @@
                            'cabanier@adobe.com',
                            'dschulze@chromium.org',
                            'rob.buis@samsung.com',
+                           'fmalita@chromium.org',
                            'jbroman@chromium.org' ],
     'svg': [ 'schenney@chromium.org', 'pdr+svgwatchlist@chromium.org', 'fmalita@chromium.org', 'dschulze@chromium.org', 'rob.buis@samsung.com', 'fs@opera.com', 'ed+blinkwatch@opera.com', 'gyuyoung.kim@webkit.org', 'kouhei+svg@chromium.org' ],
     'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org', 'dglazkov+blink@chromium.org', 'ed+blinkwatch@opera.com', 'rob.buis@samsung.com', 'blink-reviews-css@chromium.org' ],
