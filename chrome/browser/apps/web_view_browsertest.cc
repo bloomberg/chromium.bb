@@ -1324,7 +1324,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerNewWebView) {
 // the main browser window to a page that sets a cookie and loads an app with
 // multiple webview tags. Each tag sets a cookie and the test checks the proper
 // storage isolation is enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
+// This test is flaky. See http://crbug.com/294196.
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_CookieIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   const std::string kExpire =
       "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
@@ -1631,7 +1632,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
 // an app with multiple webview tags and each tag creates an IndexedDB record,
 // which the test checks to ensure proper storage isolation is enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
+// This test is flaky. See http://crbug.com/248500.
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_IndexedDBIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
