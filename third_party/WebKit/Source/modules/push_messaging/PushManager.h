@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -22,7 +21,7 @@ public:
         return new PushManager();
     }
 
-    ScriptPromise registerPushMessaging(ScriptState*, const String& senderId);
+    ScriptPromise registerPushMessaging(ScriptState*);
 
     void trace(Visitor*) { }
 

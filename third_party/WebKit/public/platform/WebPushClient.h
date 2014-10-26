@@ -7,7 +7,6 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebPushError.h"
-#include "public/platform/WebString.h"
 
 namespace blink {
 
@@ -22,7 +21,7 @@ public:
 
     // Ownership of the WebPushRegistrationCallbacks is transferred to the
     // client. Ownership of the WebServiceWorkerProvider is not transferred.
-    virtual void registerPushMessaging(const WebString& senderId, WebPushRegistrationCallbacks*, WebServiceWorkerProvider*) { }
+    virtual void registerPushMessaging(WebPushRegistrationCallbacks*, WebServiceWorkerProvider*) { }
 };
 
 } // namespace blink

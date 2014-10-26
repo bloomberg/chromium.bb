@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// http://w3c.github.io/push-api/#pushregistrationmanager-interface
+
 [
     NoInterfaceObject,
     RuntimeEnabled=PushMessaging,
     GarbageCollected,
 ] interface PushManager {
-    [CallWith=ScriptState, ImplementedAs=registerPushMessaging] Promise register(DOMString senderId);
+    [CallWith=ScriptState, ImplementedAs=registerPushMessaging] Promise register();
 };

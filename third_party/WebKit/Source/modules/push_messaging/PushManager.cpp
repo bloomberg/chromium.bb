@@ -28,7 +28,7 @@ PushManager::PushManager()
 {
 }
 
-ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState, const String& senderId)
+ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
 {
     ASSERT(scriptState->executionContext()->isDocument());
 
@@ -45,7 +45,7 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState, const
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    client->registerPushMessaging(senderId, new CallbackPromiseAdapter<PushRegistration, PushError>(resolver), serviceWorkerProvider);
+    client->registerPushMessaging(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver), serviceWorkerProvider);
     return promise;
 }
 
