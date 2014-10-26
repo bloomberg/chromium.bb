@@ -73,13 +73,12 @@ int FakePictureLayerTilingClient::GetSkewportExtrapolationLimitInContentPixels()
   return skewport_extrapolation_limit_in_content_pixels_;
 }
 
-const Region* FakePictureLayerTilingClient::GetPendingInvalidation() {
+const Region* FakePictureLayerTilingClient::GetInvalidation() {
   return &invalidation_;
 }
 
-const PictureLayerTiling*
-FakePictureLayerTilingClient::GetPendingOrActiveTwinTiling(
-    const PictureLayerTiling* tiling) const {
+const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
+      const PictureLayerTiling* tiling) const {
   return twin_tiling_;
 }
 
