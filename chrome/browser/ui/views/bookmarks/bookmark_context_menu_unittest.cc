@@ -45,7 +45,7 @@ namespace {
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
  public:
-  virtual WebContents* OpenURL(const OpenURLParams& params) override {
+  WebContents* OpenURL(const OpenURLParams& params) override {
     urls_.push_back(params.url);
     return NULL;
   }
@@ -63,7 +63,7 @@ class BookmarkContextMenuTest : public testing::Test {
         model_(NULL) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     event_source_ = ui::PlatformEventSource::CreateDefault();
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
@@ -74,7 +74,7 @@ class BookmarkContextMenuTest : public testing::Test {
     AddTestData();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
 
     BrowserThread::GetBlockingPool()->FlushForTesting();

@@ -45,9 +45,9 @@ const int kControlBorderWidth = 2;
 class UnsizedCombobox : public views::Combobox {
  public:
   explicit UnsizedCombobox(ui::ComboboxModel* model) : views::Combobox(model) {}
-  virtual ~UnsizedCombobox() {}
+  ~UnsizedCombobox() override {}
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(0, views::Combobox::GetPreferredSize().height());
   }
 

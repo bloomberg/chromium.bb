@@ -44,20 +44,20 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
 
   static void Hide();
 
-  virtual ~BookmarkBubbleView();
+  ~BookmarkBubbleView() override;
 
   // views::BubbleDelegateView method.
-  virtual views::View* GetInitiallyFocusedView() override;
+  views::View* GetInitiallyFocusedView() override;
 
   // views::WidgetDelegate method.
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
   // views::View method.
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  protected:
   // views::BubbleDelegateView method.
-  virtual void Init() override;
+  void Init() override;
 
  private:
   friend class BookmarkBubbleViewTest;
@@ -76,15 +76,14 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   base::string16 GetTitle();
 
   // Overridden from views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // Overridden from views::ButtonListener:
   // Closes the bubble or opens the edit dialog.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from views::ComboboxListener:
-  virtual void OnPerformAction(views::Combobox* combobox) override;
+  void OnPerformAction(views::Combobox* combobox) override;
 
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);

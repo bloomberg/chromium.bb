@@ -42,7 +42,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection,
       bool close_on_remove);
-  virtual ~BookmarkContextMenu();
+  ~BookmarkContextMenu() override;
 
   // Shows the context menu at the specified point.
   void RunMenuAt(const gfx::Point& point,
@@ -58,18 +58,18 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   void SetPageNavigator(content::PageNavigator* navigator);
 
   // Overridden from views::MenuDelegate:
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
-  virtual bool IsItemChecked(int command_id) const override;
-  virtual bool IsCommandEnabled(int command_id) const override;
-  virtual bool IsCommandVisible(int command_id) const override;
-  virtual bool ShouldCloseAllMenusOnExecute(int id) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsItemChecked(int command_id) const override;
+  bool IsCommandEnabled(int command_id) const override;
+  bool IsCommandVisible(int command_id) const override;
+  bool ShouldCloseAllMenusOnExecute(int id) override;
 
   // Overridden from BookmarkContextMenuControllerDelegate:
-  virtual void CloseMenu() override;
-  virtual void WillExecuteCommand(
+  void CloseMenu() override;
+  void WillExecuteCommand(
       int command_id,
       const std::vector<const BookmarkNode*>& bookmarks) override;
-  virtual void DidExecuteCommand(int command_id) override;
+  void DidExecuteCommand(int command_id) override;
 
  private:
   scoped_ptr<BookmarkContextMenuController> controller_;

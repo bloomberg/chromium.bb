@@ -184,11 +184,11 @@ class BookmarkButtonBase : public views::LabelButton {
     }
   }
 
-  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
+  View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
     return HitTestPoint(point) && CanProcessEventsWithinSubtree() ? this : NULL;
   }
 
-  virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const override {
+  scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const override {
     scoped_ptr<LabelButtonBorder> border = LabelButton::CreateDefaultBorder();
     border->set_insets(gfx::Insets(kButtonPaddingVertical,
                                    kButtonPaddingHorizontal,
@@ -197,7 +197,7 @@ class BookmarkButtonBase : public views::LabelButton {
     return border.Pass();
   }
 
-  virtual bool IsTriggerableEvent(const ui::Event& e) override {
+  bool IsTriggerableEvent(const ui::Event& e) override {
     return e.type() == ui::ET_GESTURE_TAP ||
            e.type() == ui::ET_GESTURE_TAP_DOWN ||
            event_utils::IsPossibleDispositionEvent(e);
@@ -227,8 +227,8 @@ class BookmarkButton : public BookmarkButtonBase {
         profile_(profile) {
   }
 
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override {
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override {
     gfx::Point location(p);
     ConvertPointToScreen(this, &location);
     *tooltip = BookmarkBarView::CreateToolTipForURLAndTitle(
@@ -236,9 +236,7 @@ class BookmarkButton : public BookmarkButtonBase {
     return !tooltip->empty();
   }
 
-  virtual const char* GetClassName() const override {
-    return kViewClassName;
-  }
+  const char* GetClassName() const override { return kViewClassName; }
 
  private:
   const GURL& url_;
@@ -264,9 +262,7 @@ class ShortcutButton : public BookmarkButtonBase {
       : BookmarkButtonBase(listener, title) {
   }
 
-  virtual const char* GetClassName() const override {
-    return kViewClassName;
-  }
+  const char* GetClassName() const override { return kViewClassName; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShortcutButton);
@@ -297,14 +293,14 @@ class BookmarkFolderButton : public views::MenuButton {
     }
   }
 
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override {
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override {
     if (label()->GetPreferredSize().width() > label()->size().width())
       *tooltip = GetText();
     return !tooltip->empty();
   }
 
-  virtual bool IsTriggerableEvent(const ui::Event& e) override {
+  bool IsTriggerableEvent(const ui::Event& e) override {
     // Left clicks and taps should show the menu contents and right clicks
     // should show the context menu. They should not trigger the opening of
     // underlying urls.
@@ -332,7 +328,7 @@ class OverFlowButton : public views::MenuButton {
       : MenuButton(NULL, base::string16(), owner, false),
         owner_(owner) {}
 
-  virtual bool OnMousePressed(const ui::MouseEvent& e) override {
+  bool OnMousePressed(const ui::MouseEvent& e) override {
     owner_->StopThrobbing(true);
     return views::MenuButton::OnMousePressed(e);
   }
@@ -418,9 +414,9 @@ struct BookmarkBarView::DropInfo {
 class BookmarkBarView::ButtonSeparatorView : public views::View {
  public:
   ButtonSeparatorView() {}
-  virtual ~ButtonSeparatorView() {}
+  ~ButtonSeparatorView() override {}
 
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     DetachableToolbarView::PaintVerticalDivider(
         canvas, kSeparatorStartX, height(), 1,
         DetachableToolbarView::kEdgeDividerColor,
@@ -428,13 +424,13 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     // We get the full height of the bookmark bar, so that the height returned
     // here doesn't matter.
     return gfx::Size(kSeparatorWidth, 1);
   }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) override {
+  void GetAccessibleState(ui::AXViewState* state) override {
     state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR);
     state->role = ui::AX_ROLE_SPLITTER;
   }

@@ -35,7 +35,7 @@ class BookmarkEditorViewTest : public testing::Test {
         model_(NULL) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
 
@@ -45,8 +45,7 @@ class BookmarkEditorViewTest : public testing::Test {
     AddTestData();
   }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
  protected:
   std::string base_path() const { return "file:///c:/tmp/"; }
