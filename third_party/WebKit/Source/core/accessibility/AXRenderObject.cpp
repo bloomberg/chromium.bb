@@ -1126,7 +1126,7 @@ bool AXRenderObject::supportsARIAOwns() const
 // ARIA live-region features.
 //
 
-const AtomicString& AXRenderObject::ariaLiveRegionStatus() const
+const AtomicString& AXRenderObject::liveRegionStatus() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusAssertive, ("assertive", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusPolite, ("polite", AtomicString::ConstructFromLiteral));
@@ -1153,7 +1153,7 @@ const AtomicString& AXRenderObject::ariaLiveRegionStatus() const
     return liveRegionStatus;
 }
 
-const AtomicString& AXRenderObject::ariaLiveRegionRelevant() const
+const AtomicString& AXRenderObject::liveRegionRelevant() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, defaultLiveRegionRelevant, ("additions text", AtomicString::ConstructFromLiteral));
     const AtomicString& relevant = getAttribute(aria_relevantAttr);
@@ -1165,12 +1165,12 @@ const AtomicString& AXRenderObject::ariaLiveRegionRelevant() const
     return relevant;
 }
 
-bool AXRenderObject::ariaLiveRegionAtomic() const
+bool AXRenderObject::liveRegionAtomic() const
 {
     return elementAttributeValue(aria_atomicAttr);
 }
 
-bool AXRenderObject::ariaLiveRegionBusy() const
+bool AXRenderObject::liveRegionBusy() const
 {
     return elementAttributeValue(aria_busyAttr);
 }

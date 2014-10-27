@@ -143,11 +143,21 @@ void AXScrollView::clearChildren()
 
 bool AXScrollView::computeAccessibilityIsIgnored() const
 {
-    AXObject* webArea = webAreaObject();
-    if (!webArea)
-        return true;
+    // We just want to match whatever's returned by our web area, which is a child of this
+    // object. Normally cached attribute values may only search up the tree. We can't just
+    // call accessibilityIsIgnored on the web area, because the web area may search up its
+    // ancestors and call this function recursively, and we'd loop until a stack overflow.
 
-    return webArea->accessibilityIsIgnored();
+    // Instead, we first update the cached accessibilityIsIgnored value for this node to
+    // false, call accessibilityIsIgnored on the web area, then return the mathcing value.
+    m_cachedIsIgnored = false;
+    m_lastModificationCount = axObjectCache()->modificationCount();
+
+    AXObject* webArea = webAreaObject();
+    if (webArea)
+        return webArea->accessibilityIsIgnored();
+
+    return true;
 }
 
 void AXScrollView::addChildren()

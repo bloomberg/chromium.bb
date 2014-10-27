@@ -455,11 +455,17 @@ public:
     void ariaTreeRows(AccessibilityChildrenVector&);
 
     // ARIA live-region features.
-    bool supportsARIALiveRegion() const;
-    virtual const AtomicString& ariaLiveRegionStatus() const { return nullAtom; }
-    virtual const AtomicString& ariaLiveRegionRelevant() const { return nullAtom; }
-    virtual bool ariaLiveRegionAtomic() const { return false; }
-    virtual bool ariaLiveRegionBusy() const { return false; }
+    bool isLiveRegion() const;
+    const AXObject* liveRegionRoot() const;
+    virtual const AtomicString& liveRegionStatus() const { return nullAtom; }
+    virtual const AtomicString& liveRegionRelevant() const { return nullAtom; }
+    virtual bool liveRegionAtomic() const { return false; }
+    virtual bool liveRegionBusy() const { return false; }
+
+    const AtomicString& containerLiveRegionStatus() const;
+    const AtomicString& containerLiveRegionRelevant() const;
+    bool containerLiveRegionAtomic() const;
+    bool containerLiveRegionBusy() const;
 
     // Accessibility Text.
     virtual String textUnderElement() const { return String(); }
@@ -581,12 +587,14 @@ protected:
 
     bool m_detached;
 
-private:
     // The following cached attribute values (the ones starting with m_cached*)
     // are only valid if m_lastModificationCount matches AXObjectCacheImpl::modificationCount().
     mutable int m_lastModificationCount;
     mutable bool m_cachedIsIgnored;
+    mutable const AXObject* m_cachedLiveRegionRoot;
 
+    // Updates the cached attribute values. This may be recursive, so to prevent deadlocks,
+    // functions called here may only search up the tree (ancestors), not down.
     void updateCachedAttributeValuesIfNeeded() const;
 };
 

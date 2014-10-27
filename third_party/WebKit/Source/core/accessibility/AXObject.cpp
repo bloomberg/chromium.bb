@@ -136,6 +136,7 @@ AXObject::AXObject()
     , m_detached(false)
     , m_lastModificationCount(-1)
     , m_cachedIsIgnored(false)
+    , m_cachedLiveRegionRoot(0)
 {
 }
 
@@ -263,8 +264,11 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
     if (cache->modificationCount() == m_lastModificationCount)
         return;
 
-    m_cachedIsIgnored = computeAccessibilityIsIgnored();
     m_lastModificationCount = cache->modificationCount();
+    m_cachedIsIgnored = computeAccessibilityIsIgnored();
+    m_cachedLiveRegionRoot = isLiveRegion() ?
+        this :
+        (parentObjectIfExists() ? parentObjectIfExists()->liveRegionRoot() : 0);
 }
 
 bool AXObject::accessibilityIsIgnoredByDefault() const
@@ -392,7 +396,7 @@ bool AXObject::ariaPressedIsPresent() const
 
 bool AXObject::supportsARIAAttributes() const
 {
-    return supportsARIALiveRegion()
+    return isLiveRegion()
         || supportsARIADragging()
         || supportsARIADropping()
         || supportsARIAFlowTo()
@@ -424,10 +428,40 @@ void AXObject::ariaTreeRows(AccessibilityChildrenVector& result)
     }
 }
 
-bool AXObject::supportsARIALiveRegion() const
+bool AXObject::isLiveRegion() const
 {
-    const AtomicString& liveRegion = ariaLiveRegionStatus();
+    const AtomicString& liveRegion = liveRegionStatus();
     return equalIgnoringCase(liveRegion, "polite") || equalIgnoringCase(liveRegion, "assertive");
+}
+
+const AXObject* AXObject::liveRegionRoot() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedLiveRegionRoot;
+}
+
+const AtomicString& AXObject::containerLiveRegionStatus() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedLiveRegionRoot ? m_cachedLiveRegionRoot->liveRegionStatus() : nullAtom;
+}
+
+const AtomicString& AXObject::containerLiveRegionRelevant() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedLiveRegionRoot ? m_cachedLiveRegionRoot->liveRegionRelevant() : nullAtom;
+}
+
+bool AXObject::containerLiveRegionAtomic() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedLiveRegionRoot ? m_cachedLiveRegionRoot->liveRegionAtomic() : false;
+}
+
+bool AXObject::containerLiveRegionBusy() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedLiveRegionRoot ? m_cachedLiveRegionRoot->liveRegionBusy() : false;
 }
 
 void AXObject::markCachedElementRectDirty() const

@@ -498,36 +498,76 @@ bool WebAXObject::ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) con
     return true;
 }
 
-bool WebAXObject::ariaLiveRegionAtomic() const
+bool WebAXObject::isInLiveRegion() const
+{
+    if (isDetached())
+        return false;
+
+    return 0 != m_private->liveRegionRoot();
+}
+
+bool WebAXObject::liveRegionAtomic() const
 {
     if (isDetached())
         return 0;
 
-    return m_private->ariaLiveRegionAtomic();
+    return m_private->liveRegionAtomic();
 }
 
-bool WebAXObject::ariaLiveRegionBusy() const
+bool WebAXObject::liveRegionBusy() const
 {
     if (isDetached())
         return 0;
 
-    return m_private->ariaLiveRegionBusy();
+    return m_private->liveRegionBusy();
 }
 
-WebString WebAXObject::ariaLiveRegionRelevant() const
+WebString WebAXObject::liveRegionRelevant() const
 {
     if (isDetached())
         return WebString();
 
-    return m_private->ariaLiveRegionRelevant();
+    return m_private->liveRegionRelevant();
 }
 
-WebString WebAXObject::ariaLiveRegionStatus() const
+WebString WebAXObject::liveRegionStatus() const
 {
     if (isDetached())
         return WebString();
 
-    return m_private->ariaLiveRegionStatus();
+    return m_private->liveRegionStatus();
+}
+
+bool WebAXObject::containerLiveRegionAtomic() const
+{
+    if (isDetached())
+        return false;
+
+    return m_private->containerLiveRegionAtomic();
+}
+
+bool WebAXObject::containerLiveRegionBusy() const
+{
+    if (isDetached())
+        return false;
+
+    return m_private->containerLiveRegionBusy();
+}
+
+WebString WebAXObject::containerLiveRegionRelevant() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->containerLiveRegionRelevant();
+}
+
+WebString WebAXObject::containerLiveRegionStatus() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->containerLiveRegionStatus();
 }
 
 bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const

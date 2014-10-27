@@ -1623,7 +1623,7 @@ void AXNodeObject::childrenChanged()
         // In other words, they need to be sent even when the screen reader has not accessed this live region since the last update.
 
         // If this element supports ARIA live regions, then notify the AT of changes.
-        if (parent->supportsARIALiveRegion())
+        if (parent->isLiveRegion())
             axObjectCache()->postNotification(parent, parent->document(), AXObjectCacheImpl::AXLiveRegionChanged, true);
 
         // If this element is an ARIA text box or content editable, post a "value changed" notification on it
@@ -1654,7 +1654,7 @@ void AXNodeObject::textChanged()
         if (!parent)
             continue;
 
-        if (parent->supportsARIALiveRegion())
+        if (parent->isLiveRegion())
             cache->postNotification(parentNode, AXObjectCacheImpl::AXLiveRegionChanged, true);
 
         // If this element is an ARIA text box or content editable, post a "value changed" notification on it

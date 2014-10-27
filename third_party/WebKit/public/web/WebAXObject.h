@@ -122,10 +122,6 @@ public:
     BLINK_EXPORT bool ariaFlowTo(WebVector<WebAXObject>& flowToElements) const;
     BLINK_EXPORT bool ariaHasPopup() const;
     BLINK_EXPORT bool ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const;
-    BLINK_EXPORT bool ariaLiveRegionAtomic() const;
-    BLINK_EXPORT bool ariaLiveRegionBusy() const;
-    BLINK_EXPORT WebString ariaLiveRegionRelevant() const;
-    BLINK_EXPORT WebString ariaLiveRegionStatus() const;
     BLINK_EXPORT bool ariaOwns(WebVector<WebAXObject>& ownsElements) const;
     BLINK_EXPORT WebRect boundingBoxRect() const;
     BLINK_EXPORT bool canvasHasFallbackContent() const;
@@ -146,6 +142,17 @@ public:
     BLINK_EXPORT WebString title() const;
     BLINK_EXPORT WebAXObject titleUIElement() const;
     BLINK_EXPORT WebURL url() const;
+
+    // Live regions.
+    BLINK_EXPORT bool isInLiveRegion() const;
+    BLINK_EXPORT bool liveRegionAtomic() const;
+    BLINK_EXPORT bool liveRegionBusy() const;
+    BLINK_EXPORT WebString liveRegionRelevant() const;
+    BLINK_EXPORT WebString liveRegionStatus() const;
+    BLINK_EXPORT bool containerLiveRegionAtomic() const;
+    BLINK_EXPORT bool containerLiveRegionBusy() const;
+    BLINK_EXPORT WebString containerLiveRegionRelevant() const;
+    BLINK_EXPORT WebString containerLiveRegionStatus() const;
 
     BLINK_EXPORT bool supportsRangeValue() const;
     BLINK_EXPORT WebString valueDescription() const;

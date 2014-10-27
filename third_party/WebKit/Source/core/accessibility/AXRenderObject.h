@@ -126,10 +126,10 @@ protected:
     virtual bool supportsARIAOwns() const override;
 
     // ARIA live-region features.
-    virtual const AtomicString& ariaLiveRegionStatus() const override;
-    virtual const AtomicString& ariaLiveRegionRelevant() const override;
-    virtual bool ariaLiveRegionAtomic() const override;
-    virtual bool ariaLiveRegionBusy() const override;
+    virtual const AtomicString& liveRegionStatus() const override;
+    virtual const AtomicString& liveRegionRelevant() const override;
+    virtual bool liveRegionAtomic() const override;
+    virtual bool liveRegionBusy() const override;
 
     // Accessibility Text.
     virtual String textUnderElement() const override;
