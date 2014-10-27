@@ -641,14 +641,14 @@ cr.define('local_discovery', function() {
     $('register-error-exit').addEventListener('click', cancelRegistration);
 
 
-    $('cloud-devices-retry-button').addEventListener('click',
-                                                     retryLoadCloudDevices);
+    $('cloud-devices-retry-link').addEventListener('click',
+                                                   retryLoadCloudDevices);
 
-    $('cloud-devices-login-button').addEventListener(
+    $('cloud-devices-login-link').addEventListener(
       'click',
       cloudDevicesLoginButtonClicked);
 
-    $('register-login-button').addEventListener(
+    $('register-login-link').addEventListener(
       'click',
       registerLoginButtonClicked);
 
@@ -657,8 +657,8 @@ cr.define('local_discovery', function() {
       registerOverlayLoginButtonClicked);
 
     if (loadTimeData.valueExists('backButtonURL')) {
-      $('back-button').hidden = false;
-      $('back-button').addEventListener('click', function() {
+      $('back-link').hidden = false;
+      $('back-link').addEventListener('click', function() {
         window.location.href = loadTimeData.getString('backButtonURL');
       });
     }
