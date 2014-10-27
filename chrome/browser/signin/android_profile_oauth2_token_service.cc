@@ -278,7 +278,7 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(
     curr_ids.clear();
   }
 
-  ScopedBacthChange batch(this);
+  ScopedBatchChange batch(this);
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> java_accounts(
@@ -431,7 +431,7 @@ void AndroidProfileOAuth2TokenService::FireRefreshTokensLoaded() {
 
 void AndroidProfileOAuth2TokenService::RevokeAllCredentials() {
   VLOG(1) << "AndroidProfileOAuth2TokenService::RevokeAllCredentials";
-  ScopedBacthChange batch(this);
+  ScopedBatchChange batch(this);
   std::vector<std::string> accounts = GetAccounts();
   for (std::vector<std::string>::iterator it = accounts.begin();
        it != accounts.end(); it++) {

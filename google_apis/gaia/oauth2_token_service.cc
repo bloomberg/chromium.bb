@@ -78,13 +78,13 @@ void OAuth2TokenService::RequestImpl::InformConsumer(
     consumer_->OnGetTokenFailure(this, error);
 }
 
-OAuth2TokenService::ScopedBacthChange::ScopedBacthChange(
+OAuth2TokenService::ScopedBatchChange::ScopedBatchChange(
     OAuth2TokenService* token_service) : token_service_(token_service) {
   DCHECK(token_service_);
   token_service_->StartBatchChanges();
 }
 
-OAuth2TokenService::ScopedBacthChange::~ScopedBacthChange() {
+OAuth2TokenService::ScopedBatchChange::~ScopedBatchChange() {
   token_service_->EndBatchChanges();
 }
 
@@ -150,7 +150,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   const GoogleServiceAuthError& error() const { return error_; }
 
  protected:
-   // OAuth2AccessTokenConsumer
+  // OAuth2AccessTokenConsumer
   void OnGetTokenSuccess(const std::string& access_token,
                          const base::Time& expiration_date) override;
   void OnGetTokenFailure(const GoogleServiceAuthError& error) override;

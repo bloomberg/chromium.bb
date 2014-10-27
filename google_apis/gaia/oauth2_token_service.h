@@ -69,7 +69,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // which will be called back when the request completes.
   class Consumer {
    public:
-    Consumer(const std::string& id);
+    explicit Consumer(const std::string& id);
     virtual ~Consumer();
 
     std::string id() const { return id_; }
@@ -214,7 +214,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
                       public Request {
    public:
     // |consumer| is required to outlive this.
-    explicit RequestImpl(const std::string& account_id, Consumer* consumer);
+    RequestImpl(const std::string& account_id, Consumer* consumer);
     ~RequestImpl() override;
 
     // Overridden from Request:
@@ -234,13 +234,13 @@ class OAuth2TokenService : public base::NonThreadSafe {
   };
 
   // Helper class to scope batch changes.
-  class ScopedBacthChange {
+  class ScopedBatchChange {
    public:
-    ScopedBacthChange(OAuth2TokenService* token_service);
-    ~ScopedBacthChange();
+    explicit ScopedBatchChange(OAuth2TokenService* token_service);
+    ~ScopedBatchChange();
    private:
     OAuth2TokenService* token_service_;  // Weak.
-    DISALLOW_COPY_AND_ASSIGN(ScopedBacthChange);
+    DISALLOW_COPY_AND_ASSIGN(ScopedBatchChange);
   };
 
   // Subclasses can override if they want to report errors to the user.

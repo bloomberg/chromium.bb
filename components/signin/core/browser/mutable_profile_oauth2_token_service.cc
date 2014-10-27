@@ -233,7 +233,7 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
   std::string old_login_token;
 
   {
-    ScopedBacthChange batch(this);
+    ScopedBatchChange batch(this);
 
     for (std::map<std::string, std::string>::const_iterator iter =
              db_tokens.begin();
@@ -319,7 +319,7 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
   bool refresh_token_present = refresh_tokens_.count(account_id) > 0;
   if (!refresh_token_present ||
       refresh_tokens_[account_id]->refresh_token() != refresh_token) {
-    ScopedBacthChange batch(this);
+    ScopedBatchChange batch(this);
 
     // If token present, and different from the new one, cancel its requests,
     // and clear the entries in cache related to that account.
@@ -351,7 +351,7 @@ void MutableProfileOAuth2TokenService::RevokeCredentials(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (refresh_tokens_.count(account_id) > 0) {
-    ScopedBacthChange batch(this);
+    ScopedBatchChange batch(this);
     RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
     CancelRequestsForAccount(account_id);
     ClearCacheForAccount(account_id);
@@ -383,7 +383,7 @@ void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
     return;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ScopedBacthChange batch(this);
+  ScopedBatchChange batch(this);
 
   CancelWebTokenFetch();
   CancelAllRequests();
