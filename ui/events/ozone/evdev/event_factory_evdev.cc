@@ -16,8 +16,8 @@
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
-#include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
+#include "ui/events/ozone/evdev/key_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 
 #if defined(USE_EVDEV_GESTURES)
@@ -94,15 +94,9 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
     return make_scoped_ptr<EventConverterEvdev>(new TouchEventConverterEvdev(
         fd, params.path, params.id, devinfo, params.dispatch_callback));
 
-  // Everything else: use EventConverterEvdevImpl.
-  return make_scoped_ptr<EventConverterEvdevImpl>(
-      new EventConverterEvdevImpl(fd,
-                                  params.path,
-                                  params.id,
-                                  params.modifiers,
-                                  params.cursor,
-                                  params.keyboard,
-                                  params.dispatch_callback));
+  // Everything else: use KeyEventConverterEvdev.
+  return make_scoped_ptr<EventConverterEvdev>(
+      new KeyEventConverterEvdev(fd, params.path, params.id, params.keyboard));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and

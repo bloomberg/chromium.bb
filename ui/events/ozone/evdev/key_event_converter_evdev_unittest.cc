@@ -11,37 +11,38 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
+#include "ui/events/ozone/evdev/key_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 
 namespace ui {
 
 const char kTestDevicePath[] = "/dev/input/test-device";
 
-class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
+class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
  public:
-  MockEventConverterEvdevImpl(int fd, KeyboardEvdev* keyboard)
-      : EventConverterEvdevImpl(fd,
-                                base::FilePath(kTestDevicePath),
-                                1,
-                                keyboard) {
+  MockKeyEventConverterEvdev(int fd, KeyboardEvdev* keyboard)
+      : KeyEventConverterEvdev(fd,
+                               base::FilePath(kTestDevicePath),
+                               1,
+                               keyboard) {
     Start();
   }
-  virtual ~MockEventConverterEvdevImpl() {}
+  virtual ~MockKeyEventConverterEvdev() {};
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockEventConverterEvdevImpl);
+  DISALLOW_COPY_AND_ASSIGN(MockKeyEventConverterEvdev);
 };
 
 }  // namespace ui
 
 // Test fixture.
-class EventConverterEvdevImplTest : public testing::Test {
+class KeyEventConverterEvdevTest : public testing::Test {
  public:
-  EventConverterEvdevImplTest() {}
+  KeyEventConverterEvdevTest() {}
 
   // Overridden from testing::Test:
-  void SetUp() override {
+  virtual void SetUp() override {
+
     // Set up pipe to satisfy message pump (unused).
     int evdev_io[2];
     if (pipe(evdev_io))
@@ -52,12 +53,12 @@ class EventConverterEvdevImplTest : public testing::Test {
     modifiers_.reset(new ui::EventModifiersEvdev());
     keyboard_.reset(new ui::KeyboardEvdev(
         modifiers_.get(),
-        base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
+        base::Bind(&KeyEventConverterEvdevTest::DispatchEventForTest,
                    base::Unretained(this))));
     device_.reset(
-        new ui::MockEventConverterEvdevImpl(events_in_, keyboard_.get()));
+        new ui::MockKeyEventConverterEvdev(events_in_, keyboard_.get()));
   }
-  void TearDown() override {
+  virtual void TearDown() override {
     device_.reset();
     keyboard_.reset();
     modifiers_.reset();
@@ -65,7 +66,7 @@ class EventConverterEvdevImplTest : public testing::Test {
     close(events_out_);
   }
 
-  ui::MockEventConverterEvdevImpl* device() { return device_.get(); }
+  ui::MockKeyEventConverterEvdev* device() { return device_.get(); }
   ui::EventModifiersEvdev* modifiers() { return modifiers_.get(); }
 
   unsigned size() { return dispatched_events_.size(); }
@@ -85,18 +86,18 @@ class EventConverterEvdevImplTest : public testing::Test {
 
   scoped_ptr<ui::EventModifiersEvdev> modifiers_;
   scoped_ptr<ui::KeyboardEvdev> keyboard_;
-  scoped_ptr<ui::MockEventConverterEvdevImpl> device_;
+  scoped_ptr<ui::MockKeyEventConverterEvdev> device_;
 
   ScopedVector<ui::Event> dispatched_events_;
 
   int events_out_;
   int events_in_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventConverterEvdevImplTest);
+  DISALLOW_COPY_AND_ASSIGN(KeyEventConverterEvdevTest);
 };
 
-TEST_F(EventConverterEvdevImplTest, KeyPress) {
-  ui::MockEventConverterEvdevImpl* dev = device();
+TEST_F(KeyEventConverterEvdevTest, KeyPress) {
+  ui::MockKeyEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue[] = {
       {{0, 0}, EV_MSC, MSC_SCAN, 0x7002a},
@@ -124,8 +125,8 @@ TEST_F(EventConverterEvdevImplTest, KeyPress) {
   EXPECT_EQ(0, event->flags());
 }
 
-TEST_F(EventConverterEvdevImplTest, KeyRepeat) {
-  ui::MockEventConverterEvdevImpl* dev = device();
+TEST_F(KeyEventConverterEvdevTest, KeyRepeat) {
+  ui::MockKeyEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue[] = {
       {{0, 0}, EV_MSC, MSC_SCAN, 0x7002a},
@@ -171,14 +172,14 @@ TEST_F(EventConverterEvdevImplTest, KeyRepeat) {
   EXPECT_EQ(0, event->flags());
 }
 
-TEST_F(EventConverterEvdevImplTest, NoEvents) {
-  ui::MockEventConverterEvdevImpl* dev = device();
+TEST_F(KeyEventConverterEvdevTest, NoEvents) {
+  ui::MockKeyEventConverterEvdev* dev = device();
   dev->ProcessEvents(NULL, 0);
   EXPECT_EQ(0u, size());
 }
 
-TEST_F(EventConverterEvdevImplTest, KeyWithModifier) {
-  ui::MockEventConverterEvdevImpl* dev = device();
+TEST_F(KeyEventConverterEvdevTest, KeyWithModifier) {
+  ui::MockKeyEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue[] = {
       {{0, 0}, EV_MSC, MSC_SCAN, 0x700e1},
@@ -224,8 +225,8 @@ TEST_F(EventConverterEvdevImplTest, KeyWithModifier) {
   EXPECT_EQ(0, event->flags());
 }
 
-TEST_F(EventConverterEvdevImplTest, KeyWithDuplicateModifier) {
-  ui::MockEventConverterEvdevImpl* dev = device();
+TEST_F(KeyEventConverterEvdevTest, KeyWithDuplicateModifier) {
+  ui::MockKeyEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue[] = {
       {{0, 0}, EV_MSC, MSC_SCAN, 0x700e1},
@@ -289,8 +290,8 @@ TEST_F(EventConverterEvdevImplTest, KeyWithDuplicateModifier) {
   EXPECT_EQ(0, event->flags());
 }
 
-TEST_F(EventConverterEvdevImplTest, KeyWithLock) {
-  ui::MockEventConverterEvdevImpl* dev = device();
+TEST_F(KeyEventConverterEvdevTest, KeyWithLock) {
+  ui::MockKeyEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue[] = {
       {{0, 0}, EV_MSC, MSC_SCAN, 0x70039},
@@ -354,8 +355,8 @@ TEST_F(EventConverterEvdevImplTest, KeyWithLock) {
   EXPECT_EQ(0, event->flags());
 }
 
-TEST_F(EventConverterEvdevImplTest, UnmappedKeyPress) {
-  ui::MockEventConverterEvdevImpl* dev = device();
+TEST_F(KeyEventConverterEvdevTest, UnmappedKeyPress) {
+  ui::MockKeyEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue[] = {
       {{0, 0}, EV_KEY, BTN_TOUCH, 1},
