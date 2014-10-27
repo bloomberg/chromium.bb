@@ -323,8 +323,11 @@ if ragel_involved:
 
   snapshots_dir = '${MAIN_DIR}/../validator_snapshots'
   trie_proofs = [
+    # (proof_file_name, bitness, old_trie_path, new_trie_path)
     ('vzero_proof.py', '32', '20141001', '20141020.vzero'),
     ('vzero_proof.py', '64', '20141001', '20141020.vzero'),
+    ('movbe_proof.py', '32', '20141020.vzero', '20141021.movbe'),
+    ('movbe_proof.py', '64', '20141020.vzero', '20141021.movbe'),
   ]
   for proof_file, bitness, old, new in trie_proofs:
     trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}

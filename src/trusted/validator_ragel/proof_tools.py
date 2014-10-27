@@ -80,6 +80,14 @@ def AllYMMOperands(bitness):
   return set([Operands(disasms=('%ymm{}'.format(i),))
               for i in xrange(8 if bitness == 32 else 16)])
 
+def GprOperands(bitness, operand_size):
+  regs = []
+  if bitness == 32 and operand_size == 16:
+    regs = ['%ax', '%bx', '%cx', '%dx', '%bp', '%sp', '%di', '%si']
+  else:
+    raise AssertionError("Unimplemented")
+  return set([Operands(disasms=(reg,)) for reg in regs])
+
 
 def MnemonicOp(name):
   """Returns the mnemonic as an operand set."""

@@ -2421,7 +2421,7 @@
 
       <state id="81">
       <state_actions>x x 0</state_actions>
-      <trans_list length="23">
+      <trans_list length="25">
         <t>0 11 34 x</t>
         <t>12 15 x 0</t>
         <t>16 16 82 x</t>
@@ -2444,7 +2444,9 @@
         <t>56 65 82 x</t>
         <t>66 218 x 0</t>
         <t>219 223 85 x</t>
-        <t>224 255 x 0</t>
+        <t>224 239 x 0</t>
+        <t>240 241 36 x</t>
+        <t>242 255 x 0</t>
       </trans_list>
       </state>
 

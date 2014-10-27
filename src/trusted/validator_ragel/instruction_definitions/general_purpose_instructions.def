@@ -468,21 +468,8 @@ mov a !O, 0xa2, ia32
 movabs O !a, 0xa0, amd64 nacl-forbidden
 movabs a !O, 0xa2, amd64 nacl-forbidden
 ######## MOVBE #################################################################
-# Textbook definition of "movbe" as per AMD/Intel manuals looks like this:
-#  movbe Mv Gv, 0x0f 0x38 0xf0, CPUFeature_MOVBE
-#  movbe Gv Mv, 0x0f 0x38 0xf1, CPUFeature_MOVBE
-# For consistency with the production validators, drop support for the 16-bit
-#  version of "movbe" in ia32 mode.
-# Note that the former 32- and 64-bit validators treat "movbe" inconsistently:
-#  http://code.google.com/p/nativeclient/issues/detail?id=2976
-movbe Mw Gw, data16 0x0f 0x38 0xf0, norexw CPUFeature_MOVBE nacl-ia32-forbidden
-movbe Gw Mw, data16 0x0f 0x38 0xf1, norexw CPUFeature_MOVBE nacl-ia32-forbidden
-movbe Md Gd, 0x0f 0x38 0xf0, norexw CPUFeature_MOVBE
-movbe Gd Md, 0x0f 0x38 0xf1, norexw CPUFeature_MOVBE
-movbe Mq Gq, rexw 0x0f 0x38 0xf0, amd64 CPUFeature_MOVBE
-movbe Gq Mq, rexw 0x0f 0x38 0xf1, amd64 CPUFeature_MOVBE
-movbe Mq Gq, data16 rexw 0x0f 0x38 0xf0, amd64 CPUFeature_MOVBE nacl-forbidden
-movbe Gq Mq, data16 rexw 0x0f 0x38 0xf1, amd64 CPUFeature_MOVBE nacl-forbidden
+movbe Mv Gv, 0x0f 0x38 0xf0, CPUFeature_MOVBE
+movbe Gv Mv, 0x0f 0x38 0xf1, CPUFeature_MOVBE
 ######## MOVD ##################################################################
 # Textbook definition of "movd" as per AMD/Intel manuals looks like this:
 #  movd Ey Vy, 0x66 0x0f 0x6e, CPUFeature_SSE2
