@@ -16,7 +16,6 @@ function test()
 
     var completionDictionary = new WebInspector.SampleCompletionDictionary();
     textEditor.setCompletionDictionary(completionDictionary);
-    textEditor._autocompleteController._initializeIfNeeded();
 
     InspectorTest.runTestSuite([
         function testSetInitialText(next)
