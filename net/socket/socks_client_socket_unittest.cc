@@ -35,7 +35,7 @@ class SOCKSClientSocketTest : public PlatformTest {
       HostResolver* host_resolver,
       const std::string& hostname, int port,
       NetLog* net_log);
-  virtual void SetUp();
+  void SetUp() override;
 
  protected:
   scoped_ptr<SOCKSClientSocket> user_sock_;

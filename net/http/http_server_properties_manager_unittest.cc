@@ -87,7 +87,7 @@ class HttpServerPropertiesManagerTest : public testing::Test {
  protected:
   HttpServerPropertiesManagerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     pref_service_.registry()->RegisterDictionaryPref(kTestHttpServerProperties);
     http_server_props_manager_.reset(
         new StrictMock<TestingHttpServerPropertiesManager>(
@@ -98,7 +98,7 @@ class HttpServerPropertiesManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (http_server_props_manager_.get())
       http_server_props_manager_->ShutdownOnPrefThread();
     base::RunLoop().RunUntilIdle();

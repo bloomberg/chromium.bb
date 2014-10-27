@@ -32,10 +32,10 @@ class NET_EXPORT_PRIVATE ChaCha20Poly1305Decrypter : public AeadBaseDecrypter {
 #if !defined(USE_OPENSSL)
  protected:
   // AeadBaseDecrypter methods:
-  virtual void FillAeadParams(base::StringPiece nonce,
-                              base::StringPiece associated_data,
-                              size_t auth_tag_size,
-                              AeadParams* aead_params) const override;
+  void FillAeadParams(base::StringPiece nonce,
+                      base::StringPiece associated_data,
+                      size_t auth_tag_size,
+                      AeadParams* aead_params) const override;
 #endif
 
  private:

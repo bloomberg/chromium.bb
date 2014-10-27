@@ -57,7 +57,7 @@ class TransportClientSocketPoolTest : public testing::Test {
               NULL) {
   }
 
-  virtual ~TransportClientSocketPoolTest() {
+  ~TransportClientSocketPoolTest() override {
     internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
         connect_backup_jobs_enabled_);
   }

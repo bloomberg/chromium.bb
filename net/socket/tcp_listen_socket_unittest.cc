@@ -275,13 +275,13 @@ class TCPListenSocketTest : public PlatformTest {
     tester_ = NULL;
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
     tester_ = new TCPListenSocketTester();
     tester_->SetUp();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     PlatformTest::TearDown();
     tester_->TearDown();
     tester_ = NULL;

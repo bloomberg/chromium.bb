@@ -105,7 +105,7 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
  public:
   SdchDictionaryFetcherTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DCHECK(!fetcher_.get());
 
     URLRequestSpecifiedResponseJob::AddUrlHandler();
@@ -115,7 +115,7 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
         fetcher_delegate_.get(), context_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     URLRequestSpecifiedResponseJob::RemoveUrlHandler();
     fetcher_.reset();
     context_.reset();

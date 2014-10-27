@@ -615,7 +615,7 @@ class URLRequestTest : public PlatformTest {
     default_context_.set_job_factory(&job_factory_);
     default_context_.Init();
   }
-  virtual ~URLRequestTest() {
+  ~URLRequestTest() override {
     // URLRequestJobs may post clean-up tasks on destruction.
     base::RunLoop().RunUntilIdle();
   }
@@ -6452,7 +6452,7 @@ class HTTPSRequestTest : public testing::Test {
     default_context_.set_network_delegate(&default_network_delegate_);
     default_context_.Init();
   }
-  virtual ~HTTPSRequestTest() {}
+  ~HTTPSRequestTest() override {}
 
  protected:
   TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
@@ -7125,7 +7125,7 @@ class FallbackTestURLRequestContext : public TestURLRequestContext {
 class HTTPSFallbackTest : public testing::Test {
  public:
   HTTPSFallbackTest() : context_(true) {}
-  virtual ~HTTPSFallbackTest() {}
+  ~HTTPSFallbackTest() override {}
 
  protected:
   void DoFallbackTest(const SpawnedTestServer::SSLOptions& ssl_options) {
@@ -7377,7 +7377,7 @@ class HTTPSSessionTest : public testing::Test {
     default_context_.set_cert_verifier(&cert_verifier_);
     default_context_.Init();
   }
-  virtual ~HTTPSSessionTest() {}
+  ~HTTPSSessionTest() override {}
 
  protected:
   MockCertVerifier cert_verifier_;
@@ -7476,7 +7476,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
                                    kOCSPTestCertPolicy)) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     SetupContext(&context_);
     context_.Init();
 
@@ -7513,7 +7513,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     *out_cert_status = r->ssl_info().cert_status;
   }
 
-  virtual ~HTTPSOCSPTest() {
+  ~HTTPSOCSPTest() override {
 #if defined(USE_NSS) || defined(OS_IOS)
     ShutdownNSSHttpIO();
 #endif

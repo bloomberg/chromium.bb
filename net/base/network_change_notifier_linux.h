@@ -22,14 +22,14 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierLinux
   class Thread;
 
   NetworkChangeNotifierLinux();
-  virtual ~NetworkChangeNotifierLinux();
+  ~NetworkChangeNotifierLinux() override;
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsLinux();
 
   // NetworkChangeNotifier:
-  virtual ConnectionType GetCurrentConnectionType() const override;
+  ConnectionType GetCurrentConnectionType() const override;
 
-  virtual const internal::AddressTrackerLinux*
-      GetAddressTrackerInternal() const override;
+  const internal::AddressTrackerLinux* GetAddressTrackerInternal()
+      const override;
 
   // The thread used to listen for notifications.  This relays the notification
   // to the registered observers without posting back to the thread the object

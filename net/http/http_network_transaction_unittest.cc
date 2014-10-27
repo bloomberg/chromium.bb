@@ -253,12 +253,12 @@ class HttpNetworkTransactionTest
     LoadTimingInfo load_timing_info;
   };
 
-  virtual void SetUp() {
+  void SetUp() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::MessageLoop::current()->RunUntilIdle();
     // Empty the current queue.

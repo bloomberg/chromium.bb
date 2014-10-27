@@ -27,7 +27,7 @@ namespace net {
 class SpdyProtocolTest
     : public ::testing::TestWithParam<SpdyProtocolTestTypes> {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     spdy_version_ = static_cast<SpdyMajorVersion>(GetParam());
   }
 

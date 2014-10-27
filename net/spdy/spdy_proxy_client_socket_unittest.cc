@@ -66,7 +66,7 @@ class SpdyProxyClientSocketTest
  public:
   SpdyProxyClientSocketTest();
 
-  virtual void TearDown();
+  void TearDown() override;
 
  protected:
   void Initialize(MockRead* reads, size_t reads_count, MockWrite* writes,

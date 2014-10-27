@@ -29,7 +29,7 @@ namespace net {
 
 class HttpAuthHandlerNegotiateTest : public PlatformTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     auth_library_ = new MockAuthLibrary();
     resolver_.reset(new MockHostResolver());
     resolver_->rules()->AddIPLiteralRule("alias", "10.0.0.2",

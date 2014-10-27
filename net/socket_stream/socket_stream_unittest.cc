@@ -269,15 +269,13 @@ class TestSocketStreamNetworkDelegate : public TestNetworkDelegate {
 
 class SocketStreamTest : public PlatformTest {
  public:
-  virtual ~SocketStreamTest() {}
-  virtual void SetUp() {
+  ~SocketStreamTest() override {}
+  void SetUp() override {
     mock_socket_factory_.reset();
     handshake_request_ = kWebSocketHandshakeRequest;
     handshake_response_ = kWebSocketHandshakeResponse;
   }
-  virtual void TearDown() {
-    mock_socket_factory_.reset();
-  }
+  void TearDown() override { mock_socket_factory_.reset(); }
 
   virtual void SetWebSocketHandshakeMessage(
       const char* request, const char* response) {

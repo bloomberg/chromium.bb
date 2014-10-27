@@ -2745,7 +2745,7 @@ class CookieMonsterNotificationTest : public CookieMonsterTest {
         store_(new MockPersistentCookieStore),
         monster_(new CookieMonster(store_.get(), NULL)) {}
 
-  virtual ~CookieMonsterNotificationTest() {}
+  ~CookieMonsterNotificationTest() override {}
 
   CookieMonster* monster() { return monster_.get(); }
 

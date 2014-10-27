@@ -121,9 +121,7 @@ class SpdySessionTest : public PlatformTest,
         HttpNetworkSession::NORMAL_SOCKET_POOL, old_max_group_sockets_);
   }
 
-  virtual void SetUp() override {
-    g_time_delta = base::TimeDelta();
-  }
+  void SetUp() override { g_time_delta = base::TimeDelta(); }
 
   void CreateDeterministicNetworkSession() {
     http_session_ =

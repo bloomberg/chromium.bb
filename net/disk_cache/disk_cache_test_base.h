@@ -38,7 +38,7 @@ class SimpleBackendImpl;
 class DiskCacheTest : public PlatformTest {
  protected:
   DiskCacheTest();
-  virtual ~DiskCacheTest();
+  ~DiskCacheTest() override;
 
   // Copies a set of cache files from the data folder to the test folder.
   bool CopyTestCache(const std::string& name);
@@ -46,7 +46,7 @@ class DiskCacheTest : public PlatformTest {
   // Deletes the contents of |cache_path_|.
   bool CleanupCacheDir();
 
-  virtual void TearDown() override;
+  void TearDown() override;
 
   base::FilePath cache_path_;
 
@@ -70,7 +70,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   };
 
   DiskCacheTestWithCache();
-  virtual ~DiskCacheTestWithCache();
+  ~DiskCacheTestWithCache() override;
 
   void CreateBackend(uint32 flags, base::Thread* thread);
 
@@ -154,7 +154,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   void AddDelay();
 
   // DiskCacheTest:
-  virtual void TearDown() override;
+  void TearDown() override;
 
   // cache_ will always have a valid object, regardless of how the cache was
   // initialized. The implementation pointers can be NULL.

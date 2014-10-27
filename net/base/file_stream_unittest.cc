@@ -46,13 +46,13 @@ IOBufferWithSize* CreateTestDataBuffer() {
 
 class FileStreamTest : public PlatformTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
 
     base::CreateTemporaryFile(&temp_file_path_);
     base::WriteFile(temp_file_path_, kTestData, kTestDataSize);
   }
-  virtual void TearDown() {
+  void TearDown() override {
     // FileStreamContexts must be asynchronously closed on the file task runner
     // before they can be deleted. Pump the RunLoop to avoid leaks.
     base::RunLoop().RunUntilIdle();

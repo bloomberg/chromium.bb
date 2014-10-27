@@ -26,7 +26,7 @@ const size_t kLiteralBound = 1024;
 
 class HpackInputStreamTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
   }

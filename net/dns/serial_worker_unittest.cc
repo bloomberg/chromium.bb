@@ -96,12 +96,12 @@ class SerialWorkerTest : public testing::Test {
   }
 
   // test::Test methods
-  virtual void SetUp() override {
+  void SetUp() override {
     message_loop_ = base::MessageLoop::current();
     worker_ = new TestSerialWorker(this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Cancel the worker to catch if it makes a late DoWork call.
     worker_->Cancel();
     // Check if OnWork is stalled.

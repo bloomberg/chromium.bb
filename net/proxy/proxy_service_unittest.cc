@@ -98,13 +98,13 @@ class ImmediateAfterActivityPollPolicy : public ProxyService::PacPollPolicy {
 // are careful to avoid timing problems.
 class ProxyServiceTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     previous_policy_ =
         ProxyService::set_pac_script_poll_policy(&never_poll_policy_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Restore the original policy.
     ProxyService::set_pac_script_poll_policy(previous_policy_);
     testing::Test::TearDown();

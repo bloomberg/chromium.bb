@@ -196,7 +196,7 @@ class SpdyWebSocketStreamTest
         created_stream_id_(0) {}
   virtual ~SpdyWebSocketStreamTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     host_port_pair_.set_host("example.com");
     host_port_pair_.set_port(80);
     spdy_session_key_ = SpdySessionKey(host_port_pair_,
@@ -208,9 +208,7 @@ class SpdyWebSocketStreamTest
             SETTINGS_FLAG_PERSISTED, spdy_settings_value_to_set_);
   }
 
-  virtual void TearDown() {
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  void TearDown() override { base::MessageLoop::current()->RunUntilIdle(); }
 
   void Prepare(SpdyStreamId stream_id) {
     stream_id_ = stream_id;

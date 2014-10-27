@@ -17,10 +17,10 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
  public:
   CertVerifyProcNSS();
 
-  virtual bool SupportsAdditionalTrustAnchors() const override;
+  bool SupportsAdditionalTrustAnchors() const override;
 
  protected:
-  virtual ~CertVerifyProcNSS();
+  ~CertVerifyProcNSS() override;
 
   // Like VerifyInternal, but adds a |chain_verify_callback| to override trust
   // decisions. See the documentation for CERTChainVerifyCallback and
@@ -34,12 +34,12 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
                          CertVerifyResult* verify_result);
 
  private:
-  virtual int VerifyInternal(X509Certificate* cert,
-                             const std::string& hostname,
-                             int flags,
-                             CRLSet* crl_set,
-                             const CertificateList& additional_trust_anchors,
-                             CertVerifyResult* verify_result) override;
+  int VerifyInternal(X509Certificate* cert,
+                     const std::string& hostname,
+                     int flags,
+                     CRLSet* crl_set,
+                     const CertificateList& additional_trust_anchors,
+                     CertVerifyResult* verify_result) override;
 };
 
 }  // namespace net

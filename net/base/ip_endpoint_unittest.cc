@@ -33,7 +33,7 @@ int test_count = arraysize(tests);
 
 class IPEndPointTest : public PlatformTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     // This is where we populate the TestData.
     for (int index = 0; index < test_count; ++index) {
       EXPECT_TRUE(ParseIPLiteralToNumber(tests[index].host,

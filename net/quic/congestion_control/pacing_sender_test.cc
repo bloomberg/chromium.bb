@@ -35,7 +35,7 @@ class PacingSenderTest : public ::testing::Test {
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(9));
   }
 
-  virtual ~PacingSenderTest() {}
+  ~PacingSenderTest() override {}
 
   void CheckPacketIsSentImmediately() {
     // In order for the packet to be sendable, the underlying sender must

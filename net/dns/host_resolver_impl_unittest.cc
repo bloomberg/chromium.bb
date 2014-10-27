@@ -460,11 +460,9 @@ class HostResolverImplTest : public testing::Test {
   };
 
   // testing::Test implementation:
-  virtual void SetUp() override {
-    CreateResolver();
-  }
+  void SetUp() override { CreateResolver(); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (resolver_.get())
       EXPECT_EQ(0u, resolver_->num_running_dispatcher_jobs_for_tests());
     EXPECT_FALSE(proc_->HasBlockedRequests());
@@ -1339,7 +1337,7 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
 
  protected:
   // testing::Test implementation:
-  virtual void SetUp() override {
+  void SetUp() override {
     AddDnsRule("nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL, false);
     AddDnsRule("nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL, false);
     AddDnsRule("ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);

@@ -23,11 +23,11 @@ class TransportSecurityPersisterTest : public testing::Test {
   TransportSecurityPersisterTest() {
   }
 
-  virtual ~TransportSecurityPersisterTest() {
+  ~TransportSecurityPersisterTest() override {
     base::MessageLoopForIO::current()->RunUntilIdle();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     persister_.reset(new TransportSecurityPersister(
         &state_,

@@ -18,7 +18,7 @@ namespace net {
 
 class UploadFileElementReaderTest : public PlatformTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
     // Some tests (*.ReadPartially) rely on bytes_.size() being even.
     const char kData[] = "123456789abcdefghi";
@@ -46,7 +46,7 @@ class UploadFileElementReaderTest : public PlatformTest {
     EXPECT_FALSE(reader_->IsInMemory());
   }
 
-  virtual ~UploadFileElementReaderTest() {
+  ~UploadFileElementReaderTest() override {
     reader_.reset();
     base::RunLoop().RunUntilIdle();
   }

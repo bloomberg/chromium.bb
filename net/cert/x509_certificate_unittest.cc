@@ -867,10 +867,8 @@ class X509CertificateParseTest
     : public testing::TestWithParam<CertificateFormatTestData> {
  public:
   virtual ~X509CertificateParseTest() {}
-  virtual void SetUp() {
-    test_data_ = GetParam();
-  }
-  virtual void TearDown() {}
+  void SetUp() override { test_data_ = GetParam(); }
+  void TearDown() override {}
 
  protected:
   CertificateFormatTestData test_data_;

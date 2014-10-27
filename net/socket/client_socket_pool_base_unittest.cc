@@ -667,7 +667,7 @@ class ClientSocketPoolBaseTest : public testing::Test {
         internal::ClientSocketPoolBaseHelper::cleanup_timer_enabled();
   }
 
-  virtual ~ClientSocketPoolBaseTest() {
+  ~ClientSocketPoolBaseTest() override {
     internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
         connect_backup_jobs_enabled_);
     internal::ClientSocketPoolBaseHelper::set_cleanup_timer_enabled(

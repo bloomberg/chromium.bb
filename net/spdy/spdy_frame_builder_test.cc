@@ -12,9 +12,7 @@ namespace net {
 
 class SpdyFrameBuilderTest : public ::testing::TestWithParam<SpdyMajorVersion> {
  protected:
-  virtual void SetUp() {
-    spdy_version_ = GetParam();
-  }
+  void SetUp() override { spdy_version_ = GetParam(); }
 
   // Major version of SPDY protocol to be used.
   SpdyMajorVersion spdy_version_;

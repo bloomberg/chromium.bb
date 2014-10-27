@@ -91,8 +91,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
 
 class DirectoryListerTest : public PlatformTest {
  public:
-
-  virtual void SetUp() override {
+  void SetUp() override {
     const int kMaxDepth = 3;
     const int kBranchingFactor = 4;
     const int kFilesPerDirectory = 5;

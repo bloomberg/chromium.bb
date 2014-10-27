@@ -217,7 +217,7 @@ class URLRequestFtpJobTest : public testing::Test {
                          &ftp_transaction_factory_) {
   }
 
-  virtual ~URLRequestFtpJobTest() {
+  ~URLRequestFtpJobTest() override {
     // Clean up any remaining tasks that mess up unrelated tests.
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();

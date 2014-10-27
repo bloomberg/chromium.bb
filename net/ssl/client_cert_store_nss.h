@@ -27,12 +27,12 @@ class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
 
   explicit ClientCertStoreNSS(
       const PasswordDelegateFactory& password_delegate_factory);
-  virtual ~ClientCertStoreNSS();
+  ~ClientCertStoreNSS() override;
 
   // ClientCertStore:
-  virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                              CertificateList* selected_certs,
-                              const base::Closure& callback) override;
+  void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
+                      CertificateList* selected_certs,
+                      const base::Closure& callback) override;
 
  protected:
   // Examines the certificates in |cert_list| to find all certificates that

@@ -28,7 +28,7 @@ class HpackRoundTripTest : public ::testing::Test {
       : encoder_(ObtainHpackHuffmanTable()),
         decoder_(ObtainHpackHuffmanTable()) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Use a small table size to tickle eviction handling.
     encoder_.ApplyHeaderTableSizeSetting(256);
     decoder_.ApplyHeaderTableSizeSetting(256);

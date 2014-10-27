@@ -103,7 +103,7 @@ class SOCKSClientSocketPoolTest : public testing::Test {
               NULL) {
   }
 
-  virtual ~SOCKSClientSocketPoolTest() {}
+  ~SOCKSClientSocketPoolTest() override {}
 
   int StartRequestV5(const std::string& group_name, RequestPriority priority) {
     return test_base_.StartRequestUsingPool(

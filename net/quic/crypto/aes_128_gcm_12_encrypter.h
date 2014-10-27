@@ -28,10 +28,10 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Encrypter : public AeadBaseEncrypter {
 #if !defined(USE_OPENSSL)
  protected:
   // AeadBaseEncrypter methods:
-  virtual void FillAeadParams(base::StringPiece nonce,
-                              base::StringPiece associated_data,
-                              size_t auth_tag_size,
-                              AeadParams* aead_params) const override;
+  void FillAeadParams(base::StringPiece nonce,
+                      base::StringPiece associated_data,
+                      size_t auth_tag_size,
+                      AeadParams* aead_params) const override;
 #endif
 
  private:

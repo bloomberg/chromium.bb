@@ -31,7 +31,7 @@ namespace {
 
 class ProxyResolverV8TracingTest : public testing::Test {
  public:
-  virtual void TearDown() override {
+  void TearDown() override {
     // Drain any pending messages, which may be left over from cancellation.
     // This way they get reliably run as part of the current test, rather than
     // spilling into the next test's execution.

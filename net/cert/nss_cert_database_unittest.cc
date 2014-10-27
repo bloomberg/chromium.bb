@@ -55,7 +55,7 @@ void SwapCertList(CertificateList* destination,
 
 class CertDatabaseNSSTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(test_nssdb_.is_open());
     cert_db_.reset(new NSSCertDatabase(
         crypto::ScopedPK11Slot(
@@ -68,7 +68,7 @@ class CertDatabaseNSSTest : public testing::Test {
     EXPECT_EQ(0U, ListCerts().size());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Run the message loop to process any observer callbacks (e.g. for the
     // ClientSocketFactory singleton) so that the scoped ref ptrs created in
     // NSSCertDatabase::NotifyObservers* get released.

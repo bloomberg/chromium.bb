@@ -82,7 +82,7 @@ class RegistryControlledDomainTest : public testing::Test {
     SetFindDomainGraph(graph, sizeof(Graph));
   }
 
-  virtual void TearDown() { SetFindDomainGraph(); }
+  void TearDown() override { SetFindDomainGraph(); }
 };
 
 TEST_F(RegistryControlledDomainTest, TestGetDomainAndRegistry) {

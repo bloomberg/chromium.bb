@@ -49,21 +49,18 @@ class TestTransactionFactory : public HttpTransactionFactory {
   TestTransactionFactory(const HttpNetworkSession::Params& params)
       : session_(new HttpNetworkSession(params)) {}
 
-  virtual ~TestTransactionFactory() {
-  }
+  ~TestTransactionFactory() override {}
 
   // HttpTransactionFactory methods
-  virtual int CreateTransaction(RequestPriority priority,
-                                scoped_ptr<HttpTransaction>* trans) override {
+  int CreateTransaction(RequestPriority priority,
+                        scoped_ptr<HttpTransaction>* trans) override {
     trans->reset(new HttpNetworkTransaction(priority, session_.get()));
     return OK;
   }
 
-  virtual HttpCache* GetCache() override {
-    return nullptr;
-  }
+  HttpCache* GetCache() override { return nullptr; }
 
-  virtual HttpNetworkSession* GetSession() override { return session_.get(); };
+  HttpNetworkSession* GetSession() override { return session_.get(); };
 
  private:
   scoped_refptr<HttpNetworkSession> session_;
@@ -105,7 +102,7 @@ class QuicEndToEndTest : public PlatformTest {
     return resolver;
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     QuicInMemoryCachePeer::ResetForTests();
     StartServer();
 
@@ -123,7 +120,7 @@ class QuicEndToEndTest : public PlatformTest {
     transaction_factory_.reset(new TestTransactionFactory(params_));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     StopServer();
     QuicInMemoryCachePeer::ResetForTests();
   }

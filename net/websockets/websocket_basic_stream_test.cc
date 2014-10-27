@@ -110,7 +110,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
         generator_(&GenerateNulMaskingKey),
         expect_all_io_to_complete_(true) {}
 
-  virtual ~WebSocketBasicStreamSocketTest() {
+  ~WebSocketBasicStreamSocketTest() override {
     // stream_ has a reference to socket_data_ (via MockTCPClientSocket) and so
     // should be destroyed first.
     stream_.reset();
@@ -237,7 +237,7 @@ class WebSocketBasicStreamSocketWriteTest
  protected:
   // All write tests use the same frame, so it is easiest to create it during
   // test creation.
-  virtual void SetUp() override { PrepareWriteFrame(); }
+  void SetUp() override { PrepareWriteFrame(); }
 
   // Creates a WebSocketFrame with a wire format matching kWriteFrame and adds
   // it to |frames_|.

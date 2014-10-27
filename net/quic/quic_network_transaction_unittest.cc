@@ -121,12 +121,12 @@ class QuicNetworkTransactionTest
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     // Empty the current queue.
     base::MessageLoop::current()->RunUntilIdle();

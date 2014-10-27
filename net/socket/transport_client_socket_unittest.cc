@@ -62,7 +62,7 @@ class TransportClientSocketTest
   void DidClose(StreamListenSocket* sock) override {}
 
   // Testcase hooks
-  virtual void SetUp();
+  void SetUp() override;
 
   void CloseServerSocket() {
     // delete the connected_sock_, which will close it.

@@ -127,7 +127,7 @@ class SpdyNetworkTransactionTest
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     google_get_request_initialized_ = false;
     google_post_request_initialized_ = false;
     google_chunked_post_request_initialized_ = false;

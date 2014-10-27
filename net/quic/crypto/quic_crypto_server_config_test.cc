@@ -402,7 +402,7 @@ class CryptoServerConfigsTest : public ::testing::Test {
         config_(QuicCryptoServerConfig::TESTING, rand_),
         test_peer_(&config_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1000));
   }
 

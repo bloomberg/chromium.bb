@@ -57,9 +57,7 @@ class SpdyStreamTest : public ::testing::Test,
     return CreateInsecureSpdySession(session_, key, BoundNetLog());
   }
 
-  virtual void TearDown() {
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  void TearDown() override { base::MessageLoop::current()->RunUntilIdle(); }
 
   void RunResumeAfterUnstallRequestResponseTest(
       const UnstallFunction& unstall_function);

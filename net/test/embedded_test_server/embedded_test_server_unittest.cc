@@ -49,7 +49,7 @@ class EmbeddedTestServerTest: public testing::Test,
         io_thread_("io_thread") {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     base::Thread::Options thread_options;
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
@@ -61,7 +61,7 @@ class EmbeddedTestServerTest: public testing::Test,
     ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ASSERT_TRUE(server_->ShutdownAndWaitUntilComplete());
   }
 

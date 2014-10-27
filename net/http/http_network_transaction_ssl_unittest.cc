@@ -58,7 +58,7 @@ class TLS11SSLConfigService : public SSLConfigService {
 
 class HttpNetworkTransactionSSLTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ssl_config_service_ = new TLS10SSLConfigService;
     session_params_.ssl_config_service = ssl_config_service_.get();
 

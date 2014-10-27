@@ -408,7 +408,7 @@ class WebSocketStreamCreateUMATest : public ::testing::Test {
   };
 
   class StreamCreation : public WebSocketStreamCreateTest {
-    virtual void TestBody() override {}
+    void TestBody() override {}
   };
 
   scoped_ptr<base::HistogramSamples> GetSamples(const std::string& name) {

@@ -40,7 +40,7 @@ class SOCKS5ClientSocketTest : public PlatformTest {
                                                  int port,
                                                  NetLog* net_log);
 
-  virtual void SetUp();
+  void SetUp() override;
 
  protected:
   const uint16 kNwPort;

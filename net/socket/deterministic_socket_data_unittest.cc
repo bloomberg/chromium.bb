@@ -29,7 +29,7 @@ class DeterministicSocketDataTest : public PlatformTest {
  public:
   DeterministicSocketDataTest();
 
-  virtual void TearDown();
+  void TearDown() override;
 
   void ReentrantReadCallback(int len, int rv);
   void ReentrantWriteCallback(const char* data, int len, int rv);

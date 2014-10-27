@@ -93,7 +93,7 @@ class WebSocketEndpointLockManagerTest : public ::testing::Test {
  protected:
   WebSocketEndpointLockManagerTest()
       : instance_(WebSocketEndpointLockManager::GetInstance()) {}
-  virtual ~WebSocketEndpointLockManagerTest() {
+  ~WebSocketEndpointLockManagerTest() override {
     // If this check fails then subsequent tests may fail.
     CHECK(instance_->IsEmpty());
   }

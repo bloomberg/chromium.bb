@@ -53,9 +53,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
                                 &crypto_config_, nullptr);
   }
 
-  virtual void TearDown() override {
-    session_.CloseSessionOnError(ERR_ABORTED);
-  }
+  void TearDown() override { session_.CloseSessionOnError(ERR_ABORTED); }
 
   scoped_ptr<DatagramClientSocket> GetSocket() {
     socket_factory_.AddSocketDataProvider(&socket_data_);

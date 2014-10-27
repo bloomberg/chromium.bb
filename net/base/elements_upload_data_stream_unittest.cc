@@ -125,11 +125,11 @@ class MockUploadElementReader : public UploadElementReader {
 
 class ElementsUploadDataStreamTest : public PlatformTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
-  virtual ~ElementsUploadDataStreamTest() {
+  ~ElementsUploadDataStreamTest() override {
     element_readers_.clear();
     base::RunLoop().RunUntilIdle();
   }

@@ -20,7 +20,7 @@ namespace ct {
 
 class CTObjectsExtractorTest : public ::testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     precert_chain_ =
         CreateCertificateListFromFile(GetTestCertsDirectory(),
                                       "ct-test-embedded-cert.pem",

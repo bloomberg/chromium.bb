@@ -28,7 +28,7 @@ class HttpNetworkLayerTest : public PlatformTest {
  protected:
   HttpNetworkLayerTest() : ssl_config_service_(new SSLConfigServiceDefaults) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ConfigureTestDependencies(ProxyService::CreateDirect());
   }
 

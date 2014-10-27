@@ -101,7 +101,7 @@ class HpackEncoderTest : public ::testing::Test {
         peer_(&encoder_),
         static_(peer_.table()->GetByIndex(1)) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Populate dynamic entries into the table fixture. For simplicity each
     // entry has name.size() + value.size() == 10.
     key_1_ = peer_.table()->TryAddEntry("key1", "value1");

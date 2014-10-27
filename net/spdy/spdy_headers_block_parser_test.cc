@@ -38,7 +38,7 @@ class SpdyHeadersBlockParserTest :
   virtual ~SpdyHeadersBlockParserTest() {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a parser using the mock handler.
     spdy_version_ = GetParam();
     parser_.reset(new SpdyHeadersBlockParser(spdy_version_, &handler_));

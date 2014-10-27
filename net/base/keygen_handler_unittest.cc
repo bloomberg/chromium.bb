@@ -32,13 +32,13 @@ class StubCryptoModuleDelegate : public crypto::NSSCryptoModuleDelegate {
    explicit StubCryptoModuleDelegate(crypto::ScopedPK11Slot slot)
        : slot_(slot.Pass()) {}
 
-   virtual std::string RequestPassword(const std::string& slot_name,
-                                       bool retry,
-                                       bool* cancelled) override{
+   std::string RequestPassword(const std::string& slot_name,
+                               bool retry,
+                               bool* cancelled) override {
      return std::string();
    }
 
-   virtual crypto::ScopedPK11Slot RequestSlot() override {
+   crypto::ScopedPK11Slot RequestSlot() override {
      return crypto::ScopedPK11Slot(PK11_ReferenceSlot(slot_.get()));
    }
 
@@ -50,7 +50,7 @@ class StubCryptoModuleDelegate : public crypto::NSSCryptoModuleDelegate {
 class KeygenHandlerTest : public ::testing::Test {
  public:
   KeygenHandlerTest() {}
-  virtual ~KeygenHandlerTest() {}
+  ~KeygenHandlerTest() override {}
 
   scoped_ptr<KeygenHandler> CreateKeygenHandler() {
     scoped_ptr<KeygenHandler> handler(new KeygenHandler(

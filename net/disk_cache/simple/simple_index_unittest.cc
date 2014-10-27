@@ -101,7 +101,7 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
         base::StringPrintf("key%d", static_cast<int>(hash_index)));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     scoped_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
     index_file_ = index_file->AsWeakPtr();
     index_.reset(

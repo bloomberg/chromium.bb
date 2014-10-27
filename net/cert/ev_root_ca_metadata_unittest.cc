@@ -94,9 +94,7 @@ bool EVOidData::Init() {
 
 class EVRootCAMetadataTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
-    ASSERT_TRUE(ev_oid_data.Init());
-  }
+  void SetUp() override { ASSERT_TRUE(ev_oid_data.Init()); }
 
   EVOidData ev_oid_data;
 };

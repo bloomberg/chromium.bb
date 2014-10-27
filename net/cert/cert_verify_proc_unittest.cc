@@ -114,7 +114,7 @@ class CertVerifyProcTest : public testing::Test {
   CertVerifyProcTest()
       : verify_proc_(CertVerifyProc::CreateDefault()) {
   }
-  virtual ~CertVerifyProcTest() {}
+  ~CertVerifyProcTest() override {}
 
  protected:
   bool SupportsAdditionalTrustAnchors() {

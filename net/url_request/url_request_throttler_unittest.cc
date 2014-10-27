@@ -172,7 +172,7 @@ class URLRequestThrottlerEntryTest : public testing::Test {
       : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL, NULL)) {
   }
 
-  virtual void SetUp();
+  void SetUp() override;
 
   TimeTicks now_;
   MockURLRequestThrottlerManager manager_;  // Dummy object, not used.
@@ -355,9 +355,7 @@ class URLRequestThrottlerManagerTest : public testing::Test {
       : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL, NULL)) {
   }
 
-  virtual void SetUp() {
-    request_->SetLoadFlags(0);
-  }
+  void SetUp() override { request_->SetLoadFlags(0); }
 
   void ExpectEntryAllowsAllOnErrorIfOptedOut(
       URLRequestThrottlerEntryInterface* entry,

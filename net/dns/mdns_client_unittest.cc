@@ -1056,8 +1056,7 @@ TEST_F(MDnsTest, RefreshQuery) {
 // This is a simplifying assumption based on the way the code works now.
 class SimpleMockSocketFactory : public MDnsSocketFactory {
  public:
-  virtual void CreateSockets(
-      ScopedVector<DatagramServerSocket>* sockets) override {
+  void CreateSockets(ScopedVector<DatagramServerSocket>* sockets) override {
     sockets->clear();
     sockets->swap(sockets_);
   }
@@ -1160,7 +1159,7 @@ TEST_F(MDnsConnectionTest, Error) {
 
 class MDnsConnectionSendTest : public MDnsConnectionTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     MDnsConnectionTest::SetUp();
     EXPECT_CALL(*socket_ipv4_, RecvFrom(_, _, _, _))
         .WillOnce(Return(ERR_IO_PENDING));

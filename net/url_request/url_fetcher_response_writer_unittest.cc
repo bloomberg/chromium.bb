@@ -23,7 +23,7 @@ const char kData[] = "Hello!";
 
 class URLFetcherStringWriterTest : public PlatformTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     writer_.reset(new URLFetcherStringWriter);
     buf_ = new StringIOBuffer(kData);
   }
@@ -54,7 +54,7 @@ TEST_F(URLFetcherStringWriterTest, Basic) {
 
 class URLFetcherFileWriterTest : public PlatformTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_path_ = temp_dir_.path().AppendASCII("test.txt");
     writer_.reset(new URLFetcherFileWriter(
@@ -144,7 +144,7 @@ TEST_F(URLFetcherFileWriterTest, DisownFile) {
 
 class URLFetcherFileWriterTemporaryFileTest : public PlatformTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     writer_.reset(new URLFetcherFileWriter(
         base::MessageLoopProxy::current(), base::FilePath()));
     buf_ = new StringIOBuffer(kData);

@@ -60,7 +60,7 @@ class LocalStrikeRegisterClientTest : public ::testing::Test {
   LocalStrikeRegisterClientTest() {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     strike_register_.reset(new LocalStrikeRegisterClient(
         kMaxEntries, kCurrentTimeExternalSecs, kWindowSecs, kOrbit,
         net::StrikeRegister::NO_STARTUP_PERIOD_NEEDED));

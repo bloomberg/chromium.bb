@@ -48,18 +48,18 @@ class CertNotificationForwarder : public NSSCertDatabase::Observer {
   explicit CertNotificationForwarder(CertDatabase* cert_db)
       : cert_db_(cert_db) {}
 
-  virtual ~CertNotificationForwarder() {}
+  ~CertNotificationForwarder() override {}
 
   // NSSCertDatabase::Observer implementation:
-  virtual void OnCertAdded(const X509Certificate* cert) override {
+  void OnCertAdded(const X509Certificate* cert) override {
     cert_db_->NotifyObserversOfCertAdded(cert);
   }
 
-  virtual void OnCertRemoved(const X509Certificate* cert) override {
+  void OnCertRemoved(const X509Certificate* cert) override {
     cert_db_->NotifyObserversOfCertRemoved(cert);
   }
 
-  virtual void OnCACertChanged(const X509Certificate* cert) override {
+  void OnCACertChanged(const X509Certificate* cert) override {
     cert_db_->NotifyObserversOfCACertChanged(cert);
   }
 

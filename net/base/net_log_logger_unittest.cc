@@ -18,7 +18,7 @@ namespace {
 
 class NetLogLoggerTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     log_path_ = temp_dir_.path().AppendASCII("NetLogFile");
   }

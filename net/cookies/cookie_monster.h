@@ -315,7 +315,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // See comment on keys before the CookieMap typedef.
   std::string GetKey(const std::string& domain) const;
 
-  virtual scoped_ptr<CookieChangedSubscription> AddCallbackForCookie(
+  scoped_ptr<CookieChangedSubscription> AddCallbackForCookie(
       const GURL& url,
       const std::string& name,
       const CookieChangedCallback& callback) override;

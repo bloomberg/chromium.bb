@@ -92,7 +92,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
         GetParam().send_quic_crypto_reject_reason;
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     scoped_ptr<CryptoHandshakeMessage> msg(
         config_.AddDefaultConfig(rand_, &clock_,
         config_options_));
@@ -640,7 +640,7 @@ TEST(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
 
 class CryptoServerTestNoConfig : public CryptoServerTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     // Deliberately don't add a config so that we can test this situation.
   }
 };
@@ -662,7 +662,7 @@ class AsyncStrikeServerVerificationTest : public CryptoServerTest {
   AsyncStrikeServerVerificationTest() {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     const string kOrbit = "12345678";
     config_options_.orbit = kOrbit;
     strike_register_client_ = new DelayedVerifyStrikeRegisterClient(

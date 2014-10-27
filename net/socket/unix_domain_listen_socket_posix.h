@@ -103,10 +103,10 @@ class NET_EXPORT UnixDomainListenSocketWithAbstractNamespaceFactory
       const std::string& path,
       const std::string& fallback_path,
       const UnixDomainListenSocket::AuthCallback& auth_callback);
-  virtual ~UnixDomainListenSocketWithAbstractNamespaceFactory();
+  ~UnixDomainListenSocketWithAbstractNamespaceFactory() override;
 
   // UnixDomainListenSocketFactory:
-  virtual scoped_ptr<StreamListenSocket> CreateAndListen(
+  scoped_ptr<StreamListenSocket> CreateAndListen(
       StreamListenSocket::Delegate* delegate) const override;
 
  private:

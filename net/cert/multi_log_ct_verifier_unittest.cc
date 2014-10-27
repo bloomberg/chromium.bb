@@ -37,7 +37,7 @@ const char kSCTCountHistogram[] =
 
 class MultiLogCTVerifierTest : public ::testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     scoped_ptr<CTLogVerifier> log(
         CTLogVerifier::Create(ct::GetTestPublicKey(), kLogDescription));
     ASSERT_TRUE(log);

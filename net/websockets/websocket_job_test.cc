@@ -391,12 +391,12 @@ class WebSocketJobTest : public PlatformTest,
       : spdy_util_(GetParam()),
         enable_websocket_over_spdy_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     stream_type_ = STREAM_INVALID;
     cookie_store_ = new MockCookieStore;
     context_.reset(new MockURLRequestContext(cookie_store_.get()));
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     cookie_store_ = NULL;
     context_.reset();
     websocket_ = NULL;

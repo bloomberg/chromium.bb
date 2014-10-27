@@ -15,7 +15,7 @@ namespace net {
 class NetworkChangeNotifierLinux::Thread : public base::Thread {
  public:
   Thread();
-  virtual ~Thread();
+  ~Thread() override;
 
   // Plumbing for NetworkChangeNotifier::GetCurrentConnectionType.
   // Safe to call from any thread.
@@ -29,8 +29,8 @@ class NetworkChangeNotifierLinux::Thread : public base::Thread {
 
  protected:
   // base::Thread
-  virtual void Init() override;
-  virtual void CleanUp() override;
+  void Init() override;
+  void CleanUp() override;
 
  private:
   scoped_ptr<DnsConfigService> dns_config_service_;

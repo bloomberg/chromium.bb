@@ -283,9 +283,9 @@ class OCSPRequestSession
     return data_;
   }
 
-  virtual void OnReceivedRedirect(URLRequest* request,
-                                  const RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override {
+  void OnReceivedRedirect(URLRequest* request,
+                          const RedirectInfo& redirect_info,
+                          bool* defer_redirect) override {
     DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
@@ -296,7 +296,7 @@ class OCSPRequestSession
     }
   }
 
-  virtual void OnResponseStarted(URLRequest* request) override {
+  void OnResponseStarted(URLRequest* request) override {
     DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
@@ -310,8 +310,7 @@ class OCSPRequestSession
     OnReadCompleted(request_.get(), bytes_read);
   }
 
-  virtual void OnReadCompleted(URLRequest* request,
-                               int bytes_read) override {
+  void OnReadCompleted(URLRequest* request, int bytes_read) override {
     DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
@@ -359,7 +358,7 @@ class OCSPRequestSession
  private:
   friend class base::RefCountedThreadSafe<OCSPRequestSession>;
 
-  virtual ~OCSPRequestSession() {
+  ~OCSPRequestSession() override {
     // When this destructor is called, there should be only one thread that has
     // a reference to this object, and so that thread doesn't need to lock
     // |lock_| here.

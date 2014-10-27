@@ -60,7 +60,7 @@ class TraceNetLogObserverTest : public testing::Test {
     trace_events_.reset(new base::ListValue());
   }
 
-  virtual ~TraceNetLogObserverTest() {
+  ~TraceNetLogObserverTest() override {
     DCHECK(!TraceLog::GetInstance()->IsEnabled());
   }
 

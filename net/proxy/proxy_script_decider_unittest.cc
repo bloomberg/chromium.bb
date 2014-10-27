@@ -310,7 +310,7 @@ class ProxyScriptDeciderQuickCheckTest : public ::testing::Test {
       : rule_(rules_.AddSuccessRule("http://wpad/wpad.dat")),
         fetcher_(&rules_) { }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     request_context_.set_host_resolver(&resolver_);
     fetcher_.SetRequestContext(&request_context_);
     config_.set_auto_detect(true);

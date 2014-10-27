@@ -39,7 +39,7 @@ namespace net {
 
 class TransportSecurityStateTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
 #if defined(USE_OPENSSL)
     crypto::EnsureOpenSSLInit();
 #else

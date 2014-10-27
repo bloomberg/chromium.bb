@@ -67,7 +67,7 @@ class MockCertTrustAnchorProvider : public CertTrustAnchorProvider {
 class MultiThreadedCertVerifierTest : public ::testing::Test {
  public:
   MultiThreadedCertVerifierTest() : verifier_(new MockCertVerifyProc()) {}
-  virtual ~MultiThreadedCertVerifierTest() {}
+  ~MultiThreadedCertVerifierTest() override {}
 
  protected:
   MultiThreadedCertVerifier verifier_;

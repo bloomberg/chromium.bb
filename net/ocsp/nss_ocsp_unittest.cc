@@ -44,10 +44,10 @@ class AiaResponseHandler : public net::URLRequestInterceptor {
  public:
   AiaResponseHandler(const std::string& headers, const std::string& cert_data)
       : headers_(headers), cert_data_(cert_data), request_count_(0) {}
-  virtual ~AiaResponseHandler() {}
+  ~AiaResponseHandler() override {}
 
   // net::URLRequestInterceptor implementation:
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     ++const_cast<AiaResponseHandler*>(this)->request_count_;
@@ -75,9 +75,9 @@ class NssHttpTest : public ::testing::Test {
         handler_(NULL),
         verify_proc_(new CertVerifyProcNSS),
         verifier_(new MultiThreadedCertVerifier(verify_proc_.get())) {}
-  virtual ~NssHttpTest() {}
+  ~NssHttpTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     std::string file_contents;
     ASSERT_TRUE(base::ReadFileToString(
         GetTestCertsDirectory().AppendASCII("aia-intermediate.der"),
@@ -97,7 +97,7 @@ class NssHttpTest : public ::testing::Test {
     EnsureNSSHttpIOInit();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     ShutdownNSSHttpIO();
 
     if (handler_)

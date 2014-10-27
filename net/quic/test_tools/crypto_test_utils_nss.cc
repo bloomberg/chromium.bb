@@ -20,13 +20,11 @@ namespace test {
 
 class TestChannelIDSource : public ChannelIDSource {
  public:
-  virtual ~TestChannelIDSource() {
-    STLDeleteValues(&hostname_to_key_);
-  }
+  ~TestChannelIDSource() override { STLDeleteValues(&hostname_to_key_); }
 
   // ChannelIDSource implementation.
 
-  virtual QuicAsyncStatus GetChannelIDKey(
+  QuicAsyncStatus GetChannelIDKey(
       const string& hostname,
       scoped_ptr<ChannelIDKey>* channel_id_key,
       ChannelIDSourceCallback* /*callback*/) override {

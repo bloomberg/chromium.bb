@@ -181,7 +181,7 @@ class HttpServerTest : public testing::Test,
  public:
   HttpServerTest() : quit_after_request_count_(0) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     scoped_ptr<ServerSocket> server_socket(
         new TCPServerSocket(NULL, net::NetLog::Source()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);

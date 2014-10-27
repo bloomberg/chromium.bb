@@ -167,12 +167,12 @@ class UnixDomainListenSocketTestHelper : public testing::Test {
     return temp_dir_.path().Append(socket_name);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     event_manager_ = new EventManager();
     socket_delegate_.reset(new TestListenSocketDelegate(event_manager_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     socket_.reset();
     socket_delegate_.reset();
     event_manager_ = NULL;

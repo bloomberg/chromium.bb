@@ -176,7 +176,7 @@ class DnsConfigServiceTest : public testing::Test {
     return hosts;
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     quit_on_config_ = false;
 
     service_.reset(new TestDnsConfigService());

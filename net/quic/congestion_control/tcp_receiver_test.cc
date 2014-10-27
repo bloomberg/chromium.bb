@@ -13,9 +13,7 @@ namespace test {
 
 class QuicTcpReceiverTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
-    receiver_.reset(new TcpReceiver());
-  }
+  void SetUp() override { receiver_.reset(new TcpReceiver()); }
   scoped_ptr<TcpReceiver> receiver_;
 };
 

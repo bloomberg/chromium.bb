@@ -44,12 +44,12 @@ class NET_EXPORT_PRIVATE SrvRecordRdata : public RecordRdata {
  public:
   static const uint16 kType = dns_protocol::kTypeSRV;
 
-  virtual ~SrvRecordRdata();
+  ~SrvRecordRdata() override;
   static scoped_ptr<SrvRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
 
-  virtual bool IsEqual(const RecordRdata* other) const override;
-  virtual uint16 Type() const override;
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16 Type() const override;
 
   uint16 priority() const { return priority_; }
   uint16 weight() const { return weight_; }
@@ -75,11 +75,11 @@ class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
  public:
   static const uint16 kType = dns_protocol::kTypeA;
 
-  virtual ~ARecordRdata();
+  ~ARecordRdata() override;
   static scoped_ptr<ARecordRdata> Create(const base::StringPiece& data,
                                          const DnsRecordParser& parser);
-  virtual bool IsEqual(const RecordRdata* other) const override;
-  virtual uint16 Type() const override;
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16 Type() const override;
 
   const IPAddressNumber& address() const { return address_; }
 
@@ -97,11 +97,11 @@ class NET_EXPORT_PRIVATE AAAARecordRdata : public RecordRdata {
  public:
   static const uint16 kType = dns_protocol::kTypeAAAA;
 
-  virtual ~AAAARecordRdata();
+  ~AAAARecordRdata() override;
   static scoped_ptr<AAAARecordRdata> Create(const base::StringPiece& data,
                                          const DnsRecordParser& parser);
-  virtual bool IsEqual(const RecordRdata* other) const override;
-  virtual uint16 Type() const override;
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16 Type() const override;
 
   const IPAddressNumber& address() const { return address_; }
 
@@ -119,11 +119,11 @@ class NET_EXPORT_PRIVATE CnameRecordRdata : public RecordRdata {
  public:
   static const uint16 kType = dns_protocol::kTypeCNAME;
 
-  virtual ~CnameRecordRdata();
+  ~CnameRecordRdata() override;
   static scoped_ptr<CnameRecordRdata> Create(const base::StringPiece& data,
                                              const DnsRecordParser& parser);
-  virtual bool IsEqual(const RecordRdata* other) const override;
-  virtual uint16 Type() const override;
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16 Type() const override;
 
   std::string cname() const { return cname_; }
 
@@ -141,11 +141,11 @@ class NET_EXPORT_PRIVATE PtrRecordRdata : public RecordRdata {
  public:
   static const uint16 kType = dns_protocol::kTypePTR;
 
-  virtual ~PtrRecordRdata();
+  ~PtrRecordRdata() override;
   static scoped_ptr<PtrRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
-  virtual bool IsEqual(const RecordRdata* other) const override;
-  virtual uint16 Type() const override;
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16 Type() const override;
 
   std::string ptrdomain() const { return ptrdomain_; }
 
@@ -164,11 +164,11 @@ class NET_EXPORT_PRIVATE TxtRecordRdata : public RecordRdata {
  public:
   static const uint16 kType = dns_protocol::kTypeTXT;
 
-  virtual ~TxtRecordRdata();
+  ~TxtRecordRdata() override;
   static scoped_ptr<TxtRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
-  virtual bool IsEqual(const RecordRdata* other) const override;
-  virtual uint16 Type() const override;
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16 Type() const override;
 
   const std::vector<std::string>& texts() const { return texts_; }
 
@@ -188,11 +188,11 @@ class NET_EXPORT_PRIVATE NsecRecordRdata : public RecordRdata {
  public:
   static const uint16 kType = dns_protocol::kTypeNSEC;
 
-  virtual ~NsecRecordRdata();
+  ~NsecRecordRdata() override;
   static scoped_ptr<NsecRecordRdata> Create(const base::StringPiece& data,
                                             const DnsRecordParser& parser);
-  virtual bool IsEqual(const RecordRdata* other) const override;
-  virtual uint16 Type() const override;
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16 Type() const override;
 
   // Length of the bitmap in bits.
   unsigned bitmap_length() const { return bitmap_.size() * 8; }

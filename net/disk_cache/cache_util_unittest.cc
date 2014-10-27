@@ -12,7 +12,7 @@ namespace disk_cache {
 
 class CacheUtilTest : public PlatformTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     cache_dir_ = tmp_dir_.path().Append(FILE_PATH_LITERAL("Cache"));

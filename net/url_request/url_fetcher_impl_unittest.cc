@@ -108,7 +108,7 @@ class URLFetcherTest : public testing::Test,
 
  protected:
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
 
     context_.reset(new ThrottlingTestURLRequestContext());
@@ -120,7 +120,7 @@ class URLFetcherTest : public testing::Test,
 #endif
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if defined(USE_NSS) || defined(OS_IOS)
     ShutdownNSSHttpIO();
 #endif
@@ -141,7 +141,7 @@ class URLFetcherTest : public testing::Test,
 class URLFetcherMockDnsTest : public URLFetcherTest {
  public:
   // testing::Test:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // URLFetcherTest:
   void CreateFetcher(const GURL& url) override;
@@ -347,7 +347,7 @@ class URLFetcherSocketAddressTest : public URLFetcherTest {
 class URLFetcherStopOnRedirectTest : public URLFetcherTest {
  public:
   URLFetcherStopOnRedirectTest();
-  virtual ~URLFetcherStopOnRedirectTest();
+  ~URLFetcherStopOnRedirectTest() override;
 
   // URLFetcherTest:
   void CreateFetcher(const GURL& url) override;

@@ -18,7 +18,7 @@ class QuicAckNotifierTest : public ::testing::Test {
  protected:
   QuicAckNotifierTest() : zero_(QuicTime::Delta::Zero()) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     delegate_ = new MockAckNotifierDelegate;
     notifier_.reset(new QuicAckNotifier(delegate_));
 

@@ -73,7 +73,7 @@ class SQLiteChannelIDStoreTest : public testing::Test {
     return base::Time::FromUTCExploded(exploded_time);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLiteChannelIDStore(
         temp_dir_.path().Append(kTestChannelIDFilename),

@@ -610,7 +610,7 @@ namespace net {
 
 class SpdyFramerTest : public ::testing::TestWithParam<SpdyMajorVersion> {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     spdy_version_ = GetParam();
     spdy_version_ch_ = static_cast<unsigned char>(
         SpdyConstants::SerializeMajorVersion(spdy_version_));

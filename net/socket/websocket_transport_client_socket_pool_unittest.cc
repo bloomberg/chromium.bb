@@ -67,7 +67,7 @@ class WebSocketTransportClientSocketPoolTest : public testing::Test {
               &client_socket_factory_,
               NULL) {}
 
-  virtual ~WebSocketTransportClientSocketPoolTest() {
+  ~WebSocketTransportClientSocketPoolTest() override {
     ReleaseAllConnections(ClientSocketPoolTest::NO_KEEP_ALIVE);
     EXPECT_TRUE(WebSocketEndpointLockManager::GetInstance()->IsEmpty());
   }

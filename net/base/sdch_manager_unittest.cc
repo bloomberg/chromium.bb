@@ -34,7 +34,7 @@ class SdchManagerTest : public testing::Test {
   SdchManager* sdch_manager() { return sdch_manager_.get(); }
 
   // Reset globals back to default state.
-  virtual void TearDown() {
+  void TearDown() override {
     SdchManager::EnableSdchSupport(default_support_);
     SdchManager::EnableSecureSchemeSupport(default_https_support_);
   }
