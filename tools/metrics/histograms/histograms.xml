@@ -21848,6 +21848,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="OSX.Fullscreen.Enter" enum="OSXFullscreenParameters">
+  <obsolete>
+    Deprecated as of Chrome 40. See OSX.Fullscreen.Enter.Style,
+    OSX.Fullscreen.Enter.WindowLocation and
+    OSX.Settings.ScreensHaveSeparateSpaces.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     This event is recorded each time a user triggers fullscreen for a browser
@@ -21856,6 +21861,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     primary screen (Primary vs. Secondary). Bit 2: Whether displays have
     separate spaces options is enabled (Seperate vs Shared). Bit 3: Whether
     there are multiple screens.
+  </summary>
+</histogram>
+
+<histogram name="OSX.Fullscreen.Enter.Style" enum="OSXFullscreenStyle">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This event is recorded each time a user triggers fullscreen for a browser
+    window. It indicates the mechanism (immersive vs. AppKit) and the type of
+    AppKit Fullscreen (Presentation Mode vs. Canonical Fullscreen).
+  </summary>
+</histogram>
+
+<histogram name="OSX.Fullscreen.Enter.WindowLocation"
+    enum="OSXFullscreenWindowLocation">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This event is recorded each time a user triggers fullscreen for a browser
+    window. It indicates the screen in which the window was fullscreened, and
+    the number of screens available.
+  </summary>
+</histogram>
+
+<histogram name="OSX.Settings.ScreensHaveSeparateSpaces"
+    enum="OSXScreensHaveSeparateSpaces">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The configuration of the setting &quot;Screens Have Separate Spaces&quot;
+    available in OSX 10.9+.
   </summary>
 </histogram>
 
@@ -48999,6 +49032,47 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="15" label="APPKIT_PRIMARY_SEPARATE_MULTIPLE">
     AppKit Mechanism + Primary Screen + Separate Spaces + Multiple Screens
+  </int>
+</enum>
+
+<enum name="OSXFullscreenStyle" type="int">
+  <int value="0" label="IMMERSIVE">
+    The window was fullscreened using the immersive mechanism.
+  </int>
+  <int value="1" label="PRESENTATION_MODE">
+    The window was fullscreened using the AppKit mechanism, in Presentation
+    Mode.
+  </int>
+  <int value="2" label="CANONICAL_FULLSCREEN">
+    The window was fullscreened using the AppKit mechanism, in Canonical
+    Fullscreen.
+  </int>
+</enum>
+
+<enum name="OSXFullscreenWindowLocation" type="int">
+  <int value="0" label="PRIMARY_SINGLE_SCREEN">
+    The window was located on the primary screen, and there is only a single
+    screen available.
+  </int>
+  <int value="1" label="PRIMARY_MULTIPLE_SCREEN">
+    The window was located on the primary screen, and there are multiple screens
+    available.
+  </int>
+  <int value="2" label="SECONDARY_MULTIPLE_SCREEN">
+    The window was located on a secondary screen, and there are multiple screens
+    available.
+  </int>
+</enum>
+
+<enum name="OSXScreensHaveSeparateSpaces" type="int">
+  <int value="0" label="CANNOT_HAVE_SEPARATE_SPACES">
+    The &quot;Screens Have Separate Spaces&quot; option is unavailable.
+  </int>
+  <int value="1" label="SEPARATE_SPACES">
+    The &quot;Screens Have Separate Spaces&quot; option is on.
+  </int>
+  <int value="2" label="SHARED_SPACES">
+    The &quot;Screens Have Separate Spaces&quot; option is off.
   </int>
 </enum>
 

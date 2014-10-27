@@ -246,6 +246,10 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #endif
   RecordTouchEventState();
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  RecordMacMetrics();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   const int kStartupMetricsGatheringDelaySeconds = 45;
   content::BrowserThread::GetBlockingPool()->PostDelayedTask(
       FROM_HERE,

@@ -653,6 +653,7 @@
       'browser/memory_details_win.cc',
       'browser/metrics/chrome_browser_main_extra_parts_metrics.cc',
       'browser/metrics/chrome_browser_main_extra_parts_metrics.h',
+      'browser/metrics/chrome_browser_main_extra_parts_metrics_mac.mm',
       'browser/metrics/chrome_metrics_service_accessor.cc',
       'browser/metrics/chrome_metrics_service_accessor.h',
       'browser/metrics/chrome_metrics_service_client.cc',

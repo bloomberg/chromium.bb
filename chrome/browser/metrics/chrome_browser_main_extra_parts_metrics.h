@@ -27,6 +27,11 @@ class ChromeBrowserMainExtraPartsMetrics : public ChromeBrowserMainExtraParts {
   void PostBrowserStart() override;
 
  private:
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Records Mac specific metrics.
+  void RecordMacMetrics();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetrics);
 };
 

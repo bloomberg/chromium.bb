@@ -54,69 +54,45 @@ using content::WebContents;
 
 namespace {
 
-// Each time the user enters fullscreen, a single histogram enumeration is
-// recorded. There are several relevant parameters, whose values are mapped
-// directly into individual bits of the enumeration.
-//
-// + Fullscreen Mechanism: The mechanism by which the window's size is changed
-// to encompass the entire screen. Bit 0.
-//   - AppKit (value of bit: 1)
-//   - Immersive (value of bit: 0)
-//
-// + Primary Screen: Whether the window is located on the screen at index 0.
-// Depending on OSX version, this has different implications for menu bar
-// visibility. Bit 1.
-//   - Primary (value of bit: 1)
-//   - Secondary (value of bit: 0)
-//
-// + Displays have separate spaces: An option available in Mission Control in
-// OSX 10.9+. Bit 2.
-//   - On (value of bit: 1)
-//   - Off (value of bit: 0)
-//
-// + Multiple screens: Whether the user has multiple screens. If the window is
-// located on a secondary screen, then there must be multiple screens. Bit 3.
-//   - Yes (value of bit: 1)
-//   - No (value of bit: 0)
-
-enum FullscreenMechanism {
-  IMMERSIVE_FULLSCREEN_MECHANISM,
-  APPKIT_FULLSCREEN_MECHANISM,
+// The screen on which the window was fullscreened, and whether the device had
+// multiple screens available.
+enum WindowLocation {
+  PRIMARY_SINGLE_SCREEN = 0,
+  PRIMARY_MULTIPLE_SCREEN = 1,
+  SECONDARY_MULTIPLE_SCREEN = 2,
+  WINDOW_LOCATION_COUNT = 3
 };
 
-enum {
-  FULLSCREEN_MECHANISM_BIT = 0,
-  PRIMARY_SCREEN_BIT = 1,
-  DISPLAYS_SEPARATE_SPACES_BIT = 2,
-  MULTIPLE_SCREENS_BIT = 3,
-  BIT_COUNT
+// There are 2 mechanisms for invoking fullscreen: AppKit and Immersive.
+// There are 2 types of AppKit Fullscreen: Presentation Mode and Canonical
+// Fullscreen.
+enum FullscreenStyle {
+  IMMERSIVE_FULLSCREEN = 0,
+  PRESENTATION_MODE = 1,
+  CANONICAL_FULLSCREEN = 2,
+  FULLSCREEN_STYLE_COUNT = 3
 };
 
-// Emits a histogram entry indicating that |window| is being made fullscreen.
-void RecordFullscreenHistogram(FullscreenMechanism mechanism,
-                               NSWindow* window) {
+// Emits a histogram entry indicating the Fullscreen window location.
+void RecordFullscreenWindowLocation(NSWindow* window) {
   NSArray* screens = [NSScreen screens];
   bool primary_screen = ([[window screen] isEqual:[screens objectAtIndex:0]]);
-  bool displays_have_separate_spaces =
-      [NSScreen respondsToSelector:@selector(screensHaveSeparateSpaces)] &&
-      [NSScreen screensHaveSeparateSpaces];
   bool multiple_screens = [screens count] > 1;
 
-  int output = 0;
-  if (mechanism == APPKIT_FULLSCREEN_MECHANISM)
-    output += 1 << FULLSCREEN_MECHANISM_BIT;
+  WindowLocation location = PRIMARY_SINGLE_SCREEN;
+  if (multiple_screens) {
+    location =
+        primary_screen ? PRIMARY_MULTIPLE_SCREEN : SECONDARY_MULTIPLE_SCREEN;
+  }
 
-  if (primary_screen)
-    output += 1 << PRIMARY_SCREEN_BIT;
+  UMA_HISTOGRAM_ENUMERATION(
+      "OSX.Fullscreen.Enter.WindowLocation", location, WINDOW_LOCATION_COUNT);
+}
 
-  if (displays_have_separate_spaces)
-    output += 1 << DISPLAYS_SEPARATE_SPACES_BIT;
-
-  if (multiple_screens)
-    output += 1 << MULTIPLE_SCREENS_BIT;
-
-  int max_output = 1 << BIT_COUNT;
-  UMA_HISTOGRAM_ENUMERATION("OSX.Fullscreen.Enter", output, max_output);
+// Emits a histogram entry indicating the Fullscreen style.
+void RecordFullscreenStyle(FullscreenStyle style) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "OSX.Fullscreen.Enter.Style", style, FULLSCREEN_STYLE_COUNT);
 }
 
 }  // namespace
@@ -519,7 +495,8 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)enterImmersiveFullscreen {
-  RecordFullscreenHistogram(IMMERSIVE_FULLSCREEN_MECHANISM, [self window]);
+  RecordFullscreenWindowLocation([self window]);
+  RecordFullscreenStyle(IMMERSIVE_FULLSCREEN);
 
   // Set to NO by |-windowDidEnterFullScreen:|.
   enteringImmersiveFullscreen_ = YES;
@@ -673,7 +650,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {
-  RecordFullscreenHistogram(APPKIT_FULLSCREEN_MECHANISM, [self window]);
+  RecordFullscreenWindowLocation([self window]);
+  RecordFullscreenStyle(enteringPresentationMode_ ? PRESENTATION_MODE
+                                                  : CANONICAL_FULLSCREEN);
 
   if (notification)  // For System Fullscreen when non-nil.
     [self registerForContentViewResizeNotifications];
