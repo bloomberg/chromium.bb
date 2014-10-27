@@ -28,12 +28,14 @@ class TestMessageHandler : public TestCase {
   std::string TestPostMessageAndAwaitResponse();
   std::string TestExceptions();
 
+  // Wait for HandleMessage to be called, and return the Var it received.
+  pp::Var WaitForMessage();
+  NestedEvent message_received_;
+  pp::Var last_message_;
+
   const PPB_Messaging_1_2* ppb_messaging_if_;
   pp::SimpleThread handler_thread_;
 
-  // For TestExceptions():
-  NestedEvent message_received_;
-  std::string last_message_;
 };
 
 #endif  // PPAPI_TESTS_TEST_MESSAGE_HANDLER_H_

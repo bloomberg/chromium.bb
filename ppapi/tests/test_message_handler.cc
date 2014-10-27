@@ -42,15 +42,16 @@ namespace {
 // Created and destroyed on the main thread. All public methods should be called
 // on the main thread. Most data members are only accessed on the main thread.
 // (Though it handles messages on the background thread).
-class EchoingMessageHandler : public pp::MessageHandler {
+class MyMessageHandler : public pp::MessageHandler {
  public:
-  explicit EchoingMessageHandler(TestingInstance* instance,
-                                 const pp::MessageLoop& loop)
+  explicit MyMessageHandler(TestingInstance* instance,
+                            const pp::MessageLoop& loop)
       : testing_instance_(instance),
         message_handler_loop_(loop),
         is_registered_(false),
         test_finished_event_(instance->pp_instance()),
-        destroy_event_(instance->pp_instance()) {
+        destroy_event_(instance->pp_instance()),
+        async_message_received_(instance->pp_instance()) {
     AssertOnMainThread();
   }
   void Register() {
@@ -95,6 +96,13 @@ class EchoingMessageHandler : public pp::MessageHandler {
     errors_.swap(temp_errors);
     return temp_errors;
   }
+  pp::Var WaitForAsyncMessage() {
+    async_message_received_.Wait();
+    pp::Var var_to_return = last_async_message_received_;
+    last_async_message_received_ = pp::Var();
+    async_message_received_.Reset();
+    return var_to_return;
+  }
  private:
   static void AssertOnMainThread() {
     assert(pp::MessageLoop::GetForMainThread() ==
@@ -112,10 +120,15 @@ class EchoingMessageHandler : public pp::MessageHandler {
       AddError("HandleMessage was called on the wrong thread!");
     if (instance.pp_instance() != testing_instance_->pp_instance())
       AddError("HandleMessage was passed the wrong instance!");
-    if (var.is_string() && var.AsString() == "FINISHED_TEST")
+    if (var.is_string() && var.AsString() == "FINISHED_TEST") {
       test_finished_event_.Signal();
-    else
-      testing_instance_->PostMessage(var);
+    } else {
+      // Any client causing a message to arrive must wait for the message
+      // before continuing. See WaitForAsyncMessage().
+      assert(last_async_message_received_.is_undefined());
+      last_async_message_received_ = var;
+      async_message_received_.Signal();
+    }
   }
 
   virtual pp::Var HandleBlockingMessage(pp::InstanceHandle instance,
@@ -165,9 +178,12 @@ class EchoingMessageHandler : public pp::MessageHandler {
   NestedEvent test_finished_event_;
   NestedEvent destroy_event_;
 
+  pp::Var last_async_message_received_;
+  NestedEvent async_message_received_;
+
   // Undefined & private to disallow copy and assign.
-  EchoingMessageHandler(const EchoingMessageHandler&);
-  EchoingMessageHandler& operator=(const EchoingMessageHandler&);
+  MyMessageHandler(const MyMessageHandler&);
+  MyMessageHandler& operator=(const MyMessageHandler&);
 };
 
 void FakeHandleMessage(PP_Instance instance,
@@ -183,9 +199,9 @@ void FakeDestroy(PP_Instance instance, void* user_data) {}
 
 TestMessageHandler::TestMessageHandler(TestingInstance* instance)
     : TestCase(instance),
+      message_received_(instance->pp_instance()),
       ppb_messaging_if_(NULL),
-      handler_thread_(instance),
-      message_received_(instance->pp_instance()) {
+      handler_thread_(instance) {
 }
 
 TestMessageHandler::~TestMessageHandler() {
@@ -212,11 +228,10 @@ void TestMessageHandler::HandleMessage(const pp::Var& message_data) {
     // background thread message handler.
     assert(false);
   } else {
-    if (message_data.is_string()) {
-      last_message_ = message_data.AsString();
-    } else {
-      last_message_ = "message_data was not a string!";
-    }
+    // Any subtest causing a message to arrive here must wait for it before
+    // continuing. See WaitForMessage().
+    assert(last_message_.is_undefined());
+    last_message_ = message_data;
     message_received_.Signal();
   }
 }
@@ -254,9 +269,8 @@ std::string TestMessageHandler::TestRegisterErrorConditions() {
 }
 
 std::string TestMessageHandler::TestPostMessageAndAwaitResponse() {
-  EchoingMessageHandler handler(instance(),
-                                handler_thread_.message_loop());
-  // Test doing a sync call before the handler is registered.
+  MyMessageHandler handler(instance(),
+                           handler_thread_.message_loop());
   handler.Register();
   std::string js_code("var plugin = document.getElementById('plugin');\n");
   js_code += "var result = undefined;\n";
@@ -289,8 +303,8 @@ std::string TestMessageHandler::TestPostMessageAndAwaitResponse() {
 }
 
 std::string TestMessageHandler::TestExceptions() {
-  EchoingMessageHandler handler(instance(),
-                                handler_thread_.message_loop());
+  MyMessageHandler handler(instance(),
+                           handler_thread_.message_loop());
   {
     // First, try sending a blocking message when there is no handler
     // registered. It should throw an exception.
@@ -304,8 +318,12 @@ std::string TestMessageHandler::TestExceptions() {
         "}\n"
         "plugin.postMessage(caught_exception ? 'SUCCESS' : 'FAIL');\n");
     instance_->EvalScript(js_code);
-    message_received_.Wait();
-    ASSERT_EQ("SUCCESS", last_message_);
+    // Note that we want to wait for the Instance to get the SUCCESS/FAIL
+    // message here. |message_handler| is not yet registered, so the message
+    // goes to the instance instead.
+    pp::Var msg = WaitForMessage();
+    ASSERT_TRUE(msg.is_string());
+    ASSERT_EQ("SUCCESS", msg.AsString());
   }
   handler.Register();
   {
@@ -332,12 +350,21 @@ std::string TestMessageHandler::TestExceptions() {
         "window.webkitRequestFileSystem(\n"
         "    window.Temporary, 1024, gotFileSystem, fileSystemError)\n");
     instance_->EvalScript(js_code);
-    message_received_.Wait();
-    ASSERT_EQ("SUCCESS", last_message_);
+    pp::Var msg = handler.WaitForAsyncMessage();
+    ASSERT_EQ(PP_VARTYPE_STRING, msg.pp_var().type);
+    ASSERT_EQ("SUCCESS", msg.AsString());
   }
   handler.Unregister();
   ASSERT_SUBTEST_SUCCESS(handler.WaitForDestroy());
 
   PASS();
+}
+
+pp::Var TestMessageHandler::WaitForMessage() {
+  message_received_.Wait();
+  pp::Var var_to_return = last_message_;
+  last_message_ = pp::Var();
+  message_received_.Reset();
+  return var_to_return;
 }
 
