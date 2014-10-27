@@ -114,21 +114,25 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // MojoBootstrapDelegate implementation
-  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
   void OnBootstrapError() override;
 
   // Called from MessagePipeReader implementations
   void OnMessageReceived(Message& message);
-  void OnConnected(mojo::ScopedMessagePipeHandle pipe);
   void OnPipeClosed(internal::MessagePipeReader* reader);
   void OnPipeError(internal::MessagePipeReader* reader);
-  void set_peer_pid(base::ProcessId pid) { peer_pid_ = pid; }
 
  protected:
   ChannelMojo(Delegate* delegate,
               const ChannelHandle& channel_handle,
               Mode mode,
               Listener* listener);
+
+  mojo::ScopedMessagePipeHandle CreateMessagingPipe(
+      mojo::embedder::ScopedPlatformHandle handle);
+  void InitMessageReader(mojo::ScopedMessagePipeHandle pipe, int32_t peer_pid);
+
+  Listener* listener() const { return listener_; }
+  void set_peer_pid(base::ProcessId pid) { peer_pid_ = pid; }
 
  private:
   struct ChannelInfoDeleter {
@@ -141,7 +145,6 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
   void InitDelegate(ChannelMojo::Delegate* delegate);
-  void InitControlReader(mojo::embedder::ScopedPlatformHandle handle);
 
   scoped_ptr<MojoBootstrap> bootstrap_;
   base::WeakPtr<Delegate> delegate_;
@@ -151,7 +154,6 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
   scoped_ptr<mojo::embedder::ChannelInfo,
              ChannelInfoDeleter> channel_info_;
 
-  scoped_ptr<internal::ControlReader, ReaderDeleter> control_reader_;
   scoped_ptr<internal::MessageReader, ReaderDeleter> message_reader_;
   ScopedVector<Message> pending_messages_;
 

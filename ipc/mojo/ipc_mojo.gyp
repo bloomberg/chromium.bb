@@ -17,6 +17,7 @@
       'defines': [
         'IPC_MOJO_IMPLEMENTATION',
       ],
+      'includes': [ '../../mojo/public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [
         '../ipc.gyp:ipc',
         '../../base/base.gyp:base',
@@ -26,6 +27,7 @@
         '../../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'sources': [
+        'client_channel.mojom',
         'ipc_channel_mojo.cc',
         'ipc_channel_mojo.h',
         'ipc_channel_mojo_host.cc',

@@ -8,9 +8,11 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "ipc/ipc_listener.h"
+#include "ipc/mojo/client_channel.mojom.h"
 #include "ipc/mojo/ipc_channel_mojo_readers.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
 #include "ipc/file_descriptor_set_posix.h"
@@ -41,6 +43,125 @@ class MojoChannelFactory : public ChannelFactory {
   Channel::Mode mode_;
 };
 
+//------------------------------------------------------------------------------
+
+class ClientChannelMojo
+    : public ChannelMojo,
+      public NON_EXPORTED_BASE(mojo::InterfaceImpl<ClientChannel>) {
+ public:
+  ClientChannelMojo(ChannelMojo::Delegate* delegate,
+                    const ChannelHandle& handle,
+                    Listener* listener);
+  ~ClientChannelMojo() override;
+  // MojoBootstrap::Delegate implementation
+  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
+  // InterfaceImpl implementation
+  void OnConnectionError() override;
+  // ClientChannel implementation
+  void Init(
+      mojo::ScopedMessagePipeHandle pipe,
+      int32_t peer_pid,
+      const mojo::Callback<void(int32_t)>& callback) override;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientChannelMojo);
+};
+
+ClientChannelMojo::ClientChannelMojo(ChannelMojo::Delegate* delegate,
+                                     const ChannelHandle& handle,
+                                     Listener* listener)
+    : ChannelMojo(delegate, handle, Channel::MODE_CLIENT, listener) {
+}
+
+ClientChannelMojo::~ClientChannelMojo() {
+}
+
+void ClientChannelMojo::OnPipeAvailable(
+    mojo::embedder::ScopedPlatformHandle handle) {
+  mojo::WeakBindToPipe(this, CreateMessagingPipe(handle.Pass()));
+}
+
+void ClientChannelMojo::OnConnectionError() {
+  listener()->OnChannelError();
+}
+
+void ClientChannelMojo::Init(
+    mojo::ScopedMessagePipeHandle pipe,
+    int32_t peer_pid,
+    const mojo::Callback<void(int32_t)>& callback) {
+  InitMessageReader(pipe.Pass(), static_cast<base::ProcessId>(peer_pid));
+  callback.Run(GetSelfPID());
+}
+
+//------------------------------------------------------------------------------
+
+class ServerChannelMojo : public ChannelMojo, public mojo::ErrorHandler {
+ public:
+  ServerChannelMojo(ChannelMojo::Delegate* delegate,
+                    const ChannelHandle& handle,
+                    Listener* listener);
+  ~ServerChannelMojo() override;
+
+  // MojoBootstrap::Delegate implementation
+  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
+  // ErrorHandler implementation
+  void OnConnectionError() override;
+  // Channel override
+  void Close() override;
+
+ private:
+  // ClientChannelClient implementation
+  void ClientChannelWasInitialized(int32_t peer_pid);
+
+  mojo::InterfacePtr<ClientChannel> client_channel_;
+  mojo::ScopedMessagePipeHandle message_pipe_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerChannelMojo);
+};
+
+ServerChannelMojo::ServerChannelMojo(ChannelMojo::Delegate* delegate,
+                                     const ChannelHandle& handle,
+                                     Listener* listener)
+    : ChannelMojo(delegate, handle, Channel::MODE_SERVER, listener) {
+}
+
+ServerChannelMojo::~ServerChannelMojo() {
+  Close();
+}
+
+void ServerChannelMojo::OnPipeAvailable(
+    mojo::embedder::ScopedPlatformHandle handle) {
+  mojo::ScopedMessagePipeHandle peer;
+  MojoResult create_result =
+      mojo::CreateMessagePipe(nullptr, &message_pipe_, &peer);
+  if (create_result != MOJO_RESULT_OK) {
+    DLOG(WARNING) << "mojo::CreateMessagePipe failed: " << create_result;
+    listener()->OnChannelError();
+    return;
+  }
+
+  client_channel_.Bind(CreateMessagingPipe(handle.Pass()));
+  client_channel_.set_error_handler(this);
+  client_channel_->Init(
+      peer.Pass(),
+      static_cast<int32_t>(GetSelfPID()),
+      base::Bind(&ServerChannelMojo::ClientChannelWasInitialized,
+                 base::Unretained(this)));
+}
+
+void ServerChannelMojo::ClientChannelWasInitialized(int32_t peer_pid) {
+  InitMessageReader(message_pipe_.Pass(), peer_pid);
+}
+
+void ServerChannelMojo::OnConnectionError() {
+  listener()->OnChannelError();
+}
+
+void ServerChannelMojo::Close() {
+  client_channel_.reset();
+  message_pipe_.reset();
+  ChannelMojo::Close();
+}
+
 } // namespace
 
 //------------------------------------------------------------------------------
@@ -63,8 +184,17 @@ scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojo::Delegate* delegate,
                                             const ChannelHandle& channel_handle,
                                             Mode mode,
                                             Listener* listener) {
-  return make_scoped_ptr(
-      new ChannelMojo(delegate, channel_handle, mode, listener));
+  switch (mode) {
+    case Channel::MODE_CLIENT:
+      return make_scoped_ptr(
+          new ClientChannelMojo(delegate, channel_handle, listener));
+    case Channel::MODE_SERVER:
+      return make_scoped_ptr(
+          new ServerChannelMojo(delegate, channel_handle, listener));
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 // static
@@ -115,51 +245,32 @@ void ChannelMojo::InitDelegate(ChannelMojo::Delegate* delegate) {
   delegate_->OnChannelCreated(weak_factory_.GetWeakPtr());
 }
 
-void ChannelMojo::InitControlReader(
+mojo::ScopedMessagePipeHandle ChannelMojo::CreateMessagingPipe(
     mojo::embedder::ScopedPlatformHandle handle) {
-  DCHECK(base::MessageLoopForIO::IsCurrent());
+  DCHECK(!channel_info_.get());
   mojo::embedder::ChannelInfo* channel_info;
-  mojo::ScopedMessagePipeHandle control_pipe =
+  mojo::ScopedMessagePipeHandle pipe =
       mojo::embedder::CreateChannelOnIOThread(handle.Pass(), &channel_info);
   channel_info_.reset(channel_info);
-
-  switch (mode_) {
-    case MODE_SERVER:
-      control_reader_.reset(
-          new internal::ServerControlReader(control_pipe.Pass(), this));
-      break;
-    case MODE_CLIENT:
-      control_reader_.reset(
-          new internal::ClientControlReader(control_pipe.Pass(), this));
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  return pipe.Pass();
 }
 
 bool ChannelMojo::Connect() {
   DCHECK(!message_reader_);
-  DCHECK(!control_reader_);
   return bootstrap_->Connect();
 }
 
 void ChannelMojo::Close() {
-  control_reader_.reset();
   message_reader_.reset();
   channel_info_.reset();
-}
-
-void ChannelMojo::OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) {
-  InitControlReader(handle.Pass());
-  control_reader_->Connect();
 }
 
 void ChannelMojo::OnBootstrapError() {
   listener_->OnChannelError();
 }
 
-void ChannelMojo::OnConnected(mojo::ScopedMessagePipeHandle pipe) {
+void ChannelMojo::InitMessageReader(mojo::ScopedMessagePipeHandle pipe,
+                                    int32_t peer_pid) {
   message_reader_ =
       make_scoped_ptr(new internal::MessageReader(pipe.Pass(), this));
 
@@ -175,7 +286,8 @@ void ChannelMojo::OnConnected(mojo::ScopedMessagePipeHandle pipe) {
 
   pending_messages_.clear();
 
-  listener_->OnChannelConnected(GetPeerPID());
+  set_peer_pid(peer_pid);
+  listener_->OnChannelConnected(static_cast<int32_t>(GetPeerPID()));
 }
 
 void ChannelMojo::OnPipeClosed(internal::MessagePipeReader* reader) {
