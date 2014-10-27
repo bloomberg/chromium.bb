@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 
 class PrefService;

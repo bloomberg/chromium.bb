@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"

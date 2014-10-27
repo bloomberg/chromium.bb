@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

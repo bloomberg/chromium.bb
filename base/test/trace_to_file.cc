@@ -5,6 +5,7 @@
 #include "base/test/trace_to_file.h"
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event_impl.h"
 #include "base/files/file_util.h"
