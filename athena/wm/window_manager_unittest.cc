@@ -11,6 +11,7 @@
 #include "athena/wm/split_view_controller.h"
 #include "athena/wm/test/window_manager_impl_test_api.h"
 #include "athena/wm/window_manager_impl.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -33,6 +34,7 @@ class WindowManagerTest : public test::AthenaTestBase {
         test::CreateNormalWindow(delegate, nullptr));
     window->Show();
     wm::ActivateWindow(window.get());
+    window->SetProperty(aura::client::kCanMaximizeKey, true);
     return window.Pass();
   }
 
@@ -99,6 +101,59 @@ TEST_F(WindowManagerTest, OverviewToSplitViewMode) {
   EXPECT_TRUE(w3->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_FALSE(w1->IsVisible());
+}
+
+TEST_F(WindowManagerTest, OnSelectWindow) {
+  test::WindowManagerImplTestApi wm_api;
+  aura::test::TestWindowDelegate delegate1;
+  aura::test::TestWindowDelegate delegate2;
+  aura::test::TestWindowDelegate delegate3;
+
+  // (w1): A window that sets a maximum size
+  delegate1.set_maximum_size(gfx::Size(300, 200));
+  scoped_ptr<aura::Window> w1(CreateAndActivateWindow(&delegate1));
+  w1->SetBounds(gfx::Rect(0, 0, 300, 200));
+
+  // (w2): A window that doesn't set a max size and is maximizable
+  scoped_ptr<aura::Window> w2(CreateAndActivateWindow(&delegate2));
+  w2->SetBounds(gfx::Rect(0, 0, 300, 200));
+  w2->SetProperty(aura::client::kCanMaximizeKey, true);
+
+  // (w3): A window that doesn't set a max size but is NOT maximizable
+  scoped_ptr<aura::Window> w3(CreateAndActivateWindow(&delegate3));
+  w3->SetBounds(gfx::Rect(0, 0, 300, 200));
+  w3->SetProperty(aura::client::kCanMaximizeKey, false);
+
+  const gfx::Size old_bounds1 = w1->GetTargetBounds().size();
+  const gfx::Size old_bounds2 = w2->GetTargetBounds().size();
+  const gfx::Size old_bounds3 = w3->GetTargetBounds().size();
+  const gfx::Size work_area =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
+
+  // Select w1, which has a max size, in the overview mode and make sure it's
+  // not maximized.
+  WindowManager::Get()->EnterOverview();
+  WindowOverviewModeDelegate* overview_delegate = wm_api.wm();
+  overview_delegate->OnSelectWindow(w1.get());
+  const gfx::Size new_bounds1 = w1->GetTargetBounds().size();
+  EXPECT_EQ(new_bounds1.ToString(), old_bounds1.ToString());
+  EXPECT_NE(work_area.ToString(), new_bounds1.ToString());
+
+  // Select w2, which has no max size & can be maximized, in the overview
+  // mode and make sure it's actually maximized.
+  WindowManager::Get()->EnterOverview();
+  overview_delegate->OnSelectWindow(w2.get());
+  const gfx::Size new_bounds2 = w2->GetTargetBounds().size();
+  EXPECT_NE(new_bounds2.ToString(), old_bounds2.ToString());
+  EXPECT_EQ(work_area.ToString(), new_bounds2.ToString());
+
+  // Select w3, which has no max size & cannot be maximized, in the overview
+  // mode and make sure it's not maximized.
+  WindowManager::Get()->EnterOverview();
+  overview_delegate->OnSelectWindow(w3.get());
+  const gfx::Size new_bounds3 = w3->GetTargetBounds().size();
+  EXPECT_EQ(new_bounds3.ToString(), old_bounds3.ToString());
+  EXPECT_NE(work_area.ToString(), new_bounds3.ToString());
 }
 
 TEST_F(WindowManagerTest, NewWindowFromOverview) {
@@ -352,8 +407,18 @@ TEST_F(WindowManagerTest, SplitModeActivationByShortcut) {
   wm_api.wm()->ToggleSplitView();
   EXPECT_FALSE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
 
-  EXPECT_EQ(width, w1->bounds().width());
+  // w2 is the top window, it should be resized to max width and must be visible
+  // w1 should be hidden.
   EXPECT_EQ(width, w2->bounds().width());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_FALSE(w1->IsVisible());
+
+  // Expect w1 to be visible and maximized when activated.
+  // TODO(oshima): To change to wm::ActivateWindow once the correct window state
+  // is implemented.
+  w1->Show();
+  EXPECT_EQ(width, w1->bounds().width());
+  EXPECT_TRUE(w1->IsVisible());
 }
 
 TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {

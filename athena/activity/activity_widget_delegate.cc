@@ -18,6 +18,18 @@ ActivityWidgetDelegate::ActivityWidgetDelegate(ActivityViewModel* view_model)
 ActivityWidgetDelegate::~ActivityWidgetDelegate() {
 }
 
+bool ActivityWidgetDelegate::CanResize() const {
+  return true;
+}
+
+bool ActivityWidgetDelegate::CanMaximize() const {
+  return true;
+}
+
+bool ActivityWidgetDelegate::CanMinimize() const {
+  return true;
+}
+
 base::string16 ActivityWidgetDelegate::GetWindowTitle() const {
   return view_model_->GetTitle();
 }

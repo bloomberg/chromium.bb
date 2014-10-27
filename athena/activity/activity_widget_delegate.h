@@ -19,6 +19,9 @@ class ActivityWidgetDelegate : public views::WidgetDelegate {
   ~ActivityWidgetDelegate() override;
 
   // views::WidgetDelegate:
+  bool CanResize() const override;
+  bool CanMaximize() const override;
+  bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   views::Widget* GetWidget() override;

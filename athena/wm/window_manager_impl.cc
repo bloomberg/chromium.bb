@@ -16,8 +16,10 @@
 #include "athena/wm/window_overview_mode.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/display.h"
@@ -38,6 +40,16 @@ void SetWindowState(aura::Window* window,
                     const gfx::Transform& transform) {
   window->SetBounds(bounds);
   window->SetTransform(transform);
+}
+
+// Tests whether the given window can be maximized
+bool CanWindowMaximize(const aura::Window* const window) {
+  const aura::WindowDelegate* delegate = window->delegate();
+  const bool no_max_size =
+      !delegate || delegate->GetMaximumSize().IsEmpty();
+  return no_max_size &&
+         window->GetProperty(aura::client::kCanMaximizeKey) &&
+         window->GetProperty(aura::client::kCanResizeKey);
 }
 
 }  // namespace
@@ -88,12 +100,12 @@ void AthenaContainerLayoutManager::OnWindowResized() {
     if (is_splitview) {
       if (window == instance->split_view_controller_->left_window())
         window->SetBounds(gfx::Rect(split_size));
-      else if (window == instance->split_view_controller_->right_window())
+      else if (window == instance->split_view_controller_->right_window()) {
         window->SetBounds(
             gfx::Rect(gfx::Point(split_size.width(), 0), split_size));
-      else
-        window->SetBounds(gfx::Rect(work_area));
-    } else {
+      } else if (CanWindowMaximize(window))
+          window->SetBounds(gfx::Rect(work_area));
+    } else if (CanWindowMaximize(window)) {
       window->SetBounds(gfx::Rect(work_area));
     }
   }
@@ -119,6 +131,14 @@ void AthenaContainerLayoutManager::OnWindowRemovedFromLayout(
 void AthenaContainerLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
+  if (visible && CanWindowMaximize(child)) {
+    // Make sure we're resizing a window that actually exists in the window list
+    // to avoid resizing the divider in the split mode.
+    if(instance->window_list_provider_->IsWindowInList(child)) {
+       child->SetBounds(
+          gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area());
+    }
+  }
 }
 
 void AthenaContainerLayoutManager::SetChildBounds(
@@ -291,7 +311,11 @@ void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
   // resized.
   const gfx::Size work_area =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
-  if (window->GetTargetBounds().size() != work_area) {
+
+  // Resize to the screen bounds only if the window is maximize-able, and
+  // is not already maximized
+  if (window->GetTargetBounds().size() != work_area &&
+      CanWindowMaximize(window)) {
     const gfx::Rect& window_bounds = window->bounds();
     const gfx::Rect desired_bounds(work_area);
     gfx::Transform transform;
