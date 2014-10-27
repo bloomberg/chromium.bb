@@ -322,7 +322,10 @@ TEST_F(MultiProfileUserControllerTest, PrimaryBehaviorChange) {
 }
 
 // Tests that owner could not be a secondary user.
-TEST_F(MultiProfileUserControllerTest, NoSecondaryOwner) {
+//
+// TODO (ygorshenin@, crbug.com/230018): remove or change the test when the
+// issue will be fixed.
+TEST_F(MultiProfileUserControllerTest, DISABLED_NoSecondaryOwner) {
   LoginUser(0);
   SetOwner(1);
 

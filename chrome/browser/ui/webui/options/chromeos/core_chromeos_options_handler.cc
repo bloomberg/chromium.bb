@@ -16,6 +16,8 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
@@ -223,7 +225,14 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
   }
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::options::CoreOptionsHandler::SetPref(pref_name, value, metric);
-  CrosSettings::Get()->Set(pref_name, *value);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  OwnerSettingsServiceChromeOS* service =
+      profile ? OwnerSettingsServiceChromeOSFactory::GetForProfile(profile)
+              : nullptr;
+  if (service && service->HandlesSetting(pref_name))
+    service->Set(pref_name, *value);
+  else
+    CrosSettings::Get()->Set(pref_name, *value);
 
   ProcessUserMetric(value, metric);
 }

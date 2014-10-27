@@ -142,10 +142,6 @@ bool MultiProfileUserController::IsUserAllowedInSession(
   if (primary_user_email.empty() || primary_user_email == user_email)
     return SetUserAllowedReason(reason, ALLOWED);
 
-  // Owner is not allowed to be secondary user.
-  if (user_manager->GetOwnerEmail() == user_email)
-    return SetUserAllowedReason(reason, NOT_ALLOWED_OWNER_AS_SECONDARY);
-
   // Don't allow profiles potentially tainted by data fetched with policy-pushed
   // certificates to join a multiprofile session.
   if (policy::PolicyCertServiceFactory::UsedPolicyCertificates(user_email))
