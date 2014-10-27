@@ -14,6 +14,8 @@ enum CSSParserTokenType {
     IdentToken = 0,
     FunctionToken,
     HashToken,
+    UrlToken,
+    BadUrlToken,
     DelimiterToken,
     NumberToken,
     PercentageToken,

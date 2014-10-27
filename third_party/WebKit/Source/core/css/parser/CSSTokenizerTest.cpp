@@ -27,6 +27,7 @@ void compareTokens(const CSSParserToken& expected, const CSSParserToken& actual)
     case IdentToken:
     case FunctionToken:
     case StringToken:
+    case UrlToken:
         ASSERT_EQ(expected.value(), actual.value());
         break;
     case DimensionToken:
@@ -70,6 +71,7 @@ void testTokens(const String& string, const CSSParserToken& token1, const CSSPar
 static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, string); }
 static CSSParserToken string(const String& string) { return CSSParserToken(StringToken, string); }
 static CSSParserToken function(const String& string) { return CSSParserToken(FunctionToken, string); }
+static CSSParserToken url(const String& string) { return CSSParserToken(UrlToken, string); }
 static CSSParserToken hash(const String& string, HashTokenType type) { return CSSParserToken(type, string); }
 static CSSParserToken delim(char c) { return CSSParserToken(DelimiterToken, c); }
 
@@ -103,6 +105,7 @@ DEFINE_STATIC_LOCAL(CSSParserToken, rightBracket, (RightBracketToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, leftBrace, (LeftBraceToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, rightBrace, (RightBraceToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, badString, (BadStringToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, badUrl, (BadUrlToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, comment, (CommentToken));
 
 String fromUChar32(UChar32 c)
@@ -206,6 +209,30 @@ TEST(CSSTokenizerTest, FunctionToken)
     TEST_TOKENS("foo-bar\\ baz(", function("foo-bar baz"));
     TEST_TOKENS("fun\\(ction(", function("fun(ction"));
     TEST_TOKENS("-foo(", function("-foo"));
+    TEST_TOKENS("url(\"foo.gif\"", function("url"), string("foo.gif"));
+    TEST_TOKENS("foo(  \'bar.gif\'", function("foo"), whitespace, string("bar.gif"));
+    // To simplify implementation we drop the whitespace in function(url),whitespace,string()
+    TEST_TOKENS("url(  \'bar.gif\'", function("url"), string("bar.gif"));
+}
+
+TEST(CSSTokenizerTest, UrlToken)
+{
+    TEST_TOKENS("url(foo.gif)", url("foo.gif"));
+    TEST_TOKENS("url(https://example.com/cats.png)", url("https://example.com/cats.png"));
+    TEST_TOKENS("url(what-a.crazy^URL~this\\ is!)", url("what-a.crazy^URL~this is!"));
+    TEST_TOKENS("url(123#test)", url("123#test"));
+    TEST_TOKENS("url(escapes\\ \\\"\\'\\)\\()", url("escapes \"')("));
+    TEST_TOKENS("url(   whitespace   )", url("whitespace"));
+    TEST_TOKENS("url( whitespace-eof ", url("whitespace-eof"));
+    TEST_TOKENS("url(eof)", url("eof"));
+    TEST_TOKENS("url(white space),", badUrl, comma);
+    TEST_TOKENS("url(b(ad),", badUrl, comma);
+    TEST_TOKENS("url(ba'd):", badUrl, colon);
+    TEST_TOKENS("url(b\"ad):", badUrl, colon);
+    TEST_TOKENS("url(b\"ad):", badUrl, colon);
+    TEST_TOKENS("url(b\\\rad):", badUrl, colon);
+    TEST_TOKENS("url(b\\\nad):", badUrl, colon);
+    TEST_TOKENS("url(ba'd\\\\))", badUrl, rightParenthesis);
 }
 
 TEST(CSSTokenizerTest, StringToken)

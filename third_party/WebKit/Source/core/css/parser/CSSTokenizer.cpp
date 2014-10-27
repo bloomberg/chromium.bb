@@ -360,11 +360,19 @@ CSSParserToken CSSTokenizer::consumeNumericToken()
     return token;
 }
 
-// http://www.w3.org/TR/css3-syntax/#consume-an-ident-like-token
+// http://dev.w3.org/csswg/css-syntax/#consume-ident-like-token
 CSSParserToken CSSTokenizer::consumeIdentLikeToken()
 {
     String name = consumeName();
     if (consumeIfNext('(')) {
+        if (name == "url") {
+            // The spec is slightly different so as to avoid dropping whitespace
+            // tokens, but they wouldn't be used and this is easier.
+            consumeUntilNonWhitespace();
+            UChar next = m_input.nextInputChar();
+            if (next != '"' && next != '\'')
+                return consumeUrlToken();
+        }
         return blockStart(LeftParenthesisToken, FunctionToken, name);
     }
     return CSSParserToken(IdentToken, name);
@@ -396,6 +404,63 @@ CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
         } else {
             output.append(cc);
         }
+    }
+}
+
+// http://dev.w3.org/csswg/css-syntax/#non-printable-code-point
+static bool isNonPrintableCodePoint(UChar cc)
+{
+    return (cc >= '\0' && cc <= '\x8') || cc == '\xb' || (cc >= '\xe' && cc <= '\x1f') || cc == '\x7f';
+}
+
+// http://dev.w3.org/csswg/css-syntax/#consume-url-token
+CSSParserToken CSSTokenizer::consumeUrlToken()
+{
+    consumeUntilNonWhitespace();
+    StringBuilder result;
+    while (true) {
+        UChar cc = consume();
+        if (cc == ')' || cc == kEndOfFileMarker) {
+            // The "reconsume" here deviates from the spec, but is required to avoid consuming past the EOF
+            if (cc == kEndOfFileMarker)
+                reconsume(cc);
+            return CSSParserToken(UrlToken, result.toString());
+        }
+
+        if (isHTMLSpace(cc)) {
+            consumeUntilNonWhitespace();
+            if (consumeIfNext(')') || m_input.nextInputChar() == kEndOfFileMarker)
+                return CSSParserToken(UrlToken, result.toString());
+            break;
+        }
+
+        if (cc == '"' || cc == '\'' || cc == '(' || isNonPrintableCodePoint(cc))
+            break;
+
+        if (cc == '\\') {
+            if (twoCharsAreValidEscape(cc, m_input.nextInputChar())) {
+                result.append(consumeEscape());
+                continue;
+            }
+            break;
+        }
+
+        result.append(cc);
+    }
+
+    consumeBadUrlRemnants();
+    return CSSParserToken(BadUrlToken);
+}
+
+// http://dev.w3.org/csswg/css-syntax/#consume-the-remnants-of-a-bad-url
+void CSSTokenizer::consumeBadUrlRemnants()
+{
+    while (true) {
+        UChar cc = consume();
+        if (cc == ')' || cc == kEndOfFileMarker)
+            return;
+        if (twoCharsAreValidEscape(cc, m_input.nextInputChar()))
+            consumeEscape();
     }
 }
 

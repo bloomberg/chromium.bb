@@ -33,7 +33,9 @@ private:
     CSSParserToken consumeIdentLikeToken();
     CSSParserToken consumeNumber();
     CSSParserToken consumeStringTokenUntil(UChar);
+    CSSParserToken consumeUrlToken();
 
+    void consumeBadUrlRemnants();
     void consumeUntilNonWhitespace();
     void consumeSingleWhitespaceIfNext();
     bool consumeUntilCommentEndFound();
