@@ -19,7 +19,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/test/event_generator.h"
@@ -635,8 +635,8 @@ class GestureRecognizerTest : public AuraTestBase,
 
   virtual void SetUp() override {
     AuraTestBase::SetUp();
-    ui::GestureConfiguration::set_show_press_delay_in_ms(2);
-    ui::GestureConfiguration::set_long_press_time_in_ms(3);
+    ui::GestureConfiguration::GetInstance()->set_show_press_delay_in_ms(2);
+    ui::GestureConfiguration::GetInstance()->set_long_press_time_in_ms(3);
   }
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerTest);
@@ -938,8 +938,8 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   // We'll start by moving the touch point by (10.5, 10.5). We want 5 dips of
   // that distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      sqrt(5.f * 5 + 5 * 5));
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_move_in_pixels_for_click(sqrt(5.f * 5 + 5 * 5));
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1009,8 +1009,8 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   // We'll start by moving the touch point by (5, 5). We want all of that
   // distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      sqrt(5.f * 5 + 5 * 5));
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_move_in_pixels_for_click(sqrt(5.f * 5 + 5 * 5));
 
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
@@ -1081,7 +1081,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
 TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
   TimedEvents tes;
   for (float radius = 1; radius <= 10; ++radius) {
-    ui::GestureConfiguration::set_default_radius(radius);
+    ui::GestureConfiguration::GetInstance()->set_default_radius(radius);
     scoped_ptr<GestureEventConsumeDelegate> delegate(
         new GestureEventConsumeDelegate());
     const int kWindowWidth = 123;
@@ -1130,7 +1130,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
                          radius * 2),
               delegate->bounding_box());
   }
-  ui::GestureConfiguration::set_default_radius(0);
+  ui::GestureConfiguration::GetInstance()->set_default_radius(0);
 }
 
 // Check Scroll End Events report correct velocities
@@ -1239,7 +1239,8 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
 // Check Scroll End Events report non-zero velocities if the user is not on a
 // rail
 TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(0);
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_move_in_pixels_for_click(0);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1366,7 +1367,8 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
 
 // Check that appropriate touch events generate long tap events
 TEST_F(GestureRecognizerTest, GestureEventLongTap) {
-  ui::GestureConfiguration::set_max_touch_down_duration_for_click_in_ms(3);
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_down_duration_for_click_in_ms(3);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -1572,8 +1574,8 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   // We'll start by moving the touch point by (5, 5). We want all of that
   // distance to be consumed by the slop, so we set the slop radius to
   // sqrt(5 * 5 + 5 * 5).
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
-      sqrt(5.f * 5 + 5 * 5));
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_move_in_pixels_for_click(sqrt(5.f * 5 + 5 * 5));
 
   // First, tap. Then, do a scroll using the same touch-id.
   scoped_ptr<GestureEventConsumeDelegate> delegate(
@@ -1832,9 +1834,10 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   delegate->Reset();
   ui::TouchEvent move(
       ui::ET_TOUCH_MOVED,
-      gfx::PointF(
-          203 + ui::GestureConfiguration::max_touch_move_in_pixels_for_click(),
-          303),
+      gfx::PointF(203 +
+                      ui::GestureConfiguration::GetInstance()
+                          ->max_touch_move_in_pixels_for_click(),
+                  303),
       kTouchId2,
       tes.Now());
   DispatchEventUsingWindowDispatcher(&move);
@@ -2135,8 +2138,8 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   scoped_ptr<GestureEventConsumeDelegate*[]> delegates(
       new GestureEventConsumeDelegate*[kNumWindows]);
 
-  ui::GestureConfiguration::
-      set_max_separation_for_gesture_touches_in_pixels(499);
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_separation_for_gesture_touches_in_pixels(499);
 
   scoped_ptr<gfx::Rect[]> window_bounds(new gfx::Rect[kNumWindows]);
   window_bounds[0] = gfx::Rect(0, 0, 1, 1);
@@ -3463,7 +3466,8 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
 // Checks that slow scrolls deliver the correct deltas.
 // In particular, fix for http;//crbug.com/150573.
 TEST_F(GestureRecognizerTest, NoDriftInScroll) {
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(3);
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_move_in_pixels_for_click(3);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 234;
@@ -3814,7 +3818,8 @@ TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveLongPressTest) {
 
 // Tests that the deltas are correct when leaving the slop region very slowly.
 TEST_F(GestureRecognizerTest, TestExceedingSlopSlowly) {
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(3);
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_touch_move_in_pixels_for_click(3);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 234;
@@ -4149,7 +4154,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressDeletingWindow) {
 TEST_F(GestureRecognizerTest, GestureEventSmallPinchDisabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kCompensateForUnstablePinchZoom);
-
+  ui::GestureConfiguration::GetInstance()->set_min_pinch_update_span_delta(5);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;

@@ -10,7 +10,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace ui {
 
@@ -70,8 +70,10 @@ MotionEventAura::PointData MotionEventAura::GetPointDataFromTouchEvent(
   }
 
   if (!point_data.touch_major) {
-    point_data.touch_major = 2.f * GestureConfiguration::default_radius();
-    point_data.touch_minor = 2.f * GestureConfiguration::default_radius();
+    point_data.touch_major =
+        2.f * GestureConfiguration::GetInstance()->default_radius();
+    point_data.touch_minor =
+        2.f * GestureConfiguration::GetInstance()->default_radius();
     point_data.orientation = 0;
   }
 

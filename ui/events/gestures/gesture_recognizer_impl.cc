@@ -15,7 +15,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gestures/gesture_types.h"
 
 namespace ui {
@@ -92,7 +92,8 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
 GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
     const gfx::PointF& location, int source_device_id) {
   const float max_distance =
-      GestureConfiguration::max_separation_for_gesture_touches_in_pixels();
+      GestureConfiguration::GetInstance()
+          ->max_separation_for_gesture_touches_in_pixels();
 
   gfx::PointF closest_point;
   int closest_touch_id = 0;

@@ -12,7 +12,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/event_processor.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace aura {
 namespace test {
@@ -33,26 +33,24 @@ void AuraTestBase::SetUp() {
   setup_called_ = true;
   testing::Test::SetUp();
   ui::InitializeInputMethodForTesting();
-
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit
   // testing.
-  ui::GestureConfiguration::set_long_press_time_in_ms(1000);
-  ui::GestureConfiguration::set_semi_long_press_time_in_ms(400);
-  ui::GestureConfiguration::set_show_press_delay_in_ms(5);
-  ui::GestureConfiguration::set_max_distance_for_two_finger_tap_in_pixels(300);
-  ui::GestureConfiguration::set_max_time_between_double_click_in_ms(700);
-  ui::GestureConfiguration::
-      set_max_separation_for_gesture_touches_in_pixels(150);
-  ui::GestureConfiguration::set_max_touch_down_duration_for_click_in_ms(800);
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(5);
-  ui::GestureConfiguration::set_max_distance_between_taps_for_double_tap(20);
-  ui::GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(20);
-  ui::GestureConfiguration::set_min_pinch_update_distance_in_pixels(5);
-  ui::GestureConfiguration::set_default_radius(0);
-  ui::GestureConfiguration::set_fling_velocity_cap(15000);
-  ui::GestureConfiguration::set_min_swipe_speed(10);
-
+  gesture_config->set_long_press_time_in_ms(1000);
+  gesture_config->set_semi_long_press_time_in_ms(400);
+  gesture_config->set_show_press_delay_in_ms(5);
+  gesture_config->set_max_distance_for_two_finger_tap_in_pixels(300);
+  gesture_config->set_max_time_between_double_click_in_ms(700);
+  gesture_config->set_max_separation_for_gesture_touches_in_pixels(150);
+  gesture_config->set_max_touch_down_duration_for_click_in_ms(800);
+  gesture_config->set_max_touch_move_in_pixels_for_click(5);
+  gesture_config->set_max_distance_between_taps_for_double_tap(20);
+  gesture_config->set_min_distance_for_pinch_scroll_in_pixels(20);
+  gesture_config->set_default_radius(0);
+  gesture_config->set_max_fling_velocity(15000);
+  gesture_config->set_min_swipe_velocity(10);
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
   ui::ContextFactory* context_factory =

@@ -2602,6 +2602,7 @@
         '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/events/events.gyp:events',
+        '../ui/events/events.gyp:gesture_detection',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/message_center/message_center.gyp:message_center',

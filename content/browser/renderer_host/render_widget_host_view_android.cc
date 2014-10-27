@@ -68,7 +68,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/android/window_android.h"
 #include "ui/base/android/window_android_compositor.h"
-#include "ui/events/gesture_detection/gesture_config_helper.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"

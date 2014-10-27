@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/gesture_detection/gesture_config_helper.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"

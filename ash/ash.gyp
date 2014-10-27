@@ -912,6 +912,7 @@
         '../ui/compositor/compositor.gyp:compositor',
         '../ui/events/events.gyp:events',
         '../ui/events/events.gyp:events_base',
+        '../ui/events/events.gyp:gesture_detection',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/keyboard/keyboard.gyp:keyboard',

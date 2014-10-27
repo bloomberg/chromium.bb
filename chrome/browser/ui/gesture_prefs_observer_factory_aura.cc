@@ -22,7 +22,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/common/renderer_preferences.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 
 using ui::GestureConfiguration;
 
@@ -145,15 +145,16 @@ void GesturePrefsObserver::Shutdown() {
 }
 
 void GesturePrefsObserver::Update() {
-  GestureConfiguration::set_fling_max_cancel_to_down_time_in_ms(
+  GestureConfiguration* gesture_config = GestureConfiguration::GetInstance();
+  gesture_config->set_fling_max_cancel_to_down_time_in_ms(
       prefs_->GetInteger(prefs::kFlingMaxCancelToDownTimeInMs));
-  GestureConfiguration::set_fling_max_tap_gap_time_in_ms(
+  gesture_config->set_fling_max_tap_gap_time_in_ms(
       prefs_->GetInteger(prefs::kFlingMaxTapGapTimeInMs));
-  GestureConfiguration::set_tab_scrub_activation_delay_in_ms(
+  gesture_config->set_tab_scrub_activation_delay_in_ms(
       prefs_->GetInteger(prefs::kTabScrubActivationDelayInMs));
-  GestureConfiguration::set_semi_long_press_time_in_ms(
+  gesture_config->set_semi_long_press_time_in_ms(
       prefs_->GetInteger(prefs::kSemiLongPressTimeInMs));
-  GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(
+  gesture_config->set_max_separation_for_gesture_touches_in_pixels(
       static_cast<float>(
           prefs_->GetDouble(prefs::kMaxSeparationForGestureTouchesInPixels)));
 
@@ -211,25 +212,26 @@ void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
 
 void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  GestureConfiguration* gesture_config = GestureConfiguration::GetInstance();
   registry->RegisterIntegerPref(
       prefs::kFlingMaxCancelToDownTimeInMs,
-      GestureConfiguration::fling_max_cancel_to_down_time_in_ms(),
+      gesture_config->fling_max_cancel_to_down_time_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kFlingMaxTapGapTimeInMs,
-      GestureConfiguration::fling_max_tap_gap_time_in_ms(),
+      gesture_config->fling_max_tap_gap_time_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kTabScrubActivationDelayInMs,
-      GestureConfiguration::tab_scrub_activation_delay_in_ms(),
+      gesture_config->tab_scrub_activation_delay_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kSemiLongPressTimeInMs,
-      GestureConfiguration::semi_long_press_time_in_ms(),
+      gesture_config->semi_long_press_time_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMaxSeparationForGestureTouchesInPixels,
-      GestureConfiguration::max_separation_for_gesture_touches_in_pixels(),
+      gesture_config->max_separation_for_gesture_touches_in_pixels(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   RegisterOverscrollPrefs(registry);
 }

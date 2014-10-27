@@ -11,7 +11,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
-#include "ui/events/gesture_detection/gesture_config_helper.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 

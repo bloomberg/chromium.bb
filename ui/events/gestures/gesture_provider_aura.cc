@@ -7,15 +7,15 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ui/events/event.h"
-#include "ui/events/gesture_detection/gesture_config_helper.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 namespace ui {
 
 GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
     : client_(client),
-      filtered_gesture_provider_(ui::DefaultGestureProviderConfig(), this),
+      filtered_gesture_provider_(DefaultGestureProviderConfig(), this),
       handling_event_(false) {
   filtered_gesture_provider_.SetDoubleTapSupportForPlatformEnabled(false);
 }
@@ -122,12 +122,14 @@ bool GestureProviderAura::IsConsideredDoubleTap(
     const GestureEventData& current_tap) const {
   if (current_tap.time - previous_tap.time >
       base::TimeDelta::FromMilliseconds(
-          ui::GestureConfiguration::max_time_between_double_click_in_ms())) {
+          GestureConfiguration::GetInstance()
+              ->max_time_between_double_click_in_ms())) {
     return false;
   }
 
   float double_tap_slop_square =
-      GestureConfiguration::max_distance_between_taps_for_double_tap();
+      GestureConfiguration::GetInstance()
+          ->max_distance_between_taps_for_double_tap();
   double_tap_slop_square *= double_tap_slop_square;
   const float delta_x = previous_tap.x - current_tap.x;
   const float delta_y = previous_tap.y - current_tap.y;

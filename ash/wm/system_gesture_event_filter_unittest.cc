@@ -29,7 +29,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/screen.h"
@@ -297,7 +297,8 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
 
 TEST_F(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  ui::GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(0);
+  ui::GestureConfiguration::GetInstance()
+      ->set_max_separation_for_gesture_touches_in_pixels(0);
   views::Widget* first = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, gfx::Rect(10, 0, 50, 100));
   first->Show();

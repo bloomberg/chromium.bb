@@ -40,7 +40,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/resources/grit/webui_resources.h"
 

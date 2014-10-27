@@ -10,7 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_processor.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 
 using blink::WebTouchEvent;
 using blink::WebMouseWheelEvent;
@@ -135,11 +135,14 @@ SyntheticGestureTargetAura::GetDefaultSyntheticGestureSourceType() const {
 float SyntheticGestureTargetAura::GetTouchSlopInDips() const {
   // - 1 because Aura considers a pointer to be moving if it has moved at least
   // 'max_touch_move_in_pixels_for_click' pixels.
-  return ui::GestureConfiguration::max_touch_move_in_pixels_for_click() - 1;
+  return ui::GestureConfiguration::GetInstance()
+             ->max_touch_move_in_pixels_for_click() -
+         1;
 }
 
 float SyntheticGestureTargetAura::GetMinScalingSpanInDips() const {
-  return ui::GestureConfiguration::min_distance_for_pinch_scroll_in_pixels();
+  return ui::GestureConfiguration::GetInstance()
+      ->min_distance_for_pinch_scroll_in_pixels();
 }
 
 aura::Window* SyntheticGestureTargetAura::GetWindow() const {

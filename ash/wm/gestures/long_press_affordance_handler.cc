@@ -17,7 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
@@ -254,12 +254,12 @@ void LongPressAffordanceHandler::ProcessEvent(aura::Window* target,
       tap_down_location_ = event->root_location();
       SetTapDownTarget(target);
       current_animation_type_ = GROW_ANIMATION;
-      timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(
-              ui::GestureConfiguration::semi_long_press_time_in_ms()),
-          this,
-          &LongPressAffordanceHandler::StartAnimation);
+      timer_.Start(FROM_HERE,
+                   base::TimeDelta::FromMilliseconds(
+                       ui::GestureConfiguration::GetInstance()
+                           ->semi_long_press_time_in_ms()),
+                   this,
+                   &LongPressAffordanceHandler::StartAnimation);
       break;
     }
     case ui::ET_GESTURE_TAP:
@@ -286,8 +286,10 @@ void LongPressAffordanceHandler::StartAnimation() {
         return;
       }
       view_.reset(new LongPressAffordanceView(tap_down_location_, root_window));
-      SetDuration(ui::GestureConfiguration::long_press_time_in_ms() -
-          ui::GestureConfiguration::semi_long_press_time_in_ms() -
+      SetDuration(
+          ui::GestureConfiguration::GetInstance()->long_press_time_in_ms() -
+          ui::GestureConfiguration::GetInstance()
+              ->semi_long_press_time_in_ms() -
           kAffordanceDelayBeforeShrinkMs);
       Start();
       break;

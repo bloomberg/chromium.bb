@@ -36,7 +36,7 @@
 #include "ui/compositor/test/test_layers.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
@@ -58,16 +58,16 @@ class WindowTest : public AuraTestBase {
   virtual void SetUp() override {
     AuraTestBase::SetUp();
     // TODO: there needs to be an easier way to do this.
-    max_separation_ = ui::GestureConfiguration::
-        max_separation_for_gesture_touches_in_pixels();
-    ui::GestureConfiguration::
-        set_max_separation_for_gesture_touches_in_pixels(0);
+    max_separation_ = ui::GestureConfiguration::GetInstance()
+                          ->max_separation_for_gesture_touches_in_pixels();
+    ui::GestureConfiguration::GetInstance()
+        ->set_max_separation_for_gesture_touches_in_pixels(0);
   }
 
   virtual void TearDown() override {
     AuraTestBase::TearDown();
-    ui::GestureConfiguration::
-        set_max_separation_for_gesture_touches_in_pixels(max_separation_);
+    ui::GestureConfiguration::GetInstance()
+        ->set_max_separation_for_gesture_touches_in_pixels(max_separation_);
   }
 
  private:

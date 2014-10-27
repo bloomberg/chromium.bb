@@ -23,7 +23,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
@@ -76,7 +76,8 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     AshTestBase::SetUp();
     UpdateDisplay(base::StringPrintf("800x%d", kRootHeight));
     // Ignore the touch slop region.
-    ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(0);
+    ui::GestureConfiguration::GetInstance()
+        ->set_max_touch_move_in_pixels_for_click(0);
 
     aura::Window* root = Shell::GetPrimaryRootWindow();
     gfx::Rect root_bounds(root->bounds());

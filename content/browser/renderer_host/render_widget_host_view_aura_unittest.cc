@@ -53,7 +53,7 @@
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_activation_client.h"
 
@@ -470,7 +470,7 @@ class RenderWidgetHostViewAuraOverscrollTest
   void SetUpOverscrollEnvironment() { SetUpOverscrollEnvironmentImpl(0); }
 
   void SetUpOverscrollEnvironmentImpl(int debounce_interval_in_ms) {
-    ui::GestureConfiguration::set_scroll_debounce_interval_in_ms(
+    ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         debounce_interval_in_ms);
 
     RenderWidgetHostViewAuraTest::SetUp();

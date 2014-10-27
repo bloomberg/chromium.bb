@@ -68,6 +68,7 @@ static_library("ui") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",
+    "//ui/events:gesture_detection",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/message_center",

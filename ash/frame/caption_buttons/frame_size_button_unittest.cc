@@ -13,7 +13,7 @@
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/gestures/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -247,8 +247,8 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
 
   // 3) Test with tap gestures.
   const float touch_default_radius =
-      ui::GestureConfiguration::default_radius();
-  ui::GestureConfiguration::set_default_radius(0);
+      ui::GestureConfiguration::GetInstance()->default_radius();
+  ui::GestureConfiguration::GetInstance()->set_default_radius(0);
   // Snap right.
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressMoveAndReleaseTouchTo(CenterPointInScreen(close_button()));
@@ -259,7 +259,8 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   generator.PressMoveAndReleaseTouchTo(CenterPointInScreen(minimize_button()));
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
-  ui::GestureConfiguration::set_default_radius(touch_default_radius);
+  ui::GestureConfiguration::GetInstance()->set_default_radius(
+      touch_default_radius);
 }
 
 // Test that clicking, dragging, and overshooting the minimize button a bit

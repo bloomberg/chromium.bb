@@ -30,8 +30,6 @@ component("events_base") {
     "gesture_event_details.h",
     "gestures/fling_curve.cc",
     "gestures/fling_curve.h",
-    "gestures/gesture_configuration.cc",
-    "gestures/gesture_configuration.h",
     "input_device.cc",
     "input_device.h",
     "keyboard_device.cc",
@@ -178,7 +176,8 @@ component("gesture_detection") {
     "gesture_detection/bitset_32.h",
     "gesture_detection/filtered_gesture_provider.cc",
     "gesture_detection/filtered_gesture_provider.h",
-    "gesture_detection/gesture_config_helper.h",
+    "gesture_detection/gesture_configuration.cc",
+    "gesture_detection/gesture_configuration.h",
     "gesture_detection/gesture_detection_export.h",
     "gesture_detection/gesture_detector.cc",
     "gesture_detection/gesture_detector.h",
@@ -190,6 +189,8 @@ component("gesture_detection") {
     "gesture_detection/gesture_listeners.h",
     "gesture_detection/gesture_provider.cc",
     "gesture_detection/gesture_provider.h",
+    "gesture_detection/gesture_provider_config_helper.cc",
+    "gesture_detection/gesture_provider_config_helper.h",
     "gesture_detection/gesture_touch_uma_histogram.cc",
     "gesture_detection/gesture_touch_uma_histogram.h",
     "gesture_detection/motion_event.cc",
@@ -215,6 +216,7 @@ component("gesture_detection") {
   deps = [
     ":events_base",
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -222,11 +224,11 @@ component("gesture_detection") {
   defines = [ "GESTURE_DETECTION_IMPLEMENTATION" ]
 
   if (is_android) {
-    sources += [ "gesture_detection/gesture_config_helper_android.cc" ]
+    sources += [ "gesture_detection/gesture_configuration_android.cc" ]
   } else if (use_aura) {
-    sources += [ "gesture_detection/gesture_config_helper_aura.cc" ]
+    sources += [ "gesture_detection/gesture_configuration_aura.cc" ]
   } else {
-    sources += [ "gesture_detection/gesture_config_helper.cc" ]
+    sources += [ "gesture_detection/gesture_configuration_default.cc" ]
   }
 }
 
