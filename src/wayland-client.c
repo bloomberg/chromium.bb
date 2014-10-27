@@ -1190,6 +1190,11 @@ read_events(struct wl_display *display)
 		while (display->read_serial == serial)
 			pthread_cond_wait(&display->reader_cond,
 					  &display->mutex);
+
+		if (display->last_error) {
+			errno = display->last_error;
+			return -1;
+		}
 	}
 
 	return 0;

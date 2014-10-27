@@ -369,9 +369,9 @@ thread_read_error(void *data)
 	 * thread should be woken up or it will block indefinitely.
 	 */
 	c->display_stopped = 1;
-	assert(wl_display_read_events(c->wl_display) == 0);
+	assert(wl_display_read_events(c->wl_display) == -1);
 
-	wl_display_dispatch_pending(c->wl_display);
+	assert(wl_display_dispatch_pending(c->wl_display) == -1);
 	assert(wl_display_get_error(c->wl_display));
 
 	pthread_exit(NULL);
