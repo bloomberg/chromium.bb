@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -104,10 +106,14 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
             browser()->profile(), &FakeGCMProfileService::Build));
     gcm_service_->set_collect(true);
 
-    ui_test_utils::NavigateToURL(
-        browser(), https_server_->GetURL("files/push_messaging/test.html"));
+    loadTestPage();
 
     InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  void loadTestPage() {
+    ui_test_utils::NavigateToURL(
+        browser(), https_server_->GetURL("files/push_messaging/test.html"));
   }
 
   bool RunScript(const std::string& script, std::string* result) {
@@ -117,17 +123,14 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         result);
   }
 
-  bool RegisterServiceWorker(std::string* result) {
-    return RunScript("registerServiceWorker()", result);
-  }
-
-  bool RegisterPush(std::string* result) {
-    return RunScript("registerPush()", result);
-  }
-
   net::SpawnedTestServer* https_server() const { return https_server_.get(); }
 
   FakeGCMProfileService* gcm_service() const { return gcm_service_; }
+
+  PushMessagingServiceImpl* push_service() {
+    return static_cast<PushMessagingServiceImpl*>(
+        gcm_service_->push_messaging_service());
+  }
 
  private:
   scoped_ptr<net::SpawnedTestServer> https_server_;
@@ -137,32 +140,64 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterSuccess) {
-  std::string register_worker_result;
-  ASSERT_TRUE(RegisterServiceWorker(&register_worker_result));
-  ASSERT_EQ("ok", register_worker_result);
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
 
   InfoBarResponder accepting_responder(browser(), true);
 
-  std::string register_push_result;
-  ASSERT_TRUE(RegisterPush(&register_push_result));
-  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", register_push_result);
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
 
-  PushMessagingApplicationId expected_id(https_server()->GetURL(""), 0L);
-  EXPECT_EQ(expected_id.ToString(), gcm_service()->last_registered_app_id());
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoPermission) {
-  std::string register_worker_result;
-  ASSERT_TRUE(RegisterServiceWorker(&register_worker_result));
-  ASSERT_EQ("ok", register_worker_result);
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
 
   InfoBarResponder cancelling_responder(browser(), false);
 
-  std::string register_push_result;
-  ASSERT_TRUE(RegisterPush(&register_push_result));
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
   EXPECT_EQ("AbortError - Registration failed - permission denied",
-            register_push_result);
+            script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  InfoBarResponder accepting_responder(browser(), true);
+
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
+  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+
+  loadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  GCMClient::IncomingMessage message;
+  GCMClient::MessageData messageData;
+  messageData.insert(std::pair<std::string, std::string>("data", "testdata"));
+  message.data = messageData;
+  push_service()->OnMessage(app_id.ToString(), message);
+  ASSERT_TRUE(RunScript("pushData.get()", &script_result));
+  EXPECT_EQ("testdata", script_result);
 }
 
 }  // namespace gcm

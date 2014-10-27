@@ -4,8 +4,13 @@
   <title>Push API Test</title>
   <link rel="manifest" href="manifest.json">
   <script>
+    var pushData = new FutureData();
+
+    // Sends data back to the test. This must be in response to an earlier
+    // request, but it's ok to respond asynchronously. The request blocks until
+    // the response is sent.
     function sendResultToTest(result) {
-      console.log(result);
+      console.log('sendResultToTest: ' + result);
       if (window.domAutomationController) {
         domAutomationController.send('' + result);
       }
@@ -15,21 +20,67 @@
       sendResultToTest(error.name + ' - ' + error.message);
     }
 
+    // A container for a single piece of data. The data does not have to be
+    // available yet when the getter is called, as all responses to the test are
+    // asynchronous.
+    function FutureData() {
+      this.data = null;
+      this.waiting = false;
+    }
+
+    // Sends the data to the test if it is available. Otherwise sets the
+    // |waiting| flag.
+    FutureData.prototype.get = function() {
+      if (this.data) {
+        sendResultToTest(this.data);
+      } else {
+        this.waiting = true;
+      }
+    };
+
+    // Sets a new data value. If the |waiting| flag is on, it is turned off and
+    // the data is sent to the test.
+    FutureData.prototype.set = function(data) {
+      this.data = data;
+      if (this.waiting) {
+        sendResultToTest(data);
+        this.waiting = false;
+      }
+    };
+
     function registerServiceWorker() {
-      navigator.serviceWorker.register('service_worker.js', {scope: './'}).then(function(swRegistration) {
-        console.log(swRegistration);
-        sendResultToTest('ok');
-      }, sendErrorToTest);
+      navigator.serviceWorker.register('service_worker.js', {scope: './'}).then(
+          function(swRegistration) {
+            sendResultToTest('ok - service worker registered');
+          }, sendErrorToTest);
     }
 
     function registerPush() {
       navigator.serviceWorker.ready.then(function() {
         navigator.push.register().then(function(pushRegistration) {
-          sendResultToTest(pushRegistration.pushEndpoint + ' - ' + pushRegistration.pushRegistrationId);
+          sendResultToTest(pushRegistration.pushEndpoint + ' - ' +
+              pushRegistration.pushRegistrationId);
         }, sendErrorToTest);
       }, sendErrorToTest);
     }
+
+    function isControlled() {
+      if (navigator.serviceWorker.controller) {
+        sendResultToTest('true - is controlled');
+      } else {
+        sendResultToTest('false - is not controlled');
+      }
+    }
+
+    addEventListener('message', function(event) {
+      var message = JSON.parse(event.data);
+      if (message.type == 'push') {
+        pushData.set(message.data);
+      }
+    }, false);
   </script>
  </head>
- <body>Push API Test</body>
+ <body>
+   <h1>Push API Test</h1>
+ </body>
 </html>

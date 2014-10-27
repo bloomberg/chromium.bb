@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Empty service worker script.
+this.onpush = function(event) {
+  sendMessageToClients('push', event.data);
+};
 
-// TODO(mvanouwerkerk): Add test coverage for push event delivery.
+function sendMessageToClients(type, data) {
+  var message = JSON.stringify({
+    'type': type,
+    'data': data
+  });
+  clients.getAll().then(function(clients) {
+    clients.forEach(function(client) {
+      client.postMessage(message);
+    });
+  }, function(error) {
+    console.log(error);
+  });
+}
