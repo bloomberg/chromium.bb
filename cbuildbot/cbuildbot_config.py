@@ -1808,7 +1808,6 @@ internal_paladin.add_config('link-tot-paladin',
   paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
-  hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
   important=False,
 )
 
