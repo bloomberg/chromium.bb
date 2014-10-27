@@ -65,13 +65,13 @@ def temporary_file():
     os.remove(path)
 
 
-def parse_common_test_results(json_results):
+def parse_common_test_results(json_results, test_separator='/'):
   def convert_trie_to_flat_paths(trie, prefix=None):
     # Also see webkitpy.layout_tests.layout_package.json_results_generator
     result = {}
     for name, data in trie.iteritems():
       if prefix:
-        name = prefix + '/' + name
+        name = prefix + test_separator + name
       if len(data) and not 'actual' in data and not 'expected' in data:
         result.update(convert_trie_to_flat_paths(data, name))
       else:

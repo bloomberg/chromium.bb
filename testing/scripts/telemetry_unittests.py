@@ -40,7 +40,7 @@ def main_run(args):
     with open(tempfile_path) as f:
       results = json.load(f)
 
-  parsed_results = common.parse_common_test_results(results)
+  parsed_results = common.parse_common_test_results(results, test_separator='.')
   failures = parsed_results['unexpected_failures']
 
   json.dump({
