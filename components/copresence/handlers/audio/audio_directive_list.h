@@ -10,18 +10,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-
-namespace base {
-class TickClock;
-}
 
 namespace media {
 class AudioBusRefCounted;
 }
 
 namespace copresence {
+
+class TickClockRefCounted;
 
 struct AudioDirective final {
   // Default ctor, required by the priority queue.
@@ -50,6 +49,8 @@ class AudioDirectiveList {
 
   scoped_ptr<AudioDirective> GetActiveDirective();
 
+  void set_clock_for_testing(const scoped_refptr<TickClockRefCounted>& clock);
+
  private:
   // Comparator for comparing end_times on audio tokens.
   class LatestFirstComparator {
@@ -68,7 +69,7 @@ class AudioDirectiveList {
   // element. Only currently active directives will exist in this list.
   std::vector<AudioDirective> active_directives_;
 
-  scoped_ptr<base::TickClock> clock_;
+  scoped_refptr<TickClockRefCounted> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveList);
 };

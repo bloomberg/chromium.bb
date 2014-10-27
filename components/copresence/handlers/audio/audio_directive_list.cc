@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/default_tick_clock.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
 
 namespace copresence {
 
@@ -23,7 +23,9 @@ AudioDirective::AudioDirective(const std::string& op_id,
     : op_id(op_id), end_time(end_time) {
 }
 
-AudioDirectiveList::AudioDirectiveList() : clock_(new base::DefaultTickClock) {
+AudioDirectiveList::AudioDirectiveList()
+    : clock_(new TickClockRefCounted(
+          make_scoped_ptr(new base::DefaultTickClock))) {
 }
 
 AudioDirectiveList::~AudioDirectiveList() {
@@ -74,6 +76,13 @@ scoped_ptr<AudioDirective> AudioDirectiveList::GetActiveDirective() {
 
   return make_scoped_ptr(new AudioDirective(active_directives_.front()));
 }
+
+void AudioDirectiveList::set_clock_for_testing(
+    const scoped_refptr<TickClockRefCounted>& clock) {
+  clock_ = clock;
+}
+
+// Private methods.
 
 std::vector<AudioDirective>::iterator AudioDirectiveList::FindDirectiveByOpId(
     const std::string& op_id) {

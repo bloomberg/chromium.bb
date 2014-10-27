@@ -29,6 +29,8 @@
         'copresence/handlers/audio/audio_directive_handler.h',
         'copresence/handlers/audio/audio_directive_list.cc',
         'copresence/handlers/audio/audio_directive_list.h',
+        'copresence/handlers/audio/tick_clock_ref_counted.cc',
+        'copresence/handlers/audio/tick_clock_ref_counted.h',
         'copresence/handlers/directive_handler.cc',
         'copresence/handlers/directive_handler.h',
         'copresence/mediums/audio/audio_manager.h',

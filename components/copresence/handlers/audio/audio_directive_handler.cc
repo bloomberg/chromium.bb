@@ -10,6 +10,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
 #include "components/copresence/mediums/audio/audio_manager_impl.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/public/copresence_constants.h"
@@ -36,7 +37,8 @@ base::TimeTicks GetEarliestEventTime(AudioDirectiveList* list,
 
 AudioDirectiveHandler::AudioDirectiveHandler()
     : audio_event_timer_(new base::OneShotTimer<AudioDirectiveHandler>),
-      clock_(new base::DefaultTickClock) {
+      clock_(new TickClockRefCounted(
+          make_scoped_ptr(new base::DefaultTickClock))) {
 }
 
 AudioDirectiveHandler::~AudioDirectiveHandler() {
@@ -107,6 +109,22 @@ void AudioDirectiveHandler::RemoveInstructions(const std::string& op_id) {
 const std::string AudioDirectiveHandler::PlayingToken(AudioType type) const {
   return audio_manager_->GetToken(type);
 }
+
+void AudioDirectiveHandler::set_clock_for_testing(
+    const scoped_refptr<TickClockRefCounted>& clock) {
+  clock_ = clock;
+
+  transmits_list_[AUDIBLE].set_clock_for_testing(clock);
+  transmits_list_[INAUDIBLE].set_clock_for_testing(clock);
+  receives_list_[AUDIBLE].set_clock_for_testing(clock);
+  receives_list_[INAUDIBLE].set_clock_for_testing(clock);
+}
+
+void AudioDirectiveHandler::set_timer_for_testing(
+    scoped_ptr<base::Timer> timer) {
+  audio_event_timer_.swap(timer);
+}
+
 // Private methods.
 
 void AudioDirectiveHandler::ProcessNextInstruction() {

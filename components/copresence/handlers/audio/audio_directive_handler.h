@@ -17,7 +17,6 @@
 #include "components/copresence/proto/data.pb.h"
 
 namespace base {
-class TickClock;
 class Timer;
 }
 
@@ -26,6 +25,8 @@ class AudioBusRefCounted;
 }
 
 namespace copresence {
+
+class TickClockRefCounted;
 
 // The AudioDirectiveHandler handles audio transmit and receive instructions.
 // TODO(rkc): Currently since WhispernetClient can only have one token encoded
@@ -60,6 +61,9 @@ class AudioDirectiveHandler final {
     audio_manager_ = manager.Pass();
   }
 
+  void set_clock_for_testing(const scoped_refptr<TickClockRefCounted>& clock);
+  void set_timer_for_testing(scoped_ptr<base::Timer> timer);
+
  private:
   // Processes the next active instruction, updating our audio manager state
   // accordingly.
@@ -80,7 +84,7 @@ class AudioDirectiveHandler final {
 
   scoped_ptr<base::Timer> audio_event_timer_;
 
-  scoped_ptr<base::TickClock> clock_;
+  scoped_refptr<TickClockRefCounted> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDirectiveHandler);
 };
