@@ -210,7 +210,7 @@ if host_os == 'win':
 elif host_os == 'mac':
   subprocess.check_call([sys.executable,
                          os.path.join(NACL_DIR, 'buildbot','buildbot_pnacl.py'),
-                         'opt', '32', 'pnacl'])
+                         'opt', '64', 'pnacl'])
 else:
   # Now we run the PNaCl buildbot script. It in turn runs the PNaCl build.sh
   # script (currently only for the sandboxed translator) and runs scons tests.
