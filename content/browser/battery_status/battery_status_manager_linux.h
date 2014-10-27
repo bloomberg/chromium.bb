@@ -1,17 +1,17 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef DEVICE_BATTERY_BATTERY_STATUS_MANAGER_LINUX_H_
-#define DEVICE_BATTERY_BATTERY_STATUS_MANAGER_LINUX_H_
+#ifndef CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_LINUX_H_
+#define CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_LINUX_H_
 
-#include "device/battery/battery_export.h"
-#include "device/battery/battery_status.mojom.h"
+#include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 
 namespace base {
 class DictionaryValue;
 }
 
-namespace device {
+namespace content {
 
 // UPowerDeviceState reflects the possible UPower.Device.State values,
 // see upower.freedesktop.org/docs/Device.html#Device:State.
@@ -25,10 +25,10 @@ enum UPowerDeviceState {
   UPOWER_DEVICE_STATE_PENDING_DISCHARGE = 6,
 };
 
-// Returns the BatteryStatus computed using the provided dictionary.
-DEVICE_BATTERY_EXPORT BatteryStatus ComputeWebBatteryStatus(
+// Returns the WebBatteryStatus computed using the provided dictionary.
+CONTENT_EXPORT blink::WebBatteryStatus ComputeWebBatteryStatus(
     const base::DictionaryValue& dictionary);
 
-}  // namespace device
+}  // namespace content
 
-#endif  // DEVICE_BATTERY_BATTERY_STATUS_MANAGER_LINUX_H_
+#endif  // CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_LINUX_H_

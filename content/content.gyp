@@ -424,7 +424,6 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
-            '../device/battery/battery.gyp:device_battery_java',
             '../media/media.gyp:media_java',
             '../mojo/mojo_base.gyp:mojo_system_java',
             '../mojo/public/mojo_public.gyp:mojo_bindings_java',

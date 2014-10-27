@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.device.battery;
+package org.chromium.content.browser;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -19,7 +19,7 @@ import org.chromium.base.VisibleForTesting;
 /**
  * Android implementation of the battery status APIs.
  */
-@JNINamespace("device")
+@JNINamespace("content")
 class BatteryStatusManager {
 
     private static final String TAG = "BatteryStatusManager";
@@ -88,8 +88,8 @@ class BatteryStatusManager {
             return;
         }
 
-        boolean present = ignoreBatteryPresentState()
-                ? true : intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, false);
+        boolean present = ignoreBatteryPresentState() ?
+                true : intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, false);
         int pluggedStatus = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 
         if (!present || pluggedStatus == -1) {
@@ -141,7 +141,7 @@ class BatteryStatusManager {
 
     /**
      * Native JNI call
-     * see device/battery/battery_status_manager_android.cc
+     * see content/browser/battery_status/battery_status_manager.cc
      */
     private native void nativeGotBatteryStatus(long nativeBatteryStatusManagerAndroid,
             boolean charging, double chargingTime, double dischargingTime, double level);

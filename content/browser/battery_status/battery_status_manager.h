@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BATTERY_BATTERY_STATUS_MANAGER_H_
-#define DEVICE_BATTERY_BATTERY_STATUS_MANAGER_H_
+#ifndef CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_H_
+#define CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "device/battery/battery_status_service.h"
+#include "build/build_config.h"
+#include "content/browser/battery_status/battery_status_service.h"
 
-namespace device {
+namespace content {
 
 // Platform specific manager class for fetching battery status data.
-class BatteryStatusManager {
+class CONTENT_EXPORT BatteryStatusManager {
  public:
   // Creates a BatteryStatusManager object. |callback| should be called when the
   // battery status changes.
@@ -30,6 +31,6 @@ class BatteryStatusManager {
   virtual void StopListeningBatteryChange() = 0;
 };
 
-}  // namespace device
+}  // namespace content
 
-#endif  // DEVICE_BATTERY_BATTERY_STATUS_MANAGER_H_
+#endif  // CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_H_

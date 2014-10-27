@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/battery/battery_status_manager.h"
+#include "content/browser/battery_status/battery_status_manager.h"
 
 #include "base/logging.h"
 
-namespace device {
+namespace content {
 
 namespace {
 
@@ -37,4 +37,4 @@ scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
       new BatteryStatusManagerDefault(callback));
 }
 
-}  // namespace device
+}  // namespace content

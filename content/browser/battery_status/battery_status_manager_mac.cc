@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/battery/battery_status_manager.h"
+#include "content/browser/battery_status/battery_status_manager.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/ps/IOPowerSources.h>
@@ -11,11 +11,13 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
+#include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 
-namespace device {
+namespace content {
 
 namespace {
 
@@ -57,7 +59,8 @@ void UpdateNumberBatteriesHistogram(int count) {
       "BatteryStatus.NumberBatteriesMac", count, 1, 5, 6);
 }
 
-void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
+void FetchBatteryStatus(CFDictionaryRef description,
+                        blink::WebBatteryStatus& status) {
   CFStringRef current_state =
       base::mac::GetValueFromDictionary<CFStringRef>(description,
           CFSTR(kIOPSPowerSourceStateKey));
@@ -69,7 +72,7 @@ void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
   bool is_charged =
       GetValueAsBoolean(description, CFSTR(kIOPSIsChargedKey), false);
 
-  status->charging = !on_battery_power || is_charging;
+  status.charging = !on_battery_power || is_charging;
 
   SInt64 current_capacity =
       GetValueAsSInt64(description, CFSTR(kIOPSCurrentCapacityKey), -1);
@@ -80,7 +83,7 @@ void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
   // which is 1.
   if (current_capacity != -1 && max_capacity != -1 &&
       current_capacity <= max_capacity && max_capacity != 0) {
-    status->level = current_capacity / static_cast<double>(max_capacity);
+    status.level = current_capacity / static_cast<double>(max_capacity);
   }
 
   if (is_charging) {
@@ -89,7 +92,7 @@ void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
 
     // Battery is charging: set the charging time if it's available, otherwise
     // set to +infinity.
-    status->charging_time = charging_time != -1
+    status.chargingTime = charging_time != -1
         ? base::TimeDelta::FromMinutes(charging_time).InSeconds()
         : std::numeric_limits<double>::infinity();
   } else {
@@ -97,7 +100,7 @@ void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
     // Set chargingTime to +infinity if the battery is not charged. Otherwise
     // leave the default value, which is 0.
     if (!is_charged)
-      status->charging_time = std::numeric_limits<double>::infinity();
+      status.chargingTime = std::numeric_limits<double>::infinity();
 
     // Set dischargingTime if it's available and valid, i.e. when on battery
     // power. Otherwise leave the default value, which is +infinity.
@@ -105,15 +108,15 @@ void FetchBatteryStatus(CFDictionaryRef description, BatteryStatus* status) {
       SInt64 discharging_time =
           GetValueAsSInt64(description, CFSTR(kIOPSTimeToEmptyKey), -1);
       if (discharging_time != -1) {
-        status->discharging_time =
+        status.dischargingTime =
             base::TimeDelta::FromMinutes(discharging_time).InSeconds();
       }
     }
   }
 }
 
-std::vector<BatteryStatus> GetInternalBatteriesStates() {
-  std::vector<BatteryStatus> internal_sources;
+std::vector<blink::WebBatteryStatus> GetInternalBatteriesStates() {
+  std::vector<blink::WebBatteryStatus> internal_sources;
 
   base::ScopedCFTypeRef<CFTypeRef> info(IOPSCopyPowerSourcesInfo());
   base::ScopedCFTypeRef<CFArrayRef> power_sources_list(
@@ -137,8 +140,8 @@ std::vector<BatteryStatus> GetInternalBatteriesStates() {
         GetValueAsBoolean(description, CFSTR(kIOPSIsPresentKey), false);
 
     if (internal_source && source_present) {
-      BatteryStatus status;
-      FetchBatteryStatus(description, &status);
+      blink::WebBatteryStatus status;
+      FetchBatteryStatus(description, status);
       internal_sources.push_back(status);
     }
   }
@@ -147,10 +150,12 @@ std::vector<BatteryStatus> GetInternalBatteriesStates() {
 }
 
 void OnBatteryStatusChanged(const BatteryCallback& callback) {
-  std::vector<BatteryStatus> batteries(GetInternalBatteriesStates());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  std::vector<blink::WebBatteryStatus> batteries(GetInternalBatteriesStates());
 
   if (batteries.empty()) {
-    callback.Run(BatteryStatus());
+    callback.Run(blink::WebBatteryStatus());
     return;
   }
 
@@ -161,34 +166,65 @@ void OnBatteryStatusChanged(const BatteryCallback& callback) {
   callback.Run(batteries.front());
 }
 
-class BatteryStatusObserver {
+class BatteryStatusObserver
+    : public base::RefCountedThreadSafe<BatteryStatusObserver> {
  public:
   explicit BatteryStatusObserver(const BatteryCallback& callback)
       : callback_(callback) {}
 
-  ~BatteryStatusObserver() { DCHECK(!notifier_run_loop_source_); }
-
   void Start() {
+    // Need to start on a thread with UI-type message loop for
+    // |notifier_run_loop_| to receive callbacks.
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      StartOnUI();
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&BatteryStatusObserver::StartOnUI, this));
+    }
+  }
+
+  void Stop() {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      StopOnUI();
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&BatteryStatusObserver::StopOnUI, this));
+    }
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<BatteryStatusObserver>;
+  virtual ~BatteryStatusObserver() { DCHECK(!notifier_run_loop_source_); }
+
+  void StartOnUI() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
     if (notifier_run_loop_source_)
       return;
 
     notifier_run_loop_source_.reset(
-        IOPSNotificationCreateRunLoopSource(CallOnBatteryStatusChanged,
+        IOPSNotificationCreateRunLoopSource(OnBatteryStatusChangedUI,
                                             static_cast<void*>(&callback_)));
     if (!notifier_run_loop_source_) {
       LOG(ERROR) << "Failed to create battery status notification run loop";
       // Make sure to execute to callback with the default values.
-      callback_.Run(BatteryStatus());
+      callback_.Run(blink::WebBatteryStatus());
       return;
     }
 
-    CallOnBatteryStatusChanged(static_cast<void*>(&callback_));
+    OnBatteryStatusChangedUI(static_cast<void*>(&callback_));
     CFRunLoopAddSource(CFRunLoopGetCurrent(), notifier_run_loop_source_,
                        kCFRunLoopDefaultMode);
     UpdateNumberBatteriesHistogram(GetInternalBatteriesStates().size());
   }
 
-  void Stop() {
+  void StopOnUI() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
     if (!notifier_run_loop_source_)
       return;
 
@@ -197,9 +233,14 @@ class BatteryStatusObserver {
     notifier_run_loop_source_.reset();
   }
 
- private:
-  static void CallOnBatteryStatusChanged(void* callback) {
-    OnBatteryStatusChanged(*static_cast<BatteryCallback*>(callback));
+  static void OnBatteryStatusChangedUI(void* callback) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // Offload fetching of values and callback execution to the IO thread.
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&OnBatteryStatusChanged,
+                   *static_cast<BatteryCallback*>(callback)));
   }
 
   BatteryCallback callback_;
@@ -217,16 +258,18 @@ class BatteryStatusManagerMac : public BatteryStatusManager {
 
   // BatteryStatusManager:
   bool StartListeningBatteryChange() override {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notifier_->Start();
     return true;
   }
 
   void StopListeningBatteryChange() override {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notifier_->Stop();
   }
 
  private:
-  scoped_ptr<BatteryStatusObserver> notifier_;
+  scoped_refptr<BatteryStatusObserver> notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerMac);
 };
@@ -240,4 +283,4 @@ scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
       new BatteryStatusManagerMac(callback));
 }
 
-}  // namespace device
+}  // namespace content

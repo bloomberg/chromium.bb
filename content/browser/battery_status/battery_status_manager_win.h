@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BATTERY_BATTERY_STATUS_MANAGER_WIN_H_
-#define DEVICE_BATTERY_BATTERY_STATUS_MANAGER_WIN_H_
+#ifndef CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_WIN_H_
+#define CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_WIN_H_
 
 #include <windows.h>
-#include "device/battery/battery_export.h"
-#include "device/battery/battery_status.mojom.h"
+#include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 
-namespace device {
+namespace content {
 
 enum WinACLineStatus {
   WIN_AC_LINE_STATUS_OFFLINE = 0,
@@ -18,9 +18,9 @@ enum WinACLineStatus {
 };
 
 // Returns WebBatteryStatus corresponding to the given SYSTEM_POWER_STATUS.
-DEVICE_BATTERY_EXPORT BatteryStatus ComputeWebBatteryStatus(
+CONTENT_EXPORT blink::WebBatteryStatus ComputeWebBatteryStatus(
     const SYSTEM_POWER_STATUS& win_status);
 
-}  // namespace device
+}  // namespace content
 
-#endif  // DEVICE_BATTERY_BATTERY_STATUS_MANAGER_WIN_H_
+#endif  // CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_WIN_H_

@@ -4,12 +4,12 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "device/battery/battery_status_manager.h"
+#include "content/browser/battery_status/battery_status_manager.h"
 
-#ifndef DEVICE_BATTERY_BATTERY_STATUS_MANAGER_ANDROID_H_
-#define DEVICE_BATTERY_BATTERY_STATUS_MANAGER_ANDROID_H_
+#ifndef CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_ANDROID_H_
+#define CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_ANDROID_H_
 
-namespace device {
+namespace content {
 
 class BatteryStatusManagerAndroid : public BatteryStatusManager {
  public:
@@ -40,6 +40,6 @@ class BatteryStatusManagerAndroid : public BatteryStatusManager {
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerAndroid);
 };
 
-}  // namespace device
+}  // namespace content
 
-#endif  // DEVICE_BATTERY_BATTERY_STATUS_MANAGER_ANDROID_H_
+#endif  // CHROME_BROWSER_BATTERY_STATUS_BATTERY_STATUS_MANAGER_ANDROID_H_

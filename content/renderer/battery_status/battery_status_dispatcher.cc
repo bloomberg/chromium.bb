@@ -2,35 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/battery_status/battery_status_dispatcher.h"
+#include "battery_status_dispatcher.h"
 
-#include "content/public/common/service_registry.h"
-#include "content/public/renderer/render_thread.h"
+#include "content/common/battery_status_messages.h"
+#include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 
 namespace content {
 
-BatteryStatusDispatcher::BatteryStatusDispatcher(
-    blink::WebBatteryStatusListener* listener)
-    : listener_(listener) {
-  DCHECK(listener_);
-
-  RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(&monitor_);
-  monitor_.set_client(this);
+BatteryStatusDispatcher::BatteryStatusDispatcher(RenderThread* thread)
+    : PlatformEventObserver<blink::WebBatteryStatusListener>(thread) {
 }
 
 BatteryStatusDispatcher::~BatteryStatusDispatcher() {
+  StopIfObserving();
 }
 
-void BatteryStatusDispatcher::DidChange(
-    device::BatteryStatusPtr battery_status) {
-  DCHECK(battery_status);
-  blink::WebBatteryStatus web_battery_status;
-  web_battery_status.charging = battery_status->charging;
-  web_battery_status.chargingTime = battery_status->charging_time;
-  web_battery_status.dischargingTime = battery_status->discharging_time;
-  web_battery_status.level = battery_status->level;
-  listener_->updateBatteryStatus(web_battery_status);
+bool BatteryStatusDispatcher::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(BatteryStatusDispatcher, message)
+    IPC_MESSAGE_HANDLER(BatteryStatusMsg_DidChange, OnDidChange)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void BatteryStatusDispatcher::SendStartMessage() {
+  RenderThread::Get()->Send(new BatteryStatusHostMsg_Start());
+}
+
+void BatteryStatusDispatcher::SendStopMessage() {
+  RenderThread::Get()->Send(new BatteryStatusHostMsg_Stop());
+}
+
+void BatteryStatusDispatcher::OnDidChange(
+    const blink::WebBatteryStatus& status) {
+  if (listener())
+    listener()->updateBatteryStatus(status);
+}
+
+void BatteryStatusDispatcher::SendFakeDataForTesting(void* fake_data) {
+  OnDidChange(*static_cast<blink::WebBatteryStatus*>(fake_data));
 }
 
 }  // namespace content

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/battery/battery_status_manager_win.h"
+#include "content/browser/battery_status/battery_status_manager_win.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace device {
+namespace content {
 
 namespace {
 
@@ -16,10 +16,10 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOffline) {
   win_status.BatteryLifePercent = 100;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  blink::WebBatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_FALSE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
-  EXPECT_EQ(200, status.discharging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
+  EXPECT_EQ(200, status.dischargingTime);
   EXPECT_EQ(1, status.level);
 }
 
@@ -29,10 +29,10 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOfflineDischargingTimeUnknown) {
   win_status.BatteryLifePercent = 100;
   win_status.BatteryLifeTime = (DWORD)-1;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  blink::WebBatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_FALSE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
   EXPECT_EQ(1, status.level);
 }
 
@@ -42,10 +42,10 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOnline) {
   win_status.BatteryLifePercent = 50;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  blink::WebBatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_TRUE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
   EXPECT_EQ(.5, status.level);
 }
 
@@ -55,10 +55,10 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusOnlineFullBattery) {
   win_status.BatteryLifePercent = 100;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  blink::WebBatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_TRUE(status.charging);
-  EXPECT_EQ(0, status.charging_time);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
+  EXPECT_EQ(0, status.chargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
   EXPECT_EQ(1, status.level);
 }
 
@@ -68,13 +68,13 @@ TEST(BatteryStatusManagerWinTest, ACLineStatusUnknown) {
   win_status.BatteryLifePercent = 50;
   win_status.BatteryLifeTime = 200;
 
-  BatteryStatus status = ComputeWebBatteryStatus(win_status);
+  blink::WebBatteryStatus status = ComputeWebBatteryStatus(win_status);
   EXPECT_TRUE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
   EXPECT_EQ(.5, status.level);
 }
 
 }  // namespace
 
-}  // namespace device
+}  // namespace content

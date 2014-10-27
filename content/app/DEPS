@@ -1,5 +1,4 @@
 include_rules = [
   "+content",
-  "+device/battery",
   "+media/base",  # For initializing media library.
 ]

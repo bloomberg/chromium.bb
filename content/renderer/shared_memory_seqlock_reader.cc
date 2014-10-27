@@ -4,7 +4,6 @@
 
 #include "shared_memory_seqlock_reader.h"
 
-namespace content {
 namespace internal {
 
 SharedMemorySeqLockReaderBase::SharedMemorySeqLockReaderBase() { }
@@ -57,4 +56,3 @@ bool SharedMemorySeqLockReaderBase::FetchFromBuffer(
 }
 
 }  // namespace internal
-}  // namespace content

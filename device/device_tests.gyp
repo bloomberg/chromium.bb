@@ -14,12 +14,9 @@
         '../base/base.gyp:test_support_base',
         '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
-        'battery/battery.gyp:device_battery',
-        'battery/battery.gyp:device_battery_mojo_bindings',
         'bluetooth/bluetooth.gyp:device_bluetooth',
         'bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         'nfc/nfc.gyp:device_nfc',
@@ -29,9 +26,6 @@
         'serial/serial.gyp:device_serial_test_util',
       ],
       'sources': [
-        'battery/battery_status_manager_linux_unittest.cc',
-        'battery/battery_status_manager_win_unittest.cc',
-        'battery/battery_status_service_unittest.cc',
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
         'bluetooth/bluetooth_adapter_unittest.cc',
         'bluetooth/bluetooth_adapter_win_unittest.cc',
@@ -70,10 +64,7 @@
             '../chromeos/chromeos.gyp:chromeos_test_support',
             '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
             '../dbus/dbus.gyp:dbus',
-          ],
-          'sources!': [
-            'battery/battery_status_manager_linux_unittest.cc',
-          ],
+          ]
         }],
         ['OS=="mac"', {
           'link_settings': {
@@ -102,11 +93,6 @@
           'sources/': [
             ['exclude', '^serial/'],
             ['exclude', '^hid/'],
-          ],
-        }],
-        ['use_dbus==0', {
-          'sources!': [
-            'battery/battery_status_manager_linux_unittest.cc',
           ],
         }],
       ],

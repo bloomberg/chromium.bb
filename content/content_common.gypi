@@ -160,6 +160,7 @@
       'common/appcache_interfaces.cc',
       'common/appcache_interfaces.h',
       'common/appcache_messages.h',
+      'common/battery_status_messages.h',
       'common/browser_plugin/browser_plugin_constants.cc',
       'common/browser_plugin/browser_plugin_constants.h',
       'common/browser_plugin/browser_plugin_messages.h',

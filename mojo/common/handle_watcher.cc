@@ -123,7 +123,6 @@ void WatcherBackend::RemoveAndNotify(const Handle& handle,
   const WatchData data(handle_to_data_[handle]);
   handle_to_data_.erase(handle);
   MessagePumpMojo::current()->RemoveHandler(handle);
-
   data.message_loop->PostTask(FROM_HERE, base::Bind(data.callback, result));
 }
 

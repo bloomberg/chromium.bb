@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "device/battery/battery_status_manager.h"
-#include "device/battery/battery_status_service.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "content/browser/battery_status/battery_status_service.h"
 
-namespace device {
+#include "base/bind.h"
+#include "base/run_loop.h"
+#include "content/browser/battery_status/battery_status_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+
+namespace content {
 
 namespace {
 
@@ -28,7 +28,7 @@ class FakeBatteryManager : public BatteryStatusManager {
 
   void StopListeningBatteryChange() override { stop_invoked_count_++; }
 
-  void InvokeUpdateCallback(const BatteryStatus& status) {
+  void InvokeUpdateCallback(const blink::WebBatteryStatus& status) {
     callback_.Run(status);
   }
 
@@ -46,8 +46,9 @@ class FakeBatteryManager : public BatteryStatusManager {
 class BatteryStatusServiceTest : public testing::Test {
  public:
     BatteryStatusServiceTest()
-        : battery_service_(NULL),
-          battery_manager_(NULL),
+        : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+          battery_service_(0),
+          battery_manager_(0),
           callback1_invoked_count_(0),
           callback2_invoked_count_(0) {
     }
@@ -62,20 +63,14 @@ class BatteryStatusServiceTest : public testing::Test {
     callback2_ = base::Bind(&BatteryStatusServiceTest::Callback2,
                             base::Unretained(this));
     battery_service_ = BatteryStatusService::GetInstance();
-
-    // We keep a raw pointer to the FakeBatteryManager, which we expect to
-    // remain valid for the lifetime of the BatteryStatusService.
-    scoped_ptr<FakeBatteryManager> battery_manager(new FakeBatteryManager(
-        battery_service_->GetUpdateCallbackForTesting()));
-    battery_manager_ = battery_manager.get();
-
-    battery_service_->SetBatteryManagerForTesting(battery_manager.Pass());
+    battery_manager_ = new FakeBatteryManager(
+        battery_service_->GetUpdateCallbackForTesting());
+    battery_service_->SetBatteryManagerForTesting(battery_manager_);
   }
 
   virtual void TearDown() override {
     base::RunLoop().RunUntilIdle();
-    battery_service_->SetBatteryManagerForTesting(
-        scoped_ptr<BatteryStatusManager>());
+    battery_service_->SetBatteryManagerForTesting(0);
   }
 
   FakeBatteryManager* battery_manager() {
@@ -95,7 +90,7 @@ class BatteryStatusServiceTest : public testing::Test {
     return callback2_invoked_count_;
   }
 
-  const BatteryStatus& battery_status() const {
+  const blink::WebBatteryStatus& battery_status() const {
     return battery_status_;
   }
 
@@ -108,24 +103,24 @@ class BatteryStatusServiceTest : public testing::Test {
   }
 
  private:
-  void Callback1(const BatteryStatus& status) {
+  void Callback1(const blink::WebBatteryStatus& status) {
     callback1_invoked_count_++;
     battery_status_ = status;
   }
 
-  void Callback2(const BatteryStatus& status) {
+  void Callback2(const blink::WebBatteryStatus& status) {
     callback2_invoked_count_++;
     battery_status_ = status;
   }
 
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   BatteryStatusService* battery_service_;
   FakeBatteryManager* battery_manager_;
   BatteryStatusService::BatteryUpdateCallback callback1_;
   BatteryStatusService::BatteryUpdateCallback callback2_;
   int callback1_invoked_count_;
   int callback2_invoked_count_;
-  BatteryStatus battery_status_;
+  blink::WebBatteryStatus battery_status_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusServiceTest);
 };
@@ -141,7 +136,7 @@ TEST_F(BatteryStatusServiceTest, AddFirstCallback) {
 
 TEST_F(BatteryStatusServiceTest, AddCallbackAfterUpdate) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
-  BatteryStatus status;
+  blink::WebBatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, callback1_invoked_count());
@@ -156,10 +151,10 @@ TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
-  BatteryStatus status;
+  blink::WebBatteryStatus status;
   status.charging = true;
-  status.charging_time = 100;
-  status.discharging_time = 200;
+  status.chargingTime = 100;
+  status.dischargingTime = 200;
   status.level = 0.5;
   battery_manager()->InvokeUpdateCallback(status);
   base::RunLoop().RunUntilIdle();
@@ -167,8 +162,8 @@ TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
   EXPECT_EQ(1, callback1_invoked_count());
   EXPECT_EQ(1, callback2_invoked_count());
   EXPECT_EQ(status.charging, battery_status().charging);
-  EXPECT_EQ(status.charging_time, battery_status().charging_time);
-  EXPECT_EQ(status.discharging_time, battery_status().discharging_time);
+  EXPECT_EQ(status.chargingTime, battery_status().chargingTime);
+  EXPECT_EQ(status.dischargingTime, battery_status().dischargingTime);
   EXPECT_EQ(status.level, battery_status().level);
 }
 
@@ -176,7 +171,7 @@ TEST_F(BatteryStatusServiceTest, RemoveOneCallback) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
-  BatteryStatus status;
+  blink::WebBatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, callback1_invoked_count());
@@ -191,4 +186,4 @@ TEST_F(BatteryStatusServiceTest, RemoveOneCallback) {
 
 }  // namespace
 
-}  // namespace device
+}  // namespace content

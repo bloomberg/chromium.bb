@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/battery/battery_status_manager_linux.h"
+#include "content/browser/battery_status/battery_status_manager_linux.h"
 
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "content/browser/battery_status/battery_status_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/property.h"
 #include "dbus/values_util.h"
-#include "device/battery/battery_status_manager.h"
 
-namespace device {
+namespace content {
 
 namespace {
 
@@ -112,6 +113,8 @@ class BatteryStatusNotificationThread : public base::Thread {
         battery_proxy_(NULL) {}
 
   virtual ~BatteryStatusNotificationThread() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
     // Make sure to shutdown the dbus connection if it is still open in the very
     // end. It needs to happen on the BatteryStatusNotificationThread.
     message_loop()->PostTask(
@@ -172,7 +175,7 @@ class BatteryStatusNotificationThread : public base::Thread {
     UpdateNumberBatteriesHistogram(num_batteries);
 
     if (!battery_proxy_) {
-      callback_.Run(BatteryStatus());
+      callback_.Run(blink::WebBatteryStatus());
       return;
     }
 
@@ -237,7 +240,7 @@ class BatteryStatusNotificationThread : public base::Thread {
     } else {
       // Failed to register for "Changed" signal, execute callback with the
       // default values.
-      callback_.Run(BatteryStatus());
+      callback_.Run(blink::WebBatteryStatus());
     }
   }
 
@@ -252,7 +255,7 @@ class BatteryStatusNotificationThread : public base::Thread {
     if (dictionary)
       callback_.Run(ComputeWebBatteryStatus(*dictionary));
     else
-      callback_.Run(BatteryStatus());
+      callback_.Run(blink::WebBatteryStatus());
   }
 
   BatteryStatusService::BatteryUpdateCallback callback_;
@@ -262,7 +265,8 @@ class BatteryStatusNotificationThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusNotificationThread);
 };
 
-// Creates a notification thread and delegates Start/Stop calls to it.
+// Runs on IO thread and creates a notification thread and delegates Start/Stop
+// calls to it.
 class BatteryStatusManagerLinux : public BatteryStatusManager {
  public:
   explicit BatteryStatusManagerLinux(
@@ -274,6 +278,9 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
  private:
   // BatteryStatusManager:
   virtual bool StartListeningBatteryChange() override {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+    if (!StartNotifierThreadIfNecessary())
       return false;
 
     notifier_thread_->message_loop()->PostTask(
@@ -284,6 +291,8 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
   }
 
   virtual void StopListeningBatteryChange() override {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
     if (!notifier_thread_)
       return;
 
@@ -318,8 +327,9 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
 
 }  // namespace
 
-BatteryStatus ComputeWebBatteryStatus(const base::DictionaryValue& dictionary) {
-  BatteryStatus status;
+blink::WebBatteryStatus ComputeWebBatteryStatus(
+    const base::DictionaryValue& dictionary) {
+  blink::WebBatteryStatus status;
   if (!dictionary.HasKey("State"))
     return status;
 
@@ -339,7 +349,7 @@ BatteryStatus ComputeWebBatteryStatus(const base::DictionaryValue& dictionary) {
   switch (state) {
     case UPOWER_DEVICE_STATE_CHARGING : {
       double time_to_full = GetPropertyAsDouble(dictionary, "TimeToFull", 0);
-      status.charging_time =
+      status.chargingTime =
           (time_to_full > 0) ? time_to_full
                              : std::numeric_limits<double>::infinity();
       break;
@@ -349,15 +359,15 @@ BatteryStatus ComputeWebBatteryStatus(const base::DictionaryValue& dictionary) {
       // Set dischargingTime if it's available. Otherwise leave the default
       // value which is +infinity.
       if (time_to_empty > 0)
-        status.discharging_time = time_to_empty;
-      status.charging_time = std::numeric_limits<double>::infinity();
+        status.dischargingTime = time_to_empty;
+      status.chargingTime = std::numeric_limits<double>::infinity();
       break;
     }
     case UPOWER_DEVICE_STATE_FULL : {
       break;
     }
     default: {
-      status.charging_time = std::numeric_limits<double>::infinity();
+      status.chargingTime = std::numeric_limits<double>::infinity();
     }
   }
   return status;
@@ -370,4 +380,4 @@ scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
       new BatteryStatusManagerLinux(callback));
 }
 
-}  // namespace device
+}  // namespace content

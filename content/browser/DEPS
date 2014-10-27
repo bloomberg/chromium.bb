@@ -1,7 +1,6 @@
 include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",
-  "+device/battery",  # For battery status service.
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration.
   "+media/midi",  # For Web MIDI API
@@ -37,6 +36,7 @@ include_rules = [
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
+  "+third_party/WebKit/public/platform/WebBatteryStatus.h",
   "+third_party/WebKit/public/platform/WebCircularGeofencingRegion.h",
   "+third_party/WebKit/public/platform/WebCursorInfo.h",
   "+third_party/WebKit/public/platform/WebGamepad.h",
