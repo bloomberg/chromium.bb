@@ -183,7 +183,12 @@ void ChromeWebContentsViewDelegateViews::ShowDisambiguationPopup(
 
   link_disambiguation_popup_.reset(new LinkDisambiguationPopup);
   link_disambiguation_popup_->Show(
-      zoomed_bitmap, target_rect, content, gesture_cb, mouse_cb);
+      views::Widget::GetTopLevelWidgetForNativeView(GetActiveNativeView()),
+      zoomed_bitmap,
+      target_rect,
+      content,
+      gesture_cb,
+      mouse_cb);
 #endif
 }
 

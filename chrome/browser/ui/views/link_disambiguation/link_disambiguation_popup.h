@@ -7,6 +7,7 @@
 
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/widget/widget.h"
 
 namespace aura {
 class Window;
@@ -25,13 +26,15 @@ class LinkDisambiguationPopup {
   LinkDisambiguationPopup();
   ~LinkDisambiguationPopup();
 
-  // Creates and shows the Popup. |zoomed_bitmap| is the scaled-up image of the
-  // ambiguous web content. |target_rect| is the original, unzoomed rectangle
-  // in DIPs in the coordinate system of |content|. We will convert received
+  // Creates and shows the Popup. |top_level_widget| is the active widget.
+  // |zoomed_bitmap| is the scaled-up image of the ambiguous web content.
+  // |target_rect| is the original, unzoomed rectangle in DIPs in the
+  // coordinate system of |content|. We will convert received
   // gestures in the popup to the coordinate system of |content| and as an
   // offset within |target_rect|, and then call the |callback| with the
   // transformed coordinates GestureEvent.
-  void Show(const SkBitmap& zoomed_bitmap,
+  void Show(views::Widget* top_level_widget,
+            const SkBitmap& zoomed_bitmap,
             const gfx::Rect& target_rect,
             const gfx::NativeView content,
             const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
