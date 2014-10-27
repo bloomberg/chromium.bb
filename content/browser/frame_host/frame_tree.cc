@@ -47,8 +47,12 @@ bool FrameTreeNodeForId(int64 frame_tree_node_id,
 // given RenderViewHost's process.
 bool ResetNodesForNewProcess(RenderViewHost* render_view_host,
                              FrameTreeNode* node) {
-  if (render_view_host == node->current_frame_host()->render_view_host())
+  if (render_view_host == node->current_frame_host()->render_view_host()) {
+    // Ensure that if the frame host is reused for a new RenderFrame, it will
+    // set up the Mojo connection with that frame.
+    node->current_frame_host()->InvalidateMojoConnection();
     node->ResetForNewProcess();
+  }
   return true;
 }
 

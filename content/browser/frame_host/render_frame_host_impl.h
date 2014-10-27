@@ -363,6 +363,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
                         const CommonNavigationParams& common_params,
                         const CommitNavigationParams& commit_params);
 
+  // Sets up the Mojo connection between this instance and its associated render
+  // frame if it has not yet been set up.
+  void SetUpMojoIfNeeded();
+
+  // Tears down the browser-side state relating to the Mojo connection between
+  // this instance and its associated render frame.
+  void InvalidateMojoConnection();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -558,7 +566,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstance.
   scoped_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
 
-  ServiceRegistryImpl service_registry_;
+  scoped_ptr<ServiceRegistryImpl> service_registry_;
 
 #if defined(OS_ANDROID)
   scoped_ptr<ServiceRegistryAndroid> service_registry_android_;

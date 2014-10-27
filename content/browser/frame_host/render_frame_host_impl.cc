@@ -209,20 +209,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
     GetSiteInstance()->increment_active_frame_count();
   }
 
-  if (GetProcess()->GetServiceRegistry()) {
-    RenderFrameSetupPtr setup;
-    GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
-    mojo::ServiceProviderPtr service_provider;
-    setup->GetServiceProviderForFrame(routing_id_,
-                                      mojo::GetProxy(&service_provider));
-    service_registry_.BindRemoteServiceProvider(
-        service_provider.PassMessagePipe());
-
-#if defined(OS_ANDROID)
-    service_registry_android_.reset(
-        new ServiceRegistryAndroid(&service_registry_));
-#endif
-  }
+  SetUpMojoIfNeeded();
 
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
@@ -322,7 +309,7 @@ RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
 }
 
 ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
-  return &service_registry_;
+  return service_registry_.get();
 }
 
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
@@ -1440,6 +1427,35 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.
   stream_handle_ = body.Pass();
+}
+
+void RenderFrameHostImpl::SetUpMojoIfNeeded() {
+  if (service_registry_.get())
+    return;
+
+  service_registry_.reset(new ServiceRegistryImpl());
+  if (!GetProcess()->GetServiceRegistry())
+    return;
+
+  RenderFrameSetupPtr setup;
+  GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
+  mojo::ServiceProviderPtr service_provider;
+  setup->GetServiceProviderForFrame(routing_id_,
+                                    mojo::GetProxy(&service_provider));
+  service_registry_->BindRemoteServiceProvider(
+      service_provider.PassMessagePipe());
+
+#if defined(OS_ANDROID)
+  service_registry_android_.reset(
+      new ServiceRegistryAndroid(service_registry_.get()));
+#endif
+}
+
+void RenderFrameHostImpl::InvalidateMojoConnection() {
+  service_registry_.reset();
+#if defined(OS_ANDROID)
+  service_registry_android_.reset();
+#endif
 }
 
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
