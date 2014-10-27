@@ -60,8 +60,7 @@ namespace {
 const int kDragBufferPx = 20;
 
 // Padding space in pixels for fixed layout.
-const int kTopPadding = 1;
-const int kBottomPadding = 1;
+const int kBottomPadding = 3;
 const int kLeftRightPadding = 24;
 
 // Padding space in pixels between pages.
@@ -426,13 +425,11 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
   rows_per_page_ = rows_per_page;
 
   if (switches::IsExperimentalAppListEnabled()) {
-    SetBorder(views::Border::CreateEmptyBorder(0,
-                                               kExperimentalWindowPadding,
-                                               kBottomPadding,
-                                               kExperimentalWindowPadding));
+    SetBorder(views::Border::CreateEmptyBorder(
+        0, kExperimentalWindowPadding, 0, kExperimentalWindowPadding));
   } else {
     SetBorder(views::Border::CreateEmptyBorder(
-        kTopPadding, kLeftRightPadding, kBottomPadding, kLeftRightPadding));
+        0, kLeftRightPadding, kBottomPadding, kLeftRightPadding));
   }
 }
 

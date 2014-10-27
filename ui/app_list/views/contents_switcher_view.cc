@@ -15,7 +15,7 @@ namespace app_list {
 namespace {
 
 const int kButtonSpacing = 4;
-const int kMinimumHeight = 39;
+const int kMinimumHeight = 40;
 
 }  // namespace
 

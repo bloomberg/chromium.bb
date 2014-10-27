@@ -42,7 +42,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   explicit AppListMainView(AppListViewDelegate* delegate);
   virtual ~AppListMainView();
 
-  void Init(gfx::NativeView parent, int initial_apps_page);
+  void Init(gfx::NativeView parent,
+            int initial_apps_page,
+            SearchBoxView* search_box_view);
 
   void ShowAppListWhenReady();
 
@@ -113,7 +115,8 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.
 
-  SearchBoxView* search_box_view_;  // Owned by views hierarchy.
+  // Created by AppListView. Owned by views hierarchy.
+  SearchBoxView* search_box_view_;
   ContentsView* contents_view_;  // Owned by views hierarchy.
 
   // Owned by views hierarchy. NULL in the non-experimental app list.

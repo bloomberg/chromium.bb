@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -45,10 +46,10 @@ const SkColor kBackgroundBorderColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
 const SkColor kBackgroundBorderBottomColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
 
 // A background that paints a solid white rounded rect with a thin grey border.
-class SearchBoxBackground : public views::Background {
+class ExperimentalSearchBoxBackground : public views::Background {
  public:
-  SearchBoxBackground() {}
-  virtual ~SearchBoxBackground() {}
+  ExperimentalSearchBoxBackground() {}
+  virtual ~ExperimentalSearchBoxBackground() {}
 
  private:
   // views::Background overrides:
@@ -66,11 +67,11 @@ class SearchBoxBackground : public views::Background {
     paint.setColor(kBackgroundBorderBottomColor);
     canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
     bounds.Inset(0, 0, 0, kBackgroundBorderBottomWidth);
-    paint.setColor(SK_ColorWHITE);
+    paint.setColor(kSearchBoxBackground);
     canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);
+  DISALLOW_COPY_AND_ASSIGN(ExperimentalSearchBoxBackground);
 };
 
 }  // namespace
@@ -85,8 +86,12 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       search_box_(new views::Textfield),
       contents_view_(NULL) {
   if (switches::IsExperimentalAppListEnabled()) {
-    set_background(new SearchBoxBackground());
+    set_background(new ExperimentalSearchBoxBackground());
   } else {
+    set_background(
+        views::Background::CreateSolidBackground(kSearchBoxBackground));
+    SetBorder(
+        views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kTopSeparatorColor));
     icon_view_ = new views::ImageView;
     AddChildView(icon_view_);
   }

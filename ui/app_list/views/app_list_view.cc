@@ -151,6 +151,7 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       app_list_main_view_(NULL),
+      search_box_view_(NULL),
       speech_view_(NULL),
       experimental_banner_view_(NULL),
       overlay_view_(NULL),
@@ -332,7 +333,14 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   app_list_main_view_->SetPaintToLayer(true);
   app_list_main_view_->SetFillsBoundsOpaquely(false);
   app_list_main_view_->layer()->SetMasksToBounds(true);
-  app_list_main_view_->Init(parent, initial_apps_page);
+
+  search_box_view_ = new SearchBoxView(app_list_main_view_, delegate_);
+  search_box_view_->SetPaintToLayer(true);
+  search_box_view_->SetFillsBoundsOpaquely(false);
+  search_box_view_->layer()->SetMasksToBounds(true);
+  AddChildView(search_box_view_);
+
+  app_list_main_view_->Init(parent, initial_apps_page, search_box_view_);
 
   // Speech recognition is available only when the start page exists.
   if (delegate_ && delegate_->IsSpeechRecognitionEnabled()) {
@@ -493,6 +501,9 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 void AppListView::Layout() {
+  search_box_view_->SetBoundsRect(
+      app_list_main_view_->contents_view()->GetDefaultSearchBoxBounds());
+
   const gfx::Rect contents_bounds = GetContentsBounds();
   app_list_main_view_->SetBoundsRect(contents_bounds);
 

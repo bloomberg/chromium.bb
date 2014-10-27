@@ -39,32 +39,6 @@ namespace {
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
 
-// A view that holds another view and takes its preferred size. This is used for
-// wrapping the search box view so it still gets laid out while hidden. This is
-// a separate class so it can notify the main view on search box visibility
-// change.
-class SearchBoxContainerView : public views::View {
- public:
-  SearchBoxContainerView(AppListMainView* host, SearchBoxView* search_box)
-      : host_(host), search_box_(search_box) {
-    SetLayoutManager(new views::FillLayout());
-    AddChildView(search_box);
-  }
-  virtual ~SearchBoxContainerView() {}
-
- private:
-  // Overridden from views::View:
-  virtual void ChildVisibilityChanged(views::View* child) override {
-    DCHECK_EQ(search_box_, child);
-    host_->NotifySearchBoxVisibilityChanged();
-  }
-
-  AppListMainView* host_;
-  SearchBoxView* search_box_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxContainerView);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,29 +84,17 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate)
       contents_view_(NULL),
       contents_switcher_view_(NULL),
       weak_ptr_factory_(this) {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           0,
-                           0,
-                           switches::IsExperimentalAppListEnabled() ? 0 : 1));
-
-  search_box_view_ = new SearchBoxView(this, delegate);
-  views::View* container = new SearchBoxContainerView(this, search_box_view_);
-  if (switches::IsExperimentalAppListEnabled()) {
-    container->SetBorder(
-        views::Border::CreateEmptyBorder(kExperimentalWindowPadding,
-                                         kExperimentalWindowPadding,
-                                         0,
-                                         kExperimentalWindowPadding));
-  }
-  AddChildView(container);
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 }
 
 AppListMainView::~AppListMainView() {
   pending_icon_loaders_.clear();
 }
 
-void AppListMainView::Init(gfx::NativeView parent, int initial_apps_page) {
+void AppListMainView::Init(gfx::NativeView parent,
+                           int initial_apps_page,
+                           SearchBoxView* search_box_view) {
+  search_box_view_ = search_box_view;
   AddContentsViews();
 
   // Switch the apps grid view to the specified page.
@@ -145,6 +107,8 @@ void AppListMainView::Init(gfx::NativeView parent, int initial_apps_page) {
 }
 
 void AppListMainView::AddContentsViews() {
+  DCHECK(search_box_view_);
+
   contents_view_ = new ContentsView(this);
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     contents_switcher_view_ = new ContentsSwitcherView(contents_view_);
@@ -156,6 +120,7 @@ void AppListMainView::AddContentsViews() {
     AddChildView(contents_switcher_view_);
 
   search_box_view_->set_contents_view(contents_view_);
+  UpdateSearchBoxVisibility();
 
   contents_view_->SetPaintToLayer(true);
   contents_view_->SetFillsBoundsOpaquely(false);

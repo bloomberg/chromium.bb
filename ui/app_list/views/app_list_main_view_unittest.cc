@@ -16,6 +16,7 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
@@ -79,7 +80,8 @@ class AppListMainViewTest : public views::ViewsTestBase {
     main_view_ = new AppListMainView(delegate_.get());
     main_view_->SetPaintToLayer(true);
     main_view_->model()->SetFoldersEnabled(true);
-    main_view_->Init(NULL, 0);
+    search_box_view_.reset(new SearchBoxView(main_view_, delegate_.get()));
+    main_view_->Init(NULL, 0, search_box_view_.get());
 
     widget_ = new views::Widget;
     views::Widget::InitParams params =
@@ -93,6 +95,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
   virtual void TearDown() override {
     widget_->Close();
     views::ViewsTestBase::TearDown();
+    search_box_view_.reset();
     delegate_.reset();
   }
 
@@ -229,6 +232,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
   views::Widget* widget_;  // Owned by native window.
   AppListMainView* main_view_;  // Owned by |widget_|.
   scoped_ptr<AppListTestViewDelegate> delegate_;
+  scoped_ptr<SearchBoxView> search_box_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListMainViewTest);

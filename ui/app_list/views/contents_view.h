@@ -101,6 +101,17 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Adds a blank launcher page. For use in tests only.
   void AddBlankPageForTesting();
 
+  // Returns the pagination model for the ContentsView.
+  const PaginationModel& pagination_model() { return pagination_model_; }
+
+  // Returns search box bounds to use for content views that do not specify
+  // their own custom layout.
+  gfx::Rect GetDefaultSearchBoxBounds() const;
+
+  // Returns the content area bounds to use for content views that do not
+  // specify their own custom layout.
+  gfx::Rect GetDefaultContentsBounds() const;
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const override;
   virtual void Layout() override;
@@ -112,9 +123,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   virtual void TransitionStarted() override;
   virtual void TransitionChanged() override;
 
-  // Returns the pagination model for the ContentsView.
-  const PaginationModel& pagination_model() { return pagination_model_; }
-
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.
@@ -122,6 +130,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Invoked when active view is changed.
   void ActivePageChanged(bool show_search_results);
+
+  // Returns the size of the default content area.
+  gfx::Size GetDefaultContentsSize() const;
 
   // Gets the origin (the off-screen resting place) for a given launcher page
   // with index |page_index|.

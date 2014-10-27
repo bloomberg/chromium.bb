@@ -34,6 +34,7 @@ class AppListViewDelegate;
 class AppListViewObserver;
 class HideViewAnimationObserver;
 class PaginationModel;
+class SearchBoxView;
 class SpeechView;
 
 // AppListView is the top-level view and controller of app list UI. It creates
@@ -160,6 +161,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
 
   AppListMainView* app_list_main_view_;
+  SearchBoxView* search_box_view_;
   SpeechView* speech_view_;
 
   // The red "experimental" banner for the experimental app list.

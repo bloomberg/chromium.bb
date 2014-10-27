@@ -44,10 +44,6 @@ enum TestType {
   TEST_TYPE_END,
 };
 
-bool IsViewAtOrigin(views::View* view) {
-  return view->bounds().origin().IsOrigin();
-}
-
 size_t GetVisibleTileItemViews(const std::vector<TileItemView*>& tiles) {
   size_t count = 0;
   for (std::vector<TileItemView*>::const_iterator it = tiles.begin();
@@ -207,7 +203,9 @@ void AppListViewTestContext::ShowContentsViewPageAndVerify(int index) {
   contents_view->SetActivePage(index);
   contents_view->Layout();
   for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
-    EXPECT_EQ(i == index, IsViewAtOrigin(contents_view->GetPageView(i)));
+    EXPECT_EQ(i == index,
+              contents_view->GetDefaultContentsBounds() ==
+                  contents_view->GetPageView(i)->bounds());
   }
 }
 
@@ -385,28 +383,31 @@ void AppListViewTestContext::RunPageSwitchingAnimationTest() {
 
     contents_view->SetActivePage(0);
     contents_view->Layout();
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(0)));
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(2)));
+
+    const gfx::Rect expected_bounds = contents_view->GetDefaultContentsBounds();
+
+    EXPECT_EQ(expected_bounds, contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(2)->bounds());
 
     // Change pages. View should not have moved without Layout().
     contents_view->SetActivePage(1);
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(0)));
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(2)));
+    EXPECT_EQ(expected_bounds, contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(2)->bounds());
 
     // Change to a third page. This queues up the second animation behind the
     // first.
     contents_view->SetActivePage(2);
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(0)));
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(2)));
+    EXPECT_EQ(expected_bounds, contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(2)->bounds());
 
     // Call Layout(). Should jump to the third page.
     contents_view->Layout();
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(0)));
-    EXPECT_FALSE(IsViewAtOrigin(contents_view->GetPageView(1)));
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->GetPageView(2)));
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(0)->bounds());
+    EXPECT_NE(expected_bounds, contents_view->GetPageView(1)->bounds());
+    EXPECT_EQ(expected_bounds, contents_view->GetPageView(2)->bounds());
   }
 
   Close();
@@ -486,14 +487,18 @@ void AppListViewTestContext::RunSearchResultsTest() {
   EXPECT_TRUE(contents_view->IsShowingSearchResults());
   EXPECT_TRUE(main_view->search_box_view()->visible());
 
+  const gfx::Rect default_contents_bounds =
+      contents_view->GetDefaultContentsBounds();
   if (test_type_ == EXPERIMENTAL) {
     EXPECT_TRUE(
         contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->start_page_view()));
+    EXPECT_EQ(default_contents_bounds,
+              contents_view->start_page_view()->bounds());
   } else {
     EXPECT_TRUE(contents_view->IsNamedPageActive(
         ContentsView::NAMED_PAGE_SEARCH_RESULTS));
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->search_results_view()));
+    EXPECT_EQ(default_contents_bounds,
+              contents_view->search_results_view()->bounds());
   }
 
   // Hide the search results.
@@ -503,7 +508,8 @@ void AppListViewTestContext::RunSearchResultsTest() {
 
   // Check that we return to the page that we were on before the search.
   EXPECT_TRUE(contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_APPS));
-  EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
+  EXPECT_EQ(default_contents_bounds,
+            contents_view->apps_container_view()->bounds());
   EXPECT_TRUE(main_view->search_box_view()->visible());
 
   if (test_type_ == EXPERIMENTAL) {
@@ -525,12 +531,14 @@ void AppListViewTestContext::RunSearchResultsTest() {
     EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->text());
     EXPECT_TRUE(
         contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->start_page_view()));
+    EXPECT_EQ(default_contents_bounds,
+              contents_view->start_page_view()->bounds());
 
     // Check that typing into the real search box triggers the search page.
     ShowContentsViewPageAndVerify(
         contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
+    EXPECT_EQ(default_contents_bounds,
+              contents_view->apps_container_view()->bounds());
 
     base::string16 new_search_text = base::UTF8ToUTF16("apple");
     main_view->search_box_view()->search_box()->SetText(base::string16());

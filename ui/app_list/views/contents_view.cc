@@ -16,6 +16,7 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_switcher_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/events/event.h"
@@ -80,9 +81,6 @@ void ContentsView::InitNamedPages(AppListModel* model,
 
   page_before_search_ = initial_page_index;
   pagination_model_.SelectPage(initial_page_index, false);
-
-  // Needed to update the main search box visibility.
-  ActivePageChanged(false);
 }
 
 void ContentsView::CancelDrag() {
@@ -216,7 +214,7 @@ void ContentsView::UpdatePageBounds() {
 
   // Move |current_page| from 0 to its origin. Move |target_page| from its
   // origin to 0.
-  gfx::Rect on_screen(GetContentsBounds());
+  gfx::Rect on_screen(GetDefaultContentsBounds());
   gfx::Rect current_page_origin(GetOffscreenPageBounds(current_page));
   gfx::Rect target_page_origin(GetOffscreenPageBounds(target_page));
   gfx::Rect current_page_rect(
@@ -266,7 +264,26 @@ int ContentsView::AddLauncherPage(views::View* view,
   return page_index;
 }
 
-gfx::Size ContentsView::GetPreferredSize() const {
+gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
+  gfx::Rect search_box_bounds(
+      0,
+      0,
+      GetDefaultContentsSize().width(),
+      app_list_main_view_->search_box_view()->GetPreferredSize().height());
+  if (switches::IsExperimentalAppListEnabled()) {
+    search_box_bounds.set_y(kExperimentalWindowPadding);
+    search_box_bounds.Inset(kExperimentalWindowPadding, 0);
+  }
+  return search_box_bounds;
+}
+
+gfx::Rect ContentsView::GetDefaultContentsBounds() const {
+  gfx::Rect bounds(gfx::Point(0, GetDefaultSearchBoxBounds().bottom()),
+                   GetDefaultContentsSize());
+  return bounds;
+}
+
+gfx::Size ContentsView::GetDefaultContentsSize() const {
   const gfx::Size container_size =
       apps_container_view_->apps_grid_view()->GetPreferredSize();
   const gfx::Size results_size = search_results_view_
@@ -278,6 +295,16 @@ gfx::Size ContentsView::GetPreferredSize() const {
   return gfx::Size(width, height);
 }
 
+gfx::Size ContentsView::GetPreferredSize() const {
+  gfx::Rect search_box_bounds = GetDefaultSearchBoxBounds();
+  gfx::Rect default_contents_bounds = GetDefaultContentsBounds();
+  gfx::Vector2d bottom_right =
+      search_box_bounds.bottom_right().OffsetFromOrigin();
+  bottom_right.SetToMax(
+      default_contents_bounds.bottom_right().OffsetFromOrigin());
+  return gfx::Size(bottom_right.x(), bottom_right.y());
+}
+
 void ContentsView::Layout() {
   // Immediately finish all current animations.
   pagination_model_.FinishAnimation();
@@ -285,7 +312,7 @@ void ContentsView::Layout() {
   // Move the current view onto the screen, and all other views off screen to
   // the left. (Since we are not animating, we don't need to be careful about
   // which side we place the off-screen views onto.)
-  gfx::Rect rect(GetContentsBounds());
+  gfx::Rect rect(GetDefaultContentsBounds());
   if (rect.IsEmpty())
     return;
 
