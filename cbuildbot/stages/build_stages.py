@@ -237,18 +237,43 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                             constants.CHROME_CP,
                             extra_env=self._portage_extra_env)
 
+  def GetListOfPackagesToBuild(self):
+    """Returns a list of packages to build."""
+    if self._run.config.packages:
+      # If the list of packages is set in the config, use it.
+      return self._run.config.packages
+
+    # TODO: the logic below is duplicated from the build_packages
+    # script. Once we switch to `cros build`, we should consolidate
+    # the logic in a shared location.
+    packages = ['virtual/target-os']
+    # Build Dev packages by default.
+    packages += ['virtual/target-os-dev']
+    # Build test packages by default.
+    packages += ['virtual/target-os-test']
+    # Build factory packages by default.
+    packages += ['chromeos-base/chromeos-installshim',
+                 'chromeos-base/chromeos-factory',
+                 'chromeos-base/chromeos-hwid',
+                 'chromeos-base/autotest-factory-install']
+    if self._run.ShouldBuildAutotest():
+      packages += ['chromeos-base/autotest-all']
+
+    return packages
+
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.
     noworkon = not self._run.options.rietveld_patches
 
     self.VerifyChromeBinpkg()
+    packages = self.GetListOfPackagesToBuild()
 
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._run.ShouldBuildAutotest(),
                    usepkg=self._run.config.usepkg_build_packages,
                    chrome_binhost_only=self._run.config.chrome_binhost_only,
-                   packages=self._run.config.packages,
+                   packages=packages,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,
                    noworkon=noworkon,
