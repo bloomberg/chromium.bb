@@ -11,6 +11,7 @@ import android.os.Build;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 
 import junit.framework.Assert;
 
@@ -178,8 +179,7 @@ public class ContextMenuTest extends ChromeShellTestBase {
         assertNotNull("Context menu was not properly created", menu);
         assertFalse("Context menu did not have window focus", getActivity().hasWindowFocus());
 
-        KeyUtils.pressBack(getInstrumentation());
-
+        KeyUtils.singleKeyEventView(getInstrumentation(), tab.getView(), KeyEvent.KEYCODE_BACK);
         Assert.assertTrue("Activity did not regain focus.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
