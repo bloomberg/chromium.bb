@@ -690,6 +690,7 @@ class ChromeTests:
     "message_center": TestMessageCenter,
     "message_center_unittests" : TestMessageCenter,
     "mojo_common": TestMojoCommon,
+    "mojo_system": TestMojoSystem,
     "mojo_public_system": TestMojoPublicSystem,
     "mojo_public_utility": TestMojoPublicUtility,
     "mojo_public_bindings": TestMojoPublicBindings,
