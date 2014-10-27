@@ -270,9 +270,9 @@ void AppListViewTestContext::RunDisplayTest() {
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
 
-  EXPECT_TRUE(main_view->contents_view()->IsNamedPageActive(
-      test_type_ == EXPERIMENTAL ? ContentsView::NAMED_PAGE_START
-                                 : ContentsView::NAMED_PAGE_APPS));
+  EXPECT_TRUE(main_view->contents_view()->IsStateActive(
+      test_type_ == EXPERIMENTAL ? AppListModel::STATE_START
+                                 : AppListModel::STATE_APPS));
 
   Close();
 }
@@ -340,13 +340,13 @@ void AppListViewTestContext::RunStartPageTest() {
 
     // Show the start page view.
     ContentsView* contents_view = main_view->contents_view();
-    ShowContentsViewPageAndVerify(contents_view->GetPageIndexForNamedPage(
-        ContentsView::NAMED_PAGE_START));
+    ShowContentsViewPageAndVerify(
+        contents_view->GetPageIndexForState(AppListModel::STATE_START));
     EXPECT_FALSE(main_view->search_box_view()->visible());
 
     gfx::Size view_size(view_->GetPreferredSize());
     ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
+        contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
     EXPECT_TRUE(main_view->search_box_view()->visible());
 
     // Hiding and showing the search box should not affect the app list's
@@ -478,7 +478,7 @@ void AppListViewTestContext::RunSearchResultsTest() {
   AppListMainView* main_view = view_->app_list_main_view();
   ContentsView* contents_view = main_view->contents_view();
   ShowContentsViewPageAndVerify(
-      contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
+      contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
   EXPECT_TRUE(main_view->search_box_view()->visible());
 
   // Show the search results.
@@ -490,13 +490,12 @@ void AppListViewTestContext::RunSearchResultsTest() {
   const gfx::Rect default_contents_bounds =
       contents_view->GetDefaultContentsBounds();
   if (test_type_ == EXPERIMENTAL) {
-    EXPECT_TRUE(
-        contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
+    EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_START));
     EXPECT_EQ(default_contents_bounds,
               contents_view->start_page_view()->bounds());
   } else {
-    EXPECT_TRUE(contents_view->IsNamedPageActive(
-        ContentsView::NAMED_PAGE_SEARCH_RESULTS));
+    EXPECT_TRUE(
+        contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
     EXPECT_EQ(default_contents_bounds,
               contents_view->search_results_view()->bounds());
   }
@@ -507,14 +506,14 @@ void AppListViewTestContext::RunSearchResultsTest() {
   EXPECT_FALSE(contents_view->IsShowingSearchResults());
 
   // Check that we return to the page that we were on before the search.
-  EXPECT_TRUE(contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_APPS));
+  EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_APPS));
   EXPECT_EQ(default_contents_bounds,
             contents_view->apps_container_view()->bounds());
   EXPECT_TRUE(main_view->search_box_view()->visible());
 
   if (test_type_ == EXPERIMENTAL) {
-    ShowContentsViewPageAndVerify(contents_view->GetPageIndexForNamedPage(
-        ContentsView::NAMED_PAGE_START));
+    ShowContentsViewPageAndVerify(
+        contents_view->GetPageIndexForState(AppListModel::STATE_START));
 
     // Check that typing into the dummy search box triggers the search page.
     base::string16 search_text = base::UTF8ToUTF16("test");
@@ -529,14 +528,13 @@ void AppListViewTestContext::RunSearchResultsTest() {
     EXPECT_FALSE(dummy_search_box->IsDrawn());
     EXPECT_TRUE(main_view->search_box_view()->visible());
     EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->text());
-    EXPECT_TRUE(
-        contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
+    EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_START));
     EXPECT_EQ(default_contents_bounds,
               contents_view->start_page_view()->bounds());
 
     // Check that typing into the real search box triggers the search page.
     ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
+        contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
     EXPECT_EQ(default_contents_bounds,
               contents_view->apps_container_view()->bounds());
 
@@ -554,9 +552,9 @@ void AppListViewTestContext::RunSearchResultsTest() {
 
     // Check that the dummy search box is clear when reshowing the start page.
     ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
-    ShowContentsViewPageAndVerify(contents_view->GetPageIndexForNamedPage(
-        ContentsView::NAMED_PAGE_START));
+        contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
+    ShowContentsViewPageAndVerify(
+        contents_view->GetPageIndexForState(AppListModel::STATE_START));
     EXPECT_TRUE(dummy_search_box->IsDrawn());
     EXPECT_TRUE(dummy_search_box->search_box()->text().empty());
   }

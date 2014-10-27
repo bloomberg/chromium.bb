@@ -114,7 +114,7 @@ void AppListMainView::AddContentsViews() {
     contents_switcher_view_ = new ContentsSwitcherView(contents_view_);
     contents_view_->SetContentsSwitcherView(contents_switcher_view_);
   }
-  contents_view_->InitNamedPages(model_, delegate_);
+  contents_view_->Init(model_, delegate_);
   AddChildView(contents_view_);
   if (contents_switcher_view_)
     AddChildView(contents_switcher_view_);
@@ -147,8 +147,8 @@ void AppListMainView::ShowAppListWhenReady() {
 
 void AppListMainView::ResetForShow() {
   if (switches::IsExperimentalAppListEnabled()) {
-    contents_view_->SetActivePage(contents_view_->GetPageIndexForNamedPage(
-        ContentsView::NAMED_PAGE_START));
+    contents_view_->SetActivePage(
+        contents_view_->GetPageIndexForState(AppListModel::STATE_START));
   }
   contents_view_->apps_container_view()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
@@ -180,9 +180,8 @@ void AppListMainView::ModelChanged() {
 }
 
 void AppListMainView::UpdateSearchBoxVisibility() {
-  bool visible =
-      !contents_view_->IsNamedPageActive(ContentsView::NAMED_PAGE_START) ||
-      contents_view_->IsShowingSearchResults();
+  bool visible = !contents_view_->IsStateActive(AppListModel::STATE_START) ||
+                 contents_view_->IsShowingSearchResults();
   search_box_view_->SetVisible(visible);
   if (visible && GetWidget() && GetWidget()->IsVisible())
     search_box_view_->search_box()->RequestFocus();

@@ -45,8 +45,8 @@ ContentsView::~ContentsView() {
     pagination_model_.RemoveObserver(contents_switcher_view_);
 }
 
-void ContentsView::InitNamedPages(AppListModel* model,
-                                  AppListViewDelegate* view_delegate) {
+void ContentsView::Init(AppListModel* model,
+                        AppListViewDelegate* view_delegate) {
   DCHECK(model);
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
@@ -61,22 +61,23 @@ void ContentsView::InitNamedPages(AppListModel* model,
 
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
     AddLauncherPage(
-        start_page_view_, IDR_APP_LIST_SEARCH_ICON, NAMED_PAGE_START);
+        start_page_view_, IDR_APP_LIST_SEARCH_ICON, AppListModel::STATE_START);
   } else {
     search_results_view_ =
         new SearchResultListView(app_list_main_view_, view_delegate);
-    AddLauncherPage(search_results_view_, 0, NAMED_PAGE_SEARCH_RESULTS);
+    AddLauncherPage(
+        search_results_view_, 0, AppListModel::STATE_SEARCH_RESULTS);
     search_results_view_->SetResults(model->results());
   }
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
 
   AddLauncherPage(
-      apps_container_view_, IDR_APP_LIST_APPS_ICON, NAMED_PAGE_APPS);
+      apps_container_view_, IDR_APP_LIST_APPS_ICON, AppListModel::STATE_APPS);
 
   int initial_page_index = app_list::switches::IsExperimentalAppListEnabled()
-                               ? GetPageIndexForNamedPage(NAMED_PAGE_START)
-                               : GetPageIndexForNamedPage(NAMED_PAGE_APPS);
+                               ? GetPageIndexForState(AppListModel::STATE_START)
+                               : GetPageIndexForState(AppListModel::STATE_APPS);
   DCHECK_GE(initial_page_index, 0);
 
   page_before_search_ = initial_page_index;
@@ -119,17 +120,17 @@ int ContentsView::GetActivePageIndex() const {
   return pagination_model_.SelectedTargetPage();
 }
 
-bool ContentsView::IsNamedPageActive(NamedPage named_page) const {
+bool ContentsView::IsStateActive(AppListModel::State state) const {
   int active_page_index = GetActivePageIndex();
   return active_page_index >= 0 &&
-         GetPageIndexForNamedPage(named_page) == active_page_index;
+         GetPageIndexForState(state) == active_page_index;
 }
 
-int ContentsView::GetPageIndexForNamedPage(NamedPage named_page) const {
-  // Find the index of the view corresponding to the given named_page.
-  std::map<NamedPage, int>::const_iterator it =
-      named_page_to_view_.find(named_page);
-  if (it == named_page_to_view_.end())
+int ContentsView::GetPageIndexForState(AppListModel::State state) const {
+  // Find the index of the view corresponding to the given state.
+  std::map<AppListModel::State, int>::const_iterator it =
+      state_to_view_.find(state);
+  if (it == state_to_view_.end())
     return -1;
 
   return it->second;
@@ -150,14 +151,14 @@ void ContentsView::SetActivePageInternal(int page_index,
 
 void ContentsView::ActivePageChanged(bool show_search_results) {
   // TODO(xiyuan): Highlight default match instead of the first.
-  if (IsNamedPageActive(NAMED_PAGE_SEARCH_RESULTS) &&
+  if (IsStateActive(AppListModel::STATE_SEARCH_RESULTS) &&
       search_results_view_->visible()) {
     search_results_view_->SetSelectedIndex(0);
   }
   if (search_results_view_)
     search_results_view_->UpdateAutoLaunchState();
 
-  if (IsNamedPageActive(NAMED_PAGE_START)) {
+  if (IsStateActive(AppListModel::STATE_START)) {
     if (show_search_results)
       start_page_view_->ShowSearchResults();
     else
@@ -169,10 +170,10 @@ void ContentsView::ActivePageChanged(bool show_search_results) {
 }
 
 void ContentsView::ShowSearchResults(bool show) {
-  int search_page = GetPageIndexForNamedPage(
-      app_list::switches::IsExperimentalAppListEnabled()
-          ? NAMED_PAGE_START
-          : NAMED_PAGE_SEARCH_RESULTS);
+  int search_page =
+      GetPageIndexForState(app_list::switches::IsExperimentalAppListEnabled()
+                               ? AppListModel::STATE_START
+                               : AppListModel::STATE_SEARCH_RESULTS);
   DCHECK_GE(search_page, 0);
 
   SetActivePageInternal(show ? search_page : page_before_search_, show);
@@ -180,9 +181,9 @@ void ContentsView::ShowSearchResults(bool show) {
 
 bool ContentsView::IsShowingSearchResults() const {
   return app_list::switches::IsExperimentalAppListEnabled()
-             ? IsNamedPageActive(NAMED_PAGE_START) &&
+             ? IsStateActive(AppListModel::STATE_START) &&
                    start_page_view_->IsShowingSearchResults()
-             : IsNamedPageActive(NAMED_PAGE_SEARCH_RESULTS);
+             : IsStateActive(AppListModel::STATE_SEARCH_RESULTS);
 }
 
 gfx::Rect ContentsView::GetOffscreenPageBounds(int page_index) const {
@@ -191,8 +192,8 @@ gfx::Rect ContentsView::GetOffscreenPageBounds(int page_index) const {
   // are below.
   int page_height = bounds.height();
   bool origin_above =
-      GetPageIndexForNamedPage(NAMED_PAGE_START) == page_index ||
-      GetPageIndexForNamedPage(NAMED_PAGE_SEARCH_RESULTS) == page_index;
+      GetPageIndexForState(AppListModel::STATE_START) == page_index ||
+      GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS) == page_index;
   bounds.set_y(origin_above ? -page_height : page_height);
   return bounds;
 }
@@ -258,9 +259,9 @@ int ContentsView::AddLauncherPage(views::View* view, int resource_id) {
 
 int ContentsView::AddLauncherPage(views::View* view,
                                   int resource_id,
-                                  NamedPage named_page) {
+                                  AppListModel::State state) {
   int page_index = AddLauncherPage(view, resource_id);
-  named_page_to_view_.insert(std::pair<NamedPage, int>(named_page, page_index));
+  state_to_view_.insert(std::pair<AppListModel::State, int>(state, page_index));
   return page_index;
 }
 
