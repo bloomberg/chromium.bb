@@ -39,9 +39,7 @@ class QuicInMemoryCacheTest : public ::testing::Test {
     headers->ReplaceOrAppendHeader("host", host);
   }
 
-  virtual void SetUp() override {
-    QuicInMemoryCachePeer::ResetForTests();
-  }
+  void SetUp() override { QuicInMemoryCachePeer::ResetForTests(); }
 
   // This method was copied from end_to_end_test.cc in this directory.
   void AddToCache(const StringPiece& method,

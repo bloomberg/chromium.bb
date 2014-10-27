@@ -29,24 +29,14 @@ namespace {
 class CachingBalsaVisitor : public NoOpBalsaVisitor {
  public:
   CachingBalsaVisitor() : done_framing_(false) {}
-  virtual void ProcessBodyData(const char* input, size_t size) override {
+  void ProcessBodyData(const char* input, size_t size) override {
     AppendToBody(input, size);
   }
-  virtual void MessageDone() override {
-    done_framing_ = true;
-  }
-  virtual void HandleHeaderError(BalsaFrame* framer) override {
-    UnhandledError();
-  }
-  virtual void HandleHeaderWarning(BalsaFrame* framer) override {
-    UnhandledError();
-  }
-  virtual void HandleChunkingError(BalsaFrame* framer) override {
-    UnhandledError();
-  }
-  virtual void HandleBodyError(BalsaFrame* framer) override {
-    UnhandledError();
-  }
+  void MessageDone() override { done_framing_ = true; }
+  void HandleHeaderError(BalsaFrame* framer) override { UnhandledError(); }
+  void HandleHeaderWarning(BalsaFrame* framer) override { UnhandledError(); }
+  void HandleChunkingError(BalsaFrame* framer) override { UnhandledError(); }
+  void HandleBodyError(BalsaFrame* framer) override { UnhandledError(); }
   void UnhandledError() {
     LOG(DFATAL) << "Unhandled error framing HTTP.";
   }

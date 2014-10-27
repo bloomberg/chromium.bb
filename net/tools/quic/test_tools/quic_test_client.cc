@@ -41,15 +41,14 @@ namespace {
 class RecordingProofVerifier : public ProofVerifier {
  public:
   // ProofVerifier interface.
-  virtual QuicAsyncStatus VerifyProof(
-      const string& hostname,
-      const string& server_config,
-      const vector<string>& certs,
-      const string& signature,
-      const ProofVerifyContext* context,
-      string* error_details,
-      scoped_ptr<ProofVerifyDetails>* details,
-      ProofVerifierCallback* callback) override {
+  QuicAsyncStatus VerifyProof(const string& hostname,
+                              const string& server_config,
+                              const vector<string>& certs,
+                              const string& signature,
+                              const ProofVerifyContext* context,
+                              string* error_details,
+                              scoped_ptr<ProofVerifyDetails>* details,
+                              ProofVerifierCallback* callback) override {
     common_name_.clear();
     if (certs.empty()) {
       return QUIC_FAILURE;

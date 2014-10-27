@@ -1019,21 +1019,21 @@ class EpollAlarm : public EpollAlarmCallbackInterface {
  public:
   EpollAlarm();
 
-  virtual ~EpollAlarm();
+  ~EpollAlarm() override;
 
   // Marks the alarm as unregistered and returns 0.  The return value may be
   // safely ignored by subclasses.
-  virtual int64 OnAlarm() override;
+  int64 OnAlarm() override;
 
   // Marks the alarm as registered, and stores the token.
-  virtual void OnRegistration(const EpollServer::AlarmRegToken& token,
-                              EpollServer* eps) override;
+  void OnRegistration(const EpollServer::AlarmRegToken& token,
+                      EpollServer* eps) override;
 
   // Marks the alarm as unregistered.
-  virtual void OnUnregistration() override;
+  void OnUnregistration() override;
 
   // Marks the alarm as unregistered.
-  virtual void OnShutdown(EpollServer* eps) override;
+  void OnShutdown(EpollServer* eps) override;
 
   // If the alarm was registered, unregister it.
   void UnregisterIfRegistered();

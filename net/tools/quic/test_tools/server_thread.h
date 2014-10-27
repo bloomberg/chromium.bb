@@ -21,14 +21,14 @@ class ServerThread : public base::SimpleThread {
                IPEndPoint address,
                bool strike_register_no_startup_period);
 
-  virtual ~ServerThread();
+  ~ServerThread() override;
 
   // Prepares the server, but does not start accepting connections. Useful for
   // injecting mocks.
   void Initialize();
 
   // Runs the event loop. Will initialize if necessary.
-  virtual void Run() override;
+  void Run() override;
 
   // Waits for the handshake to be confirmed for the first session created.
   void WaitForCryptoHandshakeConfirmed();

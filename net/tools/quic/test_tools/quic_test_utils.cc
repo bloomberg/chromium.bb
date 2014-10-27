@@ -23,10 +23,9 @@ class NiceMockPacketWriterFactory
     : public QuicConnection::PacketWriterFactory {
  public:
   NiceMockPacketWriterFactory() {}
-  virtual ~NiceMockPacketWriterFactory() {}
+  ~NiceMockPacketWriterFactory() override {}
 
-  virtual QuicPacketWriter* Create(
-      QuicConnection* /*connection*/) const override {
+  QuicPacketWriter* Create(QuicConnection* /*connection*/) const override {
     return new testing::NiceMock<MockPacketWriter>();
   }
 

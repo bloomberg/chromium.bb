@@ -158,11 +158,12 @@ class ServerDelegate : public PacketDroppingTestWriter::Delegate {
                  QuicDispatcher* dispatcher)
       : writer_factory_(writer_factory),
         dispatcher_(dispatcher) {}
-  virtual ~ServerDelegate() {}
-  virtual void OnPacketSent(WriteResult result) override {
+  ~ServerDelegate() override {}
+  void OnPacketSent(WriteResult result) override {
     writer_factory_->OnPacketSent(result);
   }
-  virtual void OnCanWrite() override { dispatcher_->OnCanWrite(); }
+  void OnCanWrite() override { dispatcher_->OnCanWrite(); }
+
  private:
   TestWriterFactory* writer_factory_;
   QuicDispatcher* dispatcher_;
@@ -171,9 +172,9 @@ class ServerDelegate : public PacketDroppingTestWriter::Delegate {
 class ClientDelegate : public PacketDroppingTestWriter::Delegate {
  public:
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
-  virtual ~ClientDelegate() {}
-  virtual void OnPacketSent(WriteResult result) override {}
-  virtual void OnCanWrite() override {
+  ~ClientDelegate() override {}
+  void OnPacketSent(WriteResult result) override {}
+  void OnCanWrite() override {
     EpollEvent event(EPOLLOUT, false);
     client_->OnEvent(client_->fd(), &event);
   }
@@ -320,16 +321,14 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     return client_->client()->connected();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // The ownership of these gets transferred to the QuicPacketWriterWrapper
     // and TestWriterFactory when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
   }
 
-  virtual void TearDown() override {
-    StopServer();
-  }
+  void TearDown() override { StopServer(); }
 
   void StartServer() {
     server_thread_.reset(
@@ -1102,19 +1101,16 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
     self_address_ = IPEndPoint(ip, 0);
   }
 
-  virtual WriteResult WritePacket(
-      const char* buffer,
-      size_t buf_len,
-      const IPAddressNumber& real_self_address,
-      const IPEndPoint& peer_address) override {
+  WriteResult WritePacket(const char* buffer,
+                          size_t buf_len,
+                          const IPAddressNumber& real_self_address,
+                          const IPEndPoint& peer_address) override {
     // Use wrong address!
     return QuicPacketWriterWrapper::WritePacket(
         buffer, buf_len, self_address_.address(), peer_address);
   }
 
-  virtual bool IsWriteBlockedDataBuffered() const override {
-    return false;
-  }
+  bool IsWriteBlockedDataBuffered() const override { return false; }
 
   IPEndPoint self_address_;
 };

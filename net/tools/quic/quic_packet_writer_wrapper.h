@@ -19,18 +19,17 @@ class QuicPacketWriterWrapper : public net::QuicPacketWriter {
  public:
   QuicPacketWriterWrapper();
   explicit QuicPacketWriterWrapper(QuicPacketWriter* writer);
-  virtual ~QuicPacketWriterWrapper();
+  ~QuicPacketWriterWrapper() override;
 
   // Default implementation of the QuicPacketWriter interface. Passes everything
   // to |writer_|.
-  virtual WriteResult WritePacket(
-      const char* buffer,
-      size_t buf_len,
-      const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address) override;
-  virtual bool IsWriteBlockedDataBuffered() const override;
-  virtual bool IsWriteBlocked() const override;
-  virtual void SetWritable() override;
+  WriteResult WritePacket(const char* buffer,
+                          size_t buf_len,
+                          const IPAddressNumber& self_address,
+                          const IPEndPoint& peer_address) override;
+  bool IsWriteBlockedDataBuffered() const override;
+  bool IsWriteBlocked() const override;
+  void SetWritable() override;
 
   // Takes ownership of |writer|.
   void set_writer(QuicPacketWriter* writer);

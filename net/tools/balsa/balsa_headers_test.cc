@@ -19,7 +19,7 @@ using ::base::StringPiece;
 
 class BalsaBufferTest : public ::testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     buffer_.reset(new BalsaBuffer);
     anotherBuffer_.reset(new BalsaBuffer);
   }
@@ -33,9 +33,7 @@ namespace {
 
 class BalsaHeadersTest: public ::testing::Test {
  public:
-  virtual void SetUp() override {
-    headers_.reset(new BalsaHeaders);
-  }
+  void SetUp() override { headers_.reset(new BalsaHeaders); }
 
  protected:
   scoped_ptr<BalsaHeaders> headers_;

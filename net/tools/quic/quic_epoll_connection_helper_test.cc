@@ -19,7 +19,7 @@ class TestDelegate : public QuicAlarm::Delegate {
  public:
   TestDelegate() : fired_(false) {}
 
-  virtual QuicTime OnAlarm() override {
+  QuicTime OnAlarm() override {
     fired_ = true;
     return QuicTime::Zero();
   }

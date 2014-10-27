@@ -45,9 +45,9 @@ class MockableQuicClient : public QuicClient {
                      const QuicVersionVector& supported_versions,
                      EpollServer* epoll_server);
 
-  virtual ~MockableQuicClient() override;
-  virtual QuicPacketWriter* CreateQuicPacketWriter() override;
-  virtual QuicConnectionId GenerateConnectionId() override;
+  ~MockableQuicClient() override;
+  QuicPacketWriter* CreateQuicPacketWriter() override;
+  QuicConnectionId GenerateConnectionId() override;
   void UseWriter(QuicPacketWriterWrapper* writer);
   void UseConnectionId(QuicConnectionId connection_id);
 
@@ -75,7 +75,7 @@ class QuicTestClient : public SimpleClient,
                  const QuicConfig& config,
                  const QuicVersionVector& supported_versions);
 
-  virtual ~QuicTestClient();
+  ~QuicTestClient() override;
 
   // ExpectCertificates controls whether the server is expected to provide
   // certificates. The certificates, if any, are not verified, but the common
@@ -91,45 +91,43 @@ class QuicTestClient : public SimpleClient,
   // From SimpleClient
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.  Returns 0 if the request failed and no bytes were written.
-  virtual ssize_t SendRequest(const string& uri) override;
-  virtual ssize_t SendMessage(const HTTPMessage& message) override;
-  virtual string SendCustomSynchronousRequest(
-      const HTTPMessage& message) override;
-  virtual string SendSynchronousRequest(const string& uri) override;
-  virtual void Connect() override;
-  virtual void ResetConnection() override;
-  virtual void Disconnect() override;
-  virtual IPEndPoint LocalSocketAddress() const override;
-  virtual void ClearPerRequestState() override;
-  virtual void WaitForResponseForMs(int timeout_ms) override;
-  virtual void WaitForInitialResponseForMs(int timeout_ms) override;
-  virtual ssize_t Send(const void *buffer, size_t size) override;
-  virtual bool response_complete() const override;
-  virtual bool response_headers_complete() const override;
-  virtual const BalsaHeaders* response_headers() const override;
-  virtual int64 response_size() const override;
-  virtual int response_header_size() const override;
-  virtual int64 response_body_size() const override;
-  virtual size_t bytes_read() const override;
-  virtual size_t bytes_written() const override;
-  virtual bool buffer_body() const override;
-  virtual void set_buffer_body(bool buffer_body) override;
-  virtual bool ServerInLameDuckMode() const override;
-  virtual const string& response_body() override;
-  virtual bool connected() const override;
+  ssize_t SendRequest(const string& uri) override;
+  ssize_t SendMessage(const HTTPMessage& message) override;
+  string SendCustomSynchronousRequest(const HTTPMessage& message) override;
+  string SendSynchronousRequest(const string& uri) override;
+  void Connect() override;
+  void ResetConnection() override;
+  void Disconnect() override;
+  IPEndPoint LocalSocketAddress() const override;
+  void ClearPerRequestState() override;
+  void WaitForResponseForMs(int timeout_ms) override;
+  void WaitForInitialResponseForMs(int timeout_ms) override;
+  ssize_t Send(const void* buffer, size_t size) override;
+  bool response_complete() const override;
+  bool response_headers_complete() const override;
+  const BalsaHeaders* response_headers() const override;
+  int64 response_size() const override;
+  int response_header_size() const override;
+  int64 response_body_size() const override;
+  size_t bytes_read() const override;
+  size_t bytes_written() const override;
+  bool buffer_body() const override;
+  void set_buffer_body(bool buffer_body) override;
+  bool ServerInLameDuckMode() const override;
+  const string& response_body() override;
+  bool connected() const override;
   // These functions are all unimplemented functions from SimpleClient, and log
   // DFATAL if called by users of SimpleClient.
-  virtual ssize_t SendAndWaitForResponse(const void *buffer,
-                                         size_t size) override;
-  virtual void Bind(IPEndPoint* local_address) override;
-  virtual string SerializeMessage(const HTTPMessage& message) override;
-  virtual IPAddressNumber bind_to_address() const override;
-  virtual void set_bind_to_address(IPAddressNumber address) override;
-  virtual const IPEndPoint& address() const override;
-  virtual size_t requests_sent() const override;
+  ssize_t SendAndWaitForResponse(const void* buffer, size_t size) override;
+  void Bind(IPEndPoint* local_address) override;
+  string SerializeMessage(const HTTPMessage& message) override;
+  IPAddressNumber bind_to_address() const override;
+  void set_bind_to_address(IPAddressNumber address) override;
+  const IPEndPoint& address() const override;
+  size_t requests_sent() const override;
 
   // From QuicDataStream::Visitor
-  virtual void OnClose(QuicDataStream* stream) override;
+  void OnClose(QuicDataStream* stream) override;
 
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.

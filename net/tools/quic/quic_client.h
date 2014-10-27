@@ -61,7 +61,7 @@ class QuicClient : public EpollCallbackInterface,
              const QuicConfig& config,
              EpollServer* epoll_server);
 
-  virtual ~QuicClient();
+  ~QuicClient() override;
 
   // Initializes the client to create a connection. Should be called exactly
   // once before calling StartConnect or Connect. Returns true if the
@@ -105,19 +105,17 @@ class QuicClient : public EpollCallbackInterface,
   bool WaitForEvents();
 
   // From EpollCallbackInterface
-  virtual void OnRegistration(EpollServer* eps,
-                              int fd,
-                              int event_mask) override {}
-  virtual void OnModification(int fd, int event_mask) override {}
-  virtual void OnEvent(int fd, EpollEvent* event) override;
+  void OnRegistration(EpollServer* eps, int fd, int event_mask) override {}
+  void OnModification(int fd, int event_mask) override {}
+  void OnEvent(int fd, EpollEvent* event) override;
   // |fd_| can be unregistered without the client being disconnected. This
   // happens in b3m QuicProber where we unregister |fd_| to feed in events to
   // the client from the SelectServer.
-  virtual void OnUnregistration(int fd, bool replaced) override {}
-  virtual void OnShutdown(EpollServer* eps, int fd) override {}
+  void OnUnregistration(int fd, bool replaced) override {}
+  void OnShutdown(EpollServer* eps, int fd) override {}
 
   // QuicDataStream::Visitor
-  virtual void OnClose(QuicDataStream* stream) override;
+  void OnClose(QuicDataStream* stream) override;
 
   QuicClientSession* session() { return session_.get(); }
 
@@ -192,9 +190,9 @@ class QuicClient : public EpollCallbackInterface,
   class DummyPacketWriterFactory : public QuicConnection::PacketWriterFactory {
    public:
     DummyPacketWriterFactory(QuicPacketWriter* writer);
-    virtual ~DummyPacketWriterFactory();
+    ~DummyPacketWriterFactory() override;
 
-    virtual QuicPacketWriter* Create(QuicConnection* connection) const override;
+    QuicPacketWriter* Create(QuicConnection* connection) const override;
 
    private:
     QuicPacketWriter* writer_;

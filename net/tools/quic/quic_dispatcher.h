@@ -64,11 +64,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // Creates ordinary QuicPerConnectionPacketWriter instances.
   class DefaultPacketWriterFactory : public PacketWriterFactory {
    public:
-    virtual ~DefaultPacketWriterFactory() {}
+    ~DefaultPacketWriterFactory() override {}
 
-    virtual QuicPacketWriter* Create(
-        QuicPacketWriter* writer,
-        QuicConnection* connection) override;
+    QuicPacketWriter* Create(QuicPacketWriter* writer,
+                             QuicConnection* connection) override;
   };
 
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
@@ -84,15 +83,15 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                  PacketWriterFactory* packet_writer_factory,
                  EpollServer* epoll_server);
 
-  virtual ~QuicDispatcher();
+  ~QuicDispatcher() override;
 
   virtual void Initialize(int fd);
 
   // Process the incoming packet by creating a new session, passing it to
   // an existing session, or passing it to the TimeWaitListManager.
-  virtual void ProcessPacket(const IPEndPoint& server_address,
-                             const IPEndPoint& client_address,
-                             const QuicEncryptedPacket& packet) override;
+  void ProcessPacket(const IPEndPoint& server_address,
+                     const IPEndPoint& client_address,
+                     const QuicEncryptedPacket& packet) override;
 
   // Called when the socket becomes writable to allow queued writes to happen.
   virtual void OnCanWrite();
@@ -105,12 +104,11 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   // QuicServerSessionVisitor interface implementation:
   // Ensure that the closed connection is cleaned up asynchronously.
-  virtual void OnConnectionClosed(QuicConnectionId connection_id,
-                                  QuicErrorCode error) override;
+  void OnConnectionClosed(QuicConnectionId connection_id,
+                          QuicErrorCode error) override;
 
   // Queues the blocked writer for later resumption.
-  virtual void OnWriteBlocked(
-      QuicBlockedWriterInterface* blocked_writer) override;
+  void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) override;
 
   typedef base::hash_map<QuicConnectionId, QuicSession*> SessionMap;
 
@@ -191,9 +189,9 @@ class QuicDispatcher : public QuicServerSessionVisitor,
     public QuicConnection::PacketWriterFactory {
    public:
     PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
-    virtual ~PacketWriterFactoryAdapter ();
+    ~PacketWriterFactoryAdapter() override;
 
-    virtual QuicPacketWriter* Create(QuicConnection* connection) const override;
+    QuicPacketWriter* Create(QuicConnection* connection) const override;
 
    private:
     QuicDispatcher* dispatcher_;

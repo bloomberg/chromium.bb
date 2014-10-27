@@ -19,20 +19,20 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
   // Does not take ownership of |shared_writer| or |connection|.
   QuicPerConnectionPacketWriter(QuicPacketWriter* shared_writer,
                                 QuicConnection* connection);
-  virtual ~QuicPerConnectionPacketWriter();
+  ~QuicPerConnectionPacketWriter() override;
 
   QuicPacketWriter* shared_writer() const { return shared_writer_; }
   QuicConnection* connection() const { return connection_; }
 
   // Default implementation of the QuicPacketWriter interface: Passes everything
   // to |shared_writer_|.
-  virtual WriteResult WritePacket(const char* buffer,
-                                  size_t buf_len,
-                                  const IPAddressNumber& self_address,
-                                  const IPEndPoint& peer_address) override;
-  virtual bool IsWriteBlockedDataBuffered() const override;
-  virtual bool IsWriteBlocked() const override;
-  virtual void SetWritable() override;
+  WriteResult WritePacket(const char* buffer,
+                          size_t buf_len,
+                          const IPAddressNumber& self_address,
+                          const IPEndPoint& peer_address) override;
+  bool IsWriteBlockedDataBuffered() const override;
+  bool IsWriteBlocked() const override;
+  void SetWritable() override;
 
  private:
   QuicPacketWriter* shared_writer_;  // Not owned.

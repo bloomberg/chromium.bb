@@ -166,10 +166,10 @@ class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
 class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
  public:
   TestWriterFactory();
-  virtual ~TestWriterFactory();
+  ~TestWriterFactory() override;
 
-  virtual QuicPacketWriter* Create(QuicPacketWriter* writer,
-                                   QuicConnection* connection) override;
+  QuicPacketWriter* Create(QuicPacketWriter* writer,
+                           QuicConnection* connection) override;
 
   // Calls OnPacketSent on the last QuicConnection to write through one of the
   // packet writers created by this factory.
@@ -181,13 +181,12 @@ class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
     PerConnectionPacketWriter(TestWriterFactory* factory,
                               QuicPacketWriter* writer,
                               QuicConnection* connection);
-    virtual ~PerConnectionPacketWriter();
+    ~PerConnectionPacketWriter() override;
 
-    virtual WriteResult WritePacket(
-        const char* buffer,
-        size_t buf_len,
-        const IPAddressNumber& self_address,
-        const IPEndPoint& peer_address) override;
+    WriteResult WritePacket(const char* buffer,
+                            size_t buf_len,
+                            const IPAddressNumber& self_address,
+                            const IPEndPoint& peer_address) override;
 
    private:
     TestWriterFactory* factory_;

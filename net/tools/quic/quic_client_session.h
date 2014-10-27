@@ -26,20 +26,19 @@ namespace tools {
 class QuicClientSession : public QuicClientSessionBase {
  public:
   QuicClientSession(const QuicConfig& config, QuicConnection* connection);
-  virtual ~QuicClientSession();
+  ~QuicClientSession() override;
 
   // QuicClientSessionBase methods:
-  virtual void OnProofValid(
-      const QuicCryptoClientConfig::CachedState& cached) override;
-  virtual void OnProofVerifyDetailsAvailable(
+  void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
+  void OnProofVerifyDetailsAvailable(
       const ProofVerifyDetails& verify_details) override;
 
   void InitializeSession(const QuicServerId& server_id,
                          QuicCryptoClientConfig* config);
 
   // QuicSession methods:
-  virtual QuicSpdyClientStream* CreateOutgoingDataStream() override;
-  virtual QuicCryptoClientStream* GetCryptoStream() override;
+  QuicSpdyClientStream* CreateOutgoingDataStream() override;
+  QuicCryptoClientStream* GetCryptoStream() override;
 
   // Performs a crypto handshake with the server. Returns true if the crypto
   // handshake is started successfully.
@@ -52,7 +51,7 @@ class QuicClientSession : public QuicClientSessionBase {
 
  protected:
   // QuicSession methods:
-  virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) override;
+  QuicDataStream* CreateIncomingDataStream(QuicStreamId id) override;
 
  private:
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;

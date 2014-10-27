@@ -45,10 +45,9 @@ namespace test {
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
   FramerVisitorCapturingPublicReset() {}
-  virtual ~FramerVisitorCapturingPublicReset() override {}
+  ~FramerVisitorCapturingPublicReset() override {}
 
-  virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& public_reset) override {
+  void OnPublicResetPacket(const QuicPublicResetPacket& public_reset) override {
     public_reset_packet_ = public_reset;
   }
 
