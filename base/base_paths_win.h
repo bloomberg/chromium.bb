@@ -25,7 +25,6 @@ enum {
   DIR_START_MENU,         // Usually "C:\Documents and Settings\<user>\
                           // Start Menu\Programs"
   DIR_APP_DATA,           // Application Data directory under the user profile.
-  DIR_LOCAL_APP_DATA_LOW, // Local AppData directory for low integrity level.
   DIR_LOCAL_APP_DATA,     // "Local Settings\Application Data" directory under
                           // the user profile.
   DIR_COMMON_APP_DATA,    // W2K, XP, W2K3: "C:\Documents and Settings\

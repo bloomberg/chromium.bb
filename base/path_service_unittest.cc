@@ -98,18 +98,8 @@ TEST_F(PathServiceTest, Get) {
 #if defined(OS_WIN)
   for (int key = base::PATH_WIN_START + 1; key < base::PATH_WIN_END; ++key) {
     bool valid = true;
-    switch(key) {
-      case base::DIR_LOCAL_APP_DATA_LOW:
-        // DIR_LOCAL_APP_DATA_LOW is not supported prior Vista and is expected
-        // to fail.
-        valid = base::win::GetVersion() >= base::win::VERSION_VISTA;
-        break;
-      case base::DIR_APP_SHORTCUTS:
-        // DIR_APP_SHORTCUTS is not supported prior Windows 8 and is expected to
-        // fail.
-        valid = base::win::GetVersion() >= base::win::VERSION_WIN8;
-        break;
-    }
+    if (key == base::DIR_APP_SHORTCUTS)
+      valid = base::win::GetVersion() >= base::win::VERSION_WIN8;
 
     if (valid)
       EXPECT_TRUE(ReturnsValidPath(key)) << key;

@@ -95,16 +95,6 @@ bool PathProviderWin(int key, FilePath* result) {
         return false;
       cur = FilePath(system_buffer);
       break;
-    case base::DIR_LOCAL_APP_DATA_LOW:
-      if (win::GetVersion() < win::VERSION_VISTA)
-        return false;
-
-      // TODO(nsylvain): We should use SHGetKnownFolderPath instead. Bug 1281128
-      if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT,
-                                 system_buffer)))
-        return false;
-      cur = FilePath(system_buffer).DirName().AppendASCII("LocalLow");
-      break;
     case base::DIR_LOCAL_APP_DATA:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL,
                                  SHGFP_TYPE_CURRENT, system_buffer)))
