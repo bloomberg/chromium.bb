@@ -8,6 +8,7 @@
 #include "platform/TraceLocation.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
+#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -60,7 +61,7 @@ Scheduler::~Scheduler()
 void Scheduler::postIdleTask(const TraceLocation& location, const IdleTask& idleTask)
 {
     if (m_webScheduler)
-        m_webScheduler->postIdleTask(location.toWebTraceLocation(), new IdleTaskRunner(idleTask));
+        m_webScheduler->postIdleTask(WebTraceLocation(location), new IdleTaskRunner(idleTask));
 }
 
 bool Scheduler::shouldYieldForHighPriorityWork() const

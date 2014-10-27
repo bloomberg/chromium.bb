@@ -5,8 +5,6 @@
 #ifndef TraceLocation_h
 #define TraceLocation_h
 
-#include "public/platform/WebTraceLocation.h"
-
 // This is intentionally similar to base/location.h
 // that we could easily replace usage of TraceLocation
 // with base::Location after merging into Chromium.
@@ -29,11 +27,6 @@ public:
 
     const char* functionName() const { return m_functionName; }
     const char* fileName() const { return m_fileName; }
-
-    WebTraceLocation toWebTraceLocation() const
-    {
-        return WebTraceLocation(m_functionName, m_fileName);
-    }
 
 private:
     const char* m_functionName;
