@@ -183,8 +183,9 @@ class APIKeyCache {
   std::string GetSpdyProxyAuthValue() {
 #if defined(SPDY_PROXY_AUTH_VALUE)
     return SPDY_PROXY_AUTH_VALUE;
-#endif
+#else
     return std::string();
+#endif
   }
 
  private:
