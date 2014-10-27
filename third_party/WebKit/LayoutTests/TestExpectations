@@ -644,7 +644,7 @@ crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
 # ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
-crbug.com/342574 fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
+crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
 
 crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFailure ]
 
@@ -763,12 +763,11 @@ crbug.com/334269 [ Mac ] virtual/regionbasedmulticol/fast/multicol/newmulticol/l
 crbug.com/334269 [ Mac ] virtual/regionbasedmulticol/fast/multicol/newmulticol/table-cell.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/threaded/animations/additive-transform-animations.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/css/word-spacing-characters-complex-text.html [ Skip ]
-crbug.com/334269 [ Mac ] virtual/threaded/animations/webkit-perspective.html [ ImageOnlyFailure Crash ]
 crbug.com/334269 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure Crash ]
 
-crbug.com/334269 [ Mac ] fast/text/zero-width-characters-complex-script.html [ Failure Crash ]
-crbug.com/334269 [ Mac ] virtual/textblob/fast/text/zero-width-characters-complex-script.html [ Failure Crash ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Failure Crash ]
+crbug.com/334269 [ SnowLeopard Debug ] fast/text/zero-width-characters-complex-script.html [ Crash ]
+crbug.com/334269 [ SnowLeopard Debug ] virtual/textblob/fast/text/zero-width-characters-complex-script.html [ Crash ]
+crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Crash ]
 
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
