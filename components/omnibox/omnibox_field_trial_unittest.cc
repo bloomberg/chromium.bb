@@ -52,7 +52,7 @@ class OmniboxFieldTrialTest : public testing::Test {
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
   }
 
-  // EXPECTS that demotions[match_type] exists with value expected_value.
+  // EXPECT()s that demotions[match_type] exists with value expected_value.
   static void VerifyDemotion(
       const OmniboxFieldTrial::DemotionMultipliers& demotions,
       AutocompleteMatchType::Type match_type,
@@ -64,6 +64,17 @@ class OmniboxFieldTrialTest : public testing::Test {
       const std::string& rule_value,
       const std::string& rule,
       OmniboxEventProto::PageClassification page_classification);
+
+  // EXPECT()s that OmniboxFieldTrial::GetSuggestPollingStrategy returns
+  // |expected_from_last_keystroke| and |expected_delay_ms| for the given
+  // experiment params. If one the rule values is NULL, the corresponding
+  // variation parameter won't be set thus allowing to test the default
+  // behavior.
+  void VerifySuggestPollingStrategy(
+      const char* from_last_keystroke_rule_value,
+      const char* polling_delay_ms_rule_value,
+      bool expected_from_last_keystroke,
+      int expected_delay_ms);
 
  private:
   scoped_ptr<base::FieldTrialList> field_trial_list_;
@@ -90,6 +101,35 @@ void OmniboxFieldTrialTest::ExpectRuleValue(
   EXPECT_EQ(rule_value,
             OmniboxFieldTrial::GetValueForRuleInContext(
                 rule, page_classification));
+}
+
+void OmniboxFieldTrialTest::VerifySuggestPollingStrategy(
+    const char* from_last_keystroke_rule_value,
+    const char* polling_delay_ms_rule_value,
+    bool expected_from_last_keystroke,
+    int expected_delay_ms) {
+  ResetFieldTrialList();
+  std::map<std::string, std::string> params;
+  if (from_last_keystroke_rule_value != NULL) {
+    params[std::string(
+        OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule)] =
+        from_last_keystroke_rule_value;
+  }
+  if (polling_delay_ms_rule_value != NULL) {
+    params[std::string(
+        OmniboxFieldTrial::kSuggestPollingDelayMsRule)] =
+        polling_delay_ms_rule_value;
+  }
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  bool from_last_keystroke;
+  int delay_ms;
+  OmniboxFieldTrial::GetSuggestPollingStrategy(&from_last_keystroke, &delay_ms);
+  EXPECT_EQ(expected_from_last_keystroke, from_last_keystroke);
+  EXPECT_EQ(expected_delay_ms, delay_ms);
 }
 
 // Test if GetDisabledProviderTypes() properly parses various field trial
@@ -377,4 +417,44 @@ TEST_F(OmniboxFieldTrialTest, HalfLifeTimeDecay) {
   EXPECT_EQ(0.25, buckets.HalfLifeTimeDecay(base::TimeDelta::FromDays(14)));
   EXPECT_EQ(1.0, buckets.HalfLifeTimeDecay(base::TimeDelta::FromDays(0)));
   EXPECT_EQ(1.0, buckets.HalfLifeTimeDecay(base::TimeDelta::FromDays(-1)));
+}
+
+TEST_F(OmniboxFieldTrialTest, DisableResultsCaching) {
+  EXPECT_FALSE(OmniboxFieldTrial::DisableResultsCaching());
+
+  {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDisableResultsCachingRule)] = "true";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+    EXPECT_TRUE(OmniboxFieldTrial::DisableResultsCaching());
+  }
+}
+
+TEST_F(OmniboxFieldTrialTest, GetSuggestPollingStrategy) {
+  // Invalid params.
+  VerifySuggestPollingStrategy(
+      "", "", false,
+      OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs);
+  VerifySuggestPollingStrategy(
+      "foo", "-1", false,
+      OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs);
+  VerifySuggestPollingStrategy(
+      "TRUE", "xyz", false,
+      OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs);
+
+  // Default values.
+  VerifySuggestPollingStrategy(
+      NULL, NULL, false,
+      OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs);
+
+  // Valid params.
+  VerifySuggestPollingStrategy("true", "50", true, 50);
+  VerifySuggestPollingStrategy(NULL, "35", false, 35);
+  VerifySuggestPollingStrategy(
+      "true", NULL, true,
+      OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs);
 }

@@ -116,9 +116,6 @@ class SearchProvider::CompareScoredResults {
 
 // SearchProvider -------------------------------------------------------------
 
-// static
-int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
-
 SearchProvider::SearchProvider(
     AutocompleteProviderListener* listener,
     TemplateURLService* template_url_service,
@@ -579,12 +576,30 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   }
 }
 
+base::TimeDelta SearchProvider::GetSuggestQueryDelay() const {
+  bool from_last_keystroke;
+  int polling_delay_ms;
+  OmniboxFieldTrial::GetSuggestPollingStrategy(&from_last_keystroke,
+                                               &polling_delay_ms);
+
+  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(polling_delay_ms));
+  if (from_last_keystroke)
+    return delay;
+
+  base::TimeDelta time_since_last_suggest_request =
+      base::TimeTicks::Now() - time_suggest_request_sent_;
+  return std::max(base::TimeDelta(), delay - time_since_last_suggest_request);
+}
+
 void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   if (!IsQuerySuitableForSuggest()) {
     StopSuggest();
     ClearAllResults();
     return;
   }
+
+  if (OmniboxFieldTrial::DisableResultsCaching())
+    ClearAllResults();
 
   // For the minimal_changes case, if we finished the previous query and still
   // have its results, or are allowed to keep running it, just do that, rather
@@ -612,16 +627,16 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   if (!input_.want_asynchronous_matches())
     return;
 
-  // To avoid flooding the suggest server, don't send a query until at
-  // least 100 ms since the last query.
-  base::TimeTicks next_suggest_time(time_suggest_request_sent_ +
-      base::TimeDelta::FromMilliseconds(kMinimumTimeBetweenSuggestQueriesMs));
-  base::TimeTicks now(base::TimeTicks::Now());
-  if (now >= next_suggest_time) {
+  // Kick off a timer that will start the URL fetch if it completes before
+  // the user types another character.  Requests may be delayed to avoid
+  // flooding the server with requests that are likely to be thrown away later
+  // anyway.
+  const base::TimeDelta delay = GetSuggestQueryDelay();
+  if (delay <= base::TimeDelta()) {
     Run();
     return;
   }
-  timer_.Start(FROM_HERE, next_suggest_time - now, this, &SearchProvider::Run);
+  timer_.Start(FROM_HERE, delay, this, &SearchProvider::Run);
 }
 
 bool SearchProvider::IsQuerySuitableForSuggest() const {

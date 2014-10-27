@@ -343,6 +343,28 @@ bool OmniboxFieldTrial::DisplayHintTextWhenPossible() {
       kDisplayHintTextWhenPossibleRule) == "true";
 }
 
+bool OmniboxFieldTrial::DisableResultsCaching() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kDisableResultsCachingRule) == "true";
+}
+
+void OmniboxFieldTrial::GetSuggestPollingStrategy(bool* from_last_keystroke,
+                                                  int* polling_delay_ms) {
+  *from_last_keystroke = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kMeasureSuggestPollingDelayFromLastKeystrokeRule) == "true";
+
+  const std::string& polling_delay_string = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kSuggestPollingDelayMsRule);
+  if (polling_delay_string.empty() ||
+      !base::StringToInt(polling_delay_string, polling_delay_ms) ||
+      (*polling_delay_ms <= 0)) {
+    *polling_delay_ms = kDefaultMinimumTimeBetweenSuggestQueriesMs;
+  }
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
@@ -362,6 +384,13 @@ const char OmniboxFieldTrial::kAddUWYTMatchEvenIfPromotedURLsRule[] =
     "AddUWYTMatchEvenIfPromotedURLs";
 const char OmniboxFieldTrial::kDisplayHintTextWhenPossibleRule[] =
     "DisplayHintTextWhenPossible";
+const char OmniboxFieldTrial::kDisableResultsCachingRule[] =
+    "DisableResultsCaching";
+const char
+OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule[] =
+    "MeasureSuggestPollingDelayFromLastKeystroke";
+const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
+    "SuggestPollingDelayMs";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";
@@ -377,6 +406,9 @@ const char OmniboxFieldTrial::kHUPNewScoringVisitedCountHalfLifeTimeParam[] =
     "VisitedCountHalfLifeTime";
 const char OmniboxFieldTrial::kHUPNewScoringVisitedCountScoreBucketsParam[] =
     "VisitedCountScoreBuckets";
+
+// static
+int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
 
 // Background and implementation details:
 //

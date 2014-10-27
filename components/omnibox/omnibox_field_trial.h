@@ -286,6 +286,17 @@ class OmniboxFieldTrial {
   static bool DisplayHintTextWhenPossible();
 
   // ---------------------------------------------------------
+  // For SearchProvider related experiments.
+
+  // Returns true if the search provider should not be caching results.
+  static bool DisableResultsCaching();
+
+  // Returns how the search provider should poll Suggest. Currently, we support
+  // measuring polling delay from the last keystroke or last suggest request.
+  static void GetSuggestPollingStrategy(bool* from_last_keystroke,
+                                        int* polling_delay_ms);
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -302,6 +313,9 @@ class OmniboxFieldTrial {
   static const char kAnswersInSuggestRule[];
   static const char kAddUWYTMatchEvenIfPromotedURLsRule[];
   static const char kDisplayHintTextWhenPossibleRule[];
+  static const char kDisableResultsCachingRule[];
+  static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
+  static const char kSuggestPollingDelayMsRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];
@@ -311,6 +325,11 @@ class OmniboxFieldTrial {
   static const char kHUPNewScoringVisitedCountRelevanceCapParam[];
   static const char kHUPNewScoringVisitedCountHalfLifeTimeParam[];
   static const char kHUPNewScoringVisitedCountScoreBucketsParam[];
+
+  // The amount of time to wait before sending a new suggest request after the
+  // previous one unless overridden by a field trial parameter.
+  // Non-const because some unittests modify this value.
+  static int kDefaultMinimumTimeBetweenSuggestQueriesMs;
 
  private:
   friend class OmniboxFieldTrialTest;

@@ -200,6 +200,9 @@ class SearchProvider : public BaseSearchProvider,
   // This does not update |done_|.
   void DoHistoryQuery(bool minimal_changes);
 
+  // Returns the time to delay before sending the Suggest request.
+  base::TimeDelta GetSuggestQueryDelay() const;
+
   // Determines whether an asynchronous subcomponent query should run for the
   // current input.  If so, starts it if necessary; otherwise stops it.
   // NOTE: This function does not update |done_|.  Callers must do so.
@@ -339,10 +342,6 @@ class SearchProvider : public BaseSearchProvider,
   // returns the query data associated with it. Otherwise, returns an empty
   // AnswersQueryData.
   AnswersQueryData FindAnswersPrefetchData();
-
-  // The amount of time to wait before sending a new suggest request after the
-  // previous one.  Non-const because some unittests modify this value.
-  static int kMinimumTimeBetweenSuggestQueriesMs;
 
   AutocompleteProviderListener* listener_;
 

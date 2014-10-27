@@ -57,6 +57,7 @@
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/autocomplete_result.h"
+#include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/search_provider.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/serialized_navigation_entry.h"
@@ -814,8 +815,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, SetPrefetchQuery) {
       ui_test_utils::BROWSER_TEST_NONE);
   new_tab_observer.Wait();
 
-  omnibox()->model()->autocomplete_controller()->search_provider()->
-      kMinimumTimeBetweenSuggestQueriesMs = 0;
+  OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 0;
 
   // Set the fake response for search query.
   fake_factory()->SetFakeResponse(instant_url().Resolve("#q=flowers"),
@@ -877,8 +877,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
       ui_test_utils::BROWSER_TEST_NONE);
   new_tab_observer.Wait();
 
-  omnibox()->model()->autocomplete_controller()->search_provider()->
-      kMinimumTimeBetweenSuggestQueriesMs = 0;
+  OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 0;
 
   // Set the fake response for search query.
   fake_factory()->SetFakeResponse(instant_url().Resolve("#q=flowers"),

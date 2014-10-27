@@ -322,7 +322,7 @@ void SearchProviderTest::SetUp() {
       &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
 
   provider_ = new SearchProviderForTest(this, turl_model, &profile_);
-  provider_->kMinimumTimeBetweenSuggestQueriesMs = 0;
+  OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 0;
 }
 
 void SearchProviderTest::TearDown() {
