@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/supervised_user_private/supervised_user_handler.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"

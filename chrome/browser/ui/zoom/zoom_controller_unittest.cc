@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/ui/zoom/zoom_observer.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/host_zoom_map.h"

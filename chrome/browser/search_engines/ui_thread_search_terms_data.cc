@@ -19,7 +19,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/search/search.h"

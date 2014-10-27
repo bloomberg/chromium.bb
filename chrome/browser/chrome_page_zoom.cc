@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_page_zoom_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"

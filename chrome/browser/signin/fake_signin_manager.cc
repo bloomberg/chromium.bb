@@ -12,7 +12,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/common/pref_names.h"
 
 FakeSigninManagerBase::FakeSigninManagerBase(Profile* profile)
     : SigninManagerBase(

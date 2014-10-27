@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/variations/variations_associated_data.h"
 

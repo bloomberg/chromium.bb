@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
 

@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "sync/internal_api/public/util/sync_db_util.h"
 #include "sync/test/fake_server/fake_server_verifier.h"

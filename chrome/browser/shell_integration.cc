@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 
-#include "chrome/common/pref_names.h"
 #include "ui/message_center/message_center_tray.h"
 
 void MessageCenterNotificationManager::DisplayFirstRunBalloon() {

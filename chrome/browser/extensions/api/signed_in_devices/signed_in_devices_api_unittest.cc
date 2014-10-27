@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/common/pref_names.h"
 #include "components/sync_driver/device_info.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"

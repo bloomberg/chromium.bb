@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/common/pref_names.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 

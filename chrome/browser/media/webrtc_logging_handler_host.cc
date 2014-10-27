@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "chrome/common/partial_circular_buffer.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"

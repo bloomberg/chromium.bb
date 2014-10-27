@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
-#include "chrome/common/pref_names.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"

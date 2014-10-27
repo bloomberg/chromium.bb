@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/search_engines/template_url_service.h"

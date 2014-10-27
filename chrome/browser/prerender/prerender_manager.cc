@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_types.h"
 #include "content/public/browser/browser_thread.h"

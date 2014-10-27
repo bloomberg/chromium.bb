@@ -14,7 +14,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"

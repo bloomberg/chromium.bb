@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/variations/variations_util.h"
 #include "content/public/common/content_constants.h"
 #include "net/spdy/spdy_session.h"

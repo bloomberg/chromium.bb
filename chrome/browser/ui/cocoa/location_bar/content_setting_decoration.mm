@@ -18,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"

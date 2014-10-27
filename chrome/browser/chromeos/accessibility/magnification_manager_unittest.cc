@@ -7,7 +7,6 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
