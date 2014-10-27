@@ -406,6 +406,12 @@ void ScriptLoader::notifyFinished(Resource* resource)
 
     if (m_resource->errorOccurred()) {
         dispatchErrorEvent();
+        // dispatchErrorEvent might move the HTMLScriptElement to a new
+        // document. In that case, we must notify the ScriptRunner of the new
+        // document, not the ScriptRunner of the old docuemnt.
+        contextDocument = elementDocument->contextDocument().get();
+        if (!contextDocument)
+            return;
         contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
         return;
     }
