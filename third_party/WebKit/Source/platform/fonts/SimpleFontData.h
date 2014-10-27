@@ -58,12 +58,6 @@ public:
         return adoptRef(new SimpleFontData(platformData, customData, isTextOrientationFallback));
     }
 
-    // Used to create SVG Fonts.
-    static PassRefPtr<SimpleFontData> create(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
-    {
-        return adoptRef(new SimpleFontData(customData, fontSize, syntheticBold, syntheticItalic));
-    }
-
     virtual ~SimpleFontData();
 
     const FontPlatformData& platformData() const { return m_platformData; }
