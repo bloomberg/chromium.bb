@@ -55,7 +55,7 @@ class RasterBufferImpl : public RasterBuffer {
                 const gfx::Rect& rect,
                 float scale,
                 RenderingStatsInstrumentation* stats) override {
-    gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_->gpu_memory_buffer();
+    gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_->GetGpuMemoryBuffer();
     if (!gpu_memory_buffer)
       return;
 

@@ -58,6 +58,9 @@ class TextureUploader;
 // This class is not thread-safe and can only be called from the thread it was
 // created on (in practice, the impl thread).
 class CC_EXPORT ResourceProvider {
+ private:
+  struct Resource;
+
  public:
   typedef unsigned ResourceId;
   typedef std::vector<ResourceId> ResourceIdArray;
@@ -258,7 +261,7 @@ class CC_EXPORT ResourceProvider {
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceProvider::ResourceId resource_id_;
+    ResourceProvider::Resource* resource_;
     unsigned texture_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
@@ -298,7 +301,7 @@ class CC_EXPORT ResourceProvider {
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceProvider::ResourceId resource_id_;
+    ResourceProvider::Resource* resource_;
     SkBitmap sk_bitmap_;
     scoped_ptr<SkCanvas> sk_canvas_;
 
@@ -311,12 +314,15 @@ class CC_EXPORT ResourceProvider {
                                    ResourceProvider::ResourceId resource_id);
     ~ScopedWriteLockGpuMemoryBuffer();
 
-    gfx::GpuMemoryBuffer* gpu_memory_buffer() { return gpu_memory_buffer_; }
+    gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceProvider::ResourceId resource_id_;
+    ResourceProvider::Resource* resource_;
+    GpuMemoryBufferManager* gpu_memory_buffer_manager_;
     gfx::GpuMemoryBuffer* gpu_memory_buffer_;
+    gfx::Size size_;
+    ResourceFormat format_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
@@ -331,7 +337,7 @@ class CC_EXPORT ResourceProvider {
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceProvider::ResourceId resource_id_;
+    ResourceProvider::Resource* resource_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
   };
@@ -493,12 +499,8 @@ class CC_EXPORT ResourceProvider {
   Resource* GetResource(ResourceId id);
   const Resource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);
-  const Resource* LockForWrite(ResourceId id);
-  void UnlockForWrite(ResourceId id);
-  const Resource* LockForWriteToGpuMemoryBuffer(ResourceId id);
-  void UnlockForWriteToGpuMemoryBuffer(ResourceId id);
-  void LockForWriteToSkSurface(ResourceId id);
-  void UnlockForWriteToSkSurface(ResourceId id);
+  Resource* LockForWrite(ResourceId id);
+  void UnlockForWrite(Resource* resource);
 
   static void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                            const Resource* resource);
