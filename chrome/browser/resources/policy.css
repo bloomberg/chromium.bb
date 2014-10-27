@@ -148,7 +148,7 @@ span.value {
   white-space: nowrap;
 }
 
-button.toggle-expanded-value {
+.toggle-expanded-value {
   padding: 0;
 }
 
@@ -156,7 +156,7 @@ tbody.has-overflowed-value span.value {
   display: none;
 }
 
-tbody:not(.has-overflowed-value) button.toggle-expanded-value {
+tbody:not(.has-overflowed-value) .toggle-expanded-value {
   display: none;
 }
 
