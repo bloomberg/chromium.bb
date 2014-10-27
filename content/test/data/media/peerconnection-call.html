@@ -7,6 +7,12 @@
     return document.getElementById(id);
   };
 
+  window.onerror = function(errorMsg, url, lineNumber, column, errorObj) {
+    failTest('Error: ' + errorMsg + '\nScript: ' + url +
+             '\nLine: ' + lineNumber + '\nColumn: ' + column +
+             '\nStackTrace: ' + errorObj);
+  }
+
   var gFirstConnection = null;
   var gSecondConnection = null;
   var gTestWithoutMsid = false;
@@ -281,7 +287,6 @@
     waitForVideo('remote-view-1');
     waitForVideo('remote-view-2');
   }
-
 
   // Test call with a data channel and later add audio and video.
   function callWithDataAndLaterAddMedia() {
@@ -628,7 +633,6 @@
       firstDataChannel.send(sendDataString);
     }
 
-
     // Event handler for when |gSecondConnection| receive a new dataChannel.
     gSecondConnection.ondatachannel = function (event) {
       var secondDataChannel = event.channel;
@@ -803,12 +807,16 @@
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
                                                   sdp: offerSdp });
-    callee.setRemoteDescription(parsedOffer, function() {},
+    callee.setRemoteDescription(parsedOffer,
+                                function() {
+                                  assertEquals('have-remote-offer',
+                                               callee.signalingState);
+                                  callee.createAnswer(
+                                    function (answer) {
+                                      onAnswerCreated(answer, caller, callee);
+                                    });
+                                },
                                 onRemoteDescriptionError);
-    callee.createAnswer(function (answer) {
-                          onAnswerCreated(answer, caller, callee);
-                        });
-    assertEquals('have-remote-offer', callee.signalingState);
   }
 
   function removeMsid(offerSdp) {
