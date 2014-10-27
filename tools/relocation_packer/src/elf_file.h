@@ -100,14 +100,12 @@ class ElfFile {
   // Templated packer, helper for PackRelocations().  Rel type is one of
   // ELF::Rel or ELF::Rela.
   template <typename Rel>
-  bool PackTypedRelocations(const std::vector<Rel>& relocations,
-                            Elf_Data* data);
+  bool PackTypedRelocations(const std::vector<Rel>& relocations);
 
   // Templated unpacker, helper for UnpackRelocations().  Rel type is one of
   // ELF::Rel or ELF::Rela.
   template <typename Rel>
-  bool UnpackTypedRelocations(const std::vector<uint8_t>& packed,
-                              Elf_Data* data);
+  bool UnpackTypedRelocations(const std::vector<uint8_t>& packed);
 
   // Write ELF file changes.
   void Flush();
