@@ -27,7 +27,7 @@
             // has been set yet.
             Notification.requestPermission(function (localResult) {
                 result = localResult;
-                shouldBeEqualToString("result", "default");
+                shouldBeEqualToString("result", "denied");
 
                 if (!window.testRunner) {
                     testPassed("The remainder of this test requires the TestRunner.");

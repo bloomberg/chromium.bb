@@ -3,6 +3,6 @@ Tests that it is possible to request permission to display Web Notifications fro
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS result is "default"
+PASS result is "denied"
 PASS result is "granted"
 
