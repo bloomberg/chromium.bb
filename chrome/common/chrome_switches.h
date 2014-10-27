@@ -347,10 +347,8 @@ extern const char kDisableZeroSuggest[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableAppInstallAlerts[];
 extern const char kEnableContextualSearch[];
-extern const char kEnableZeroSuggestEtherSerp[];
-extern const char kEnableZeroSuggestEtherNoSerp[];
 extern const char kEnableZeroSuggestMostVisited[];
-extern const char kEnableZeroSuggestPersonalized[];
+extern const char kEnableZeroSuggestMostVisitedWithoutSerp[];
 extern const char kEnableInstantSearchClicks[];
 #endif
 

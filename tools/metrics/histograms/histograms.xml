@@ -46475,7 +46475,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-2098610409" label="disable-lcd-text"/>
   <int value="-2097515669" label="disable-cast"/>
   <int value="-2077268643" label="disable-device-enumeration"/>
-  <int value="-2052416224" label="enable-zero-suggest-ether-noserp"/>
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
   <int value="-2020024440" label="scroll-end-effect"/>
@@ -46491,6 +46490,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1911153473" label="enable-easy-signin"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
+  <int value="-1887053262"
+      label="enable-zero-suggest-most-visited-without-serp"/>
   <int value="-1876881908"
       label="disable-infobar-for-protected-media-identifier"/>
   <int value="-1874908826" label="enable-instant-search-clicks"/>
@@ -46537,7 +46538,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
-  <int value="-1245459041" label="enable-zero-suggest-personalized"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
@@ -46631,7 +46631,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="120429808" label="disable-new-profile-management"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
-  <int value="242267133" label="enable-zero-suggest-ether-serp"/>
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="346711293" label="enable-save-password-bubble"/>

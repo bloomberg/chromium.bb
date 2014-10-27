@@ -318,12 +318,8 @@ const Experiment::Choice kZeroSuggestExperimentsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED,
     switches::kEnableZeroSuggestMostVisited, ""},
-  { IDS_FLAGS_ZERO_SUGGEST_ETHER_SERP,
-    switches::kEnableZeroSuggestEtherSerp, ""},
-  { IDS_FLAGS_ZERO_SUGGEST_ETHER_NO_SERP,
-    switches::kEnableZeroSuggestEtherNoSerp, ""},
-  { IDS_FLAGS_ZERO_SUGGEST_PERSONALIZED,
-    switches::kEnableZeroSuggestPersonalized, ""},
+  { IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED_WITHOUT_SERP,
+    switches::kEnableZeroSuggestMostVisitedWithoutSerp, ""},
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kDisableZeroSuggest, ""}
 };

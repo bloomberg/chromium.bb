@@ -1244,25 +1244,15 @@ const char kEnableAppInstallAlerts[]        = "enable-app-install-alerts";
 // Enables Contextual Search.
 const char kEnableContextualSearch[]        = "enable-contextual-search";
 
-// Enables zero suggest functionality on Dev channel, showing contextual
-// suggestions (EtherSuggest) for http pages and google.com search queries.
-const char kEnableZeroSuggestEtherSerp[] =
-    "enable-zero-suggest-ether-serp";
-
-// Enables zero suggest functionality on Dev channel, showing contextual
-// suggestions (EtherSuggest) for http pages.
-const char kEnableZeroSuggestEtherNoSerp[] =
-    "enable-zero-suggest-ether-noserp";
-
 // Enables zero suggest functionality on Dev channel, showing most visited
 // sites as default suggestions.
 const char kEnableZeroSuggestMostVisited[] =
     "enable-zero-suggest-most-visited";
 
-// Enables zero suggest functionality on Dev channel, showing recently typed
-// queries as default suggestions.
-const char kEnableZeroSuggestPersonalized[] =
-    "enable-zero-suggest-personalized";
+// Enable zero suggest functionality on Dev channel, showing most visited
+// sites on non-search-result pages as default suggestions.
+const char kEnableZeroSuggestMostVisitedWithoutSerp[] =
+    "enable-zero-suggest-most-visited-without-serp";
 
 // Enables instant search clicks feature.
 const char kEnableInstantSearchClicks[] = "enable-instant-search-clicks";
