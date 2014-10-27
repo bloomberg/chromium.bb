@@ -22,16 +22,16 @@ namespace media {
 class AudioStreamHandlerTest : public testing::Test {
  public:
   AudioStreamHandlerTest() {}
-  virtual ~AudioStreamHandlerTest() {}
+  ~AudioStreamHandlerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     audio_manager_.reset(AudioManager::CreateForTesting());
 
     base::StringPiece data(kTestAudioData, arraysize(kTestAudioData));
     audio_stream_handler_.reset(new AudioStreamHandler(data));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     audio_stream_handler_.reset();
     audio_manager_.reset();
   }

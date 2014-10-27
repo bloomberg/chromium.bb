@@ -22,7 +22,7 @@ class FramerTest : public ::testing::Test {
         .WillRepeatedly(testing::Return());
   }
 
-  virtual ~FramerTest() {}
+  ~FramerTest() override {}
 
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;

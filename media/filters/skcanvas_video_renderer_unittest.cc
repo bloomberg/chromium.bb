@@ -45,7 +45,7 @@ class SkCanvasVideoRendererTest : public testing::Test {
   };
 
   SkCanvasVideoRendererTest();
-  virtual ~SkCanvasVideoRendererTest();
+  ~SkCanvasVideoRendererTest() override;
 
   // Paints to |canvas| using |renderer_| without any frame data.
   void PaintWithoutFrame(SkCanvas* canvas);

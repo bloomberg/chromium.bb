@@ -18,7 +18,7 @@ class VideoUtilTest : public testing::Test {
         v_stride_(0) {
   }
 
-  virtual ~VideoUtilTest() {}
+  ~VideoUtilTest() override {}
 
   void CreateSourceFrame(int width, int height,
                          int y_stride, int u_stride, int v_stride) {

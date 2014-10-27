@@ -26,7 +26,7 @@ class FakeDemuxerStreamTest : public testing::Test {
       : status_(DemuxerStream::kAborted),
         read_pending_(false),
         num_buffers_received_(0) {}
-  virtual ~FakeDemuxerStreamTest() {}
+  ~FakeDemuxerStreamTest() override {}
 
   void BufferReady(DemuxerStream::Status status,
                    const scoped_refptr<DecoderBuffer>& buffer) {

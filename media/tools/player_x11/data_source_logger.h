@@ -19,16 +19,17 @@ class DataSourceLogger : public media::DataSource {
   // |data_source|.
   DataSourceLogger(scoped_ptr<DataSource> data_source,
                    bool force_streaming);
-  virtual ~DataSourceLogger();
+  ~DataSourceLogger() override;
 
   // media::DataSource implementation.
-  virtual void Stop() override;
-  virtual void Read(
-      int64 position, int size, uint8* data,
-      const media::DataSource::ReadCB& read_cb) override;
-  virtual bool GetSize(int64* size_out) override;
-  virtual bool IsStreaming() override;
-  virtual void SetBitrate(int bitrate) override;
+  void Stop() override;
+  void Read(int64 position,
+            int size,
+            uint8* data,
+            const media::DataSource::ReadCB& read_cb) override;
+  bool GetSize(int64* size_out) override;
+  bool IsStreaming() override;
+  void SetBitrate(int bitrate) override;
 
  private:
   scoped_ptr<media::DataSource> data_source_;

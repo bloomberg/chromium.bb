@@ -14,7 +14,7 @@ class WallClockTimeSourceTest : public testing::Test {
     time_source_.SetTickClockForTesting(
         scoped_ptr<base::TickClock>(tick_clock_));
   }
-  virtual ~WallClockTimeSourceTest() {}
+  ~WallClockTimeSourceTest() override {}
 
   void AdvanceTimeInSeconds(int seconds) {
     tick_clock_->Advance(base::TimeDelta::FromSeconds(seconds));

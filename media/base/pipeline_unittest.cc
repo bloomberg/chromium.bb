@@ -778,7 +778,7 @@ class PipelineTeardownTest : public PipelineTest {
   };
 
   PipelineTeardownTest() {}
-  virtual ~PipelineTeardownTest() {}
+  ~PipelineTeardownTest() override {}
 
   void RunTest(TeardownState state, StopOrError stop_or_error) {
     switch (state) {

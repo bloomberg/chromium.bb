@@ -73,7 +73,7 @@ class CastTransportSenderImplTest : public ::testing::Test {
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
   }
 
-  virtual ~CastTransportSenderImplTest() {}
+  ~CastTransportSenderImplTest() override {}
 
   void InitWithoutLogging() {
     transport_sender_.reset(

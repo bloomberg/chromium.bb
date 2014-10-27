@@ -137,7 +137,7 @@ namespace media {
 
 class AudioOutputProxyTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     EXPECT_CALL(manager_, GetTaskRunner())
         .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
     EXPECT_CALL(manager_, GetWorkerTaskRunner())
@@ -150,7 +150,7 @@ class AudioOutputProxyTest : public testing::Test {
     InitDispatcher(base::TimeDelta::FromMilliseconds(kTestCloseDelayMs));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // This is necessary to free all proxy objects that have been
     // closed by the test.
     message_loop_.RunUntilIdle();
@@ -413,9 +413,7 @@ class AudioOutputProxyTest : public testing::Test {
 
 class AudioOutputResamplerTest : public AudioOutputProxyTest {
  public:
-  virtual void TearDown() {
-    AudioOutputProxyTest::TearDown();
-  }
+  void TearDown() override { AudioOutputProxyTest::TearDown(); }
 
   void InitDispatcher(base::TimeDelta close_delay) override {
     // Use a low sample rate and large buffer size when testing otherwise the

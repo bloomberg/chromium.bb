@@ -28,7 +28,7 @@ class SimpleEventSubscriberTest : public ::testing::Test {
     cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   }
 
-  virtual ~SimpleEventSubscriberTest() {
+  ~SimpleEventSubscriberTest() override {
     cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
   }
 

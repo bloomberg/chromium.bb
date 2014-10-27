@@ -89,7 +89,7 @@ class AudioSenderTest : public ::testing::Test {
     task_runner_->RunTasks();
   }
 
-  virtual ~AudioSenderTest() {}
+  ~AudioSenderTest() override {}
 
   static void UpdateCastTransportStatus(CastTransportStatus status) {
     EXPECT_EQ(TRANSPORT_AUDIO_INITIALIZED, status);

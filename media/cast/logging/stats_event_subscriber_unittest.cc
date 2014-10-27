@@ -38,7 +38,7 @@ class StatsEventSubscriberTest : public ::testing::Test {
         &fake_offset_estimator_);
   }
 
-  virtual ~StatsEventSubscriberTest() {
+  ~StatsEventSubscriberTest() override {
     if (subscriber_.get())
       cast_environment_->Logging()->RemoveRawEventSubscriber(subscriber_.get());
     cast_environment_->Logging()->RemoveRawEventSubscriber(

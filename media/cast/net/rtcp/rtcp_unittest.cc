@@ -119,7 +119,7 @@ class RtcpTest : public ::testing::Test {
     receiver_to_sender_.set_rtcp_destination(&rtcp_for_sender_);
   }
 
-  virtual ~RtcpTest() {}
+  ~RtcpTest() override {}
 
   scoped_ptr<base::SimpleTestTickClock> sender_clock_;
   scoped_ptr<test::SkewedTickClock> receiver_clock_;

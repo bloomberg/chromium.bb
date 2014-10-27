@@ -12,7 +12,7 @@ namespace media {
 class AudioFifoTest : public testing::Test {
  public:
   AudioFifoTest() {}
-  virtual ~AudioFifoTest() {}
+  ~AudioFifoTest() override {}
 
   void VerifyValue(const float data[], int size, float value) {
     for (int i = 0; i < size; ++i)

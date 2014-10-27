@@ -30,7 +30,7 @@ class ReceiverStatsTest : public ::testing::Test {
     start_time_ = testing_clock_.NowTicks();
     delta_increments_ = base::TimeDelta::FromMilliseconds(kStdTimeIncrementMs);
   }
-  virtual ~ReceiverStatsTest() {}
+  ~ReceiverStatsTest() override {}
 
   uint32 ExpectedJitter(uint32 const_interval, int num_packets) {
     float jitter = 0;

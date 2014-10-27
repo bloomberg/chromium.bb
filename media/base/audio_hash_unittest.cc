@@ -38,7 +38,7 @@ class AudioHashTest : public testing::Test {
     }
   }
 
-  virtual ~AudioHashTest() {}
+  ~AudioHashTest() override {}
 
  protected:
   scoped_ptr<AudioBus> bus_one_;

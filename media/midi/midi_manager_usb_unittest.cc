@@ -159,7 +159,7 @@ class MidiManagerUsbTest : public ::testing::Test {
     factory_ = factory.get();
     manager_.reset(new MidiManagerUsbForTesting(factory.Pass()));
   }
-  virtual ~MidiManagerUsbTest() {
+  ~MidiManagerUsbTest() override {
     std::string leftover_logs = logger_.TakeLog();
     if (!leftover_logs.empty()) {
       ADD_FAILURE() << "Log should be empty: " << leftover_logs;

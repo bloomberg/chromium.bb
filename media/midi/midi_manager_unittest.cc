@@ -97,7 +97,7 @@ class MidiManagerTest : public ::testing::Test {
   MidiManagerTest()
       : manager_(new FakeMidiManager),
         message_loop_(new base::MessageLoop) {}
-  virtual ~MidiManagerTest() {}
+  ~MidiManagerTest() override {}
 
  protected:
   void StartTheFirstSession(FakeMidiManagerClient* client) {

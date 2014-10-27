@@ -21,14 +21,14 @@ namespace media {
 class SoundsManagerTest : public testing::Test {
  public:
   SoundsManagerTest() {}
-  virtual ~SoundsManagerTest() {}
+  ~SoundsManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     audio_manager_.reset(AudioManager::CreateForTesting());
     SoundsManager::Create();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     SoundsManager::Shutdown();
     audio_manager_.reset();
   }

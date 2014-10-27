@@ -34,7 +34,7 @@ class RtpParserTest : public ::testing::Test {
     cast_header_.marker = true;
   }
 
-  virtual ~RtpParserTest() {}
+  ~RtpParserTest() override {}
 
   void ExpectParsesPacket() {
     RtpCastHeader parsed_header;

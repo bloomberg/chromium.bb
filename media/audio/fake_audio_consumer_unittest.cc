@@ -26,7 +26,7 @@ class FakeAudioConsumerTest : public testing::Test {
         static_cast<float>(params_.sample_rate()));
   }
 
-  virtual ~FakeAudioConsumerTest() {}
+  ~FakeAudioConsumerTest() override {}
 
   void ConsumeData(AudioBus* audio_bus) {
     source_.OnMoreData(audio_bus, 0);

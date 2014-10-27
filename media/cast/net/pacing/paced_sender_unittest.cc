@@ -73,7 +73,7 @@ class PacedSenderTest : public ::testing::Test {
     paced_sender_->RegisterVideoSsrc(kVideoSsrc);
   }
 
-  virtual ~PacedSenderTest() {
+  ~PacedSenderTest() override {
     logging_.RemoveRawEventSubscriber(&subscriber_);
   }
 

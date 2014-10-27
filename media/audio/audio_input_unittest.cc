@@ -54,9 +54,7 @@ class AudioInputTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual ~AudioInputTest() {
-    base::RunLoop().RunUntilIdle();
-  }
+  ~AudioInputTest() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
   AudioManager* audio_manager() { return audio_manager_.get(); }

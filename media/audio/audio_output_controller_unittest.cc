@@ -99,8 +99,7 @@ class AudioOutputControllerTest : public testing::Test {
         pause_event_(false, false) {
   }
 
-  virtual ~AudioOutputControllerTest() {
-  }
+  ~AudioOutputControllerTest() override {}
 
  protected:
   void Create(int samples_per_packet) {

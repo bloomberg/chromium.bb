@@ -15,7 +15,7 @@ class FrameBufferTest : public ::testing::Test {
     payload_.assign(kMaxIpPacketSize, 0);
   }
 
-  virtual ~FrameBufferTest() {}
+  ~FrameBufferTest() override {}
 
   FrameBuffer buffer_;
   std::vector<uint8> payload_;

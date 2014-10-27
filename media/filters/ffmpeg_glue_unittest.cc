@@ -45,7 +45,7 @@ class FFmpegGlueTest : public ::testing::Test {
     CHECK(glue_->format_context()->pb);
   }
 
-  virtual ~FFmpegGlueTest() {
+  ~FFmpegGlueTest() override {
     // Ensure |glue_| and |protocol_| are still alive.
     CHECK(glue_.get());
     CHECK(protocol_.get());
@@ -84,7 +84,7 @@ class FFmpegGlueDestructionTest : public ::testing::Test {
     CHECK(glue_->format_context()->pb);
   }
 
-  virtual ~FFmpegGlueDestructionTest() {
+  ~FFmpegGlueDestructionTest() override {
     // Ensure Initialize() was called.
     CHECK(glue_.get());
     CHECK(protocol_.get());

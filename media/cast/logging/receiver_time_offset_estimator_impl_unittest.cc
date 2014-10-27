@@ -28,7 +28,7 @@ class ReceiverTimeOffsetEstimatorImplTest : public ::testing::Test {
     cast_environment_->Logging()->AddRawEventSubscriber(&estimator_);
   }
 
-  virtual ~ReceiverTimeOffsetEstimatorImplTest() {
+  ~ReceiverTimeOffsetEstimatorImplTest() override {
     cast_environment_->Logging()->RemoveRawEventSubscriber(&estimator_);
   }
 

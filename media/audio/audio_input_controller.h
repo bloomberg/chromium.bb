@@ -266,7 +266,7 @@ class MEDIA_EXPORT AudioInputController
                        SyncWriter* sync_writer,
                        UserInputMonitor* user_input_monitor,
                        const bool agc_is_enabled);
-  virtual ~AudioInputController();
+  ~AudioInputController() override;
 
   // Methods called on the audio thread (owned by the AudioManager).
   void DoCreate(AudioManager* audio_manager,

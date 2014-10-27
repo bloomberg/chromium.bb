@@ -47,7 +47,7 @@ class EncodingEventSubscriberTest : public ::testing::Test {
         event_subscriber_.get());
   }
 
-  virtual ~EncodingEventSubscriberTest() {
+  ~EncodingEventSubscriberTest() override {
     if (event_subscriber_) {
       cast_environment_->Logging()->RemoveRawEventSubscriber(
           event_subscriber_.get());

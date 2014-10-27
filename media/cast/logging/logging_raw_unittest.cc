@@ -16,7 +16,7 @@ class LoggingRawTest : public ::testing::Test {
     raw_.AddSubscriber(&event_subscriber_);
   }
 
-  virtual ~LoggingRawTest() { raw_.RemoveSubscriber(&event_subscriber_); }
+  ~LoggingRawTest() override { raw_.RemoveSubscriber(&event_subscriber_); }
 
   LoggingRaw raw_;
   SimpleEventSubscriber event_subscriber_;

@@ -33,7 +33,7 @@ class LoggingImplTest : public ::testing::Test {
     logging_.AddRawEventSubscriber(&event_subscriber_);
   }
 
-  virtual ~LoggingImplTest() {
+  ~LoggingImplTest() override {
     logging_.RemoveRawEventSubscriber(&event_subscriber_);
   }
 

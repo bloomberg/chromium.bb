@@ -12,7 +12,7 @@ namespace cast {
 class FrameIdWrapHelperTest : public ::testing::Test {
  protected:
   FrameIdWrapHelperTest() {}
-  virtual ~FrameIdWrapHelperTest() {}
+  ~FrameIdWrapHelperTest() override {}
 
   void RunOneTest(uint32 starting_point, int iterations) {
     const int window_size = 127;

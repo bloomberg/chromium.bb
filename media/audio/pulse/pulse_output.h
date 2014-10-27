@@ -41,15 +41,15 @@ class PulseAudioOutputStream : public AudioOutputStream {
                          const std::string& device_id,
                          AudioManagerBase* manager);
 
-  virtual ~PulseAudioOutputStream();
+  ~PulseAudioOutputStream() override;
 
   // Implementation of AudioOutputStream.
-  virtual bool Open() override;
-  virtual void Close() override;
-  virtual void Start(AudioSourceCallback* callback) override;
-  virtual void Stop() override;
-  virtual void SetVolume(double volume) override;
-  virtual void GetVolume(double* volume) override;
+  bool Open() override;
+  void Close() override;
+  void Start(AudioSourceCallback* callback) override;
+  void Stop() override;
+  void SetVolume(double volume) override;
+  void GetVolume(double* volume) override;
 
  private:
   // Called by PulseAudio when |pa_stream_| change state.  If an unexpected

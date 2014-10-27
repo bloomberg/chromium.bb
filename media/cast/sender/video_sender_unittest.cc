@@ -155,9 +155,9 @@ class VideoSenderTest : public ::testing::Test {
         &transport_));
   }
 
-  virtual ~VideoSenderTest() {}
+  ~VideoSenderTest() override {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     video_sender_.reset();
     task_runner_->RunTasks();
   }

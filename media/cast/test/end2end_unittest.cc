@@ -630,12 +630,12 @@ class End2EndTest : public ::testing::Test {
                                 kSoundVolume));
   }
 
-  virtual ~End2EndTest() {
+  ~End2EndTest() override {
     cast_environment_sender_->Logging()->RemoveRawEventSubscriber(
         &event_subscriber_sender_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     cast_sender_.reset();
     cast_receiver_.reset();
     task_runner_->RunTasks();

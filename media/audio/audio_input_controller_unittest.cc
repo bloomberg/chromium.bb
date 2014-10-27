@@ -67,7 +67,7 @@ class MockAudioInputControllerEventHandler
 class AudioInputControllerTest : public testing::Test {
  public:
   AudioInputControllerTest() {}
-  virtual ~AudioInputControllerTest() {}
+  ~AudioInputControllerTest() override {}
 
  protected:
   base::MessageLoop message_loop_;

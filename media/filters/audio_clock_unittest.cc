@@ -14,7 +14,7 @@ class AudioClockTest : public testing::Test {
   AudioClockTest()
       : sample_rate_(10), clock_(base::TimeDelta(), sample_rate_) {}
 
-  virtual ~AudioClockTest() {}
+  ~AudioClockTest() override {}
 
   void WroteAudio(int frames_written,
                   int frames_requested,

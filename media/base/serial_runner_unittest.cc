@@ -15,7 +15,7 @@ class SerialRunnerTest : public ::testing::Test {
  public:
   SerialRunnerTest()
       : inside_start_(false), done_called_(false), done_status_(PIPELINE_OK) {}
-  virtual ~SerialRunnerTest() {}
+  ~SerialRunnerTest() override {}
 
   void RunSerialRunner() {
     message_loop_.PostTask(FROM_HERE, base::Bind(

@@ -12,7 +12,7 @@ namespace media {
 class FFmpegCommonTest : public testing::Test {
  public:
   FFmpegCommonTest() { FFmpegGlue::InitializeFFmpeg(); }
-  virtual ~FFmpegCommonTest() {};
+  ~FFmpegCommonTest() override{};
 };
 
 TEST_F(FFmpegCommonTest, OpusAudioDecoderConfig) {

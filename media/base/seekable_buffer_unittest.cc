@@ -23,7 +23,7 @@ class SeekableBufferTest : public testing::Test {
   static const int kBufferSize = 4096;
   static const int kWriteSize = 512;
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Note: We use srand() and rand() rather than base::RandXXX() to improve
     // unit test performance.  We don't need good random numbers, just
     // something that generates "mixed data."

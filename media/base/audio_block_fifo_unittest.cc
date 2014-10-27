@@ -12,7 +12,7 @@ namespace media {
 class AudioBlockFifoTest : public testing::Test {
  public:
   AudioBlockFifoTest() {}
-  virtual ~AudioBlockFifoTest() {}
+  ~AudioBlockFifoTest() override {}
 
   void PushAndVerify(AudioBlockFifo* fifo, int frames_to_push,
                      int channels, int block_frames, int max_frames) {

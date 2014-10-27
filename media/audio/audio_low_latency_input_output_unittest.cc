@@ -93,9 +93,9 @@ struct AudioDelayState {
 class MockAudioManager : public AudioManagerAnyPlatform {
  public:
   MockAudioManager() : AudioManagerAnyPlatform(&fake_audio_log_factory_) {}
-  virtual ~MockAudioManager() {}
+  ~MockAudioManager() override {}
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
     return base::MessageLoop::current()->message_loop_proxy();
   }
 
@@ -109,7 +109,7 @@ class AudioLowLatencyInputOutputTest : public testing::Test {
  protected:
   AudioLowLatencyInputOutputTest() {}
 
-  virtual ~AudioLowLatencyInputOutputTest() {}
+  ~AudioLowLatencyInputOutputTest() override {}
 
   AudioManager* audio_manager() { return &mock_audio_manager_; }
   base::MessageLoopForUI* message_loop() { return &message_loop_; }
@@ -162,7 +162,7 @@ class FullDuplexAudioSinkSource
     delay_states_.reset(new AudioDelayState[kMaxDelayMeasurements]);
   }
 
-  virtual ~FullDuplexAudioSinkSource() {
+  ~FullDuplexAudioSinkSource() override {
     // Get complete file path to output file in the directory containing
     // media_unittests.exe. Example: src/build/Debug/audio_delay_values_ms.txt.
     base::FilePath file_name;
@@ -191,10 +191,10 @@ class FullDuplexAudioSinkSource
   }
 
   // AudioInputStream::AudioInputCallback.
-  virtual void OnData(AudioInputStream* stream,
-                      const AudioBus* src,
-                      uint32 hardware_delay_bytes,
-                      double volume) override {
+  void OnData(AudioInputStream* stream,
+              const AudioBus* src,
+              uint32 hardware_delay_bytes,
+              double volume) override {
     base::AutoLock lock(lock_);
 
     // Update three components in the AudioDelayState for this recorded
@@ -222,11 +222,10 @@ class FullDuplexAudioSinkSource
     // }
   }
 
-  virtual void OnError(AudioInputStream* stream) override {}
+  void OnError(AudioInputStream* stream) override {}
 
   // AudioOutputStream::AudioSourceCallback.
-  virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) override {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
     base::AutoLock lock(lock_);
 
     // Update one component in the AudioDelayState for the packet
@@ -254,7 +253,7 @@ class FullDuplexAudioSinkSource
     return 0;
   }
 
-  virtual void OnError(AudioOutputStream* stream) override {}
+  void OnError(AudioOutputStream* stream) override {}
 
  protected:
   // Converts from bytes to milliseconds taking the sample rate and size

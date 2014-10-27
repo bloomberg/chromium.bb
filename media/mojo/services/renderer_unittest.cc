@@ -108,7 +108,7 @@ class MojoRendererTest : public testing::Test {
  public:
   MojoRendererTest() : service_provider_(NULL) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     demuxer_stream_provider_.reset(new FakeDemuxerStream());
     service_provider_ =
         g_test_delegate->application_impl()

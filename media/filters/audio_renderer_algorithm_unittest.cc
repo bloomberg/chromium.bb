@@ -75,7 +75,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
         bytes_per_sample_(0) {
   }
 
-  virtual ~AudioRendererAlgorithmTest() {}
+  ~AudioRendererAlgorithmTest() override {}
 
   void Initialize() {
     Initialize(CHANNEL_LAYOUT_STEREO, kSampleFormatS16, 3000);

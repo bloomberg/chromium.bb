@@ -51,7 +51,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     video_decoder_.reset(new VideoDecoder(cast_environment_, GetParam()));
     CHECK_EQ(STATUS_VIDEO_INITIALIZED, video_decoder_->InitializationResult());
 

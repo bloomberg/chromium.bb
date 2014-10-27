@@ -83,8 +83,7 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
     device_enumeration_listener_ = new DeviceEnumerationListener();
   }
 
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;

@@ -126,7 +126,7 @@ class VideoCaptureDeviceTest : public testing::Test {
     device_enumeration_listener_ = new DeviceEnumerationListener();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
 #if defined(OS_ANDROID)
     media::VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(
         base::android::AttachCurrentThread());

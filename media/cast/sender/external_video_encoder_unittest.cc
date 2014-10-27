@@ -148,7 +148,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     vea_factory.FinishCreatingVideoEncodeAccelerator();
   }
 
-  virtual ~ExternalVideoEncoderTest() {}
+  ~ExternalVideoEncoderTest() override {}
 
   void AdvanceClockAndVideoFrameTimestamp() {
     testing_clock_->Advance(base::TimeDelta::FromMilliseconds(33));

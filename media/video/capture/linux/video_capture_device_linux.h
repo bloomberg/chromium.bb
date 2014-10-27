@@ -27,13 +27,13 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
                                      std::list<int>* fourccs);
 
   explicit VideoCaptureDeviceLinux(const Name& device_name);
-  virtual ~VideoCaptureDeviceLinux();
+  ~VideoCaptureDeviceLinux() override;
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<Client> client) override;
+  void AllocateAndStart(const VideoCaptureParams& params,
+                        scoped_ptr<Client> client) override;
 
-  virtual void StopAndDeAllocate() override;
+  void StopAndDeAllocate() override;
 
  protected:
   void SetRotation(int rotation);

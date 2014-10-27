@@ -77,9 +77,9 @@ class FrameReceiverTest : public ::testing::Test {
                             task_runner_);
   }
 
-  virtual ~FrameReceiverTest() {}
+  ~FrameReceiverTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     payload_.assign(kPacketSize, 0);
 
     // Always start with a key frame.
