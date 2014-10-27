@@ -37,21 +37,40 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
       supervised_user_avatar_label_(NULL),
 #endif
       new_avatar_button_(NULL) {
+  // The profile manager may by NULL in tests.
+  if (g_browser_process->profile_manager()) {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    cache.AddObserver(this);
+  }
 }
 
 BrowserNonClientFrameView::~BrowserNonClientFrameView() {
+  // The profile manager may by NULL in tests.
+  if (g_browser_process->profile_manager()) {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    cache.RemoveObserver(this);
+  }
 }
 
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   if (!is_visible)
     return;
+
   // The first time UpdateAvatarInfo() is called the window is not visible so
   // DrawTaskBarDecoration() has no effect. Therefore we need to call it again
   // once the window is visible.
   if (!browser_view_->IsRegularOrGuestSession() ||
-      !switches::IsNewAvatarMenu())
+      !switches::IsNewAvatarMenu()) {
     UpdateAvatarInfo();
+  }
+
+  // Make sure the task bar icon is correctly updated call
+  // |OnProfileAvatarChanged()| in this case, but only for non guest profiles.
+  if (!browser_view_->IsGuestSession() || !switches::IsNewAvatarMenu())
+    OnProfileAvatarChanged(base::FilePath());
 }
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -97,57 +116,18 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     frame_->GetRootView()->Layout();
   }
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Image avatar;
   gfx::Image taskbar_badge_avatar;
-  base::string16 text;
   bool is_rectangle = false;
-  if (browser_view_->IsGuestSession()) {
-    avatar = rb.
-        GetImageNamed(profiles::GetPlaceholderAvatarIconResourceID());
-  } else if (browser_view_->IsOffTheRecord()) {
-    avatar = rb.GetImageNamed(IDR_OTR_ICON);
-    // TODO(nkostylev): Allow this on ChromeOS once the ChromeOS test
-    // environment handles profile directories correctly.
-#if !defined(OS_CHROMEOS)
-    bool is_badge_rectangle = false;
-    // The taskbar badge should be the profile avatar, not the OTR avatar.
-    AvatarMenu::GetImageForMenuButton(browser_view_->browser()->profile(),
-                                      &taskbar_badge_avatar,
-                                      &is_badge_rectangle);
-#endif
-  } else if (avatar_button_ || AvatarMenu::ShouldShowAvatarMenu()) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    Profile* profile = browser_view_->browser()->profile();
-    size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-    if (index == std::string::npos)
-      return;
-    text = cache.GetNameOfProfileAtIndex(index);
+  AvatarMenuButton::GetAvatarImages(browser_view_->browser()->profile(),
+                                    &avatar, &taskbar_badge_avatar,
+                                    &is_rectangle);
 
-    AvatarMenu::GetImageForMenuButton(browser_view_->browser()->profile(),
-                                      &avatar,
-                                      &is_rectangle);
-    // Disable the menu when we should not show the menu.
-    if (avatar_button_ && !AvatarMenu::ShouldShowAvatarMenu())
-      avatar_button_->SetEnabled(false);
-  }
+  // Disable the menu when we should not show the menu.
+  if (avatar_button_ && !AvatarMenu::ShouldShowAvatarMenu())
+    avatar_button_->SetEnabled(false);
   if (avatar_button_)
     avatar_button_->SetAvatarIcon(avatar, is_rectangle);
-
-  // For popups and panels which don't have the avatar button, we still
-  // need to draw the taskbar decoration. Even though we have an icon on the
-  // window's relaunch details, we draw over it because the user may have pinned
-  // the badge-less Chrome shortcut which will cause windows to ignore the
-  // relaunch details.
-  // TODO(calamity): ideally this should not be necessary but due to issues with
-  // the default shortcut being pinned, we add the runtime badge for safety.
-  // See crbug.com/313800.
-  chrome::DrawTaskbarDecoration(
-      frame_->GetNativeWindow(),
-      AvatarMenu::ShouldShowAvatarMenu()
-          ? (taskbar_badge_avatar.IsEmpty() ? &avatar : &taskbar_badge_avatar)
-          : NULL);
 }
 
 void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
@@ -170,4 +150,32 @@ void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
     new_avatar_button_ = NULL;
     frame_->GetRootView()->Layout();
   }
+}
+
+void BrowserNonClientFrameView::DrawTaskbarDecoration(
+    const gfx::Image& avatar,
+    const gfx::Image& taskbar_badge_avatar) {
+  // For popups and panels which don't have the avatar button, we still
+  // need to draw the taskbar decoration. Even though we have an icon on the
+  // window's relaunch details, we draw over it because the user may have pinned
+  // the badge-less Chrome shortcut which will cause windows to ignore the
+  // relaunch details.
+  // TODO(calamity): ideally this should not be necessary but due to issues with
+  // the default shortcut being pinned, we add the runtime badge for safety.
+  // See crbug.com/313800.
+  chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(),
+      AvatarMenu::ShouldShowAvatarMenu()
+          ? (taskbar_badge_avatar.IsEmpty() ? &avatar : &taskbar_badge_avatar)
+          : NULL);
+}
+
+void BrowserNonClientFrameView::OnProfileAvatarChanged(
+    const base::FilePath& profile_path) {
+  gfx::Image avatar;
+  gfx::Image taskbar_badge_avatar;
+  bool is_rectangle;
+  AvatarMenuButton::GetAvatarImages(browser_view_->browser()->profile(),
+                                    &avatar, &taskbar_badge_avatar,
+                                    &is_rectangle);
+  DrawTaskbarDecoration(avatar, taskbar_badge_avatar);
 }

@@ -185,12 +185,14 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Returns the decoded image at |image_path|. Used both by the GAIA profile
   // image and the high res avatars.
   const gfx::Image* LoadAvatarPictureFromPath(
+      const base::FilePath& profile_path,
       const std::string& key,
       const base::FilePath& image_path) const;
 
   // Called when the picture given by |key| has been loaded from disk and
   // decoded into |image|.
-  void OnAvatarPictureLoaded(const std::string& key,
+  void OnAvatarPictureLoaded(const base::FilePath& profile_path,
+                             const std::string& key,
                              gfx::Image** image) const;
   // Called when the picture given by |file_name| has been saved to disk.
   // Used both for the GAIA profile picture and the high res avatar files.
@@ -206,7 +208,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::vector<std::string> sorted_keys_;
   base::FilePath user_data_dir_;
 
-  ObserverList<ProfileInfoCacheObserver> observer_list_;
+  mutable ObserverList<ProfileInfoCacheObserver> observer_list_;
 
   // A cache of gaia/high res avatar profile pictures. This cache is updated
   // lazily so it needs to be mutable.

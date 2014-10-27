@@ -381,7 +381,7 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
     return NULL;
 
   base::FilePath image_path = path.AppendASCII(file_name);
-  return LoadAvatarPictureFromPath(key, image_path);
+  return LoadAvatarPictureFromPath(path, key, image_path);
 }
 
 bool ProfileInfoCache::IsUsingGAIAPictureOfProfileAtIndex(size_t index) const {
@@ -994,10 +994,12 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
 
   base::FilePath image_path =
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
-  return LoadAvatarPictureFromPath(key, image_path);
+  return LoadAvatarPictureFromPath(GetPathOfProfileAtIndex(index),
+                                   key, image_path);
 }
 
 const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
+    const base::FilePath& profile_path,
     const std::string& key,
     const base::FilePath& image_path) const {
   // If the picture is already loaded then use it.
@@ -1016,11 +1018,13 @@ const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ReadBitmap, image_path, image),
       base::Bind(&ProfileInfoCache::OnAvatarPictureLoaded,
-          const_cast<ProfileInfoCache*>(this)->AsWeakPtr(), key, image));
+          const_cast<ProfileInfoCache*>(this)->AsWeakPtr(),
+          profile_path, key, image));
   return NULL;
 }
 
-void ProfileInfoCache::OnAvatarPictureLoaded(const std::string& key,
+void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
+                                             const std::string& key,
                                              gfx::Image** image) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1039,6 +1043,10 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const std::string& key,
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
+
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileAvatarChanged(profile_path));
 }
 
 void ProfileInfoCache::OnAvatarPictureSaved(

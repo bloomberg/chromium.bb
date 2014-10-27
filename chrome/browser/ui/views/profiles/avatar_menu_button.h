@@ -18,6 +18,7 @@ class Canvas;
 class Image;
 }
 class Browser;
+class Profile;
 
 // AvatarMenuButton
 //
@@ -49,6 +50,15 @@ class AvatarMenuButton : public views::MenuButton,
     button_on_right_ = button_on_right;
   }
   bool button_on_right() { return button_on_right_; }
+
+  // Get avatar images for the profile.  |avatar| is used in the browser window
+  // whereas |taskbar_badge_avatar| is used for the OS taskbar.  If
+  // |taskbar_badge_avatar| is empty then |avatar| should be used for the
+  // taskbar as well.
+  static void GetAvatarImages(Profile* profile,
+                              gfx::Image* avatar,
+                              gfx::Image* taskbar_badge_avatar,
+                              bool *is_rectangle);
 
  private:
   // views::ViewTargeterDelegate:
