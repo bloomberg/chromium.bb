@@ -11,11 +11,11 @@ namespace extensions {
 
 class AppShellTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
-  virtual int RunTestSuite(int argc, char** argv) override;
-  virtual bool AdjustChildProcessCommandLine(
+  int RunTestSuite(int argc, char** argv) override;
+  bool AdjustChildProcessCommandLine(
       base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) override;
-  virtual content::ContentMainDelegate* CreateContentMainDelegate() override;
+  content::ContentMainDelegate* CreateContentMainDelegate() override;
 };
 
 }  // namespace extensions

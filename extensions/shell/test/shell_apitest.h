@@ -16,7 +16,7 @@ namespace extensions {
 class ShellApiTest : public AppShellTest {
  public:
   ShellApiTest();
-  virtual ~ShellApiTest();
+  ~ShellApiTest() override;
 
   // Loads an unpacked platform app from a directory using the current
   // ExtensionSystem, launches it, and waits for a chrome.test success

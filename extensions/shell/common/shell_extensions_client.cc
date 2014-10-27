@@ -38,31 +38,30 @@ SimpleFeature* CreateFeature() {
 class ShellPermissionMessageProvider : public PermissionMessageProvider {
  public:
   ShellPermissionMessageProvider() {}
-  virtual ~ShellPermissionMessageProvider() {}
+  ~ShellPermissionMessageProvider() override {}
 
   // PermissionMessageProvider implementation.
-  virtual PermissionMessages GetPermissionMessages(
+  PermissionMessages GetPermissionMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override {
     return PermissionMessages();
   }
 
-  virtual std::vector<base::string16> GetWarningMessages(
+  std::vector<base::string16> GetWarningMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override {
     return std::vector<base::string16>();
   }
 
-  virtual std::vector<base::string16> GetWarningMessagesDetails(
+  std::vector<base::string16> GetWarningMessagesDetails(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override {
     return std::vector<base::string16>();
   }
 
-  virtual bool IsPrivilegeIncrease(
-      const PermissionSet* old_permissions,
-      const PermissionSet* new_permissions,
-      Manifest::Type extension_type) const override {
+  bool IsPrivilegeIncrease(const PermissionSet* old_permissions,
+                           const PermissionSet* new_permissions,
+                           Manifest::Type extension_type) const override {
     // Ensure we implement this before shipping.
     CHECK(false);
     return false;

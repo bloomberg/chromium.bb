@@ -25,10 +25,10 @@ class ShellExtensionSystem;
 class AppShellTest : public content::BrowserTestBase {
  public:
   AppShellTest();
-  virtual ~AppShellTest();
+  ~AppShellTest() override;
 
   // content::BrowserTestBase implementation.
-  virtual void SetUp() override;
+  void SetUp() override;
   void SetUpOnMainThread() override;
   void RunTestOnMainThreadLoop() override;
 

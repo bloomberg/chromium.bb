@@ -19,7 +19,7 @@ class ShellExtensionWebContentsObserver
 
   explicit ShellExtensionWebContentsObserver(
       content::WebContents* web_contents);
-  virtual ~ShellExtensionWebContentsObserver();
+  ~ShellExtensionWebContentsObserver() override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionWebContentsObserver);
 };

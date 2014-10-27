@@ -49,13 +49,13 @@ namespace {
 class FillLayout : public aura::LayoutManager {
  public:
   FillLayout() {}
-  virtual ~FillLayout() {}
+  ~FillLayout() override {}
 
  private:
   // aura::LayoutManager:
-  virtual void OnWindowResized() override {}
+  void OnWindowResized() override {}
 
-  virtual void OnWindowAddedToLayout(aura::Window* child) override {
+  void OnWindowAddedToLayout(aura::Window* child) override {
     if (!child->parent())
       return;
 
@@ -64,15 +64,15 @@ class FillLayout : public aura::LayoutManager {
     child->SetBounds(gfx::Rect(parent_size));
   }
 
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
 
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override {}
 
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) override {}
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override {}
 
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override {
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, requested_bounds);
   }
 
@@ -85,17 +85,17 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
  public:
   explicit ShellNativeCursorManager(aura::WindowTreeHost* host)
       : host_(host), image_cursors_(new ui::ImageCursors) {}
-  virtual ~ShellNativeCursorManager() {}
+  ~ShellNativeCursorManager() override {}
 
   // wm::NativeCursorManager overrides.
-  virtual void SetDisplay(const gfx::Display& display,
-                          wm::NativeCursorManagerDelegate* delegate) override {
+  void SetDisplay(const gfx::Display& display,
+                  wm::NativeCursorManagerDelegate* delegate) override {
     if (image_cursors_->SetDisplay(display, display.device_scale_factor()))
       SetCursor(delegate->GetCursor(), delegate);
   }
 
-  virtual void SetCursor(gfx::NativeCursor cursor,
-                         wm::NativeCursorManagerDelegate* delegate) override {
+  void SetCursor(gfx::NativeCursor cursor,
+                 wm::NativeCursorManagerDelegate* delegate) override {
     image_cursors_->SetPlatformCursor(&cursor);
     cursor.set_device_scale_factor(image_cursors_->GetScale());
     delegate->CommitCursor(cursor);
@@ -104,9 +104,8 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
       ApplyCursor(cursor);
   }
 
-  virtual void SetVisibility(
-      bool visible,
-      wm::NativeCursorManagerDelegate* delegate) override {
+  void SetVisibility(bool visible,
+                     wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitVisibility(visible);
 
     if (visible) {
@@ -118,16 +117,15 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
     }
   }
 
-  virtual void SetCursorSet(
-      ui::CursorSetType cursor_set,
-      wm::NativeCursorManagerDelegate* delegate) override {
+  void SetCursorSet(ui::CursorSetType cursor_set,
+                    wm::NativeCursorManagerDelegate* delegate) override {
     image_cursors_->SetCursorSet(cursor_set);
     delegate->CommitCursorSet(cursor_set);
     if (delegate->IsCursorVisible())
       SetCursor(delegate->GetCursor(), delegate);
   }
 
-  virtual void SetMouseEventsEnabled(
+  void SetMouseEventsEnabled(
       bool enabled,
       wm::NativeCursorManagerDelegate* delegate) override {
     delegate->CommitMouseEventsEnabled(enabled);
@@ -148,9 +146,9 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
 class AppsFocusRules : public wm::BaseFocusRules {
  public:
   AppsFocusRules() {}
-  virtual ~AppsFocusRules() {}
+  ~AppsFocusRules() override {}
 
-  virtual bool SupportsChildActivation(aura::Window* window) const override {
+  bool SupportsChildActivation(aura::Window* window) const override {
     return true;
   }
 

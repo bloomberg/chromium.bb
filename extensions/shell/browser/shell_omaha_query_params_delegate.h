@@ -13,9 +13,9 @@ class ShellOmahaQueryParamsDelegate
     : public omaha_query_params::OmahaQueryParamsDelegate {
  public:
   ShellOmahaQueryParamsDelegate();
-  virtual ~ShellOmahaQueryParamsDelegate();
+  ~ShellOmahaQueryParamsDelegate() override;
 
-  virtual std::string GetExtraParams() override;
+  std::string GetExtraParams() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellOmahaQueryParamsDelegate);

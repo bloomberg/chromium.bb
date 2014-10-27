@@ -12,16 +12,16 @@ namespace extensions {
 class ShellDisplayInfoProvider : public DisplayInfoProvider {
  public:
   ShellDisplayInfoProvider();
-  virtual ~ShellDisplayInfoProvider();
+  ~ShellDisplayInfoProvider() override;
 
   // DisplayInfoProvider implementation.
-  virtual bool SetInfo(const std::string& display_id,
-                       const core_api::system_display::DisplayProperties& info,
-                       std::string* error) override;
-  virtual void UpdateDisplayUnitInfoForPlatform(
+  bool SetInfo(const std::string& display_id,
+               const core_api::system_display::DisplayProperties& info,
+               std::string* error) override;
+  void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
       extensions::core_api::system_display::DisplayUnitInfo* unit) override;
-  virtual gfx::Screen* GetActiveScreen() override;
+  gfx::Screen* GetActiveScreen() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDisplayInfoProvider);

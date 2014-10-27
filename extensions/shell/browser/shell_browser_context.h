@@ -24,11 +24,11 @@ class ShellSpecialStoragePolicy;
 class ShellBrowserContext : public content::ShellBrowserContext {
  public:
   explicit ShellBrowserContext(net::NetLog* net_log);
-  virtual ~ShellBrowserContext();
+  ~ShellBrowserContext() override;
 
   // content::BrowserContext implementation.
-  virtual content::BrowserPluginGuestManager* GetGuestManager() override;
-  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  content::BrowserPluginGuestManager* GetGuestManager() override;
+  storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
 
   net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,

@@ -22,33 +22,32 @@ class ShellRendererMainDelegate;
 class ShellContentRendererClient : public content::ContentRendererClient {
  public:
   ShellContentRendererClient();
-  virtual ~ShellContentRendererClient();
+  ~ShellContentRendererClient() override;
 
   // content::ContentRendererClient implementation:
-  virtual void RenderThreadStarted() override;
-  virtual void RenderFrameCreated(content::RenderFrame* render_frame) override;
-  virtual void RenderViewCreated(content::RenderView* render_view) override;
-  virtual bool OverrideCreatePlugin(content::RenderFrame* render_frame,
-                                    blink::WebLocalFrame* frame,
-                                    const blink::WebPluginParams& params,
-                                    blink::WebPlugin** plugin) override;
-  virtual blink::WebPlugin* CreatePluginReplacement(
+  void RenderThreadStarted() override;
+  void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  void RenderViewCreated(content::RenderView* render_view) override;
+  bool OverrideCreatePlugin(content::RenderFrame* render_frame,
+                            blink::WebLocalFrame* frame,
+                            const blink::WebPluginParams& params,
+                            blink::WebPlugin** plugin) override;
+  blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
-  virtual bool WillSendRequest(blink::WebFrame* frame,
-                               ui::PageTransition transition_type,
-                               const GURL& url,
-                               const GURL& first_party_for_cookies,
-                               GURL* new_url) override;
-  virtual void DidCreateScriptContext(blink::WebFrame* frame,
-                                      v8::Handle<v8::Context> context,
-                                      int extension_group,
-                                      int world_id) override;
-  virtual const void* CreatePPAPIInterface(
-      const std::string& interface_name) override;
-  virtual bool IsExternalPepperPlugin(const std::string& module_name) override;
-  virtual bool ShouldEnableSiteIsolationPolicy() const override;
-  virtual content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
+  bool WillSendRequest(blink::WebFrame* frame,
+                       ui::PageTransition transition_type,
+                       const GURL& url,
+                       const GURL& first_party_for_cookies,
+                       GURL* new_url) override;
+  void DidCreateScriptContext(blink::WebFrame* frame,
+                              v8::Handle<v8::Context> context,
+                              int extension_group,
+                              int world_id) override;
+  const void* CreatePPAPIInterface(const std::string& interface_name) override;
+  bool IsExternalPepperPlugin(const std::string& module_name) override;
+  bool ShouldEnableSiteIsolationPolicy() const override;
+  content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
       const std::string& mime_type) override;
 

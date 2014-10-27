@@ -18,10 +18,10 @@ class ShellIdentityGetAuthTokenFunction : public UIThreadExtensionFunction {
   ShellIdentityGetAuthTokenFunction();
 
  protected:
-  virtual ~ShellIdentityGetAuthTokenFunction();
+  ~ShellIdentityGetAuthTokenFunction() override;
 
   // ExtensionFunction:
-  virtual ResponseAction Run() override;
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellIdentityGetAuthTokenFunction);

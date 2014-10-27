@@ -39,11 +39,10 @@ class ShellFrameHelper
  public:
   ShellFrameHelper(content::RenderFrame* render_frame,
                    Dispatcher* extension_dispatcher);
-  virtual ~ShellFrameHelper();
+  ~ShellFrameHelper() override;
 
   // RenderFrameObserver implementation.
-  virtual void WillReleaseScriptContext(v8::Handle<v8::Context>,
-                                        int world_id) override;
+  void WillReleaseScriptContext(v8::Handle<v8::Context>, int world_id) override;
 
  private:
   Dispatcher* extension_dispatcher_;

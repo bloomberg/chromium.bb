@@ -40,10 +40,10 @@ class ShellURLRequestContextGetter :
       InfoMap* extension_info_map);
 
   // content::ShellURLRequestContextGetter implementation.
-  virtual net::NetworkDelegate* CreateNetworkDelegate() override;
+  net::NetworkDelegate* CreateNetworkDelegate() override;
 
 protected:
-  virtual ~ShellURLRequestContextGetter();
+ ~ShellURLRequestContextGetter() override;
 
 private:
   content::BrowserContext* browser_context_;

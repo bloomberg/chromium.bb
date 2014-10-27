@@ -24,9 +24,9 @@ class ShellDesktopControllerTest : public aura::test::AuraTestBase {
 #endif
       {
   }
-  virtual ~ShellDesktopControllerTest() {}
+  ~ShellDesktopControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
 #if defined(OS_CHROMEOS)
     scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
@@ -37,7 +37,7 @@ class ShellDesktopControllerTest : public aura::test::AuraTestBase {
     controller_.reset(new ShellDesktopController());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     controller_.reset();
     aura::test::AuraTestBase::TearDown();
 #if defined(OS_CHROMEOS)

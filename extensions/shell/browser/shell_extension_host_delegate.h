@@ -14,29 +14,25 @@ namespace extensions {
 class ShellExtensionHostDelegate : public ExtensionHostDelegate {
  public:
   ShellExtensionHostDelegate();
-  virtual ~ShellExtensionHostDelegate();
+  ~ShellExtensionHostDelegate() override;
 
   // ExtensionHostDelegate implementation.
-  virtual void OnExtensionHostCreated(
-      content::WebContents* web_contents) override;
-  virtual void OnRenderViewCreatedForBackgroundPage(
-      ExtensionHost* host) override;
-  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
-      override;
-  virtual void CreateTab(content::WebContents* web_contents,
-                         const std::string& extension_id,
-                         WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_pos,
-                         bool user_gesture) override;
-  virtual void ProcessMediaAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const Extension* extension) override;
-  virtual bool CheckMediaAccessPermission(content::WebContents* web_contents,
-                                          const GURL& security_origin,
-                                          content::MediaStreamType type,
-                                          const Extension* extension) override;
+  void OnExtensionHostCreated(content::WebContents* web_contents) override;
+  void OnRenderViewCreatedForBackgroundPage(ExtensionHost* host) override;
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager() override;
+  void CreateTab(content::WebContents* web_contents,
+                 const std::string& extension_id,
+                 WindowOpenDisposition disposition,
+                 const gfx::Rect& initial_pos,
+                 bool user_gesture) override;
+  void ProcessMediaAccessRequest(content::WebContents* web_contents,
+                                 const content::MediaStreamRequest& request,
+                                 const content::MediaResponseCallback& callback,
+                                 const Extension* extension) override;
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type,
+                                  const Extension* extension) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionHostDelegate);

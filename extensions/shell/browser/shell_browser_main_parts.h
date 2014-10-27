@@ -47,21 +47,21 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
  public:
   ShellBrowserMainParts(const content::MainFunctionParams& parameters,
                         ShellBrowserMainDelegate* browser_main_delegate);
-  virtual ~ShellBrowserMainParts();
+  ~ShellBrowserMainParts() override;
 
   ShellBrowserContext* browser_context() { return browser_context_.get(); }
 
   ShellExtensionSystem* extension_system() { return extension_system_; }
 
   // BrowserMainParts overrides.
-  virtual void PreEarlyInitialization() override;
-  virtual void PreMainMessageLoopStart() override;
-  virtual void PostMainMessageLoopStart() override;
-  virtual int PreCreateThreads() override;
-  virtual void PreMainMessageLoopRun() override;
-  virtual bool MainMessageLoopRun(int* result_code) override;
-  virtual void PostMainMessageLoopRun() override;
-  virtual void PostDestroyThreads() override;
+  void PreEarlyInitialization() override;
+  void PreMainMessageLoopStart() override;
+  void PostMainMessageLoopStart() override;
+  int PreCreateThreads() override;
+  void PreMainMessageLoopRun() override;
+  bool MainMessageLoopRun(int* result_code) override;
+  void PostMainMessageLoopRun() override;
+  void PostDestroyThreads() override;
 
  private:
   // Creates and initializes the ExtensionSystem.

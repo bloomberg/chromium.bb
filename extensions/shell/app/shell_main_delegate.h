@@ -22,16 +22,15 @@ class ShellBrowserMainDelegate;
 class ShellMainDelegate : public content::ContentMainDelegate {
  public:
   ShellMainDelegate();
-  virtual ~ShellMainDelegate();
+  ~ShellMainDelegate() override;
 
   // ContentMainDelegate implementation:
-  virtual bool BasicStartupComplete(int* exit_code) override;
-  virtual void PreSandboxStartup() override;
-  virtual content::ContentBrowserClient* CreateContentBrowserClient() override;
-  virtual content::ContentRendererClient* CreateContentRendererClient()
-      override;
+  bool BasicStartupComplete(int* exit_code) override;
+  void PreSandboxStartup() override;
+  content::ContentBrowserClient* CreateContentBrowserClient() override;
+  content::ContentRendererClient* CreateContentRendererClient() override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  virtual void ZygoteStarting(
+  void ZygoteStarting(
       ScopedVector<content::ZygoteForkDelegate>* delegates) override;
 #endif
 

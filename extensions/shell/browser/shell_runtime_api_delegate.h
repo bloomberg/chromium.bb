@@ -13,19 +13,19 @@ namespace extensions {
 class ShellRuntimeAPIDelegate : public RuntimeAPIDelegate {
  public:
   ShellRuntimeAPIDelegate();
-  virtual ~ShellRuntimeAPIDelegate();
+  ~ShellRuntimeAPIDelegate() override;
 
   // RuntimeAPIDelegate implementation.
-  virtual void AddUpdateObserver(UpdateObserver* observer) override;
-  virtual void RemoveUpdateObserver(UpdateObserver* observer) override;
-  virtual base::Version GetPreviousExtensionVersion(
+  void AddUpdateObserver(UpdateObserver* observer) override;
+  void RemoveUpdateObserver(UpdateObserver* observer) override;
+  base::Version GetPreviousExtensionVersion(
       const Extension* extension) override;
-  virtual void ReloadExtension(const std::string& extension_id) override;
-  virtual bool CheckForUpdates(const std::string& extension_id,
-                               const UpdateCheckCallback& callback) override;
-  virtual void OpenURL(const GURL& uninstall_url) override;
-  virtual bool GetPlatformInfo(core_api::runtime::PlatformInfo* info) override;
-  virtual bool RestartDevice(std::string* error_message) override;
+  void ReloadExtension(const std::string& extension_id) override;
+  bool CheckForUpdates(const std::string& extension_id,
+                       const UpdateCheckCallback& callback) override;
+  void OpenURL(const GURL& uninstall_url) override;
+  bool GetPlatformInfo(core_api::runtime::PlatformInfo* info) override;
+  bool RestartDevice(std::string* error_message) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellRuntimeAPIDelegate);

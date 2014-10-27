@@ -16,16 +16,16 @@ class ShellSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   ShellSpecialStoragePolicy();
 
   // storage::SpecialStoragePolicy implementation.
-  virtual bool IsStorageProtected(const GURL& origin) override;
-  virtual bool IsStorageUnlimited(const GURL& origin) override;
-  virtual bool IsStorageSessionOnly(const GURL& origin) override;
-  virtual bool CanQueryDiskSize(const GURL& origin) override;
-  virtual bool IsFileHandler(const std::string& extension_id) override;
-  virtual bool HasIsolatedStorage(const GURL& origin) override;
-  virtual bool HasSessionOnlyOrigins() override;
+  bool IsStorageProtected(const GURL& origin) override;
+  bool IsStorageUnlimited(const GURL& origin) override;
+  bool IsStorageSessionOnly(const GURL& origin) override;
+  bool CanQueryDiskSize(const GURL& origin) override;
+  bool IsFileHandler(const std::string& extension_id) override;
+  bool HasIsolatedStorage(const GURL& origin) override;
+  bool HasSessionOnlyOrigins() override;
 
  protected:
-  virtual ~ShellSpecialStoragePolicy();
+  ~ShellSpecialStoragePolicy() override;
 };
 
 }  // namespace extensions

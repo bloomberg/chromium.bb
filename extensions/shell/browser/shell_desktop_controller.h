@@ -64,20 +64,20 @@ class ShellDesktopController : public DesktopController,
                                public aura::WindowTreeHostObserver {
  public:
   ShellDesktopController();
-  virtual ~ShellDesktopController();
+  ~ShellDesktopController() override;
 
   // DesktopController:
-  virtual aura::WindowTreeHost* GetHost() override;
-  virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
-                                     const Extension* extension) override;
-  virtual void AddAppWindow(aura::Window* window) override;
-  virtual void RemoveAppWindow(AppWindow* window) override;
-  virtual void CloseAppWindows() override;
+  aura::WindowTreeHost* GetHost() override;
+  AppWindow* CreateAppWindow(content::BrowserContext* context,
+                             const Extension* extension) override;
+  void AddAppWindow(aura::Window* window) override;
+  void RemoveAppWindow(AppWindow* window) override;
+  void CloseAppWindows() override;
 
   // aura::client::WindowTreeClient overrides:
-  virtual aura::Window* GetDefaultParent(aura::Window* context,
-                                         aura::Window* window,
-                                         const gfx::Rect& bounds) override;
+  aura::Window* GetDefaultParent(aura::Window* context,
+                                 aura::Window* window,
+                                 const gfx::Rect& bounds) override;
 
 #if defined(OS_CHROMEOS)
   // chromeos::PowerManagerClient::Observer overrides:
@@ -91,7 +91,7 @@ class ShellDesktopController : public DesktopController,
 #endif
 
   // aura::WindowTreeHostObserver overrides:
-  virtual void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
+  void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
  protected:
   // Creates and sets the aura clients and window manager stuff. Subclass may

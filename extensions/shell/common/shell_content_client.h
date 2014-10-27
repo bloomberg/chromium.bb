@@ -14,21 +14,20 @@ namespace extensions {
 class ShellContentClient : public content::ContentClient {
  public:
   ShellContentClient();
-  virtual ~ShellContentClient();
+  ~ShellContentClient() override;
 
-  virtual void AddPepperPlugins(
+  void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) override;
-  virtual void AddAdditionalSchemes(
-      std::vector<std::string>* standard_schemes,
-      std::vector<std::string>* saveable_shemes) override;
-  virtual std::string GetUserAgent() const override;
-  virtual base::string16 GetLocalizedString(int message_id) const override;
-  virtual base::StringPiece GetDataResource(
+  void AddAdditionalSchemes(std::vector<std::string>* standard_schemes,
+                            std::vector<std::string>* saveable_shemes) override;
+  std::string GetUserAgent() const override;
+  base::string16 GetLocalizedString(int message_id) const override;
+  base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
-  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
+  base::RefCountedStaticMemory* GetDataResourceBytes(
       int resource_id) const override;
-  virtual gfx::Image& GetNativeImageNamed(int resource_id) const override;
+  gfx::Image& GetNativeImageNamed(int resource_id) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellContentClient);
