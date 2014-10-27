@@ -454,12 +454,12 @@ InspectorTest.TempFileMock = function(dirPath, name, callback)
 
 InspectorTest.TempFileMock.prototype = {
     /**
-     * @param {!Array.<string>} strings
+     * @param {!Array.<string>} chunks
      * @param {!function(boolean)} callback
      */
-    write: function(strings, callback)
+    write: function(chunks, callback)
     {
-        this._chunks.push.apply(this._chunks, strings);
+        this._chunks.push.apply(this._chunks, chunks);
         setTimeout(callback.bind(this, true), 1);
     },
 
@@ -470,7 +470,25 @@ InspectorTest.TempFileMock.prototype = {
      */
     read: function(callback)
     {
-        callback(this._chunks.join(""));
+        this.readRange(undefined, undefined, callback);
+    },
+
+    /**
+     * @param {number|undefined} startOffset
+     * @param {number|undefined} endOffset
+     * @param {function(?string)} callback
+     */
+    readRange: function(startOffset, endOffset, callback)
+    {
+        var blob = new Blob(this._chunks);
+        blob = blob.slice(startOffset || 0, endOffset || blob.size);
+        reader = new FileReader();
+        var self = this;
+        reader.onloadend = function()
+        {
+            callback(reader.result);
+        }
+        reader.readAsText(blob);
     },
 
     /**
