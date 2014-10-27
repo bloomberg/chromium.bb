@@ -159,8 +159,8 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
     const HashSet<Page*>& pages = Page::ordinaryPages();
-    for (HashSet<Page*>::const_iterator it = pages.begin(); it != pages.end(); ++it) {
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Page* page : pages) {
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
             if (!frame->isLocalFrame())
                 continue;
@@ -168,7 +168,7 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
             if (storage && toLocalFrame(frame)->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
                 frame->domWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
         }
-        InspectorInstrumentation::didDispatchDOMStorageEvent(*it, key, oldValue, newValue, LocalStorage, securityOrigin);
+        InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, LocalStorage, securityOrigin);
     }
 }
 
@@ -176,13 +176,13 @@ static Page* findPageWithSessionStorageNamespace(const WebStorageNamespace& sess
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
     const HashSet<Page*>& pages = Page::ordinaryPages();
-    for (HashSet<Page*>::const_iterator it = pages.begin(); it != pages.end(); ++it) {
+    for (Page* page : pages) {
         const bool dontCreateIfMissing = false;
-        StorageNamespace* storageNamespace = (*it)->sessionStorage(dontCreateIfMissing);
+        StorageNamespace* storageNamespace = page->sessionStorage(dontCreateIfMissing);
         if (storageNamespace && storageNamespace->isSameNamespace(sessionNamespace))
-            return *it;
+            return page;
     }
-    return 0;
+    return nullptr;
 }
 
 void StorageArea::dispatchSessionStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, const WebStorageNamespace& sessionNamespace, WebStorageArea* sourceAreaInstance, bool originatedInProcess)
