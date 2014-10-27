@@ -27,27 +27,25 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
  public:
   BubbleDelegateView();
   BubbleDelegateView(View* anchor_view, BubbleBorder::Arrow arrow);
-  virtual ~BubbleDelegateView();
+  ~BubbleDelegateView() override;
 
   // Create and initialize the bubble Widget(s) with proper bounds.
   static Widget* CreateBubble(BubbleDelegateView* bubble_delegate);
 
   // WidgetDelegateView overrides:
-  virtual BubbleDelegateView* AsBubbleDelegate() override;
-  virtual bool ShouldShowCloseButton() const override;
-  virtual View* GetContentsView() override;
-  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  BubbleDelegateView* AsBubbleDelegate() override;
+  bool ShouldShowCloseButton() const override;
+  View* GetContentsView() override;
+  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // WidgetObserver overrides:
-  virtual void OnWidgetDestroying(Widget* widget) override;
-  virtual void OnWidgetVisibilityChanging(Widget* widget, bool visible)
-      override;
-  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible)
-      override;
-  virtual void OnWidgetActivationChanged(Widget* widget, bool active) override;
-  virtual void OnWidgetBoundsChanged(Widget* widget,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWidgetDestroying(Widget* widget) override;
+  void OnWidgetVisibilityChanging(Widget* widget, bool visible) override;
+  void OnWidgetVisibilityChanged(Widget* widget, bool visible) override;
+  void OnWidgetActivationChanged(Widget* widget, bool active) override;
+  void OnWidgetBoundsChanged(Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   bool close_on_esc() const { return close_on_esc_; }
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
@@ -119,8 +117,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual const gfx::FontList& GetTitleFontList() const;
 
   // View overrides:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();

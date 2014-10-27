@@ -26,10 +26,10 @@ class TestBubbleFrameView : public BubbleFrameView {
     SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
         new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor)));
   }
-  virtual ~TestBubbleFrameView() {}
+  ~TestBubbleFrameView() override {}
 
   // BubbleFrameView overrides:
-  virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) override {
+  gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) override {
     return available_bounds_;
   }
 

@@ -22,7 +22,7 @@ class TestBubbleDelegateView : public BubbleDelegateView {
     view_->SetFocusable(true);
     AddChildView(view_);
   }
-  virtual ~TestBubbleDelegateView() {}
+  ~TestBubbleDelegateView() override {}
 
   void SetAnchorRectForTest(gfx::Rect rect) {
     SetAnchorRect(rect);
@@ -33,10 +33,8 @@ class TestBubbleDelegateView : public BubbleDelegateView {
   }
 
   // BubbleDelegateView overrides:
-  virtual View* GetInitiallyFocusedView() override { return view_; }
-  virtual gfx::Size GetPreferredSize() const override {
-    return gfx::Size(200, 200);
-  }
+  View* GetInitiallyFocusedView() override { return view_; }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
 
  private:
   View* view_;
@@ -47,7 +45,7 @@ class TestBubbleDelegateView : public BubbleDelegateView {
 class BubbleDelegateTest : public ViewsTestBase {
  public:
   BubbleDelegateTest() {}
-  virtual ~BubbleDelegateTest() {}
+  ~BubbleDelegateTest() override {}
 
   // Creates a test widget that owns its native widget.
   Widget* CreateTestWidget() {

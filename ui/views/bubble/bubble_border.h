@@ -109,7 +109,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   };
 
   BubbleBorder(Arrow arrow, Shadow shadow, SkColor color);
-  virtual ~BubbleBorder();
+  ~BubbleBorder() override;
 
   // Returns the radius of the corner of the border.
   // TODO(xiyuan): Get rid of this since it's part of BorderImages now?
@@ -196,9 +196,9 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   int GetArrowOffset(const gfx::Size& border_size) const;
 
   // Overridden from Border:
-  virtual void Paint(const View& view, gfx::Canvas* canvas) override;
-  virtual gfx::Insets GetInsets() const override;
-  virtual gfx::Size GetMinimumSize() const override;
+  void Paint(const View& view, gfx::Canvas* canvas) override;
+  gfx::Insets GetInsets() const override;
+  gfx::Size GetMinimumSize() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetSizeForContentsSizeTest);
@@ -233,7 +233,7 @@ class VIEWS_EXPORT BubbleBackground : public Background {
   explicit BubbleBackground(BubbleBorder* border) : border_(border) {}
 
   // Overridden from Background:
-  virtual void Paint(gfx::Canvas* canvas, View* view) const override;
+  void Paint(gfx::Canvas* canvas, View* view) const override;
 
  private:
   BubbleBorder* border_;

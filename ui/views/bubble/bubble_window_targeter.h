@@ -18,12 +18,11 @@ class VIEWS_EXPORT BubbleWindowTargeter
     : public NON_EXPORTED_BASE(wm::MaskedWindowTargeter) {
  public:
   explicit BubbleWindowTargeter(BubbleDelegateView* bubble);
-  virtual ~BubbleWindowTargeter();
+  ~BubbleWindowTargeter() override;
 
  private:
   // wm::MaskedWindowTargeter:
-  virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const override;
+  bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const override;
 
   views::BubbleDelegateView* bubble_;
 

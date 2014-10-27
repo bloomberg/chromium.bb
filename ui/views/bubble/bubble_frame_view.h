@@ -30,7 +30,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   static const char kViewClassName[];
 
   explicit BubbleFrameView(const gfx::Insets& content_margins);
-  virtual ~BubbleFrameView();
+  ~BubbleFrameView() override;
 
   // Insets to make bubble contents align horizontal with the bubble title.
   // NOTE: this does not take into account whether a title actually exists.
@@ -40,33 +40,32 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   static LabelButton* CreateCloseButton(ButtonListener* listener);
 
   // NonClientFrameView overrides:
-  virtual gfx::Rect GetBoundsForClientView() const override;
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
+  gfx::Rect GetBoundsForClientView() const override;
+  gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
-  virtual int NonClientHitTest(const gfx::Point& point) override;
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) override;
-  virtual void ResetWindowControls() override;
-  virtual void UpdateWindowIcon() override;
-  virtual void UpdateWindowTitle() override;
-  virtual void SizeConstraintsChanged() override;
+  int NonClientHitTest(const gfx::Point& point) override;
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
+  void ResetWindowControls() override;
+  void UpdateWindowIcon() override;
+  void UpdateWindowTitle() override;
+  void SizeConstraintsChanged() override;
 
   // Set the FontList to be used for the title of the bubble.
   // Caller must arrange to update the layout to have the call take effect.
   void SetTitleFontList(const gfx::FontList& font_list);
 
   // View overrides:
-  virtual gfx::Insets GetInsets() const override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual void Layout() override;
-  virtual const char* GetClassName() const override;
-  virtual void ChildPreferredSizeChanged(View* child) override;
-  virtual void OnThemeChanged() override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  gfx::Insets GetInsets() const override;
+  gfx::Size GetPreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
+  void Layout() override;
+  const char* GetClassName() const override;
+  void ChildPreferredSizeChanged(View* child) override;
+  void OnThemeChanged() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Use bubble_border() and SetBubbleBorder(), not border() and SetBorder().
   BubbleBorder* bubble_border() const { return bubble_border_; }

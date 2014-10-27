@@ -53,10 +53,10 @@ namespace internal {
 class MouseMoveDetectorHost : public MouseWatcherHost {
  public:
   MouseMoveDetectorHost();
-  virtual ~MouseMoveDetectorHost();
+  ~MouseMoveDetectorHost() override;
 
-  virtual bool Contains(const gfx::Point& screen_point,
-                        MouseEventType type) override;
+  bool Contains(const gfx::Point& screen_point, MouseEventType type) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MouseMoveDetectorHost);
 };
@@ -89,12 +89,12 @@ class TrayBubbleBorder : public BubbleBorder {
     set_paint_arrow(params.arrow_paint_type);
   }
 
-  virtual ~TrayBubbleBorder() {}
+  ~TrayBubbleBorder() override {}
 
   // Overridden from BubbleBorder.
   // Sets the bubble on top of the anchor when it has no arrow.
-  virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
-                              const gfx::Size& contents_size) const override {
+  gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
+                      const gfx::Size& contents_size) const override {
     if (has_arrow(arrow())) {
       gfx::Rect rect =
           BubbleBorder::GetBounds(position_relative_to, contents_size);
@@ -177,16 +177,15 @@ class TrayBubbleBorder : public BubbleBorder {
 class TrayBubbleContentMask : public ui::LayerDelegate {
  public:
   explicit TrayBubbleContentMask(int corner_radius);
-  virtual ~TrayBubbleContentMask();
+  ~TrayBubbleContentMask() override;
 
   ui::Layer* layer() { return &layer_; }
 
   // Overridden from LayerDelegate.
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  virtual base::Closure PrepareForLayerBoundsChange() override;
+  void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  base::Closure PrepareForLayerBoundsChange() override;
 
  private:
   ui::Layer layer_;
@@ -231,10 +230,10 @@ class BottomAlignedBoxLayout : public BoxLayout {
         bubble_view_(bubble_view) {
   }
 
-  virtual ~BottomAlignedBoxLayout() {}
+  ~BottomAlignedBoxLayout() override {}
 
  private:
-  virtual void Layout(View* host) override {
+  void Layout(View* host) override {
     if (host->height() >= host->GetPreferredSize().height() ||
         !bubble_view_->is_gesture_dragging()) {
       BoxLayout::Layout(host);
