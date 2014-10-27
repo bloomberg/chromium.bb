@@ -20,6 +20,9 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.py"
 readonly LLVM_TEST="pnacl/scripts/llvm-test.py"
 readonly CLANG_UPDATE="../tools/clang/scripts/update.py"
+readonly INSTALL_SUBDIR="toolchain/linux_x86/pnacl_newlib"
+readonly INSTALL_ABSPATH=$(pwd)/${INSTALL_SUBDIR}
+readonly LIBRARY_ABSPATH=${INSTALL_ABSPATH}/lib
 
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
@@ -156,7 +159,7 @@ tc-test-bot() {
   # Build the un-sandboxed toolchain. The build script outputs its own buildbot
   # annotations.
   ${TOOLCHAIN_BUILD} --verbose --sync --clobber --testsuite-sync --gcc\
-    --install toolchain/linux_x86/pnacl_newlib
+    --install ${INSTALL_SUBDIR}
 
   # Linking the tests require additional sdk libraries like libnacl.
   # Do this once and for all early instead of attempting to do it within
@@ -198,13 +201,14 @@ tc-test-bot() {
     for opt in "${optset[@]}"; do
       echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
       python ${LLVM_TEST} --testsuite-clean
-      python ${LLVM_TEST} \
+      LD_LIBRARY_PATH=${LIBRARY_ABSPATH} python ${LLVM_TEST} \
         --testsuite-configure --testsuite-run --testsuite-report \
         --arch ${arch} ${opt} -v -c || handle-error
     done
 
     echo "@@@BUILD_STEP libcxx-test ${arch} @@@"
-    python ${LLVM_TEST} --libcxx-test --arch ${arch} -c || handle-error
+    LD_LIBRARY_PATH=${LIBRARY_ABSPATH} python ${LLVM_TEST} \
+      --libcxx-test --arch ${arch} -c || handle-error
 
     # Note: we do not build the sandboxed translator on this bot
     # because this would add another 20min to the build time.
