@@ -85,7 +85,7 @@ class ManagePasswordItemView::PendingView : public views::View {
   explicit PendingView(ManagePasswordItemView* parent);
 
  private:
-  virtual ~PendingView();
+  ~PendingView() override;
 };
 
 ManagePasswordItemView::PendingView::PendingView(
@@ -111,11 +111,10 @@ class ManagePasswordItemView::ManageView : public views::View,
   explicit ManageView(ManagePasswordItemView* parent);
 
  private:
-  virtual ~ManageView();
+  ~ManageView() override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   views::ImageButton* delete_button_;
   ManagePasswordItemView* parent_;
@@ -161,10 +160,10 @@ class ManagePasswordItemView::UndoView : public views::View,
   explicit UndoView(ManagePasswordItemView* parent);
 
  private:
-  virtual ~UndoView();
+  ~UndoView() override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   views::Link* undo_link_;
   ManagePasswordItemView* parent_;

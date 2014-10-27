@@ -30,9 +30,9 @@ namespace metrics_util = password_manager::metrics_util;
 class ManagePasswordsBubbleViewTest : public ManagePasswordsTest {
  public:
   ManagePasswordsBubbleViewTest() {}
-  virtual ~ManagePasswordsBubbleViewTest() {}
+  ~ManagePasswordsBubbleViewTest() override {}
 
-  virtual ManagePasswordsIcon* view() override {
+  ManagePasswordsIcon* view() override {
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     return browser_view->GetToolbarView()
         ->location_bar()

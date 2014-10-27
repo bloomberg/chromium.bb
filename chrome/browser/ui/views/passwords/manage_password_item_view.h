@@ -32,7 +32,7 @@ class ManagePasswordItemView : public views::View {
   class PendingView;
   class UndoView;
 
-  virtual ~ManagePasswordItemView();
+  ~ManagePasswordItemView() override;
 
   void NotifyClickedDelete();
   void NotifyClickedUndo();

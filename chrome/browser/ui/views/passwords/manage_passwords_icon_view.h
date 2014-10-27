@@ -19,16 +19,16 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
                                 public BubbleIconView {
  public:
   explicit ManagePasswordsIconView(CommandUpdater* updater);
-  virtual ~ManagePasswordsIconView();
+  ~ManagePasswordsIconView() override;
 
   // BubbleIconView:
-  virtual bool IsBubbleShowing() const override;
-  virtual void OnExecuting(BubbleIconView::ExecuteSource source) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool IsBubbleShowing() const override;
+  void OnExecuting(BubbleIconView::ExecuteSource source) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // views::View:
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
 #if defined(UNIT_TEST)
   int icon_id() const { return icon_id_; }
@@ -37,7 +37,7 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
 
  protected:
   // ManagePasswordsIcon:
-  virtual void UpdateVisibleUI() override;
+  void UpdateVisibleUI() override;
 
  private:
 

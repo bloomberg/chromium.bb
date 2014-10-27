@@ -181,15 +181,14 @@ class ManagePasswordsBubbleView::PendingView : public views::View,
                                                public views::ComboboxListener {
  public:
   explicit PendingView(ManagePasswordsBubbleView* parent);
-  virtual ~PendingView();
+  ~PendingView() override;
 
  private:
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Handles the event when the user changes an index of a combobox.
-  virtual void OnPerformAction(views::Combobox* source) override;
+  void OnPerformAction(views::Combobox* source) override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -281,12 +280,11 @@ class ManagePasswordsBubbleView::ConfirmNeverView
       public views::ButtonListener {
  public:
   explicit ConfirmNeverView(ManagePasswordsBubbleView* parent);
-  virtual ~ConfirmNeverView();
+  ~ConfirmNeverView() override;
 
  private:
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -376,15 +374,14 @@ class ManagePasswordsBubbleView::ManageView : public views::View,
                                               public views::LinkListener {
  public:
   explicit ManageView(ManagePasswordsBubbleView* parent);
-  virtual ~ManageView();
+  ~ManageView() override;
 
  private:
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -488,12 +485,11 @@ class ManagePasswordsBubbleView::BlacklistedView
       public views::ButtonListener {
  public:
   explicit BlacklistedView(ManagePasswordsBubbleView* parent);
-  virtual ~BlacklistedView();
+  ~BlacklistedView() override;
 
  private:
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -571,16 +567,15 @@ class ManagePasswordsBubbleView::SaveConfirmationView
       public views::StyledLabelListener {
  public:
   explicit SaveConfirmationView(ManagePasswordsBubbleView* parent);
-  virtual ~SaveConfirmationView();
+  ~SaveConfirmationView() override;
 
  private:
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener implementation
-  virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) override;
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -650,10 +645,10 @@ class ManagePasswordsBubbleView::WebContentMouseHandler
     : public ui::EventHandler {
  public:
   explicit WebContentMouseHandler(ManagePasswordsBubbleView* bubble);
-  virtual ~WebContentMouseHandler();
+  ~WebContentMouseHandler() override;
 
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   aura::Window* GetWebContentsWindow();

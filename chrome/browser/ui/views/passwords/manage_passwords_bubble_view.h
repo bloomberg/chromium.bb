@@ -62,7 +62,7 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             ManagePasswordsIconView* anchor_view,
                             DisplayReason reason);
-  virtual ~ManagePasswordsBubbleView();
+  ~ManagePasswordsBubbleView() override;
 
   // If the bubble is not anchored to a view, places the bubble in the top
   // right (left in RTL) of the |screen_bounds| that contain |web_contents_|'s
@@ -90,16 +90,16 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   void NotifyUndoNeverForThisSite();
 
   // views::BubbleDelegateView:
-  virtual void Init() override;
-  virtual void WindowClosing() override;
+  void Init() override;
+  void WindowClosing() override;
 
   // views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() override;
+  views::View* GetInitiallyFocusedView() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void set_initially_focused_view(views::View* view) {
     DCHECK(!initially_focused_view_);
