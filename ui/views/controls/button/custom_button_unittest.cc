@@ -29,7 +29,7 @@ class TestCustomButton : public CustomButton {
       : CustomButton(listener) {
   }
 
-  virtual ~TestCustomButton() {}
+  ~TestCustomButton() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCustomButton);

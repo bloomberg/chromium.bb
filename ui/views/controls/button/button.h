@@ -27,7 +27,7 @@ class VIEWS_EXPORT ButtonListener {
 // could be implemented by a native control or custom rendered.
 class VIEWS_EXPORT Button : public View {
  public:
-  virtual ~Button();
+  ~Button() override;
 
   // Button states for various button sub-types.
   enum ButtonState {
@@ -56,9 +56,9 @@ class VIEWS_EXPORT Button : public View {
   void SetAccessibleName(const base::string16& name);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:
   // Construct the Button with a Listener. The listener can be NULL. This can be

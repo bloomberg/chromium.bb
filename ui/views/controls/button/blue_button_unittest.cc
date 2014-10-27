@@ -18,7 +18,7 @@ namespace {
 class TestBlueButton : public BlueButton {
  public:
   TestBlueButton() : BlueButton(NULL, base::ASCIIToUTF16("foo")) {}
-  virtual ~TestBlueButton() {}
+  ~TestBlueButton() override {}
 
   using BlueButton::OnNativeThemeChanged;
 

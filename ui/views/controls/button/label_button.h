@@ -29,7 +29,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   static const char kViewClassName[];
 
   LabelButton(ButtonListener* listener, const base::string16& text);
-  virtual ~LabelButton();
+  ~LabelButton() override;
 
   // Get or set the image shown for the specified button state.
   // GetImage returns the image for STATE_NORMAL if the state's image is empty.
@@ -86,11 +86,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   Painter* focus_painter() { return focus_painter_.get(); }
 
   // View:
-  virtual void SetBorder(scoped_ptr<Border> border) override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int w) const override;
-  virtual void Layout() override;
-  virtual const char* GetClassName() const override;
+  void SetBorder(scoped_ptr<Border> border) override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int w) const override;
+  void Layout() override;
+  const char* GetClassName() const override;
 
  protected:
   ImageView* image() const { return image_; }
@@ -101,10 +101,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual gfx::Rect GetChildAreaBounds();
 
   // View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Fill |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
@@ -124,7 +124,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void UpdateThemedBorder();
 
   // NativeThemeDelegate:
-  virtual gfx::Rect GetThemePaintRect() const override;
+  gfx::Rect GetThemePaintRect() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
@@ -134,19 +134,19 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, FontList);
 
   // CustomButton:
-  virtual void StateChanged() override;
+  void StateChanged() override;
 
   // View:
-  virtual void ChildPreferredSizeChanged(View* child) override;
+  void ChildPreferredSizeChanged(View* child) override;
 
   // NativeThemeDelegate:
-  virtual ui::NativeTheme::Part GetThemePart() const override;
-  virtual ui::NativeTheme::State GetThemeState(
+  ui::NativeTheme::Part GetThemePart() const override;
+  ui::NativeTheme::State GetThemeState(
       ui::NativeTheme::ExtraParams* params) const override;
-  virtual const gfx::Animation* GetThemeAnimation() const override;
-  virtual ui::NativeTheme::State GetBackgroundThemeState(
+  const gfx::Animation* GetThemeAnimation() const override;
+  ui::NativeTheme::State GetBackgroundThemeState(
       ui::NativeTheme::ExtraParams* params) const override;
-  virtual ui::NativeTheme::State GetForegroundThemeState(
+  ui::NativeTheme::State GetForegroundThemeState(
       ui::NativeTheme::ExtraParams* params) const override;
 
   // Resets |cached_preferred_size_| and marks |cached_preferred_size_valid_|

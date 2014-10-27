@@ -25,7 +25,7 @@ namespace views {
 class MenuButtonTest : public ViewsTestBase {
  public:
   MenuButtonTest() : widget_(nullptr), button_(nullptr) {}
-  virtual ~MenuButtonTest() {}
+  ~MenuButtonTest() override {}
 
   void TearDown() override {
     if (widget_ && !widget_->IsClosed())
@@ -89,7 +89,7 @@ class TestButtonListener : public ButtonListener {
       : last_sender_(nullptr),
         last_sender_state_(Button::STATE_NORMAL),
         last_event_type_(ui::ET_UNKNOWN) {}
-  virtual ~TestButtonListener() {}
+  ~TestButtonListener() override {}
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     last_sender_ = sender;
@@ -115,7 +115,7 @@ class TestMenuButtonListener : public MenuButtonListener {
  public:
   TestMenuButtonListener()
       : last_source_(nullptr), last_source_state_(Button::STATE_NORMAL) {}
-  virtual ~TestMenuButtonListener() {}
+  ~TestMenuButtonListener() override {}
 
   void OnMenuButtonClicked(View* source, const gfx::Point& /*point*/) override {
     last_source_ = source;
@@ -137,7 +137,7 @@ class TestMenuButtonListener : public MenuButtonListener {
 class TestDragController : public DragController {
  public:
   TestDragController() {}
-  virtual ~TestDragController() {}
+  ~TestDragController() override {}
 
   void WriteDragDataForView(View* sender,
                             const gfx::Point& press_pt,
@@ -165,7 +165,7 @@ class TestDragDropClient : public aura::client::DragDropClient,
                            public ui::EventHandler {
  public:
   TestDragDropClient();
-  virtual ~TestDragDropClient();
+  ~TestDragDropClient() override;
 
   // aura::client::DragDropClient:
   int StartDragAndDrop(const ui::OSExchangeData& data,

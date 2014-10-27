@@ -50,7 +50,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
              const base::string16& text,
              MenuButtonListener* menu_button_listener,
              bool show_menu_marker);
-  virtual ~MenuButton();
+  ~MenuButton() override;
 
   bool show_menu_marker() const { return show_menu_marker_; }
   void set_menu_marker(const gfx::ImageSkia* menu_marker) {
