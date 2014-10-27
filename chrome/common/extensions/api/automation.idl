@@ -135,6 +135,7 @@
     pane,
     paragraph,
     popUpButton,
+    pre,
     presentational,
     progressIndicator,
     radioButton,

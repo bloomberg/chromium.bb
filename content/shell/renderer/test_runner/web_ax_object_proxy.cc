@@ -178,6 +178,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Paragraph");
     case blink::WebAXRolePopUpButton:
       return result.append("PopUpButton");
+    case blink::WebAXRolePre:
+      return result.append("Pre");
     case blink::WebAXRolePresentational:
       return result.append("Presentational");
     case blink::WebAXRoleProgressIndicator:

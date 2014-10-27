@@ -242,6 +242,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_PARAGRAPH;
     case blink::WebAXRolePopUpButton:
       return ui::AX_ROLE_POP_UP_BUTTON;
+    case blink::WebAXRolePre:
+      return ui::AX_ROLE_PRE;
     case blink::WebAXRolePresentational:
       return ui::AX_ROLE_PRESENTATIONAL;
     case blink::WebAXRoleProgressIndicator:

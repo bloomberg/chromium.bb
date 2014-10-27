@@ -3682,6 +3682,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         ia_role_ = ROLE_SYSTEM_BUTTONMENU;
       }
       break;
+    case ui::AX_ROLE_PRE:
+      role_name_ = html_tag;
+      ia_role_ = ROLE_SYSTEM_TEXT;
+      ia2_role_ = IA2_ROLE_PARAGRAPH;
+      break;
     case ui::AX_ROLE_PROGRESS_INDICATOR:
       ia_role_ = ROLE_SYSTEM_PROGRESSBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;

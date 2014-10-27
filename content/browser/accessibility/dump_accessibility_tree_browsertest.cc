@@ -876,6 +876,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityParam) {
   RunTest(FILE_PATH_LITERAL("param.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityPre) {
+  RunTest(FILE_PATH_LITERAL("pre.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityQ) {
   RunTest(FILE_PATH_LITERAL("q.html"));
 }

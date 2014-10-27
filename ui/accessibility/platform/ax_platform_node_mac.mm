@@ -95,6 +95,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_OUTLINE, NSAccessibilityOutlineRole},
       {ui::AX_ROLE_PARAGRAPH, NSAccessibilityGroupRole},
       {ui::AX_ROLE_POP_UP_BUTTON, NSAccessibilityPopUpButtonRole},
+      {ui::AX_ROLE_PRE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_PRESENTATIONAL, NSAccessibilityGroupRole},
       {ui::AX_ROLE_PROGRESS_INDICATOR, NSAccessibilityProgressIndicatorRole},
       {ui::AX_ROLE_RADIO_BUTTON, NSAccessibilityRadioButtonRole},
