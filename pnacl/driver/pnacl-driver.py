@@ -7,8 +7,8 @@ import re
 import subprocess
 
 from driver_tools import AddHostBinarySearchPath, DefaultOutputName, \
-    DriverChain, GetArch, ParseArgs, ParseTriple, Run, RunDriver, RunWithEnv, \
-    TempNameGen, UnrecognizedOption
+    DefaultPCHOutputName, DriverChain, GetArch, ParseArgs, ParseTriple, \
+    Run, RunDriver, RunWithEnv, TempNameGen, UnrecognizedOption
 from driver_env import env
 from driver_log import DriverOpen, Log
 import filetype
@@ -155,7 +155,7 @@ EXTRA_ENV = {
 
   # IS_CXX is set by pnacl-clang and pnacl-clang++ programmatically
   'CC' : '${IS_CXX ? ${CLANGXX} : ${CLANG}}',
-  'RUN_CC': '${CC} -emit-llvm ${mode} ${CC_FLAGS} ' +
+  'RUN_CC': '${CC} ${emit_llvm_flag} ${mode} ${CC_FLAGS} ' +
             '${@AddPrefix:-isystem :ISYSTEM} ' +
             '-x${typespec} "${infile}" -o ${output}',
 }
@@ -317,6 +317,13 @@ GCCPatterns = [
                        "env.append('ISYSTEM_USER', pathtools.normalize($0))"),
   ( ('-I', '(.+)'),    "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
   ( '-I(.+)',          "env.append('CC_FLAGS', '-I'+pathtools.normalize($0))"),
+  # -I is passed through, so we allow -isysroot and pass it through as well.
+  # However -L is intercepted and interpreted, so it would take more work
+  # to handle -sysroot w/ libraries.
+  ( ('-isysroot', '(.+)'),
+        "env.append('CC_FLAGS', '-isysroot ' + pathtools.normalize($0))"),
+  ( '-isysroot(.+)',
+        "env.append('CC_FLAGS', '-isysroot ' + pathtools.normalize($0))"),
 
   # NOTE: the -iquote =DIR syntax (substitute = with sysroot) doesn't work.
   # Clang just says: ignoring nonexistent directory "=DIR"
@@ -332,6 +339,7 @@ GCCPatterns = [
 
   ( ('(-include)','(.+)'),    AddCCFlag),
   ( ('(-include.+)'),         AddCCFlag),
+  ( '(--relocatable-pch)',    AddCCFlag),
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
   ( '(-w)',                   AddCCFlag),
@@ -506,10 +514,10 @@ def main(argv):
     # Default C++ Standard Library.
     SetStdLib('libc++')
 
-  inputs = env.get('INPUTS')
+  flags_and_inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 
-  if len(inputs) == 0:
+  if len(flags_and_inputs) == 0:
     if env.getbool('VERBOSE'):
       # -v can be invoked without any inputs. Runs the original
       # command without modifying the commandline for this case.
@@ -520,6 +528,24 @@ def main(argv):
 
   gcc_mode = env.getone('GCC_MODE')
   output_type = DriverOutputTypes(gcc_mode, compiling_to_native)
+  # INPUTS consists of actual input files and a subset of flags like -Wl,<foo>.
+  # Create a version with just the files.
+  inputs = [f for f in flags_and_inputs if not IsFlag(f)]
+  header_inputs = [f for f in inputs
+                   if filetype.IsHeaderType(filetype.FileType(f))]
+  # Handle PCH case specially (but only for a limited sense...)
+  if header_inputs and gcc_mode != '-E':
+    # We only handle doing pre-compiled headers for all inputs or not at
+    # all at the moment. This is because DriverOutputTypes only assumes
+    # one type of output, depending on the "gcc_mode" flag. When mixing
+    # header inputs w/ non-header inputs, some of the outputs will be
+    # pch while others will be output_type. We would also need to modify
+    # the input->output chaining for the needs_linking case.
+    if len(header_inputs) != len(inputs):
+      Log.Fatal('mixed compiling of headers and source not supported')
+    CompileHeaders(header_inputs, output)
+    return 0
+
   needs_linking = (gcc_mode == '')
 
   if env.getbool('NEED_DASH_E') and gcc_mode != '-E':
@@ -528,17 +554,13 @@ def main(argv):
   # There are multiple input files and no linking is being done.
   # There will be multiple outputs. Handle this case separately.
   if not needs_linking:
-    # Filter out flags
-    inputs = [f for f in inputs if not IsFlag(f)]
     if output != '' and len(inputs) > 1:
       Log.Fatal('Cannot have -o with -c, -S, or -E and multiple inputs: %s',
                 repr(inputs))
 
     for f in inputs:
-      if IsFlag(f):
-        continue
       intype = filetype.FileType(f)
-      if not filetype.IsSourceType(intype):
+      if not (filetype.IsSourceType(intype) or filetype.IsHeaderType(intype)):
         if ((output_type == 'pp' and intype != 'S') or
             (output_type == 'll') or
             (output_type == 'po' and intype != 'll') or
@@ -562,27 +584,27 @@ def main(argv):
 
   if output == '':
     output = pathtools.normalize('a.out')
-  namegen = TempNameGen(inputs, output)
+  namegen = TempNameGen(flags_and_inputs, output)
 
   # Compile all source files (c/c++/ll) to .po
-  for i in xrange(0, len(inputs)):
-    if IsFlag(inputs[i]):
+  for i in xrange(0, len(flags_and_inputs)):
+    if IsFlag(flags_and_inputs[i]):
       continue
-    intype = filetype.FileType(inputs[i])
+    intype = filetype.FileType(flags_and_inputs[i])
     if filetype.IsSourceType(intype) or intype == 'll':
-      inputs[i] = CompileOne(inputs[i], 'po', namegen)
+      flags_and_inputs[i] = CompileOne(flags_and_inputs[i], 'po', namegen)
 
   # Compile all .s/.S to .o
   if env.getbool('ALLOW_NATIVE'):
-    for i in xrange(0, len(inputs)):
-      if IsFlag(inputs[i]):
+    for i in xrange(0, len(flags_and_inputs)):
+      if IsFlag(flags_and_inputs[i]):
         continue
-      intype = filetype.FileType(inputs[i])
+      intype = filetype.FileType(flags_and_inputs[i])
       if intype in ('s','S'):
-        inputs[i] = CompileOne(inputs[i], 'o', namegen)
+        flags_and_inputs[i] = CompileOne(flags_and_inputs[i], 'o', namegen)
 
   # We should only be left with .po and .o and libraries
-  for f in inputs:
+  for f in flags_and_inputs:
     if IsFlag(f):
       continue
     intype = filetype.FileType(f)
@@ -594,7 +616,7 @@ def main(argv):
 
   # Fix the user-specified linker arguments
   ld_inputs = []
-  for f in inputs:
+  for f in flags_and_inputs:
     if f.startswith('-Xlinker='):
       ld_inputs.append(f[len('-Xlinker='):])
     elif f.startswith('-Wl,'):
@@ -617,6 +639,14 @@ def main(argv):
 def IsFlag(f):
   return f.startswith('-')
 
+def CompileHeaders(header_inputs, output):
+  if output != '' and len(header_inputs) > 1:
+      Log.Fatal('Cannot have -o <out> and compile multiple header files: %s',
+                repr(header_inputs))
+  for f in header_inputs:
+    f_output = output if output else DefaultPCHOutputName(f)
+    RunCC(f, f_output, mode='', emit_llvm_flag='')
+
 def CompileOne(infile, output_type, namegen, output = None):
   if output is None:
     output = namegen.TempNameForInput(infile, output_type)
@@ -626,15 +656,16 @@ def CompileOne(infile, output_type, namegen, output = None):
   chain.run()
   return output
 
-def RunCC(infile, output, mode):
+def RunCC(infile, output, mode, emit_llvm_flag='-emit-llvm'):
   intype = filetype.FileType(infile)
   typespec = filetype.FileTypeToGCCType(intype)
-  include_cxx_headers = (env.get('LANGUAGE') == 'CXX') or (intype == 'c++')
+  include_cxx_headers = ((env.get('LANGUAGE') == 'CXX') or
+                         (intype in ('c++', 'c++-header')))
   env.setbool('INCLUDE_CXX_HEADERS', include_cxx_headers)
   if IsStdinInput(infile):
     infile = '-'
   RunWithEnv("${RUN_CC}", infile=infile, output=output,
-                          mode=mode,
+                          emit_llvm_flag=emit_llvm_flag, mode=mode,
                           typespec=typespec)
 
 def RunLLVMAS(infile, output):
@@ -675,6 +706,13 @@ def SetupChain(chain, input_type, output_type):
 
   # source file -> pp
   if filetype.IsSourceType(cur_type) and output_type == 'pp':
+    chain.add(RunCC, 'cpp', mode='-E')
+    cur_type = 'pp'
+  if cur_type == output_type:
+    return
+
+  # header file -> pre-process
+  if filetype.IsHeaderType(cur_type) and output_type == 'pp':
     chain.add(RunCC, 'cpp', mode='-E')
     cur_type = 'pp'
   if cur_type == output_type:

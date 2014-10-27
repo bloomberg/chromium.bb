@@ -301,6 +301,9 @@ ExtensionMap = {
   'C'   : 'c++',
   'ii'  : 'c++',  # C++, but should not be preprocessed.
 
+  'h'   : 'c-header',
+  'hpp' : 'c++-header',
+
   'm'   : 'objc',  # .m = "Objective-C source file"
 
   'll'  : 'll',
@@ -319,6 +322,9 @@ ExtensionMap = {
 
 def IsSourceType(filetype):
   return filetype in ('c','c++','objc')
+
+def IsHeaderType(filetype):
+  return filetype in ('c-header', 'c++-header')
 
 # The SimpleCache decorator is required for correctness, due to the
 # ForceFileType mechanism.
@@ -360,6 +366,8 @@ FILE_TYPE_MAP = {
     'c++'               : 'c++',
     'assembler'         : 's',
     'assembler-with-cpp': 'S',
+    'c-header'          : 'c-header',
+    'c++-header'        : 'c++-header',
 }
 FILE_TYPE_MAP_REVERSE = dict([reversed(_tmp) for _tmp in FILE_TYPE_MAP.items()])
 

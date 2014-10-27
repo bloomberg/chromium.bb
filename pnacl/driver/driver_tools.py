@@ -427,6 +427,11 @@ def DefaultOutputName(filename, outtype):
 
   return base + '.' + outtype
 
+def DefaultPCHOutputName(filename):
+  # Clang currently uses the GCC '.gch' by default for precompiled headers,
+  # though their documentation example uses '-o foo.h.pch' as the example.
+  return filename + '.gch'
+
 def RemoveExtension(filename):
   if filename.endswith('.opt.bc'):
     return filename[0:-len('.opt.bc')]
