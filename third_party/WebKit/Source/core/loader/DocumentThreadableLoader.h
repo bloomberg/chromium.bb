@@ -91,6 +91,10 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
         void handleSuccessfulFinish(unsigned long identifier, double finishTime);
 
         void didTimeout(Timer<DocumentThreadableLoader>*);
+        // Calls the appropriate loading method according to policy and data
+        // about origin. Only for handling the initial load (including fallback
+        // after consulting ServiceWorker).
+        void dispatchInitialRequest(const ResourceRequest&);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
         // Loads m_fallbackRequestForServiceWorker.
         void loadFallbackRequestForServiceWorker();

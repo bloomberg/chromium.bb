@@ -89,6 +89,11 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     // Setting an outgoing referer is only supported in the async code path.
     ASSERT(m_async || request.httpReferrer().isEmpty());
 
+    if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
+        m_client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are not supported."));
+        return;
+    }
+
     m_requestStartedSeconds = monotonicallyIncreasingTime();
 
     // Save any CORS simple headers on the request here. If this request redirects cross-origin, we cancel the old request
@@ -105,11 +110,10 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     // FetchRequestModeCORSWithForcedPreflight. Otherwise the ServiceWorker can
     // return a opaque response which is from the other origin site and the
     // script in the page can read the content.
+    //
+    // We assume that ServiceWorker is skipped for sync requests by content/
+    // code.
     if (m_async && !request.skipServiceWorker() && m_document.fetcher()->isControlledByServiceWorker()) {
-        if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
-            m_client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are not supported."));
-            return;
-        }
         ResourceRequest newRequest(request);
         // FetchRequestMode should be set by the caller. But the expected value
         // of FetchRequestMode is not speced yet except for XHR. So we set here.
@@ -127,15 +131,17 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
         return;
     }
 
+    dispatchInitialRequest(request);
+}
+
+void DocumentThreadableLoader::dispatchInitialRequest(const ResourceRequest& request)
+{
     if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
         loadRequest(request, m_resourceLoaderOptions);
         return;
     }
 
-    if (m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
-        m_client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are not supported."));
-        return;
-    }
+    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
 
     makeCrossOriginAccessRequest(request);
 }
@@ -395,8 +401,8 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     }
 
     if (response.wasFetchedViaServiceWorker()) {
+        ASSERT(m_fallbackRequestForServiceWorker);
         if (response.wasFallbackRequiredByServiceWorker()) {
-            ASSERT(m_fallbackRequestForServiceWorker);
             loadFallbackRequestForServiceWorker();
             return;
         }
@@ -404,6 +410,8 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         m_client->didReceiveResponse(identifier, response);
         return;
     }
+
+    ASSERT(!m_fallbackRequestForServiceWorker);
 
     if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
         String accessControlErrorDescription;
@@ -426,9 +434,14 @@ void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data
 void DocumentThreadableLoader::handleReceivedData(const char* data, unsigned dataLength)
 {
     ASSERT(m_client);
+
     // Preflight data should be invisible to clients.
-    if (!m_actualRequest && !m_fallbackRequestForServiceWorker)
-        m_client->didReceiveData(data, dataLength);
+    if (m_actualRequest)
+        return;
+
+    ASSERT(!m_fallbackRequestForServiceWorker);
+
+    m_client->didReceiveData(data, dataLength);
 }
 
 void DocumentThreadableLoader::notifyFinished(Resource* resource)
@@ -446,6 +459,8 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
 
 void DocumentThreadableLoader::handleSuccessfulFinish(unsigned long identifier, double finishTime)
 {
+    ASSERT(!m_fallbackRequestForServiceWorker);
+
     if (m_actualRequest) {
         ASSERT(!m_sameOriginRequest);
         ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
@@ -473,12 +488,7 @@ void DocumentThreadableLoader::loadFallbackRequestForServiceWorker()
 {
     clearResource();
     OwnPtr<ResourceRequest> fallbackRequest(m_fallbackRequestForServiceWorker.release());
-    if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
-        loadRequest(*fallbackRequest, m_resourceLoaderOptions);
-        return;
-    }
-    ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
-    makeCrossOriginAccessRequest(*fallbackRequest);
+    dispatchInitialRequest(*fallbackRequest);
 }
 
 void DocumentThreadableLoader::loadActualRequest()
