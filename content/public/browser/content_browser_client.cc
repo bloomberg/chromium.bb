@@ -227,38 +227,13 @@ ContentBrowserClient::CheckDesktopNotificationPermission(
   return blink::WebNotificationPermissionAllowed;
 }
 
-void ContentBrowserClient::RequestGeolocationPermission(
+void ContentBrowserClient::RequestPermission(
+    PermissionType permission,
     WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
     const base::Callback<void(bool)>& result_callback) {
-  result_callback.Run(true);
-}
-
-// TODO(miguelg): replace all Create*Permission with a single
-// CreatePermission(enum permission) method.
-void ContentBrowserClient::CancelGeolocationPermissionRequest(
-    WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame) {
-}
-
-void ContentBrowserClient::RequestMidiSysExPermission(
-    WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
-  result_callback.Run(true);
-}
-
-void ContentBrowserClient::RequestProtectedMediaIdentifierPermission(
-    WebContents* web_contents,
-    const GURL& origin,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
   result_callback.Run(true);
 }
 

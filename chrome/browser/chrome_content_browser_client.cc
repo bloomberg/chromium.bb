@@ -108,6 +108,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/desktop_notification_delegate.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -1819,39 +1820,6 @@ content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
   return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
-    const GURL& source_origin,
-    content::RenderFrameHost* render_frame_host,
-    const base::Callback<void(blink::WebNotificationPermission)>& callback) {
-#if defined(ENABLE_NOTIFICATIONS)
-  // Skip showing the infobar if the request comes from an extension, and that
-  // extension has the 'notify' permission. (If the extension does not have the
-  // permission, the user will still be prompted.)
-  Profile* profile = Profile::FromBrowserContext(
-      render_frame_host->GetSiteInstance()->GetBrowserContext());
-  DesktopNotificationService* notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-  WebContents* web_contents = WebContents::FromRenderFrameHost(
-      render_frame_host);
-  int render_process_id = render_frame_host->GetProcess()->GetID();
-  const PermissionRequestID request_id(render_process_id,
-      web_contents->GetRoutingID(),
-      -1 /* bridge id */,
-      GURL());
-
-  notification_service->RequestNotificationPermission(
-      web_contents,
-      request_id,
-      source_origin,
-      // TODO(peter): plumb user_gesture over IPC
-      true,
-      callback);
-
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
 blink::WebNotificationPermission
 ChromeContentBrowserClient::CheckDesktopNotificationPermission(
     const GURL& source_origin,
@@ -1920,7 +1888,8 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
 #endif
 }
 
-void ChromeContentBrowserClient::RequestGeolocationPermission(
+void ChromeContentBrowserClient::RequestPermission(
+    content::PermissionType permission,
     content::WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame,
@@ -1928,19 +1897,67 @@ void ChromeContentBrowserClient::RequestGeolocationPermission(
     const base::Callback<void(bool)>& result_callback) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   const PermissionRequestID request_id(render_process_id,
                                        render_view_id,
                                        bridge_id,
                                        requesting_frame);
-  GeolocationPermissionContextFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
-          RequestPermission(web_contents, request_id,
-                            requesting_frame.GetOrigin(), user_gesture,
-                            result_callback);
+
+  switch (permission) {
+    case content::PERMISSION_MIDI_SYSEX:
+      MidiPermissionContextFactory::GetForProfile(profile)
+          ->RequestPermission(web_contents,
+                              request_id,
+                              requesting_frame,
+                              user_gesture,
+                              result_callback);
+      break;
+    case content::PERMISSION_NOTIFICATIONS:
+#if defined(ENABLE_NOTIFICATIONS)
+      DesktopNotificationServiceFactory::GetForProfile(profile)
+          ->RequestNotificationPermission(web_contents,
+                                          request_id,
+                                          requesting_frame,
+                                          user_gesture,
+                                          result_callback);
+#else
+      NOTIMPLEMENTED();
+#endif
+      break;
+    case content::PERMISSION_GEOLOCATION:
+      GeolocationPermissionContextFactory::GetForProfile(profile)
+          ->RequestPermission(web_contents,
+                              request_id,
+                              requesting_frame.GetOrigin(),
+                              user_gesture,
+                              result_callback);
+      break;
+    case content::PERMISSION_PROTECTED_MEDIA:
+#if defined(OS_ANDROID)
+      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)
+          ->RequestProtectedMediaIdentifierPermission(
+              web_contents, requesting_frame, result_callback);
+#else
+      NOTIMPLEMENTED();
+#endif
+      break;
+    case content::PERMISSION_PUSH_MESSAGING:
+      // Push messaging does not require this flow as it goes directly through
+      // the push service implementation so there is no reason to
+      // implement it here.
+      NOTIMPLEMENTED() << "RequestPermission not implemented for "
+                       << permission;
+      break;
+    case content::PERMISSION_NUM:
+      NOTREACHED() << "Invalid RequestPermission for " << permission;
+      break;
+  }
 }
 
-void ChromeContentBrowserClient::CancelGeolocationPermissionRequest(
+void ChromeContentBrowserClient::CancelPermissionRequest(
+    content::PermissionType permission,
     content::WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame) {
@@ -1951,56 +1968,72 @@ void ChromeContentBrowserClient::CancelGeolocationPermissionRequest(
                                        render_view_id,
                                        bridge_id,
                                        requesting_frame);
-  GeolocationPermissionContextFactory::GetForProfile(
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
-            CancelPermissionRequest(web_contents, request_id);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  switch (permission) {
+    case content::PERMISSION_MIDI_SYSEX:
+      MidiPermissionContextFactory::GetForProfile(profile)
+          ->CancelPermissionRequest(web_contents, request_id);
+      break;
+    case content::PERMISSION_NOTIFICATIONS:
+#if defined(ENABLE_NOTIFICATIONS)
+      DesktopNotificationServiceFactory::GetForProfile(profile)
+          ->CancelPermissionRequest(web_contents, request_id);
+#else
+      NOTIMPLEMENTED();
+#endif
+      break;
+    case content::PERMISSION_GEOLOCATION:
+      GeolocationPermissionContextFactory::GetForProfile(profile)
+          ->CancelPermissionRequest(web_contents, request_id);
+      break;
+    case content::PERMISSION_PROTECTED_MEDIA:
+#if defined(OS_ANDROID)
+      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)
+          ->CancelProtectedMediaIdentifierPermissionRequests(
+              render_process_id, render_view_id, requesting_frame);
+#else
+      NOTIMPLEMENTED();
+#endif
+      break;
+    case content::PERMISSION_PUSH_MESSAGING:
+      NOTIMPLEMENTED() << "CancelPermission not implemented for " << permission;
+      break;
+    case content::PERMISSION_NUM:
+      NOTREACHED() << "Invalid CancelPermission for " << permission;
+      break;
+  }
 }
 
-void ChromeContentBrowserClient::RequestMidiSysExPermission(
-    content::WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
-  MidiPermissionContext* context =
-      MidiPermissionContextFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  int renderer_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  const PermissionRequestID id(renderer_id, render_view_id, bridge_id, GURL());
-
-  context->RequestPermission(web_contents, id, requesting_frame,
-                             user_gesture, result_callback);
+// Helper method to translate from Permissions to ContentSettings
+static ContentSettingsType PermissionToContentSetting(
+    content::PermissionType permission) {
+  switch (permission) {
+    case content::PERMISSION_MIDI_SYSEX:
+      return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+    case content::PERMISSION_NOTIFICATIONS:
+      return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+    case content::PERMISSION_GEOLOCATION:
+      return CONTENT_SETTINGS_TYPE_GEOLOCATION;
+#if defined(OS_ANDROID)
+    case content::PERMISSION_PROTECTED_MEDIA:
+      return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+#endif
+    default:
+      NOTREACHED() << "Unknown content setting for permission " << permission;
+      return CONTENT_SETTINGS_TYPE_DEFAULT;
+  }
 }
 
-void ChromeContentBrowserClient::DidUseGeolocationPermission(
+void ChromeContentBrowserClient::RegisterPermissionUsage(
+    content::PermissionType permission,
     content::WebContents* web_contents,
     const GURL& frame_url,
     const GURL& main_frame_url) {
   Profile::FromBrowserContext(web_contents->GetBrowserContext())
       ->GetHostContentSettingsMap()
       ->UpdateLastUsage(
-          frame_url, main_frame_url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-}
-
-void ChromeContentBrowserClient::RequestProtectedMediaIdentifierPermission(
-    content::WebContents* web_contents,
-    const GURL& origin,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
-#if defined(OS_ANDROID)
-  ProtectedMediaIdentifierPermissionContext* context =
-      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  context->RequestProtectedMediaIdentifierPermission(web_contents,
-                                                     origin,
-                                                     result_callback,
-                                                     cancel_callback);
-#else
-  NOTIMPLEMENTED();
-  result_callback.Run(false);
-#endif  // defined(OS_ANDROID)
+          frame_url, main_frame_url, PermissionToContentSetting(permission));
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(

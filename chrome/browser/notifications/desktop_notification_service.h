@@ -54,10 +54,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// Callback to be invoked when the result of a permission request is known.
-typedef base::Callback<void(blink::WebNotificationPermission)>
-    NotificationPermissionCallback;
-
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
 class DesktopNotificationService : public PermissionContextBase
@@ -89,7 +85,7 @@ class DesktopNotificationService : public PermissionContextBase
       const PermissionRequestID& request_id,
       const GURL& requesting_origin,
       bool user_gesture,
-      const NotificationPermissionCallback& callback);
+      const base::Callback<void(bool)>& result_callback);
 
   // Show a desktop notification. If |cancel_callback| is non-null, it's set to
   // a callback which can be used to cancel the notification.
@@ -120,12 +116,6 @@ class DesktopNotificationService : public PermissionContextBase
 
   // Called when the disabled_extension_id pref has been changed.
   void OnDisabledExtensionIdsChanged();
-
-  // Used as a callback once a permission has been decided to convert |allowed|
-  // to one of the blink::WebNotificationPermission values.
-  void OnNotificationPermissionRequested(
-      const base::Callback<void(blink::WebNotificationPermission)>& callback,
-      bool allowed);
 
   void FirePermissionLevelChangedEvent(
       const message_center::NotifierId& notifier_id,
@@ -164,8 +154,6 @@ class DesktopNotificationService : public PermissionContextBase
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 #endif
-
-  base::WeakPtrFactory<DesktopNotificationService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };

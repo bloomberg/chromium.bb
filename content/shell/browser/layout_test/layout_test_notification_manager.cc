@@ -29,9 +29,10 @@ LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
 
 void LayoutTestNotificationManager::RequestPermission(
     const GURL& origin,
-    const base::Callback<void(blink::WebNotificationPermission)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  callback.Run(CheckPermission(origin));
+    const base::Callback<void(bool)>& callback) {
+  bool allowed =
+      CheckPermission(origin) == blink::WebNotificationPermissionAllowed;
+  callback.Run(allowed);
 }
 
 void LayoutTestNotificationManager::SetPermission(

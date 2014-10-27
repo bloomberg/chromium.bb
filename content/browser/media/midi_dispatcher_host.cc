@@ -78,15 +78,17 @@ void MidiDispatcherHost::OnRequestSysExPermission(
       render_process_id, render_frame_id, bridge_id);
   pending_permissions_.push_back(pending_permission);
 
-  GetContentClient()->browser()->RequestMidiSysExPermission(
+  GetContentClient()->browser()->RequestPermission(
+      PERMISSION_MIDI_SYSEX,
       web_contents(),
       bridge_id,
       origin,
       user_gesture,
       base::Bind(&MidiDispatcherHost::WasSysExPermissionGranted,
                  weak_factory_.GetWeakPtr(),
-                 render_process_id, render_frame_id, bridge_id),
-      &pending_permissions_.back().cancel);
+                 render_process_id,
+                 render_frame_id,
+                 bridge_id));
 }
 
 void MidiDispatcherHost::CancelPermissionRequestsForFrame(
@@ -97,8 +99,12 @@ void MidiDispatcherHost::CancelPermissionRequestsForFrame(
   for (size_t i = 0; i < pending_permissions_.size(); ++i) {
     if (pending_permissions_[i].render_process_id == render_process_id &&
         pending_permissions_[i].render_frame_id == render_frame_id) {
-      if (!pending_permissions_[i].cancel.is_null())
-        pending_permissions_[i].cancel.Run();
+      GetContentClient()->browser()->CancelPermissionRequest(
+          PERMISSION_MIDI_SYSEX,
+          web_contents(),
+          pending_permissions_[i].bridge_id,
+          render_frame_host->GetLastCommittedURL());
+
       pending_permissions_.erase(pending_permissions_.begin() + i);
       return;
     }

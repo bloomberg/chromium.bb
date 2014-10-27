@@ -165,7 +165,8 @@ void GeolocationDispatcherHost::UpdateGeoposition(
   while (top_frame->GetParent()) {
     top_frame = top_frame->GetParent();
   }
-  GetContentClient()->browser()->DidUseGeolocationPermission(
+  GetContentClient()->browser()->RegisterPermissionUsage(
+      content::PERMISSION_GEOLOCATION,
       web_contents(),
       frame->GetLastCommittedURL().GetOrigin(),
       top_frame->GetLastCommittedURL().GetOrigin());
@@ -186,14 +187,17 @@ void GeolocationDispatcherHost::OnRequestPermission(
       render_frame_id, render_process_id, bridge_id, requesting_origin);
   pending_permissions_.push_back(pending_permission);
 
-  GetContentClient()->browser()->RequestGeolocationPermission(
+  GetContentClient()->browser()->RequestPermission(
+      content::PERMISSION_GEOLOCATION,
       web_contents(),
       bridge_id,
       requesting_origin,
       user_gesture,
       base::Bind(&GeolocationDispatcherHost::SendGeolocationPermissionResponse,
                  weak_factory_.GetWeakPtr(),
-                 render_process_id, render_frame_id, bridge_id));
+                 render_process_id,
+                 render_frame_id,
+                 bridge_id));
 }
 
 void GeolocationDispatcherHost::OnStartUpdating(
@@ -286,7 +290,8 @@ void GeolocationDispatcherHost::CancelPermissionRequestsForFrame(
   for (size_t i = 0; i < pending_permissions_.size(); ++i) {
     if (pending_permissions_[i].render_process_id == render_process_id &&
         pending_permissions_[i].render_frame_id == render_frame_id) {
-      GetContentClient()->browser()->CancelGeolocationPermissionRequest(
+      GetContentClient()->browser()->CancelPermissionRequest(
+          content::PERMISSION_GEOLOCATION,
           web_contents(),
           pending_permissions_[i].bridge_id,
           pending_permissions_[i].origin);

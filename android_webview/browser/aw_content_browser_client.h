@@ -118,28 +118,17 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       scoped_ptr<content::DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) override;
-  virtual void RequestGeolocationPermission(
+  virtual void RequestPermission(
+      content::PermissionType permission,
       content::WebContents* web_contents,
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
       const base::Callback<void(bool)>& result_callback) override;
-  virtual void CancelGeolocationPermissionRequest(
-      content::WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame) override;
-  virtual void RequestMidiSysExPermission(
-      content::WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      base::Callback<void(bool)> result_callback,
-      base::Closure* cancel_callback) override;
-  virtual void RequestProtectedMediaIdentifierPermission(
-    content::WebContents* web_contents,
-    const GURL& origin,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) override;
+  virtual void CancelPermissionRequest(content::PermissionType permission,
+                                       content::WebContents* web_contents,
+                                       int bridge_id,
+                                       const GURL& origin) override;
   virtual bool CanCreateWindow(const GURL& opener_url,
                                const GURL& opener_top_level_frame_url,
                                const GURL& source_origin,

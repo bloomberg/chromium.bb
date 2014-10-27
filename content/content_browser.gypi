@@ -162,6 +162,7 @@
       'public/browser/page_navigator.cc',
       'public/browser/page_navigator.h',
       'public/browser/pepper_flash_settings_helper.h',
+      'public/browser/permission_type.h',
       'public/browser/plugin_data_remover.h',
       'public/browser/plugin_service.h',
       'public/browser/plugin_service_filter.h',

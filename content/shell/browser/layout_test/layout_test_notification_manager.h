@@ -34,7 +34,7 @@ class LayoutTestNotificationManager {
   // Must be called on the IO thread.
   void RequestPermission(
       const GURL& origin,
-      const base::Callback<void(blink::WebNotificationPermission)>& callback);
+      const base::Callback<void(bool)>& callback);
 
   // Sets the permission to display notifications for |origin| to |permission|.
   // Must be called on the IO thread.

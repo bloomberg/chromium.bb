@@ -21,14 +21,13 @@ LayoutTestContentBrowserClient* g_layout_test_browser_client;
 
 void RequestDesktopNotificationPermissionOnIO(
     const GURL& source_origin,
-    RenderFrameHost* render_frame_host,
-    const base::Callback<void(blink::WebNotificationPermission)>& callback) {
+    const base::Callback<void(bool)>& callback) {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
     manager->RequestPermission(source_origin, callback);
   else
-    callback.Run(blink::WebNotificationPermissionAllowed);
+    callback.Run(true);
 }
 
 }  // namespace
@@ -70,17 +69,29 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
   host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));
 }
 
-void LayoutTestContentBrowserClient::RequestDesktopNotificationPermission(
-    const GURL& source_origin,
-    RenderFrameHost* render_frame_host,
-    const base::Callback<void(blink::WebNotificationPermission)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&RequestDesktopNotificationPermissionOnIO,
-                                     source_origin,
-                                     render_frame_host,
-                                     callback));
+void LayoutTestContentBrowserClient::RequestPermission(
+    PermissionType permission,
+    WebContents* web_contents,
+    int bridge_id,
+    const GURL& requesting_frame,
+    bool user_gesture,
+    const base::Callback<void(bool)>& result_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (permission == content::PERMISSION_NOTIFICATIONS) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&RequestDesktopNotificationPermissionOnIO,
+                   requesting_frame,
+                   result_callback));
+    return;
+  }
+  ShellContentBrowserClient::RequestPermission(permission,
+                                               web_contents,
+                                               bridge_id,
+                                               requesting_frame,
+                                               user_gesture,
+                                               result_callback);
 }
 
 blink::WebNotificationPermission

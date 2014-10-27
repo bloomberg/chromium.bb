@@ -4,8 +4,8 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/permission_context_uma_util.h"
+#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
-
 
 // UMA keys need to be statically initialized so plain function would not
 // work. Use a Macro instead.
@@ -39,20 +39,6 @@ enum PermissionAction {
 
   // Always keep this at the end.
   PERMISSION_ACTION_NUM,
-};
-
-// Enum for UMA purposes, make sure you update histograms.xml if you add new
-// permission actions. Never delete or reorder an entry; only add new entries
-// immediately before PERMISSION_NUM
-enum PermissionType {
-  PERMISSION_UNKNOWN = 0,
-  PERMISSION_MIDI_SYSEX = 1,
-  PERMISSION_PUSH_MESSAGING = 2,
-  PERMISSION_NOTIFICATIONS = 3,
-  PERMISSION_GEOLOCATION = 4,
-
-  // Always keep this at the end.
-  PERMISSION_NUM,
 };
 
 void RecordPermissionAction(
@@ -105,38 +91,36 @@ void RecordPermissionAction(
 
 void RecordPermissionRequest(
     ContentSettingsType permission, bool secure_origin) {
-  PermissionType type;
+  content::PermissionType type;
   switch (permission) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      type = PERMISSION_GEOLOCATION;
+      type = content::PERMISSION_GEOLOCATION;
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      type = PERMISSION_NOTIFICATIONS;
+      type = content::PERMISSION_NOTIFICATIONS;
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      type = PERMISSION_MIDI_SYSEX;
+      type = content::PERMISSION_MIDI_SYSEX;
       break;
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      type = PERMISSION_PUSH_MESSAGING;
+      type = content::PERMISSION_PUSH_MESSAGING;
       break;
     default:
       NOTREACHED() << "PERMISSION " << permission << " not accounted for";
-      type = PERMISSION_UNKNOWN;
+      return;
   }
   UMA_HISTOGRAM_ENUMERATION(
-      "ContentSettings.PermissionRequested",
-      type,
-      PERMISSION_NUM);
+      "ContentSettings.PermissionRequested", type, content::PERMISSION_NUM);
   if (secure_origin) {
     UMA_HISTOGRAM_ENUMERATION(
         "ContentSettings.PermissionRequested_SecureOrigin",
         type,
-        PERMISSION_NUM);
+        content::PERMISSION_NUM);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "ContentSettings.PermissionRequested_InsecureOrigin",
         type,
-        PERMISSION_NUM);
+        content::PERMISSION_NUM);
   }
 }
 

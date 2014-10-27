@@ -998,14 +998,22 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
 
 void RenderFrameHostImpl::OnRequestPlatformNotificationPermission(
     const GURL& origin, int request_id) {
-  base::Callback<void(blink::WebNotificationPermission)> done_callback =
-      base::Bind(
-          &RenderFrameHostImpl::PlatformNotificationPermissionRequestDone,
-          weak_ptr_factory_.GetWeakPtr(),
-          request_id);
+  base::Callback<void(bool)> done_callback = base::Bind(
+      &RenderFrameHostImpl::PlatformNotificationPermissionRequestDone,
+      weak_ptr_factory_.GetWeakPtr(),
+      request_id);
 
-  GetContentClient()->browser()->RequestDesktopNotificationPermission(
-      origin, this, done_callback);
+  if (!delegate()->GetAsWebContents())
+    return;
+
+  // TODO(peter): plumb user_gesture and bridge_id.
+  GetContentClient()->browser()->RequestPermission(
+      content::PERMISSION_NOTIFICATIONS,
+      delegate()->GetAsWebContents(),
+      routing_id_,
+      origin,
+      true,  // user_gesture,
+      done_callback);
 }
 
 void RenderFrameHostImpl::OnShowDesktopNotification(
@@ -1459,7 +1467,12 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 }
 
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
-    int request_id, blink::WebNotificationPermission permission) {
+    int request_id,
+    bool granted) {
+  blink::WebNotificationPermission permission =
+      granted ? blink::WebNotificationPermissionAllowed
+              : blink::WebNotificationPermissionDenied;
+
   Send(new PlatformNotificationMsg_PermissionRequestComplete(
       routing_id_, request_id, permission));
 }

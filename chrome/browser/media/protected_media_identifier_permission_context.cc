@@ -48,20 +48,13 @@ void ProtectedMediaIdentifierPermissionContext::
     RequestProtectedMediaIdentifierPermission(
         content::WebContents* web_contents,
         const GURL& origin,
-        base::Callback<void(bool)> result_callback,
-        base::Closure* cancel_callback) {
+        base::Callback<void(bool)> result_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (shutting_down_)
     return;
 
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  if (cancel_callback) {
-    *cancel_callback = base::Bind(
-        &ProtectedMediaIdentifierPermissionContext::
-            CancelProtectedMediaIdentifierPermissionRequests,
-        this, render_process_id, render_view_id, origin);
-  }
 
   const PermissionRequestID id(
       render_process_id, render_view_id, 0, origin);

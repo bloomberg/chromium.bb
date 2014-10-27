@@ -31,8 +31,11 @@ class ProtectedMediaIdentifierPermissionContext
   void RequestProtectedMediaIdentifierPermission(
       content::WebContents* web_contents,
       const GURL& origin,
-      base::Callback<void(bool)> result_callback,
-      base::Closure* cancel_callback);
+      base::Callback<void(bool)> result_callback);
+
+  void CancelProtectedMediaIdentifierPermissionRequests(int render_process_id,
+                                                        int render_view_id,
+                                                        const GURL& origin);
 
   // Called on the UI thread when the profile is about to be destroyed.
   void ShutdownOnUIThread();
@@ -47,11 +50,6 @@ class ProtectedMediaIdentifierPermissionContext
   // Return an instance of the infobar queue controller, creating it
   // if necessary.
   PermissionQueueController* QueueController();
-
-  void CancelProtectedMediaIdentifierPermissionRequests(
-      int render_process_id,
-      int render_view_id,
-      const GURL& origin);
 
   // Notifies whether or not the corresponding bridge is allowed to use
   // protected media identifier via

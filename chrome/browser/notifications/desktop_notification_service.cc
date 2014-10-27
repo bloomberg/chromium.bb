@@ -102,11 +102,12 @@ std::string DesktopNotificationService::AddIconNotification(
 
 DesktopNotificationService::DesktopNotificationService(Profile* profile)
     : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
-      profile_(profile),
+      profile_(profile)
 #if defined(ENABLE_EXTENSIONS)
-      extension_registry_observer_(this),
+      ,
+      extension_registry_observer_(this)
 #endif
-      weak_factory_(this) {
+{
   OnStringListPrefChanged(
       prefs::kMessageCenterDisabledExtensionIds, &disabled_extension_ids_);
   OnStringListPrefChanged(
@@ -142,7 +143,7 @@ void DesktopNotificationService::RequestNotificationPermission(
     const PermissionRequestID& request_id,
     const GURL& requesting_origin,
     bool user_gesture,
-    const NotificationPermissionCallback& callback) {
+    const base::Callback<void(bool)>& result_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
 #if defined(ENABLE_EXTENSIONS)
@@ -169,19 +170,16 @@ void DesktopNotificationService::RequestNotificationPermission(
           extensions::APIPermission::kNotifications,
           extension,
           web_contents->GetRenderViewHost())) {
-    callback.Run(blink::WebNotificationPermissionAllowed);
+    result_callback.Run(true);
     return;
   }
 #endif
 
-  RequestPermission(
-      web_contents,
-      request_id,
-      requesting_origin,
-      user_gesture,
-      base::Bind(&DesktopNotificationService::OnNotificationPermissionRequested,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+  RequestPermission(web_contents,
+                    request_id,
+                    requesting_origin,
+                    user_gesture,
+                    result_callback);
 }
 
 void DesktopNotificationService::ShowDesktopNotification(
@@ -355,15 +353,6 @@ void DesktopNotificationService::UpdateContentSetting(
   } else {
     DesktopNotificationProfileUtil::DenyPermission(profile_, requesting_origin);
   }
-}
-
-void DesktopNotificationService::OnNotificationPermissionRequested(
-    const NotificationPermissionCallback& callback, bool allowed) {
-  blink::WebNotificationPermission permission = allowed ?
-      blink::WebNotificationPermissionAllowed :
-      blink::WebNotificationPermissionDenied;
-
-  callback.Run(permission);
 }
 
 void DesktopNotificationService::FirePermissionLevelChangedEvent(

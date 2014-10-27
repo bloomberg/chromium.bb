@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -139,17 +140,6 @@ class AwAccessTokenStore : public content::AccessTokenStore {
 
   DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
 };
-
-void CancelProtectedMediaIdentifierPermissionRequests(
-    int render_process_id,
-    int render_view_id,
-    const GURL& origin) {
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
-  if (delegate)
-    delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
-}
 
 }  // namespace
 
@@ -402,7 +392,8 @@ void AwContentBrowserClient::ShowDesktopNotification(
   NOTREACHED() << "Android WebView does not support desktop notifications.";
 }
 
-void AwContentBrowserClient::RequestGeolocationPermission(
+void AwContentBrowserClient::RequestPermission(
+    content::PermissionType permission,
     content::WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame,
@@ -410,66 +401,68 @@ void AwContentBrowserClient::RequestGeolocationPermission(
     const base::Callback<void(bool)>& result_callback) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
-  if (delegate == NULL) {
-    DVLOG(0) << "Dropping GeolocationPermission request";
-    result_callback.Run(false);
-    return;
-  }
-
   GURL origin = requesting_frame.GetOrigin();
-  delegate->RequestGeolocationPermission(origin, result_callback);
+  AwBrowserPermissionRequestDelegate* delegate =
+      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
+                                                 render_view_id);
+  switch (permission) {
+    case content::PERMISSION_GEOLOCATION:
+      if (!delegate) {
+        DVLOG(0) << "Dropping GeolocationPermission request";
+        result_callback.Run(false);
+        return;
+      }
+      delegate->RequestGeolocationPermission(origin, result_callback);
+      break;
+    case content::PERMISSION_PROTECTED_MEDIA:
+      if (!delegate) {
+        DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
+        result_callback.Run(false);
+        return;
+      }
+      delegate->RequestProtectedMediaIdentifierPermission(origin,
+                                                          result_callback);
+      break;
+    case content::PERMISSION_MIDI_SYSEX:
+    case content::PERMISSION_NOTIFICATIONS:
+    case content::PERMISSION_PUSH_MESSAGING:
+      NOTIMPLEMENTED() << "RequestPermission not implemented for "
+                       << permission;
+      break;
+    case content::PERMISSION_NUM:
+      NOTREACHED() << "Invalid RequestPermission for " << permission;
+      break;
+  }
 }
 
-void AwContentBrowserClient::CancelGeolocationPermissionRequest(
+void AwContentBrowserClient::CancelPermissionRequest(
+    content::PermissionType permission,
     content::WebContents* web_contents,
     int bridge_id,
-    const GURL& requesting_frame) {
+    const GURL& origin) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   AwBrowserPermissionRequestDelegate* delegate =
       AwBrowserPermissionRequestDelegate::FromID(render_process_id,
                                                  render_view_id);
-  if (delegate)
-    delegate->CancelGeolocationPermissionRequests(requesting_frame);
-}
-
-void AwContentBrowserClient::RequestMidiSysExPermission(
-    content::WebContents* web_contents,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
-  // TODO(toyoshim): Android WebView is not supported yet.
-  // See http://crbug.com/339767.
-  result_callback.Run(false);
-}
-
-void AwContentBrowserClient::RequestProtectedMediaIdentifierPermission(
-    content::WebContents* web_contents,
-    const GURL& origin,
-    base::Callback<void(bool)> result_callback,
-    base::Closure* cancel_callback) {
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  AwBrowserPermissionRequestDelegate* delegate =
-      AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
-  if (delegate == NULL) {
-    DVLOG(0) << "Dropping ProtectedMediaIdentifierPermission request";
-    result_callback.Run(false);
+  if (!delegate)
     return;
+  switch (permission) {
+    case content::PERMISSION_GEOLOCATION:
+      delegate->CancelGeolocationPermissionRequests(origin);
+      break;
+    case content::PERMISSION_PROTECTED_MEDIA:
+      delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
+      break;
+    case content::PERMISSION_MIDI_SYSEX:
+    case content::PERMISSION_NOTIFICATIONS:
+    case content::PERMISSION_PUSH_MESSAGING:
+      NOTIMPLEMENTED() << "CancelPermission not implemented for " << permission;
+      break;
+    case content::PERMISSION_NUM:
+      NOTREACHED() << "Invalid CancelPermission for " << permission;
+      break;
   }
-
-  if (cancel_callback) {
-    *cancel_callback = base::Bind(
-        CancelProtectedMediaIdentifierPermissionRequests,
-        render_process_id, render_view_id, origin);
-  }
-  delegate->RequestProtectedMediaIdentifierPermission(origin, result_callback);
 }
 
 bool AwContentBrowserClient::CanCreateWindow(

@@ -180,11 +180,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                       int render_process_id,
                       int render_frame_id) override;
   content::MediaObserver* GetMediaObserver() override;
-  void RequestDesktopNotificationPermission(
-      const GURL& source_origin,
-      content::RenderFrameHost* render_frame_host,
-      const base::Callback<void(blink::WebNotificationPermission)>& callback)
-      override;
   blink::WebNotificationPermission CheckDesktopNotificationPermission(
       const GURL& source_origin,
       content::ResourceContext* context,
@@ -194,30 +189,21 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       scoped_ptr<content::DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) override;
-  void RequestGeolocationPermission(
+  void RequestPermission(
+      content::PermissionType permission,
       content::WebContents* web_contents,
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
       const base::Callback<void(bool)>& result_callback) override;
-  void CancelGeolocationPermissionRequest(
-      content::WebContents* web_contents,
-      int bridge_id,
-      const GURL& requesting_frame) override;
-  void RequestMidiSysExPermission(content::WebContents* web_contents,
-                                  int bridge_id,
-                                  const GURL& requesting_frame,
-                                  bool user_gesture,
-                                  base::Callback<void(bool)> result_callback,
-                                  base::Closure* cancel_callback) override;
-  void DidUseGeolocationPermission(content::WebContents* web_contents,
-                                   const GURL& frame_url,
-                                   const GURL& main_frame_url) override;
-  void RequestProtectedMediaIdentifierPermission(
-      content::WebContents* web_contents,
-      const GURL& origin,
-      base::Callback<void(bool)> result_callback,
-      base::Closure* cancel_callback) override;
+  void CancelPermissionRequest(content::PermissionType permission,
+                               content::WebContents* web_contents,
+                               int bridge_id,
+                               const GURL& requesting_frame) override;
+  void RegisterPermissionUsage(content::PermissionType permission,
+                               content::WebContents* web_contents,
+                               const GURL& frame_url,
+                               const GURL& main_frame_url) override;
   bool CanCreateWindow(const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,
                        const GURL& source_origin,

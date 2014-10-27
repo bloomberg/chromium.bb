@@ -252,20 +252,21 @@ void BrowserCdmManager::OnCreateSession(
       RenderFrameHost::FromID(render_process_id_, render_frame_id);
   WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
   DCHECK(web_contents);
-
-  base::Closure cancel_callback;
-  GetContentClient()->browser()->RequestProtectedMediaIdentifierPermission(
+  GetContentClient()->browser()->RequestPermission(
+      content::PERMISSION_PROTECTED_MEDIA,
       web_contents,
+      0,  // bridge id
       security_origin,
+      // Only implemented for Android infobars which do not support
+      // user gestures.
+      true,
       base::Bind(&BrowserCdmManager::CreateSessionIfPermitted,
                  this,
-                 render_frame_id, cdm_id, session_id,
-                 mime_type, init_data),
-      &cancel_callback);
-
-  if (cancel_callback.is_null())
-    return;
-  cdm_cancel_permission_map_[GetId(render_frame_id, cdm_id)] = cancel_callback;
+                 render_frame_id,
+                 cdm_id,
+                 session_id,
+                 mime_type,
+                 init_data));
 }
 
 void BrowserCdmManager::OnUpdateSession(

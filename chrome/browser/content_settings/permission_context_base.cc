@@ -51,7 +51,7 @@ void PermissionContextBase::RequestPermission(
 void PermissionContextBase::CancelPermissionRequest(
     content::WebContents* web_contents,
     const PermissionRequestID& id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (PermissionBubbleManager::Enabled()) {
     PermissionBubbleRequest* cancelling =
