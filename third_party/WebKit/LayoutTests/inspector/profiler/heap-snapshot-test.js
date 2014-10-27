@@ -87,7 +87,7 @@ InspectorTest.createHeapSnapshotMockRaw = function()
             1, 5, 6, 6,  6, 21, 0], // E (35)
         edges: [
             // root node edges
-            2,  6,  7, // shortcut 'a' to node 'A'
+            1,  6,  7, // property 'a' to node 'A'
             1,  7, 14, // property 'b' to node 'B'
 
             // A node edges
