@@ -39,6 +39,12 @@ PASS getComputedStyle(scroller1, '::-webkit-scrollbar-track-piece').backgroundCo
 PASS getComputedStyle(scroller2, '::-webkit-scrollbar-track-piece').backgroundColor is transparent
 PASS internals.updateStyleAndReturnAffectedElementCount() is 10
 PASS getComputedStyle(scroller2, '::-webkit-scrollbar-track-piece').backgroundColor is green
+PASS getComputedStyle(scroller1, '::-webkit-resizer').backgroundColor is transparent
+PASS internals.updateStyleAndReturnAffectedElementCount() is 4
+PASS getComputedStyle(scroller1, '::-webkit-resizer').backgroundColor is green
+PASS getComputedStyle(scroller2, '::-webkit-resizer').backgroundColor is transparent
+PASS internals.updateStyleAndReturnAffectedElementCount() is 9
+PASS getComputedStyle(scroller2, '::-webkit-resizer').backgroundColor is green
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -26,8 +26,14 @@
 .t9 .scroller::-webkit-scrollbar-track,
 .t10 + .scroller::-webkit-scrollbar-track,
 .t11 .scroller::-webkit-scrollbar-track-piece,
-.t12 + .scroller::-webkit-scrollbar-track-piece {
+.t12 + .scroller::-webkit-scrollbar-track-piece,
+.t13 .scroller::-webkit-resizer,
+.t14 + .scroller::-webkit-resizer {
     background-color: green;
+}
+
+.t13 .scroller, .t14 + .scroller {
+    resize: both;
 }
 </style>
 <div>
@@ -96,7 +102,8 @@ function testScrollbarPseudo(pseudoElm, scroller, classElement, testClass, expec
 // ::-webkit-scrollbar-corner: 1 scrollbar + 1 corner (in total 4 and 9)
 // ::-webkit-scrollbar-thumb: 1 scrollbar + 1 thumb (in total 4 and 9)
 // ::-webkit-scrollbar-track: 1 scrollbar + 1 track (in total 4 and 9)
-// ::-webkit-scrollbar-track-piece: 1 scrollbar + 2 track pieces (in total 5 and 12)
+// ::-webkit-scrollbar-track-piece: 1 scrollbar + 2 track pieces (in total 5 and 10)
+// ::-webkit-resizer: 1 scrollbar + 1 resizer (in total 4 and 9)
 
 testScrollbarPseudo("::-webkit-scrollbar", "scroller1", scrollerParent, "t1", 3);
 testScrollbarPseudo("::-webkit-scrollbar", "scroller2", scrollerSibling, "t2", 8);
@@ -110,4 +117,6 @@ testScrollbarPseudo("::-webkit-scrollbar-track", "scroller1", scrollerParent, "t
 testScrollbarPseudo("::-webkit-scrollbar-track", "scroller2", scrollerSibling, "t10", 9);
 testScrollbarPseudo("::-webkit-scrollbar-track-piece", "scroller1", scrollerParent, "t11", 5);
 testScrollbarPseudo("::-webkit-scrollbar-track-piece", "scroller2", scrollerSibling, "t12", 10);
+testScrollbarPseudo("::-webkit-resizer", "scroller1", scrollerParent, "t13", 4);
+testScrollbarPseudo("::-webkit-resizer", "scroller2", scrollerSibling, "t14", 9);
 </script>

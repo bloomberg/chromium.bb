@@ -110,6 +110,7 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoBackdrop:
     case CSSSelector::PseudoLang:
     case CSSSelector::PseudoNot:
+    case CSSSelector::PseudoResizer:
     case CSSSelector::PseudoRoot:
     case CSSSelector::PseudoScope:
     case CSSSelector::PseudoScrollbar:
@@ -160,7 +161,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoFirstLine:
     case CSSSelector::PseudoFirstLetter:
     case CSSSelector::PseudoFullPageMedia:
-    case CSSSelector::PseudoResizer:
     case CSSSelector::PseudoCornerPresent:
     case CSSSelector::PseudoDecrement:
     case CSSSelector::PseudoIncrement:
