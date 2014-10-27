@@ -489,15 +489,15 @@ MediaControls.prototype.onPlayStateChanged = function() {};
  * @private
  */
 MediaControls.prototype.updatePlayButtonState_ = function(playing) {
-  if (playing) {
-    this.playButton_.setAttribute('state',
-                                  MediaControls.ButtonStateType.PLAYING);
-  } else if (!this.media_.ended) {
-    this.playButton_.setAttribute('state',
-                                  MediaControls.ButtonStateType.DEFAULT);
-  } else {
+  if (this.media_.ended && this.progressSlider_.isAtEnd()) {
     this.playButton_.setAttribute('state',
                                   MediaControls.ButtonStateType.ENDED);
+  } else if (playing) {
+    this.playButton_.setAttribute('state',
+                                  MediaControls.ButtonStateType.PLAYING);
+  } else {
+    this.playButton_.setAttribute('state',
+                                  MediaControls.ButtonStateType.DEFAULT);
   }
 };
 
@@ -705,6 +705,14 @@ MediaControls.Slider.prototype.isDragging = function() {
 MediaControls.Slider.prototype.onInputDrag_ = function(on) {
   this.isDragging_ = on;
   this.onDrag_(on);
+};
+
+/**
+ * Check if the slider position is at the end of the control.
+ * @return {boolean} True if the slider position is at the end.
+ */
+MediaControls.Slider.prototype.isAtEnd = function() {
+  return this.input_.value === this.input_.max;
 };
 
 /**
