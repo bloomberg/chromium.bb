@@ -1404,6 +1404,8 @@ crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-3
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
 
+crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure ]
+
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] virtual/textblob/fast/text/whitespace/008.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
