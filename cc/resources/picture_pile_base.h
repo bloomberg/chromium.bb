@@ -26,7 +26,8 @@ class Value;
 
 namespace cc {
 
-class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
+class CC_EXPORT PicturePileBase
+    : public base::RefCountedThreadSafe<PicturePileBase> {
  public:
   PicturePileBase();
   explicit PicturePileBase(const PicturePileBase* other);
@@ -136,7 +137,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
  private:
   void SetBufferPixels(int buffer_pixels);
 
-  friend class base::RefCounted<PicturePileBase>;
+  friend class base::RefCountedThreadSafe<PicturePileBase>;
   DISALLOW_COPY_AND_ASSIGN(PicturePileBase);
 };
 
