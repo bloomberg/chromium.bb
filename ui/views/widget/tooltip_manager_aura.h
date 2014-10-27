@@ -26,7 +26,7 @@ class Widget;
 class TooltipManagerAura : public TooltipManager {
  public:
   explicit TooltipManagerAura(Widget* widget);
-  virtual ~TooltipManagerAura();
+  ~TooltipManagerAura() override;
 
   // If |source| has capture this finds the Widget under the mouse and invokes
   // UpdateTooltip() on it's TooltipManager. This is necessary as when capture
@@ -38,9 +38,9 @@ class TooltipManagerAura : public TooltipManager {
   static const gfx::FontList& GetDefaultFontList();
 
   // TooltipManager:
-  virtual const gfx::FontList& GetFontList() const override;
-  virtual void UpdateTooltip() override;
-  virtual void TooltipTextChanged(View* view) override;
+  const gfx::FontList& GetFontList() const override;
+  void UpdateTooltip() override;
+  void TooltipTextChanged(View* view) override;
 
  private:
   View* GetViewUnderPoint(const gfx::Point& point);

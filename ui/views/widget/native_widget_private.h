@@ -44,7 +44,7 @@ class InputMethodDelegate;
 //
 class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
  public:
-  virtual ~NativeWidgetPrivate() {}
+  ~NativeWidgetPrivate() override {}
 
   // Creates an appropriate default NativeWidgetPrivate implementation for the
   // current OS/circumstance.
@@ -231,7 +231,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void RepostNativeEvent(gfx::NativeEvent native_event) = 0;
 
   // Overridden from NativeWidget:
-  virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() override;
+  internal::NativeWidgetPrivate* AsNativeWidgetPrivate() override;
 };
 
 }  // namespace internal

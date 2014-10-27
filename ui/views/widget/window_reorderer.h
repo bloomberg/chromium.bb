@@ -25,7 +25,7 @@ class View;
 class WindowReorderer : public aura::WindowObserver {
  public:
   WindowReorderer(aura::Window* window, View* root_view);
-  virtual ~WindowReorderer();
+  ~WindowReorderer() override;
 
   // Explicitly reorder the children of |window_| (and their layers). This
   // method should be called when the position of a view with an associated
@@ -37,9 +37,9 @@ class WindowReorderer : public aura::WindowObserver {
 
  private:
   // aura::WindowObserver overrides:
-  virtual void OnWindowAdded(aura::Window* new_window) override;
-  virtual void OnWillRemoveWindow(aura::Window* window) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowAdded(aura::Window* new_window) override;
+  void OnWillRemoveWindow(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // The window and the root view of the native widget which owns the
   // WindowReorderer.

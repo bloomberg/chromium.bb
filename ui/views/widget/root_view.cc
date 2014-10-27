@@ -47,7 +47,7 @@ class MouseEnterExitEvent : public ui::MouseEvent {
     SetType(type);
   }
 
-  virtual ~MouseEnterExitEvent() {}
+  ~MouseEnterExitEvent() override {}
 };
 
 }  // namespace
@@ -60,11 +60,11 @@ class PreEventDispatchHandler : public ui::EventHandler {
   explicit PreEventDispatchHandler(View* owner)
       : owner_(owner) {
   }
-  virtual ~PreEventDispatchHandler() {}
+  ~PreEventDispatchHandler() override {}
 
  private:
   // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override {
+  void OnKeyEvent(ui::KeyEvent* event) override {
     CHECK_EQ(ui::EP_PRETARGET, event->phase());
     if (event->handled())
       return;
@@ -102,11 +102,11 @@ class PostEventDispatchHandler : public ui::EventHandler {
   PostEventDispatchHandler()
       : touch_dnd_enabled_(::switches::IsTouchDragDropEnabled()) {
   }
-  virtual ~PostEventDispatchHandler() {}
+  ~PostEventDispatchHandler() override {}
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
+  void OnGestureEvent(ui::GestureEvent* event) override {
     DCHECK_EQ(ui::EP_POSTTARGET, event->phase());
     if (event->handled())
       return;

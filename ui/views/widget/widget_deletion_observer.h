@@ -17,13 +17,13 @@ class Widget;
 class VIEWS_EXPORT WidgetDeletionObserver : public WidgetObserver {
  public:
   explicit WidgetDeletionObserver(Widget* widget);
-  virtual ~WidgetDeletionObserver();
+  ~WidgetDeletionObserver() override;
 
   // Returns true if the widget passed in the constructor is still alive.
   bool IsWidgetAlive() { return widget_ != NULL; }
 
   // Overridden from WidgetObserver.
-  virtual void OnWidgetDestroying(Widget* widget) override;
+  void OnWidgetDestroying(Widget* widget) override;
 
  private:
   void CleanupWidget();

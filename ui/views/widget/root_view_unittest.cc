@@ -17,9 +17,9 @@ typedef ViewsTestBase RootViewTest;
 class DeleteOnKeyEventView : public View {
  public:
   explicit DeleteOnKeyEventView(bool* set_on_key) : set_on_key_(set_on_key) {}
-  virtual ~DeleteOnKeyEventView() {}
+  ~DeleteOnKeyEventView() override {}
 
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override {
+  bool OnKeyPressed(const ui::KeyEvent& event) override {
     *set_on_key_ = true;
     delete this;
     return true;
@@ -73,7 +73,7 @@ class TestContextMenuController : public ContextMenuController {
         menu_source_view_(NULL),
         menu_source_type_(ui::MENU_SOURCE_NONE) {
   }
-  virtual ~TestContextMenuController() {}
+  ~TestContextMenuController() override {}
 
   int show_context_menu_calls() const { return show_context_menu_calls_; }
   View* menu_source_view() const { return menu_source_view_; }
@@ -86,10 +86,9 @@ class TestContextMenuController : public ContextMenuController {
   }
 
   // ContextMenuController:
-  virtual void ShowContextMenuForView(
-      View* source,
-      const gfx::Point& point,
-      ui::MenuSourceType source_type) override {
+  void ShowContextMenuForView(View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override {
     show_context_menu_calls_++;
     menu_source_view_ = source;
     menu_source_type_ = source_type;
@@ -160,12 +159,9 @@ class GestureHandlingView : public View {
   GestureHandlingView() {
   }
 
-  virtual ~GestureHandlingView() {
-  }
+  ~GestureHandlingView() override {}
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
-    event->SetHandled();
-  }
+  void OnGestureEvent(ui::GestureEvent* event) override { event->SetHandled(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GestureHandlingView);

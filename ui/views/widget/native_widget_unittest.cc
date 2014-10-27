@@ -35,7 +35,7 @@ class ScopedTestWidget {
 class NativeWidgetTest : public ViewsTestBase {
  public:
   NativeWidgetTest() {}
-  virtual ~NativeWidgetTest() {}
+  ~NativeWidgetTest() override {}
 
   internal::NativeWidgetPrivate* CreateNativeWidgetOfType(
       Widget::InitParams::Type type) {

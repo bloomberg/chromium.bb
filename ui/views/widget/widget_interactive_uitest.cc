@@ -43,11 +43,11 @@ namespace {
 class ExitLoopOnRelease : public View {
  public:
   ExitLoopOnRelease() {}
-  virtual ~ExitLoopOnRelease() {}
+  ~ExitLoopOnRelease() override {}
 
  private:
   // Overridden from View:
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override {
+  void OnMouseReleased(const ui::MouseEvent& event) override {
     GetWidget()->Close();
     base::MessageLoop::current()->QuitNow();
   }
@@ -59,11 +59,11 @@ class ExitLoopOnRelease : public View {
 class GestureCaptureView : public View {
  public:
   GestureCaptureView() {}
-  virtual ~GestureCaptureView() {}
+  ~GestureCaptureView() override {}
 
  private:
   // Overridden from View:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
+  void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       GetWidget()->SetCapture(this);
       event->StopPropagation();
@@ -82,20 +82,16 @@ class MouseView : public View {
         exited_(0),
         pressed_(0) {
   }
-  virtual ~MouseView() {}
+  ~MouseView() override {}
 
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
+  bool OnMousePressed(const ui::MouseEvent& event) override {
     pressed_++;
     return true;
   }
 
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override {
-    entered_++;
-  }
+  void OnMouseEntered(const ui::MouseEvent& event) override { entered_++; }
 
-  virtual void OnMouseExited(const ui::MouseEvent& event) override {
-    exited_++;
-  }
+  void OnMouseExited(const ui::MouseEvent& event) override { exited_++; }
 
   // Return the number of OnMouseEntered calls and reset the counter.
   int EnteredCalls() {
@@ -127,11 +123,11 @@ class MouseView : public View {
 class NestedLoopCaptureView : public View {
  public:
   explicit NestedLoopCaptureView(Widget* widget) : widget_(widget) {}
-  virtual ~NestedLoopCaptureView() {}
+  ~NestedLoopCaptureView() override {}
 
  private:
   // Overridden from View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
+  bool OnMousePressed(const ui::MouseEvent& event) override {
     // Start a nested loop.
     widget_->Show();
     widget_->SetCapture(widget_->GetContentsView());
@@ -155,9 +151,9 @@ class NestedLoopCaptureView : public View {
 class WidgetTestInteractive : public WidgetTest {
  public:
   WidgetTestInteractive() {}
-  virtual ~WidgetTestInteractive() {}
+  ~WidgetTestInteractive() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
@@ -637,12 +633,10 @@ TEST_F(WidgetTestInteractive, WidgetNotActivatedOnFakeActivationMessages) {
 class ModalDialogDelegate : public DialogDelegateView {
  public:
   explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
-  virtual ~ModalDialogDelegate() {}
+  ~ModalDialogDelegate() override {}
 
   // WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const override {
-    return type_;
-  }
+  ui::ModalType GetModalType() const override { return type_; }
 
  private:
   ui::ModalType type_;
@@ -858,7 +852,7 @@ namespace {
 class CaptureLostTrackingWidget : public Widget {
  public:
   CaptureLostTrackingWidget() : got_capture_lost_(false) {}
-  virtual ~CaptureLostTrackingWidget() {}
+  ~CaptureLostTrackingWidget() override {}
 
   bool GetAndClearGotCaptureLost() {
     bool value = got_capture_lost_;
@@ -867,7 +861,7 @@ class CaptureLostTrackingWidget : public Widget {
   }
 
   // Widget:
-  virtual void OnMouseCaptureLost() override {
+  void OnMouseCaptureLost() override {
     got_capture_lost_ = true;
     Widget::OnMouseCaptureLost();
   }
@@ -885,10 +879,9 @@ class WidgetCaptureTest : public ViewsTestBase {
   WidgetCaptureTest() {
   }
 
-  virtual ~WidgetCaptureTest() {
-  }
+  ~WidgetCaptureTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
@@ -1044,11 +1037,10 @@ class CaptureOnActivationObserver : public WidgetObserver {
  public:
   CaptureOnActivationObserver() {
   }
-  virtual ~CaptureOnActivationObserver() {
-  }
+  ~CaptureOnActivationObserver() override {}
 
   // WidgetObserver:
-  virtual void OnWidgetActivationChanged(Widget* widget, bool active) override {
+  void OnWidgetActivationChanged(Widget* widget, bool active) override {
     if (active)
       widget->SetCapture(NULL);
   }

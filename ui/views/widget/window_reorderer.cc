@@ -61,7 +61,7 @@ void GetOrderOfViewsWithLayers(
 class WindowReorderer::AssociationObserver : public aura::WindowObserver {
  public:
   explicit AssociationObserver(WindowReorderer* reorderer);
-  virtual ~AssociationObserver();
+  ~AssociationObserver() override;
 
   // Start/stop observing changes in the kHostViewKey property on |window|.
   void StartObserving(aura::Window* window);
@@ -69,10 +69,10 @@ class WindowReorderer::AssociationObserver : public aura::WindowObserver {
 
  private:
   // aura::WindowObserver overrides:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                      const void* key,
-                                      intptr_t old) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // Not owned.
   WindowReorderer* reorderer_;

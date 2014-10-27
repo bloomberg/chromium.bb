@@ -55,7 +55,7 @@ class VIEWS_EXPORT RootView : public View,
 
   // Creation and lifetime -----------------------------------------------------
   explicit RootView(Widget* widget);
-  virtual ~RootView();
+  ~RootView() override;
 
   // Tree operations -----------------------------------------------------------
 
@@ -87,42 +87,42 @@ class VIEWS_EXPORT RootView : public View,
   void LocaleChanged();
 
   // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch() override;
-  virtual FocusTraversable* GetFocusTraversableParent() override;
-  virtual View* GetFocusTraversableParentView() override;
+  FocusSearch* GetFocusSearch() override;
+  FocusTraversable* GetFocusTraversableParent() override;
+  View* GetFocusTraversableParentView() override;
 
   // Overridden from ui::EventProcessor:
-  virtual ui::EventTarget* GetRootTarget() override;
-  virtual void OnEventProcessingStarted(ui::Event* event) override;
-  virtual void OnEventProcessingFinished(ui::Event* event) override;
+  ui::EventTarget* GetRootTarget() override;
+  void OnEventProcessingStarted(ui::Event* event) override;
+  void OnEventProcessingFinished(ui::Event* event) override;
 
   // Overridden from View:
-  virtual const Widget* GetWidget() const override;
-  virtual Widget* GetWidget() override;
-  virtual bool IsDrawn() const override;
-  virtual void Layout() override;
-  virtual const char* GetClassName() const override;
-  virtual void SchedulePaintInRect(const gfx::Rect& rect) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnMouseMoved(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
-  virtual void SetMouseHandler(View* new_mouse_handler) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void UpdateParentLayer() override;
+  const Widget* GetWidget() const override;
+  Widget* GetWidget() override;
+  bool IsDrawn() const override;
+  void Layout() override;
+  const char* GetClassName() const override;
+  void SchedulePaintInRect(const gfx::Rect& rect) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void SetMouseHandler(View* new_mouse_handler) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void UpdateParentLayer() override;
 
  protected:
   // Overridden from View:
-  virtual void ViewHierarchyChanged(
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  virtual void VisibilityChanged(View* starting_from, bool is_visible) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Vector2d CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent) override;
-  virtual View::DragInfo* GetDragInfo() override;
+  View::DragInfo* GetDragInfo() override;
 
  private:
   friend class ::views::RootViewTargeter;
@@ -154,11 +154,11 @@ class VIEWS_EXPORT RootView : public View,
                                    View* sibling);
 
   // Overridden from ui::EventDispatcherDelegate:
-  virtual bool CanDispatchToTarget(ui::EventTarget* target) override;
-  virtual ui::EventDispatchDetails PreDispatchEvent(ui::EventTarget* target,
-                                                    ui::Event* event) override;
-  virtual ui::EventDispatchDetails PostDispatchEvent(
-      ui::EventTarget* target, const ui::Event& event) override;
+  bool CanDispatchToTarget(ui::EventTarget* target) override;
+  ui::EventDispatchDetails PreDispatchEvent(ui::EventTarget* target,
+                                            ui::Event* event) override;
+  ui::EventDispatchDetails PostDispatchEvent(ui::EventTarget* target,
+                                             const ui::Event& event) override;
 
   //////////////////////////////////////////////////////////////////////////////
   // Tree operations -----------------------------------------------------------
