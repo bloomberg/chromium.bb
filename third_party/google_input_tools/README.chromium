@@ -1,0 +1,22 @@
+Name: Google Input Tools
+Short Name: google_input_tools
+URL: https://github.com/googlei18n/google-input-tools.git
+Version: 1.0.4.0
+Revision: @b99e802e53613e07f24a779695c1c6f3bd2f864a
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+This directory contains source for the google-input-tools project, which
+provides multi-lingual input support. In particular, google-input-tools is
+used in ChromeOS to provide a fallback virtual keyboard for IMEs that are not
+VK-aware.
+
+To update to a newer version of google-input-tools, run the following script:
+
+update.py --input=_path_to_google_input_tools_ --lib=_path_to_closure_lib_
+
+Local Modifications:
+Only includes the portion of google-input-tools required to build an inputview-
+based virtual keyboard.
