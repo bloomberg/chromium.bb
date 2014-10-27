@@ -214,6 +214,11 @@ void WebRuntimeFeatures::enableSessionStorage(bool enable)
     RuntimeEnabledFeatures::setSessionStorageEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableSlimmingPaint(bool enable)
+{
+    RuntimeEnabledFeatures::setSlimmingPaintEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableTouch(bool enable)
 {
     RuntimeEnabledFeatures::setTouchEnabled(enable);
