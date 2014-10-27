@@ -26,7 +26,7 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            'internal/chromecast_internal.gyp:media_base_internal',
+            '<(cast_internal_gyp):media_base_internal',
           ],
         }, {
           'sources': [

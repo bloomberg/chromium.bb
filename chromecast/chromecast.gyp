@@ -172,7 +172,7 @@
       'conditions': [
         ['chromecast_branding=="Chrome"', {
           'dependencies': [
-            'internal/chromecast_internal.gyp:cast_shell_internal',
+            '<(cast_internal_gyp):cast_shell_internal',
           ],
         }, {
           'sources': [
@@ -413,7 +413,7 @@
           'conditions': [
             ['chromecast_branding=="Chrome"', {
               'dependencies': [
-                'internal/chromecast_internal.gyp:cast_gfx_internal',
+                '<(cast_internal_gyp):cast_gfx_internal',
               ],
             }, {
               'dependencies': [
