@@ -1,21 +1,21 @@
 This is a testharness.js-based test.
 PASS Service Worker: Cache.match and Cache.matchAll 
 FAIL Cache.matchAll with URL Method is not implemented.
-FAIL Cache.match with URL Entry was not found.
-FAIL Cache.matchAll with Request Entry was not found.
-FAIL Cache.match with Request Entry was not found.
-FAIL Cache.matchAll with new Request Entry was not found.
-FAIL Cache.match with new Request Entry was not found.
+FAIL Cache.match with URL assert_equals: Cache.match should match by URL.: Response.url expected "" but got "http://example.com/a"
+FAIL Cache.matchAll with Request Method is not implemented.
+FAIL Cache.match with Request assert_equals: Cache.match should match by Request.: Response.url expected "" but got "http://example.com/a"
+FAIL Cache.matchAll with new Request Method is not implemented.
+FAIL Cache.match with new Request assert_equals: Cache.match should match by Request.: Response.url expected "" but got "http://example.com/a"
 FAIL Cache.match with Request containing non-empty body assert_false: Cache.match should not consume Request body. expected false got true
-FAIL Cache.matchAll with ignoreSearch option (request with no search parameters) Entry was not found.
-FAIL Cache.matchAll with ignoreSearch option (request with search parameter) Entry was not found.
-FAIL Cache.matchAll with request containing hash Entry was not found.
-FAIL Cache.matchAll with string fragment "http" as query Entry was not found.
-FAIL Cache.matchAll with prefixMatch option Entry was not found.
-FAIL Cache.matchAll with prefixMatch option Entry was not found.
-FAIL Cache.matchAll with responses containing "Vary" header Entry already exists.
-FAIL Cache.match with responses containing "Vary" header Entry was not found.
-FAIL Cache.matchAll with "ignoreVary" parameter Entry was not found.
+FAIL Cache.matchAll with ignoreSearch option (request with no search parameters) Method is not implemented.
+FAIL Cache.matchAll with ignoreSearch option (request with search parameter) Method is not implemented.
+FAIL Cache.matchAll with request containing hash Method is not implemented.
+FAIL Cache.matchAll with string fragment "http" as query Method is not implemented.
+FAIL Cache.matchAll with prefixMatch option Method is not implemented.
+FAIL Cache.matchAll with prefixMatch option Method is not implemented.
+FAIL Cache.matchAll with responses containing "Vary" header assert_unreached: Test setup failed: Entry already exists. Reached unreachable code
+FAIL Cache.match with responses containing "Vary" header assert_unreached: Test setup failed: Entry already exists. Reached unreachable code
+FAIL Cache.matchAll with "ignoreVary" parameter assert_unreached: Test setup failed: Entry already exists. Reached unreachable code
 FAIL Cache.match with Request and Response objects with different URLs assert_equals: Cache.match should reutrn a Response object that has the same properties as the stored response.: Response.url expected "http://127.0.0.1:8000/serviceworker/resources/simple.txt" but got "http://example.com/"
 PASS Cache.match invoked multiple times for the same Request/Response 
 Harness: the test ran to completion.

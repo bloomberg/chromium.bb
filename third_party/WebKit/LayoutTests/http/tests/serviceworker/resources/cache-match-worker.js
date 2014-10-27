@@ -102,7 +102,7 @@ prepopulated_cache_test(simple_entries, function(cache) {
   }, 'Cache.match with URL');
 
 prepopulated_cache_test(simple_entries, function(cache) {
-    return cache.matchAll(simple_entries.a.request)
+    return cache.matchAll(simple_entries.a.request.clone())
       .then(function(result) {
           assert_array_objects_equals(
             result, [simple_entries.a.response],
@@ -111,7 +111,7 @@ prepopulated_cache_test(simple_entries, function(cache) {
   }, 'Cache.matchAll with Request');
 
 prepopulated_cache_test(simple_entries, function(cache) {
-    return cache.match(simple_entries.a.request)
+    return cache.match(simple_entries.a.request.clone())
       .then(function(result) {
           assert_object_equals(result, simple_entries.a.response,
                                'Cache.match should match by Request.');
@@ -162,7 +162,7 @@ cache_test(function(cache) {
   }, 'Cache.match with Request containing non-empty body');
 
 prepopulated_cache_test(simple_entries, function(cache) {
-    return cache.matchAll(simple_entries.a.request,
+    return cache.matchAll(simple_entries.a.request.clone(),
                           {ignoreSearch: true})
       .then(function(result) {
           assert_array_equivalent(
@@ -179,7 +179,7 @@ prepopulated_cache_test(simple_entries, function(cache) {
   'parameters)');
 
 prepopulated_cache_test(simple_entries, function(cache) {
-    return cache.matchAll(simple_entries.a_with_query.request,
+    return cache.matchAll(simple_entries.a_with_query.request.clone(),
                           {ignoreSearch: true})
       .then(function(result) {
           assert_array_equivalent(
@@ -195,7 +195,7 @@ prepopulated_cache_test(simple_entries, function(cache) {
   'Cache.matchAll with ignoreSearch option (request with search parameter)');
 
 prepopulated_cache_test(simple_entries, function(cache) {
-    return cache.matchAll(simple_entries.cat.request)
+    return cache.matchAll(simple_entries.cat.request.clone())
       .then(function(result) {
           assert_array_equivalent(
             result,
@@ -390,8 +390,13 @@ cache_test(function(cache) {
 function prepopulated_cache_test(entries, test_function, description) {
   cache_test(function(cache) {
       return Promise.all(Object.keys(entries).map(function(k) {
-          return cache.put(entries[k].request, entries[k].response);
+          // FIXME: Remove clone() calls when http://crbug.com/426146 is fixed.
+          return cache.put(entries[k].request.clone(),
+                           entries[k].response.clone());
         }))
+        .catch(function(reason) {
+            assert_unreached('Test setup failed: ' + reason.message);
+          })
         .then(function() {
             return test_function(cache);
           });
