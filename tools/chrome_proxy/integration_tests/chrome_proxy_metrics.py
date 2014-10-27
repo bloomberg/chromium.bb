@@ -191,6 +191,9 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
       raise ChromeProxyMetricException, (
           'Chrome proxy should be enabled. proxy info: %s' % info)
 
+    if not info['badProxies']:
+      return False, []
+
     bad_proxies = [str(p['proxy']) for p in info['badProxies']]
     bad_proxies.sort()
     proxies = [self.effective_proxies['proxy'],
