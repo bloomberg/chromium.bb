@@ -57,6 +57,7 @@ component("base") {
     "android/jni_weak_ref.h",
     "android/library_loader/library_loader_hooks.cc",
     "android/library_loader/library_loader_hooks.h",
+    "android/library_loader/library_load_from_apk_status_codes.h",
     "android/memory_pressure_listener_android.cc",
     "android/memory_pressure_listener_android.h",
     "android/java_handler_thread.cc",
@@ -1464,14 +1465,17 @@ if (is_android) {
   }
 
   # GYP: //base.gyp:base_java_application_state
+  # GYP: //base.gyp:base_java_library_load_from_apk_status_codes
   # GYP: //base.gyp:base_java_memory_pressure_level
   java_cpp_enum("base_android_java_enums_srcjar") {
     sources = [
       "android/application_status_listener.h",
+      "android/library_loader/library_load_from_apk_status_codes.h",
       "memory/memory_pressure_listener.h",
     ]
     outputs = [
       "org/chromium/base/ApplicationState.java",
+      "org/chromium/base/library_loader/LibraryLoadFromApkStatusCodes.java",
       "org/chromium/base/MemoryPressureLevel.java",
     ]
   }

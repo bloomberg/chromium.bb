@@ -6,6 +6,7 @@
 
 #include "base/android/command_line_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/library_loader/library_load_from_apk_status_codes.h"
 #include "base/at_exit.h"
 #include "base/metrics/histogram.h"
 #include "jni/LibraryLoader_jni.h"
@@ -46,14 +47,6 @@ enum BrowserHistogramCode {
 
 RendererHistogramCode g_renderer_histogram_code = NO_PENDING_HISTOGRAM_CODE;
 
-enum LibraryLoadFromApkSupportCode {
-  // The device's support for loading a library directly from the APK file.
-  NOT_SUPPORTED = 0,
-  SUPPORTED = 1,
-
-  MAX_LIBRARY_LOAD_FROM_APK_SUPPORT_CODE = 2,
-};
-
 } // namespace
 
 static void RegisterChromiumAndroidLinkerRendererHistogram(
@@ -85,7 +78,7 @@ static void RecordChromiumAndroidLinkerBrowserHistogram(
     jclass clazz,
     jboolean is_using_browser_shared_relros,
     jboolean load_at_fixed_address_failed,
-    jboolean library_load_from_apk_supported) {
+    jint library_load_from_apk_status) {
   // For low-memory devices, record whether or not we successfully loaded the
   // browser at a fixed address. Otherwise just record a normal invocation.
   BrowserHistogramCode histogram_code;
@@ -99,12 +92,10 @@ static void RecordChromiumAndroidLinkerBrowserHistogram(
                             histogram_code,
                             MAX_BROWSER_HISTOGRAM_CODE);
 
-  // Record whether the device supports loading a library directly from the APK
-  // file.
-  UMA_HISTOGRAM_ENUMERATION("ChromiumAndroidLinker.LibraryLoadFromApkSupported",
-                            library_load_from_apk_supported ?
-                                SUPPORTED : NOT_SUPPORTED,
-                            MAX_LIBRARY_LOAD_FROM_APK_SUPPORT_CODE);
+  // Record the device support for loading a library directly from the APK file.
+  UMA_HISTOGRAM_ENUMERATION("ChromiumAndroidLinker.LibraryLoadFromApkStatus",
+                            library_load_from_apk_status,
+                            LIBRARY_LOAD_FROM_APK_STATUS_CODES_MAX);
 }
 
 void SetLibraryLoadedHook(LibraryLoadedHook* func) {

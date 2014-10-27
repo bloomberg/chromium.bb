@@ -63,6 +63,7 @@
           'android/jni_weak_ref.h',
           'android/library_loader/library_loader_hooks.cc',
           'android/library_loader/library_loader_hooks.h',
+          'android/library_loader/library_load_from_apk_status_codes.h',
           'android/memory_pressure_listener_android.cc',
           'android/memory_pressure_listener_android.h',
           'android/java_handler_thread.cc',

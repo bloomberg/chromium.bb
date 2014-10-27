@@ -2707,8 +2707,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Is low memory device.</summary>
 </histogram>
 
-<histogram name="ChromiumAndroidLinker.LibraryLoadFromApkSupported"
-    enum="BooleanSupported">
+<histogram name="ChromiumAndroidLinker.LibraryLoadFromApkStatus"
+    enum="LibraryLoadFromApkStatus">
   <owner>petrcermak@chromium.org</owner>
   <summary>
     Whether the device supports loading a library directly from the APK file.
@@ -40097,11 +40097,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Success"/>
 </enum>
 
-<enum name="BooleanSupported" type="int">
-  <int value="0" label="Not supported"/>
-  <int value="1" label="Supported"/>
-</enum>
-
 <enum name="BooleanSuppressed" type="int">
   <int value="0" label="No suppressions"/>
   <int value="1" label="Suppressed"/>
@@ -46376,6 +46371,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="211"
       label="REPAIR_FAILED | DESTROYED | OPENED | DATA_LOST | ITER_NOT_OK"/>
   <int value="256" label="FILE_NOT_SPECIFIED"/>
+</enum>
+
+<enum name="LibraryLoadFromApkStatus" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Not supported"/>
+  <int value="2" label="Supported"/>
+  <int value="3" label="Successful"/>
 </enum>
 
 <enum name="LinkMonitorFailureType" type="int">

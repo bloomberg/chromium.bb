@@ -196,6 +196,8 @@ public class Linker {
     private static boolean sRelroSharingSupported = false;
 
     // Set to true if this runs in the browser process. Disabled by initServiceProcess().
+    // TODO(petrcermak): This flag can be incorrectly set to false (even though this might run in
+    // the browser process) on low-memory devices.
     private static boolean sInBrowserProcess = true;
 
     // Becomes true to indicate this process needs to wait for a shared RELRO in
@@ -378,19 +380,6 @@ public class Linker {
         synchronized (Linker.class) {
             ensureInitializedLocked();
             return sBrowserUsesSharedRelro;
-        }
-    }
-
-    /**
-     * Call this method to determine if the linker is running in the browser
-     * process.
-     *
-     * @return true if the linker is running in the browser process.
-     */
-    public static boolean isInBrowserProcess() {
-        synchronized (Linker.class) {
-            ensureInitializedLocked();
-            return sInBrowserProcess;
         }
     }
 
@@ -838,6 +827,7 @@ public class Linker {
      * @return true if supported.
      */
     public static boolean checkLibraryLoadFromApkSupport(String apkFile) {
+        assert apkFile != null;
         synchronized (Linker.class) {
             ensureInitializedLocked();
 

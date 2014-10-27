@@ -59,6 +59,7 @@ $(call intermediates-dir-for,GYP,shared)/enums/speech_recognition_error_java/org
 $(call intermediates-dir-for,GYP,shared)/enums/top_controls_state_java/org/chromium/content_public/common/TopControlsState.java \
 $(call intermediates-dir-for,GYP,shared)/enums/window_open_disposition_java/org/chromium/ui/WindowOpenDisposition.java \
 $(call intermediates-dir-for,GYP,shared)/enums/base_java_application_state/org/chromium/base/ApplicationState.java \
+$(call intermediates-dir-for,GYP,shared)/enums/base_java_library_load_from_apk_status_codes/org/chromium/base/library_loader/LibraryLoadFromApkStatusCodes.java \
 $(call intermediates-dir-for,GYP,shared)/enums/base_java_memory_pressure_level/org/chromium/base/MemoryPressureLevel.java \
 $(call intermediates-dir-for,GYP,shared)/enums/media_android_imageformat/org/chromium/media/AndroidImageFormat.java \
 $(call intermediates-dir-for,GYP,shared)/enums/page_transition_types_java/org/chromium/ui/base/PageTransition.java \

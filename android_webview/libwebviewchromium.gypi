@@ -14,6 +14,7 @@
       # android_webview_java in android_webview/java_library_common.mk.
       'dependencies': [
         '../base/base.gyp:base_java_application_state',
+        '../base/base.gyp:base_java_library_load_from_apk_status_codes',
         '../base/base.gyp:base_java_memory_pressure_level',
         '../content/content.gyp:content_gamepad_mapping',
         '../content/content.gyp:gesture_event_type_java',
