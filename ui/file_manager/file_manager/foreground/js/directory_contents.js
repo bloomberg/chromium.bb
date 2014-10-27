@@ -824,6 +824,14 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
   this.processNewEntriesQueue_.run(function(callbackOuter) {
     var finish = function() {
       if (!this.scanCancelled_) {
+        // Just before inserting entries into the file list, check and avoid
+        // duplication.
+        var currentURLs = {};
+        for (var i = 0; i < this.fileList_.length; i++)
+          currentURLs[this.fileList_.item(i).toURL()] = true;
+        entriesFiltered = entriesFiltered.filter(function(entry) {
+          return !currentURLs[entry.toURL()];
+        });
         // Update the filelist without waiting the metadata.
         this.fileList_.push.apply(this.fileList_, entriesFiltered);
         cr.dispatchSimpleEvent(this, 'scan-updated');
