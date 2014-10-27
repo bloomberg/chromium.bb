@@ -435,8 +435,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidAccessInitialDocument();
   void OnDidDisownOpener();
   void OnDidAssignPageId(int32 page_id);
-  void OnUpdateTitle(int32 page_id,
-                     const base::string16& title,
+  void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
   void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params,

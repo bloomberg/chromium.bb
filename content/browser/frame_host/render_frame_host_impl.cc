@@ -1067,7 +1067,6 @@ void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {
 }
 
 void RenderFrameHostImpl::OnUpdateTitle(
-    int32 page_id,
     const base::string16& title,
     blink::WebTextDirection title_direction) {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
@@ -1077,7 +1076,7 @@ void RenderFrameHostImpl::OnUpdateTitle(
     return;
   }
 
-  delegate_->UpdateTitle(this, page_id, title,
+  delegate_->UpdateTitle(this, render_view_host_->page_id_, title,
                          WebTextDirectionToChromeTextDirection(
                              title_direction));
 }

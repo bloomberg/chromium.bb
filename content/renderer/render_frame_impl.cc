@@ -2374,7 +2374,6 @@ void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
 
     base::string16 shortened_title = title16.substr(0, kMaxTitleChars);
     Send(new FrameHostMsg_UpdateTitle(routing_id_,
-                                      render_view_->page_id_,
                                       shortened_title, direction));
   }
 

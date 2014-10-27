@@ -582,8 +582,7 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId,
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes. Sent for top-level frames.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateTitle,
-                    int32 /* page_id */,
+IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateTitle,
                     base::string16 /* title */,
                     blink::WebTextDirection /* title direction */)
 
