@@ -13,7 +13,6 @@
 
 struct NaClElfImage;
 struct NaClValidationMetadata;
-struct Gio;
 
 uintptr_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
 

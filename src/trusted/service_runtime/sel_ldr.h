@@ -480,12 +480,6 @@ int NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
 /*
  * Loads a NaCl ELF file into memory in preparation for running it.
  *
- * gp is a pointer to a generic I/O object and should be a GioMem with
- * a memory buffer containing the file read entirely into memory if
- * the file system might be subject to race conditions (e.g., another
- * thread / process might modify a downloaded NaCl ELF file while we
- * are loading it here).
- *
  * nap is a pointer to the NaCl object that is being filled in.  it
  * should be properly constructed via NaClAppCtor.
  *
@@ -515,9 +509,6 @@ NaClErrorCode NaClAppLoadFileDynamically(
     struct NaClApp *nap,
     struct NaClDesc *ndp,
     struct NaClValidationMetadata *metadata) NACL_WUR;
-
-NaClErrorCode NaClLoadImage(struct Gio            *gp,
-                            struct NaClApp        *nap) NACL_WUR;
 
 int NaClValidateCode(struct NaClApp *nap,
                      uintptr_t      guest_addr,
