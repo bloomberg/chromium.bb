@@ -9,8 +9,6 @@ group("mojo") {
   testonly = true
   deps = [
     ":tests",
-    "//mojo/apps/js:mojo_js_content_handler",
-    "//mojo/apps/js:mojo_js_standalone",
     "//mojo/common",
     "//mojo/examples",
     "//mojo/public",
@@ -30,7 +28,6 @@ group("tests") {
   testonly = true
   deps = [
     "//mojo/application_manager:mojo_application_manager_unittests",
-    "//mojo/apps/js/test:mojo_apps_js_unittests",
     "//mojo/bindings/js/tests:mojo_js_unittests",
     "//mojo/common:mojo_common_unittests",
     "//mojo/converters/surfaces/tests:mojo_surfaces_lib_unittests",
