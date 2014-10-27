@@ -1018,7 +1018,7 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(long x, long y, lo
     IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
     HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
 
-    Node* targetNode;
+    Node* targetNode = 0;
     IntPoint adjustedPoint;
 
     bool foundNode = eventHandler.bestClickableNodeForHitTestResult(result, adjustedPoint, targetNode);
@@ -1045,7 +1045,7 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
     IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
     HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, radius);
 
-    Node* targetNode;
+    Node* targetNode = 0;
     IntPoint adjustedPoint;
     document->frame()->eventHandler().bestClickableNodeForHitTestResult(result, adjustedPoint, targetNode);
     return targetNode;
@@ -1114,7 +1114,7 @@ PassRefPtrWillBeRawPtr<ClientRect> Internals::bestZoomableAreaForTouchPoint(long
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
 
-    Node* targetNode;
+    Node* targetNode = 0;
     IntRect zoomableArea;
     bool foundNode = document->frame()->eventHandler().bestZoomableAreaForTouchPoint(point, radius, zoomableArea, targetNode);
     if (foundNode)
