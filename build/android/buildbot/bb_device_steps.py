@@ -73,9 +73,14 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'org.chromium.android_webview.shell',
       'AndroidWebViewTest',
       'webview:android_webview/test/data/device_files'),
+    I('ChromeSyncShell',
+      'ChromeSyncShell.apk',
+      'org.chromium.chrome.browser.sync',
+      'ChromeSyncShellTest',
+      None),
     ])
 
-VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'gpu', 'sync',
+VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'gpu',
                    'telemetry_perf_unittests', 'ui', 'unit', 'webkit',
                    'webkit_layout', 'python_unittests'])
 
@@ -184,14 +189,6 @@ def RunChromeProxyTests(options):
   bb_annotations.PrintNamedStep('chrome_proxy')
   RunCmd(['tools/chrome_proxy/run_tests'] + args)
 
-def RunChromeSyncShellTests(options):
-  """Run the chrome sync shell tests"""
-  test = I('ChromeSyncShell',
-           'ChromeSyncShell.apk',
-           'org.chromium.chrome.browser.sync',
-           'ChromeSyncShellTest',
-           'chrome:chrome/test/data/android/device_files')
-  RunInstrumentationSuite(options, test)
 
 def RunTelemetryPerfUnitTests(options):
   """Runs the telemetry perf unit tests.
@@ -532,7 +529,6 @@ def GetTestStepCmds():
       ('chrome_proxy', RunChromeProxyTests),
       ('gpu', RunGPUTests),
       ('python_unittests', RunPythonUnitTests),
-      ('sync', RunChromeSyncShellTests),
       ('telemetry_perf_unittests', RunTelemetryPerfUnitTests),
       ('ui', RunInstrumentationTests),
       ('unit', RunUnitTests),
