@@ -68,7 +68,6 @@ namespace blink {
     class ResourceResponse;
     class SecurityOrigin;
     class SharedWorkerRepositoryClient;
-    class SocketStreamHandle;
     class SubstituteData;
     class Widget;
 
@@ -192,7 +191,6 @@ namespace blink {
 
         virtual void didChangeName(const String&) { }
 
-        virtual void dispatchWillOpenSocketStream(SocketStreamHandle*) { }
         virtual void dispatchWillOpenWebSocket(blink::WebSocketHandle*) { }
 
         virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) { }

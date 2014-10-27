@@ -82,7 +82,6 @@ class WebRTCPeerConnectionHandler;
 class WebScreenOrientationClient;
 class WebSharedWorker;
 class WebSharedWorkerClient;
-class WebSocketStreamHandle;
 class WebString;
 class WebURL;
 class WebURLLoader;
@@ -490,12 +489,7 @@ public:
 
     // WebSocket -----------------------------------------------------
 
-    // A WebSocket object is going to open a new socket stream connection. Used
-    // by the old WebSocket implementation.
-    virtual void willOpenSocketStream(WebSocketStreamHandle*) { }
-
-    // A WebSocket object is going to open a new WebSocket connection. Used by
-    // the new WebSocket implementation.
+    // A WebSocket object is going to open a new WebSocket connection.
     virtual void willOpenWebSocket(WebSocketHandle*) { }
 
 

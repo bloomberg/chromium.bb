@@ -96,7 +96,6 @@ class WebScheduler;
 class WebSecurityOrigin;
 class WebScrollbarBehavior;
 class WebSocketHandle;
-class WebSocketStreamHandle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
@@ -307,9 +306,6 @@ public:
 
     // May return null.
     virtual WebPrescientNetworking* prescientNetworking() { return 0; }
-
-    // Returns a new WebSocketStreamHandle instance.
-    virtual WebSocketStreamHandle* createSocketStreamHandle() { return 0; }
 
     // Returns a new WebSocketHandle instance.
     virtual WebSocketHandle* createWebSocketHandle() { return 0; }

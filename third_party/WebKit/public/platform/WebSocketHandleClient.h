@@ -41,7 +41,6 @@ class WebSocketHandshakeResponseInfo;
 class WebString;
 class WebURL;
 
-// FIXME: This class should replace WebSocketStreamHandleClient.
 class WebSocketHandleClient {
 public:
     // Called when the handle is opened.

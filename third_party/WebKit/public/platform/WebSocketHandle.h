@@ -41,8 +41,6 @@ class WebSocketHandleClient;
 class WebString;
 class WebURL;
 
-// FIXME: This class will replace WebSocketStreamHandle.
-//
 // WebSocketHandle is an interface class designed to be a handle of WebSocket connection.
 // WebSocketHandle will be used together with WebSocketHandleClient.
 //
