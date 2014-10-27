@@ -61,7 +61,7 @@ PlatformFontMac::PlatformFontMac()
       font_name_(base::SysNSStringToUTF8([native_font_ familyName])),
       font_size_([NSFont systemFontSize]),
       font_style_(Font::NORMAL) {
-  CalculateMetrics();
+  CalculateMetricsAndInitRenderParams();
 }
 
 PlatformFontMac::PlatformFontMac(NativeFont native_font)
@@ -75,7 +75,7 @@ PlatformFontMac::PlatformFontMac(NativeFont native_font)
   if (traits & NSFontBoldTrait)
     font_style_ |= Font::BOLD;
 
-  CalculateMetrics();
+  CalculateMetricsAndInitRenderParams();
 }
 
 PlatformFontMac::PlatformFontMac(const std::string& font_name,
@@ -84,7 +84,7 @@ PlatformFontMac::PlatformFontMac(const std::string& font_name,
       font_name_(font_name),
       font_size_(font_size),
       font_style_(Font::NORMAL) {
-  CalculateMetrics();
+  CalculateMetricsAndInitRenderParams();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,9 +127,7 @@ int PlatformFontMac::GetFontSize() const {
 }
 
 const FontRenderParams& PlatformFontMac::GetFontRenderParams() const {
-  NOTIMPLEMENTED();
-  static FontRenderParams params;
-  return params;
+  return render_params_;
 }
 
 NativeFont PlatformFontMac::GetNativeFont() const {
@@ -146,13 +144,13 @@ PlatformFontMac::PlatformFontMac(const std::string& font_name,
       font_name_(font_name),
       font_size_(font_size),
       font_style_(font_style) {
-  CalculateMetrics();
+  CalculateMetricsAndInitRenderParams();
 }
 
 PlatformFontMac::~PlatformFontMac() {
 }
 
-void PlatformFontMac::CalculateMetrics() {
+void PlatformFontMac::CalculateMetricsAndInitRenderParams() {
   NSFont* font = native_font_.get();
   if (!font) {
     // This object was constructed from a font name that doesn't correspond to
@@ -171,6 +169,12 @@ void PlatformFontMac::CalculateMetrics() {
   cap_height_ = SkScalarCeilToInt([font capHeight]);
   average_width_ =
       NSWidth([font boundingRectForGlyph:[font glyphWithName:@"x"]]);
+
+  FontRenderParamsQuery query(false);
+  query.families.push_back(font_name_);
+  query.pixel_size = font_size_;
+  query.style = font_style_;
+  render_params_ = gfx::GetFontRenderParams(query, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
