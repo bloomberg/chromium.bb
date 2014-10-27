@@ -16,7 +16,7 @@
     }
 
     function registerServiceWorker() {
-      navigator.serviceWorker.register('service_worker.js').then(function(swRegistration) {
+      navigator.serviceWorker.register('service_worker.js', {scope: './'}).then(function(swRegistration) {
         console.log(swRegistration);
         sendResultToTest('ok');
       }, sendErrorToTest);
