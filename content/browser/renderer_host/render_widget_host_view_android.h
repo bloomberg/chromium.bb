@@ -130,6 +130,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                     bool can_compose_inline,
                                     int flags) override;
   virtual void ImeCancelComposition() override;
+  virtual void ImeCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) override;
   virtual void FocusedNodeChanged(bool is_editable_node) override;
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) override;

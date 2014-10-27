@@ -601,7 +601,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                               bool can_compose_inline,
                               int flags);
 
-#if defined(OS_MACOSX) || defined(USE_AURA)
+#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   void OnImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds);
