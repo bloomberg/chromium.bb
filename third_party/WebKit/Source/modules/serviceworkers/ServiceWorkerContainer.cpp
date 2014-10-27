@@ -135,6 +135,11 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
+    if (!patternURL.string().startsWith(scriptURL.baseAsString())) {
+        resolver->reject(DOMException::create(SecurityError, "The scope must be under the directory of the script URL."));
+        return promise;
+    }
+
     m_provider->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorkerRegistration, ServiceWorkerError>(resolver));
 
     return promise;

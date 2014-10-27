@@ -8,7 +8,7 @@
   
 promise_test(function(t) {
     var script = 'resources/registration-worker.js';
-    var scope = '/registration/';
+    var scope = 'resources/registration/';
     return navigator.serviceWorker.register(script, {scope: scope})
       .then(function(registration) {
           assert_true(registration instanceof ServiceWorkerRegistration,
@@ -16,6 +16,37 @@ promise_test(function(t) {
           service_worker_unregister_and_done(t, scope);
         })
   }, 'Registering normal pattern');
+
+promise_test(function(t) {
+    var script = 'resources/registration-worker.js';
+    var scope = 'resources/';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_true(registration instanceof ServiceWorkerRegistration,
+                      'Successfully registered.');
+          service_worker_unregister_and_done(t, scope);
+        })
+  }, 'Registering same scope as the script directory');
+
+promise_test(function(t) {
+    var script = 'resources/registration-worker.js';
+    var scope = 'resources';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registering same scope as the script directory without the last ' +
+            'slash should fail with SecurityError.');
+  }, 'Registering same scope as the script directory without the last slash');
+
+promise_test(function(t) {
+    var script = 'resources/registration-worker.js';
+    var scope = 'different-directory/';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registration scope outside the script directory should fail ' +
+            'with SecurityError.');
+  }, 'Registration scope outside the script directory');
 
 promise_test(function(t) {
     var script = 'resources/registration-worker.js';
@@ -28,40 +59,45 @@ promise_test(function(t) {
 
 promise_test(function(t) {
     var script = 'http://example.com/worker.js';
+    var scope = 'http://example.com/scope/';
     return assert_promise_rejects(
-        navigator.serviceWorker.register(script),
+        navigator.serviceWorker.register(script, {scope: scope}),
         'SecurityError',
         'Registration script outside domain should fail with SecurityError.');
   }, 'Registering script outside domain');
 
 promise_test(function(t) {
-    var script = 'no-such-worker.js';
+    var script = 'resources/no-such-worker.js';
+    var scope = 'resources/scope/no-such-worker';
     return assert_promise_rejects(
-        navigator.serviceWorker.register(script),
+        navigator.serviceWorker.register(script, {scope: scope}),
         'NetworkError',
         'Registration of non-existent script should fail.');
   }, 'Registering non-existent script');
 
 promise_test(function(t) {
     var script = 'resources/invalid-chunked-encoding.php';
+    var scope = 'resources/scope/invalid-chunked-encoding/';
     return assert_promise_rejects(
-        navigator.serviceWorker.register(script),
+        navigator.serviceWorker.register(script, {scope: scope}),
         'NetworkError',
         'Registration of invalid chunked encoding script should fail.');
   }, 'Registering invalid chunked encoding script');
 
 promise_test(function(t) {
     var script = 'resources/invalid-chunked-encoding-with-flush.php';
+    var scope = 'resources/scope/invalid-chunked-encoding-with-flush/';
     return assert_promise_rejects(
-        navigator.serviceWorker.register(script),
+        navigator.serviceWorker.register(script, {scope: scope}),
         'NetworkError',
         'Registration of invalid chunked encoding script should fail.');
   }, 'Registering invalid chunked encoding script with flush');
 
 promise_test(function(t) {
     var script = 'resources/plain-text-worker.php';
+    var scope = 'resources/scope/plain-text-worker/';
     return assert_promise_rejects(
-        navigator.serviceWorker.register(script),
+        navigator.serviceWorker.register(script, {scope: scope}),
         'SecurityError',
         'Registration of plain text script should fail.');
   }, 'Registering script without correct MIME type');
@@ -69,8 +105,9 @@ promise_test(function(t) {
 promise_test(function(t) {
     var script = 'resources/redirect.php?Redirect=' +
                   encodeURIComponent('/resources/registration-worker.js');
+    var scope = 'resources/sope/redirect/';
     return assert_promise_rejects(
-        navigator.serviceWorker.register(script),
+        navigator.serviceWorker.register(script, {scope: scope}),
         'SecurityError',
         'Registration of redirected script should fail.');
   }, 'Registering redirected script');

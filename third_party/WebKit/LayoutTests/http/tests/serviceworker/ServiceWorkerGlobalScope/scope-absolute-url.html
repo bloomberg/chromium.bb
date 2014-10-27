@@ -6,6 +6,8 @@
 <script src="resources/scope.js"></script>
 <script>
 async_test(function(t) {
-    scope_test(t, 'resources/scope-worker.js', get_host_info().HTTP_ORIGIN);
+    scope_test(
+        t, 'resources/scope-worker.js',
+        get_host_info().HTTP_ORIGIN + base_path() + 'resources/absolute_url/');
   }, 'Verify the scope property: absolute url');
 </script>

@@ -6,7 +6,7 @@
 <script src="../serviceworker/resources/test-helpers.js"></script>
 <script>
 var sw_url = 'resources/emptyworker.js';
-var sw_scope = '/service-worker-scope' + window.location.pathname;
+var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
 
 promise_test(function(test) {
     return assert_promise_rejects(

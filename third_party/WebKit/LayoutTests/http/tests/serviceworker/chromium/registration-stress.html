@@ -15,7 +15,7 @@ async_test(function(t) {
     var register_promises = [];
 
     for (var i = 0; i < number_of_registrations; i++) {
-      var scope = i;
+      var scope = base_path() + '../resources/registration-stress' + i;
       register_promises.push(with_iframe(scope)
         .then(step(function(f) {
             frames.push(f);

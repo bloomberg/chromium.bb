@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <title>ServiceWorkerGlobalScope: scope property is default value</title>
 <script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharness-helpers.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../resources/test-helpers.js"></script>
 <script src="resources/scope.js"></script>
 <script>
-async_test(function(t) {
-    scope_test(t, 'resources/scope-worker.js');
-  }, 'Verify the scope property: default scope');
+
+promise_test(function(t) {
+    return assert_promise_rejects(
+        navigator.serviceWorker.register('resources/scope-worker.js'),
+        'SecurityError',
+        'Registering a script not in the root directory for the default scope' +
+            'should fail with SecurityError.');
+  }, 'Register a script not in the root directory for the default scope.');
 </script>

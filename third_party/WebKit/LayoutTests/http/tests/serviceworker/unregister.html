@@ -4,7 +4,7 @@
 <script src="resources/test-helpers.js"></script>
 <script>
 async_test(function(t) {
-    var scope = 'scope/unregister-twice';
+    var scope = 'resources/scope/unregister-twice';
     var registration;
     navigator.serviceWorker.register('resources/empty-worker.js',
                                      {scope: scope})
@@ -24,7 +24,7 @@ async_test(function(t) {
   }, 'Unregister twice');
 
 async_test(function(t) {
-    var scope = 'scope/successful-unregister/';
+    var scope = 'resources/scope/successful-unregister/';
     navigator.serviceWorker.register('resources/empty-worker.js',
                                      {scope: scope})
       .then(function(registration) {

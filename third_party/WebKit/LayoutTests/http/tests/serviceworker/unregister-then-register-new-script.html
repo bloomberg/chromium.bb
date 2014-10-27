@@ -6,7 +6,7 @@
 var worker_url = 'resources/empty-worker.js';
 
 async_test(function(t) {
-    var scope = 'scope/register-waits-for-unregistered-registration-to-clear';
+    var scope = 'resources/scope/register-waits-for-unregistered-registration-to-clear';
     var new_worker_url = worker_url + '?new';
     var iframe;
     var registration;
@@ -52,7 +52,7 @@ async_test(function(t) {
      'registration is cleared');
 
 async_test(function(t) {
-    var scope = 'scope/unregister-then-register-new-script-that-exists';
+    var scope = 'resources/scope/unregister-then-register-new-script-that-exists';
     var new_worker_url = worker_url + '?new';
     var iframe;
     var registration;
@@ -118,7 +118,7 @@ async_test(function(t) {
 }, 'Registering a new script URL while an unregistered registration is in use');
 
 async_test(function(t) {
-    var scope = 'scope/unregister-then-register-new-script-that-404s';
+    var scope = 'resources/scope/unregister-then-register-new-script-that-404s';
     var iframe;
     var registration;
 
@@ -162,7 +162,7 @@ async_test(function(t) {
        'unregistered registration');
 
 async_test(function(t) {
-    var scope = 'scope/unregister-then-register-reject-install-worker';
+    var scope = 'resources/scope/unregister-then-register-reject-install-worker';
     var iframe;
     var registration;
 
