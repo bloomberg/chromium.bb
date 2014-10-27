@@ -1882,9 +1882,6 @@ class BisectPerformanceMetrics(object):
       regex_results = version_re.search(revision_info['subject'])
       if regex_results:
         git_revision = None
-        # TODO (prasadv): Support the v8 git migration based subject
-        # "based on <githash>"
-        # Look for "based on bleeding_edge" and parse out revision
         if 'based on bleeding_edge' in revision_info['subject']:
           try:
             bleeding_edge_revision = revision_info['subject'].split(
@@ -1902,6 +1899,16 @@ class BisectPerformanceMetrics(object):
             if output:
               git_revision = output.strip()
             return git_revision
+          except (IndexError, ValueError):
+            pass
+        else:
+          # V8 rolls description changed after V8 git migration, new description
+          # includes "Version 3.X.Y (based on <git hash>)"
+          try:
+            rxp = re.compile('based on (?P<git_revision>[a-fA-F0-9]+)')
+            re_results = rxp.search(revision_info['subject'])
+            if re_results:
+              return re_results.group('git_revision')
           except (IndexError, ValueError):
             pass
         if not git_revision:
