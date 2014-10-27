@@ -387,7 +387,7 @@
       # -fsanitize=address only works with clang, but asan=1 implies clang=1
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/addresssanitizer
       'asan%': 0,
-      'asan_blacklist%': '<!(cd <(DEPTH) && pwd -P)/tools/memory/asan/blacklist.txt',
+      'asan_blacklist%': '<(PRODUCT_DIR)/../../tools/memory/asan/blacklist.txt',
       # Enable coverage gathering instrumentation in ASan. This flag also
       # controls coverage granularity (1 for function-level coverage, 2 for
       # block-level coverage).
@@ -412,13 +412,13 @@
       # -fsanitize=thread only works with clang, but tsan=1 implies clang=1
       # See http://clang.llvm.org/docs/ThreadSanitizer.html
       'tsan%': 0,
-      'tsan_blacklist%': '<!(cd <(DEPTH) && pwd -P)/tools/memory/tsan_v2/ignores.txt',
+      'tsan_blacklist%': '<(PRODUCT_DIR)/../../tools/memory/tsan_v2/ignores.txt',
 
       # Enable building with MSan (Clang's -fsanitize=memory option).
       # MemorySanitizer only works with clang, but msan=1 implies clang=1
       # See http://clang.llvm.org/docs/MemorySanitizer.html
       'msan%': 0,
-      'msan_blacklist%': '<!(cd <(DEPTH) && pwd -P)/tools/msan/blacklist.txt',
+      'msan_blacklist%': '<(PRODUCT_DIR)/../../tools/msan/blacklist.txt',
       # Track where uninitialized memory originates from. From fastest to
       # slowest: 0 - no tracking, 1 - track only the initial allocation site, 2
       # - track the chain of stores leading from allocation site to use site.
@@ -432,7 +432,7 @@
       # Enable building with UBsan's vptr (Clang's -fsanitize=vptr option).
       # -fsanitize=vptr only works with clang, but ubsan_vptr=1 implies clang=1
       'ubsan_vptr%': 0,
-      'ubsan_vptr_blacklist%': '<!(cd <(DEPTH) && pwd -P)/tools/ubsan_vptr/blacklist.txt',
+      'ubsan_vptr_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan_vptr/blacklist.txt',
 
       # Use the dynamic libraries instrumented by one of the sanitizers
       # instead of the standard system libraries.
