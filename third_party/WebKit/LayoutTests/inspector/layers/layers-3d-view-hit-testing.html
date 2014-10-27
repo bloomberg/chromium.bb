@@ -26,8 +26,10 @@ function test()
         var canvasHeight = canvas.offsetHeight;
         var rootWidth = contentRoot.width();
         var rootHeight = contentRoot.height();
-        var scaleX = rootWidth / canvasWidth;
-        var scaleY = rootHeight / canvasHeight;
+        var paddingX = canvasWidth * 0.1;
+        var paddingY = canvasHeight * 0.1;
+        var scaleX = rootWidth / (canvasWidth - paddingX);
+        var scaleY = rootHeight / (canvasHeight - paddingY);
         var resultScale = Math.max(scaleX, scaleY);
         var width = canvasWidth * resultScale;
         var height = canvasHeight * resultScale;
