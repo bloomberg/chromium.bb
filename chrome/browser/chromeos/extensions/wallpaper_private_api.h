@@ -27,6 +27,19 @@ class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
   virtual bool RunSync() override;
 };
 
+// Check if sync themes setting is enabled.
+class WallpaperPrivateGetSyncSettingFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getSyncSetting",
+                             WALLPAPERPRIVATE_GETSYNCSETTING)
+
+ protected:
+  virtual ~WallpaperPrivateGetSyncSettingFunction() {}
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunSync() override;
+};
+
 class WallpaperPrivateSetWallpaperIfExistsFunction
     : public WallpaperFunctionBase {
  public:

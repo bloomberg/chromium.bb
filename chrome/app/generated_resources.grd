@@ -12348,9 +12348,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_DATATYPE_AUTOFILL" desc="Form Autofill items, one of the data types that we allow syncing.">
           Autofill
         </message>
-        <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
-          Themes
-        </message>
+        <if expr="chromeos">
+          <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
+            Themes &amp; Wallpapers
+          </message>
+        </if>
+        <if expr="not chromeos">
+          <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
+            Themes
+          </message>
+        </if>
         <message name="IDS_SYNC_DATATYPE_EXTENSIONS" desc="Extensions, one of the data types that we allow syncing.">
           Extensions
         </message>
