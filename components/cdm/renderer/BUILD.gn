@@ -19,7 +19,7 @@ static_library("renderer") {
     "//base",
     "//components/cdm/common",
     "//content/public/renderer",
-    "//media/base",
+    "//media",
     "//third_party/widevine/cdm:version_h",
   ]
 }

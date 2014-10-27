@@ -34,6 +34,7 @@ if (!link_pulseaudio) {
 }
 
 source_set("audio") {
+  visibility = [ "//media/*" ]
   sources = [
     "agc_audio_stream.h",
     "audio_device_name.cc",

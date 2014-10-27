@@ -9,6 +9,7 @@ import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
 
 source_set("base") {
+  visibility = [ "//media/*" ]
   sources = [
     "audio_block_fifo.cc",
     "audio_block_fifo.h",

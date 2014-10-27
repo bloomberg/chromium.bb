@@ -600,6 +600,8 @@ component("base") {
 
   if (is_android) {
     sources -= [
+      "cursor/image_cursors.cc",
+      "cursor/image_cursors.h",
       "default_theme_provider.cc",
       "dragdrop/drag_utils.cc",
       "dragdrop/drag_utils.h",

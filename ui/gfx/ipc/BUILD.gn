@@ -16,6 +16,6 @@ component("ipc") {
     "//base",
     "//ipc",
     "//skia",
-    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }

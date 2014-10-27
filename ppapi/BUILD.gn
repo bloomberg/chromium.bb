@@ -417,12 +417,14 @@ component("ppapi_shared") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
     "//ipc",
     "//media:shared_memory_support",
     "//skia",
     "//third_party/icu:icuuc",
+    "//ui/events:events_base",
     "//ui/surface",
     "//url",
   ]
@@ -740,6 +742,7 @@ component("ppapi_proxy") {
     "//ipc",
     "//skia",
     "//third_party/icu",
+    "//ui/events:events_base",
     "//ui/surface",
     blink_target,
   ]
@@ -782,6 +785,7 @@ component("ppapi_host") {
     "//base",
     "//ipc",
     "//media:shared_memory_support",
+    "//ui/events:events_base",
     "//ui/surface",
     "//url",
   ]

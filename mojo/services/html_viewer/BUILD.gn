@@ -47,8 +47,6 @@ shared_library("html_viewer") {
     "//cc/blink",
     "//cc/surfaces",
     "//media",
-    "//media/audio",
-    "//media/base",
     "//media/blink",
     "//media/mojo",
     "//mojo/application",

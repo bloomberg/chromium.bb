@@ -170,6 +170,10 @@ static_library("chrome_shell_base") {
     "//skia",
   ]
 
+  # Some android targets still depend on --gc-sections to link.
+  # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
+  ldflags = [ "-Wl,--gc-sections" ]
+
   # TODO(GYP):
   #[ 'order_profiling!=0', {
   #'conditions': [
@@ -180,24 +184,18 @@ static_library("chrome_shell_base") {
   #}],
 }
 
-# TODO(GYP, cjhopman): make chrome_shell_base actually link and then move it to
-# deps. Also, actually compile the main delegates at that point.
 # GYP: //chrome/chrome_shell.gypi:libchromeshell
 shared_library("chrome_shell") {
   testonly = true
   sources = [
     # This file must always be included in the shared_library step to ensure
     # JNI_OnLoad is exported.
-#"//chrome/app/android/chrome_jni_onload.cc",
-#"shell/chrome_main_delegate_chrome_shell_android.cc",
-#"shell/chrome_main_delegate_chrome_shell_android.h",
+    "//chrome/app/android/chrome_jni_onload.cc",
+    "shell/chrome_main_delegate_chrome_shell_android.cc",
+    "shell/chrome_main_delegate_chrome_shell_android.h",
   ]
   deps = [
-#":chrome_shell_base",
-  ]
-  deps = [ ":chrome_java" ]
-  datadeps = [
-    ":chrome_shell_base"
+    ":chrome_shell_base",
   ]
 }
 

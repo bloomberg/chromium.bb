@@ -10,6 +10,7 @@ source_set("native_test_native_code") {
   sources = [
     "native_test_launcher.cc"
   ]
+  libs = [ "log" ]
   deps = [
     ":native_test_jni_headers",
     ":native_test_util",

@@ -60,6 +60,9 @@
       ],
       'conditions': [
         ['OS == "android"', {
+          # In GN, this android-specific stuff is its own target at
+          # //components/bookmarks/common/android
+          # TODO(cjhopman): This should be its own target in Gyp, too.
           'dependencies': [
             'bookmarks_jni_headers',
           ],

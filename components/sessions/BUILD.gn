@@ -24,6 +24,7 @@ source_set("sessions_core") {
   deps = [
     "//base",
     "//skia",
+    "//third_party/protobuf:protobuf_lite",
     "//ui/base",
     "//url",
   ]

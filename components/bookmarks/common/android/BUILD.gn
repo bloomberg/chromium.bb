@@ -4,6 +4,18 @@
 
 import("//build/config/android/rules.gni")
 
+# GYP: //components/bookmarks.gyp:bookmarks_browser (android part)
+source_set("android") {
+  sources = [
+    "bookmark_id.cc",
+    "bookmark_id.h",
+    "bookmark_type_list.h",
+    "component_jni_registrar.cc",
+    "component_jni_registrar.h",
+  ]
+  deps = [ ":bookmarks_jni_headers" ]
+}
+
 # GYP: //components/bookmarks.gyp:bookmarks_java
 android_library("bookmarks_java") {
   deps = [

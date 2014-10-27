@@ -47,7 +47,11 @@ source_set("android") {
   configs += [ "//media:media_config" ]
   deps = [
     ":media_jni_headers",
+    "//media:shared_memory_support",
+    "//media/base",
     "//third_party/widevine/cdm:version_h",
+    "//ui/gl",
+    "//url",
   ]
 }
 

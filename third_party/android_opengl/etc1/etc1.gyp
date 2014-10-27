@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //third_party/android_opengl/etc1:etc1
       'target_name': 'etc1',
       'type': 'static_library',
       'sources': [

@@ -135,7 +135,7 @@ static_library("browser") {
     "//third_party/zlib:minizip",
     "//third_party/zlib:zip",
     "//ui/base",
-    "//ui/events",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/message_center",
@@ -184,6 +184,7 @@ static_library("browser") {
       "//content/app/resources",
       "//media",
       "//media/cast:net",
+      "//mojo/common",
       "//mojo/edk/system",
       "//mojo/environment:chromium",
       "//mojo/public/cpp/bindings",
@@ -308,7 +309,10 @@ static_library("browser") {
       sources += rebase_path(gypi_values.chrome_browser_policy_desktop_sources,
                              ".", "//chrome")
     }
-    if (!is_android && !is_ios) {  # Non-mobile
+    if (is_android || is_ios) {
+      sources += rebase_path(gypi_values.chrome_browser_policy_mobile_sources,
+                             ".", "//chrome")
+    } else {
       deps += [
         "//chrome/browser/policy:path_parser",
       ]
@@ -492,7 +496,10 @@ static_library("browser") {
     deps += [
       ":jni_headers",
       "//components/cdm/browser",
-      #"../components/components.gyp:web_contents_delegate_android",  TODO(GYP)
+      "//components/enhanced_bookmarks",
+      "//components/history/core/android",
+      "//components/web_contents_delegate_android",
+      "//third_party/android_opengl/etc1",
     ]
     deps -= [
       "//third_party/libaddressinput",

@@ -117,12 +117,15 @@ test("gl_tests") {
     "//gpu/command_buffer/client:gles2_implementation_client_side_arrays",
   ]
 
+  libs = []
+
+  if (is_android) {
+    deps += [
+      "//testing/android:native_test_native_code",
+    ]
+    libs += [ "android" ]
+  }
   # TODO(GYP)
-  #     ['OS == "android"', {
-  #       'dependencies': [
-  #         '../testing/android/native_test.gyp:native_test_native_code',
-  #       ],
-  #     }],
   #     ['OS == "win"', {
   #       'dependencies': [
   #         '../third_party/angle/src/build_angle.gyp:libEGL',

@@ -360,8 +360,12 @@ SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
 }
 
 void SafeBrowsingService::RegisterAllDelayedAnalysis() {
+#if defined(FULL_SAFE_BROWSING)
   safe_browsing::RegisterBinaryIntegrityAnalysis();
   safe_browsing::RegisterBlacklistLoadAnalysis();
+#else
+  NOTREACHED();
+#endif
 }
 
 void SafeBrowsingService::InitURLRequestContextOnIOThread(

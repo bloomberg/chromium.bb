@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # GYP version: components/dom_distiller.gypi:dom_distiller_core
-static_library("core") {
+source_set("core") {
   sources = [
     "../android/component_jni_registrar.cc",
     "../android/component_jni_registrar.h",
@@ -63,6 +63,10 @@ static_library("core") {
   ]
 
   if (is_android) {
+    sources += [
+      "dom_distiller_service_android.cc",
+      "dom_distiller_service_android.h",
+    ]
     deps += [ ":jni_headers" ]
   }
 }

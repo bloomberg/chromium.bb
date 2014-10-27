@@ -31,5 +31,6 @@ component("surfaces") {
     "//mojo/public/c/system:for_component",
     "//mojo/services/public/interfaces/surfaces:surface_id",
     "//mojo/services/public/interfaces/surfaces",
+    "//skia",
   ]
 }

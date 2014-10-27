@@ -270,6 +270,7 @@
   },
   'targets': [
     {
+      # GN: //chrome/common:common
       'target_name': 'common',
       'type': 'static_library',
       'variables': {

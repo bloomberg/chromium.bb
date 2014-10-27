@@ -7,7 +7,10 @@ config("cld_config") {
   include_dirs = [ "." ]
 }
 
-static_library("cld") {
+source_set("cld") {
+  # The /win/ directory is used on all platforms.
+  set_sources_assignment_filter([])
+
   # This target includes its own copy of "base" which confuses the header
   # checker.
   check_includes = false

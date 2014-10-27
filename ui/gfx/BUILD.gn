@@ -345,6 +345,9 @@ component("gfx") {
     deps += [
       "//ui/gfx/x",
     ]
+    configs += [
+      "//build/config/linux:x11",
+    ]
   } else {
     sources -= [
       "path_x11.cc",

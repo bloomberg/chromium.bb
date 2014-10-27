@@ -13,4 +13,9 @@ source_set("common") {
   deps = [
     "//base",
   ]
+  if (is_android) {
+    deps += [
+      "//components/bookmarks/common/android",
+    ]
+  }
 }

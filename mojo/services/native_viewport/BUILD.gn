@@ -63,12 +63,15 @@ source_set("lib") {
     "viewport_surface.h",
   ]
 
+  libs = []
+
   if (is_ios) {
     sources += [ "platform_viewport_stub.cc" ]
   }
 
   if (is_android) {
     deps += [ "//mojo:jni_headers" ]
+    libs += [ "android" ]
   }
 
   if (use_x11) {
