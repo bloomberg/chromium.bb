@@ -53,7 +53,23 @@ class SpeedIndexMetric(Metric):
     # Release the tab so that it can be disconnected.
     self._impl = None
     results.AddValue(scalar.ScalarValue(
-        results.current_page, '%s.speed_index' % chart_name, 'ms', index))
+        results.current_page, '%s_speed_index' % chart_name, 'ms', index,
+        description='Speed Index. This focuses on time when visible parts of '
+                    'page are displayed and shows the time when the '
+                    'first look is "almost" composed. If the contents of the '
+                    'testing page are composed by only static resources, load '
+                    'time can measure more accurately and speed index will be '
+                    'smaller than the load time. On the other hand, If the '
+                    'contents are composed by many XHR requests with small '
+                    'main resource and javascript, speed index will be able to '
+                    'get the features of performance more accurately than load '
+                    'time because the load time will measure the time when '
+                    'static resources are loaded. If you want to get more '
+                    'detail, please refer to http://goo.gl/Rw3d5d. Currently '
+                    'there are two implementations: for Android and for '
+                    'Desktop. The Android version uses video capture; the '
+                    'Desktop one uses paint events and has extra overhead to '
+                    'catch paint events.'))
 
   def IsFinished(self, tab):
     """Decide whether the timeline recording should be stopped.
