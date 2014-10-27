@@ -2222,13 +2222,17 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
 }
 
 TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
-  SetupDefaultTrees(gfx::Size(10, 10));
+  gfx::Size tile_size(100, 100);
+
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(10, 10));
+  SetupPendingTree(active_pile);
+  ActivateTree();
   host_impl_.active_tree()->UpdateDrawProperties();
   EXPECT_FALSE(host_impl_.active_tree()->needs_update_draw_properties());
 
   SetupDrawPropertiesAndUpdateTiles(
       active_layer_, 0.5f, 0.5f, 0.5f, 0.5f, false);
-  pending_layer_->tilings()->RemoveAllTilings();
   active_layer_->tilings()->RemoveAllTilings();
   PictureLayerTiling* tiling = active_layer_->AddTiling(0.5f);
   active_layer_->AddTiling(1.5f);
@@ -2239,18 +2243,13 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
   ASSERT_EQ(tiling, active_layer_->tilings()->TilingAtScale(0.5f));
 
-  pending_layer_->tilings()->RemoveAllTilings();
-  ASSERT_EQ(0u, pending_layer_->tilings()->num_tilings());
-
   // Now, set the bounds to be 1x1 (so that minimum contents scale becomes
   // 1.0f). Note that we should also ensure that the pending layer needs post
   // commit initialization, since this is what would happen during commit. In
   // other words we want the pending layer to sync from the active layer.
-  pending_layer_->SetBounds(gfx::Size(1, 1));
-  pending_layer_->SetNeedsPostCommitInitialization();
-  pending_layer_->set_twin_layer(nullptr);
-  active_layer_->set_twin_layer(nullptr);
-  EXPECT_TRUE(pending_layer_->needs_post_commit_initialization());
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1, 1));
+  SetupPendingTree(pending_pile);
 
   // Update the draw properties: sync from active tree should happen here.
   host_impl_.pending_tree()->UpdateDrawProperties();
