@@ -22,8 +22,8 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
   TranslateBubbleViewBrowserTest()
       : cld_data_harness(test::CreateCldDataHarness()) {}
-  virtual ~TranslateBubbleViewBrowserTest() {}
-  virtual void SetUpOnMainThread() override {
+  ~TranslateBubbleViewBrowserTest() override {}
+  void SetUpOnMainThread() override {
     // We can't Init() until PathService has been initialized. This happens
     // very late in the test fixture setup process.
     cld_data_harness->Init();

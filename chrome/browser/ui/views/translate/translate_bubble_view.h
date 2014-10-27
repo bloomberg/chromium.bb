@@ -39,7 +39,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
                             public views::LinkListener,
                             public content::WebContentsObserver {
  public:
-  virtual ~TranslateBubbleView();
+  ~TranslateBubbleView() override;
 
   // Shows the Translate bubble.
   //
@@ -63,25 +63,24 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   TranslateBubbleModel* model() { return model_.get(); }
 
   // views::BubbleDelegateView methods.
-  virtual void Init() override;
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void Init() override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::WidgetDelegate method.
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
   // views::View methods.
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  virtual gfx::Size GetPreferredSize() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  gfx::Size GetPreferredSize() const override;
 
   // views::CombboxListener methods.
-  virtual void OnPerformAction(views::Combobox* combobox) override;
+  void OnPerformAction(views::Combobox* combobox) override;
 
   // views::LinkListener method.
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // content::WebContentsObserver method.
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   // Returns the current view state.
   TranslateBubbleModel::ViewState GetViewState() const;
