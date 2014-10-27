@@ -115,7 +115,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
           int render_process_id) override;
   virtual void ShowDesktopNotification(
       const content::ShowDesktopNotificationHostMsgParams& params,
-      content::RenderFrameHost* render_frame_host,
+      content::BrowserContext* browser_context,
+      int render_process_id,
       scoped_ptr<content::DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) override;
   virtual void RequestPermission(

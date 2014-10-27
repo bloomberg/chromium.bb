@@ -38,7 +38,8 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       int render_process_id) override;
   void ShowDesktopNotification(
       const ShowDesktopNotificationHostMsgParams& params,
-      RenderFrameHost* render_frame_host,
+      BrowserContext* browser_context,
+      int render_process_id,
       scoped_ptr<DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) override;
 

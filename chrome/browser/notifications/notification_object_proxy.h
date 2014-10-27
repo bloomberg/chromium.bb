@@ -12,15 +12,13 @@
 
 namespace content {
 class DesktopNotificationDelegate;
-class RenderFrameHost;
 }
 
 // A NotificationObjectProxy stands in for the JavaScript Notification object
 // which corresponds to a notification toast on the desktop.  It can be signaled
 // when various events occur regarding the desktop notification, and the
 // attached JS listeners will be invoked in the renderer or worker process.
-class NotificationObjectProxy
-    : public NotificationDelegate {
+class NotificationObjectProxy : public NotificationDelegate {
  public:
   // Creates a Proxy object with the necessary callback information. The Proxy
   // will take ownership of |delegate|.
@@ -35,8 +33,6 @@ class NotificationObjectProxy
   std::string id() const override;
 
  protected:
-  friend class base::RefCountedThreadSafe<NotificationObjectProxy>;
-
   ~NotificationObjectProxy() override;
 
  private:

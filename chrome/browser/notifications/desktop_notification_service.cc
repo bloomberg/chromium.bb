@@ -27,8 +27,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/show_desktop_notification_params.h"
@@ -184,7 +182,7 @@ void DesktopNotificationService::RequestNotificationPermission(
 
 void DesktopNotificationService::ShowDesktopNotification(
     const content::ShowDesktopNotificationHostMsgParams& params,
-    content::RenderFrameHost* render_frame_host,
+    int render_process_id,
     scoped_ptr<content::DesktopNotificationDelegate> delegate,
     base::Closure* cancel_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -192,7 +190,7 @@ void DesktopNotificationService::ShowDesktopNotification(
   NotificationObjectProxy* proxy = new NotificationObjectProxy(delegate.Pass());
 
   base::string16 display_source = DisplayNameForOriginInProcessId(
-      origin, render_frame_host->GetProcess()->GetID());
+      origin, render_process_id);
 
   // TODO(peter): Icons for Web Notifications are currently always requested for
   // 1x scale, whereas the displays on which they can be displayed can have a

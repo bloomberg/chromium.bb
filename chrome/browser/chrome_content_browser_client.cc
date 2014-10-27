@@ -1870,17 +1870,20 @@ ChromeContentBrowserClient::CheckDesktopNotificationPermission(
 
 void ChromeContentBrowserClient::ShowDesktopNotification(
     const content::ShowDesktopNotificationHostMsgParams& params,
-    RenderFrameHost* render_frame_host,
+    content::BrowserContext* browser_context,
+    int render_process_id,
     scoped_ptr<content::DesktopNotificationDelegate> delegate,
     base::Closure* cancel_callback) {
 #if defined(ENABLE_NOTIFICATIONS)
-  content::RenderProcessHost* process = render_frame_host->GetProcess();
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
+
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
-  service->ShowDesktopNotification(
-      params, render_frame_host, delegate.Pass(), cancel_callback);
+  DCHECK(service);
 
+  service->ShowDesktopNotification(
+      params, render_process_id, delegate.Pass(), cancel_callback);
   profile->GetHostContentSettingsMap()->UpdateLastUsage(
       params.origin, params.origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 #else

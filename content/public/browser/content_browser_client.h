@@ -430,7 +430,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // a callback which can be used to cancel the notification.
   virtual void ShowDesktopNotification(
       const ShowDesktopNotificationHostMsgParams& params,
-      RenderFrameHost* render_frame_host,
+      BrowserContext* browser_context,
+      int render_process_id,
       scoped_ptr<DesktopNotificationDelegate> delegate,
       base::Closure* cancel_callback) {}
 
