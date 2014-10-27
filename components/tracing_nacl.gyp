@@ -16,8 +16,10 @@
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',
+            '../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../ipc/ipc_nacl.gyp:ipc_nacl',
+            '../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
             '../native_client/tools.gyp:prep_toolchain',
-            '../ipc/ipc.gyp:ipc',
           ],
           'include_dirs': [
             '..',
@@ -28,6 +30,8 @@
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
           },
           'sources': [
             'tracing/child_trace_message_filter.cc',

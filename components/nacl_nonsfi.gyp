@@ -64,6 +64,7 @@
                   '>(tc_lib_dir_nonsfi_helper32)/libgpu_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libipc_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libshared_memory_support_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libtracing_nacl.a',
                 ],
               }],
             ],
@@ -78,6 +79,7 @@
             # Temporarily depends on some libraries to make sure they can be
             # built properly. These are depended on by PPAPI library.
             # TODO(hidehiko): Remove them when PPAPI library is introduced.
+            '../components/tracing_nacl.gyp:tracing_nacl',
             '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
             '../gpu/gpu_nacl.gyp:command_buffer_client_nacl',
             '../gpu/gpu_nacl.gyp:command_buffer_common_nacl',
