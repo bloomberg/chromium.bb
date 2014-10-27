@@ -22,6 +22,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "device/battery/android/battery_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
@@ -60,6 +61,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!content::android::RegisterAppJni(env))
+      return false;
+
+    if (!device::android::RegisterBatteryJni(env))
       return false;
 
     if (!media::RegisterJni(env))

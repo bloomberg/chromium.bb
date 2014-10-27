@@ -40,7 +40,6 @@
 #include "cc/base/switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/battery_status/battery_status_message_filter.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
@@ -131,6 +130,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/url_constants.h"
+#include "device/battery/battery_monitor_impl.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
@@ -585,6 +585,7 @@ bool RenderProcessHostImpl::Init() {
   GetContentClient()->browser()->RenderProcessWillLaunch(this);
 
   CreateMessageFilters();
+  RegisterMojoServices();
 
   if (run_renderer_in_process()) {
     DCHECK(g_renderer_main_thread_factory);
@@ -861,7 +862,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new VibrationMessageFilter());
   AddFilter(new PushMessagingMessageFilter(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
-  AddFilter(new BatteryStatusMessageFilter());
 #if defined(OS_ANDROID)
   AddFilter(new ScreenOrientationMessageFilterAndroid());
 #endif
@@ -869,10 +869,14 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetGeofencingManager()));
 }
 
+void RenderProcessHostImpl::RegisterMojoServices() {
+  mojo_application_host_->service_registry()->AddService(
+      base::Bind(&device::BatteryMonitorImpl::Create));
+}
+
 int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
-
 
 void RenderProcessHostImpl::ResumeDeferredNavigation(
     const GlobalRequestID& request_id) {

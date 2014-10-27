@@ -6,6 +6,8 @@
   'dependencies': [
     '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
+    '../device/battery/battery.gyp:device_battery',
+    '../device/battery/battery.gyp:device_battery_mojo_bindings',
     '../google_apis/google_apis.gyp:google_apis',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
@@ -379,20 +381,6 @@
       'browser/appcache/appcache_manifest_parser.h',
       'browser/appcache/view_appcache_internals_job.cc',
       'browser/appcache/view_appcache_internals_job.h',
-      'browser/battery_status/battery_status_manager_android.cc',
-      'browser/battery_status/battery_status_manager_android.h',
-      'browser/battery_status/battery_status_manager_chromeos.cc',
-      'browser/battery_status/battery_status_manager_default.cc',
-      'browser/battery_status/battery_status_manager_linux.cc',
-      'browser/battery_status/battery_status_manager_linux.h',
-      'browser/battery_status/battery_status_manager_mac.cc',
-      'browser/battery_status/battery_status_manager_win.cc',
-      'browser/battery_status/battery_status_manager_win.h',
-      'browser/battery_status/battery_status_manager.h',
-      'browser/battery_status/battery_status_message_filter.cc',
-      'browser/battery_status/battery_status_message_filter.h',
-      'browser/battery_status/battery_status_service.cc',
-      'browser/battery_status/battery_status_service.h',
       'browser/bootstrap_sandbox_mac.cc',
       'browser/bootstrap_sandbox_mac.h',
       'browser/browser_child_process_host_impl.cc',
@@ -1805,7 +1793,6 @@
         ],
       },
       'sources/': [
-        ['exclude', '^browser/battery_status/battery_status_manager_default\\.cc$'],
         ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default\\.cc$'],
         ['exclude', '^browser/geolocation/network_location_provider\\.(cc|h)$'],
         ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],
@@ -1830,7 +1817,6 @@
       ],
       'sources!': [
         'browser/geolocation/empty_wifi_data_provider.cc',
-        'browser/battery_status/battery_status_manager_default.cc',
       ],
       'dependencies': [
         '../third_party/mozilla/mozilla.gyp:mozilla',
@@ -1848,8 +1834,6 @@
         '../chromeos/chromeos.gyp:power_manager_proto',
       ],
       'sources!': [
-        'browser/battery_status/battery_status_manager_default.cc',
-        'browser/battery_status/battery_status_manager_linux.cc',
         'browser/geolocation/wifi_data_provider_linux.cc',
         'browser/power_save_blocker_ozone.cc',
         'browser/power_save_blocker_x11.cc',
@@ -1901,13 +1885,11 @@
     }],
     ['OS == "win"', {
       'sources!': [
-        'browser/battery_status/battery_status_manager_default.cc',
         'browser/geolocation/empty_wifi_data_provider.cc',
       ],
     }],
     ['OS == "linux" and use_dbus==1', {
       'sources!': [
-        'browser/battery_status/battery_status_manager_default.cc',
         'browser/geolocation/empty_wifi_data_provider.cc',
       ],
       'dependencies': [
@@ -1916,7 +1898,6 @@
       ],
     }, {  # OS != "linux" or use_dbus==0
       'sources!': [
-        'browser/battery_status/battery_status_manager_linux.cc',
         'browser/geolocation/wifi_data_provider_linux.cc',
       ],
     }],

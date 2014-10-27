@@ -44,6 +44,7 @@ group("root") {
     "//content/shell:content_shell",
     "//content/test:test_support",
     "//crypto",
+    "//device/battery",
     "//device/bluetooth",
     "//device/nfc",
     "//extensions/browser",

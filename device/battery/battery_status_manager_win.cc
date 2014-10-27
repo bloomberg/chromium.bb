@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/battery_status/battery_status_manager_win.h"
+#include "device/battery/battery_status_manager_win.h"
 
-#include "base/memory/ref_counted.h"
+#include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/win/message_window.h"
 #include "base/win/windows_version.h"
-#include "content/browser/battery_status/battery_status_manager.h"
-#include "content/public/browser/browser_thread.h"
+#include "device/battery/battery_status_manager.h"
 
-namespace content {
+namespace device {
 
 namespace {
 
@@ -51,8 +51,7 @@ void UpdateNumberBatteriesHistogram() {
 }
 
 // Message-only window for handling battery changes on Windows.
-class BatteryStatusObserver
-    : public base::RefCountedThreadSafe<BatteryStatusObserver> {
+class BatteryStatusObserver {
  public:
   explicit BatteryStatusObserver(const BatteryCallback& callback)
       : power_handle_(NULL),
@@ -60,29 +59,9 @@ class BatteryStatusObserver
         callback_(callback) {
   }
 
-  virtual ~BatteryStatusObserver() { DCHECK(!window_); }
+  ~BatteryStatusObserver() { DCHECK(!window_); }
 
   void Start() {
-    // Need to start on the UI thread to receive battery status notifications.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&BatteryStatusObserver::StartOnUI, this));
-  }
-
-  void Stop() {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&BatteryStatusObserver::StopOnUI, this));
-  }
-
- private:
-  void StartOnUI() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (window_)
-      return;
-
     if (CreateMessageWindow()) {
       BatteryChanged();
       // RegisterPowerSettingNotification function work from Windows Vista
@@ -97,17 +76,13 @@ class BatteryStatusObserver
     } else {
       // Could not create a message window, execute callback with the default
       // values.
-      callback_.Run(blink::WebBatteryStatus());
+      callback_.Run(BatteryStatus());
     }
 
     UpdateNumberBatteriesHistogram();
   }
 
-  void StopOnUI() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!window_)
-      return;
-
+  void Stop() {
     if (power_handle_)
       UnregisterNotification(power_handle_);
     if (battery_change_handle_)
@@ -115,12 +90,13 @@ class BatteryStatusObserver
     window_.reset();
   }
 
+ private:
   void BatteryChanged() {
     SYSTEM_POWER_STATUS win_status;
     if (GetSystemPowerStatus(&win_status))
       callback_.Run(ComputeWebBatteryStatus(win_status));
     else
-      callback_.Run(blink::WebBatteryStatus());
+      callback_.Run(BatteryStatus());
   }
 
   bool HandleMessage(UINT message,
@@ -185,27 +161,24 @@ class BatteryStatusManagerWin : public BatteryStatusManager {
  public:
   // BatteryStatusManager:
   virtual bool StartListeningBatteryChange() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     battery_observer_->Start();
     return true;
   }
 
   virtual void StopListeningBatteryChange() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     battery_observer_->Stop();
   }
 
  private:
-  scoped_refptr<BatteryStatusObserver> battery_observer_;
+  scoped_ptr<BatteryStatusObserver> battery_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerWin);
 };
 
 }  // namespace
 
-blink::WebBatteryStatus ComputeWebBatteryStatus(
-    const SYSTEM_POWER_STATUS& win_status) {
-  blink::WebBatteryStatus status;
+BatteryStatus ComputeWebBatteryStatus(const SYSTEM_POWER_STATUS& win_status) {
+  BatteryStatus status;
   status.charging = win_status.ACLineStatus != WIN_AC_LINE_STATUS_OFFLINE;
 
   // Set level if available. Otherwise keep the default value which is 1.
@@ -215,16 +188,16 @@ blink::WebBatteryStatus ComputeWebBatteryStatus(
   }
 
   if (!status.charging) {
-    // Set dischargingTime if available otherwise keep the default value,
+    // Set discharging_time if available otherwise keep the default value,
     // which is +Infinity.
     if (win_status.BatteryLifeTime != (DWORD)-1)
-      status.dischargingTime = win_status.BatteryLifeTime;
-    status.chargingTime = std::numeric_limits<double>::infinity();
+      status.discharging_time = win_status.BatteryLifeTime;
+    status.charging_time = std::numeric_limits<double>::infinity();
   } else {
-    // Set chargingTime to +Infinity if not fully charged, otherwise leave the
+    // Set charging_time to +Infinity if not fully charged, otherwise leave the
     // default value, which is 0.
     if (status.level < 1)
-      status.chargingTime = std::numeric_limits<double>::infinity();
+      status.charging_time = std::numeric_limits<double>::infinity();
   }
   return status;
 }
@@ -236,4 +209,4 @@ scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
       new BatteryStatusManagerWin(callback));
 }
 
-}  // namespace content
+}  // namespace device

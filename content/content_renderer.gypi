@@ -9,6 +9,8 @@
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../cc/cc.gyp:cc',
     '../cc/blink/cc_blink.gyp:cc_blink',
+    '../device/battery/battery.gyp:device_battery',
+    '../device/battery/battery.gyp:device_battery_mojo_bindings',
     '../gin/gin.gyp:gin',
     '../gpu/gpu.gyp:gpu',
     '../jingle/jingle.gyp:jingle_glue',

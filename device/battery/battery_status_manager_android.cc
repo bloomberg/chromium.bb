@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/battery_status/battery_status_manager_android.h"
+#include "device/battery/battery_status_manager_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -11,7 +11,7 @@
 
 using base::android::AttachCurrentThread;
 
-namespace content {
+namespace device {
 
 BatteryStatusManagerAndroid::BatteryStatusManagerAndroid(
     const BatteryStatusService::BatteryUpdateCallback& callback)
@@ -35,10 +35,10 @@ void BatteryStatusManagerAndroid::GotBatteryStatus(JNIEnv*,
                                                    jdouble charging_time,
                                                    jdouble discharging_time,
                                                    jdouble level) {
-  blink::WebBatteryStatus status;
+  BatteryStatus status;
   status.charging = charging;
-  status.chargingTime = charging_time;
-  status.dischargingTime = discharging_time;
+  status.charging_time = charging_time;
+  status.discharging_time = discharging_time;
   status.level = level;
   callback_.Run(status);
 }
@@ -62,4 +62,4 @@ scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
       new BatteryStatusManagerAndroid(callback));
 }
 
-}  // namespace content
+}  // namespace device

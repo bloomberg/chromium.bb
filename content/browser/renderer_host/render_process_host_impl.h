@@ -290,6 +290,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();
 
+  // Registers Mojo services to be exposed to the renderer.
+  void RegisterMojoServices();
+
   // Control message handlers.
   void OnShutdownRequest();
   void OnDumpHandlesDone();
